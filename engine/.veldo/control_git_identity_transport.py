@@ -105,21 +105,60 @@ def options(record, remote):
     return [part for item in config for part in ('-c', item)]
 
 
-def record_operations(conn, events):
-    """Metadata-only operational log, separate from authority and credentials."""
-    import json
-    conn.execute('CREATE TABLE IF NOT EXISTS git_identity_operations (event TEXT NOT NULL)')
-    conn.executemany('INSERT INTO git_identity_operations VALUES (?)',
-                     [(json.dumps(event, sort_keys=True),) for event in events])
+def checked_argv(args, remote):
+    """Bind transport's positional destination to the literal URL checked by options."""
+    prefix, i = [args[0]], 1
+    while i < len(args) and args[i] in ('-C', '-c'):
+        if i + 1 >= len(args):
+            raise Refused('invalid_input:identity_argv')
+        if args[i] == '-c' and args[i + 1] not in ('push.followTags=false', 'push.pushOption='):
+            raise Refused('binding_mismatch:identity_transport_config')
+        prefix.extend(args[i:i + 2])
+        i += 2
+    command = args[i] if i < len(args) else ''
+    if command in ('push', 'fetch', 'ls-remote'):
+        tail = args[i + 1:]
+        flags = {'-q', '--quiet', '--porcelain', '--no-verify', '--no-follow-tags',
+                 '--recurse-submodules=no', '--no-tags', '--no-write-fetch-head',
+                 '--symref', '--get-url', '--heads', '--tags', '--refs', '--exit-code'}
+        while tail and tail[0].startswith('-'):
+            flag, tail = tail[0], tail[1:]
+            if flag == '--':
+                break
+            if flag not in flags and not (command == 'push' and flag.startswith('--force-with-lease=')):
+                raise Refused('invalid_input:identity_argv')
+        if not tail or tail[0] != remote:
+            raise Refused('binding_mismatch:identity_destination')
+    elif command not in ('config', 'credential', 'status'):
+        raise Refused('invalid_input:identity_argv')
+    return prefix, command
 
 
-def metrics(conn):
-    import json
-    if not conn.execute("SELECT 1 FROM sqlite_master WHERE name='git_identity_operations'").fetchone():
-        return {}
+def config_overrides(data, remote):
+    for entry in data.decode('utf-8', 'surrogateescape').split('\0'):
+        key, _, value = entry.partition('\n')
+        key = key.lower()
+        if (key.startswith(('url.', 'credential.', 'http.')) or key == 'core.sshcommand'
+                or (key.startswith('remote.') and key.endswith(('.url', '.pushurl')) and value != remote)):
+            return True
+    return False
+
+
+def record_operations(conn, events, journal):
+    """Persist metadata through the same signed command boundary as protected effects."""
+    import secrets
+    effects = organ('control_effects')
+    state = effects.S.materialized_state(conn)['entities']
+    changes = {'git-identity-operation:' + secrets.token_hex(20):
+               {'kind': 'git_identity_operation', 'data': event} for event in events}
+    if changes:
+        effects.transact(conn, 'observe_git_identity', {'new_ids': list(changes), 'events': events},
+                         state, secrets.token_hex(20), journal, lambda params, before: changes)
+
+
+def count_events(events):
     counts = {}
-    for (data,) in conn.execute('SELECT event FROM git_identity_operations'):
-        event = json.loads(data)
+    for event in events:
         row = counts.setdefault(event.get('identity'), {'pushes': 0, 'refusals': {}})
         if event['operation'] == 'push' and event['outcome'] == 'accepted':
             row['pushes'] += 1
@@ -127,6 +166,27 @@ def metrics(conn):
             reason = event['refusal']
             row['refusals'][reason] = row['refusals'].get(reason, 0) + 1
     return counts
+
+
+def metrics(conn):
+    import json
+    return count_events(json.loads(data) for (data,) in conn.execute(
+        "SELECT data FROM entities WHERE kind='git_identity_operation'"))
+
+
+def local_operations(common, event=None):
+    """Durable direct-lander observations, outside the disposable candidate and authority DB."""
+    import fcntl
+    import json
+    path = Path(common) / 'veldo-identity-operations.jsonl'
+    with path.open('a+', encoding='utf-8') as stream:
+        fcntl.flock(stream, fcntl.LOCK_EX)
+        if event is not None:
+            stream.write(json.dumps(event, sort_keys=True) + '\n')
+            stream.flush()
+            os.fsync(stream.fileno())
+        stream.seek(0)
+        return count_events(json.loads(line) for line in stream)
 
 
 def helper(argv):

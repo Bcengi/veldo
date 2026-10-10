@@ -65,7 +65,8 @@ def _v153_suite():
         tokens = {owner: 'fixture-value-' + os.urandom(16).hex() for owner in keys}
         token = tokens['alpha']
         marker = base / 'planted-helper-ran'
-        (home / '.gitconfig').write_text('[credential]\n\thelper = !touch ' + str(marker) + '\n')
+        (home / '.gitconfig').write_text('[credential]\n\thelper = !touch ' + str(marker) + '\n'
+            + '[url "https://github.com/intruder/"]\n\tinsteadOf = https://github.com/alpha/\n')
         system = base / 'system.gitconfig'
         system.write_text('[url "https://github.com/intruder/"]\n\tinsteadOf = https://github.com/alpha/\n')
         secret = tools / 'secret-tool'
@@ -107,6 +108,13 @@ def _v153_suite():
             row('profile/environment', 'SSH_AUTH_SOCK' not in env and 'GIT_SSH_COMMAND' not in env
                 and 'GIT_DIR' not in env and 'GIT_CONFIG_COUNT' not in env and 'GIT_TRACE' not in env
                 and env['GIT_CONFIG_GLOBAL'] == os.devnull and env['GIT_CONFIG_SYSTEM'] == os.devnull)
+            try:
+                global_routed = G.run(['git', '-C', str(repo), 'ls-remote', '--get-url', url], profile='identity',
+                    push_identity=record, remote_url=url, capture_output=True, text=True)
+                global_isolated = global_routed.returncode == 0 and global_routed.stdout.strip() == url
+            except ValueError:
+                global_isolated = False
+            row('profile/global-config', global_isolated)
             helpers = G.run(['git', '-C', str(repo), 'config', '--get-all', 'credential.helper'],
                             profile='identity', push_identity=record, remote_url=url, capture_output=True, text=True)
             filled = G.run(['git', '-C', str(repo), 'credential', 'fill'], input='protocol=https\nhost=github.com\npath=alpha/repo.git\n\n',
@@ -133,6 +141,85 @@ def _v153_suite():
             row('profile/local-auth-refused', refusal(lambda: G.run(['git', '-C', str(repo), 'status'], profile='identity',
                 push_identity=record, remote_url=url)) == 'binding_mismatch:identity_transport_config')
             git('config', '--unset-all', 'credential.https://github.com.helper')
+            included = base / 'included.config'
+            included.write_text('[url "https://github.com/third/"]\n\tinsteadOf = https://github.com/alpha/\n')
+            for name, key in (('include', 'include.path'),
+                              ('include-if', 'includeIf.gitdir:' + str(repo / '.git') + '.path')):
+                git('config', key, str(included))
+                row('profile/' + name, refusal(lambda: G.run(['git', '-C', str(repo), 'ls-remote', '--get-url', url],
+                    profile='identity', push_identity=record, remote_url=url, capture_output=True)) == 'binding_mismatch:identity_transport_config')
+                git('config', '--unset-all', key)
+            git('config', 'extensions.worktreeConfig', 'true')
+            git('config', '--worktree', 'http.extraHeader', 'Authorization: planted')
+            row('profile/worktree-config', refusal(lambda: G.run(['git', '-C', str(repo), 'status'],
+                profile='identity', push_identity=record, remote_url=url, capture_output=True)) == 'binding_mismatch:identity_transport_config')
+            git('config', '--worktree', '--unset-all', 'http.extraHeader')
+            git('config', '--unset-all', 'extensions.worktreeConfig')
+            for field in ('url', 'pushurl'):
+                key = 'remote.' + url + '.' + field
+                git('config', key, 'https://github.com/third/repo.git')
+                row('profile/url-section-' + field, refusal(lambda: G.run(['git', '-C', str(repo), 'ls-remote', '--get-url', url],
+                    profile='identity', push_identity=record, remote_url=url, capture_output=True)) == 'binding_mismatch:identity_transport_config')
+                git('config', '--unset-all', key)
+            git('config', 'remote.origin.url', url)
+            git('config', 'remote.origin.pushurl', url)
+            def no_wire(args, **kwargs):
+                if 'push' in args:
+                    return subprocess.CompletedProcess(args, 0, b'', b'')
+                return original_run(args, **kwargs)
+            with patch.object(subprocess, 'run', no_wire):
+                row('profile/literal-destination', refusal(lambda: G.run(['git', '-C', str(repo), 'push', 'origin', 'HEAD'],
+                    profile='identity', push_identity=record, remote_url=url, capture_output=True)) == 'binding_mismatch:identity_destination')
+            git('config', '--remove-section', 'remote.origin')
+
+            # A loopback HTTP adapter observes libcurl's actual authentication choice.
+            # Git and curl run unchanged; only the endpoint and fixture helper are substituted.
+            import base64
+            import http.server
+            import threading
+            auth = []
+            class Handler(http.server.BaseHTTPRequestHandler):
+                def do_GET(self):
+                    value = self.headers.get('Authorization')
+                    auth.append(value)
+                    if value is None:
+                        self.send_response(401)
+                        self.send_header('WWW-Authenticate', 'Basic realm="fixture"')
+                        self.end_headers()
+                    else:
+                        self.send_response(200)
+                        self.send_header('Content-Type', 'application/x-git-upload-pack-advertisement')
+                        self.end_headers()
+                        self.wfile.write(b'001e# service=git-upload-pack\n00000000')
+                def log_message(self, *args):
+                    pass
+            server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            (home / '.netrc').write_text('machine 127.0.0.1 login planted password planted\n')
+            (home / '.netrc').chmod(0o600)
+            observed_homes = []
+            def http_wire(args, **kwargs):
+                args = list(args)
+                if 'ls-remote' in args:
+                    observed_homes.append(kwargs['env']['HOME'])
+                    row('profile/private-home-live', kwargs['env']['HOME'] == kwargs['env']['XDG_CONFIG_HOME']
+                        and Path(kwargs['env']['HOME']).stat().st_mode & 0o777 == 0o700)
+                    args[args.index(url)] = 'http://127.0.0.1:' + str(server.server_port) + '/alpha/repo.git'
+                    for i, value in enumerate(args):
+                        if value.startswith('credential.helper=!'):
+                            args[i] = "credential.helper=!printf 'username=identity\npassword=fixture\n'"
+                return original_run(args, **kwargs)
+            try:
+                with patch.object(subprocess, 'run', http_wire):
+                    G.run(['git', '-C', str(repo), 'ls-remote', url], profile='identity',
+                          push_identity=record, remote_url=url, capture_output=True, text=True)
+                row('profile/netrc', auth and auth[-1] == 'Basic ' + base64.b64encode(b'identity:fixture').decode()
+                    and 'Basic ' + base64.b64encode(b'planted:planted').decode() not in auth)
+                row('profile/private-home-cleaned', observed_homes and all(not Path(h).exists() for h in observed_homes))
+            finally:
+                server.shutdown(); server.server_close(); thread.join()
+
 
             # Test adapter for the SSH wire. Git still performs real receive-pack publication.
             # It verifies the selected key and isolation, but does not implement SSH cryptography.
@@ -159,20 +246,26 @@ def _v153_suite():
                 return original_run(args, **kwargs)
 
             ssh_records = [dict(r, push_credential={'kind': 'ssh', 'reference': 'keychain:fixture/' + r['id'] + '/ssh'}) for r in records]
-            conn = sqlite3.connect(base / 'identities.db', isolation_level=None)
+            conn = X.E.S.open_store(base / 'identities.db')
             for r in ssh_records:
                 I.configure_identities(conn, 'domain', [r], {r['id']: {'path': str(repo) if r['id'] == 'alpha' else str(base / 'beta'), 'identity': r['id']}})
             conn.close()
-            conn = sqlite3.connect(base / 'identities.db', isolation_level=None)
+            conn = X.E.S.open_store(base / 'identities.db')
             before = lambda: git('rev-parse', 'refs/heads/main', cwd=bare)
             reset = lambda: git('update-ref', 'refs/heads/main', old, cwd=bare)
             with patch.object(subprocess, 'run', wire), patch.object(L, 'verification_organ', lambda: SimpleNamespace(accept=lambda *a, **k: [])):
+                planted_hook = repo / '.git/hooks/pre-push'
+                hook_marker = base / 'pre-push-ran'
+                planted_hook.write_text('#!/bin/sh\ntouch ' + str(hook_marker) + '\n')
+                planted_hook.chmod(0o700)
                 for r in ssh_records:
                     url = 'git@github.com:' + r['id'] + '/repo.git'
                     reset()
+                    git('config', '--remove-section', 'remote.origin') if G.run(['git', '-C', str(repo), 'config', '--get', 'remote.origin.url'], capture_output=True).returncode == 0 else None
                     done = G.run(['git', '-C', str(repo), 'push', url, 'HEAD:refs/heads/main'], profile='identity',
                                  push_identity=r, remote_url=url, capture_output=True, text=True)
                     row('profile/direct-push/' + r['id'], done.returncode == 0 and before() == tip)
+                    row('profile/pre-push-hook/' + r['id'], not hook_marker.exists())
                     for destination in ('alpha', 'beta', 'third'):
                         reset()
                         git('config', 'remote.origin.url', 'git@github.com:' + destination + '/repo.git')
@@ -192,9 +285,15 @@ def _v153_suite():
                         row('lander/' + r['id'] + '/' + destination,
                             landed['ok'] and before() == tip if own else
                             landed.get('refusal') == 'binding_mismatch:remote_owner' and before() == old and len(invocations) == count)
+                        if not own:
+                            row('lander/' + r['id'] + '/' + destination + '/observed-owner',
+                                any(e['operation'] == 'push' and e.get('remote_owner') == destination for e in logs))
                         if own:
+                            restarted = L.GitLandOps(ops.repo_root, 'HEAD', domain='domain', repository=r['id'])
+                            row('lander/' + r['id'] + '/durable', restarted.status()['identities'][r['id']]['pushes'] == 1)
                             row('lander/' + r['id'] + '/observability', ops.identity_counts[r['id']]['pushes'] == 1
                                 and any(e['operation'] == 'push' and e['remote_owner'] == destination for e in logs))
+                git('config', 'remote.origin.url', 'git@github.com:alpha/repo.git')
                 for destination in ('alpha', 'beta', 'third'):
                     reset()
                     contract = dict(kind='publication', target='git', domain_uuid='domain', repository_uuid='alpha',
@@ -207,7 +306,15 @@ def _v153_suite():
                         answer = X.receive(config, contract, accepted)
                         row('executor/own', answer['status'] == 'completed' and before() == tip
                             and answer['evidence']['identity'] == 'alpha')
-                        T.record_operations(conn, config['_identity_events'])
+                        S = X.E.S
+                        signed = []
+                        T.record_operations(conn, config['_identity_events'], ('fixture', lambda data: signed.append(data) or 'fixture-signature'))
+                        row('executor/signed-observations', len(signed) == 1
+                            and conn.execute("SELECT count(*) FROM journal").fetchone()[0] > 0
+                            and not conn.execute("SELECT 1 FROM sqlite_master WHERE name='git_identity_operations'").fetchone())
+                        reopened = X.E.S.open_store(base / 'identities.db')
+                        row('executor/durable', T.metrics(reopened)['alpha']['pushes'] == 1)
+                        reopened.close()
                         row('executor/observability', T.metrics(conn)['alpha']['pushes'] == 1
                             and all(e['repository'] == 'alpha' and e['request'] == 'dispatch'
                                     and e['remote_owner'] == 'alpha' for e in config['_identity_events']))
@@ -216,6 +323,15 @@ def _v153_suite():
                             and before() == old and len(invocations) == count)
                 reset()
                 config['receivers']['git']['remote'] = 'git@github.com:alpha/repo.git'
+                signed_execute = []
+                with patch.object(X.E, 'authenticate', lambda *a: None), \
+                     patch.object(X.E, 'accept', lambda *a: (dict(contract, **accepted), True)), \
+                     patch.object(X.E, 'finish', lambda conn, accepted, observation, journal: observation), \
+                     patch.object(X.E.SIG, 'sign_bytes', lambda key, data, ns: signed_execute.append(data) or 'fixture-signature'):
+                    executed = X.execute(dict(config, journal_key='fixture'), {'operation': 'execute'}, 'fixture', 'challenge', 'signature')
+                row('executor/execute-signed', executed.get('accepted') and len(signed_execute) == 1
+                    and T.metrics(conn)['alpha']['pushes'] == 2)
+                reset()
                 missing_contract = dict(contract, repository_uuid='unbound')
                 count = len(invocations)
                 row('executor/unbound', refusal(lambda: X.receive(config, missing_contract, accepted)) == 'missing_authority:repository_identity'
@@ -226,7 +342,21 @@ def _v153_suite():
                                            policy=lambda *a: {'ok': True})
                     instance.candidate = dict(id='candidate', state='verified', workspace=str(repo), commit=tip, tree=tree, watermark=old, gate={})
                     return instance
+                synced = alpha_lander(conn)
+                synced.candidate = None
+                count_before_read = len(invocations)
+                sync_result = synced.sync_main()
+                row('lander/watermark-identity', sync_result.get('ok') and len(invocations) > count_before_read
+                    and synced.candidate['watermark'] == old)
+                synced.discard()
+                B = load('control_landing')
+                landing = B.Landing.__new__(B.Landing)
+                landing.conn, landing.domain, landing.repository = conn, 'domain', 'alpha'
+                landing.clone, landing.remote, landing.ref = str(repo), 'origin', 'refs/heads/main'
+                count_before_read = len(invocations)
+                row('landing/list-identity', landing._remote_tip() == old and len(invocations) > count_before_read)
                 row('lander/unbound', alpha_lander(None).finalize({'id': 'unit'}).get('refusal') == 'missing_authority:repository_identity')
+                count = len(invocations)
                 key_bytes = keys['alpha'].read_bytes()
                 keys['alpha'].unlink()
                 try:
@@ -247,7 +377,7 @@ def _v153_suite():
         row('install/asset', '.veldo/control_git_identity_transport.py' in scaffold.ASSETS if hasattr(scaffold, 'ASSETS') else
             '".veldo/control_git_identity_transport.py"' in (ROOT / '.veldo/init_scaffold.py').read_text())
         row('install/template-sync', all((ROOT / '.veldo' / n).read_bytes() == (ROOT / 'engine/.veldo' / n).read_bytes()
-            for n in ('git_process.py', 'control_git_identity_transport.py', 'lander.py', 'control_effect_executor.py', 'init_scaffold.py')))
+            for n in ('git_process.py', 'control_git_identity_transport.py', 'lander.py', 'control_landing.py', 'control_effect_executor.py', 'init_scaffold.py')))
         if os.environ.get('VELDO_0153_OBSERVATIONS'):
             Path(os.environ['VELDO_0153_OBSERVATIONS']).write_text(json.dumps(results, indent=2) + '\n')
 

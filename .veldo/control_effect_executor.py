@@ -317,9 +317,10 @@ def execute(config, request, principal, challenge, signature):
                 except Exception:
                     record = {}
                 config['_identity_events'].append(dict(operation='push', repository=contract['repository_uuid'],
-                    request=accepted['dispatch_id'], identity=record.get('id'), remote_owner=record.get('remote_owner'),
+                    request=accepted['dispatch_id'], identity=record.get('id'), remote_owner=next((e.get('remote_owner') for e in reversed(config['_identity_events'])
+                        if e['operation'] == 'remote_check'), None),
                     outcome='refused', refusal=observation['refusal']))
-            _git_process.identity_transport().record_operations(conn, config['_identity_events'])
+            _git_process.identity_transport().record_operations(conn, config['_identity_events'], journal)
         result = E.finish(conn, accepted, observation, journal)
         if result['status'] == 'refused':
             return {'accepted': False, 'refusal': result['refusal'], 'result': result, 'metrics': identity_metrics(conn)}

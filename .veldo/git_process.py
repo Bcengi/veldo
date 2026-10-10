@@ -30,6 +30,8 @@ import importlib.util
 from pathlib import Path
 import re
 import subprocess
+import tempfile
+from contextlib import nullcontext
 
 PROFILES = ("isolated", "network", "identity")
 
@@ -99,7 +101,7 @@ def clean_env(env=None, identity=None, profile="isolated"):
 PINNED_GIT = "/usr/bin/git"
 
 
-def _options(args, kwargs):
+def _options(args, kwargs, private_home=None):
     if isinstance(args, (str, bytes)) or not args or args[0] not in ("git", PINNED_GIT):
         raise ValueError("the Git boundary accepts a git argument vector only")
     if kwargs.get("shell"):
@@ -108,33 +110,40 @@ def _options(args, kwargs):
     profile = kwargs.pop("profile", "isolated")
     record, remote = kwargs.pop("push_identity", None), kwargs.pop("remote_url", None)
     kwargs["env"] = clean_env(kwargs.pop("env", None), kwargs.pop("identity", None), profile)
-    if profile == "identity":
-        transport = identity_transport()
-        options = transport.options(record, remote)
-        # Local config remains for ordinary Git operations. Identity transport refuses local
-        # routing/auth overrides, including URL-scoped helpers and headers, before any network IO.
-        prefix = args[:3] if len(args) > 2 and args[1] == '-C' else args[:1]
-        local = subprocess.run([*prefix, 'config', '--local', '--name-only', '--get-regexp',
-                                r'^(url\..*|credential\..*|http\..*|core\.sshcommand)$'],
-                               env=kwargs['env'], capture_output=True, timeout=15)
-        if local.returncode != 1:
-            raise transport.Refused('binding_mismatch:identity_transport_config')
-        args[1:1] = options
-    # A common directory the caller has already validated is pinned after the cleaning, which
-    # strips every inherited GIT_* variable, so only this explicit value can select one.
+    # Pin the common directory before the guard so it inspects the same repository as Git.
     if common_dir is not None:
         kwargs["env"]["GIT_COMMON_DIR"] = str(common_dir)
+    if profile == "identity":
+        transport = identity_transport()
+        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)
+        prefix, command = transport.checked_argv(args, remote)
+        # With global/system files disabled, the default config scope covers local config,
+        # linked-worktree config and every include Git itself would follow.
+        local = subprocess.run([*prefix, 'config', '--includes', '--null', '--list'],
+                               cwd=kwargs.get('cwd'), env=kwargs['env'], capture_output=True, timeout=15)
+        if local.returncode or transport.config_overrides(local.stdout, remote):
+            raise transport.Refused('binding_mismatch:identity_transport_config')
+        options = transport.options(record, remote)
+        args[1:1] = [*options, '-c', 'core.hooksPath=' + private_home]
+        if command == 'push':
+            args.insert(args.index('push') + 1, '--no-verify')
     return kwargs
 
 
+def _invoke(invoke, args, kwargs):
+    # The home is empty, private, unique to this invocation and alive until Git exits.
+    context = tempfile.TemporaryDirectory(prefix='veldo-git-home-') if kwargs.get('profile') == 'identity' else nullcontext()
+    with context as private_home:
+        args = list(args)
+        return invoke(args, **_options(args, kwargs, private_home))
+
+
 def run(args, **kwargs):
-    args = list(args)
-    return subprocess.run(args, **_options(args, kwargs))
+    return _invoke(subprocess.run, args, kwargs)
 
 
 def check_output(args, **kwargs):
-    args = list(args)
-    return subprocess.check_output(args, **_options(args, kwargs))
+    return _invoke(subprocess.check_output, args, kwargs)
 
 
 def claims_a_repository(path):

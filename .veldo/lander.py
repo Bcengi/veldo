@@ -473,6 +473,11 @@ class GitLandOps(LandOps):
         if refusal is not None:
             counts['refusals'][refusal] = counts['refusals'].get(refusal, 0) + 1
         event.update(extra)
+        if operation == 'remote_check':
+            c['checked_remote_owner'] = event.get('remote_owner')
+        if operation in ('push', 'remote_check'):
+            common = self._git(self.repo_root, 'rev-parse', '--path-format=absolute', '--git-common-dir').stdout.strip()
+            _git_process.identity_transport().local_operations(common, event)
         self.counts["refused" if outcome == "refused" else "accepted"] += 1
         self.observe(event)
         return event
@@ -490,7 +495,13 @@ class GitLandOps(LandOps):
         decided), if any."""
         c = self.candidate or {}
         pending = [c["id"]] if c.get("state") in ("synced", "built", "verified") else []
-        return dict(self.counts, pending=pending, identities=self.identity_counts)
+        identities = {key: dict(value) for key, value in self.identity_counts.items()}
+        if Path(self.repo_root).is_dir():
+            common = self._git(self.repo_root, 'rev-parse', '--path-format=absolute', '--git-common-dir', ok=None)
+            if common.returncode == 0:
+                for key, value in _git_process.identity_transport().local_operations(common.stdout.strip()).items():
+                    identities.setdefault(key, {}).update(value)
+        return dict(self.counts, pending=pending, identities=identities)
 
     def record(self):
         """The current candidate's record: its identity, fixed inputs, merges, projections and state."""
@@ -527,11 +538,11 @@ class GitLandOps(LandOps):
             info.mkdir(parents=True, exist_ok=True)
             (info / "alternates").write_text(str(objects) + "\n")
             if self.push:
-                url = self._git(self.repo_root, "remote", "get-url", self.remote, profile="network").stdout.strip()
+                url = self._git(self.repo_root, "config", "--get", "remote." + self.remote + ".url").stdout.strip()
                 if not url:
                     raise CandidateRefused("unavailable_service:git/remote", "the remote has no url", operation="remote")
                 self._git(workspace, "fetch", "-q", "--no-tags", "--no-write-fetch-head", self._absolute(url),
-                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="network")
+                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="identity", remote_url=url)
                 self.candidate["remote_url"] = self._absolute(url)
             else:
                 local = self._commit_of(self.repo_root, "refs/heads/" + self.trunk, "missing_evidence:trunk")
@@ -845,7 +856,7 @@ class GitLandOps(LandOps):
             url = targets[0]
             transport = _git_process.identity_transport()
             try:
-                transport.check_remote(self.identity_record, url, repository=self.repository,
+                target = transport.check_remote(self.identity_record, url, repository=self.repository,
                     request=c.get('id'), observe=lambda event: self._event(
                         'remote_check', event['outcome'], event.get('refusal'), remote_owner=event['remote_owner']))
             except transport.Refused as error:
@@ -854,12 +865,14 @@ class GitLandOps(LandOps):
                              url, "%s:refs/heads/%s" % (c["commit"], self.trunk),
                              profile="identity", remote_url=url, ok=None)
         except CandidateRefused as error:
+            self._event('push', 'refused', error.code,
+                        remote_owner=c.get('checked_remote_owner'))
             return self._refuse("finalize", error, pushed=False)
         pushed = push.returncode == 0
         c["state"] = "published" if pushed else "rejected"
         refusal = None if pushed else "push_refused:remote"
         self._event("push", "accepted" if pushed else "refused", refusal, pushed=pushed,
-                    remote_owner=self.identity_record['remote_owner'])
+                    remote_owner=target['owner'])
         return dict(detail, ok=pushed, pushed=pushed, candidate=c["commit"], refusal=refusal)
 
     def _publish(self, unit, detail):

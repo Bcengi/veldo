@@ -290,10 +290,13 @@ class Landing:
         EL = _organ('control_eligibility')
         return EL.Gate(self.store, self.conn, domain_uuid=self.domain, repository_uuid=self.repository, workspace=None)
 
-    def _git(self, repo, *args, profile='isolated', text=True):
+    def _git(self, repo, *args, profile='isolated', text=True, push_identity=None, remote_url=None):
         try:
             return _git_process.run(['git', '-C', str(repo), *args], capture_output=True, text=text, timeout=GIT_SECONDS,
-                                    stdin=subprocess.DEVNULL, profile=profile)
+                                    stdin=subprocess.DEVNULL, profile=profile,
+                                    push_identity=push_identity, remote_url=remote_url)
+        except ValueError as error:
+            raise Refused(getattr(error, 'code', 'invalid_input:git_profile')) from None
         except (OSError, subprocess.SubprocessError) as error:
             raise Refused('unavailable_service:git/' + args[0], type(error).__name__) from None
 
@@ -343,7 +346,18 @@ class Landing:
 
     def _remote_tip(self):
         """The remote's own answer now: the commit the receiver's ref holds there, or None."""
-        found = self._git(self.clone, 'ls-remote', '--', self.remote, self.ref, profile='network')
+        identity = _organ('control_git_identity').resolve(self.conn, self.domain, self.repository)
+        remote = self.remote
+        if '://' not in remote and not remote.startswith('git@'):
+            configured = self._git(self.clone, 'config', '--get-all', 'remote.' + remote + '.pushurl')
+            if configured.returncode == 1:
+                configured = self._git(self.clone, 'config', '--get-all', 'remote.' + remote + '.url')
+            targets = configured.stdout.splitlines()
+            if configured.returncode or len(targets) != 1:
+                raise Refused('invalid_input:push_destinations')
+            remote = targets[0]
+        found = self._git(self.clone, 'ls-remote', '--', remote, self.ref, profile='identity',
+                          push_identity=identity, remote_url=remote)
         if found.returncode:
             return None
         lines = [line.split('\t') for line in found.stdout.splitlines() if line.strip()]

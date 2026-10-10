@@ -9,6 +9,7 @@ The candidate acceptance seam is controlled: this checks transport, never claims
 import importlib.util
 import json
 import os
+import re
 from pathlib import Path
 import sqlite3
 import subprocess
@@ -46,13 +47,31 @@ def main(config_path):
             key_path = T.credential(entry['identity'])
             fingerprint = subprocess.run(['/usr/bin/ssh-keygen', '-lf', key_path], capture_output=True, text=True, timeout=10)
             assert fingerprint.returncode == 0 and fingerprint.stdout.split()[1] not in fingerprints
+            # Different fingerprints do not prove different authorization. Ask GitHub which
+            # account each key authenticates as. No repository writes occur in this probe.
+            def authenticated_user(options):
+                probe = subprocess.run(['/usr/bin/ssh', '-F', os.devnull, '-o', 'BatchMode=yes',
+                    '-o', 'PasswordAuthentication=no', '-o', 'KbdInteractiveAuthentication=no',
+                    *options, '-T', 'git@github.com'], capture_output=True, text=True, timeout=30)
+                match = re.search(r'Hi ([A-Za-z0-9-]+)! You.ve successfully authenticated', probe.stdout + probe.stderr)
+                return match[1].casefold() if match else None
+            identity_user = authenticated_user(['-o', 'IdentitiesOnly=yes', '-o', 'IdentityAgent=none', '-i', key_path])
+            assert identity_user, 'identity key did not authenticate'
+            agent_user = authenticated_user(['-o', 'IdentityFile=none', '-o', 'IdentitiesOnly=no'])
+            assert agent_user is not None and agent_user != identity_user, 'planted agent must authenticate as a different user'
     results = {}
     with tempfile.TemporaryDirectory(prefix='veldo153-host-') as tmp:
         base = Path(tmp)
         marker, planted_global, planted_system = [base / name for name in ('helper-ran', 'global', 'system')]
         planted_global.write_text('[credential]\n\thelper = !touch ' + str(marker) + '\n')
         planted_system.write_text('[url "https://github.com/veldo-unrelated-owner/"]\n\tinsteadOf = https://github.com/\n')
-        environment = dict(os.environ, GIT_CONFIG_GLOBAL=str(planted_global), GIT_CONFIG_SYSTEM=str(planted_system),
+        home = base / 'planted-home'
+        home.mkdir(mode=0o700)
+        (home / '.netrc').write_text('machine github.com login planted password invalid-host-check-fixture\n')
+        (home / '.netrc').chmod(0o600)
+        included = base / 'included-rewrite'
+        included.write_text('[url "https://github.com/veldo-unrelated-owner/"]\n\tinsteadOf = https://github.com/\n')
+        environment = dict(os.environ, HOME=str(home), XDG_CONFIG_HOME=str(home), GIT_CONFIG_GLOBAL=str(planted_global), GIT_CONFIG_SYSTEM=str(planted_system),
                            GIT_SSH_COMMAND='/bin/false', GIT_ASKPASS='/bin/false')
         with patch.dict(os.environ, environment, clear=True):
             for entry in entries:
@@ -73,6 +92,15 @@ def main(config_path):
                 local('init', '-q', '-b', 'main')
                 local('commit', '--allow-empty', '-qm', 'VELDO-0153 host initial')
                 local('config', 'remote.origin.url', remote)
+                local('config', 'include.path', str(included))
+                try:
+                    G.run(['git', '-C', str(repo), 'ls-remote', remote], capture_output=True,
+                          profile='identity', push_identity=record, remote_url=remote)
+                except ValueError as error:
+                    results['host/AC1/included-rewrite/' + record['id']] = getattr(error, 'code', None) == 'binding_mismatch:identity_transport_config'
+                else:
+                    raise AssertionError('included rewrite was not refused')
+                local('config', '--unset-all', 'include.path')
                 old = local('rev-parse', 'HEAD')
                 prefix = 'refs/heads/veldo-0153-' + uuid.uuid4().hex
                 refs = [prefix + '/' + leg for leg in ('direct', 'lander', 'executor')]
@@ -106,6 +134,7 @@ def main(config_path):
                                 results['host/AC2/' + operation + '/' + record['id'] + '/' + owner] = error.code == 'binding_mismatch:remote_owner'
                             else:
                                 results['host/AC2/' + operation + '/' + record['id'] + '/' + owner] = False
+                local('config', 'remote.origin.url', remote)
                 receiver = {'kind': 'publication', 'repository': str(repo), 'remote': remote, 'ref': refs[2]}
                 contract = {'kind': 'publication', 'target': 'host', 'domain_uuid': 'host153', 'repository_uuid': record['id'],
                             'payload': {'old_tip': old, 'commit': tip, 'tree': tree}}
