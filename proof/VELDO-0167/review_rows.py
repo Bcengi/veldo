@@ -51,6 +51,35 @@ def older_engine(h, check):
         check(row, 'engine and records keys added', now.get('state_root') == str(args[0])
               and now.get('records') == str(args[0] / 'records')
               and now.get('record_hint_service') == config['socket'])
+    # The historical receiver now lacks only keys the records preflight names (VELDO-0185 AC3, host
+    # trust), and the trust preflight refuses any other missing key before it. So the preflight's own
+    # rule for keys an engine upgrade adds is driven directly: an upgraded receiver that has not yet
+    # gained an engine key is not asked for it; the same receiver outside an upgrade is refused.
+    records = h['load']('v167_review_records', h['ROOT'] / '.veldo/control_factory_setup_records.py')
+    path, now = paths[0], json.loads(Path(paths[0]).read_text())
+    class Differs(Exception):
+        pass
+    scratch = h['base'] / 'older-engine-preflight'
+    scratch.mkdir()
+    held = scratch / Path(path).name
+    earlier = {k: v for k, v in original[path].items() if k != 'journal_key'}
+    held.write_text(json.dumps(earlier, indent=1, sort_keys=True) + '\n')
+    held.chmod(0o600)
+    fresh = {k: v for k, v in now.items() if k not in ('records', 'record_hint_service')}
+    api = {'service_config': str(scratch / 'api-service.json'),
+           'installed_service_config': str(scratch / 'installed-api-service.json')}
+    def prepare(writes):
+        try:
+            plan = records.prepare(scratch, {'socket': config['socket']}, {str(held): fresh}, api, '{}', Differs,
+                                   writes)
+        except Differs:
+            return None
+        return next(f for f in plan['files'] if f[0] == str(held))
+    planned = prepare([('configuration', str(held), '', 0o600)])
+    check(row, 'upgraded receiver is not asked for an engine key the upgrade adds', planned is not None
+          and 'journal_key' not in planned[1] and planned[3] == 'upgrade'
+          and sorted(planned[5]) == ['record_hint_service', 'records'])
+    check(row, 'receiver outside an upgrade lacking an engine key is refused', prepare(()) is None)
 
 
 def host(h, suffix):
