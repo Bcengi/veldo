@@ -10607,9 +10607,9 @@ def cases():
     add(153, 'identity153-finalize-event', '67_veldo_0056_candidates.py', 'lander.py',
         '        self._event("finalize", "accepted" if pushed else "refused", refusal, pushed=pushed)\n', '',
         ['candidate/observations'])
-    add(153, 'identity153-push-detail', '67_veldo_0056_candidates.py', 'lander.py',
+    add(153, 'identity153-push-detail', '107_veldo_0153_identity_push.py', 'lander.py',
         'refusal=refusal,\n                    detail=push.stderr.strip())', 'refusal=refusal)',
-        ['candidate/observations'])
+        ['lander/push-detail'])
     add(153, 'identity153-common-dir-reread', '67_veldo_0056_candidates.py', 'lander.py',
         '            self.common_dir = common or None\n', '',
         ['candidate/every-git-operation-checked'])

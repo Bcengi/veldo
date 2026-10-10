@@ -260,9 +260,12 @@ def _v153_suite(fence_dir):
             # A remote of another name is never read for a literal URL, so it is no override: a clone that
             # publishes to two receivers, or keeps an upstream, pushes to each by its own URL.
             git('config', 'remote.upstream.url', 'https://github.com/third/repo.git')
-            kept = G.run(['git', '-C', str(repo), 'ls-remote', '--get-url', url], profile='identity',
-                         push_identity=record, remote_url=url, capture_output=True, text=True)
-            row('profile/other-remote-kept', kept.returncode == 0 and kept.stdout.strip() == url)
+            try:
+                kept = G.run(['git', '-C', str(repo), 'ls-remote', '--get-url', url], profile='identity',
+                             push_identity=record, remote_url=url, capture_output=True, text=True)
+            except Exception:  # a refusal is this row's failure, not the suite's end
+                kept = None
+            row('profile/other-remote-kept', kept is not None and kept.returncode == 0 and kept.stdout.strip() == url)
             git('config', '--remove-section', 'remote.upstream')
             git('config', 'remote.origin.url', url)
             git('config', 'remote.origin.pushurl', url)
@@ -490,7 +493,10 @@ def _v153_suite(fence_dir):
                 # The remote's refusal is named in the identity observation; the effect stays unknown, as
                 # every receiver refusal does (VELDO-0028), and is never reported as a landed push.
                 config['_identity_events'] = []
-                rejected = X.receive(config, contract, accepted)
+                try:
+                    rejected = X.receive(config, contract, accepted)
+                except Exception as error:  # a refusal raised is this row's failure, not the suite's end
+                    rejected = {'status': 'refused', 'refusal': getattr(error, 'code', None), 'evidence': None}
                 row('executor/remote-refused', rejected['status'] == 'unknown' and rejected['evidence'] is None
                     and before() == old and [(e['operation'], e['outcome'], e.get('refusal')) for e in config['_identity_events']
                                              if e['operation'] == 'push'] == [('push', 'refused', 'push_refused:remote')])
@@ -501,6 +507,8 @@ def _v153_suite(fence_dir):
                     and refused_land.get('refusal') == 'push_refused:remote'
                     and L.taxonomy(refused_land.get('refusal')) == 'unknown_outcome'
                     and L.taxonomy('push_refused') == 'unknown_outcome' and before() == old)
+                # The push's own report stays in the result beside the identity event (VELDO-0056).
+                row('lander/push-detail', 'pre-receive hook declined' in (refused_land.get('detail') or ''))
                 hook.unlink()
                 row('profile/no-token-on-command-line', all(token not in str(args) and token not in str(env) for args, env in invocations))
                 row('profile/ssh-only', bool(invocations) and all('SSH_AUTH_SOCK' not in env and 'GIT_SSH_COMMAND' not in env
