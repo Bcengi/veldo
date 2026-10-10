@@ -390,7 +390,7 @@ class GitLandOps(LandOps):
 
     # The one checked Git step.
 
-    def _git(self, repo, *args, operation=None, profile="isolated", ok=(0,), text=True, identity=None):
+    def _git(self, repo, *args, operation=None, profile="isolated", ok=(0,), text=True, identity=None, remote_url=None):
         """Run one Git operation in `repo` through the boundary. A return code outside `ok` refuses
         the candidate naming the operation; the completed process is returned otherwise."""
         name = operation or args[0]
@@ -400,7 +400,11 @@ class GitLandOps(LandOps):
                 before_commit = self._git(repo, 'rev-parse', 'HEAD').stdout.strip()
             result = _git_process.run(["git", "-C", str(repo), *args], capture_output=True, text=text,
                                       timeout=GIT_SECONDS, stdin=subprocess.DEVNULL, profile=profile,
-                                      identity=identity)
+                                      identity=identity, push_identity=self.identity_record,
+                                      remote_url=remote_url)
+        except ValueError as error:
+            raise CandidateRefused(getattr(error, 'code', 'invalid_input:git_profile'),
+                                   'identity transport refused', operation=name) from None
         except (OSError, subprocess.SubprocessError) as error:
             raise CandidateRefused("unavailable_service:git/" + name, type(error).__name__, operation=name)
         if ok is not None and result.returncode not in ok:
@@ -461,9 +465,11 @@ class GitLandOps(LandOps):
         event['identity'] = (self.identity_record or {}).get('id')
         if refusal is not None:
             event.update(refusal=refusal, taxonomy=taxonomy(refusal))
-        counts = self.identity_counts.setdefault(event['identity'], {'commits': 0, 'refusals': {}})
+        counts = self.identity_counts.setdefault(event['identity'], {'commits': 0, 'pushes': 0, 'refusals': {}})
         if operation in ('lander_merge', 'projection_commit') and outcome == 'accepted':
             counts['commits'] += 1
+        if operation == 'push' and outcome == 'accepted':
+            counts['pushes'] += 1
         if refusal is not None:
             counts['refusals'][refusal] = counts['refusals'].get(refusal, 0) + 1
         event.update(extra)
@@ -827,17 +833,34 @@ class GitLandOps(LandOps):
         # updates the trunk only while it still holds the watermark, so a trunk that advanced under
         # us is refused rather than clobbered, and the land is retried from sync_main.
         try:
-            url = self._git(self.repo_root, "remote", "get-url", "--push", self.remote, profile="network").stdout.strip()
+            self._identity()
+            # Read the raw local destination, never a global rewrite. Each actual push goes
+            # through the same owner check as creation/adoption and the protected executor.
+            urls = self._git(self.repo_root, 'config', '--get-all', 'remote.' + self.remote + '.pushurl', ok=(0, 1))
+            if urls.returncode == 1:
+                urls = self._git(self.repo_root, 'config', '--get-all', 'remote.' + self.remote + '.url')
+            targets = urls.stdout.splitlines()
+            if len(targets) != 1:
+                raise CandidateRefused('invalid_input:push_destinations', 'one remote required')
+            url = targets[0]
+            transport = _git_process.identity_transport()
+            try:
+                transport.check_remote(self.identity_record, url, repository=self.repository,
+                    request=c.get('id'), observe=lambda event: self._event(
+                        'remote_check', event['outcome'], event.get('refusal'), remote_owner=event['remote_owner']))
+            except transport.Refused as error:
+                raise CandidateRefused(error.code, 'remote identity refused') from None
             push = self._git(c["workspace"], "push", "-q", "--force-with-lease=refs/heads/%s:%s" % (self.trunk, c["watermark"]),
-                             self._absolute(url), "%s:refs/heads/%s" % (c["commit"], self.trunk),
-                             profile="network", ok=None)
+                             url, "%s:refs/heads/%s" % (c["commit"], self.trunk),
+                             profile="identity", remote_url=url, ok=None)
         except CandidateRefused as error:
             return self._refuse("finalize", error, pushed=False)
         pushed = push.returncode == 0
         c["state"] = "published" if pushed else "rejected"
-        self._event("finalize", "accepted" if pushed else "refused",
-                    None if pushed else "unavailable_service:git/push", pushed=pushed)
-        return dict(detail, ok=pushed, pushed=pushed, candidate=c["commit"], detail=push.stderr.strip())
+        refusal = None if pushed else "push_refused:remote"
+        self._event("push", "accepted" if pushed else "refused", refusal, pushed=pushed,
+                    remote_owner=self.identity_record['remote_owner'])
+        return dict(detail, ok=pushed, pushed=pushed, candidate=c["commit"], refusal=refusal)
 
     def _publish(self, unit, detail):
         """VELDO-0057: the factory land's exact-tip publication and confirmed completion, through the

@@ -5,7 +5,8 @@ Repository-local configuration remains authoritative. In the default profile, sy
 are disabled. Writers needing a synthetic identity pass it explicitly; ambient identity is never
 trusted.
 
-Two profiles. The default, "isolated", is everything above and serves every local operation.
+Three profiles. Identity strips ambient transport credentials and configuration, checks the
+remote owner and supplies only the recorded keystore credential. The default, "isolated", is everything above and serves every local operation.
 "network" is for transport operations only (push, fetch, ls-remote to a remote) and for the
 read-only queries that decide where such an operation goes. It exists because a transport
 operation run in the isolated profile loses what a plain `git push` from the same clone and the
@@ -24,10 +25,20 @@ command does, as its one file, so passing it would make a configuration query di
 push it describes.
 """
 import os
+import importlib.util
+from pathlib import Path
 import re
 import subprocess
 
-PROFILES = ("isolated", "network")
+PROFILES = ("isolated", "network", "identity")
+
+
+def identity_transport():
+    spec = importlib.util.spec_from_file_location('git_identity_transport',
+        Path(__file__).with_name('control_git_identity_transport.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 # Transport and credential variables a plain `git push` from the operator's shell honors. None
 # names a repository, object store, index, namespace, configuration file or configuration value.
@@ -71,6 +82,10 @@ def clean_env(env=None, identity=None, profile="isolated"):
         result.update(GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_SYSTEM=os.devnull,
                       GIT_CONFIG_GLOBAL=os.devnull, GIT_TERMINAL_PROMPT="0",
                       GIT_NO_REPLACE_OBJECTS="1")
+    if profile == "identity":
+        for key in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'SSH_ASKPASS', 'SSH_ASKPASS_REQUIRE'):
+            result.pop(key, None)
+        result['GIT_ASKPASS'] = '/bin/false'
     if identity is not None:
         name, email = identity
         result.update(GIT_AUTHOR_NAME=name, GIT_AUTHOR_EMAIL=email,
@@ -89,8 +104,21 @@ def _options(args, kwargs):
     if kwargs.get("shell"):
         raise ValueError("the Git boundary does not invoke a shell")
     common_dir = kwargs.pop("common_dir", None)
-    kwargs["env"] = clean_env(kwargs.pop("env", None), kwargs.pop("identity", None),
-                              kwargs.pop("profile", "isolated"))
+    profile = kwargs.pop("profile", "isolated")
+    record, remote = kwargs.pop("push_identity", None), kwargs.pop("remote_url", None)
+    kwargs["env"] = clean_env(kwargs.pop("env", None), kwargs.pop("identity", None), profile)
+    if profile == "identity":
+        transport = identity_transport()
+        options = transport.options(record, remote)
+        # Local config remains for ordinary Git operations. Identity transport refuses local
+        # routing/auth overrides, including URL-scoped helpers and headers, before any network IO.
+        prefix = args[:3] if len(args) > 2 and args[1] == '-C' else args[:1]
+        local = subprocess.run([*prefix, 'config', '--local', '--name-only', '--get-regexp',
+                                r'^(url\..*|credential\..*|http\..*|core\.sshcommand)$'],
+                               env=kwargs['env'], capture_output=True, timeout=15)
+        if local.returncode != 1:
+            raise transport.Refused('binding_mismatch:identity_transport_config')
+        args[1:1] = options
     # A common directory the caller has already validated is pinned after the cleaning, which
     # strips every inherited GIT_* variable, so only this explicit value can select one.
     if common_dir is not None:
@@ -99,10 +127,12 @@ def _options(args, kwargs):
 
 
 def run(args, **kwargs):
+    args = list(args)
     return subprocess.run(args, **_options(args, kwargs))
 
 
 def check_output(args, **kwargs):
+    args = list(args)
     return subprocess.check_output(args, **_options(args, kwargs))
 
 

@@ -10539,6 +10539,14 @@ def cases():
         "    return max(models, key=lambda m: (m.get('priority', 1 << 30), str(m.get('slug'))))['slug']\n",
         ['team/newest-model'], ())
 
+    # VELDO-0153: each acceptance criterion has a single-change negative control.
+    add(153, 'identity153-global-helper', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
+        "config = ['credential.helper=',", "config = ['include.path=' + os.environ['GIT_CONFIG_GLOBAL'],",
+        ['profile/planted-helper'])
+    add(153, 'identity153-host-only', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
+        "if owner.casefold() != record['remote_owner'].casefold():", 'if False:',
+        ['owner/alpha/push/beta', 'lander/alpha/beta', 'executor/beta'])
+
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
     add(142, 'identity142-clone-global-author', '103_veldo_0142_git_identities.py', 'control_clone.py', "for section in ('user', 'author', 'committer'):", 'for section in ():', ['clone/identity-authors'])

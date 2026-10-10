@@ -125,17 +125,28 @@ def receive(config, contract, accepted):
         payload = contract['payload']
         repo, remote, ref = receiver['repository'], receiver['remote'], receiver['ref']
         step = receiver.get('git_step_seconds', GIT_STEP_SECONDS)
+        identity_module = E.organ('control_git_identity')
+        transport_module = _git_process.identity_transport()
+        try:
+            reader = E.S.open_store(config['store'])
+            try:
+                push_identity = identity_module.resolve(reader, contract['domain_uuid'], contract['repository_uuid'])
+            finally:
+                reader.close()
+        except identity_module.Refused as error:
+            raise E.Refused(error.code) from None
         # Resolution: the tree check, the configuration guard and git's resolution.
         _announce(3 * step + STORE_MARGIN_SECONDS)
         def git(*args, profile='isolated', env=None, steps=1):
             # Output is decoded losslessly: a hook, a server or a ref name may emit any bytes.
             return _git_process.run(['git', '-C', repo, *args], capture_output=True, text=True,
-                                    errors='surrogateescape', timeout=steps * step, profile=profile, env=env)
+                                    errors='surrogateescape', timeout=steps * step, profile=profile, env=env,
+                                    push_identity=push_identity, remote_url=remote)
         def transport(*args, env=None, steps=1):
-            # What reaches the remote, and every query deciding where it goes, sees what a plain
-            # git push from this clone and this operator environment sees: global and system
-            # configuration, credential helpers, rewrites, proxies and SSH/askpass variables.
-            return git(*args, profile='network', env=env, steps=steps)
+            try:
+                return git(*args, profile='identity', env=env, steps=steps)
+            except transport_module.Refused as error:
+                raise E.Refused(error.code) from None
         def remote_refs(url):
             # Every advertised ref of one destination, HEAD and peeled tags included, plus each
             # symbolic ref's target; None when it cannot be listed.
@@ -169,48 +180,23 @@ def receive(config, contract, accepted):
         tree = git('rev-parse', payload['commit'] + '^{tree}')
         if tree.returncode or tree.stdout.strip() != payload['tree']:
             raise E.Refused('missing-evidence')
-        # The push is addressed to the receiver's URL and routed as the operator configured it:
-        # url.*.insteadOf and pushInsteadOf rewrites, a remote section or a legacy remotes/ or
-        # branches/ file of that name, pushurl fan-out, in any scope the push reads. Routing is
-        # the operator's and is kept. WHERE it goes is git's own resolution of this push from
-        # configuration, read before pushing and never from anything the push prints: `git
-        # remote show -n` names every push URL of the remote git push would use, for a configured
-        # remote and for a plain URL alike (`git remote get-url` answers only for remotes in the
-        # clone's own file), without contacting any remote or running any hook. It reports one URL
-        # per line, so a line break in the receiver's URL or in any configured URL would make two
-        # URLs of one; such a configuration is refused before anything is pushed.
-        if '\n' in remote:
-            raise E.Refused('invalid-input')
-        urls = transport('config', '-z', '--get-regexp',
-                         r'^(remote\..*\.(url|pushurl)|url\..*\.(insteadof|pushinsteadof))$')
-        if urls.returncode not in (0, 1) or any('\n' in entry.partition('\n')[2]
-                                                for entry in urls.stdout.split('\0')):
-            raise E.Refused('invalid-input')
-        # Read in the C locale, where gettext applies no message catalog (and ignores LANGUAGE).
-        shown = transport('remote', 'show', '-n', '--', remote, env=dict(os.environ, LC_ALL='C'))
-        head = '* remote ' + remote + '\n'
-        lines = shown.stdout[len(head):].split('\n') if shown.stdout.startswith(head) else []
-        pushed = []
-        for line in lines[1:]:
-            if not line.startswith('  Push  URL: '):
-                break
-            pushed.append(line[len('  Push  URL: '):])
-        if (shown.returncode or not lines or not lines[0].startswith('  Fetch URL: ') or not pushed
-                or lines[1 + len(pushed):2 + len(pushed)] != ['  HEAD branch: (not queried)']):
-            raise E.Refused('invalid-input')
-        # Each destination is listed by the URL git resolved for it, and `git ls-remote` resolves a
-        # URL again through the whole remote lookup (a remote section named by it, a legacy
-        # remotes/ file of that name, a further url.*.insteadOf). A destination that does not
-        # resolve to itself would be listed somewhere the push never went, so it is refused by
-        # name before anything is pushed; `--get-url` reads configuration only, no network.
-        # From here each destination takes at most six steps: its self-resolution, its listing
-        # before, its share of the push, its listing after, and, when its trunk moved to another
-        # commit, that commit's fetch and the ancestry question (VELDO-0148).
-        _announce(6 * step * len(pushed) + STORE_MARGIN_SECONDS)
-        for url in pushed:
-            itself = transport('ls-remote', '--get-url', '--', url)
-            if itself.returncode or itself.stdout != url + '\n':
-                raise E.Refused('rerouted-destination')
+        # Resolve a named remote from local metadata only. No global/system routing is read.
+        if '://' not in remote and not remote.startswith('git@'):
+            configured = git('config', '--get-all', 'remote.' + remote + '.pushurl')
+            if configured.returncode == 1:
+                configured = git('config', '--get-all', 'remote.' + remote + '.url')
+            targets = configured.stdout.splitlines()
+            if configured.returncode or len(targets) != 1:
+                raise E.Refused('invalid_input:push_destinations')
+            remote = targets[0]
+        try:
+            target = transport_module.check_remote(push_identity, remote,
+                repository=contract['repository_uuid'], request=binding['dispatch_id'],
+                observe=config.get('_identity_events', []).append)
+        except transport_module.Refused as error:
+            raise E.Refused(error.code) from None
+        pushed = [remote]
+        _announce(6 * step + STORE_MARGIN_SECONDS)
         # Each destination's state before the push, so its change can be judged after it. Nothing
         # is pushed unless every destination could be listed and holds the authorized ref at the
         # expected old state: the old tip, or absent when the all-zero id names a ref creation. A
@@ -220,14 +206,8 @@ def receive(config, contract, accepted):
         if any(state is None or (ref in state if absent else state.get(ref) != payload['old_tip'])
                for state in before):
             raise E.Refused('stale-subject')
-        # An ordinary git push, so the clone's hooks, url.*.insteadOf rewrites, transports
-        # (HTTP(S) included) and credential helpers behave exactly as configured. Only what
-        # WIDENS a push is neutralized: an explicit URL and single refspec, no tag following
-        # from the command line or config, no push options from any configuration scope (an
-        # empty push.pushOption resets the list; on GitLab-style servers an option can open a
-        # merge request or skip CI), no submodule recursion, and a lease on the old tip. What it
-        # prints is diagnostic text only: a pre-push hook shares its standard output and a server
-        # can shape its report, so nothing in it is evidence of where it went or whether it worked.
+        # Exact-tip publication with only the repository identity's credential. Push output is
+        # diagnostic only; the remote's subsequently advertised refs establish completion.
         push = transport('-c', 'push.followTags=false', '-c', 'push.pushOption=', 'push', '--porcelain',
                          '--no-follow-tags', '--recurse-submodules=no',
                          '--force-with-lease=' + ref + ':' + ('' if absent else payload['old_tip']),
@@ -254,6 +234,9 @@ def receive(config, contract, accepted):
                        'destinations': [{'url': scrubbed_url(url), 'outcome': outcome}
                                         for url, outcome in zip(pushed, outcomes)]}
         complete = push.returncode == 0 and all(outcome == 'at-tip' for outcome in outcomes)
+        config.get('_identity_events', []).append(dict(operation='push', repository=contract['repository_uuid'],
+            request=binding['dispatch_id'], identity=push_identity['id'], remote_owner=target['owner'],
+            outcome='accepted' if complete else 'refused', refusal=None if complete else 'push_refused:remote'))
         # VELDO-0148: a lease lost to another push between the listing and the push. The push failed,
         # and when EVERY destination's trunk now holds a commit that is neither the old tip nor the
         # candidate and does not contain the candidate, nothing of this publication is on any trunk:
@@ -264,7 +247,8 @@ def receive(config, contract, accepted):
                 trunk_moved(url, after) for url, after in zip(pushed, afters)):
             raise E.Refused(TRUNK_MOVED)
         return dict(binding, status='completed' if complete else 'unknown', destination=destination,
-                    evidence={'remote_commit': payload['commit'], 'tree': payload['tree']} if complete else None)
+                    evidence={'remote_commit': payload['commit'], 'tree': payload['tree'],
+                              'identity': push_identity['id'], 'remote_owner': target['owner']} if complete else None)
     # Only a service-selected adapter sees reusable authentication, on stdin. Its stdout
     # is never returned verbatim; only a bound digest enters the effect observation.
     credential = Path(receiver['credential_file']).read_text()
@@ -276,6 +260,10 @@ def receive(config, contract, accepted):
     if proc.returncode:
         return dict(binding, status='unknown')
     return json.loads(proc.stdout)
+
+
+def identity_metrics(conn):
+    return dict(E.metrics(conn), identities=_git_process.identity_transport().metrics(conn))
 
 
 def execute(config, request, principal, challenge, signature):
@@ -299,9 +287,10 @@ def execute(config, request, principal, challenge, signature):
         accepted, fresh = E.accept(conn, config, principal, request, journal)
         if not fresh:
             if accepted.get('status') == 'refused':
-                return {'accepted': False, 'refusal': accepted['refusal'], 'result': accepted, 'metrics': E.metrics(conn)}
-            return {'accepted': True, 'result': accepted, 'metrics': E.metrics(conn)}
+                return {'accepted': False, 'refusal': accepted['refusal'], 'result': accepted, 'metrics': identity_metrics(conn)}
+            return {'accepted': True, 'result': accepted, 'metrics': identity_metrics(conn)}
         contract = accepted
+        config = dict(config, _identity_events=[])
         try:
             observation = receive(config, contract, accepted)
             if isinstance(observation, dict) and observation.get('status') == 'refused':
@@ -316,10 +305,20 @@ def execute(config, request, principal, challenge, signature):
             observation = dict(accepted, status='refused', refusal=error.code, evidence=None)
         except (OSError, ValueError, KeyError, subprocess.TimeoutExpired):
             observation = dict(accepted, status='unknown', evidence=None)
+        if contract['kind'] == 'publication':
+            if observation.get('status') == 'refused':
+                try:
+                    record = E.organ('control_git_identity').resolve(conn, contract['domain_uuid'], contract['repository_uuid'])
+                except Exception:
+                    record = {}
+                config['_identity_events'].append(dict(operation='push', repository=contract['repository_uuid'],
+                    request=accepted['dispatch_id'], identity=record.get('id'), remote_owner=record.get('remote_owner'),
+                    outcome='refused', refusal=observation['refusal']))
+            _git_process.identity_transport().record_operations(conn, config['_identity_events'])
         result = E.finish(conn, accepted, observation, journal)
         if result['status'] == 'refused':
-            return {'accepted': False, 'refusal': result['refusal'], 'result': result, 'metrics': E.metrics(conn)}
-        return {'accepted': True, 'result': result, 'metrics': E.metrics(conn)}
+            return {'accepted': False, 'refusal': result['refusal'], 'result': result, 'metrics': identity_metrics(conn)}
+        return {'accepted': True, 'result': result, 'metrics': identity_metrics(conn)}
     except (E.Refused, E.S.StoreRefused) as error:
         return {'accepted': False, 'refusal': error.code, 'metrics': {'refused': 1}}
     except (ValueError, TypeError, KeyError):

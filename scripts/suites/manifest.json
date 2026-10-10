@@ -1469,6 +1469,15 @@
    ],
    "regions": "Shared signed memory, profile exclusion, setup reruns and sampled loss checks over five stores.",
    "requires_note": "Only ROOT, expect and fast_temp from shared. Synthetic captured-layout stores, real signed SQLite authority, setup and Runner with foreground fake engines and local stand-ins."
+  },
+  {
+   "name": "107_veldo_0153_identity_push",
+   "file": "107_veldo_0153_identity_push.py",
+   "requires": [
+    "107_veldo_0153_identity_push"
+   ],
+   "regions": "Identity profile, credential helper, owner refusals and real fixture Git publication.",
+   "requires_note": "Only ROOT and expect. Fake keystore and explicit SSH wire adapter, no live accounts or gate."
   }
  ],
  "resource_capacities": {

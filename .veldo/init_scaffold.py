@@ -194,6 +194,7 @@ _FILES = [
     # (env_provision). Runtime assets, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_clone.py",
     ".veldo/control_git_identity.py",
+    ".veldo/control_git_identity_transport.py",
     ".veldo/env_provision.py",
     # VELDO-0047: the authority service (install, explicit start and stop, one instance under the
     # store's stable lock, signed commands applied to the configured store) and the systemd user unit
