@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Owner-run disposable Linux authority for the real Mac probe; no deployed state.
 
-setup <candidate.json> <new-directory> <Linux-SSH-alias>
+setup <candidate.json> <new-directory> <Linux-SSH-alias> <fixed-socket> <Mac-transport-key>
 serve <directory>
 compare <directory> <Mac-result.json>
 The SSH alias must authenticate from the Mac to this Linux account. The relay

@@ -439,7 +439,17 @@ def _v168_suite():
                 ('control_channel_activation.py', 'main.send', 'CC', 'send'),
                 ('status_server.py', '_Handler.do_GET', 'self', '_send'),
             }
+            # Worker command transport and OS signals carry no owner-facing text.
+            wanted_calls.update({
+                ('control_worker_client.py', 'Client.claim', 'self', 'send'),
+                ('control_worker_client.py', 'Client.launch', 'self', 'send'),
+                ('control_worker_client.py', 'Client.result', 'self', 'send'),
+                ('project_runner_macos.py', 'Run.descendants', 'self.os', 'send'),
+                ('project_runner_macos.py', 'Run.step', 'self.os', 'send'),
+                ('project_runner_macos.py', 'Run.wait', 'self.os', 'send'),
+            })
             wanted_calls = Counter(wanted_calls)
+            wanted_calls[('project_runner_macos.py', 'Run.descendants', 'self.os', 'send')] = 2
             wanted_calls[('status_server.py', '_Handler.do_GET', 'self', '_send')] = 3
             engine_calls = Counter({
                 ('scripts/runners/api/fixtures/mock_server.py', 'Handler.do_GET', 'self', '_send'): 2,

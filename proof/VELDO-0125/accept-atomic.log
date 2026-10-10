@@ -12,28 +12,28 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmppuqgznlm: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmppuqgznlm/nocrit.md: no acceptance criteria
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmppuqgznlm/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmppuqgznlm/status.md: bad status: donezo
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmppuqgznlm/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmppuqgznlm/proof2.json: spec criterion AC1 missing from proof
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmppuqgznlm/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmppuqgznlm/proof4.json: criterion AC1 passed without evidence
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmppuqgznlm/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmppuqgznlm/verdict.json: bad verdict: looks_fine
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmp17sj_aln/cycle.md: dependency cycle through WARP-9101
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmp17sj_aln/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmp17sj_aln/oref.md: feature F1: unknown outcome ref O7
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmp17sj_aln/fref.md: work W1: unknown feature ref F9
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmp17sj_aln/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmp17sj_aln/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmp17sj_aln/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmp17sj_aln/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmp17sj_aln/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmp17sj_aln/dupspec.md: duplicate spec ids across work items
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmp17sj_aln/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/veldo-agent-7nyrqa4a/tmp/tmp17sj_aln/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmp85x3xf6y: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmp85x3xf6y/nocrit.md: no acceptance criteria
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmp85x3xf6y/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmp85x3xf6y/status.md: bad status: donezo
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmp85x3xf6y/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmp85x3xf6y/proof2.json: spec criterion AC1 missing from proof
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmp85x3xf6y/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmp85x3xf6y/proof4.json: criterion AC1 passed without evidence
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmp85x3xf6y/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmp85x3xf6y/verdict.json: bad verdict: looks_fine
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmptylc5bdw/cycle.md: dependency cycle through WARP-9101
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmptylc5bdw/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmptylc5bdw/oref.md: feature F1: unknown outcome ref O7
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmptylc5bdw/fref.md: work W1: unknown feature ref F9
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmptylc5bdw/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmptylc5bdw/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmptylc5bdw/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmptylc5bdw/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmptylc5bdw/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmptylc5bdw/dupspec.md: duplicate spec ids across work items
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmptylc5bdw/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/veldo-agent-7nyrqa4a/tmp/tmptylc5bdw/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
@@ -41,6 +41,6 @@ AC3/refused-report-atomic: AssertionError:
   SELFTEST FAIL: VELDO-0125 AC3/refused-report-atomic
 AC2/precall-caps: AssertionError:
   SELFTEST FAIL: VELDO-0125 AC2/precall-caps
-  105_veldo_0125_relay                            12 passed    5.03s
-selftest (PARTIAL, 1 of 160 suites): 38 passed, 2 failed in 5.03s
+  105_veldo_0125_relay                            12 passed    5.28s
+selftest (PARTIAL, 1 of 160 suites): 38 passed, 2 failed in 5.28s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

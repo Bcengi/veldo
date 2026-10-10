@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Owner-run real SSH/Mac probe, from the Linux checkout. Never called by a suite.
 
-Argument: this Linux account's SSH alias as reachable FROM dmitrys-mac-mini.
+Arguments: this Linux account's SSH alias as reachable FROM dmitrys-mac-mini,
+the fixed forced-command socket, and the dedicated transport key path on the Mac.
 Creates disposable state, exports only tracked code, supervises one ordinary
 Linux authority at a time and retains evidence under the caller's private temp.
 No deployed service, provider login, live capture, branch or worktree is changed.

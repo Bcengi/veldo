@@ -274,3 +274,11 @@ These rows exercise the review findings on Linux with explicit host fixtures:
 Review verification results are retained in review-verification.json. These are
 selected suite results, never a canonical gate stamp. Native containment, real
 Mac/SSH observations, qualification and activation remain unrun in this checkout.
+
+The final selected pass observed 51 named 0124/0125 rows passing and rejected all
+17 retained falsifiers. Across 88 affected suites, 51 passed and 37 remained
+non-green. Confirmed limitations include denied Unix socket creation, an
+unavailable qualified user manager, and denied fixture directories under
+/run/user/1000. The verification record keeps all failing rows, including those
+requiring unrestricted reviewer diagnosis; none is reported as a passing guard.
+The service's fixed source closure resolves to 128 modules.
