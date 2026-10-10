@@ -1430,6 +1430,15 @@
    ],
    "regions": "Mac authority contract over signed store records.",
    "requires_note": "Only ROOT and expect."
+  },
+  {
+   "name": "105_veldo_0125_relay",
+   "file": "105_veldo_0125_relay.py",
+   "requires": [
+    "105_veldo_0125_relay"
+   ],
+   "regions": "Mac remote command families and dispatch bindings.",
+   "requires_note": "Only ROOT and expect."
   }
  ],
  "resource_capacities": {
