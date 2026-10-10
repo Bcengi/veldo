@@ -190,7 +190,7 @@ and MAC_TRANSPORT_KEY to the absolute dedicated key path on the Mac. This exact 
 python3 proof/VELDO-0125/native_roundtrip.py "$VELDO_LINUX_SSH_ALIAS" "$VELDO_AUTHORITY_SOCKET" "$MAC_TRANSPORT_KEY" > "$TMPDIR/veldo-0125-native.json" 2>&1
 ```
 
-The driver exports tracked code to a new `~/veldo-0125-check-<unique>` directory
+The driver exports tracked code to a new `~/veldo-0125-check/run-<unique>` directory
 on the Mac, creates synthetic clones and a Mac-only receiver signing key, and
 passes only its public key to a disposable Linux authority. It runs 0047's real
 service and 0108's relay over real SSH, one authority at a time, and stops its child

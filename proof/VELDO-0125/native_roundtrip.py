@@ -24,7 +24,7 @@ def main(linux_alias, fixed_socket, transport_key):
     if not linux_alias or linux_alias.startswith('-'):
         raise ValueError('a configured Linux SSH alias is required')
     root = Path(tempfile.mkdtemp(prefix='v125-native-'))
-    export = 'veldo-0125-check-' + uuid.uuid4().hex[:12]
+    export = 'veldo-0125-check/run-' + uuid.uuid4().hex[:12]
     remote = '"$HOME"/' + export
     ssh = ['ssh', '-T', '-o', 'BatchMode=yes', MAC]
     def mac(command, data=None, timeout=90):
@@ -37,7 +37,7 @@ def main(linux_alias, fixed_socket, transport_key):
     with archive.open('wb') as out:
         subprocess.run(['git', 'archive', 'HEAD', '.veldo', 'proof/VELDO-0124', 'proof/VELDO-0125'],
                        cwd=A.T.ROOT, stdout=out, stderr=subprocess.PIPE, check=True, timeout=30)
-    mac('mkdir ' + remote + ' && tar -xf - -C ' + remote, archive.read_bytes())
+    mac('mkdir -p "$HOME"/veldo-0125-check && mkdir ' + remote + ' && tar -xf - -C ' + remote, archive.read_bytes())
     reports = []
     for engine in ('claude_code', 'codex'):
         prefix = 'cd ' + remote + ' && ' + PINNED + ' proof/VELDO-0125/native_checks.py '
