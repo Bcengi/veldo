@@ -174,6 +174,9 @@ _FILES = [
     # VELDO-0141: every run's execution record, which control_launch.py writes and the API authority reads;
     # a runtime asset, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_execution_record.py",
+    # VELDO-0125: capability routing, which control_launch.py loads to choose a dispatch's host; a
+    # runtime asset, no validator import, not REQUIRED_SUBSTRATE.
+    ".veldo/control_routing.py",
     ".veldo/control_launch_work.py",
     ".veldo/dispatch.py",
     ".veldo/work.py",

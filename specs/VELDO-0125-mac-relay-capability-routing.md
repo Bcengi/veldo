@@ -47,6 +47,8 @@ footprint:
   - "engine/.veldo/control_worker*.py"
   - ".veldo/control_worker*.py"
   - "packs/*/.veldo/control_worker*.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
   - "engine/.veldo/control_routing*.py"
   - ".veldo/control_routing*.py"
   - "packs/*/.veldo/control_routing*.py"
