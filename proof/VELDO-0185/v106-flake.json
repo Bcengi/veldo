@@ -1,0 +1,73 @@
+{
+  "specification": "VELDO-0185",
+  "criterion": "AC4",
+  "status": "remaining",
+  "base_commit": "f9e9e17d",
+  "implementation_commit": "e22d81921b93aaffa50d2421ece649d851583bc3",
+  "analysis": {
+    "selection": "control_account_pool.choose ranks login refusal, utilization, active runs, last use and account id, in that order. Fresh fixture accounts have no windows or uses. Pooled reservations record reserved_seq; retired records remain visible to _uses. Thus healthy completions alone do not explain starving the unused claude-b account in the original fixture.",
+    "line": "Line.run settles ended runs, then offers assigned units in sorted order. Line.limited retries a named account-login refusal through another_account, which rechecks login and excludes accounts still logged out.",
+    "loop": "FactoryLoop.run only processes queued wakes and writes the loop_pass observation after the line finishes. The original journey could stop after 30 seconds with unchanged dispatch states and no holding record, without proving the receiver refusal or retry.",
+    "original_failure": "The quiet exit is a timing-dependent failure path in the code. The precise trigger of the reported 16-worker gate failure remains unconfirmed: this session cannot run the installed-host fixture far enough to reproduce it."
+  },
+  "change": [
+    "Make claude-a the logged-out account, the deterministic first selection among fresh tied accounts. Keep claude-b and claude-c healthy.",
+    "Assert that the first unit first build attempt selected the logged-out account.",
+    "Wait for every review completion plus retry observations linking every logged-out dispatch to a different account. A completed journey with a terminal receiver violation proceeds directly to the failing assertions.",
+    "Remove the 30-second quiet exit; retain the existing 300-second overall failure bound.",
+    "Read only complete observation lines. Preserve named refusal and no-invocation checks, and strengthen retry coverage to match dispatch identities as well as counts."
+  ],
+  "checks": {
+    "syntax": "ast.parse succeeded",
+    "whitespace": "git diff check succeeded",
+    "original_under_load": {
+      "busy_python_processes": 16,
+      "elapsed_seconds": 0.96,
+      "exit_code": 1,
+      "passed": 29,
+      "failed": 17,
+      "result": "blocked before journey: unavailable_service:profile:user_manager",
+      "log": "proof/VELDO-0185/v106-flake-original-loaded.log"
+    },
+    "patched_and_mutant": [
+      {
+        "label": "patched-baseline",
+        "exit_code": 1,
+        "elapsed_seconds": 0.861,
+        "summary": "selftest (PARTIAL, 1 of 162 suites): 29 passed, 17 failed in 0.78s",
+        "log": "proof/VELDO-0185/v106-flake-patched.log",
+        "environment_blocked": true
+      },
+      {
+        "label": "receiver-login-unchecked",
+        "exit_code": 1,
+        "elapsed_seconds": 0.841,
+        "summary": "selftest (PARTIAL, 1 of 162 suites): 29 passed, 17 failed in 0.77s",
+        "log": "proof/VELDO-0185/v106-flake-mutant.log",
+        "environment_blocked": true
+      }
+    ],
+    "mutation": {
+      "old": "if adapter.get('account_login') is not True or self.token is not None:",
+      "new": "if True:",
+      "restored_sha256": "84f2214963d55d1063e605058998d6d25a7584c79dd7871240dd0f9a3cbdced5",
+      "source": ".veldo/control_launch.py",
+      "applied_exactly_once": true,
+      "reverted": true,
+      "result": "inconclusive: same setup failure as patched baseline, not a demonstrated mutation kill"
+    },
+    "user_manager": "systemctl user is-system-running: Failed to connect to bus: Operation not permitted",
+    "load_requirement": {
+      "required_green_runs": 10,
+      "completed_green_runs": 0,
+      "result": "blocked by user-manager access"
+    },
+    "gate": "not run, as instructed"
+  },
+  "remaining": [
+    "Run the patched suite in a session with access to the real systemd user manager.",
+    "Apply the exact receiver-login-unchecked mutation and demonstrate a failure caused by the login/receiver-refuses row, then revert it.",
+    "Record at least ten green sequential suite runs with sixteen busy CPU processes.",
+    "Confirm the original gate failure cause from its detailed row output or a reproduction."
+  ]
+}
