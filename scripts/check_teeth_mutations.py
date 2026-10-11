@@ -9848,6 +9848,12 @@ def cases():
     add(127, 'role127-staged-skill-committed', suite127, 'control_agent_config_handoff.py',
         "                handle.write('\\n/.agents/skills/' + skill['name'] + '\\n')",
         "                handle.write('\\n')", ['review/skill-commit'])
+    add(213, 'prompt213-mark-after-write', '80_veldo_0155_claude_baseline.py', 'control_launch.py',
+        "    if last and getattr(terminal, 'require_prompt', False):\n"
+        "        terminal.wrote_prompt()\n    stdin.write(data)\n    stdin.flush()\n",
+        "    stdin.write(data)\n    stdin.flush()\n"
+        "    if last and getattr(terminal, 'require_prompt', False):\n"
+        "        terminal.wrote_prompt()\n", ['paid-api/prompt-write'])
     add(127, 'role127-probe-is-terminal', suite127, 'control_engine_claude.py',
         "            if self.require_prompt and (not self.prompt_written or decoded['num_turns'] == 0):",
         "            if False:", ['review/probe-terminal'])
