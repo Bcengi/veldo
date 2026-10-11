@@ -32,6 +32,7 @@ def _v167_suite():
     review_spec = importlib.util.spec_from_file_location('v167_review', here / 'proof/VELDO-0167/review_rows.py')
     review = importlib.util.module_from_spec(review_spec)
     review_spec.loader.exec_module(review)
+    review.PRODUCTION = PRODUCTION
     rows = {name: [] for name in ('installed-record', 'late-subscriber', 'older-host') + review.ROWS}
 
     def check(row, label, condition):

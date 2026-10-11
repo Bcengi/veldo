@@ -13,6 +13,10 @@ from types import SimpleNamespace
 
 ROWS = ('older-engine-host', 'interrupted-record-write', 'hints-without-api',
         'record-hint-counts', 'upgrade-restart-answer')
+# The suite's own module map, set by suite 91 after it loads this file. A row that loads a production
+# module itself reads it from here, so the copy it exercises is the one the suite was handed (the
+# mutation observer swaps the suite's map entry for a mutant; a path built from ROOT would not move).
+PRODUCTION = {}
 
 
 def older_engine(h, check):
@@ -55,7 +59,7 @@ def older_engine(h, check):
     # trust), and the trust preflight refuses any other missing key before it. So the preflight's own
     # rule for keys an engine upgrade adds is driven directly: an upgraded receiver that has not yet
     # gained an engine key is not asked for it; the same receiver outside an upgrade is refused.
-    records = h['load']('v167_review_records', h['ROOT'] / '.veldo/control_factory_setup_records.py')
+    records = h['load']('v167_review_records', PRODUCTION['control_factory_setup_records.py'])
     path, now = paths[0], json.loads(Path(paths[0]).read_text())
     class Differs(Exception):
         pass
