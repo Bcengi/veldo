@@ -760,7 +760,11 @@ else:
 
         # Success needs the evidence the rows assert, not a wall-clock quiet period. Keep the overall
         # deadline as a failure bound. A completed journey with a terminal login violation can fail now.
-        deadline, found, refused_ids, reruns = time.monotonic() + 300, [], [], []
+        # The bound stays under the gate's per-worker budget (check_gate_mutations.WORKER_BUDGET, 120 s):
+        # a mutant that never produces the evidence must fail here, inside the suite, so its cleanup runs;
+        # a worker killed at the budget leaves its /dev/shm scratch behind and the stage goes red on that.
+        # The journey takes about 12 s alone and well under a minute under gate load.
+        deadline, found, refused_ids, reruns = time.monotonic() + 90, [], [], []
         while time.monotonic() < deadline:
             found = dispatches()
             refused_ids, reruns = retries(found)
