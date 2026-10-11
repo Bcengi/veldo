@@ -29,6 +29,83 @@ logs in, no credential exists (every token and key is assembled at run time). Ea
 """
 
 
+def _v213_prompt_write(check, launch):
+    """An engine answers inside write(), so the ordering check needs no scheduler."""
+    import hashlib
+    import json
+
+    engine = launch.ENGINES['claude_code']
+    row = 'paid-api/prompt-write'
+    event = {'type': 'result', 'subtype': 'success', 'is_error': False,
+             'num_turns': 1, 'session_id': 'prompt213', 'stop_reason': 'end_turn',
+             'result': 'prompt completed',
+             'modelUsage': {'model': {'inputTokens': 2, 'outputTokens': 1,
+                                    'cacheReadInputTokens': 0, 'cacheCreationInputTokens': 0}}}
+    line = json.dumps(event).encode()
+    expected = {'subtype': 'success', 'is_error': False, 'num_turns': 1,
+                'session_id': 'prompt213', 'stop_reason': 'end_turn', 'errors': [],
+                'tokens': 3, 'result': 'prompt completed',
+                'result_digest': 'sha256:' + hashlib.sha256(b'prompt completed').hexdigest()}
+    exit_ok = {'returncode': 0, 'signal': None, 'deadline_stop': False}
+    terminal = engine.Terminal()
+    terminal.hold_prompt()
+
+    class AnsweringInput:
+        def __init__(self):
+            self.written = []
+            self.flushed = False
+
+        def write(self, data):
+            self.written.append(data)
+            terminal.feed(line + b'\n')
+            return len(data)
+
+        def flush(self):
+            self.flushed = True
+
+    stdin = AnsweringInput()
+    launch._write_held_input(stdin, b'held prompt', True, terminal)
+    document = terminal.document(exit_ok, None)
+    check(row, 'the result returned during write completes the run (verdict: %s)' % document['verdict'],
+          terminal.result == expected and terminal.receipt == engine.receipt(line)
+          and terminal.probe_result is None and document['verdict'] == 'complete'
+          and document['complete'] and stdin.written == [b'held prompt'] and stdin.flushed)
+
+    # A capability probe is still held; zero-turn results remain probes after release too.
+    terminal = engine.Terminal()
+    terminal.hold_prompt()
+    launch._write_held_input(AnsweringInput(), b'probe', False, terminal)
+    check(row, 'a response before the prompt stays a probe',
+          terminal.result is None and terminal.probe_result == expected and not terminal.prompt_written)
+    terminal.wrote_prompt()
+    zero_turn = dict(event, num_turns=0, result='probe completed')
+    terminal.feed(json.dumps(zero_turn).encode() + b'\n')
+    check(row, 'a zero-turn result after the mark stays a probe and cannot complete the run',
+          terminal.result is None and (terminal.probe_result or {}).get('num_turns') == 0
+          and terminal.document(exit_ok, None)['verdict'] == 'missing_result')
+
+    for stage in ('write', 'flush'):
+        failure = BrokenPipeError('closed engine input')
+
+        class FailedInput:
+            def write(self, data):
+                if stage == 'write':
+                    raise failure
+                return len(data)
+
+            def flush(self):
+                raise failure
+
+        terminal = engine.Terminal()
+        terminal.hold_prompt()
+        caught = None
+        try:
+            launch._write_held_input(FailedInput(), b'held prompt', True, terminal)
+        except OSError as error:
+            caught = error
+        check(row, stage + ' failure reaches the receiver input_failed handler', caught is failure)
+
+
 def _v155_suite():
     import contextlib
     import hashlib
@@ -59,7 +136,7 @@ def _v155_suite():
     }
     ROWS = ('baseline/qualified', 'baseline/planted-settings', 'baseline/planted-server', 'baseline/planted-skill',
             'baseline/planted-instructions', 'baseline/planted-memory', 'baseline/planted-hook',
-            'paid-api/read-back', 'paid-api/token-file', 'paid-api/stop', 'paid-api/every-init', 'paid-api/profile-login',
+            'paid-api/prompt-write', 'paid-api/read-back', 'paid-api/token-file', 'paid-api/stop', 'paid-api/every-init', 'paid-api/profile-login',
             'strip/read-back', 'strip/private-runtime-directory', 'strip/user-manager',
             'fixture/planted-control', 'format/fake-lines')
     rows = {name: [] for name in ROWS}
@@ -116,6 +193,8 @@ def _v155_suite():
                 shutil.copyfile(source, mods / name)
         S = load('v155_store', mods / 'control_store.py')
         L = load('v155_launch', mods / 'control_launch.py')
+        with region('paid-api/prompt-write'):
+            _v213_prompt_write(check, L)
         D = L.D
         RES = D.RES
         ACC = getattr(RES, 'ACC', None)

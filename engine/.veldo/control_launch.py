@@ -949,6 +949,14 @@ def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, 
 
 # The receiver process.
 
+def _write_held_input(stdin, data, last, terminal):
+    """Mark the prompt before an engine can answer during write or flush."""
+    if last and getattr(terminal, 'require_prompt', False):
+        terminal.wrote_prompt()
+    stdin.write(data)
+    stdin.flush()
+
+
 class Receiver:
     """The trusted launch receiver over the installed configuration: {store, journal_key, principal,
     domain, repository, authority_generation, workspace, host_trust, profile, adapters: {name: {argv,
@@ -1858,10 +1866,7 @@ class Receiver:
                     if not later:
                         break
                     data, last = later
-                    worker.stdin.write(data)
-                    worker.stdin.flush()
-                    if last and getattr(metering.terminal, 'require_prompt', False):
-                        metering.terminal.wrote_prompt()
+                    _write_held_input(worker.stdin, data, last, metering.terminal)
             except OSError:
                 input_failed.set()
             finally:
