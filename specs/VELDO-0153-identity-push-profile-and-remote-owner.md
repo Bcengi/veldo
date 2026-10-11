@@ -88,6 +88,36 @@ acceptance_criteria:
       other-owner refusal row must fail.
     falsified_by: >
       Compare only the remote host, not its owner; the other-owner refusal row must fail.
+  - id: AC3
+    text: >
+      Claim: Every identity push runs no hook from the clone and goes to exactly the one GitHub URL
+      the owner check accepted; configuration inside the clone never decides where the identity's
+      credential goes. Set and completeness: The identity profile points `core.hooksPath` at its
+      private empty directory and gives every push Git's no-verify option, so no hook of the clone
+      runs.
+      The push, and every listing that judges it, is addressed to the checked literal URL alone:
+      a named receiver remote resolves from the clone's own configuration to exactly one URL or is
+      refused, and that URL is the one checked. In the clone's configuration (includes and worktree
+      configuration followed), any `url.*` rewrite (`insteadOf`, `pushInsteadOf`), credential or
+      http setting, `core.sshCommand`, and any entry of the remote section named by the checked URL
+      other than a url or pushurl equal to it (a pushurl fan-out, an AGit-style second destination,
+      a receivepack) refuses the push by name before any network write. A remote section of another
+      name and legacy remotes/ or branches/ files are not read for the URL and are ignored. Plant a
+      pre-push hook, a clone `insteadOf`, a `pushInsteadOf`, a URL-named pushurl, a pushurl fan-out
+      with an AGit-style second server and a legacy file, then publish through the protected
+      executor: the hook never runs, each route is refused by name or ignored, nothing moves outside
+      the checked repository, and the record names only the checked URL. This supersedes the
+      VELDO-0028 suite rows publication-pre-push-hook, publication-url-rewrite,
+      publication-records-resolved-destination, publication-destination-despite-hook-text,
+      publication-rejected-destination-recorded, publication-completion-from-destination-state and
+      publication-fan-out-agit-report, and the hook legs of publication-hook-text-without-newline and
+      publication-non-utf8-output; the push safety rules those rows also carry (completion read
+      from the destination's state, a rejected push recorded at its destination) are kept against
+      the checked URL. Falsifier: Let the identity push run the clone's hooks (no private
+      `core.hooksPath`, no no-verify option); the pre-push-hook row must fail.
+    falsified_by: >
+      Let the identity push run the clone's hooks (no private core.hooksPath, no no-verify option);
+      the pre-push-hook row must fail.
 required_evidence: [unit, integration]
 rollback: >
   An identity-bound push that cannot use its profile refuses rather than falling back to the ambient
@@ -172,3 +202,11 @@ transport variables, credential helpers and credential-bearing or non-GitHub add
 rewritten against AC1 and AC2. Fifteen 0028 rows are kept red: no criterion here supersedes the
 clone's hooks, the clone's own routing and fan-out, or 0028's destination rule, which the
 implementation replaced. Acceptance criteria, risk, readiness and approval are unchanged.
+
+2026-10-11 AC3 added on the owner's approval of 2026-10-10, verbatim: "approve 0153 push rule"
+(Telegram 33063). AC3 states the push rule the implementation already enforces: no hook from the
+clone runs during an identity push, and the clone's own routing (url rewrites, pushInsteadOf,
+pushurl and AGit-style fan-out) is refused by name or ignored, so the push goes to the one checked
+GitHub URL. It supersedes the seven VELDO-0028 rows it names; the 0028 push safety rules that do not
+depend on hooks or on the clone's routing are kept against the checked URL. Risk, readiness and the
+approval requirement are unchanged.
