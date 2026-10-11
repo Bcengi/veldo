@@ -1,0 +1,66 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0213",
+  "commit": "d84c8e378eb6f4c8495a7eb14569802cc126d498",
+  "tree": "5f5b370bed2d261ef5a9fdfcf677ffee0ac0cffa",
+  "producer": "Codex implementation agent; not an independent reviewer",
+  "produced_at": "2026-10-11T11:09:32.757998+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0213/local_checks.json",
+          "detail": "Exact suite row function passes; registered old ordering makes its completion assertion fail with missing_result. No timing or threads."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0213/local_checks.json",
+          "detail": "Probe classification and propagation of write and flush errors pass locally; existing probe mutant fails two assertions."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0213/HOST_RUNS.md",
+          "detail": "NOT RUN: full receiver input failure path, suites 80 and 86, suite 106 ten times under load, and registered mutation-stage runs require the host."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "command": "python3 proof/VELDO-0213/local_check.py"
+    },
+    {
+      "name": "integration",
+      "status": "not_run",
+      "reason": "Host user manager required; no host suite attempted."
+    },
+    {
+      "name": "gate",
+      "status": "not_run",
+      "reason": "Owner reserves repository gate for reviewer."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0213/local_check.py",
+    "proof/VELDO-0213/local_checks.json",
+    "proof/VELDO-0213/HOST_RUNS.md"
+  ],
+  "artifact_digests": {
+    "proof/VELDO-0213/local_check.py": "sha256:bf379a81e014d924da64ae4959b183da0197dd7e5b41876b5d1799c867f3f3d6",
+    "proof/VELDO-0213/local_checks.json": "sha256:711472a08db689502284cdace0d4254fa0863c6f3279dd32632f67ca2a561fd0",
+    "proof/VELDO-0213/HOST_RUNS.md": "sha256:99915e24c8913478c199e749139614afd1db0f27161a08dd4a4640fbf5d08deb"
+  },
+  "rollback": "Revert the helper and call site in both production copies.",
+  "review": "Host verification and independent review pending; no gate stamp or approval claimed."
+}
