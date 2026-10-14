@@ -170,7 +170,9 @@ Mac read-back (VELDO-0147).
 ## Notes
 
 Choosing an account is part of preparing a dispatch, inside the VELDO-0036 reservation. The candidates
-are the active accounts of an engine the role allows, with a profile on the chosen host, outside every
+are the active accounts of an engine the role allows, whose registry record allows that role (an account
+may be registered for some roles only: the owner's second Codex login reviews and checks but never writes
+code, Telegram 33241 and 33547), with a profile on the chosen host, outside every
 reported rate-limit window and under their concurrency. The Runner picks the lowest last reported
 utilization on the tightest window, then the fewest active runs, then the least recently used. With
 no candidate the unit waits, the UI shows "no account until" the earliest reset, and the factory loop
@@ -443,3 +445,13 @@ after the full mutation run exposed the assertion lost when the forked Skill mov
 Validation of this fix: all 33 suite rows pass, all 134 finding 160 mutations are rejected, the red record at
 52f817d5 has 31 assertion failures and two green fixture rows, format extraction matches, engine copies are
 identical, and repository validation passes. The gate was not run.
+
+
+## Amendment 2026-10-14 (owner, Telegram 33548 and 33550)
+
+An account record carries the roles it may serve, and the candidate list filters on it, so an account
+registered for reviews only is never given a build and is never left idle while review work waits. The
+owner noticed the assistant had forgotten the second Codex login for a whole day because nothing
+mechanical listed it; in the factory the registry is that list, and every dispatch reads it. Approval:
+Dmitry Grinberg's standing approval over Telegram on 2026-10-11, message 33105: "I approve tickets now,
+don't need to rubberstamp later."
