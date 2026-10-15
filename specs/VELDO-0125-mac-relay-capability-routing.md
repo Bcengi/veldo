@@ -44,6 +44,7 @@ footprint:
   - ".veldo/project_runner_macos_profile.py"
   - "scripts/suites/*_veldo_0124_*.py"
   - "proof/VELDO-0124/*.py"
+  - "proof/VELDO-0124/manifest.json"
   - "engine/.veldo/control_worker*.py"
   - ".veldo/control_worker*.py"
   - "packs/*/.veldo/control_worker*.py"

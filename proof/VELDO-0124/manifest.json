@@ -33,6 +33,17 @@
     {
       "name": "native_macos_qualification",
       "status": "not_run"
+    },
+    {
+      "name": "unit",
+      "status": "not_run",
+      "detail": "Full unit evidence pending reviewer verification; selected development runs are not accepted proof."
+    },
+    {
+      "name": "integration",
+      "status": "not_run",
+      "detail": "Integration evidence for this manifest remains pending; no current-tree host verification is claimed."
     }
-  ]
+  ],
+  "rollback": "Disable new operations for this concern while preserving accepted records, configuration revisions and unresolved work. No automatic rollback, retry or recovery is authorized."
 }

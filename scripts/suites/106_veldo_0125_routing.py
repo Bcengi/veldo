@@ -69,6 +69,14 @@ def _v125_routing_suite():
         finally:
             f.close()
 
+    def signing_key_read(base):
+        P = helper('v125_key_host', 'proof/VELDO-0124/checks.py')
+        host, backend, request, paths = P.start(base)
+        signing_key = paths['authority'] / 'worker-signing'
+        signing_key.write_text('synthetic signing material')
+        host.profile['signing_keys'] = [str(signing_key)]
+        assert '(deny file-read-data (require-any (subpath "%s")))' % signing_key in host.policy(request)
+
     def actual_launch(base):
         P = helper('v124_host', 'proof/VELDO-0124/checks.py')
         host, backend, request, paths = P.start(base / 'mac')
@@ -188,7 +196,8 @@ def _v125_routing_suite():
                                      'run', 'codex', 'unused.json'], capture_output=True, text=True)
             assert result.returncode == 2 and json.loads(result.stdout)['status'] == 'not_run'
 
-    for row, test in {'AC2/capability-selection': selection, 'AC2/host-routing-refusal': blocked,
+    for row, test in {'AC1/worker-signing-key-read': signing_key_read,
+                      'AC2/capability-selection': selection, 'AC2/host-routing-refusal': blocked,
                       'AC2/qualification': qualification, 'AC2/production-routing': production, 'AC2/production-account-host': production_pool, 'AC2/actual-worker-launch': actual_launch,
                       'AC1/template-sync': sync, 'AC1/native-declared': native_declared}.items():
         with tempfile.TemporaryDirectory(prefix='v125-routing-') as directory:
