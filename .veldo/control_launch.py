@@ -473,6 +473,8 @@ class Runner:
         self.clock = clock or time.time
         self.observations = []
         self.launches = {}
+        # Remote cleanup has no authority evidence protocol yet. Never infer it from Linux.
+        self.remote_retirements = {}
         # VELDO-0154: dispatches whose receiver died, whose account slot waits for their worker to be gone.
         self.orphans = {}
         # VELDO-0158: settled dispatches whose run directory is left, by dispatch: {group, process}.
@@ -496,6 +498,19 @@ class Runner:
         slot, pending, until an obligation it waits on is completed and the retirement is retried. A
         dispatch the runner asked to stop is accounted as cancelled."""
         launch = self.launches.pop(dispatch_id, None)
+        record = self.dispatches.record(dispatch_id) or {}
+        route = record.get('contract', {}).get('input', {}).get('context', {}).get('host_route') or {}
+        remote = route and route.get('host') != self.local_host
+        never_contacted = record.get('state') == 'refused' and (launch is None or launch.child is None)
+        if remote and (not never_contacted or dispatch_id in self.remote_retirements):
+            # Signed exit/spend do not prove host termination, group cleanup or clone removal.
+            # Keep this out of Linux retirement, including its accounting-triggered retries.
+            event = dict(operation='retire', dispatch_id=dispatch_id, outcome='refused',
+                         refusal='missing_evidence:remote_cleanup', basis=basis,
+                         open=['termination', 'group', 'clone'], host=route['host'])
+            self.remote_retirements[dispatch_id] = event
+            self.observations.append(event)
+            return None
         if launch is not None:
             self.retirements.track(dispatch_id, group=getattr(launch, 'group', None),
                                    stop_requested=getattr(launch, 'stop_requested', False),
@@ -674,7 +689,8 @@ class Runner:
         elif record and record['state'] == 'unknown':
             # Its outcome is an open obligation: the retirement keeps it, and the slot, until it is known. Its run
             # directory, which a receiver keeps while the run's group is not empty, goes once the run is gone.
-            self._left(record['dispatch_id'], getattr(launch, 'group', None), record.get('process'))
+            if not getattr(launch, 'remote', False):
+                self._left(record['dispatch_id'], getattr(launch, 'group', None), record.get('process'))
             self._retire(record['dispatch_id'], 'unknown', 'outcome_unknown')
         self.launches.pop(launch.dispatch_id, None)
         # This dispatch's end may have completed another's obligation (a group the kernel emptied).
@@ -690,6 +706,8 @@ class Runner:
         recorded process, checked by its identity on this boot, sent SIGKILL), and the release is the reservation
         service's `release_account` over the runner's own kernel observation. A release that cannot be made yet
         stays pending in `orphans` and is tried again by `release_orphans`. Returns what `release_orphans` returns."""
+        if getattr(launch, 'remote', False):
+            return []
         record = self.dispatches.record(launch.dispatch_id) or {}
         if record.get('state') == 'unknown':
             entry = self.retirements.entries.get(launch.dispatch_id) or {}

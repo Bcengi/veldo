@@ -269,6 +269,40 @@ def _v125_routing_suite():
         finally:
             f.close()
 
+    def remote_retirement(base):
+        import sys
+        f = T.Fixture(base)
+        L = T.load('control_launch')
+        launch = None
+        try:
+            contract = f.prepare(required=['macos'])['contract']
+            f.start()
+            client = f.client()
+            binding = T.launch(client)
+            client.result(binding, T.observation(), usage=None, references={})
+            launch = L.invoke_remote({'argv': [sys.executable, '-c', 'import sys; sys.stdin.readline()']},
+                                     contract, f.ds)
+            runner = L.Runner(None, f.res, f.ds, None, account='account', local_host='linux')
+            runner.launches[launch.dispatch_id] = launch
+            assert runner.wait(launch, timeout=5)['state'] == 'exited'
+            assert not f.res.worker(launch.dispatch_id)['retired']
+            # The old local observer mistakes the foreign boot/PID for a dead worker,
+            # and cannot see the Mac clone. Settle accounting to expose that release.
+            f.res.report('late-usage', 'remote/' + launch.dispatch_id, 1, {'tokens': 0}, final=True,
+                         outcome='completed', receipts=[], now=__import__('time').time())
+            runner.sweep()
+            runner._retire(launch.dispatch_id, 'failed', 'retry')
+            slot = f.res.worker(launch.dispatch_id)
+            assert not slot['retired'], 'remote cleanup inferred from the Linux kernel after accounting'
+            assert not slot.get('account_released'), 'remote account released without cleanup evidence'
+            assert launch.dispatch_id not in runner.retirements.entries, 'remote entered Linux retirement'
+            assert runner.remote_retirements[launch.dispatch_id]['open'] == ['termination', 'group', 'clone']
+            assert runner.observations[-1]['refusal'] == 'missing_evidence:remote_cleanup'
+        finally:
+            if launch and launch.child:
+                launch._end_receiver()
+            f.close()
+
     def transport_is_not_evidence(base):
         import sys
         for state in ('prepared', 'accepted', 'running'):
@@ -342,6 +376,7 @@ def _v125_routing_suite():
                       'AC2/capability-selection': selection, 'AC2/host-routing-refusal': blocked,
                       'AC2/qualification': qualification, 'AC2/factory-remote-delivery': factory_delivery,
                       'AC2/missing-remote-receiver': missing_receiver,
+                      'AC3/remote-cleanup-held': remote_retirement,
                       'AC3/transport-is-not-evidence': transport_is_not_evidence, 'AC2/production-routing': production, 'AC2/production-account-host': production_pool, 'AC2/actual-worker-launch': actual_launch,
                       'AC1/template-sync': sync, 'AC1/native-declared': native_declared}.items():
         with tempfile.TemporaryDirectory(prefix='v125-routing-') as directory:
