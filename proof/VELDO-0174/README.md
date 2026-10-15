@@ -1,6 +1,12 @@
 # VELDO-0174 implementation and review record
 
-Latest round: [batch-2.md](batch-2.md), with direct results in
+Latest round: [review-fixes.json](review-fixes.json). The project attachment owner
+check and its falsifier are verified. The restart fixture now supplies its unit and
+sends signed messages through the running service to wake scheduling. Suite 107
+has 33 passing ticket rows; its two restart rows remain blocked by this host's
+AF_UNIX socket denial. The full gate remains for the reviewer.
+
+Previous round: [batch-2.md](batch-2.md), with direct results in
 [batch-2-results.json](batch-2-results.json). Status: BLOCKED on host verification.
 The narrative below is the inherited round, retained as history; batch 2 resolves
 the versioned-command, skill-delivery and production project-priority gaps.

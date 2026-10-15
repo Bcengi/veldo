@@ -1,0 +1,76 @@
+{
+  "spec": "VELDO-0174",
+  "base": "d435e306",
+  "implementation_commit": "4318ddd3c60eb5e1f91d8cf9ebbd1ea7cb0442f0",
+  "status": "BLOCKED: both production restart rows require a host permitting AF_UNIX sockets",
+  "scope": "Focused review-fix observations only; not a proof manifest, gate pass, approval or landing decision.",
+  "fixes": {
+    "attachment_scope": "Both byte-identical control_conversation.py copies refuse missing_authority:project when the project owner differs from the conversation owner (VELDO-0177 AC3).",
+    "regression": "AC1/project-owner uses signed project_owner commands and verifies refusal preserves the existing attachment and the full durable row, including its version and digest.",
+    "restart_unit": "service_config supplies the authority unit using control_client.service_unit.",
+    "restart_wake": "Each restart phase sends a signed owner message over the live authority socket; Service.apply commits it and hint_after wakes the factory loop."
+  },
+  "baseline_after_owner_fix": {
+    "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+    "exit_code": 1,
+    "summary": [
+      "selftest (PARTIAL, 1 of 163 suites): 59 passed, 2 failed in 11.71s"
+    ],
+    "failed_rows": [
+      "VELDO-0174 AC1/restart-open",
+      "VELDO-0174 AC2/restart-turns"
+    ],
+    "log_sha256": "b1a8468cc8dfb7d773b32a3f56641812b303015d289e6161e0c7723ffeea6117",
+    "socket_denied": true
+  },
+  "falsifier": {
+    "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+    "exit_code": 1,
+    "summary": [
+      "selftest (PARTIAL, 1 of 163 suites): 58 passed, 3 failed in 11.64s"
+    ],
+    "failed_rows": [
+      "VELDO-0174 AC1/project-owner",
+      "VELDO-0174 AC1/restart-open",
+      "VELDO-0174 AC2/restart-turns"
+    ],
+    "log_sha256": "33cf5c1baa892ce8382d44b01f4b495667a5c0e06a517451ae21a2d2a1653628",
+    "socket_denied": true,
+    "case": "v174-attach-another-owners-project",
+    "mutation": "Remove the two-line project-owner guard from .veldo/control_conversation.py.",
+    "target_row": "VELDO-0174 AC1/project-owner",
+    "target_red": true,
+    "source_restored": true,
+    "registered_in": "scripts/check_teeth_mutations.py",
+    "driver_executed": false
+  },
+  "final_suite": {
+    "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+    "exit_code": 1,
+    "summary": [
+      "selftest (PARTIAL, 1 of 163 suites): 59 passed, 2 failed in 12.20s"
+    ],
+    "failed_rows": [
+      "VELDO-0174 AC1/restart-open",
+      "VELDO-0174 AC2/restart-turns"
+    ],
+    "log_sha256": "35bb65a315f0e0decabceece87a40baae3d7cf3504a05ccb9f5bd88437be61d1",
+    "socket_denied": true
+  },
+  "final_ticket_rows": {
+    "passed": 33,
+    "failed": 2
+  },
+  "limitations": [
+    "Socket creation fails before service readiness; the corrected restart paths still need socket-capable host execution.",
+    "The complete gate and both mutation drivers were not run, per owner instructions."
+  ],
+  "copies_byte_identical": true,
+  "source_sha256": {
+    ".veldo/control_conversation.py": "904b7e3f5b154c6b68cd21847a1a455174d9f2adb01f600b20ab1d5b6046ef85",
+    "engine/.veldo/control_conversation.py": "904b7e3f5b154c6b68cd21847a1a455174d9f2adb01f600b20ab1d5b6046ef85",
+    "scripts/suites/107_veldo_0174_conversations.py": "1b001030999051c2f6e45d31a759b04f92c980246b15eceb8b206e4ffb94dad5",
+    "scripts/suites/support/v174_journey.py": "7ee5f50b4ff2a88b8fe4ef14cae73ee931dec97be6a803eb4921ad9341367595",
+    "scripts/check_teeth_mutations.py": "5bec8741dfb68af38f07bd28ad431e86e6043478c47bb7cf704241ed02a50bcd"
+  }
+}
