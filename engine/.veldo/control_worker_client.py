@@ -6,8 +6,10 @@ existing 0108 relay, never constructed from an untrusted request.
 """
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
+import time
 import uuid
 
 
@@ -20,7 +22,24 @@ def organ(name):
 
 CC = organ('control_client')
 COMMAND_NAMESPACE = 'veldo-worker-command'
-OPERATIONS = ('worker_claim', 'worker_launch', 'worker_result')
+OPERATIONS = ('worker_claim', 'worker_launch', 'worker_result', 'worker_release')
+
+
+def durable_json(path, value):
+    """Replace a trusted host record, syncing both its contents and directory entry."""
+    path = Path(path)
+    temporary = path.with_name(path.name + '.tmp')
+    with temporary.open('w') as stream:
+        os.chmod(temporary, 0o600)
+        json.dump(value, stream, sort_keys=True)
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.replace(temporary, path)
+    descriptor = os.open(path.parent, os.O_RDONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
 
 
 class Refused(Exception):
@@ -49,6 +68,8 @@ class Client:
         self.signing_key = str(Path(signing_key).resolve()) if signing_key else None
         self.watermark = None
         self.sent = []
+        self.outbox = None
+        self.retry_seconds = 1
 
     def send(self, operation, parameters):
         if operation not in OPERATIONS:
@@ -59,6 +80,26 @@ class Client:
         packet = dict(command=command, signature=self.sign(json.dumps(command, sort_keys=True,
                        separators=(',', ':'), ensure_ascii=True, default=str).encode(), COMMAND_NAMESPACE))
         request = remote_request(self.workspace, self.binding, packet, self.sign)
+        if operation == 'worker_result' and self.outbox is not None:
+            durable_json(self.outbox, request)
+            return self.retry_result()
+        return self.deliver(request)
+
+    def retry_result(self):
+        """Replay the same signed command until acknowledged; retained across receiver restarts."""
+        request = json.loads(Path(self.outbox).read_text())
+        while True:
+            try:
+                response = self.deliver(request)
+            except Refused as error:
+                if not error.code.startswith('AUTHORITY_UNAVAILABLE:'):
+                    raise
+                time.sleep(self.retry_seconds)
+                continue
+            durable_json(str(self.outbox) + '.ack', response)
+            return response
+
+    def deliver(self, request):
         wire = json.dumps(request).encode()
         self.sent.append(request)
         try:
@@ -88,3 +129,6 @@ class Client:
     def result(self, binding, observation, *, usage=None, references=None):
         return self.send('worker_result', dict(binding, observation=observation,
                                                usage=usage, references=references or {}))
+
+    def release(self, binding, *, reason, cleanup):
+        return self.send('worker_release', dict(binding, reason=reason, cleanup=cleanup))

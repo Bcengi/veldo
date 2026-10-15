@@ -50,7 +50,7 @@ class Fixture:
         self.base.mkdir(parents=True, exist_ok=True)
         self.keys = self.base / 'keys'
         self.keys.mkdir()
-        for name in ('authority', 'mac', 'linux', 'outsider'):
+        for name in ('authority', 'mac', 'linux', 'outsider', 'operator'):
             command(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(self.keys / name)])
         self.repo = self.base / 'repo'
         self.repo.mkdir()
@@ -62,9 +62,10 @@ class Fixture:
         self.store = self.base / 'authority.sqlite3'
         self.conn = S.open_store(str(self.store))
         self.serial = 0
-        for name in ('authority', 'mac', 'linux', 'outsider'):
-            self.put(name, 'membership', dict(principal_type='service', scope=['repo'],
-                     roles=['reservation_service'] if name == 'authority' else ['worker_receiver']))
+        for name in ('authority', 'mac', 'linux', 'outsider', 'operator'):
+            self.put(name, 'membership', dict(principal_type='person' if name == 'operator' else 'service', scope=['repo'],
+                     roles=['operations_authority'] if name == 'operator' else
+                     ['reservation_service'] if name == 'authority' else ['worker_receiver']))
             self.put('key:' + name, 'verification_key', dict(principal=name,
                      public_key=remote['public_key'] if remote and name == 'mac' else
                      (self.keys / (name + '.pub')).read_text().strip(), effective_at=0))

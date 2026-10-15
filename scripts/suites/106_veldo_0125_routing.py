@@ -77,7 +77,7 @@ def _v125_routing_suite():
         host.profile['signing_keys'] = [str(signing_key)]
         assert '(deny file-read-data (require-any (subpath "%s")))' % signing_key in host.policy(request)
 
-    def actual_launch(base, lost_result=False):
+    def actual_launch(base, lost_result=False, default_collect=False, empty_collect=False, cleanup_failed=False):
         P = helper('v124_host', 'proof/VELDO-0124/checks.py')
         host, backend, request, paths = P.start(base / 'mac')
         f = T.Fixture(base / 'linux')
@@ -99,28 +99,77 @@ def _v125_routing_suite():
                 calls = [v for v in f.res._records().values() if v['type'] == 'invocation']
                 assert len(calls) == 1 and calls[0]['state'] == 'pending'
                 seen.append(record['contract']['input']['context']['host_route']['host'])
+                (paths['clone'] / 'generated.bin').write_bytes(b'generated deliverable')
+                (paths['scratch'] / 'proof.txt').write_text('generated proof')
                 return old(*args)
             backend.bootstrap = bootstrap
             real = worker.C.organ
             worker.C.organ = lambda name: types.SimpleNamespace(identity=lambda pid: dict(backend.process, pid=pid)) if name == 'project_runner_macos_os' else real(name)
             client = f.client()
+            client.retry_seconds = 0
+            deliveries = []
             if lost_result:
-                def unavailable(*args, **kwargs):
-                    raise OSError('result_transport_unavailable')
-                client.result = unavailable
+                deliver = client.deliver
+                def dropped(request):
+                    if request['command']['command']['operation'] != 'worker_result':
+                        return deliver(request)
+                    import json
+                    assert json.loads(client.outbox.read_text()) == request, 'result was not durable before send'
+                    deliveries.append(request)
+                    if len(deliveries) == 1:
+                        if lost_result == 'restart':
+                            raise KeyboardInterrupt('receiver restarted before result delivery')
+                        raise client.deliver_error('AUTHORITY_UNAVAILABLE:dropped_request')
+                    answer = deliver(request)
+                    if len(deliveries) == 2:
+                        raise client.deliver_error('AUTHORITY_UNAVAILABLE:dropped_ack')
+                    return answer
+                # Match the exception class owned by this client's module.
+                client.deliver_error = client.retry_result.__globals__['Refused']
+                client.deliver = dropped
+            if cleanup_failed:
+                worker.shutil = types.SimpleNamespace(rmtree=lambda path: (_ for _ in ()).throw(OSError('busy')))
             def run():
                 return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
                     dict(id='account', status='active', provider='codex', profiles={backend.facts()['host']: str(paths['login'])}),
-                    collect=lambda run, result: ({'tokens': 3}, {'output': result['termination']['output_digest'], 'proof': 'fixture'}))
-            if lost_result:
-                T.refused(run, 'result_transport_unavailable')
-                assert host.status()['pending'] == 0, 'failed result delivery reopened a retired host run'
-                assert f.ds.record('dispatch/test')['state'] == 'running'
-                assert not f.res.worker('dispatch/test')['retired'], 'lost signature released authority hold'
-                return
-            result = run()
+                    collect=None if default_collect else (lambda run, result: ({'tokens': 3}, {} if empty_collect else
+                        {'output': result['termination']['output_digest'], 'proof': 'fixture'})))
+            if lost_result == 'restart':
+                try:
+                    run()
+                    raise AssertionError('receiver did not restart')
+                except KeyboardInterrupt:
+                    pass
+                resumed = f.client()
+                resumed.outbox = client.outbox
+                result = resumed.retry_result()
+            else:
+                result = run()
+            if lost_result is True:
+                assert len(deliveries) == 3 and all(item == deliveries[0] for item in deliveries)
+                assert Path(str(client.outbox) + '.ack').exists()
             assert seen == [backend.facts()['host']] and backend.bootstraps == 1
-            assert result['record']['host'] == backend.facts()['host'] and result['record']['usage']['tokens'] == 3
+            assert result['record']['host'] == backend.facts()['host']
+            if default_collect:
+                import tarfile
+                with tarfile.open(paths['clone'].parent / 'deliverables.tar') as archive:
+                    assert archive.extractfile('clone/generated.bin').read() == b'generated deliverable'
+                    assert archive.extractfile('scratch/proof.txt').read() == b'generated proof'
+                assert result['record']['references']['output'].startswith('file:')
+            else:
+                assert result['record']['usage']['tokens'] == 3
+            if empty_collect or cleanup_failed:
+                assert paths['clone'].exists() and paths['scratch'].exists()
+                assert not f.res.worker('dispatch/test')['retired']
+                import shutil
+                shutil.copytree(paths['clone'], base / 'operator-collected-clone')
+                shutil.copytree(paths['scratch'], base / 'operator-collected-scratch')
+                shutil.rmtree(paths['clone'])
+                shutil.rmtree(paths['scratch'])
+                f.client('operator').release(result['binding'], reason='files collected and host cleaned by operator',
+                    cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
+                assert f.res.worker('dispatch/test')['retired'], 'cleanup failure has no operator release path'
+                return
             assert result['record']['state'] == 'exited' and host.status()['pending'] == 0
             assert f.res.worker('dispatch/test')['retired'], 'signed cleanup retained account capacity'
             assert not paths['clone'].exists() and not paths['scratch'].exists()
@@ -396,6 +445,15 @@ def _v125_routing_suite():
                 assert launch.dispatch_id not in loop.deadlines and loop.next_timer() == later.ends_at
                 passes = loop.passes
                 loop.expire(launch.ends_at + 1)
+                if state == 'prepared':
+                    offered = []
+                    loop.provision = lambda *args: None
+                    loop.lines['repo'].run = lambda report, ended: offered.append('waiting work')
+                    loop.lines['unrelated'].run = lambda report, ended: None
+                    next_pass = loop.run()
+                    assert next_pass['sources'] == ['remote_capacity_released'] and offered, \
+                        'freed account did not wake waiting work'
+                    passes += 1
                 assert loop.run() is None and loop.passes == passes, 'deadline fired more than once'
                 assert f.ds.record(launch.dispatch_id)['state'] == ('refused' if state == 'prepared' else 'unknown')
                 assert f.res.worker(launch.dispatch_id)['retired'] == (state == 'prepared'), \
@@ -445,6 +503,7 @@ def _v125_routing_suite():
             runner.dispatches.record = counted
             start = launch.clock()
             for elapsed in (0, .25, 1, 2, 10, 30):
+                assert loop.next_timer() == launch.ends_at, 'recurring timer replaced the fixed deadline'
                 loop.expire(start + elapsed)
                 loop.run()
             assert loop.passes - passes == 0, 'pending remote launch caused factory passes without an event'
@@ -557,6 +616,74 @@ def _v125_routing_suite():
             finally:
                 if launch:
                     launch._end_receiver()
+                f.close()
+
+    def unknown_cleanup(base):
+        for initial in ('accepted', 'running'):
+            f = T.Fixture(base / initial)
+            try:
+                f.res.configure('one-slot', 'account', 'account', dict(capacity=1, invocations=20, wall_seconds=1000),
+                                now=__import__('time').time())
+                f.prepare(required=['macos'])
+                f.start()
+                client = f.client()
+                binding = client.claim('dispatch/test')['binding']
+                client.launch(binding, 'accept', receiver=T.process(), runtime_seconds=5)
+                if initial == 'running':
+                    client.launch(binding, 'running', process=T.process())
+                    client.result(binding, dict(state='unknown', process=T.process()))
+                # Neither process nor termination can be recovered. Cleanup itself is the evidence.
+                observation = dict(state='unknown', cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
+                client.result(binding, observation)
+                assert f.res.worker('dispatch/test')['retired']
+                assert f.res.balances('account', 'account')['capacity'] == 0
+                assert f.ds.record('dispatch/test')['state'] == 'unknown'
+                assert f.service.get('dispatch/test')['observation'] == observation
+                assert f.service.get('dispatch/test')['charge'] == 'unknown'
+                f.conn.close()
+                f.conn = T.S.open_store(str(f.store))
+                f.service = T.W.Service(f.config, f.conn)
+                f.ds, f.res = f.service.records('repo')
+                assert f.res.worker('dispatch/test')['remote_hold']['open'] == []
+                assert f.service.get('dispatch/test')['observation'] == observation
+                f.res.reserve_worker('next-slot', 'dispatch/next', 'account', 'project', 'unit',
+                                     now=__import__('time').time())
+            finally:
+                f.close()
+
+    def operator_release(base):
+        for initial in ('accepted', 'running', 'unknown', 'exited'):
+            f = T.Fixture(base / initial)
+            try:
+                f.prepare(required=['macos'])
+                f.start()
+                client = f.client()
+                binding = client.claim('dispatch/test')['binding']
+                client.launch(binding, 'accept', receiver=T.process(), runtime_seconds=5)
+                if initial != 'accepted':
+                    client.launch(binding, 'running', process=T.process())
+                if initial in ('exited', 'unknown'):
+                    client.result(binding, T.observation() if initial == 'exited' else
+                                  dict(state='unknown', process=T.process()))
+                cleanup = dict(terminated=True, cleaned=True, clone_removed=True)
+                before = f.service.watermark()
+                T.refused(lambda: client.release(binding, reason='not an operator', cleanup=cleanup), 'command_signature_invalid')
+                operator = f.client('operator')
+                T.refused(lambda: operator.release(dict(binding, host='wrong'), reason='wrong binding', cleanup=cleanup),
+                          'binding_mismatch:remote_release')
+                T.refused(lambda: operator.release(binding, reason='incomplete', cleanup=dict(cleanup, cleaned=False)),
+                          'missing_evidence:remote_cleanup')
+                assert f.service.watermark() == before
+                result = operator.release(binding, reason='host inspected, files collected, process and clone removed',
+                                          cleanup=cleanup)
+                assert result['released'] and f.res.worker('dispatch/test')['retired']
+                assert f.res.worker('dispatch/test')['retirement']['observer'] == 'operator'
+                assert f.service.get('dispatch/test')['release']['reason'].startswith('host inspected')
+                assert f.ds.record('dispatch/test')['state'] == ('exited' if initial == 'exited' else 'unknown')
+                again = operator.release(binding, reason='duplicate attestation', cleanup=cleanup)
+                assert not again['released']
+                assert f.res.balances('account', 'account')['capacity'] == 0
+            finally:
                 f.close()
 
     def remote_signed_cleanup(base):
@@ -682,6 +809,12 @@ def _v125_routing_suite():
                       'AC3/remote-cleanup-held': remote_retirement,
                       'AC3/remote-hold-restart': remote_hold_restart,
                       'AC3/remote-result-transport-failure': lambda base: actual_launch(base, lost_result=True),
+                      'AC3/remote-result-restart': lambda base: actual_launch(base, lost_result='restart'),
+                      'AC3/default-collector-retains-files': lambda base: actual_launch(base, default_collect=True),
+                      'AC3/empty-collector-preserves-files': lambda base: actual_launch(base, empty_collect=True),
+                      'AC3/cleanup-failure-release': lambda base: actual_launch(base, cleanup_failed=True),
+                      'AC3/unknown-cleanup-releases': unknown_cleanup,
+                      'AC3/operator-release': operator_release,
                       'AC3/remote-signed-cleanup': remote_signed_cleanup,
                       'AC3/remote-signed-refusal': remote_signed_refusal,
                       'AC2/remote-factory-deadline': remote_factory_deadline,

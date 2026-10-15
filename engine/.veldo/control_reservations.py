@@ -433,11 +433,12 @@ class Reservations:
                 row = self.conn.execute('SELECT data FROM entities WHERE id=? AND kind=?',
                                         ('worker:' + current['dispatch'], 'worker_observation')).fetchone()
                 remote = json.loads(row[0]) if row else {}
-                cleanup = (remote.get('observation') or {}).get('cleanup') or {}
-                if (remote.get('state') not in ('exited', 'refused') or
+                release = remote.get('release') or {}
+                cleanup = release.get('cleanup') or (remote.get('observation') or {}).get('cleanup') or {}
+                if ((not release and remote.get('state') not in ('exited', 'refused', 'unknown')) or
                         remote.get('host') != current['remote_hold']['host'] or
                         remote.get('contract_digest') != current['remote_hold']['contract_digest'] or
-                        observation.get('observer') != remote.get('principal') or
+                        observation.get('observer') != (release.get('principal') or remote.get('principal')) or
                         observation.get('command_id') != (remote.get('commands') or [{}])[-1].get('command_id') or
                         any(cleanup.get(key) is not True for key in ('terminated', 'cleaned', 'clone_removed'))):
                     raise Refused('missing_evidence:remote_cleanup')

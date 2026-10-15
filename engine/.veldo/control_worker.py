@@ -10,6 +10,8 @@ import json
 import subprocess
 import shutil
 import sys
+import hashlib
+import tarfile
 from pathlib import Path
 
 
@@ -21,9 +23,28 @@ def organ(name):
 
 
 C = organ('project_runner_macos_control')
+CL = organ('control_worker_client')
 
 
-def run(client, host, dispatch, clone, scratch, account, *, collect=lambda run, result: (None, {}), claim=None):
+def collect_files(clone, scratch, started):
+    """Keep the complete generated trees outside their cleanup roots before deleting either."""
+    target = Path(clone).parent / 'deliverables.tar'
+    temporary = target.with_suffix('.tmp')
+    with tarfile.open(temporary, 'w') as archive:
+        for name, path in (('clone', clone), ('scratch', scratch)):
+            archive.add(path, arcname=name)
+        output = started.directory / 'engine.out'
+        if output.exists():
+            archive.add(output, arcname='engine.out')
+    with temporary.open('rb') as stream:
+        os.fsync(stream.fileno())
+        digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+    os.replace(temporary, target)
+    # durable_json below syncs the directory containing the archive and evidence.
+    return None, {'output': target.resolve().as_uri() + '#sha256=' + digest}
+
+
+def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=None):
     keys = {str(Path(p).resolve()) for p in host.profile.get('signing_keys', [])}
     if not client.signing_key or client.signing_key not in keys:
         raise C.P.Refused('missing_evidence:worker_signing_key_custody')
@@ -49,10 +70,16 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=lambda run, 
     try:
         client.launch(binding, 'running', process=started.process)
         observation = started.wait()
-        usage, references = collect(started, observation)
+        usage, references = collect(started, observation) if collect else collect_files(clone, scratch, started)
+        evidence = Path(clone).parent / 'result-evidence.json'
+        client.outbox = Path(clone).parent / 'result-request.json'
+        def retain():
+            CL.durable_json(evidence, dict(binding=binding, observation=observation,
+                                          usage=usage, references=references))
+        retain()
         if observation['state'] == 'exited':
             seen = started.retirement()
-            if all(seen.get(key) is True for key in ('terminated', 'cleaned', 'outcome_known')):
+            if references and all(seen.get(key) is True for key in ('terminated', 'cleaned', 'outcome_known')):
                 try:
                     # Output/proof references must be retained by collect before these run inputs go.
                     for path in (clone, scratch):
@@ -63,6 +90,7 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=lambda run, 
                     pass  # The signed exit is still useful; missing cleanup keeps the durable hold.
                 else:
                     observation = dict(observation, cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
+                    retain()
         return client.result(binding, observation, usage=usage, references=references)
     except Exception:
         if started.state not in ('exited', 'retired'):
@@ -91,13 +119,22 @@ def receive(config, request):
     if (request.get('domain') != config['binding']['domain_uuid']
             or request.get('repository') != config['binding']['repository_uuid']):
         raise C.P.Refused('binding_mismatch:receiver_repository')
+    directory = Path(config['runs']) / C.P.digest(request['dispatch_id']).split(':')[-1]
+    evidence = directory / 'result-evidence.json'
+    if evidence.exists():
+        retained = json.loads(evidence.read_text())
+        if retained['binding']['contract_digest'] != request.get('contract_digest'):
+            raise C.P.Refused('binding_mismatch:receiver_contract')
+        client.outbox = directory / 'result-request.json'
+        if client.outbox.exists():
+            return client.retry_result()
+        return client.result(**retained)
     claim = client.claim(request['dispatch_id'])
     contract = claim['contract']
     if (claim['binding']['contract_digest'] != request.get('contract_digest')
             or contract['domain'] != request['domain'] or contract['repository'] != request['repository']):
         raise C.P.Refused('binding_mismatch:receiver_contract')
     account = config['accounts'][contract['reservation']['account']]
-    directory = Path(config['runs']) / C.P.digest(request['dispatch_id']).split(':')[-1]
     directory.mkdir(parents=True, exist_ok=False)
     clone, scratch = directory / 'clone', directory / 'scratch'
     scratch.mkdir()

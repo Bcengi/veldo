@@ -24,7 +24,7 @@ R = organ('control_routing')
 D = R.D
 RR = organ('control_reservation_runtime')
 RES = D.RES
-OPERATIONS = ('worker_claim', 'worker_launch', 'worker_result')
+OPERATIONS = ('worker_claim', 'worker_launch', 'worker_result', 'worker_release')
 RECORD = 'worker_observation'
 COMMAND_NAMESPACE = 'veldo-worker-command'
 
@@ -87,8 +87,10 @@ class Service(SV.Service):
         member = SV.AC.membership_entry(state['membership'], principal)
         active = SV.AC.active_member(member, time.time())[0]
         key = SV.AC.active_key(state['keyring'], principal, time.time()) if active else None
-        if (not active or key is None or member.get('principal_type') != 'service'
-                or 'worker_receiver' not in member.get('roles', [])
+        operator = command.get('operation') == 'worker_release'
+        role, kind = ('operations_authority', 'person') if operator else ('worker_receiver', 'service')
+        if (not active or key is None or member.get('principal_type') != kind
+                or role not in member.get('roles', [])
                 or not SV.CM.scope_covers(member.get('scope'), repository)):
             raise SV.Refused('unauthorized:worker_receiver')
         if not SV.AC.ssh_keygen_verify(SV.S.canonical_bytes(command), packet.get('signature') or '',
@@ -110,8 +112,10 @@ class Service(SV.Service):
                     R.check_prepared(ds, self.profiles, record['contract'])
             with SV.S.atomic(self.conn):
                 answer = self.worker(packet, command, repository)
-            if self.loop is not None and command['operation'] == 'worker_result':
+            if self.loop is not None and command['operation'] in ('worker_result', 'worker_release'):
                 self.loop.remote_result(repository, command['parameters']['dispatch_id'])
+                if answer.get('released'):
+                    self.loop.wake('remote_capacity_released', command['parameters']['dispatch_id'])
             return answer
         except (D.Refused, RES.Refused) as error:
             raise SV.Refused(error.code) from error
@@ -159,12 +163,19 @@ class Service(SV.Service):
             raise SV.Refused('binding_mismatch:dispatch')
         contract = record['contract']
         route = contract['input']['context'].get('host_route') or {}
-        if route.get('principal') != command['principal']:
+        if command['operation'] != 'worker_release' and route.get('principal') != command['principal']:
             raise SV.Refused('unauthorized:dispatch_host')
         binding = dict(dispatch_id=dispatch, unit=contract['unit'], host=route['host'],
                        contract_digest=record['contract_digest'])
         op, now = command['operation'], time.time()
         data = self.get(dispatch)
+        for prior in (data or {}).get('commands', []):
+            if prior['command_id'] == command['command_id']:
+                if prior['digest'] != SV.S.digest_of(command):
+                    raise SV.Refused('binding_mismatch:command_replay')
+                return dict(ok=True, reason=op, binding=binding, record=data, contract=contract, replayed=True)
+        if op == 'worker_release':
+            return self.operator_release(ds, reservations, record, data, params, command, binding, now)
         if op == 'worker_claim':
             R.check(self.profiles, contract)
             if record['state'] != 'prepared' or data is not None:
@@ -213,9 +224,42 @@ class Service(SV.Service):
                                                     digest=SV.S.digest_of(command)))
         data['workspace'] = self.repositories[repository]
         receipt = self.save(command, data)
-        if op == 'worker_result':
-            self.release_remote(reservations, record, data, command, now)
-        return dict(ok=True, reason=op, receipt=receipt, binding=binding, record=data, contract=contract)
+        released = self.release_remote(reservations, record, data, command, now) if op == 'worker_result' else False
+        return dict(ok=True, reason=op, receipt=receipt, binding=binding, record=data, contract=contract,
+                    released=released)
+
+    def operator_release(self, ds, reservations, record, data, params, command, binding, now):
+        """A scoped person's signed cleanup attestation releases even irrecoverable outcomes."""
+        cleanup = params.get('cleanup')
+        slot = reservations.worker(record['dispatch_id'])
+        if (not data or any(params.get(k) != v for k, v in binding.items())
+                or not slot or not slot.get('remote_hold')):
+            raise SV.Refused('binding_mismatch:remote_release')
+        if (not D._text(params.get('reason')) or not isinstance(cleanup, dict)
+                or set(cleanup) != {'terminated', 'cleaned', 'clone_removed'}
+                or any(value is not True for value in cleanup.values())):
+            raise SV.Refused('missing_evidence:remote_cleanup')
+        data['release'] = dict(principal=command['principal'], command_id=command['command_id'],
+                               cleanup=cleanup, reason=params['reason'], digest=SV.S.digest_of(command))
+        if record['state'] in ('accepted', 'running'):
+            ds.unknown(record['dispatch_id'], record['contract_digest'], 'operator_cleanup', now=now,
+                       expected_state=record['state'])
+        if data['state'] not in ('exited', 'unknown'):
+            data.update(state='unknown', usage=None, references={}, charge='unknown')
+        data.setdefault('commands', []).append(dict(command_id=command['command_id'],
+            operation=command['operation'], digest=SV.S.digest_of(command)))
+        if not data.get('spend_receipt'):
+            data['spend_receipt'] = reservations.report('remote-spend/' + record['dispatch_id'],
+                data['invocation'], 1, {}, final=True, now=now)
+        receipt = self.save(command, data)
+        released = not slot['retired']
+        if released:
+            reservations.retire('remote-retire/' + record['dispatch_id'], record['dispatch_id'],
+                lambda identity: dict(terminated=True, cleaned=True, outcome='unknown',
+                    observer=command['principal'], command_id=command['command_id'],
+                    host=data['host'], contract_digest=record['contract_digest'], cleanup=cleanup), now=now)
+        return dict(ok=True, reason='worker_release', receipt=receipt, binding=binding, record=data,
+                    contract=record['contract'], released=released)
 
     def result(self, ds, reservations, record, data, params, command, now):
         """A signed host end and optional cleanup release, including a late end of a held run.
@@ -252,7 +296,10 @@ class Service(SV.Service):
         elif state in ('exited', 'unknown'):
             missing_start = (data['state'] == 'accepted' and record['state'] in ('accepted', 'unknown')
                              and record.get('process') is None)
-            if missing_start:
+            cleanup_only = state == 'unknown' and cleanup is not None
+            if cleanup_only and data['state'] in ('accepted', 'running', 'unknown'):
+                pass  # The signed, dispatch-bound cleanup is evidence even when process/exit evidence was lost.
+            elif missing_start:
                 process = observation.get('process')
                 route = record['contract']['input']['context']['host_route']
                 if (D._identity_problems(process) or process['host'] != route['host']
@@ -289,6 +336,9 @@ class Service(SV.Service):
             elif record['state'] in ('accepted', 'running'):
                 ds.unknown(dispatch, record['contract_digest'], 'remote_outcome_unknown', now=now,
                            expected_state=record['state'])
+            if state == 'unknown' and cleanup is not None and not data.get('spend_receipt'):
+                data['spend_receipt'] = reservations.report('remote-spend/' + dispatch, data['invocation'],
+                    1, {}, final=True, now=now)
         else:
             raise SV.Refused('invalid_input:terminal_state')
         data.update(state=state, observation=observation, references=references,
@@ -299,14 +349,16 @@ class Service(SV.Service):
         state, dispatch = data['state'], record['dispatch_id']
         cleanup = data['observation'].get('cleanup')
         slot = reservations.worker(dispatch)
-        if state == 'refused' or (state == 'exited' and cleanup is not None):
+        if state == 'refused' or (state in ('exited', 'unknown') and cleanup is not None):
             if not slot['retired']:
                 reservations.retire('remote-retire/' + dispatch, dispatch,
                     lambda identity: dict(terminated=True, cleaned=True,
-                        outcome='cancelled' if state == 'refused' else (
+                        outcome='cancelled' if state == 'refused' else 'unknown' if state == 'unknown' else (
                             'completed' if data['observation']['termination']['returncode'] == 0 else 'failed'),
                         observer=command['principal'], command_id=command['command_id'],
                         host=data['host'], contract_digest=record['contract_digest'], cleanup=cleanup), now=now)
+                return True
+        return False
 
 
 

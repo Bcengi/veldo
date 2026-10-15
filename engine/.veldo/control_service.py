@@ -2261,6 +2261,10 @@ class FactoryLoop:
                 if deadline_only:
                     if launches:
                         line.finish(report, launches)
+                        for launch in launches:
+                            slot = line.runner.reservations.worker(launch.dispatch_id)
+                            if slot and slot['retired']:
+                                self.wake('remote_capacity_released', launch.dispatch_id)
                 else:
                     line.run(report, launches)
             except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never the end
