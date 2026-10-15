@@ -10532,6 +10532,19 @@ def cases():
         '        self.conversation = ConversationLine(self, conversation_receiver) if conversation_receiver and work else None\n',
         ['AC4/no-work-line'], ())
 
+    # These modules resolve transitive authority dependencies beside their own file.
+    for case in result:
+        if case['finding'] == 174 and case['module'] in ('control_conversation.py', 'control_service.py'):
+            case['siblings'] = True
+    add(174, 'v174-mutation-siblings-missing', S174, 'check_teeth_mutations.py',
+        "        if case['finding'] == 174 and case['module'] in ('control_conversation.py', 'control_service.py'):\n",
+        '        if False:  # defect: isolated conversation mutants lose their dependencies\n',
+        ['proof/mutation-dependencies'])
+    result[-1]['dir'] = 'scripts'
+    add(174, 'v174-signed-commands-bypass-mutant', S174, S174,
+        '    CS.CV = CV\n', '', ['proof/signed-command-module'])
+    result[-1]['dir'] = 'scripts/suites'
+
     # VELDO-0185: each acceptance criterion's declared falsifier, then the guards its rows also hold.
     S185 = '106_veldo_0185_dispatch_setup.py'
     add(185, 'v185-work-not-installed', S185, 'control_factory_setup.py',

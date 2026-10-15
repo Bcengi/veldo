@@ -19,6 +19,7 @@ def _v174_suite():
     import shutil
     import socket
     import subprocess
+    import sys
     import tempfile
     import time
 
@@ -31,10 +32,16 @@ def _v174_suite():
     CV = load('v174_conversation', ROOT / ".veldo" / "control_conversation.py")
     L = load('v174_launch', ROOT / ".veldo" / "control_launch.py")
     CS = load('v174_service', ROOT / ".veldo" / "control_service.py")
+    # Signed commands must use the same production copy selected by the mutation driver,
+    # including its Refused type and its durable command registration.
+    CS.CV = CV
+    MUTATIONS = ROOT / "scripts" / "check_teeth_mutations.py"
     E = load('v174_enrollment', ROOT / ".veldo" / "control_enrollment.py")
     H = load('v174_authority', ROOT / 'scripts/suites/support/v73_authority.py')
     J = load('v174_journey', ROOT / 'scripts/suites/support/v174_journey.py')
     rows = {name: [] for name in (
+        'proof/mutation-dependencies',
+        'proof/signed-command-module',
         'AC1/durable-store',
         'AC1/mutation-targets',
         'AC1/not-project',
@@ -211,6 +218,33 @@ def _v174_suite():
             factory.lines.clear()
 
     try:
+        # Import real no-op layouts from the registry without running the mutation driver.
+        # Group identical layouts, but include the module: service and conversation have
+        # different transitive imports. A missing sibling is a failed row, not a crash.
+        bytecode_disabled = sys.dont_write_bytecode
+        try:
+            driver = load('v174_mutation_catalog', MUTATIONS)
+        finally:
+            sys.dont_write_bytecode = bytecode_disabled
+        cases = [case for case in driver.cases() if case['finding'] == 174
+                 and case['module'] in ('control_conversation.py', 'control_service.py')]
+        check('proof/mutation-dependencies', 'both production modules have registered falsifiers',
+              {case['module'] for case in cases} == {'control_conversation.py', 'control_service.py'})
+        layouts = set()
+        for case in cases:
+            layout = (case['module'], case.get('siblings', False), tuple(case.get('companions', ())))
+            if layout in layouts:
+                continue
+            layouts.add(layout)
+            try:
+                made = driver.materialize(case, 'noop', base / 'noops' / case['name'], root=ROOT)
+                module = load('v174_noop_' + case['name'], made['mutant'])
+                check('proof/mutation-dependencies', case['name'] + ' imports its unchanged isolated copy',
+                      Path(module.__file__).resolve() == made['mutant'].resolve()
+                      and made['mutant'].read_bytes() == made['source'].read_bytes())
+            except Exception as error:
+                check('proof/mutation-dependencies', case['name'] + ': ' + str(error), False)
+
         # AC1: durable standalone versioned record and owner-only close.
         f1 = fixture('ac1')
         c1, a1 = f1['conversations'], f1['authority']
@@ -256,6 +290,8 @@ def _v174_suite():
             return CV._row(av.conn, 'owner')['data']['scope'] == scope
         assert owner_scope(['activation-repository', 'attachment', 'another-owner'])
         service = CS.Service(J.service_config(fv, CS), av.conn)
+        check('proof/signed-command-module', 'signed service commands bind the selected conversation authority and refusal type',
+              CS.CV is CV and type(service.conversations()) is CV.Conversations)
         def owner_command(operation, parameters, who='owner', command_id=None):
             command = dict(av.ids, operation=operation, parameters=parameters, principal=who,
                            command_id=command_id or av.next_id('conversation'), nonce=av.next_id('nonce'))
