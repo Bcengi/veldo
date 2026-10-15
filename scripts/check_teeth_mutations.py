@@ -10486,6 +10486,10 @@ def cases():
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n        if False:\n            self.reservations.configure('x', 'unit', 'x', {}, now=0)\n", ['census/writer'], ())
     # VELDO-0174: one exact single-edit falsifier for each acceptance criterion.
     S174 = '107_veldo_0174_conversations.py'
+    add(174, 'v174-attach-another-owners-project', S174, 'control_conversation.py',
+        "            if target['data'].get('owner') != record.get('owner'):\n"
+        "                raise Refused('missing_authority:project')\n",
+        '', ['AC1/project-owner'], ())
     add(174, 'v174-record-memory-only', S174, 'control_conversation.py',
         "        self.store, self.conn, self.domain, self.principal = store, conn, domain, principal\n",
         "        memory = __import__('sqlite3').connect(':memory:', isolation_level=None, factory=type(conn))\n"

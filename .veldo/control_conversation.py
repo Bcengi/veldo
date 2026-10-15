@@ -191,6 +191,8 @@ def transition(conn, params, before):
             target = _row(conn, 'project:' + project) if _text(project) else None
             if not target or target['kind'] != 'project':
                 raise Refused('invalid_input:conversation_project')
+            if target['data'].get('owner') != record.get('owner'):
+                raise Refused('missing_authority:project')
             record['project'] = project
         record['version'] += 1
         return {cid: {'kind': KIND, 'data': record}}

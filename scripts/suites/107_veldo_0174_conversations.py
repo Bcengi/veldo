@@ -39,6 +39,7 @@ def _v174_suite():
         'AC1/mutation-targets',
         'AC1/not-project',
         'AC1/project-commands',
+        'AC1/project-owner',
         'AC1/restart-open',
         'AC1/unknown-conversation',
         'AC1/version-owner',
@@ -283,6 +284,19 @@ def _v174_suite():
         check('AC1/mutation-targets', 'unknown roles and projects leave the version unchanged; closed conversations refuse edits',
               invalid == ['invalid_input:conversation_role:absent', 'invalid_input:conversation_project', 'stale_version']
               and closed['version'] == 4 and refused_closed == 'stale_subject:conversation_closed')
+
+        # A signed project_owner still cannot attach another owner's project (VELDO-0177 AC3).
+        owner_command(CV.OPEN, {'conversation': 'scoped'})
+        own = owner_command(CV.ATTACH, {'conversation': 'scoped', 'version': 1,
+                                      'project': 'attachment'})['conversation']
+        av.fixture('project:another-owner', 'project', {'name': 'another-owner', 'owner': 'steward'})
+        before = CV._row(av.conn, CV.conversation_id('scoped'))
+        foreign = owner_command(CV.ATTACH, {'conversation': 'scoped', 'version': own['version'],
+                                          'project': 'another-owner'})
+        check('AC1/project-owner', 'signed project owner cannot replace its attachment with another owner\'s project; durable record and version stay unchanged',
+              foreign == {'ok': False, 'reason': 'missing_authority:project'}
+              and own['project'] == 'attachment' and own['version'] == 2
+              and CV._row(av.conn, CV.conversation_id('scoped')) == before)
 
         # AC2: three owner messages queue, only one dispatch is active, and a later turn binds the new role revision.
         f2 = fixture('ac2', account_count=2)
