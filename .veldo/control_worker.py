@@ -31,7 +31,9 @@ def collect_files(clone, scratch, started):
     target = Path(clone).parent / 'deliverables.tar'
     temporary = target.with_suffix('.tmp')
     with tarfile.open(temporary, 'w') as archive:
-        for name, path in (('clone', clone), ('scratch', scratch)):
+        for name, path in (('clone', clone), ('scratch', scratch), ('tmp', started.temp)):
+            if path is None:
+                continue
             archive.add(path, arcname=name)
         output = started.directory / 'engine.out'
         if output.exists():
@@ -90,18 +92,26 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=
                     for path in (clone, scratch):
                         if os.path.lexists(path):
                             shutil.rmtree(path)
-                    started.release(allow_unknown=observation['state'] == 'unknown')
+                    if started.temp and os.path.lexists(started.temp):
+                        shutil.rmtree(started.temp)
                 except (OSError, C.P.Refused):
                     pass  # The signed exit is still useful; missing cleanup keeps the durable hold.
                 else:
                     observation = dict(observation, cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
                     retain()
-        return client.result(binding, observation, usage=usage, references=references)
+        outcome = client.result(binding, observation, usage=usage, references=references)
+        apply_release(host, binding, outcome)
+        return outcome
     except Exception:
         if started.state not in ('exited', 'retired'):
             started.stop('authority_unavailable')
             started.wait()
         raise
+
+
+def apply_release(host, binding, outcome):
+    if outcome.get('host_released'):
+        host.release_authority(binding['dispatch_id'], binding['contract_digest'], outcome)
 
 
 def receive(config, request):
@@ -125,6 +135,12 @@ def receive(config, request):
             or request.get('repository') != config['binding']['repository_uuid']):
         raise C.P.Refused('binding_mismatch:receiver_repository')
     directory = Path(config['runs']) / C.P.digest(request['dispatch_id']).split(':')[-1]
+    if request.get('action') == 'release':
+        # Transport input is only a wake. Ask the authority through the signed,
+        # configured relay before changing local capacity; never trust stdin.
+        outcome = client.status(request['dispatch_id'])
+        host.release_authority(request['dispatch_id'], request['contract_digest'], outcome)
+        return outcome
     evidence = directory / 'result-evidence.json'
     if evidence.exists():
         retained = json.loads(evidence.read_text())
@@ -132,8 +148,11 @@ def receive(config, request):
             raise C.P.Refused('binding_mismatch:receiver_contract')
         client.outbox = directory / 'result-request.json'
         if client.outbox.exists():
-            return client.retry_result()
-        return client.result(**retained)
+            outcome = client.retry_result()
+        else:
+            outcome = client.result(**retained)
+        apply_release(host, retained['binding'], outcome)
+        return outcome
     claim = client.claim(request['dispatch_id'])
     contract = claim['contract']
     if (claim['binding']['contract_digest'] != request.get('contract_digest')

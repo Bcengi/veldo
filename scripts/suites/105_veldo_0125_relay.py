@@ -22,6 +22,7 @@ def _v125_suite():
         operator = f.client('operator')
         result = operator.release(binding, reason='operator collected files and completed host cleanup',
                                   cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
+        assert client.status(binding['dispatch_id'])['host_released']
         sent = client.sent + operator.sent
         assert {r['command']['command']['operation'] for r in sent} == set(T.CL.OPERATIONS)
         assert f.res.worker('dispatch/test')['retired']
@@ -39,7 +40,8 @@ def _v125_suite():
             assert independent.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == operator.watermark
         assert data['host'] == 'mac' and data['unit'] == 'unit' and data['dispatch_id'] == 'dispatch/test'
         assert all(next(c for c in data['commands'] if c['command_id'] == r['command']['command']['command_id'])['digest']
-                   == T.S.digest_of(r['command']['command']) for r in sent)
+                   == T.S.digest_of(r['command']['command']) for r in sent
+                   if r['command']['command']['operation'] != 'worker_status')
         assert data['references']['proof'] == 'proof/synthetic' and data['usage']['tokens'] == 7
         invocation = f.res._records()[T.RES.entity('invocation', ['domain', data['invocation']])]
         assert invocation['dispatch'] == data['dispatch_id'] and invocation['context']['unit'] == data['unit']

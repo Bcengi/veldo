@@ -7,6 +7,7 @@ existing 0108 relay, never constructed from an untrusted request.
 import importlib.util
 import json
 import os
+import random
 from pathlib import Path
 import subprocess
 import time
@@ -22,7 +23,7 @@ def organ(name):
 
 CC = organ('control_client')
 COMMAND_NAMESPACE = 'veldo-worker-command'
-OPERATIONS = ('worker_claim', 'worker_launch', 'worker_result', 'worker_release')
+OPERATIONS = ('worker_claim', 'worker_launch', 'worker_result', 'worker_release', 'worker_status')
 
 
 def durable_json(path, value):
@@ -70,6 +71,8 @@ class Client:
         self.sent = []
         self.outbox = None
         self.retry_seconds = 1
+        self.retry_max_seconds = 300
+        self.retry_attempts = 8
 
     def send(self, operation, parameters):
         if operation not in OPERATIONS:
@@ -83,20 +86,29 @@ class Client:
         if operation == 'worker_result' and self.outbox is not None:
             durable_json(self.outbox, request)
             return self.retry_result()
+        if operation == 'worker_status':
+            return self.retry(request)
         return self.deliver(request)
 
     def retry_result(self):
-        """Replay the same signed command until acknowledged; retained across receiver restarts."""
+        """Bounded exponential retry; exhaustion leaves the same command for restart."""
         request = json.loads(Path(self.outbox).read_text())
-        while True:
+        response = self.retry(request)
+        durable_json(str(self.outbox) + '.ack', response)
+        return response
+
+    def retry(self, request):
+        for attempt in range(self.retry_attempts):
             try:
                 response = self.deliver(request)
             except Refused as error:
                 if not error.code.startswith('AUTHORITY_UNAVAILABLE:'):
                     raise
-                time.sleep(self.retry_seconds)
+                if attempt + 1 == self.retry_attempts:
+                    raise
+                delay = min(self.retry_max_seconds, self.retry_seconds * 2 ** attempt)
+                time.sleep(random.uniform(delay / 2, delay))
                 continue
-            durable_json(str(self.outbox) + '.ack', response)
             return response
 
     def deliver(self, request):
@@ -132,3 +144,6 @@ class Client:
 
     def release(self, binding, *, reason, cleanup):
         return self.send('worker_release', dict(binding, reason=reason, cleanup=cleanup))
+
+    def status(self, dispatch):
+        return self.send('worker_status', dict(dispatch_id=dispatch))

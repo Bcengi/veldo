@@ -77,6 +77,39 @@ def _v125_routing_suite():
         host.profile['signing_keys'] = [str(signing_key)]
         assert '(deny file-read-data (require-any (subpath "%s")))' % signing_key in host.policy(request)
 
+    def release_endpoint(base, f, host, backend, paths):
+        import json
+        import sys
+        exchange = base / 'release-exchange'
+        exchange.mkdir()
+        endpoint = base / 'release-endpoint.json'
+        endpoint.write_text(json.dumps(dict(profile=host.profile, qualification=host.qualification,
+            signing_key=str(f.keys / 'mac'), principal='mac', workspace=str(f.repo), binding=f.binding,
+            ssh_argv=[], runs=str(base / 'runs'), fixture_facts=backend.facts(),
+            fixture_temp=str(paths['usertemp']), fixture_marker=str(base / 'release-marker.json'),
+            fixture_exchange=str(exchange))))
+        f.config['receiver'] = dict(remote_receivers={backend.facts()['host']: dict(argv=[sys.executable,
+            str(ROOT / 'proof/VELDO-0125/receiver_fixture.py'), str(endpoint)])})
+        return exchange
+
+    def finish_release(f, host, exchange):
+        import json
+        import time
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline:
+            for request in exchange.glob('*.request'):
+                response = request.with_suffix('.response')
+                if not response.exists():
+                    answer = f.authority.judge(json.loads(request.read_text()), os.getuid())
+                    temporary = response.with_suffix('.tmp')
+                    temporary.write_text(json.dumps(answer))
+                    temporary.replace(response)
+            if not any(thread.is_alive() for thread in f.service.release_deliveries.values()):
+                break
+            time.sleep(.01)
+        assert host.status()['pending'] == 0, 'authority release leaked the Mac slot'
+        assert not any(thread.is_alive() for thread in f.service.release_deliveries.values())
+
     def actual_launch(base, lost_result=False, default_collect=False, empty_collect=False, cleanup_failed=False,
                       unknown=False, lost_running=False, incomplete_retirement=False):
         P = helper('v124_host', 'proof/VELDO-0124/checks.py')
@@ -102,6 +135,9 @@ def _v125_routing_suite():
                 seen.append(record['contract']['input']['context']['host_route']['host'])
                 (paths['clone'] / 'generated.bin').write_bytes(b'generated deliverable')
                 (paths['scratch'] / 'proof.txt').write_text('generated proof')
+                temporary = Path(host.run_paths('dispatch/test', str(paths['scratch']))['temp'])
+                (temporary / 'deliverable.bin').write_bytes(b'temporary deliverable')
+                (paths['clone'] / 'temporary-output').symlink_to(temporary / 'deliverable.bin')
                 return old(*args)
             backend.bootstrap = bootstrap
             real = worker.C.organ
@@ -155,6 +191,7 @@ def _v125_routing_suite():
                     raise AssertionError('receiver did not restart')
                 except KeyboardInterrupt:
                     pass
+                assert host.status()['pending'] == 1, 'Mac slot released before authority acknowledged cleanup'
                 resumed = f.client()
                 import json
                 import shutil
@@ -183,6 +220,8 @@ def _v125_routing_suite():
                 with tarfile.open(paths['clone'].parent / 'deliverables.tar') as archive:
                     assert archive.extractfile('clone/generated.bin').read() == b'generated deliverable'
                     assert archive.extractfile('scratch/proof.txt').read() == b'generated proof'
+                    assert archive.extractfile('tmp/deliverable.bin').read() == b'temporary deliverable'
+                    assert archive.getmember('clone/temporary-output').issym()
                 assert result['record']['references']['output'].startswith('file:')
             else:
                 assert result['record']['usage']['tokens'] == 3
@@ -194,9 +233,18 @@ def _v125_routing_suite():
                 shutil.copytree(paths['scratch'], base / 'operator-collected-scratch')
                 shutil.rmtree(paths['clone'])
                 shutil.rmtree(paths['scratch'])
+                # Unknown slots cannot be rebuilt with recover(); release must
+                # consume the committed authority outcome directly.
+                if cleanup_failed:
+                    slot_path = host.root / host.label('dispatch/test') / 'slot.json'
+                    P.M.write(slot_path, dict(P.M.read(slot_path), state='unknown'))
+                exchange = release_endpoint(base, f, host, backend, paths)
                 f.client('operator').release(result['binding'], reason='files collected and host cleaned by operator',
                     cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
                 assert f.res.worker('dispatch/test')['retired'], 'cleanup failure has no operator release path'
+                finish_release(f, host, exchange)
+                restarted = P.M.Supervisor(host.profile, host.qualification, backend=backend)
+                assert restarted.status()['pending'] == 0, 'Mac slot retirement was not durable'
                 return
             assert result['record']['state'] == ('unknown' if unknown else 'exited') and host.status()['pending'] == 0
             assert f.res.worker('dispatch/test')['retired'], 'signed cleanup retained account capacity'
@@ -655,6 +703,61 @@ def _v125_routing_suite():
                     launch._end_receiver()
                 f.close()
 
+    def retry_backoff(base):
+        client = T.CL.Client('/workspace', {}, 'mac', lambda *args: '', [])
+        client.outbox = base / 'outbox.json'
+        T.CL.durable_json(client.outbox, {'same': 'command'})
+        sent, sleeps = [], []
+        def unavailable(request):
+            sent.append(request)
+            raise T.CL.Refused('AUTHORITY_UNAVAILABLE:offline')
+        client.deliver = unavailable
+        old = T.CL.time
+        T.CL.time = types.SimpleNamespace(sleep=sleeps.append)
+        try:
+            T.refused(client.retry_result, 'AUTHORITY_UNAVAILABLE:offline')
+        finally:
+            T.CL.time = old
+        assert len(sent) == client.retry_attempts and len(sleeps) == client.retry_attempts - 1
+        assert all(request == sent[0] for request in sent)
+        assert all(min(300, 2 ** i) / 2 <= value <= min(300, 2 ** i) for i, value in enumerate(sleeps))
+        assert sleeps[-1] > 1 and client.outbox.exists()
+        client.deliver = lambda request: {'ok': True}
+        assert client.retry_result() == {'ok': True}
+        assert Path(str(client.outbox) + '.ack').exists()
+
+    def late_usage(base):
+        for release in ('operator', 'unknown'):
+            for initial in ('accepted', 'running'):
+                f = T.Fixture(base / release / initial)
+                try:
+                    f.prepare(required=['macos'])
+                    f.start()
+                    client = f.client()
+                    binding = client.claim('dispatch/test')['binding']
+                    client.launch(binding, 'accept', receiver=T.process(), runtime_seconds=5)
+                    if initial == 'running':
+                        client.launch(binding, 'running', process=T.process())
+                    cleanup = dict(terminated=True, cleaned=True, clone_removed=True)
+                    if release == 'operator':
+                        f.client('operator').release(binding, reason='inspected cleanup', cleanup=cleanup)
+                    else:
+                        client.result(binding, dict(state='unknown', cleanup=cleanup))
+                    usage = dict(tokens=7, messages=1, invocations=1, wall_seconds=2)
+                    result = client.result(binding, T.observation(), usage=usage)
+                    calls = [v for v in f.res._records().values() if v['type'] == 'invocation']
+                    assert len(calls) == 1 and calls[0]['observed'] == usage, 'late usage lost after release'
+                    assert calls[0]['charge'] == usage and calls[0]['sequence'] == 2
+                    assert result['record']['usage'] == usage and result['record']['charge'] == 'reported'
+                    receipt = result['record']['spend_receipt']
+                    client.result(binding, T.observation(), usage=usage)
+                    assert f.service.get('dispatch/test')['spend_receipt'] == receipt
+                    call = [v for v in f.res._records().values() if v['type'] == 'invocation'][0]
+                    assert call == calls[0], 'duplicate delivery charged again'
+                    assert f.res.balances('account', 'account')['tokens'] == 7
+                finally:
+                    f.close()
+
     def unknown_cleanup(base):
         for initial in ('accepted', 'running'):
             f = T.Fixture(base / initial)
@@ -860,6 +963,8 @@ def _v125_routing_suite():
                       'AC3/incomplete-retirement-release': lambda base: actual_launch(base, incomplete_retirement=True),
                       'AC3/unknown-cleanup-releases': unknown_cleanup,
                       'AC3/operator-release': operator_release,
+                      'AC3/late-usage-amends-spend': late_usage,
+                      'AC3/result-retry-backoff': retry_backoff,
                       'AC3/remote-signed-cleanup': remote_signed_cleanup,
                       'AC3/remote-signed-refusal': remote_signed_refusal,
                       'AC2/remote-factory-deadline': remote_factory_deadline,

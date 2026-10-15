@@ -8,6 +8,8 @@ Trusted host receivers sign observations; engine output has no signing key.
 import json
 import sys
 import time
+import subprocess
+import threading
 from pathlib import Path
 import importlib.util
 
@@ -24,7 +26,7 @@ R = organ('control_routing')
 D = R.D
 RR = organ('control_reservation_runtime')
 RES = D.RES
-OPERATIONS = ('worker_claim', 'worker_launch', 'worker_result', 'worker_release')
+OPERATIONS = ('worker_claim', 'worker_launch', 'worker_result', 'worker_release', 'worker_status')
 RECORD = 'worker_observation'
 COMMAND_NAMESPACE = 'veldo-worker-command'
 
@@ -51,6 +53,49 @@ class Service(SV.Service):
                                              writes=('entities', 'journal', 'commands', 'nonces'))
         SV.S.declare_owners(conn, 'VELDO-0125', kinds={RECORD: (RECORD,), 'worker_spend': (RECORD,)},
                             prefixes={'worker:': (RECORD,), 'worker-spend:': (RECORD,)}, module=__file__)
+        self.release_deliveries = {}
+        # The committed reservation is the durable release outbox. A service
+        # restart redelivers releases even if the previous process died before
+        # launching the receiver. Delivery is idempotent and never executes work.
+        for row in conn.execute('SELECT data FROM entities WHERE kind=?', (RECORD,)).fetchall():
+            data = json.loads(row[0])
+            _, reservations = self.records(data['repository_uuid'])
+            slot = reservations.worker(data['dispatch_id'])
+            if slot and slot['retired']:
+                self.notify_release(data['repository_uuid'], data)
+
+    def notify_release(self, repository, binding):
+        """Wake the configured Mac endpoint outside the authority's IPC thread.
+
+        It checks the committed status through this authority before retiring.
+        A failed delivery stays recoverable by command replay or either restart.
+        """
+        dispatch = binding['dispatch_id']
+        previous = self.release_deliveries.get(dispatch)
+        if previous is not None and previous.is_alive():
+            return
+        receiver = self.config.get('receiver') or {}
+        config_path = receiver.get('configs', {}).get(repository)
+        if config_path:
+            try:
+                receiver = json.loads(Path(config_path).read_text())
+            except (OSError, ValueError):
+                return  # Committed release stays available when configuration is repaired.
+        target = receiver.get('remote_receivers', {}).get(binding['host']) or {}
+        argv = target.get('argv')
+        if not isinstance(argv, list) or not argv or any(not isinstance(a, str) or not a for a in argv):
+            return
+        request = dict(action='release', domain=self.domain, repository=repository,
+                       dispatch_id=dispatch, contract_digest=binding['contract_digest'])
+        def deliver():
+            try:
+                subprocess.run(argv, input=json.dumps(request).encode() + b'\n',
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
+            except (OSError, subprocess.TimeoutExpired):
+                pass  # The durable reservation remains available for replay.
+        delivery = threading.Thread(target=deliver, name='mac-release', daemon=True)
+        self.release_deliveries[dispatch] = delivery
+        delivery.start()
 
     def records(self, repository):
         common = dict(domain=self.domain, repository=repository, principal=self.principal,
@@ -112,6 +157,8 @@ class Service(SV.Service):
                     R.check_prepared(ds, self.profiles, record['contract'])
             with SV.S.atomic(self.conn):
                 answer = self.worker(packet, command, repository)
+            if answer.get('host_released') and command['operation'] in ('worker_result', 'worker_release'):
+                self.notify_release(repository, answer['binding'])
             if self.loop is not None and command['operation'] in ('worker_result', 'worker_release'):
                 self.loop.remote_result(repository, command['parameters']['dispatch_id'])
                 if answer.get('released'):
@@ -169,11 +216,17 @@ class Service(SV.Service):
                        contract_digest=record['contract_digest'])
         op, now = command['operation'], time.time()
         data = self.get(dispatch)
+        slot = reservations.worker(dispatch)
+        host_released = bool(slot and slot['retired'])
+        if op == 'worker_status':
+            return dict(ok=True, reason=op, binding=binding, record=data, contract=contract,
+                        host_released=host_released)
         for prior in (data or {}).get('commands', []):
             if prior['command_id'] == command['command_id']:
                 if prior['digest'] != SV.S.digest_of(command):
                     raise SV.Refused('binding_mismatch:command_replay')
-                return dict(ok=True, reason=op, binding=binding, record=data, contract=contract, replayed=True)
+                return dict(ok=True, reason=op, binding=binding, record=data, contract=contract, replayed=True,
+                            released=host_released, host_released=host_released)
         if op == 'worker_release':
             return self.operator_release(ds, reservations, record, data, params, command, binding, now)
         if op == 'worker_claim':
@@ -226,7 +279,7 @@ class Service(SV.Service):
         receipt = self.save(command, data)
         released = self.release_remote(reservations, record, data, command, now) if op == 'worker_result' else False
         return dict(ok=True, reason=op, receipt=receipt, binding=binding, record=data, contract=contract,
-                    released=released)
+                    released=released, host_released=bool(reservations.worker(dispatch)['retired']))
 
     def operator_release(self, ds, reservations, record, data, params, command, binding, now):
         """A scoped person's signed cleanup attestation releases even irrecoverable outcomes."""
@@ -259,7 +312,7 @@ class Service(SV.Service):
                     observer=command['principal'], command_id=command['command_id'],
                     host=data['host'], contract_digest=record['contract_digest'], cleanup=cleanup), now=now)
         return dict(ok=True, reason='worker_release', receipt=receipt, binding=binding, record=data,
-                    contract=record['contract'], released=released)
+                    contract=record['contract'], released=released, host_released=True)
 
     def result(self, ds, reservations, record, data, params, command, now):
         """A signed host end and optional cleanup release, including a late end of a held run.
@@ -294,7 +347,7 @@ class Service(SV.Service):
                 data['spend_receipt'] = reservations.report('remote-spend/' + dispatch, data['invocation'],
                     1, {}, final=True, outcome='not_executed', receipts=[], now=now)
         elif state in ('exited', 'unknown'):
-            missing_start = (data['state'] == 'accepted' and record['state'] in ('accepted', 'unknown')
+            missing_start = (data['state'] in ('accepted', 'unknown') and record['state'] in ('accepted', 'unknown')
                              and record.get('process') is None)
             cleanup_only = state == 'unknown' and cleanup is not None
             if cleanup_only and data['state'] in ('accepted', 'running', 'unknown'):
@@ -328,9 +381,14 @@ class Service(SV.Service):
                 elif record['state'] == 'accepted':
                     ds.unknown(dispatch, record['contract_digest'], 'remote_launch_evidence_missing', now=now,
                                expected_state='accepted')
-                if not data.get('spend_receipt') and (usage is not None or cleanup is not None):
-                    data['spend_receipt'] = reservations.report('remote-spend/' + dispatch, data['invocation'],
-                        1, usage or {}, final=True,
+                if (usage is not None and usage != data.get('usage')) or (
+                        not data.get('spend_receipt') and cleanup is not None):
+                    # Reports are cumulative revisions of ONE reserved invocation. A
+                    # placeholder final report never suppresses later measured usage.
+                    invocation = reservations._records()[RES.entity('invocation', [self.domain, data['invocation']])]
+                    sequence = invocation['sequence'] + 1
+                    data['spend_receipt'] = reservations.report('remote-spend/' + dispatch + '/' + str(sequence), data['invocation'],
+                        sequence, usage or {}, final=True,
                         outcome='completed' if termination['returncode'] == 0 else 'cancelled',
                         receipts=[termination['output_digest']], now=now)
             elif record['state'] in ('accepted', 'running'):

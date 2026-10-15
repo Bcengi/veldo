@@ -36,8 +36,16 @@ def read(path):
 
 def write(path, value):
     temporary = path.with_suffix('.tmp')
-    temporary.write_text(json.dumps(value, sort_keys=True))
+    with temporary.open('w') as stream:
+        json.dump(value, stream, sort_keys=True)
+        stream.flush()
+        os.fsync(stream.fileno())
     os.replace(temporary, path)
+    descriptor = os.open(path.parent, os.O_RDONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
 
 
 class Supervisor:
@@ -144,7 +152,8 @@ class Supervisor:
             for name in ('derived', 'simulator', 'temp'):
                 Path(paths[name]).mkdir(mode=0o700, parents=True, exist_ok=True)
             engine = p['engines'][request['engine']]
-            wrapper_request = dict(dispatch_id=dispatch, argv=engine['argv'], binary_digest=engine['binary_digest'],
+            wrapper_request = dict(dispatch_id=dispatch, contract_digest=request['contract_digest'],
+                                   argv=engine['argv'], binary_digest=engine['binary_digest'],
                                    clone=P.canonical(request['clone']), environment=request['environment'],
                                    sandbox=policy, startup_seconds=p['startup_seconds'],
                                    heartbeat_seconds=p['heartbeat_seconds'],
@@ -213,6 +222,30 @@ class Supervisor:
             run.exit_seen = True
         self.observe(dict(operation='recover', dispatch_id=dispatch, role='macos_supervisor', state=run.state))
         return run
+
+    def release_authority(self, dispatch, contract_digest, outcome):
+        """Apply an authenticated authority outcome, including to unknown slots.
+
+        The trusted receiver supplies the response from its configured relay. This
+        only retires capacity; file collection and cleanup are separate evidence.
+        """
+        binding = outcome.get('binding') or {}
+        if (not outcome.get('ok') or outcome.get('host_released') is not True
+                or binding.get('dispatch_id') != dispatch
+                or binding.get('contract_digest') != contract_digest
+                or binding.get('host') != self.os.facts()['host']):
+            raise P.Refused('binding_mismatch:authority_release')
+        with self.lock():
+            path = self.root / self.label(dispatch) / 'slot.json'
+            slot = read(path)
+            if slot is None:
+                return  # A pre-launch refusal never allocated a host slot.
+            request = read(path.parent / 'request.json') or {}
+            if (slot.get('dispatch_id') != dispatch or request.get('dispatch_id') != dispatch
+                    or request.get('contract_digest') != contract_digest):
+                raise P.Refused('binding_mismatch:authority_release')
+            if slot['state'] != 'retired':
+                write(path, dict(slot, state='retired', authority_release=outcome))
 
 
 class Run:

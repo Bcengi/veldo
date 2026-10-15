@@ -1227,7 +1227,7 @@ class Service:
         for principal in find_principals(signature, signers):
             member = AC.membership_entry(state['membership'], principal)
             if (member and 'worker_receiver' in member.get('roles', [])
-                    and operation not in ('worker_claim', 'worker_launch', 'worker_result')):
+                    and operation not in ('worker_claim', 'worker_launch', 'worker_result', 'worker_status')):
                 continue
             if AC.ssh_keygen_verify(message, signature, signers, principal)[0]:
                 return True
@@ -1252,7 +1252,7 @@ class Service:
                 raise Refused('missing_authority:repository_not_served', 'this instance does not serve it')
             member = AC.membership_entry(CM.authority_state(S, self.conn)['membership'], command.get('principal'))
             if (member and 'worker_receiver' in member.get('roles', [])
-                    and command.get('operation') not in ('worker_claim', 'worker_launch', 'worker_result')):
+                    and command.get('operation') not in ('worker_claim', 'worker_launch', 'worker_result', 'worker_status')):
                 raise Refused('not_authorized', 'worker receiver operation only')
             if isinstance(packet, dict) and packet.get('operation') == 'inspect' and 'command' not in packet:
                 result = self.inspect(packet)
