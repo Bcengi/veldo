@@ -1,0 +1,9 @@
+--- control_service.py
++++ control_service.py
+@@ -1948,5 +1948,5 @@
+                                       host=(contract['input']['context'].get('host_route') or {}).get('host', self.hosts.get(adapter)),
+                                       adapter=adapter, commit=contract['source']['commit'], result=launch.result))
+-        if launch.result == 'pending':
++        if False:
+             # The remote receiver needs this loop to serve its signed acceptance.
+             pass

@@ -1,0 +1,12 @@
+--- control_launch.py
++++ control_launch.py
+@@ -653,6 +653,7 @@
+         route = contract['input']['context'].get('host_route')
+         if route and route['host'] != self.local_host:
+-            launch = invoke_remote(self.remote_receivers.get(route['host']), contract, self.dispatches,
+-                                   clock=self.clock)
++            launch = Launch(None, contract, self.dispatches, self.clock)
++            launch.owned = False
++            launch.record = self.dispatches.record(contract['dispatch_id'])
+         else:
+             launch = self.receiver(contract)

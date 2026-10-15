@@ -1,0 +1,68 @@
+{
+  "scope": "Targeted regression diagnostics only; not a gate stamp or landing proof",
+  "implementation_commit": "bdc73e5c6f9c63acf1d999cee412976f874846ea",
+  "suites": [
+    {
+      "command": "python3 scripts/selftest.py --suite 105_veldo_0125_relay",
+      "specification_rows": 17,
+      "failed": 0,
+      "log": "relay-final.log",
+      "returncode": 2,
+      "status": "partial_passed"
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "specification_rows": 13,
+      "failed": 0,
+      "log": "routing-green.log",
+      "returncode": 2,
+      "status": "partial_passed"
+    }
+  ],
+  "falsifiers": [
+    {
+      "name": "accept-eligibility",
+      "suite": "105_veldo_0125_relay",
+      "row": "AC2/accept-eligibility-recheck",
+      "source_sha256": "3f5edf444307f01a222ef357cf3bac9c8d39af52e61d520b799383897ea67b4f",
+      "rejected": true,
+      "returncode": 1,
+      "failed_row": "SELFTEST FAIL: VELDO-0125 AC2/accept-eligibility-recheck",
+      "patch": "accept-eligibility.diff",
+      "log": "accept-eligibility.log"
+    },
+    {
+      "name": "remote-delivery",
+      "suite": "106_veldo_0125_routing",
+      "row": "AC2/factory-remote-delivery",
+      "source_sha256": "3aa9b18f01d6514e4a418963697bdfcedd537c8d8c763a7927a44a0dc26f7ad2",
+      "rejected": true,
+      "returncode": 1,
+      "failed_row": "SELFTEST FAIL: VELDO-0125 AC2/factory-remote-delivery",
+      "patch": "remote-delivery.diff",
+      "log": "remote-delivery.log"
+    },
+    {
+      "name": "remote-tracking",
+      "suite": "106_veldo_0125_routing",
+      "row": "AC2/factory-remote-delivery",
+      "source_sha256": "284a6bff6027b280b74a59494fae1dd8bf173006b807a391959e10d1583fdf1d",
+      "rejected": true,
+      "returncode": 1,
+      "failed_row": "SELFTEST FAIL: VELDO-0125 AC2/factory-remote-delivery",
+      "patch": "remote-tracking.diff",
+      "log": "remote-tracking.log"
+    }
+  ],
+  "synchronized": [
+    "control_worker_service.py",
+    "control_launch.py",
+    "control_service.py",
+    "control_worker.py"
+  ],
+  "not_run": [
+    "canonical gate",
+    "repository mutation runners",
+    "fresh native Mac/SSH validation"
+  ]
+}

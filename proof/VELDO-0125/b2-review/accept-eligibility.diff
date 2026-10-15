@@ -1,0 +1,8 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -185,5 +185,4 @@
+                     if not RES.number(runtime) or runtime <= 0:
+                         raise SV.Refused('invalid_input:runtime_seconds')
+-                    self.recheck(contract, repository)
+                     # Authorization, complete contract and reservation precede any OS launch.
+                     ds.accept(dispatch, record['contract_digest'], dict(receiver, principal=self.principal), now=now)
