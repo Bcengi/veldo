@@ -36,12 +36,21 @@ from contextlib import nullcontext
 PROFILES = ("isolated", "network", "identity")
 
 
-def identity_transport():
+def _load_identity_transport():
     spec = importlib.util.spec_from_file_location('git_identity_transport',
         Path(__file__).with_name('control_git_identity_transport.py'))
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+# Keep the exception type identical for the caller and the subprocess boundary.
+# Loading per call makes a guard refusal escape a caller's Refused handler.
+_IDENTITY_TRANSPORT = _load_identity_transport()
+
+
+def identity_transport():
+    return _IDENTITY_TRANSPORT
 
 # Transport and credential variables a plain `git push` from the operator's shell honors. None
 # names a repository, object store, index, namespace, configuration file or configuration value.

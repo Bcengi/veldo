@@ -454,6 +454,32 @@ def _v153_suite(fence_dir):
                     and T.metrics(conn)['alpha']['pushes'] == 2)
                 row('executor/refused-signed', refused_execute.get('refusal') == 'binding_mismatch:remote_owner'
                     and T.metrics(conn)['alpha']['refusals'].get('binding_mismatch:remote_owner') == 1)
+                # AC3: clone routing and a failed config inspection must reach the caller
+                # as the transport's named refusal, through the executor's real exception boundary.
+                for name, key in (('route-insteadof', 'url.ssh://invalid/.insteadOf'),
+                                  ('route-push-instead-of', 'url.ssh://invalid/.pushInsteadOf'),
+                                  ('shape-config-exit', None)):
+                    reset()
+                    count = len(invocations)
+                    if key:
+                        git('config', key, 'git@github.com:')
+                    def config_failure(args, **kwargs):
+                        if 'config' in args and '--null' in args:
+                            return subprocess.CompletedProcess(args, 1, b'', b'fixture config failure')
+                        return wire(args, **kwargs)
+                    try:
+                        with patch.object(subprocess, 'run', wire if key else config_failure), \
+                             patch.object(X.E, 'authenticate', lambda *a: None), \
+                             patch.object(X.E, 'accept', lambda *a: (dict(contract, **accepted), True)), \
+                             patch.object(X.E, 'finish', lambda conn, accepted, observation, journal: observation), \
+                             patch.object(X.E.SIG, 'sign_bytes', lambda *a: 'fixture-signature'):
+                            answer = X.execute(dict(config, journal_key='fixture'), {'operation': 'execute'},
+                                               'fixture', 'challenge', 'signature')
+                        row('executor/' + name, answer.get('refusal') == 'binding_mismatch:identity_transport_config'
+                            and before() == old and len(invocations) == count)
+                    finally:
+                        if key:
+                            git('config', '--remove-section', 'url.ssh://invalid/')
                 reset()
                 missing_contract = dict(contract, repository_uuid='unbound')
                 count = len(invocations)
