@@ -77,9 +77,10 @@ def _v125_routing_suite():
         host.profile['signing_keys'] = [str(signing_key)]
         assert '(deny file-read-data (require-any (subpath "%s")))' % signing_key in host.policy(request)
 
-    def actual_launch(base, lost_result=False, default_collect=False, empty_collect=False, cleanup_failed=False):
+    def actual_launch(base, lost_result=False, default_collect=False, empty_collect=False, cleanup_failed=False,
+                      unknown=False, lost_running=False, incomplete_retirement=False):
         P = helper('v124_host', 'proof/VELDO-0124/checks.py')
-        host, backend, request, paths = P.start(base / 'mac')
+        host, backend, request, paths = P.start(base / 'mac', mode='killed' if unknown else 'natural')
         f = T.Fixture(base / 'linux')
         worker = T.load('control_worker')
         host.profile['signing_keys'] = [str(f.keys / 'mac')]
@@ -107,6 +108,13 @@ def _v125_routing_suite():
             worker.C.organ = lambda name: types.SimpleNamespace(identity=lambda pid: dict(backend.process, pid=pid)) if name == 'project_runner_macos_os' else real(name)
             client = f.client()
             client.retry_seconds = 0
+            if lost_running:
+                send_launch = client.launch
+                def dropped_running(binding, phase, **fields):
+                    if phase == 'running':
+                        raise OSError('running request lost')
+                    return send_launch(binding, phase, **fields)
+                client.launch = dropped_running
             deliveries = []
             if lost_result:
                 deliver = client.deliver
@@ -129,6 +137,13 @@ def _v125_routing_suite():
                 client.deliver = dropped
             if cleanup_failed:
                 worker.shutil = types.SimpleNamespace(rmtree=lambda path: (_ for _ in ()).throw(OSError('busy')))
+            if incomplete_retirement:
+                start = host.start
+                def uncertain_start(request):
+                    started = start(request)
+                    started.retirement = lambda: dict(terminated=False, cleaned=False, outcome_known=True)
+                    return started
+                host.start = uncertain_start
             def run():
                 return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
                     dict(id='account', status='active', provider='codex', profiles={backend.facts()['host']: str(paths['login'])}),
@@ -141,8 +156,21 @@ def _v125_routing_suite():
                 except KeyboardInterrupt:
                     pass
                 resumed = f.client()
-                resumed.outbox = client.outbox
-                result = resumed.retry_result()
+                import json
+                import shutil
+                retained = json.loads((paths['clone'].parent / 'result-evidence.json').read_text())
+                directory = base / 'restarted-receiver' / worker.C.P.digest('dispatch/test').split(':')[-1]
+                directory.mkdir(parents=True)
+                shutil.copyfile(client.outbox, directory / 'result-request.json')
+                shutil.copyfile(paths['clone'].parent / 'result-evidence.json', directory / 'result-evidence.json')
+                original = worker.organ
+                worker.organ = lambda name: types.SimpleNamespace(Client=lambda *args, **kwargs: resumed) if name == 'control_worker_client' else (
+                    types.SimpleNamespace(Supervisor=lambda *args: host) if name == 'project_runner_macos' else original(name))
+                config = dict(profile=host.profile, qualification=host.qualification,
+                    signing_key=str(f.keys / 'mac'), workspace=str(f.repo), binding=f.binding, principal='mac',
+                    ssh_argv=[], runs=str(directory.parent))
+                result = worker.receive(config, dict(domain='domain', repository='repo', dispatch_id='dispatch/test',
+                                                      contract_digest=retained['binding']['contract_digest']))
             else:
                 result = run()
             if lost_result is True:
@@ -158,7 +186,7 @@ def _v125_routing_suite():
                 assert result['record']['references']['output'].startswith('file:')
             else:
                 assert result['record']['usage']['tokens'] == 3
-            if empty_collect or cleanup_failed:
+            if empty_collect or cleanup_failed or incomplete_retirement:
                 assert paths['clone'].exists() and paths['scratch'].exists()
                 assert not f.res.worker('dispatch/test')['retired']
                 import shutil
@@ -170,7 +198,7 @@ def _v125_routing_suite():
                     cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
                 assert f.res.worker('dispatch/test')['retired'], 'cleanup failure has no operator release path'
                 return
-            assert result['record']['state'] == 'exited' and host.status()['pending'] == 0
+            assert result['record']['state'] == ('unknown' if unknown else 'exited') and host.status()['pending'] == 0
             assert f.res.worker('dispatch/test')['retired'], 'signed cleanup retained account capacity'
             assert not paths['clone'].exists() and not paths['scratch'].exists()
         finally:
@@ -417,6 +445,11 @@ def _v125_routing_suite():
             launch = None
             try:
                 launch, runner, _, _ = stalled_remote(f, state)
+                if state == 'prepared':
+                    f.res.configure('one-slot', 'account', 'account', dict(capacity=1, invocations=20, wall_seconds=1000),
+                                    now=time.time())
+                    T.refused(lambda: f.res.reserve_worker('waiting-slot', 'dispatch/waiting', 'account', 'project',
+                              'unit', now=time.time()), 'usage_cap:account:capacity')
                 loop = remote_loop(f, runner)
                 loop.wake('fixture')
                 report = loop.run()
@@ -448,7 +481,11 @@ def _v125_routing_suite():
                 if state == 'prepared':
                     offered = []
                     loop.provision = lambda *args: None
-                    loop.lines['repo'].run = lambda report, ended: offered.append('waiting work')
+                    def offer_waiting(report, ended):
+                        f.res.reserve_worker('waiting-slot', 'dispatch/waiting', 'account', 'project',
+                                             'unit', now=time.time())
+                        offered.append('waiting work')
+                    loop.lines['repo'].run = offer_waiting
                     loop.lines['unrelated'].run = lambda report, ended: None
                     next_pass = loop.run()
                     assert next_pass['sources'] == ['remote_capacity_released'] and offered, \
@@ -503,7 +540,7 @@ def _v125_routing_suite():
             runner.dispatches.record = counted
             start = launch.clock()
             for elapsed in (0, .25, 1, 2, 10, 30):
-                assert loop.next_timer() == launch.ends_at, 'recurring timer replaced the fixed deadline'
+                loop.next_timer()  # The service asks for the next wake before every wait.
                 loop.expire(start + elapsed)
                 loop.run()
             assert loop.passes - passes == 0, 'pending remote launch caused factory passes without an event'
@@ -674,6 +711,9 @@ def _v125_routing_suite():
                 T.refused(lambda: operator.release(binding, reason='incomplete', cleanup=dict(cleanup, cleaned=False)),
                           'missing_evidence:remote_cleanup')
                 assert f.service.watermark() == before
+                wakes = []
+                f.service.loop = types.SimpleNamespace(remote_result=lambda *args: None,
+                    wake=lambda *args: wakes.append(args))
                 result = operator.release(binding, reason='host inspected, files collected, process and clone removed',
                                           cleanup=cleanup)
                 assert result['released'] and f.res.worker('dispatch/test')['retired']
@@ -683,6 +723,8 @@ def _v125_routing_suite():
                 again = operator.release(binding, reason='duplicate attestation', cleanup=cleanup)
                 assert not again['released']
                 assert f.res.balances('account', 'account')['capacity'] == 0
+                assert [wake for wake in wakes if wake[0] == 'remote_capacity_released'] == [
+                    ('remote_capacity_released', 'dispatch/test')], 'late cleanup did not wake idle work once'
             finally:
                 f.close()
 
@@ -811,8 +853,11 @@ def _v125_routing_suite():
                       'AC3/remote-result-transport-failure': lambda base: actual_launch(base, lost_result=True),
                       'AC3/remote-result-restart': lambda base: actual_launch(base, lost_result='restart'),
                       'AC3/default-collector-retains-files': lambda base: actual_launch(base, default_collect=True),
+                      'AC3/unknown-host-cleanup': lambda base: actual_launch(base, default_collect=True, unknown=True),
+                      'AC3/running-notification-lost': lambda base: actual_launch(base, default_collect=True, lost_running=True),
                       'AC3/empty-collector-preserves-files': lambda base: actual_launch(base, empty_collect=True),
                       'AC3/cleanup-failure-release': lambda base: actual_launch(base, cleanup_failed=True),
+                      'AC3/incomplete-retirement-release': lambda base: actual_launch(base, incomplete_retirement=True),
                       'AC3/unknown-cleanup-releases': unknown_cleanup,
                       'AC3/operator-release': operator_release,
                       'AC3/remote-signed-cleanup': remote_signed_cleanup,

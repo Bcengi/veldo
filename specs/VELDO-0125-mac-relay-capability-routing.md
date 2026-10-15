@@ -182,3 +182,11 @@ and transport output that attempts to impersonate completion. Targeted falsifier
 remove the eligibility recheck, restore the unowned/no-contact submission, and drop
 pending factory tracking. Configuration and evidence limits are recorded in
 proof/VELDO-0125/README.md; acceptance criteria and approval requirements are unchanged.
+
+2026-10-15: the owner explicitly requests durable result delivery and retries until
+acknowledged, collection before cleanup, release from signed cleanup when exit
+evidence is lost, and a scoped operator-signed release path for every remote hold.
+This authorizes retrying delivery of the same terminal command, never re-executing
+the unit. Deadline capacity release wakes waiting work. The recovery correction
+and targeted falsifiers are recorded in proof/VELDO-0125/b2-recovery.md; broader
+recovery, host qualification and activation remain outside this correction.

@@ -68,7 +68,12 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=
     request['environment']['VELDO_DISPATCH_ACCEPTANCE'] = request['acceptance']
     started = host.start(request)
     try:
-        client.launch(binding, 'running', process=started.process)
+        try:
+            client.launch(binding, 'running', process=started.process)
+        except Exception:
+            # Acceptance already owns the slot. Preserve the eventual terminal evidence
+            # even when the running notification (or its acknowledgement) is lost.
+            started.stop('authority_unavailable')
         observation = started.wait()
         usage, references = collect(started, observation) if collect else collect_files(clone, scratch, started)
         evidence = Path(clone).parent / 'result-evidence.json'
@@ -77,9 +82,9 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=
             CL.durable_json(evidence, dict(binding=binding, observation=observation,
                                           usage=usage, references=references))
         retain()
-        if observation['state'] == 'exited':
+        if observation['state'] in ('exited', 'unknown'):
             seen = started.retirement()
-            if references and all(seen.get(key) is True for key in ('terminated', 'cleaned', 'outcome_known')):
+            if references and all(seen.get(key) is True for key in ('terminated', 'cleaned')):
                 try:
                     # Output/proof references must be retained by collect before these run inputs go.
                     for path in (clone, scratch):

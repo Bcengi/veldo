@@ -340,7 +340,9 @@ class Run:
         if self.state == 'retired':
             raise P.Refused('stale_version:already_retired')
         observation = self.retirement()
-        if not all(observation[key] for key in ('terminated', 'cleaned', 'outcome_known')):
+        # Cleanup evidence can release capacity even if the wrapper lost its exit record.
+        # The caller still reports an unknown outcome; retirement does not invent completion.
+        if not all(observation[key] for key in ('terminated', 'cleaned')):
             raise P.Refused('unknown_outcome:retirement')
         with self.supervisor.lock():
             if self.state == 'retired':

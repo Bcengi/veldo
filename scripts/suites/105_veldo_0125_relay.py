@@ -19,8 +19,13 @@ def _v125_suite():
         binding = T.launch(client)
         result = client.result(binding, T.observation(), usage={'tokens': 7, 'wall_seconds': .1},
                                references={'output': 'sha256:output', 'proof': 'proof/synthetic'})
-        assert {r['command']['command']['operation'] for r in client.sent} == set(T.CL.OPERATIONS)
-        for request in client.sent:
+        operator = f.client('operator')
+        result = operator.release(binding, reason='operator collected files and completed host cleanup',
+                                  cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
+        sent = client.sent + operator.sent
+        assert {r['command']['command']['operation'] for r in sent} == set(T.CL.OPERATIONS)
+        assert f.res.worker('dispatch/test')['retired']
+        for request in sent:
             assert all(request[k] == f.binding[k] for k in ('domain_uuid', 'repository_uuid', 'store_uuid'))
             assert request['workspace'] == str(f.repo)
         with sqlite3.connect(f.store) as independent:
@@ -31,10 +36,10 @@ def _v125_suite():
                 ('worker-spend:dispatch/test',)).fetchone()[0])
             assert all(spend[k] == data[k] for k in ('unit', 'host', 'dispatch_id', 'invocation', 'usage'))
             assert spend['receipt']['seq'] > 0
-            assert independent.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == client.watermark
+            assert independent.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == operator.watermark
         assert data['host'] == 'mac' and data['unit'] == 'unit' and data['dispatch_id'] == 'dispatch/test'
         assert all(next(c for c in data['commands'] if c['command_id'] == r['command']['command']['command_id'])['digest']
-                   == T.S.digest_of(r['command']['command']) for r in client.sent)
+                   == T.S.digest_of(r['command']['command']) for r in sent)
         assert data['references']['proof'] == 'proof/synthetic' and data['usage']['tokens'] == 7
         invocation = f.res._records()[T.RES.entity('invocation', ['domain', data['invocation']])]
         assert invocation['dispatch'] == data['dispatch_id'] and invocation['context']['unit'] == data['unit']

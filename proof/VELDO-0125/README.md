@@ -1,6 +1,7 @@
 # VELDO-0125 build and pending native checks
 
-Latest corrections: [B2 deadlines, grace and durable release](b2-deadlines.md).
+Latest corrections: [B2 durable results, collection and operator release](b2-recovery.md).
+Earlier deadline corrections: [B2 deadlines, grace and durable release](b2-deadlines.md).
 Earlier round: [batch 2, 2026-10-15](batch2/ROUND.md). It records the current
 registry repair, review regressions, static checks, falsifiers and remaining host
 blockers. The observations below describe earlier revisions.

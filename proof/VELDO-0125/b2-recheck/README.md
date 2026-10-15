@@ -1,5 +1,11 @@
 # B2 current-head recheck, 2026-10-15
 
+Correction: independent review found the retained recurring-tick diff unreachable.
+Its old failure summary is withdrawn. `recurring-tick.diff` and its section in
+`results.txt` now contain the reachable replacement and real rerun from the
+[recovery correction](../b2-recovery.md). Other sections below describe the earlier
+round and are not new verification claims.
+
 The repeated findings were checked against starting commit fdbf5c3a. All three
 runtime corrections were already present there; this recheck does not replace
 them or claim another implementation fix.

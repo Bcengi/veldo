@@ -59,6 +59,10 @@ the slot again. A result after a timeout can record actual exit/spend and discha
 cleanup while retaining the dispatch's unknown outcome; it does not automatically
 recover or retry the unit.
 
+This historical round supplied only a manual follow-up API, not durable delivery.
+The [recovery correction](b2-recovery.md) adds the actual durable outbox, automatic
+transport retries, retained files and a scoped operator release command.
+
 For a previously reported exit whose cleanup was delayed, the assigned Mac receiver
 can send another `Client.result(binding, observation, usage=usage,
 references=references)` with the same original observation, usage and references
@@ -81,9 +85,10 @@ Additional regression rows:
   cannot subsequently accept.
 - `AC3/remote-cleanup-held`: Linux retirement cannot bypass signed cleanup even
   when accounting settles.
-- `AC3/remote-result-transport-failure`: losing the signed-result transport after
-  host cleanup keeps the authority hold and does not reopen or signal the retired
-  host run.
+- `AC3/remote-result-transport-failure`: the original row incorrectly treated a
+  permanently held authority slot as correct. The recovery correction replaces it
+  with dropped-request and dropped-acknowledgement checks that require automatic
+  delivery and capacity release without executing the engine again.
 - `AC2/actual-worker-launch`: the trusted Mac orchestration path removes clone and
   scratch and releases both host and authority slots. Apple OS observations here
   are synthetic; this is not a fresh native Mac run.
@@ -95,8 +100,9 @@ selected failing rows. Diffs omit unchanged context (apply with `--unidiff-zero`
 copy, tested with `python3 scripts/selftest.py --suite 106_veldo_0125_routing`, then
 restored. Canonical and installed source copies are identical in the final tree.
 
-- `recurring-tick.diff`: an account-reset wake while a remote deadline exists makes
-  `AC2/remote-no-polling` and the deadline isolation row fail.
+- `recurring-tick.diff`: the original diff inserted unreachable code after a return
+  and its recorded failures were invalid. The recovery correction replaces both
+  the diff and its results with a reachable recurring timer and actual rerun output.
 - `grace.diff`: removing acceptance grace makes `AC3/remote-deadline-grace` fail.
 - `durability.diff`: omitting the durable hold makes `AC3/remote-hold-restart` fail.
 - `release.diff`: disabling signed release makes cleanup, restart and actual-worker
