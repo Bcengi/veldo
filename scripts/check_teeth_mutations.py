@@ -10486,6 +10486,10 @@ def cases():
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n        if False:\n            self.reservations.configure('x', 'unit', 'x', {}, now=0)\n", ['census/writer'], ())
     # VELDO-0174: one exact single-edit falsifier for each acceptance criterion.
     S174 = '107_veldo_0174_conversations.py'
+    add(174, 'v174-attach-outside-current-scope', S174, 'control_conversation.py',
+        "            if not CM.scope_covers(member.get('scope'), [project]):\n"
+        "                raise Refused('missing_authority:project')\n",
+        '', ['AC1/project-scope'], ())
     add(174, 'v174-attach-another-owners-project', S174, 'control_conversation.py',
         "            if target['data'].get('owner') != record.get('owner'):\n"
         "                raise Refused('missing_authority:project')\n",

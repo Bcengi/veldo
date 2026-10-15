@@ -40,6 +40,7 @@ def _v174_suite():
         'AC1/not-project',
         'AC1/project-commands',
         'AC1/project-owner',
+        'AC1/project-scope',
         'AC1/restart-open',
         'AC1/unknown-conversation',
         'AC1/version-owner',
@@ -248,6 +249,12 @@ def _v174_suite():
         # AC1's record mutations travel through signed owner commands, including replay.
         fv = fixture('versions', providers=('claude_code', 'codex'))
         av = fv['authority']
+        owner_roles = CV._row(av.conn, 'owner')['data']['roles']
+        def owner_scope(scope):
+            av.admin('steward', 'change_roles', {'principal': 'owner', 'roles': owner_roles,
+                                                'scope': scope})
+            return CV._row(av.conn, 'owner')['data']['scope'] == scope
+        assert owner_scope(['activation-repository', 'attachment', 'another-owner'])
         service = CS.Service(J.service_config(fv, CS), av.conn)
         def owner_command(operation, parameters, who='owner', command_id=None):
             command = dict(av.ids, operation=operation, parameters=parameters, principal=who,
@@ -297,6 +304,28 @@ def _v174_suite():
               foreign == {'ok': False, 'reason': 'missing_authority:project'}
               and own['project'] == 'attachment' and own['version'] == 2
               and CV._row(av.conn, CV.conversation_id('scoped')) == before)
+
+        # Ownership survives a scope change; attachment authority must not.
+        owner_command(CV.OPEN, {'conversation': 'unattached'})
+        for scope in (['activation-repository'], []):
+            updated = owner_scope(scope)
+            for identity in ('unattached', 'scoped'):
+                before = CV._row(av.conn, CV.conversation_id(identity))
+                denied = owner_command(CV.ATTACH, {'conversation': identity,
+                    'version': before['data']['version'], 'project': 'attachment'})
+                check('AC1/project-scope', 'signed scope removal refuses attachment without changing the durable row: '+identity,
+                      updated and denied == {'ok': False, 'reason': 'missing_authority:project'}
+                      and CV._row(av.conn, CV.conversation_id(identity)) == before
+                      and CV._row(av.conn, 'project:attachment')['data']['owner'] == 'owner')
+        for scope in (['attachment'], 'attachment', '*', ['*']):
+            updated = owner_scope(scope)
+            before = service.conversations().read('unattached')
+            allowed = owner_command(CV.ATTACH, {'conversation': 'unattached',
+                'version': before['version'], 'project': 'attachment'})
+            saved = service.conversations().read('unattached')
+            check('AC1/project-scope', 'restored named or universal scope permits a fresh signed attachment',
+                  updated and allowed.get('ok') is True and allowed.get('conversation') == saved
+                  and saved['project'] == 'attachment' and saved['version'] == before['version'] + 1)
 
         # AC2: three owner messages queue, only one dispatch is active, and a later turn binds the new role revision.
         f2 = fixture('ac2', account_count=2)

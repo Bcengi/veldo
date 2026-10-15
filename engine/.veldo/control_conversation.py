@@ -168,7 +168,7 @@ def transition(conn, params, before):
     if not current or current.get('kind') != KIND:
         raise Refused('invalid_input:conversation:unknown')
     if operation in OWNER_OPERATIONS:
-        _member(conn, principal, now, owner=True)
+        member = _member(conn, principal, now, owner=True)
         if record.get('owner') != principal:
             raise Refused('missing_authority:conversation_owner')
     else:
@@ -192,6 +192,8 @@ def transition(conn, params, before):
             if not target or target['kind'] != 'project':
                 raise Refused('invalid_input:conversation_project')
             if target['data'].get('owner') != record.get('owner'):
+                raise Refused('missing_authority:project')
+            if not CM.scope_covers(member.get('scope'), [project]):
                 raise Refused('missing_authority:project')
             record['project'] = project
         record['version'] += 1
