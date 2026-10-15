@@ -216,3 +216,51 @@ and names the store and the copy; VELDO-0183 AC4's switch and the owner's assist
 same check. The title names it. Asked by the owner; back to draft: the owner must re-mark it ready.
 
 2026-09-28: marked ready by the owner (Telegram 29313, "Ok approved"), after the fresh check's text fixes.
+
+2026-10-08, continuation on agent/codex/veldo-0182: the owner supplied read-only,
+version-identified source captures, resolving the interface-access blocker recorded
+at 264b3d2f. Implemented the signed memory record and revision command, setup's
+idempotent memory step, profile exclusion at both boundaries, current-revision
+launch handoff and durable metadata receipts, and private safety copies with
+sampled loss checks. Suite 105 uses synthetic native-layout stores and reads the
+captured interfaces in place for additional conformance checks. No captured file,
+live memory or credential was copied into the repository. Capture versions,
+operational commands, criterion rows, falsifiers and validation limits are in
+proof/VELDO-0182/. The canonical gate, independent review and approval remain the
+reviewer's and owner's work. Acceptance criteria and ready status are unchanged.
+
+2026-10-08, owner-requested review repairs: adapter configuration cannot name
+VELDO_ variables and the exec wrapper preserves the handed memory. Candidate
+checks now precede the signed revision. The owner authorized reading claude-mem
+SQLite directly instead of relying on its worker-routed MCP server. Interpreter
+validation permits venv links and root-owned system executables while retaining
+strict code/data validation. Fresh setup preflights adapter dependencies, and
+checks distinguish unavailable adapters from measured loss. Review rows and
+executed falsifiers are recorded in proof/VELDO-0182. The ready status and
+acceptance-criterion text are unchanged; this History records the owner's
+explicit operational clarifications.
+
+2026-10-09, second review repairs (review of 00b27f77..78ca3687). Decision made by the owner's
+assistant, not by the owner: claude-mem's check uses claude-mem's own search, through a claude-mem
+worker started for the check against the named data directory (a private copy of it), on its own
+port, and stopped afterwards; it never uses the owner's running worker. This replaces the direct
+SQLite read recorded on 2026-10-08, whose "the owner authorized" came from that round's fix brief,
+not from the owner. Repairs: VELDO_MCP_ header credentials reach Codex again (VELDO-0158); claude-mem
+memories whose only text is in facts, and those with none, are checked; safety copies work while the
+assistant runs (SQLite by online backup, Chroma by a verified, retried copy); profile containment
+compares real paths without walking; the link rule is "not a link" in setup, revise, the signed
+transition and handoff alike; a re-run that will write the memory step runs setup's preflight; the
+check metric counts check refusals only; handoff refuses a record made for another host. Rows,
+falsifiers and read-only runs against the owner's real stores are in proof/VELDO-0182, Round 2. The
+ready status and acceptance-criterion text are unchanged.
+
+2026-10-09, third review repairs (review of round 2), decisions given in the fix brief: a link inside a
+store is accepted only while its resolved target stays inside the same store, refused otherwise in
+setup, revise, the signed transition and handoff alike, with only link targets compared and code trees
+never listed; this replaces round 2's "a link inside a location is the store's own". Setup and revise
+refuse a manifest for another host with handoff's refusal. The claude-mem check pins its own chroma-mcp
+resolution in a uv cache of its own and names the cause when chroma-mcp cannot start; it uses its
+worker's port only once the listener is proven its own; its backfill wait is bounded by observable state.
+The Chroma copy's ordering argument was verified against chromadb 1.5.9's Rust writer, with copies
+checked through the HNSW index. Rows, falsifiers and a read-only real store run are in
+proof/VELDO-0182, Round 3. The ready status and acceptance-criterion text are unchanged.

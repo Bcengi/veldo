@@ -1,0 +1,11 @@
+--- a/.veldo/control_git_identity.py
++++ b/.veldo/control_git_identity.py
+@@ -30,7 +30,7 @@
+ 
+ 
+ def reference(value):
+-    return isinstance(value, str) and re.fullmatch(r'keychain:[A-Za-z0-9_][A-Za-z0-9_./-]*', value) is not None
++    return text(value) and value.startswith('keychain:') and bool(value[9:].strip())
+ 
+ 
+ def validate(identities):

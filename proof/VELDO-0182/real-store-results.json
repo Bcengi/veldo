@@ -1,0 +1,243 @@
+{
+  "schema": "veldo.local-real-store-run/v1",
+  "spec_id": "VELDO-0182",
+  "implementation_commit": "7b577314a40d8148676a0bf08c634ff0264580b3",
+  "observed_at": "2026-10-09T13:52:47+00:00",
+  "scope": "Read-only runs against the owner's real stores on the owner's host while the owner's claude-mem worker and three chroma-mcp processes ran. Diagnostic observations, not gate evidence. Every run was traced with strace (-f, seccomp, -s 0, no payload bytes) for opens, writes, renames, unlinks, mode and time changes, links and signals; proof/VELDO-0182/README.md, Round 2, explains each.",
+  "environment": {
+    "claude_mem_plugin": "10.6.2 (installed plugin cache)",
+    "bun": "1.3.11",
+    "uv": "0.10.8",
+    "chromadb_in_owner_mem0_venv": "1.5.5",
+    "uv_constraint": "UV_CONSTRAINT named a file holding 'pydantic<2.14'. A fresh uvx resolution of chroma-mcp on 2026-10-09 picks pydantic 2.14.0, with which chroma-mcp's mcp 1.6.0 fails to import (eval_type_backport). The owner's running chroma-mcp still uses pydantic 2.13.5, resolved on 2026-10-05; a restart of the owner's claude-mem would meet the same failure. The check passes UV_ settings and the owner's uv.toml through to the dedicated chroma-mcp, and without a working chroma-mcp it refuses unavailable_service:memory:claude_mem:adapter."
+  },
+  "safety_copies": {
+    "note": "copy_data for all five parts into a private scratch directory; each SQLite database's integrity_check and counts in the copy against the source before and after; each Chroma copy loaded by chromadb 1.5.5 from the owner's mem0 venv.",
+    "parts": {
+      "file_memory": {
+        "seconds": 0.1,
+        "files": 652,
+        "databases": {}
+      },
+      "ava_memory": {
+        "seconds": 0.1,
+        "files": 13,
+        "databases": {
+          "history.db": {
+            "source_start": {
+              "history": 1
+            },
+            "source_end": {
+              "history": 1
+            },
+            "copy": {
+              "history": 1
+            },
+            "integrity": "ok"
+          },
+          "chromadb/chroma.sqlite3": {
+            "source_start": {
+              "embeddings": 559
+            },
+            "source_end": {
+              "embeddings": 559
+            },
+            "copy": {
+              "embeddings": 559
+            },
+            "integrity": "ok"
+          }
+        }
+      },
+      "knowledge_graph": {
+        "seconds": 0.0,
+        "files": 1,
+        "databases": {
+          "knowledge_graph.db": {
+            "source_start": {
+              "entities": 35,
+              "embeddings": 35
+            },
+            "source_end": {
+              "entities": 35,
+              "embeddings": 35
+            },
+            "copy": {
+              "entities": 35,
+              "embeddings": 35
+            },
+            "integrity": "ok"
+          }
+        }
+      },
+      "memory_kb": {
+        "seconds": 0.2,
+        "files": 28,
+        "databases": {
+          "chroma.sqlite3": {
+            "source_start": {
+              "embeddings": 379
+            },
+            "source_end": {
+              "embeddings": 379
+            },
+            "copy": {
+              "embeddings": 379
+            },
+            "integrity": "ok"
+          }
+        }
+      },
+      "claude_mem": {
+        "seconds": 28.9,
+        "files": 59,
+        "databases": {
+          "claude-mem.db": {
+            "source_start": {
+              "observations": 48241,
+              "session_summaries": 14308,
+              "user_prompts": 16919
+            },
+            "source_end": {
+              "observations": 48241,
+              "session_summaries": 14308,
+              "user_prompts": 16920
+            },
+            "copy": {
+              "observations": 48241,
+              "session_summaries": 14308,
+              "user_prompts": 16919
+            },
+            "integrity": "ok"
+          },
+          "chroma/chroma.sqlite3": {
+            "source_start": {
+              "embeddings": 448896
+            },
+            "source_end": {
+              "embeddings": 448896
+            },
+            "copy": {
+              "embeddings": 448896
+            },
+            "integrity": "ok"
+          }
+        }
+      }
+    },
+    "chroma_loaded": {
+      "ava_memory/chromadb": {
+        "mem0migrations": 1,
+        "ava_memory": 558
+      },
+      "memory_kb": {
+        "emails": 0,
+        "confluence": 50,
+        "jira": 0,
+        "files": 327,
+        "conversations": 0,
+        "recipes": 1,
+        "research": 1
+      },
+      "claude_mem/chroma": {
+        "cm__claude-mem": 448896
+      }
+    },
+    "trace": {
+      "trace": "trace-copies.txt",
+      "traced_processes": 1,
+      "opens_under_stores": 1564,
+      "write_capable_opens": 3,
+      "write_capable_open_targets": [
+        "~/.claude-mem/claude-mem.db-wal"
+      ],
+      "writing_syscalls_under_stores": 0,
+      "signals_outside_tree": 0,
+      "samples": []
+    }
+  },
+  "claude_mem_check": {
+    "before": {
+      "part": "claude_mem",
+      "phase": "before",
+      "outcome": "passed",
+      "path": "~/.claude-mem",
+      "copy": "~/v182-proof/state/memory/copies/claude_mem",
+      "count": 79469,
+      "sample_size": 20,
+      "metrics": {
+        "memory_checks_passed": 1
+      },
+      "seconds": 139.1
+    },
+    "before_trace": {
+      "trace": "trace-before.txt",
+      "traced_processes": 145,
+      "opens_under_stores": 138,
+      "write_capable_opens": 2,
+      "write_capable_open_targets": [
+        "~/.claude-mem/claude-mem.db-wal"
+      ],
+      "writing_syscalls_under_stores": 0,
+      "signals_outside_tree": 0,
+      "samples": []
+    },
+    "after": {
+      "part": "claude_mem",
+      "phase": "after",
+      "outcome": "passed",
+      "path": "~/.claude-mem",
+      "copy": "~/v182-proof/state/memory/copies/claude_mem",
+      "count": 79497,
+      "sample_size": 20,
+      "metrics": {
+        "memory_checks_passed": 1
+      },
+      "seconds": 448.6
+    },
+    "after_trace": {
+      "trace": "trace-after.txt",
+      "traced_processes": 232,
+      "opens_under_stores": 20,
+      "write_capable_opens": 1,
+      "write_capable_open_targets": [
+        "~/.claude-mem/claude-mem.db-wal"
+      ],
+      "writing_syscalls_under_stores": 0,
+      "signals_outside_tree": 0,
+      "samples": []
+    },
+    "after_note": "Final implementation. Most of the after run is the dedicated worker's own Chroma backfill, which a search awaits when a sampled memory is not found at first. An earlier diagnostic run over 20 other random memories showed this directly: one user prompt absent from the owner's Chroma was found after that backfill (435 s), and the other 19 in 0.5 to 8 s each.",
+    "sample_mix": "20 of 79469: 9 observations, 6 session summaries, 5 user prompts; 0 without indexed text",
+    "loss_on_a_copy": {
+      "outcome": "refused",
+      "code": "missing_evidence:memory:claude_mem:lost",
+      "detail": "store=~/v182-proof/copies-proof/claude_mem copy=~/v182-proof/state/memory/copies/claude_mem",
+      "seconds": 15.8,
+      "how": "A private copy of the real store with the first sampled memory renumbered (count unchanged), checked with after; the real worker and search server refused it."
+    }
+  },
+  "owner_processes": "The owner's claude-mem worker (pid 10845, started 2026-09-01), its two mcp-server.cjs and three chroma-mcp process pairs were listed before and after every run and were unchanged; no process carrying a check's private HOME remained.",
+  "incident": "During the first copy verification, a read-only count opened ~/projects/myday/knowledge_graph/knowledge_graph.db (WAL mode, held open by no one) with mode=ro&readonly_shm=1, and SQLite created an empty knowledge_graph.db-wal beside it (0 bytes, 2026-10-09 08:48:18 local). Nothing else was written. The file was left in place for the owner. The copy now reads such an idle database immutably (copy/idle-wal-no-sidecars), and every later traced run opened nothing under the stores for writing except SQLite's read-only connection opening the existing claude-mem.db-wal, through which nothing was written.",
+  "round_three": {
+    "implementation_commit": "f7353efdbc358023e2a9bc5941795198c8303d35",
+    "observed_at": "2026-10-09T15:40:00+00:00",
+    "how": "control_memory_check.check for claude_mem, before then after, from env -i with HOME, LANG and PATH only (no UV_ setting), against private copies under a scratch directory, while the owner's worker and chroma-mcp ran. Diagnostic, not gate evidence; not traced this round.",
+    "pins": "Read from the owner's running chroma-mcp environment in its uv cache: chroma-mcp==0.2.6, chromadb==1.5.9, pydantic<2.14; resolved into a uv cache inside the check's private home.",
+    "before": {
+      "outcome": "passed",
+      "count": 79550,
+      "sample_size": 20,
+      "seconds": 33.5
+    },
+    "after": {
+      "outcome": "passed",
+      "count": 79551,
+      "sample_size": 20,
+      "seconds": 248.5
+    },
+    "owner_uv_cache_entries_changed": 0,
+    "link_rule": "links_inside over the four data locations (ava_memory data, knowledge_graph.db, memory_kb data/chromadb, ~/.claude-mem): accepted, none holds a link; the code trees are not listed.",
+    "indexed_layout": "The copy's Chroma names each claude-mem document by embedding_metadata sqlite_id (int_value) and doc_type (string_value), the layout the bounded backfill wait reads."
+  }
+}

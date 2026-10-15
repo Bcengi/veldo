@@ -405,8 +405,8 @@ def attach_revisions(store, conn, domain_uuid, repositories):
     if 'accept_revision' in conn.command_registry:
         raise SN.Refused('invalid_registration', 'connection already accepts revisions')
     service = Revisions(store, conn, domain_uuid, repositories)
-    store.declare_owners(conn, REVISION_OWNER, kinds=REVISION_KINDS, prefixes=REVISION_PREFIXES, module=__file__)
     store.bind_repositories(conn, domain_uuid, service.paths)
+    store.declare_owners(conn, REVISION_OWNER, kinds=REVISION_KINDS, prefixes=REVISION_PREFIXES, module=__file__)
     conn.command_registry['accept_revision'] = {
         'transaction_transition': service.transition, 'writes': ('entities', 'journal', 'commands', 'nonces')}
     return service

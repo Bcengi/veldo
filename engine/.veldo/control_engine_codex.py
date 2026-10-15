@@ -902,6 +902,14 @@ def login_problem(bound, environment, cwd=None):
     return None if kind == 'chatgpt' and done.returncode == 0 else 'paid_api:codex_login:' + kind
 
 
+def account_login(bound, environment, cwd=None):
+    """VELDO-0185 AC4: the account's login as the pinned binary itself reports it, read exactly as
+    login_problem (VELDO-0156 AC3) reads it: None for a ChatGPT login, else the kind it reports instead
+    (`not_logged_in`, `api_key`, ..., `unknown`, `unreadable`)."""
+    problem = login_problem(bound, environment, cwd)
+    return None if problem is None else problem[len('paid_api:codex_login:'):]
+
+
 class Guard:
     """The stream side of the paid-API guard (the same protocol as Claude Code's): Codex's exec stream
     names no login, so its guard is `login_problem` before acceptance and the engine's own forced login

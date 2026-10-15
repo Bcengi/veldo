@@ -98,6 +98,8 @@ def _v140_suite():
     tailscale = TS.stand_in(ROOT / 'proof' / 'VELDO-0171' / 'tailscale-capture.json', sys.executable)
     ts_overrides = ({'tailscale': [tailscale.path], 'api_port': TS.free_port()}
                     if 'tailscale' in __import__('inspect').signature(F.setup).parameters else {})
+    # VELDO-0142: setup records the workspace repository with its configured Git identity.
+    ts_overrides.update(__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['setup_options'](F.setup))
     AC = ACT.AC
 
     # The socket guard of this process: nothing but the loopback interface, every other attempt counted.

@@ -1,0 +1,10 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -361,7 +361,6 @@
+                         if not name.startswith('VELDO_') or name.startswith(DELIVERY_PREFIX)})
+     if handed is not None:
+         environment['VELDO_MEMORY'] = handed
+-    environment = _organ('control_git_identity').environment(environment)
+     environment['XDG_RUNTIME_DIR'] = runtime
+     return environment
+ 

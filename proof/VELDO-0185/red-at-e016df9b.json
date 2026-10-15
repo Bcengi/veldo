@@ -1,0 +1,118 @@
+{
+ "all_named_rows_red": true,
+ "by_assertion": true,
+ "commit": "e016df9bc1791f0aa3b65f69c4032cf5aef2dc64",
+ "details": {
+  "VELDO-0185 login/recheck": "not logged in when read again, the only account is excluded and the unit waits, named with the login read [{'repository': '6e1ffdad-3ebc-427c-8367-b2753bbe3c1b', 'unit': 'v185-r', 'station': 'build', 'dispatch_id': 'v185-refused', 'refusals': ['missing_authority:account_login:none_left']}; offers []",
+  "VELDO-0185 login/retry-excludes": "each retry of a dispatch refused for its login chose another account, the refused one passed over as excluded [[('claude-a', None)]]",
+  "VELDO-0185 rerun/missing-state-root": "setup run again over a receiver lacking its state_root key succeeds and adds it [1 invalid_input:state_root:differs:/dev/shm/b171-7rhn8thz/install-main/9984fde9e7ba3bef/config/receiver-7ef0011196e68d5e.json []]",
+  "VELDO-0185 rerun/over-earlier-host": "the engine of 294e1933 is in history",
+  "VELDO-0185 team/newest-model": "the Codex reviewer's saved configuration names the newest model of the qualified catalog, no listed model newer [gpt-5.5; newest gpt-6-astra; listed [(1, 'gpt-6-astra'), (6, 'gpt-5.6-sol'), (7, 'gpt-5.6-terra'), (8, 'gpt-5.6-luna'), (12, 'gpt-5.5'), (29, 'gpt-5.2')]]",
+  "VELDO-0185 team/workers": "elaborator is enrolled, a service principal of its own independence group, by the owner's signed command [{'principal_type': None, 'independence_group': None, 'scope': None, 'revoked_at': None}]"
+ },
+ "failed_rows": [
+  "VELDO-0185 rerun/over-earlier-host",
+  "VELDO-0185 login/retry-excludes",
+  "VELDO-0185 login/recheck",
+  "VELDO-0185 rerun/missing-state-root",
+  "VELDO-0185 team/workers",
+  "VELDO-0185 team/newest-model"
+ ],
+ "named_details": {
+  "login/recheck": "not logged in when read again, the only account is excluded and the unit waits, named with the login read [{'repository': '6e1ffdad-3ebc-427c-8367-b2753bbe3c1b', 'unit': 'v185-r', 'station': 'build', 'dispatch_id': 'v185-refused', 'refusals': ['missing_authority:account_login:none_left']}; offers []",
+  "login/retry-excludes": "each retry of a dispatch refused for its login chose another account, the refused one passed over as excluded [[('claude-a', None)]]",
+  "rerun/missing-state-root": "setup run again over a receiver lacking its state_root key succeeds and adds it [1 invalid_input:state_root:differs:/dev/shm/b171-7rhn8thz/install-main/9984fde9e7ba3bef/config/receiver-7ef0011196e68d5e.json []]",
+  "team/newest-model": "the Codex reviewer's saved configuration names the newest model of the qualified catalog, no listed model newer [gpt-5.5; newest gpt-6-astra; listed [(1, 'gpt-6-astra'), (6, 'gpt-5.6-sol'), (7, 'gpt-5.6-terra'), (8, 'gpt-5.6-luna'), (12, 'gpt-5.5'), (29, 'gpt-5.2')]]",
+  "team/workers": "elaborator is enrolled, a service principal of its own independence group, by the owner's signed command [{'principal_type': None, 'independence_group': None, 'scope': None, 'revoked_at': None}]"
+ },
+ "named_rows": [
+  "login/retry-excludes",
+  "login/recheck",
+  "rerun/missing-state-root",
+  "team/workers",
+  "team/newest-model"
+ ],
+ "rows": [
+  [
+   "VELDO-0185 fresh/team",
+   true
+  ],
+  [
+   "VELDO-0185 fresh/adapters",
+   true
+  ],
+  [
+   "VELDO-0185 fresh/one-engine",
+   true
+  ],
+  [
+   "VELDO-0185 loop/configured",
+   true
+  ],
+  [
+   "VELDO-0185 reservation/principals",
+   true
+  ],
+  [
+   "VELDO-0185 reservation/state-root",
+   true
+  ],
+  [
+   "VELDO-0185 fresh/registered",
+   true
+  ],
+  [
+   "VELDO-0185 login/named",
+   true
+  ],
+  [
+   "VELDO-0185 login/receiver-refuses",
+   true
+  ],
+  [
+   "VELDO-0185 every-account",
+   true
+  ],
+  [
+   "VELDO-0185 rerun/changes-nothing",
+   true
+  ],
+  [
+   "VELDO-0185 rerun/over-earlier-host",
+   false
+  ],
+  [
+   "VELDO-0185 install/asset",
+   true
+  ],
+  [
+   "VELDO-0185 format/fake-lines",
+   true
+  ],
+  [
+   "VELDO-0185 login/retry-excludes",
+   false
+  ],
+  [
+   "VELDO-0185 login/recheck",
+   false
+  ],
+  [
+   "VELDO-0185 rerun/missing-state-root",
+   false
+  ],
+  [
+   "VELDO-0185 team/workers",
+   false
+  ],
+  [
+   "VELDO-0185 team/newest-model",
+   false
+  ]
+ ],
+ "schema": "veldo.proof-red/v1",
+ "seconds": 8.833,
+ "spec_id": "VELDO-0185",
+ "suite": "scripts/suites/106_veldo_0185_dispatch_setup.py",
+ "tree": "unchanged git archive of the pre-change commit"
+}

@@ -1061,7 +1061,10 @@ def cases():
             '        if bound != os.path.realpath(self.paths[repository]):', '        if False:',
             'aliases/revision-in-enrolled-repository')
     aliases('repository-binding-unchecked', 'control_store.py',
-            '            elif prior != target:', '            elif False:', 'aliases/revision-in-enrolled-repository')
+            # VELDO-0142 checks the persisted path before resolving its Git identity. The later
+            # insert-loop check is now unreachable for a conflicting binding in this transaction.
+            '                if prior is not None and prior != target:', '                if False:',
+            'aliases/revision-in-enrolled-repository')
     aliases('store-owner-by-name', 'control_store.py',
             '        if origin is not None:', '        if False:', 'aliases/owned-by-code-not-name')
     aliases('store-owner-ignores-digest', 'control_store.py',
@@ -5249,8 +5252,8 @@ def cases():
         "        if a['operation'] == 'save_workflow':\n"
         "            return self._save_workflow(a)  # defect: a workflow save skips the authority's checks\n",
         ['actions/unauthorized-write'])
-    api('publication-lag-labeled-live', AU130, "                                'freshness': 'live' if published == head else 'stale'}}",
-        "                                'freshness': 'live'}}  # defect: a lagging publication is labeled current",
+    api('publication-lag-labeled-live', AU130, "'freshness': 'live' if published == head else 'stale'",
+        "# defect: a lagging publication is labeled current\n                                'freshness': 'live'",
         ['reads/freshness'])
     api('read-unscoped', AU130,
         "        if not any(self.CM.scope_covers(member.get('scope'), p) for p in self.intake.projects):\n"
@@ -5273,15 +5276,15 @@ def cases():
         "        if isinstance(item, str) and SCAN.scan_text(item):",
         "        if False:  # defect: token-shaped text is served", ['reads/authoritative'])
     api('read-model-kind-dropped', MO130,
-        "        Kind('intake_question', 'control_intake', 'QUESTION_KIND', 'VELDO-0126'))),\n", "        )),\n",
+        "        Kind('intake_question', 'control_intake', 'QUESTION_KIND', 'VELDO-0126', ('reference', 'proposal_id')))),\n", "        )),\n",
         ['reads/model-set'])
     # Codex review of 3c85f33b (P2): the project, objective, backlog item and team records their writers keep
     # were registered in no read model, so the endpoints answered them empty and live; each registration dropped
     # again, and the published gaps claiming them not implemented again.
-    for kind, line in (('project', "        Kind('project', 'control_project', 'KIND', 'VELDO-0076'),\n"),
-                       ('objective', "        Kind('objective', 'control_objective', 'KIND', 'VELDO-0077'),\n"),
-                       ('backlog-item', "        Kind('backlog_item', 'control_backlog', 'KIND', 'VELDO-0078'),\n"),
-                       ('team', "        Kind('team', 'control_team', 'KIND', 'VELDO-0089'),\n")):
+    for kind, line in (('project', "        Kind('project', 'control_project', 'KIND', 'VELDO-0076', ('field', 'name')),\n"),
+                       ('objective', "        Kind('objective', 'control_objective', 'KIND', 'VELDO-0077', ('field', 'project')),\n"),
+                       ('backlog-item', "        Kind('backlog_item', 'control_backlog', 'KIND', 'VELDO-0078', ('field', 'project')),\n"),
+                       ('team', "        Kind('team', 'control_team', 'KIND', 'VELDO-0089', ('field', 'project')),\n")):
         api('read-model-%s-unregistered' % kind, MO130, line, '', ['reads/implemented-writers'])
     api('read-model-gaps-claim-projects', MO130,
         "    return {'machine registry': 'workers', 'tool calls': 'runs'}.get(gap.subject) == name\n",
@@ -5289,9 +5292,9 @@ def cases():
         ['reads/implemented-writers'],
         also=[("GAPS = (\n", "GAPS = (\n    Gap('AC2', 'projects', 'VELDO-0076', 'no project record is written by the engine yet'),  # defect\n")])
     api('event-data-leaked', AU130,
-        "                        'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind')} for eid in sorted(changes)],",
-        "                        'entities': [{'id': eid, 'kind': (changes[eid] or {}).get('kind'),"
-        " 'data': (changes[eid] or {}).get('data')} for eid in sorted(changes)],  # defect", ['events/live'])
+        "                        'entities': [{'id': eid, 'kind': (visible[eid] or {}).get('kind')} for eid in sorted(visible)],",
+        "                        'entities': [{'id': eid, 'kind': (visible[eid] or {}).get('kind'),"
+        " 'data': (visible[eid] or {}).get('data')} for eid in sorted(visible)],  # defect", ['events/live'])
     api('feed-skips-revocations', AU130,
         "                if change.get('kind') in (CR.KIND, 'membership') and data.get('revoked_at') is not None:",
         "                if False:  # defect: the feed carries no revocation", ['events/live'])
@@ -5654,8 +5657,8 @@ def cases():
     factory('chat-not-the-owners', "principal=owner, chat_id=plan['chat'], revoked_at=None)),",
             "principal=owner, chat_id=plan['chat'] + 1, revoked_at=None)),  # defect: another chat is enrolled",
             'chat/enrolled')
-    factory('setup-starts-service', "                                   api_service=api_service)\n",
-            "                                   api_service=api_service)\n"
+    factory('setup-starts-service', "                                   work=work)\n",
+            "                                   work=work)\n"
             "            CS.start(installed['unit'], runner)  # defect: the setup starts the service\n",
             'service/starts-inert')
     # AC3 (declared falsifier): the genesis is signed by a key that is not the owner's, and accepted.
@@ -7301,12 +7304,12 @@ def cases():
          "    return bool((record or {}).get('windows'))  # defect: usage alone is not an observation\n",
          ['pool/usage-observes'])
     pool('pool-highest-utilization-first', 'control_account_pool.py',
-         "        ranked.append(((0, used) if used is not None else (1, 0), active, last, name))\n",
-         "        ranked.append(((0, -used) if used is not None else (1, 0), active, last, name))  # defect\n",
+         "        ranked.append((name in refused, (0, used) if used is not None else (1, 0), active, last, name))\n",
+         "        ranked.append((name in refused, (0, -used) if used is not None else (1, 0), active, last, name))  # defect\n",
          ['pool/selection-order'])
     pool('pool-most-recently-used-first', 'control_account_pool.py',
-         "        ranked.append(((0, used) if used is not None else (1, 0), active, last, name))\n",
-         "        ranked.append(((0, used) if used is not None else (1, 0), active, -last, name))  # defect\n",
+         "        ranked.append((name in refused, (0, used) if used is not None else (1, 0), active, last, name))\n",
+         "        ranked.append((name in refused, (0, used) if used is not None else (1, 0), active, -last, name))  # defect\n",
          ['pool/selection-order'])
     pool('pool-until-latest-reset', 'control_account_pool.py',
          "                until = max(resets) if until is None else min(until, max(resets))\n",
@@ -8794,7 +8797,9 @@ def cases():
                    "    if not isinstance(" + source + ".get('session_environment'), list):", "    if False:",
                    ['refuse/' + engine])
     hygiene165('own-values-lost', 'control_launch.py',
-               "    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))",
+               "    environment.update({name: value for name, value in\n"
+               "                        json.loads(environment.pop(ENGINE_OVERRIDES, '{}')).items()\n"
+               "                        if not name.startswith('VELDO_') or name.startswith(DELIVERY_PREFIX)})",
                "    environment.pop(ENGINE_OVERRIDES, None)", ['strip/own-values'])
     hygiene165('strip-not-applied', 'control_launch.py',
                '    environment = engine_environment(environment)',
@@ -9843,6 +9848,12 @@ def cases():
     add(127, 'role127-staged-skill-committed', suite127, 'control_agent_config_handoff.py',
         "                handle.write('\\n/.agents/skills/' + skill['name'] + '\\n')",
         "                handle.write('\\n')", ['review/skill-commit'])
+    add(213, 'prompt213-mark-after-write', '80_veldo_0155_claude_baseline.py', 'control_launch.py',
+        "    if last and getattr(terminal, 'require_prompt', False):\n"
+        "        terminal.wrote_prompt()\n    stdin.write(data)\n    stdin.flush()\n",
+        "    stdin.write(data)\n    stdin.flush()\n"
+        "    if last and getattr(terminal, 'require_prompt', False):\n"
+        "        terminal.wrote_prompt()\n", ['paid-api/prompt-write'])
     add(127, 'role127-probe-is-terminal', suite127, 'control_engine_claude.py',
         "            if self.require_prompt and (not self.prompt_written or decoded['num_turns'] == 0):",
         "            if False:", ['review/probe-terminal'])
@@ -10181,6 +10192,13 @@ def cases():
             "        return self._send(chat, text, None)  # defect: unlisted raw text caller\n\n"
             "    def _tell(self, ev, receipt, text):\n",
             ['inventory/sends-and-assets'])
+    # VELDO-0185's service_team socket send is listed; a second setup send beside it is not.
+    text168('unlisted-setup-send', 'control_factory_setup.py',
+            "def service_team(plan, dispatch, prefix, owner_sign, clock):\n",
+            "def raw_team_packet(workspace, packet, CE, verify, owner_sign, identity):\n"
+            "    return CC.send(workspace, packet, CE, verify, owner_sign, identity, timeout=60)  # defect: unlisted send\n\n\n"
+            "def service_team(plan, dispatch, prefix, owner_sign, clock):\n",
+            ['inventory/sends-and-assets'])
     text168('refusal-unescaped', 'control_channel_presentation.py',
             "        text = TEXT.message(text, free_text=False)\n",
             "        text = text  # defect: refusal choices bypass rendering\n",
@@ -10466,6 +10484,134 @@ def cases():
     add(204, 'v204-second-policy-writer', '96_veldo_0204_reservation_policies.py', 'control_service.py',
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n",
         "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n        if False:\n            self.reservations.configure('x', 'unit', 'x', {}, now=0)\n", ['census/writer'], ())
+    # VELDO-0185: each acceptance criterion's declared falsifier, then the guards its rows also hold.
+    S185 = '106_veldo_0185_dispatch_setup.py'
+    add(185, 'v185-work-not-installed', S185, 'control_factory_setup.py',
+        '                                   work=work)\n', '                                   work=None)\n',
+        ['loop/configured'], ())
+    add(185, 'v185-principals-without-role', S185, 'control_factory_setup_dispatch.py',
+        '    due = [(p, [RESERVATION_ROLE]) for p in RESERVATION_PRINCIPALS', '    due = [(p, []) for p in RESERVATION_PRINCIPALS',
+        ['reservation/principals'], ())
+    add(185, 'v185-enrollments-every-run', S185, 'control_factory_setup.py',
+        "    missing = {name for name in ('reservation_principals', 'factory_project') if not held[name]}\n",
+        "    missing = {'reservation_principals'} | {name for name in ('factory_project',) if not held[name]}\n",
+        ['rerun/changes-nothing'], ())
+    add(185, 'v185-adapters-without-codex', S185, 'control_factory_setup_dispatch.py',
+        "    if 'codex' in present:\n        vendor", "    if False:\n        vendor", ['every-account'], ())
+    add(185, 'v185-registration-left-out', S185, 'control_factory_setup.py',
+        "        if 'account_registration' in wanted:\n", '        if False:\n', ['fresh/registered'], ())
+    add(185, 'v185-receiver-login-unchecked', S185, 'control_launch.py',
+        "        if adapter.get('account_login') is not True or self.token is not None:\n",
+        '        if True:\n', ['login/receiver-refuses'], ())
+    add(185, 'v185-refused-unit-stranded', S185, 'control_service.py',
+        '            return self.another_account(record, report)\n', '            return None\n',
+        ['login/receiver-refuses', 'every-account'], ())
+    add(185, 'v185-setup-login-unchecked', S185, 'control_factory_setup_dispatch.py',
+        "        if kind is None:\n            entry.update(outcome='logged_in')",
+        "        if True:\n            entry.update(outcome='logged_in')", ['login/named'], ())
+    add(185, 'v185-rerun-work-not-recorded', S185, 'control_factory_setup.py',
+        "    if states['service_work'] == 'add':\n", '    if False:\n', ['rerun/over-earlier-host'], ())
+    add(185, 'v185-team-saved-again', S185, 'control_factory_setup.py',
+        "    if not held['default_team']:\n", '    if True:\n', ['rerun/changes-nothing'], ())
+    add(185, 'v185-null-state-root-refused', S185, 'control_factory_setup_trust.py',
+        "        if actual.get('state_root') is None:\n", "        if 'state_root' not in actual:\n",
+        ['rerun/over-earlier-host'], ())
+    add(185, 'v185-records-null-refused', S185, 'control_factory_setup_records.py',
+        "        if held.get('state_root') is None:\n            expected.pop('state_root', None)\n"
+        "            if 'state_root' in held:\n                expected['state_root'] = None\n", '',
+        ['rerun/over-earlier-host'], ())
+    add(185, 'v185-scaffold-absent', S185, 'init_scaffold.py',
+        '    ".veldo/control_factory_setup_dispatch.py",\n', '', ['install/asset'], ())
+    # The Codex review of e016df9b: each defect it found, put back, and the Codex roles' model.
+    add(185, 'v185-retry-excludes-nothing', S185, 'control_service.py',
+        '        return self.rerun(record, report, exclude=excluded)\n', '        return self.rerun(record, report)\n',
+        ['login/retry-excludes'], ())
+    add(185, 'v185-pool-ignores-exclude', S185, 'control_account_pool.py',
+        "        if name in excluded:\n            passed[name] = 'account_login:excluded'\n            continue\n", '',
+        ['login/retry-excludes'], ())
+    add(185, 'v185-pool-ranks-by-utilization-first', S185, 'control_account_pool.py',
+        '        ranked.append((name in refused, ', '        ranked.append((False, ', ['login/retry-excludes'], ())
+    add(185, 'v185-login-refusal-forever', S185, 'control_service.py',
+        '        excluded = sorted(a for a, kind in logins.items() if kind is not None and not kind.startswith(UNCHECKED))\n',
+        '        excluded = sorted(logins)\n', ['login/recheck'], ())
+    add(185, 'v185-records-missing-refused', S185, 'control_factory_setup_records.py',
+        "        if held.get('state_root') is None:\n            expected.pop('state_root', None)\n"
+        "            if 'state_root' in held:\n                expected['state_root'] = None\n",
+        "        if 'state_root' in held and held['state_root'] is None:\n            expected['state_root'] = None\n",
+        ['rerun/missing-state-root'], ())
+    add(185, 'v185-workers-not-enrolled', S185, 'control_factory_setup_dispatch.py',
+        '    return due + [(worker, []) for worker in TEAM_WORKERS if member(worker) is None]\n', '    return due\n',
+        ['team/workers'], ())
+    add(185, 'v185-codex-model-oldest', S185, 'control_factory_setup_dispatch.py',
+        "    return min(models, key=lambda m: (m.get('priority', 1 << 30), str(m.get('slug'))))['slug']\n",
+        "    return max(models, key=lambda m: (m.get('priority', 1 << 30), str(m.get('slug'))))['slug']\n",
+        ['team/newest-model'], ())
+
+    # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
+    add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
+    add(142, 'identity142-clone-global-author', '103_veldo_0142_git_identities.py', 'control_clone.py', "for section in ('user', 'author', 'committer'):", 'for section in ():', ['clone/identity-authors'])
+    add(142, 'identity142-lander-caller-author', '103_veldo_0142_git_identities.py', 'lander.py', 'return module.author(self.identity_record)', "return tuple(self._git(self.repo_root, 'config', '--get', key).stdout.strip() for key in ('user.name', 'user.email'))", ['lander/identity-and-reland-authors'])
+    add(142, 'identity142-environment-overrides-kept', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "return {key: value for key, value in environment.items()\n            if not (key.startswith(AUTHOR_PREFIXES) or key in ('GIT_CONFIG_PARAMETERS', 'GIT_CONFIG_COUNT')\n                    or re.fullmatch(r'GIT_CONFIG_(KEY|VALUE)_[0-9]+', key))}", 'return dict(environment)', ['launch/no-author-overrides'])
+    add(142, 'identity142-setup-binding-omitted', '103_veldo_0142_git_identities.py', 'control_factory_setup.py', "        if git_identities is not None:\n            with step('git_identities'):", "        if False:\n            with step('git_identities'):", ['setup/full-command-and-rerun'])
+    add(142, 'identity142-config-overrides-kept', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "return {key: value for key, value in environment.items()\n            if not (key.startswith(AUTHOR_PREFIXES) or key in ('GIT_CONFIG_PARAMETERS', 'GIT_CONFIG_COUNT')\n                    or re.fullmatch(r'GIT_CONFIG_(KEY|VALUE)_[0-9]+', key))}", 'return {key: value for key, value in environment.items() if not key.startswith(AUTHOR_PREFIXES)}', ['launch/no-config-overrides', 'launch/spawn-config-commit-authors'])
+    add(142, 'identity142-spawn-strip-omitted', '103_veldo_0142_git_identities.py', 'control_launch.py', "        environment = _organ('control_git_identity').environment(environment)\n        environment['VELDO_DISPATCH_ACCEPTANCE']", "        environment['VELDO_DISPATCH_ACCEPTANCE']", ['launch/spawn-config-commit-authors'])
+    add(142, 'identity142-worker-authors-unchecked', '103_veldo_0142_git_identities.py', 'lander.py', '            self._check_worker_identities(workspace, evidence, identity)', '            pass', ['lander/worker-commit-mismatch'])
+    add(142, 'identity142-rerun-binding-not-written', '103_veldo_0142_git_identities.py', 'control_factory_setup.py', '                                 git_identities, workspace_identity,\n                                 observe=lambda event: outcomes.append', '                                 git_identities, workspace_identity, check_only=True,\n                                 observe=lambda event: outcomes.append', ['setup/existing-store-adds-binding', 'setup/rerun-adds-identity'])
+    add(142, 'identity142-store-unbound-written', '103_veldo_0142_git_identities.py', 'control_store.py', '                identity_module.resolve(conn, domain_uuid, repository, target)', '                pass', ['binding/store-and-callers-missing'])
+    add(142, 'identity142-reference-too-loose', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "return isinstance(value, str) and re.fullmatch(r'keychain:[A-Za-z0-9_][A-Za-z0-9_./-]*', value) is not None", "return text(value) and value.startswith('keychain:') and bool(value[9:].strip())", ['setup/keychain-reference-pattern'])
+    add(142, 'identity142-setup-log-omitted', '103_veldo_0142_git_identities.py', 'control_factory_setup.py', "observe=lambda event: done.append(dict(step='git_identity_configured', **event))", 'observe=None', ['setup/configured-log'])
+    add(142, 'identity142-caller-identity-ignored', '103_veldo_0142_git_identities.py', 'lander.py', '        if self.identity is not None:', '        if False:', ['lander/caller-identity-refused'])
+    add(142, 'identity142-engine-config-reinjected', '103_veldo_0142_git_identities.py', 'control_launch.py', "    environment = _organ('control_git_identity').environment(environment)\n    environment['XDG_RUNTIME_DIR']", "    environment['XDG_RUNTIME_DIR']", ['launch/no-config-overrides', 'launch/spawn-config-commit-authors'])
+    add(142, 'identity142-station-caller-config', '103_veldo_0142_git_identities.py', 'control_landing_station.py', 'policy=policy, workspace_root=land.get', "policy=policy, identity=tuple(land['identity']), workspace_root=land.get", ['lander/station-record-authority'])
+
+    # VELDO-0164: every project rule is applied at reads and journal delivery.
+    add(164, 'v164-model-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        'answer = MO.read_model(self.S, self.conn, model, scope=scope)',
+        'answer = MO.read_model(self.S, self.conn, model)', ['reads/member-A'])
+    add(164, 'v164-events-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        'if scope is not None and not scope.universal:', 'if False:', ['events/member-A'])
+    add(164, 'v164-universal-projectless-hidden', '104_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
+        'if self.universal:', 'if self.universal and self.projects(identity, kind, data):', ['owner/unchanged'])
+    add(164, 'v164-workflow-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        "if not scope.visible('', WF.REVISION_KIND, {'repository': self.workflows.repository}):",
+        'if False:', ['reads/workflow'])
+    add(164, 'v164-shared-hidden', '104_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
+        "if self.rules.get(kind) == ('shared',):", 'if False:', ['reads/member-A'])
+    add(164, 'v164-published-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        "or e.get('receipt') in visible", 'or True', ['events/publication'])
+    add(164, 'v164-own-revocations-hidden', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        'reason = None if own else scope.reason(eid, kind, data)',
+        'reason = scope.reason(eid, kind, data)', ['events/own-revocations'])
+    add(164, 'v164-cursor-stalls', '104_veldo_0164_scoped_reads.py', 'control_api_authority.py',
+        "{'cursor': rows[-1][0] if rows else after}", "{'cursor': after}", ['events/cursor'])
+    add(164, 'v164-team-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api.py',
+        "if row and row['kind'] == 'team' and not CR.CM.scope_covers(data.get('scope'), row['data'].get('project')):",
+        "if False:", ['reads/team-route'])
+    add(164, 'v164-unrouted-factory-visible', '104_veldo_0164_scoped_reads.py', 'control_api_models_scope.py',
+        "return None if data.get('proposal') == 'inbox' else data.get('project')",
+        "return None if data.get('state') == 'AWAITING_ROUTE' else data.get('project')", ['reads/unrouted-intake'])
+
+
+    add(164, 'v164-decision-request-at-top-level', '104_veldo_0164_scoped_reads.py', 'control_api_models.py',
+        "'DECISION_SETTLEMENT_KIND', 'VELDO-0069', ('reference', 'settlement.request_id')",
+        "'DECISION_SETTLEMENT_KIND', 'VELDO-0069', ('reference', 'request_id')", ['reads/decision-settlement'])
+    add(164, 'v164-proposal-context-unfiltered', '104_veldo_0164_scoped_reads.py', 'control_api_models.py',
+        'served_data = scope.project_data(kind, data) if scope is not None else data',
+        'served_data = data', ['reads/proposal-context'])
+    add(164, 'v164-team-requires-model-read', '104_veldo_0164_scoped_reads.py', 'control_api.py',
+        'entities = self._inspect([identity, principal])',
+        "self._ask(self.authority.read, 'configuration', principal)\n        entities = self._inspect([identity, principal])",
+        ['reads/team-route'])
+
+
+    add(164, 'v164-api-default-team-unseeded', '71_veldo_0130_api.py', '71_veldo_0130_api.py',
+        "            phase2['team_routes'].save_default(default_team, 'owner', 0, next_id('default-team'),\n                                              S.digest_of(default_team))\n",
+        '', ['reads/authoritative'])
+    result[-1]['dir'] = 'scripts/suites'
+    add(164, 'v164-socket-message-unrouted', '71_veldo_0130_api.py', '71_veldo_0130_api.py',
+        "{'text': 'Plan the socket phase.', 'project': 'project-a'}",
+        "{'text': 'Plan the socket phase.'}", ['service/socket-path'])
+    result[-1]['dir'] = 'scripts/suites'
 
     return result
 

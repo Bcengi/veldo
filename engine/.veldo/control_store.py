@@ -992,18 +992,29 @@ def bind_repositories(conn, domain_uuid, repositories):
     repository at its path (resolved), all of them or none. Idempotent for the same paths;
     repository_binding_conflict for another path, because the first binding is the one every
     accepted commit of that repository has been checked against. Its own transaction, like
-    declare_owners."""
+    declare_owners. Every record requires its configured immutable Git identity; an unbound
+    record refuses before writing any table or row."""
     if not _is_str(domain_uuid) or not isinstance(repositories, dict) or not repositories or not all(
             _is_str(r) and _is_str(p) for r, p in repositories.items()):
         raise StoreRefused("malformed_command", "a repository binding names its domain and maps each repository to a path")
     targets = {repository: os.path.realpath(path) for repository, path in sorted(repositories.items())}
-    if all(bound_repository(conn, domain_uuid, r) == t for r, t in targets.items()):
-        return targets
     try:
         conn.execute("BEGIN IMMEDIATE")
     except sqlite3.OperationalError as e:
         raise StoreRefused("read_only_handle", "this handle cannot bind a repository (%s)" % e)
     try:
+        spec = importlib.util.spec_from_file_location('store_git_identity',
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), 'control_git_identity.py'))
+        identity_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(identity_module)
+        try:
+            for repository, target in targets.items():
+                prior = bound_repository(conn, domain_uuid, repository)
+                if prior is not None and prior != target:
+                    raise StoreRefused('repository_binding_conflict', 'repository path cannot change')
+                identity_module.resolve(conn, domain_uuid, repository, target)
+        except identity_module.Refused as error:
+            raise StoreRefused(error.code, 'repository binding requires its configured identity') from None
         conn.execute(_BINDINGS_DDL)
         for repository, target in targets.items():
             prior = bound_repository(conn, domain_uuid, repository)

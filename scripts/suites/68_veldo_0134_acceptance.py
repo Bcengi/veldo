@@ -95,6 +95,7 @@ def _v134_suite():
         IDS = dict(domain_uuid=DOMAIN, repository_uuid=REPO, store_uuid=STORE)
         AID = 'architecture:' + REPO
         IDENTITY = ('Fixture', 'fixture@example.invalid')
+        GI = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))
 
         def git(repo, *args, **kwargs):
             return _git_process.run(['git', '-C', str(repo)] + list(args), capture_output=True, **kwargs)
@@ -211,6 +212,9 @@ def _v134_suite():
                 execute(w.conn, 'upsert_entity', dict(entity_id='key-' + who, kind='verification_key',
                                                       data=dict(principal=who, public_key=key(who), effective_at=0,
                                                                 revoked_at=1 if revoked else None)), {'key-' + who: 0})
+            # VELDO-0142: the repository is bound only with its configured Git identity, so the fixture
+            # configures it on this store before the authority binds the repository.
+            GI['bind_paths'](mods, w.conn, DOMAIN, {REPO: str(repo)}, IDENTITY)
             w.authority = (AR.ArchitectureAuthority(S, CM, w.conn, IDS, str(repo), 'authority', journal_sign)
                            if AR is not None else None)
             # The suite's own connection, with the suite's own writer of records in any shape registered

@@ -192,6 +192,9 @@ refused by name (`paid_api:anthropic_profile:<type>`) from the profile's configu
 path resolved against the engine's working directory as the binary resolves it. The subscription token
 of an account configured to use one reaches the engine as CLAUDE_CODE_OAUTH_TOKEN from the receiver's
 configuration (control_launch).
+`account_login` (VELDO-0185 AC4) is the account's own login as the binary reports it, the qualified
+`login_status` command (2.1.281: `auth status --json`): `loggedIn` true with the claude.ai subscription as its
+`authMethod`, else what it reports by name; setup and the launch receiver run it before any work.
 
 THE LAUNCH TOOL SET, VELDO-0173. A version is also qualified with the binary's full tool registry, every tool
 it registers (the entry's `tool_registry`, read from its bytes by proof/VELDO-0173/extract_tools.py, never the
@@ -217,6 +220,7 @@ import re
 import shutil
 import stat
 import struct
+import subprocess
 import time
 import zoneinfo
 
@@ -1554,6 +1558,41 @@ def _profile_login(environment, cwd):
         except OSError:
             return None
     return 'paid_api:anthropic_profile:' + kind
+
+
+# VELDO-0185 AC4: how long the account's own login status may take before it reads as unreadable.
+LOGIN_SECONDS = 30
+
+
+def account_login(bound, environment, cwd=None, record=None):
+    """VELDO-0185 AC4: the account's login as the pinned binary itself reports it, run in the account's
+    login environment and working directory `cwd`: the version's qualified `login_status` command (2.1.281:
+    `auth status --json`, recorded in its qualification record), whose JSON answer must name `loggedIn`
+    true with the claude.ai subscription as its `authMethod`. None when it does; else what it reports
+    instead, by name: `not_logged_in`, the other authMethod, `unqualified` (a version whose record names
+    no login status) or `unreadable`. Nothing is written; no credential is read here."""
+    try:
+        status = qualified(bound.get('version'), record).get('login_status')
+    except Refused:
+        status = None
+    if (not isinstance(status, dict) or not isinstance(status.get('argv'), list)
+            or not all(isinstance(status.get(k), str) for k in ('logged_in', 'method', 'subscription'))):
+        return 'unqualified'
+    try:
+        done = subprocess.run([bound['path']] + [str(a) for a in status['argv']], capture_output=True, text=True,
+                              timeout=LOGIN_SECONDS, env=dict(environment), stdin=subprocess.DEVNULL,
+                              errors='replace', cwd=cwd)
+        report = json.loads(done.stdout)
+    except (OSError, subprocess.SubprocessError, ValueError):
+        return 'unreadable'
+    if not isinstance(report, dict):
+        return 'unreadable'
+    if report.get(status['logged_in']) is not True:
+        return 'not_logged_in'
+    method = report.get(status['method'])
+    if method != status['subscription']:
+        return re.sub(r'[^A-Za-z0-9._-]', '_', str(method))[:40] or 'unreadable'
+    return None
 
 
 class Guard:

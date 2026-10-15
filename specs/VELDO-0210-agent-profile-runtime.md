@@ -645,11 +645,11 @@ runs the full gate and lands the real verification stamp; this branch records no
   regular file with one link, at most 1 MiB. Changed bytes that parse as one JSON object replace
   the source through a temporary file in the source's directory, fsync and rename; just before the
   rename the source is read again and replaced only if it still holds the bytes copied in, otherwise
-  the copy is dropped and the launcher says so. The re-read and the rename run under an exclusive
-  flock on the sibling file <source>.veldo-lock (left in place), so two launchers writing back one
-  source never interleave them. A copy that fails to parse for any reason (a
-  syntax error, nesting past the recursion limit) is not written back, and nothing the write-back
-  meets replaces the run's own exit status. Every credential
+  the copy is dropped and the launcher says so. The whole run, write-back included, holds the
+  login's runner lease (VELDO-0211), so two runs writing back one source never interleave. A copy
+  that fails to parse for any reason (a syntax error, nesting past the recursion limit) is not
+  written back; since VELDO-0211 it is kept as a credential recovery and the run ends with 74,
+  its own exit status named in the message. Every credential
   source of every client is added to deny_read for the run.
 - Capabilities. Read links: Claude's plugins/cache, plugins/marketplaces, plugins/synced, skills,
   agents and commands; Codex's skills, rules and plugins/cache. Each target is granted read-only

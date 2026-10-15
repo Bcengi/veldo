@@ -57,3 +57,13 @@ gate or landing claim. The full suite and mutation runners were not run in this 
 
 Splitting inbox items, reports and intake prompts exceeding 4096 after escaping remains the explicit
 History follow-up, outside this job.
+
+## Batch 1: the setup's service_team send, 2026-10-10
+
+VELDO-0185 added `service_team.send` in `control_factory_setup.py`, a call to the local authority
+socket (`CC.send`), like the `enroll_api_edge_through_service.send` beside it, not a Telegram
+renderer. The inventory row now lists it, and the suite names `control_factory_setup.py` among its
+production copies so a mutation of that module reaches the inventoried copy. The new falsifier
+`text168-unlisted-setup-send` adds a second, unlisted `CC.send` beside it; the mutation runner
+rejected it and the existing `text168-unlisted-send` (`text168-unlisted-setup-send.diff`). Suite
+86_veldo_0168_text passes 26 rows. Scoped checks, not a gate claim.

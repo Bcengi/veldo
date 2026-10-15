@@ -1,0 +1,11 @@
+--- .veldo/control_factory_setup_trust.py
++++ .veldo/control_factory_setup_trust.py
+@@ -41,7 +41,7 @@
+         expected.pop('host_trust', None)
+         actual = dict(held)
+         actual.pop('host_trust', None)
+-        if actual.get('state_root') is None:
++        if 'state_root' not in actual:
+             # VELDO-0185 AC3: a receiver lacking its state root, or holding it as null, gains it by name.
+             expected.pop('state_root', None)
+             actual.pop('state_root', None)

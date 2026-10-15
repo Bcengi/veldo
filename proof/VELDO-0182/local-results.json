@@ -1,0 +1,763 @@
+{
+  "schema": "veldo.local-targeted-tests/v1",
+  "spec_id": "VELDO-0182",
+  "implementation_commit": "f7353efdbc358023e2a9bc5941795198c8303d35",
+  "observed_at": "2026-10-09T16:05:00+00:00",
+  "command": "python3 scripts/selftest.py --suite 105_veldo_0182_memory",
+  "exit_code": 2,
+  "specification_rows": 127,
+  "total_passed": 153,
+  "total_failed": 0,
+  "elapsed_seconds": 75.04,
+  "scope": "Diagnostic observations only. Scoped selftest returns 2 on a clean partial run and cannot supply aggregate unit evidence or authorize landing. Tested implementation and suite bytes match the recorded implementation commit.",
+  "gate_run": false,
+  "other_suites_run": [
+    {
+      "suite": "85_veldo_0158_credential_delivery",
+      "passed_rows": 23,
+      "elapsed_seconds": 4.36,
+      "failed_rows": []
+    },
+    {
+      "suite": "85_veldo_0171_setup_api",
+      "passed_rows": 18,
+      "elapsed_seconds": 8.77,
+      "failed_rows": []
+    },
+    {
+      "suite": "82_veldo_0165_launch_hygiene",
+      "passed_rows": 23,
+      "elapsed_seconds": 12.64,
+      "failed_rows": []
+    },
+    {
+      "suite": "82_veldo_0173_tool_registry",
+      "passed_rows": 11,
+      "elapsed_seconds": 2.34,
+      "failed_rows": []
+    },
+    {
+      "suite": "73_veldo_0139_factory_setup",
+      "passed_rows": 17,
+      "elapsed_seconds": 21.76,
+      "failed_rows": []
+    },
+    {
+      "suite": "91_veldo_0167_setup_records",
+      "passed_rows": 9,
+      "elapsed_seconds": 12.34,
+      "failed_rows": []
+    },
+    {
+      "suite": "75_veldo_0062_accounts",
+      "passed_rows": 23,
+      "elapsed_seconds": 29.89,
+      "failed_rows": []
+    },
+    {
+      "suite": "82_veldo_0141_execution_record",
+      "passed_rows": 40,
+      "elapsed_seconds": 19.33,
+      "failed_rows": []
+    },
+    {
+      "suite": "82_veldo_0129_worker_wiring",
+      "passed_rows": 29,
+      "elapsed_seconds": 20.71,
+      "failed_rows": []
+    },
+    {
+      "suite": "78_veldo_0160_account_pool",
+      "passed_rows": 34,
+      "elapsed_seconds": 21.55,
+      "failed_rows": []
+    },
+    {
+      "suite": "87_veldo_0170_receiver_trust",
+      "passed_rows": 12,
+      "elapsed_seconds": 5.94,
+      "failed_rows": []
+    },
+    {
+      "suite": "86_veldo_0186_setup_assets",
+      "passed_rows": 11,
+      "elapsed_seconds": 11.66,
+      "failed_rows": []
+    },
+    {
+      "suite": "95_veldo_0203_owner_revisions",
+      "passed_rows": 36,
+      "elapsed_seconds": 4.77,
+      "failed_rows": []
+    }
+  ],
+  "mutation_runner_run": false,
+  "rows": {
+    "record/owner-signature": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/five-parts": {
+      "assertions": 1,
+      "passed": true
+    },
+    "switch/refused-unchanged": {
+      "assertions": 1,
+      "passed": true
+    },
+    "switch/retry-rechecks": {
+      "assertions": 1,
+      "passed": true
+    },
+    "switch/original-setup": {
+      "assertions": 1,
+      "passed": true
+    },
+    "metrics/check-refusal": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/commit-before-check": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/venv-interpreter": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/system-interpreter": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/idempotent": {
+      "assertions": 1,
+      "passed": true
+    },
+    "host/setup-revise-differs": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/host-unchecked": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/differs": {
+      "assertions": 1,
+      "passed": true
+    },
+    "metrics/step-refusal-only": {
+      "assertions": 1,
+      "passed": true
+    },
+    "record/stale": {
+      "assertions": 1,
+      "passed": true
+    },
+    "record/revise": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/later-registration": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/memory-inside-accepted": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/setup-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/real-paths": {
+      "assertions": 1,
+      "passed": true
+    },
+    "link/nested-same-everywhere": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/link-outside-accepted": {
+      "assertions": 1,
+      "passed": true
+    },
+    "link/inside-accepted": {
+      "assertions": 1,
+      "passed": true
+    },
+    "link/safety-copy-keeps-links": {
+      "assertions": 1,
+      "passed": true
+    },
+    "link/location-same-everywhere": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/no-walk": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/host-differs": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/engine-overrides": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/dedicated": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/owner-worker-untouched": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/kills-nothing": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/stopped": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/read-only": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/facts-and-untexted": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/search-is-claude-mems": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/unaudited-version-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/cut-short-stopped": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/own-resolution": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/caller-pins-only": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/chroma-mcp-cause-named": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/port-unverified": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/port-listener-verified": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/backfill-bounded": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/backfill-silent": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/missing-database": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/missing-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/link-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-passes": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/search-required-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/search-required-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/search-required-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/search-required-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/sqlite-writer-50ms": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/idle-wal-no-sidecars": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/check-while-assistant-writes": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/chroma-open-writer": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/chroma-link-outside-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/chroma-link-followed": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/chroma-link-inside-kept": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/chroma-persist-retried": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/chroma-busy-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/unavailable-not-lost": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/rewrite-rerun": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/setup-only": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/twenty": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/count-drop": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/older-host": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/rerun-preflight": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/service-lock": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/setup-memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/record": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/identical-files": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/setup-repeat": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/preflight": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/adapter-preflight-no-writes": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/refused-outcome": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/fresh-setup": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/check-cli": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/revise-cli": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/differs-no-writes": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/host-differs-no-writes": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/register": {
+      "assertions": 2,
+      "passed": true
+    },
+    "launch/reserved-config-claude": {
+      "assertions": 2,
+      "passed": true
+    },
+    "launch/config-precedence-claude": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/config-precedence-claude": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/reserved-config-codex": {
+      "assertions": 2,
+      "passed": true
+    },
+    "launch/config-precedence-codex": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/config-precedence-codex": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/acct-c1": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/durable-receipt": {
+      "assertions": 4,
+      "passed": true
+    },
+    "launch/recorded": {
+      "assertions": 4,
+      "passed": true
+    },
+    "launch/acct-c2": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/acct-x1": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/acct-x2": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/same-on-every-account": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/current-revision": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/account-derived": {
+      "assertions": 1,
+      "passed": true
+    }
+  },
+  "execution_note": "Every suite ran on its own, one at a time, in the foreground. Rows passed in other_suites_run are from the final tree unless the entry is absent from the final pass, in which case it ran on the same code before the receiver's memory field was initialized. Each round_two_falsifiers entry applied one mutation to the shipped module, ran the suite, and restored the module; each failed exactly the rows listed, by assertion. Round 3: every suite ran on its own, one at a time, in the foreground, on the final tree. Each round_three_falsifiers entry applied one mutation to the shipped module under .veldo, ran suite 105 and restored the module; item3-caller-pins-only stops the unit section at its first claude-mem probe (unit/completed) and fails every setup integration row.",
+  "round_two_falsifiers": [
+    {
+      "mutation": "item1-drop-all-veldo",
+      "suite": "85_veldo_0158_credential_delivery",
+      "failed_rows": [
+        "VELDO-0158 delivery/codex-environment"
+      ]
+    },
+    {
+      "mutation": "item1-drop-all-veldo",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 launch/engine-overrides"
+      ]
+    },
+    {
+      "mutation": "item2-search-not-server",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 worker/search-is-claude-mems",
+        "VELDO-0182 check/search-required-claude_mem"
+      ]
+    },
+    {
+      "mutation": "item2-no-ps-shim",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 worker/kills-nothing"
+      ]
+    },
+    {
+      "mutation": "item2-no-sweep",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 worker/stopped"
+      ]
+    },
+    {
+      "mutation": "item3-open-idle-normally",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 copy/idle-wal-no-sidecars"
+      ]
+    },
+    {
+      "mutation": "item3-raw-sqlite",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 copy/sqlite-writer-50ms"
+      ]
+    },
+    {
+      "mutation": "item3-no-verify",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 copy/chroma-persist-retried"
+      ]
+    },
+    {
+      "mutation": "item4-walk",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 profile/no-walk"
+      ]
+    },
+    {
+      "mutation": "item5-nested-links",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 link/nested-same-everywhere",
+        "VELDO-0182 profile/no-walk"
+      ]
+    },
+    {
+      "mutation": "item6-no-rerun-preflight",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 integration/rerun-preflight"
+      ]
+    },
+    {
+      "mutation": "item8-metric-always",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 metrics/step-refusal-only"
+      ]
+    },
+    {
+      "mutation": "item9-no-host",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 launch/host-differs"
+      ]
+    },
+    {
+      "mutation": "item2-no-parent-sweep",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 worker/cut-short-stopped"
+      ]
+    }
+  ],
+  "round_three_falsifiers": [
+    {
+      "mutation": "item1-no-link-target-check",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 link/nested-same-everywhere"
+      ]
+    },
+    {
+      "mutation": "item1-chroma-copy-follows-links",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 copy/chroma-link-inside-kept",
+        "VELDO-0182 copy/chroma-link-outside-refused"
+      ]
+    },
+    {
+      "mutation": "item2-no-host-check-at-setup",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 host/setup-revise-differs",
+        "VELDO-0182 integration/host-differs-no-writes"
+      ]
+    },
+    {
+      "mutation": "item3-caller-pins-only",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 integration/check-cli",
+        "VELDO-0182 integration/differs-no-writes",
+        "VELDO-0182 integration/fresh-setup",
+        "VELDO-0182 integration/record",
+        "VELDO-0182 integration/revise-cli",
+        "VELDO-0182 integration/service-lock",
+        "VELDO-0182 integration/setup-completed",
+        "VELDO-0182 integration/setup-memory",
+        "VELDO-0182 integration/setup-repeat",
+        "VELDO-0182 unit/completed"
+      ]
+    },
+    {
+      "mutation": "item5-listener-unverified",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 worker/port-listener-verified"
+      ]
+    },
+    {
+      "mutation": "item6-stall-passes-silently",
+      "suite": "105_veldo_0182_memory",
+      "failed_rows": [
+        "VELDO-0182 worker/backfill-bounded"
+      ]
+    }
+  ]
+}

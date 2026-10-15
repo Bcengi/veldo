@@ -14,6 +14,22 @@ depends_on: [VELDO-0028, VELDO-0042, VELDO-0056, VELDO-0057, VELDO-0139, VELDO-0
 placement: [contracts, fleet, distribution]
 protected_paths: []
 footprint:
+  - "scripts/suites/93_veldo_0152_intake_routes.py"
+  - "scripts/suites/59_veldo_0037_aliases.py"
+  - "scripts/suites/75_veldo_0062_accounts.py"
+  - "scripts/suites/69_veldo_0068_settlement.py"
+  - "scripts/suites/65_veldo_0132_workflow.py"
+  - "scripts/suites/92_veldo_0088_pm_cycles.py"
+  - "scripts/suites/82_veldo_0129_worker_wiring.py"
+  - "scripts/suites/82_veldo_0085_decomposition.py"
+  - "scripts/suites/77_veldo_0149_adopted_activation.py"
+  - "scripts/suites/103_veldo_0142_git_identities.py"
+  - "engine/.veldo/control_landing_station.py"
+  - ".veldo/control_landing_station.py"
+  - "engine/.veldo/control_readset.py"
+  - ".veldo/control_readset.py"
+  - "engine/.veldo/control_store.py"
+  - ".veldo/control_store.py"
   - "engine/.veldo/control_git_identity*.py"
   - ".veldo/control_git_identity*.py"
   - "packs/*/.veldo/control_git_identity*.py"
@@ -33,12 +49,41 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0142_*.py"
+  - "scripts/suites/04_run_status_reader_veldo.py"
+  - "scripts/suites/66_veldo_0042_clones.py"
+  - "scripts/suites/67_veldo_0041_heartbeat.py"
+  - "scripts/suites/67_veldo_0056_candidates.py"
+  - "scripts/suites/69_veldo_0058_gate_output.py"
+  - "scripts/suites/70_veldo_0057_landing.py"
+  - "scripts/suites/73_veldo_0139_factory_setup.py"
+  - "scripts/suites/78_veldo_0060_claude_adapter.py"
+  - "scripts/suites/79_veldo_0061_codex_adapter.py"
+  - "scripts/suites/80_veldo_0155_claude_baseline.py"
+  - "scripts/suites/81_veldo_0156_codex_baseline.py"
+  - "scripts/suites/82_veldo_0141_execution_record.py"
+  - "scripts/suites/85_veldo_0158_credential_delivery.py"
+  - "scripts/suites/86_veldo_0148_re_land.py"
+  - "scripts/suites/86_veldo_0186_setup_assets.py"
+  - "scripts/suites/86_veldo_0189_engine_upgrade.py"
+  - "scripts/suites/87_veldo_0170_receiver_trust.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0142-git-identities-and-identity-profile.md"
   - "specs/index.md"
   - "proof/VELDO-0142/*"
+  - "scripts/suites/support/git_identity.py"
+  - "scripts/suites/63_veldo_0049_floor.py"
+  - "scripts/suites/64_veldo_0050_proof.py"
+  - "scripts/suites/67_veldo_0135_offers.py"
+  - "scripts/suites/68_veldo_0134_acceptance.py"
+  - "scripts/suites/72_veldo_0077_objectives.py"
+  - "scripts/suites/72_veldo_0128_reports.py"
+  - "scripts/suites/74_veldo_0140_standing_delegation.py"
+  - "scripts/suites/85_veldo_0171_setup_api.py"
+  - "proof/VELDO-0088/setup_fixture.py"
+  - "proof/VELDO-0162/setup_fixture.py"
+  - "proof/VELDO-0204/host.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -124,7 +169,9 @@ every push's use of it.
 
 Pushing with the identity's credential and the remote owner check (VELDO-0153); Git hosts other than
 GitHub, an identity spanning two remote owners, moving a repository between identities (refused), and
-the UI form for identities (VELDO-0131 shows them read-only).
+the UI form for identities (VELDO-0131 shows them read-only). The standalone control_replica
+audit exports on refs/veldo/audit use their authority identity. They are not factory source
+commits and are not wired into factory setup; their authorship is outside this specification.
 
 ## What the reviewer judges
 
@@ -165,3 +212,60 @@ formerly AC3 and AC4, are VELDO-0153.
 2026-09-25, PLAN-0019 revision 4, third review: the footprint drops `git_process.py`, which VELDO-0153
 owns since the `identity` push profile moved there; no criterion of this specification changes it.
 Criteria and status unchanged.
+
+2026-10-08 implementation on agent/codex/veldo-0142: setup accepts an identity JSON file
+and an explicit workspace identity. Each record has id, label, author_name, author_email,
+remote_host (github.com), remote_owner, api_token (a keychain reference), push_credential
+(kind token or ssh and a keychain reference), projects_root and default_visibility.
+For an SSH credential, the referenced keystore value names the key path. Setup does not
+resolve either credential. New setup refuses omitted identities before writing. Setup reruns add missing identities
+and repository bindings, including in an existing VELDO-0139 store, and never change an existing binding.
+No legacy author is inferred and no migration of a previously bound identity is allowed.
+
+The new control_git_identity module owns transactional local identity metadata beside
+the store's repository path registry. Repository creation/adoption calls configure_identities with
+an explicit repository id, path and identity; missing, multiple, unknown and changed
+identities refuse. Clone provisioning reads that record and sets local user, author and
+committer names and emails. The receiver strips both Git identity variable prefixes and injected Git configuration,
+including adapter overrides. GitLandOps resolves the repository record from its authority
+policy's reader (or an explicit identity_conn), refuses a caller identity argument and never uses the
+caller's Git configuration. Each new merge or projection commit is read back, checked and
+observed with the repository, identity, candidate and unit. Re-lands use this same path.
+
+The footprint adds the existing clone, lander and setup consumer suite files because their
+fixtures must now supply explicit identity records. Their assertions are retained. The
+one shared fixture helper is scripts/suites/support/git_identity.py; it chooses test identities and is never installed.
+The canonical module and scaffold changes are synchronized with this checkout. No pack
+copy exists in the source tree. Suite 103 and finding 142 register the behavior and its
+falsifiers. The owner reserves the full gate and repository mutation drivers for review. This review
+followup runs suite 103 and touched consumer suites individually, serially and in the foreground. Criteria, readiness,
+risk and approval requirements are unchanged.
+
+2026-10-08 review followup: strip environment-injected Git configuration on every launch path
+and after engine overrides. Check every incoming worker commit before merging. Setup reruns
+add missing bindings and identities without replacement. Store path registration refuses
+unbound records before writing, including both service registration callers. Scoped suite rows
+and registered falsifiers cover the review findings; the full gate remains reviewer-owned.
+
+2026-10-08 gate followup (gate-v0142a at dfec87a1 RED): every fixture, harness and helper that binds a
+repository now configures its identity first through the one shared helper,
+scripts/suites/support/git_identity.py (bind, bind_paths, options, setup_options). Its fixture record
+is call-site independent, so setup and later fixture binds on one store replay the same record. Product
+defects the gate exposed are fixed: a clone retire event raised on a manifest's identity id; a setup
+rerun checked identities before comparing its arguments, opened the store for writing when nothing was
+absent and wrote while the service held the store (now refused service_running:git_identities, and
+reported after the VELDO-0139 steps); the landing station's lander read its identity reader from a
+replaceable policy (now the station's store reader, explicitly). The identity writer is named
+configure_identities so the VELDO-0204 census of Reservations.configure stays exact. Fixtures that read
+a set-up factory's repository use the workspace setup bound it to. The VELDO-0127 live captures pin
+control_launch.py, which this specification changes; their refresh is the owner's.
+
+2026-10-09 gate followup (gate-v0142c at b3108355 RED): suite 103 made its tree under the checkout's
+.veldo/tmp, which the confined gate domain and a mutation worker's read-only checkout cannot write
+and which first use's copy puts beneath /tmp, where the VELDO-0042 clone layout refuses every
+protected target. The tree now lives in the process temporary directory with its own temporary
+directories standing for the system's while the provisioner runs; row clone/layout-refused proves
+the rule still refuses beneath both. A setup block that ends early emits its later rows as failed,
+so the falsifier identity142-setup-binding-omitted is a detection rather than missing_target. The
+suite 93, 95 and 96 cleanup errors in that run were workers the stage killed when it stopped on
+suite 103; each finding's cases pass in the mutation stage.

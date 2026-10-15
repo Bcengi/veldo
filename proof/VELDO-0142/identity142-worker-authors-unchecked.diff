@@ -1,0 +1,11 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -699,7 +699,7 @@
+                 raise CandidateRefused("missing_evidence:implementation/absent", implementation, operation="cat-file")
+             self._ancestor(workspace, implementation, evidence, "missing_evidence:implementation/not_ancestor")
+             c.update(evidence=evidence, implementation=implementation, proof={"path": path, "digest": _digest(body)})
+-            self._check_worker_identities(workspace, evidence, identity)
++            pass
+             self._merge(workspace, implementation, "Land implementation %s of %s" % (implementation[:12], sid),
+                         identity, "implementation")
+             self._merge(workspace, evidence, "Land evidence %s of %s" % (evidence[:12], sid), identity, "evidence")

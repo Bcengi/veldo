@@ -1,0 +1,5 @@
+--- scripts/suites/71_veldo_0130_api.py
++++ scripts/suites/71_veldo_0130_api.py
+@@ -3074 +3074 @@
+-                        {'text': 'Plan the socket phase.', 'project': 'project-a'}, cookie, token)
++                        {'text': 'Plan the socket phase.'}, cookie, token)

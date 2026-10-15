@@ -247,6 +247,7 @@ def _v60_suite():
         GP.run(['git', '-C', str(src), 'add', 'README'], check=True, capture_output=True)
         GP.run(['git', '-C', str(src), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'source'], check=True,
                capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](Path(S.__file__).parent, writer, DOMAIN, {REPOSITORY: str(src)})
         S.bind_repositories(writer, DOMAIN, {REPOSITORY: str(src)})
 
         # The fake engine: it records how it was started and what the store held for its invocation, then
@@ -507,6 +508,7 @@ sys.exit(payload.get('code', 0))
                                   signer='runner', sign=sign)
         # The engines directories (the pinned copies, the Codex packages) are write-protected in every clone.
         engines_dirs = [str(factory / 'engines'), str(base / 'packages')]
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_all'](Path(CL.__file__).parent, writer)
         clones, _ = attempt(lambda: CL.Clones(dispatches, clones=str(clones_root), caches=str(caches_root),
                                               protected=[str(private)], engines=engines_dirs))
         if clones is None:

@@ -1,0 +1,22 @@
+--- engine/scripts/agent_sandbox.py
++++ engine/scripts/agent_sandbox.py
+@@ -1968,7 +1968,7 @@
+                     failures.append((entry['source'], entry['relative'], None,
+                                      'a killed run left an unreadable copy: %s' % error))
+                     continue
+-                if digest(data) != entry['sha256']:
++                if False:  # falsifier: the sweep drops a killed run's rotation
+                     failures.append((entry['source'], entry['relative'], data,
+                                      'a killed run left a rotated copy that was never written back'))
+             if not failures:
+--- scripts/agent_sandbox.py
++++ scripts/agent_sandbox.py
+@@ -1968,7 +1968,7 @@
+                     failures.append((entry['source'], entry['relative'], None,
+                                      'a killed run left an unreadable copy: %s' % error))
+                     continue
+-                if digest(data) != entry['sha256']:
++                if False:  # falsifier: the sweep drops a killed run's rotation
+                     failures.append((entry['source'], entry['relative'], data,
+                                      'a killed run left a rotated copy that was never written back'))
+             if not failures:

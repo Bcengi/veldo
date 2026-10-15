@@ -1,0 +1,10 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1638,7 +1638,6 @@
+                 self.config.get('state_root') or str(Path(self.config['store']).parent.parent), dispatch_id, self.memory)
+             self.emit(dict(event='memory', dispatch_id=dispatch_id, **self.memory))
+         environment['VELDO_DISPATCH_ID'] = dispatch_id
+-        environment = _organ('control_git_identity').environment(environment)
+         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
+         # VELDO-0141: the run's resolved values and its execution record, before the worker exists; its error
+         # stream comes to this receiver, which keeps it in the record.

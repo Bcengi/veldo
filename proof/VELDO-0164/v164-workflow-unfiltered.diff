@@ -1,0 +1,5 @@
+--- .veldo/control_api_authority.py
++++ .veldo/control_api_authority.py
+@@ -264 +264 @@
+-            if not scope.visible('', WF.REVISION_KIND, {'repository': self.workflows.repository}):
++            if False:

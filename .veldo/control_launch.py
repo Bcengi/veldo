@@ -133,7 +133,10 @@ refused by name before acceptance. `profile_problem(binding, environment, cwd)` 
 environment and working directory (`cwd`: the clone's work tree the clone entrance changes into, this
 receiver's own for an engine it execs directly, None for another host's): an account profile holding an
 item no switch of the baseline keeps out (Codex's own AGENTS.md) is refused by name, and so is a login
-that is not a subscription (`paid_api:...`), nothing accepted, reserved or spawned. The protocol's `Guard`
+that is not a subscription (`paid_api:...`), nothing accepted, reserved or spawned. For an adapter factory setup
+wrote (`account_login` true, VELDO-0185), the account's own login as its engine reports it (`account_login`:
+Claude Code's `auth status`, Codex's `login status`) is checked first, and an account not logged in to its
+subscription is refused by name (`missing_authority:account_login:<account>`). The protocol's `Guard`
 holds the prompt: the receiver writes the engine's input from `Guard.opening(packet)` ((bytes, close):
 Claude Code's initialize control request with its input left open, Codex's packet whole and closed),
 reads the stream through `Guard.feed`, where a login the engine reports that is not a subscription stops
@@ -234,6 +237,8 @@ DL = _organ('control_credential_delivery')
 ACC = D.RES.ACC
 RTM = _organ('control_reservation_runtime')
 ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('control_engine_codex')}
+# VELDO-0185 AC4: the refusal of a dispatch on an account its engine reports not logged in to its subscription.
+ACCOUNT_LOGIN = D.RES.POOL.ACCOUNT_LOGIN
 # Every name either binary's lists make a login: none reaches any engine, whichever it is, and an
 # adapter configuring one is refused. STRIPPED adds each binary's settings of the owner's shell, which
 # the inherited environment loses and an adapter may configure.
@@ -343,13 +348,20 @@ def engine_environment(environment):
     the session bus and the Git tokens, and with XDG_RUNTIME_DIR the run's own empty runtime directory, never
     the receiver's. VELDO-0165 also removes every session-prefixed name, then installs only the qualified
     adapter, baseline and account values the receiver carried in ENGINE_OVERRIDES. Other launches are unchanged."""
+    environment = _organ('control_git_identity').environment(environment)
     runtime = environment.pop(ENGINE_RUNTIME, None)
     if runtime is None:
         return environment
     for name in list(environment):
         if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES):
             environment.pop(name, None)
-    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))
+    handed = environment.pop('VELDO_MEMORY', None)
+    environment.update({name: value for name, value in
+                        json.loads(environment.pop(ENGINE_OVERRIDES, '{}')).items()
+                        if not name.startswith('VELDO_') or name.startswith(DELIVERY_PREFIX)})
+    if handed is not None:
+        environment['VELDO_MEMORY'] = handed
+    environment = _organ('control_git_identity').environment(environment)
     environment['XDG_RUNTIME_DIR'] = runtime
     return environment
 
@@ -550,8 +562,9 @@ class Runner:
         return self.clear_runs()
 
     def prepare(self, unit, station, *, holder, source, revision, payload, adapter, configuration,
-                deadline, context=None):
-        """Decide, reserve and record the complete contract; nothing is invoked. Returns the contract."""
+                deadline, context=None, exclude=()):
+        """Decide, reserve and record the complete contract; nothing is invoked. Returns the contract. `exclude`
+        names the accounts a login retry's pool passes over (VELDO-0185 AC4)."""
         # Pending retirements first: a slot whose obligations have since completed is released before
         # this preparation reserves another.
         self.sweep()
@@ -583,7 +596,7 @@ class Runner:
             # VELDO-0160: an account pool (control_account_pool.Pool) chooses the account inside the slot's
             # reservation, reading the pool now: an account registered while work runs takes this dispatch.
             account = account.reserve(self.reservations, 'worker/' + dispatch_id, dispatch_id, project, unit,
-                                      adapter=adapter, now=now)
+                                      adapter=adapter, now=now, **({'exclude': list(exclude)} if exclude else {}))
         else:
             self.reservations.reserve_worker('worker/' + dispatch_id, dispatch_id, account, project, unit, now=now)
         try:
@@ -936,6 +949,14 @@ def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, 
 
 # The receiver process.
 
+def _write_held_input(stdin, data, last, terminal):
+    """Mark the prompt before an engine can answer during write or flush."""
+    if last and getattr(terminal, 'require_prompt', False):
+        terminal.wrote_prompt()
+    stdin.write(data)
+    stdin.flush()
+
+
 class Receiver:
     """The trusted launch receiver over the installed configuration: {store, journal_key, principal,
     domain, repository, authority_generation, workspace, host_trust, profile, adapters: {name: {argv,
@@ -962,6 +983,7 @@ class Receiver:
         self.sign = lambda data: signer.sign_bytes(key, data, JOURNAL_NAMESPACE)
         self.host = config.get('host') or socket.gethostname()
         self.login = None
+        self.memory = None
         self.metering = None
         self.binding = None
         self.token = None
@@ -1102,6 +1124,17 @@ class Receiver:
             refusal = self._login(contract, adapter)
         if not refusal:
             refusal = self._bind(adapter, dispatch_id)
+        self.memory = None
+        if not refusal:
+            memory = _organ('control_memory')
+            reader = S.open_store(self.config['store'], mode='r')
+            try:
+                self.memory = memory.handoff(reader, self.host)
+            except memory.Refused as error:
+                refusal = error.code
+            finally:
+                reader.close()
+
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
@@ -1258,6 +1291,9 @@ class Receiver:
         """VELDO-0062: the subscription login of an engine adapter, read before acceptance from the
         account the accepted contract records. None when it may run; else the named refusal."""
         self.login = None
+        reserved = sorted(n for n in (adapter.get('environment') or {}) if n.startswith('VELDO_'))
+        if reserved:
+            return 'invalid_input:adapter_environment:' + reserved[0]
         engine = adapter.get('engine')
         if engine is None:
             return None
@@ -1342,12 +1378,30 @@ class Receiver:
         login_environment = self._login_environment(adapter)
         cwd = self._engine_cwd(argv, dispatch_id, adapter.get('identity', 'local') == 'reported')
         self.token, problem = self._token()
-        problem = (problem or module.profile_problem(self.binding, login_environment, cwd)
+        problem = (problem or self._account_login(module, bound, adapter, login_environment, cwd)
+                   or module.profile_problem(self.binding, login_environment, cwd)
                    or module.login_problem(bound, login_environment, cwd))
         if problem:
             self.binding, self.token = None, None
             return problem
         return None
+
+    def _account_login(self, module, bound, adapter, environment, cwd):
+        """VELDO-0185 AC4: for an adapter factory setup wrote (`account_login` true), the account's own login
+        as its engine reports it (the engine module's `account_login`, the check setup runs), before acceptance:
+        an account not logged in to its subscription is refused by name (missing_authority:account_login:<account>),
+        nothing accepted, reserved or spawned, so the Line offers the unit on another account. An account whose
+        subscription token the configuration names (VELDO-0155 AC2) logs in with that token instead."""
+        if adapter.get('account_login') is not True or self.token is not None:
+            return None
+        check = getattr(module, 'account_login', None)
+        kind = check(bound, environment, cwd) if callable(check) else 'unqualified'
+        if kind is None:
+            return None
+        account = self.login['account']
+        self.emit({'event': 'account_login_refused', 'engine': module.PROVIDER, 'account': account, 'login': kind,
+                   'metrics': {'account_login_refused': 1}})
+        return ACCOUNT_LOGIN + account
 
     @staticmethod
     def _engine_cwd(argv, dispatch_id, reported):
@@ -1585,7 +1639,14 @@ class Receiver:
             environment[ENGINE_PATH], environment[ENGINE_DIGEST] = self.binding['path'], self.binding['sha256']
             argv, environment = self._baseline(dispatch_id, argv, environment,
                                                adapter.get('identity', 'local') == 'reported')
+        environment.pop('VELDO_MEMORY', None)
+        if self.memory is not None:
+            environment['VELDO_MEMORY'] = json.dumps(self.memory, sort_keys=True)
+            _organ('control_memory').record_launch(
+                self.config.get('state_root') or str(Path(self.config['store']).parent.parent), dispatch_id, self.memory)
+            self.emit(dict(event='memory', dispatch_id=dispatch_id, **self.memory))
         environment['VELDO_DISPATCH_ID'] = dispatch_id
+        environment = _organ('control_git_identity').environment(environment)
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
         # VELDO-0141: the run's resolved values and its execution record, before the worker exists; its error
         # stream comes to this receiver, which keeps it in the record.
@@ -1805,10 +1866,7 @@ class Receiver:
                     if not later:
                         break
                     data, last = later
-                    worker.stdin.write(data)
-                    worker.stdin.flush()
-                    if last and getattr(metering.terminal, 'require_prompt', False):
-                        metering.terminal.wrote_prompt()
+                    _write_held_input(worker.stdin, data, last, metering.terminal)
             except OSError:
                 input_failed.set()
             finally:
