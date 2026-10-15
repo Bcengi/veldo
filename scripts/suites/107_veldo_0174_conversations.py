@@ -226,6 +226,8 @@ def _v174_suite():
             driver = load('v174_mutation_catalog', MUTATIONS)
         finally:
             sys.dont_write_bytecode = bytecode_disabled
+        # A catalog mutant is isolated; its referenced qualification fixtures stay here.
+        driver.ROOT = ROOT
         cases = [case for case in driver.cases() if case['finding'] == 174
                  and case['module'] in ('control_conversation.py', 'control_service.py')]
         check('proof/mutation-dependencies', 'both production modules have registered falsifiers',
