@@ -6,6 +6,10 @@ merged-tree verification for the reviewer. Only suites 105 and 106 were selected
 Their prerequisite closure is the selftest dispatcher's own choice. Exit 2 with
 zero failed rows is the dispatcher's required PARTIAL result, not a gate pass.
 
+The [current-head recheck](b2-recheck/README.md) confirms these corrections at
+fdbf5c3a, strengthens the grace row's authority-time and final-spend observations,
+and records six separately driven falsifiers with both source copies mutated.
+
 ## Deadline and wake behavior
 
 `Line.offer` registers exactly one remote deadline at the contract deadline plus

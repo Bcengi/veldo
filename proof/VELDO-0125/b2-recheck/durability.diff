@@ -1,0 +1,10 @@
+--- a/.veldo/control_reservations.py
++++ b/.veldo/control_reservations.py
+@@ -425 +425 @@
+-            value = dict(current, remote_hold=p)
++            value = dict(current)
+--- a/engine/.veldo/control_reservations.py
++++ b/engine/.veldo/control_reservations.py
+@@ -425 +425 @@
+-            value = dict(current, remote_hold=p)
++            value = dict(current)

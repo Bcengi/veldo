@@ -1,0 +1,47 @@
+Targeted falsifiers against 75223fdd; each applied to both mirrored copies and restored.
+Only 106_veldo_0125_routing selected, sequentially. These PARTIAL runs are not gate evidence.
+
+grace (exit 1)
+  SELFTEST FAIL: VELDO-0125 AC2/remote-factory-deadline
+  SELFTEST FAIL: VELDO-0125 AC3/remote-deadline-grace
+  106_veldo_0125_routing                          21 passed   13.32s
+selftest (PARTIAL, 1 of 166 suites): 47 passed, 2 failed in 13.32s
+
+recurring-tick (exit 1)
+  SELFTEST FAIL: VELDO-0125 AC2/remote-factory-deadline
+  SELFTEST FAIL: VELDO-0125 AC2/remote-no-polling
+  106_veldo_0125_routing                          21 passed   13.34s
+selftest (PARTIAL, 1 of 166 suites): 47 passed, 2 failed in 13.34s
+
+durability (exit 1)
+  SELFTEST FAIL: VELDO-0125 AC3/remote-cleanup-held
+  SELFTEST FAIL: VELDO-0125 AC3/remote-hold-restart
+  SELFTEST FAIL: VELDO-0125 AC3/remote-signed-cleanup
+  SELFTEST FAIL: VELDO-0125 AC2/remote-factory-deadline
+  SELFTEST FAIL: VELDO-0125 AC3/remote-deadline-grace
+  SELFTEST FAIL: VELDO-0125 AC3/remote-authority-end
+  SELFTEST FAIL: VELDO-0125 AC2/remote-wait-timeout
+  106_veldo_0125_routing                          16 passed   11.34s
+selftest (PARTIAL, 1 of 166 suites): 42 passed, 7 failed in 11.34s
+
+release (exit 1)
+  SELFTEST FAIL: VELDO-0125 AC3/remote-hold-restart
+  SELFTEST FAIL: VELDO-0125 AC3/remote-signed-cleanup
+  SELFTEST FAIL: VELDO-0125 AC3/remote-signed-refusal
+  SELFTEST FAIL: VELDO-0125 AC2/actual-worker-launch
+  106_veldo_0125_routing                          19 passed   12.38s
+selftest (PARTIAL, 1 of 166 suites): 45 passed, 4 failed in 12.38s
+
+result-wake (exit 1)
+  SELFTEST FAIL: VELDO-0125 AC3/remote-deadline-grace
+  SELFTEST FAIL: VELDO-0125 AC3/remote-authority-end
+  106_veldo_0125_routing                          21 passed   14.34s
+selftest (PARTIAL, 1 of 166 suites): 47 passed, 2 failed in 14.34s
+
+prepared-release (exit 1)
+  SELFTEST FAIL: VELDO-0125 AC2/factory-remote-delivery
+  SELFTEST FAIL: VELDO-0125 AC2/missing-remote-receiver
+  SELFTEST FAIL: VELDO-0125 AC2/remote-factory-deadline
+  SELFTEST FAIL: VELDO-0125 AC2/remote-wait-timeout
+  106_veldo_0125_routing                          19 passed   11.46s
+selftest (PARTIAL, 1 of 166 suites): 45 passed, 4 failed in 11.46s

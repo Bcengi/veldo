@@ -1,0 +1,10 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1007 +1007 @@
+-        return self.contract['deadline'] + ACCEPT_SECONDS
++        return self.contract['deadline']
+--- a/engine/.veldo/control_launch.py
++++ b/engine/.veldo/control_launch.py
+@@ -1007 +1007 @@
+-        return self.contract['deadline'] + ACCEPT_SECONDS
++        return self.contract['deadline']

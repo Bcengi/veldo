@@ -1,0 +1,12 @@
+Unmutated verification on 75223fdd; selected suites only, no canonical gate.
+
+105_veldo_0125_relay (exit 2, required PARTIAL result)
+  105_veldo_0125_relay                            17 passed    6.95s
+selftest (PARTIAL, 1 of 166 suites): 43 passed, 0 failed in 6.95s
+
+106_veldo_0125_routing (exit 2, required PARTIAL result)
+  106_veldo_0125_routing                          23 passed   14.25s
+selftest (PARTIAL, 1 of 166 suites): 49 passed, 0 failed in 14.25s
+
+All five affected engine/.veldo and .veldo source pairs are byte-identical.
+All six falsifiers were restored; no runtime source changes remain in this recheck.

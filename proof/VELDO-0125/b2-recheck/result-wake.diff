@@ -1,0 +1,10 @@
+--- a/.veldo/control_worker_service.py
++++ b/.veldo/control_worker_service.py
+@@ -114 +114 @@
+-                self.loop.remote_result(repository, command['parameters']['dispatch_id'])
++                pass
+--- a/engine/.veldo/control_worker_service.py
++++ b/engine/.veldo/control_worker_service.py
+@@ -114 +114 @@
+-                self.loop.remote_result(repository, command['parameters']['dispatch_id'])
++                pass

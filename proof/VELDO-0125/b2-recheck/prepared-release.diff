@@ -1,0 +1,10 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -511 +511 @@
+-        never_accepted = record.get('state') == 'refused' and not record.get('receiver')
++        never_accepted = False
+--- a/engine/.veldo/control_launch.py
++++ b/engine/.veldo/control_launch.py
+@@ -511 +511 @@
+-        never_accepted = record.get('state') == 'refused' and not record.get('receiver')
++        never_accepted = False
