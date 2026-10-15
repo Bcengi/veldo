@@ -109,7 +109,10 @@ class Service(SV.Service):
                 if route.get('principal') == command.get('principal'):
                     R.check_prepared(ds, self.profiles, record['contract'])
             with SV.S.atomic(self.conn):
-                return self.worker(packet, command, repository)
+                answer = self.worker(packet, command, repository)
+            if self.loop is not None and command['operation'] == 'worker_result':
+                self.loop.remote_result(repository, command['parameters']['dispatch_id'])
+            return answer
         except (D.Refused, RES.Refused) as error:
             raise SV.Refused(error.code) from error
 

@@ -211,7 +211,8 @@ def _v125_routing_suite():
                 remote_receivers={remote_host: {'argv': [sys.executable,
                     str(ROOT / 'proof/VELDO-0125/receiver_fixture.py'), str(endpoint_path)]}})))
             ended = []
-            loop = types.SimpleNamespace(service=f.service, saw_end=lambda line, launch: ended.append(launch))
+            loop = types.SimpleNamespace(service=f.service, saw_end=lambda line, launch: ended.append(launch),
+                                         watch_remote=lambda line, launch: None)
             line = service_module.Line(loop, 'repo', {}, str(receiver_path))
             f.start()
             report = dict(offered=[], refused=[], waiting=[])
@@ -327,13 +328,17 @@ def _v125_routing_suite():
         loop = service.FactoryLoop.__new__(service.FactoryLoop)
         loop.service = types.SimpleNamespace(domain='domain', principal='authority', _log=lambda event: None)
         loop.wakes, loop.ended, loop.timer = [], [], None
+        loop.deadlines = {}
         loop.passes, loop.last, loop.counts = 0, None, {}
         loop.provision = lambda report, caller: None
         def run(report, ended):
             for launch in ended:
                 record = runner.wait(launch, timeout=0)
                 report['ended'].append(record)
-        loop.lines = {'repo': types.SimpleNamespace(runner=runner, run=run)}
+        loop.lines = {'repo': types.SimpleNamespace(runner=runner, run=run, finish=run)}
+        f.service.loop = loop
+        for launch in runner.launches.values():
+            loop.watch_remote(loop.lines['repo'], launch)
         return loop
 
     def remote_factory_deadline(base):
@@ -349,12 +354,17 @@ def _v125_routing_suite():
                 report = loop.run()
                 assert not report['faults'] and not report['ended'], report
                 assert launch.child.poll() is None and not select.select([launch.fileno()], [], [], 0)[0]
-                assert loop.timer is not None and loop.timer <= min(time.time() + 1.0, launch.contract['deadline']), \
-                    'factory has no remote deadline/state timer'
-                assert loop.due(loop.timer), 'factory cannot wake for remote deadline'
-                # Advance the launch clock to the immutable deadline, without waiting 90 seconds.
-                launch.clock = lambda: launch.contract['deadline']
-                loop.wake('account_reset')  # The serve poll loop uses this wake for its due timer.
+                assert loop.timer is None, 'remote work installed an account reset timer'
+                assert loop.next_timer() == launch.contract['deadline'] + T.W.SV.L.ACCEPT_SECONDS
+                # Deadline processing must touch only this launch, with no provisioning or scans.
+                def unrelated(*args):
+                    raise AssertionError('deadline ran a full factory pass')
+                loop.provision = unrelated
+                loop.lines['repo'].run = unrelated
+                loop.lines['unrelated'] = types.SimpleNamespace(runner=types.SimpleNamespace(launches={}),
+                                                               run=unrelated, finish=unrelated)
+                launch.clock = lambda: launch.ends_at
+                loop.expire(launch.ends_at)
                 report = loop.run()
                 assert not report['faults'], report
                 assert report['ended'], 'silent remote transport kept dispatch pending past deadline'
@@ -378,14 +388,60 @@ def _v125_routing_suite():
             loop.wake('fixture')
             loop.run()
             client.result(binding, T.observation(), usage={'tokens': 0}, references={})
-            assert launch.child.poll() is None and not select.select([launch.fileno()], [], [], 0)[0]
-            loop.wake('worker_result')
+            assert launch.child.poll() is not None, 'signed result did not wake the launch directly'
             report = loop.run()
             assert not report['faults'] and len(report['ended']) == 1, 'authority completion waited for pipe EOF'
             assert report['ended'][0]['state'] == 'exited'
             assert launch.child.poll() is not None and launch.dispatch_id not in runner.launches
             assert loop.timer is None, 'finished transport kept factory timer active'
             assert not f.res.worker(launch.dispatch_id)['retired'], 'result alone released remote slot'
+        finally:
+            if launch:
+                launch._end_receiver()
+            f.close()
+
+    def remote_no_polling(base):
+        f = T.Fixture(base)
+        launch = None
+        try:
+            launch, runner, _, _ = stalled_remote(f, 'running')
+            loop = remote_loop(f, runner)
+            loop.wake('fixture')
+            loop.run()
+            passes = loop.passes
+            reads = []
+            original = runner.dispatches.record
+            def counted(dispatch):
+                reads.append(dispatch)
+                return original(dispatch)
+            runner.dispatches.record = counted
+            start = launch.clock()
+            for elapsed in (0, .25, 1, 2, 10, 30):
+                loop.expire(start + elapsed)
+                loop.run()
+            assert loop.passes - passes == 0, 'pending remote launch caused factory passes without an event'
+            assert reads == [], 'idle serve iterations polled dispatch state'
+            assert len(loop.deadlines) == 1 and loop.next_timer() == launch.ends_at
+        finally:
+            if launch:
+                launch._end_receiver()
+            f.close()
+
+    def remote_deadline_grace(base):
+        f = T.Fixture(base)
+        launch = None
+        try:
+            launch, runner, client, binding = stalled_remote(f, 'running')
+            loop = remote_loop(f, runner)
+            launch.clock = lambda: launch.contract['deadline'] + T.W.SV.L.ACCEPT_SECONDS / 2
+            loop.expire(launch.clock())
+            assert not launch.pump(read=False), 'remote deadline omitted acceptance grace'
+            assert f.ds.record(launch.dispatch_id)['state'] == 'running'
+            client.result(binding, T.observation(), usage={'tokens': 7}, references={})
+            report = loop.run()
+            assert not report['faults'] and report['ended'][0]['state'] == 'exited'
+            assert f.service.get(launch.dispatch_id)['usage']['tokens'] == 7
+            assert loop.next_timer() is None
         finally:
             if launch:
                 launch._end_receiver()
@@ -490,6 +546,8 @@ def _v125_routing_suite():
                       'AC2/missing-remote-receiver': missing_receiver,
                       'AC3/remote-cleanup-held': remote_retirement,
                       'AC2/remote-factory-deadline': remote_factory_deadline,
+                      'AC2/remote-no-polling': remote_no_polling,
+                      'AC3/remote-deadline-grace': remote_deadline_grace,
                       'AC3/remote-authority-end': remote_authority_end,
                       'AC2/remote-wait-timeout': remote_wait_timeout,
                       'AC3/transport-is-not-evidence': transport_is_not_evidence, 'AC2/production-routing': production, 'AC2/production-account-host': production_pool, 'AC2/actual-worker-launch': actual_launch,

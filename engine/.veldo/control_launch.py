@@ -992,6 +992,10 @@ class RemoteLaunch(Launch):
     """
     remote = True
 
+    @property
+    def ends_at(self):
+        return self.contract['deadline'] + ACCEPT_SECONDS
+
     def pump(self, read=True):
         if self.ended:
             return True
@@ -1001,7 +1005,7 @@ class RemoteLaunch(Launch):
             self._end_receiver()
             self.ended = True
             return True
-        if self.clock() >= self.contract['deadline']:
+        if self.clock() >= self.ends_at:
             self.stop('deadline')
             return True
         if read and self.fileno() is not None:
@@ -1042,10 +1046,10 @@ class RemoteLaunch(Launch):
                 self.stop('wait_timeout')
                 self._settle(lost=True)
                 raise TimeoutError('remote_receiver_pending')
-            remaining = max(0, self.contract['deadline'] - self.clock())
+            remaining = max(0, self.ends_at - self.clock())
             if deadline is not None:
                 remaining = min(remaining, max(0, deadline - time.monotonic()))
-            ready, _, _ = select.select([self.fileno()], [], [], min(1.0, remaining))
+            ready, _, _ = select.select([self.fileno()], [], [], remaining)
             if ready:
                 self.pump()
         self._end_receiver()

@@ -1696,17 +1696,27 @@ class Line:
         row = self.service.conn.execute('SELECT data FROM entities WHERE id=?', (entity,)).fetchone()
         return json.loads(row[0]) if row else None
 
+    def finish(self, report, ended):
+        """Settle only the launches named by an end or deadline event."""
+        self.activate()
+        for launch in ended:
+            self.finish_launch(report, launch)
+
+    def finish_launch(self, report, launch):
+        record = self.runner.wait(launch, timeout=0) or {}
+        report['ended'].append({'repository': self.repository, 'dispatch_id': launch.dispatch_id,
+                                'unit': launch.contract['unit'], 'station': launch.contract['station'],
+                                'state': record.get('state'), 'reason': record.get('reason') or record.get('refusal'),
+                                'receiver_lost': launch.lost})
+        return record
+
     def run(self, report, ended):
         """This line's part of one loop pass: settle each run whose end the launch pipe showed, free the account
         slot of each whose receiver died, then offer each assigned unit its next station."""
         self.activate()
         lost = []
         for launch in ended:
-            record = self.runner.wait(launch, timeout=0) or {}
-            report['ended'].append({'repository': self.repository, 'dispatch_id': launch.dispatch_id,
-                                    'unit': launch.contract['unit'], 'station': launch.contract['station'],
-                                    'state': record.get('state'), 'reason': record.get('reason') or record.get('refusal'),
-                                    'receiver_lost': launch.lost})
+            record = self.finish_launch(report, launch)
             if launch.lost and record.get('state') == 'unknown' and not getattr(launch, 'remote', False):
                 lost.append(launch)
         released = [one for launch in lost for one in self.runner.orphaned(launch)]
@@ -1949,7 +1959,7 @@ class Line:
                                       adapter=adapter, commit=contract['source']['commit'], result=launch.result))
         if launch.result == 'pending':
             # The remote receiver needs this loop to serve its signed acceptance.
-            pass
+            self.loop.watch_remote(self, launch)
         elif launch.result != 'accepted' or (launch.record or {}).get('state') != 'running':
             # Refused, or its answer lost: nothing runs to watch, so it is settled through the Runner now.
             self.runner.wait(launch, timeout=0)
@@ -2128,6 +2138,7 @@ class FactoryLoop:
         self.lines = {repository: Line(self, repository, roles, receivers[repository])
                       for repository, roles in sorted(work['repositories'].items())}
         self.wakes, self.ended, self.timer = [], [], None
+        self.deadlines = {}
         self.passes, self.last = 0, None
         self.counts = {'offered': 0, 'refused': 0, 'waiting': 0, 'asked': 0, 'released': 0, 'faults': 0, 'lands': 0}
 
@@ -2190,43 +2201,72 @@ class FactoryLoop:
         if ended:
             self.saw_end(line, launch)
 
-    def saw_end(self, line, launch):
+    def watch_remote(self, line, launch):
+        # One immutable deadline per launch; no periodic state reads or recurring ticks.
+        self.deadlines.setdefault(launch.dispatch_id, (launch.ends_at, line, launch))
+
+    def remote_result(self, repository, dispatch_id):
+        line = self.lines.get(repository)
+        launch = line.runner.launches.get(dispatch_id) if line else None
+        if launch is not None and getattr(launch, 'remote', False) and launch.pump(read=False):
+            self.saw_end(line, launch)
+
+    def next_timer(self):
+        times = [entry[0] for entry in self.deadlines.values()]
+        if self.timer is not None:
+            times.append(self.timer)
+        return min(times) if times else None
+
+    def expire(self, now):
+        for dispatch_id, (deadline, line, launch) in list(self.deadlines.items()):
+            if now >= deadline:
+                del self.deadlines[dispatch_id]
+                if launch.pump(read=False):
+                    self.saw_end(line, launch, 'remote_deadline')
+        if self.due(now):
+            self.timer = None
+            self.wake('account_reset')
+
+    def saw_end(self, line, launch, source='run_end'):
+        self.deadlines.pop(launch.dispatch_id, None)
+        if any(pending is launch for _, pending in self.ended):
+            return
         self.ended.append((line, launch))
-        self.wake('run_end', launch.dispatch_id)
+        self.wake(source, launch.dispatch_id)
 
     def due(self, now):
         return self.timer is not None and now >= self.timer
 
     def run(self):
         """One pass, when anything woke the loop; None otherwise."""
-        # Remote state and deadline progress independently of transport pipe EOF.
-        for line in self.lines.values():
-            for launch in list(line.runner.launches.values()):
-                queued = any(owner is line and pending is launch for owner, pending in self.ended)
-                if getattr(launch, 'remote', False) and not queued and launch.pump(read=False):
-                    self.saw_end(line, launch)
         if not self.wakes:
             return None
         wakes, self.wakes = self.wakes, []
         ended, self.ended = self.ended, []
-        self.timer = None
+        deadline_only = all(wake['source'] == 'remote_deadline' for wake in wakes)
+        if not deadline_only:
+            self.timer = None
         self.passes += 1
         report = {'kind': 'loop', 'operation': 'loop_pass', 'pass': self.passes, 'at': time.time(),
                   'domain_uuid': self.service.domain, 'principal': self.service.principal,
                   'sources': sorted({wake['source'] for wake in wakes}), 'wakes': wakes, 'ended': [], 'released': [],
                   'offered': [], 'refused': [], 'waiting': [], 'decisions': [], 'asked': [], 'awaiting': [],
                   'stopped': [], 'faults': [], 'lands': [], 'provisioning': []}
-        self.provision(report, 'pass')
+        if not deadline_only:
+            self.provision(report, 'pass')
         for repository, line in sorted(self.lines.items()):
             try:
-                line.run(report, [launch for owner, launch in ended if owner is line])
+                launches = [launch for owner, launch in ended if owner is line]
+                if deadline_only:
+                    if launches:
+                        line.finish(report, launches)
+                else:
+                    line.run(report, launches)
             except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never the end
                 report['faults'].append({'repository': repository, 'reason': 'unknown_outcome:' + type(error).__name__})
         resets = [waiting['until'] for waiting in report['waiting'] if isinstance(waiting.get('until'), int)]
-        remote_checks = [min(time.time() + 1.0, launch.contract['deadline'])
-                         for line in self.lines.values() for launch in line.runner.launches.values()
-                         if getattr(launch, 'remote', False) and not launch.ended]
-        self.timer = min(resets + remote_checks) if resets or remote_checks else None
+        if not deadline_only:
+            self.timer = min(resets) if resets else None
         report['timer'] = self.timer
         for name in self.counts:
             self.counts[name] += len(report[name])
@@ -2351,8 +2391,9 @@ def serve(config_path):
                     # for the accept timeout at most, or until the account reset timer, when it is sooner.
                     pipes = service.loop.pipes() if service.loop is not None else {}
                     wait = ACCEPT_SECONDS
-                    if service.loop is not None and service.loop.timer is not None:
-                        wait = max(0.0, min(wait, service.loop.timer - time.time()))
+                    timer = service.loop.next_timer() if service.loop is not None else None
+                    if timer is not None:
+                        wait = max(0.0, min(wait, timer - time.time()))
                     ready = select.select([listener] + sorted(pipes), [], [], wait)[0]
                     response = None
                     if listener in ready:
@@ -2369,8 +2410,8 @@ def serve(config_path):
                     for fd in ready:
                         if fd in pipes:
                             service.loop.readable(pipes[fd])
-                    if service.loop is not None and service.loop.due(time.time()):
-                        service.loop.wake('account_reset')
+                    if service.loop is not None:
+                        service.loop.expire(time.time())
                     if service.channel is not None and not stopping and time.monotonic() >= next_pass:
                         service.channel_pass()
                         next_pass = time.monotonic() + CH.POLL_SECONDS
