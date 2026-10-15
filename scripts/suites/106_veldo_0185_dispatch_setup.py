@@ -210,9 +210,11 @@ else:
        .replace('@@CODE_MODE@@', repr(code_mode())))
     fake_capture = (['teardown not reached'], [])
     # The owner's accounts as his case has them: three Claude Code and one Codex, one Claude Code logged out.
-    ACCOUNTS = (('claude-a', 'claude_code', True), ('claude-b', 'claude_code', False), ('claude-c', 'claude_code', True),
+    # Fresh accounts tie on utilization, active runs and last use, so the pool chooses by id.
+    # Refuse the very first build, before any healthy worker can affect selection or timing.
+    ACCOUNTS = (('claude-a', 'claude_code', False), ('claude-b', 'claude_code', True), ('claude-c', 'claude_code', True),
                 ('codex-a', 'codex', True))
-    LOGGED_OUT = 'claude-b'
+    LOGGED_OUT = 'claude-a'
 
     def exercise(h):
         F, S, CEN, base = h['F'], h['S'], h['CEN'], h['base']
@@ -744,16 +746,36 @@ else:
         def finished(found):
             return all(any(r['contract']['unit'] == name and r['contract']['station'] == 'review' and L.D.completed(r)
                            for r in found) for name in names)
-        # Until every unit is reviewed, or nothing has moved for 30 seconds with no dispatch holding a run.
-        deadline, found, seen, quiet = time.monotonic() + 300, [], None, time.monotonic()
+
+        home = Path(main['report']['home'])
+
+        def retries(found):
+            refused_ids = [r['dispatch_id'] for r in found if r['contract']['reservation']['account'] == LOGGED_OUT]
+            # Dispatch state and the completed loop-pass observation are separate writes. Wait for both;
+            # ignore an unfinished final line while the service appends its observation.
+            passes = [json.loads(line) for line in (home / 'state' / 'observations.jsonl').read_text().splitlines(True)
+                      if line.endswith('\n') and '"loop_pass"' in line]
+            reruns = [o for p in passes for o in p.get('offered') or [] if o.get('rerun_of') in refused_ids]
+            return refused_ids, reruns
+
+        # Success needs the evidence the rows assert, not a wall-clock quiet period. Keep the overall
+        # deadline as a failure bound. A completed journey with a terminal login violation can fail now.
+        # The bound stays under the gate's per-worker budget (check_gate_mutations.WORKER_BUDGET, 120 s):
+        # a mutant that never produces the evidence must fail here, inside the suite, so its cleanup runs;
+        # a worker killed at the budget leaves its /dev/shm scratch behind and the stage goes red on that.
+        # The journey takes about 12 s alone and well under a minute under gate load.
+        deadline, found, refused_ids, reruns = time.monotonic() + 90, [], [], []
         while time.monotonic() < deadline:
             found = dispatches()
-            if finished(found):
-                break
-            now = sorted((r['dispatch_id'], r['state']) for r in found)
-            if now != seen:
-                seen, quiet = now, time.monotonic()
-            elif time.monotonic() - quiet > 30 and not any(r['state'] in L.D.HOLDING for r in found):
+            refused_ids, reruns = retries(found)
+            out = [r for r in found if r['dispatch_id'] in refused_ids]
+            violated = any(r['state'] not in L.D.HOLDING and
+                           (r['state'] != 'refused' or r.get('refusal') != L.ACCOUNT_LOGIN + LOGGED_OUT) for r in out)
+            retried = (set(o.get('rerun_of') for o in reruns) == set(refused_ids)
+                       and all(any(r['dispatch_id'] == o.get('dispatch_id')
+                                   and r['contract']['reservation']['account'] != LOGGED_OUT for r in found)
+                               for o in reruns))
+            if finished(found) and refused_ids and (violated or retried):
                 break
             time.sleep(1)
         by_account = {}
@@ -782,25 +804,24 @@ else:
         codex_runs = [r for r in by_account.get('codex-a', []) if r[3]]
         check('every-account', 'the Codex account ran the reviews and Claude Code the builds [%s]' % codex_runs,
               codex_runs and all(r[1] == 'review' for r in codex_runs)
-              and all(r[1] == 'build' for n in ('claude-a', 'claude-c') for r in by_account.get(n, []) if r[3]))
+              and all(r[1] == 'build' for n in ('claude-b', 'claude-c') for r in by_account.get(n, []) if r[3]))
 
         # AC4: the logged-out account takes no work: refused before spawn, and the unit is offered elsewhere.
+        check('login/receiver-refuses', 'the first build was offered to the logged-out account',
+              any(r['contract']['unit'] == names[0] and r['contract']['station'] == 'build'
+                  and r['contract']['attempt'] == 1 and r['contract']['reservation']['account'] == LOGGED_OUT
+                  for r in found))
         out = by_account.get(LOGGED_OUT, [])
         check('login/receiver-refuses', 'every dispatch on the logged-out account was refused by name before spawn [%s]'
               % out, out and all(r[2] == 'refused' and r[4] == 'missing_authority:account_login:' + LOGGED_OUT
                                  for r in out))
-        refused_ids = [r['dispatch_id'] for r in found if r['contract']['reservation']['account'] == LOGGED_OUT]
         invocations = rows_count = [d for d in refused_ids if sqlite3.connect('file:%s?mode=ro' % store, uri=True).execute(
             'SELECT 1 FROM entities WHERE id=?', (RES.entity('invocation', [domain, 'invocation/' + d]),)).fetchone()]
         check('login/receiver-refuses', 'no invocation was reserved for a refused dispatch [%s]' % rows_count,
               refused_ids and not invocations)
-        home = Path(main['report']['home'])
-        passes = [json.loads(line) for line in (home / 'state' / 'observations.jsonl').read_text().splitlines()
-                  if '"loop_pass"' in line]
-        reruns = [o for p in passes for o in p.get('offered') or [] if o.get('rerun_of') in refused_ids]
         check('login/receiver-refuses', 'the Line offered each refused unit\'s station again on another account at its '
               'next pass [%s]' % [(o.get('unit'), o.get('station'), o.get('rerun_of')) for o in reruns],
-              len(reruns) == len(refused_ids)
+              len(reruns) == len(refused_ids) and {o.get('rerun_of') for o in reruns} == set(refused_ids)
               and all(any(r['dispatch_id'] == o.get('dispatch_id') and r['contract']['reservation']['account'] != LOGGED_OUT
                           for r in found) for o in reruns))
         # R1: the installed service read the refused account's login again and passed it to the pool as excluded.

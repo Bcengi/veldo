@@ -1,6 +1,6 @@
 --- .veldo/control_factory_setup.py
 +++ .veldo/control_factory_setup.py
-@@ -719,7 +719,7 @@
+@@ -733,7 +733,7 @@
      installed_work = installed.get('work') or os.path.join(home, 'config', CS.WORK)
      configs = sorted(((installed.get('receiver') or {}).get('configs') or {}).values())
      missing = {name for name in ('reservation_principals', 'factory_project') if not held[name]}

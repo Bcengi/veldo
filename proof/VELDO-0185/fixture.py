@@ -19,8 +19,21 @@ def run(root, production, exercise, teardown, fake):
                             'engines186 = fixtures186.install(ROOT, base, mods, __fake__)')
     cleanup = source[source.index('    finally:\n        close_runtime()'):source.index('    if profiler is not None:')]
     body = "    try:\n        __exercise__(dict(locals(), ROOT=ROOT))\n" + cleanup
-    # Observe the installation executables before the shared fixture removes them.
+    # Observe the installation executables before the shared fixture removes them. A failing teardown
+    # check (as a mutation makes it fail) must not skip the shared cleanup: the scratch directories live
+    # in /dev/shm when it is writable, and one left behind is a resource outside the worker's own home,
+    # which the gate's ownership ledger refuses. So the error is held, the cleanup runs, then it is raised.
     body = body.replace('        close_runtime()',
-                        '        __teardown__(dict(locals()))\n        close_runtime()')
+                        '        __teardown_error__ = None\n'
+                        '        try:\n'
+                        '            __teardown__(dict(locals()))\n'
+                        '        except BaseException as error:  # noqa: BLE001\n'
+                        '            __teardown_error__ = error\n'
+                        '        close_runtime()', 1)
+    body = body.replace('        shutil.rmtree(cache)\n',
+                        '        shutil.rmtree(cache)\n'
+                        '        if __teardown_error__ is not None:\n'
+                        '            raise __teardown_error__\n', 1)
+    assert '__teardown_error__ is not None' in body, 'the shared fixture cleanup changed shape'
     ns = dict(ROOT=Path(root), __production__=production, __exercise__=exercise, __teardown__=teardown, __fake__=fake)
     exec(compile(prefix + body + '\n_v171_suite()\n', __file__, 'exec'), ns)

@@ -386,11 +386,15 @@ def _v182_suite():
                               (2,'sqlite_id',None,8),(2,'doc_type','user_prompt',None)]);c.commit()
             landed=raised(lambda: plugin.backfilled(missed))
             other=raised(lambda: plugin.backfilled(dict(collection='prompts',id=7)))
-            # While the check's own processes work, the wait goes on until claude-mem's backfill ends.
-            burner=subprocess.Popen([sys.executable,'-c','import time\nend=time.time()+4\nwhile time.time()<end:pass\n'],env=dict(os.environ,HOME=str(plugin.home)))
+            # While the check's own processes work, the wait goes on until claude-mem's backfill ends. One busy
+            # process earns at most 1 CPU second per second, exactly the progress a 1 s window demands, so on a
+            # loaded host it read as a stall: four processes and a 2 s window keep progress measurable.
+            burners=[subprocess.Popen([sys.executable,'-c','import time\nend=time.time()+4\nwhile time.time()<end:pass\n'],env=dict(os.environ,HOME=str(plugin.home))) for _ in range(4)]
             threading.Timer(3,lambda: log.write_text('Backfill check complete for all projects\n')).start()
+            plugin.STALL=2
             started=time.monotonic();working=raised(lambda: plugin.backfilled(dict(collection='sessions',id=9)));worked=time.monotonic()-started
-            burner.wait()
+            plugin.STALL=1
+            for burner in burners:burner.wait()
             check('worker/backfill-bounded',stalled=='Unavailable: claude-mem backfill made no progress for 1 s' and waited<5
                   and failed=='Unavailable: claude-mem backfill failed' and ended is None and landed is None
                   and other=='Unavailable: claude-mem backfill made no progress for 1 s' and working is None and worked>=2.5)

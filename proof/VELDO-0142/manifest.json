@@ -1,9 +1,10 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0142",
-  "commit": "1242de164b88d59ea5813e39c2c9a271022d8125",
+  "commit": "c416bf44a3a6981886c196a02a7808ca17040b6f",
+  "tree": "96d54dc0e9d4eaaef40271a25894de831d9c93c9",
   "producer": "Codex implementation agent",
-  "produced_at": "2026-10-09T00:59:49.885502+00:00",
+  "produced_at": "2026-10-10T16:35:31.201486+00:00",
   "plan": "PLAN-0019",
   "work": "W102",
   "plan_revision": 4,
@@ -85,5 +86,6 @@
     "Independent critical-risk reviews and human approval remain outstanding."
   ],
   "rollback": "Stop new bindings. Keep recorded identities and bindings. Missing identity refuses; no automatic rollback is authorized.",
-  "proof_digest": "sha256:9e5894645b809a2e"
+  "proof_digest": "sha256:f08ab036ead4cdc3",
+  "batch_rerun": "Batch 1: proof/VELDO-0142/drive.py rerun at this commit; the honest suite 103 passed and all 15 registered falsifiers were rejected (verification.json)."
 }

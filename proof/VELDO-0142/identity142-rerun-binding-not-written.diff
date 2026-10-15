@@ -1,6 +1,6 @@
 --- a/.veldo/control_factory_setup.py
 +++ b/.veldo/control_factory_setup.py
-@@ -936,7 +936,7 @@
+@@ -1231,7 +1231,7 @@
              writer = S.open_store(plan['store'])
              try:
                  setup_identities(writer, ids['domain_uuid'], ids['repository_uuid'], workspace,

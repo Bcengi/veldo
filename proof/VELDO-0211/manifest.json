@@ -1,9 +1,10 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0211",
-  "commit": "b0e85cfd07bda51faaf0ea48c69e10918fcca512",
+  "commit": "c416bf44a3a6981886c196a02a7808ca17040b6f",
+  "tree": "96d54dc0e9d4eaaef40271a25894de831d9c93c9",
   "producer": "Claude host implementation, fixing the host review of the Codex implementation",
-  "produced_at": "2026-10-09T12:39:58.357658+00:00",
+  "produced_at": "2026-10-10T16:35:31.201486+00:00",
   "criteria": [
     {
       "id": "AC1",
@@ -48,5 +49,6 @@
     }
   ],
   "rollback": "Revert the implementation and stop borrowed-login runs until corrected.",
-  "review": "Pending independent reviewer and owner approval; no self-approval."
+  "review": "Pending independent reviewer and owner approval; no self-approval.",
+  "batch_rerun": "Batch 1: proof/VELDO-0211/falsify.py rerun at this commit; 7 of 7 falsifiers detected with sources restored (falsifiers.json and the case logs)."
 }

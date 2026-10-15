@@ -1,6 +1,6 @@
 --- .veldo/control_service.py
 +++ .veldo/control_service.py
-@@ -1981,7 +1981,7 @@
+@@ -1988,7 +1988,7 @@
                                        'station': contract['station'], 'dispatch_id': record['dispatch_id'],
                                        'refusals': [L.ACCOUNT_LOGIN + 'none_left'], 'logins': logins})
              return None

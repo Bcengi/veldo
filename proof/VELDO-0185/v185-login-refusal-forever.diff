@@ -1,6 +1,6 @@
 --- .veldo/control_service.py
 +++ .veldo/control_service.py
-@@ -1973,7 +1973,7 @@
+@@ -1980,7 +1980,7 @@
                     and r.get('state') == 'refused' and str(r.get('refusal') or '').startswith(L.ACCOUNT_LOGIN)}
          logins = {account: self.login_now(account, contract['capability']['adapter'])
                    for account in sorted(a for a in refused if isinstance(a, str))}

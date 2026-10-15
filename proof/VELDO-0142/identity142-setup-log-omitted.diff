@@ -1,6 +1,6 @@
 --- a/.veldo/control_factory_setup.py
 +++ b/.veldo/control_factory_setup.py
-@@ -529,7 +529,7 @@
+@@ -540,7 +540,7 @@
              with step('git_identities'):
                  setup_identities(conn, ids['domain_uuid'], ids['repository_uuid'], workspace,
                                   git_identities, workspace_identity,
