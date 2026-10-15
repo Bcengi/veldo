@@ -1,4 +1,4 @@
-"""Reproduce the two process-boundary falsifiers using only specification suite 108.
+"""Reproduce process-boundary and global-config falsifiers using only spec suite 108.
 
 Read registration data through the restricted AST audit, never import a mutation driver.
 No network or service is needed. Full gate and consumer-suite kills remain unmeasured.
@@ -7,7 +7,6 @@ import json
 import os
 from pathlib import Path
 import runpy
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -19,15 +18,17 @@ def main(output):
     cases, unresolved = audit['registrations']((root / 'scripts/check_teeth_mutations.py').read_text())
     if unresolved:
         raise AssertionError(unresolved)
-    names = ('effects-transport-isolated-profile', 'effects-remote-host-unchecked')
+    names = ('effects-transport-isolated-profile', 'effects-remote-host-unchecked',
+             'identity153-global-config')
     cases = {c['name']: c for c in cases if c['name'] in names}
     if set(cases) != set(names):
         raise AssertionError('missing process-boundary falsifier')
     runs = {}
-    with tempfile.TemporaryDirectory(prefix='v153-process-', dir=os.environ['TMPDIR']) as directory:
+    copy_checkout = runpy.run_path(str(root / 'proof/VELDO-0153/reproduce_refusal.py'))['copy_checkout']
+    with tempfile.TemporaryDirectory(prefix='v153-process-') as directory:
         scratch = Path(directory)
         checkout = scratch / 'checkout'
-        shutil.copytree(root, checkout, ignore=shutil.ignore_patterns('.git', '__pycache__', 'target'))
+        copy_checkout(root, checkout, scratch)
         temporary = scratch / 'tmp'
         temporary.mkdir()
         originals = {checkout / prefix / case['module']: (root / prefix / case['module']).read_text()
@@ -49,10 +50,16 @@ def main(output):
             lines = log_path.read_text().splitlines()
             failures = [line.strip() for line in lines if 'SELFTEST FAIL:' in line]
             summary = [line for line in lines if line.startswith('selftest (PARTIAL')]
+            observations = next((json.loads(line.split(': ', 1)[1]) for line in lines
+                                 if line.startswith('VELDO-0153 global config observations: ')), None)
             expected = [] if mode == 'restored' else ['SELFTEST FAIL: VELDO-0153 ' + row for row in cases[mode]['rows']]
             runs[mode] = dict(command=command, exit=result.returncode, failures=failures, summary=summary,
+                              global_config_observations=observations,
                               expected_failures=expected,
                               matched=set(failures) == set(expected) and bool(summary)
+                              and observations == dict(unset='isolated', selected=(
+                                  'binding_mismatch:identity_transport_config'
+                                  if mode == 'identity153-global-config' else 'isolated'))
                               and result.returncode == (2 if mode == 'restored' else 1))
     ok = all(run['matched'] for run in runs.values())
     Path(output).write_text(json.dumps(dict(scope='suite 108 only; no gate or integration claim',

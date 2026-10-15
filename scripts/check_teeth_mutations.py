@@ -10562,8 +10562,10 @@ def cases():
     add(153, 'identity153-pre-push-hook', '107_veldo_0153_identity_push.py', 'git_process.py',
         "        args[1:1] = [*options, '-c', 'core.hooksPath=' + private_home]\n        if command == 'push':\n            args.insert(len(prefix) + len(options) + 3, '--no-verify')", '        args[1:1] = options',
         ['profile/pre-push-hook/alpha'])
-    add(153, 'identity153-global-config', '107_veldo_0153_identity_push.py', 'git_process.py',
-        "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)", "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)\n        kwargs['env']['GIT_CONFIG_GLOBAL'] = os.environ['GIT_CONFIG_GLOBAL']",
+    # The local-resolution fixture records refusals at the isolation assertion and
+    # completes without relying on subsequent credential/integration setup.
+    add(153, 'identity153-global-config', '108_veldo_0153_executor_profile.py', 'git_process.py',
+        "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)", "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)\n        kwargs['env']['GIT_CONFIG_GLOBAL'] = os.environ.get('GIT_CONFIG_GLOBAL', os.devnull)",
         ['profile/global-config'])
     add(153, 'identity153-watermark-network', '107_veldo_0153_identity_push.py', 'lander.py',
         'profile="identity", remote_url=url)', 'profile="network", remote_url=url)',

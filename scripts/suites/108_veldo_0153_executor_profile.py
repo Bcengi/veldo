@@ -1,4 +1,65 @@
-"""VELDO-0153 executor profile and remote-host unit boundaries; no transport starts."""
+"""VELDO-0153 process boundaries and local Git config isolation; no transport starts."""
+
+
+def _v153_global_config_rows():
+    """Observe global isolation independently of the integration fixture's credentials.
+
+    A refusal is a failed isolation assertion, not an uncaught fixture exception.
+    Only credential lookup is substituted; Git reads and resolves the actual config.
+    """
+    import importlib.util
+    import os
+    from pathlib import Path
+    import shutil
+    import subprocess
+    import tempfile
+    from unittest.mock import patch
+
+    with tempfile.TemporaryDirectory(prefix='global153-') as directory:
+        base = Path(directory)
+        installed = base / 'installed'
+        installed.mkdir()
+        for source in (ROOT / '.veldo').glob('*.py'):
+            shutil.copyfile(source, installed / source.name)
+        # Literal source paths let the mutation worker substitute both real modules.
+        shutil.copyfile(ROOT / ".veldo" / "git_process.py", installed / 'git_process.py')
+        shutil.copyfile(ROOT / ".veldo" / "control_git_identity_transport.py",
+                        installed / 'control_git_identity_transport.py')
+        spec = importlib.util.spec_from_file_location('global153', installed / 'git_process.py')
+        G = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(G)
+        transport = G.identity_transport()
+        home, repo = base / 'home', base / 'repo'
+        home.mkdir()
+        env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
+        env.update(HOME=str(home), XDG_CONFIG_HOME=str(home), GIT_CONFIG_NOSYSTEM='1')
+        record = dict(id='alpha', remote_host='github.com', remote_owner='alpha',
+                      push_credential=dict(kind='token', reference='keychain:fixture/alpha/token'))
+        url = 'https://github.com/alpha/repo.git'
+        global_config = base / 'global.config'
+        global_config.write_text('[url "https://github.com/intruder/"]\n'
+                                 '\tinsteadOf = https://github.com/alpha/\n')
+        with patch.dict(os.environ, env, clear=True):
+            G.run(['/usr/bin/git', 'init', '-q', str(repo)], check=True, capture_output=True)
+        args = ['/usr/bin/git', '-C', str(repo), 'ls-remote', '--get-url', url]
+        outcomes = {}
+        for name, selection in (('unset', {}), ('selected', {'GIT_CONFIG_GLOBAL': str(global_config)})):
+            with patch.dict(os.environ, dict(env, **selection), clear=True), \
+                 patch.object(transport, 'credential', return_value='fixture-token'):
+                plain = subprocess.run(args, capture_output=True, text=True, check=True).stdout.strip()
+                expect('VELDO-0153 profile/global-config-control/' + name,
+                       plain == (url if name == 'unset' else 'https://github.com/intruder/repo.git'))
+                try:
+                    result = G.run(args, profile='identity', push_identity=record, remote_url=url,
+                                   capture_output=True, text=True)
+                    isolated = result.returncode == 0 and result.stdout.strip() == url
+                    outcomes[name] = 'isolated' if isolated else 'wrong-destination'
+                except transport.Refused as error:
+                    isolated = False
+                    outcomes[name] = error.code
+                expect('VELDO-0153 profile/global-config' + ('-unset' if name == 'unset' else ''), isolated)
+        import json
+        print('VELDO-0153 global config observations: ' + json.dumps(outcomes, sort_keys=True))
 
 
 def _v153_process_boundary_rows():
@@ -70,4 +131,5 @@ def _v153_process_boundary_rows():
                    'https://github.com/alpha/repo.git')['owner'] == 'alpha')
 
 
+_v153_global_config_rows()
 _v153_process_boundary_rows()
