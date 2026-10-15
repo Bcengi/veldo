@@ -536,7 +536,6 @@
   "102_veldo_0210_agent_profile_runtime": [
    "102_veldo_0210_agent_profile_runtime"
   ],
-<<<<<<< HEAD
   "103_veldo_0124_macos": [
    "103_veldo_0124_macos"
   ],
@@ -548,7 +547,7 @@
   ],
   "106_veldo_0125_routing": [
    "106_veldo_0125_routing"
-=======
+  ],
   "103_veldo_0142_git_identities": [
    "103_veldo_0142_git_identities"
   ],
@@ -566,7 +565,6 @@
   ],
   "105_veldo_0182_memory": [
    "105_veldo_0182_memory"
->>>>>>> main
   ]
  }
 }
