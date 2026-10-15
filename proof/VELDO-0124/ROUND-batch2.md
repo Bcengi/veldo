@@ -100,8 +100,12 @@ checks. They are diagnostics only and are not cited as passed manifest evidence.
 Command: `python3 proof/VELDO-0124/negative_controls.py --output proof/VELDO-0124/batch2`
 exited **0**; all nine mutants exited **1** with their named failed row. The
 unmutated final runs above followed these red observations. Source digests,
-single-change patches, failed rows and raw logs are in
+single-change patches, failed rows and captured logs are in
 `batch2/negative-controls.json` and its referenced files.
+For committed artifact hygiene, captured log line endings are normalized and
+trailing whitespace removed; patch files use zero context. Observed rows and exit
+statuses are unchanged. The initial whitespace-check failure is retained in
+`batch2/diff-check-before-normalization.log`.
 
 | Criterion / mutation | Named failed row |
 | --- | --- |

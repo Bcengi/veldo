@@ -37,7 +37,7 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
-  AC3/descendant: AssertionError: 
+  AC3/descendant: AssertionError:
   SELFTEST FAIL: VELDO-0124 AC3/descendant
   103_veldo_0124_macos                            27 passed    1.60s
 selftest (PARTIAL, 1 of 164 suites): 53 passed, 1 failed in 1.60s

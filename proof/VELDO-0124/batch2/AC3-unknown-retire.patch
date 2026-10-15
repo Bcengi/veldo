@@ -1,11 +1,5 @@
 --- a/project_runner_macos_control.py
 +++ b/project_runner_macos_control.py
-@@ -124,7 +124,7 @@
-             seen = run.retirement()
-             if identity != dispatch or self.dispatches.record(dispatch)['state'] != 'exited':
-                 seen['outcome_known'] = False
+@@ -127 +127 @@
 -            if not seen['outcome_known']:
 +            if False:
-                 raise P.Refused('unknown_outcome:retirement')
-             if seen['terminated'] and seen['cleaned'] and seen['outcome_known']:
-                 seen['cleaned'] = self.cleanup(dispatch) is True

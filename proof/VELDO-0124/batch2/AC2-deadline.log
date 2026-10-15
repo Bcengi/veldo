@@ -37,13 +37,13 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
-  AC3/hard-kill-unknown: AssertionError: 
+  AC3/hard-kill-unknown: AssertionError:
   SELFTEST FAIL: VELDO-0124 AC3/hard-kill-unknown
   AC3/recover: AssertionError: {'state': 'unknown', 'process': {'boot_id': 'fixture-boot', 'host': 'fixture-mac', 'pid': 12400, 'platform': 'darwin', 'start': 'start'}, 'steps': [], 'refusal': 'unknown_outcome:TimeoutError'}
   SELFTEST FAIL: VELDO-0124 AC3/recover
-  AC2/deadline: AssertionError: 
+  AC2/deadline: AssertionError:
   SELFTEST FAIL: VELDO-0124 AC2/deadline
-  AC2/contract-deadline: AssertionError: 
+  AC2/contract-deadline: AssertionError:
   SELFTEST FAIL: VELDO-0124 AC2/contract-deadline
   AC3/unknown: AssertionError: stale_version:deadline_passed
   SELFTEST FAIL: VELDO-0124 AC3/unknown

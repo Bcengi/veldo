@@ -1,11 +1,5 @@
 --- a/project_runner_macos.py
 +++ b/project_runner_macos.py
-@@ -135,7 +135,7 @@
-         with self.lock():
-             if directory.exists():
-                 raise P.Refused('stale_version:dispatch_already_attempted')
+@@ -138 +138 @@
 -            if self.status()['pending'] >= p['max_workers']:
 +            if False:
-                 raise P.Refused('unavailable_service:concurrency')
-             if request['engine'] == 'claude_code':
-                 P.claude_settings(p['engines']['claude_code']['argv'], request['clone'],

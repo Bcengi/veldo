@@ -39,7 +39,7 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   x.md: plan and work must be declared together
   AC1/accepted-store: Refused: unknown_outcome:launch
   SELFTEST FAIL: VELDO-0124 AC1/accepted-store
-  AC2/precall-caps: AssertionError: 
+  AC2/precall-caps: AssertionError:
   SELFTEST FAIL: VELDO-0124 AC2/precall-caps
   AC2/invocation-boundaries: Refused: unknown_outcome:launch
   SELFTEST FAIL: VELDO-0124 AC2/invocation-boundaries
