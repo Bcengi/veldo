@@ -1,0 +1,5 @@
+--- a/.veldo/control_worker.py
++++ b/.veldo/control_worker.py
+@@ -68,1 +68,1 @@
+-        if started.state not in ('exited', 'retired'):
++        if True:

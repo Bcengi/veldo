@@ -2280,6 +2280,7 @@ class FactoryLoop:
         return {'available': True, 'passes': self.passes, 'timer': self.timer, 'counts': dict(self.counts),
                 'running': sorted(d for line in self.lines.values() for d in line.runner.launches),
                 'orphans': sorted(d for line in self.lines.values() for d in line.runner.orphans),
+                'remote_deadlines': {dispatch: entry[0] for dispatch, entry in sorted(self.deadlines.items())},
                 'remote_holds': {repository: line.runner.remote_retirements
                                  for repository, line in sorted(self.lines.items())},
                 'last_sources': (self.last or {}).get('sources'),

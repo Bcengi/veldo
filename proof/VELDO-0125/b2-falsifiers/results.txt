@@ -1,0 +1,49 @@
+Selected suite results only; these are PARTIAL runs, not gate evidence.
+Each falsifier was applied alone and restored before final verification.
+Template-sync can also fail for an installed-copy mutant; the behavioral failures below are decisive.
+
+Final 105_veldo_0125_relay
+  105_veldo_0125_relay                            17 passed    8.03s
+selftest (PARTIAL, 1 of 166 suites): 43 passed, 0 failed in 8.03s
+
+Final 106_veldo_0125_routing
+  106_veldo_0125_routing                          23 passed   18.24s
+selftest (PARTIAL, 1 of 166 suites): 49 passed, 0 failed in 18.24s
+
+Recurring tick falsifier
+  SELFTEST FAIL: VELDO-0125 AC2/remote-factory-deadline
+  SELFTEST FAIL: VELDO-0125 AC2/remote-no-polling
+  106_veldo_0125_routing                          17 passed    9.85s
+selftest (PARTIAL, 1 of 166 suites): 43 passed, 2 failed in 9.85s
+
+Grace falsifier
+  SELFTEST FAIL: VELDO-0125 AC2/remote-factory-deadline
+  SELFTEST FAIL: VELDO-0125 AC3/remote-deadline-grace
+  106_veldo_0125_routing                          20 passed   13.88s
+selftest (PARTIAL, 1 of 166 suites): 46 passed, 2 failed in 13.88s
+
+Durability falsifier
+  SELFTEST FAIL: VELDO-0125 AC3/remote-cleanup-held
+  SELFTEST FAIL: VELDO-0125 AC3/remote-hold-restart
+  SELFTEST FAIL: VELDO-0125 AC3/remote-signed-cleanup
+  SELFTEST FAIL: VELDO-0125 AC2/remote-factory-deadline
+  SELFTEST FAIL: VELDO-0125 AC3/remote-deadline-grace
+  SELFTEST FAIL: VELDO-0125 AC3/remote-authority-end
+  SELFTEST FAIL: VELDO-0125 AC2/remote-wait-timeout
+  106_veldo_0125_routing                          15 passed   16.35s
+selftest (PARTIAL, 1 of 166 suites): 41 passed, 7 failed in 16.35s
+
+Release falsifier
+  SELFTEST FAIL: VELDO-0125 AC3/remote-hold-restart
+  SELFTEST FAIL: VELDO-0125 AC3/remote-signed-cleanup
+  SELFTEST FAIL: VELDO-0125 AC3/remote-signed-refusal
+  SELFTEST FAIL: VELDO-0125 AC2/actual-worker-launch
+  SELFTEST FAIL: VELDO-0125 AC1/template-sync
+  106_veldo_0125_routing                          17 passed   23.97s
+selftest (PARTIAL, 1 of 166 suites): 43 passed, 5 failed in 23.97s
+
+Result transport falsifier
+  SELFTEST FAIL: VELDO-0125 AC3/remote-result-transport-failure
+  SELFTEST FAIL: VELDO-0125 AC1/template-sync
+  106_veldo_0125_routing                          21 passed   14.14s
+selftest (PARTIAL, 1 of 166 suites): 47 passed, 2 failed in 14.14s

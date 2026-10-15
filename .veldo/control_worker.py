@@ -65,8 +65,9 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=lambda run, 
                     observation = dict(observation, cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
         return client.result(binding, observation, usage=usage, references=references)
     except Exception:
-        started.stop('authority_unavailable')
-        started.wait()
+        if started.state not in ('exited', 'retired'):
+            started.stop('authority_unavailable')
+            started.wait()
         raise
 
 

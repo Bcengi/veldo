@@ -486,7 +486,9 @@ class Runner:
         """Unreleased remote obligations survive both Runner and service restarts."""
         return {record['dispatch']: record['remote_hold']
                 for record in self.reservations._records().values()
-                if record['type'] == 'worker' and not record['retired'] and record.get('remote_hold')}
+                if record['type'] == 'worker' and not record['retired'] and record.get('remote_hold')
+                and record['context']['domain'] == self.dispatches.domain
+                and record['context']['repository'] == self.dispatches.repository}
 
     def _slot(self, dispatch_id):
         entity = RES_ENTITY(self.dispatches.domain, dispatch_id)
@@ -707,8 +709,10 @@ class Runner:
                 self._left(record['dispatch_id'], getattr(launch, 'group', None), record.get('process'))
             self._retire(record['dispatch_id'], 'unknown', 'outcome_unknown')
         self.launches.pop(launch.dispatch_id, None)
-        # This dispatch's end may have completed another's obligation (a group the kernel emptied).
-        self.sweep()
+        # A local group ending can complete another local obligation. Remote events settle only
+        # their own reservation and never cause an unrelated Linux cleanup sweep.
+        if not getattr(launch, 'remote', False):
+            self.sweep()
         if timeout_error is not None:
             raise timeout_error
         return record

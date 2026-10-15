@@ -1,0 +1,5 @@
+--- a/.veldo/control_worker_service.py
++++ b/.veldo/control_worker_service.py
+@@ -290,1 +290,1 @@
+-        if state == 'refused' or (state == 'exited' and cleanup is not None):
++        if False:

@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1005,1 +1005,1 @@
+-        return self.contract['deadline'] + ACCEPT_SECONDS
++        return self.contract['deadline']

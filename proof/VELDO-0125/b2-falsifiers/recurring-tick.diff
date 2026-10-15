@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -2220,0 +2221,2 @@
++        if self.deadlines:
++            self.wake('account_reset')
