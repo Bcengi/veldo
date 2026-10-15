@@ -1,7 +1,8 @@
 """Read mutation registration data with a restricted AST interpreter, without running a driver.
 
-Only the VELDO-0028, 0056 and 0057 registrations are collected. This checks anchor
-uniqueness, not mutant kills. No suite or mutation driver is imported or invoked.
+By default VELDO-0028, 0056, 0057 and 0153 registrations are collected. Production
+anchors can be audited for all registrations; suite-copy anchors are checked for
+those four findings. This checks anchors and syntax, not mutant kills. No suite or mutation driver is imported or invoked.
 """
 import ast
 import json
@@ -10,7 +11,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-FINDINGS = None if sys.argv[2:] == ['all'] else (28, 56, 57)
+FINDINGS = None if sys.argv[2:] == ['all'] else (28, 56, 57, 153)
 
 
 def registrations(source):
@@ -152,7 +153,14 @@ def audit(commit=None):
     source = git_text(commit, 'scripts/check_teeth_mutations.py') if commit else (ROOT / 'scripts/check_teeth_mutations.py').read_text()
     cases, unresolved = registrations(source)
     missing = []
+    suite_missing = []
     for case in cases:
+        if case['finding'] in (28, 56, 57, 153) and not case.get('fixture'):
+            suite_path = 'scripts/suites/' + case['suite']
+            suite = git_text(commit, suite_path) if commit else (ROOT / suite_path).read_text()
+            anchor = 'ROOT / "' + case.get('dir', '.veldo') + '" / "' + case['module'] + '"'
+            if anchor not in suite:
+                suite_missing.append(dict(name=case['name'], suite=case['suite'], anchor=anchor))
         path = case.get('dir', 'scripts/fixtures' if case.get('fixture') else '.veldo') + '/' + case['module']
         try:
             text = git_text(commit, path) if commit else (ROOT / path).read_text()
@@ -175,7 +183,8 @@ def audit(commit=None):
                     compile(text, path, 'exec')
                 except SyntaxError as error:
                     unresolved.append(dict(case=case['name'], error='mutant syntax: ' + str(error)))
-    return dict(cases=len(cases), unresolved=unresolved, missing=missing)
+    return dict(cases=len(cases), unresolved=unresolved, missing=missing,
+                suite_anchor_findings=[28, 56, 57, 153], suite_missing=suite_missing)
 
 
 if __name__ == '__main__':
@@ -187,3 +196,6 @@ if __name__ == '__main__':
             name, record['cases'], len(record['unresolved']), len(record['missing'])))
         for case in record['missing']:
             print('  ' + case['name'])
+        print('  %d missing scoped suite-copy anchors' % len(record['suite_missing']))
+    current = result['current']
+    raise SystemExit(bool(current['missing'] or current['unresolved'] or current['suite_missing']))

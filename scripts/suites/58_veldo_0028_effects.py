@@ -106,8 +106,10 @@ def _v28_run():
         _v28_shutil.copyfile(ROOT / ".veldo" / "control_effect_executor.py", modules / 'control_effect_executor.py')
         # VELDO-0153: a publication resolves the repository's Git identity and pushes through the
         # identity transport, which resolves that identity's credential.
-        for name in ('control_git_identity', 'control_git_identity_transport', 'control_credential_keystore', 'secretref'):
+        for name in ('control_git_identity', 'control_credential_keystore', 'secretref'):
             _v28_shutil.copyfile(ROOT / '.veldo' / (name + '.py'), modules / (name + '.py'))
+        _v28_shutil.copyfile(ROOT / ".veldo" / "control_git_identity_transport.py",
+                             modules / 'control_git_identity_transport.py')
         _v28_executor_spec = _v28_import.spec_from_file_location('v28_executor', modules / 'control_effect_executor.py')
         _v28_executor = _v28_import.module_from_spec(_v28_executor_spec)
         _v28_executor_spec.loader.exec_module(_v28_executor)
@@ -1047,7 +1049,7 @@ print(json.dumps(result))
         row('publication-line-break-refused', all(answer.get('refusal') == codes[key]
             and all(remote_main(b) == old for b in repositories) for key, (answer, repositories) in breaks.items()))
         # Named-remote resolution reads machine config values. Inject a bad host, an empty
-        # value, missing values, multiple values, failure exits and localized diagnostics.
+        # value, missing values, multiple values and failure exits.
         # Retain historical shape names so the earlier review rows remain traceable.
         wrapper = root / 'git-wrapper'
         wrapper.mkdir()
@@ -1055,17 +1057,12 @@ print(json.dumps(result))
 real=%s
 if [ "$1" = -C ] && [ "$3" = config ] && [ "$4" = --get-all ] && [ "$5" = remote.publication.url ]; then
   out=$("$real" "$@"); rc=$?
-  loc=${LC_ALL:-${LC_MESSAGES:-${LANG:-C}}}
   case "$V28_GIT_SHAPE" in
     show-exit) printf '%%s\\n' "$out"; exit 1 ;;
     header) printf 'http://elsewhere.invalid/repo.git\\n' ;;
     fetch) printf '\\n' ;;
     no-push) : ;;
     extra) printf '%%s\\n%%s\\n' "$out" "$out" ;;
-    translated)
-      # Config values are machine output; only diagnostics are localized.
-      printf 'URL zum Versenden (%%s)\\n' "$loc" >&2
-      printf '%%s\\n' "$out" ;;
     *) printf '%%s\\n' "$out" ;;
   esac
   exit $rc
@@ -1096,10 +1093,6 @@ exec "$real" "$@"
             and all(remote_main(b) == tip for b in repositories)
             and all(answer.get('refusal') == shape_codes[shape] and all(remote_main(b) == old for b in repositories)
                     for shape, (answer, repositories) in shapes.items()))
-        # Keep locale independence: machine config values have no translated labels to parse.
-        localized, repositories = reshaped('translated', {'LC_ALL': 'de_DE.UTF-8', 'LANG': 'de_DE.UTF-8'})
-        row('publication-resolution-in-c-locale', localized.get('result', {}).get('completed') is True
-            and all(remote_main(b) == tip for b in repositories))
         # R6 2 and 3, superseded by VELDO-0153 AC1 for the factory's publication: the identity
         # profile strips every GIT_* variable and ignores global and system configuration, so no
         # selection or injection route reaches the push. Each case plants one route rewriting the

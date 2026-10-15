@@ -12,10 +12,20 @@ import sys
 import tempfile
 
 
+def assess(observations, names):
+    """Required unit kills remain mandatory; sockets may expose additional integration kills."""
+    labels = {'SELFTEST FAIL: VELDO-0153 refusal-unit/' + name for name in names}
+    rejected = labels.issubset(observations['red']['failures'])
+    eager_rejected = ('SELFTEST FAIL: VELDO-0153 profile/isolated-without-identity-asset'
+                      in observations['eager']['failures'])
+    restored = (observations['green']['failures'] == [] and observations['green']['unit_observations']
+                == dict.fromkeys(names, 'binding_mismatch:identity_transport_config'))
+    return rejected, eager_rejected, restored
+
+
 def main(output):
     root = Path(__file__).resolve().parents[2]
     names = ('route-insteadof', 'route-push-instead-of', 'shape-config-exit')
-    labels = ['SELFTEST FAIL: VELDO-0153 refusal-unit/' + name for name in names]
     observations = {}
     with tempfile.TemporaryDirectory(prefix='v153-refusal-', dir=os.environ['TMPDIR']) as directory:
         scratch = Path(directory)
@@ -49,11 +59,7 @@ def main(output):
                                       unit_observations=observed,
                                       infrastructure=[line for line in lines if 'PermissionError:' in line],
                                       summary=[line for line in lines if line.startswith('selftest (PARTIAL')])
-    rejected = set(observations['red']['failures']) == set(labels)
-    eager_rejected = observations['eager']['failures'] == [
-        'SELFTEST FAIL: VELDO-0153 profile/isolated-without-identity-asset']
-    restored = (observations['green']['failures'] == [] and observations['green']['unit_observations']
-                == dict.fromkeys(names, 'binding_mismatch:identity_transport_config'))
+    rejected, eager_rejected, restored = assess(observations, names)
     record = dict(scope='three refusal unit rows only; no aggregate suite or host claim',
                   mutant='identity153-refusal-module-identity', rejected=rejected,
                   eager_mutant='identity153-eager-transport', eager_rejected=eager_rejected,

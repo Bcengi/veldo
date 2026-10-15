@@ -374,10 +374,7 @@ def cases():
     send_pack = "        push = transport('send-pack',"
     add(28, 'effects-push-by-send-pack', '58_veldo_0028_effects.py', 'control_effect_executor.py', push, send_pack,
         ['effects/publication-' + name for name in ('pre-push-hook', 'url-rewrite', 'smart-http')])
-    # AC3 reverses the hook guarantee: re-enable clone hooks, disabling both independent guards.
-    add(28, 'effects-push-skips-hooks', '58_veldo_0028_effects.py', 'git_process.py',
-        "        args[1:1] = [*options, '-c', 'core.hooksPath=' + private_home]\n        if command == 'push':\n            args.insert(len(prefix) + len(options) + 3, '--no-verify')",
-        '        args[1:1] = options', ['effects/publication-pre-push-hook'])
+    # AC3 hook removal is registered once as identity153-pre-push-hook.
     # AC3 supersedes clone routing. A checked GitHub URL need not name a local path.
     owner_check = "            target = transport_module.check_remote(push_identity, remote, operation='remote_check',\n"
     publication('effects-remote-must-exist-verbatim', owner_check,
@@ -416,7 +413,7 @@ def cases():
     # The destinations read from the To lines a dry-run push prints: hook text reaches them.
     # AC3: a dry-run is no longer used. Reintroduce trusting To lines in the actual push output.
     destination_record = "        destination = {'authorized_url': scrubbed_url(remote),"
-    add(28, 'effects-destinations-from-dry-run-output', '58_veldo_0028_effects.py', 'control_effect_executor.py', destination_record,
+    add(28, 'effects-destinations-from-push-output', '58_veldo_0028_effects.py', 'control_effect_executor.py', destination_record,
         "        pushed = [line[3:] for line in push.stdout.splitlines() if line.startswith('To ')]\n" + destination_record,
         ['effects/publication-destination-despite-hook-text', 'effects/publication-rejected-destination-recorded',
          'effects/publication-hook-text-without-newline'])
@@ -429,20 +426,15 @@ def cases():
         "            targets = configured.stdout.splitlines()", "            targets = configured.stdout.splitlines()[:1]",
         ['effects/publication-resolution-output-checked'])
     complete = "        complete = push.returncode == 0 and all(outcome == 'at-tip' for outcome in outcomes)"
-    # Completion from the push's exit status alone, from the first destination only, or from the
-    # To lines the push prints.
+    # Completion from the push's exit status alone, or from the To lines the push prints.
     add(28, 'effects-completion-from-exit-status', '58_veldo_0028_effects.py', 'control_effect_executor.py', complete,
         "        complete = push.returncode == 0",
-        ['effects/publication-completion-from-destination-state', 'effects/publication-fan-out-agit-report'])
-    add(28, 'effects-completion-first-destination', '58_veldo_0028_effects.py', 'control_effect_executor.py', complete,
-        "        complete = push.returncode == 0 and all(outcome == 'at-tip' for outcome in outcomes[1:])",
         ['effects/publication-completion-from-destination-state'])
     publication('effects-completion-from-push-output', complete,
                 complete + "\n        complete = complete and all('To ' + url in push.stdout.splitlines() for url in pushed)",
                 'publication-hook-text-without-newline')
-    # Each destination's state read at the authorized URL instead of at the destination.
-    # AC3 makes authorized and actual URLs identical. Reading local state still violates the guarantee.
-    add(28, 'effects-state-read-at-authorized-url', '58_veldo_0028_effects.py', 'control_effect_executor.py', listing,
+    # AC3 makes authorized and actual URLs identical. Local state is not remote evidence.
+    add(28, 'effects-state-read-locally', '58_veldo_0028_effects.py', 'control_effect_executor.py', listing,
         "            listed = git('ls-remote', '--symref', '.')",
         ['effects/publication-destination-despite-hook-text', 'effects/publication-rejected-destination-recorded'])
     # Output read strictly as UTF-8: the push's (a hook's Latin-1 byte) or a listing's (a ref name).
@@ -472,15 +464,12 @@ def cases():
     # R8 B1: nothing is pushed unless every destination was listed first and holds the expected
     # old state (the old tip, or absent for a creation); the refusal is named, recorded as
     # conclusive, reconciled as stopped and returned again on a replay.
-    stale_rows = ['effects/publication-refused-when-not-at-old-tip', 'effects/' + routed]
     precheck = ("        if any(state is None or (ref in state if absent else state.get(ref) != payload['old_tip'])\n"
                 "               for state in before):")
     publication('effects-push-without-old-tip-check', precheck, "        if False:", 'publication-refused-when-not-at-old-tip')
-    add(28, 'effects-old-tip-checked-at-first-destination', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        precheck, precheck.replace('for state in before):', 'for state in before[:0]):'), stale_rows)
     add(28, 'effects-unlisted-destination-pushed', '58_veldo_0028_effects.py', 'control_effect_executor.py',
         precheck, precheck.replace('state is None or (', 'state is not None and ('),
-        stale_rows + ['effects/publication-config-selection-parity'])
+        ['effects/publication-refused-when-not-at-old-tip'])
     add(28, 'effects-receiver-refusal-as-unknown', '58_veldo_0028_effects.py', 'control_effect_executor.py',
         "            observation = dict(accepted, status='refused', refusal=error.code, evidence=None)",
         "            observation = dict(accepted, status='unknown', evidence=None)",
@@ -500,13 +489,10 @@ def cases():
     # R8 B2: every destination must resolve to itself for its listing, or it is refused.
     # AC3 replaces a second resolution with a guard over the literal URL's whole section.
     itself = "or (section.lower() == 'remote' and subsection == remote"
-    add(28, 'effects-destination-listing-unchecked', '58_veldo_0028_effects.py', 'control_git_identity_transport.py',
-        itself, 'or (False', ['effects/publication-destination-listed-as-resolved'])
-    add(28, 'effects-destination-listing-first-only', '58_veldo_0028_effects.py', 'control_git_identity_transport.py',
+    add(28, 'effects-url-section-pushurl-unchecked', '58_veldo_0028_effects.py', 'control_git_identity_transport.py',
         itself, itself + " and name.lower() != 'pushurl'", ['effects/publication-destination-listed-as-resolved'])
-    # R8 time limits: the push is bounded per destination, and the supervisor's limit follows
-    # the windows the executor announces.
-    publication('effects-push-timeout-not-scaled', "remote, payload['commit'] + ':' + ref, steps=len(pushed))",
+    # AC3 has one destination: retain its configured step budget and supervisor window.
+    publication('effects-push-step-timeout-shortened', "remote, payload['commit'] + ':' + ref, steps=len(pushed))",
                 "remote, payload['commit'] + ':' + ref, steps=1 / step)", 'publication-call-covers-every-destination')
     publication('effects-call-window-not-extended', "                deadline = time.monotonic() + answer['window_seconds']",
                 "                pass", 'publication-call-covers-every-destination')
@@ -518,46 +504,34 @@ def cases():
     publication('effects-scrub-malformed-host-kept', "        if not _AUTHORITY.fullmatch(host):", "        if False:", malformed)
     publication('effects-scrub-at-in-path-kept', "            if '@' in tail:", "            if False:", malformed)
     # R8 rules pinned by rows of their own: a clean push exit, the receiver-URL line-break guard,
-    # the shape of git's report and the configuration read's exit status, and the C locale.
+    # the configuration values and the configuration read's exit status.
     exit_rule = 'publication-requires-clean-push-exit'
     publication('effects-completion-ignores-exit-status', complete,
                 "        complete = all(outcome == 'at-tip' for outcome in outcomes)", exit_rule)
     publication('effects-completion-ignores-hook-failure', complete,
                 complete.replace('push.returncode == 0', 'push.returncode != 128'), exit_rule)
     publication('effects-remote-line-break-accepted', owner_check,
-                "            remote = remote.splitlines()[0]\n" + owner_check,
+                "            remote = remote.partition('\\n')[0]\n" + owner_check,
                 'publication-line-break-refused')
     report = 'publication-resolution-output-checked'
     # AC3 uses machine config values, not the former remote-show header/fetch/footer grammar.
     resolution_guard = "            if configured.returncode or len(targets) != 1:"
-    publication('effects-show-exit-unchecked', resolution_guard, "            if len(targets) != 1:", report)
-    publication('effects-header-unchecked',
-                fetch_config, fetch_config.replace("'remote.' + remote + '.url'", "'remote.origin.url'"), report)
-    publication('effects-fetch-line-unchecked', "            remote = targets[0]\n",
-                "            remote = git('config', '--get', 'remote.origin.url').stdout.strip()\n", report)
+    publication('effects-resolution-config-exit-unchecked', resolution_guard, "            if len(targets) != 1:", report)
     publication('effects-empty-resolution-accepted', parsed, "        pushed = []\n", routed)
     config_guard = "        if local.returncode or transport.config_overrides(local.stdout, remote):"
-    add(28, 'effects-head-line-unchecked', '58_veldo_0028_effects.py', 'git_process.py',
+    add(28, 'effects-local-config-guard-omitted', '58_veldo_0028_effects.py', 'git_process.py',
         config_guard, "        if False:", ['effects/' + report])
     add(28, 'effects-config-exit-unchecked', '58_veldo_0028_effects.py', 'git_process.py',
         config_guard, "        if transport.config_overrides(local.stdout, remote):", ['effects/' + report])
-    # Reintroduce dependence on human diagnostics, now stderr, under non-C locales.
-    resolution_values = "            targets = configured.stdout.splitlines()"
-    publication('effects-resolution-locale-not-forced', resolution_values,
-                "            targets = (configured.stderr if os.environ.get('LC_ALL') not in (None, 'C', 'POSIX') else configured.stdout).splitlines()",
-                'publication-resolution-in-c-locale')
-    publication('effects-resolution-messages-locale-only', resolution_values,
-                "            targets = (configured.stdout if os.environ.get('LC_MESSAGES') in ('C', 'POSIX') else configured.stderr).splitlines()",
-                'publication-resolution-in-c-locale')
-    # R5 3: transport operations run in git_process's network profile. Reintroducing the isolated
-    # profile loses global config and transport variables at once; each git_process mutant loses
-    # one of them, or stops stripping the coordinates the profile must still strip.
+    # AC1: factory transport uses the identity profile. Observe its selection in a socket-free
+    # suite so an omitted profile cannot crash the hermetic integration fence. The following
+    # network-profile cases retain the operator profile's configuration rules.
     capability = ['effects/publication-' + name for name in
                   ('global-insteadof', 'global-credential-helper', 'env-ssh-command', 'global-ssh-command',
                    'config-selection-parity')]
-    add(28, 'effects-transport-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+    add(28, 'effects-transport-isolated-profile', '108_veldo_0153_executor_profile.py', 'control_effect_executor.py',
         "                return git(*args, profile='identity', env=env, steps=steps)",
-        "                return git(*args, env=env, steps=steps)", capability)
+        "                return git(*args, env=env, steps=steps)", ['executor-unit/identity-profile'])
     add(28, 'effects-network-profile-without-global-config', '58_veldo_0028_effects.py', 'git_process.py',
         '        result.update(GIT_NO_REPLACE_OBJECTS="1")',
         '        result.update(GIT_NO_REPLACE_OBJECTS="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")',
@@ -10558,6 +10532,9 @@ def cases():
         "    return min(models, key=lambda m: (m.get('priority', 1 << 30), str(m.get('slug'))))['slug']\n",
         "    return max(models, key=lambda m: (m.get('priority', 1 << 30), str(m.get('slug'))))['slug']\n",
         ['team/newest-model'], ())
+
+    add(28, 'effects-remote-host-unchecked', '108_veldo_0153_executor_profile.py', 'control_git_identity_transport.py',
+        "        if (url.scheme not in ('https', 'ssh') or url.hostname != 'github.com'\n                or url.hostname != record.get('remote_host') or url.password is not None\n                or url.query or url.fragment or port not in (None, 443 if url.scheme == 'https' else 22)\n                or url.username != (None if url.scheme == 'https' else 'git')):\n", '        if False:\n', ['owner-unit/host'])
 
     # VELDO-0153: transport bypasses and durable, signed observations.
     add(153, 'identity153-refusal-module-identity', '107_veldo_0153_identity_push.py', 'git_process.py',

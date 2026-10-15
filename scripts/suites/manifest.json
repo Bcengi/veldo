@@ -1478,6 +1478,13 @@
    ],
    "regions": "Identity profile, credential helper, owner refusals and real fixture Git publication.",
    "requires_note": "Only ROOT and expect. Fake keystore and explicit SSH wire adapter, no live accounts or gate."
+  },
+  {
+   "name": "108_veldo_0153_executor_profile",
+   "file": "108_veldo_0153_executor_profile.py",
+   "requires": [
+    "108_veldo_0153_executor_profile"
+   ]
   }
  ],
  "resource_capacities": {

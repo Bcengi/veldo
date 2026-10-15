@@ -5,7 +5,60 @@ Real GitHub, SSH agent and Secret Service qualification is proof/VELDO-0153/host
 """
 
 
-def _v153_refusal_rows():
+def _v153_evidence_rows():
+    """Review regressions in evidence checks, without invoking a mutation driver."""
+    import copy
+    import runpy
+    assess = runpy.run_path(str(ROOT / 'proof/VELDO-0153/reproduce_refusal.py'))['assess']
+    names = ('route-insteadof', 'route-push-instead-of', 'shape-config-exit')
+    observations = dict(
+        red=dict(failures=['SELFTEST FAIL: VELDO-0153 refusal-unit/' + n for n in names]
+                 + ['SELFTEST FAIL: VELDO-0153 executor/route-insteadof']),
+        eager=dict(failures=['SELFTEST FAIL: VELDO-0153 profile/isolated-without-identity-asset',
+                            'SELFTEST FAIL: VELDO-0153 executor/route-insteadof']),
+        green=dict(failures=[], unit_observations=dict.fromkeys(names, 'binding_mismatch:identity_transport_config')))
+    expect('VELDO-0153 evidence/additional-integration-kills', all(assess(observations, names)))
+    missing = copy.deepcopy(observations)
+    missing['red']['failures'].pop(0)
+    expect('VELDO-0153 evidence/required-unit-kill', not assess(missing, names)[0])
+    dirty = copy.deepcopy(observations)
+    dirty['green']['failures'].append('SELFTEST FAIL: VELDO-0153 executor/route-insteadof')
+    expect('VELDO-0153 evidence/restored-clean', not assess(dirty, names)[2])
+    audit_module = runpy.run_path(str(ROOT / 'proof/VELDO-0153/audit_anchors.py'))
+    audit = audit_module['audit']()
+    import json
+    inventory = json.loads((ROOT / 'proof/VELDO-0153/teeth-inventory.json').read_text())
+    cases, _ = audit_module['registrations']((ROOT / 'scripts/check_teeth_mutations.py').read_text())
+    active = {case['name'] for case in cases}
+    expect('VELDO-0153 evidence/retired-teeth-excluded', all(
+        entry['name'] not in active and (entry['replacement'] is None or entry['replacement'] in active)
+        for entry in inventory['retired']))
+    identities = [(c['module'], c['old'], c['new'], repr(c['also'])) for c in cases if c['finding'] in (28, 153)]
+    expect('VELDO-0153 evidence/no-duplicate-teeth', len(identities) == len(set(identities)))
+    expect('VELDO-0153 evidence/production-and-suite-anchors',
+           not (audit['missing'] or audit['unresolved'] or audit['suite_missing']))
+
+
+def _v153_install(directory):
+    """Copy the actual modules, with literal paths the mutation worker can substitute.
+
+    Both direct loads and imports by sibling path must see the same defective copy.
+    """
+    import shutil
+    directory.mkdir()
+    for source in (ROOT / '.veldo').glob('*.py'):
+        shutil.copyfile(source, directory / source.name)
+    for source, name in (
+            (ROOT / ".veldo" / "git_process.py", 'git_process.py'),
+            (ROOT / ".veldo" / "control_git_identity_transport.py", 'control_git_identity_transport.py'),
+            (ROOT / ".veldo" / "control_effect_executor.py", 'control_effect_executor.py'),
+            (ROOT / ".veldo" / "control_landing.py", 'control_landing.py'),
+            (ROOT / ".veldo" / "lander.py", 'lander.py')):
+        shutil.copyfile(source, directory / name)
+    return directory
+
+
+def _v153_refusal_rows(installed):
     """Unit check of the real executor/profile exception boundary; no transport or service runs.
 
     The fenced integration rows below also check that the remote remains unchanged.
@@ -19,7 +72,7 @@ def _v153_refusal_rows():
     from types import SimpleNamespace
     from unittest.mock import patch
 
-    spec = importlib.util.spec_from_file_location('refusal153', ROOT / '.veldo/control_effect_executor.py')
+    spec = importlib.util.spec_from_file_location('refusal153', installed / 'control_effect_executor.py')
     X = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(X)
     contract = dict(kind='publication', target='git', domain_uuid='domain', repository_uuid='alpha',
@@ -31,7 +84,7 @@ def _v153_refusal_rows():
     outcomes = {}
     with tempfile.TemporaryDirectory(prefix='refusal153-') as directory:
         isolated_path = Path(directory) / 'git_process.py'
-        isolated_path.write_bytes((ROOT / '.veldo/git_process.py').read_bytes())
+        isolated_path.write_bytes((installed / 'git_process.py').read_bytes())
         isolated_spec = importlib.util.spec_from_file_location('isolated153', isolated_path)
         isolated = importlib.util.module_from_spec(isolated_spec)
         try:
@@ -148,7 +201,7 @@ def _v153_fence_rows(W, base):
     print('VELDO-0153 fence observations: ' + json.dumps({'outcome': outcome, 'kinds': kinds}, sort_keys=True))
 
 
-def _v153_suite(fence_dir):
+def _v153_suite(fence_dir, installed):
     import importlib.util
     import json
     import os
@@ -161,7 +214,7 @@ def _v153_suite(fence_dir):
     from unittest.mock import patch
 
     def load(name):
-        spec = importlib.util.spec_from_file_location('v153_' + name, ROOT / '.veldo' / (name + '.py'))
+        spec = importlib.util.spec_from_file_location('v153_' + name, installed / (name + '.py'))
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         return mod
@@ -619,7 +672,7 @@ def _v153_suite(fence_dir):
             Path(os.environ['VELDO_0153_OBSERVATIONS']).write_text(json.dumps(results, indent=2) + '\n')
 
 
-def _v153_hermetic():
+def _v153_hermetic(installed):
     """The suite runs inside the hermetic fence: nothing it starts reaches the network or a real
     keyring or credential store, and a fixture that would is a loud failure when the fence closes."""
     import runpy
@@ -630,8 +683,13 @@ def _v153_hermetic():
         _v153_fence_rows(W, Path(tmp) / 'proof')
         fence = W['Fence'](Path(tmp) / 'fence')
         with fence.active():
-            _v153_suite(fence.directory)
+            _v153_suite(fence.directory, installed)
 
 
-_v153_refusal_rows()
-_v153_hermetic()
+import tempfile as _v153_tempfile
+from pathlib import Path as _v153_Path
+_v153_evidence_rows()
+with _v153_tempfile.TemporaryDirectory(prefix='modules153-') as _v153_directory:
+    _v153_installed = _v153_install(_v153_Path(_v153_directory) / 'installed')
+    _v153_refusal_rows(_v153_installed)
+    _v153_hermetic(_v153_installed)

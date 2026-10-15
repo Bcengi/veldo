@@ -1,0 +1,115 @@
+{
+  "scope": "VELDO-0153 review corrections; retired entries are not active registrations or kills",
+  "retired": [
+    {
+      "name": "effects-completion-first-destination",
+      "reason": "One checked destination makes first-only completion equivalent to the live implementation; the previous outcomes[1:] replacement duplicated exit-status-only completion.",
+      "replacement": "effects-completion-from-exit-status"
+    },
+    {
+      "name": "effects-old-tip-checked-at-first-destination",
+      "reason": "One checked destination makes first-only validation equivalent to production; before[:0] duplicated removal of the old-tip check.",
+      "replacement": "effects-push-without-old-tip-check"
+    },
+    {
+      "name": "effects-push-timeout-not-scaled",
+      "reason": "AC3 permits one URL, so per-destination scaling has no observable behavior. The flat one-second mutant is registered under its actual defect.",
+      "replacement": "effects-push-step-timeout-shortened"
+    },
+    {
+      "name": "effects-header-unchecked",
+      "reason": "Production no longer parses remote-show headers; reading remote.origin.url was an unrelated invented defect.",
+      "replacement": null
+    },
+    {
+      "name": "effects-fetch-line-unchecked",
+      "reason": "Production no longer parses remote-show fetch lines; reading remote.origin.url was an unrelated invented defect.",
+      "replacement": null
+    },
+    {
+      "name": "effects-resolution-locale-not-forced",
+      "reason": "Production reads untranslated config values and has no locale forcing to remove. The stderr replacement invented a locale dependency.",
+      "replacement": null
+    },
+    {
+      "name": "effects-resolution-messages-locale-only",
+      "reason": "Production has no locale forcing to weaken to LC_MESSAGES. The stderr replacement invented a locale dependency.",
+      "replacement": null
+    },
+    {
+      "name": "effects-head-line-unchecked",
+      "reason": "Production no longer parses a HEAD report line. Omitting the local-config guard is now registered with its actual name.",
+      "replacement": "effects-local-config-guard-omitted"
+    },
+    {
+      "name": "effects-state-read-at-authorized-url",
+      "reason": "AC3 makes authorized and actual destinations identical. Reading local state is registered as a separate, accurately named defect.",
+      "replacement": "effects-state-read-locally"
+    },
+    {
+      "name": "effects-push-skips-hooks",
+      "reason": "The mutant enables hooks, and is byte-identical to identity153-pre-push-hook. Keep one registration for this defect.",
+      "replacement": "identity153-pre-push-hook"
+    },
+    {
+      "name": "effects-destination-listing-unchecked",
+      "reason": "The whole URL-named-section guard removal is byte-identical to identity153-url-section. Keep one registration for this defect.",
+      "replacement": "identity153-url-section"
+    },
+    {
+      "name": "effects-destination-listing-first-only",
+      "reason": "The live defect exempts pushurl entries from the URL-named-section guard; it no longer checks a first destination.",
+      "replacement": "effects-url-section-pushurl-unchecked"
+    },
+    {
+      "name": "effects-show-exit-unchecked",
+      "reason": "Resolution uses config --get-all, not a remote-show report.",
+      "replacement": "effects-resolution-config-exit-unchecked"
+    },
+    {
+      "name": "effects-destinations-from-dry-run-output",
+      "reason": "The defect trusts actual push output, not a removed dry-run.",
+      "replacement": "effects-destinations-from-push-output"
+    }
+  ],
+  "retired_rows": [
+    {
+      "name": "publication-resolution-in-c-locale",
+      "reason": "No locale forcing remains in production. Config values have no translated grammar; remove the obsolete locale claim and its contrived falsifiers."
+    }
+  ],
+  "retained": [
+    {
+      "name": "effects-unlisted-destination-pushed",
+      "rows": [
+        "effects/publication-refused-when-not-at-old-tip"
+      ],
+      "reason": "Failed listing still forbids publication. Routing and configuration-selection rows do not reach the old-tip guard and cannot falsify it."
+    },
+    {
+      "name": "effects-transport-isolated-profile",
+      "suite": "108_veldo_0153_executor_profile.py",
+      "rows": [
+        "executor-unit/identity-profile"
+      ],
+      "reason": "Exercise real receive with a process-boundary spy. Missing identity profile is asserted before any fixture URL needs translation; the hermetic fence remains unchanged."
+    },
+    {
+      "name": "effects-completion-from-exit-status",
+      "rows": [
+        "effects/publication-completion-from-destination-state"
+      ],
+      "reason": "The AC3 fan-out fixture refuses before completion is computed. Its refusal remains tested and is falsified by identity153-url-section; only the actual completion row belongs on this mutant."
+    }
+  ],
+  "new_falsifiers": [
+    {
+      "name": "effects-remote-host-unchecked",
+      "guarantee": "Remote config values must identify the allowed host, independent of the retired remote-show grammar.",
+      "suite": "108_veldo_0153_executor_profile.py",
+      "rows": [
+        "owner-unit/host"
+      ]
+    }
+  ]
+}
