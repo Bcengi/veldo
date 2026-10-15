@@ -157,7 +157,8 @@ No automatic recovery, extra channel activation or broader host qualification is
 ## Notes
 
 Qualify every logged-in subscription account the owner registers, any number per provider (today three
-Claude Code and one Codex), for each of Claude Code and Codex on Linux, and on the Mac through VELDO-0147. Models run only through those subscriptions; paid model APIs are prohibited.
+Claude Code and two Codex; the second Codex login serves reviews and checks only, per its registry
+record, see VELDO-0160), for each of Claude Code and Codex on Linux, and on the Mac through VELDO-0147. Models run only through those subscriptions; paid model APIs are prohibited.
 There is no per-call price. Record actual invocation counts, wall time, tokens or messages as
 reported by the CLI, and the subscription's exposed rate-limit windows, resets and usage
 watermarks. Do not fabricate unreported counters or require pricing to qualify an adapter.

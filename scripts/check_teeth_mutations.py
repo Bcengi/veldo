@@ -5657,8 +5657,8 @@ def cases():
     factory('chat-not-the-owners', "principal=owner, chat_id=plan['chat'], revoked_at=None)),",
             "principal=owner, chat_id=plan['chat'] + 1, revoked_at=None)),  # defect: another chat is enrolled",
             'chat/enrolled')
-    factory('setup-starts-service', "                                   api_service=api_service)\n",
-            "                                   api_service=api_service)\n"
+    factory('setup-starts-service', "                                   work=work)\n",
+            "                                   work=work)\n"
             "            CS.start(installed['unit'], runner)  # defect: the setup starts the service\n",
             'service/starts-inert')
     # AC3 (declared falsifier): the genesis is signed by a key that is not the owner's, and accepted.
@@ -7304,12 +7304,12 @@ def cases():
          "    return bool((record or {}).get('windows'))  # defect: usage alone is not an observation\n",
          ['pool/usage-observes'])
     pool('pool-highest-utilization-first', 'control_account_pool.py',
-         "        ranked.append(((0, used) if used is not None else (1, 0), active, last, name))\n",
-         "        ranked.append(((0, -used) if used is not None else (1, 0), active, last, name))  # defect\n",
+         "        ranked.append((name in refused, (0, used) if used is not None else (1, 0), active, last, name))\n",
+         "        ranked.append((name in refused, (0, -used) if used is not None else (1, 0), active, last, name))  # defect\n",
          ['pool/selection-order'])
     pool('pool-most-recently-used-first', 'control_account_pool.py',
-         "        ranked.append(((0, used) if used is not None else (1, 0), active, last, name))\n",
-         "        ranked.append(((0, used) if used is not None else (1, 0), active, -last, name))  # defect\n",
+         "        ranked.append((name in refused, (0, used) if used is not None else (1, 0), active, last, name))\n",
+         "        ranked.append((name in refused, (0, used) if used is not None else (1, 0), active, -last, name))  # defect\n",
          ['pool/selection-order'])
     pool('pool-until-latest-reset', 'control_account_pool.py',
          "                until = max(resets) if until is None else min(until, max(resets))\n",
@@ -8797,7 +8797,9 @@ def cases():
                    "    if not isinstance(" + source + ".get('session_environment'), list):", "    if False:",
                    ['refuse/' + engine])
     hygiene165('own-values-lost', 'control_launch.py',
-               "    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))",
+               "    environment.update({name: value for name, value in\n"
+               "                        json.loads(environment.pop(ENGINE_OVERRIDES, '{}')).items()\n"
+               "                        if not name.startswith('VELDO_') or name.startswith(DELIVERY_PREFIX)})",
                "    environment.pop(ENGINE_OVERRIDES, None)", ['strip/own-values'])
     hygiene165('strip-not-applied', 'control_launch.py',
                '    environment = engine_environment(environment)',
@@ -9846,6 +9848,12 @@ def cases():
     add(127, 'role127-staged-skill-committed', suite127, 'control_agent_config_handoff.py',
         "                handle.write('\\n/.agents/skills/' + skill['name'] + '\\n')",
         "                handle.write('\\n')", ['review/skill-commit'])
+    add(213, 'prompt213-mark-after-write', '80_veldo_0155_claude_baseline.py', 'control_launch.py',
+        "    if last and getattr(terminal, 'require_prompt', False):\n"
+        "        terminal.wrote_prompt()\n    stdin.write(data)\n    stdin.flush()\n",
+        "    stdin.write(data)\n    stdin.flush()\n"
+        "    if last and getattr(terminal, 'require_prompt', False):\n"
+        "        terminal.wrote_prompt()\n", ['paid-api/prompt-write'])
     add(127, 'role127-probe-is-terminal', suite127, 'control_engine_claude.py',
         "            if self.require_prompt and (not self.prompt_written or decoded['num_turns'] == 0):",
         "            if False:", ['review/probe-terminal'])

@@ -1,0 +1,529 @@
+{
+  "schema": "veldo.local-targeted-tests/v1",
+  "spec_id": "VELDO-0182",
+  "commit": "c416bf44a3a6981886c196a02a7808ca17040b6f",
+  "tree": "96d54dc0e9d4eaaef40271a25894de831d9c93c9",
+  "worktree_clean": true,
+  "command": "VELDO_0182_REPORT=<file> python3 scripts/selftest.py --suite 105_veldo_0182_memory",
+  "exit_code": 2,
+  "summary": [
+    "selftest (PARTIAL, 1 of 162 suites): 153 passed, 0 failed in 73.61s"
+  ],
+  "log_sha256": "sha256:242d424f7c03e7e6aeaede41ace3a91ce5e0bf45143d36a16be8eccbd8f94492",
+  "suite_sha256": "sha256:b4c36d623633e631e8ded856e76dc40560b524f7f682652ae8a824fef3c5793b",
+  "rows_total": 127,
+  "rows_passed": 127,
+  "in_suite_falsifiers": 18,
+  "in_suite_falsifiers_detected": 18,
+  "scope": "Batch 1 rerun of suite 105 at the batch code commit. Each falsifier/* row applies its counterexample inside the suite and passes only when the counterexample is refused. Diagnostic partial run, not a gate verdict. The round two and round three source mutations in local-results.json have no recorded mutant text and were not replayed.",
+  "rows": {
+    "record/owner-signature": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/five-parts": {
+      "assertions": 1,
+      "passed": true
+    },
+    "switch/refused-unchanged": {
+      "assertions": 1,
+      "passed": true
+    },
+    "switch/retry-rechecks": {
+      "assertions": 1,
+      "passed": true
+    },
+    "switch/original-setup": {
+      "assertions": 1,
+      "passed": true
+    },
+    "metrics/check-refusal": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/commit-before-check": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/venv-interpreter": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/system-interpreter": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/idempotent": {
+      "assertions": 1,
+      "passed": true
+    },
+    "host/setup-revise-differs": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/host-unchecked": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/differs": {
+      "assertions": 1,
+      "passed": true
+    },
+    "metrics/step-refusal-only": {
+      "assertions": 1,
+      "passed": true
+    },
+    "record/stale": {
+      "assertions": 1,
+      "passed": true
+    },
+    "record/revise": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/later-registration": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/memory-inside-accepted": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/setup-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/real-paths": {
+      "assertions": 1,
+      "passed": true
+    },
+    "link/nested-same-everywhere": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/link-outside-accepted": {
+      "assertions": 1,
+      "passed": true
+    },
+    "link/inside-accepted": {
+      "assertions": 1,
+      "passed": true
+    },
+    "link/safety-copy-keeps-links": {
+      "assertions": 1,
+      "passed": true
+    },
+    "link/location-same-everywhere": {
+      "assertions": 1,
+      "passed": true
+    },
+    "profile/no-walk": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/host-differs": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/engine-overrides": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/dedicated": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/owner-worker-untouched": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/kills-nothing": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/stopped": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/read-only": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/facts-and-untexted": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/search-is-claude-mems": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/unaudited-version-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/cut-short-stopped": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/own-resolution": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/caller-pins-only": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/chroma-mcp-cause-named": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/port-unverified": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/port-listener-verified": {
+      "assertions": 1,
+      "passed": true
+    },
+    "worker/backfill-bounded": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/backfill-silent": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/missing-database": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/missing-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "setup/link-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-passes": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-file_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/search-required-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-ava_memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/search-required-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-knowledge_graph": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/search-required-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-memory_kb": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/sample-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/search-required-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/named-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/copy-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/loss-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/copy-once-claude_mem": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/sqlite-writer-50ms": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/idle-wal-no-sidecars": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/check-while-assistant-writes": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/chroma-open-writer": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/chroma-link-outside-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/chroma-link-followed": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/chroma-link-inside-kept": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/chroma-persist-retried": {
+      "assertions": 1,
+      "passed": true
+    },
+    "copy/chroma-busy-refused": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/unavailable-not-lost": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/rewrite-rerun": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/setup-only": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/twenty": {
+      "assertions": 1,
+      "passed": true
+    },
+    "check/count-drop": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/older-host": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/rerun-preflight": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/service-lock": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/setup-memory": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/record": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/identical-files": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/setup-repeat": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/preflight": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/adapter-preflight-no-writes": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/refused-outcome": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/fresh-setup": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/check-cli": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/revise-cli": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/differs-no-writes": {
+      "assertions": 1,
+      "passed": true
+    },
+    "integration/host-differs-no-writes": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/register": {
+      "assertions": 2,
+      "passed": true
+    },
+    "launch/reserved-config-claude": {
+      "assertions": 2,
+      "passed": true
+    },
+    "launch/config-precedence-claude": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/config-precedence-claude": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/reserved-config-codex": {
+      "assertions": 2,
+      "passed": true
+    },
+    "launch/config-precedence-codex": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/config-precedence-codex": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/acct-c1": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/durable-receipt": {
+      "assertions": 4,
+      "passed": true
+    },
+    "launch/recorded": {
+      "assertions": 4,
+      "passed": true
+    },
+    "launch/acct-c2": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/acct-x1": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/acct-x2": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/same-on-every-account": {
+      "assertions": 1,
+      "passed": true
+    },
+    "launch/current-revision": {
+      "assertions": 1,
+      "passed": true
+    },
+    "falsifier/account-derived": {
+      "assertions": 1,
+      "passed": true
+    }
+  }
+}
