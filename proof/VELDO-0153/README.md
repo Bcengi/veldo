@@ -1,6 +1,6 @@
 # VELDO-0153 review fixes
 
-Current batch-2 record: [2026-10-15](round-2026-10-15.md). The remaining text and earlier
+Current batch-2 record: [independent-review corrections](review-corrections.md). The remaining text and earlier
 JSON receipts below are historical. The current manifest names the final code commit
 and retains incomplete integration and host qualification explicitly.
 
