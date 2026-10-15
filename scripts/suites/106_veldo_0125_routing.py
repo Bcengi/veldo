@@ -805,7 +805,9 @@ def _v125_routing_suite():
 
     def late_usage(base):
         for release in ('operator', 'unknown'):
-            for initial in ('accepted', 'running'):
+            for initial in ('accepted', 'running', 'exited'):
+                if release == 'unknown' and initial == 'exited':
+                    continue  # An unknown observation cannot overwrite a signed exit.
                 f = T.Fixture(base / release / initial)
                 try:
                     f.prepare(required=['macos'])
@@ -813,8 +815,10 @@ def _v125_routing_suite():
                     client = f.client()
                     binding = client.claim('dispatch/test')['binding']
                     client.launch(binding, 'accept', receiver=T.process(), runtime_seconds=5)
-                    if initial == 'running':
+                    if initial in ('running', 'exited'):
                         client.launch(binding, 'running', process=T.process())
+                    if initial == 'exited':
+                        client.result(binding, T.observation())  # Exit known; usage not yet collected.
                     cleanup = dict(terminated=True, cleaned=True, clone_removed=True)
                     if release == 'operator':
                         f.client('operator').release(binding, reason='inspected cleanup', cleanup=cleanup)

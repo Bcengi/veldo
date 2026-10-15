@@ -1,0 +1,15 @@
+command: python3 scripts/selftest.py --suite 106_veldo_0125_routing
+exit: 1
+  SELFTEST FAIL: VELDO-0125 AC3/remote-result-transport-failure
+  SELFTEST FAIL: VELDO-0125 AC3/remote-result-restart
+  SELFTEST FAIL: VELDO-0125 AC3/stored-release-restart
+  SELFTEST FAIL: VELDO-0125 AC3/default-collector-retains-files
+  SELFTEST FAIL: VELDO-0125 AC3/unknown-host-cleanup
+  SELFTEST FAIL: VELDO-0125 AC3/running-notification-lost
+  SELFTEST FAIL: VELDO-0125 AC3/empty-collector-preserves-files
+  SELFTEST FAIL: VELDO-0125 AC3/cleanup-failure-release
+  SELFTEST FAIL: VELDO-0125 AC3/incomplete-retirement-release
+  SELFTEST FAIL: VELDO-0125 AC3/host-release-replay-and-restart
+AC2/actual-worker-launch: AssertionError: 
+  SELFTEST FAIL: VELDO-0125 AC2/actual-worker-launch
+selftest (PARTIAL, 1 of 166 suites): 51 passed, 11 failed in 29.54s

@@ -1,0 +1,22 @@
+--- a/engine/.veldo/control_worker_service.py
++++ b/engine/.veldo/control_worker_service.py
+@@ -226,7 +226,7 @@
+                 if prior['digest'] != SV.S.digest_of(command):
+                     raise SV.Refused('binding_mismatch:command_replay')
+                 return dict(ok=True, reason=op, binding=binding, record=data, contract=contract, replayed=True,
+-                            released=host_released, host_released=host_released)
++                            released=False, host_released=host_released)
+         if op == 'worker_release':
+             return self.operator_release(ds, reservations, record, data, params, command, binding, now)
+         if op == 'worker_claim':
+--- a/.veldo/control_worker_service.py
++++ b/.veldo/control_worker_service.py
+@@ -226,7 +226,7 @@
+                 if prior['digest'] != SV.S.digest_of(command):
+                     raise SV.Refused('binding_mismatch:command_replay')
+                 return dict(ok=True, reason=op, binding=binding, record=data, contract=contract, replayed=True,
+-                            released=host_released, host_released=host_released)
++                            released=False, host_released=host_released)
+         if op == 'worker_release':
+             return self.operator_release(ds, reservations, record, data, params, command, binding, now)
+         if op == 'worker_claim':

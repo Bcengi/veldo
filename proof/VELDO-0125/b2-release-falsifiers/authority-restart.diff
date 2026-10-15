@@ -1,0 +1,22 @@
+--- a/engine/.veldo/control_worker_service.py
++++ b/engine/.veldo/control_worker_service.py
+@@ -62,7 +62,7 @@
+             _, reservations = self.records(data['repository_uuid'])
+             slot = reservations.worker(data['dispatch_id'])
+             if slot and slot['retired']:
+-                self.notify_release(data['repository_uuid'], data)
++                pass  # falsifier: forget durable releases on restart
+ 
+     def notify_release(self, repository, binding):
+         """Wake the configured Mac endpoint outside the authority's IPC thread.
+--- a/.veldo/control_worker_service.py
++++ b/.veldo/control_worker_service.py
+@@ -62,7 +62,7 @@
+             _, reservations = self.records(data['repository_uuid'])
+             slot = reservations.worker(data['dispatch_id'])
+             if slot and slot['retired']:
+-                self.notify_release(data['repository_uuid'], data)
++                pass  # falsifier: forget durable releases on restart
+ 
+     def notify_release(self, repository, binding):
+         """Wake the configured Mac endpoint outside the authority's IPC thread.

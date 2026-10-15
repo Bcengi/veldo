@@ -1,0 +1,5 @@
+command: python3 scripts/selftest.py --suite 106_veldo_0125_routing
+exit: 1
+AC3/result-retry-backoff: AssertionError: 
+  SELFTEST FAIL: VELDO-0125 AC3/result-retry-backoff
+selftest (PARTIAL, 1 of 166 suites): 61 passed, 1 failed in 40.75s

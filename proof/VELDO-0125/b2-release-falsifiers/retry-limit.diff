@@ -1,0 +1,22 @@
+--- a/engine/.veldo/control_worker_client.py
++++ b/engine/.veldo/control_worker_client.py
+@@ -104,7 +104,7 @@
+             except Refused as error:
+                 if not error.code.startswith('AUTHORITY_UNAVAILABLE:'):
+                     raise
+-                if attempt + 1 == self.retry_attempts:
++                if attempt + 1 == self.retry_attempts - 1:
+                     raise
+                 delay = min(self.retry_max_seconds, self.retry_seconds * 2 ** attempt)
+                 time.sleep(random.uniform(delay / 2, delay))
+--- a/.veldo/control_worker_client.py
++++ b/.veldo/control_worker_client.py
+@@ -104,7 +104,7 @@
+             except Refused as error:
+                 if not error.code.startswith('AUTHORITY_UNAVAILABLE:'):
+                     raise
+-                if attempt + 1 == self.retry_attempts:
++                if attempt + 1 == self.retry_attempts - 1:
+                     raise
+                 delay = min(self.retry_max_seconds, self.retry_seconds * 2 ** attempt)
+                 time.sleep(random.uniform(delay / 2, delay))

@@ -1,0 +1,22 @@
+--- a/engine/.veldo/control_worker.py
++++ b/engine/.veldo/control_worker.py
+@@ -31,7 +31,7 @@
+     target = Path(clone).parent / 'deliverables.tar'
+     temporary = target.with_suffix('.tmp')
+     with tarfile.open(temporary, 'w') as archive:
+-        for name, path in (('clone', clone), ('scratch', scratch), ('tmp', started.temp)):
++        for name, path in (('clone', clone), ('scratch', scratch)):
+             if path is None:
+                 continue
+             archive.add(path, arcname=name)
+--- a/.veldo/control_worker.py
++++ b/.veldo/control_worker.py
+@@ -31,7 +31,7 @@
+     target = Path(clone).parent / 'deliverables.tar'
+     temporary = target.with_suffix('.tmp')
+     with tarfile.open(temporary, 'w') as archive:
+-        for name, path in (('clone', clone), ('scratch', scratch), ('tmp', started.temp)):
++        for name, path in (('clone', clone), ('scratch', scratch)):
+             if path is None:
+                 continue
+             archive.add(path, arcname=name)

@@ -1,0 +1,22 @@
+--- a/engine/.veldo/project_runner_macos.py
++++ b/engine/.veldo/project_runner_macos.py
+@@ -248,7 +248,7 @@
+                     or request.get('contract_digest', slot.get('contract_digest', contract_digest)) != contract_digest):
+                 raise P.Refused('binding_mismatch:authority_release')
+             if slot['state'] != 'retired':
+-                write(path, dict(slot, state='retired', authority_release=outcome))
++                pass  # falsifier: leak the local slot
+ 
+ 
+ class Run:
+--- a/.veldo/project_runner_macos.py
++++ b/.veldo/project_runner_macos.py
+@@ -248,7 +248,7 @@
+                     or request.get('contract_digest', slot.get('contract_digest', contract_digest)) != contract_digest):
+                 raise P.Refused('binding_mismatch:authority_release')
+             if slot['state'] != 'retired':
+-                write(path, dict(slot, state='retired', authority_release=outcome))
++                pass  # falsifier: leak the local slot
+ 
+ 
+ class Run:

@@ -1,0 +1,22 @@
+--- a/engine/.veldo/control_worker_client.py
++++ b/engine/.veldo/control_worker_client.py
+@@ -106,7 +106,7 @@
+                     raise
+                 if attempt + 1 == self.retry_attempts:
+                     raise
+-                delay = min(self.retry_max_seconds, self.retry_seconds * 2 ** attempt)
++                delay = self.retry_seconds
+                 time.sleep(random.uniform(delay / 2, delay))
+                 continue
+             return response
+--- a/.veldo/control_worker_client.py
++++ b/.veldo/control_worker_client.py
+@@ -106,7 +106,7 @@
+                     raise
+                 if attempt + 1 == self.retry_attempts:
+                     raise
+-                delay = min(self.retry_max_seconds, self.retry_seconds * 2 ** attempt)
++                delay = self.retry_seconds
+                 time.sleep(random.uniform(delay / 2, delay))
+                 continue
+             return response

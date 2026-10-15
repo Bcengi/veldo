@@ -1,0 +1,22 @@
+--- a/engine/.veldo/control_worker.py
++++ b/engine/.veldo/control_worker.py
+@@ -151,7 +151,7 @@
+         if acknowledgement.exists():
+             outcome = json.loads(acknowledgement.read_text())
+             if outcome.get('host_released'):
+-                apply_release(host, retained['binding'], outcome)
++                pass  # falsifier: ignore stored release
+                 return outcome
+         if client.outbox.exists():
+             outcome = client.retry_result()
+--- a/.veldo/control_worker.py
++++ b/.veldo/control_worker.py
+@@ -151,7 +151,7 @@
+         if acknowledgement.exists():
+             outcome = json.loads(acknowledgement.read_text())
+             if outcome.get('host_released'):
+-                apply_release(host, retained['binding'], outcome)
++                pass  # falsifier: ignore stored release
+                 return outcome
+         if client.outbox.exists():
+             outcome = client.retry_result()

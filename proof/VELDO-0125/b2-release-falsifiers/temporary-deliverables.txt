@@ -1,0 +1,7 @@
+command: python3 scripts/selftest.py --suite 106_veldo_0125_routing
+exit: 1
+AC3/default-collector-retains-files: KeyError: "filename 'tmp/deliverable.bin' not found"
+  SELFTEST FAIL: VELDO-0125 AC3/default-collector-retains-files
+  SELFTEST FAIL: VELDO-0125 AC3/unknown-host-cleanup
+  SELFTEST FAIL: VELDO-0125 AC3/running-notification-lost
+selftest (PARTIAL, 1 of 166 suites): 59 passed, 3 failed in 39.36s

@@ -368,7 +368,8 @@ class Service(SV.Service):
             if data['state'] == 'exited' and (state != 'exited' or
                     {k: v for k, v in observation.items() if k != 'cleanup'} !=
                     {k: v for k, v in previous.items() if k != 'cleanup'} or
-                    usage != data.get('usage') or references != data.get('references')):
+                    (data.get('usage') is not None and usage != data.get('usage'))
+                    or references != data.get('references')):
                 raise SV.Refused('binding_mismatch:remote_result')
             if state == 'exited':
                 termination = observation.get('termination')

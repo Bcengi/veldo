@@ -1,0 +1,22 @@
+--- a/engine/.veldo/control_worker_service.py
++++ b/engine/.veldo/control_worker_service.py
+@@ -158,7 +158,7 @@
+             with SV.S.atomic(self.conn):
+                 answer = self.worker(packet, command, repository)
+             if answer.get('host_released') and command['operation'] in ('worker_result', 'worker_release'):
+-                self.notify_release(repository, answer['binding'])
++                pass  # falsifier: no Mac release notification
+             if self.loop is not None and command['operation'] in ('worker_result', 'worker_release'):
+                 self.loop.remote_result(repository, command['parameters']['dispatch_id'])
+                 if answer.get('released'):
+--- a/.veldo/control_worker_service.py
++++ b/.veldo/control_worker_service.py
+@@ -158,7 +158,7 @@
+             with SV.S.atomic(self.conn):
+                 answer = self.worker(packet, command, repository)
+             if answer.get('host_released') and command['operation'] in ('worker_result', 'worker_release'):
+-                self.notify_release(repository, answer['binding'])
++                pass  # falsifier: no Mac release notification
+             if self.loop is not None and command['operation'] in ('worker_result', 'worker_release'):
+                 self.loop.remote_result(repository, command['parameters']['dispatch_id'])
+                 if answer.get('released'):

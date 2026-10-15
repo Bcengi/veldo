@@ -80,6 +80,11 @@ release or unknown cleanup advances the report sequence on the original
 reservation invocation. These are cumulative corrections, not additional
 invocation charges. Duplicate delivery leaves the measured charge unchanged;
 an unexpected preexisting first report still refuses atomically.
+If the exit was already recorded without usage, its first measured usage can
+fill that gap while preserving the signed exit and references. Previously
+measured usage remains immutable. Delayed local observations also cannot
+overwrite a retired Mac slot, and a release arriving before bootstrap retains
+a tombstone that prevents a late launch of that dispatch.
 
 The default archive includes TMPDIR contents before deletion, preserving output
 linked from the clone into temporary storage. Archives remain file URIs on the
