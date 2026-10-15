@@ -89,3 +89,12 @@ a tombstone that prevents a late launch of that dispatch.
 The default archive includes TMPDIR contents before deletion, preserving output
 linked from the clone into temporary storage. Archives remain file URIs on the
 Mac; this change does not transfer or expire them.
+
+The [follow-up verification record](b2-release-falsifiers/verification.txt) binds
+the tested source digests and records 17 relay rows and 36 routing rows passing,
+with no failures. Both commands exit 2 because selected suites are PARTIAL.
+The ten adjacent falsifier diffs and failure excerpts demonstrate the named
+regressions on the implementation commits recorded there. These are Linux
+fixtures with signed requests, real SQLite transactions, a child receiver over
+file-backed test transport, and simulated Mac OS observations; no live SSH or
+macOS qualification is claimed. The full gate remains the reviewer's work.

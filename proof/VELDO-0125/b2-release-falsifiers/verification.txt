@@ -1,0 +1,38 @@
+Selected regression checks only; not a canonical gate pass or independent approval.
+Tested implementation commit: 052fd5d841ae18804e1a9cd7ad7703dd3179ff7d
+
+python3 scripts/selftest.py --suite 105_veldo_0125_relay
+exit: 2 (PARTIAL)
+  105_veldo_0125_relay                            17 passed   11.65s
+selftest (PARTIAL, 1 of 166 suites): 43 passed, 0 failed in 11.65s
+
+python3 scripts/selftest.py --suite 106_veldo_0125_routing
+exit: 2 (PARTIAL)
+  106_veldo_0125_routing                          36 passed   42.81s
+selftest (PARTIAL, 1 of 166 suites): 62 passed, 0 failed in 42.81s
+
+SHA-256 of tested sources and regressions; installed and canonical copies match:
+0b4c45426e4f9ee540df6df7a23144ed6868189a9e83dc938915d82c0f361a69  engine/.veldo/control_service.py
+fe16bee6c8ed03c5aa6cdd604b73ac61e59b370f020e17d7742e6e53d362a5e5  engine/.veldo/control_worker.py
+f07c3db8aba7aa73988096e5ac05befc3ce9379aad5407403d932e3e017f89f5  engine/.veldo/control_worker_client.py
+adda555a8bc02c698fd1822831450a9063ed8b5c79a4204f67c94f8e13f4f547  engine/.veldo/control_worker_service.py
+963d2d60150a1fd3e75debf36e2c08a6f72009b3b632547ed451bc47825a4e0b  engine/.veldo/project_runner_macos.py
+4324d2bd1b77699185035f7791f9707a271e39ea2978c1d3d92844dbeb65df59  scripts/suites/105_veldo_0125_relay.py
+cb501438be5e7757530104cff26c92729ba621e9afb258dee68650068f2d5123  scripts/suites/106_veldo_0125_routing.py
+
+Falsifiers: initial nine ran on 3c0416aa; late-usage was rerun and late-exited-usage
+was added on 052fd5d841ae18804e1a9cd7ad7703dd3179ff7d. Only the missing-usage-on-recorded-exit guard and its
+regression case changed between these implementation commits. Every mutation changed
+both copies and was restored. Each .diff retains the exact applied change; each .txt
+retains the command, actual exit code, named failed rows, and partial summary.
+
+local-slot-retirement: caught (exit 1)
+operator-notification: caught (exit 1)
+authority-restart: caught (exit 1)
+stored-outcome: caught (exit 1)
+late-usage: caught (exit 1)
+late-exited-usage: caught (exit 1)
+temporary-deliverables: caught (exit 1)
+replay-wake: caught (exit 1)
+retry-backoff: caught (exit 1)
+retry-limit: caught (exit 1)

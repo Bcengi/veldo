@@ -1,6 +1,6 @@
 --- a/engine/.veldo/control_worker_service.py
 +++ b/engine/.veldo/control_worker_service.py
-@@ -381,8 +381,7 @@
+@@ -382,8 +382,7 @@
                  elif record['state'] == 'accepted':
                      ds.unknown(dispatch, record['contract_digest'], 'remote_launch_evidence_missing', now=now,
                                 expected_state='accepted')
@@ -12,7 +12,7 @@
                      invocation = reservations._records()[RES.entity('invocation', [self.domain, data['invocation']])]
 --- a/.veldo/control_worker_service.py
 +++ b/.veldo/control_worker_service.py
-@@ -381,8 +381,7 @@
+@@ -382,8 +382,7 @@
                  elif record['state'] == 'accepted':
                      ds.unknown(dispatch, record['contract_digest'], 'remote_launch_evidence_missing', now=now,
                                 expected_state='accepted')

@@ -1,0 +1,5 @@
+command: python3 scripts/selftest.py --suite 106_veldo_0125_routing
+exit: 1
+AC3/late-usage-amends-spend: Refused: binding_mismatch:remote_result
+  SELFTEST FAIL: VELDO-0125 AC3/late-usage-amends-spend
+selftest (PARTIAL, 1 of 166 suites): 61 passed, 1 failed in 32.29s

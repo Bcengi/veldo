@@ -1,0 +1,22 @@
+--- a/engine/.veldo/control_worker_service.py
++++ b/engine/.veldo/control_worker_service.py
+@@ -368,7 +368,7 @@
+             if data['state'] == 'exited' and (state != 'exited' or
+                     {k: v for k, v in observation.items() if k != 'cleanup'} !=
+                     {k: v for k, v in previous.items() if k != 'cleanup'} or
+-                    (data.get('usage') is not None and usage != data.get('usage'))
++                    usage != data.get('usage')
+                     or references != data.get('references')):
+                 raise SV.Refused('binding_mismatch:remote_result')
+             if state == 'exited':
+--- a/.veldo/control_worker_service.py
++++ b/.veldo/control_worker_service.py
+@@ -368,7 +368,7 @@
+             if data['state'] == 'exited' and (state != 'exited' or
+                     {k: v for k, v in observation.items() if k != 'cleanup'} !=
+                     {k: v for k, v in previous.items() if k != 'cleanup'} or
+-                    (data.get('usage') is not None and usage != data.get('usage'))
++                    usage != data.get('usage')
+                     or references != data.get('references')):
+                 raise SV.Refused('binding_mismatch:remote_result')
+             if state == 'exited':
