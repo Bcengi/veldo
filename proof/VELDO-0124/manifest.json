@@ -33,6 +33,17 @@
     {
       "name": "native_macos_qualification",
       "status": "not_run"
+    },
+    {
+      "name": "unit",
+      "status": "not_run",
+      "detail": "Full unit evidence pending the reviewer gate; selected development runs do not confer proof."
+    },
+    {
+      "name": "integration",
+      "status": "not_run",
+      "detail": "Real qualified Claude Code and Codex runs on the selected Mac remain pending; historical synthetic native rows do not satisfy this claim."
     }
-  ]
+  ],
+  "rollback": "Disable new Mac launches; preserve accepted records, reservations, unresolved charge exposure, profile revisions and unknown slots. No automatic retry or recovery."
 }

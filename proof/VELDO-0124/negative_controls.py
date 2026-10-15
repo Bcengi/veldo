@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Single change falsifiers, each driven through only its owning 0124 suite."""
 import difflib
+import argparse
 import hashlib
 import json
 import os
@@ -18,6 +19,9 @@ MUTANTS = (
     ('AC1-session-type', 'project_runner_macos_os.py',
      "                    LimitLoadToSessionType='Background',\n", '', '103_veldo_0124_macos',
      'AC1/apple-interfaces'),
+    ('AC1-claude-sandbox', 'project_runner_macos_profile.py',
+     "if value.get('sandbox', {}).get('enabled', False) is not False:",
+     'if False:', '103_veldo_0124_macos', 'AC1/claude-sandbox-refused'),
     ('AC2-deadline', 'project_runner_macos.py',
      "if now >= self.deadline and self.stage in (None, 'cooperative'):",
      "if False and self.stage in (None, 'cooperative'):", '103_veldo_0124_macos', 'AC2/deadline'),
@@ -39,6 +43,11 @@ MUTANTS = (
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output', type=Path, default=HERE,
+                        help='Observation directory; keep earlier rounds intact.')
+    output = parser.parse_args().output.resolve()
+    output.mkdir(parents=True, exist_ok=True)
     observations = []
     for name, filename, before, after, suite, row in MUTANTS:
         source = (ROOT / '.veldo' / filename).read_text()
@@ -46,13 +55,13 @@ def main():
         changed = source.replace(before, after)
         patch = ''.join(difflib.unified_diff(source.splitlines(True), changed.splitlines(True),
                                             fromfile='a/' + filename, tofile='b/' + filename))
-        (HERE / (name + '.patch')).write_text(patch)
+        (output / (name + '.patch')).write_text(patch)
         with tempfile.TemporaryDirectory(prefix='v124-mutant-') as temporary:
             target = Path(temporary)
             for path in (ROOT / '.veldo').glob('*.py'):
                 shutil.copyfile(path, target / path.name)
             (target / filename).write_text(changed)
-            log = HERE / (name + '.log')
+            log = output / (name + '.log')
             with log.open('w') as stream:
                 child = subprocess.run([sys.executable, 'scripts/selftest.py', '--suite', suite], cwd=ROOT,
                                        env=dict(os.environ, VELDO_0124_MODULES=str(target), PYTHONDONTWRITEBYTECODE='1'),
@@ -63,7 +72,7 @@ def main():
                                      source_sha256=hashlib.sha256(source.encode()).hexdigest(),
                                      patch=name + '.patch', log=name + '.log'))
             print(name, 'REJECTED' if killed else 'SURVIVED', row)
-    (HERE / 'negative-controls.json').write_text(json.dumps(observations, indent=2) + '\n')
+    (output / 'negative-controls.json').write_text(json.dumps(observations, indent=2) + '\n')
     return 0 if all(o['rejected'] for o in observations) else 1
 
 
