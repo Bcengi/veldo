@@ -87,6 +87,12 @@ class Fixture:
             host_identity='linux-authority', socket=str(self.base / 'authority.sock'),
             lock=str(self.base / 'authority.lock'), service='fixture-0125', unit='fixture-0125.service',
             worker_profiles=self.profiles, receivers={})
+        trust = self.base / 'host-trust.json'
+        trust.write_text(json.dumps(dict(schema=W.SV.EL.HOST_TRUST_SCHEMA,
+            host_identity='linux-authority', enrollment_signers=str(self.signers))))
+        self.config['host_trust'] = str(trust)
+        self.put('project:project', 'project', dict(name='fixture'))
+        self.put('authority:domain', 'authority', dict(state='active', generation=1))
         self.service = W.Service(self.config, self.conn)
         self.ds, self.res = self.service.records('repo')
         for scope, subject in (('account', 'account'), ('project', 'project'), ('unit', 'unit')):
@@ -110,11 +116,19 @@ class Fixture:
         entity = RES.entity('worker', ['domain', dispatch])
         version, digest = self.conn.execute('SELECT version, digest FROM entities WHERE id=?', (entity,)).fetchone()
         source = source or {k: git(self.repo, 'rev-parse', 'HEAD^{%s}' % k) for k in ('commit', 'tree')}
-        inputs = dict(source=source, required_host_capabilities=required or [])
+        if not self.conn.execute('SELECT 1 FROM entities WHERE id=?', (unit,)).fetchone():
+            self.put(unit, 'execution_unit', dict(state='READY', repository_uuid='repo',
+                backlog_item_uuid='backlog:' + unit, project='project', revision=1,
+                scope_digest=D.digest(unit), producer='builder', required_host_capabilities=required or []))
+            self.put('backlog:' + unit, 'backlog_item', dict(state='PRIORITIZED', repository_uuid='repo'))
+            self.put('admission:' + unit, 'admission', dict(unit=unit, state='accepted', scope_digest=D.digest(unit)))
+        gate = W.SV.EL.Gate(S, self.conn, domain_uuid='domain', repository_uuid='repo', workspace=str(self.repo))
+        context = dict(reviewer='reviewer')
+        decision = gate.require('review', unit, context=context)
         contract = dict(schema=D.SCHEMA, dispatch_id=dispatch, domain='domain', repository='repo',
             unit=unit, station='review', attempt=self.ds.attempts(unit, 'review') + 1, source=source,
-            input=dict(decision=dict(decision_id='accepted-review', station='review', unit=unit, inputs=inputs),
-                       context={}, payload={}, payload_digest=D.digest({})),
+            input=dict(decision=decision, context=dict(context, required_host_capabilities=required or []),
+                       payload={}, payload_digest=D.digest({})),
             capability=dict(adapter=engine, configuration=self.configuration, configuration_digest=D.digest(self.configuration)),
             reservation=dict(entity=entity, version=version, digest=digest, account='account', project='project'),
             claim=None, deadline=time.time() + deadline_seconds, authority_generation=1)

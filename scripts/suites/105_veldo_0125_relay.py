@@ -251,6 +251,26 @@ def _v125_suite():
             assert f.service.get('dispatch/test')['state'] == 'running'
             assert f.conn.execute("SELECT 1 FROM entities WHERE id='worker-spend:dispatch/test'").fetchone() is None
 
+    def eligibility_recheck(f):
+        f.prepare(required=['macos'])
+        f.start()
+        client = f.client()
+        bound = client.claim('dispatch/test')['binding']
+        f.put('admission:unit', 'admission', dict(unit='unit', state='withdrawn', scope_digest=T.D.digest('unit')))
+        before = T.S.table_snapshot(f.conn)
+        T.refused(lambda: client.launch(bound, 'accept', receiver=T.process(), runtime_seconds=5),
+                  'stale_input:admission')
+        assert T.S.table_snapshot(f.conn) == before, 'refused acceptance wrote authority state'
+        assert f.ds.record('dispatch/test')['state'] == 'prepared'
+        assert f.service.get('dispatch/test')['state'] == 'claimed'
+        assert not any(r['type'] == 'invocation' for r in f.res._records().values())
+        # Re-admitting the same scope still invalidates the preparation's ticket.
+        f.put('admission:unit', 'admission', dict(unit='unit', state='accepted', scope_digest=T.D.digest('unit')))
+        before = T.S.table_snapshot(f.conn)
+        T.refused(lambda: client.launch(bound, 'accept', receiver=T.process(), runtime_seconds=5),
+                  'stale_input:admission')
+        assert T.S.table_snapshot(f.conn) == before
+
     def namespaces(f):
         f.prepare(required=['macos'])
         f.start()
@@ -267,7 +287,7 @@ def _v125_suite():
                       'AC1/worker-inbox-only': lambda f: confinement(f, 'inbox'),
                       'AC1/worker-request-only': request_only, 'AC1/entity-owners': owners,
                       'AC1/owner-copies': owner_copies, 'AC1/remote-workspace': remote_workspace,
-                      'AC1/signature-namespaces': namespaces,
+                      'AC1/signature-namespaces': namespaces, 'AC2/accept-eligibility-recheck': eligibility_recheck,
                       'AC3/refused-report-atomic': refused_report, 'AC2/precall-caps': precall, 'AC3/remote-result-binding': binding,
                       'AC3/dispatch-other': lambda f: binding(f, [('dispatch_id', 'dispatch/other')]),
                       'AC3/unknown-charge': unknown}.items():

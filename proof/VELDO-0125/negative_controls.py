@@ -24,6 +24,8 @@ CASES = [
      "if not data or any(params.get(k) != v or data.get(k) != v for k, v in binding.items()):", "if not data:")]
 
 CASES += [
+    ('accept-eligibility', 'control_worker_service.py', '105_veldo_0125_relay', 'AC2/accept-eligibility-recheck',
+     '                    self.recheck(contract, repository)\n', ''),
     ('scaffold-routing', 'init_scaffold.py', '106_veldo_0125_routing', 'AC1/installed-routing',
      '    ".veldo/control_routing.py",\n', ''),
     ('worker-request', 'control_service.py', '105_veldo_0125_relay', 'AC1/worker-request-only',

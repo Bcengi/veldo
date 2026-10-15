@@ -113,6 +113,36 @@ class Service(SV.Service):
         except (D.Refused, RES.Refused) as error:
             raise SV.Refused(error.code) from error
 
+    def recheck(self, contract, repository):
+        """Re-read the prepared eligibility ticket inside the acceptance transaction."""
+        EL = SV.EL
+        try:
+            trust_path = self.config.get('host_trust')
+            if not trust_path:
+                receiver = (self.config.get('receiver') or {}).get('configs', {}).get(repository)
+                if receiver:
+                    trust_path = json.loads(Path(receiver).read_text()).get('host_trust')
+            if not trust_path:
+                raise SV.Refused('host_trust_required:receiver_configuration')
+            trust = EL.load_host_trust(trust_path)
+            if trust is None:
+                raise SV.Refused('host_trust_required')
+            workspace = self.repositories[repository]
+            gate = EL.Gate(SV.S, self.conn, domain_uuid=self.domain, repository_uuid=repository,
+                authority_generation=self.generation, workspace=workspace,
+                settlement_trust=trust.settlement_trust(workspace))
+            context = dict(contract['input']['context'])
+            if contract['claim']:
+                context['generation'] = contract['claim']['generation']
+            decision = gate.decide(contract['station'], contract['unit'], context=context,
+                                   ticket=contract['input']['decision'])
+        except EL.Stopped as error:
+            raise SV.Refused(error.reason) from error
+        except (OSError, ValueError, TypeError) as error:
+            raise SV.Refused('host_trust_unreadable') from error
+        if not decision['eligible']:
+            raise SV.Refused('; '.join(decision['refusals']))
+
     def worker(self, packet, command, repository):
         self.authenticate(packet, command, repository)
         params = command.get('parameters')
@@ -154,6 +184,7 @@ class Service(SV.Service):
                     runtime = params.get('runtime_seconds')
                     if not RES.number(runtime) or runtime <= 0:
                         raise SV.Refused('invalid_input:runtime_seconds')
+                    self.recheck(contract, repository)
                     # Authorization, complete contract and reservation precede any OS launch.
                     ds.accept(dispatch, record['contract_digest'], dict(receiver, principal=self.principal), now=now)
                     # Cover transport and startup too: the Mac's immutable accepted
