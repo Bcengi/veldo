@@ -59,6 +59,12 @@ Paths below are repository-relative; line numbers identify the current checks.
 
 ## Checks and falsifiers
 
+Final development result: 16 relay rows and 10 routing rows passed (42 and 36
+including the shared assertions), both selected exits 2. All 19 mutants returned
+1 with their required failing rows, followed by those clean runs. All eight
+static checks returned 0. `source-digests.json` binds the implementation and test
+bytes to `4de0f0688d95`; these are still development observations, not a full gate.
+
 `suites.json` records both commands, direct exit statuses, summaries and failures.
 Each clean selected run deliberately returns 2 (PARTIAL), not 0. The logs include
 26 shared assertions in addition to the named 0125 rows.

@@ -1,0 +1,5 @@
+--- control_service.py
++++ control_service.py
+@@ -1458 +1458 @@
+-        if member and 'worker_receiver' in member.get('roles', []):
++        if False:

@@ -1,0 +1,4 @@
+--- control_worker_client.py
++++ control_worker_client.py
+@@ -69,0 +70 @@
++            if Path(self.argv[-1]).is_absolute(): __import__('sqlite3').connect(str(Path(self.argv[-1]).parent / 'fallback.sqlite3')).close()

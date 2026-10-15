@@ -1,0 +1,173 @@
+[
+  {
+    "ac": "AC1",
+    "row": "AC1/one-authority",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "910a44b8fdd9e5bbe4ae623a31f3d37e4fa9d825723d1c1793a04d3c8939d569",
+    "patch": "AC1.diff",
+    "log": "AC1.log"
+  },
+  {
+    "ac": "AC2",
+    "row": "AC2/host-routing-refusal",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "837bad939a3c4ee4c14ccb97efba2f5eeb38600f5f4d9be3fbac67a0fa185a51",
+    "patch": "AC2.diff",
+    "log": "AC2.log"
+  },
+  {
+    "ac": "AC3",
+    "row": "AC3/remote-result-binding",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "f713105096433b0a4eb2b100d11f477efe2839ed09e640f214d5dee1ccc1714f",
+    "patch": "AC3.diff",
+    "log": "AC3.log"
+  },
+  {
+    "ac": "scaffold-routing",
+    "row": "AC1/installed-routing",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "696862a55bb31a5b416660e81a38c6a2362ad0359652a1d1af95bbf1aa25c829",
+    "patch": "scaffold-routing.diff",
+    "log": "scaffold-routing.log"
+  },
+  {
+    "ac": "worker-request",
+    "row": "AC1/worker-request-only",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "de06c0a8dcfe1d916fad675b19a43152c381950c7911c319ac9c8a00fc80acdc",
+    "patch": "worker-request.diff",
+    "log": "worker-request.log"
+  },
+  {
+    "ac": "worker-mutate",
+    "row": "AC1/worker-mutate-only",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "de06c0a8dcfe1d916fad675b19a43152c381950c7911c319ac9c8a00fc80acdc",
+    "patch": "worker-mutate.diff",
+    "log": "worker-mutate.log"
+  },
+  {
+    "ac": "worker-claim",
+    "row": "AC1/worker-claim-only",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "a02112551bdffe6ef532cffa1db48e6561689e42deaf938eb1788f7335f43ac1",
+    "patch": "worker-claim.diff",
+    "log": "worker-claim.log"
+  },
+  {
+    "ac": "worker-inbox",
+    "row": "AC1/worker-inbox-only",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "78c3f25c8da3b918d931a3640dee5f896603325e49dc4d721912789178a06139",
+    "patch": "worker-inbox.diff",
+    "log": "worker-inbox.log"
+  },
+  {
+    "ac": "production-route",
+    "row": "AC2/production-routing",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "2f181549d7fa83ab9d54b2f6f7616c06a5d57842035b0b88a6717cb19bbb4780",
+    "patch": "production-route.diff",
+    "log": "production-route.log"
+  },
+  {
+    "ac": "accept-atomic",
+    "row": "AC2/precall-caps",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "f713105096433b0a4eb2b100d11f477efe2839ed09e640f214d5dee1ccc1714f",
+    "patch": "accept-atomic.diff",
+    "log": "accept-atomic.log"
+  },
+  {
+    "ac": "report-atomic",
+    "row": "AC3/refused-report-atomic",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "f713105096433b0a4eb2b100d11f477efe2839ed09e640f214d5dee1ccc1714f",
+    "patch": "report-atomic.diff",
+    "log": "report-atomic.log"
+  },
+  {
+    "ac": "prepared-blocked",
+    "row": "AC2/qualification",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "837bad939a3c4ee4c14ccb97efba2f5eeb38600f5f4d9be3fbac67a0fa185a51",
+    "patch": "prepared-blocked.diff",
+    "log": "prepared-blocked.log"
+  },
+  {
+    "ac": "worker-key-read",
+    "row": "AC1/worker-signing-key-read",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "301c19290b722a9d951d12ee5769df7c11115e0bb1a2dfd50101b5523d9c05d2",
+    "patch": "worker-key-read.diff",
+    "log": "worker-key-read.log"
+  },
+  {
+    "ac": "signature-namespace",
+    "row": "AC1/signature-namespaces",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "f713105096433b0a4eb2b100d11f477efe2839ed09e640f214d5dee1ccc1714f",
+    "patch": "signature-namespace.diff",
+    "log": "signature-namespace.log"
+  },
+  {
+    "ac": "dispatch-other",
+    "row": "AC3/dispatch-other",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "f713105096433b0a4eb2b100d11f477efe2839ed09e640f214d5dee1ccc1714f",
+    "patch": "dispatch-other.diff",
+    "log": "dispatch-other.log"
+  },
+  {
+    "ac": "remote-workspace",
+    "row": "AC1/remote-workspace",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "910a44b8fdd9e5bbe4ae623a31f3d37e4fa9d825723d1c1793a04d3c8939d569",
+    "patch": "remote-workspace.diff",
+    "log": "remote-workspace.log"
+  },
+  {
+    "ac": "owner-dispatch",
+    "row": "AC1/entity-owners",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "8fd14ae05e78759ff1546afe1a6ccdf41f3c92399bdf8270e71dcb74c639974d",
+    "patch": "owner-dispatch.diff",
+    "log": "owner-dispatch.log"
+  },
+  {
+    "ac": "owner-membership",
+    "row": "AC1/entity-owners",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "8fd14ae05e78759ff1546afe1a6ccdf41f3c92399bdf8270e71dcb74c639974d",
+    "patch": "owner-membership.diff",
+    "log": "owner-membership.log"
+  },
+  {
+    "ac": "owner-reservations",
+    "row": "AC1/entity-owners",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "8fd14ae05e78759ff1546afe1a6ccdf41f3c92399bdf8270e71dcb74c639974d",
+    "patch": "owner-reservations.diff",
+    "log": "owner-reservations.log"
+  }
+]

@@ -1,0 +1,5 @@
+--- control_worker_client.py
++++ control_worker_client.py
+@@ -61 +61 @@
+-        request = remote_request(self.workspace, self.binding, packet, self.sign)
++        request = CC.build_request(self.workspace, self.binding, packet, self.sign)

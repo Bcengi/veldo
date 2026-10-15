@@ -1,0 +1,5 @@
+   shape (review lane, non-blocking): pattern stdlib_only_enforcement (review lane): reviewer guidance, not gate-enforced
+   shape (review lane, non-blocking): pattern reuse_one_parser (review lane): reviewer guidance, not gate-enforced
+   shape (review lane, non-blocking): invariant no_detached_processes (review lane): reviewer guidance, not gate-enforced
+   shape (review lane, non-blocking): invariant gate_is_the_only_done (review lane): reviewer guidance, not gate-enforced
+   shape gate: pass (mechanizable rules enforced; review-lane rules are reviewer guidance)

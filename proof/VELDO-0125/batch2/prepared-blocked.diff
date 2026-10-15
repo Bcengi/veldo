@@ -1,0 +1,5 @@
+--- control_routing.py
++++ control_routing.py
+@@ -106 +106 @@
+-        if error.code.startswith('blocked:'):
++        if False:

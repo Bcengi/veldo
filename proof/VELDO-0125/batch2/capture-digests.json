@@ -1,0 +1,24 @@
+[
+  {
+    "engine": "claude",
+    "record": "proof/VELDO-0127/claude-live.json",
+    "mismatches": [
+      {
+        "module": "control_launch.py",
+        "recorded": "100416f2e229f6442e737b75fdb393d29328ac6326a27fd7a79375586fef51c9",
+        "current": "2f181549d7fa83ab9d54b2f6f7616c06a5d57842035b0b88a6717cb19bbb4780"
+      }
+    ]
+  },
+  {
+    "engine": "codex",
+    "record": "proof/VELDO-0127/codex-live.json",
+    "mismatches": [
+      {
+        "module": "control_launch.py",
+        "recorded": "100416f2e229f6442e737b75fdb393d29328ac6326a27fd7a79375586fef51c9",
+        "current": "2f181549d7fa83ab9d54b2f6f7616c06a5d57842035b0b88a6717cb19bbb4780"
+      }
+    ]
+  }
+]

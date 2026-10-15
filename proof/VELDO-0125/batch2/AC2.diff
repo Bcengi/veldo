@@ -1,0 +1,5 @@
+--- control_routing.py
++++ control_routing.py
+@@ -51 +51 @@
+-            and set(requirements(contract)).issubset(profile['capabilities'])
++            and True

@@ -1,0 +1,8 @@
+-- dash sweep (em/en dashes forbidden)
+-- non-ASCII sweep
+proof/VELDO-0160/README.md
+proof/VELDO-0189/older/8bc34e94.tar.gz
+proof/VELDO-0189/older/971186ac.tar.gz
+proof/VELDO-0189/older/census.json.gz
+-- genericity sweep (docs/ and packs/claude/; design/ and research/ are internal provenance)
+docs hygiene: pass

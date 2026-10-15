@@ -1,0 +1,32 @@
+[
+  {
+    "suite": "105_veldo_0125_relay",
+    "command": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "105_veldo_0125_relay"
+    ],
+    "returncode": 2,
+    "summary": [
+      "selftest (PARTIAL, 1 of 166 suites): 42 passed, 0 failed in 5.78s"
+    ],
+    "failures": [],
+    "scope": "Selected development run, not a gate stamp or accepted proof"
+  },
+  {
+    "suite": "106_veldo_0125_routing",
+    "command": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "106_veldo_0125_routing"
+    ],
+    "returncode": 2,
+    "summary": [
+      "selftest (PARTIAL, 1 of 166 suites): 36 passed, 0 failed in 2.54s"
+    ],
+    "failures": [],
+    "scope": "Selected development run, not a gate stamp or accepted proof"
+  }
+]

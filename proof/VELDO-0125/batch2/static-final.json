@@ -1,0 +1,75 @@
+[
+  {
+    "check": "lint",
+    "command": [
+      "bash",
+      "scripts/check_lint.sh"
+    ],
+    "returncode": 0,
+    "log": "lint-final.log"
+  },
+  {
+    "check": "security",
+    "command": [
+      "python3",
+      "scripts/secret_inventory.py"
+    ],
+    "returncode": 0,
+    "log": "security-final.log"
+  },
+  {
+    "check": "generated",
+    "command": [
+      "bash",
+      "scripts/check_generated.sh"
+    ],
+    "returncode": 0,
+    "log": "generated-final.log"
+  },
+  {
+    "check": "docs",
+    "command": [
+      "bash",
+      "scripts/check_docs.sh"
+    ],
+    "returncode": 0,
+    "log": "docs-final.log"
+  },
+  {
+    "check": "template-sync",
+    "command": [
+      "bash",
+      "scripts/check_template_sync.sh"
+    ],
+    "returncode": 0,
+    "log": "template-sync-final.log"
+  },
+  {
+    "check": "contracts",
+    "command": [
+      "python3",
+      ".veldo/validate.py",
+      "all"
+    ],
+    "returncode": 0,
+    "log": "contracts-final.log"
+  },
+  {
+    "check": "shape",
+    "command": [
+      "python3",
+      ".veldo/shape_gate.py"
+    ],
+    "returncode": 0,
+    "log": "shape-final.log"
+  },
+  {
+    "check": "builtin-secret-scan",
+    "command": [
+      "bash",
+      ".veldo/tmp-0125-b2/builtin-secret-scan.sh"
+    ],
+    "returncode": 0,
+    "log": "builtin-secret-scan-final.log"
+  }
+]

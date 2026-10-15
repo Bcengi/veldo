@@ -1,0 +1,34 @@
+{
+  "seed": "95a33d9b",
+  "registry_commit": "2ac81bec",
+  "test_metadata_commit": "00966396",
+  "scope": "Development verification; no gate stamp, independent verdict, qualification or activation",
+  "native_ipc": {
+    "returncode": 2,
+    "log": "ipc.log",
+    "status": "not_run",
+    "reason": "sandbox denies sockets"
+  },
+  "mac_access": {
+    "returncode": 255,
+    "log": "mac-access.log",
+    "status": "unavailable",
+    "reason": "SSH connection timed out"
+  },
+  "falsifier_invocation": [
+    "python3",
+    "proof/VELDO-0125/negative_controls.py",
+    "--output-dir",
+    "proof/VELDO-0125/batch2"
+  ],
+  "forbidden_stages_not_run": [
+    "full selftest",
+    "global mutation checks",
+    "canonical gate",
+    "first-use integration (nested full selftest)",
+    "packaging (nested gate)"
+  ],
+  "implementation_commit": "4de0f0688d95ea4fec916fcab5cd4ea8b471be29",
+  "falsifier_returncode": 0,
+  "falsifiers_rejected": 19
+}
