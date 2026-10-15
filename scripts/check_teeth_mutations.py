@@ -374,11 +374,15 @@ def cases():
     send_pack = "        push = transport('send-pack',"
     add(28, 'effects-push-by-send-pack', '58_veldo_0028_effects.py', 'control_effect_executor.py', push, send_pack,
         ['effects/publication-' + name for name in ('pre-push-hook', 'url-rewrite', 'smart-http')])
-    publication('effects-push-skips-hooks', push, push.replace("'push',", "'push', '--no-verify',"),
-                'publication-pre-push-hook')
-    newline_remote = "        if '\\n' in remote:\n"
-    publication('effects-remote-must-exist-verbatim', newline_remote,
-                "        if '\\n' in remote or not (Path(remote).exists() or '://' in remote):\n", 'publication-url-rewrite')
+    # AC3 reverses the hook guarantee: re-enable clone hooks, disabling both independent guards.
+    add(28, 'effects-push-skips-hooks', '58_veldo_0028_effects.py', 'git_process.py',
+        "        args[1:1] = [*options, '-c', 'core.hooksPath=' + private_home]\n        if command == 'push':\n            args.insert(len(prefix) + len(options) + 3, '--no-verify')",
+        '        args[1:1] = options', ['effects/publication-pre-push-hook'])
+    # AC3 supersedes clone routing. A checked GitHub URL need not name a local path.
+    owner_check = "            target = transport_module.check_remote(push_identity, remote, operation='remote_check',\n"
+    publication('effects-remote-must-exist-verbatim', owner_check,
+                "            if not Path(remote).exists():\n                raise E.Refused('invalid_input:remote')\n" + owner_check,
+                'publication-url-rewrite')
     publication('effects-push-transports-restricted', push,
                 push.replace("transport('-c', 'push.followTags=false',", "transport('-c', 'protocol.http.allow=never', '-c', 'push.followTags=false',"),
                 'publication-smart-http')
@@ -402,30 +406,28 @@ def cases():
     add(28, 'effects-destination-not-recorded', '58_veldo_0028_effects.py', 'control_effects.py',
         "        result['destination'] = destination", "        pass",
         ['effects/' + routed, 'effects/publication-destination-without-credentials'])
-    parsed = ("        pushed = []\n        for line in lines[1:]:\n            if not line.startswith('  Push  URL: '):\n"
-              "                break\n            pushed.append(line[len('  Push  URL: '):])\n")
-    shape = "                or lines[1 + len(pushed):2 + len(pushed)] != ['  HEAD branch: (not queried)']):"
+    parsed = "        pushed = [remote]\n"
+    push_config = "            configured = git('config', '--get-all', 'remote.' + remote + '.pushurl')"
+    fetch_config = "                configured = git('config', '--get-all', 'remote.' + remote + '.url')"
     # The fetch-side resolution (`ls-remote --get-url`) in place of git's push resolution: it
     # misses pushInsteadOf and pushurl routing, so the record names the authorized repository.
-    add(28, 'effects-destinations-from-fetch-url', '58_veldo_0028_effects.py', 'control_effect_executor.py', parsed,
-        "        pushed = [transport('ls-remote', '--get-url', remote).stdout.strip()]\n",
-        ['effects/' + routed, 'effects/publication-destination-despite-hook-text',
-         'effects/publication-rejected-destination-recorded'], also=[(shape, "                or False):")])
+    add(28, 'effects-destinations-from-fetch-url', '58_veldo_0028_effects.py', 'control_effect_executor.py', push_config,
+        push_config.replace("'.pushurl'", "'.url'"), ['effects/' + routed])
     # The destinations read from the To lines a dry-run push prints: hook text reaches them.
-    add(28, 'effects-destinations-from-dry-run-output', '58_veldo_0028_effects.py', 'control_effect_executor.py', parsed,
-        "        pushed = [line[len('To '):] for line in transport('push', '--dry-run', '--porcelain', remote,\n"
-        "                  payload['commit'] + ':' + ref).stdout.splitlines() if line.startswith('To ')]\n",
+    # AC3: a dry-run is no longer used. Reintroduce trusting To lines in the actual push output.
+    destination_record = "        destination = {'authorized_url': scrubbed_url(remote),"
+    add(28, 'effects-destinations-from-dry-run-output', '58_veldo_0028_effects.py', 'control_effect_executor.py', destination_record,
+        "        pushed = [line[3:] for line in push.stdout.splitlines() if line.startswith('To ')]\n" + destination_record,
         ['effects/publication-destination-despite-hook-text', 'effects/publication-rejected-destination-recorded',
-         'effects/publication-hook-text-without-newline'], also=[(shape, "                or False):")])
+         'effects/publication-hook-text-without-newline'])
     # Git's resolution read in the isolated profile, so global routing is missed.
     add(28, 'effects-resolution-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "        shown = transport('remote', 'show', '-n', '--', remote, env=dict(",
-        "        shown = git('remote', 'show', '-n', '--', remote, env=dict(",
-        ['effects/' + routed, 'effects/publication-config-selection-parity'])
+        push_config, push_config[:-1] + ", profile='network')",
+        ['effects/' + routed], also=[(fetch_config, fetch_config[:-1] + ", profile='network')")])
     # The guard against a configured URL holding a line break removed.
     add(28, 'effects-newline-config-accepted', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "        if urls.returncode not in (0, 1) or any(", "        if False and any(",
-        ['effects/' + routed, 'effects/publication-line-break-refused'])
+        "            targets = configured.stdout.splitlines()", "            targets = configured.stdout.splitlines()[:1]",
+        ['effects/publication-resolution-output-checked'])
     complete = "        complete = push.returncode == 0 and all(outcome == 'at-tip' for outcome in outcomes)"
     # Completion from the push's exit status alone, from the first destination only, or from the
     # To lines the push prints.
@@ -433,19 +435,19 @@ def cases():
         "        complete = push.returncode == 0",
         ['effects/publication-completion-from-destination-state', 'effects/publication-fan-out-agit-report'])
     add(28, 'effects-completion-first-destination', '58_veldo_0028_effects.py', 'control_effect_executor.py', complete,
-        "        complete = push.returncode == 0 and outcomes[:1] == ['at-tip']",
-        ['effects/publication-fan-out-agit-report'])
+        "        complete = push.returncode == 0 and all(outcome == 'at-tip' for outcome in outcomes[1:])",
+        ['effects/publication-completion-from-destination-state'])
     publication('effects-completion-from-push-output', complete,
                 complete + "\n        complete = complete and all('To ' + url in push.stdout.splitlines() for url in pushed)",
                 'publication-hook-text-without-newline')
     # Each destination's state read at the authorized URL instead of at the destination.
-    add(28, 'effects-state-read-at-authorized-url', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "            after = remote_refs(url)\n", "            after = remote_refs(remote)\n",
-        ['effects/publication-completion-from-destination-state', 'effects/publication-fan-out-agit-report'],
-        also=[("        before = [remote_refs(url) for url in pushed]", "        before = [remote_refs(remote) for url in pushed]")])
+    # AC3 makes authorized and actual URLs identical. Reading local state still violates the guarantee.
+    add(28, 'effects-state-read-at-authorized-url', '58_veldo_0028_effects.py', 'control_effect_executor.py', listing,
+        "            listed = git('ls-remote', '--symref', '.')",
+        ['effects/publication-destination-despite-hook-text', 'effects/publication-rejected-destination-recorded'])
     # Output read strictly as UTF-8: the push's (a hook's Latin-1 byte) or a listing's (a ref name).
     publication('effects-push-output-read-strictly', "                         remote, payload['commit'] + ':' + ref, steps=len(pushed))\n",
-                "                         remote, payload['commit'] + ':' + ref, steps=len(pushed))\n        push.stdout.encode('utf-8')\n",
+                "                         remote, payload['commit'] + ':' + ref, steps=len(pushed))\n        push.stdout.encode('utf-8')\n        push.stderr.encode('utf-8')\n",
                 'publication-non-utf8-output')
     publication('effects-listing-read-strictly', "            if listed.returncode:\n                return None\n",
                 "            listed.stdout.encode('utf-8')\n            if listed.returncode:\n                return None\n",
@@ -475,7 +477,7 @@ def cases():
                 "               for state in before):")
     publication('effects-push-without-old-tip-check', precheck, "        if False:", 'publication-refused-when-not-at-old-tip')
     add(28, 'effects-old-tip-checked-at-first-destination', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        precheck, precheck.replace('for state in before):', 'for state in before[:1]):'), stale_rows)
+        precheck, precheck.replace('for state in before):', 'for state in before[:0]):'), stale_rows)
     add(28, 'effects-unlisted-destination-pushed', '58_veldo_0028_effects.py', 'control_effect_executor.py',
         precheck, precheck.replace('state is None or (', 'state is not None and ('),
         stale_rows + ['effects/publication-config-selection-parity'])
@@ -496,18 +498,16 @@ def cases():
     publication('effects-creation-over-existing-ref', precheck, precheck.replace('(ref in state if absent', '(False if absent'),
                 'publication-ref-creation')
     # R8 B2: every destination must resolve to itself for its listing, or it is refused.
-    itself = ("        for url in pushed:\n            itself = transport('ls-remote', '--get-url', '--', url)\n"
-              "            if itself.returncode or itself.stdout != url + '\\n':")
-    publication('effects-destination-listing-unchecked', itself, itself.replace(
-        "            if itself.returncode or itself.stdout != url + '\\n':", "            if False:"),
-        'publication-destination-listed-as-resolved')
-    publication('effects-destination-listing-first-only', itself,
-                itself.replace('        for url in pushed:\n', '        for url in pushed[:1]:\n'),
-                'publication-destination-listed-as-resolved')
+    # AC3 replaces a second resolution with a guard over the literal URL's whole section.
+    itself = "or (section.lower() == 'remote' and subsection == remote"
+    add(28, 'effects-destination-listing-unchecked', '58_veldo_0028_effects.py', 'control_git_identity_transport.py',
+        itself, 'or (False', ['effects/publication-destination-listed-as-resolved'])
+    add(28, 'effects-destination-listing-first-only', '58_veldo_0028_effects.py', 'control_git_identity_transport.py',
+        itself, itself + " and name.lower() != 'pushurl'", ['effects/publication-destination-listed-as-resolved'])
     # R8 time limits: the push is bounded per destination, and the supervisor's limit follows
     # the windows the executor announces.
     publication('effects-push-timeout-not-scaled', "remote, payload['commit'] + ':' + ref, steps=len(pushed))",
-                "remote, payload['commit'] + ':' + ref)", 'publication-call-covers-every-destination')
+                "remote, payload['commit'] + ':' + ref, steps=1 / step)", 'publication-call-covers-every-destination')
     publication('effects-call-window-not-extended', "                deadline = time.monotonic() + answer['window_seconds']",
                 "                pass", 'publication-call-covers-every-destination')
     # R8 scrub: anything that does not parse into a well-formed host is over-scrubbed.
@@ -524,21 +524,31 @@ def cases():
                 "        complete = all(outcome == 'at-tip' for outcome in outcomes)", exit_rule)
     publication('effects-completion-ignores-hook-failure', complete,
                 complete.replace('push.returncode == 0', 'push.returncode != 128'), exit_rule)
-    publication('effects-remote-line-break-accepted', "        if '\\n' in remote:\n", "        if False:\n",
+    publication('effects-remote-line-break-accepted', owner_check,
+                "            remote = remote.splitlines()[0]\n" + owner_check,
                 'publication-line-break-refused')
     report = 'publication-resolution-output-checked'
-    publication('effects-show-exit-unchecked', "        if (shown.returncode or not lines", "        if (not lines", report)
+    # AC3 uses machine config values, not the former remote-show header/fetch/footer grammar.
+    resolution_guard = "            if configured.returncode or len(targets) != 1:"
+    publication('effects-show-exit-unchecked', resolution_guard, "            if len(targets) != 1:", report)
     publication('effects-header-unchecked',
-                "        lines = shown.stdout[len(head):].split('\\n') if shown.stdout.startswith(head) else []",
-                "        lines = shown.stdout.split('\\n')[1:]", report)
-    publication('effects-fetch-line-unchecked', "not lines[0].startswith('  Fetch URL: ') or ", "", report)
-    publication('effects-empty-resolution-accepted', " or not pushed\n", "\n", report)
-    publication('effects-head-line-unchecked', shape, "                or False):", report)
-    publication('effects-config-exit-unchecked', "        if urls.returncode not in (0, 1) or any(", "        if any(", report)
-    publication('effects-resolution-locale-not-forced', "env=dict(os.environ, LC_ALL='C'))", "env=None)",
+                fetch_config, fetch_config.replace("'remote.' + remote + '.url'", "'remote.origin.url'"), report)
+    publication('effects-fetch-line-unchecked', "            remote = targets[0]\n",
+                "            remote = git('config', '--get', 'remote.origin.url').stdout.strip()\n", report)
+    publication('effects-empty-resolution-accepted', parsed, "        pushed = []\n", routed)
+    config_guard = "        if local.returncode or transport.config_overrides(local.stdout, remote):"
+    add(28, 'effects-head-line-unchecked', '58_veldo_0028_effects.py', 'git_process.py',
+        config_guard, "        if False:", ['effects/' + report])
+    add(28, 'effects-config-exit-unchecked', '58_veldo_0028_effects.py', 'git_process.py',
+        config_guard, "        if transport.config_overrides(local.stdout, remote):", ['effects/' + report])
+    # Reintroduce dependence on human diagnostics, now stderr, under non-C locales.
+    resolution_values = "            targets = configured.stdout.splitlines()"
+    publication('effects-resolution-locale-not-forced', resolution_values,
+                "            targets = (configured.stderr if os.environ.get('LC_ALL') not in (None, 'C', 'POSIX') else configured.stdout).splitlines()",
                 'publication-resolution-in-c-locale')
-    publication('effects-resolution-messages-locale-only', "env=dict(os.environ, LC_ALL='C'))",
-                "env=dict(os.environ, LC_MESSAGES='C'))", 'publication-resolution-in-c-locale')
+    publication('effects-resolution-messages-locale-only', resolution_values,
+                "            targets = (configured.stdout if os.environ.get('LC_MESSAGES') in ('C', 'POSIX') else configured.stderr).splitlines()",
+                'publication-resolution-in-c-locale')
     # R5 3: transport operations run in git_process's network profile. Reintroducing the isolated
     # profile loses global config and transport variables at once; each git_process mutant loses
     # one of them, or stops stripping the coordinates the profile must still strip.
@@ -546,7 +556,8 @@ def cases():
                   ('global-insteadof', 'global-credential-helper', 'env-ssh-command', 'global-ssh-command',
                    'config-selection-parity')]
     add(28, 'effects-transport-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "            return git(*args, profile='network', env=env, steps=steps)", "            return git(*args, env=env, steps=steps)", capability)
+        "                return git(*args, profile='identity', env=env, steps=steps)",
+        "                return git(*args, env=env, steps=steps)", capability)
     add(28, 'effects-network-profile-without-global-config', '58_veldo_0028_effects.py', 'git_process.py',
         '        result.update(GIT_NO_REPLACE_OBJECTS="1")',
         '        result.update(GIT_NO_REPLACE_OBJECTS="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")',
@@ -3762,9 +3773,9 @@ def cases():
     candidate('candidate-projection-skipped', '            self._project(workspace, sid, identity)\n',
               '            pass  # defect: the projections are not derived\n', 'whole-candidate')
     candidate('candidate-watermark-from-caller-trunk',
-              '            if self.push:\n                url = self._git(self.repo_root, "remote", "get-url", self.remote, profile="network")',
+              '            if self.push:\n                url = self._git(self.repo_root, "config", "--get", "remote." + self.remote + ".url").stdout.strip()',
               '            if False:  # defect: the watermark is the caller\'s local trunk, never the published one\n'
-              '                url = self._git(self.repo_root, "remote", "get-url", self.remote, profile="network")',
+              '                url = self._git(self.repo_root, "config", "--get", "remote." + self.remote + ".url").stdout.strip()',
               'whole-candidate')
     # AC2, declared: a merge failure is ignored and the land continues to the gate. The fixed code refuses a
     # real conflict AND verifies the candidate's ancestry, so the defect needs both guards gone.
@@ -3774,8 +3785,8 @@ def cases():
               '        if real:\n            self._git(workspace, "merge", "--abort")  # defect: the failed merge is ignored\n'
               '            return\n', 'git-failures-refuse', also=[(ancestry, unverified)])
     candidate('candidate-fetch-failure-ignored',
-              '                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="network")\n',
-              '                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="network", ok=None)'
+              '                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="identity", remote_url=url)\n',
+              '                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="identity", remote_url=url, ok=None)'
               '  # defect: a failed fetch is ignored\n', 'git-failures-refuse')
     candidate('candidate-missing-evidence-accepted',
               '            if not listed.stdout.strip():\n'
@@ -4579,8 +4590,9 @@ def cases():
             "            if recorded is not None and recorded['data'].get('status') != 'refused':  # defect: a failed one is tried again\n"
             '                return self._recorded(unit, candidate, dispatch, recorded)\n', ['unconfirmed/failed-no-attempt'])
     landing('landing-confirmation-read-from-local-clone',
-            "        found = self._git(self.clone, 'ls-remote', '--', self.remote, self.ref, profile='network')\n",
-            "        found = self._git(self.clone, 'ls-remote', '--', '.', self.ref, profile='network')"
+            "        found = self._git(self.clone, 'ls-remote', '--', remote, self.ref, profile='identity',\n"
+            "                          push_identity=identity, remote_url=remote)\n",
+            "        found = self._git(self.clone, 'ls-remote', '--', '.', self.ref)"
             "  # defect: the publication clone is read for the remote\n", ['unconfirmed/confirmed-remote-evidence'])
     landing('landing-confirmation-from-executor-answer', "        if tip != fields['commit']:\n",
             "        if False:  # defect: the executor's answer is taken for the remote's\n", ['unconfirmed/moved-after-ack'])

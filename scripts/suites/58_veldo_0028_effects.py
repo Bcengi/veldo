@@ -348,8 +348,8 @@ print(json.dumps(result))
             and refs == {'refs/heads/main': tip, 'refs/tags/receiver-side-effect': old})
         for name in ('publication-exact-ref', 'publication-confirms-one-change'):
             expect('VELDO-0028 effects/' + name, checks[name])
-        # R4: publication is an ordinary git push. Whatever configured Git and its credentials
-        # allow keeps working (hooks, URL rewrites, smart HTTP); only widening is neutralized.
+        # Publication uses the identity profile. AC3 removes clone hooks and routing;
+        # the authorized ref, destination state and transport exit still establish completion.
         def fresh(name):
             clone, bare = root / (name + '-source'), root / (name + '-remote.git')
             git('clone', '-q', '--no-local', str(repo), str(clone))
@@ -373,7 +373,7 @@ print(json.dumps(result))
             return pr, call(pr, env=env)
         def remote_main(bare):
             return git('-C', str(bare), 'rev-parse', 'refs/heads/main')
-        # P1: the clone's pre-push policy hook refuses; it runs and nothing is published.
+        # AC3: plant a clone hook that would refuse and record its invocation if it ran.
         clone, bare = fresh('pre-push-hook')
         ran = root / 'pre-push-hook.ran'
         hook = clone / '.git' / 'hooks' / 'pre-push'
@@ -474,7 +474,7 @@ print(json.dumps(result))
         def reached(*pairs):
             return [{'url': url, 'outcome': outcome} for url, outcome in pairs]
         routes = {}
-        for name in ('control', 'insteadof', 'global-include-insteadof', 'remotes-file', 'branches-file',
+        for name in ('control', 'insteadof', 'global-include-insteadof', 'named-pushurl', 'remotes-file', 'branches-file',
                      'push-instead-of', 'space-section-pushurl', 'fan-out-pushurls', 'fan-out-stale',
                      'fan-out-unreachable', 'config-newline', 'path-newline'):
             clone, bare = fresh('route-' + name)
@@ -495,8 +495,13 @@ print(json.dumps(result))
                 git('-C', str(clone), 'config', 'url.' + str(other) + '.insteadOf', url)
             elif name == 'global-include-insteadof':
                 included = root / ('route-' + name + '.gitconfig')
-                included.write_text('[url "%s"]\n\tinsteadOf = %s\n' % (other, url))
+                included.write_text('[url "%s"]\n\tinsteadOf = %s\n[remote "publication"]\n\tpushurl = %s\n'
+                                    % (other, url, wired_url('route-global-decoy', str(other))))
+                git('-C', str(clone), 'config', 'remote.publication.url', url)
                 env = operator_home('route-' + name, '[includeIf "gitdir:%s/"]\n\tpath = %s\n' % (clone, included))
+            elif name == 'named-pushurl':
+                git('-C', str(clone), 'config', 'remote.publication.url', wired_url('route-fetch-decoy', str(other)))
+                git('-C', str(clone), 'config', 'remote.publication.pushurl', url)
             elif name in ('remotes-file', 'branches-file'):
                 # A remote nickname: the legacy file of that name gives the listing and the push
                 # the decoy's URL.
@@ -527,7 +532,9 @@ print(json.dumps(result))
                 # git's one-per-line report, so it is refused before anything is pushed.
                 git('-C', str(clone), 'config', 'remote.' + url + '.url', url)
                 git('-C', str(clone), 'config', 'remote.' + url + '.pushurl', str(other) + '\n  Push  URL: ' + url)
-            result = publish('route-' + name, clone, url, env=env)
+            receiver_url = ('publication' if name in ('global-include-insteadof', 'named-pushurl') else
+                            'publish-target' if name in ('remotes-file', 'branches-file') else url)
+            result = publish('route-' + name, clone, receiver_url, env=env)
             routes[name] = dict(result=result, url=url, bare=bare, other=other, destination=recorded('route-' + name),
                                 authorized_moved=remote_main(bare) == tip, decoy_moved=remote_main(other) == tip)
             seen_result('route-' + name, result, authorized_moved=routes[name]['authorized_moved'],
@@ -551,7 +558,7 @@ print(json.dumps(result))
         row('publication-records-resolved-destination',
             routed('control', True, reached((url_of('control'), 'at-tip')), True, False)
             and all(routed(name, True, reached((url_of(name), 'at-tip')), True, False)
-                    for name in ('global-include-insteadof', 'remotes-file', 'branches-file'))
+                    for name in ('global-include-insteadof', 'named-pushurl', 'remotes-file', 'branches-file'))
             and all(routed(name, 'binding_mismatch:identity_transport_config', None, False, False)
                     for name in ('insteadof', 'push-instead-of', 'space-section-pushurl',
                                  'fan-out-pushurls', 'fan-out-stale', 'fan-out-unreachable', 'config-newline'))
@@ -676,19 +683,19 @@ print(json.dumps(result))
             # git's own `To X` line.
             return 'printf "To file://%s\\n*\\t%s:refs/heads/main\\t[new branch]\\nx"\n' % (lbare, tip)
         text_cases = {}
-        # 1b: the hook mirrors the commit to L and forges L; the push went to X.
+        # AC3: the clone hook would mirror and forge output, but must never run.
         clone, lbare, xbare = routed_to_x('text-mirrored')
         hook(clone, 'git push -q --no-verify %s %s:refs/heads/main >/dev/null 2>&1\n' % (lbare, tip) + forged(lbare))
         text_cases['mirrored'] = (publish('text-mirrored', clone, 'file://' + str(lbare)), recorded('text-mirrored'), lbare, xbare)
-        # 1c: X refuses the push; the hook forges L.
+        # The checked destination L refuses; a planted clone hook cannot alter the record.
         clone, lbare, xbare = routed_to_x('text-refused')
         refuse = lbare / 'hooks' / 'pre-receive'
         refuse.write_text('#!/bin/sh\necho refused >&2\nexit 1\n')
         refuse.chmod(0o755)
         hook(clone, forged(lbare))
         text_cases['refused'] = (publish('text-refused', clone, 'file://' + str(lbare)), recorded('text-refused'), lbare, xbare)
-        # 1g: X's proc-receive reports success without updating X, mirrors the commit to L and
-        # reports an option refname carrying a newline and a forged To block for L.
+        # L's proc-receive reports success without updating L, mirrors to X and forges
+        # a To block for X. Completion must still be read from the checked L.
         clone, lbare, xbare = routed_to_x('text-proc-receive')
         proc_receive(lbare, '    subprocess.run(["git", "push", "-q", %r, new + ":" + ref], check=True)\n'
                             '    wr("ok %%s\\n" %% ref)\n'
@@ -927,12 +934,9 @@ print(json.dumps(result))
         row('publication-destination-listed-as-resolved', all(
             answer.get('refusal') == 'binding_mismatch:identity_transport_config' and answer.get('result', {}).get('status') == 'refused'
             and all(remote_main(b) == old for b in repositories) for answer, repositories in rerouted.values()))
-        # R8 time limits: a slow push to many destinations is never killed after acceptance. Each git
-        # step is bounded by the receiver's git_step_seconds and the push by that bound for each
-        # destination; the supervisor's limit follows the windows the executor announces. Six
-        # destinations each take a second to receive, with 1.5-second steps: the push needs six
-        # seconds (a single step would kill it), and the whole call runs well past the 2-second
-        # acceptance window the supervisor starts from.
+        # The supervisor must extend its acceptance deadline for the announced operation.
+        # AC3 permits one destination; its three-second receive exceeds the two-second
+        # acceptance window while staying within the five-second Git step bound.
         clone, lbare = fresh('slow-fan-out')
         slow_url = wired_url('slow-fan-out', str(lbare))
         slow = [lbare]
@@ -1003,9 +1007,8 @@ print(json.dumps(result))
         seen_result('scrub-table', {}, mismatches={url: got for (url, want), got in zip(scrub_table, scrub_seen.values()) if got != want})
         row('publication-scrub-malformed-address', ext_ok
             and all(scrub_seen[url] == want for url, want in scrub_table))
-        # R8 rules each pinned by a row of its own. Completion requires the push to exit cleanly: a
-        # pre-push hook that publishes the tip itself and then fails the push leaves the
-        # destination exactly at the tip, and the effect must still not read completed.
+        # Completion requires a clean transport exit even when the checked destination
+        # already holds exactly the authorized tip. Inject that exit at the process boundary.
         clone, bare = fresh('hook-then-fail')
         failed_exit = root / 'failed-exit-wrapper'
         failed_exit.mkdir()
@@ -1043,11 +1046,9 @@ print(json.dumps(result))
         codes = {'remote': 'invalid_input:remote', 'pushurl': 'binding_mismatch:identity_transport_config'}
         row('publication-line-break-refused', all(answer.get('refusal') == codes[key]
             and all(remote_main(b) == old for b in repositories) for key, (answer, repositories) in breaks.items()))
-        # git's report is read only in the shape it has: the header naming this remote, the Fetch
-        # URL line, one or more Push URL lines, then the HEAD line; a failed `git remote show`
-        # or a failed configuration read refuses too. A wrapper ahead of git on PATH reshapes one
-        # output per case (a different git version, a localized one) and passes everything else to
-        # the real git. Each case pushes to two pushurls.
+        # Named-remote resolution reads machine config values. Inject a bad host, an empty
+        # value, missing values, multiple values, failure exits and localized diagnostics.
+        # Retain historical shape names so the earlier review rows remain traceable.
         wrapper = root / 'git-wrapper'
         wrapper.mkdir()
         (wrapper / 'git').write_text("""#!/bin/sh
