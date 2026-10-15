@@ -1,0 +1,22 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -2264,7 +2264,7 @@
+                         for launch in launches:
+                             slot = line.runner.reservations.worker(launch.dispatch_id)
+                             if slot and slot['retired']:
+-                                self.wake('remote_capacity_released', launch.dispatch_id)
++                                pass  # Mutant: leave waiting work idle.
+                 else:
+                     line.run(report, launches)
+             except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never the end
+--- a/engine/.veldo/control_service.py
++++ b/engine/.veldo/control_service.py
+@@ -2264,7 +2264,7 @@
+                         for launch in launches:
+                             slot = line.runner.reservations.worker(launch.dispatch_id)
+                             if slot and slot['retired']:
+-                                self.wake('remote_capacity_released', launch.dispatch_id)
++                                pass  # Mutant: leave waiting work idle.
+                 else:
+                     line.run(report, launches)
+             except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never the end

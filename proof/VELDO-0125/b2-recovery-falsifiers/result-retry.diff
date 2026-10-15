@@ -1,0 +1,22 @@
+--- a/.veldo/control_worker_client.py
++++ b/.veldo/control_worker_client.py
+@@ -92,7 +92,7 @@
+             try:
+                 response = self.deliver(request)
+             except Refused as error:
+-                if not error.code.startswith('AUTHORITY_UNAVAILABLE:'):
++                if True:
+                     raise
+                 time.sleep(self.retry_seconds)
+                 continue
+--- a/engine/.veldo/control_worker_client.py
++++ b/engine/.veldo/control_worker_client.py
+@@ -92,7 +92,7 @@
+             try:
+                 response = self.deliver(request)
+             except Refused as error:
+-                if not error.code.startswith('AUTHORITY_UNAVAILABLE:'):
++                if True:
+                     raise
+                 time.sleep(self.retry_seconds)
+                 continue

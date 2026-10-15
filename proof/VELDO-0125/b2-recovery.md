@@ -6,8 +6,9 @@ targeted regression evidence, not a gate stamp or independent approval.
 Signed host cleanup now releases an unknown outcome without requiring a recovered
 termination record. The cleanup and final unknown accounting are journaled with
 the release; the dispatch outcome and missing usage remain unknown.
-The Mac supervisor likewise allows retirement after observed termination and an
-empty group without requiring an exit code. A lost running notification stops the
+The remote cleanup caller explicitly permits Mac supervisor retirement after
+observed termination and an empty group without requiring an exit code; the local
+caller's default contract is unchanged. A lost running notification stops the
 run and still collects and durably delivers its terminal observation.
 
 The trusted receiver retains result evidence before deleting inputs. Its default
@@ -38,6 +39,10 @@ the factory when they free capacity after the original launch has been removed.
 Initial verification: `python3 scripts/selftest.py --suite 106_veldo_0125_routing`
 reported 29 suite rows passed, 55 overall passed, zero failed, exit 2 (PARTIAL).
 Further verification and falsifier results are recorded alongside this document.
+Final [selected-suite verification](b2-recovery-falsifiers/verification.txt): relay
+has 17 suite rows passed (43 overall), routing has 32 (58 overall), both zero failed
+and exit 2. All seven targeted falsifiers exited 1 with named regression failures.
+The verification record includes source and regression digests and mirror checks.
 The current [falsifier records](b2-recovery-falsifiers/) retain exact diffs applied
 to both mirrored copies and the real selected output, including exit codes. The
 old recurring-tick failure claims in both earlier bundles were withdrawn because

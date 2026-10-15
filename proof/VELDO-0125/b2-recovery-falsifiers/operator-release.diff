@@ -1,0 +1,22 @@
+--- a/.veldo/control_worker_service.py
++++ b/.veldo/control_worker_service.py
+@@ -252,7 +252,7 @@
+             data['spend_receipt'] = reservations.report('remote-spend/' + record['dispatch_id'],
+                 data['invocation'], 1, {}, final=True, now=now)
+         receipt = self.save(command, data)
+-        released = not slot['retired']
++        released = False
+         if released:
+             reservations.retire('remote-retire/' + record['dispatch_id'], record['dispatch_id'],
+                 lambda identity: dict(terminated=True, cleaned=True, outcome='unknown',
+--- a/engine/.veldo/control_worker_service.py
++++ b/engine/.veldo/control_worker_service.py
+@@ -252,7 +252,7 @@
+             data['spend_receipt'] = reservations.report('remote-spend/' + record['dispatch_id'],
+                 data['invocation'], 1, {}, final=True, now=now)
+         receipt = self.save(command, data)
+-        released = not slot['retired']
++        released = False
+         if released:
+             reservations.retire('remote-retire/' + record['dispatch_id'], record['dispatch_id'],
+                 lambda identity: dict(terminated=True, cleaned=True, outcome='unknown',

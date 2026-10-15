@@ -1,0 +1,22 @@
+--- a/.veldo/control_worker_service.py
++++ b/.veldo/control_worker_service.py
+@@ -349,7 +349,7 @@
+         state, dispatch = data['state'], record['dispatch_id']
+         cleanup = data['observation'].get('cleanup')
+         slot = reservations.worker(dispatch)
+-        if state == 'refused' or (state in ('exited', 'unknown') and cleanup is not None):
++        if state == 'refused' or (state == 'exited' and cleanup is not None):
+             if not slot['retired']:
+                 reservations.retire('remote-retire/' + dispatch, dispatch,
+                     lambda identity: dict(terminated=True, cleaned=True,
+--- a/engine/.veldo/control_worker_service.py
++++ b/engine/.veldo/control_worker_service.py
+@@ -349,7 +349,7 @@
+         state, dispatch = data['state'], record['dispatch_id']
+         cleanup = data['observation'].get('cleanup')
+         slot = reservations.worker(dispatch)
+-        if state == 'refused' or (state in ('exited', 'unknown') and cleanup is not None):
++        if state == 'refused' or (state == 'exited' and cleanup is not None):
+             if not slot['retired']:
+                 reservations.retire('remote-retire/' + dispatch, dispatch,
+                     lambda identity: dict(terminated=True, cleaned=True,

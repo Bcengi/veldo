@@ -1,0 +1,22 @@
+--- a/.veldo/control_worker.py
++++ b/.veldo/control_worker.py
+@@ -75,7 +75,7 @@
+             # even when the running notification (or its acknowledgement) is lost.
+             started.stop('authority_unavailable')
+         observation = started.wait()
+-        usage, references = collect(started, observation) if collect else collect_files(clone, scratch, started)
++        usage, references = collect(started, observation) if collect else (None, {'output': 'uncollected'})
+         evidence = Path(clone).parent / 'result-evidence.json'
+         client.outbox = Path(clone).parent / 'result-request.json'
+         def retain():
+--- a/engine/.veldo/control_worker.py
++++ b/engine/.veldo/control_worker.py
+@@ -75,7 +75,7 @@
+             # even when the running notification (or its acknowledgement) is lost.
+             started.stop('authority_unavailable')
+         observation = started.wait()
+-        usage, references = collect(started, observation) if collect else collect_files(clone, scratch, started)
++        usage, references = collect(started, observation) if collect else (None, {'output': 'uncollected'})
+         evidence = Path(clone).parent / 'result-evidence.json'
+         client.outbox = Path(clone).parent / 'result-request.json'
+         def retain():

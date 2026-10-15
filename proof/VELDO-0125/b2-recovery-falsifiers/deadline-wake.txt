@@ -1,0 +1,4 @@
+deadline-wake (exit 1)
+  SELFTEST FAIL: VELDO-0125 AC2/remote-factory-deadline
+  106_veldo_0125_routing                          31 passed   21.84s
+selftest (PARTIAL, 1 of 166 suites): 57 passed, 1 failed in 21.84s

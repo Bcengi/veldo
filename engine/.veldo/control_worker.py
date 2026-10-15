@@ -90,7 +90,7 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=
                     for path in (clone, scratch):
                         if os.path.lexists(path):
                             shutil.rmtree(path)
-                    started.release()
+                    started.release(allow_unknown=observation['state'] == 'unknown')
                 except (OSError, C.P.Refused):
                     pass  # The signed exit is still useful; missing cleanup keeps the durable hold.
                 else:

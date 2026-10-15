@@ -1,0 +1,20 @@
+Selected suites only. Exit 2 means PARTIAL, not a canonical gate pass.
+
+105_veldo_0125_relay (exit 2)
+  105_veldo_0125_relay                            17 passed    7.32s
+selftest (PARTIAL, 1 of 166 suites): 43 passed, 0 failed in 7.32s
+
+106_veldo_0125_routing (exit 2)
+  106_veldo_0125_routing                          32 passed   22.70s
+selftest (PARTIAL, 1 of 166 suites): 58 passed, 0 failed in 22.70s
+
+SHA-256 of tested canonical sources; each installed copy is byte-identical:
+e96fd6d64fc54e394c4363a5d9f163d044d7058ae47634eaf3273a6a48c2876e  engine/.veldo/control_worker.py
+f901a58e284ea458ee7009deb0fc4fa854a9c40b4fadc78a3463cf0acbfe9586  engine/.veldo/control_worker_client.py
+af50c068ed36db963db5deadf916151e3fc80f9325c65aff8e21f86ed7ec0edf  engine/.veldo/control_worker_service.py
+074899255522a706bf16cd5c2630605f4a2bd4569ebd821cb6cf76e7fbf3f7a0  engine/.veldo/control_reservations.py
+a4d0f925078293f2aeeb21862ea2e637d1fa60ab04775fb438eef5e8436f516b  engine/.veldo/control_service.py
+8b16e7fc997c2987652f986c0004e495c6bef7b76fb1e72e8ea5eae97da3a285  engine/.veldo/project_runner_macos.py
+f92b90015d2511b720ca2d34f8026c2a0f45bbbc6006228f3674495b8feef75e  scripts/suites/105_veldo_0125_relay.py
+d9ab5c8343eba1f6c49266ecb6d0296a80b7fb67154e09779092f3128e19a2f4  scripts/suites/106_veldo_0125_routing.py
+b760c9c6e8092f38de1325050ce5bd812baa512272b2c8087d4063793a3b1fed  proof/VELDO-0125/checks.py

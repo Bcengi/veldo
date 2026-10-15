@@ -336,13 +336,14 @@ class Run:
         return dict(terminated=self.exit_seen and empty, cleaned=empty,
                     outcome_known=self.state == 'exited', observer='macos_supervisor')
 
-    def release(self):
+    def release(self, *, allow_unknown=False):
         if self.state == 'retired':
             raise P.Refused('stale_version:already_retired')
         observation = self.retirement()
-        # Cleanup evidence can release capacity even if the wrapper lost its exit record.
-        # The caller still reports an unknown outcome; retirement does not invent completion.
-        if not all(observation[key] for key in ('terminated', 'cleaned')):
+        # The signed remote cleanup path may release without recovering an exit record.
+        # Other callers keep the default requirement for a known outcome.
+        if (not all(observation[key] for key in ('terminated', 'cleaned'))
+                or (not observation['outcome_known'] and not allow_unknown)):
             raise P.Refused('unknown_outcome:retirement')
         with self.supervisor.lock():
             if self.state == 'retired':

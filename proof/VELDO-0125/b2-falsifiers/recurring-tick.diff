@@ -1,5 +1,22 @@
 --- a/.veldo/control_service.py
 +++ b/.veldo/control_service.py
-@@ -2220,0 +2221,2 @@
+@@ -2213,6 +2213,8 @@
+             self.saw_end(line, launch)
+ 
+     def next_timer(self):
 +        if self.deadlines:
-+            self.wake('account_reset')
++            self.timer = time.time() + 1
+         times = [entry[0] for entry in self.deadlines.values()]
+         if self.timer is not None:
+             times.append(self.timer)
+--- a/engine/.veldo/control_service.py
++++ b/engine/.veldo/control_service.py
+@@ -2213,6 +2213,8 @@
+             self.saw_end(line, launch)
+ 
+     def next_timer(self):
++        if self.deadlines:
++            self.timer = time.time() + 1
+         times = [entry[0] for entry in self.deadlines.values()]
+         if self.timer is not None:
+             times.append(self.timer)

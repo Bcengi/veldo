@@ -1,0 +1,4 @@
+result-retry (exit 1)
+  SELFTEST FAIL: VELDO-0125 AC3/remote-result-transport-failure
+  106_veldo_0125_routing                          31 passed   22.62s
+selftest (PARTIAL, 1 of 166 suites): 57 passed, 1 failed in 22.62s

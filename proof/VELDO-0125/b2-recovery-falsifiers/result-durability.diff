@@ -1,0 +1,22 @@
+--- a/.veldo/control_worker_client.py
++++ b/.veldo/control_worker_client.py
+@@ -81,7 +81,7 @@
+                        separators=(',', ':'), ensure_ascii=True, default=str).encode(), COMMAND_NAMESPACE))
+         request = remote_request(self.workspace, self.binding, packet, self.sign)
+         if operation == 'worker_result' and self.outbox is not None:
+-            durable_json(self.outbox, request)
++            pass  # Mutant: lose the result on restart.
+             return self.retry_result()
+         return self.deliver(request)
+ 
+--- a/engine/.veldo/control_worker_client.py
++++ b/engine/.veldo/control_worker_client.py
+@@ -81,7 +81,7 @@
+                        separators=(',', ':'), ensure_ascii=True, default=str).encode(), COMMAND_NAMESPACE))
+         request = remote_request(self.workspace, self.binding, packet, self.sign)
+         if operation == 'worker_result' and self.outbox is not None:
+-            durable_json(self.outbox, request)
++            pass  # Mutant: lose the result on restart.
+             return self.retry_result()
+         return self.deliver(request)
+ 

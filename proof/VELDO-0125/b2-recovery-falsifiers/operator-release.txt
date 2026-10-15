@@ -1,0 +1,7 @@
+operator-release (exit 1)
+  SELFTEST FAIL: VELDO-0125 AC3/empty-collector-preserves-files
+  SELFTEST FAIL: VELDO-0125 AC3/cleanup-failure-release
+  SELFTEST FAIL: VELDO-0125 AC3/incomplete-retirement-release
+  SELFTEST FAIL: VELDO-0125 AC3/operator-release
+  106_veldo_0125_routing                          28 passed   20.95s
+selftest (PARTIAL, 1 of 166 suites): 54 passed, 4 failed in 20.96s

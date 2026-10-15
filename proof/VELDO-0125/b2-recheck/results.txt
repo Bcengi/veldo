@@ -1,4 +1,4 @@
-Targeted falsifiers against 75223fdd; each applied to both mirrored copies and restored.
+Historical falsifiers against 75223fdd (except the corrected recurring-tick rerun below); each applied to both mirrored copies and restored.
 Only 106_veldo_0125_routing selected, sequentially. These PARTIAL runs are not gate evidence.
 
 grace (exit 1)
@@ -7,11 +7,13 @@ grace (exit 1)
   106_veldo_0125_routing                          21 passed   13.32s
 selftest (PARTIAL, 1 of 166 suites): 47 passed, 2 failed in 13.32s
 
+Recurring tick correction against 5b7a64f6; old unreachable mutation result withdrawn.
 recurring-tick (exit 1)
   SELFTEST FAIL: VELDO-0125 AC2/remote-factory-deadline
+AC2/remote-no-polling: AssertionError: pending remote launch caused factory passes without an event
   SELFTEST FAIL: VELDO-0125 AC2/remote-no-polling
-  106_veldo_0125_routing                          21 passed   13.34s
-selftest (PARTIAL, 1 of 166 suites): 47 passed, 2 failed in 13.34s
+  106_veldo_0125_routing                          30 passed   21.68s
+selftest (PARTIAL, 1 of 166 suites): 56 passed, 2 failed in 21.68s
 
 durability (exit 1)
   SELFTEST FAIL: VELDO-0125 AC3/remote-cleanup-held

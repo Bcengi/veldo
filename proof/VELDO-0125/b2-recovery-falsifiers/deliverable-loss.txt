@@ -1,0 +1,6 @@
+deliverable-loss (exit 1)
+  SELFTEST FAIL: VELDO-0125 AC3/default-collector-retains-files
+  SELFTEST FAIL: VELDO-0125 AC3/unknown-host-cleanup
+  SELFTEST FAIL: VELDO-0125 AC3/running-notification-lost
+  106_veldo_0125_routing                          29 passed   22.57s
+selftest (PARTIAL, 1 of 166 suites): 55 passed, 3 failed in 22.57s

@@ -1,0 +1,13 @@
+result-durability (exit 1)
+  SELFTEST FAIL: VELDO-0125 AC2/factory-remote-delivery
+  SELFTEST FAIL: VELDO-0125 AC3/remote-result-transport-failure
+  SELFTEST FAIL: VELDO-0125 AC3/remote-result-restart
+  SELFTEST FAIL: VELDO-0125 AC3/default-collector-retains-files
+  SELFTEST FAIL: VELDO-0125 AC3/unknown-host-cleanup
+  SELFTEST FAIL: VELDO-0125 AC3/running-notification-lost
+  SELFTEST FAIL: VELDO-0125 AC3/empty-collector-preserves-files
+  SELFTEST FAIL: VELDO-0125 AC3/cleanup-failure-release
+  SELFTEST FAIL: VELDO-0125 AC3/incomplete-retirement-release
+  SELFTEST FAIL: VELDO-0125 AC2/actual-worker-launch
+  106_veldo_0125_routing                          22 passed   21.82s
+selftest (PARTIAL, 1 of 166 suites): 48 passed, 10 failed in 21.82s

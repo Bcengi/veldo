@@ -1,0 +1,6 @@
+recurring-tick (exit 1)
+  SELFTEST FAIL: VELDO-0125 AC2/remote-factory-deadline
+AC2/remote-no-polling: AssertionError: pending remote launch caused factory passes without an event
+  SELFTEST FAIL: VELDO-0125 AC2/remote-no-polling
+  106_veldo_0125_routing                          30 passed   21.68s
+selftest (PARTIAL, 1 of 166 suites): 56 passed, 2 failed in 21.68s

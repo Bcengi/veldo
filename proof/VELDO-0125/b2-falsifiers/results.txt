@@ -10,11 +10,14 @@ Final 106_veldo_0125_routing
   106_veldo_0125_routing                          23 passed   18.24s
 selftest (PARTIAL, 1 of 166 suites): 49 passed, 0 failed in 18.24s
 
-Recurring tick falsifier
+Recurring tick falsifier - corrected rerun against 5b7a64f6
+The earlier unreachable mutation and claimed failures are withdrawn. Actual replacement output:
+recurring-tick (exit 1)
   SELFTEST FAIL: VELDO-0125 AC2/remote-factory-deadline
+AC2/remote-no-polling: AssertionError: pending remote launch caused factory passes without an event
   SELFTEST FAIL: VELDO-0125 AC2/remote-no-polling
-  106_veldo_0125_routing                          17 passed    9.85s
-selftest (PARTIAL, 1 of 166 suites): 43 passed, 2 failed in 9.85s
+  106_veldo_0125_routing                          30 passed   21.68s
+selftest (PARTIAL, 1 of 166 suites): 56 passed, 2 failed in 21.68s
 
 Grace falsifier
   SELFTEST FAIL: VELDO-0125 AC2/remote-factory-deadline

@@ -1,0 +1,5 @@
+unknown-cleanup (exit 1)
+  SELFTEST FAIL: VELDO-0125 AC3/unknown-host-cleanup
+  SELFTEST FAIL: VELDO-0125 AC3/unknown-cleanup-releases
+  106_veldo_0125_routing                          30 passed   22.13s
+selftest (PARTIAL, 1 of 166 suites): 56 passed, 2 failed in 22.13s
