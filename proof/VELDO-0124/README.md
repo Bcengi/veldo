@@ -1,5 +1,9 @@
 # VELDO-0124 build and pending qualification
 
+Latest round: [batch 2, 2026-10-15](ROUND-batch2.md). Suite catalog conflicts
+are resolved; nine local falsifiers were rejected and the owning suites rerun.
+Static contract defects were repaired. Real engine qualification remains blocked.
+
 This is a build observation, not a shipped specification, gate stamp,
 native qualification, activation approval or independent review. The selected
 machine is the SSH tailnet alias `dmitrys-mac-mini`: hostname `dmitrys-mini.lan`,

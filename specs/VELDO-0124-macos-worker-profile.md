@@ -112,6 +112,16 @@ not tests run by this writing revision.
 
 ## History
 
+2026-10-15: batch 2 resolved the suite catalog conflicts while retaining both
+sets of registrations and regenerating prerequisite closures. The two owning
+suites were rerun against the integrated control modules, and all nine local
+falsifiers were rejected. The proof manifest now declares rollback and the
+pending unit/integration evidence explicitly. See `proof/VELDO-0124/ROUND-batch2.md`
+for static checks, review response locations and native commands. SSH to the
+selected Mac timed out; real Claude Code/Codex qualification and the reviewer
+gate remain blocked/pending. Status, criteria and approval requirements remain
+unchanged; local fixture results do not qualify the Mac.
+
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 2, under the owner's
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,

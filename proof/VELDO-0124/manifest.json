@@ -1,28 +1,28 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0124",
-  "commit": "869d76ffc79d28809e3ffeb3e5c6f56ec529657e",
+  "commit": "eebad4f91360f494588e1a9b0f29e2f2465564d6",
   "producer": "Codex implementation agent",
-  "produced_at": "2026-10-10T01:21:08.689705+00:00",
+  "produced_at": "2026-10-15T15:10:09.593365+00:00",
   "veldo_version": "3.10.1",
   "criteria": [
     {
       "id": "AC1",
       "status": "pending",
       "evidence": [],
-      "detail": "Real Mac qualification and canonical gate pending. Development observations are not passing proof."
+      "detail": "Pending real Claude Code/Codex qualification on the selected Mac and reviewer gate. SSH timed out on 2026-10-15; partial local diagnostics are not passing proof."
     },
     {
       "id": "AC2",
       "status": "pending",
       "evidence": [],
-      "detail": "Real Mac qualification and canonical gate pending. Development observations are not passing proof."
+      "detail": "Pending real Claude Code/Codex qualification on the selected Mac and reviewer gate. SSH timed out on 2026-10-15; partial local diagnostics are not passing proof."
     },
     {
       "id": "AC3",
       "status": "pending",
       "evidence": [],
-      "detail": "Real Mac qualification and canonical gate pending. Development observations are not passing proof."
+      "detail": "Pending real Claude Code/Codex qualification on the selected Mac and reviewer gate. SSH timed out on 2026-10-15; partial local diagnostics are not passing proof."
     }
   ],
   "checks": [

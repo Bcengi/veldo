@@ -1,0 +1,41 @@
+   shape (review lane, non-blocking): pattern stdlib_only_enforcement (review lane): reviewer guidance, not gate-enforced
+   shape (review lane, non-blocking): pattern reuse_one_parser (review lane): reviewer guidance, not gate-enforced
+   shape (review lane, non-blocking): invariant no_detached_processes (review lane): reviewer guidance, not gate-enforced
+   shape (review lane, non-blocking): invariant gate_is_the_only_done (review lane): reviewer guidance, not gate-enforced
+   shape gate FAIL: the diff touches '.local-0124/accounts-index.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/commit1.log', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/commit2.log', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/contract-errors.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/control-suite.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/dependency-additions.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/dependency-diff.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/files.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/final-stat.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/forbidden-nested.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/functions.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/history.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/instructions.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/integrated-paths.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/launch-diff.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/launch-summary.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/native-index.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/neighbor-proof.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/policy.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/profile.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/proof-example.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/proof-schema.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/remaining-failures.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/requires.log', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/review-search.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/rounds.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/runtime-section.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/runtime-stop.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/source-index.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/stat.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/static-failures.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/static.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/status.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/supervisor.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/top.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate FAIL: the diff touches '.local-0124/validator-index.txt', outside the footprint declared by specs/VELDO-0124-macos-worker-profile.md: a change may not silently touch a path its spec did not declare
+   shape gate: 36 mechanizable-rule violation(s)
