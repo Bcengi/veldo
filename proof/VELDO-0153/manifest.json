@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0153",
-  "commit": "193c72e7acfc666c1ec9dd38446cd595577b32e3",
+  "commit": "eb39d109239b90f42a134e6d4ee482a90e78bfbc",
   "producer": "Codex implementation agent",
-  "produced_at": "2026-10-15T16:21:58.453718+00:00",
+  "produced_at": "2026-10-15T16:55:54.637877+00:00",
   "plan": "PLAN-0019",
   "work": "W113",
   "plan_revision": 4,
@@ -15,16 +15,16 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0153/review-corrections.md",
-          "detail": "Current mutation inventory, unit findings and review corrections; consumer and fenced integration execution remain pending."
+          "detail": "Current registry corrections and static audit. Suite 58 attempted but all 57 row predicates remain unexecuted at AF_UNIX denial; fenced integration and consumer kills remain pending."
         },
         {
           "type": "unit",
-          "ref": "proof/VELDO-0153/review-corrections-refusal.json",
+          "ref": "proof/VELDO-0153/review-followup-refusal.json",
           "detail": "Required refusal and isolated-import unit kills observed, restored unit rows clean. Selected suite still stops at AF_UNIX denial; no integration pass inferred."
         },
         {
           "type": "unit",
-          "ref": "proof/VELDO-0153/review-corrections-executor.json",
+          "ref": "proof/VELDO-0153/review-followup-executor.json",
           "detail": "Profile-selection and remote-host mutants each fail the required process-boundary row; restored suite 108 has zero failures."
         }
       ]
@@ -36,16 +36,16 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0153/review-corrections.md",
-          "detail": "Current mutation inventory, unit findings and review corrections; consumer and fenced integration execution remain pending."
+          "detail": "Current registry corrections and static audit. Suite 58 attempted but all 57 row predicates remain unexecuted at AF_UNIX denial; fenced integration and consumer kills remain pending."
         },
         {
           "type": "unit",
-          "ref": "proof/VELDO-0153/review-corrections-refusal.json",
+          "ref": "proof/VELDO-0153/review-followup-refusal.json",
           "detail": "Required refusal and isolated-import unit kills observed, restored unit rows clean. Selected suite still stops at AF_UNIX denial; no integration pass inferred."
         },
         {
           "type": "unit",
-          "ref": "proof/VELDO-0153/review-corrections-executor.json",
+          "ref": "proof/VELDO-0153/review-followup-executor.json",
           "detail": "Profile-selection and remote-host mutants each fail the required process-boundary row; restored suite 108 has zero failures."
         }
       ]
@@ -57,16 +57,16 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0153/review-corrections.md",
-          "detail": "Current mutation inventory, unit findings and review corrections; consumer and fenced integration execution remain pending."
+          "detail": "Current registry corrections and static audit. Suite 58 attempted but all 57 row predicates remain unexecuted at AF_UNIX denial; fenced integration and consumer kills remain pending."
         },
         {
           "type": "unit",
-          "ref": "proof/VELDO-0153/review-corrections-refusal.json",
+          "ref": "proof/VELDO-0153/review-followup-refusal.json",
           "detail": "Required refusal and isolated-import unit kills observed, restored unit rows clean. Selected suite still stops at AF_UNIX denial; no integration pass inferred."
         },
         {
           "type": "unit",
-          "ref": "proof/VELDO-0153/review-corrections-executor.json",
+          "ref": "proof/VELDO-0153/review-followup-executor.json",
           "detail": "Profile-selection and remote-host mutants each fail the required process-boundary row; restored suite 108 has zero failures."
         }
       ]
@@ -76,7 +76,7 @@
     {
       "name": "unit",
       "status": "not_run",
-      "detail": "Suite 108: two suite assertions pass, zero failures (partial exit 2). Suite 107 reaches unit assertions with no named failures, then exits 1 at AF_UNIX PermissionError. No aggregate unit pass."
+      "detail": "Suite 108 partial exit 2: 28 passed, zero failed including shared preamble (two suite assertions). Suite 107: all 12 evidence and four isolated-import/refusal assertions reached with no named failures, then AF_UNIX PermissionError, exit 1. No aggregate unit pass."
     },
     {
       "name": "integration",
@@ -86,47 +86,47 @@
     {
       "name": "refusal_unit_falsifiers",
       "status": "passed",
-      "detail": "Reproduction exits 0: all three required refusal kills and the isolated-import kill observed, restored unit rows clean. Additional mutant failures are allowed; integration remains incomplete."
+      "detail": "Fresh reproduction exits 0 with TMPDIR inside this checkout under target/veldo-0153: three required refusal kills and isolated-import kill observed; restored unit rows have no named failures. All three selected suite invocations still stop at AF_UNIX denial. See review-followup-refusal.json."
     },
     {
       "name": "mutation_anchor_static",
       "status": "passed",
-      "detail": "2452 registrations audited for production edit anchors and mutant syntax. No missing anchors or unresolved expressions. Suite-copy anchors also checked for findings 28, 56, 57 and 153: zero missing. Static evidence does not establish consumer kills."
+      "detail": "2556 registrations resolved by the all audit, matching every field of the isolated real cases() data factory. Zero missing production anchors, unresolved expressions or mutant syntax errors; zero missing suite-copy anchors for findings 28, 56, 57 and 153. Prior 2452 count omitted 104 registrations. See review-followup-anchors.json and review-followup-registry.json; static evidence is not mutant-kill evidence."
     },
     {
       "name": "lint",
       "status": "passed",
-      "detail": "bash scripts/check_lint.sh exited 0: Python compilation and shell syntax checks passed for 994 Python and 34 shell files."
+      "detail": "Historical evidence from 193c72e7; not rerun in this follow-up. bash scripts/check_lint.sh exited 0: Python compilation and shell syntax checks passed for 994 Python and 34 shell files."
     },
     {
       "name": "generated",
       "status": "passed",
-      "detail": "bash scripts/check_generated.sh exited 0: declared generated artifacts match their generators, including the regenerated suite prerequisite closure with suite 108."
+      "detail": "Fresh bash scripts/check_generated.sh exits 0, including scripts/suites/requires.json; artifacts match their generators."
     },
     {
       "name": "docs",
       "status": "passed",
-      "detail": "bash scripts/check_docs.sh exited 0: documentation hygiene and genericity sweeps passed."
+      "detail": "Historical evidence from 193c72e7; not rerun in this follow-up. bash scripts/check_docs.sh exited 0: documentation hygiene and genericity sweeps passed."
     },
     {
       "name": "template_sync",
       "status": "passed",
-      "detail": "bash scripts/check_template_sync.sh exited 0: 285 declared pairs identical, six declared per-repo exceptions and 131 engine-only files. No production copy changed in this correction."
+      "detail": "Fresh bash scripts/check_template_sync.sh exits 0: 285 pairs identical, six declared per-repo exceptions and 131 engine-only files. No production module changed."
     },
     {
       "name": "shape",
       "status": "passed",
-      "detail": "python3 .veldo/shape_gate.py exited 0: mechanizable architecture rules passed; review-lane rules remain reviewer guidance."
+      "detail": "Historical evidence from 193c72e7; not rerun in this follow-up. python3 .veldo/shape_gate.py exited 0: mechanizable architecture rules passed; review-lane rules remain reviewer guidance."
     },
     {
       "name": "security",
       "status": "passed",
-      "detail": "python3 scripts/secret_inventory.py exited 0 with zero outstanding findings. The built-in gate secret regex was not rerun; its earlier result is historical."
+      "detail": "Historical evidence from 193c72e7; not rerun in this follow-up. python3 scripts/secret_inventory.py exited 0 with zero outstanding findings. The built-in gate secret regex was not rerun; its earlier result is historical."
     },
     {
       "name": "consumer_suites",
       "status": "not_run",
-      "detail": "The owner's ONLY-own-specification-suites rule excludes consumers. Suite 101 also loads a prohibited mutation driver. Base runtime attribution and consumer falsifier kills remain pending."
+      "detail": "The user explicitly authorized suite 58 this round. Exit 1 at socket(AF_UNIX), before any of its 57 row predicates execute. Every unexecuted row is listed in review-followup-checks.json. Other consumer suites and all consumer mutant kills remain unrun; drivers and full gate are prohibited."
     },
     {
       "name": "gate",
@@ -136,16 +136,26 @@
     {
       "name": "process_boundary_falsifiers",
       "status": "passed",
-      "detail": "reproduce_executor.py exits 0. Missing identity profile and omitted remote-host guard each fail their exact required row without a socket or HermeticViolation; restored suite 108 has zero failures."
+      "detail": "Fresh reproduce_executor.py exits 0 with the expanded audit. Each mutant fails exactly its named suite-108 row, and restored suite 108 has zero failures. See review-followup-executor.json."
+    },
+    {
+      "name": "changed_python_syntax",
+      "status": "passed",
+      "detail": "Compiled all five changed Python files without executing any mutation driver."
+    },
+    {
+      "name": "evidence_regression_controls",
+      "status": "passed",
+      "detail": "Four deliberately restored evidence defects fail their exact named suite-107 rows. Fixes restored; subsequent refusal reproduction green run has no named failures. See review-followup-regressions.json and review-followup-refusal.json."
     }
   ],
   "assumptions": [
-    "AF_UNIX socket restrictions still prevent fenced integration. Only the named socket-free unit observations and four unit falsifiers have fresh execution evidence.",
+    "AF_UNIX restrictions prevent every suite-58 row and the suite-107 fence/integration rows. Fresh selected observations and regression/falsifier receipts do not establish full integration or a gate pass.",
     "Consumer mutants need reviewer execution. Retired names do not count as kills, and static source/suite anchor validity does not establish live consumer kills.",
     "Suite 101 source is identical to main 9763249e; runtime failure attribution is unmeasured.",
     "Real host qualification, independent critical-risk review and final approval remain outstanding.",
     "VELDO-0143's repository provisioner is absent and still must drive creation/adoption integration with the shared check."
   ],
   "rollback": "Stop identity pushes that cannot satisfy the profile. Keep recorded bindings; no ambient fallback or automatic rollback.",
-  "proof_digest": "sha256:0674c8b95de64db6"
+  "proof_digest": "sha256:5caf684109b09faa"
 }
