@@ -5,6 +5,7 @@ anchors can be audited for all registrations; suite-copy anchors are checked for
 those four findings. This checks anchors and syntax, not mutant kills. No suite or mutation driver is imported or invoked.
 """
 import ast
+from functools import lru_cache
 import json
 from pathlib import Path
 import subprocess
@@ -14,8 +15,32 @@ ROOT = Path(__file__).resolve().parents[2]
 FINDINGS = None if sys.argv[2:] == ['all'] else (28, 56, 57, 153)
 
 
-def registrations(source):
-    result, environment, helpers = [], {}, {}
+def factory_registrations(source):
+    """Cross-check the trusted registry's data factory, never its driver or imports.
+
+    Only literal globals and the cases definition are compiled. No suite, worker,
+    driver entry point or other top-level executable statement is evaluated.
+    """
+    tree = ast.parse(source)
+    namespace = {'ROOT': ROOT, 'json': json, '__builtins__': {
+        'dict': dict, 'list': list, 'repr': repr, 'set': set, 'sorted': sorted, 'tuple': tuple}}
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            try:
+                value = ast.literal_eval(node.value)
+            except (ValueError, TypeError):
+                continue
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    namespace[target.id] = value
+    factory = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'cases')
+    exec(compile(ast.Module(body=[factory], type_ignores=[]), '<registry data factory>', 'exec'), namespace)
+    return namespace['cases']()
+
+
+def registrations(source, findings=FINDINGS, read_text=None):
+    result, environment, helpers = [], {'ROOT': ROOT}, {}
+    read_text = read_text or (lambda path: path.read_text())
 
     def evaluate(node, env):
         if isinstance(node, ast.Constant):
@@ -24,9 +49,16 @@ def registrations(source):
             return env[node.id]
         if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
             return -evaluate(node.operand, env)
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+            return not evaluate(node.operand, env)
+        if isinstance(node, ast.IfExp):
+            return evaluate(node.body if evaluate(node.test, env) else node.orelse, env)
         if isinstance(node, ast.BoolOp):
-            values = [evaluate(value, env) for value in node.values]
-            return any(values) if isinstance(node.op, ast.Or) else all(values)
+            for item in node.values:
+                value = evaluate(item, env)
+                if bool(value) == isinstance(node.op, ast.Or):
+                    return value
+            return value
         if isinstance(node, ast.Compare) and len(node.ops) == 1:
             left, right = evaluate(node.left, env), evaluate(node.comparators[0], env)
             if isinstance(node.ops[0], ast.NotEq):
@@ -40,7 +72,12 @@ def registrations(source):
         if isinstance(node, ast.Dict):
             return {evaluate(key, env): evaluate(value, env) for key, value in zip(node.keys, node.values)}
         if isinstance(node, (ast.List, ast.Tuple)):
-            items = [evaluate(item, env) for item in node.elts]
+            items = []
+            for item in node.elts:
+                if isinstance(item, ast.Starred):
+                    items.extend(evaluate(item.value, env))
+                else:
+                    items.append(evaluate(item, env))
             return tuple(items) if isinstance(node, ast.Tuple) else items
         if isinstance(node, ast.BinOp):
             left, right = evaluate(node.left, env), evaluate(node.right, env)
@@ -48,6 +85,8 @@ def registrations(source):
                 return left + right
             if isinstance(node.op, ast.Mod):
                 return left % right
+            if isinstance(node.op, ast.Div) and isinstance(left, Path):
+                return left / right
         if isinstance(node, ast.Subscript):
             return evaluate(node.value, env)[evaluate(node.slice, env)]
         if isinstance(node, ast.Slice):
@@ -64,16 +103,30 @@ def registrations(source):
         if isinstance(node, ast.Call):
             args = [evaluate(arg, env) for arg in node.args]
             kwargs = {item.arg: evaluate(item.value, env) for item in node.keywords}
-            if isinstance(node.func, ast.Attribute) and node.func.attr in ('replace', 'join', 'format'):
+            if isinstance(node.func, ast.Attribute):
+                if isinstance(node.func.value, ast.Name):
+                    owner = node.func.value.id
+                    if (owner, node.func.attr) == ('json', 'loads'):
+                        return json.loads(*args, **kwargs)
+                    if (owner, node.func.attr) == ('dict', 'fromkeys'):
+                        return dict.fromkeys(*args, **kwargs)
                 value = evaluate(node.func.value, env)
-                if not isinstance(value, str):
-                    raise ValueError('non-string method')
-                return getattr(value, node.func.attr)(*args, **kwargs)
+                if isinstance(value, Path) and node.func.attr == 'read_text':
+                    path = value.resolve()
+                    if not path.is_relative_to(ROOT):
+                        raise ValueError('data path outside repository')
+                    return read_text(path)
+                allowed = ((str, ('replace', 'join', 'format', 'rstrip')),
+                           (dict, ('get', 'items')), (set, ('update',)))
+                if any(isinstance(value, kind) and node.func.attr in methods for kind, methods in allowed):
+                    return getattr(value, node.func.attr)(*args, **kwargs)
+                raise ValueError('unsupported method: ' + node.func.attr)
             if isinstance(node.func, ast.Name):
                 name = node.func.id
-                if name in ('list', 'tuple', 'str', 'range', 'enumerate', 'zip', 'dict'):
+                if name in ('list', 'tuple', 'str', 'range', 'enumerate', 'zip', 'dict', 'repr', 'set', 'sorted'):
                     return {'list': list, 'tuple': tuple, 'str': str, 'range': range,
-                            'enumerate': enumerate, 'zip': zip, 'dict': dict}[name](*args, **kwargs)
+                            'enumerate': enumerate, 'zip': zip, 'dict': dict, 'repr': repr,
+                            'set': set, 'sorted': sorted}[name](*args, **kwargs)
                 if name == 'add':
                     finding, case, suite, module, old, new, rows, *extra = args
                     result.append(dict(finding=finding, name=case, suite=suite, module=module,
@@ -87,6 +140,8 @@ def registrations(source):
                     for key, default in zip(parameters[-len(function.args.defaults):], function.args.defaults):
                         local[key] = evaluate(default, environment)
                     local.update(zip(parameters, args))
+                    if function.args.vararg:
+                        local[function.args.vararg.arg] = tuple(args[len(parameters):])
                     local.update(kwargs)
                     for statement in function.body:
                         if isinstance(statement, ast.Return):
@@ -124,6 +179,10 @@ def registrations(source):
         elif isinstance(node, ast.If):
             for statement in node.body if evaluate(node.test, env) else node.orelse:
                 visit(statement, env)
+        elif isinstance(node, ast.Return) and isinstance(node.value, ast.Name) and node.value.id == 'result':
+            pass
+        else:
+            raise ValueError('unsupported statement: ' + type(node).__name__)
 
     tree = ast.parse(source)
     for node in tree.body:
@@ -139,11 +198,11 @@ def registrations(source):
             visit(statement, environment)
         except (KeyError, ValueError, TypeError, IndexError) as error:
             text = ast.unparse(statement)
-            if text.startswith(('publication(', 'candidate(', 'landing(', 'effects(', 'add(28,', 'add(56,', 'add(57,')):
-                unresolved.append(dict(line=statement.lineno, expression=text[:140], error=str(error)))
-    return [case for case in result if FINDINGS is None or case['finding'] in FINDINGS], unresolved
+            unresolved.append(dict(line=statement.lineno, expression=text[:140], error=str(error)))
+    return [case for case in result if findings is None or case['finding'] in findings], unresolved
 
 
+@lru_cache(maxsize=None)
 def git_text(commit, path):
     return subprocess.check_output(['git', 'show', commit + ':' + path], cwd=ROOT, text=True,
                                    stderr=subprocess.DEVNULL)
@@ -151,7 +210,17 @@ def git_text(commit, path):
 
 def audit(commit=None):
     source = git_text(commit, 'scripts/check_teeth_mutations.py') if commit else (ROOT / 'scripts/check_teeth_mutations.py').read_text()
-    cases, unresolved = registrations(source)
+    reader = (lambda path: git_text(commit, str(path.relative_to(ROOT)))) if commit else None
+    cases, unresolved = registrations(source, read_text=reader)
+    factory_count = None
+    if commit is None:
+        actual = factory_registrations(source)
+        factory_count = len(actual)
+        expected = [dict(case, also=case.get('also', ())) for case in actual
+                    if FINDINGS is None or case['finding'] in FINDINGS]
+        # Normalize list/tuple representations; compare every field, not just counts.
+        if json.dumps(cases, sort_keys=True) != json.dumps(expected, sort_keys=True):
+            unresolved.append(dict(error='AST registrations differ from isolated cases() data factory'))
     missing = []
     suite_missing = []
     for case in cases:
@@ -183,7 +252,7 @@ def audit(commit=None):
                     compile(text, path, 'exec')
                 except SyntaxError as error:
                     unresolved.append(dict(case=case['name'], error='mutant syntax: ' + str(error)))
-    return dict(cases=len(cases), unresolved=unresolved, missing=missing,
+    return dict(cases=len(cases), factory_cases=factory_count, unresolved=unresolved, missing=missing,
                 suite_anchor_findings=[28, 56, 57, 153], suite_missing=suite_missing)
 
 

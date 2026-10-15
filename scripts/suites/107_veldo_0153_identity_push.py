@@ -9,7 +9,24 @@ def _v153_evidence_rows():
     """Review regressions in evidence checks, without invoking a mutation driver."""
     import copy
     import runpy
-    assess = runpy.run_path(str(ROOT / 'proof/VELDO-0153/reproduce_refusal.py'))['assess']
+    reproduction = runpy.run_path(str(ROOT / 'proof/VELDO-0153/reproduce_refusal.py'))
+    assess = reproduction['assess']
+    import tempfile
+    from pathlib import Path
+    with tempfile.TemporaryDirectory(prefix='copy153-') as directory:
+        root = Path(directory)
+        (root / 'kept').write_text('source')
+        for ignored in ('.git', '__pycache__', 'target'):
+            (root / ignored).mkdir()
+            (root / ignored / 'excluded').touch()
+        scratch = root / 'nested-tmp' / 'scratch'
+        scratch.mkdir(parents=True)
+        checkout = scratch / 'checkout'
+        reproduction['copy_checkout'](root, checkout, scratch)
+        expect('VELDO-0153 evidence/refusal-copy-inside-checkout',
+               (checkout / 'kept').read_text() == 'source'
+               and not any((checkout / name).exists() for name in
+                           ('.git', '__pycache__', 'target', 'nested-tmp/scratch')))
     names = ('route-insteadof', 'route-push-instead-of', 'shape-config-exit')
     observations = dict(
         red=dict(failures=['SELFTEST FAIL: VELDO-0153 refusal-unit/' + n for n in names]
@@ -25,8 +42,62 @@ def _v153_evidence_rows():
     dirty['green']['failures'].append('SELFTEST FAIL: VELDO-0153 executor/route-insteadof')
     expect('VELDO-0153 evidence/restored-clean', not assess(dirty, names)[2])
     audit_module = runpy.run_path(str(ROOT / 'proof/VELDO-0153/audit_anchors.py'))
+    import ast
+    # Unknown expressions must be visible even outside the four scoped findings.
+    unresolved_prefixes = ('signature', 'relay', 'aliases', 'architecture', 'grammar',
+                           'rerun', 'hygiene165', 'tools173', 'role127')
+    source = 'def cases():\n' + ''.join('    ' + name + '(unknown)\n' for name in unresolved_prefixes)
+    _, unresolved = audit_module['registrations'](source, findings=None)
+    expect('VELDO-0153 evidence/audit-reports-every-prefix',
+           len(unresolved) == len(unresolved_prefixes)
+           and {item['line'] for item in unresolved} == set(range(2, 2 + len(unresolved_prefixes))))
+    # Exercise the previously omitted constructs without importing the mutation driver.
+    sample = '''
+def cases():
+    result = []
+    def add(*args): pass
+    def helper(name, row, *rows):
+        add(37, name, 'suite.py', 'module.py', 'old', 'new', [row, *rows])
+    for key, value in {'one': b'a', 'two': b'b'}.items():
+        helper(key + repr(value), 'first', 'second')
+    names = set()
+    names.update(['name'])
+    helper(repr(tuple(sorted(names))).rstrip(' '), 'third' if names else 'wrong')
+    for case in result:
+        if not case.get('fixture'):
+            case['companions'] = list(dict.fromkeys([*case.get('companions', ()), 'extra.py']))
+    return result
+'''
+    parsed, errors = audit_module['registrations'](sample, findings=None)
+    expect('VELDO-0153 evidence/audit-expands-registrations', not errors and len(parsed) == 3
+           and [case['name'] for case in parsed] == ["oneb'a'", "twob'b'", "('name',)"]
+           and [case['rows'] for case in parsed] == [['first', 'second'], ['first', 'second'], ['third']]
+           and all(case['companions'] == ['extra.py'] for case in parsed))
+    # The publication loop must not reference a retired/missing row. This check runs
+    # before socket setup so a denied AF_UNIX cannot conceal the original KeyError.
+    def publication_rows_complete(source):
+        tree = ast.parse(source)
+        defined = {node.args[0].value for node in ast.walk(tree) if isinstance(node, ast.Call)
+                   and isinstance(node.func, ast.Name) and node.func.id == 'row'
+                   and node.args and isinstance(node.args[0], ast.Constant)}
+        loops = [node for node in ast.walk(tree) if isinstance(node, ast.For)
+                 and any(isinstance(child, ast.Constant)
+                         and child.value == 'VELDO-0028 effects/publication-'
+                         for child in ast.walk(node))]
+        return bool(loops) and all('publication-' + name in defined
+                                  for loop in loops for name in ast.literal_eval(loop.iter))
+    publication_source = (ROOT / 'scripts/suites/58_veldo_0028_effects.py').read_text()
+    expect('VELDO-0153 evidence/publication-loop-has-rows', publication_rows_complete(publication_source))
+    stale = publication_source.replace("'resolution-with-locale-env',", "'resolution-in-c-locale',")
+    expect('VELDO-0153 evidence/publication-loop-rejects-missing-row', not publication_rows_complete(stale))
     audit = audit_module['audit']()
     import json
+    registry_source = (ROOT / 'scripts/check_teeth_mutations.py').read_text()
+    full, errors = audit_module['registrations'](registry_source, findings=None)
+    actual = [dict(case, also=case.get('also', ()))
+              for case in audit_module['factory_registrations'](registry_source)]
+    expect('VELDO-0153 evidence/audit-matches-data-factory', not errors
+           and json.dumps(full, sort_keys=True) == json.dumps(actual, sort_keys=True))
     inventory = json.loads((ROOT / 'proof/VELDO-0153/teeth-inventory.json').read_text())
     cases, _ = audit_module['registrations']((ROOT / 'scripts/check_teeth_mutations.py').read_text())
     active = {case['name'] for case in cases}

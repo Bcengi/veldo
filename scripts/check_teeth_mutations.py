@@ -417,8 +417,8 @@ def cases():
         "        pushed = [line[3:] for line in push.stdout.splitlines() if line.startswith('To ')]\n" + destination_record,
         ['effects/publication-destination-despite-hook-text', 'effects/publication-rejected-destination-recorded',
          'effects/publication-hook-text-without-newline'])
-    # Git's resolution read in the isolated profile, so global routing is missed.
-    add(28, 'effects-resolution-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+    # Named-remote config reads use the operator's network profile, admitting global routing.
+    add(28, 'effects-resolution-network-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
         push_config, push_config[:-1] + ", profile='network')",
         ['effects/' + routed], also=[(fetch_config, fetch_config[:-1] + ", profile='network')")])
     # The guard against a configured URL holding a line break removed.

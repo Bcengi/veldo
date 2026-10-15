@@ -27,4 +27,5 @@ Falsifier: Enable clone hooks by removing both the private hooksPath and the pus
 no-verify option. The planted pre-push hook row must fail.
 
 falsified_by: identity153-pre-push-hook. The consumer registration
-effects-push-skips-hooks now introduces that same approved defect, enabling hooks.
+effects-push-skips-hooks was retired as a byte-identical duplicate in 193c72e7.
+identity153-pre-push-hook remains the active falsifier, enabling clone hooks.

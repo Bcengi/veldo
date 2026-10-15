@@ -70,12 +70,18 @@
       "name": "effects-destinations-from-dry-run-output",
       "reason": "The defect trusts actual push output, not a removed dry-run.",
       "replacement": "effects-destinations-from-push-output"
+    },
+    {
+      "name": "effects-resolution-isolated-profile",
+      "reason": "The mutant adds profile='network' to named-remote config reads, admitting operator configuration; production deliberately uses isolated reads.",
+      "replacement": "effects-resolution-network-profile"
     }
   ],
   "retired_rows": [
     {
       "name": "publication-resolution-in-c-locale",
-      "reason": "No locale forcing remains in production. Config values have no translated grammar; remove the obsolete locale claim and its contrived falsifiers."
+      "reason": "Production does not force C. Preserve the successful publication check under caller-selected locale variables using an accurate name, without claiming an installed locale or translated grammar.",
+      "replacement": "publication-resolution-with-locale-env"
     }
   ],
   "retained": [

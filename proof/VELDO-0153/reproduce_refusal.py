@@ -23,6 +23,13 @@ def assess(observations, names):
     return rejected, eager_rejected, restored
 
 
+def copy_checkout(root, checkout, scratch):
+    """Exclude build outputs and our own destination even for an in-checkout TMPDIR."""
+    shutil.copytree(root, checkout, ignore=lambda directory, names: {name for name in names
+        if name in ('.git', '__pycache__', 'target')
+        or (Path(directory) / name).resolve() == scratch.resolve()})
+
+
 def main(output):
     root = Path(__file__).resolve().parents[2]
     names = ('route-insteadof', 'route-push-instead-of', 'shape-config-exit')
@@ -30,7 +37,7 @@ def main(output):
     with tempfile.TemporaryDirectory(prefix='v153-refusal-', dir=os.environ['TMPDIR']) as directory:
         scratch = Path(directory)
         checkout = scratch / 'checkout'
-        shutil.copytree(root, checkout, ignore=shutil.ignore_patterns('.git', '__pycache__'))
+        copy_checkout(root, checkout, scratch)
         temporary = scratch / 'tmp'
         temporary.mkdir()
         sources = [checkout / prefix / 'git_process.py' for prefix in ('.veldo', 'engine/.veldo')]

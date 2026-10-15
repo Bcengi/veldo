@@ -1093,6 +1093,11 @@ exec "$real" "$@"
             and all(remote_main(b) == tip for b in repositories)
             and all(answer.get('refusal') == shape_codes[shape] and all(remote_main(b) == old for b in repositories)
                     for shape, (answer, repositories) in shapes.items()))
+        # Machine config resolution must still work with a caller-selected locale.
+        # This does not assert that Git forces C or that this locale is installed.
+        localized, repositories = reshaped('translated', {'LC_ALL': 'de_DE.UTF-8', 'LANG': 'de_DE.UTF-8'})
+        row('publication-resolution-with-locale-env', localized.get('result', {}).get('completed') is True
+            and all(remote_main(b) == tip for b in repositories))
         # R6 2 and 3, superseded by VELDO-0153 AC1 for the factory's publication: the identity
         # profile strips every GIT_* variable and ignores global and system configuration, so no
         # selection or injection route reaches the push. Each case plants one route rewriting the
@@ -1174,7 +1179,7 @@ exec "$real" "$@"
                      'destination-listed-as-resolved', 'call-covers-every-destination',
                      'scrub-malformed-address',
                      'requires-clean-push-exit', 'line-break-refused', 'resolution-output-checked',
-                     'resolution-in-c-locale',
+                     'resolution-with-locale-env',
                      'config-selection-parity', 'network-profile-strips-coordinates'):
             expect('VELDO-0028 effects/publication-' + name, checks['publication-' + name])
         row('authenticated-ipc', call(r, 'stranger').get('accepted') is False and call(r, None).get('accepted') is False)
