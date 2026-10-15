@@ -1,0 +1,45 @@
+{
+ "binary_sha256": "56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+ "code": "else if(d===\"claude.ai\")p=\"claude.ai\";else if(d===\"apiKeyHelper\")p=\"api_key_helper\";else if(d!==\"none\")p=\"oauth_token\";else if(c===\"ANTHROPIC_API_KEY\"||h)p=\"api_key\";else if(c===\"/login managed key\")p=\"claude.ai\";let E;if(w.text){let A=hCe(_),o=A===void 0?void 0:await A,s=gCe([[...cBt(o),...dBt()]]).flat(),r=lBt(s).map((g)=>g.label?`${g.label}: ${g.value}`:g.value);if(r.length===0&&h)r.push(\"API key: ANTHROPIC_API_KEY\");if(!C)r.push(T?\"Not logged in. This session uses a Cloud gateway; start `claude` and sign in with /login.\":\"Not logged in. Run claude auth login to authenticate.\");E=e(n,{children:r.join(`\n`)})}else{let A=He(),o=c!==\"none\"?c:h?\"ANTHROPIC_API_KEY\":null,s={loggedIn:C,authMethod:p,apiProvider:A,analyticsDisabled:Pg(),pr",
+ "observations": [
+  {
+   "argv": [
+    "auth",
+    "status",
+    "--help"
+   ],
+   "returncode": 0,
+   "stdout": "Usage: claude auth status [options]\n\nShow authentication status\n\nOptions:\n  -h, --help  Display help for command\n  --json      Output as JSON (default)\n  --text      Output as human-readable text\n"
+  },
+  {
+   "argv": [
+    "auth",
+    "status",
+    "--json"
+   ],
+   "returncode": 1,
+   "stdout": "{\n  \"loggedIn\": false,\n  \"authMethod\": \"none\",\n  \"apiProvider\": \"firstParty\",\n  \"analyticsDisabled\": false,\n  \"projectsDirectory\": \"<profile>/projects\",\n  \"configDirectory\": \"<profile>\"\n}\n"
+  },
+  {
+   "argv": [
+    "auth",
+    "status",
+    "--json"
+   ],
+   "returncode": 0,
+   "stdout": "{\n  \"loggedIn\": true,\n  \"authMethod\": \"api_key\",\n  \"apiProvider\": \"firstParty\",\n  \"analyticsDisabled\": false,\n  \"projectsDirectory\": \"<profile>/projects\",\n  \"configDirectory\": \"<profile>\",\n  \"apiKeySource\": \"ANTHROPIC_API_KEY\"\n}\n"
+  }
+ ],
+ "record": {
+  "argv": [
+   "auth",
+   "status",
+   "--json"
+  ],
+  "logged_in": "loggedIn",
+  "method": "authMethod",
+  "source": "proof/VELDO-0185/login-status.json: read from the 2.1.281 bytes and its answers in a fresh empty profile; exit 0 when loggedIn, 1 otherwise",
+  "subscription": "claude.ai"
+ },
+ "schema": "veldo.login_status_extraction/v1"
+}

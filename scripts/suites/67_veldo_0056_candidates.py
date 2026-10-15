@@ -194,7 +194,7 @@ packet = json.loads(sys.stdin.read() or '{}')
 unit, mode = packet['unit'], packet['mode']
 def git(*args):
     return _git_process.run(['git', '-C', str(work), *args], check=True, capture_output=True, text=True,
-                            identity=('Builder A', 'builder-a@example.invalid')).stdout.strip()
+                            identity=('Lander', 'lander@example.invalid')).stdout.strip()
 def sha(path):
     return 'sha256:' + hashlib.sha256((work / path).read_bytes()).hexdigest()
 git('checkout', '-q', '-B', 'build/' + unit, base)
@@ -253,6 +253,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
         db = base / 'authority' / 'control.sqlite3'
         writer = S.open_store(str(db))
         reader = S.open_store(str(db), mode='r')
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind'](mods, writer, DOMAIN, REPOSITORY, caller, LANDER_ID)
         connections = [writer, reader]
         serial = [0]
 
@@ -514,9 +515,9 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
             boundary.calls, boundary.fail_at = [], fault
             unit = {'spec': sid, 'holder': BUILDER, 'generation': generations.get(sid)}
             ops = outcome_of(lambda: make(Observed, str(caller), ref or 'build/' + sid, trunk=trunk, remote=remote_name,
-                                          push=True, policy=policy if authority else None, identity=LANDER_ID,
+                                          push=True, policy=policy if authority else None,
                                           observe=events.append, workspace_root=str(spaces), domain=DOMAIN,
-                                          repository=REPOSITORY))
+                                          repository=REPOSITORY, identity_conn=writer))
             if ops[0] == 'ok':
                 result = outcome_of(lambda: LD.Lander('lander-56', ops[1], claims_root=str(claims),
                                                       lock_timeout=30).land(unit))
@@ -757,6 +758,12 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                 ops_one = one.get('ops')
                 status_after = outcome_of(lambda: ops_one.status())
                 built = [e for e in events if e.get('operation') == 'reconcile' and e.get('outcome') == 'accepted']
+                # VELDO-0142: besides its four stages, the land observes every incoming worker commit it
+                # checked against the repository's identity and every commit it made as that identity.
+                one_id = (one.get('candidate') or {}).get('id')
+                bound = [e for e in events if e.get('request') == one_id and e.get('outcome') == 'accepted'
+                         and e.get('operation') in ('worker_commit_identity', 'lander_merge', 'projection_commit')]
+                made = [e for e in bound if e['operation'] != 'worker_commit_identity']
                 observed['observations'] = {'events': len(events), 'refused': sorted({e.get('refusal') for e in refused}),
                                             'status_at_gate': one.get('status'), 'status_after': status_after,
                                             'sample': refused[:2]}
@@ -774,7 +781,9 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                               for e in events)
                       and (one.get('status') or {}).get('pending') == [(one.get('candidate') or {}).get('id')]
                       and status_after[0] == 'ok' and status_after[1].get('pending') == []
-                      and status_after[1].get('accepted') == 4 and status_after[1].get('refused') == 0
+                      and status_after[1].get('accepted') == 4 + len(bound) and status_after[1].get('refused') == 0
+                      and len(bound) - len(made) >= 2 and made
+                      and sum(c['commits'] for c in status_after[1].get('identities', {}).values()) == len(made)
                       and taxonomy('conflict:README.md') == 'stale_subject'
                       and taxonomy('unavailable_service:git/fetch') == 'unavailable_service'
                       and taxonomy('missing_evidence:proof/VELDO-9569') == 'missing_evidence'

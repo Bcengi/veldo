@@ -676,7 +676,8 @@ def _ld_proof(d, unit):
 @__import__("contextlib").contextmanager
 def _ld_candidate(d, ref, unit):
     """Yield the reconcile result, workspace, caller status and ops; discard on every exit."""
-    ops = LD.GitLandOps(d, ref, push=False)
+    identity_conn = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind'](ROOT / '.veldo', None, 'lander-fixture', 'repository', d, ('t', 't@t'))
+    ops = LD.GitLandOps(d, ref, push=False, identity_conn=identity_conn, domain='lander-fixture', repository='repository')
     try:
         got = ops.sync_main()
         got = ops.reconcile(unit) if got.get("ok") else got

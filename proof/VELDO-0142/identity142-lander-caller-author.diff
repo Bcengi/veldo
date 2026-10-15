@@ -1,0 +1,11 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -447,7 +447,7 @@
+             self.identity_record = module.resolve(conn, self.domain, self.repository, self.repo_root)
+         except module.Refused as error:
+             raise CandidateRefused(error.code, 'repository identity refused') from None
+-        return module.author(self.identity_record)
++        return tuple(self._git(self.repo_root, 'config', '--get', key).stdout.strip() for key in ('user.name', 'user.email'))
+ 
+     # Observability.
+ 

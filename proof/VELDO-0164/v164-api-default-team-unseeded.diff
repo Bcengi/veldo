@@ -1,0 +1,5 @@
+--- scripts/suites/71_veldo_0130_api.py
++++ scripts/suites/71_veldo_0130_api.py
+@@ -1758,2 +1757,0 @@
+-            phase2['team_routes'].save_default(default_team, 'owner', 0, next_id('default-team'),
+-                                              S.digest_of(default_team))

@@ -1,0 +1,11 @@
+--- .veldo/control_account_pool.py
++++ .veldo/control_account_pool.py
+@@ -167,7 +167,7 @@
+             passed[name] = 'account_unobserved:one_run' if not observed(record, records) else 'account_concurrency'
+             continue
+         used = utilization(record, now)
+-        ranked.append((name in refused, (0, used) if used is not None else (1, 0), active, last, name))
++        ranked.append((False, (0, used) if used is not None else (1, 0), active, last, name))
+     candidates = [dict({'account': name, 'utilization': key[1] if key[0] == 0 else None, 'active': active,
+                         'last_used': last}, **({'login_refused': True} if login else {}))
+                   for login, key, active, last, name in sorted(ranked)]

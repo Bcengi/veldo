@@ -1,0 +1,11 @@
+--- .veldo/control_factory_setup_dispatch.py
++++ .veldo/control_factory_setup_dispatch.py
+@@ -157,7 +157,7 @@
+     models = catalog_models(record)
+     if not models:
+         raise Refused('missing_evidence:codex_model_catalog', 'the Codex qualification names no model a role can bind')
+-    return min(models, key=lambda m: (m.get('priority', 1 << 30), str(m.get('slug'))))['slug']
++    return max(models, key=lambda m: (m.get('priority', 1 << 30), str(m.get('slug'))))['slug']
+ 
+ 
+ def team(CT, roles, revisions):

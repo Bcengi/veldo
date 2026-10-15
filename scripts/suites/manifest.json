@@ -1414,6 +1414,7 @@
    "requires_note": "Only ROOT, V and expect; foreground launcher fixtures, sequential, no mutation stage."
   },
   {
+<<<<<<< HEAD
    "name": "103_veldo_0124_macos",
    "file": "103_veldo_0124_macos.py",
    "requires": [
@@ -1448,6 +1449,63 @@
    ],
    "regions": "Host capability routing and Mac worker integration.",
    "requires_note": "Only ROOT and expect."
+=======
+   "name": "103_veldo_0142_git_identities",
+   "file": "103_veldo_0142_git_identities.py",
+   "requires": [
+    "103_veldo_0142_git_identities"
+   ],
+   "regions": "Explicit Git identities, immutable repository bindings and clone and lander authorship.",
+   "requires_note": "Only ROOT and expect. Real SQLite and Git; controlled verification seams, no gate or provider."
+  },
+  {
+   "name": "104_veldo_0210_mutation_workers",
+   "file": "104_veldo_0210_mutation_workers.py",
+   "requires": [
+    "104_veldo_0210_mutation_workers"
+   ],
+   "regions": "Existing mutation worker integration, split from suite 102.",
+   "requires_note": "Only ROOT and expect; sequential foreground fixtures."
+  },
+  {
+   "name": "103_veldo_0211_borrowed_login",
+   "file": "103_veldo_0211_borrowed_login.py",
+   "requires": [
+    "103_veldo_0211_borrowed_login"
+   ],
+   "regions": "Borrowed login locks, atomic rotation and fail-closed admission.",
+   "requires_note": "Only ROOT and expect; sequential foreground fixtures."
+  },
+  {
+   "name": "104_veldo_0164_scoped_reads",
+   "file": "104_veldo_0164_scoped_reads.py",
+   "requires": [
+    "104_veldo_0164_scoped_reads"
+   ],
+   "regions": "Project scope on read models, workflow reads and member event pages.",
+   "requires_note": "Only ROOT and expect. Real SQLite and signed journal fixtures; foreground only."
+  },
+  {
+   "name": "106_veldo_0185_dispatch_setup",
+   "file": "106_veldo_0185_dispatch_setup.py",
+   "requires": [
+    "106_veldo_0185_dispatch_setup"
+   ],
+   "regions": "Factory setup lays down the dispatch configuration; installed dispatch on every account; re-run changes nothing.",
+   "requires_note": "Only ROOT and expect. VELDO-0171's installed-host fixture with real setup, generated SSH keys, accounts.py registries and generated 0172 fake engines run contained under the host's user manager; the installed service and receiver dispatch the units.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
+  },
+  {
+   "name": "105_veldo_0182_memory",
+   "file": "105_veldo_0182_memory.py",
+   "requires": [
+    "105_veldo_0182_memory"
+   ],
+   "regions": "Shared signed memory, profile exclusion, setup reruns and sampled loss checks over five stores.",
+   "requires_note": "Only ROOT, expect and fast_temp from shared. Synthetic captured-layout stores, real signed SQLite authority, setup and Runner with foreground fake engines and local stand-ins."
+>>>>>>> main
   }
  ],
  "resource_capacities": {

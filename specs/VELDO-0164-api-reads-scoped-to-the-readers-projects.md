@@ -14,6 +14,8 @@ depends_on: [VELDO-0076, VELDO-0130, VELDO-0162]
 placement: [contracts, loop]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_api.py"
+  - ".veldo/control_api.py"
   - "engine/.veldo/control_api_authority*.py"
   - ".veldo/control_api_authority*.py"
   - "engine/.veldo/control_api_models*.py"
@@ -157,3 +159,32 @@ entities are decided per entity, with intake_proposal and subscription_reservati
 Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29229, "all ready").
+
+2026-10-08: implementation footprint includes control_api.py for the separate team read and
+for live-stream cursor advancement across withheld records. Criteria and status are unchanged.
+
+2026-10-08: builder checks: the 16 scoped-read rows and 16 workflow regression rows pass.
+API and configuration regressions are blocked by unavailable_service:profile:user_manager;
+intake routing reports runtime_unavailable; execution-record fixtures cannot write under
+/run/user/1000. These verification blockers and logs are retained in proof/VELDO-0164.
+Ten falsifiers are registered with exact diffs; their execution and the gate belong to
+the reviewer. No criterion, risk or readiness change, approval, push or merge is claimed.
+
+2026-10-08: host review found two real regressions behind the builder's local service
+blockers. Suite 71 now writes its default team through the owning command and its
+named-scope socket reader sends a project-routed message. Team GET uses the existing
+inspect interface, reading team and current membership in one transaction; no change
+to proof/VELDO-0162/fixture.py or to the authority interface is required. Inbox
+proposals are projectless by their proposal marker at every state. Decision settlements
+resolve settlement.request_id, and visible proposal project metadata is projected to
+the reader's scope before redaction. The writer-shaped regressions were observed failing
+before the fixes. Suite 104 replaces 103 to leave that number to VELDO-0142.
+
+2026-10-08: suite 71 now reports completed API rows before starting its service
+fixture, preserving assertion identities and order. reads/authoritative and
+reads/implemented-writers pass locally. events/retry-after-failure fails with
+PermissionError; the socket fixture still stops at unavailable_service:profile:user_manager.
+Suite 104's 19 rows and regressions 65, 68 and 82 (MCP catalog) pass. Other requested
+regressions require host qualification; exact outcomes are retained in the proof.
+Fifteen falsifiers are registered with valid anchors; the mutation runner and gate
+remain unexecuted under the user's token rules. No approval or completion claim.

@@ -487,8 +487,10 @@ def _v85_suite():
             g('add', '.')
             g('commit', '-qm', 'Fixture specifications')
             before_files = {p.name: p.read_bytes() for p in (work / 'specs').iterdir()}
+            __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](__import__('pathlib').Path(S.__file__).parent, conn, DOMAIN, {REPO: str(work)})
             allocations = AL.attach(S, conn, DOMAIN, {REPO: str(work)})
             signing = dict(signer='authority', sign=journal_sign, authority_generation=1)
+            __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](__import__('pathlib').Path(S.__file__).parent, conn, DOMAIN, {REPO: str(work)})
             revisions = RS.attach_revisions(S, conn, DOMAIN, {REPO: str(work)})
             revisions.accept('revision/v85', REPO, g('rev-parse', 'HEAD'), 'pm', **signing)
             EN.enroll(work, DOMAIN, ids['store_uuid'], str(db), 'fixture-host', 1,
@@ -793,6 +795,7 @@ def _v85_suite():
                             inherited.close()
                         connection = S.open_store(str(db))
                         backlog = CB.Backlog(S, CM, connection, ids, 'authority', journal_sign, workspace=str(work))
+                        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](__import__('pathlib').Path(S.__file__).parent, connection, DOMAIN, {REPO: str(work)})
                         allocator = AL.attach(S, connection, DOMAIN, {REPO: str(work)})
                         with verify_lock:
                             materializer = DOC.Publisher(allocator, work, verify=verify, host_identity='fixture-host')

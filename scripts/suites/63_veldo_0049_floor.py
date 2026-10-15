@@ -337,6 +337,10 @@ sys.stdout.flush()
         calls = EL.StationCalls(gate, guards, account=ACCOUNT)
         events = []
         projections = base / 'projections'
+        # VELDO-0142: the repository is bound only with its configured Git identity; the fixture
+        # configures it on the authority's store before the floor (and the proof service) binds it.
+        __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](
+            mods, writer, DOMAIN, {REPOSITORY: str(work)})
         floor = DSP.FloorAuthority(S, writer, domain=DOMAIN, repository=REPOSITORY, repo=str(work),
                                    projections=str(projections), principal='floor-service', signer='floor-service',
                                    sign=sign, observe=events.append)

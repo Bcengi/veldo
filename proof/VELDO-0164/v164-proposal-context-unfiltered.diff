@@ -1,0 +1,5 @@
+--- .veldo/control_api_models.py
++++ .veldo/control_api_models.py
+@@ -193 +193 @@
+-    served_data = scope.project_data(kind, data) if scope is not None else data
++    served_data = data

@@ -26,6 +26,8 @@ footprint:
   - ".veldo/control_accounts.py"
   - "engine/.veldo/control_account_pool*.py"
   - ".veldo/control_account_pool*.py"
+  - "engine/.veldo/control_reservations.py"
+  - ".veldo/control_reservations.py"
   - "engine/.veldo/control_engine_claude*.py"
   - ".veldo/control_engine_claude*.py"
   - "engine/.veldo/control_engine_codex*.py"
@@ -214,6 +216,33 @@ VELDO-0174 AC4's conversation receiver configuration, which the installer writes
 so setup lays it down with nothing more once VELDO-0174 lands.
 
 ## History
+
+2026-10-09, the Codex review of e016df9b found four defects, each with a capsule: setup enrolled only the PM
+of the default team's workers (R4), a login retry did not pass the refused accounts to selection (R1), a login
+refusal excluded an account forever (R2), and a missing state_root key was refused before its repair (R3).
+Fixed in 5952516c, each with a suite 106 row false at e016df9b and a falsifier case; the Codex roles also start
+on the newest qualified model. The footprint adds control_reservations.py, whose request check the exclusion
+passes. Criteria and ready status are unchanged; proof/VELDO-0185/README.md records the rows, cases and capsule runs.
+
+2026-10-09, build on veldo-0185 from 244784bc, on the host: the user manager answers there, so the
+installed-host fixture qualifies the worker profile and the 2026-10-08 blocker no longer holds; its record
+and preflight file are replaced by the proof in proof/VELDO-0185/README.md. Setup lays the dispatch
+configuration down, suite 106 proves AC1 to AC4, and every declared falsifier was executed on the host
+(two fail their row by another mechanism than the criterion text names; both are recorded there).
+Criteria and ready status are unchanged. The VELDO-0127 live captures bind modules this change edits and
+need the lead's recapture.
+
+2026-10-08, preflight on agent/codex/veldo-0185 at 294e1933: the owner revision
+and reservation policy prerequisites are present. The installed-host fixture
+cannot pass the existing containment qualification in this execution environment:
+setup refuses unavailable_service:profile:user_manager, and direct read-only
+systemctl queries return Operation not permitted, including with the explicit
+user bus address. The incomplete implementation and suite draft were removed
+without bypassing qualification. Resume needs authorized user-manager access
+for the fixture, then implementation and suite 106 with all acceptance proofs.
+The exact observations and remaining proof matrix are in proof/VELDO-0185/README.md
+and host-preflight-2026-10-08.json beside it. Criteria and ready status are unchanged;
+no implementation, passing acceptance check or gate stamp is claimed.
 
 2026-10-04: depends on VELDO-0203, the owner-signed command entry point for the two revision writers, which AC1 consumes to save the capability configurations and the default team.
 2026-10-04: depends on VELDO-0204, the provisioning of every account, project and engineering unit reservation policy, which AC4's dispatch consumes; setup calls it after AC2's reservation_service enrollment of `authority`, whose absence the reservation writer refuses as missing_authority.

@@ -31,6 +31,7 @@ def _v62_suite():
     import json
     import os
     from pathlib import Path
+    import select
     import shutil
     import subprocess
     import sys
@@ -491,6 +492,28 @@ sys.exit(payload.get('code', 0))
                 environment[0] = None
             record = runner(account).wait(launch) if wait else None
             return launch, record
+
+        def cap_stop(account, launch, seconds=5.0):
+            # A missing cap stop must fail this row before the fake's 30-second sleep or
+            # the normal launch deadline. Pump only ready bytes; then stop and reap the
+            # owned worker on expiry so neither provider leaves a live fixture behind.
+            end = time.monotonic() + seconds
+            while not launch.ended and launch.fileno() is not None:
+                remaining = end - time.monotonic()
+                if remaining <= 0:
+                    break
+                if b'\n' in launch.pending:
+                    launch.pump(read=False)
+                elif select.select([launch.fileno()], [], [], remaining)[0]:
+                    launch.pump()
+                else:
+                    break
+            stopped = launch.ended
+            if not stopped:
+                launch.stop('fixture_cap_stop_timeout')
+            runner(account).wait(launch, timeout=5.0)
+            check('usage/cap-stops-worker', '%s: worker did not terminate within %.1f seconds '
+                  'after its cap report; fixture requested cleanup' % (account, seconds), stopped)
 
         def engine_markers(dispatch_id):
             found = []
@@ -1061,7 +1084,8 @@ sys.exit(payload.get('code', 0))
                     ('acct-x1', 'codex', [x_started(), x_done(800, 400), {'sleep': 30}, x_started(), x_done(1, 1)])):
                 unit = admitted('VELDO-6207-' + adapter, tokens=1000)
                 began = time.monotonic()
-                launch, record = run(account, unit, adapter, script)
+                launch, record = run(account, unit, adapter, script, wait=False)
+                cap_stop(account, launch)
                 elapsed = time.monotonic() - began
                 own = engine_markers(launch.dispatch_id)
                 call = invocation(launch.dispatch_id)
@@ -1653,7 +1677,8 @@ sys.exit(payload.get('code', 0))
                     print('  VELDO-0062 %s detail: %s' % (name, label))
             if not observed:
                 print('  VELDO-0062 %s detail: no check ran' % name)
-        expect('VELDO-0062 ' + name, ok)
+        detail = '; '.join(label for label, one in observed if not one)
+        expect('VELDO-0062 ' + name + (': ' + detail if detail else ''), ok)
     for line in conform_formats.describe('0062_accounts', *fake_capture):
         print(line)
     expect('VELDO-0172 fake/capture:0062_accounts', bool(fake_capture[1]) and not fake_capture[0])

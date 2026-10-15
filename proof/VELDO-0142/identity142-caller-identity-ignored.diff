@@ -1,0 +1,11 @@
+--- a/.veldo/lander.py
++++ b/.veldo/lander.py
+@@ -437,7 +437,7 @@
+                                    operation="merge-base")
+ 
+     def _identity(self):
+-        if self.identity is not None:
++        if False:
+             raise CandidateRefused('invalid_input:caller_git_identity', 'identity must come from the repository record')
+         module = _load('lander_git_identity', 'control_git_identity.py')
+         conn = self.identity_conn if self.identity_conn is not None else getattr(self.policy, 'conn', None)

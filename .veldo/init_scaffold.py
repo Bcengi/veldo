@@ -196,6 +196,7 @@ _FILES = [
     # the keys, the authority's Git metadata and the caches; the lifecycle base it builds on
     # (env_provision). Runtime assets, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_clone.py",
+    ".veldo/control_git_identity.py",
     ".veldo/env_provision.py",
     # VELDO-0047: the authority service (install, explicit start and stop, one instance under the
     # store's stable lock, signed commands applied to the configured store) and the systemd user unit
@@ -280,6 +281,7 @@ _FILES = [
     ".veldo/control_authority_lock.py",
     ".veldo/control_api_credentials.py",
     ".veldo/control_api_models.py",
+    ".veldo/control_api_models_scope.py",
     ".veldo/control_api_signer.py",
     ".veldo/control_api_webauthn.py",
     # VELDO-0130 phase 3: the API process's client of the authority service socket and its hint socket.
@@ -292,6 +294,10 @@ _FILES = [
     # and checks the pieces above. An owner command, not loaded by the service or any validator, so not
     # REQUIRED_SUBSTRATE.
     ".veldo/control_factory_setup.py",
+    ".veldo/control_memory.py",
+    ".veldo/control_memory_adapter.py",
+    ".veldo/control_memory_check.py",
+    ".veldo/control_factory_setup_memory.py",
     # VELDO-0171: its API steps (the api edge, the API configurations and unit, Tailscale Serve) and
     # veldo factory passkey. An owner command too, so not REQUIRED_SUBSTRATE.
     ".veldo/control_factory_setup_api.py",
@@ -301,6 +307,7 @@ _FILES = [
     ".veldo/control_factory_setup_upgrade.py",
     ".veldo/control_factory_setup_engines.py",
     ".veldo/control_factory_setup_trust.py",
+    ".veldo/control_factory_setup_dispatch.py",
     ".veldo/control_andon.py",
     # VELDO-0076: the project service (activation, pause, resume, cancel, completion). A runtime asset
     # the authority loads; no validator import, so not REQUIRED_SUBSTRATE.

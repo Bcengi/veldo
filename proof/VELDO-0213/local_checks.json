@@ -1,0 +1,103 @@
+{
+  "scope": "Python row only; no full suite or mutation dispatcher executed",
+  "registered_anchors": [
+    "prompt213-mark-after-write",
+    "role127-probe-is-terminal",
+    "role127-prompt-write-failure-swallowed"
+  ],
+  "runs": [
+    {
+      "case": "baseline",
+      "checks": [
+        {
+          "row": "paid-api/prompt-write",
+          "label": "the result returned during write completes the run (verdict: complete)",
+          "passed": true
+        },
+        {
+          "row": "paid-api/prompt-write",
+          "label": "a response before the prompt stays a probe",
+          "passed": true
+        },
+        {
+          "row": "paid-api/prompt-write",
+          "label": "a zero-turn result after the mark stays a probe and cannot complete the run",
+          "passed": true
+        },
+        {
+          "row": "paid-api/prompt-write",
+          "label": "write failure reaches the receiver input_failed handler",
+          "passed": true
+        },
+        {
+          "row": "paid-api/prompt-write",
+          "label": "flush failure reaches the receiver input_failed handler",
+          "passed": true
+        }
+      ],
+      "failed_checks": 0
+    },
+    {
+      "case": "prompt213-mark-after-write",
+      "checks": [
+        {
+          "row": "paid-api/prompt-write",
+          "label": "the result returned during write completes the run (verdict: missing_result)",
+          "passed": false
+        },
+        {
+          "row": "paid-api/prompt-write",
+          "label": "a response before the prompt stays a probe",
+          "passed": true
+        },
+        {
+          "row": "paid-api/prompt-write",
+          "label": "a zero-turn result after the mark stays a probe and cannot complete the run",
+          "passed": true
+        },
+        {
+          "row": "paid-api/prompt-write",
+          "label": "write failure reaches the receiver input_failed handler",
+          "passed": true
+        },
+        {
+          "row": "paid-api/prompt-write",
+          "label": "flush failure reaches the receiver input_failed handler",
+          "passed": true
+        }
+      ],
+      "failed_checks": 1
+    },
+    {
+      "case": "role127-probe-is-terminal",
+      "checks": [
+        {
+          "row": "paid-api/prompt-write",
+          "label": "the result returned during write completes the run (verdict: complete)",
+          "passed": true
+        },
+        {
+          "row": "paid-api/prompt-write",
+          "label": "a response before the prompt stays a probe",
+          "passed": false
+        },
+        {
+          "row": "paid-api/prompt-write",
+          "label": "a zero-turn result after the mark stays a probe and cannot complete the run",
+          "passed": false
+        },
+        {
+          "row": "paid-api/prompt-write",
+          "label": "write failure reaches the receiver input_failed handler",
+          "passed": true
+        },
+        {
+          "row": "paid-api/prompt-write",
+          "label": "flush failure reaches the receiver input_failed handler",
+          "passed": true
+        }
+      ],
+      "failed_checks": 2
+    }
+  ]
+}

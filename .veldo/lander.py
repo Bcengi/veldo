@@ -179,6 +179,16 @@ class LandOps:
         """Fix the trunk this land builds on (the watermark)."""
         raise NotImplementedError
 
+    def _check_worker_identities(self, workspace, evidence, identity):
+        """Check every incoming commit, including side histories, before creating any land commit."""
+        commits = self._git(workspace, 'rev-list', evidence, '^' + self.candidate['watermark']).stdout.splitlines()
+        for commit in commits:
+            actual = self._git(workspace, 'show', '-s', '--format=%an%n%ae%n%cn%n%ce', commit).stdout.splitlines()
+            if actual != list(identity) * 2:
+                raise CandidateRefused('binding_mismatch:worker_commit_identity', commit,
+                                       operation='worker_commit_identity')
+            self._event('worker_commit_identity', 'accepted', commit=commit)
+
     def reconcile(self, unit):
         """Build the candidate: merge the build onto the watermark, union-resolving shared
         append-only files and rejecting a real conflict (ok False with the conflicting paths)."""
@@ -340,7 +350,7 @@ class GitLandOps(LandOps):
                 completes nothing.
     landing     VELDO-0057: the control_landing.Landing a factory land publishes and completes
                 through (the unit handed to finalize names its land dispatch). With none, the
-                pre-factory land pushes the candidate itself, leased on the exact watermark.
+                direct publication requires an explicit authority identity reader and policy.
     policy      the authority's acceptance, called (unit, candidate) -> {ok, refusals}: for a
                 factory land a CandidatePolicy. With none, the installed repository policy
                 (the installation's policy_check.py, asked about the candidate) decides.
@@ -348,22 +358,25 @@ class GitLandOps(LandOps):
                 default the watermark's own, laid down from Git objects outside the candidate.
     observations  where each land's observation directory (the sink and observation.json) is made;
                 by default the system temporary directory, removed with the workspace.
-    identity    (name, email) the candidate's merge and projection commits are made as; by
-                default the caller repository's own configured user.name and user.email.
+    identity_conn  authority store reader for explicit repository identity resolution. A factory
+                policy supplies its reader automatically. A caller identity argument is refused;
+                every incoming worker commit and every created commit must match the record.
     workspace_root  where candidate workspaces are made (the system temporary directory).
     observe     receives one event per stage: operation, repository, unit, candidate, the
                 accepted input versions, outcome, named refusal and its taxonomy."""
 
     def __init__(self, repo_root, build_ref, trunk="main", remote="origin", push=True, *,
                  policy=None, identity=None, workspace_root=None, observe=None, domain=None,
-                 repository=None, installation=None, observations=None, landing=None):
+                 repository=None, installation=None, observations=None, landing=None, identity_conn=None):
         self.repo_root = str(repo_root)
         self.build_ref = build_ref
         self.trunk = trunk
         self.remote = remote
         self.push = push
         self.policy = policy
-        self.identity = tuple(identity) if identity is not None else None
+        self.identity = identity
+        self.identity_conn = identity_conn
+        self.identity_record = None
         self.workspace_root = str(workspace_root) if workspace_root is not None else None
         self.observe = observe or (lambda event: None)
         self.domain = domain
@@ -372,6 +385,7 @@ class GitLandOps(LandOps):
         self.observations = str(observations) if observations is not None else None
         self.landing = landing
         self.counts = {"accepted": 0, "refused": 0}
+        self.identity_counts = {}
         self.candidate = None
 
     # The one checked Git step.
@@ -381,6 +395,9 @@ class GitLandOps(LandOps):
         the candidate naming the operation; the completed process is returned otherwise."""
         name = operation or args[0]
         try:
+            before_commit = None
+            if identity is not None and args[0] in ('merge', 'commit'):
+                before_commit = self._git(repo, 'rev-parse', 'HEAD').stdout.strip()
             result = _git_process.run(["git", "-C", str(repo), *args], capture_output=True, text=text,
                                       timeout=GIT_SECONDS, stdin=subprocess.DEVNULL, profile=profile,
                                       identity=identity)
@@ -389,6 +406,14 @@ class GitLandOps(LandOps):
         if ok is not None and result.returncode not in ok:
             stderr = result.stderr if isinstance(result.stderr, str) else (result.stderr or b"").decode("utf-8", "replace")
             raise CandidateRefused("unavailable_service:git/" + name, _first_line(stderr), operation=name)
+        if before_commit is not None and result.returncode == 0:
+            commit = self._git(repo, 'rev-parse', 'HEAD').stdout.strip()
+            if commit != before_commit:
+                actual = self._git(repo, 'show', '-s', '--format=%an%n%ae%n%cn%n%ce', commit).stdout.splitlines()
+                if actual != list(identity) * 2:
+                    raise CandidateRefused('binding_mismatch:commit_identity', 'author or committer differs', operation=name)
+                operation = 'lander_merge' if args[0] == 'merge' or '--no-edit' in args else 'projection_commit'
+                self._event(operation, 'accepted', commit=commit)
         return result
 
     def _absolute(self, url):
@@ -413,17 +438,16 @@ class GitLandOps(LandOps):
 
     def _identity(self):
         if self.identity is not None:
-            if len(self.identity) != 2 or not all(_text(v) for v in self.identity):
-                raise CandidateRefused("invalid_input:identity", "a name and an email")
-            return self.identity
-        found = []
-        for key in ("user.name", "user.email"):
-            value = self._git(self.repo_root, "config", "--get", key, ok=(0, 1))
-            found.append(value.stdout.strip() if value.returncode == 0 else "")
-        if not all(found):
-            raise CandidateRefused("missing_authority:identity",
-                                   "no identity is configured for the candidate's commits", operation="config")
-        return tuple(found)
+            raise CandidateRefused('invalid_input:caller_git_identity', 'identity must come from the repository record')
+        module = _load('lander_git_identity', 'control_git_identity.py')
+        conn = self.identity_conn if self.identity_conn is not None else getattr(self.policy, 'conn', None)
+        if conn is None:
+            raise CandidateRefused('missing_authority:repository_identity', 'no repository identity record')
+        try:
+            self.identity_record = module.resolve(conn, self.domain, self.repository, self.repo_root)
+        except module.Refused as error:
+            raise CandidateRefused(error.code, 'repository identity refused') from None
+        return module.author(self.identity_record)
 
     # Observability.
 
@@ -434,8 +458,14 @@ class GitLandOps(LandOps):
                  "request": c.get("id"), "accepted_versions": {
                      k: c.get(k) for k in ("watermark", "implementation", "evidence", "commit", "tree") if c.get(k)},
                  "outcome": outcome}
+        event['identity'] = (self.identity_record or {}).get('id')
         if refusal is not None:
             event.update(refusal=refusal, taxonomy=taxonomy(refusal))
+        counts = self.identity_counts.setdefault(event['identity'], {'commits': 0, 'refusals': {}})
+        if operation in ('lander_merge', 'projection_commit') and outcome == 'accepted':
+            counts['commits'] += 1
+        if refusal is not None:
+            counts['refusals'][refusal] = counts['refusals'].get(refusal, 0) + 1
         event.update(extra)
         self.counts["refused" if outcome == "refused" else "accepted"] += 1
         self.observe(event)
@@ -454,7 +484,7 @@ class GitLandOps(LandOps):
         decided), if any."""
         c = self.candidate or {}
         pending = [c["id"]] if c.get("state") in ("synced", "built", "verified") else []
-        return dict(self.counts, pending=pending)
+        return dict(self.counts, pending=pending, identities=self.identity_counts)
 
     def record(self):
         """The current candidate's record: its identity, fixed inputs, merges, projections and state."""
@@ -478,6 +508,7 @@ class GitLandOps(LandOps):
                           "trunk": self.trunk, "remote": self.remote if self.push else None,
                           "workspace": None, "merges": [], "projections": {}}
         try:
+            self._identity()
             workspace = Path(tempfile.mkdtemp(prefix="veldo-candidate-", dir=self.workspace_root))
             self.candidate["workspace"] = str(workspace)
             common = self._git(self.repo_root, "rev-parse", "--path-format=absolute", "--git-common-dir").stdout.strip()
@@ -628,6 +659,16 @@ class GitLandOps(LandOps):
         self.candidate["projected_from"] = base
         self.candidate["projection_commit"] = head if head != base else None
 
+    def _check_worker_identities(self, workspace, evidence, identity):
+        """Check every incoming commit, including side histories, before creating any land commit."""
+        commits = self._git(workspace, 'rev-list', evidence, '^' + self.candidate['watermark']).stdout.splitlines()
+        for commit in commits:
+            actual = self._git(workspace, 'show', '-s', '--format=%an%n%ae%n%cn%n%ce', commit).stdout.splitlines()
+            if actual != list(identity) * 2:
+                raise CandidateRefused('binding_mismatch:worker_commit_identity', commit,
+                                       operation='worker_commit_identity')
+            self._event('worker_commit_identity', 'accepted', commit=commit)
+
     def reconcile(self, unit):
         """The whole candidate: the unit's implementation, then its evidence, then its projections."""
         c = self.candidate
@@ -658,6 +699,7 @@ class GitLandOps(LandOps):
                 raise CandidateRefused("missing_evidence:implementation/absent", implementation, operation="cat-file")
             self._ancestor(workspace, implementation, evidence, "missing_evidence:implementation/not_ancestor")
             c.update(evidence=evidence, implementation=implementation, proof={"path": path, "digest": _digest(body)})
+            self._check_worker_identities(workspace, evidence, identity)
             self._merge(workspace, implementation, "Land implementation %s of %s" % (implementation[:12], sid),
                         identity, "implementation")
             self._merge(workspace, evidence, "Land evidence %s of %s" % (evidence[:12], sid), identity, "evidence")

@@ -1,0 +1,91 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0142",
+  "commit": "c416bf44a3a6981886c196a02a7808ca17040b6f",
+  "tree": "96d54dc0e9d4eaaef40271a25894de831d9c93c9",
+  "producer": "Codex implementation agent",
+  "produced_at": "2026-10-10T16:35:31.201486+00:00",
+  "plan": "PLAN-0019",
+  "work": "W102",
+  "plan_revision": 4,
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0142/observations.json",
+          "detail": "Scoped assertions: setup/full-command-and-rerun, setup/configured-log, setup/existing-store-adds-binding, setup/rerun-adds-identity, setup/rerun-change-refused, setup/two-identities-and-replay, binding/missing, binding/second, binding/immutable, setup/reference-only-and-unchanged, binding/store-and-callers-missing, setup/keychain-reference-pattern"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0142/verification.json",
+          "detail": "Real stores and Git, with exact registered negative controls. See README.md for controlled seams."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0142/observations.json",
+          "detail": "Scoped assertions: launch/no-author-overrides, launch/no-config-overrides, clone/identity-authors, launch/spawn-config-commit-authors, clone/unbound-refused, clone/layout-refused"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0142/verification.json",
+          "detail": "Real stores and Git, with exact registered negative controls. See README.md for controlled seams."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0142/observations.json",
+          "detail": "Scoped assertions: lander/identity-and-reland-authors, lander/worker-commit-mismatch, lander/station-record-authority, lander/caller-identity-refused, lander/unbound-before-commit"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0142/verification.json",
+          "detail": "Real stores and Git, with exact registered negative controls. See README.md for controlled seams."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "detail": "Own suite: 49 passed, zero failed, partial exit 2, unconfined and in the confined gate domain. Not a gate verdict."
+    },
+    {
+      "name": "integration",
+      "status": "passed",
+      "detail": "Real setup, clone and lander identity observations; 15 exact falsifiers rejected at their recorded suite revisions."
+    },
+    {
+      "name": "gate",
+      "status": "not_run",
+      "detail": "Reserved for the reviewer by owner instruction."
+    },
+    {
+      "name": "consumer_suites",
+      "status": "failed",
+      "detail": "24 permitted consumer suites ran individually. Six passed, 18 failed in this host environment. Exact failures, startup errors and runtime retries are recorded in consumer-verification.json."
+    }
+  ],
+  "assumptions": [
+    "Failed consumer suites require reviewer qualification and regression execution; their failures are not certified as non-regressions here.",
+    "The trusted setup account supplies keystore references; this concern does not resolve credentials or authorize pushes.",
+    "Independent critical-risk reviews and human approval remain outstanding."
+  ],
+  "rollback": "Stop new bindings. Keep recorded identities and bindings. Missing identity refuses; no automatic rollback is authorized.",
+  "proof_digest": "sha256:f08ab036ead4cdc3",
+  "batch_rerun": "Batch 1: proof/VELDO-0142/drive.py rerun at this commit; the honest suite 103 passed and all 15 registered falsifiers were rejected (verification.json)."
+}
