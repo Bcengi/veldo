@@ -5,6 +5,66 @@ Real GitHub, SSH agent and Secret Service qualification is proof/VELDO-0153/host
 """
 
 
+def _v153_refusal_rows():
+    """Unit check of the real executor/profile exception boundary; no transport or service runs.
+
+    The fenced integration rows below also check that the remote remains unchanged.
+    These rows isolate module identity from host socket availability.
+    """
+    import importlib.util
+    import json
+    from pathlib import Path
+    import subprocess
+    import tempfile
+    from types import SimpleNamespace
+    from unittest.mock import patch
+
+    spec = importlib.util.spec_from_file_location('refusal153', ROOT / '.veldo/control_effect_executor.py')
+    X = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(X)
+    contract = dict(kind='publication', target='git', domain_uuid='domain', repository_uuid='alpha',
+                    payload=dict(commit='1' * 40, tree='2' * 40, old_tip='0' * 40),
+                    dispatch_id='unit-refusal', request_digest='unit-digest')
+    record = dict(id='alpha', remote_host='github.com', remote_owner='alpha')
+    identity = SimpleNamespace(resolve=lambda *a: record, Refused=type('IdentityRefused', (ValueError,), {}))
+    organ = X.E.organ
+    outcomes = {}
+    with tempfile.TemporaryDirectory(prefix='refusal153-') as directory:
+        store = Path(directory) / 'store'
+        store.touch()
+        config = dict(store=str(store), journal_key='unused-unit-key', receivers={'git': dict(
+            kind='publication', repository=directory, remote='https://github.com/alpha/repo.git',
+            ref='refs/heads/main')})
+        for name, data, status in (
+                ('route-insteadof', b'url.ssh://invalid/.insteadof\nhttps://github.com/\0', 0),
+                ('route-push-instead-of', b'url.ssh://invalid/.pushinsteadof\nhttps://github.com/\0', 0),
+                ('shape-config-exit', b'', 1)):
+            calls = []
+            def run(args, **kwargs):
+                calls.append(args)
+                if 'rev-parse' in args:
+                    return subprocess.CompletedProcess(args, 0, contract['payload']['tree'] + '\n', '')
+                if 'config' in args:
+                    return subprocess.CompletedProcess(args, status, data, b'')
+                raise AssertionError('transport reached after config refusal')
+            # AC3: config refusals must use the exact exception class execute catches.
+            with patch.object(subprocess, 'run', run), \
+                 patch.object(X.E, 'organ', lambda name: identity if name == 'control_git_identity' else organ(name)), \
+                 patch.object(X.E.S, 'open_store', lambda *a: SimpleNamespace(close=lambda: None)):
+                try:
+                    X.receive(config, contract, contract)
+                    outcome = 'unexpected-success'
+                except X.E.Refused as error:
+                    outcome = error.code
+                except ValueError:
+                    outcome = 'uncaught-transport-refusal'
+            outcomes[name] = outcome
+            expect('VELDO-0153 refusal-unit/' + name,
+                   outcome == 'binding_mismatch:identity_transport_config'
+                   and len(calls) == 2)
+    print('VELDO-0153 refusal unit observations: ' + json.dumps(outcomes, sort_keys=True))
+
+
 def _v153_fence_rows(W, base):
     """The hermetic fence (support/identity_wire.py) every 0153 and consumer identity fixture runs in:
     each way out is refused, recorded and raised when the fence closes; local work passes."""
@@ -563,4 +623,5 @@ def _v153_hermetic():
             _v153_suite(fence.directory)
 
 
+_v153_refusal_rows()
 _v153_hermetic()
