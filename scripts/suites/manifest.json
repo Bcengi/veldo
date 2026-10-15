@@ -1414,7 +1414,6 @@
    "requires_note": "Only ROOT, V and expect; foreground launcher fixtures, sequential, no mutation stage."
   },
   {
-<<<<<<< HEAD
    "name": "103_veldo_0124_macos",
    "file": "103_veldo_0124_macos.py",
    "requires": [
@@ -1431,7 +1430,8 @@
    ],
    "regions": "Mac authority contract over signed store records.",
    "requires_note": "Only ROOT and expect."
-=======
+  },
+  {
    "name": "103_veldo_0142_git_identities",
    "file": "103_veldo_0142_git_identities.py",
    "requires": [
@@ -1487,7 +1487,6 @@
    ],
    "regions": "Shared signed memory, profile exclusion, setup reruns and sampled loss checks over five stores.",
    "requires_note": "Only ROOT, expect and fast_temp from shared. Synthetic captured-layout stores, real signed SQLite authority, setup and Runner with foreground fake engines and local stand-ins."
->>>>>>> main
   }
  ],
  "resource_capacities": {
