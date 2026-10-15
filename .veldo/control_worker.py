@@ -6,6 +6,9 @@ reader, never guessed from a successful exit. Absent usage keeps charge unknown.
 """
 import importlib.util
 import os
+import json
+import subprocess
+import sys
 from pathlib import Path
 
 
@@ -19,11 +22,11 @@ def organ(name):
 C = organ('project_runner_macos_control')
 
 
-def run(client, host, dispatch, clone, scratch, account, *, collect=lambda run, result: (None, {})):
+def run(client, host, dispatch, clone, scratch, account, *, collect=lambda run, result: (None, {}), claim=None):
     keys = {str(Path(p).resolve()) for p in host.profile.get('signing_keys', [])}
     if not client.signing_key or client.signing_key not in keys:
         raise C.P.Refused('missing_evidence:worker_signing_key_custody')
-    claim = client.claim(dispatch)
+    claim = claim if claim is not None else client.claim(dispatch)
     contract, binding = claim['contract'], claim['binding']
     route = contract['input']['context']['host_route']
     if (route.get('runtime_profile') != C.P.digest(host.profile)
@@ -53,3 +56,47 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=lambda run, 
         raise
     # Deliberately retain the host and authority slots. Retirement additionally
     # requires clone cleanup and settled accounting through the existing contract.
+
+
+def receive(config, request):
+    """Installed Mac endpoint: resolve a dispatch through its configured Linux relay.
+
+    Source mirror, account profiles, host qualification and keys are operator
+    configuration. The request supplies only identity; execution uses the signed
+    authority response. Each invocation gets an independent clone and scratch.
+    """
+    CL = organ('control_worker_client')
+    SIG = organ('control_signer')
+    M = organ('project_runner_macos')
+    host = M.Supervisor(config['profile'], config['qualification'])
+    key = str(Path(config['signing_key']).resolve())
+    if key not in {str(Path(p).resolve()) for p in host.profile.get('signing_keys', [])}:
+        raise C.P.Refused('missing_evidence:worker_signing_key_custody')
+    client = CL.Client(config['workspace'], config['binding'], config['principal'],
+        lambda data, namespace='veldo-command': SIG.sign_bytes(key, data, namespace),
+        config['ssh_argv'], signing_key=key)
+    if (request.get('domain') != config['binding']['domain_uuid']
+            or request.get('repository') != config['binding']['repository_uuid']):
+        raise C.P.Refused('binding_mismatch:receiver_repository')
+    claim = client.claim(request['dispatch_id'])
+    contract = claim['contract']
+    if (claim['binding']['contract_digest'] != request.get('contract_digest')
+            or contract['domain'] != request['domain'] or contract['repository'] != request['repository']):
+        raise C.P.Refused('binding_mismatch:receiver_contract')
+    account = config['accounts'][contract['reservation']['account']]
+    directory = Path(config['runs']) / C.P.digest(request['dispatch_id']).split(':')[-1]
+    directory.mkdir(parents=True, exist_ok=False)
+    clone, scratch = directory / 'clone', directory / 'scratch'
+    scratch.mkdir()
+    # The source mirror is installed configuration, never a source URL from work.
+    subprocess.run(['git', 'clone', '--no-local', '--no-checkout', '--', config['source'], str(clone)],
+                   check=True, capture_output=True, timeout=60)
+    subprocess.run(['git', '-C', str(clone), 'checkout', '--detach', contract['source']['commit']],
+                   check=True, capture_output=True, timeout=30)
+    return run(client, host, request['dispatch_id'], str(clone), str(scratch), account, claim=claim)
+
+
+if __name__ == '__main__':
+    config = json.loads(Path(sys.argv[1]).read_text())
+    result = receive(config, json.loads(sys.stdin.readline(65536)))
+    print(json.dumps(dict(state=result['record']['state'])), flush=True)

@@ -173,3 +173,12 @@ hold in production otherwise. Production Runner preparation now selects the
 qualified host before submission. The same review authorizes the listed service,
 store, membership, dispatch, reservation and containment fixes and their 0124
 regressions. Criteria and approval requirements are unchanged.
+
+2026-10-15: B2 independent-review corrections bind remote acceptance to the current
+eligibility decision inside its authority transaction, and wire factory submission
+to a configured Mac receiver with a tracked asynchronous launch. Regression rows
+cover withdrawn/replaced admission, factory delivery, missing-receiver retirement
+and transport output that attempts to impersonate completion. Targeted falsifiers
+remove the eligibility recheck, restore the unowned/no-contact submission, and drop
+pending factory tracking. Configuration and evidence limits are recorded in
+proof/VELDO-0125/README.md; acceptance criteria and approval requirements are unchanged.

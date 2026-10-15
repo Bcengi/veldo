@@ -465,9 +465,10 @@ class Runner:
     the kernel shows nothing of the run left (VELDO-0158)."""
 
     def __init__(self, gate, reservations, dispatches, receiver, *, account, clock=None, clones=None, runs=None,
-                 profile=None, worker_profiles=None, local_host=None):
+                 profile=None, worker_profiles=None, local_host=None, remote_receivers=None):
         self.gate, self.reservations, self.dispatches = gate, reservations, dispatches
         self.receiver, self.account = receiver, account
+        self.remote_receivers = remote_receivers or {}
         self.worker_profiles, self.local_host = worker_profiles, local_host or socket.gethostname()
         self.clock = clock or time.time
         self.observations = []
@@ -651,10 +652,8 @@ class Runner:
         contract = self.prepare(unit, station, **kwargs)
         route = contract['input']['context'].get('host_route')
         if route and route['host'] != self.local_host:
-            # Remote receivers claim the prepared contract through the relay.
-            launch = Launch(None, contract, self.dispatches, self.clock)
-            launch.owned = False
-            launch.record = self.dispatches.record(contract['dispatch_id'])
+            launch = invoke_remote(self.remote_receivers.get(route['host']), contract, self.dispatches,
+                                   clock=self.clock)
         else:
             launch = self.receiver(contract)
         self.launches[contract['dispatch_id']] = launch
@@ -670,6 +669,8 @@ class Runner:
             # engine, the complete artifact it binds (THE ENGINE PROTOCOL).
             clean = D.completed(record)
             self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')
+        elif record and record['state'] == 'refused':
+            self._retire(record['dispatch_id'], 'cancelled', 'never_spawned')
         elif record and record['state'] == 'unknown':
             # Its outcome is an open obligation: the retirement keeps it, and the slot, until it is known. Its run
             # directory, which a receiver keeps while the run's group is not empty, goes once the run is gone.
@@ -952,6 +953,85 @@ class Launch:
                                              execution_record=self._record_commitment())
         self.record = record
         return record
+
+
+
+class RemoteLaunch(Launch):
+    """An outstanding remote receiver, observed through its pipe and the Linux authority.
+
+    Transport output is only a wakeup. Signed worker commands, never stdout, decide
+    the dispatch state. Pending submission must not block the authority's IPC loop.
+    """
+    remote = True
+
+    def pump(self, read=True):
+        if self.ended or self.fileno() is None:
+            return self.ended
+        if read:
+            chunk = os.read(self.fileno(), 65536)
+            if not chunk:
+                self.ended = True
+                self.record = self.dispatches.record(self.dispatch_id)
+                self.lost = (self.record or {}).get('state') not in ('exited', 'refused', 'unknown')
+        return self.ended
+
+    def stop(self, reason='requested'):
+        # Ending SSH is not evidence that the remote process died. The Mac's
+        # accepted deadline still bounds execution; unresolved outcomes stay held.
+        self.stop_requested = True
+        if self.child is not None and self.child.poll() is None:
+            self.child.terminate()
+            return True
+        return False
+
+    def wait(self, timeout=None):
+        if not self.ended and self.child is not None:
+            deadline = time.monotonic() + (timeout if timeout is not None else
+                max(0, self.contract['deadline'] - self.clock()) + ACCEPT_SECONDS)
+            while not self.ended and time.monotonic() < deadline:
+                ready, _, _ = select.select([self.fileno()], [], [], max(0, deadline - time.monotonic()))
+                if ready:
+                    self.pump()
+            if not self.ended:
+                raise TimeoutError('remote_receiver_pending')
+        if self.child is not None:
+            self._end_receiver()
+        self._settle(lost=self.lost)
+        if (self.record or {}).get('state') == 'running':
+            self.record = self.dispatches.unknown(self.dispatch_id, self.record['contract_digest'],
+                'remote_outcome_unknown', now=self.clock(), expected_state='running')
+        return self.record
+
+
+def invoke_remote(receiver, contract, dispatches, *, clock=time.time):
+    """Start an operator-configured transport argv; send only the prepared binding.
+
+    The installed endpoint calls control_worker.receive on the Mac. No shell or
+    command-line argument is built from unit data, and no Linux receiver is used.
+    """
+    launch = RemoteLaunch(None, contract, dispatches, clock)
+    argv = receiver.get('argv') if isinstance(receiver, dict) else None
+    if not isinstance(argv, list) or not argv or any(not isinstance(a, str) or not a for a in argv):
+        launch.record = dispatches.refuse(contract['dispatch_id'], D.digest(contract),
+            'unavailable_service:remote_receiver', now=clock(), expected_state='prepared')
+        launch.result, launch.ended = 'refused', True
+        return launch
+    try:
+        launch.child = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                        stderr=subprocess.DEVNULL)
+        request = dict(dispatch_id=contract['dispatch_id'], contract_digest=D.digest(contract),
+                       domain=contract['domain'], repository=contract['repository'])
+        launch.child.stdin.write(json.dumps(request).encode() + b'\n')
+        launch.child.stdin.close()
+    except (OSError, ValueError):
+        if launch.child is not None:
+            launch._end_receiver()
+        launch.lost = launch.ended = True
+        launch._settle(lost=True)
+        return launch
+    launch.result = 'pending'
+    launch.record = dispatches.record(contract['dispatch_id'])
+    return launch
 
 
 def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, environment=None, clock=None):

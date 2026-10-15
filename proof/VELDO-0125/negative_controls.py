@@ -26,6 +26,14 @@ CASES = [
 CASES += [
     ('accept-eligibility', 'control_worker_service.py', '105_veldo_0125_relay', 'AC2/accept-eligibility-recheck',
      '                    self.recheck(contract, repository)\n', ''),
+    ('remote-delivery', 'control_launch.py', '106_veldo_0125_routing', 'AC2/factory-remote-delivery',
+     "            launch = invoke_remote(self.remote_receivers.get(route['host']), contract, self.dispatches,\n"
+     "                                   clock=self.clock)",
+     "            launch = Launch(None, contract, self.dispatches, self.clock)\n"
+     "            launch.owned = False\n"
+     "            launch.record = self.dispatches.record(contract['dispatch_id'])"),
+    ('remote-tracking', 'control_service.py', '106_veldo_0125_routing', 'AC2/factory-remote-delivery',
+     "        if launch.result == 'pending':", "        if False:"),
     ('scaffold-routing', 'init_scaffold.py', '106_veldo_0125_routing', 'AC1/installed-routing',
      '    ".veldo/control_routing.py",\n', ''),
     ('worker-request', 'control_service.py', '105_veldo_0125_relay', 'AC1/worker-request-only',

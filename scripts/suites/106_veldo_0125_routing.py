@@ -123,7 +123,8 @@ def _v125_routing_suite():
             unit_record=lambda unit: dict(project='project', required_host_capabilities=list(requirements)))
         local = []
         runner = L.Runner(gate, f.res, f.ds, lambda contract: local.append(contract),
-                          account='account', worker_profiles=f.profiles, local_host='linux')
+                          account='account', worker_profiles=f.profiles, local_host='linux',
+                          remote_receivers={'mac': {'argv': [__import__('sys').executable, '-c', 'import sys; sys.stdin.readline()']}})
         try:
             for i, required in enumerate((['macos'], ['ios-build'])):
                 requirements[:] = required
@@ -132,7 +133,8 @@ def _v125_routing_suite():
                     configuration=f.configuration, deadline=__import__('time').time() + 60)
                 assert not local, 'Mac dispatch reached Linux receiver'
                 assert launch.contract['input']['context']['host_route']['host'] == 'mac'
-                f.ds.refuse(launch.dispatch_id, T.D.digest(launch.contract), 'end', now=__import__('time').time())
+                assert launch.owned and launch.result == 'pending' and launch.fileno() is not None
+                assert runner.wait(launch, timeout=5)['state'] == 'refused'
             f.profiles[1]['available'] = False
             T.refused(lambda: runner.prepare('unit', 'review', holder='authority', source=str(f.repo),
                 revision=T.git(f.repo, 'rev-parse', 'HEAD'), payload={}, adapter='codex',
@@ -155,7 +157,8 @@ def _v125_routing_suite():
             profiles={'mac': '/synthetic/mac/login'}, concurrency=1, windows={}))
         pool = L.D.RES.POOL.Pool({'codex': dict(engine='codex', host='linux')})
         runner = L.Runner(gate, f.res, f.ds, lambda contract: (_ for _ in ()).throw(
-            AssertionError('Mac work reached Linux')), account=pool, worker_profiles=f.profiles, local_host='linux')
+            AssertionError('Mac work reached Linux')), account=pool, worker_profiles=f.profiles, local_host='linux',
+            remote_receivers={'mac': {'argv': [__import__('sys').executable, '-c', 'import sys; sys.stdin.readline()']}})
         try:
             launch = runner.submit('unit', 'review', holder='authority', source=str(f.repo),
                 revision=T.git(f.repo, 'rev-parse', 'HEAD'), payload={}, adapter='codex',
@@ -163,8 +166,135 @@ def _v125_routing_suite():
             assert launch.contract['input']['context']['host_route']['host'] == 'mac'
             assert launch.contract['reservation']['account'] == 'account'
             assert launch.contract['input']['decision']['inputs'] == {'source': 'accepted'}
+            assert runner.wait(launch, timeout=5)['state'] == 'refused'
         finally:
             f.close()
+
+    def factory_delivery(base):
+        import json
+        import select
+        import sys
+        import time
+        P = helper('v125_delivery_host', 'proof/VELDO-0124/checks.py')
+        host, backend, request, paths = P.start(base / 'mac')
+        f = T.Fixture(base / 'linux')
+        service_module = T.W.SV
+        L = service_module.L
+        L.CFG.bind = lambda conn, domain, repository, configuration: configuration
+        launched, line = None, None
+        try:
+            host.profile['signing_keys'] = [str(f.keys / 'mac')]
+            host.qualification['profile_digest'] = P.P.digest(host.profile)
+            remote_host = backend.facts()['host']
+            f.profiles[1] = T.profile(remote_host, 'darwin', ['macos', 'ios-build'], f.configuration, principal='mac')
+            f.profiles[1]['runtime_profile'] = P.P.digest(host.profile)
+            f.profiles[1]['qualification']['profile_digest'] = T.D.digest(T.R.definition(f.profiles[1]))
+            seeded = f.prepare(required=['ios-build'])['contract']
+            f.ds.refuse(seeded['dispatch_id'], T.D.digest(seeded), 'fixture_setup', now=time.time())
+            L.Runner(None, f.res, f.ds, None, account='account')._retire(
+                seeded['dispatch_id'], 'cancelled', 'never_spawned')
+            account = dict(id='account', provider='codex', status='active',
+                           profiles={remote_host: str(paths['login'])}, concurrency=20, windows={})
+            f.put('account:account', 'account', account)
+            endpoint = dict(profile=host.profile, qualification=host.qualification,
+                signing_key=str(f.keys / 'mac'), principal='mac', workspace=str(f.repo), binding=f.binding,
+                ssh_argv=[sys.executable, str(T.MODULES / 'control_relay.py'), f.config['socket']],
+                source=str(f.repo), runs=str(paths['projects'] / 'runs'), accounts={'account': account},
+                fixture_facts=backend.facts(), fixture_temp=str(paths['usertemp']),
+                fixture_marker=str(base / 'contacted.json'), fixture_exchange=str(base / 'exchange'))
+            (base / 'exchange').mkdir()
+            endpoint_path = base / 'endpoint.json'
+            endpoint_path.write_text(json.dumps(endpoint))
+            receiver_path = base / 'receiver.json'
+            receiver_path.write_text(json.dumps(dict(workspace=str(f.repo), store=str(f.store), host='linux',
+                host_trust=f.config['host_trust'], adapters={'codex': {'engine': 'codex'}},
+                remote_receivers={remote_host: {'argv': [sys.executable,
+                    str(ROOT / 'proof/VELDO-0125/receiver_fixture.py'), str(endpoint_path)]}})))
+            ended = []
+            loop = types.SimpleNamespace(service=f.service, saw_end=lambda line, launch: ended.append(launch))
+            line = service_module.Line(loop, 'repo', {}, str(receiver_path))
+            f.start()
+            report = dict(offered=[], refused=[], waiting=[])
+            role = dict(identity='reviewer', adapter='codex', payload={}, configuration=f.configuration, seconds=30)
+            launched = line.offer(report, 'unit', 'review', role,
+                revision=T.git(f.repo, 'rev-parse', 'HEAD'), context={'reviewer': 'reviewer'})
+            assert launched is not None, report
+            assert launched.owned and launched.result == 'pending', 'remote dispatch not owned/pending'
+            assert launched.dispatch_id in line.runner.launches, 'Line.offer dropped prepared remote work'
+            assert launched.fileno() is not None, 'remote receiver was not contacted'
+            assert report['offered'][0]['host'] == remote_host
+            until = time.monotonic() + 20
+            while not launched.ended and time.monotonic() < until:
+                # File transport fixture: the confined suite cannot create IPC sockets.
+                # Both signatures, enrollment, dispatch and reservation writes remain real.
+                for message in sorted((base / 'exchange').glob('*.request')):
+                    answer = f.authority.judge(json.loads(message.read_text()), os.getuid())
+                    temporary = message.with_suffix('.tmp')
+                    temporary.write_text(json.dumps(answer))
+                    temporary.replace(message.with_suffix('.response'))
+                    message.unlink()
+                if select.select([launched.fileno()], [], [], .2)[0]:
+                    launched.pump()
+            assert launched.ended, 'remote receiver did not finish'
+            terminal = line.runner.wait(launched, timeout=0)
+            marker = json.loads((base / 'contacted.json').read_text())
+            assert marker['bootstraps'] == 1, marker
+            assert terminal['state'] == 'exited', (terminal['state'], terminal.get('reason'), marker)
+            assert launched.dispatch_id not in line.runner.launches
+            stored = f.service.get(launched.dispatch_id)
+            assert stored['state'] == 'exited' and stored['host'] == remote_host
+            assert stored['dispatch_id'] == launched.dispatch_id and stored['unit'] == 'unit'
+            assert stored['charge'] == 'unknown', 'missing usage became invented spend'
+        finally:
+            for pending in list(line.runner.launches.values()) if line else []:
+                pending._end_receiver()
+            if launched and launched.child:
+                launched._end_receiver()
+            f.close()
+
+    def missing_receiver(base):
+        f = T.Fixture(base)
+        L = T.load('control_launch')
+        try:
+            contract = f.prepare(required=['macos'])['contract']
+            launch = L.invoke_remote(None, contract, f.ds)
+            assert launch.owned and launch.result == 'refused'
+            assert launch.record['state'] == 'refused'
+            assert launch.record['refusal'] == 'unavailable_service:remote_receiver'
+            runner = L.Runner(None, f.res, f.ds, None, account='account')
+            runner.launches[launch.dispatch_id] = launch
+            runner.wait(launch, timeout=0)
+            slot = f.res._records()[T.RES.entity('worker', ['domain', launch.dispatch_id])]
+            assert slot['retired'], 'unlaunched remote work kept its reservation'
+        finally:
+            f.close()
+
+    def transport_is_not_evidence(base):
+        import sys
+        for state in ('prepared', 'accepted', 'running'):
+            f = T.Fixture(base / state)
+            L = T.load('control_launch')
+            launch = None
+            try:
+                contract = f.prepare(required=['macos'])['contract']
+                f.start()
+                client = f.client()
+                if state == 'accepted':
+                    binding = client.claim('dispatch/test')['binding']
+                    client.launch(binding, 'accept', receiver=T.process(), runtime_seconds=5)
+                elif state == 'running':
+                    T.launch(client)
+                launch = L.invoke_remote({'argv': [sys.executable, '-c',
+                    'import sys,json; sys.stdin.readline(); print(json.dumps(dict(event="exited",returncode=0)))']},
+                    contract, f.ds)
+                assert launch.owned and launch.result == 'pending'
+                record = launch.wait(timeout=5)
+                assert record['state'] == ('refused' if state == 'prepared' else 'unknown'), record['state']
+                assert not T.D.completed(record), 'transport stdout or exit invented completion'
+            finally:
+                if launch and launch.child:
+                    launch._end_receiver()
+                f.close()
 
     def installed_routing(base):
         target = base / 'adopter'
@@ -210,7 +340,9 @@ def _v125_routing_suite():
     for row, test in {'AC1/installed-routing': installed_routing,
                       'AC1/worker-signing-key-read': signing_key_read,
                       'AC2/capability-selection': selection, 'AC2/host-routing-refusal': blocked,
-                      'AC2/qualification': qualification, 'AC2/production-routing': production, 'AC2/production-account-host': production_pool, 'AC2/actual-worker-launch': actual_launch,
+                      'AC2/qualification': qualification, 'AC2/factory-remote-delivery': factory_delivery,
+                      'AC2/missing-remote-receiver': missing_receiver,
+                      'AC3/transport-is-not-evidence': transport_is_not_evidence, 'AC2/production-routing': production, 'AC2/production-account-host': production_pool, 'AC2/actual-worker-launch': actual_launch,
                       'AC1/template-sync': sync, 'AC1/native-declared': native_declared}.items():
         with tempfile.TemporaryDirectory(prefix='v125-routing-') as directory:
             try:

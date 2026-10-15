@@ -380,3 +380,55 @@ whole `~/veldo-0125-check` was removed; `native/mac-cleanup.txt` shows no org.ve
 launchd job, run temp or probe process left. Only the transport key pair, its known_hosts
 file and `~/.ssh/config` remain on the Mac. This is observation, not qualification,
 activation or a gate stamp.
+
+## B2 review fixes (2026-10-15)
+
+Remote acceptance now re-evaluates the prepared eligibility ticket on the Linux
+service connection, inside the same transaction as acceptance, invocation
+reservation and the worker observation. It uses the served repository workspace,
+authority generation, claim generation and installed settlement trust. Trust comes
+from the service's `host_trust`, or the repository receiver configuration's
+`host_trust`. Missing trust refuses. Withdrawal or replacement of admission cannot
+reuse the prepared ticket. `AC2/accept-eligibility-recheck` exercises both cases and
+requires an unchanged store on refusal.
+
+Factory submission now starts the selected host's configured receiver and keeps
+an owned, pending launch in the service's pipe poll set. It returns immediately so
+the same authority can serve that receiver's signed claim/accept/result commands.
+Missing receiver configuration produces a named refusal and retires the unlaunched
+reservation. Transport output and exit status cannot establish completion. A lost
+transport before acceptance refuses the dispatch; after acceptance it leaves the
+outcome unknown. A remote PID is never sent to Linux orphan cleanup.
+
+The Linux repository receiver JSON accepts `remote_receivers`, keyed by the exact
+qualified host identity. Each entry is `{"argv": [...]}`: a fixed operator-installed
+SSH command running `python3 /installed/control_worker.py /private/receiver.json`
+on that host. Configure noninteractive authentication and bounded SSH connection
+and keepalive timeouts. No work-supplied string is interpolated into this command.
+The receiver gets one JSON line on stdin containing dispatch ID, contract digest,
+domain and repository. The installed Mac configuration supplies:
+
+- `profile` and `qualification`: the existing qualified Mac supervisor records;
+- `workspace`, `binding`, `principal`, `signing_key`, `ssh_argv`: the worker's enrolled
+  Linux coordinates, private receiver signing key and fixed return relay transport;
+- `source`: an operator-managed Git mirror containing the accepted source commit;
+- `runs`: a private directory under the configured project roots for unique clones
+  and scratch directories;
+- `accounts`: account records keyed by account ID, with the selected engine's login
+  profile on this host.
+
+The receiver claims the dispatch through the relay, checks the supplied binding,
+creates an independent clone of the accepted commit, and runs the existing trusted
+Mac supervisor. Keys must be declared in the supervisor's protected signing-key
+inventory. Missing usage remains unknown; this change does not invent spend or
+release reservations awaiting accounting/cleanup evidence. Installation, native
+qualification and remote source-mirror upkeep remain operator responsibilities.
+
+`AC2/factory-remote-delivery` drives the real `Line.offer`, transport subprocess,
+Mac endpoint, signed authority decisions and supervisor lifecycle. Its transport
+uses a file exchange because this suite's sandbox refuses IPC sockets; Apple OS
+observations are simulated. `AC2/missing-remote-receiver` verifies reservation
+retirement, and `AC3/transport-is-not-evidence` attacks stdout and exit-status
+claims before acceptance, after acceptance and while running. These are Linux
+logic regressions, not fresh native SSH/Mac observations or a canonical gate stamp.
+The reviewer retains responsibility for the gate and native validation.
