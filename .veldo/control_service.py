@@ -2122,11 +2122,12 @@ class Line:
 
 class FactoryLoop:
     """THE FACTORY LOOP (VELDO-0154): the Runner of every line, inside this authority service, the one scheduling
-    instance. A pass starts only from its three WAKE SOURCES: a packet or channel pass that advanced the journal
+    instance. A full pass starts only from its three WAKE SOURCES: a packet or channel pass that advanced the journal
     (`journal`, from hint_after), a run's end seen on its launch pipe (`run_end`: the receiver's `exited` or
-    `unknown` report, or the pipe's end of file when the receiver died), and the account reset timer (`account_reset`,
+    `unknown` report, a committed signed remote result, or the pipe's end of file when the receiver died), and the account reset timer (`account_reset`,
     set to the earliest reset a waiting unit needs). Nothing else starts one: the service loop's accept timeout
-    and channel pass start none, and the loop never polls. The wakes a service loop iteration collects make one
+    and channel pass start none, and the loop never polls. Each remote launch also has one deadline event,
+    including acceptance grace; it settles only that launch, without provisioning or scheduling scans. The wakes a service loop iteration collects make one
     pass. Each pass is logged (kind `loop`) with its sources and what it ended, freed, offered, refused, left
     waiting, decided and asked, each land dispatch it ran (VELDO-0148), and the timer it set."""
 
@@ -2279,6 +2280,8 @@ class FactoryLoop:
         return {'available': True, 'passes': self.passes, 'timer': self.timer, 'counts': dict(self.counts),
                 'running': sorted(d for line in self.lines.values() for d in line.runner.launches),
                 'orphans': sorted(d for line in self.lines.values() for d in line.runner.orphans),
+                'remote_holds': {repository: line.runner.remote_retirements
+                                 for repository, line in sorted(self.lines.items())},
                 'last_sources': (self.last or {}).get('sources'),
                 # VELDO-0148: each land station's land dispatches: outcomes, those running, re-lands per unit.
                 'lands': {repository: line.station.status() for repository, line in sorted(self.lines.items())

@@ -196,6 +196,7 @@ class Service(SV.Service):
                         RR.boundary(contract), contract['deadline'] - now, now=now)
                     if receipt['replayed']:
                         raise SV.Refused('unknown_outcome:invocation_replayed')
+                    reservations.hold_remote(dispatch, route['host'], record['contract_digest'], now=now)
                     data.update(state='accepted', acceptance=ds.receipt(dispatch, 'accept'), reservation=receipt)
                 elif phase == 'running' and data['state'] == 'accepted' and record['state'] == 'accepted':
                     process = params.get('process')
@@ -207,42 +208,93 @@ class Service(SV.Service):
                 else:
                     raise SV.Refused('stale_version:launch_phase')
             else:
-                observation = params.get('observation') or {}
-                if (data['state'] != 'running' or record['state'] != 'running'
-                        or observation.get('process') != record['process']):
-                    raise SV.Refused('binding_mismatch:remote_result')
-                references = params.get('references')
-                if not isinstance(references, dict) or set(references) - {'output', 'proof'} or any(
-                        not isinstance(v, str) or not v for v in references.values()):
-                    raise SV.Refused('invalid_input:references')
-                usage = params.get('usage')
-                if usage is not None and (not isinstance(usage, dict) or set(usage) - set(RES.USAGE)
-                                           or any(not RES.number(v) for v in usage.values())):
-                    raise SV.Refused('invalid_input:usage')
-                if observation.get('state') == 'exited':
-                    termination = observation.get('termination')
-                    if (D._termination_problems(termination) or len(termination['output_digest']) != 71
-                            or any(c not in '0123456789abcdef' for c in termination['output_digest'][7:])):
-                        raise SV.Refused('invalid_input:termination')
-                    ds.exit(dispatch, record['contract_digest'], record['process'], observation['termination'], now=now,
-                            artifact=dict(verdict='incomplete', complete=False, digest=D.digest(references)))
-                    if usage is not None:
-                        data['spend_receipt'] = reservations.report('remote-spend/' + dispatch, data['invocation'], 1, usage,
-                            final=True, outcome='completed' if observation['termination']['returncode'] == 0 else 'cancelled',
-                            receipts=[observation['termination']['output_digest']], now=now)
-                elif observation.get('state') == 'unknown':
-                    ds.unknown(dispatch, record['contract_digest'], 'remote_outcome_unknown', now=now,
-                               expected_state='running')
-                else:
-                    raise SV.Refused('invalid_input:terminal_state')
-                data.update(state=observation['state'], observation=observation, references=references,
-                            usage=usage if observation['state'] == 'exited' else None,
-                            charge='reported' if usage is not None and observation['state'] == 'exited' else 'unknown')
+                self.result(ds, reservations, record, data, params, command, now)
         data.setdefault('commands', []).append(dict(command_id=command['command_id'], operation=op,
                                                     digest=SV.S.digest_of(command)))
         data['workspace'] = self.repositories[repository]
         receipt = self.save(command, data)
+        if op == 'worker_result':
+            self.release_remote(reservations, record, data, command, now)
         return dict(ok=True, reason=op, receipt=receipt, binding=binding, record=data, contract=contract)
+
+    def result(self, ds, reservations, record, data, params, command, now):
+        """A signed host end and optional cleanup release, including a late end of a held run.
+
+        A late result retains the dispatch's unknown outcome (no automatic retry or recovery),
+        but its final spend and cleanup evidence still settle the original reservation.
+        """
+        observation = params.get('observation') or {}
+        state, dispatch = observation.get('state'), record['dispatch_id']
+        references, usage = params.get('references'), params.get('usage')
+        if not isinstance(references, dict) or set(references) - {'output', 'proof'} or any(
+                not isinstance(v, str) or not v for v in references.values()):
+            raise SV.Refused('invalid_input:references')
+        if usage is not None and (not isinstance(usage, dict) or set(usage) - set(RES.USAGE)
+                                   or any(not RES.number(v) for v in usage.values())):
+            raise SV.Refused('invalid_input:usage')
+        cleanup = observation.get('cleanup')
+        if cleanup is not None and (not isinstance(cleanup, dict) or
+                set(cleanup) != {'terminated', 'cleaned', 'clone_removed'} or
+                any(value is not True for value in cleanup.values())):
+            raise SV.Refused('invalid_input:remote_cleanup')
+        if state == 'refused':
+            if (data['state'] not in ('claimed', 'accepted') or record.get('process') is not None
+                    or record['state'] not in ('prepared', 'accepted', 'unknown', 'refused')
+                    or not D._text(observation.get('refusal'))):
+                raise SV.Refused('binding_mismatch:remote_result')
+            if data['state'] == 'accepted' and cleanup is None:
+                raise SV.Refused('missing_evidence:remote_cleanup')
+            if record['state'] in ('prepared', 'accepted'):
+                ds.refuse(dispatch, record['contract_digest'], observation['refusal'], now=now)
+            if data['state'] == 'accepted':
+                data['spend_receipt'] = reservations.report('remote-spend/' + dispatch, data['invocation'],
+                    1, {}, final=True, outcome='not_executed', receipts=[], now=now)
+        elif state in ('exited', 'unknown'):
+            if (data['state'] not in ('running', 'unknown', 'exited')
+                    or record['state'] not in ('running', 'unknown', 'exited')
+                    or observation.get('process') != record.get('process')):
+                raise SV.Refused('binding_mismatch:remote_result')
+            # A second delivery may add cleanup, but cannot rewrite a previously signed exit or spend.
+            previous = data.get('observation') or {}
+            if data['state'] == 'exited' and (state != 'exited' or
+                    {k: v for k, v in observation.items() if k != 'cleanup'} !=
+                    {k: v for k, v in previous.items() if k != 'cleanup'} or
+                    usage != data.get('usage') or references != data.get('references')):
+                raise SV.Refused('binding_mismatch:remote_result')
+            if state == 'exited':
+                termination = observation.get('termination')
+                if (D._termination_problems(termination) or len(termination['output_digest']) != 71
+                        or any(c not in '0123456789abcdef' for c in termination['output_digest'][7:])):
+                    raise SV.Refused('invalid_input:termination')
+                if record['state'] == 'running':
+                    ds.exit(dispatch, record['contract_digest'], record['process'], termination, now=now,
+                            artifact=dict(verdict='incomplete', complete=False, digest=D.digest(references)))
+                if not data.get('spend_receipt') and (usage is not None or cleanup is not None):
+                    data['spend_receipt'] = reservations.report('remote-spend/' + dispatch, data['invocation'],
+                        1, usage or {}, final=True,
+                        outcome='completed' if termination['returncode'] == 0 else 'cancelled',
+                        receipts=[termination['output_digest']], now=now)
+            elif record['state'] == 'running':
+                ds.unknown(dispatch, record['contract_digest'], 'remote_outcome_unknown', now=now,
+                           expected_state='running')
+        else:
+            raise SV.Refused('invalid_input:terminal_state')
+        data.update(state=state, observation=observation, references=references,
+                    usage=usage if state == 'exited' else None,
+                    charge='reported' if usage is not None and state == 'exited' else 'unknown')
+    def release_remote(self, reservations, record, data, command, now):
+        state, dispatch = data['state'], record['dispatch_id']
+        cleanup = data['observation'].get('cleanup')
+        slot = reservations.worker(dispatch)
+        if state == 'refused' or (state == 'exited' and cleanup is not None):
+            if not slot['retired']:
+                reservations.retire('remote-retire/' + dispatch, dispatch,
+                    lambda identity: dict(terminated=True, cleaned=True,
+                        outcome='cancelled' if state == 'refused' else (
+                            'completed' if data['observation']['termination']['returncode'] == 0 else 'failed'),
+                        observer=command['principal'], command_id=command['command_id'],
+                        host=data['host'], contract_digest=record['contract_digest'], cleanup=cleanup), now=now)
+
 
 
 def serve(config):

@@ -8,6 +8,7 @@ import importlib.util
 import os
 import json
 import subprocess
+import shutil
 import sys
 from pathlib import Path
 
@@ -49,13 +50,24 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=lambda run, 
         client.launch(binding, 'running', process=started.process)
         observation = started.wait()
         usage, references = collect(started, observation)
+        if observation['state'] == 'exited':
+            seen = started.retirement()
+            if all(seen.get(key) is True for key in ('terminated', 'cleaned', 'outcome_known')):
+                try:
+                    # Output/proof references must be retained by collect before these run inputs go.
+                    for path in (clone, scratch):
+                        if os.path.lexists(path):
+                            shutil.rmtree(path)
+                    started.release()
+                except (OSError, C.P.Refused):
+                    pass  # The signed exit is still useful; missing cleanup keeps the durable hold.
+                else:
+                    observation = dict(observation, cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
         return client.result(binding, observation, usage=usage, references=references)
     except Exception:
         started.stop('authority_unavailable')
         started.wait()
         raise
-    # Deliberately retain the host and authority slots. Retirement additionally
-    # requires clone cleanup and settled accounting through the existing contract.
 
 
 def receive(config, request):

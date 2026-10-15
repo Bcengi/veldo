@@ -108,7 +108,9 @@ def _v125_routing_suite():
                 collect=lambda run, result: ({'tokens': 3}, {'output': result['termination']['output_digest'], 'proof': 'fixture'}))
             assert seen == [backend.facts()['host']] and backend.bootstraps == 1
             assert result['record']['host'] == backend.facts()['host'] and result['record']['usage']['tokens'] == 3
-            assert result['record']['state'] == 'exited' and host.status()['pending'] == 1
+            assert result['record']['state'] == 'exited' and host.status()['pending'] == 0
+            assert f.res.worker('dispatch/test')['retired'], 'signed cleanup retained account capacity'
+            assert not paths['clone'].exists() and not paths['scratch'].exists()
         finally:
             f.close()
 
@@ -210,9 +212,8 @@ def _v125_routing_suite():
                 host_trust=f.config['host_trust'], adapters={'codex': {'engine': 'codex'}},
                 remote_receivers={remote_host: {'argv': [sys.executable,
                     str(ROOT / 'proof/VELDO-0125/receiver_fixture.py'), str(endpoint_path)]}})))
-            ended = []
-            loop = types.SimpleNamespace(service=f.service, saw_end=lambda line, launch: ended.append(launch),
-                                         watch_remote=lambda line, launch: None)
+            loop = service_module.FactoryLoop.__new__(service_module.FactoryLoop)
+            loop.service, loop.deadlines, loop.wakes, loop.ended = f.service, {}, [], []
             line = service_module.Line(loop, 'repo', {}, str(receiver_path))
             f.start()
             report = dict(offered=[], refused=[], waiting=[])
@@ -223,6 +224,8 @@ def _v125_routing_suite():
             assert launched.owned and launched.result == 'pending', 'remote dispatch not owned/pending'
             assert launched.dispatch_id in line.runner.launches, 'Line.offer dropped prepared remote work'
             assert launched.fileno() is not None, 'remote receiver was not contacted'
+            assert loop.deadlines[launched.dispatch_id] == (launched.ends_at, line, launched), \
+                'production offer did not register the launch deadline'
             assert report['offered'][0]['host'] == remote_host
             until = time.monotonic() + 20
             while not launched.ended and time.monotonic() < until:
@@ -291,6 +294,9 @@ def _v125_routing_suite():
             # and cannot see the Mac clone. Settle accounting to expose that release.
             f.res.report('late-usage', 'remote/' + launch.dispatch_id, 1, {'tokens': 0}, final=True,
                          outcome='completed', receipts=[], now=__import__('time').time())
+            T.refused(lambda: f.res.retire('unsafe-local-retire', launch.dispatch_id,
+                lambda dispatch: dict(terminated=True, cleaned=True, outcome='completed'),
+                now=__import__('time').time()), 'missing_evidence:remote_cleanup')
             runner.sweep()
             runner._retire(launch.dispatch_id, 'failed', 'retry')
             slot = f.res.worker(launch.dispatch_id)
@@ -371,7 +377,8 @@ def _v125_routing_suite():
                 assert launch.child.poll() is not None, 'deadline left transport alive'
                 assert launch.dispatch_id not in runner.launches
                 assert f.ds.record(launch.dispatch_id)['state'] == ('refused' if state == 'prepared' else 'unknown')
-                assert not f.res.worker(launch.dispatch_id)['retired'], 'transport death invented Mac cleanup'
+                assert f.res.worker(launch.dispatch_id)['retired'] == (state == 'prepared'), \
+                    'never accepted work must release; accepted work must retain cleanup obligations'
                 assert not runner.orphans and not runner.leftovers
             finally:
                 if launch:
@@ -464,12 +471,107 @@ def _v125_routing_suite():
                 assert launch.dispatch_id not in runner.launches, 'timed-out dispatch kept factory tracking'
                 record = runner.wait(launch, timeout=0)
                 assert record['state'] == ('refused' if state == 'prepared' else 'unknown')
-                assert not f.res.worker(launch.dispatch_id)['retired'], 'wait timeout invented remote cleanup'
+                assert f.res.worker(launch.dispatch_id)['retired'] == (state == 'prepared'), \
+                    'never accepted work must release; accepted work must retain cleanup obligations'
                 assert not runner.orphaned(launch) and not runner.orphans
             finally:
                 if launch:
                     launch._end_receiver()
                 f.close()
+
+    def cleanup_observation():
+        return dict(T.observation(), cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
+
+    def remote_hold_restart(base):
+        for state in ('accepted', 'running'):
+            f = T.Fixture(base / state)
+            launch = None
+            try:
+                launch, runner, _, binding = stalled_remote(f, state)
+                dispatch = launch.dispatch_id
+                held = runner.remote_retirements[dispatch]
+                assert held['open'] == ['termination', 'group', 'clone']
+                assert held['contract_digest'] == T.D.digest(launch.contract)
+                try:
+                    runner.wait(launch, timeout=.01)
+                except TimeoutError:
+                    pass
+                assert f.ds.record(dispatch)['state'] == 'unknown'
+                # Close SQLite and reconstruct the service and Runner, not just its Python hold map.
+                f.conn.close()
+                f.conn = T.S.open_store(str(f.store))
+                f.service = T.W.Service(f.config, f.conn)
+                f.ds, f.res = f.service.records('repo')
+                f.start()
+                restored = T.W.SV.L.Runner(None, f.res, f.ds, None, account='account', local_host='linux')
+                assert restored.remote_retirements[dispatch] == held, 'restart lost remote obligations'
+                assert f.res.balances('account', 'account')['capacity'] == 1
+                observation = cleanup_observation() if state == 'running' else dict(
+                    state='refused', refusal='host_start_refused', cleanup=dict(
+                        terminated=True, cleaned=True, clone_removed=True))
+                before = f.service.watermark()
+                T.refused(lambda: f.client('outsider').result(binding, observation, usage={'tokens': 2}),
+                          'unauthorized:dispatch_host')
+                assert f.service.watermark() == before
+                f.client().result(binding, observation, usage={'tokens': 2} if state == 'running' else None)
+                slot = f.res.worker(dispatch)
+                assert slot['retired'] and slot['remote_hold']['open'] == []
+                assert slot['retirement']['observer'] == 'mac'
+                assert not restored.remote_retirements and f.res.balances('account', 'account')['capacity'] == 0
+                assert f.ds.record(dispatch)['state'] == 'unknown', 'late cleanup invented recovered completion'
+                if state == 'running':
+                    assert f.service.get(dispatch)['usage'] == {'tokens': 2}, 'late final spend discarded'
+            finally:
+                if launch:
+                    launch._end_receiver()
+                f.close()
+
+    def remote_signed_cleanup(base):
+        f = T.Fixture(base)
+        try:
+            f.res.configure('one-slot', 'account', 'account', dict(capacity=1, invocations=20, wall_seconds=1000),
+                            now=__import__('time').time())
+            f.start()
+            client = f.client()
+            for index in range(3):
+                dispatch = 'dispatch/reuse/' + str(index)
+                f.prepare(dispatch, required=['macos'])
+                binding = T.launch(client, dispatch)
+                observation = T.observation()
+                client.result(binding, observation, usage={'tokens': 3, 'messages': 1, 'invocations': 1, 'wall_seconds': 1})
+                assert not f.res.worker(dispatch)['retired'], 'unsigned cleanup inferred from a signed exit'
+                before = f.service.watermark()
+                T.refused(lambda: client.result(binding, dict(observation, cleanup=dict(
+                    terminated=True, cleaned=False, clone_removed=True)), usage={'tokens': 3, 'messages': 1, 'invocations': 1, 'wall_seconds': 1}),
+                    'invalid_input:remote_cleanup')
+                assert f.service.watermark() == before
+                client.result(binding, cleanup_observation(), usage={'tokens': 3, 'messages': 1, 'invocations': 1, 'wall_seconds': 1})
+                slot = f.res.worker(dispatch)
+                assert slot['retired'] and slot['remote_hold']['open'] == []
+                assert f.res.balances('account', 'account')['capacity'] == 0
+                identity = T.RES.entity('worker', ['domain', dispatch])
+                version = f.conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()[0]
+                client.result(binding, cleanup_observation(), usage={'tokens': 3, 'messages': 1, 'invocations': 1, 'wall_seconds': 1})
+                assert f.conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()[0] == version
+                assert f.res.balances('account', 'account')['capacity'] == 0
+        finally:
+            f.close()
+
+    def remote_signed_refusal(base):
+        f = T.Fixture(base)
+        try:
+            f.prepare(required=['macos'])
+            f.start()
+            client = f.client()
+            binding = client.claim('dispatch/test')['binding']
+            client.result(binding, dict(state='refused', refusal='host_preflight_refused'))
+            assert f.ds.record('dispatch/test')['state'] == 'refused'
+            assert f.res.worker('dispatch/test')['retired']
+            assert f.res.balances('account', 'account')['capacity'] == 0
+            T.refused(lambda: client.launch(binding, 'accept', receiver=T.process(), runtime_seconds=5),
+                      'stale_version:launch_phase')
+        finally:
+            f.close()
 
     def transport_is_not_evidence(base):
         import sys
@@ -545,6 +647,9 @@ def _v125_routing_suite():
                       'AC2/qualification': qualification, 'AC2/factory-remote-delivery': factory_delivery,
                       'AC2/missing-remote-receiver': missing_receiver,
                       'AC3/remote-cleanup-held': remote_retirement,
+                      'AC3/remote-hold-restart': remote_hold_restart,
+                      'AC3/remote-signed-cleanup': remote_signed_cleanup,
+                      'AC3/remote-signed-refusal': remote_signed_refusal,
                       'AC2/remote-factory-deadline': remote_factory_deadline,
                       'AC2/remote-no-polling': remote_no_polling,
                       'AC3/remote-deadline-grace': remote_deadline_grace,

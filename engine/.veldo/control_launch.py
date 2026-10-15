@@ -473,8 +473,6 @@ class Runner:
         self.clock = clock or time.time
         self.observations = []
         self.launches = {}
-        # Remote cleanup has no authority evidence protocol yet. Never infer it from Linux.
-        self.remote_retirements = {}
         # VELDO-0154: dispatches whose receiver died, whose account slot waits for their worker to be gone.
         self.orphans = {}
         # VELDO-0158: settled dispatches whose run directory is left, by dispatch: {group, process}.
@@ -482,6 +480,13 @@ class Runner:
         self.leftovers = {}
         self.retirements = RT.Retirements(reservations, dispatches, clones=clones, clock=self.clock,
                                           observations=self.observations)
+
+    @property
+    def remote_retirements(self):
+        """Unreleased remote obligations survive both Runner and service restarts."""
+        return {record['dispatch']: record['remote_hold']
+                for record in self.reservations._records().values()
+                if record['type'] == 'worker' and not record['retired'] and record.get('remote_hold')}
 
     def _slot(self, dispatch_id):
         entity = RES_ENTITY(self.dispatches.domain, dispatch_id)
@@ -501,15 +506,16 @@ class Runner:
         record = self.dispatches.record(dispatch_id) or {}
         route = record.get('contract', {}).get('input', {}).get('context', {}).get('host_route') or {}
         remote = route and route.get('host') != self.local_host
-        never_contacted = record.get('state') == 'refused' and (launch is None or launch.child is None)
-        if remote and (not never_contacted or dispatch_id in self.remote_retirements):
-            # Signed exit/spend do not prove host termination, group cleanup or clone removal.
-            # Keep this out of Linux retirement, including its accounting-triggered retries.
-            event = dict(operation='retire', dispatch_id=dispatch_id, outcome='refused',
-                         refusal='missing_evidence:remote_cleanup', basis=basis,
-                         open=['termination', 'group', 'clone'], host=route['host'])
-            self.remote_retirements[dispatch_id] = event
-            self.observations.append(event)
+        never_accepted = record.get('state') == 'refused' and not record.get('receiver')
+        if remote and not never_accepted:
+            slot = self.reservations.worker(dispatch_id)
+            if slot and slot['retired']:
+                return None
+            # Only signed host evidence can release this hold; Linux cannot observe Mac cleanup.
+            self.reservations.hold_remote(dispatch_id, route['host'], record['contract_digest'], now=self.clock())
+            self.observations.append(dict(operation='retire', dispatch_id=dispatch_id, outcome='refused',
+                refusal='missing_evidence:remote_cleanup', basis=basis,
+                open=['termination', 'group', 'clone'], host=route['host']))
             return None
         if launch is not None:
             self.retirements.track(dispatch_id, group=getattr(launch, 'group', None),
