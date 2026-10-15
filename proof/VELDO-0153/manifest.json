@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0153",
-  "commit": "eb39d109239b90f42a134e6d4ee482a90e78bfbc",
+  "commit": "fe92ae1a041952f4f77b5e8874b59e14d335fad3",
   "producer": "Codex implementation agent",
-  "produced_at": "2026-10-15T16:55:54.637877+00:00",
+  "produced_at": "2026-10-15T17:50:09.316522+00:00",
   "plan": "PLAN-0019",
   "work": "W113",
   "plan_revision": 4,
@@ -26,6 +26,11 @@
           "type": "unit",
           "ref": "proof/VELDO-0153/review-followup-executor.json",
           "detail": "Profile-selection and remote-host mutants each fail the required process-boundary row; restored suite 108 has zero failures."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0153/review-global-config-falsifiers.json",
+          "detail": "Real Git global-config isolation controls for absent and selected environments; exact registered mutant completes suite 108 and fails profile/global-config, restored suite has zero failures. See review-global-config.md for scope."
         }
       ]
     },
@@ -68,6 +73,11 @@
           "type": "unit",
           "ref": "proof/VELDO-0153/review-followup-executor.json",
           "detail": "Profile-selection and remote-host mutants each fail the required process-boundary row; restored suite 108 has zero failures."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0153/review-global-config-checks.json",
+          "detail": "Publication loop registration regression and stale-locale falsifier pass before suite 107 stops at AF_UNIX denial; no publication integration pass."
         }
       ]
     }
@@ -76,7 +86,7 @@
     {
       "name": "unit",
       "status": "not_run",
-      "detail": "Suite 108 partial exit 2: 28 passed, zero failed including shared preamble (two suite assertions). Suite 107: all 12 evidence and four isolated-import/refusal assertions reached with no named failures, then AF_UNIX PermissionError, exit 1. No aggregate unit pass."
+      "detail": "Suite 108 partial exit 2: 32 passed, zero failed (six suite assertions plus shared preamble). Suite 107 publication-row regression/falsifier and refusal-unit observations pass with no named failures, then AF_UNIX PermissionError, exit 1. No aggregate unit pass. See review-global-config-checks.json and review-global-config-falsifiers.json."
     },
     {
       "name": "integration",
@@ -147,6 +157,11 @@
       "name": "evidence_regression_controls",
       "status": "passed",
       "detail": "Four deliberately restored evidence defects fail their exact named suite-107 rows. Fixes restored; subsequent refusal reproduction green run has no named failures. See review-followup-regressions.json and review-followup-refusal.json."
+    },
+    {
+      "name": "global_config_falsifier",
+      "status": "passed",
+      "detail": "Exact registered global-config mutation and both executor/host mutations each complete suite 108 with exactly the required failing assertion; restored suite completes with zero failures. Both absent and selected global environments exercised. See review-global-config-falsifiers.json."
     }
   ],
   "assumptions": [
@@ -157,5 +172,5 @@
     "VELDO-0143's repository provisioner is absent and still must drive creation/adoption integration with the shared check."
   ],
   "rollback": "Stop identity pushes that cannot satisfy the profile. Keep recorded bindings; no ambient fallback or automatic rollback.",
-  "proof_digest": "sha256:5caf684109b09faa"
+  "proof_digest": "sha256:a5ccb6a2ebbbbae9"
 }

@@ -8,6 +8,7 @@ Real GitHub, SSH agent and Secret Service qualification is proof/VELDO-0153/host
 def _v153_evidence_rows():
     """Review regressions in evidence checks, without invoking a mutation driver."""
     import copy
+    import json
     import runpy
     reproduction = runpy.run_path(str(ROOT / 'proof/VELDO-0153/reproduce_refusal.py'))
     assess = reproduction['assess']
@@ -87,11 +88,14 @@ def cases():
         return bool(loops) and all('publication-' + name in defined
                                   for loop in loops for name in ast.literal_eval(loop.iter))
     publication_source = (ROOT / 'scripts/suites/58_veldo_0028_effects.py').read_text()
-    expect('VELDO-0153 evidence/publication-loop-has-rows', publication_rows_complete(publication_source))
+    publication_complete = publication_rows_complete(publication_source)
+    expect('VELDO-0153 evidence/publication-loop-has-rows', publication_complete)
     stale = publication_source.replace("'resolution-with-locale-env',", "'resolution-in-c-locale',")
-    expect('VELDO-0153 evidence/publication-loop-rejects-missing-row', not publication_rows_complete(stale))
+    stale_rejected = not publication_rows_complete(stale)
+    expect('VELDO-0153 evidence/publication-loop-rejects-missing-row', stale_rejected)
+    print('VELDO-0153 publication row observations: ' + json.dumps(dict(
+        complete=publication_complete, stale_rejected=stale_rejected), sort_keys=True))
     audit = audit_module['audit']()
-    import json
     registry_source = (ROOT / 'scripts/check_teeth_mutations.py').read_text()
     full, errors = audit_module['registrations'](registry_source, findings=None)
     actual = [dict(case, also=case.get('also', ()))
