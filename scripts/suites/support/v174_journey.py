@@ -35,8 +35,10 @@ ENGINE = PROVIDER
 MARKERS = Path(MARKER_PATH)
 args = sys.argv[1:]
 def emit(value):
+    original = value
     value = complete_event(value)
-    if value.get('type')=='system': value['plugins']=[]
+    if value.get('type')=='system':
+        for field in ('plugins','skills','slash_commands'): value[field]=original.get(field,[])
     with (MARKERS / (str(os.getpid()) + '.out')).open('a') as f: f.write(json.dumps(value) + '\n')
     print(json.dumps(value), flush=True)
 def opts():
@@ -61,6 +63,7 @@ if ENGINE == 'codex':
         sys.exit(0)
     packet = json.loads(sys.stdin.read())
     mcp = list(cfg.get('mcp_servers', {}))
+    skills = {Path(s['path']).parent.name:Path(s['path']).read_text() for s in cfg.get('skills.config',[]) if s['enabled']}
 else:
     tools = []
     for a in args:
@@ -68,8 +71,14 @@ else:
     mcp = []
     if '--mcp-config' in args:
         mcp = list(json.loads(Path(args[args.index('--mcp-config')+1]).read_text()).get('mcpServers',{}))
+    skills = {}
+    if '--plugin-dir' in args:
+        plugin = Path(args[args.index('--plugin-dir')+1])
+        skills = {p.parent.name:p.read_text() for p in (plugin/'skills').glob('*/SKILL.md')}
+    names = ['veldo-role:'+name for name in sorted(skills)]
     init = {'type':'system','subtype':'init','apiKeySource':'none','tools':tools,
-            'mcp_servers':[{'name':n,'status':'connected'} for n in mcp], 'plugins':[], 'skills':[],
+            'mcp_servers':[{'name':n,'status':'connected'} for n in mcp],
+            'plugins':[{'name':'veldo-role'}] if skills else [], 'skills':names, 'slash_commands':names,
             'claude_code_version':'2.1.281','model':'fixture-model','session_id':'fixture-session',
             'cwd':os.getcwd()}
     while True:
@@ -85,7 +94,7 @@ else:
                                   'result':'','usage':{'input_tokens':0,'output_tokens':0}})
                 continue
             packet = json.loads(msg['message']['content']); break
-own = {'engine':ENGINE,'tools':tools,'mcp':mcp,'cwd':os.getcwd(),'dispatch':os.environ.get('VELDO_DISPATCH_ID'),
+own = {'engine':ENGINE,'tools':tools,'mcp':mcp,'skills':skills,'cwd':os.getcwd(),'dispatch':os.environ.get('VELDO_DISPATCH_ID'),
        'argv':args,'packet':packet}
 (MARKERS / (str(os.getpid()) + '.json')).write_text(json.dumps(own))
 while not (MARKERS / 'release').exists(): time.sleep(.02)
@@ -144,12 +153,17 @@ def engines(root, f, CS):
             adapters[provider] = {'engine':provider,'identity':'reported','executable':str(executable),
                 'qualification':str(qualification),'argv':wrapper+[str(executable)]+list(module.FLAGS)}
     authority = f['authority']
+    skill_body = '---\nname: conversation-help\ndescription: Fixture conversation guidance.\n---\nKeep the turn ordered.\n'
+    (state/'conversation-skill.md').write_text(skill_body)
+    authority.fixture('skill:conversation-help:1', 'agent_skill',
+                      {'skill':'conversation-help','revision':1,'source':'factory','path':'conversation-skill.md'})
     config = dict(store=str(authority.db),domain=authority.ids['domain_uuid'],principal='launch-receiver',
                   journal_key=str(authority.keyfile['authority']),host=f['host'],authority_generation=1,
                   host_trust=authority.config['host_trust'],state_root=str(state),receiver_kind='conversation',adapters=adapters)
     path = f['root'] / 'receiver.json'; path.write_text(json.dumps(config)); path.chmod(0o600)
     for name, revision in f['revisions'].items():
         revision['native_tools'] = [{'name':'Read' if revision['engine']=='claude_code' else 'update_plan','load':'always'}]
+        revision['skills'] = [{'skill':'conversation-help','revision':1,'load':'always'}]
         if revision['engine']=='codex': revision['settings']={'model':'gpt-5.5'}
         revision['digest']=CS.CV.CFG.digest({k:v for k,v in revision.items() if k!='digest'})
         authority.fixture('configuration:'+name,'agent_configuration',revision)
@@ -187,8 +201,53 @@ def drain(factory, markers):
     return factory.run()
 
 
-def restart(f, CS, root, receiver=None, identity='restart'):
-    """Run the production service twice and observe its record from both processes."""
+def project_line(f, factory, CS, E):
+    """A real claimed project unit, Gate, Runner and receiver sharing the conversation pool."""
+    a=f['authority']; repository=a.ids['repository_uuid']; workspace=Path(a.config['workspace'])
+    (workspace/'README').write_text('Conversation and project priority fixture.\n')
+    subprocess.run(['git','-C',str(workspace),'add','README'],check=True,capture_output=True)
+    subprocess.run(['git','-C',str(workspace),'-c','user.name=Dmitry Grinberg',
+                    '-c','user.email=dmitry@bcengi.com','commit','-qm','Project fixture'],check=True,capture_output=True)
+    E.enroll(str(workspace), a.ids['domain_uuid'], a.ids['store_uuid'], str(a.db), 'v73-host', 1,
+             lambda data:a.sign_as('steward',data,'veldo-enrollment'),'steward','fixture',repository_uuid=repository)
+    a.fixture('project-builder','membership',dict(principal_type='agent_run',roles=[],scope='*',
+                                                revoked_at=None,expires_at=None))
+    PJ=load('v174_priority_project',f['root']/'modules/control_project.py')
+    projects=PJ.Projects(a.S,a.CM,a.conn,a.ids,'authority',a.journal_sign,stop=lambda *args:None)
+    command=dict(a.ids,operation='activate',project='activation-repository',principal='owner',
+                 command_id='priority-project',nonce='priority-project',owner='owner',
+                 charter={'purpose':'Priority fixture','exclusions':[]},execution_repository=repository,
+                 authority_policy={'grooming':['project_owner']},
+                 coordination_budget={'capacity':4,'invocations':20,'wall_seconds':300,'owner_minutes':10})
+    answer=projects.apply({'command':command,'signature':a.sign_as('owner',a.S.canonical_bytes(command))})
+    if not answer.get('ok'): raise RuntimeError('project activation: '+str(answer.get('reason')))
+    unit='build-unit'; backlog='backlog:'+unit
+    a.fixture(unit,'execution_unit',dict(state='READY',repository_uuid=repository,backlog_item_uuid=backlog,
+        requirements=[],eligible_holders=['project-builder'],project='activation-repository',
+        scope_digest='sha256:priority-unit',revision=1,depends_on=[],producer='project-builder'))
+    a.fixture(backlog,'backlog_item',dict(state='PRIORITIZED',repository_uuid=repository))
+    a.fixture('admission:'+unit,'admission',dict(unit=unit,state='accepted',scope_digest='sha256:priority-unit'))
+    cid=a.claims.claim_id(repository,unit)
+    versions={key:(a.conn.execute('SELECT version FROM entities WHERE id=?',(key,)).fetchone() or [0])[0]
+              for key in (unit,backlog,cid)}
+    a.conn.command_registry['claim_operation']={'transaction_transition':a.claims.transition,
+        'writes':('entities','journal','commands','nonces')}
+    a.S.execute(a.conn,dict(command_id='priority-claim',principal='project-builder',operation='claim_operation',
+        nonce='priority-claim',artifact_digests=[],expected_versions=versions,
+        parameters=dict(action='claim',unit_id=unit,backlog_item_uuid=backlog,claim_id=cid,
+                        holder='project-builder',generation=0,capabilities=[],repository_uuid=repository)),
+        'project-builder',a.journal_sign,1)
+    config=dict(factory.conversation.receiver,receiver_kind='project',repository=repository,workspace=str(workspace))
+    path=f['root']/'project-receiver.json'; path.write_text(json.dumps(config)); path.chmod(0o600)
+    role=dict(identity='project-builder',adapter='claude_code',configuration={},payload={},seconds=30)
+    line=CS.Line(factory,repository,{'builder':role,'reviewers':[dict(role,identity='project-reviewer')]},str(path))
+    line.reservations.configure('priority-unit-policy','unit',unit,
+                                {'capacity':4,'invocations':20,'wall_seconds':300},now=time.time())
+    return repository,line
+
+
+def service_config(f, CS, receiver=None):
+    """One production service configuration for signed-command and restart journeys."""
     authority=f['authority']; home=f['root']/'service'; home.mkdir(exist_ok=True)
     trust=json.loads(Path(authority.config['host_trust']).read_text())
     config=dict(schema=CS.SCHEMA,domain_uuid=authority.ids['domain_uuid'],store_uuid=authority.ids['store_uuid'],
@@ -198,6 +257,13 @@ def restart(f, CS, root, receiver=None, identity='restart'):
          repositories={authority.ids['repository_uuid']:[authority.config['workspace']]},
          observations=str(home/'observations.jsonl'),state_root=str(f['root']/'state'),
          receiver={'conversations':str(receiver)} if receiver else {},work=None)
+    return config
+
+
+def restart(f, CS, root, receiver=None, identity='restart'):
+    """Run the production service twice and observe its record from both processes."""
+    config=service_config(f, CS, receiver)
+    home=f['root']/'service'
     path=home/'config.json'; path.write_text(json.dumps(config)); path.chmod(0o600)
     driver=home/'driver.py'
     driver.write_text('''import importlib.util,json,sys

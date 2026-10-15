@@ -135,33 +135,25 @@ def _v174_suite():
             deadline=time.time() + 30)
 
     def priority_journey(factory, live, cv, markers, CS, L):
-        from types import SimpleNamespace
-        authority=live['authority']; reservations=factory.conversation.reservations
-        authority.fixture('build-unit','execution_unit',{'project':'build-project','station':'build'})
-        authority.fixture('project:build-project','project',{'name':'build-project','coordination_budget':
-            {'capacity':1,'invocations':10,'wall_seconds':300}})
+        repository, line = J.project_line(live, factory, CS, E)
+        factory.lines[repository] = line
         cv.open('priority-live',owner='owner',intake_digest='sha256:priority-live')
         cv.message('priority-live','priority-live-1','sha256:priority-live-1',owner='owner')
-        build=[]
-        class ProjectLine:
-            def __init__(self):
-                self.reservations=reservations
-            def activate(self):
-                factory.conversation.activate()
-            def run(self,report,ended):
-                records=reservations._records()
-                choice=L.D.RES.POOL.choose(authority.conn,records,{'engine':'claude_code','host':live['host']},
-                                          time.time(),lambda account:None)
-                if choice['account']:
-                    build.append({'unit':'build-unit','station':'build','account':choice['account']})
-                    report['offered'].append(build[-1])
-        factory.lines['project-fixture']=ProjectLine()
         try:
-            offered=J.pass_(factory)
-            first=not build and bool(offered['conversation_offered'])
-            J.drain(factory,markers)
-            return first and bool(build) and build[0]['station']=='build'
+            offered = J.pass_(factory)
+            first = (bool(offered['conversation_offered']) and not line.runner.launches
+                     and any(e.get('unit') == 'build-unit' for e in offered['waiting']))
+            next_pass = J.drain(factory, markers)
+            builds = [e for e in next_pass['offered'] if e.get('unit') == 'build-unit']
+            started = bool(builds) and builds[0]['result'] == 'accepted'
+            if not first or not started:
+                print('  VELDO-0174 priority:', [{k:r[k] for k in ('offered','waiting','refused','faults')}
+                                               for r in (offered, next_pass)])
+            return first and started
         finally:
+            for launch in list(line.runner.launches.values()):
+                J.eventually(lambda: launch.pump(), 10)
+                line.runner.wait(launch, timeout=3)
             factory.lines.clear()
 
     try:
@@ -196,6 +188,46 @@ def _v174_suite():
             refused_projects.append(project_service.apply({'command':command,'signature':'fixture'})['reason'])
         check('AC1/project-commands','all project commands refuse a conversation identity',
               refused_projects==['invalid_input:conversation']*len(PJ.OPERATIONS))
+
+        # AC1's record mutations travel through signed owner commands, including replay.
+        fv = fixture('versions', providers=('claude_code', 'codex'))
+        av = fv['authority']
+        service = CS.Service(J.service_config(fv, CS), av.conn)
+        def owner_command(operation, parameters, who='owner', command_id=None):
+            command = dict(av.ids, operation=operation, parameters=parameters, principal=who,
+                           command_id=command_id or av.next_id('conversation'), nonce=av.next_id('nonce'))
+            packet = {'command': command, 'signature': av.sign_as(who, av.S.canonical_bytes(command))}
+            return service.conversation_command(packet, command, av.ids['repository_uuid'], {})
+        opened = owner_command(CV.OPEN, {'conversation': 'versioned'})['conversation']
+        av.fixture('project:attachment', 'project', {'name': 'attachment', 'owner': 'owner'})
+        rejected = []
+        for operation, field, value in [(CV.ROLE, 'role', 'assistant_codex'),
+                                         (CV.ATTACH, 'project', 'attachment')]:
+            params = {'conversation': 'versioned', 'version': 0, field: value}
+            rejected.append(owner_command(operation, params)['reason'] == 'stale_version')
+            params['version'] = 1
+            rejected.append(owner_command(operation, params, 'steward')['reason']
+                            == 'missing_authority:conversation_owner')
+        rejected.append(service.conversations().read('versioned') == opened)
+        changed = owner_command(CV.ROLE, {'conversation': 'versioned', 'version': 1,
+                                         'role': 'assistant_codex'}, command_id='change-role')['conversation']
+        attached = owner_command(CV.ATTACH, {'conversation': 'versioned', 'version': 2,
+                                            'project': 'attachment'})['conversation']
+        replay = owner_command(CV.ROLE, {'conversation': 'versioned', 'version': 1,
+                                        'role': 'assistant_codex'}, command_id='change-role')['conversation']
+        check('AC1/versioned-mutations', 'signed role and project changes reject stale versions and non-owners; replay preserves the original result',
+              all(rejected) and changed['version'] == 2 and changed['role'] == 'assistant_codex'
+              and attached['version'] == 3 and attached['project'] == 'attachment' and replay == changed
+              and not ({'repository', 'workspace', 'backlog', 'charter', 'trunk'} & set(attached)))
+        invalid = [owner_command(CV.ROLE, {'conversation': 'versioned', 'version': 3, 'role': 'absent'})['reason'],
+                   owner_command(CV.ATTACH, {'conversation': 'versioned', 'version': 3, 'project': 'absent'})['reason'],
+                   owner_command(CV.CLOSE, {'conversation': 'versioned', 'version': 1})['reason']]
+        closed = owner_command(CV.CLOSE, {'conversation': 'versioned', 'version': 3})['conversation']
+        refused_closed = owner_command(CV.ROLE, {'conversation': 'versioned', 'version': 4,
+                                               'role': 'assistant'})['reason']
+        check('AC1/mutation-targets', 'unknown roles and projects leave the version unchanged; closed conversations refuse edits',
+              invalid == ['invalid_input:conversation_role:absent', 'invalid_input:conversation_project', 'stale_version']
+              and closed['version'] == 4 and refused_closed == 'stale_subject:conversation_closed')
 
         # AC2: three owner messages queue, only one dispatch is active, and a later turn binds the new role revision.
         f2 = fixture('ac2', account_count=2)
@@ -412,6 +444,9 @@ def _v174_suite():
             check('AC2/role-tools','both fake executables observe exactly the accepted native tools and MCP sets',
                   {v['engine']:v['tools'] for v in observed}=={'claude_code':['Read'],'codex':['update_plan']}
                   and all(v['mcp']==[] for v in observed))
+            check('AC2/role-skills', 'both engines read the accepted skill body from their actual launch inputs',
+                  len(observed) == 2 and all(v['skills'] == {'conversation-help':
+                      (live['root']/'state/conversation-skill.md').read_text()} for v in observed))
             check('AC2/own-directory','each engine runs in its own durable conversation directory',
                   {v['cwd'] for v in observed}=={cv.read(i)['directory'] for i in ('claude-live','codex-live')})
             J.drain(factory,markers)

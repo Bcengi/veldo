@@ -1264,7 +1264,7 @@ class Service:
                     result = memory.Memory(S, self.conn, ids, self.principal, self.sign, self.generation).admit(packet)
                 except memory.Refused as error:
                     result = dict(ok=False, reason=error.code)
-            elif command.get('operation') in (CV.OPEN, CV.CLOSE, CV.MESSAGE):
+            elif command.get('operation') in CV.OWNER_OPERATIONS:
                 result = self.conversation_command(packet, command, repository, observation)
             elif command.get('operation') in (SA.AUTH.MC.SAVE,) + SA.AUTH.CV.OPERATIONS:
                 result = self.mcp_command(packet, repository)
@@ -1374,9 +1374,9 @@ class Service:
         return self._conversations
 
     def conversation_command(self, packet, command, repository, observation):
-        """Admit the owner's typed open, close or message command and execute it as authority data."""
+        """Admit a signed owner command and execute it as durable conversation authority data."""
         if (not isinstance(packet.get('signature'), str) or not packet['signature'].isascii()
-                or command.get('operation') not in (CV.OPEN, CV.CLOSE, CV.MESSAGE)):
+                or command.get('operation') not in CV.OWNER_OPERATIONS):
             raise Refused('invalid_input:conversation_command')
         expected = {'domain_uuid': self.domain, 'store_uuid': self.store, 'repository_uuid': repository}
         if any(command.get(k) != value for k, value in expected.items()):
@@ -1405,6 +1405,14 @@ class Service:
             elif command['operation'] == CV.CLOSE:
                 value = conversations.close(identity, params.get('version'), owner=principal,
                                             command_id=command.get('command_id'), now=now)
+                result = {'conversation': value}
+            elif command['operation'] == CV.ROLE:
+                value = conversations.change_role(identity, params.get('version'), params.get('role'),
+                                                  owner=principal, command_id=command.get('command_id'), now=now)
+                result = {'conversation': value}
+            elif command['operation'] == CV.ATTACH:
+                value = conversations.attach_project(identity, params.get('version'), params.get('project'),
+                                                     owner=principal, command_id=command.get('command_id'), now=now)
                 result = {'conversation': value}
             else:
                 value = conversations.message(identity, command.get('command_id'), intake_digest, owner=principal,

@@ -42,11 +42,14 @@ KIND = 'conversation'
 TURN_KIND = 'conversation_turn'
 OPEN = 'open_conversation'
 CLOSE = 'close_conversation'
+ROLE = 'change_conversation_role'
+ATTACH = 'attach_conversation_project'
 MESSAGE = 'send_conversation_message'
 DISPATCH = 'dispatch_conversation_turn'
 END = 'end_conversation_turn'
 DEFER = 'wait_conversation_turn'
-OPERATIONS = (OPEN, CLOSE, MESSAGE, DISPATCH, DEFER, END)
+OWNER_OPERATIONS = (OPEN, CLOSE, ROLE, ATTACH, MESSAGE)
+OPERATIONS = OWNER_OPERATIONS + (DISPATCH, DEFER, END)
 STATUSES = ('open', 'closed')
 TURN_STATES = ('waiting', 'dispatched', 'ended')
 DEFAULT_ROLE = 'assistant'
@@ -164,18 +167,32 @@ def transition(conn, params, before):
         return {cid: {'kind': KIND, 'data': data}}
     if not current or current.get('kind') != KIND:
         raise Refused('invalid_input:conversation:unknown')
-    if operation in (CLOSE, MESSAGE):
+    if operation in OWNER_OPERATIONS:
         _member(conn, principal, now, owner=True)
         if record.get('owner') != principal:
             raise Refused('missing_authority:conversation_owner')
     else:
         _member(conn, principal, now, service=True)
-    if operation == CLOSE:
-        if params.get('version') != record.get('version'):
+    if operation in (CLOSE, ROLE, ATTACH):
+        if type(params.get('version')) is not int or params['version'] != record.get('version'):
             raise Refused('stale_version')
         if record.get('status') != 'open':
             raise Refused('stale_subject:conversation_closed')
-        record.update(status='closed', version=record['version'] + 1, closed_at=now)
+        if operation == CLOSE:
+            record.update(status='closed', closed_at=now)
+        elif operation == ROLE:
+            role = params.get('role')
+            if not _text(role):
+                raise Refused('invalid_input:conversation_role')
+            role_at(conn, role)
+            record['role'] = role
+        else:
+            project = params.get('project')
+            target = _row(conn, 'project:' + project) if _text(project) else None
+            if not target or target['kind'] != 'project':
+                raise Refused('invalid_input:conversation_project')
+            record['project'] = project
+        record['version'] += 1
         return {cid: {'kind': KIND, 'data': record}}
     if operation == MESSAGE:
         if record.get('status') != 'open':
@@ -349,6 +366,16 @@ class Conversations:
         if len(replayed) != 1:
             raise Refused('unknown_outcome:conversation_replay')
         return replayed[0]
+
+    def change_role(self, identity, version, role, *, owner, command_id=None, now=None):
+        record, _receipt = self._run(ROLE, identity, {'version': version, 'role': role,
+                                     'command_id': command_id}, principal=owner, now=now)
+        return record
+
+    def attach_project(self, identity, version, project, *, owner, command_id=None, now=None):
+        record, _receipt = self._run(ATTACH, identity, {'version': version, 'project': project,
+                                     'command_id': command_id}, principal=owner, now=now)
+        return record
 
     def dispatched(self, identity, sequence, dispatch_id, role_revision, account, receiver, *, now=None):
         self._run(DISPATCH, identity, {'sequence': sequence, 'dispatch_id': dispatch_id,

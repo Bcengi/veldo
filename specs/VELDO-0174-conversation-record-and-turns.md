@@ -213,7 +213,7 @@ VELDO-0185 (the receiver configuration's state root). Still a draft.
 
 ## Implementation follow-up boundaries
 
-Role-change and project-attach commands and their version checks remain open with the conversation
-intake and history work in VELDO-0175 and VELDO-0176. Message text delivery and session continuity are
-also open there. VELDO-0174 currently hands the receiver the durable intake command reference and turn
-identity. These open items are not claimed as passing evidence for AC1 or AC2.
+Role-change and project-attach commands are versioned owner commands in VELDO-0174.
+Message text delivery and session continuity remain with the conversation intake and history work
+in VELDO-0175 and VELDO-0176. VELDO-0174 currently hands the receiver the durable intake command reference and turn
+identity. Those later features are not claimed as evidence for this ticket.
