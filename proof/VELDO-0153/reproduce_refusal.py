@@ -25,13 +25,17 @@ def main(output):
         temporary.mkdir()
         sources = [checkout / prefix / 'git_process.py' for prefix in ('.veldo', 'engine/.veldo')]
         originals = {path: path.read_text() for path in sources}
-        for mode in ('red', 'green'):
+        for mode in ('red', 'eager', 'green'):
             for path, source in originals.items():
-                anchor = '    return _IDENTITY_TRANSPORT\n'
+                anchor = '        return _IDENTITY_TRANSPORT\n'
                 if source.count(anchor) != 1:
                     raise AssertionError('refusal module anchor is not unique')
-                path.write_text(source.replace(anchor, '    return _load_identity_transport()\n')
-                                if mode == 'red' else source)
+                if mode == 'red':
+                    source = source.replace(anchor, '        return _load_identity_transport()\n')
+                elif mode == 'eager':
+                    source = source.replace('_IDENTITY_TRANSPORT = None\n',
+                                            '_IDENTITY_TRANSPORT = _load_identity_transport()\n')
+                path.write_text(source)
             command = [sys.executable, 'scripts/selftest.py', '--suite', '107_veldo_0153_identity_push']
             log_path = scratch / (mode + '.log')
             with log_path.open('w') as log:
@@ -46,15 +50,18 @@ def main(output):
                                       infrastructure=[line for line in lines if 'PermissionError:' in line],
                                       summary=[line for line in lines if line.startswith('selftest (PARTIAL')])
     rejected = set(observations['red']['failures']) == set(labels)
+    eager_rejected = observations['eager']['failures'] == [
+        'SELFTEST FAIL: VELDO-0153 profile/isolated-without-identity-asset']
     restored = (observations['green']['failures'] == [] and observations['green']['unit_observations']
                 == dict.fromkeys(names, 'binding_mismatch:identity_transport_config'))
     record = dict(scope='three refusal unit rows only; no aggregate suite or host claim',
                   mutant='identity153-refusal-module-identity', rejected=rejected,
+                  eager_mutant='identity153-eager-transport', eager_rejected=eager_rejected,
                   restored=restored, runs=observations)
     Path(output).write_text(json.dumps(record, indent=2) + '\n')
-    print('refusal unit falsifier: rejected=%s restored=%s; suite exits=%s' % (
-        rejected, restored, {mode: run['exit'] for mode, run in observations.items()}))
-    return 0 if rejected and restored else 1
+    print('refusal unit falsifiers: rejected=%s eager_rejected=%s restored=%s; suite exits=%s' % (
+        rejected, eager_rejected, restored, {mode: run['exit'] for mode, run in observations.items()}))
+    return 0 if rejected and eager_rejected and restored else 1
 
 
 if __name__ == '__main__':

@@ -10561,8 +10561,11 @@ def cases():
 
     # VELDO-0153: transport bypasses and durable, signed observations.
     add(153, 'identity153-refusal-module-identity', '107_veldo_0153_identity_push.py', 'git_process.py',
-        '    return _IDENTITY_TRANSPORT\n', '    return _load_identity_transport()\n',
+        '        return _IDENTITY_TRANSPORT\n', '        return _load_identity_transport()\n',
         ['refusal-unit/route-insteadof', 'refusal-unit/route-push-instead-of', 'refusal-unit/shape-config-exit'])
+    add(153, 'identity153-eager-transport', '107_veldo_0153_identity_push.py', 'git_process.py',
+        '_IDENTITY_TRANSPORT = None\n', '_IDENTITY_TRANSPORT = _load_identity_transport()\n',
+        ['profile/isolated-without-identity-asset'])
     add(153, 'identity153-netrc', '107_veldo_0153_identity_push.py', 'git_process.py',
         "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)\n", '',
         ['profile/netrc'])

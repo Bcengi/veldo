@@ -30,6 +30,16 @@ def _v153_refusal_rows():
     organ = X.E.organ
     outcomes = {}
     with tempfile.TemporaryDirectory(prefix='refusal153-') as directory:
+        isolated_path = Path(directory) / 'git_process.py'
+        isolated_path.write_bytes((ROOT / '.veldo/git_process.py').read_bytes())
+        isolated_spec = importlib.util.spec_from_file_location('isolated153', isolated_path)
+        isolated = importlib.util.module_from_spec(isolated_spec)
+        try:
+            isolated_spec.loader.exec_module(isolated)
+            isolated_ok = isolated.clean_env({}, profile='isolated')['GIT_CONFIG_NOSYSTEM'] == '1'
+        except FileNotFoundError:
+            isolated_ok = False
+        expect('VELDO-0153 profile/isolated-without-identity-asset', isolated_ok)
         store = Path(directory) / 'store'
         store.touch()
         config = dict(store=str(store), journal_key='unused-unit-key', receivers={'git': dict(

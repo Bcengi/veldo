@@ -31,6 +31,7 @@ from pathlib import Path
 import re
 import subprocess
 import tempfile
+import threading
 from contextlib import nullcontext
 
 PROFILES = ("isolated", "network", "identity")
@@ -46,11 +47,18 @@ def _load_identity_transport():
 
 # Keep the exception type identical for the caller and the subprocess boundary.
 # Loading per call makes a guard refusal escape a caller's Refused handler.
-_IDENTITY_TRANSPORT = _load_identity_transport()
+_IDENTITY_TRANSPORT = None
+_IDENTITY_TRANSPORT_LOCK = threading.Lock()
 
 
 def identity_transport():
-    return _IDENTITY_TRANSPORT
+    global _IDENTITY_TRANSPORT
+    # Isolated-only installations need no identity assets. Serialize the first load so
+    # concurrent callers also receive exactly the same module and exception class.
+    with _IDENTITY_TRANSPORT_LOCK:
+        if _IDENTITY_TRANSPORT is None:
+            _IDENTITY_TRANSPORT = _load_identity_transport()
+        return _IDENTITY_TRANSPORT
 
 # Transport and credential variables a plain `git push` from the operator's shell honors. None
 # names a repository, object store, index, namespace, configuration file or configuration value.
