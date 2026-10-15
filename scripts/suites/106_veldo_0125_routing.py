@@ -456,6 +456,7 @@ def _v125_routing_suite():
             f.close()
 
     def remote_deadline_grace(base):
+        from unittest.mock import patch
         f = T.Fixture(base)
         launch = None
         try:
@@ -465,10 +466,16 @@ def _v125_routing_suite():
             loop.expire(launch.clock())
             assert not launch.pump(read=False), 'remote deadline omitted acceptance grace'
             assert f.ds.record(launch.dispatch_id)['state'] == 'running'
-            client.result(binding, T.observation(), usage={'tokens': 7}, references={})
+            # Advance the authority too: the signed result and its spend must actually
+            # commit after the execution deadline, not merely after a launch-local clock.
+            with patch.object(T.W, 'time', types.SimpleNamespace(time=launch.clock)):
+                client.result(binding, T.observation(), usage={'tokens': 7}, references={})
             report = loop.run()
             assert not report['faults'] and report['ended'][0]['state'] == 'exited'
             assert f.service.get(launch.dispatch_id)['usage']['tokens'] == 7
+            invocation = f.res._records()[T.RES.entity('invocation', ['domain', 'remote/' + launch.dispatch_id])]
+            assert invocation['reports']['1']['final'] is True
+            assert invocation['observed']['tokens'] == invocation['charge']['tokens'] == 7
             assert loop.next_timer() is None
         finally:
             if launch:
