@@ -1,6 +1,16 @@
 # VELDO-0174 implementation and review record
 
-Latest round: [review-fixes.json](review-fixes.json). The project attachment owner
+Latest round: [scope-review-fix.json](scope-review-fix.json). Project attachment
+now requires both ownership and current membership scope covering the project,
+checked inside the store transition. The signed-command `AC1/project-scope` row
+refuses attachment after a steward removes scope and preserves the durable row,
+including its version and digest. Restoring named or wildcard scope permits the
+attachment. Removing only the scope guard makes that row fail. Both source copies
+are byte-identical. Suite 107 has 34 passing ticket rows; its two restart rows
+remain blocked by this host's AF_UNIX socket denial. The full gate remains for
+the reviewer; no gate or mutation driver was run here.
+
+Previous round: [review-fixes.json](review-fixes.json). The project attachment owner
 check and its falsifier are verified. The restart fixture now supplies its unit and
 sends signed messages through the running service to wake scheduling. Suite 107
 has 33 passing ticket rows; its two restart rows remain blocked by this host's

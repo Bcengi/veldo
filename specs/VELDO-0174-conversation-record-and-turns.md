@@ -214,6 +214,10 @@ VELDO-0185 (the receiver configuration's state root). Still a draft.
 ## Implementation follow-up boundaries
 
 Role-change and project-attach commands are versioned owner commands in VELDO-0174.
+Project attachment also requires that the project belongs to the conversation's
+owner and that the owner's current active membership scope covers that project.
+Ownership alone does not retain attachment authority after scope removal. A refusal
+is named `missing_authority:project` and leaves the conversation record unchanged.
 Message text delivery and session continuity remain with the conversation intake and history work
 in VELDO-0175 and VELDO-0176. VELDO-0174 currently hands the receiver the durable intake command reference and turn
 identity. Those later features are not claimed as evidence for this ticket.
