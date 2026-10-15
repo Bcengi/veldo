@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0153",
-  "commit": "1679d3d32aa1dc1ca1ef1f0d4eed69ab82d5e419",
+  "commit": "07eb46aea5fa3cd61af8a913eff785454e9fdebf",
   "producer": "Codex implementation agent",
-  "produced_at": "2026-10-10T12:49:04.795194+00:00",
+  "produced_at": "2026-10-15T14:17:42.645Z",
   "plan": "PLAN-0019",
   "work": "W113",
   "plan_revision": 4,
@@ -14,13 +14,13 @@
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0153/observations.json",
-          "detail": "Scoped observations of netrc, included/worktree config, URL sections, hooks, literal destinations, identity reads, signed observations and durable counts. Host qualification pending."
+          "ref": "proof/VELDO-0153/round-2026-10-15.md",
+          "detail": "Current implementation and row mapping. Consumer and fenced integration execution remain pending."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0153/falsifiers.json",
-          "detail": "Fourteen targeted falsifiers rejected at their named rows, including natural global-config exposure. Restored scoped suite passes. No mutation driver or aggregate gate ran."
+          "ref": "proof/VELDO-0153/round-2026-10-15-refusal.json",
+          "detail": "Two unit falsifiers rejected in disposable copies; restored refusal and isolated-import rows pass. Socket denial prevents integration assertions. No host qualification claim."
         }
       ]
     },
@@ -30,13 +30,29 @@
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0153/observations.json",
-          "detail": "Scoped observations only: owner/alpha/push/beta, lander/alpha/beta and executor/beta refuse before remote writes."
+          "ref": "proof/VELDO-0153/round-2026-10-15.md",
+          "detail": "Current implementation and row mapping. Consumer and fenced integration execution remain pending."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0153/falsifiers.json",
-          "detail": "identity153-host-only is red at the named owner assertions and green after restoration. VELDO-0143 creation/adoption legs absent."
+          "ref": "proof/VELDO-0153/round-2026-10-15-refusal.json",
+          "detail": "Two unit falsifiers rejected in disposable copies; restored refusal and isolated-import rows pass. Socket denial prevents integration assertions. No host qualification claim."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "not_run",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0153/round-2026-10-15.md",
+          "detail": "Current implementation and row mapping. Consumer and fenced integration execution remain pending."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0153/round-2026-10-15-refusal.json",
+          "detail": "Two unit falsifiers rejected in disposable copies; restored refusal and isolated-import rows pass. Socket denial prevents integration assertions. No host qualification claim."
         }
       ]
     }
@@ -45,29 +61,71 @@
     {
       "name": "unit",
       "status": "not_run",
-      "detail": "Scoped suite: 91 named and 26 shared assertions, zero failures, partial exit 2. No aggregate unit pass is claimed."
+      "detail": "Only suite 107 invoked. Each selected invocation exits 1 when the fence cannot create an AF_UNIX socket. No aggregate pass."
     },
     {
       "name": "integration",
       "status": "not_run",
-      "detail": "Real local Git and synthetic credentials exercised offline; real GitHub, Secret Service and agent qualification pending. Exact host command in README.md."
+      "detail": "Fenced integration, real GitHub, Secret Service, SSH agent and VELDO-0143 provisioner qualification remain outstanding."
+    },
+    {
+      "name": "refusal_unit_falsifiers",
+      "status": "passed",
+      "detail": "identity153-refusal-module-identity and identity153-eager-transport fail their named rows; restored code passes those four unit rows. Reproduction exits 0; full selected runs remain incomplete."
+    },
+    {
+      "name": "mutation_anchor_static",
+      "status": "passed",
+      "detail": "2459 registration records audited without invoking a mutation driver; no missing current anchors or mutant syntax errors. 20 ticket-caused anchors reanchored. This does not establish mutant kills."
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "detail": "Direct static check exited 0. Secret inventory: zero outstanding. Gate secret regex: no matches and no errors."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "Direct static check exited 0. Secret inventory: zero outstanding. Gate secret regex: no matches and no errors."
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "detail": "Direct static check exited 0. Secret inventory: zero outstanding. Gate secret regex: no matches and no errors."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "Direct static check exited 0. Secret inventory: zero outstanding. Gate secret regex: no matches and no errors."
+    },
+    {
+      "name": "shape",
+      "status": "passed",
+      "detail": "Direct static check exited 0. Secret inventory: zero outstanding. Gate secret regex: no matches and no errors."
+    },
+    {
+      "name": "security",
+      "status": "passed",
+      "detail": "Direct static check exited 0. Secret inventory: zero outstanding. Gate secret regex: no matches and no errors."
     },
     {
       "name": "consumer_suites",
-      "status": "failed",
-      "detail": "Individually selected consumers: {'passed_scoped': 30, 'failed': 26, 'incomplete': 12}. Four driver-invoking consumers deferred because mutation drivers are prohibited. See consumer-suites.json and baseline-comparison.json."
+      "status": "not_run",
+      "detail": "The owner's ONLY-own-specification-suites rule excludes consumers. Suite 101 also loads a prohibited mutation driver. Base runtime attribution and consumer falsifier kills remain pending."
     },
     {
       "name": "gate",
       "status": "not_run",
-      "detail": "Reviewer owned. No mutation driver, full selftest, gate or live capture executed."
+      "detail": "Full gate, full selftest, mutation drivers, first-use full selftest and adopter gate prohibited in this run."
     }
   ],
   "assumptions": [
-    "Host rows, independent critical-risk review and human approval remain outstanding.",
-    "Consumer verification is not green. Selected starting-commit failures are compared in baseline-comparison.json; other failures and environment limitations remain visible in consumer-suites.json.",
-    "VELDO-0143 must call the shared owner check on creation/adoption and the identity profile on initial pushes."
+    "Socket restrictions prevented fenced integration. Only the named socket-free unit rows have fresh red/green execution evidence.",
+    "The consumer row adaptations and reanchored mutants need reviewer execution. Static anchor validity is not a kill.",
+    "Suite 101 source is identical to main 9763249e; runtime failure attribution is unmeasured.",
+    "Real host qualification, independent critical-risk review and final approval remain outstanding.",
+    "VELDO-0143's repository provisioner is absent and still must drive creation/adoption integration with the shared check."
   ],
   "rollback": "Stop identity pushes that cannot satisfy the profile. Keep recorded bindings; no ambient fallback or automatic rollback.",
-  "proof_digest": "sha256:ffbe0268221d6448"
+  "proof_digest": "sha256:b2893a2acb0de861"
 }

@@ -1,5 +1,9 @@
 # VELDO-0153 review fixes
 
+Current batch-2 record: [2026-10-15](round-2026-10-15.md). The remaining text and earlier
+JSON receipts below are historical. The current manifest names the final code commit
+and retains incomplete integration and host qualification explicitly.
+
 Identity Git transport creates an empty private directory for each invocation and uses
 it for HOME, XDG_CONFIG_HOME and hooksPath until Git exits. Pushes also disable the
 pre-push hook. The configuration inspection follows includes in the local and worktree
