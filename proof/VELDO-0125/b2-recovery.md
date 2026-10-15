@@ -12,13 +12,15 @@ caller's default contract is unchanged. A lost running notification stops the
 run and still collects and durably delivers its terminal observation.
 
 The trusted receiver retains result evidence before deleting inputs. Its default
-collector archives the complete clone and scratch trees and engine output outside
+collector archives the complete clone, scratch and TMPDIR trees and engine output outside
 the deleted roots, and returns a file reference with a SHA-256 digest. An explicitly
 empty collector retains the directories. A failed cleanup retains the hold until
 signed cleanup or operator release arrives.
 
 The client stores the signed result request on the Mac before transmission, retries
-transport failures until acknowledged, and retains the acknowledgement. Replay
+transport failures with exponential backoff and jitter for up to eight attempts,
+and retains the acknowledgement. Exhaustion leaves the request for the next
+receiver invocation; it never repeats execution. Replay
 uses the same command identity; the authority verifies it and returns the committed
 record without duplicating spend or release. Reinvoking the receiver for that
 dispatch replays its retained request without claiming or executing work again.
@@ -50,3 +52,35 @@ their mutations were unreachable. Their replacement is a recurring timer install
 before `next_timer` returns; the zero-pass row drives that timer through `expire`.
 Only the reviewer runs the canonical gate. No real Mac, SSH relay, provider engine,
 deployment or activation is certified by these Linux fixture rows.
+
+## Follow-up review corrections
+
+Local Mac capacity now retires from the authority's committed release outcome,
+separately from collection and OS cleanup. Empty collection, failed cleanup and
+incomplete retirement keep their files and hold until an authorized release.
+An operator release then retires even a local unknown slot. Slot replacement
+fsyncs the contents and directory. A saved result acknowledgement can finish
+local retirement after a receiver crash without contacting the authority.
+
+The authority uses the existing configured receiver argv under
+`receiver.configs[repository]` -> `remote_receivers[host].argv` (or directly under
+`receiver.remote_receivers`) to send a release-only wake after commit. The Mac
+queries `worker_status` over its signed relay and checks dispatch, contract and
+host before writing the local slot. Untrusted wake input cannot authorize a
+release. A bounded background delivery lets the authority continue serving that
+status request. Committed retired reservations form the durable release outbox;
+authority startup and command replay redeliver, and receiver restart can consume
+the stored outcome. No recurring factory timer is added. An unavailable Mac
+remains queued in that durable state for replay or restart; no transport can
+synchronously change a disconnected host.
+
+Replaying a committed release also reissues the capacity wake, covering a crash
+between transaction commit and scheduling. A late measured result after operator
+release or unknown cleanup advances the report sequence on the original
+reservation invocation. These are cumulative corrections, not additional
+invocation charges. Duplicate delivery leaves the measured charge unchanged;
+an unexpected preexisting first report still refuses atomically.
+
+The default archive includes TMPDIR contents before deletion, preserving output
+linked from the clone into temporary storage. Archives remain file URIs on the
+Mac; this change does not transfer or expire them.

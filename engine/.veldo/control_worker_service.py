@@ -386,7 +386,7 @@ class Service(SV.Service):
                     # Reports are cumulative revisions of ONE reserved invocation. A
                     # placeholder final report never suppresses later measured usage.
                     invocation = reservations._records()[RES.entity('invocation', [self.domain, data['invocation']])]
-                    sequence = invocation['sequence'] + 1
+                    sequence = invocation['sequence'] + 1 if data.get('spend_receipt') else 1
                     data['spend_receipt'] = reservations.report('remote-spend/' + dispatch + '/' + str(sequence), data['invocation'],
                         sequence, usage or {}, final=True,
                         outcome='completed' if termination['returncode'] == 0 else 'cancelled',

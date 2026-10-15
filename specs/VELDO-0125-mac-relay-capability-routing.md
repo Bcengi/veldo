@@ -190,3 +190,12 @@ This authorizes retrying delivery of the same terminal command, never re-executi
 the unit. Deadline capacity release wakes waiting work. The recovery correction
 and targeted falsifiers are recorded in proof/VELDO-0125/b2-recovery.md; broader
 recovery, host qualification and activation remain outside this correction.
+
+2026-10-15: further owner-requested corrections separate local Mac capacity
+retirement from cleanup, propagate committed releases to the configured receiver,
+replay release wakes after crashes, preserve TMPDIR deliverables, correct late
+usage on the original invocation and bound delivery retries with exponential
+backoff. The signed receiver status query reads the existing authority; it creates
+no additional store. Targeted regression and falsifier records accompany this
+correction. The reviewer retains responsibility for the full gate and real-host
+qualification; no independent approval is claimed here.

@@ -159,7 +159,7 @@ class Supervisor:
                                    heartbeat_seconds=p['heartbeat_seconds'],
                                    kill_grace_seconds=p['kill_grace_seconds'], settle_seconds=p['settle_seconds'])
             write(directory / 'request.json', wrapper_request)
-            run.save('starting')
+            run.save('starting', locked=True)
             try:
                 # An acceptance digest is already committed; only now can launchd run a wrapper.
                 self.os.bootstrap(label, [p['interpreter'], str(Path(__file__).with_name(
@@ -182,7 +182,7 @@ class Supervisor:
                 now = self.os.monotonic()
                 if now >= run.deadline:
                     raise OSError('deadline_before_release')
-                run.save('running')
+                run.save('running', locked=True)
                 write(directory / 'go', {'acceptance': request['acceptance'], 'runtime_seconds': run.deadline - now})
             except Exception:
                 # Bootstrap may have succeeded even if its response was lost. Retain
@@ -192,7 +192,7 @@ class Supervisor:
                 if run.watch is not None:
                     run.watch.close()
                     run.watch = None
-                run.save('unknown')
+                run.save('unknown', locked=True)
                 raise P.Refused('unknown_outcome:launch')
         self.counts['accepted'] += 1
         self.observe(dict(operation='launch', role='macos_supervisor', domain=contract['domain'],
@@ -239,10 +239,13 @@ class Supervisor:
             path = self.root / self.label(dispatch) / 'slot.json'
             slot = read(path)
             if slot is None:
-                return  # A pre-launch refusal never allocated a host slot.
+                # A release may beat bootstrap. Retain a tombstone so the late
+                # start cannot allocate a new slot for this released dispatch.
+                path.parent.mkdir(mode=0o700, exist_ok=True)
+                slot = dict(dispatch_id=dispatch, contract_digest=contract_digest, state='unstarted')
             request = read(path.parent / 'request.json') or {}
-            if (slot.get('dispatch_id') != dispatch or request.get('dispatch_id') != dispatch
-                    or request.get('contract_digest') != contract_digest):
+            if (slot.get('dispatch_id') != dispatch or request.get('dispatch_id', dispatch) != dispatch
+                    or request.get('contract_digest', slot.get('contract_digest', contract_digest)) != contract_digest):
                 raise P.Refused('binding_mismatch:authority_release')
             if slot['state'] != 'retired':
                 write(path, dict(slot, state='retired', authority_release=outcome))
@@ -258,7 +261,14 @@ class Run:
         self.exit_seen, self.steps = False, []
         self.last_heartbeat = self.os.monotonic()
 
-    def save(self, state):
+    def save(self, state, *, locked=False):
+        if not locked:
+            with self.supervisor.lock():
+                return self.save(state, locked=True)
+        previous = read(self.directory / 'slot.json')
+        if previous and previous['state'] == 'retired':
+            self.state = 'retired'
+            return  # A delayed observer cannot resurrect an authority-released slot.
         self.state = state
         write(self.directory / 'slot.json', dict(dispatch_id=self.dispatch, label=self.label, state=state,
                                                  process=self.process, pgid=self.pgid, coalition=self.coalition,
@@ -383,4 +393,4 @@ class Run:
                 raise P.Refused('stale_version:already_retired')
             if self.temp:
                 shutil.rmtree(self.temp, ignore_errors=True)
-            self.save('retired')
+            self.save('retired', locked=True)

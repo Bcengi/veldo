@@ -135,18 +135,24 @@ def receive(config, request):
             or request.get('repository') != config['binding']['repository_uuid']):
         raise C.P.Refused('binding_mismatch:receiver_repository')
     directory = Path(config['runs']) / C.P.digest(request['dispatch_id']).split(':')[-1]
-    if request.get('action') == 'release':
+    evidence = directory / 'result-evidence.json'
+    if request.get('action') == 'release' or (directory.exists() and not evidence.exists()):
         # Transport input is only a wake. Ask the authority through the signed,
         # configured relay before changing local capacity; never trust stdin.
         outcome = client.status(request['dispatch_id'])
         host.release_authority(request['dispatch_id'], request['contract_digest'], outcome)
         return outcome
-    evidence = directory / 'result-evidence.json'
     if evidence.exists():
         retained = json.loads(evidence.read_text())
         if retained['binding']['contract_digest'] != request.get('contract_digest'):
             raise C.P.Refused('binding_mismatch:receiver_contract')
         client.outbox = directory / 'result-request.json'
+        acknowledgement = Path(str(client.outbox) + '.ack')
+        if acknowledgement.exists():
+            outcome = json.loads(acknowledgement.read_text())
+            if outcome.get('host_released'):
+                apply_release(host, retained['binding'], outcome)
+                return outcome
         if client.outbox.exists():
             outcome = client.retry_result()
         else:

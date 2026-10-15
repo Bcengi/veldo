@@ -58,6 +58,7 @@ def _v125_suite():
         local.mkdir()
         before = set(local.rglob('*'))
         client = f.client(argv=[__import__('sys').executable, str(T.MODULES / 'control_relay.py'), str(local / 'absent.sock')])
+        client.retry_seconds = 0
         for op in T.CL.OPERATIONS:
             T.refused(lambda: client.send(op, {'dispatch_id': 'dispatch/test'}), 'AUTHORITY_UNAVAILABLE:')
         assert set(local.rglob('*')) == before, 'Mac-local fallback wrote authority state'

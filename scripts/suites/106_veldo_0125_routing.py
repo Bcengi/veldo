@@ -152,7 +152,7 @@ def _v125_routing_suite():
                     return send_launch(binding, phase, **fields)
                 client.launch = dropped_running
             deliveries = []
-            if lost_result:
+            if lost_result and lost_result != 'stored':
                 deliver = client.deliver
                 def dropped(request):
                     if request['command']['command']['operation'] != 'worker_result':
@@ -185,7 +185,10 @@ def _v125_routing_suite():
                     dict(id='account', status='active', provider='codex', profiles={backend.facts()['host']: str(paths['login'])}),
                     collect=None if default_collect else (lambda run, result: ({'tokens': 3}, {} if empty_collect else
                         {'output': result['termination']['output_digest'], 'proof': 'fixture'})))
-            if lost_result == 'restart':
+            if lost_result == 'stored':
+                release = host.release_authority
+                host.release_authority = lambda *args: (_ for _ in ()).throw(KeyboardInterrupt('before local retirement'))
+            if lost_result in ('restart', 'stored'):
                 try:
                     run()
                     raise AssertionError('receiver did not restart')
@@ -193,12 +196,17 @@ def _v125_routing_suite():
                     pass
                 assert host.status()['pending'] == 1, 'Mac slot released before authority acknowledged cleanup'
                 resumed = f.client()
+                if lost_result == 'stored':
+                    host.release_authority = release
+                    resumed.deliver = lambda *args: (_ for _ in ()).throw(AssertionError('stored release called relay'))
                 import json
                 import shutil
                 retained = json.loads((paths['clone'].parent / 'result-evidence.json').read_text())
                 directory = base / 'restarted-receiver' / worker.C.P.digest('dispatch/test').split(':')[-1]
                 directory.mkdir(parents=True)
                 shutil.copyfile(client.outbox, directory / 'result-request.json')
+                if lost_result == 'stored':
+                    shutil.copyfile(str(client.outbox) + '.ack', directory / 'result-request.json.ack')
                 shutil.copyfile(paths['clone'].parent / 'result-evidence.json', directory / 'result-evidence.json')
                 original = worker.organ
                 worker.organ = lambda name: types.SimpleNamespace(Client=lambda *args, **kwargs: resumed) if name == 'control_worker_client' else (
@@ -703,8 +711,77 @@ def _v125_routing_suite():
                     launch._end_receiver()
                 f.close()
 
+    def host_release_recovery(base):
+        # A pending bootstrap has a durable local slot but cannot be recovered
+        # as a Run. Drive the real receiver's release-only endpoint for each
+        # authority release, including a crash before its post-commit wake.
+        P = helper('v125_release_host', 'proof/VELDO-0124/checks.py')
+        for kind in ('operator', 'unknown', 'refused'):
+            for recovery in ('replay', 'restart'):
+                directory = base / kind / recovery
+                host, backend, request, paths = P.start(directory / 'mac')
+                f = T.Fixture(directory / 'linux')
+                try:
+                    host.profile['signing_keys'] = [str(f.keys / 'mac')]
+                    host.qualification['profile_digest'] = P.P.digest(host.profile)
+                    f.profiles[1] = T.profile(backend.facts()['host'], 'darwin', ['macos'],
+                                              f.configuration, principal='mac')
+                    f.prepare(required=['macos'])
+                    f.start()
+                    client = f.client()
+                    binding = client.claim('dispatch/test')['binding']
+                    client.launch(binding, 'accept', receiver=backend.process, runtime_seconds=5)
+                    slot = host.root / host.label('dispatch/test')
+                    slot.mkdir()
+                    P.M.write(slot / 'slot.json', dict(dispatch_id='dispatch/test', state='unknown'))
+                    P.M.write(slot / 'request.json', dict(dispatch_id='dispatch/test',
+                                                        contract_digest=binding['contract_digest']))
+                    assert host.status()['pending'] == 1
+                    exchange = release_endpoint(directory, f, host, backend, paths)
+                    # Simulate death immediately after the atomic release commit,
+                    # before notification or scheduling, rather than a lost input.
+                    notify = f.service.notify_release
+                    f.service.notify_release = lambda *args: (_ for _ in ()).throw(KeyboardInterrupt())
+                    cleanup = dict(terminated=True, cleaned=True, clone_removed=True)
+                    sender = f.client('operator') if kind == 'operator' else client
+                    try:
+                        if kind == 'operator':
+                            sender.release(binding, reason='operator verified cleanup', cleanup=cleanup)
+                        else:
+                            sender.result(binding, dict(state=kind, cleanup=cleanup, refusal='bootstrap_refused'))
+                        raise AssertionError('post-commit crash did not occur')
+                    except KeyboardInterrupt:
+                        pass
+                    assert f.res.worker('dispatch/test')['retired'] and host.status()['pending'] == 1
+                    if recovery == 'restart':
+                        f.service = T.W.Service(f.config, f.conn)
+                        f.ds, f.res = f.service.records('repo')
+                        f.start()
+                    else:
+                        f.service.notify_release = notify
+                        wakes = []
+                        f.service.loop = types.SimpleNamespace(remote_result=lambda *args: None,
+                            wake=lambda *args: wakes.append(args))
+                        answer = sender.deliver(sender.sent[-1])
+                        assert answer['replayed'] and answer['host_released']
+                        assert ('remote_capacity_released', 'dispatch/test') in wakes, 'replay lost capacity wake'
+                    finish_release(f, host, exchange)
+                    restarted = P.M.Supervisor(host.profile, host.qualification, backend=backend)
+                    assert restarted.status()['pending'] == 0
+                    stale = P.M.Run(host, slot, 'dispatch/test', host.label('dispatch/test'))
+                    stale.save('unknown')
+                    assert restarted.status()['pending'] == 0, 'late observer resurrected released slot'
+                    # An arbitrary input cannot retire a different contract's slot.
+                    answer = client.status('dispatch/test')
+                    T.refused(lambda: restarted.release_authority('dispatch/test', 'sha256:wrong', answer),
+                              'binding_mismatch:authority_release')
+                    assert backend.bootstraps == 0, 'release endpoint re-executed work'
+                finally:
+                    f.close()
+
     def retry_backoff(base):
         client = T.CL.Client('/workspace', {}, 'mac', lambda *args: '', [])
+        client.retry_attempts = 12  # Exercise the capped portion as well as exponential growth.
         client.outbox = base / 'outbox.json'
         T.CL.durable_json(client.outbox, {'same': 'command'})
         sent, sleeps = [], []
@@ -918,7 +995,8 @@ def _v125_routing_suite():
 
     def sync(base):
         pack = T.load('pack')
-        names = ['control_routing.py', 'control_worker.py', 'control_worker_client.py', 'control_worker_service.py']
+        names = ['control_routing.py', 'control_worker.py', 'control_worker_client.py', 'control_worker_service.py',
+                 'control_service.py', 'project_runner_macos.py']
         inventory = pack.engine_files(str(ROOT / 'engine'))
         for name in names:
             assert '.veldo/' + name in inventory
@@ -955,6 +1033,7 @@ def _v125_routing_suite():
                       'AC3/remote-hold-restart': remote_hold_restart,
                       'AC3/remote-result-transport-failure': lambda base: actual_launch(base, lost_result=True),
                       'AC3/remote-result-restart': lambda base: actual_launch(base, lost_result='restart'),
+                      'AC3/stored-release-restart': lambda base: actual_launch(base, lost_result='stored'),
                       'AC3/default-collector-retains-files': lambda base: actual_launch(base, default_collect=True),
                       'AC3/unknown-host-cleanup': lambda base: actual_launch(base, default_collect=True, unknown=True),
                       'AC3/running-notification-lost': lambda base: actual_launch(base, default_collect=True, lost_running=True),
@@ -965,6 +1044,7 @@ def _v125_routing_suite():
                       'AC3/operator-release': operator_release,
                       'AC3/late-usage-amends-spend': late_usage,
                       'AC3/result-retry-backoff': retry_backoff,
+                      'AC3/host-release-replay-and-restart': host_release_recovery,
                       'AC3/remote-signed-cleanup': remote_signed_cleanup,
                       'AC3/remote-signed-refusal': remote_signed_refusal,
                       'AC2/remote-factory-deadline': remote_factory_deadline,
