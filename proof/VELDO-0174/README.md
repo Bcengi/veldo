@@ -1,5 +1,10 @@
 # VELDO-0174 implementation and review record
 
+Latest round: [batch-2.md](batch-2.md), with direct results in
+[batch-2-results.json](batch-2-results.json). Status: BLOCKED on host verification.
+The narrative below is the inherited round, retained as history; batch 2 resolves
+the versioned-command, skill-delivery and production project-priority gaps.
+
 This record is focused review evidence, not a proof manifest or a landing decision. The specification
 remains ready. The reviewer must run the canonical gate in the checkout that will land the change.
 No gate, live capture, real login, push, or user service installation was run in this worktree.

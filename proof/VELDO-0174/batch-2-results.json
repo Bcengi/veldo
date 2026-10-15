@@ -1,7 +1,7 @@
 {
   "spec": "VELDO-0174",
   "base": "22bec40f",
-  "implementation_checkpoint": "072bc56e",
+  "implementation_checkpoint": "dd195069",
   "status": "BLOCKED: real service sockets denied; host and independent verification outstanding",
   "scope": "Focused observations, not a proof manifest, gate receipt, approval or landing decision.",
   "suite": {
@@ -324,10 +324,10 @@
         "scripts/check_lint.sh"
       ],
       "exit_code": 0,
-      "seconds": 1.83,
-      "log_sha256": "93ea1e591631a5cc7d520ad84bceaca49b1cc9d09fdfbbf00984f4f3541deb8b",
+      "seconds": 1.81,
+      "log_sha256": "aee127d86548e94c365eb2af6cd4cf4d554aef08d64303e6e829b36b6222c42d",
       "summary": [
-        "lint: pass (988 python, 34 shell, 1.81s)"
+        "lint: pass (989 python, 34 shell, 1.79s)"
       ]
     },
     {
@@ -352,7 +352,7 @@
         "scripts/check_docs.sh"
       ],
       "exit_code": 0,
-      "seconds": 0.31,
+      "seconds": 0.32,
       "log_sha256": "e4c366e2b87332bd87bf456866d97c14886ea5a7cec6313163cab88a4199bf6c",
       "summary": [
         "proof/VELDO-0189/older/census.json.gz",
@@ -367,7 +367,7 @@
         "scripts/check_template_sync.sh"
       ],
       "exit_code": 0,
-      "seconds": 0.17,
+      "seconds": 0.16,
       "log_sha256": "f631e3185082a05619298349e5e6b26f2b7be1a19231b4639f5096d0850bc415",
       "summary": [
         "template sync: pass (285 pair(s) compared, 6 declared per-repo, 131 engine-only)"
@@ -380,10 +380,10 @@
         "scripts/secret_inventory.py"
       ],
       "exit_code": 0,
-      "seconds": 41.83,
-      "log_sha256": "63f79044e538e64dc2e582f4cf15e967d472fabc00b1f042452ded964d857784",
+      "seconds": 41.34,
+      "log_sha256": "b9929e05eddb7591ad276b2436f602ff060131d4a517329bc99017454851aa90",
       "summary": [
-        "secret inventory: 0 outstanding (0 exposed in reachable history), 270 dispositioned, 147889 advisory, 148159 scanned; posture=enforcing (reporting, not blocking)"
+        "secret inventory: 0 outstanding (0 exposed in reachable history), 270 dispositioned, 147905 advisory, 148175 scanned; posture=enforcing (reporting, not blocking)"
       ]
     },
     {
