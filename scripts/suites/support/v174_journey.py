@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import socket
 import subprocess
 import sys
 import time
@@ -251,6 +252,7 @@ def service_config(f, CS, receiver=None):
     authority=f['authority']; home=f['root']/'service'; home.mkdir(exist_ok=True)
     trust=json.loads(Path(authority.config['host_trust']).read_text())
     config=dict(schema=CS.SCHEMA,domain_uuid=authority.ids['domain_uuid'],store_uuid=authority.ids['store_uuid'],
+         unit=CS.CC.service_unit(authority.ids),
          store_path=str(authority.db),lock=str(authority.db.parent/'authority.lock'),socket=str(home/'socket'),
          principal='authority',authority_generation=1,journal_key=str(authority.keyfile['authority']),
          enrollment_signers=trust['enrollment_signers'],host_identity=trust['host_identity'],
@@ -263,6 +265,18 @@ def service_config(f, CS, receiver=None):
 def restart(f, CS, root, receiver=None, identity='restart', serve=True, turns=False):
     """Run the production service twice and observe its record from both processes."""
     config=service_config(f, CS, receiver)
+    authority=f['authority']
+    if turns:
+        workspace=Path(authority.config['workspace'])
+        (workspace/'README').write_text('Conversation restart fixture.\n')
+        subprocess.run(['git','-C',str(workspace),'add','README'],check=True,capture_output=True)
+        subprocess.run(['git','-C',str(workspace),'-c','user.name=Dmitry Grinberg',
+                        '-c','user.email=dmitry@bcengi.com','commit','-qm','Restart fixture'],
+                       check=True,capture_output=True)
+        binding=CS.E.enroll(str(workspace),authority.ids['domain_uuid'],authority.ids['store_uuid'],
+                            str(authority.db),config['host_identity'],1,
+                            lambda data:authority.sign_as('steward',data,'veldo-enrollment'),
+                            'steward','fixture',repository_uuid=authority.ids['repository_uuid'])
     home=f['root']/'service'
     path=home/'config.json'; path.write_text(json.dumps(config)); path.chmod(0o600)
     driver=home/'driver.py'
@@ -272,7 +286,6 @@ spec=importlib.util.spec_from_file_location('service',sys.argv[1]); CS=importlib
 config=CS.load_config(sys.argv[2]); conn=CS.S.open_store(config['store_path']); service=CS.Service(config,conn)
 cv=service.conversations()
 if sys.argv[4]=='open': cv.open(sys.argv[5],owner='owner',intake_digest='sha256:restart',command_id='restart-open/'+sys.argv[5])
-if sys.argv[7]=='turns': cv.message(sys.argv[5],'restart-'+sys.argv[4],'sha256:restart-'+sys.argv[4],owner='owner')
 Path(sys.argv[3]).write_text(json.dumps(cv.read(sys.argv[5])))
 conn.close()
 if sys.argv[6]=='serve': CS.serve(sys.argv[2])
@@ -284,14 +297,30 @@ if sys.argv[6]=='serve': CS.serve(sys.argv[2])
         snapshot=home/(phase+'.json')
         with (home/(phase+'.log')).open('w') as output:
             proc=subprocess.Popen([sys.executable,str(driver),str(module),str(path),
-                                   str(snapshot),phase,identity,'serve' if serve else 'store',
-                                   'turns' if turns else 'record'],stdout=output,stderr=output)
+                                   str(snapshot),phase,identity,'serve' if serve else 'store'],stdout=output,stderr=output)
             try:
                 if serve:
                     ready=eventually(lambda:Path(config['socket']).exists() or proc.poll() is not None)
                     if proc.poll() is not None: raise RuntimeError((home/(phase+'.log')).read_text()[-1800:])
                     if not ready: raise RuntimeError('service socket did not become ready')
                     if turns:
+                        # Commit through the running service so hint_after wakes its factory loop.
+                        command=dict(authority.ids,operation='send_conversation_message',principal='owner',
+                                     parameters={'conversation':identity},command_id='restart-'+phase,
+                                     nonce='restart-'+phase)
+                        packet={'command':command,
+                                'signature':authority.sign_as('owner',authority.S.canonical_bytes(command))}
+                        request=CS.CC.build_request(workspace,binding,packet,
+                                                   lambda data:authority.sign_as('owner',data))
+                        with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as client:
+                            client.settimeout(10)
+                            client.connect(config['socket'])
+                            client.sendall(json.dumps(request).encode())
+                            client.shutdown(socket.SHUT_WR)
+                            with client.makefile('rb') as response:
+                                answer=json.load(response)
+                        if not answer.get('accepted') or not answer.get('result',{}).get('ok'):
+                            raise RuntimeError('service refused restart message: '+str(answer))
                         count = 1 if phase == 'open' else 2
                         def complete():
                             saved=f['conversations'].turns(identity)
