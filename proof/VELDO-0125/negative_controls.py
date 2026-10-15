@@ -16,7 +16,7 @@ ROOT = HERE.parents[1]
 CASES = [
     ('AC1', 'control_worker_client.py', '105_veldo_0125_relay', 'AC1/one-authority',
      "            raise Refused('AUTHORITY_UNAVAILABLE:%s:watermark=%s:%s' % (",
-     "            __import__('sqlite3').connect(str(Path(self.argv[-1]).parent / 'fallback.sqlite3')).close()\n"
+     "            if Path(self.argv[-1]).is_absolute(): __import__('sqlite3').connect(str(Path(self.argv[-1]).parent / 'fallback.sqlite3')).close()\n"
      "            raise Refused('AUTHORITY_UNAVAILABLE:%s:watermark=%s:%s' % ("),
     ('AC2', 'control_routing.py', '106_veldo_0125_routing', 'AC2/host-routing-refusal',
      "and set(requirements(contract)).issubset(profile['capabilities'])", "and True"),
@@ -24,6 +24,8 @@ CASES = [
      "if not data or any(params.get(k) != v or data.get(k) != v for k, v in binding.items()):", "if not data:")]
 
 CASES += [
+    ('scaffold-routing', 'init_scaffold.py', '106_veldo_0125_routing', 'AC1/installed-routing',
+     '    ".veldo/control_routing.py",\n', ''),
     ('worker-request', 'control_service.py', '105_veldo_0125_relay', 'AC1/worker-request-only',
      "and operation not in ('worker_claim', 'worker_launch', 'worker_result')):", "and False):"),
     ('worker-mutate', 'control_service.py', '105_veldo_0125_relay', 'AC1/worker-mutate-only',

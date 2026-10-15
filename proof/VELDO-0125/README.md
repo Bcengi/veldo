@@ -1,5 +1,9 @@
 # VELDO-0125 build and pending native checks
 
+Latest round: [batch 2, 2026-10-15](batch2/ROUND.md). It records the current
+registry repair, review regressions, static checks, falsifiers and remaining host
+blockers. The observations below describe earlier revisions.
+
 Candidate implementation, not a gate stamp, qualification, activation or independent
 review. Specification status and acceptance criteria are unchanged. No real provider
 login, engine invocation, live capture or deployed service was touched. The only

@@ -166,6 +166,17 @@ def _v125_routing_suite():
         finally:
             f.close()
 
+    def installed_routing(base):
+        target = base / 'adopter'
+        T.load('init_scaffold').scaffold(target, templates=ROOT / 'engine')
+        installed = target / '.veldo/control_routing.py'
+        assert installed.is_file(), 'scaffold omitted the production routing dependency'
+        assert installed.read_bytes() == (ROOT / 'engine/.veldo/control_routing.py').read_bytes()
+        spec = importlib.util.spec_from_file_location('v125_installed_launch', target / '.veldo/control_launch.py')
+        launch = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(launch)
+        assert callable(launch._organ('control_routing').prepare)
+
     def sync(base):
         pack = T.load('pack')
         names = ['control_routing.py', 'control_worker.py', 'control_worker_client.py', 'control_worker_service.py']
@@ -196,7 +207,8 @@ def _v125_routing_suite():
                                      'run', 'codex', 'unused.json'], capture_output=True, text=True)
             assert result.returncode == 2 and json.loads(result.stdout)['status'] == 'not_run'
 
-    for row, test in {'AC1/worker-signing-key-read': signing_key_read,
+    for row, test in {'AC1/installed-routing': installed_routing,
+                      'AC1/worker-signing-key-read': signing_key_read,
                       'AC2/capability-selection': selection, 'AC2/host-routing-refusal': blocked,
                       'AC2/qualification': qualification, 'AC2/production-routing': production, 'AC2/production-account-host': production_pool, 'AC2/actual-worker-launch': actual_launch,
                       'AC1/template-sync': sync, 'AC1/native-declared': native_declared}.items():
