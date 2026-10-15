@@ -34,7 +34,42 @@ def _v174_suite():
     E = load('v174_enrollment', ROOT / ".veldo" / "control_enrollment.py")
     H = load('v174_authority', ROOT / 'scripts/suites/support/v73_authority.py')
     J = load('v174_journey', ROOT / 'scripts/suites/support/v174_journey.py')
-    rows = {}
+    rows = {name: [] for name in (
+        'AC1/durable-store',
+        'AC1/mutation-targets',
+        'AC1/not-project',
+        'AC1/project-commands',
+        'AC1/restart-open',
+        'AC1/unknown-conversation',
+        'AC1/version-owner',
+        'AC1/versioned-mutations',
+        'AC2/account-retry',
+        'AC2/active-refusal-once',
+        'AC2/charged-windows',
+        'AC2/closed-dispatch',
+        'AC2/current-role-revision',
+        'AC2/domain-cap',
+        'AC2/durable-recovery',
+        'AC2/one-active-ordered',
+        'AC2/one-offer-per-pass',
+        'AC2/own-directory',
+        'AC2/real-ordered-turns',
+        'AC2/receiver-loss',
+        'AC2/redelivery',
+        'AC2/role-skills',
+        'AC2/role-tools',
+        'AC2/restart-turns',
+        'AC3/parallel-conversations',
+        'AC3/three-running',
+        'AC3/turn-before-project',
+        'AC3/turn-first-slot',
+        'AC4/install-conversation-receiver',
+        'AC4/no-work-line',
+        'AC4/real-kind-refusal',
+        'AC4/receiver-kind-refusal',
+        'AC4/turn-kind',
+        'AC4/unit-to-conversation',
+    )}
 
     def check(row, label, condition):
         rows.setdefault(row, []).append((label, bool(condition)))
@@ -53,7 +88,7 @@ def _v174_suite():
         root = base / tag
         root.mkdir(parents=True)
         organs = ROOT / '.veldo'
-        if tag == 'live':
+        if tag.startswith('live'):
             organs = root / 'modules'
             shutil.copytree(ROOT / '.veldo', organs, ignore=shutil.ignore_patterns('__pycache__'))
         authority = H.build(root / 'authority', organs, 17400 + len(fixtures),
@@ -146,6 +181,23 @@ def _v174_suite():
             next_pass = J.drain(factory, markers)
             builds = [e for e in next_pass['offered'] if e.get('unit') == 'build-unit']
             started = bool(builds) and builds[0]['result'] == 'accepted'
+            if started:
+                build = line.runner.launches[builds[0]['dispatch_id']]
+                J.eventually(lambda: build.pump(), 10)
+                line.runner.wait(build, timeout=3)
+                line.activate()
+                contract = line.runner.prepare('build-unit', 'build', holder='project-builder',
+                    source=line.workspace, revision='HEAD', payload={}, adapter='claude_code',
+                    configuration={}, deadline=time.time()+30)
+                kind_events = []
+                receiver = L.Receiver(factory.conversation.receiver, kind_events.append)
+                try:
+                    receiver.launch(contract)
+                finally:
+                    receiver.close()
+                check('AC4/unit-to-conversation', 'actual conversation receiver refuses the real project build contract',
+                      kind_events[-1].get('refusal') == 'binding_mismatch:conversation_receiver')
+                line.runner.cancel_prepared(contract, 'fixture_kind_check')
             if not first or not started:
                 print('  VELDO-0174 priority:', [{k:r[k] for k in ('offered','waiting','refused','faults')}
                                                for r in (offered, next_pass)])
@@ -160,6 +212,9 @@ def _v174_suite():
         # AC1: durable standalone versioned record and owner-only close.
         f1 = fixture('ac1')
         c1, a1 = f1['conversations'], f1['authority']
+        persisted, reread = J.restart(f1, CS, ROOT, identity='store-persistence', serve=False)
+        check('AC1/durable-store', 'separate authority processes read the same open record from SQLite without a service socket',
+              persisted is not None and persisted == reread and reread['status'] == 'open')
         try:
             opened, reopened = J.restart(f1, CS, ROOT, identity='conversation-one')
             check('AC1/restart-open', 'real service stop and start preserve the open record',
@@ -405,9 +460,14 @@ def _v174_suite():
             CS.C.qualify = original_qualify
         conversation_path = layout['config']['receiver']['conversations']
         receiver = layout['receivers'].get(conversation_path) or {}
+        repository_receiver = next(value for value in layout['receivers'].values()
+                                   if value.get('receiver_kind') == 'project')
         check('AC4/install-conversation-receiver', 'installation without work writes and names one conversation receiver',
               layout['config']['work'] is None and receiver.get('receiver_kind') == 'conversation'
               and receiver.get('state_root') == str(f4['root'] / 'factory-state')
+              and all(receiver.get(field) == repository_receiver.get(field) for field in
+                      ('store', 'journal_key', 'principal', 'domain', 'authority_generation',
+                       'host_trust', 'profile', 'adapters', 'state_root'))
               and 'repository' not in receiver and 'workspace' not in receiver)
         project_contract = {'station': 'build'}
         conversation_contract = {'subject_kind': 'conversation', 'station': 'turn'}
@@ -502,6 +562,43 @@ def _v174_suite():
             for launch in list(factory.conversation.runner.launches.values()):
                 launch.stop('fixture_cleanup')
                 factory.conversation.runner.wait(launch,timeout=3)
+
+        parallel = fixture('live-parallel', account_count=3)
+        path, marks, _mods = J.engines(ROOT, parallel, CS)
+        fleet, held_lock, _events = J.loop(parallel, CS, path)
+        try:
+            for number in (1, 2, 3):
+                identity = 'simultaneous-' + str(number)
+                parallel['conversations'].open(identity, owner='owner', intake_digest='sha256:'+identity)
+                parallel['conversations'].message(identity, identity, 'sha256:'+identity, owner='owner')
+            report = J.pass_(fleet)
+            J.eventually(lambda: len(list(marks.glob('*.json'))) == 3)
+            launches = list(fleet.conversation.runner.launches.values())
+            if len(list(marks.glob('*.json'))) != 3:
+                print('  VELDO-0174 parallel:', {k: report[k] for k in ('offered','refused','faults')})
+                errors=parallel['root']/'receiver-errors.log'
+                if errors.exists(): print('  VELDO-0174 parallel errors:', errors.read_text()[-1500:])
+            check('AC3/three-running', 'three fake engines run concurrently on three shared accounts',
+                  len(launches) == 3 and len(list(marks.glob('*.json'))) == 3
+                  and all(launch.child.poll() is None and launch.result == 'accepted' for launch in launches)
+                  and len({entry['account'] for entry in report['conversation_offered']}) == 3)
+            J.drain(fleet, marks)
+        finally:
+            for launch in list(fleet.conversation.runner.launches.values()):
+                launch.stop('fixture_cleanup')
+                fleet.conversation.runner.wait(launch, timeout=3)
+            os.close(held_lock)
+
+        restarted = fixture('live-restart')
+        path, marks, _mods = J.engines(ROOT, restarted, CS)
+        (marks/'release').touch()
+        try:
+            before, after = J.restart(restarted, CS, ROOT, receiver=path, identity='restart-turns', turns=True)
+            saved = restarted['conversations'].turns('restart-turns')
+            check('AC2/restart-turns', 'the production service completes a turn before and after restarting over the same store',
+                  before == after and len(saved) == 2 and all(t['outcome'] == 'completed' for t in saved))
+        except Exception as error:
+            check('AC2/restart-turns', 'real service restart: '+str(error)[-350:], False)
     except Exception as error:
         import traceback
         traceback.print_exc()
@@ -515,7 +612,7 @@ def _v174_suite():
             fixture_value['authority'].conn.close()
         shutil.rmtree(base, ignore_errors=True)
     for row in sorted(rows):
-        failed = [label for label, ok in rows[row] if not ok]
+        failed = [label for label, ok in rows[row] if not ok] or ([] if rows[row] else ['journey did not reach row'])
         if failed:
             print('  VELDO-0174 detail:', row, '; '.join(failed))
         expect('VELDO-0174 ' + row, bool(rows[row]) and not failed)

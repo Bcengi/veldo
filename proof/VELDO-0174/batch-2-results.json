@@ -1,0 +1,441 @@
+{
+  "spec": "VELDO-0174",
+  "base": "22bec40f",
+  "implementation_checkpoint": "072bc56e",
+  "status": "BLOCKED: real service sockets denied; host and independent verification outstanding",
+  "scope": "Focused observations, not a proof manifest, gate receipt, approval or landing decision.",
+  "suite": {
+    "command": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "107_veldo_0174_conversations"
+    ],
+    "exit_code": 1,
+    "ticket_rows_passed": 32,
+    "ticket_rows_failed": 2,
+    "failed_rows": [
+      "AC1/restart-open",
+      "AC2/restart-turns"
+    ],
+    "summary": [
+      "  107_veldo_0174_conversations                    32 passed   11.13s",
+      "selftest (PARTIAL, 1 of 163 suites): 58 passed, 2 failed in 11.13s"
+    ],
+    "log_sha256": "12e5f4045de2e2b9684eb58ad71b9c281d62df15f30a6eff4762acaee7cc045a"
+  },
+  "rows": {
+    "AC1/durable-store": "passed",
+    "AC1/mutation-targets": "passed",
+    "AC1/not-project": "passed",
+    "AC1/project-commands": "passed",
+    "AC1/restart-open": "failed: AF_UNIX socket EPERM",
+    "AC1/unknown-conversation": "passed",
+    "AC1/version-owner": "passed",
+    "AC1/versioned-mutations": "passed",
+    "AC2/account-retry": "passed",
+    "AC2/active-refusal-once": "passed",
+    "AC2/charged-windows": "passed",
+    "AC2/closed-dispatch": "passed",
+    "AC2/current-role-revision": "passed",
+    "AC2/domain-cap": "passed",
+    "AC2/durable-recovery": "passed",
+    "AC2/one-active-ordered": "passed",
+    "AC2/one-offer-per-pass": "passed",
+    "AC2/own-directory": "passed",
+    "AC2/real-ordered-turns": "passed",
+    "AC2/receiver-loss": "passed",
+    "AC2/redelivery": "passed",
+    "AC2/restart-turns": "failed: AF_UNIX socket EPERM",
+    "AC2/role-skills": "passed",
+    "AC2/role-tools": "passed",
+    "AC3/parallel-conversations": "passed",
+    "AC3/three-running": "passed",
+    "AC3/turn-before-project": "passed",
+    "AC3/turn-first-slot": "passed",
+    "AC4/install-conversation-receiver": "passed",
+    "AC4/no-work-line": "passed",
+    "AC4/real-kind-refusal": "passed",
+    "AC4/receiver-kind-refusal": "passed",
+    "AC4/turn-kind": "passed",
+    "AC4/unit-to-conversation": "passed"
+  },
+  "falsifiers": [
+    {
+      "case": "v174-drop-skills",
+      "source": "control_agent_config_handoff.py",
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "107_veldo_0174_conversations"
+      ],
+      "exit_code": 1,
+      "seconds": 11.19,
+      "target_rows": [
+        "AC2/role-skills"
+      ],
+      "failed_rows": [
+        "AC1/restart-open",
+        "AC2/restart-turns",
+        "AC2/role-skills"
+      ],
+      "targets_red": true,
+      "source_restored": true,
+      "log_sha256": "1346f2dfed4418ad9ab1901b70dbebfb5a8dfa578f7768642f74cca946955742",
+      "green_after_restore": {
+        "AC2/role-skills": true
+      }
+    },
+    {
+      "case": "v174-ignore-record-version",
+      "source": "control_conversation.py",
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "107_veldo_0174_conversations"
+      ],
+      "exit_code": 1,
+      "seconds": 0.87,
+      "target_rows": [
+        "AC1/versioned-mutations"
+      ],
+      "failed_rows": [
+        "AC1/mutation-targets",
+        "AC1/not-project",
+        "AC1/project-commands",
+        "AC1/restart-open",
+        "AC1/unknown-conversation",
+        "AC1/version-owner",
+        "AC1/versioned-mutations",
+        "AC2/account-retry",
+        "AC2/active-refusal-once",
+        "AC2/charged-windows",
+        "AC2/closed-dispatch",
+        "AC2/current-role-revision",
+        "AC2/domain-cap",
+        "AC2/durable-recovery",
+        "AC2/one-active-ordered",
+        "AC2/one-offer-per-pass",
+        "AC2/own-directory",
+        "AC2/real-ordered-turns",
+        "AC2/receiver-loss",
+        "AC2/redelivery",
+        "AC2/restart-turns",
+        "AC2/role-skills",
+        "AC2/role-tools",
+        "AC3/parallel-conversations",
+        "AC3/three-running",
+        "AC3/turn-before-project",
+        "AC3/turn-first-slot",
+        "AC4/install-conversation-receiver",
+        "AC4/no-work-line",
+        "AC4/real-kind-refusal",
+        "AC4/receiver-kind-refusal",
+        "AC4/turn-kind",
+        "AC4/unit-to-conversation"
+      ],
+      "targets_red": true,
+      "source_restored": true,
+      "log_sha256": "4c4b6ce40972e345bc584613d018d7072169607e0064bebd64327c9a999c05b4",
+      "green_after_restore": {
+        "AC1/versioned-mutations": true
+      }
+    },
+    {
+      "case": "v174-no-work-conversation-line-dropped",
+      "source": "control_service.py",
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "107_veldo_0174_conversations"
+      ],
+      "exit_code": 1,
+      "seconds": 16.11,
+      "target_rows": [
+        "AC4/no-work-line"
+      ],
+      "failed_rows": [
+        "AC1/not-project",
+        "AC1/restart-open",
+        "AC1/version-owner",
+        "AC2/active-refusal-once",
+        "AC2/charged-windows",
+        "AC2/current-role-revision",
+        "AC2/durable-recovery",
+        "AC2/one-active-ordered",
+        "AC2/one-offer-per-pass",
+        "AC2/own-directory",
+        "AC2/real-ordered-turns",
+        "AC2/receiver-loss",
+        "AC2/restart-turns",
+        "AC2/role-skills",
+        "AC2/role-tools",
+        "AC3/parallel-conversations",
+        "AC3/three-running",
+        "AC3/turn-before-project",
+        "AC3/turn-first-slot",
+        "AC4/install-conversation-receiver",
+        "AC4/no-work-line",
+        "AC4/receiver-kind-refusal",
+        "AC4/unit-to-conversation"
+      ],
+      "targets_red": true,
+      "source_restored": true,
+      "log_sha256": "e14a9c876fbe31174debf93ef9e8e7fa86638b9cca1bfaa8a638c80ae17236bb",
+      "green_after_restore": {
+        "AC4/no-work-line": true
+      }
+    },
+    {
+      "case": "v174-offer-every-waiting-turn",
+      "source": "control_service.py",
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "107_veldo_0174_conversations"
+      ],
+      "exit_code": 1,
+      "seconds": 11.19,
+      "target_rows": [
+        "AC2/one-offer-per-pass"
+      ],
+      "failed_rows": [
+        "AC1/restart-open",
+        "AC2/active-refusal-once",
+        "AC2/one-offer-per-pass",
+        "AC2/restart-turns"
+      ],
+      "targets_red": true,
+      "source_restored": true,
+      "log_sha256": "f576dd5149a8209fb7f8504d607507d86391e0a3850640094780fce28e0538f0",
+      "green_after_restore": {
+        "AC2/one-offer-per-pass": true
+      }
+    },
+    {
+      "case": "v174-project-lines-first",
+      "source": "control_service.py",
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "107_veldo_0174_conversations"
+      ],
+      "exit_code": 1,
+      "seconds": 8.29,
+      "target_rows": [
+        "AC3/turn-before-project"
+      ],
+      "failed_rows": [
+        "AC1/not-project",
+        "AC1/restart-open",
+        "AC1/version-owner",
+        "AC2/current-role-revision",
+        "AC2/durable-recovery",
+        "AC2/one-active-ordered",
+        "AC2/one-offer-per-pass",
+        "AC2/receiver-loss",
+        "AC2/restart-turns",
+        "AC3/parallel-conversations",
+        "AC3/three-running",
+        "AC3/turn-before-project",
+        "AC3/turn-first-slot",
+        "AC4/install-conversation-receiver",
+        "AC4/no-work-line",
+        "AC4/receiver-kind-refusal",
+        "AC4/unit-to-conversation"
+      ],
+      "targets_red": true,
+      "source_restored": true,
+      "log_sha256": "072f90c7c7f3d138e8233f779fcaaff01f9386b3731916f75c1262b06ae99097",
+      "green_after_restore": {
+        "AC3/turn-before-project": true
+      }
+    },
+    {
+      "case": "v174-record-memory-only",
+      "source": "control_conversation.py",
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "107_veldo_0174_conversations"
+      ],
+      "exit_code": 1,
+      "seconds": 0.87,
+      "target_rows": [
+        "AC1/restart-open",
+        "AC1/durable-store"
+      ],
+      "failed_rows": [
+        "AC1/durable-store",
+        "AC1/mutation-targets",
+        "AC1/not-project",
+        "AC1/project-commands",
+        "AC1/restart-open",
+        "AC1/unknown-conversation",
+        "AC1/version-owner",
+        "AC1/versioned-mutations",
+        "AC2/account-retry",
+        "AC2/active-refusal-once",
+        "AC2/charged-windows",
+        "AC2/closed-dispatch",
+        "AC2/current-role-revision",
+        "AC2/domain-cap",
+        "AC2/durable-recovery",
+        "AC2/one-active-ordered",
+        "AC2/one-offer-per-pass",
+        "AC2/own-directory",
+        "AC2/real-ordered-turns",
+        "AC2/receiver-loss",
+        "AC2/redelivery",
+        "AC2/restart-turns",
+        "AC2/role-skills",
+        "AC2/role-tools",
+        "AC3/parallel-conversations",
+        "AC3/three-running",
+        "AC3/turn-before-project",
+        "AC3/turn-first-slot",
+        "AC4/install-conversation-receiver",
+        "AC4/no-work-line",
+        "AC4/real-kind-refusal",
+        "AC4/receiver-kind-refusal",
+        "AC4/turn-kind",
+        "AC4/unit-to-conversation"
+      ],
+      "targets_red": true,
+      "source_restored": true,
+      "log_sha256": "70d191c05cd11d3301281aceeb657340abf85518463b1389673dfc9cedcdfb18",
+      "green_after_restore": {
+        "AC1/restart-open": false,
+        "AC1/durable-store": true
+      }
+    }
+  ],
+  "static_checks": [
+    {
+      "name": "lint",
+      "command": [
+        "bash",
+        "scripts/check_lint.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 1.83,
+      "log_sha256": "93ea1e591631a5cc7d520ad84bceaca49b1cc9d09fdfbbf00984f4f3541deb8b",
+      "summary": [
+        "lint: pass (988 python, 34 shell, 1.81s)"
+      ]
+    },
+    {
+      "name": "generated",
+      "command": [
+        "bash",
+        "scripts/check_generated.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 0.45,
+      "log_sha256": "f11b77ff165398767a2894fd34d9592c5d6d516b2828368d967fa7663a9d1217",
+      "summary": [
+        "generated: pass (proof/WARP-0712/split-plan.md)",
+        "generated: pass (scripts/suites/requires.json)",
+        "generated: pass"
+      ]
+    },
+    {
+      "name": "docs",
+      "command": [
+        "bash",
+        "scripts/check_docs.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 0.31,
+      "log_sha256": "e4c366e2b87332bd87bf456866d97c14886ea5a7cec6313163cab88a4199bf6c",
+      "summary": [
+        "proof/VELDO-0189/older/census.json.gz",
+        "-- genericity sweep (docs/ and packs/claude/; design/ and research/ are internal provenance)",
+        "docs hygiene: pass"
+      ]
+    },
+    {
+      "name": "template-sync",
+      "command": [
+        "bash",
+        "scripts/check_template_sync.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 0.17,
+      "log_sha256": "f631e3185082a05619298349e5e6b26f2b7be1a19231b4639f5096d0850bc415",
+      "summary": [
+        "template sync: pass (285 pair(s) compared, 6 declared per-repo, 131 engine-only)"
+      ]
+    },
+    {
+      "name": "secret-inventory",
+      "command": [
+        "python3",
+        "scripts/secret_inventory.py"
+      ],
+      "exit_code": 0,
+      "seconds": 41.83,
+      "log_sha256": "63f79044e538e64dc2e582f4cf15e967d472fabc00b1f042452ded964d857784",
+      "summary": [
+        "secret inventory: 0 outstanding (0 exposed in reachable history), 270 dispositioned, 147889 advisory, 148159 scanned; posture=enforcing (reporting, not blocking)"
+      ]
+    },
+    {
+      "name": "contracts",
+      "command": [
+        "python3",
+        ".veldo/validate.py",
+        "all"
+      ],
+      "exit_code": 0,
+      "seconds": 4.41,
+      "log_sha256": "1714c37f2f5e104a6506a5f2716a5ee0a78c591f807de1aea958885d5504a396",
+      "summary": [
+        "  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0174-b2/proof/WARP-1212/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit",
+        "  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0174-b2/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down",
+        "  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0174-b2/.veldo/examples/proof-example.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit"
+      ]
+    },
+    {
+      "name": "shape",
+      "command": [
+        "python3",
+        ".veldo/shape_gate.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.05,
+      "log_sha256": "11be7dfa91bec399bd37b4fbd2233a733f69f5bf4d48d0c2bf40a4bf83765a54",
+      "summary": [
+        "   shape (review lane, non-blocking): invariant no_detached_processes (review lane): reviewer guidance, not gate-enforced",
+        "   shape (review lane, non-blocking): invariant gate_is_the_only_done (review lane): reviewer guidance, not gate-enforced",
+        "   shape gate: pass (mechanizable rules enforced; review-lane rules are reviewer guidance)"
+      ]
+    }
+  ],
+  "builtin_secret_scan": {
+    "exit_code": 0,
+    "source": "Exact secret-scan block extracted from scripts/verify.sh; no gate invocation.",
+    "log_sha256": "e645c8c2fc3224d0c773f87950384b3dbb2999f3f02f7b76fb8e3a6ed1a00f2b"
+  },
+  "source_sha256": {
+    "engine/.veldo/control_conversation.py": "4a80e521ab5130076b806a61e93f64f37a9df61486636c43f676b6928d65c5bd",
+    "engine/.veldo/control_service.py": "f0ab80e5bbcc14a3347a69466b736e950668eadf0f320874407c63ea65701d44",
+    "scripts/suites/107_veldo_0174_conversations.py": "209d919ad26c78beb2f286495839f86611924b6c384488f38e41a6721aded7ab",
+    "scripts/suites/support/v174_journey.py": "8eaf6fef26a3eb1170594c46584ad7c61320c051466a8a377faf99caf3ff9cfe",
+    "proof/VELDO-0174/run_falsifier.py": "b74fbb6fe07dabc85735fd8b96e2c1652fcef1343ded8ab3726d9b7ba5dd9915"
+  },
+  "not_run": [
+    "full selftest",
+    "gate",
+    "gate or teeth mutation driver",
+    "integration and packaging stages (invoke other suites or a gate)",
+    "other specifications suites"
+  ],
+  "host_command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations > /tmp/veldo-0174-host.log 2>&1; status=$?; grep -E \"SELFTEST FAIL|107_veldo.*passed|selftest \\(\" /tmp/veldo-0174-host.log; exit \"$status\""
+}

@@ -260,7 +260,7 @@ def service_config(f, CS, receiver=None):
     return config
 
 
-def restart(f, CS, root, receiver=None, identity='restart'):
+def restart(f, CS, root, receiver=None, identity='restart', serve=True, turns=False):
     """Run the production service twice and observe its record from both processes."""
     config=service_config(f, CS, receiver)
     home=f['root']/'service'
@@ -271,21 +271,35 @@ from pathlib import Path
 spec=importlib.util.spec_from_file_location('service',sys.argv[1]); CS=importlib.util.module_from_spec(spec);spec.loader.exec_module(CS)
 config=CS.load_config(sys.argv[2]); conn=CS.S.open_store(config['store_path']); service=CS.Service(config,conn)
 cv=service.conversations()
-if sys.argv[4]=='open': cv.open(sys.argv[5],owner='owner',intake_digest='sha256:restart',command_id='restart-open')
+if sys.argv[4]=='open': cv.open(sys.argv[5],owner='owner',intake_digest='sha256:restart',command_id='restart-open/'+sys.argv[5])
+if sys.argv[7]=='turns': cv.message(sys.argv[5],'restart-'+sys.argv[4],'sha256:restart-'+sys.argv[4],owner='owner')
 Path(sys.argv[3]).write_text(json.dumps(cv.read(sys.argv[5])))
 conn.close()
-CS.serve(sys.argv[2])
+if sys.argv[6]=='serve': CS.serve(sys.argv[2])
 ''')
     records=[]
+    module=f['root']/'modules/control_service.py'
+    if not module.exists(): module=root/'.veldo/control_service.py'
     for phase in ('open','read'):
         snapshot=home/(phase+'.json')
         with (home/(phase+'.log')).open('w') as output:
-            proc=subprocess.Popen([sys.executable,str(driver),str(root/'.veldo/control_service.py'),str(path),
-                                   str(snapshot),phase,identity],stdout=output,stderr=output)
+            proc=subprocess.Popen([sys.executable,str(driver),str(module),str(path),
+                                   str(snapshot),phase,identity,'serve' if serve else 'store',
+                                   'turns' if turns else 'record'],stdout=output,stderr=output)
             try:
-                ready=eventually(lambda:Path(config['socket']).exists() or proc.poll() is not None)
-                if proc.poll() is not None: raise RuntimeError((home/(phase+'.log')).read_text()[-1800:])
-                if not ready: raise RuntimeError('service socket did not become ready')
+                if serve:
+                    ready=eventually(lambda:Path(config['socket']).exists() or proc.poll() is not None)
+                    if proc.poll() is not None: raise RuntimeError((home/(phase+'.log')).read_text()[-1800:])
+                    if not ready: raise RuntimeError('service socket did not become ready')
+                    if turns:
+                        count = 1 if phase == 'open' else 2
+                        def complete():
+                            saved=f['conversations'].turns(identity)
+                            return len(saved)==count and all(t['outcome']=='completed' for t in saved)
+                        if not eventually(complete, 15):
+                            raise RuntimeError('service did not complete turn '+str(count))
+                elif proc.wait(timeout=10) != 0:
+                    raise RuntimeError((home/(phase+'.log')).read_text()[-1800:])
                 records.append(json.loads(snapshot.read_text()))
             finally:
                 proc.terminate()
