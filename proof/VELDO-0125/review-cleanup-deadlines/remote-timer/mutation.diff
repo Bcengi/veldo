@@ -1,0 +1,11 @@
+--- control_service.py
++++ control_service.py
+@@ -2225,7 +2225,7 @@
+         remote_checks = [min(time.time() + 1.0, launch.contract['deadline'])
+                          for line in self.lines.values() for launch in line.runner.launches.values()
+                          if getattr(launch, 'remote', False) and not launch.ended]
+-        self.timer = min(resets + remote_checks) if resets or remote_checks else None
++        self.timer = min(resets) if resets else None
+         report['timer'] = self.timer
+         for name in self.counts:
+             self.counts[name] += len(report[name])

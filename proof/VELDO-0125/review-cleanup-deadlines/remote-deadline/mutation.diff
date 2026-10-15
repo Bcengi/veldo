@@ -1,0 +1,11 @@
+--- control_launch.py
++++ control_launch.py
+@@ -1001,7 +1001,7 @@
+             self._end_receiver()
+             self.ended = True
+             return True
+-        if self.clock() >= self.contract['deadline']:
++        if False:
+             self.stop('deadline')
+             return True
+         if read and self.fileno() is not None:

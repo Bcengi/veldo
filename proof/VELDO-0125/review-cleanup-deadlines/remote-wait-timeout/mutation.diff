@@ -1,0 +1,11 @@
+--- control_launch.py
++++ control_launch.py
+@@ -1039,8 +1039,6 @@
+         deadline = None if timeout is None else time.monotonic() + max(0, timeout)
+         while not self.pump(read=False):
+             if deadline is not None and time.monotonic() >= deadline:
+-                self.stop('wait_timeout')
+-                self._settle(lost=True)
+                 raise TimeoutError('remote_receiver_pending')
+             remaining = max(0, self.contract['deadline'] - self.clock())
+             if deadline is not None:

@@ -678,7 +678,15 @@ class Runner:
 
     def wait(self, launch, timeout=None):
         """Wait for the launched dispatch's terminal record; a conclusive end returns its slot."""
-        record = launch.wait(timeout)
+        timeout_error = None
+        try:
+            record = launch.wait(timeout)
+        except TimeoutError as error:
+            if not getattr(launch, 'remote', False) or not launch.ended:
+                raise
+            # Remote wait has stopped its transport and settled the authority state.
+            # Remove factory tracking and retain cleanup obligations before reporting timeout.
+            timeout_error, record = error, launch.record
         if record and record['state'] == 'exited':
             # The one completion gate (control_dispatch.completed): the exit record's clean exit and, for an
             # engine, the complete artifact it binds (THE ENGINE PROTOCOL).
@@ -695,6 +703,8 @@ class Runner:
         self.launches.pop(launch.dispatch_id, None)
         # This dispatch's end may have completed another's obligation (a group the kernel emptied).
         self.sweep()
+        if timeout_error is not None:
+            raise timeout_error
         return record
 
     def orphaned(self, launch):
@@ -983,41 +993,63 @@ class RemoteLaunch(Launch):
     remote = True
 
     def pump(self, read=True):
-        if self.ended or self.fileno() is None:
-            return self.ended
-        if read:
+        if self.ended:
+            return True
+        self.record = self.dispatches.record(self.dispatch_id)
+        if (self.record or {}).get('state') in ('exited', 'refused', 'unknown'):
+            # The authority can finish while SSH keeps stdout open indefinitely.
+            self._end_receiver()
+            self.ended = True
+            return True
+        if self.clock() >= self.contract['deadline']:
+            self.stop('deadline')
+            return True
+        if read and self.fileno() is not None:
             chunk = os.read(self.fileno(), 65536)
             if not chunk:
-                self.ended = True
-                self.record = self.dispatches.record(self.dispatch_id)
-                self.lost = (self.record or {}).get('state') not in ('exited', 'refused', 'unknown')
+                self.ended = self.lost = True
         return self.ended
 
     def stop(self, reason='requested'):
         # Ending SSH is not evidence that the remote process died. The Mac's
         # accepted deadline still bounds execution; unresolved outcomes stay held.
         self.stop_requested = True
-        if self.child is not None and self.child.poll() is None:
-            self.child.terminate()
-            return True
-        return False
+        alive = self.child is not None and self.child.poll() is None
+        self._end_receiver()
+        self.ended = self.lost = True
+        return alive
+
+    def _settle(self, lost):
+        # Remote records come only from the authority. In particular, do not create
+        # a Linux execution-record commitment for a Mac receiver's lost acceptance.
+        record = self.dispatches.record(self.dispatch_id)
+        state = (record or {}).get('state')
+        if lost and state == 'prepared':
+            record = self.dispatches.refuse(self.dispatch_id, record['contract_digest'],
+                'receiver_unavailable', now=self.clock(), expected_state='prepared')
+        elif lost and state in ('accepted', 'running'):
+            record = self.dispatches.unknown(self.dispatch_id, record['contract_digest'],
+                'remote_outcome_unknown', now=self.clock(), expected_state=state)
+        self.record = record
+        self.result = {'running': 'accepted', 'exited': 'accepted', 'refused': 'refused'}.get(
+            (record or {}).get('state'), 'unknown')
+        self.refusal = (record or {}).get('refusal')
 
     def wait(self, timeout=None):
-        if not self.ended and self.child is not None:
-            deadline = time.monotonic() + (timeout if timeout is not None else
-                max(0, self.contract['deadline'] - self.clock()) + ACCEPT_SECONDS)
-            while not self.ended and time.monotonic() < deadline:
-                ready, _, _ = select.select([self.fileno()], [], [], max(0, deadline - time.monotonic()))
-                if ready:
-                    self.pump()
-            if not self.ended:
+        deadline = None if timeout is None else time.monotonic() + max(0, timeout)
+        while not self.pump(read=False):
+            if deadline is not None and time.monotonic() >= deadline:
+                self.stop('wait_timeout')
+                self._settle(lost=True)
                 raise TimeoutError('remote_receiver_pending')
-        if self.child is not None:
-            self._end_receiver()
+            remaining = max(0, self.contract['deadline'] - self.clock())
+            if deadline is not None:
+                remaining = min(remaining, max(0, deadline - time.monotonic()))
+            ready, _, _ = select.select([self.fileno()], [], [], min(1.0, remaining))
+            if ready:
+                self.pump()
+        self._end_receiver()
         self._settle(lost=self.lost)
-        if (self.record or {}).get('state') == 'running':
-            self.record = self.dispatches.unknown(self.dispatch_id, self.record['contract_digest'],
-                'remote_outcome_unknown', now=self.clock(), expected_state='running')
         return self.record
 
 

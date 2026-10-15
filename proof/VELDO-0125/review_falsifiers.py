@@ -14,6 +14,15 @@ CASES = {
     'remote-cleanup': ('control_launch.py', 'AC3/remote-cleanup-held',
         '        if remote and (not never_contacted or dispatch_id in self.remote_retirements):',
         '        if False:'),
+    'remote-timer': ('control_service.py', 'AC2/remote-factory-deadline',
+        '        self.timer = min(resets + remote_checks) if resets or remote_checks else None',
+        '        self.timer = min(resets) if resets else None'),
+    'remote-deadline': ('control_launch.py', 'AC2/remote-factory-deadline',
+        "        if self.clock() >= self.contract['deadline']:", '        if False:'),
+    'remote-authority-end': ('control_launch.py', 'AC3/remote-authority-end',
+        "        if (self.record or {}).get('state') in ('exited', 'refused', 'unknown'):", '        if False:'),
+    'remote-wait-timeout': ('control_launch.py', 'AC2/remote-wait-timeout',
+        "                self.stop('wait_timeout')\n                self._settle(lost=True)\n", ''),
 }
 
 

@@ -2199,6 +2199,12 @@ class FactoryLoop:
 
     def run(self):
         """One pass, when anything woke the loop; None otherwise."""
+        # Remote state and deadline progress independently of transport pipe EOF.
+        for line in self.lines.values():
+            for launch in list(line.runner.launches.values()):
+                queued = any(owner is line and pending is launch for owner, pending in self.ended)
+                if getattr(launch, 'remote', False) and not queued and launch.pump(read=False):
+                    self.saw_end(line, launch)
         if not self.wakes:
             return None
         wakes, self.wakes = self.wakes, []
@@ -2217,7 +2223,10 @@ class FactoryLoop:
             except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never the end
                 report['faults'].append({'repository': repository, 'reason': 'unknown_outcome:' + type(error).__name__})
         resets = [waiting['until'] for waiting in report['waiting'] if isinstance(waiting.get('until'), int)]
-        self.timer = min(resets) if resets else None
+        remote_checks = [min(time.time() + 1.0, launch.contract['deadline'])
+                         for line in self.lines.values() for launch in line.runner.launches.values()
+                         if getattr(launch, 'remote', False) and not launch.ended]
+        self.timer = min(resets + remote_checks) if resets or remote_checks else None
         report['timer'] = self.timer
         for name in self.counts:
             self.counts[name] += len(report[name])

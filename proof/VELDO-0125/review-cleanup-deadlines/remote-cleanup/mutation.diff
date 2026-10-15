@@ -1,0 +1,11 @@
+--- control_launch.py
++++ control_launch.py
+@@ -502,7 +502,7 @@
+         route = record.get('contract', {}).get('input', {}).get('context', {}).get('host_route') or {}
+         remote = route and route.get('host') != self.local_host
+         never_contacted = record.get('state') == 'refused' and (launch is None or launch.child is None)
+-        if remote and (not never_contacted or dispatch_id in self.remote_retirements):
++        if False:
+             # Signed exit/spend do not prove host termination, group cleanup or clone removal.
+             # Keep this out of Linux retirement, including its accounting-triggered retries.
+             event = dict(operation='retire', dispatch_id=dispatch_id, outcome='refused',

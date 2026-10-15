@@ -303,6 +303,118 @@ def _v125_routing_suite():
                 launch._end_receiver()
             f.close()
 
+    def stalled_remote(f, state):
+        import sys
+        contract = f.prepare(required=['macos'])['contract']
+        f.start()
+        client = f.client()
+        binding = None
+        if state == 'accepted':
+            binding = client.claim(contract['dispatch_id'])['binding']
+            client.launch(binding, 'accept', receiver=T.process(), runtime_seconds=5)
+        elif state in ('running', 'exited'):
+            binding = T.launch(client)
+        L = T.W.SV.L
+        launch = L.invoke_remote({'argv': [sys.executable, '-c',
+            'import sys,time; sys.stdin.readline(); time.sleep(120)']}, contract, f.ds)
+        runner = L.Runner(None, f.res, f.ds, None, account='account', local_host='linux')
+        runner.launches[launch.dispatch_id] = launch
+        return launch, runner, client, binding
+
+    def remote_loop(f, runner):
+        # Exercise the production factory poll/timer pass with no unrelated work to offer.
+        service = T.W.SV
+        loop = service.FactoryLoop.__new__(service.FactoryLoop)
+        loop.service = types.SimpleNamespace(domain='domain', principal='authority', _log=lambda event: None)
+        loop.wakes, loop.ended, loop.timer = [], [], None
+        loop.passes, loop.last, loop.counts = 0, None, {}
+        loop.provision = lambda report, caller: None
+        def run(report, ended):
+            for launch in ended:
+                record = runner.wait(launch, timeout=0)
+                report['ended'].append(record)
+        loop.lines = {'repo': types.SimpleNamespace(runner=runner, run=run)}
+        return loop
+
+    def remote_factory_deadline(base):
+        import select
+        import time
+        for state in ('prepared', 'accepted', 'running'):
+            f = T.Fixture(base / state)
+            launch = None
+            try:
+                launch, runner, _, _ = stalled_remote(f, state)
+                loop = remote_loop(f, runner)
+                loop.wake('fixture')
+                report = loop.run()
+                assert not report['faults'] and not report['ended'], report
+                assert launch.child.poll() is None and not select.select([launch.fileno()], [], [], 0)[0]
+                assert loop.timer is not None and loop.timer <= min(time.time() + 1.0, launch.contract['deadline']), \
+                    'factory has no remote deadline/state timer'
+                assert loop.due(loop.timer), 'factory cannot wake for remote deadline'
+                # Advance the launch clock to the immutable deadline, without waiting 90 seconds.
+                launch.clock = lambda: launch.contract['deadline']
+                loop.wake('account_reset')  # The serve poll loop uses this wake for its due timer.
+                report = loop.run()
+                assert not report['faults'], report
+                assert report['ended'], 'silent remote transport kept dispatch pending past deadline'
+                assert launch.child.poll() is not None, 'deadline left transport alive'
+                assert launch.dispatch_id not in runner.launches
+                assert f.ds.record(launch.dispatch_id)['state'] == ('refused' if state == 'prepared' else 'unknown')
+                assert not f.res.worker(launch.dispatch_id)['retired'], 'transport death invented Mac cleanup'
+                assert not runner.orphans and not runner.leftovers
+            finally:
+                if launch:
+                    launch._end_receiver()
+                f.close()
+
+    def remote_authority_end(base):
+        import select
+        f = T.Fixture(base)
+        launch = None
+        try:
+            launch, runner, client, binding = stalled_remote(f, 'exited')
+            loop = remote_loop(f, runner)
+            loop.wake('fixture')
+            loop.run()
+            client.result(binding, T.observation(), usage={'tokens': 0}, references={})
+            assert launch.child.poll() is None and not select.select([launch.fileno()], [], [], 0)[0]
+            loop.wake('worker_result')
+            report = loop.run()
+            assert not report['faults'] and len(report['ended']) == 1, 'authority completion waited for pipe EOF'
+            assert report['ended'][0]['state'] == 'exited'
+            assert launch.child.poll() is not None and launch.dispatch_id not in runner.launches
+            assert loop.timer is None, 'finished transport kept factory timer active'
+            assert not f.res.worker(launch.dispatch_id)['retired'], 'result alone released remote slot'
+        finally:
+            if launch:
+                launch._end_receiver()
+            f.close()
+
+    def remote_wait_timeout(base):
+        for state in ('prepared', 'accepted', 'running'):
+            f = T.Fixture(base / state)
+            launch = None
+            try:
+                launch, runner, _, _ = stalled_remote(f, state)
+                try:
+                    runner.wait(launch, timeout=.02)
+                except TimeoutError:
+                    pass
+                else:
+                    raise AssertionError('connected receiver did not time out')
+                assert launch.child.poll() is not None, 'wait timeout left transport alive'
+                assert launch.ended and launch.lost
+                assert launch.dispatch_id not in runner.launches, 'timed-out dispatch kept factory tracking'
+                record = runner.wait(launch, timeout=0)
+                assert record['state'] == ('refused' if state == 'prepared' else 'unknown')
+                assert not f.res.worker(launch.dispatch_id)['retired'], 'wait timeout invented remote cleanup'
+                assert not runner.orphaned(launch) and not runner.orphans
+            finally:
+                if launch:
+                    launch._end_receiver()
+                f.close()
+
     def transport_is_not_evidence(base):
         import sys
         for state in ('prepared', 'accepted', 'running'):
@@ -377,6 +489,9 @@ def _v125_routing_suite():
                       'AC2/qualification': qualification, 'AC2/factory-remote-delivery': factory_delivery,
                       'AC2/missing-remote-receiver': missing_receiver,
                       'AC3/remote-cleanup-held': remote_retirement,
+                      'AC2/remote-factory-deadline': remote_factory_deadline,
+                      'AC3/remote-authority-end': remote_authority_end,
+                      'AC2/remote-wait-timeout': remote_wait_timeout,
                       'AC3/transport-is-not-evidence': transport_is_not_evidence, 'AC2/production-routing': production, 'AC2/production-account-host': production_pool, 'AC2/actual-worker-launch': actual_launch,
                       'AC1/template-sync': sync, 'AC1/native-declared': native_declared}.items():
         with tempfile.TemporaryDirectory(prefix='v125-routing-') as directory:
