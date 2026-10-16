@@ -1,0 +1,13 @@
+--- project_runner_macos_os.py
++++ project_runner_macos_os.py
+@@ -154,8 +154,8 @@
+                         os.close(descriptor)
+ 
+     def wake(self):
+-        # The lifetime lock covers the write, so close cannot recycle its fd.
+-        with self.lock:
++        # Mutant: wake no longer owns the descriptor lifetime.
++        with __import__('contextlib').nullcontext():
+             if self.closed:
+                 return
+             try:

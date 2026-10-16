@@ -1,0 +1,11 @@
+--- control_worker.py
++++ control_worker.py
+@@ -340,7 +340,7 @@
+             try:
+                 receive(config, request, queued=True)
+             except RecorderFailure as error:
+-                recorder_errors.append(error)
++                raise
+             except Exception:
+                 pass  # receive durably records/parks this dispatch; drain its peers.
+         if recorder_errors:

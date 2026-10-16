@@ -1,0 +1,1713 @@
+==============================================================================
+PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
+==============================================================================
+  selector    --suite 106_veldo_0125_routing
+  running     1 of 166 suites: 106_veldo_0125_routing
+  skipped     165: 01_warp_0101_reviewer_notes, 02_mobile_ios_runner_b8, 03_plugin_extension_loading_runner, 04_run_status_reader_veldo, 05_tracker_routing_resolver_veldo, 06_capabilities_manifest_honesty_veldo, 07_warp_1103_completion_mandatory, 08_restoration_spec_generation_veldo, 09_action_whitelist_warp_1205, 10_warp_0613_anti_vacuity, 11_inbound_command_receipt_reconcile, 12_warp_1210_hardening_four, 13_warp_0623_codified_live, 14_warp_0717_subset_runner, 15_warp_1402_estimate_record, 15_warp_1404_historical_analogy, 15_warp_1405_reconciliation, 15_warp_1406_normalization, 15_warp_1407_judgment_load, 15_warp_1408_budget_rollup, 15_warp_1409_cost_to_change_per_area, 16_warp_1403_sizing_pass, 17_veldo_0001_falsification_declared, 18_veldo_0011_release_contract, 18_veldo_0012_behaviour_floor_contract, 19_veldo_0002_work_state, 20_veldo_0003_task_source, 21_veldo_0004_promise_corpus, 22_veldo_0005_declared_vs_shipped, 23_veldo_0006_budget_state, 24_veldo_0007_install_and_run, 25_veldo_0008_version, 26_veldo_0009_install_stamp, 27_veldo_0010_evidence_provenance, 28_veldo_0015_clock_standdown, 29_veldo_0016_policy_boundaries, 30_veldo_0017_entity_lifecycle, 31_veldo_0018_release_floor, 32_veldo_0019_combined_graph, 33_veldo_0020_authority, 34_veldo_0022_admission, 35_veldo_0021_completion, 36_veldo_0023_journal, 37_veldo_0024_replica, 38_veldo_0025_membership, 39_veldo_0026_revocation, 40_veldo_0101_capsules, 41_veldo_0103_assessor, 42_veldo_0102_fixval, 43_veldo_0104_proofcheck, 44_veldo_0105_startline, 45_veldo_0106_policyread, 46_veldo_0029_enrollment, 47_veldo_0107_ipc, 48_veldo_0108_relay, 49_veldo_0109_unavailable, 50_git_environment, 51_parser_boundary, 52_writer_boundary, 53_veldo_0123_mutations, 54_veldo_0118_grammar, 55_veldo_0119_agreement, 56_veldo_0027_signing, 57_veldo_0120_policygrammar, 58_veldo_0028_effects, 58_veldo_0036_reservations, 58_veldo_0035_snapshots, 59_veldo_0043_graph, 59_veldo_0037_aliases, 58_veldo_0031_claims, 59_veldo_0031_review, 60_veldo_0052_eligibility, 60_veldo_0053_architecture, 58_veldo_0046_notifications, 60_veldo_0064_inbox, 61_scope_covers, 62_veldo_0045_runtime, 62_veldo_0054_decisions, 62_veldo_0065_presentations, 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0066_attribution, 63_veldo_0049_floor, 64_veldo_0050_proof, 65_veldo_0132_workflow, 65_veldo_0067_edges, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 66_veldo_0051_events, 67_veldo_0056_candidates, 68_veldo_0137_policy_revision, 68_veldo_0126_intake, 69_veldo_0058_gate_output, 67_veldo_0135_offers, 68_veldo_0136_hints, 68_veldo_0134_acceptance, 69_veldo_0068_settlement, 69_veldo_0133_dispositions, 70_veldo_0069_bindings, 70_veldo_0057_landing, 70_veldo_0073_activation, 71_veldo_0076_projects, 71_veldo_0138_channel_service, 72_veldo_0077_objectives, 72_veldo_0075_andon, 72_veldo_0128_reports, 73_veldo_0089_team, 71_veldo_0130_api, 73_veldo_0139_factory_setup, 74_veldo_0140_standing_delegation, 73_veldo_0078_backlog, 75_veldo_0062_accounts, 75_veldo_0150_own_message_acceptance, 76_veldo_0079_grooming, 77_veldo_0149_adopted_activation, 78_veldo_0160_account_pool, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0144_mcp_catalog, 82_veldo_0141_execution_record, 82_veldo_0085_decomposition, 82_veldo_0129_worker_wiring, 82_veldo_0165_launch_hygiene, 82_veldo_0173_tool_registry, 82_veldo_0172_live_formats, 84_veldo_0169_project_handouts, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 86_veldo_0148_re_land, 86_veldo_0127_agent_configuration, 83_veldo_0166_usage_windows, 86_veldo_0168_text, 86_veldo_0186_setup_assets, 87_veldo_0127_codex_delivery, 88_veldo_0127_feature_defaults, 89_veldo_0127_feature_listing, 90_veldo_0127_feature_profile, 85_veldo_0171_setup_api, 86_veldo_0189_engine_upgrade, 91_veldo_0167_setup_records, 87_veldo_0170_receiver_trust, 91_veldo_0151_specialists, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 97_veldo_0204_gate_resources, 98_veldo_0204_mutation_receipts, 99_veldo_0205_reuse, 100_veldo_0207_case_reuse, 101_veldo_0208_landing_reuse, 102_veldo_0210_agent_profile_runtime, 103_veldo_0124_macos, 104_veldo_0124_control, 105_veldo_0125_relay, 103_veldo_0142_git_identities, 104_veldo_0210_mutation_workers, 103_veldo_0211_borrowed_login, 104_veldo_0164_scoped_reads, 106_veldo_0185_dispatch_setup, 105_veldo_0182_memory
+  why these   the named suites plus their measured prerequisite closure
+              (scripts/suites/requires.json). No fragment runs alone: every
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  cannot      emit the aggregate summary line, write .veldo/last_verify, or
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  exit        never 0, even when nothing fails.
+  done means  `bash scripts/verify.sh` green, and nothing else.
+==============================================================================
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round12_checks.py", line 125, in migration_receiver
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round12_checks.py", line 129, in stop_deadline
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round12_checks.py", line 140, in event_liveness
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round12_checks.py", line 154, in profile_v2
+    assert not any('heartbeat' in name for name in P.P.CAPS)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round12_checks.py", line 259, in stop_watch_reference
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 118, in migrate_before_admission
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 208, in startup_ready_event
+    assert host.start(request).state == 'running'
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 213, in supervisor_exit_wait
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 276, in stop_interrupts_wait
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpgdran7kb: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpgdran7kb/nocrit.md: no acceptance criteria
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpgdran7kb/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpgdran7kb/status.md: bad status: donezo
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpgdran7kb/proof.json: proof criterion AC9 not in the specification (invented)
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpgdran7kb/proof2.json: spec criterion AC1 missing from proof
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpgdran7kb/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpgdran7kb/proof4.json: criterion AC1 passed without evidence
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpgdran7kb/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpgdran7kb/verdict.json: bad verdict: looks_fine
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpa9gftfvu/cycle.md: dependency cycle through WARP-9101
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpa9gftfvu/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpa9gftfvu/oref.md: feature F1: unknown outcome ref O7
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpa9gftfvu/fref.md: work W1: unknown feature ref F9
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpa9gftfvu/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpa9gftfvu/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpa9gftfvu/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpa9gftfvu/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpa9gftfvu/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpa9gftfvu/dupspec.md: duplicate spec ids across work items
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpa9gftfvu/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/tmpa9gftfvu/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  x.md: declares plan PLAN-9002 but no such plan exists
+  x.md: plan PLAN-9001 has no work item W9
+  x.md: plan and work must be declared together
+AC2/receiver-never-migrates-history: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/receiver-never-migrates-history
+AC3/cooperative-stop-runtime-bound: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/cooperative-stop-runtime-bound
+AC3/stalled-wrapper-event-or-runtime-cap: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/stalled-wrapper-event-or-runtime-cap
+AC2/profile-v2-no-heartbeat-fields: AssertionError: 
+  SELFTEST FAIL: VELDO-0125 AC2/profile-v2-no-heartbeat-fields
+AC3/stop-captures-watch-lifetime: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/stop-captures-watch-lifetime
+AC2/upgrade-migrates-before-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/upgrade-migrates-before-admission
+AC3/startup-ready-event: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/startup-ready-event
+AC3/supervisor-blocking-exit: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/supervisor-blocking-exit
+AC3/stop-interrupts-exit-wait: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/stop-interrupts-exit-wait
+AC2/slot-crash-1-before-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-1-before-admission
+AC2/slot-crash-1-before-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-1-before-restart
+AC2/slot-crash-1-after-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-1-after-admission
+AC2/slot-crash-1-after-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-1-after-restart
+AC2/slot-crash-2-before-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-2-before-admission
+AC2/slot-crash-2-before-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-2-before-restart
+AC2/slot-crash-2-after-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-2-after-admission
+AC2/slot-crash-2-after-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-2-after-restart
+AC2/slot-crash-3-before-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-3-before-admission
+AC2/slot-crash-3-before-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-3-before-restart
+AC2/slot-crash-3-after-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-3-after-admission
+AC2/slot-crash-3-after-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-3-after-restart
+AC2/slot-crash-4-before-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-4-before-admission
+AC2/slot-crash-4-before-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-4-before-restart
+AC2/slot-crash-4-after-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-4-after-admission
+AC2/slot-crash-4-after-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-4-after-restart
+AC2/slot-crash-5-before-admission: Refused: unsupported_configuration:heartbeat_window_secondsTraceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 343, in <lambda>
+    rows[name] = lambda base, b=boundary, a=after, r=restart: slot_crash(base, b, a, r)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 38, in slot_crash
+    host.start(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 348, in <lambda>
+    rows[name] = lambda base, a=authority, b=after, r=restart: retirement_crash(base, a, b, r)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 64, in retirement_crash
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 348, in <lambda>
+    rows[name] = lambda base, a=authority, b=after, r=restart: retirement_crash(base, a, b, r)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 64, in retirement_crash
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 348, in <lambda>
+    rows[name] = lambda base, a=authority, b=after, r=restart: retirement_crash(base, a, b, r)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 64, in retirement_crash
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 348, in <lambda>
+    rows[name] = lambda base, a=authority, b=after, r=restart: retirement_crash(base, a, b, r)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 64, in retirement_crash
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 348, in <lambda>
+    rows[name] = lambda base, a=authority, b=after, r=restart: retirement_crash(base, a, b, r)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 64, in retirement_crash
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 348, in <lambda>
+    rows[name] = lambda base, a=authority, b=after, r=restart: retirement_crash(base, a, b, r)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 64, in retirement_crash
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 348, in <lambda>
+    rows[name] = lambda base, a=authority, b=after, r=restart: retirement_crash(base, a, b, r)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 64, in retirement_crash
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 348, in <lambda>
+    rows[name] = lambda base, a=authority, b=after, r=restart: retirement_crash(base, a, b, r)
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/crash_event_checks_r12.py", line 64, in retirement_crash
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/lifecycle_checks_r12.py", line 126, in evidence_release_wait
+    with crashed(base) as c:
+  File "/usr/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/lifecycle_checks_r12.py", line 36, in crashed
+    worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/lifecycle_checks_r12.py", line 103, in waiting_no_status_timer
+    with crashed(base) as c:
+  File "/usr/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/lifecycle_checks_r12.py", line 36, in crashed
+    worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/lifecycle_checks_r12.py", line 144, in status_not_result_ack
+    with crashed(base, output=False) as c:
+  File "/usr/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/lifecycle_checks_r12.py", line 36, in crashed
+    worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/lifecycle_checks_r12.py", line 156, in original_replay_usage
+    with crashed(base) as c:
+  File "/usr/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/lifecycle_checks_r12.py", line 36, in crashed
+    worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/lifecycle_checks_r12.py", line 164, in upgraded_release_attempted
+    with crashed(base) as c:
+  File "/usr/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/lifecycle_checks_r12.py", line 36, in crashed
+    worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/lifecycle_checks_r12.py", line 234, in live_admission_index
+    run = host.start(request)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+{"operation": "worker_delivery", "dispatch_id": "permanent", "state": "parked", "reason": "binding_mismatch:permanent"}
+{"operation": "worker_delivery", "dispatch_id": "bad", "state": "parked", "reason": "binding_mismatch:operator_required"}
+{"operation": "worker_delivery", "dispatch_id": "offline", "state": "retry_pending", "reason": "AUTHORITY_UNAVAILABLE:offline"}
+{"operation": "worker_delivery", "dispatch_id": "offline", "state": "retry_pending", "reason": "AUTHORITY_UNAVAILABLE:offline"}
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/event_checks_r12.py", line 128, in crashed_usage
+    worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+{"operation": "worker_release_wake", "dispatch_id": "dispatch/test", "state": "retry_pending", "reason": "ssh_exit:255"}
+{"operation": "worker_release_wake", "dispatch_id": "dispatch/test", "state": "retry_pending", "reason": "TimeoutExpired"}
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 429, in factory_delivery
+    assert marker['bootstraps'] == 1, marker
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'bootstraps': 0, 'error': 'Traceback (most recent call last):\n  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/receiver_fixture_r12.py", line 61, in <module>\n    result = worker.receive(config, request)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 172, in receive\n    result = receive_locked(config, request)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 323, in receive_locked\n    return run(client, host, request[\'dispatch_id\'], str(clone), str(scratch), account, claim=claim)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run\n    host.preflight(request)\n  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight\n    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request[\'engine\'],\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify\n    validate(profile)\n  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate\n    raise Refused(\'unsupported_configuration:\' + name)\nproject_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds\n'}
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1208, in <lambda>
+    'AC3/remote-result-transport-failure': lambda base: actual_launch(base, lost_result=True),
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 255, in actual_launch
+    result = run()
+             ^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 193, in run
+    return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1209, in <lambda>
+    'AC3/release-flushes-saved-usage': lambda base: actual_launch(base, lost_result='release'),
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 202, in actual_launch
+    run()
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 193, in run
+    return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1210, in <lambda>
+    'AC3/operator-release-after-result': lambda base: actual_launch(base, lost_result='stored-release'),
+                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 202, in actual_launch
+    run()
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 193, in run
+    return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1211, in <lambda>
+    'AC3/startup-resumes-outbox': lambda base: actual_launch(base, lost_result='resumer'),
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 202, in actual_launch
+    run()
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 193, in run
+    return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/checks.py", line 200, in refused
+    call()
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 899, in <lambda>
+    T.refused(lambda: restarted.start(request), 'stale_version:dispatch_already_attempted')
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 181, in start
+    binding, policy = self.preflight(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 899, in release_before_start
+    T.refused(lambda: restarted.start(request), 'stale_version:dispatch_already_attempted')
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/checks.py", line 202, in refused
+    assert getattr(error, 'code', str(error)).startswith(prefix), str(error)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1215, in <lambda>
+    'AC3/remote-result-restart': lambda base: actual_launch(base, lost_result='restart'),
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 202, in actual_launch
+    run()
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 193, in run
+    return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-5-before-admission
+AC2/slot-crash-5-before-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-5-before-restart
+AC2/slot-crash-5-after-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-5-after-admission
+AC2/slot-crash-5-after-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-5-after-restart
+AC2/slot-crash-6-before-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-6-before-admission
+AC2/slot-crash-6-before-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-6-before-restart
+AC2/slot-crash-6-after-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-6-after-admission
+AC2/slot-crash-6-after-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-6-after-restart
+AC2/slot-crash-7-before-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-7-before-admission
+AC2/slot-crash-7-before-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-7-before-restart
+AC2/slot-crash-7-after-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-7-after-admission
+AC2/slot-crash-7-after-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-7-after-restart
+AC2/slot-crash-8-before-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-8-before-admission
+AC2/slot-crash-8-before-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-8-before-restart
+AC2/slot-crash-8-after-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-8-after-admission
+AC2/slot-crash-8-after-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-8-after-restart
+AC2/slot-crash-9-before-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-9-before-admission
+AC2/slot-crash-9-before-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-9-before-restart
+AC2/slot-crash-9-after-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-9-after-admission
+AC2/slot-crash-9-after-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-9-after-restart
+AC2/slot-crash-10-before-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-10-before-admission
+AC2/slot-crash-10-before-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-10-before-restart
+AC2/slot-crash-10-after-admission: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-10-after-admission
+AC2/slot-crash-10-after-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/slot-crash-10-after-restart
+AC2/retirement-crash-False-False-False: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/retirement-crash-False-False-False
+AC2/retirement-crash-False-False-True: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/retirement-crash-False-False-True
+AC2/retirement-crash-False-True-False: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/retirement-crash-False-True-False
+AC2/retirement-crash-False-True-True: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/retirement-crash-False-True-True
+AC2/retirement-crash-True-False-False: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/retirement-crash-True-False-False
+AC2/retirement-crash-True-False-True: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/retirement-crash-True-False-True
+AC2/retirement-crash-True-True-False: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/retirement-crash-True-True-False
+AC2/retirement-crash-True-True-True: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/retirement-crash-True-True-True
+AC3/evidence-release-awaits-authorization: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/evidence-release-awaits-authorization
+AC3/operator-wait-no-status-timer: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/operator-wait-no-status-timer
+AC3/status-is-not-result-ack: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/status-is-not-result-ack
+AC3/original-replay-retains-usage: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/original-replay-retains-usage
+AC3/upgraded-release-attempted: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/upgraded-release-attempted
+AC2/live-slot-admission-index: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/live-slot-admission-index
+AC3/crash-before-evidence-usage: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/crash-before-evidence-usage
+AC2/factory-remote-delivery: AssertionError: {'bootstraps': 0, 'error': 'Traceback (most recent call last):\n  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/receiver_fixture_r12.py", line 61, in <module>\n    result = worker.receive(config, request)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 172, in receive\n    result = receive_locked(config, request)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 323, in receive_locked\n    return run(client, host, request[\'dispatch_id\'], str(clone), str(scratch), account, claim=claim)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run\n    host.preflight(request)\n  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12
+  SELFTEST FAIL: VELDO-0125 AC2/factory-remote-delivery
+AC3/remote-result-transport-failure: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/remote-result-transport-failure
+AC3/release-flushes-saved-usage: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/release-flushes-saved-usage
+AC3/operator-release-after-result: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/operator-release-after-result
+AC3/startup-resumes-outbox: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/startup-resumes-outbox
+AC3/release-before-start: AssertionError: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/release-before-start
+AC3/remote-result-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/remote-result-restartTraceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1216, in <lambda>
+    'AC3/stored-release-restart': lambda base: actual_launch(base, lost_result='stored'),
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 202, in actual_launch
+    run()
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 193, in run
+    return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1217, in <lambda>
+    'AC3/default-collector-retains-files': lambda base: actual_launch(base, default_collect=True),
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 255, in actual_launch
+    result = run()
+             ^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 193, in run
+    return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1218, in <lambda>
+    'AC3/unknown-host-cleanup': lambda base: actual_launch(base, default_collect=True, unknown=True),
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 255, in actual_launch
+    result = run()
+             ^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 193, in run
+    return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1219, in <lambda>
+    'AC3/running-notification-lost': lambda base: actual_launch(base, default_collect=True, lost_running=True),
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 255, in actual_launch
+    result = run()
+             ^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 193, in run
+    return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1220, in <lambda>
+    'AC3/empty-collector-preserves-files': lambda base: actual_launch(base, empty_collect=True),
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 255, in actual_launch
+    result = run()
+             ^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 193, in run
+    return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1221, in <lambda>
+    'AC3/cleanup-failure-release': lambda base: actual_launch(base, cleanup_failed=True),
+                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 255, in actual_launch
+    result = run()
+             ^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 193, in run
+    return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1222, in <lambda>
+    'AC3/incomplete-retirement-release': lambda base: actual_launch(base, incomplete_retirement=True),
+                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 255, in actual_launch
+    result = run()
+             ^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 193, in run
+    return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1239, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 255, in actual_launch
+    result = run()
+             ^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 193, in run
+    return worker.run(client, host, 'dispatch/test', str(paths['clone']), str(paths['scratch']),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/control_worker.py", line 89, in run
+    host.preflight(request)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos.py", line 143, in preflight
+    binding = P.qualify(self.profile, self.qualification, self.os.facts(), request['engine'],
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 169, in qualify
+    validate(profile)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.local-r12/tmp/v125-r12-mutant-5swzix5k/.veldo/project_runner_macos_profile.py", line 134, in validate
+    raise Refused('unsupported_configuration:' + name)
+project_runner_macos_profile.Refused: unsupported_configuration:heartbeat_window_seconds
+
+AC3/stored-release-restart: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/stored-release-restart
+AC3/default-collector-retains-files: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/default-collector-retains-files
+AC3/unknown-host-cleanup: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/unknown-host-cleanup
+AC3/running-notification-lost: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/running-notification-lost
+AC3/empty-collector-preserves-files: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/empty-collector-preserves-files
+AC3/cleanup-failure-release: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/cleanup-failure-release
+AC3/incomplete-retirement-release: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC3/incomplete-retirement-release
+AC2/actual-worker-launch: Refused: unsupported_configuration:heartbeat_window_seconds
+  SELFTEST FAIL: VELDO-0125 AC2/actual-worker-launch
+  106_veldo_0125_routing                          47 passed   40.53s
+selftest (PARTIAL, 1 of 166 suites): 73 passed, 79 failed in 40.53s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

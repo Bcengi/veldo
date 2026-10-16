@@ -1,0 +1,17 @@
+--- project_runner_macos_os.py
++++ project_runner_macos_os.py
+@@ -128,10 +128,10 @@
+         self.closed = False
+         self.reader = self.writer = -1
+         self.queue = select.kqueue()
+-        try:
+-            self.reader, self.writer = os.pipe()
+-            os.set_blocking(self.reader, False)
+-            os.set_blocking(self.writer, False)
++        self.reader, self.writer = os.pipe()
++        os.set_blocking(self.reader, False)
++        os.set_blocking(self.writer, False)
++        try:
+             self.queue.control([
+                 select.kevent(pid, filter=select.KQ_FILTER_PROC,
+                     flags=select.KQ_EV_ADD | select.KQ_EV_ONESHOT, fflags=select.KQ_NOTE_EXIT),

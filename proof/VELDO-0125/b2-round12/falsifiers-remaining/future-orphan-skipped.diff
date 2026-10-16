@@ -1,0 +1,11 @@
+--- control_worker_outbox.py
++++ control_worker_outbox.py
+@@ -100,6 +100,8 @@
+         locks = root / '.locks'
+         locks.mkdir(exist_ok=True)
+         for path in sorted((root / '.active').glob('*.json')):
++            if json.loads(path.read_text())['due'] > time.time():
++                continue
+             request = json.loads(path.read_text())['request']
+             lock_key = hashlib.sha256(json.dumps(request['dispatch_id']).encode()).hexdigest()
+             with (locks / lock_key).open('a') as stream:

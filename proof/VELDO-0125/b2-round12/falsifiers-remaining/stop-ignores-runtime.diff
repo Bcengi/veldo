@@ -1,0 +1,12 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -397,8 +397,7 @@
+             while not self.poll():
+                 # NOTE_EXIT blocks for the healthy run. Only deadline/stop stages
+                 # schedule a timeout; no recurring heartbeat or process scan.
+-                until = (min(self.due, self.deadline) if self.stage == 'cooperative'
+-                         else self.due if self.stage else self.deadline)
++                until = self.due if self.stage else self.deadline
+                 seconds = max(0, until - self.os.monotonic())
+                 if self.exit_seen:
+                     self.os.sleep(seconds)  # Bounded shutdown of orphan descendants.

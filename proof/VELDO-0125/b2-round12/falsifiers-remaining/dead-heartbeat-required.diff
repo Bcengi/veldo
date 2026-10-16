@@ -1,0 +1,11 @@
+--- project_runner_macos_profile.py
++++ project_runner_macos_profile.py
+@@ -23,7 +23,7 @@
+                          ('--sandbox=danger-full-access',), ('--dangerously-bypass-approvals-and-sandbox',))}
+ MINIMUM_PYTHON = (3, 11)
+ CAPS = ('runtime_seconds', 'stop_grace_seconds', 'kill_grace_seconds', 'settle_seconds',
+-        'startup_seconds')
++        'startup_seconds', 'heartbeat_window_seconds')
+ 
+ 
+ class Refused(Exception):

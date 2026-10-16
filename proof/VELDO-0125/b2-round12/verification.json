@@ -1,0 +1,162 @@
+{
+  "scope": "Local observations only. No gate, native macOS, SSH, qualification or independent-review claim.",
+  "source_audit": {
+    "implementation_commit": "533843ea172daa5de72f13a63a8ef20f287aa555",
+    "modules": {
+      "control_worker": "8e8e9901a4c2ebcb0e1c47939e2d6ce3071d00df8ea4dc712e0b804ece984e2d",
+      "control_worker_outbox": "c3c4ed126441c62fc80037e87067136cd5b631eb07003e2840442cac8f3b8a7b",
+      "project_runner_macos": "e1a988c89c8661cc5225c2a99cfe7db8c4dbb545621a15624065e4bbc4ccd8d1",
+      "project_runner_macos_os": "5e89aafb1866bf29d42220e12379f6e2f67e68b0c6ba06f7f6cf55eee25d56dc",
+      "project_runner_macos_profile": "40ac69b6dd08bc6b33957eac5bfcc96f3f9f19d6a2d2d672f8fd26d277882d5f"
+    },
+    "engine_copies_identical": true,
+    "previous_proof_unchanged": true,
+    "original_0124_file_restored": true,
+    "changed_python_compiles": true,
+    "all_shared_python_sync": {
+      "checked": 243,
+      "mismatches": []
+    }
+  },
+  "runs": [
+    {
+      "log": "proof/VELDO-0125/b2-round12/routing-baseline.log",
+      "sha256": "0fb996e27437316d9c66216469338d7058eb4d11696d3192b4690de3fac7414c",
+      "passed": 152,
+      "failed": 0,
+      "seconds": 60.62,
+      "returncode": 2,
+      "scope": "selected suite, PARTIAL"
+    },
+    {
+      "log": "proof/VELDO-0125/b2-round12/relay-final.log",
+      "sha256": "ad3bf025202b6aae5778c64604245fd471bf9063fc00d2642f2c8c94038867b9",
+      "passed": 43,
+      "failed": 0,
+      "seconds": 7.6,
+      "returncode": 2,
+      "scope": "selected suite, PARTIAL"
+    }
+  ],
+  "falsifiers": [
+    {
+      "case": "recorder-requeues",
+      "row": "AC3/recorder-failure-no-relaunch",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "c3c4ed126441c62fc80037e87067136cd5b631eb07003e2840442cac8f3b8a7b",
+      "patch": "proof/VELDO-0125/b2-round12/falsifiers/recorder-requeues.diff",
+      "log": "proof/VELDO-0125/b2-round12/falsifiers/recorder-requeues.log"
+    },
+    {
+      "case": "backlog-before-request",
+      "row": "AC3/new-request-independent-of-backlog",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "8e8e9901a4c2ebcb0e1c47939e2d6ce3071d00df8ea4dc712e0b804ece984e2d",
+      "patch": "proof/VELDO-0125/b2-round12/falsifiers-remaining/backlog-before-request.diff",
+      "log": "proof/VELDO-0125/b2-round12/falsifiers-remaining/backlog-before-request.log"
+    },
+    {
+      "case": "recorder-aborts-peers",
+      "row": "AC3/new-request-independent-of-backlog",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "8e8e9901a4c2ebcb0e1c47939e2d6ce3071d00df8ea4dc712e0b804ece984e2d",
+      "patch": "proof/VELDO-0125/b2-round12/falsifiers-remaining/recorder-aborts-peers.diff",
+      "log": "proof/VELDO-0125/b2-round12/falsifiers-remaining/recorder-aborts-peers.log"
+    },
+    {
+      "case": "future-orphan-skipped",
+      "row": "AC3/future-active-scheduled",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "c3c4ed126441c62fc80037e87067136cd5b631eb07003e2840442cac8f3b8a7b",
+      "patch": "proof/VELDO-0125/b2-round12/falsifiers-remaining/future-orphan-skipped.diff",
+      "log": "proof/VELDO-0125/b2-round12/falsifiers-remaining/future-orphan-skipped.log"
+    },
+    {
+      "case": "receiver-migrates",
+      "row": "AC2/receiver-never-migrates-history",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "8e8e9901a4c2ebcb0e1c47939e2d6ce3071d00df8ea4dc712e0b804ece984e2d",
+      "patch": "proof/VELDO-0125/b2-round12/falsifiers-remaining/receiver-migrates.diff",
+      "log": "proof/VELDO-0125/b2-round12/falsifiers-remaining/receiver-migrates.log"
+    },
+    {
+      "case": "stop-ignores-runtime",
+      "row": "AC3/cooperative-stop-runtime-bound",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "e1a988c89c8661cc5225c2a99cfe7db8c4dbb545621a15624065e4bbc4ccd8d1",
+      "patch": "proof/VELDO-0125/b2-round12/falsifiers-remaining/stop-ignores-runtime.diff",
+      "log": "proof/VELDO-0125/b2-round12/falsifiers-remaining/stop-ignores-runtime.log"
+    },
+    {
+      "case": "runtime-detection-late",
+      "row": "AC3/stalled-wrapper-event-or-runtime-cap",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "e1a988c89c8661cc5225c2a99cfe7db8c4dbb545621a15624065e4bbc4ccd8d1",
+      "patch": "proof/VELDO-0125/b2-round12/falsifiers-remaining/runtime-detection-late.diff",
+      "log": "proof/VELDO-0125/b2-round12/falsifiers-remaining/runtime-detection-late.log"
+    },
+    {
+      "case": "dead-heartbeat-required",
+      "row": "AC2/profile-v2-no-heartbeat-fields",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "40ac69b6dd08bc6b33957eac5bfcc96f3f9f19d6a2d2d672f8fd26d277882d5f",
+      "patch": "proof/VELDO-0125/b2-round12/falsifiers-remaining/dead-heartbeat-required.diff",
+      "log": "proof/VELDO-0125/b2-round12/falsifiers-remaining/dead-heartbeat-required.log"
+    },
+    {
+      "case": "profile-version-unchanged",
+      "row": "AC2/profile-v2-no-heartbeat-fields",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "40ac69b6dd08bc6b33957eac5bfcc96f3f9f19d6a2d2d672f8fd26d277882d5f",
+      "patch": "proof/VELDO-0125/b2-round12/falsifiers-remaining/profile-version-unchanged.diff",
+      "log": "proof/VELDO-0125/b2-round12/falsifiers-remaining/profile-version-unchanged.log"
+    },
+    {
+      "case": "watch-allocation-unprotected",
+      "row": "AC3/exit-watch-init-closes-resources",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "5e89aafb1866bf29d42220e12379f6e2f67e68b0c6ba06f7f6cf55eee25d56dc",
+      "patch": "proof/VELDO-0125/b2-round12/falsifiers-remaining/watch-allocation-unprotected.diff",
+      "log": "proof/VELDO-0125/b2-round12/falsifiers-remaining/watch-allocation-unprotected.log"
+    },
+    {
+      "case": "wake-close-race",
+      "row": "AC3/exit-watch-close-serializes-wake",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "5e89aafb1866bf29d42220e12379f6e2f67e68b0c6ba06f7f6cf55eee25d56dc",
+      "patch": "proof/VELDO-0125/b2-round12/falsifiers-remaining/wake-close-race.diff",
+      "log": "proof/VELDO-0125/b2-round12/falsifiers-remaining/wake-close-race.log"
+    },
+    {
+      "case": "stop-rereads-cleared-watch",
+      "row": "AC3/stop-captures-watch-lifetime",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "e1a988c89c8661cc5225c2a99cfe7db8c4dbb545621a15624065e4bbc4ccd8d1",
+      "patch": "proof/VELDO-0125/b2-round12/falsifiers-remaining/stop-rereads-cleared-watch.diff",
+      "log": "proof/VELDO-0125/b2-round12/falsifiers-remaining/stop-rereads-cleared-watch.log"
+    },
+    {
+      "case": "correction-claims-partial",
+      "row": "AC1/round11-log-correction-and-original-row",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "8b9e818f03916dbd27a34cf9f8d8ad1455be41825de2883c953c2efaf4b3281e",
+      "patch": "proof/VELDO-0125/b2-round12/falsifiers-remaining/correction-claims-partial.diff",
+      "log": "proof/VELDO-0125/b2-round12/falsifiers-remaining/correction-claims-partial.log"
+    }
+  ],
+  "historical_suite": "VELDO-0124 row file restored exactly; v1 heartbeat liveness is superseded for v2 as specified in VELDO-0125. Only VELDO-0125 suites were run.",
+  "driver_note": "The first driver rejected recorder-requeues, then refused a non-unique selector before running its next case. The additive continuation driver narrowed that selector and ran the remaining twelve serially. Both logs are retained."
+}

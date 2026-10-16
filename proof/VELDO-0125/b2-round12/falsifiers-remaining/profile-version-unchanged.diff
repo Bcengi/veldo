@@ -1,0 +1,11 @@
+--- project_runner_macos_profile.py
++++ project_runner_macos_profile.py
+@@ -11,7 +11,7 @@
+ from pathlib import Path
+ import unicodedata
+ 
+-SCHEMA = 'veldo.macos_worker_profile/v2'
++SCHEMA = 'veldo.macos_worker_profile/v1'
+ QUALIFICATION = 'veldo.macos_worker_qualification/v1'
+ ENGINES = ('claude_code', 'codex')
+ NATIVE_ROWS = ('launch', 'write', 'read', 'launchd', 'keychain', 'signal', 'capacity', 'deadline', 'natural',

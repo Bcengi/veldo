@@ -1,0 +1,15 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -361,10 +361,9 @@
+         if self.stage is None:
+             self.cause = reason
+             self.step('cooperative', self.os.monotonic())
+-            watch = self.watch
+-            if watch is not None:
++            if self.watch is not None:
+                 with contextlib.suppress(OSError):
+-                    self.os.wake(watch)
++                    self.os.wake(self.watch)
+ 
+     def poll(self):
+         now = self.os.monotonic()
