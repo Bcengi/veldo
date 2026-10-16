@@ -241,3 +241,39 @@ prior proof corpus. Heartbeat timeouts remain accepted profile fields for
 compatibility; healthy runs use exit events and the existing runtime deadline.
 The updated simulator models blocking exit events. The reviewer owns the full
 gate and native macOS qualification under the owner's explicit suite limits.
+
+2026-10-16, round 12: the owner requires recorder-failure parking without a
+launchd relaunch loop, new-request isolation from retained deliveries, recovery
+of future-due orphaned active entries, migration outside receiver admission,
+runtime-cap precedence during cooperative stop, and safe exit-watch lifetime.
+The delivery worker migrates the live slot index at its RunAtLoad startup;
+receiver construction disables migration and requires that installed index.
+Recovery schedules orphaned entries with their original deadline and attempt
+count. It does not perform backlog network calls on the receiver's stdin path.
+Recorder failures retain the original entry in .parked using rename, outside
+launchd's watched queue. Explicit new events can retry operator-repaired work.
+
+The macOS worker profile changes from veldo.macos_worker_profile/v1 to v2.
+Both heartbeat_seconds and heartbeat_window_seconds are removed, including
+from the serialized profile whose digest binds qualification. v2 rejects either
+retired field and refuses v1; operators must remove those fields, set schema v2,
+and qualify the resulting profile digest before activation. Existing native
+qualification is not silently reused. Runtime, startup and shutdown deadlines
+remain required. Healthy wrappers use NOTE_EXIT; a stalled live wrapper is
+terminated at the runtime cap. The VELDO-0124 heartbeat-missing assertion is
+restored to its prior content as historical v1 evidence. Its heartbeat-loss
+liveness check is superseded for profile v2 by the NEW VELDO-0125
+AC3/stalled-wrapper-event-or-runtime-cap row, not by editing its expected result.
+The unmodified v1 row is not a v2 qualification claim. The reviewer must account
+for this explicit profile-version change when running the historical suite.
+New correction records identify the completed round 11 routing log without
+rewriting that log or its earlier README. Full gate and native qualification
+remain with the reviewer under the owner's run restrictions.
+
+Before enabling the receiver, run `python3 .veldo/control_worker.py CONFIG --install`
+on the trusted worker to migrate the index and install its launch agent. The
+RunAtLoad delivery worker also initializes the index as an upgrade/startup step.
+An uninstalled receiver refuses with `unavailable_service:slot_migration_required`
+before acquiring admission.lock, so a history scan cannot hold that receiver
+inside admission. Installation precedes dispatch eligibility; this is not an
+automatic retry of execution or reuse of an old qualification.

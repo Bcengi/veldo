@@ -1,0 +1,11 @@
+{
+  "run": "round11-routing-corrected-106_veldo_0125_routing",
+  "log": "proof/VELDO-0125/b2-crash-events/routing-corrected.log",
+  "log_sha256": "5d73d9e9c2419f8de0ded2a488d3251b0d0c0816ec7b32dbd64ea6ec3d041d7e",
+  "complete": true,
+  "passed": 138,
+  "failed": 0,
+  "seconds": 107.07,
+  "correction": "The retained log is the completed corrected round 11 routing invocation, not partial output of a stopped run. Its suite line reports 112 routing rows plus 26 prerequisite rows. The prior README statement that this log was stopped immediately is incorrect. The log alone does not establish when an overlapping process was stopped; no such timing claim is made here.",
+  "restored_0124_sha256": "987feec48aaff54fa5c1049062c92f8e793315813fec1f9b5c296f1b4570a8bb"
+}

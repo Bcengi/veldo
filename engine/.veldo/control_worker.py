@@ -147,6 +147,7 @@ def apply_release(client, host, binding, outcome):
 def receive(config, request, *, queued=False):
     lock = None
     acquired = False
+    recorder_failed = False
     try:
         # Serialize queue transitions with execution-lock acquisition/completion.
         # Active entries are durable but outside launchd's watched directory.
@@ -176,6 +177,8 @@ def receive(config, request, *, queued=False):
         try:
             OUT.failure(config, request, error, CL.durable_json)
         except Exception as recording_error:
+            recorder_failed = True
+            OUT.park_recorder_failure(config, request['dispatch_id'])
             print(json.dumps(dict(operation='worker_delivery_recorder_failed',
                 dispatch_id=request['dispatch_id'], reason=str(recording_error))),
                 file=sys.stderr, flush=True)
@@ -189,9 +192,10 @@ def receive(config, request, *, queued=False):
                 with OUT.locked(config) as root:
                     fcntl.flock(lock, fcntl.LOCK_UN)
                     path = root / '.active' / OUT.key(request['dispatch_id'])
-                    if path.exists():
+                    if path.exists() and not recorder_failed:
                         OUT.move(root, path, '.pending', CL.durable_json)
         except Exception as recording_error:
+            OUT.park_recorder_failure(config, request['dispatch_id'])
             print(json.dumps(dict(operation='worker_delivery_recorder_failed',
                 dispatch_id=request['dispatch_id'], reason=str(recording_error))),
                 file=sys.stderr, flush=True)
@@ -248,7 +252,7 @@ def receive_locked(config, request):
     CL = organ('control_worker_client')
     SIG = organ('control_signer')
     M = organ('project_runner_macos')
-    host = M.Supervisor(config['profile'], config['qualification'])
+    host = M.Supervisor(config['profile'], config['qualification'], migrate=False)
     key = str(Path(config['signing_key']).resolve())
     if key not in {str(Path(p).resolve()) for p in host.profile.get('signing_keys', [])}:
         raise C.P.Refused('missing_evidence:worker_signing_key_custody')
@@ -321,10 +325,12 @@ def receive_locked(config, request):
 
 def resume_pending(config, *, drain=False):
     """Drain only indexed events, waiting solely for specific delivery retries."""
-    entries = OUT.entries(config)  # Includes interrupted receivers, once per wake.
+    OUT.recover_active(config)
+    entries = OUT.entries(config, ready_only=True)
     while True:
         if not entries:
             return
+        recorder_errors = []
         for entry in entries:
             if entry['due'] > time.time():
                 continue
@@ -333,10 +339,12 @@ def resume_pending(config, *, drain=False):
                 request['action'] = 'resume'
             try:
                 receive(config, request, queued=True)
-            except RecorderFailure:
-                raise
+            except RecorderFailure as error:
+                recorder_errors.append(error)
             except Exception:
                 pass  # receive durably records/parks this dispatch; drain its peers.
+        if recorder_errors:
+            raise recorder_errors[0]
         if not drain:
             return
         entries = OUT.entries(config, ready_only=True)
@@ -374,14 +382,18 @@ def install_resumer(config_path, config):
         subprocess.run(['launchctl', 'bootstrap', domain, str(path)], check=True, capture_output=True)
 
 
-def main(config_path, resume=False):
+def main(config_path, resume=False, install=False):
     config = json.loads(Path(config_path).read_text())
     Path(config['runs']).mkdir(parents=True, exist_ok=True)
+    if install:
+        organ('project_runner_macos').Supervisor(config['profile'], config['qualification'])
+        install_resumer(config_path, config)
+        return
     if resume:
+        organ('project_runner_macos').Supervisor(config['profile'], config['qualification'])
         resume_pending(config, drain=True)
     else:
         install_resumer(config_path, config)
-        resume_pending(config)  # Worker-start event replays orphaned active owners.
         try:
             result = receive(config, json.loads(sys.stdin.readline(65536)))
         except Exception as error:
@@ -392,7 +404,12 @@ def main(config_path, resume=False):
             print(json.dumps(dict(state='parked', reason=str(error))), flush=True)
             return
         print(json.dumps(dict(state=result['record']['state'] if result else 'delivery_pending')), flush=True)
+        try:
+            OUT.recover_active(config)
+        except Exception as error:
+            print(json.dumps(dict(operation='worker_recovery_failed', reason=str(error))),
+                  file=sys.stderr, flush=True)
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], '--resume' in sys.argv[2:])
+    main(sys.argv[1], '--resume' in sys.argv[2:], '--install' in sys.argv[2:])

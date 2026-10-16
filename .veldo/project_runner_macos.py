@@ -49,13 +49,16 @@ def write(path, value):
 
 
 class Supervisor:
-    def __init__(self, profile, qualification, *, backend=None, observe=None):
+    def __init__(self, profile, qualification, *, backend=None, observe=None, migrate=True):
         self.profile, self.qualification = profile, qualification
         self.os = backend or OS.Native()
         self.root = Path(P.canonical(profile['root']))
         self.observe = observe or (lambda event: None)
         self.counts = dict(accepted=0, refused=0)
-        self.initialize_slots()
+        if migrate:
+            self.initialize_slots()
+        else:
+            self.live_slots()  # Refuse an uninstalled index before taking admission.lock.
 
     @contextlib.contextmanager
     def lock(self):
@@ -64,7 +67,7 @@ class Supervisor:
             yield
 
     def initialize_slots(self):
-        """Migrate once at supervisor construction, never during admission."""
+        """Migrate at worker/drain startup; receivers explicitly disable migration."""
         with self.lock():
             path = self.root / '.live-slots.json'
             if read(path) is None:
@@ -77,7 +80,10 @@ class Supervisor:
             self.reconcile_slots()
 
     def live_slots(self):
-        return read(self.root / '.live-slots.json')
+        slots = read(self.root / '.live-slots.json')
+        if slots is None:
+            raise P.Refused('unavailable_service:slot_migration_required')
+        return slots
 
     def reconcile_slots(self):
         """The write-ahead index bounds reconciliation to potentially live records.
@@ -205,7 +211,6 @@ class Supervisor:
                                    argv=engine['argv'], binary_digest=engine['binary_digest'],
                                    clone=P.canonical(request['clone']), environment=request['environment'],
                                    sandbox=policy, startup_seconds=p['startup_seconds'],
-                                   heartbeat_seconds=p['heartbeat_seconds'],
                                    kill_grace_seconds=p['kill_grace_seconds'], settle_seconds=p['settle_seconds'])
             write(directory / 'request.json', wrapper_request)
             run.save('starting', locked=True)
@@ -310,7 +315,6 @@ class Run:
         self.state, self.cause, self.stage = 'starting', None, None
         self.due, self.deadline, self.deadline_wall = float('inf'), float('inf'), None
         self.exit_seen, self.steps = False, []
-        self.last_heartbeat = self.os.monotonic()
 
     def save(self, state, *, locked=False):
         if not locked:
@@ -357,9 +361,10 @@ class Run:
         if self.stage is None:
             self.cause = reason
             self.step('cooperative', self.os.monotonic())
-            if self.watch is not None:
+            watch = self.watch
+            if watch is not None:
                 with contextlib.suppress(OSError):
-                    self.os.wake(self.watch)
+                    self.os.wake(watch)
 
     def poll(self):
         now = self.os.monotonic()
@@ -392,7 +397,8 @@ class Run:
             while not self.poll():
                 # NOTE_EXIT blocks for the healthy run. Only deadline/stop stages
                 # schedule a timeout; no recurring heartbeat or process scan.
-                until = self.due if self.stage else self.deadline
+                until = (min(self.due, self.deadline) if self.stage == 'cooperative'
+                         else self.due if self.stage else self.deadline)
                 seconds = max(0, until - self.os.monotonic())
                 if self.exit_seen:
                     self.os.sleep(seconds)  # Bounded shutdown of orphan descendants.

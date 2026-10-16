@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 import unicodedata
 
-SCHEMA = 'veldo.macos_worker_profile/v1'
+SCHEMA = 'veldo.macos_worker_profile/v2'
 QUALIFICATION = 'veldo.macos_worker_qualification/v1'
 ENGINES = ('claude_code', 'codex')
 NATIVE_ROWS = ('launch', 'write', 'read', 'launchd', 'keychain', 'signal', 'capacity', 'deadline', 'natural',
@@ -23,7 +23,7 @@ UNSANDBOXED = {'codex': (('--sandbox', 'danger-full-access'), ('-s', 'danger-ful
                          ('--sandbox=danger-full-access',), ('--dangerously-bypass-approvals-and-sandbox',))}
 MINIMUM_PYTHON = (3, 11)
 CAPS = ('runtime_seconds', 'stop_grace_seconds', 'kill_grace_seconds', 'settle_seconds',
-        'startup_seconds', 'heartbeat_seconds', 'heartbeat_window_seconds')
+        'startup_seconds')
 
 
 class Refused(Exception):
@@ -132,8 +132,8 @@ def validate(profile):
         value = profile.get(name)
         if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
             raise Refused('unsupported_configuration:' + name)
-    if profile['heartbeat_window_seconds'] <= profile['heartbeat_seconds']:
-        raise Refused('unsupported_configuration:heartbeat_window_seconds')
+    if any(name in profile for name in ('heartbeat_seconds', 'heartbeat_window_seconds')):
+        raise Refused('unsupported_configuration:removed_heartbeat_field')
     if not isinstance(profile.get('engines'), dict) or set(profile['engines']) != set(ENGINES):
         raise Refused('unsupported_configuration:engines')
     for engine in profile['engines'].values():

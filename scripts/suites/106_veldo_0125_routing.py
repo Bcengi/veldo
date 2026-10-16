@@ -10,10 +10,12 @@ def _v125_routing_suite():
     from pathlib import Path
 
     def helper(name, relative):
-        if relative == "proof/VELDO-0125/lifecycle_checks_r11.py":
+        if relative == "proof/VELDO-0125/lifecycle_checks_r12.py":
             relative = os.environ.get("VELDO_0125_LIFECYCLE_CHECKS", relative)
         if relative == "proof/VELDO-0124/checks.py":
             relative = "proof/VELDO-0125/macos_event_fixture.py"
+        if relative == "proof/VELDO-0125/macos_event_fixture.py":
+            relative = "proof/VELDO-0125/macos_event_fixture_r12.py"
         spec = importlib.util.spec_from_file_location(name, ROOT / relative)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
@@ -93,7 +95,7 @@ def _v125_routing_suite():
             fixture_temp=str(paths['usertemp']), fixture_marker=str(base / 'release-marker.json'),
             fixture_exchange=str(exchange))))
         f.config['receiver'] = dict(remote_receivers={backend.facts()['host']: dict(argv=[sys.executable,
-            str(ROOT / 'proof/VELDO-0125/receiver_fixture_r11.py'), str(endpoint)])})
+            str(ROOT / 'proof/VELDO-0125/receiver_fixture_r12.py'), str(endpoint)])})
         return exchange
 
     def finish_release(f, host, exchange):
@@ -218,7 +220,7 @@ def _v125_routing_suite():
                 shutil.copyfile(paths['clone'].parent / 'result-evidence.json', directory / 'result-evidence.json')
                 original = worker.organ
                 worker.organ = lambda name: types.SimpleNamespace(Client=lambda *args, **kwargs: resumed) if name == 'control_worker_client' else (
-                    types.SimpleNamespace(Supervisor=lambda *args: host) if name == 'project_runner_macos' else original(name))
+                    types.SimpleNamespace(Supervisor=lambda *args, **kwargs: host) if name == 'project_runner_macos' else original(name))
                 config = dict(profile=host.profile, qualification=host.qualification,
                     signing_key=str(f.keys / 'mac'), workspace=str(f.repo), binding=f.binding, principal='mac',
                     ssh_argv=[], runs=str(directory.parent))
@@ -393,7 +395,7 @@ def _v125_routing_suite():
             receiver_path.write_text(json.dumps(dict(workspace=str(f.repo), store=str(f.store), host='linux',
                 host_trust=f.config['host_trust'], adapters={'codex': {'engine': 'codex'}},
                 remote_receivers={remote_host: {'argv': [sys.executable,
-                    str(ROOT / 'proof/VELDO-0125/receiver_fixture_r11.py'), str(endpoint_path)]}})))
+                    str(ROOT / 'proof/VELDO-0125/receiver_fixture_r12.py'), str(endpoint_path)]}})))
             loop = service_module.FactoryLoop.__new__(service_module.FactoryLoop)
             loop.service, loop.deadlines, loop.wakes, loop.ended = f.service, {}, [], []
             line = service_module.Line(loop, 'repo', {}, str(receiver_path))
@@ -920,6 +922,9 @@ def _v125_routing_suite():
         assert calls[-1][1] == 'bootstrap'
         invoked = []
         worker.resume_pending = lambda config, **kwargs: invoked.append((config, kwargs))
+        worker.organ = lambda name: types.SimpleNamespace(Supervisor=lambda *args: None)
+        config['qualification'] = {}
+        path.write_text(json.dumps(config))
         worker.sleep = lambda seconds: (_ for _ in ()).throw(KeyboardInterrupt())
         try:
             worker.main(str(path), resume=True)
@@ -1189,10 +1194,11 @@ def _v125_routing_suite():
                                      'run', 'codex', 'unused.json'], capture_output=True, text=True)
             assert result.returncode == 2 and json.loads(result.stdout)['status'] == 'not_run'
 
-    events = helper('v125_event_checks', 'proof/VELDO-0125/event_checks_r11.py')
-    lifecycle = helper('v125_lifecycle_checks', 'proof/VELDO-0125/lifecycle_checks_r11.py')
-    crash_events = helper('v125_crash_events', 'proof/VELDO-0125/crash_event_checks.py')
-    for row, test in {**crash_events.cases(T, helper), **lifecycle.cases(T, helper), **events.cases(T, helper, release_endpoint, finish_release), 'AC1/installed-routing': installed_routing,
+    events = helper('v125_event_checks', 'proof/VELDO-0125/event_checks_r12.py')
+    lifecycle = helper('v125_lifecycle_checks', 'proof/VELDO-0125/lifecycle_checks_r12.py')
+    crash_events = helper('v125_crash_events', 'proof/VELDO-0125/crash_event_checks_r12.py')
+    round12 = helper('v125_round12', 'proof/VELDO-0125/round12_checks.py')
+    for row, test in {**round12.cases(T, helper), **crash_events.cases(T, helper), **lifecycle.cases(T, helper), **events.cases(T, helper, release_endpoint, finish_release), 'AC1/installed-routing': installed_routing,
                       'AC1/worker-signing-key-read': signing_key_read,
                       'AC2/capability-selection': selection, 'AC2/host-routing-refusal': blocked,
                       'AC2/qualification': qualification, 'AC2/factory-remote-delivery': factory_delivery,

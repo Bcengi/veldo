@@ -20,6 +20,7 @@ import socket
 import subprocess
 import sys
 import time
+import threading
 
 ENV = {'PATH': '/usr/bin:/bin:/usr/sbin:/sbin', 'LC_ALL': 'C', 'TZ': 'UTC'}
 
@@ -123,11 +124,14 @@ def wait_members(pids, seconds):
 class ExitWatch:
     """A process exit plus a pipe wake, using Python 3.11's kqueue filters."""
     def __init__(self, pid):
+        self.lock = threading.Lock()
+        self.closed = False
+        self.reader = self.writer = -1
         self.queue = select.kqueue()
-        self.reader, self.writer = os.pipe()
-        os.set_blocking(self.reader, False)
-        os.set_blocking(self.writer, False)
         try:
+            self.reader, self.writer = os.pipe()
+            os.set_blocking(self.reader, False)
+            os.set_blocking(self.writer, False)
             self.queue.control([
                 select.kevent(pid, filter=select.KQ_FILTER_PROC,
                     flags=select.KQ_EV_ADD | select.KQ_EV_ONESHOT, fflags=select.KQ_NOTE_EXIT),
@@ -138,9 +142,26 @@ class ExitWatch:
             raise
 
     def close(self):
-        self.queue.close()
-        os.close(self.reader)
-        os.close(self.writer)
+        with self.lock:
+            if self.closed:
+                return
+            self.closed = True
+            try:
+                self.queue.close()
+            finally:
+                for descriptor in (self.reader, self.writer):
+                    if descriptor >= 0:
+                        os.close(descriptor)
+
+    def wake(self):
+        # The lifetime lock covers the write, so close cannot recycle its fd.
+        with self.lock:
+            if self.closed:
+                return
+            try:
+                os.write(self.writer, b'x')
+            except BlockingIOError:
+                pass  # An unread wake already exists.
 
 
 class Native:
@@ -202,10 +223,7 @@ class Native:
 
     def wake(self, watch):
         # Pipe readiness interrupts a blocking wait when stop shortens its deadline.
-        try:
-            os.write(watch.writer, b'x')
-        except BlockingIOError:
-            pass  # An unread wake already exists.
+        watch.wake()
 
     def exited(self, watch, seconds):
         events = watch.queue.control(None, 2, max(0, seconds))

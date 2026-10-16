@@ -10,7 +10,7 @@ def _v124_suite():
     import signal
     import tempfile
 
-    spec = importlib.util.spec_from_file_location('v124_checks', ROOT / 'proof/VELDO-0125/macos_event_fixture.py')
+    spec = importlib.util.spec_from_file_location('v124_checks', ROOT / 'proof/VELDO-0124/checks.py')
     T = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(T)
     M, P = T.M, T.P
@@ -307,8 +307,8 @@ def _v124_suite():
         run = host.start(request)
         osx.heartbeat = False
         result = run.wait()
-        assert result['state'] == 'exited' and run.cause == 'runtime_cap'
-        assert run.steps[0]['monotonic'] <= .301 and run.steps[0]['stage'] == 'terminate'
+        assert result['state'] == 'exited' and run.cause == 'heartbeat_missing'
+        assert run.steps[0]['monotonic'] <= .101 and run.steps[0]['stage'] == 'cooperative'
 
     def os_contract(base):
         host, osx, request, paths = T.start(base)
