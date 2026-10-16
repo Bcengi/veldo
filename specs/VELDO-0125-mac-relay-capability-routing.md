@@ -217,3 +217,13 @@ and flush measured engine output even after a crash before result evidence.
 Unknown outcomes retain measured usage on the original invocation exactly once.
 Round 9 regressions and isolated falsifiers are added without changing historical
 proof records. Native Mac/SSH qualification and the full gate remain with the reviewer.
+
+2026-10-16: the owner requires active receiver entries to remain outside the
+watched delivery queue, operator holds to await an explicit event without status
+polling, and upgraded release events to survive permanent result refusals.
+Recovery must preserve late wrapper output and original-dispatch replay usage;
+execution-lock failures must be recorded with bounded retries. Mac admission now
+uses a live slot index, and parking persists its parent before removing pending
+work. New lifecycle regression rows and isolated falsifiers extend the evidence
+without rewriting earlier proof records. The reviewer still owns the full gate,
+merged-tree stamp and real Mac qualification under the owner's run restrictions.

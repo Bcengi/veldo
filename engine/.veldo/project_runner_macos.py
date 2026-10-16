@@ -62,10 +62,30 @@ class Supervisor:
             fcntl.flock(stream, fcntl.LOCK_EX)
             yield
 
-    def status(self):
-        states = [read(path) for path in self.root.glob('*/slot.json')]
-        return dict(self.counts, pending=sum(s['state'] != 'retired' for s in states),
-                    stopped=sum(s['state'] == 'unknown' for s in states))
+    def live_slots(self):
+        """Called under admission.lock; migrate old pools once, then read live work only."""
+        path = self.root / '.live-slots.json'
+        slots = read(path)
+        if slots is None:
+            slots = {p.parent.name: read(p)['state'] for p in self.root.glob('*/slot.json')
+                     if read(p)['state'] != 'retired'}
+            write(path, slots)
+        return slots
+
+    def index_slot(self, label, state):
+        slots = self.live_slots()
+        if state == 'retired':
+            slots.pop(label, None)
+        else:
+            slots[label] = state
+        write(self.root / '.live-slots.json', slots)
+
+    def status(self, *, locked=False):
+        if not locked:
+            with self.lock():
+                return self.status(locked=True)
+        states = self.live_slots().values()
+        return dict(self.counts, pending=len(states), stopped=sum(s == 'unknown' for s in states))
 
     @staticmethod
     def label(dispatch):
@@ -141,7 +161,7 @@ class Supervisor:
         with self.lock():
             if directory.exists():
                 raise P.Refused('stale_version:dispatch_already_attempted')
-            if self.status()['pending'] >= p['max_workers']:
+            if self.status(locked=True)['pending'] >= p['max_workers']:
                 raise P.Refused('unavailable_service:concurrency')
             directory.mkdir(mode=0o700)
             run = Run(self, directory, dispatch, label)
@@ -249,6 +269,7 @@ class Supervisor:
                 raise P.Refused('binding_mismatch:authority_release')
             if slot['state'] != 'retired':
                 write(path, dict(slot, state='retired', authority_release=outcome))
+            self.index_slot(self.label(dispatch), 'retired')
 
 
 class Run:
@@ -268,12 +289,18 @@ class Run:
         previous = read(self.directory / 'slot.json')
         if previous and previous['state'] == 'retired':
             self.state = 'retired'
+            self.supervisor.index_slot(self.label, 'retired')
             return  # A delayed observer cannot resurrect an authority-released slot.
         self.state = state
+        # Admission is durable before launch; retirement is durable before removal.
+        if state != 'retired':
+            self.supervisor.index_slot(self.label, state)
         write(self.directory / 'slot.json', dict(dispatch_id=self.dispatch, label=self.label, state=state,
                                                  process=self.process, pgid=self.pgid, coalition=self.coalition,
                                                  deadline=self.deadline, deadline_wall=self.deadline_wall,
                                                  temp=self.temp, cause=self.cause, steps=self.steps))
+        if state == 'retired':
+            self.supervisor.index_slot(self.label, state)
 
     def descendants(self, number):
         """Signal the engine group and every other coalition member, including those

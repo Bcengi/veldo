@@ -44,51 +44,95 @@ def replace_entry(root, path, value, write):
         os.close(descriptor)
 
 
+class WaitingForRelease(Exception):
+    """A durable hold resumed only by a new receiver event."""
+
+
+def sync_directory(path):
+    descriptor = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def locate(root, dispatch):
+    for state in ('.pending', '.active', '.waiting'):
+        path = root / state / key(dispatch)
+        if path.exists():
+            return path
+    return root / '.pending' / key(dispatch)
+
+
+def move(root, path, state, write, entry=None):
+    destination = root / state
+    destination.mkdir(exist_ok=True)
+    # Persist the new directory name before removing the old recovery record.
+    sync_directory(root)
+    target = destination / path.name
+    value = entry or json.loads(path.read_text())
+    if path.exists() and target != path:
+        replace_entry(root, path, value, write)
+        os.replace(path, target)
+        sync_directory(target.parent)
+        sync_directory(path.parent)
+    else:
+        replace_entry(root, target, value, write)
+    return target
+
+
+def enqueue_locked(root, request, write):
+    path = locate(root, request['dispatch_id'])
+    previous = json.loads(path.read_text()) if path.exists() else None
+    if previous and previous['request'].get('action') == 'release':
+        request = previous['request']
+    entry = dict(request=request, attempts=0, due=0)
+    return move(root, path, '.active' if path.parent.name == '.active' else '.pending', write, entry)
+
+
 def enqueue(config, request, write):
     with locked(config) as root:
-        pending = root / '.pending'
-        pending.mkdir(exist_ok=True)
-        path = pending / key(request['dispatch_id'])
-        if path.exists():
-            previous = json.loads(path.read_text())
-            # A release event upgrades an ordinary result delivery, never the reverse.
-            if previous['request'].get('action') == 'release':
-                return
-        replace_entry(root, path, dict(request=request, attempts=0, due=0), write)
+        enqueue_locked(root, request, write)
 
 
 def acknowledge(config, dispatch, *, release=False):
     with locked(config) as root:
-        pending = root / '.pending'
-        if pending.exists():
-            path = pending / key(dispatch)
-            if path.exists() and not release and json.loads(path.read_text())['request'].get('action') == 'release':
+        path = locate(root, dispatch)
+        if path.exists():
+            if not release and json.loads(path.read_text())['request'].get('action') == 'release':
                 return
             sync_remove(path)
 
 
-def entries(config):
+def entries(config, *, ready_only=False):
     with locked(config) as root:
-        pending = root / '.pending'
-        return [json.loads(path.read_text()) for path in sorted(pending.glob('*.json'))]
+        states = ('.pending',) if ready_only else ('.pending', '.active')
+        return [json.loads(path.read_text()) for state in states
+                for path in sorted((root / state).glob('*.json'))]
 
 
 def failure(config, request, error, write):
     reason = getattr(error, 'code', str(error))
     transient = isinstance(error, (OSError, TimeoutError)) or reason.startswith('AUTHORITY_UNAVAILABLE:')
     with locked(config) as root:
-        path = root / '.pending' / key(request['dispatch_id'])
+        path = locate(root, request['dispatch_id'])
         if not path.exists():
             return
         entry = json.loads(path.read_text())
         entry.update(reason=reason, attempts=entry['attempts'] + 1)
-        if transient:
+        upgraded = entry['request'].get('action') == 'release' and request.get('action') != 'release'
+        if upgraded:
+            # The failed result attempt says nothing about the new release event.
+            entry['due'] = 0
+            state = '.pending'
+        elif isinstance(error, WaitingForRelease):
+            state = '.waiting'
+        elif transient:
             entry['due'] = time.time() + min(300, 2 ** min(entry['attempts'] - 1, 9))
-            replace_entry(root, path, entry, write)
+            state = '.pending'
         else:
-            parked = root / '.parked'
-            parked.mkdir(exist_ok=True)
-            write(parked / path.name, entry)
-            sync_remove(path)
+            state = '.parked'
+        move(root, path, state, write, entry)
     print(json.dumps(dict(operation='worker_delivery', dispatch_id=request['dispatch_id'],
-        state='retry_pending' if transient else 'parked', reason=reason)), file=sys.stderr, flush=True)
+        state={'.pending': 'retry_pending', '.waiting': 'waiting', '.parked': 'parked'}[state],
+        reason=reason)), file=sys.stderr, flush=True)

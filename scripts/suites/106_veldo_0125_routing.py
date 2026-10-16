@@ -1184,7 +1184,8 @@ def _v125_routing_suite():
             assert result.returncode == 2 and json.loads(result.stdout)['status'] == 'not_run'
 
     events = helper('v125_event_checks', 'proof/VELDO-0125/event_checks.py')
-    for row, test in {**events.cases(T, helper, release_endpoint, finish_release), 'AC1/installed-routing': installed_routing,
+    lifecycle = helper('v125_lifecycle_checks', 'proof/VELDO-0125/lifecycle_checks.py')
+    for row, test in {**lifecycle.cases(T, helper), **events.cases(T, helper, release_endpoint, finish_release), 'AC1/installed-routing': installed_routing,
                       'AC1/worker-signing-key-read': signing_key_read,
                       'AC2/capability-selection': selection, 'AC2/host-routing-refusal': blocked,
                       'AC2/qualification': qualification, 'AC2/factory-remote-delivery': factory_delivery,

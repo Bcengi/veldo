@@ -140,27 +140,47 @@ def apply_release(client, host, binding, outcome):
 
 
 def receive(config, request, *, queued=False):
-    # A resumed outbox and an operator wake may race the original receiver.
-    locks = Path(config['runs']) / '.locks'
-    locks.mkdir(parents=True, exist_ok=True)
-    with (locks / C.P.digest(request['dispatch_id']).split(':')[-1]).open('a') as lock:
-        try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
+    lock = None
+    acquired = False
+    try:
+        # Serialize queue transitions with execution-lock acquisition/completion.
+        # Active entries are durable but outside launchd's watched directory.
+        with OUT.locked(config) as root:
             if not queued:
-                OUT.enqueue(config, request, CL.durable_json)
-            OUT.failure(config, request, OSError('receiver_busy'), CL.durable_json)
-            return None
-        try:
-            if not queued:
-                OUT.enqueue(config, request, CL.durable_json)
-            result = receive_locked(config, request)
-            OUT.acknowledge(config, request['dispatch_id'],
-                            release=result.get('host_released') or request.get('action') == 'release')
-            return result
-        except Exception as error:
-            OUT.failure(config, request, error, CL.durable_json)
+                path = OUT.locate(root, request['dispatch_id'])
+                if not path.exists():
+                    OUT.move(root, path, '.active', CL.durable_json,
+                             dict(request=request, attempts=0, due=0))
+                else:
+                    OUT.enqueue_locked(root, request, CL.durable_json)
+            locks = root / '.locks'
+            locks.mkdir(exist_ok=True)
+            lock = (locks / C.P.digest(request['dispatch_id']).split(':')[-1]).open('a')
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                OUT.move(root, OUT.locate(root, request['dispatch_id']), '.active', CL.durable_json)
+                return None
+            acquired = True
+            OUT.move(root, OUT.locate(root, request['dispatch_id']), '.active', CL.durable_json)
+        result = receive_locked(config, request)
+        OUT.acknowledge(config, request['dispatch_id'],
+                        release=result.get('host_released') or request.get('action') == 'release')
+        return result
+    except Exception as error:
+        OUT.failure(config, request, error, CL.durable_json)
+        if not isinstance(error, OUT.WaitingForRelease):
             raise
+        return None
+    finally:
+        if acquired:
+            with OUT.locked(config) as root:
+                fcntl.flock(lock, fcntl.LOCK_UN)
+                path = root / '.active' / OUT.key(request['dispatch_id'])
+                if path.exists():
+                    OUT.move(root, path, '.pending', CL.durable_json)
+        if lock is not None:
+            lock.close()
 
 
 def retain_crashed_output(host, client, request, directory):
@@ -187,7 +207,7 @@ def retain_crashed_output(host, client, request, directory):
     # The authority's signed cleanup attestation establishes that retained output
     # is final. Without it, leave the release pending rather than snapshot a live engine.
     if not outcome.get('host_released'):
-        raise OSError('release_not_yet_authorized')
+        raise OUT.WaitingForRelease('release_not_yet_authorized')
     observation = dict(outcome['record'].get('observation') or {}, state='unknown')
     if outcome['record']['state'] == 'exited':
         observation = outcome['record']['observation']
@@ -227,7 +247,7 @@ def receive_locked(config, request):
     client.outbox = directory / 'result-request.json'
     directory_existed = directory.exists()
     directory.mkdir(parents=True, exist_ok=True)
-    if not evidence.exists() and request.get('action') in ('release', 'resume'):
+    if not evidence.exists() and (directory_existed or request.get('action') in ('release', 'resume')):
         retain_crashed_output(host, client, request, directory)
     # Flush retained measurement before any release confirmation, including an
     # operator wake after a crash. A transport wake never authorizes execution.
@@ -236,17 +256,31 @@ def receive_locked(config, request):
         if retained['binding']['contract_digest'] != request.get('contract_digest'):
             raise C.P.Refused('binding_mismatch:receiver_contract')
         acknowledgement = Path(str(client.outbox) + '.ack')
-        if acknowledgement.exists():
-            outcome = json.loads(acknowledgement.read_text())
-        elif client.outbox.exists():
-            outcome = client.retry_result()
-        else:
-            outcome = client.result(**retained)
+        try:
+            if acknowledgement.exists():
+                outcome = json.loads(acknowledgement.read_text())
+            elif client.outbox.exists():
+                outcome = client.retry_result()
+            else:
+                outcome = client.result(**retained)
+        except Exception as error:
+            reason = getattr(error, 'code', str(error))
+            if (request.get('action') != 'release' or isinstance(error, (OSError, TimeoutError))
+                    or reason.startswith('AUTHORITY_UNAVAILABLE:')):
+                raise
+            # Keep the refused result and its evidence for operator repair, but
+            # independently attempt the signed release already accepted by Linux.
+            CL.durable_json(directory / 'result-refusal.json', dict(reason=reason))
+            outcome = client.status(request['dispatch_id'])
         if not outcome.get('host_released') and request.get('action') == 'release':
             outcome = client.status(request['dispatch_id'])
+            if not outcome.get('host_released'):
+                raise OUT.WaitingForRelease('release_not_yet_authorized')
         return apply_release(client, host, retained['binding'], outcome)
     if request.get('action') in ('release', 'resume') or directory_existed:
         outcome = client.status(request['dispatch_id'])
+        if not outcome.get('host_released'):
+            raise OUT.WaitingForRelease('release_not_yet_authorized')
         directory.mkdir(parents=True, exist_ok=True)
         return apply_release(client, host, dict(dispatch_id=request['dispatch_id'],
             contract_digest=request['contract_digest'], host=outcome['binding']['host'],
@@ -269,8 +303,8 @@ def receive_locked(config, request):
 
 def resume_pending(config, *, drain=False):
     """Drain only indexed events, waiting solely for specific delivery retries."""
+    entries = OUT.entries(config)  # Includes interrupted receivers, once per wake.
     while True:
-        entries = OUT.entries(config)
         if not entries:
             return
         for entry in entries:
@@ -285,7 +319,7 @@ def resume_pending(config, *, drain=False):
                 pass  # receive durably records/parks this dispatch; drain its peers.
         if not drain:
             return
-        entries = OUT.entries(config)
+        entries = OUT.entries(config, ready_only=True)
         if not entries:
             return
         time.sleep(max(0, min(entry['due'] for entry in entries) - time.time()))
