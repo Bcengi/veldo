@@ -32,6 +32,8 @@ CASES.update({
         '        resume_pending(config)  # Worker-start event replays orphaned active owners.\n', ''),
     'recorder-error-swallowed': ('control_worker.py', 'AC3/recorder-failure-stops-drain',
         '            except RecorderFailure:\n                raise\n', ''),
+    'stop-event-unwired': ('project_runner_macos.py', 'AC3/stop-interrupts-exit-wait',
+        '                    self.os.wake(self.watch)\n', '                    pass\n'),
     'supervisor-exit-polling': ('project_runner_macos.py', 'AC3/supervisor-blocking-exit',
         '                    self.exit_seen = self.os.exited(self.watch, seconds)\n',
         '                    self.os.sleep(0.02)\n'),

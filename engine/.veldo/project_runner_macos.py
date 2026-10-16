@@ -357,6 +357,9 @@ class Run:
         if self.stage is None:
             self.cause = reason
             self.step('cooperative', self.os.monotonic())
+            if self.watch is not None:
+                with contextlib.suppress(OSError):
+                    self.os.wake(self.watch)
 
     def poll(self):
         now = self.os.monotonic()
@@ -423,6 +426,7 @@ class Run:
         finally:
             if self.watch is not None:
                 self.watch.close()
+                self.watch = None
         self.supervisor.observe(dict(operation='exit', dispatch_id=self.dispatch, role='macos_supervisor',
                                      outcome=answer['state'], cause=self.cause, steps=self.steps))
         return answer

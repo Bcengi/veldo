@@ -139,6 +139,9 @@ class FakeOS:
         assert process == self.process and WRAPPER in self.live
         return Watch()
 
+    def wake(self, watch):
+        pass
+
     def exited(self, watch, seconds):
         if not self.exit_event and seconds:
             # Model NOTE_EXIT waking early for a natural exit, otherwise its

@@ -222,6 +222,24 @@ def cases(T, helper):
         assert waits[-1] == run.deadline and len(scans) == 2
         assert not (run.directory / 'heartbeat.json').exists()
 
+    def stop_interrupts_wait(base):
+        P = helper('v125_stop_event', 'proof/VELDO-0125/macos_event_fixture.py')
+        host, backend, request, paths = P.start(base, 'ignoring')
+        run = host.start(request)
+        exited, wakes, waits = backend.exited, [], []
+        backend.wake = lambda watch: wakes.append(watch)
+        def blocked(watch, seconds):
+            if seconds and not waits:
+                waits.append(seconds)
+                run.stop()  # Operator event while the exit wait has the runtime deadline.
+                assert wakes == [watch], 'stop did not interrupt the blocking exit wait'
+                return False
+            return exited(watch, seconds)
+        backend.exited = blocked
+        assert run.wait()['state'] == 'exited'
+        assert [step['stage'] for step in run.steps] == ['cooperative', 'terminate', 'kill']
+        assert run.steps[1]['monotonic'] == host.profile['stop_grace_seconds']
+
     def wrapper_exit_wait(base):
         wrapper = T.load('project_runner_macos_wrapper')
         executable = str(Path(sys.executable).resolve())
@@ -265,6 +283,7 @@ def cases(T, helper):
             'AC3/finalizer-failure-stops-drain': lambda base: recorder_failure(base, True),
             'AC3/startup-ready-event': startup_ready_event,
             'AC3/supervisor-blocking-exit': supervisor_exit_wait,
+            'AC3/stop-interrupts-exit-wait': stop_interrupts_wait,
             'AC3/wrapper-blocking-exit': wrapper_exit_wait}
     # request, admission index/record, launch-intent index/record, ready, worker,
     # running index/record and go. Each side of every write is a crash boundary.

@@ -179,11 +179,18 @@ class Native:
         try:
             queue.control([select.kevent(process['pid'], filter=select.KQ_FILTER_PROC,
                                         flags=select.KQ_EV_ADD | select.KQ_EV_ONESHOT,
-                                        fflags=select.KQ_NOTE_EXIT)], 0, 0)
+                                        fflags=select.KQ_NOTE_EXIT),
+                           select.kevent(1, filter=select.KQ_FILTER_USER,
+                                         flags=select.KQ_EV_ADD | select.KQ_EV_CLEAR)], 0, 0)
         except BaseException:
             queue.close()
             raise
         return queue
+
+    def wake(self, watch):
+        # A stop arriving during a blocking exit wait installs an earlier deadline.
+        watch.control([select.kevent(1, filter=select.KQ_FILTER_USER,
+                                     fflags=select.KQ_NOTE_TRIGGER)], 0, 0)
 
     def exited(self, watch, seconds):
         events = watch.control(None, 1, max(0, seconds))
