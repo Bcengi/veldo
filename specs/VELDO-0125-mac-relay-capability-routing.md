@@ -264,8 +264,8 @@ terminated at the runtime cap. The VELDO-0124 heartbeat-missing assertion is
 restored to its prior content as historical v1 evidence. Its heartbeat-loss
 liveness check is superseded for profile v2 by the NEW VELDO-0125
 AC3/stalled-wrapper-event-or-runtime-cap row, not by editing its expected result.
-The unmodified v1 row is not a v2 qualification claim. The reviewer must account
-for this explicit profile-version change when running the historical suite.
+The unmodified v1 row is not a v2 qualification claim. Round 13 below corrects the compatibility gap; the historical suite remains
+mandatory and its assertions are not waived.
 New correction records identify the completed round 11 routing log without
 rewriting that log or its earlier README. Full gate and native qualification
 remain with the reviewer under the owner's run restrictions.
@@ -277,3 +277,23 @@ An uninstalled receiver refuses with `unavailable_service:slot_migration_require
 before acquiring admission.lock, so a history scan cannot hold that receiver
 inside admission. Installation precedes dispatch eligibility; this is not an
 automatic retry of execution or reuse of an old qualification.
+
+
+2026-10-16, round 13: the owner requires the 0124 suites to remain green with
+unchanged recorded assertions, retryable missing-index refusals, orphan recovery
+on failed receiver starts, diagnostics even when an unwritable outbox prevents
+parking, and per-entry active recovery. Complete v1 profiles retain their
+original qualification and liveness contract. The product migration API returns
+a v2 profile requiring new qualification; the event fixture uses this path.
+Explicit v1 wrapper requests alone enable legacy heartbeat compatibility; v2
+field rejection, runtime-cap precedence and exit-watch lifetime are unchanged.
+Missing migration schedules pending delivery so an already installed launch
+agent wakes on upgrades without a plist change. Receiver finalization schedules
+orphans regardless of incoming success. Recorder errors log before best-effort
+parking and remain visible when parking fails. Unreadable active entries are
+quarantined individually while healthy work drains. New regression rows and
+before/after selected-suite logs are under proof/VELDO-0125/b2-round13. These
+corrections supersede the round 12 requirement to install manually before any
+dispatch can recover and its known-red historical-suite caveat. Native
+qualification and the canonical merged-tree gate remain pending reviewer runs;
+no criterion or recorded historical test assertion is weakened.

@@ -50,7 +50,7 @@ def fixture(base):
                   configuration_digest=P.digest(configuration))
     engines = {name: copy.deepcopy(engine) for name in P.ENGINES}
     engines['codex']['argv'] += ['--sandbox', 'danger-full-access']
-    profile = dict(schema=P.SCHEMA, revision=1, root=str(paths['host']), protected=[str(paths['authority'])],
+    profile = dict(schema='veldo.macos_worker_profile/v1', revision=1, root=str(paths['host']), protected=[str(paths['authority'])],
                    interpreter=executable, home=str(paths['owner']), account_roots=[str(paths['accounts'])],
                    project_roots=[str(paths['projects'])],
                    max_workers=1, runtime_seconds=0.3, stop_grace_seconds=0.1, kill_grace_seconds=0.1,
@@ -138,6 +138,9 @@ class FakeOS:
     def watch(self, process):
         assert process == self.process and WRAPPER in self.live
         return Watch()
+
+    def wake(self, watch):
+        pass  # The v1 fixture uses nonblocking exit checks.
 
     def exited(self, watch, seconds):
         return self.exit_event

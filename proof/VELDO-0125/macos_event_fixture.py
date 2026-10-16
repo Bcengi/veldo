@@ -50,12 +50,13 @@ def fixture(base):
                   configuration_digest=P.digest(configuration))
     engines = {name: copy.deepcopy(engine) for name in P.ENGINES}
     engines['codex']['argv'] += ['--sandbox', 'danger-full-access']
-    profile = dict(schema=P.SCHEMA, revision=1, root=str(paths['host']), protected=[str(paths['authority'])],
+    profile = dict(schema='veldo.macos_worker_profile/v1', revision=1, root=str(paths['host']), protected=[str(paths['authority'])],
                    interpreter=executable, home=str(paths['owner']), account_roots=[str(paths['accounts'])],
                    project_roots=[str(paths['projects'])],
                    max_workers=1, runtime_seconds=0.3, stop_grace_seconds=0.1, kill_grace_seconds=0.1,
                    settle_seconds=0.1, startup_seconds=0.2, heartbeat_seconds=0.02, heartbeat_window_seconds=0.08,
                    engines=engines)
+    profile = P.migrate(profile)
     facts = dict(platform='darwin', host='fixture-mac', os_version='fixture-26.0', boot_id='fixture-boot', tools=True)
     qualification = dict(schema=P.QUALIFICATION, kind='native', host=facts['host'], os_version=facts['os_version'],
                          profile_digest=P.digest(profile), rows={e + '/' + r: 'FIXTURE-NOT-EVIDENCE'

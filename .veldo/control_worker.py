@@ -144,6 +144,18 @@ def apply_release(client, host, binding, outcome):
     return outcome
 
 
+def recorder_failure(config, request, error):
+    # The diagnostic must survive even when the filesystem cannot park the entry.
+    print(json.dumps(dict(operation='worker_delivery_recorder_failed',
+        dispatch_id=request['dispatch_id'], reason=str(error))), file=sys.stderr, flush=True)
+    try:
+        OUT.park_recorder_failure(config, request['dispatch_id'])
+    except Exception as park_error:
+        print(json.dumps(dict(operation='worker_delivery_park_failed',
+            dispatch_id=request['dispatch_id'], reason=str(park_error))), file=sys.stderr, flush=True)
+    raise RecorderFailure(str(error)) from error
+
+
 def receive(config, request, *, queued=False):
     lock = None
     acquired = False
@@ -178,28 +190,20 @@ def receive(config, request, *, queued=False):
             OUT.failure(config, request, error, CL.durable_json)
         except Exception as recording_error:
             recorder_failed = True
-            OUT.park_recorder_failure(config, request['dispatch_id'])
-            print(json.dumps(dict(operation='worker_delivery_recorder_failed',
-                dispatch_id=request['dispatch_id'], reason=str(recording_error))),
-                file=sys.stderr, flush=True)
-            raise RecorderFailure(str(recording_error)) from recording_error
+            recorder_failure(config, request, recording_error)
         if not isinstance(error, OUT.WaitingForRelease):
             raise
         return None
     finally:
         try:
-            if acquired:
+            if acquired and not recorder_failed:
                 with OUT.locked(config) as root:
                     fcntl.flock(lock, fcntl.LOCK_UN)
                     path = root / '.active' / OUT.key(request['dispatch_id'])
-                    if path.exists() and not recorder_failed:
+                    if path.exists():
                         OUT.move(root, path, '.pending', CL.durable_json)
         except Exception as recording_error:
-            OUT.park_recorder_failure(config, request['dispatch_id'])
-            print(json.dumps(dict(operation='worker_delivery_recorder_failed',
-                dispatch_id=request['dispatch_id'], reason=str(recording_error))),
-                file=sys.stderr, flush=True)
-            raise RecorderFailure(str(recording_error)) from recording_error
+            recorder_failure(config, request, recording_error)
         finally:
             if lock is not None:
                 lock.close()
@@ -325,12 +329,12 @@ def receive_locked(config, request):
 
 def resume_pending(config, *, drain=False):
     """Drain only indexed events, waiting solely for specific delivery retries."""
-    OUT.recover_active(config)
+    recovery_errors = OUT.recover_active(config)
     entries = OUT.entries(config, ready_only=True)
     while True:
-        if not entries:
+        if not entries and not recovery_errors:
             return
-        recorder_errors = []
+        recorder_errors = [RecorderFailure(str(error)) for error in recovery_errors]
         for entry in entries:
             if entry['due'] > time.time():
                 continue
@@ -397,18 +401,22 @@ def main(config_path, resume=False, install=False):
         try:
             result = receive(config, json.loads(sys.stdin.readline(65536)))
         except Exception as error:
-            if isinstance(error, (OSError, TimeoutError)) or str(error).startswith('AUTHORITY_UNAVAILABLE:'):
+            if OUT.retryable(error):
                 raise
             # receive recorded the permanent refusal for the operator. A successful
             # transport handoff must not ask Linux to resend this parked command forever.
             print(json.dumps(dict(state='parked', reason=str(error))), flush=True)
             return
-        print(json.dumps(dict(state=result['record']['state'] if result else 'delivery_pending')), flush=True)
-        try:
-            OUT.recover_active(config)
-        except Exception as error:
-            print(json.dumps(dict(operation='worker_recovery_failed', reason=str(error))),
-                  file=sys.stderr, flush=True)
+        else:
+            print(json.dumps(dict(state=result['record']['state'] if result else 'delivery_pending')), flush=True)
+        finally:
+            # Schedule local orphans on every receiver outcome. Never deliver the
+            # backlog on the incoming request's network path.
+            try:
+                OUT.recover_active(config)
+            except Exception as error:
+                print(json.dumps(dict(operation='worker_recovery_failed', reason=str(error))),
+                      file=sys.stderr, flush=True)
 
 
 if __name__ == '__main__':

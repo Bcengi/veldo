@@ -12,6 +12,8 @@ from pathlib import Path
 import unicodedata
 
 SCHEMA = 'veldo.macos_worker_profile/v2'
+LEGACY_SCHEMA = 'veldo.macos_worker_profile/v1'
+HEARTBEAT = ('heartbeat_seconds', 'heartbeat_window_seconds')
 QUALIFICATION = 'veldo.macos_worker_qualification/v1'
 ENGINES = ('claude_code', 'codex')
 NATIVE_ROWS = ('launch', 'write', 'read', 'launchd', 'keychain', 'signal', 'capacity', 'deadline', 'natural',
@@ -124,15 +126,16 @@ def sandbox(writable, protected, home, accounts=(), projects=(), dispatches=(), 
 
 
 def validate(profile):
-    if (not isinstance(profile, dict) or profile.get('schema') != SCHEMA
+    if (not isinstance(profile, dict) or profile.get('schema') not in (SCHEMA, LEGACY_SCHEMA)
             or type(profile.get('revision')) is not int or profile['revision'] < 1
             or type(profile.get('max_workers')) is not int or profile['max_workers'] < 1):
         raise Refused('unsupported_configuration:profile')
-    for name in CAPS:
+    legacy = profile['schema'] == LEGACY_SCHEMA
+    for name in CAPS + (HEARTBEAT if legacy else ()):
         value = profile.get(name)
         if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
             raise Refused('unsupported_configuration:' + name)
-    if any(name in profile for name in ('heartbeat_seconds', 'heartbeat_window_seconds')):
+    if not legacy and any(name in profile for name in HEARTBEAT):
         raise Refused('unsupported_configuration:removed_heartbeat_field')
     if not isinstance(profile.get('engines'), dict) or set(profile['engines']) != set(ENGINES):
         raise Refused('unsupported_configuration:engines')
@@ -163,6 +166,18 @@ def validate(profile):
     for path in profile['protected']:
         canonical(path)
     return profile
+
+
+def migrate(profile):
+    """Return the v2 configuration; old qualification never binds its new digest.
+
+    Reading a complete v1 profile retains its original liveness contract until
+    the operator explicitly migrates and supplies qualification for the v2 digest.
+    """
+    validate(profile)
+    migrated = {key: value for key, value in profile.items() if key not in HEARTBEAT}
+    migrated['schema'] = SCHEMA
+    return validate(migrated)
 
 
 def qualify(profile, evidence, facts, engine, configuration):

@@ -87,7 +87,12 @@ def main(path):
         deadline_stop = False
         while True:
             if returncode is None:
-                finished.wait(max(0, due - time.monotonic()))
+                timeout = max(0, due - time.monotonic())
+                if request.get('profile_schema') == 'veldo.macos_worker_profile/v1':
+                    write(directory / 'heartbeat.json', dict(monotonic=time.monotonic(),
+                                                            dispatch_id=request['dispatch_id']))
+                    timeout = min(timeout, request['heartbeat_seconds'])
+                finished.wait(timeout)
                 if finished.is_set():
                     returncode = child.returncode
                     write(directory / 'engine-exit.json', dict(returncode=returncode))

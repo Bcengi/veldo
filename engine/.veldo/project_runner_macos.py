@@ -212,6 +212,9 @@ class Supervisor:
                                    clone=P.canonical(request['clone']), environment=request['environment'],
                                    sandbox=policy, startup_seconds=p['startup_seconds'],
                                    kill_grace_seconds=p['kill_grace_seconds'], settle_seconds=p['settle_seconds'])
+            if p['schema'] == P.LEGACY_SCHEMA:
+                wrapper_request['profile_schema'] = p['schema']
+                wrapper_request['heartbeat_seconds'] = p['heartbeat_seconds']
             write(directory / 'request.json', wrapper_request)
             run.save('starting', locked=True)
             try:
@@ -315,6 +318,7 @@ class Run:
         self.state, self.cause, self.stage = 'starting', None, None
         self.due, self.deadline, self.deadline_wall = float('inf'), float('inf'), None
         self.exit_seen, self.steps = False, []
+        self.last_heartbeat = self.os.monotonic()
 
     def save(self, state, *, locked=False):
         if not locked:
@@ -381,6 +385,12 @@ class Run:
         if now >= self.deadline and self.stage in (None, 'cooperative'):
             self.cause = 'runtime_cap'
             self.step('terminate', now)
+        elif self.p['schema'] == P.LEGACY_SCHEMA and not engine_done and self.stage is None:
+            heartbeat = read(self.directory / 'heartbeat.json')
+            if heartbeat and heartbeat.get('dispatch_id') == self.dispatch:
+                self.last_heartbeat = heartbeat['monotonic']
+            if now - self.last_heartbeat >= self.p['heartbeat_window_seconds']:
+                self.stop('heartbeat_missing')
         elif engine_done and others and self.stage in (None, 'cooperative'):
             self.cause = self.cause or 'exit'
             self.step('terminate', now)
@@ -400,7 +410,9 @@ class Run:
                 until = (min(self.due, self.deadline) if self.stage == 'cooperative'
                          else self.due if self.stage else self.deadline)
                 seconds = max(0, until - self.os.monotonic())
-                if self.exit_seen:
+                if self.p['schema'] == P.LEGACY_SCHEMA:
+                    self.os.sleep(min(seconds, self.p['heartbeat_seconds']))
+                elif self.exit_seen:
                     self.os.sleep(seconds)  # Bounded shutdown of orphan descendants.
                 else:
                     self.exit_seen = self.os.exited(self.watch, seconds)

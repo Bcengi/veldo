@@ -81,38 +81,55 @@ def move(root, path, state, write, entry=None):
     return target
 
 
+def park_path(root, path):
+    """Quarantine original bytes even when reading or serialization is broken."""
+    target = root / '.parked'
+    target.mkdir(exist_ok=True)
+    sync_directory(root)
+    os.replace(path, target / path.name)
+    sync_directory(target)
+    sync_directory(path.parent)
+
+
 def park_recorder_failure(config, dispatch):
     """Retain the original bytes without calling the failed JSON recorder again."""
     with locked(config) as root:
         path = locate(root, dispatch)
         if path.exists():
-            target = root / '.parked'
-            target.mkdir(exist_ok=True)
-            sync_directory(root)
-            os.replace(path, target / path.name)
-            sync_directory(target)
-            sync_directory(path.parent)
+            park_path(root, path)
 
 
 def recover_active(config):
     """Schedule every orphan, including retries whose deadline is still future."""
+    errors = []
     with locked(config) as root:
         locks = root / '.locks'
         locks.mkdir(exist_ok=True)
         for path in sorted((root / '.active').glob('*.json')):
-            request = json.loads(path.read_text())['request']
-            lock_key = hashlib.sha256(json.dumps(request['dispatch_id']).encode()).hexdigest()
-            with (locks / lock_key).open('a') as stream:
+            try:
+                request = json.loads(path.read_text())['request']
+                lock_key = hashlib.sha256(json.dumps(request['dispatch_id']).encode()).hexdigest()
+                with (locks / lock_key).open('a') as stream:
+                    try:
+                        fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    except BlockingIOError:
+                        continue
+                    target = root / '.pending'
+                    target.mkdir(exist_ok=True)
+                    sync_directory(root)
+                    os.replace(path, target / path.name)
+                    sync_directory(target)
+                    sync_directory(path.parent)
+            except Exception as error:
+                print(json.dumps(dict(operation='worker_recovery_failed', entry=path.name,
+                    reason=str(error))), file=sys.stderr, flush=True)
                 try:
-                    fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                except BlockingIOError:
-                    continue
-                target = root / '.pending'
-                target.mkdir(exist_ok=True)
-                sync_directory(root)
-                os.replace(path, target / path.name)
-                sync_directory(target)
-                sync_directory(path.parent)
+                    park_path(root, path)
+                except Exception as park_error:
+                    print(json.dumps(dict(operation='worker_delivery_park_failed', entry=path.name,
+                        reason=str(park_error))), file=sys.stderr, flush=True)
+                    errors.append(park_error)
+    return errors
 
 
 def enqueue_locked(root, request, write):
@@ -145,9 +162,15 @@ def entries(config, *, ready_only=False):
                 for path in sorted((root / state).glob('*.json'))]
 
 
+def retryable(error):
+    reason = getattr(error, 'code', str(error))
+    return (isinstance(error, (OSError, TimeoutError)) or reason.startswith('AUTHORITY_UNAVAILABLE:')
+            or reason == 'unavailable_service:slot_migration_required')
+
+
 def failure(config, request, error, write):
     reason = getattr(error, 'code', str(error))
-    transient = isinstance(error, (OSError, TimeoutError)) or reason.startswith('AUTHORITY_UNAVAILABLE:')
+    transient = retryable(error)
     with locked(config) as root:
         path = locate(root, request['dispatch_id'])
         if not path.exists():
