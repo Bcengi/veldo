@@ -297,3 +297,18 @@ corrections supersede the round 12 requirement to install manually before any
 dispatch can recover and its known-red historical-suite caveat. Native
 qualification and the canonical merged-tree gate remain pending reviewer runs;
 no criterion or recorded historical test assertion is weakened.
+
+2026-10-16, round 16: the owner requires one outbox entry validator at every
+read boundary, covering recovery, drain, receive and queue transitions. Required
+fields are request (dict), attempts (non-negative int, excluding bool), and due
+(int or float, excluding bool); request.dispatch_id is a non-empty str whose
+SHA-256 key equals the entry filename. The only optional field is reason (str),
+which failure() writes. No other top-level fields are accepted. Due must be
+finite and in [0, now + 300 seconds], retaining the writer's immediate sentinel
+and old retries while bounding future deadlines by its maximum backoff. Invalid
+entries are logged and quarantined as original bytes on first read. Operational
+lock failures such as ENOSPC retain readable active entries for later recovery.
+Drain sleeps are bounded to 1-300 seconds, with invalid computed delays logged
+and clamped. The regression matrix and before/after selected-suite observations
+live under proof/VELDO-0125/b2-round16; the full gate and native qualification
+remain the reviewer's responsibility under the owner's run restrictions.

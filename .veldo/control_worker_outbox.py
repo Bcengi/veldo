@@ -3,14 +3,61 @@ import contextlib
 import fcntl
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import sys
 import time
 
 
+MAX_BACKOFF = 300
+
+
 def key(dispatch):
     return hashlib.sha256(dispatch.encode()).hexdigest() + '.json'
+
+
+def validate_entry(entry, path, now):
+    """Writer contract: required request/attempts/due, optional failure reason.
+
+    Request is an opaque dict except for its non-empty string dispatch_id, whose
+    key must name this file. Attempts is a non-negative int (never bool); due is
+    an int or float (never bool), finite and in [0, now + MAX_BACKOFF]. Zero is
+    immediate and old retries remain valid. Only failure() adds reason, a str.
+    """
+    if (type(entry) is not dict or not {'request', 'attempts', 'due'} <= entry.keys()
+            or entry.keys() - {'request', 'attempts', 'due', 'reason'}
+            or type(entry['request']) is not dict
+            or type(entry['request'].get('dispatch_id')) is not str
+            or not entry['request']['dispatch_id']
+            or type(entry['attempts']) is not int or entry['attempts'] < 0
+            or type(entry['due']) not in (int, float)
+            or ('reason' in entry and type(entry['reason']) is not str)):
+        raise ValueError('invalid outbox entry shape')
+    if path.name != key(entry['request']['dispatch_id']):
+        raise ValueError('outbox filename does not match dispatch_id')
+    due = entry['due']
+    # Check the range first so an arbitrarily large JSON int never overflows
+    # float conversion inside isfinite().
+    if due < 0 or due > now + MAX_BACKOFF or not math.isfinite(due):
+        raise ValueError('outbox due must be finite and in [0, now + 300 seconds]')
+    return entry
+
+
+def read_entry(root, path, *, operation='worker_delivery_invalid_entry'):
+    """Read under locked(); quarantine original bytes before exposing any fields."""
+    try:
+        return validate_entry(json.loads(path.read_text()), path, time.time())
+    except Exception as error:
+        print(json.dumps(dict(operation=operation, entry=path.name, reason=str(error))),
+              file=sys.stderr, flush=True)
+        try:
+            park_path(root, path)
+        except Exception as park_error:
+            print(json.dumps(dict(operation='worker_delivery_park_failed', entry=path.name,
+                reason=str(park_error))), file=sys.stderr, flush=True)
+            raise
+        return None
 
 
 @contextlib.contextmanager
@@ -65,12 +112,14 @@ def locate(root, dispatch):
 
 
 def move(root, path, state, write, entry=None):
+    value = entry if entry is not None else read_entry(root, path)
+    if value is None:
+        return None
     destination = root / state
     destination.mkdir(exist_ok=True)
     # Persist the new directory name before removing the old recovery record.
     sync_directory(root)
     target = destination / path.name
-    value = entry or json.loads(path.read_text())
     if path.exists() and target != path:
         replace_entry(root, path, value, write)
         os.replace(path, target)
@@ -106,23 +155,11 @@ def recover_active(config):
         locks = root / '.locks'
         for path in sorted((root / '.active').glob('*.json')):
             try:
-                entry = json.loads(path.read_text())
-                # Decodable JSON must also contain the fields delivery and retry use.
-                if (not isinstance(entry, dict)
-                        or not isinstance(entry.get('request'), dict)
-                        or not isinstance(entry['request'].get('dispatch_id'), str)
-                        or type(entry.get('due')) not in (int, float)
-                        or type(entry.get('attempts')) is not int):
-                    raise ValueError('invalid outbox entry shape')
+                entry = read_entry(root, path, operation='worker_recovery_failed')
             except Exception as error:
-                print(json.dumps(dict(operation='worker_recovery_failed', entry=path.name,
-                    reason=str(error))), file=sys.stderr, flush=True)
-                try:
-                    park_path(root, path)
-                except Exception as park_error:
-                    print(json.dumps(dict(operation='worker_delivery_park_failed', entry=path.name,
-                        reason=str(park_error))), file=sys.stderr, flush=True)
-                    errors.append(park_error)
+                errors.append(error)
+                continue
+            if entry is None:
                 continue
             try:
                 # Operational failures must retain a readable orphan for the next recovery.
@@ -149,7 +186,11 @@ def recover_active(config):
 
 def enqueue_locked(root, request, write):
     path = locate(root, request['dispatch_id'])
-    previous = json.loads(path.read_text()) if path.exists() else None
+    previous = None
+    if path.exists():
+        previous = read_entry(root, path)
+        if previous is None:
+            return None
     if previous and previous['request'].get('action') == 'release':
         request = previous['request']
     entry = dict(request=request, attempts=0, due=0)
@@ -165,7 +206,10 @@ def acknowledge(config, dispatch, *, release=False):
     with locked(config) as root:
         path = locate(root, dispatch)
         if path.exists():
-            if not release and json.loads(path.read_text())['request'].get('action') == 'release':
+            entry = read_entry(root, path)
+            if entry is None:
+                return
+            if not release and entry['request'].get('action') == 'release':
                 return
             sync_remove(path)
 
@@ -173,8 +217,8 @@ def acknowledge(config, dispatch, *, release=False):
 def entries(config, *, ready_only=False):
     with locked(config) as root:
         states = ('.pending',) if ready_only else ('.pending', '.active')
-        return [json.loads(path.read_text()) for state in states
-                for path in sorted((root / state).glob('*.json'))]
+        return [entry for state in states for path in sorted((root / state).glob('*.json'))
+                if (entry := read_entry(root, path)) is not None]
 
 
 def retryable(error):
@@ -190,7 +234,9 @@ def failure(config, request, error, write):
         path = locate(root, request['dispatch_id'])
         if not path.exists():
             return
-        entry = json.loads(path.read_text())
+        entry = read_entry(root, path)
+        if entry is None:
+            return
         entry.update(reason=reason, attempts=entry['attempts'] + 1)
         upgraded = entry['request'].get('action') == 'release' and request.get('action') != 'release'
         if upgraded:
@@ -200,7 +246,7 @@ def failure(config, request, error, write):
         elif isinstance(error, WaitingForRelease):
             state = '.waiting'
         elif transient:
-            entry['due'] = time.time() + min(300, 2 ** min(entry['attempts'] - 1, 9))
+            entry['due'] = time.time() + min(MAX_BACKOFF, 2 ** min(entry['attempts'] - 1, 9))
             state = '.pending'
         else:
             state = '.parked'

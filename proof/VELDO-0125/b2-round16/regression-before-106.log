@@ -1,0 +1,1069 @@
+==============================================================================
+PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
+==============================================================================
+  selector    --suite 106_veldo_0125_routing
+  running     1 of 166 suites: 106_veldo_0125_routing
+  skipped     165: 01_warp_0101_reviewer_notes, 02_mobile_ios_runner_b8, 03_plugin_extension_loading_runner, 04_run_status_reader_veldo, 05_tracker_routing_resolver_veldo, 06_capabilities_manifest_honesty_veldo, 07_warp_1103_completion_mandatory, 08_restoration_spec_generation_veldo, 09_action_whitelist_warp_1205, 10_warp_0613_anti_vacuity, 11_inbound_command_receipt_reconcile, 12_warp_1210_hardening_four, 13_warp_0623_codified_live, 14_warp_0717_subset_runner, 15_warp_1402_estimate_record, 15_warp_1404_historical_analogy, 15_warp_1405_reconciliation, 15_warp_1406_normalization, 15_warp_1407_judgment_load, 15_warp_1408_budget_rollup, 15_warp_1409_cost_to_change_per_area, 16_warp_1403_sizing_pass, 17_veldo_0001_falsification_declared, 18_veldo_0011_release_contract, 18_veldo_0012_behaviour_floor_contract, 19_veldo_0002_work_state, 20_veldo_0003_task_source, 21_veldo_0004_promise_corpus, 22_veldo_0005_declared_vs_shipped, 23_veldo_0006_budget_state, 24_veldo_0007_install_and_run, 25_veldo_0008_version, 26_veldo_0009_install_stamp, 27_veldo_0010_evidence_provenance, 28_veldo_0015_clock_standdown, 29_veldo_0016_policy_boundaries, 30_veldo_0017_entity_lifecycle, 31_veldo_0018_release_floor, 32_veldo_0019_combined_graph, 33_veldo_0020_authority, 34_veldo_0022_admission, 35_veldo_0021_completion, 36_veldo_0023_journal, 37_veldo_0024_replica, 38_veldo_0025_membership, 39_veldo_0026_revocation, 40_veldo_0101_capsules, 41_veldo_0103_assessor, 42_veldo_0102_fixval, 43_veldo_0104_proofcheck, 44_veldo_0105_startline, 45_veldo_0106_policyread, 46_veldo_0029_enrollment, 47_veldo_0107_ipc, 48_veldo_0108_relay, 49_veldo_0109_unavailable, 50_git_environment, 51_parser_boundary, 52_writer_boundary, 53_veldo_0123_mutations, 54_veldo_0118_grammar, 55_veldo_0119_agreement, 56_veldo_0027_signing, 57_veldo_0120_policygrammar, 58_veldo_0028_effects, 58_veldo_0036_reservations, 58_veldo_0035_snapshots, 59_veldo_0043_graph, 59_veldo_0037_aliases, 58_veldo_0031_claims, 59_veldo_0031_review, 60_veldo_0052_eligibility, 60_veldo_0053_architecture, 58_veldo_0046_notifications, 60_veldo_0064_inbox, 61_scope_covers, 62_veldo_0045_runtime, 62_veldo_0054_decisions, 62_veldo_0065_presentations, 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0066_attribution, 63_veldo_0049_floor, 64_veldo_0050_proof, 65_veldo_0132_workflow, 65_veldo_0067_edges, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 66_veldo_0051_events, 67_veldo_0056_candidates, 68_veldo_0137_policy_revision, 68_veldo_0126_intake, 69_veldo_0058_gate_output, 67_veldo_0135_offers, 68_veldo_0136_hints, 68_veldo_0134_acceptance, 69_veldo_0068_settlement, 69_veldo_0133_dispositions, 70_veldo_0069_bindings, 70_veldo_0057_landing, 70_veldo_0073_activation, 71_veldo_0076_projects, 71_veldo_0138_channel_service, 72_veldo_0077_objectives, 72_veldo_0075_andon, 72_veldo_0128_reports, 73_veldo_0089_team, 71_veldo_0130_api, 73_veldo_0139_factory_setup, 74_veldo_0140_standing_delegation, 73_veldo_0078_backlog, 75_veldo_0062_accounts, 75_veldo_0150_own_message_acceptance, 76_veldo_0079_grooming, 77_veldo_0149_adopted_activation, 78_veldo_0160_account_pool, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0144_mcp_catalog, 82_veldo_0141_execution_record, 82_veldo_0085_decomposition, 82_veldo_0129_worker_wiring, 82_veldo_0165_launch_hygiene, 82_veldo_0173_tool_registry, 82_veldo_0172_live_formats, 84_veldo_0169_project_handouts, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 86_veldo_0148_re_land, 86_veldo_0127_agent_configuration, 83_veldo_0166_usage_windows, 86_veldo_0168_text, 86_veldo_0186_setup_assets, 87_veldo_0127_codex_delivery, 88_veldo_0127_feature_defaults, 89_veldo_0127_feature_listing, 90_veldo_0127_feature_profile, 85_veldo_0171_setup_api, 86_veldo_0189_engine_upgrade, 91_veldo_0167_setup_records, 87_veldo_0170_receiver_trust, 91_veldo_0151_specialists, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 97_veldo_0204_gate_resources, 98_veldo_0204_mutation_receipts, 99_veldo_0205_reuse, 100_veldo_0207_case_reuse, 101_veldo_0208_landing_reuse, 102_veldo_0210_agent_profile_runtime, 103_veldo_0124_macos, 104_veldo_0124_control, 105_veldo_0125_relay, 103_veldo_0142_git_identities, 104_veldo_0210_mutation_workers, 103_veldo_0211_borrowed_login, 104_veldo_0164_scoped_reads, 106_veldo_0185_dispatch_setup, 105_veldo_0182_memory
+  why these   the named suites plus their measured prerequisite closure
+              (scripts/suites/requires.json). No fragment runs alone: every
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  cannot      emit the aggregate summary line, write .veldo/last_verify, or
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  exit        never 0, even when nothing fails.
+  done means  `bash scripts/verify.sh` green, and nothing else.
+==============================================================================
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-2ysw06x4/.parked/a0dd3470d8165f949d1c01f1d26a3877b3123991945f8a53cca50159d85a7a35.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 33, in invalid
+    w.resume_pending(config, drain=True)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.veldo/control_worker.py", line 359, in resume_pending
+    sleep(max(0, min(entry['due'] for entry in entries) - time.time()))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 25, in sleep
+    assert math.isfinite(seconds) and seconds > 0, 'unsafe drain sleep'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: unsafe drain sleep
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-htz5_xc5/.parked/a0dd3470d8165f949d1c01f1d26a3877b3123991945f8a53cca50159d85a7a35.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-9t7bznzz/.parked/a0dd3470d8165f949d1c01f1d26a3877b3123991945f8a53cca50159d85a7a35.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 45, in invalid
+    assert not bad.exists(), reader + ': invalid entry retained'
+           ^^^^^^^^^^^^^^^^
+AssertionError: enqueue: invalid entry retained
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-zjglqr8v/.parked/a0dd3470d8165f949d1c01f1d26a3877b3123991945f8a53cca50159d85a7a35.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 45, in invalid
+    assert not bad.exists(), reader + ': invalid entry retained'
+           ^^^^^^^^^^^^^^^^
+AssertionError: failure: invalid entry retained
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-jkjsdqml/.parked/a0dd3470d8165f949d1c01f1d26a3877b3123991945f8a53cca50159d85a7a35.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-hbkb_9zg/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 33, in invalid
+    w.resume_pending(config, drain=True)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.veldo/control_worker.py", line 359, in resume_pending
+    sleep(max(0, min(entry['due'] for entry in entries) - time.time()))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 25, in sleep
+    assert math.isfinite(seconds) and seconds > 0, 'unsafe drain sleep'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: unsafe drain sleep
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-cmgvhbp3/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-0h6lpe83/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 45, in invalid
+    assert not bad.exists(), reader + ': invalid entry retained'
+           ^^^^^^^^^^^^^^^^
+AssertionError: enqueue: invalid entry retained
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-8jph7t3e/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 45, in invalid
+    assert not bad.exists(), reader + ': invalid entry retained'
+           ^^^^^^^^^^^^^^^^
+AssertionError: failure: invalid entry retained
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-f1id1of5/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-st8th6w5/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-z6fjqg_u/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-wbwtkskv/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-rt1ij8fn/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 45, in invalid
+    assert not bad.exists(), reader + ': invalid entry retained'
+           ^^^^^^^^^^^^^^^^
+AssertionError: enqueue: invalid entry retained
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-ce839rwk/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  /tmp/veldo-agent-3vfd3bke/tmp/tmp4gg9akmg: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/veldo-agent-3vfd3bke/tmp/tmp4gg9akmg/nocrit.md: no acceptance criteria
+  /tmp/veldo-agent-3vfd3bke/tmp/tmp4gg9akmg/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/veldo-agent-3vfd3bke/tmp/tmp4gg9akmg/status.md: bad status: donezo
+  /tmp/veldo-agent-3vfd3bke/tmp/tmp4gg9akmg/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/veldo-agent-3vfd3bke/tmp/tmp4gg9akmg/proof2.json: spec criterion AC1 missing from proof
+  /tmp/veldo-agent-3vfd3bke/tmp/tmp4gg9akmg/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/veldo-agent-3vfd3bke/tmp/tmp4gg9akmg/proof4.json: criterion AC1 passed without evidence
+  /tmp/veldo-agent-3vfd3bke/tmp/tmp4gg9akmg/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/veldo-agent-3vfd3bke/tmp/tmp4gg9akmg/verdict.json: bad verdict: looks_fine
+  /tmp/veldo-agent-3vfd3bke/tmp/tmpcacnsheo/cycle.md: dependency cycle through WARP-9101
+  /tmp/veldo-agent-3vfd3bke/tmp/tmpcacnsheo/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/veldo-agent-3vfd3bke/tmp/tmpcacnsheo/oref.md: feature F1: unknown outcome ref O7
+  /tmp/veldo-agent-3vfd3bke/tmp/tmpcacnsheo/fref.md: work W1: unknown feature ref F9
+  /tmp/veldo-agent-3vfd3bke/tmp/tmpcacnsheo/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/veldo-agent-3vfd3bke/tmp/tmpcacnsheo/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/veldo-agent-3vfd3bke/tmp/tmpcacnsheo/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/veldo-agent-3vfd3bke/tmp/tmpcacnsheo/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/veldo-agent-3vfd3bke/tmp/tmpcacnsheo/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/veldo-agent-3vfd3bke/tmp/tmpcacnsheo/dupspec.md: duplicate spec ids across work items
+  /tmp/veldo-agent-3vfd3bke/tmp/tmpcacnsheo/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/veldo-agent-3vfd3bke/tmp/tmpcacnsheo/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  x.md: declares plan PLAN-9002 but no such plan exists
+  x.md: plan PLAN-9001 has no work item W9
+  x.md: plan and work must be declared together
+AC3/outbox-recovery-name-key-mismatch: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-2ysw06x4/.parked/a0dd3470d8165f949d1c01f1d26a3877b3123991945f8a53cca50159d85a7a35.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-recovery-name-key-mismatch
+AC3/outbox-drain-name-key-mismatch: AssertionError: unsafe drain sleep
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-drain-name-key-mismatch
+AC3/outbox-receive-name-key-mismatch: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-htz5_xc5/.parked/a0dd3470d8165f949d1c01f1d26a3877b3123991945f8a53cca50159d85a7a35.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-receive-name-key-mismatch
+AC3/outbox-new-receive-name-key-mismatch: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-9t7bznzz/.parked/a0dd3470d8165f949d1c01f1d26a3877b3123991945f8a53cca50159d85a7a35.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-new-receive-name-key-mismatch
+AC3/outbox-enqueue-name-key-mismatch: AssertionError: enqueue: invalid entry retained
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-enqueue-name-key-mismatch
+AC3/outbox-acknowledge-name-key-mismatch: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-zjglqr8v/.parked/a0dd3470d8165f949d1c01f1d26a3877b3123991945f8a53cca50159d85a7a35.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-acknowledge-name-key-mismatch
+AC3/outbox-failure-name-key-mismatch: AssertionError: failure: invalid entry retained
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-failure-name-key-mismatch
+AC3/outbox-move-name-key-mismatch: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-jkjsdqml/.parked/a0dd3470d8165f949d1c01f1d26a3877b3123991945f8a53cca50159d85a7a35.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-move-name-key-mismatch
+AC3/outbox-recovery-infinity: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-hbkb_9zg/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-recovery-infinity
+AC3/outbox-drain-infinity: AssertionError: unsafe drain sleep
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-drain-infinity
+AC3/outbox-receive-infinity: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-cmgvhbp3/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-receive-infinity
+AC3/outbox-new-receive-infinity: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-0h6lpe83/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-new-receive-infinity
+AC3/outbox-enqueue-infinity: AssertionError: enqueue: invalid entry retained
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-enqueue-infinity
+AC3/outbox-acknowledge-infinity: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-8jph7t3e/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-acknowledge-infinity
+AC3/outbox-failure-infinity: AssertionError: failure: invalid entry retained
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-failure-infinity
+AC3/outbox-move-infinity: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-f1id1of5/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-move-infinity
+AC3/outbox-recovery-nan: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-st8th6w5/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-recovery-nan
+AC3/outbox-drain-nan: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-z6fjqg_u/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-drain-nan
+AC3/outbox-receive-nan: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-wbwtkskv/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-receive-nan
+AC3/outbox-new-receive-nan: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-rt1ij8fn/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-new-receive-nan
+AC3/outbox-enqueue-nan: AssertionError: enqueue: invalid entry retained
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-enqueue-nan
+AC3/outbox-acknowledge-nan: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-ce839rwk/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 45, in invalid
+    assert not bad.exists(), reader + ': invalid entry retained'
+           ^^^^^^^^^^^^^^^^
+AssertionError: failure: invalid entry retained
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-9peersrf/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-144e4rkm/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 33, in invalid
+    w.resume_pending(config, drain=True)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.veldo/control_worker.py", line 359, in resume_pending
+    sleep(max(0, min(entry['due'] for entry in entries) - time.time()))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 26, in sleep
+    raise AssertionError('invalid entry scheduled a retry')
+AssertionError: invalid entry scheduled a retry
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-0kxmtkh0/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-3ow98iz_/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 45, in invalid
+    assert not bad.exists(), reader + ': invalid entry retained'
+           ^^^^^^^^^^^^^^^^
+AssertionError: enqueue: invalid entry retained
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-jsi6il0o/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 45, in invalid
+    assert not bad.exists(), reader + ': invalid entry retained'
+           ^^^^^^^^^^^^^^^^
+AssertionError: failure: invalid entry retained
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-8y9k9f5p/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-agmqwwu5/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-7022ac8v/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-8gvr8hda/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-02lnbbq8/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 45, in invalid
+    assert not bad.exists(), reader + ': invalid entry retained'
+           ^^^^^^^^^^^^^^^^
+AssertionError: enqueue: invalid entry retained
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-ki9awbbj/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 45, in invalid
+    assert not bad.exists(), reader + ': invalid entry retained'
+           ^^^^^^^^^^^^^^^^
+AssertionError: failure: invalid entry retained
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-3984s_hj/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-xud9arna/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-jx60o_ya/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-bjsk93s3/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 45, in invalid
+    assert not bad.exists(), reader + ': invalid entry retained'
+           ^^^^^^^^^^^^^^^^
+AssertionError: enqueue: invalid entry retained
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-5w_noy4_/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 41, in invalid
+    w.OUT.failure(config, request, OSError('offline'), w.CL.durable_json)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.veldo/control_worker_outbox.py", line 194, in failure
+    entry.update(reason=reason, attempts=entry['attempts'] + 1)
+                                         ~~~~~~~~~~~~~~~~~~^~~
+TypeError: can only concatenate str (not "int") to str
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-jqwt3uzw/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-6732ylsl/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-jk0xif0q/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-60z6el01/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-vnbwum71/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 45, in invalid
+    assert not bad.exists(), reader + ': invalid entry retained'
+           ^^^^^^^^^^^^^^^^
+AssertionError: enqueue: invalid entry retained
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-jg7bq541/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 45, in invalid
+    assert not bad.exists(), reader + ': invalid entry retained'
+           ^^^^^^^^^^^^^^^^
+AssertionError: failure: invalid entry retained
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 65, in <lambda>
+    invalid(base, value, reader, mismatch=name == 'name-key-mismatch'))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-h9plqm2c/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 88, in <lambda>
+    rows['AC3/outbox-complete-contract-' + reader] = lambda base, reader=reader: contract(base, reader)
+                                                                                 ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 86, in contract
+    invalid(base / name, value, reader)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-f6ag36f8/dispatch-empty/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-acknowledge-nan
+AC3/outbox-failure-nan: AssertionError: failure: invalid entry retained
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-failure-nan
+AC3/outbox-move-nan: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-9peersrf/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-move-nan
+AC3/outbox-recovery-huge-float: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-144e4rkm/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-recovery-huge-float
+AC3/outbox-drain-huge-float: AssertionError: invalid entry scheduled a retry
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-drain-huge-float
+AC3/outbox-receive-huge-float: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-0kxmtkh0/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-receive-huge-float
+AC3/outbox-new-receive-huge-float: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-3ow98iz_/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-new-receive-huge-float
+AC3/outbox-enqueue-huge-float: AssertionError: enqueue: invalid entry retained
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-enqueue-huge-float
+AC3/outbox-acknowledge-huge-float: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-jsi6il0o/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-acknowledge-huge-float
+AC3/outbox-failure-huge-float: AssertionError: failure: invalid entry retained
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-failure-huge-float
+AC3/outbox-move-huge-float: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-8y9k9f5p/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-move-huge-float
+AC3/outbox-recovery-negative-attempts: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-agmqwwu5/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-recovery-negative-attempts
+AC3/outbox-drain-negative-attempts: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-7022ac8v/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-drain-negative-attempts
+AC3/outbox-receive-negative-attempts: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-8gvr8hda/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-receive-negative-attempts
+AC3/outbox-new-receive-negative-attempts: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-02lnbbq8/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-new-receive-negative-attempts
+AC3/outbox-enqueue-negative-attempts: AssertionError: enqueue: invalid entry retained
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-enqueue-negative-attempts
+AC3/outbox-acknowledge-negative-attempts: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-ki9awbbj/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-acknowledge-negative-attempts
+AC3/outbox-failure-negative-attempts: AssertionError: failure: invalid entry retained
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-failure-negative-attempts
+AC3/outbox-move-negative-attempts: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-3984s_hj/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-move-negative-attempts
+AC3/outbox-drain-string-attempts: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-xud9arna/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-drain-string-attempts
+AC3/outbox-receive-string-attempts: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-jx60o_ya/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-receive-string-attempts
+AC3/outbox-new-receive-string-attempts: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-bjsk93s3/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-new-receive-string-attempts
+AC3/outbox-enqueue-string-attempts: AssertionError: enqueue: invalid entry retained
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-enqueue-string-attempts
+AC3/outbox-acknowledge-string-attempts: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-5w_noy4_/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-acknowledge-string-attempts
+AC3/outbox-failure-string-attempts: TypeError: can only concatenate str (not "int") to str
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-failure-string-attempts
+AC3/outbox-move-string-attempts: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-jqwt3uzw/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-move-string-attempts
+AC3/outbox-recovery-unknown-field: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-6732ylsl/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-recovery-unknown-field
+AC3/outbox-drain-unknown-field: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-jk0xif0q/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-drain-unknown-field
+AC3/outbox-receive-unknown-field: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-60z6el01/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-receive-unknown-field
+AC3/outbox-new-receive-unknown-field: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-vnbwum71/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-new-receive-unknown-field
+AC3/outbox-enqueue-unknown-field: AssertionError: enqueue: invalid entry retained
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-enqueue-unknown-field
+AC3/outbox-acknowledge-unknown-field: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-jg7bq541/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-acknowledge-unknown-field
+AC3/outbox-failure-unknown-field: AssertionError: failure: invalid entry retained
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-failure-unknown-field
+AC3/outbox-move-unknown-field: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-h9plqm2c/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-move-unknown-field
+AC3/outbox-complete-contract-recovery: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-f6ag36f8/dispatch-empty/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 88, in <lambda>
+    rows['AC3/outbox-complete-contract-' + reader] = lambda base, reader=reader: contract(base, reader)
+                                                                                 ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 86, in contract
+    invalid(base / name, value, reader)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 33, in invalid
+    w.resume_pending(config, drain=True)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/.veldo/control_worker.py", line 341, in resume_pending
+    if entry['due'] > time.time():
+       ~~~~~^^^^^^^
+KeyError: 'due'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 88, in <lambda>
+    rows['AC3/outbox-complete-contract-' + reader] = lambda base, reader=reader: contract(base, reader)
+                                                                                 ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 86, in contract
+    invalid(base / name, value, reader)
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 46, in invalid
+    assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1021, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-0x_l4lng/empty-object/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 132, in <lambda>
+    rows['AC3/drain-defensive-sleep-' + name] = lambda base, delay=delay: defensive_sleep(base, delay)
+                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 126, in defensive_sleep
+    assert len(sleeps) == 1 and math.isfinite(sleeps[0]) and 0 < sleeps[0] <= 300
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 132, in <lambda>
+    rows['AC3/drain-defensive-sleep-' + name] = lambda base, delay=delay: defensive_sleep(base, delay)
+                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 126, in defensive_sleep
+    assert len(sleeps) == 1 and math.isfinite(sleeps[0]) and 0 < sleeps[0] <= 300
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 132, in <lambda>
+    rows['AC3/drain-defensive-sleep-' + name] = lambda base, delay=delay: defensive_sleep(base, delay)
+                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 126, in defensive_sleep
+    assert len(sleeps) == 1 and math.isfinite(sleeps[0]) and 0 < sleeps[0] <= 300
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 132, in <lambda>
+    rows['AC3/drain-defensive-sleep-' + name] = lambda base, delay=delay: defensive_sleep(base, delay)
+                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 126, in defensive_sleep
+    assert len(sleeps) == 1 and math.isfinite(sleeps[0]) and 0 < sleeps[0] <= 300
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/scripts/suites/106_veldo_0125_routing.py", line 1243, in _v125_routing_suite
+    test(Path(directory))
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 132, in <lambda>
+    rows['AC3/drain-defensive-sleep-' + name] = lambda base, delay=delay: defensive_sleep(base, delay)
+                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/agent/codex/veldo-0125-b2/proof/VELDO-0125/round16_checks.py", line 126, in defensive_sleep
+    assert len(sleeps) == 1 and math.isfinite(sleeps[0]) and 0 < sleeps[0] <= 300
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+{"operation": "worker_delivery", "dispatch_id": "dispatch/test", "state": "waiting", "reason": "release_not_yet_authorized"}
+{"operation": "worker_delivery", "dispatch_id": "dispatch/test", "state": "waiting", "reason": "release_not_yet_authorized"}
+{"operation": "worker_delivery", "dispatch_id": "dispatch/test", "state": "waiting", "reason": "release_not_yet_authorized"}
+{"operation": "worker_delivery", "dispatch_id": "dispatch/test", "state": "retry_pending", "reason": "binding_mismatch:remote_result"}
+{"operation": "worker_delivery", "dispatch_id": "permanent", "state": "parked", "reason": "binding_mismatch:permanent"}
+{"operation": "worker_delivery", "dispatch_id": "bad", "state": "parked", "reason": "binding_mismatch:operator_required"}
+{"operation": "worker_delivery", "dispatch_id": "offline", "state": "retry_pending", "reason": "AUTHORITY_UNAVAILABLE:offline"}
+{"operation": "worker_delivery", "dispatch_id": "offline", "state": "retry_pending", "reason": "AUTHORITY_UNAVAILABLE:offline"}
+{"operation": "worker_release_wake", "dispatch_id": "dispatch/test", "state": "retry_pending", "reason": "ssh_exit:255"}
+{"operation": "worker_release_wake", "dispatch_id": "dispatch/test", "state": "retry_pending", "reason": "TimeoutExpired"}
+
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-complete-contract-recovery
+AC3/outbox-complete-contract-drain: KeyError: 'due'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-complete-contract-drain
+AC3/outbox-complete-contract-receive: FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-agent-3vfd3bke/tmp/v125-routing-0x_l4lng/empty-object/.parked/2f05d4b689d270cafb02285f35f44866f7dc8a2d368a3f9d1124373eeab31fb1.json'
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-complete-contract-receive
+AC3/drain-defensive-sleep-infinity: AssertionError: 
+  SELFTEST FAIL: VELDO-0125 AC3/drain-defensive-sleep-infinity
+AC3/drain-defensive-sleep-nan: AssertionError: 
+  SELFTEST FAIL: VELDO-0125 AC3/drain-defensive-sleep-nan
+AC3/drain-defensive-sleep-negative: AssertionError: 
+  SELFTEST FAIL: VELDO-0125 AC3/drain-defensive-sleep-negative
+AC3/drain-defensive-sleep-zero: AssertionError: 
+  SELFTEST FAIL: VELDO-0125 AC3/drain-defensive-sleep-zero
+AC3/drain-defensive-sleep-huge: AssertionError: 
+  SELFTEST FAIL: VELDO-0125 AC3/drain-defensive-sleep-huge
+  106_veldo_0125_routing                         148 passed  158.29s
+selftest (PARTIAL, 1 of 166 suites): 174 passed, 63 failed in 158.29s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

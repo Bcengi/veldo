@@ -7,6 +7,7 @@ reader, never guessed from a successful exit. Absent usage keeps charge unknown.
 import importlib.util
 import os
 import json
+import math
 import subprocess
 import shutil
 import sys
@@ -170,17 +171,22 @@ def receive(config, request, *, queued=False):
                     OUT.move(root, path, '.active', CL.durable_json,
                              dict(request=request, attempts=0, due=0))
                 else:
-                    OUT.enqueue_locked(root, request, CL.durable_json)
+                    if OUT.enqueue_locked(root, request, CL.durable_json) is None:
+                        return None
+            path = OUT.locate(root, request['dispatch_id'])
+            entry = OUT.read_entry(root, path)
+            if entry is None:
+                return None
             locks = root / '.locks'
             locks.mkdir(exist_ok=True)
             lock = (locks / C.P.digest(request['dispatch_id']).split(':')[-1]).open('a')
             try:
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
-                OUT.move(root, OUT.locate(root, request['dispatch_id']), '.active', CL.durable_json)
+                OUT.move(root, path, '.active', CL.durable_json, entry)
                 return None
             acquired = True
-            OUT.move(root, OUT.locate(root, request['dispatch_id']), '.active', CL.durable_json)
+            OUT.move(root, path, '.active', CL.durable_json, entry)
         result = receive_locked(config, request)
         OUT.acknowledge(config, request['dispatch_id'],
                         release=result.get('host_released') or request.get('action') == 'release')
@@ -356,7 +362,15 @@ def resume_pending(config, *, drain=False):
         entries = OUT.entries(config, ready_only=True)
         if not entries:
             return
-        sleep(max(0, min(entry['due'] for entry in entries) - time.time()))
+        delay = min(entry['due'] for entry in entries) - time.time()
+        if not math.isfinite(delay) or delay <= 0:
+            print(json.dumps(dict(operation='worker_delivery_sleep_invalid', delay=str(delay),
+                reason='invalid computed retry delay; clamped to 1 second')),
+                file=sys.stderr, flush=True)
+            delay = 1
+        # A clock/computation bug or a concurrently enqueued immediate event must
+        # never become sleep(inf), a crash, or an unbounded sleep(0) busy loop.
+        sleep(max(1, min(OUT.MAX_BACKOFF, delay)))
 
 
 def install_resumer(config_path, config):
