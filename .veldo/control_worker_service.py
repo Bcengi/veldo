@@ -10,7 +10,7 @@ import sys
 import time
 import subprocess
 import threading
-import queue
+import heapq
 from pathlib import Path
 import importlib.util
 
@@ -55,10 +55,13 @@ class Service(SV.Service):
         SV.S.declare_owners(conn, 'VELDO-0125', kinds={RECORD: (RECORD,), 'worker_spend': (RECORD,)},
                             prefixes={'worker:': (RECORD,), 'worker-spend:': (RECORD,)}, module=__file__)
         self.release_deliveries = {}
-        self.release_queue = queue.Queue()
+        self.release_queue = []
         self.release_sent = set()
         self.release_confirmed = set()
         self.release_lock = threading.Lock()
+        self.release_changed = threading.Condition(self.release_lock)
+        self.release_retry_seconds = 1
+        self.release_retry_max_seconds = 300
         # A partial index is maintained by the same transaction as the observation.
         # Restarts visit only unconfirmed releases, never historical reservations.
         conn.execute("CREATE INDEX IF NOT EXISTS worker_release_pending ON entities(id) "
@@ -69,7 +72,7 @@ class Service(SV.Service):
             self.notify_release(data['repository_uuid'], data)
 
     def notify_release(self, repository, binding):
-        """Queue each unconfirmed release once per service lifetime, with one SSH at a time."""
+        """Queue release events; unsuccessful handoffs retain a bounded-backoff retry."""
         dispatch = binding['dispatch_id']
         receiver = self.config.get('receiver') or {}
         config_path = receiver.get('configs', {}).get(repository)
@@ -90,7 +93,8 @@ class Service(SV.Service):
             if dispatch in self.release_confirmed:
                 return
             self.release_sent.add(dispatch)
-            self.release_queue.put((argv, request))
+            heapq.heappush(self.release_queue, (time.monotonic(), dispatch, 0, argv, request))
+            self.release_changed.notify_all()
             previous = self.release_deliveries.get('sender')
             if previous is not None and previous.is_alive():
                 return
@@ -101,17 +105,34 @@ class Service(SV.Service):
     def deliver_releases(self):
         while True:
             with self.release_lock:
-                if self.release_queue.empty():
+                # Confirmations cancel even a retry whose deadline is far away.
+                self.release_queue[:] = [entry for entry in self.release_queue
+                                         if entry[1] not in self.release_confirmed]
+                heapq.heapify(self.release_queue)
+                if not self.release_queue:
                     self.release_deliveries.pop('sender', None)
                     return
-                argv, request = self.release_queue.get_nowait()
-                if request['dispatch_id'] in self.release_confirmed:
+                due, dispatch, attempts, argv, request = self.release_queue[0]
+                if due > time.monotonic():
+                    self.release_changed.wait(due - time.monotonic())
                     continue
+                heapq.heappop(self.release_queue)
             try:
-                subprocess.run(argv, input=json.dumps(request).encode() + b'\n',
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
-            except (OSError, subprocess.TimeoutExpired):
-                pass  # The pending marker survives; a restart can redeliver.
+                result = subprocess.run(argv, input=json.dumps(request).encode() + b'\n',
+                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
+                if result.returncode == 0:
+                    continue  # Mac acknowledged the wake and now owns its durable outbox.
+                reason = 'ssh_exit:' + str(result.returncode)
+            except (OSError, subprocess.TimeoutExpired) as error:
+                reason = type(error).__name__
+            print(json.dumps(dict(operation='worker_release_wake', dispatch_id=dispatch,
+                state='retry_pending', reason=reason)), file=sys.stderr, flush=True)
+            with self.release_lock:
+                if dispatch not in self.release_confirmed:
+                    delay = min(self.release_retry_max_seconds,
+                                self.release_retry_seconds * 2 ** min(attempts, 30))
+                    heapq.heappush(self.release_queue,
+                                  (time.monotonic() + delay, dispatch, attempts + 1, argv, request))
 
     def records(self, repository):
         common = dict(domain=self.domain, repository=repository, principal=self.principal,
@@ -176,6 +197,7 @@ class Service(SV.Service):
             if (answer.get('record') or {}).get('release_state') == 'confirmed':
                 with self.release_lock:
                     self.release_confirmed.add(answer['binding']['dispatch_id'])
+                    self.release_changed.notify_all()
             if (answer.get('record') or {}).get('release_state') == 'pending' and command['operation'] in ('worker_result', 'worker_release'):
                 self.notify_release(repository, answer['binding'])
             if self.loop is not None and command['operation'] in ('worker_result', 'worker_release', 'worker_retired'):
@@ -436,14 +458,19 @@ class Service(SV.Service):
             elif record['state'] in ('accepted', 'running'):
                 ds.unknown(dispatch, record['contract_digest'], 'remote_outcome_unknown', now=now,
                            expected_state=record['state'])
-            if state == 'unknown' and cleanup is not None and not data.get('spend_receipt'):
-                data['spend_receipt'] = reservations.report('remote-spend/' + dispatch, data['invocation'],
-                    1, {}, final=True, now=now)
-        else:
+            if state == 'unknown' and ((usage is not None and usage != data.get('usage')) or
+                    (cleanup is not None and not data.get('spend_receipt'))):
+                invocation = reservations._records()[RES.entity('invocation', [self.domain, data['invocation']])]
+                sequence = invocation['sequence'] + 1 if data.get('spend_receipt') else 1
+                data['spend_receipt'] = reservations.report('remote-spend/' + dispatch + '/' + str(sequence),
+                    data['invocation'], sequence, usage or data.get('usage') or {}, final=True, now=now)
+        if state in ('exited', 'unknown') and usage is None:
+            usage = data.get('usage')
+        elif state not in ('refused', 'exited', 'unknown'):
             raise SV.Refused('invalid_input:terminal_state')
         data.update(state=state, observation=observation, references=references,
-                    usage=usage if state == 'exited' else None,
-                    charge='reported' if usage is not None and state == 'exited' else 'unknown')
+                    usage=usage if state in ('exited', 'unknown') else None,
+                    charge='reported' if usage is not None and state in ('exited', 'unknown') else 'unknown')
 
     def release_remote(self, reservations, record, data, command, now):
         state, dispatch = data['state'], record['dispatch_id']

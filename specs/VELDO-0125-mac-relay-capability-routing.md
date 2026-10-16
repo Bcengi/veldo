@@ -208,3 +208,12 @@ storm. The signed worker_retired command, launch-agent outbox resumer and target
 regressions implement this correction. proof/VELDO-0125/b2-delivery.md records the
 protocol, named rows and isolated falsifiers. The canonical gate and native host
 qualification remain the reviewer's responsibility under the owner's run limits.
+
+2026-10-15: the owner requires event-driven Mac delivery with a durable pending
+index, no recurring idle timer or completed-history startup scan, per-dispatch
+error isolation and permanent-refusal parking. Linux release wakes must retry
+failed SSH handoffs with bounded backoff; the Mac must retain busy release events
+and flush measured engine output even after a crash before result evidence.
+Unknown outcomes retain measured usage on the original invocation exactly once.
+Round 9 regressions and isolated falsifiers are added without changing historical
+proof records. Native Mac/SSH qualification and the full gate remain with the reviewer.

@@ -229,6 +229,8 @@ def _v125_routing_suite():
                     f.ds, f.res = f.service.records('repo')
                     f.start()
                 if lost_result == 'resumer':
+                    worker.OUT.enqueue(config, dict(action='resume', domain='domain', repository='repo',
+                        dispatch_id='dispatch/test', contract_digest=retained['binding']['contract_digest']), worker.CL.durable_json)
                     worker.resume_pending(config)
                     result = resumed.status('dispatch/test')
                     assert (directory / 'delivery-complete.json').exists()
@@ -258,10 +260,9 @@ def _v125_routing_suite():
                     assert archive.extractfile('tmp/deliverable.bin').read() == b'temporary deliverable'
                     assert archive.getmember('clone/temporary-output').issym()
                 assert result['record']['references']['output'].startswith('file:')
-                if not unknown and not lost_running:
-                    assert result['record']['usage'] == {'tokens': 21, 'messages': 1}
-                    calls = [v for v in f.res._records().values() if v['type'] == 'invocation']
-                    assert calls[0]['observed']['tokens'] == 21, 'engine usage never reached spend report'
+                assert result['record']['usage'] == {'tokens': 21, 'messages': 1}
+                calls = [v for v in f.res._records().values() if v['type'] == 'invocation']
+                assert calls[0]['observed']['tokens'] == 21, 'engine usage never reached spend report'
             else:
                 assert result['record']['usage']['tokens'] == 3
             if empty_collect or cleanup_failed or incomplete_retirement:
@@ -839,7 +840,7 @@ def _v125_routing_suite():
             calls.append(kwargs['input'])
             entered.set()
             assert unblock.wait(5)
-            return types.SimpleNamespace(returncode=1)
+            return types.SimpleNamespace(returncode=0)
         T.W.subprocess = types.SimpleNamespace(run=delivery, TimeoutExpired=original.TimeoutExpired,
                                                DEVNULL=original.DEVNULL)
         try:
@@ -906,17 +907,19 @@ def _v125_routing_suite():
         jobs = list((base / 'Library' / 'LaunchAgents').glob('*.plist'))
         assert len(jobs) == 1
         job = plistlib.loads(jobs[0].read_bytes())
-        assert job['RunAtLoad'] and job['KeepAlive'] and job['ThrottleInterval'] >= 30
+        assert job['RunAtLoad'] and not job.get('KeepAlive')
+        assert job['QueueDirectories'] == [str(base / 'runs' / '.pending')]
+        assert not any(key in job for key in ('StartInterval', 'StartCalendarInterval'))
         assert job['ProgramArguments'][-2:] == [str(path), '--resume']
         assert calls[-1][1] == 'bootstrap'
         invoked = []
-        worker.resume_pending = lambda config: invoked.append(config)
+        worker.resume_pending = lambda config, **kwargs: invoked.append((config, kwargs))
         worker.time = types.SimpleNamespace(sleep=lambda seconds: (_ for _ in ()).throw(KeyboardInterrupt()))
         try:
             worker.main(str(path), resume=True)
         except KeyboardInterrupt:
             pass
-        assert invoked == [config], 'installed startup entrypoint did not drain outbox'
+        assert invoked == [(config, {'drain': True})], 'installed startup entrypoint did not drain outbox'
 
     def retry_backoff(base):
         client = T.CL.Client('/workspace', {}, 'mac', lambda *args: '', [])
@@ -1152,7 +1155,7 @@ def _v125_routing_suite():
     def sync(base):
         pack = T.load('pack')
         names = ['control_routing.py', 'control_worker.py', 'control_worker_client.py', 'control_worker_service.py',
-                 'control_service.py', 'project_runner_macos.py']
+                 'control_service.py', 'project_runner_macos.py', 'control_worker_outbox.py']
         inventory = pack.engine_files(str(ROOT / 'engine'))
         for name in names:
             assert '.veldo/' + name in inventory
@@ -1180,7 +1183,8 @@ def _v125_routing_suite():
                                      'run', 'codex', 'unused.json'], capture_output=True, text=True)
             assert result.returncode == 2 and json.loads(result.stdout)['status'] == 'not_run'
 
-    for row, test in {'AC1/installed-routing': installed_routing,
+    events = helper('v125_event_checks', 'proof/VELDO-0125/event_checks.py')
+    for row, test in {**events.cases(T, helper, release_endpoint, finish_release), 'AC1/installed-routing': installed_routing,
                       'AC1/worker-signing-key-read': signing_key_read,
                       'AC2/capability-selection': selection, 'AC2/host-routing-refusal': blocked,
                       'AC2/qualification': qualification, 'AC2/factory-remote-delivery': factory_delivery,

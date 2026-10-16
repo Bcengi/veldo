@@ -15,6 +15,7 @@ import tarfile
 import fcntl
 import time
 import plistlib
+from types import SimpleNamespace
 from pathlib import Path
 
 
@@ -27,6 +28,7 @@ def organ(name):
 
 C = organ('project_runner_macos_control')
 CL = organ('control_worker_client')
+OUT = organ('control_worker_outbox')
 
 
 def engine_usage(started, engine):
@@ -84,6 +86,8 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=
     accepted = client.launch(binding, 'accept', receiver=receiver, runtime_seconds=host.profile['runtime_seconds'])
     request['acceptance'] = accepted['record']['acceptance']
     request['environment']['VELDO_DISPATCH_ACCEPTANCE'] = request['acceptance']
+    CL.durable_json(Path(clone).parent / 'run-context.json',
+                    dict(binding=binding, engine=request['engine']))
     started = host.start(request)
     try:
         try:
@@ -135,16 +139,65 @@ def apply_release(client, host, binding, outcome):
     return outcome
 
 
-def receive(config, request):
+def receive(config, request, *, queued=False):
     # A resumed outbox and an operator wake may race the original receiver.
     locks = Path(config['runs']) / '.locks'
     locks.mkdir(parents=True, exist_ok=True)
     with (locks / C.P.digest(request['dispatch_id']).split(':')[-1]).open('a') as lock:
         try:
-            fcntl.flock(lock, fcntl.LOCK_EX | (fcntl.LOCK_NB if request.get('action') == 'resume' else 0))
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
+            if not queued:
+                OUT.enqueue(config, request, CL.durable_json)
+            OUT.failure(config, request, OSError('receiver_busy'), CL.durable_json)
             return None
-        return receive_locked(config, request)
+        try:
+            if not queued:
+                OUT.enqueue(config, request, CL.durable_json)
+            result = receive_locked(config, request)
+            OUT.acknowledge(config, request['dispatch_id'],
+                            release=result.get('host_released') or request.get('action') == 'release')
+            return result
+        except Exception as error:
+            OUT.failure(config, request, error, CL.durable_json)
+            raise
+
+
+def retain_crashed_output(host, client, request, directory):
+    """Recover measurement from the trusted wrapper before acknowledging a release."""
+    context = directory / 'run-context.json'
+    slot_dir = host.root / host.label(request['dispatch_id'])
+    output = slot_dir / 'engine.out'
+    if not output.exists():
+        return
+    outcome = client.status(request['dispatch_id'])
+    binding = outcome['binding']
+    wrapper = json.loads((slot_dir / 'request.json').read_text())
+    if (wrapper['dispatch_id'] != request['dispatch_id']
+            or wrapper['contract_digest'] != request['contract_digest']
+            or binding['contract_digest'] != request['contract_digest']):
+        raise C.P.Refused('binding_mismatch:retained_output')
+    if outcome['record']['state'] == 'exited' and outcome['record'].get('usage') is not None:
+        return  # The acknowledged signed final measurement is already on the authority.
+    engine = outcome['contract']['capability']['adapter']
+    if context.exists():
+        retained = json.loads(context.read_text())
+        if retained['binding'] != binding or retained['engine'] != engine:
+            raise C.P.Refused('binding_mismatch:retained_context')
+    # The authority's signed cleanup attestation establishes that retained output
+    # is final. Without it, leave the release pending rather than snapshot a live engine.
+    if not outcome.get('host_released'):
+        raise OSError('release_not_yet_authorized')
+    observation = dict(outcome['record'].get('observation') or {}, state='unknown')
+    if outcome['record']['state'] == 'exited':
+        observation = outcome['record']['observation']
+    else:
+        observation['cleanup'] = dict(terminated=True, cleaned=True, clone_removed=True)
+    usage = engine_usage(SimpleNamespace(directory=slot_dir), engine)
+    references = outcome['record'].get('references', {}) if outcome['record']['state'] == 'exited' else {
+        'output': output.resolve().as_uri() + '#sha256=' + hashlib.sha256(output.read_bytes()).hexdigest()}
+    CL.durable_json(directory / 'result-evidence.json', dict(binding=binding,
+        observation=observation, usage=usage, references=references))
 
 
 def receive_locked(config, request):
@@ -164,12 +217,18 @@ def receive_locked(config, request):
     client = CL.Client(config['workspace'], config['binding'], config['principal'],
         lambda data, namespace='veldo-command': SIG.sign_bytes(key, data, namespace),
         config['ssh_argv'], signing_key=key)
+    # The durable scheduler owns retries. A failed dispatch must yield to its peers.
+    client.retry_inline = False
     if (request.get('domain') != config['binding']['domain_uuid']
             or request.get('repository') != config['binding']['repository_uuid']):
         raise C.P.Refused('binding_mismatch:receiver_repository')
     directory = Path(config['runs']) / C.P.digest(request['dispatch_id']).split(':')[-1]
     evidence = directory / 'result-evidence.json'
     client.outbox = directory / 'result-request.json'
+    directory_existed = directory.exists()
+    directory.mkdir(parents=True, exist_ok=True)
+    if not evidence.exists() and request.get('action') in ('release', 'resume'):
+        retain_crashed_output(host, client, request, directory)
     # Flush retained measurement before any release confirmation, including an
     # operator wake after a crash. A transport wake never authorizes execution.
     if evidence.exists():
@@ -183,10 +242,10 @@ def receive_locked(config, request):
             outcome = client.retry_result()
         else:
             outcome = client.result(**retained)
-        if not outcome.get('host_released'):
+        if not outcome.get('host_released') and request.get('action') == 'release':
             outcome = client.status(request['dispatch_id'])
         return apply_release(client, host, retained['binding'], outcome)
-    if request.get('action') in ('release', 'resume') or directory.exists():
+    if request.get('action') in ('release', 'resume') or directory_existed:
         outcome = client.status(request['dispatch_id'])
         directory.mkdir(parents=True, exist_ok=True)
         return apply_release(client, host, dict(dispatch_id=request['dispatch_id'],
@@ -198,7 +257,6 @@ def receive_locked(config, request):
             or contract['domain'] != request['domain'] or contract['repository'] != request['repository']):
         raise C.P.Refused('binding_mismatch:receiver_contract')
     account = config['accounts'][contract['reservation']['account']]
-    directory.mkdir(parents=True, exist_ok=False)
     clone, scratch = directory / 'clone', directory / 'scratch'
     scratch.mkdir()
     # The source mirror is installed configuration, never a source URL from work.
@@ -209,20 +267,28 @@ def receive_locked(config, request):
     return run(client, host, request['dispatch_id'], str(clone), str(scratch), account, claim=claim)
 
 
-def resume_pending(config):
-    """Startup/periodic outbox drain. It never claims or starts an engine."""
-    for directory in Path(config['runs']).iterdir():
-        if not directory.is_dir() or (directory / 'delivery-complete.json').exists():
-            continue
-        for name in ('result-evidence.json', 'retirement-request.json'):
-            path = directory / name
-            if path.exists():
-                retained = json.loads(path.read_text())
-                binding = retained['binding']
-                receive(config, dict(action='resume', domain=config['binding']['domain_uuid'],
-                    repository=config['binding']['repository_uuid'], dispatch_id=binding['dispatch_id'],
-                    contract_digest=binding['contract_digest']))
-                break
+def resume_pending(config, *, drain=False):
+    """Drain only indexed events, waiting solely for specific delivery retries."""
+    while True:
+        entries = OUT.entries(config)
+        if not entries:
+            return
+        for entry in entries:
+            if entry['due'] > time.time():
+                continue
+            request = dict(entry['request'])
+            if request.get('action') != 'release':
+                request['action'] = 'resume'
+            try:
+                receive(config, request, queued=True)
+            except Exception:
+                pass  # receive durably records/parks this dispatch; drain its peers.
+        if not drain:
+            return
+        entries = OUT.entries(config)
+        if not entries:
+            return
+        time.sleep(max(0, min(entry['due'] for entry in entries) - time.time()))
 
 
 def install_resumer(config_path, config):
@@ -231,10 +297,15 @@ def install_resumer(config_path, config):
     agents = Path(config['profile']['home']) / 'Library' / 'LaunchAgents'
     agents.mkdir(parents=True, exist_ok=True)
     path = agents / (label + '.plist')
+    pending = Path(config['runs']) / '.pending'
+    pending.mkdir(parents=True, exist_ok=True)
     job = dict(Label=label, ProgramArguments=[sys.executable, str(Path(__file__).resolve()),
-        str(Path(config_path).resolve()), '--resume'], RunAtLoad=True, KeepAlive=True, ThrottleInterval=30)
+        str(Path(config_path).resolve()), '--resume'], RunAtLoad=True,
+        QueueDirectories=[str(pending.resolve())],
+        StandardErrorPath=str(Path(config['runs']).resolve() / 'delivery-errors.log'))
     payload = plistlib.dumps(job)
-    if not path.exists() or path.read_bytes() != payload:
+    changed = not path.exists() or path.read_bytes() != payload
+    if changed:
         temporary = path.with_suffix('.tmp')
         with temporary.open('wb') as stream:
             stream.write(payload)
@@ -242,7 +313,10 @@ def install_resumer(config_path, config):
             os.fsync(stream.fileno())
         os.replace(temporary, path)
     domain = 'gui/' + str(os.getuid())
-    if subprocess.run(['launchctl', 'print', domain + '/' + label], capture_output=True).returncode:
+    loaded = not subprocess.run(['launchctl', 'print', domain + '/' + label], capture_output=True).returncode
+    if loaded and changed:
+        subprocess.run(['launchctl', 'bootout', domain + '/' + label], check=True, capture_output=True)
+    if not loaded or changed:
         subprocess.run(['launchctl', 'bootstrap', domain, str(path)], check=True, capture_output=True)
 
 
@@ -250,13 +324,19 @@ def main(config_path, resume=False):
     config = json.loads(Path(config_path).read_text())
     Path(config['runs']).mkdir(parents=True, exist_ok=True)
     if resume:
-        while True:
-            resume_pending(config)
-            time.sleep(30)
+        resume_pending(config, drain=True)
     else:
         install_resumer(config_path, config)
-        result = receive(config, json.loads(sys.stdin.readline(65536)))
-        print(json.dumps(dict(state=result['record']['state'])), flush=True)
+        try:
+            result = receive(config, json.loads(sys.stdin.readline(65536)))
+        except Exception as error:
+            if isinstance(error, (OSError, TimeoutError)) or str(error).startswith('AUTHORITY_UNAVAILABLE:'):
+                raise
+            # receive recorded the permanent refusal for the operator. A successful
+            # transport handoff must not ask Linux to resend this parked command forever.
+            print(json.dumps(dict(state='parked', reason=str(error))), flush=True)
+            return
+        print(json.dumps(dict(state=result['record']['state'] if result else 'delivery_pending')), flush=True)
 
 
 if __name__ == '__main__':

@@ -72,6 +72,7 @@ class Client:
         self.outbox = None
         self.retry_seconds = 1
         self.retry_max_seconds = 300
+        self.retry_inline = True
 
     def send(self, operation, parameters):
         if operation not in OPERATIONS:
@@ -97,6 +98,8 @@ class Client:
         return response
 
     def retry(self, request):
+        if not self.retry_inline:
+            return self.deliver(request)
         delay = self.retry_seconds
         while True:
             try:
