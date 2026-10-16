@@ -1,0 +1,4 @@
+--- control_worker.py
++++ control_worker.py
+@@ -130,0 +131 @@
++        client.retired(binding)

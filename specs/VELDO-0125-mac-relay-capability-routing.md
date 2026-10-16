@@ -199,3 +199,12 @@ backoff. The signed receiver status query reads the existing authority; it creat
 no additional store. Targeted regression and falsifier records accompany this
 correction. The reviewer retains responsibility for the full gate and real-host
 qualification; no independent approval is claimed here.
+
+2026-10-15: the owner's second B2 review requires Mac-confirmed retirement before
+Linux capacity release, retained-result flushing on release wakes, the installed
+engine usage reader, uncapped result delivery with bounded backoff and restart
+replay, and indexed unconfirmed-release delivery without a startup connection
+storm. The signed worker_retired command, launch-agent outbox resumer and targeted
+regressions implement this correction. proof/VELDO-0125/b2-delivery.md records the
+protocol, named rows and isolated falsifiers. The canonical gate and native host
+qualification remain the reviewer's responsibility under the owner's run limits.

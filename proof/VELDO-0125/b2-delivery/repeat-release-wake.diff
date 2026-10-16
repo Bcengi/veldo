@@ -1,0 +1,5 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -88 +88 @@
+-            if dispatch in self.release_sent:
++            if False:

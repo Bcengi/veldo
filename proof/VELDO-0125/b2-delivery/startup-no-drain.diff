@@ -1,0 +1,4 @@
+--- control_worker.py
++++ control_worker.py
+@@ -254 +253,0 @@
+-            resume_pending(config)

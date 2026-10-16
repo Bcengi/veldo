@@ -1,0 +1,5 @@
+--- control_worker_client.py
++++ control_worker_client.py
+@@ -101 +101 @@
+-        while True:
++        for attempt in range(8):

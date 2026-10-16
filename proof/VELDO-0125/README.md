@@ -434,3 +434,10 @@ retirement, and `AC3/transport-is-not-evidence` attacks stdout and exit-status
 claims before acceptance, after acceptance and while running. These are Linux
 logic regressions, not fresh native SSH/Mac observations or a canonical gate stamp.
 The reviewer retains responsibility for the gate and native validation.
+
+The second B2 review correction is documented in [b2-delivery.md](b2-delivery.md).
+It supersedes the earlier capped delivery policy: retries have no attempt limit,
+the installed Mac CLI maintains a delivery-only startup agent, and Linux capacity
+is released only after the Mac signs its durable retirement confirmation. Release
+wakes flush saved usage, the default collector reads the engine's usage stream,
+and authority restarts read only indexed unconfirmed releases.

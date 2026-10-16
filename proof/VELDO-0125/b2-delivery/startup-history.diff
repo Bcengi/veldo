@@ -1,0 +1,6 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -66,2 +66 @@
+-        for row in conn.execute("SELECT data FROM entities INDEXED BY worker_release_pending "
+-                "WHERE kind='worker_observation' AND json_extract(data, '$.release_state')='pending'"):
++        for row in conn.execute("SELECT data FROM entities WHERE kind='worker_observation'"):

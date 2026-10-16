@@ -1,0 +1,5 @@
+--- control_worker.py
++++ control_worker.py
+@@ -175 +175 @@
+-    if evidence.exists():
++    if evidence.exists() and request.get('action') != 'release':

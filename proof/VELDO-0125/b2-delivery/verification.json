@@ -1,0 +1,38 @@
+{
+  "schema": "veldo.targeted-review-observations/v1",
+  "spec": "VELDO-0125",
+  "implementation_commits": [
+    "1b3cafd7",
+    "d00a74b5"
+  ],
+  "checks": [
+    {
+      "command": "python3 scripts/selftest.py --suite 105_veldo_0125_relay",
+      "passed": 43,
+      "failed": 0,
+      "scope": "partial named suite; not the canonical gate",
+      "log": "relay-final.log"
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "passed": 68,
+      "failed": 0,
+      "scope": "partial named suite; not the canonical gate",
+      "log": "routing-verified.log"
+    }
+  ],
+  "negative_controls": "results.json",
+  "gate_run": false,
+  "native_host_run": false,
+  "independent_approval": false,
+  "source_sha256": {
+    "engine/.veldo/control_reservations.py": "4d7d5e72fa658e3527542ba84117cfc8e6aefb0af9dcd11fe9a3900a7cc6736e",
+    "engine/.veldo/control_service.py": "5cbd68bfd9da5bb0dd2728caf4552ee35bdb80350e4df7272934f4bbf5ba1cde",
+    "engine/.veldo/control_worker.py": "eb1437fed8f512e7118db384484ad9cbdc13800d4c0222434028ef3e6e0c615a",
+    "engine/.veldo/control_worker_client.py": "568ceba1ba77b0f9190225c5df4350ec6e064b92fa504c2943f0d38be98cd86f",
+    "engine/.veldo/control_worker_service.py": "4162a97cff1afbc68784b6421fdf7962f57101e218eff31475e79ce035271bb3",
+    "scripts/suites/105_veldo_0125_relay.py": "2dcf88a7697fb92faa5766dc6e257cf6c7359de436a03c1d517ec880c122f78b",
+    "scripts/suites/106_veldo_0125_routing.py": "0026ff022310b7155c3617c0704046e40b98a5a2512876c62eb71b55b6b215aa",
+    "proof/VELDO-0125/delivery_falsifiers.py": "73b268149fd7b6dffd4a6d90f43eec61d55751ece0d05299743df884830c0c20"
+  }
+}

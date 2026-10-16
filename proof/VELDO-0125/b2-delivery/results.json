@@ -1,0 +1,74 @@
+[
+  {
+    "case": "retirement-order",
+    "row": "AC3/stored-release-restart",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "eb1437fed8f512e7118db384484ad9cbdc13800d4c0222434028ef3e6e0c615a",
+    "patch": "retirement-order.diff",
+    "log": "retirement-order.log"
+  },
+  {
+    "case": "release-skips-outbox",
+    "row": "AC3/release-flushes-saved-usage",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "eb1437fed8f512e7118db384484ad9cbdc13800d4c0222434028ef3e6e0c615a",
+    "patch": "release-skips-outbox.diff",
+    "log": "release-skips-outbox.log"
+  },
+  {
+    "case": "usage-unwired",
+    "row": "AC3/default-collector-retains-files",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "eb1437fed8f512e7118db384484ad9cbdc13800d4c0222434028ef3e6e0c615a",
+    "patch": "usage-unwired.diff",
+    "log": "usage-unwired.log"
+  },
+  {
+    "case": "retry-eight",
+    "row": "AC3/result-retry-backoff",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "568ceba1ba77b0f9190225c5df4350ec6e064b92fa504c2943f0d38be98cd86f",
+    "patch": "retry-eight.diff",
+    "log": "retry-eight.log"
+  },
+  {
+    "case": "startup-history",
+    "row": "AC3/host-release-replay-and-restart",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "4162a97cff1afbc68784b6421fdf7962f57101e218eff31475e79ce035271bb3",
+    "patch": "startup-history.diff",
+    "log": "startup-history.log"
+  },
+  {
+    "case": "early-release-refused",
+    "row": "AC3/release-before-start",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "963d2d60150a1fd3e75debf36e2c08a6f72009b3b632547ed451bc47825a4e0b",
+    "patch": "early-release-refused.diff",
+    "log": "early-release-refused.log"
+  },
+  {
+    "case": "startup-no-drain",
+    "row": "AC3/delivery-launch-agent",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "eb1437fed8f512e7118db384484ad9cbdc13800d4c0222434028ef3e6e0c615a",
+    "patch": "startup-no-drain.diff",
+    "log": "startup-no-drain.log"
+  },
+  {
+    "case": "repeat-release-wake",
+    "row": "AC3/release-wakes-bounded-once",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "4162a97cff1afbc68784b6421fdf7962f57101e218eff31475e79ce035271bb3",
+    "patch": "repeat-release-wake.diff",
+    "log": "repeat-release-wake.log"
+  }
+]

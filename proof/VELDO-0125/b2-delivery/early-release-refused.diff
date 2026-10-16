@@ -1,0 +1,4 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -241,0 +242 @@
++                raise P.Refused('missing_evidence:slot')
