@@ -61,8 +61,18 @@ def _v125_suite():
         before = set(local.rglob('*'))
         client = f.client(argv=[__import__('sys').executable, str(T.MODULES / 'control_relay.py'), str(local / 'absent.sock')])
         client.retry_seconds = 0
-        for op in T.CL.OPERATIONS:
-            T.refused(lambda: client.send(op, {'dispatch_id': 'dispatch/test'}), 'AUTHORITY_UNAVAILABLE:')
+        module = client.retry.__globals__
+        original_time = module['time']
+        module['time'] = __import__('types').SimpleNamespace(sleep=lambda seconds:
+            (_ for _ in ()).throw(KeyboardInterrupt('observed unavailable delivery')))
+        try:
+            for op in T.CL.OPERATIONS:
+                try:
+                    T.refused(lambda: client.send(op, {'dispatch_id': 'dispatch/test'}), 'AUTHORITY_UNAVAILABLE:')
+                except KeyboardInterrupt:
+                    assert op in ('worker_status', 'worker_retired')
+        finally:
+            module['time'] = original_time
         assert set(local.rglob('*')) == before, 'Mac-local fallback wrote authority state'
         assert not list(local.rglob('*.sqlite3'))
 

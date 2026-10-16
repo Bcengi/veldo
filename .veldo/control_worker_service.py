@@ -57,6 +57,7 @@ class Service(SV.Service):
         self.release_deliveries = {}
         self.release_queue = queue.Queue()
         self.release_sent = set()
+        self.release_confirmed = set()
         self.release_lock = threading.Lock()
         # A partial index is maintained by the same transaction as the observation.
         # Restarts visit only unconfirmed releases, never historical reservations.
@@ -86,6 +87,8 @@ class Service(SV.Service):
         with self.release_lock:
             if dispatch in self.release_sent:
                 return
+            if dispatch in self.release_confirmed:
+                return
             self.release_sent.add(dispatch)
             self.release_queue.put((argv, request))
             previous = self.release_deliveries.get('sender')
@@ -102,6 +105,8 @@ class Service(SV.Service):
                     self.release_deliveries.pop('sender', None)
                     return
                 argv, request = self.release_queue.get_nowait()
+                if request['dispatch_id'] in self.release_confirmed:
+                    continue
             try:
                 subprocess.run(argv, input=json.dumps(request).encode() + b'\n',
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
@@ -168,6 +173,9 @@ class Service(SV.Service):
                     R.check_prepared(ds, self.profiles, record['contract'])
             with SV.S.atomic(self.conn):
                 answer = self.worker(packet, command, repository)
+            if (answer.get('record') or {}).get('release_state') == 'confirmed':
+                with self.release_lock:
+                    self.release_confirmed.add(answer['binding']['dispatch_id'])
             if (answer.get('record') or {}).get('release_state') == 'pending' and command['operation'] in ('worker_result', 'worker_release'):
                 self.notify_release(repository, answer['binding'])
             if self.loop is not None and command['operation'] in ('worker_result', 'worker_release', 'worker_retired'):

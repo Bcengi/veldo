@@ -155,7 +155,7 @@ def _v125_routing_suite():
                     return send_launch(binding, phase, **fields)
                 client.launch = dropped_running
             deliveries = []
-            if lost_result and lost_result != 'stored':
+            if lost_result and lost_result not in ('stored', 'stored-release'):
                 deliver = client.deliver
                 def dropped(request):
                     if request['command']['command']['operation'] != 'worker_result':
@@ -188,10 +188,10 @@ def _v125_routing_suite():
                     dict(id='account', status='active', provider='codex', profiles={backend.facts()['host']: str(paths['login'])}),
                     collect=None if default_collect else (lambda run, result: ({'tokens': 3}, {} if empty_collect else
                         {'output': result['termination']['output_digest'], 'proof': 'fixture'})))
-            if lost_result == 'stored':
+            if lost_result in ('stored', 'stored-release'):
                 release = host.release_authority
                 host.release_authority = lambda *args: (_ for _ in ()).throw(KeyboardInterrupt('before local retirement'))
-            if lost_result in ('restart', 'stored', 'release', 'resumer'):
+            if lost_result in ('restart', 'stored', 'stored-release', 'release', 'resumer'):
                 try:
                     run()
                     raise AssertionError('receiver did not restart')
@@ -199,7 +199,7 @@ def _v125_routing_suite():
                     pass
                 assert host.status()['pending'] == 1, 'Mac slot released before authority acknowledged cleanup'
                 resumed = f.client()
-                if lost_result == 'stored':
+                if lost_result in ('stored', 'stored-release'):
                     host.release_authority = release
                     assert not f.res.worker('dispatch/test')['retired'], 'Linux released before Mac retirement'
                     assert f.res.balances('account', 'account')['capacity'] == 1
@@ -209,7 +209,7 @@ def _v125_routing_suite():
                 directory = base / 'restarted-receiver' / worker.C.P.digest('dispatch/test').split(':')[-1]
                 directory.mkdir(parents=True)
                 shutil.copyfile(client.outbox, directory / 'result-request.json')
-                if lost_result == 'stored':
+                if lost_result in ('stored', 'stored-release'):
                     shutil.copyfile(str(client.outbox) + '.ack', directory / 'result-request.json.ack')
                 shutil.copyfile(paths['clone'].parent / 'result-evidence.json', directory / 'result-evidence.json')
                 original = worker.organ
@@ -218,10 +218,11 @@ def _v125_routing_suite():
                 config = dict(profile=host.profile, qualification=host.qualification,
                     signing_key=str(f.keys / 'mac'), workspace=str(f.repo), binding=f.binding, principal='mac',
                     ssh_argv=[], runs=str(directory.parent))
-                if lost_result == 'release':
+                if lost_result in ('release', 'stored-release'):
                     f.client('operator').release(retained['binding'], reason='operator inspected cleanup',
                         cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
-                    assert f.service.get('dispatch/test')['usage'] is None
+                    if lost_result == 'release':
+                        assert f.service.get('dispatch/test')['usage'] is None
                     f.conn.close()
                     f.conn = T.S.open_store(str(f.store))
                     f.service = T.W.Service(f.config, f.conn)
@@ -236,7 +237,7 @@ def _v125_routing_suite():
                     assert len(resumed.sent) == count, 'completed result replayed on every startup'
                 else:
                     result = worker.receive(config, dict(domain='domain', repository='repo', dispatch_id='dispatch/test',
-                        action='release' if lost_result == 'release' else 'result',
+                        action='release' if lost_result in ('release', 'stored-release') else 'result',
                         contract_digest=retained['binding']['contract_digest']))
                 assert f.service.get('dispatch/test')['usage'] == {'tokens': 3}
                 calls = [v for v in f.res._records().values() if v['type'] == 'invocation']
@@ -810,6 +811,9 @@ def _v125_routing_suite():
                     T.refused(lambda: restarted.release_authority('dispatch/test', 'sha256:wrong', answer),
                               'binding_mismatch:authority_release')
                     assert backend.bootstraps == 0, 'release endpoint re-executed work'
+                    # A faulty historical replay must fail promptly, not leave an orphan relay.
+                    f.config['receiver'] = dict(remote_receivers={backend.facts()['host']:
+                        dict(argv=[str(directory / 'unexpected-release-endpoint')])})
                     queries = []
                     f.conn.set_trace_callback(queries.append)
                     f.service = T.W.Service(f.config, f.conn)
@@ -853,6 +857,21 @@ def _v125_routing_suite():
             for binding in bindings:
                 f.service.notify_release('repo', binding)
             assert len(calls) == 20 and not f.service.release_deliveries, 'release wake sent more than once'
+            entered.clear()
+            unblock.clear()
+            f.service.notify_release('repo', dict(bindings[0], dispatch_id='dispatch/block-sender'))
+            assert entered.wait(5)
+            sender = next(iter(f.service.release_deliveries.values()))
+            f.prepare(required=['macos'])
+            f.start()
+            client = f.client()
+            binding = T.launch(client)
+            client.result(binding, cleanup_observation(), usage={'tokens': 3})
+            client.retired(binding)
+            unblock.set()
+            sender.join(5)
+            assert not sender.is_alive() and len(calls) == 21, 'queued wake sent after confirmation'
+
         finally:
             unblock.set()
             T.W.subprocess = original
@@ -943,6 +962,8 @@ def _v125_routing_suite():
                         f.client('operator').release(binding, reason='inspected cleanup', cleanup=cleanup)
                     else:
                         client.result(binding, dict(state='unknown', cleanup=cleanup))
+                    client.retired(binding)
+                    assert f.res.worker('dispatch/test')['retired']
                     usage = dict(tokens=7, messages=1, invocations=1, wall_seconds=2)
                     result = client.result(binding, T.observation(), usage=usage)
                     calls = [v for v in f.res._records().values() if v['type'] == 'invocation']
@@ -972,9 +993,12 @@ def _v125_routing_suite():
                 if initial == 'running':
                     client.launch(binding, 'running', process=T.process())
                     client.result(binding, dict(state='unknown', process=T.process()))
+                T.refused(lambda: client.retired(binding), 'missing_evidence:mac_retirement')
                 # Neither process nor termination can be recovered. Cleanup itself is the evidence.
                 observation = dict(state='unknown', cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
                 client.result(binding, observation)
+                T.refused(lambda: f.client('outsider').retired(binding), 'unauthorized:dispatch_host')
+                T.refused(lambda: client.retired(dict(binding, host='other')), 'missing_evidence:mac_retirement')
                 assert not f.res.worker('dispatch/test')['retired']
                 client.retired(binding)
                 assert f.res.worker('dispatch/test')['retired']
@@ -1165,6 +1189,7 @@ def _v125_routing_suite():
                       'AC3/remote-hold-restart': remote_hold_restart,
                       'AC3/remote-result-transport-failure': lambda base: actual_launch(base, lost_result=True),
                       'AC3/release-flushes-saved-usage': lambda base: actual_launch(base, lost_result='release'),
+                      'AC3/operator-release-after-result': lambda base: actual_launch(base, lost_result='stored-release'),
                       'AC3/startup-resumes-outbox': lambda base: actual_launch(base, lost_result='resumer'),
                       'AC3/delivery-launch-agent': delivery_agent,
                       'AC3/release-wakes-bounded-once': release_queue_once,

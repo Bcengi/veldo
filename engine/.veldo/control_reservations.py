@@ -438,7 +438,7 @@ class Reservations:
                 if ((not release and remote.get('state') not in ('exited', 'refused', 'unknown')) or
                         remote.get('host') != current['remote_hold']['host'] or
                         remote.get('contract_digest') != current['remote_hold']['contract_digest'] or
-                        observation.get('observer') != (release.get('principal') or remote.get('principal')) or
+                        observation.get('observer') not in (release.get('principal'), remote.get('principal')) or
                         remote.get('release_state') != 'confirmed' or
                         remote.get('retirement_confirmation') != (remote.get('commands') or [{}])[-1].get('command_id') or
                         (remote.get('commands') or [{}])[-1].get('operation') != 'worker_retired' or
