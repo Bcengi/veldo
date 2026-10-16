@@ -329,12 +329,14 @@ def receive_locked(config, request):
 
 def resume_pending(config, *, drain=False):
     """Drain only indexed events, waiting solely for specific delivery retries."""
-    recovery_errors = OUT.recover_active(config)
+    # Recovery logs per-entry failures and retains them outside the watched queue.
+    # They must not prevent waiting for the pending entries' retry deadlines.
+    OUT.recover_active(config)
     entries = OUT.entries(config, ready_only=True)
     while True:
-        if not entries and not recovery_errors:
+        if not entries:
             return
-        recorder_errors = [RecorderFailure(str(error)) for error in recovery_errors]
+        recorder_errors = []
         for entry in entries:
             if entry['due'] > time.time():
                 continue

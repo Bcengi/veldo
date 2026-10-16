@@ -104,11 +104,24 @@ def recover_active(config):
     errors = []
     with locked(config) as root:
         locks = root / '.locks'
-        locks.mkdir(exist_ok=True)
         for path in sorted((root / '.active').glob('*.json')):
             try:
-                request = json.loads(path.read_text())['request']
+                entry = json.loads(path.read_text())
+            except Exception as error:
+                print(json.dumps(dict(operation='worker_recovery_failed', entry=path.name,
+                    reason=str(error))), file=sys.stderr, flush=True)
+                try:
+                    park_path(root, path)
+                except Exception as park_error:
+                    print(json.dumps(dict(operation='worker_delivery_park_failed', entry=path.name,
+                        reason=str(park_error))), file=sys.stderr, flush=True)
+                    errors.append(park_error)
+                continue
+            try:
+                # Operational failures must retain a readable orphan for the next recovery.
+                request = entry['request']
                 lock_key = hashlib.sha256(json.dumps(request['dispatch_id']).encode()).hexdigest()
+                locks.mkdir(exist_ok=True)
                 with (locks / lock_key).open('a') as stream:
                     try:
                         fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -123,12 +136,7 @@ def recover_active(config):
             except Exception as error:
                 print(json.dumps(dict(operation='worker_recovery_failed', entry=path.name,
                     reason=str(error))), file=sys.stderr, flush=True)
-                try:
-                    park_path(root, path)
-                except Exception as park_error:
-                    print(json.dumps(dict(operation='worker_delivery_park_failed', entry=path.name,
-                        reason=str(park_error))), file=sys.stderr, flush=True)
-                    errors.append(park_error)
+                errors.append(error)
     return errors
 
 
