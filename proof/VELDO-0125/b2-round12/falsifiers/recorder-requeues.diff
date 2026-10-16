@@ -1,0 +1,11 @@
+--- control_worker_outbox.py
++++ control_worker_outbox.py
+@@ -86,7 +86,7 @@
+     with locked(config) as root:
+         path = locate(root, dispatch)
+         if path.exists():
+-            target = root / '.parked'
++            target = root / '.pending'
+             target.mkdir(exist_ok=True)
+             sync_directory(root)
+             os.replace(path, target / path.name)

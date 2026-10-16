@@ -1,0 +1,11 @@
+[
+  {
+    "case": "recorder-requeues",
+    "row": "AC3/recorder-failure-no-relaunch",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "c3c4ed126441c62fc80037e87067136cd5b631eb07003e2840442cac8f3b8a7b",
+    "patch": "recorder-requeues.diff",
+    "log": "recorder-requeues.log"
+  }
+]
