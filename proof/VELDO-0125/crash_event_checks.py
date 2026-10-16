@@ -222,6 +222,49 @@ def cases(T, helper):
         assert waits[-1] == run.deadline and len(scans) == 2
         assert not (run.directory / 'heartbeat.json').exists()
 
+    def native_stop_pipe(base):
+        module = T.load('project_runner_macos_os')
+        import select
+        process = {'pid': 123}
+        class Queue:
+            def __init__(self):
+                self.read_events = 0
+                self.closed = False
+            def control(self, changes, count, seconds):
+                if changes:
+                    self.reader = changes[1].ident
+                    return []
+                ready, _, _ = select.select([self.reader], [], [], seconds)
+                self.read_events += len(ready)
+                return [types.SimpleNamespace(filter=-1, flags=0, fflags=0)] if ready else []
+            def close(self):
+                self.closed = True
+        queue = Queue()
+        # Only filters/constants exported by CPython 3.11, no EVFILT_USER seam.
+        module.select = types.SimpleNamespace(kqueue=lambda: queue,
+            kevent=lambda ident, **kwargs: types.SimpleNamespace(ident=ident, **kwargs),
+            KQ_FILTER_PROC=-5, KQ_FILTER_READ=-1, KQ_EV_ADD=1, KQ_EV_ONESHOT=16,
+            KQ_EV_CLEAR=32, KQ_NOTE_EXIT=0x80000000, KQ_EV_ERROR=0x4000)
+        module.identity = lambda pid: process
+        native = module.Native()
+        watch = native.watch(process)
+        try:
+            assert not native.exited(watch, 0)
+            native.wake(watch)
+            assert not native.exited(watch, 0)
+            assert queue.read_events == 1, 'native stop wake did not reach the exit queue'
+            assert not native.exited(watch, 0)
+            assert queue.read_events == 1, 'stop pipe stayed readable after wake consumption'
+        finally:
+            watch.close()
+        assert queue.closed
+        try:
+            os.fstat(watch.reader)
+        except OSError:
+            pass
+        else:
+            raise AssertionError('exit watch leaked its stop pipe')
+
     def stop_interrupts_wait(base):
         P = helper('v125_stop_event', 'proof/VELDO-0125/macos_event_fixture.py')
         host, backend, request, paths = P.start(base, 'ignoring')
@@ -283,6 +326,7 @@ def cases(T, helper):
             'AC3/finalizer-failure-stops-drain': lambda base: recorder_failure(base, True),
             'AC3/startup-ready-event': startup_ready_event,
             'AC3/supervisor-blocking-exit': supervisor_exit_wait,
+            'AC3/native-stop-pipe': native_stop_pipe,
             'AC3/stop-interrupts-exit-wait': stop_interrupts_wait,
             'AC3/wrapper-blocking-exit': wrapper_exit_wait}
     # request, admission index/record, launch-intent index/record, ready, worker,

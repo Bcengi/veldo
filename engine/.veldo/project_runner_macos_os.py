@@ -120,6 +120,29 @@ def wait_members(pids, seconds):
             raise OSError('exit_notification_failed')
 
 
+class ExitWatch:
+    """A process exit plus a pipe wake, using Python 3.11's kqueue filters."""
+    def __init__(self, pid):
+        self.queue = select.kqueue()
+        self.reader, self.writer = os.pipe()
+        os.set_blocking(self.reader, False)
+        os.set_blocking(self.writer, False)
+        try:
+            self.queue.control([
+                select.kevent(pid, filter=select.KQ_FILTER_PROC,
+                    flags=select.KQ_EV_ADD | select.KQ_EV_ONESHOT, fflags=select.KQ_NOTE_EXIT),
+                select.kevent(self.reader, filter=select.KQ_FILTER_READ,
+                    flags=select.KQ_EV_ADD | select.KQ_EV_CLEAR)], 0, 0)
+        except BaseException:
+            self.close()
+            raise
+
+    def close(self):
+        self.queue.close()
+        os.close(self.reader)
+        os.close(self.writer)
+
+
 class Native:
     wait_file = staticmethod(wait_file)
     monotonic = staticmethod(time.monotonic)
@@ -175,28 +198,25 @@ class Native:
     def watch(self, process):
         if identity(process['pid']) != process:
             raise OSError('process_identity_changed')
-        queue = select.kqueue()
-        try:
-            queue.control([select.kevent(process['pid'], filter=select.KQ_FILTER_PROC,
-                                        flags=select.KQ_EV_ADD | select.KQ_EV_ONESHOT,
-                                        fflags=select.KQ_NOTE_EXIT),
-                           select.kevent(1, filter=select.KQ_FILTER_USER,
-                                         flags=select.KQ_EV_ADD | select.KQ_EV_CLEAR)], 0, 0)
-        except BaseException:
-            queue.close()
-            raise
-        return queue
+        return ExitWatch(process['pid'])
 
     def wake(self, watch):
-        # A stop arriving during a blocking exit wait installs an earlier deadline.
-        watch.control([select.kevent(1, filter=select.KQ_FILTER_USER,
-                                     fflags=select.KQ_NOTE_TRIGGER)], 0, 0)
+        # Pipe readiness interrupts a blocking wait when stop shortens its deadline.
+        try:
+            os.write(watch.writer, b'x')
+        except BlockingIOError:
+            pass  # An unread wake already exists.
 
     def exited(self, watch, seconds):
-        events = watch.control(None, 1, max(0, seconds))
+        events = watch.queue.control(None, 2, max(0, seconds))
         if any(e.flags & select.KQ_EV_ERROR for e in events):
             raise OSError('exit_notification_failed')
-        return any(e.fflags & select.KQ_NOTE_EXIT for e in events)
+        if any(e.filter == select.KQ_FILTER_READ for e in events):
+            try:
+                os.read(watch.reader, 65536)
+            except BlockingIOError:
+                pass
+        return any(e.filter == select.KQ_FILTER_PROC and e.fflags & select.KQ_NOTE_EXIT for e in events)
 
     def send(self, pid, number, *, group=False):
         try:
