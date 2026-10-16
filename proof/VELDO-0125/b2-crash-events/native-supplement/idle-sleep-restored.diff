@@ -1,0 +1,10 @@
+--- control_worker.py
++++ control_worker.py
+@@ -324,6 +324,7 @@
+     entries = OUT.entries(config)  # Includes interrupted receivers, once per wake.
+     while True:
+         if not entries:
++            sleep(0)
+             return
+         for entry in entries:
+             if entry['due'] > time.time():

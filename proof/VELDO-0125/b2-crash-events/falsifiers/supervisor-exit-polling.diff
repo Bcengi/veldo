@@ -1,0 +1,11 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -397,7 +397,7 @@
+                 if self.exit_seen:
+                     self.os.sleep(seconds)  # Bounded shutdown of orphan descendants.
+                 else:
+-                    self.exit_seen = self.os.exited(self.watch, seconds)
++                    self.os.sleep(0.02)
+             result = read(self.directory / 'result.json')
+             if (not result or result.get('dispatch_id') != self.dispatch
+                     or result.get('process') != self.process or type(result.get('returncode')) is not int):

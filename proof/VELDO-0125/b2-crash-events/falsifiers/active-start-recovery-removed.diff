@@ -1,0 +1,10 @@
+--- control_worker.py
++++ control_worker.py
+@@ -381,7 +381,6 @@
+         resume_pending(config, drain=True)
+     else:
+         install_resumer(config_path, config)
+-        resume_pending(config)  # Worker-start event replays orphaned active owners.
+         try:
+             result = receive(config, json.loads(sys.stdin.readline(65536)))
+         except Exception as error:

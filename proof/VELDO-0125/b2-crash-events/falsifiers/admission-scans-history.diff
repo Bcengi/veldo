@@ -1,0 +1,11 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -113,7 +113,7 @@
+             with self.lock():
+                 return self.status(locked=True)
+         self.reconcile_slots()
+-        states = self.live_slots().values()
++        states = [read(p)['state'] for p in self.root.glob('*/slot.json') if read(p)['state'] != 'retired']
+         return dict(self.counts, pending=len(states), stopped=sum(s == 'unknown' for s in states))
+ 
+     @staticmethod

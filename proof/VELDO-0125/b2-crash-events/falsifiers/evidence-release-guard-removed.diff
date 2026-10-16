@@ -1,0 +1,11 @@
+--- control_worker.py
++++ control_worker.py
+@@ -292,8 +292,6 @@
+             outcome = client.status(request['dispatch_id'])
+         if not outcome.get('host_released') and request.get('action') == 'release':
+             outcome = client.status(request['dispatch_id'])
+-            if not outcome.get('host_released'):
+-                raise OUT.WaitingForRelease('release_not_yet_authorized')
+         return apply_release(client, host, retained['binding'], outcome)
+     if request.get('action') in ('release', 'resume') or directory_existed:
+         outcome = client.status(request['dispatch_id'])

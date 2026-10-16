@@ -1,0 +1,11 @@
+--- project_runner_macos_os.py
++++ project_runner_macos_os.py
+@@ -203,7 +203,7 @@
+     def wake(self, watch):
+         # Pipe readiness interrupts a blocking wait when stop shortens its deadline.
+         try:
+-            os.write(watch.writer, b'x')
++            pass
+         except BlockingIOError:
+             pass  # An unread wake already exists.
+ 

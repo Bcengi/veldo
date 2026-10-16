@@ -1,0 +1,11 @@
+--- control_worker.py
++++ control_worker.py
+@@ -167,7 +167,7 @@
+                 OUT.move(root, OUT.locate(root, request['dispatch_id']), '.active', CL.durable_json)
+                 return None
+             acquired = True
+-            OUT.move(root, OUT.locate(root, request['dispatch_id']), '.active', CL.durable_json)
++            OUT.move(root, OUT.locate(root, request['dispatch_id']), '.pending', CL.durable_json)
+         result = receive_locked(config, request)
+         OUT.acknowledge(config, request['dispatch_id'],
+                         release=result.get('host_released') or request.get('action') == 'release')

@@ -1,0 +1,11 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -55,7 +55,7 @@
+         self.root = Path(P.canonical(profile['root']))
+         self.observe = observe or (lambda event: None)
+         self.counts = dict(accepted=0, refused=0)
+-        self.initialize_slots()
++        # Migration omitted from startup.
+ 
+     @contextlib.contextmanager
+     def lock(self):

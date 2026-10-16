@@ -1,0 +1,11 @@
+--- control_worker.py
++++ control_worker.py
+@@ -333,8 +333,6 @@
+                 request['action'] = 'resume'
+             try:
+                 receive(config, request, queued=True)
+-            except RecorderFailure:
+-                raise
+             except Exception:
+                 pass  # receive durably records/parks this dispatch; drain its peers.
+         if not drain:

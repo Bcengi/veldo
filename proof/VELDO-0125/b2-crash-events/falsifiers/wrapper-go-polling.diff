@@ -1,0 +1,11 @@
+--- project_runner_macos_wrapper.py
++++ project_runner_macos_wrapper.py
+@@ -40,7 +40,7 @@
+     if os.getpgrp() != os.getpid():
+         raise RuntimeError('launchd_process_group_mismatch')
+     write(directory / 'ready.json', dict(process=parent, pgid=os.getpgrp()))
+-    if not wait_file(directory / 'go', request['startup_seconds']):
++    if not (directory / 'go').exists():
+         return 125
+     go = read(directory / 'go')
+     deadline = time.monotonic() + go['runtime_seconds']

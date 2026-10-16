@@ -1,0 +1,11 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -94,7 +94,7 @@
+             if slot and slot['state'] == 'starting' and slot.get('launch_protocol') == 2:
+                 slot = dict(slot, state='retired', cause='interrupted_before_launch')
+                 write(path, slot)
+-            if slot and slot['state'] != 'retired':
++            if slot:
+                 live[label] = slot['state']
+         if live != indexed:
+             write(self.root / '.live-slots.json', live)

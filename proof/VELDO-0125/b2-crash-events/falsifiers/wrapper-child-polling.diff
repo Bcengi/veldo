@@ -1,0 +1,11 @@
+--- project_runner_macos_wrapper.py
++++ project_runner_macos_wrapper.py
+@@ -80,7 +80,7 @@
+         write(directory / 'worker.json', dict(process=identity(child.pid), pgid=os.getpgid(child.pid)))
+         finished = threading.Event()
+         def reap():
+-            child.wait()  # Blocking waitpid, with no subprocess timeout polling.
++            child.wait(timeout=request['heartbeat_seconds'])
+             finished.set()
+         threading.Thread(target=reap, daemon=True).start()
+         returncode, stage, due = None, None, deadline

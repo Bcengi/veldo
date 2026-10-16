@@ -1,0 +1,11 @@
+--- control_worker_outbox.py
++++ control_worker_outbox.py
+@@ -121,7 +121,7 @@
+         entry = json.loads(path.read_text())
+         entry.update(reason=reason, attempts=entry['attempts'] + 1)
+         upgraded = entry['request'].get('action') == 'release' and request.get('action') != 'release'
+-        if upgraded:
++        if False:
+             # The failed result attempt says nothing about the new release event.
+             entry['due'] = 0
+             state = '.pending'

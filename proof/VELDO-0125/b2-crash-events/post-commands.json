@@ -1,0 +1,31 @@
+[
+  {
+    "name": "native-supplement-run",
+    "command": [
+      "/usr/bin/python3",
+      "proof/VELDO-0125/native_stop_falsifier.py",
+      "proof/VELDO-0125/b2-crash-events/native-supplement"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "relay-post-falsifiers",
+    "command": [
+      "/usr/bin/python3",
+      "scripts/selftest.py",
+      "--suite",
+      "105_veldo_0125_relay"
+    ],
+    "returncode": 2
+  },
+  {
+    "name": "routing-consolidated",
+    "command": [
+      "/usr/bin/python3",
+      "scripts/selftest.py",
+      "--suite",
+      "106_veldo_0125_routing"
+    ],
+    "returncode": 2
+  }
+]

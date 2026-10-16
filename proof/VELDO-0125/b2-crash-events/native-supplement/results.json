@@ -1,0 +1,38 @@
+[
+  {
+    "case": "operator-status-polling",
+    "row": "AC3/operator-wait-no-status-timer",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "1d5bc74e317906515fc4746d197fa9a1e412b665350df7400ce7bba9dee59545",
+    "patch": "operator-status-polling.diff",
+    "log": "operator-status-polling.log"
+  },
+  {
+    "case": "unattempted-release-parked",
+    "row": "AC3/upgraded-release-attempted",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "650fe94024c3901bd99a3476606d131dd6c371f6c8163ef4cb96f8a83a10c052",
+    "patch": "unattempted-release-parked.diff",
+    "log": "unattempted-release-parked.log"
+  },
+  {
+    "case": "native-stop-pipe-unwired",
+    "row": "AC3/native-stop-pipe",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "9fdb7294e2dbe0cfc91ede4b9dbd6fe34420066f9daff98ea306fdc4fcce85e1",
+    "patch": "native-stop-pipe-unwired.diff",
+    "log": "native-stop-pipe-unwired.log"
+  },
+  {
+    "case": "idle-sleep-restored",
+    "row": "AC3/event-index-idle-and-history",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "1d5bc74e317906515fc4746d197fa9a1e412b665350df7400ce7bba9dee59545",
+    "patch": "idle-sleep-restored.diff",
+    "log": "idle-sleep-restored.log"
+  }
+]

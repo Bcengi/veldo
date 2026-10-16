@@ -1,0 +1,10 @@
+--- control_worker.py
++++ control_worker.py
+@@ -288,6 +288,7 @@
+                 raise
+             # Keep the refused result and its evidence for operator repair, but
+             # independently attempt the signed release already accepted by Linux.
++            raise error
+             CL.durable_json(directory / 'result-refusal.json', dict(reason=reason))
+             outcome = client.status(request['dispatch_id'])
+         if not outcome.get('host_released') and request.get('action') == 'release':

@@ -1,0 +1,10 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -86,6 +86,7 @@
+         launch intent and is safe to retire. Launching/unknown slots retain their
+         hold because bootstrap may have succeeded before its caller died.
+         """
++        return self.live_slots()
+         indexed = self.live_slots()
+         live = {}
+         for label in indexed:

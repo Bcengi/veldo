@@ -1,0 +1,4 @@
+operator-status-polling: rejected by AC3/operator-wait-no-status-timer
+unattempted-release-parked: rejected by AC3/upgraded-release-attempted
+native-stop-pipe-unwired: rejected by AC3/native-stop-pipe
+idle-sleep-restored: rejected by AC3/event-index-idle-and-history

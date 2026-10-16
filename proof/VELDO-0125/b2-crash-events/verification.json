@@ -1,0 +1,297 @@
+{
+  "implementation_commit": "bb2042156e040f9909a82e592a53f0b9e35fa00b",
+  "scope": "Owner-requested VELDO-0125 correction. Selected Linux logic suites only; no gate or native qualification claim.",
+  "acceptance_criteria": {
+    "AC1": [
+      "105_veldo_0125_relay"
+    ],
+    "AC2": [
+      "slot crash matrix",
+      "retirement crash matrix",
+      "upgrade-migrates-before-admission"
+    ],
+    "AC3": [
+      "receiver/drain crash-start-event",
+      "recorder/finalizer-failure-stops-drain",
+      "supervisor/wrapper-blocking-exit",
+      "startup-ready-event",
+      "stop-interrupts-exit-wait",
+      "native-stop-pipe",
+      "evidence-release-awaits-authorization",
+      "operator-wait-no-status-timer"
+    ]
+  },
+  "sources": {
+    ".veldo/control_worker.py": "1d5bc74e317906515fc4746d197fa9a1e412b665350df7400ce7bba9dee59545",
+    ".veldo/project_runner_macos.py": "e571ce92c8ac7c8e7c71a7e907edcb1167fdac9d9785e5d93ed531bab62b0e28",
+    ".veldo/project_runner_macos_os.py": "9fdb7294e2dbe0cfc91ede4b9dbd6fe34420066f9daff98ea306fdc4fcce85e1",
+    ".veldo/project_runner_macos_wrapper.py": "a2aa325531bfcd97fd5bf9d69e28081f64addcd6c2155d35474e070e1b66e5e4",
+    "engine/.veldo/control_worker.py": "1d5bc74e317906515fc4746d197fa9a1e412b665350df7400ce7bba9dee59545",
+    "engine/.veldo/project_runner_macos.py": "e571ce92c8ac7c8e7c71a7e907edcb1167fdac9d9785e5d93ed531bab62b0e28",
+    "engine/.veldo/project_runner_macos_os.py": "9fdb7294e2dbe0cfc91ede4b9dbd6fe34420066f9daff98ea306fdc4fcce85e1",
+    "engine/.veldo/project_runner_macos_wrapper.py": "a2aa325531bfcd97fd5bf9d69e28081f64addcd6c2155d35474e070e1b66e5e4",
+    "scripts/suites/103_veldo_0124_macos.py": "6cbb1132f817acd37872ccaed981b6c2f998b65bad664c8b39ed672015c25aff",
+    "scripts/suites/104_veldo_0124_control.py": "10e003f9522c7ed450f8a18a906523844d0bf132f6a43776cec8397505d2a98d",
+    "scripts/suites/106_veldo_0125_routing.py": "9ff80669706701d81dadf396d1613906dcf17888dca7a5737dc086e2073dde78",
+    "proof/VELDO-0125/lifecycle_checks_r11.py": "477808080ad998144ab6e8f5cac15ea7851580f6d13c8834070ff4d4cd8b55ea",
+    "proof/VELDO-0125/event_checks_r11.py": "45a1015bb3cec8c999a63231f81c6a041932a86aaf65d76fc69bb813b3259326",
+    "proof/VELDO-0125/macos_event_fixture.py": "6646e3c7aa1bda52b13a07699039b59f9290dcfb23fb620266319bf58b9a95c4",
+    "proof/VELDO-0125/crash_event_checks.py": "eb1abb4163420097b9b4cb34ed861297d706114ae7b936bcb6d8fc01fea7ab23",
+    "proof/VELDO-0125/crash_event_falsifiers.py": "c4a9806ac34b7d7982d1e91b1268da5d5ee70e16c2d693fd0859d3d4cea62e61",
+    "proof/VELDO-0125/native_stop_falsifier.py": "902b7509810f611292d94972e4b2a3ccb453dff25d1d5dc4d00532067c0e6aa2",
+    "proof/VELDO-0125/receiver_fixture_r11.py": "8365470f93afa7610bc8708b8050a0ccefafc1b3d5621975a1ceb572af2f7053"
+  },
+  "baselines": [
+    {
+      "suite": "106_veldo_0125_routing",
+      "log": "routing-consolidated.log",
+      "passed": 141,
+      "failed": 0,
+      "returncode": 2,
+      "scope": "selected suite and prerequisites"
+    },
+    {
+      "suite": "105_veldo_0125_relay",
+      "log": "relay-post-falsifiers.log",
+      "passed": 43,
+      "failed": 0,
+      "returncode": 2,
+      "scope": "selected suite and prerequisites"
+    }
+  ],
+  "controls": [
+    {
+      "case": "operator-status-polling",
+      "row": "AC3/operator-wait-no-status-timer",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "1d5bc74e317906515fc4746d197fa9a1e412b665350df7400ce7bba9dee59545",
+      "patch": "operator-status-polling.diff",
+      "log": "operator-status-polling.log",
+      "directory": "native-supplement"
+    },
+    {
+      "case": "unattempted-release-parked",
+      "row": "AC3/upgraded-release-attempted",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "650fe94024c3901bd99a3476606d131dd6c371f6c8163ef4cb96f8a83a10c052",
+      "patch": "unattempted-release-parked.diff",
+      "log": "unattempted-release-parked.log",
+      "directory": "native-supplement"
+    },
+    {
+      "case": "status-dequeues-result",
+      "row": "AC3/status-is-not-result-ack",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "1d5bc74e317906515fc4746d197fa9a1e412b665350df7400ce7bba9dee59545",
+      "patch": "status-dequeues-result.diff",
+      "log": "status-dequeues-result.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "original-replay-drops-output",
+      "row": "AC3/original-replay-retains-usage",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "1d5bc74e317906515fc4746d197fa9a1e412b665350df7400ce7bba9dee59545",
+      "patch": "original-replay-drops-output.diff",
+      "log": "original-replay-drops-output.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "lock-error-unrecorded",
+      "row": "AC3/lock-errors-bounded-recorded",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "1d5bc74e317906515fc4746d197fa9a1e412b665350df7400ce7bba9dee59545",
+      "patch": "lock-error-unrecorded.diff",
+      "log": "lock-error-unrecorded.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "admission-scans-history",
+      "row": "AC2/live-slot-admission-index",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "e571ce92c8ac7c8e7c71a7e907edcb1167fdac9d9785e5d93ed531bab62b0e28",
+      "patch": "admission-scans-history.diff",
+      "log": "admission-scans-history.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "park-parent-unsynced",
+      "row": "AC3/park-parent-durable",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "650fe94024c3901bd99a3476606d131dd6c371f6c8163ef4cb96f8a83a10c052",
+      "patch": "park-parent-unsynced.diff",
+      "log": "park-parent-unsynced.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "release-skipped-after-result-refusal",
+      "row": "AC3/upgraded-release-attempted",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "1d5bc74e317906515fc4746d197fa9a1e412b665350df7400ce7bba9dee59545",
+      "patch": "release-skipped-after-result-refusal.diff",
+      "log": "release-skipped-after-result-refusal.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "global-sleep-patch-restored",
+      "row": "AC3/operator-wait-no-status-timer",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "477808080ad998144ab6e8f5cac15ea7851580f6d13c8834070ff4d4cd8b55ea",
+      "patch": "global-sleep-patch-restored.diff",
+      "log": "global-sleep-patch-restored.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "active-receiver-left-pending",
+      "row": "AC3/active-receiver-no-timer",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "1d5bc74e317906515fc4746d197fa9a1e412b665350df7400ce7bba9dee59545",
+      "patch": "active-receiver-left-pending.diff",
+      "log": "active-receiver-left-pending.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "slot-reconciliation-removed",
+      "row": "AC2/slot-crash-2-after-restart",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "e571ce92c8ac7c8e7c71a7e907edcb1167fdac9d9785e5d93ed531bab62b0e28",
+      "patch": "slot-reconciliation-removed.diff",
+      "log": "slot-reconciliation-removed.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "retired-slot-stays-live",
+      "row": "AC2/retirement-crash-False-False-False",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "e571ce92c8ac7c8e7c71a7e907edcb1167fdac9d9785e5d93ed531bab62b0e28",
+      "patch": "retired-slot-stays-live.diff",
+      "log": "retired-slot-stays-live.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "migration-deferred-to-admission",
+      "row": "AC2/upgrade-migrates-before-admission",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "e571ce92c8ac7c8e7c71a7e907edcb1167fdac9d9785e5d93ed531bab62b0e28",
+      "patch": "migration-deferred-to-admission.diff",
+      "log": "migration-deferred-to-admission.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "active-start-recovery-removed",
+      "row": "AC3/receiver-crash-start-event",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "1d5bc74e317906515fc4746d197fa9a1e412b665350df7400ce7bba9dee59545",
+      "patch": "active-start-recovery-removed.diff",
+      "log": "active-start-recovery-removed.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "recorder-error-swallowed",
+      "row": "AC3/recorder-failure-stops-drain",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "1d5bc74e317906515fc4746d197fa9a1e412b665350df7400ce7bba9dee59545",
+      "patch": "recorder-error-swallowed.diff",
+      "log": "recorder-error-swallowed.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "stop-event-unwired",
+      "row": "AC3/stop-interrupts-exit-wait",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "e571ce92c8ac7c8e7c71a7e907edcb1167fdac9d9785e5d93ed531bab62b0e28",
+      "patch": "stop-event-unwired.diff",
+      "log": "stop-event-unwired.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "supervisor-exit-polling",
+      "row": "AC3/supervisor-blocking-exit",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "e571ce92c8ac7c8e7c71a7e907edcb1167fdac9d9785e5d93ed531bab62b0e28",
+      "patch": "supervisor-exit-polling.diff",
+      "log": "supervisor-exit-polling.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "startup-ready-polling",
+      "row": "AC3/startup-ready-event",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "e571ce92c8ac7c8e7c71a7e907edcb1167fdac9d9785e5d93ed531bab62b0e28",
+      "patch": "startup-ready-polling.diff",
+      "log": "startup-ready-polling.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "wrapper-go-polling",
+      "row": "AC3/wrapper-blocking-exit",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "a2aa325531bfcd97fd5bf9d69e28081f64addcd6c2155d35474e070e1b66e5e4",
+      "patch": "wrapper-go-polling.diff",
+      "log": "wrapper-go-polling.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "wrapper-child-polling",
+      "row": "AC3/wrapper-blocking-exit",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "a2aa325531bfcd97fd5bf9d69e28081f64addcd6c2155d35474e070e1b66e5e4",
+      "patch": "wrapper-child-polling.diff",
+      "log": "wrapper-child-polling.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "evidence-release-guard-removed",
+      "row": "AC3/evidence-release-awaits-authorization",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "1d5bc74e317906515fc4746d197fa9a1e412b665350df7400ce7bba9dee59545",
+      "patch": "evidence-release-guard-removed.diff",
+      "log": "evidence-release-guard-removed.log",
+      "directory": "falsifiers"
+    },
+    {
+      "case": "native-stop-pipe-unwired",
+      "row": "AC3/native-stop-pipe",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "9fdb7294e2dbe0cfc91ede4b9dbd6fe34420066f9daff98ea306fdc4fcce85e1",
+      "patch": "native-stop-pipe-unwired.diff",
+      "log": "native-stop-pipe-unwired.log",
+      "directory": "native-supplement"
+    },
+    {
+      "case": "idle-sleep-restored",
+      "row": "AC3/event-index-idle-and-history",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "1d5bc74e317906515fc4746d197fa9a1e412b665350df7400ce7bba9dee59545",
+      "patch": "idle-sleep-restored.diff",
+      "log": "idle-sleep-restored.log",
+      "directory": "native-supplement"
+    }
+  ],
+  "unique_falsifiers": 23,
+  "engine_copies_identical": true,
+  "prior_proof_records_modified": false
+}

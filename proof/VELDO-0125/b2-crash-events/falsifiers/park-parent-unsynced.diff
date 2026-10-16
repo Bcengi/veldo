@@ -1,0 +1,14 @@
+--- control_worker_outbox.py
++++ control_worker_outbox.py
+@@ -67,6 +67,11 @@
+ def move(root, path, state, write, entry=None):
+     destination = root / state
+     destination.mkdir(exist_ok=True)
++    if state == '.parked':
++        target = destination / path.name
++        write(target, entry or json.loads(path.read_text()))
++        sync_remove(path)
++        return target
+     # Persist the new directory name before removing the old recovery record.
+     sync_directory(root)
+     target = destination / path.name

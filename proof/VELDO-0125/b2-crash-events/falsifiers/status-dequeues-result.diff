@@ -1,0 +1,11 @@
+--- control_worker.py
++++ control_worker.py
+@@ -297,8 +297,6 @@
+         return apply_release(client, host, retained['binding'], outcome)
+     if request.get('action') in ('release', 'resume') or directory_existed:
+         outcome = client.status(request['dispatch_id'])
+-        if not outcome.get('host_released'):
+-            raise OUT.WaitingForRelease('release_not_yet_authorized')
+         directory.mkdir(parents=True, exist_ok=True)
+         return apply_release(client, host, dict(dispatch_id=request['dispatch_id'],
+             contract_digest=request['contract_digest'], host=outcome['binding']['host'],

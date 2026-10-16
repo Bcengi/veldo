@@ -1,0 +1,10 @@
+{
+  "engine_pairs_identical": 4,
+  "original_proof_records_changed": 0,
+  "commits_with_required_identity": 6,
+  "trailers": 0,
+  "forbidden_dashes": 0,
+  "branch": "agent/codex/veldo-0125-b2",
+  "checked_through_commit": "67f318e9b2ef2fc1a3ff1f3d6ddc14e1a4bf55b1",
+  "falsifier_sources_match_current_tree": 23
+}

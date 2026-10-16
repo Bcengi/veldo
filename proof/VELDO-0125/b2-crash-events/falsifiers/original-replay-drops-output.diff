@@ -1,0 +1,11 @@
+--- control_worker.py
++++ control_worker.py
+@@ -265,7 +265,7 @@
+     client.outbox = directory / 'result-request.json'
+     directory_existed = directory.exists()
+     directory.mkdir(parents=True, exist_ok=True)
+-    if not evidence.exists() and (directory_existed or request.get('action') in ('release', 'resume')):
++    if not evidence.exists() and request.get('action') in ('release', 'resume'):
+         retain_crashed_output(host, client, request, directory)
+     # Flush retained measurement before any release confirmation, including an
+     # operator wake after a crash. A transport wake never authorizes execution.

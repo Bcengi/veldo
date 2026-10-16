@@ -1,0 +1,12 @@
+--- control_worker.py
++++ control_worker.py
+@@ -174,7 +174,8 @@
+         return result
+     except Exception as error:
+         try:
+-            OUT.failure(config, request, error, CL.durable_json)
++            if not isinstance(error, PermissionError):
++                OUT.failure(config, request, error, CL.durable_json)
+         except Exception as recording_error:
+             print(json.dumps(dict(operation='worker_delivery_recorder_failed',
+                 dispatch_id=request['dispatch_id'], reason=str(recording_error))),

@@ -1,0 +1,11 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -217,7 +217,7 @@
+                 until = min(run.deadline, self.os.monotonic() + p['startup_seconds'])
+                 ready = read(directory / 'ready.json')
+                 if ready is None:
+-                    self.os.wait_file(directory / 'ready.json', until - self.os.monotonic())
++                    self.os.sleep(0.02)
+                     ready = read(directory / 'ready.json')
+                 if not ready or ready['pgid'] != ready['process']['pid']:
+                     raise OSError('wrapper_identity_missing')
