@@ -93,7 +93,7 @@ def cases(T, helper):
 
     def migrate_before_admission(base):
         P, (host, backend, request, paths) = host_fixture(base)
-        (host.root / '.live-slots.json').unlink()
+        (host.root / '.live-slots.json').unlink(missing_ok=True)
         for i in range(500):
             directory = host.root / ('historical-' + str(i))
             directory.mkdir()

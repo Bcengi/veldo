@@ -16,6 +16,9 @@ ROOT = Path(__file__).resolve().parents[2]
 CASES = dict(previous.CASES)
 CASES.pop('healthy-run-enqueued')
 CASES.update({
+    'global-sleep-patch-restored': ('lifecycle_checks_r11.py', 'AC3/operator-wait-no-status-timer',
+        "patch.object(c.worker, 'sleep', side_effect=AssertionError('operator wait timer'))",
+        "patch.object(c.worker.time, 'sleep', side_effect=AssertionError('operator wait timer'))"),
     'active-receiver-left-pending': ('control_worker.py', 'AC3/active-receiver-no-timer',
         "            acquired = True\n            OUT.move(root, OUT.locate(root, request['dispatch_id']), '.active', CL.durable_json)",
         "            acquired = True\n            OUT.move(root, OUT.locate(root, request['dispatch_id']), '.pending', CL.durable_json)"),
@@ -57,7 +60,8 @@ def main():
     output.mkdir(parents=True, exist_ok=False)
     results = []
     for name, (filename, row, before, after) in CASES.items():
-        source = (ROOT / '.veldo' / filename).read_text()
+        source_path = ROOT / ('proof/VELDO-0125' if filename == 'lifecycle_checks_r11.py' else '.veldo') / filename
+        source = source_path.read_text()
         assert source.count(before) == 1, (name, source.count(before))
         mutant = source.replace(before, after)
         (output / (name + '.diff')).write_text(''.join(difflib.unified_diff(
@@ -66,11 +70,12 @@ def main():
             modules = Path(directory) / '.veldo'
             shutil.copytree(ROOT / '.veldo', modules, ignore=shutil.ignore_patterns('__pycache__', 'tmp-*'))
             (modules / filename).write_text(mutant)
+            proof_override = {'VELDO_0125_LIFECYCLE_CHECKS': str(modules / filename)} if filename == 'lifecycle_checks_r11.py' else {}
             log = output / (name + '.log')
             with log.open('w') as stream:
                 result = subprocess.run([sys.executable, 'scripts/selftest.py', '--suite', '106_veldo_0125_routing'],
                     cwd=ROOT, stdout=stream, stderr=subprocess.STDOUT, timeout=300,
-                    env=dict(os.environ, VELDO_0125_MODULES=str(modules), VELDO_0124_MODULES=str(modules)))
+                    env=dict(os.environ, VELDO_0125_MODULES=str(modules), VELDO_0124_MODULES=str(modules), **proof_override))
         rejected = result.returncode == 1 and 'SELFTEST FAIL: VELDO-0125 ' + row in log.read_text()
         results.append(dict(case=name, row=row, rejected=rejected, returncode=result.returncode,
             source_sha256=hashlib.sha256(source.encode()).hexdigest(), patch=name + '.diff', log=name + '.log'))

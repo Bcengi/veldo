@@ -105,7 +105,9 @@ def cases(T, helper):
             status = c.client.status
             c.client.status = lambda dispatch: statuses.append(dispatch) or status(dispatch)
             c.worker.OUT.enqueue(c.config, dict(c.wake, action='resume'), c.worker.CL.durable_json)
+            stdlib_sleep = time.sleep
             with patch.object(c.worker, 'sleep', side_effect=AssertionError('operator wait timer')):
+                assert time.sleep is stdlib_sleep, 'worker clock patch leaked into subprocess waits'
                 # A child timeout wait must retain the real stdlib sleep.
                 import subprocess, sys
                 subprocess.run([sys.executable, '-c', 'import time; time.sleep(.03)'], timeout=5, check=True)

@@ -10,6 +10,8 @@ def _v125_routing_suite():
     from pathlib import Path
 
     def helper(name, relative):
+        if relative == "proof/VELDO-0125/lifecycle_checks_r11.py":
+            relative = os.environ.get("VELDO_0125_LIFECYCLE_CHECKS", relative)
         if relative == "proof/VELDO-0124/checks.py":
             relative = "proof/VELDO-0125/macos_event_fixture.py"
         spec = importlib.util.spec_from_file_location(name, ROOT / relative)
