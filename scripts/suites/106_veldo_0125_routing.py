@@ -1198,7 +1198,8 @@ def _v125_routing_suite():
     lifecycle = helper('v125_lifecycle_checks', 'proof/VELDO-0125/lifecycle_checks_r12.py')
     crash_events = helper('v125_crash_events', 'proof/VELDO-0125/crash_event_checks_r12.py')
     round12 = helper('v125_round12', 'proof/VELDO-0125/round12_checks.py')
-    for row, test in {**round12.cases(T, helper), **crash_events.cases(T, helper), **lifecycle.cases(T, helper), **events.cases(T, helper, release_endpoint, finish_release), 'AC1/installed-routing': installed_routing,
+    round13 = helper('v125_round13', 'proof/VELDO-0125/round13_checks.py')
+    for row, test in {**round13.cases(T, helper), **round12.cases(T, helper), **crash_events.cases(T, helper), **lifecycle.cases(T, helper), **events.cases(T, helper, release_endpoint, finish_release), 'AC1/installed-routing': installed_routing,
                       'AC1/worker-signing-key-read': signing_key_read,
                       'AC2/capability-selection': selection, 'AC2/host-routing-refusal': blocked,
                       'AC2/qualification': qualification, 'AC2/factory-remote-delivery': factory_delivery,
