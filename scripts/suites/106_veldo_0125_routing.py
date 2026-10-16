@@ -138,7 +138,10 @@ def _v125_routing_suite():
                 temporary = Path(host.run_paths('dispatch/test', str(paths['scratch']))['temp'])
                 (temporary / 'deliverable.bin').write_bytes(b'temporary deliverable')
                 (paths['clone'] / 'temporary-output').symlink_to(temporary / 'deliverable.bin')
-                return old(*args)
+                result = old(*args)
+                (host.root / host.label('dispatch/test') / 'engine.out').write_bytes(
+                    b'{"type":"turn.started"}\n{"type":"turn.completed","usage":{"input_tokens":13,"output_tokens":8}}\n')
+                return result
             backend.bootstrap = bootstrap
             real = worker.C.organ
             worker.C.organ = lambda name: types.SimpleNamespace(identity=lambda pid: dict(backend.process, pid=pid)) if name == 'project_runner_macos_os' else real(name)
@@ -161,7 +164,7 @@ def _v125_routing_suite():
                     assert json.loads(client.outbox.read_text()) == request, 'result was not durable before send'
                     deliveries.append(request)
                     if len(deliveries) == 1:
-                        if lost_result == 'restart':
+                        if lost_result in ('restart', 'release', 'resumer'):
                             raise KeyboardInterrupt('receiver restarted before result delivery')
                         raise client.deliver_error('AUTHORITY_UNAVAILABLE:dropped_request')
                     answer = deliver(request)
@@ -188,7 +191,7 @@ def _v125_routing_suite():
             if lost_result == 'stored':
                 release = host.release_authority
                 host.release_authority = lambda *args: (_ for _ in ()).throw(KeyboardInterrupt('before local retirement'))
-            if lost_result in ('restart', 'stored'):
+            if lost_result in ('restart', 'stored', 'release', 'resumer'):
                 try:
                     run()
                     raise AssertionError('receiver did not restart')
@@ -198,7 +201,8 @@ def _v125_routing_suite():
                 resumed = f.client()
                 if lost_result == 'stored':
                     host.release_authority = release
-                    resumed.deliver = lambda *args: (_ for _ in ()).throw(AssertionError('stored release called relay'))
+                    assert not f.res.worker('dispatch/test')['retired'], 'Linux released before Mac retirement'
+                    assert f.res.balances('account', 'account')['capacity'] == 1
                 import json
                 import shutil
                 retained = json.loads((paths['clone'].parent / 'result-evidence.json').read_text())
@@ -214,8 +218,30 @@ def _v125_routing_suite():
                 config = dict(profile=host.profile, qualification=host.qualification,
                     signing_key=str(f.keys / 'mac'), workspace=str(f.repo), binding=f.binding, principal='mac',
                     ssh_argv=[], runs=str(directory.parent))
-                result = worker.receive(config, dict(domain='domain', repository='repo', dispatch_id='dispatch/test',
-                                                      contract_digest=retained['binding']['contract_digest']))
+                if lost_result == 'release':
+                    f.client('operator').release(retained['binding'], reason='operator inspected cleanup',
+                        cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
+                    assert f.service.get('dispatch/test')['usage'] is None
+                    f.conn.close()
+                    f.conn = T.S.open_store(str(f.store))
+                    f.service = T.W.Service(f.config, f.conn)
+                    f.ds, f.res = f.service.records('repo')
+                    f.start()
+                if lost_result == 'resumer':
+                    worker.resume_pending(config)
+                    result = resumed.status('dispatch/test')
+                    assert (directory / 'delivery-complete.json').exists()
+                    count = len(resumed.sent)
+                    worker.resume_pending(config)
+                    assert len(resumed.sent) == count, 'completed result replayed on every startup'
+                else:
+                    result = worker.receive(config, dict(domain='domain', repository='repo', dispatch_id='dispatch/test',
+                        action='release' if lost_result == 'release' else 'result',
+                        contract_digest=retained['binding']['contract_digest']))
+                assert f.service.get('dispatch/test')['usage'] == {'tokens': 3}
+                calls = [v for v in f.res._records().values() if v['type'] == 'invocation']
+                assert calls[0]['observed']['tokens'] == 3, 'saved usage was not reported'
+
             else:
                 result = run()
             if lost_result is True:
@@ -231,6 +257,10 @@ def _v125_routing_suite():
                     assert archive.extractfile('tmp/deliverable.bin').read() == b'temporary deliverable'
                     assert archive.getmember('clone/temporary-output').issym()
                 assert result['record']['references']['output'].startswith('file:')
+                if not unknown and not lost_running:
+                    assert result['record']['usage'] == {'tokens': 21, 'messages': 1}
+                    calls = [v for v in f.res._records().values() if v['type'] == 'invocation']
+                    assert calls[0]['observed']['tokens'] == 21, 'engine usage never reached spend report'
             else:
                 assert result['record']['usage']['tokens'] == 3
             if empty_collect or cleanup_failed or incomplete_retirement:
@@ -249,7 +279,7 @@ def _v125_routing_suite():
                 exchange = release_endpoint(base, f, host, backend, paths)
                 f.client('operator').release(result['binding'], reason='files collected and host cleaned by operator',
                     cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
-                assert f.res.worker('dispatch/test')['retired'], 'cleanup failure has no operator release path'
+                assert not f.res.worker('dispatch/test')['retired'], 'Linux released before Mac confirmed'
                 finish_release(f, host, exchange)
                 restarted = P.M.Supervisor(host.profile, host.qualification, backend=backend)
                 assert restarted.status()['pending'] == 0, 'Mac slot retirement was not durable'
@@ -699,6 +729,8 @@ def _v125_routing_suite():
                     f.client().result(binding, T.observation(), usage={'tokens': 2})
                     assert not f.res.worker(dispatch)['retired']
                 f.client().result(binding, observation, usage={'tokens': 2} if state != 'accepted' else None)
+                assert not f.res.worker(dispatch)['retired']
+                f.client().retired(binding)
                 slot = f.res.worker(dispatch)
                 assert slot['retired'] and slot['remote_hold']['open'] == []
                 assert slot['retirement']['observer'] == 'mac'
@@ -752,7 +784,7 @@ def _v125_routing_suite():
                         raise AssertionError('post-commit crash did not occur')
                     except KeyboardInterrupt:
                         pass
-                    assert f.res.worker('dispatch/test')['retired'] and host.status()['pending'] == 1
+                    assert not f.res.worker('dispatch/test')['retired'] and host.status()['pending'] == 1
                     if recovery == 'restart':
                         f.service = T.W.Service(f.config, f.conn)
                         f.ds, f.res = f.service.records('repo')
@@ -764,8 +796,10 @@ def _v125_routing_suite():
                             wake=lambda *args: wakes.append(args))
                         answer = sender.deliver(sender.sent[-1])
                         assert answer['replayed'] and answer['host_released']
-                        assert ('remote_capacity_released', 'dispatch/test') in wakes, 'replay lost capacity wake'
+                        assert not wakes, 'capacity wake preceded Mac retirement'
                     finish_release(f, host, exchange)
+                    assert f.res.worker('dispatch/test')['retired']
+                    assert f.service.get('dispatch/test')['release_state'] == 'confirmed'
                     restarted = P.M.Supervisor(host.profile, host.qualification, backend=backend)
                     assert restarted.status()['pending'] == 0
                     stale = P.M.Run(host, slot, 'dispatch/test', host.label('dispatch/test'))
@@ -776,31 +810,116 @@ def _v125_routing_suite():
                     T.refused(lambda: restarted.release_authority('dispatch/test', 'sha256:wrong', answer),
                               'binding_mismatch:authority_release')
                     assert backend.bootstraps == 0, 'release endpoint re-executed work'
+                    queries = []
+                    f.conn.set_trace_callback(queries.append)
+                    f.service = T.W.Service(f.config, f.conn)
+                    f.conn.set_trace_callback(None)
+                    assert not f.service.release_sent, 'restart sent confirmed release again'
+                    assert not any('reservation_record' in query for query in queries), 'startup rescanned reservations'
+                    reads = [query for query in queries if 'SELECT data FROM entities' in query]
+                    assert all('worker_release_pending' in query for query in reads), 'startup rescanned worker history'
+                    plan = f.conn.execute("EXPLAIN QUERY PLAN SELECT data FROM entities INDEXED BY worker_release_pending "
+                        "WHERE kind='worker_observation' AND json_extract(data, '$.release_state')='pending'").fetchall()
+                    assert any('worker_release_pending' in str(row) for row in plan)
+
                 finally:
                     f.close()
 
+    def release_queue_once(base):
+        import threading
+        f = T.Fixture(base)
+        original = T.W.subprocess
+        entered, unblock = threading.Event(), threading.Event()
+        calls = []
+        def delivery(argv, **kwargs):
+            calls.append(kwargs['input'])
+            entered.set()
+            assert unblock.wait(5)
+            return types.SimpleNamespace(returncode=1)
+        T.W.subprocess = types.SimpleNamespace(run=delivery, TimeoutExpired=original.TimeoutExpired,
+                                               DEVNULL=original.DEVNULL)
+        try:
+            f.config['receiver'] = dict(remote_receivers={'mac': dict(argv=['fixture'])})
+            bindings = [dict(dispatch_id='dispatch/' + str(i), contract_digest='sha256:fixture', host='mac')
+                        for i in range(20)]
+            for binding in bindings:
+                f.service.notify_release('repo', binding)
+            assert entered.wait(5)
+            assert len(calls) == 1 and len(f.service.release_deliveries) == 1, 'release connection storm'
+            sender = next(iter(f.service.release_deliveries.values()))
+            unblock.set()
+            sender.join(5)
+            assert not sender.is_alive() and len(calls) == 20
+            for binding in bindings:
+                f.service.notify_release('repo', binding)
+            assert len(calls) == 20 and not f.service.release_deliveries, 'release wake sent more than once'
+        finally:
+            unblock.set()
+            T.W.subprocess = original
+            f.close()
+
+    def release_before_start(base):
+        P = helper('v125_early_release', 'proof/VELDO-0124/checks.py')
+        host, backend, request, paths = P.start(base)
+        dispatch = request['contract']['dispatch_id']
+        outcome = dict(ok=True, host_released=True, binding=dict(dispatch_id=dispatch,
+            contract_digest=request['contract_digest'], host=backend.facts()['host']))
+        host.release_authority(dispatch, request['contract_digest'], outcome)
+        restarted = P.M.Supervisor(host.profile, host.qualification, backend=backend)
+        slot = P.M.read(host.root / host.label(dispatch) / 'slot.json')
+        assert slot['state'] == 'retired' and slot['contract_digest'] == request['contract_digest']
+        T.refused(lambda: restarted.start(request), 'stale_version:dispatch_already_attempted')
+        assert backend.bootstraps == 0 and restarted.status()['pending'] == 0
+
+    def delivery_agent(base):
+        import json
+        import plistlib
+        worker = T.load('control_worker')
+        config = dict(profile=dict(home=str(base)), runs=str(base / 'runs'))
+        path = base / 'receiver.json'
+        path.write_text(json.dumps(config))
+        calls = []
+        def launchctl(argv, **kwargs):
+            calls.append(argv)
+            return types.SimpleNamespace(returncode=1 if argv[1] == 'print' else 0)
+        worker.subprocess = types.SimpleNamespace(run=launchctl)
+        worker.install_resumer(path, config)
+        jobs = list((base / 'Library' / 'LaunchAgents').glob('*.plist'))
+        assert len(jobs) == 1
+        job = plistlib.loads(jobs[0].read_bytes())
+        assert job['RunAtLoad'] and job['KeepAlive'] and job['ThrottleInterval'] >= 30
+        assert job['ProgramArguments'][-2:] == [str(path), '--resume']
+        assert calls[-1][1] == 'bootstrap'
+        invoked = []
+        worker.resume_pending = lambda config: invoked.append(config)
+        worker.time = types.SimpleNamespace(sleep=lambda seconds: (_ for _ in ()).throw(KeyboardInterrupt()))
+        try:
+            worker.main(str(path), resume=True)
+        except KeyboardInterrupt:
+            pass
+        assert invoked == [config], 'installed startup entrypoint did not drain outbox'
+
     def retry_backoff(base):
         client = T.CL.Client('/workspace', {}, 'mac', lambda *args: '', [])
-        client.retry_attempts = 12  # Exercise the capped portion as well as exponential growth.
         client.outbox = base / 'outbox.json'
         T.CL.durable_json(client.outbox, {'same': 'command'})
         sent, sleeps = [], []
         def unavailable(request):
             sent.append(request)
-            raise T.CL.Refused('AUTHORITY_UNAVAILABLE:offline')
+            if len(sent) <= 25:
+                raise T.CL.Refused('AUTHORITY_UNAVAILABLE:offline')
+            return {'ok': True}
         client.deliver = unavailable
         old = T.CL.time
         T.CL.time = types.SimpleNamespace(sleep=sleeps.append)
         try:
-            T.refused(client.retry_result, 'AUTHORITY_UNAVAILABLE:offline')
+            assert client.retry_result() == {'ok': True}
         finally:
             T.CL.time = old
-        assert len(sent) == client.retry_attempts and len(sleeps) == client.retry_attempts - 1
+        assert len(sent) == 26 and len(sleeps) == 25, 'delivery stopped during a long authority outage'
         assert all(request == sent[0] for request in sent)
         assert all(min(300, 2 ** i) / 2 <= value <= min(300, 2 ** i) for i, value in enumerate(sleeps))
         assert sleeps[-1] > 1 and client.outbox.exists()
-        client.deliver = lambda request: {'ok': True}
-        assert client.retry_result() == {'ok': True}
         assert Path(str(client.outbox) + '.ack').exists()
 
     def late_usage(base):
@@ -856,6 +975,8 @@ def _v125_routing_suite():
                 # Neither process nor termination can be recovered. Cleanup itself is the evidence.
                 observation = dict(state='unknown', cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
                 client.result(binding, observation)
+                assert not f.res.worker('dispatch/test')['retired']
+                client.retired(binding)
                 assert f.res.worker('dispatch/test')['retired']
                 assert f.res.balances('account', 'account')['capacity'] == 0
                 assert f.ds.record('dispatch/test')['state'] == 'unknown'
@@ -900,6 +1021,9 @@ def _v125_routing_suite():
                     wake=lambda *args: wakes.append(args))
                 result = operator.release(binding, reason='host inspected, files collected, process and clone removed',
                                           cleanup=cleanup)
+                assert not result['released'] and not f.res.worker('dispatch/test')['retired']
+                assert not [wake for wake in wakes if wake[0] == 'remote_capacity_released']
+                result = client.retired(binding)
                 assert result['released'] and f.res.worker('dispatch/test')['retired']
                 assert f.res.worker('dispatch/test')['retirement']['observer'] == 'operator'
                 assert f.service.get('dispatch/test')['release']['reason'].startswith('host inspected')
@@ -932,6 +1056,8 @@ def _v125_routing_suite():
                     'invalid_input:remote_cleanup')
                 assert f.service.watermark() == before
                 client.result(binding, cleanup_observation(), usage={'tokens': 3, 'messages': 1, 'invocations': 1, 'wall_seconds': 1})
+                assert not f.res.worker(dispatch)['retired']
+                client.retired(binding)
                 slot = f.res.worker(dispatch)
                 assert slot['retired'] and slot['remote_hold']['open'] == []
                 assert f.res.balances('account', 'account')['capacity'] == 0
@@ -952,6 +1078,8 @@ def _v125_routing_suite():
             binding = client.claim('dispatch/test')['binding']
             client.result(binding, dict(state='refused', refusal='host_preflight_refused'))
             assert f.ds.record('dispatch/test')['state'] == 'refused'
+            assert not f.res.worker('dispatch/test')['retired']
+            client.retired(binding)
             assert f.res.worker('dispatch/test')['retired']
             assert f.res.balances('account', 'account')['capacity'] == 0
             T.refused(lambda: client.launch(binding, 'accept', receiver=T.process(), runtime_seconds=5),
@@ -1036,6 +1164,11 @@ def _v125_routing_suite():
                       'AC3/remote-cleanup-held': remote_retirement,
                       'AC3/remote-hold-restart': remote_hold_restart,
                       'AC3/remote-result-transport-failure': lambda base: actual_launch(base, lost_result=True),
+                      'AC3/release-flushes-saved-usage': lambda base: actual_launch(base, lost_result='release'),
+                      'AC3/startup-resumes-outbox': lambda base: actual_launch(base, lost_result='resumer'),
+                      'AC3/delivery-launch-agent': delivery_agent,
+                      'AC3/release-wakes-bounded-once': release_queue_once,
+                      'AC3/release-before-start': release_before_start,
                       'AC3/remote-result-restart': lambda base: actual_launch(base, lost_result='restart'),
                       'AC3/stored-release-restart': lambda base: actual_launch(base, lost_result='stored'),
                       'AC3/default-collector-retains-files': lambda base: actual_launch(base, default_collect=True),
@@ -1063,6 +1196,7 @@ def _v125_routing_suite():
                 test(Path(directory))
                 expect('VELDO-0125 ' + row, True)
             except Exception as error:
+                __import__('traceback').print_exc()
                 print(row + ': ' + type(error).__name__ + ': ' + str(error)[:1200])
                 expect('VELDO-0125 ' + row, False)
 

@@ -23,7 +23,7 @@ def organ(name):
 
 CC = organ('control_client')
 COMMAND_NAMESPACE = 'veldo-worker-command'
-OPERATIONS = ('worker_claim', 'worker_launch', 'worker_result', 'worker_release', 'worker_status')
+OPERATIONS = ('worker_claim', 'worker_launch', 'worker_result', 'worker_release', 'worker_status', 'worker_retired')
 
 
 def durable_json(path, value):
@@ -72,7 +72,6 @@ class Client:
         self.outbox = None
         self.retry_seconds = 1
         self.retry_max_seconds = 300
-        self.retry_attempts = 8
 
     def send(self, operation, parameters):
         if operation not in OPERATIONS:
@@ -86,34 +85,32 @@ class Client:
         if operation == 'worker_result' and self.outbox is not None:
             durable_json(self.outbox, request)
             return self.retry_result()
-        if operation == 'worker_status':
+        if operation in ('worker_status', 'worker_retired'):
             return self.retry(request)
         return self.deliver(request)
 
     def retry_result(self):
-        """Bounded exponential retry; exhaustion leaves the same command for restart."""
+        """Retry the durable command until acknowledged; only the interval is bounded."""
         request = json.loads(Path(self.outbox).read_text())
         response = self.retry(request)
         durable_json(str(self.outbox) + '.ack', response)
         return response
 
     def retry(self, request):
-        for attempt in range(self.retry_attempts):
+        delay = self.retry_seconds
+        while True:
             try:
-                response = self.deliver(request)
+                return self.deliver(request)
             except Refused as error:
                 if not error.code.startswith('AUTHORITY_UNAVAILABLE:'):
                     raise
-                if attempt + 1 == self.retry_attempts:
-                    raise
-                delay = min(self.retry_max_seconds, self.retry_seconds * 2 ** attempt)
                 time.sleep(random.uniform(delay / 2, delay))
-                continue
-            return response
+                delay = min(self.retry_max_seconds, delay * 2)
 
     def deliver(self, request):
         wire = json.dumps(request).encode()
         self.sent.append(request)
+        del self.sent[:-256]
         try:
             result = subprocess.run(self.argv, input=wire, capture_output=True, timeout=self.timeout)
             if result.returncode:
@@ -147,3 +144,6 @@ class Client:
 
     def status(self, dispatch):
         return self.send('worker_status', dict(dispatch_id=dispatch))
+
+    def retired(self, binding):
+        return self.send('worker_retired', binding)

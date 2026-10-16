@@ -12,6 +12,9 @@ import shutil
 import sys
 import hashlib
 import tarfile
+import fcntl
+import time
+import plistlib
 from pathlib import Path
 
 
@@ -26,7 +29,20 @@ C = organ('project_runner_macos_control')
 CL = organ('control_worker_client')
 
 
-def collect_files(clone, scratch, started):
+def engine_usage(started, engine):
+    reader = {'codex': 'control_engine_codex', 'claude_code': 'control_engine_claude'}.get(engine)
+    output = started.directory / 'engine.out'
+    if reader is None or not output.exists():
+        return None
+    meter = organ(reader).Meter()
+    with output.open('rb') as stream:
+        for line in stream:
+            meter.feed(line)
+    meter.close()
+    return meter.final() or None
+
+
+def collect_files(clone, scratch, started, engine):
     """Keep the complete generated trees outside their cleanup roots before deleting either."""
     target = Path(clone).parent / 'deliverables.tar'
     temporary = target.with_suffix('.tmp')
@@ -43,7 +59,7 @@ def collect_files(clone, scratch, started):
         digest = hashlib.file_digest(stream, 'sha256').hexdigest()
     os.replace(temporary, target)
     # durable_json below syncs the directory containing the archive and evidence.
-    return None, {'output': target.resolve().as_uri() + '#sha256=' + digest}
+    return engine_usage(started, engine), {'output': target.resolve().as_uri() + '#sha256=' + digest}
 
 
 def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=None):
@@ -77,7 +93,7 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=
             # even when the running notification (or its acknowledgement) is lost.
             started.stop('authority_unavailable')
         observation = started.wait()
-        usage, references = collect(started, observation) if collect else collect_files(clone, scratch, started)
+        usage, references = collect(started, observation) if collect else collect_files(clone, scratch, started, contract['capability']['adapter'])
         evidence = Path(clone).parent / 'result-evidence.json'
         client.outbox = Path(clone).parent / 'result-request.json'
         def retain():
@@ -100,8 +116,7 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=
                     observation = dict(observation, cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
                     retain()
         outcome = client.result(binding, observation, usage=usage, references=references)
-        apply_release(host, binding, outcome)
-        return outcome
+        return apply_release(client, host, binding, outcome)
     except Exception:
         if started.state not in ('exited', 'retired'):
             started.stop('authority_unavailable')
@@ -109,12 +124,30 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=
         raise
 
 
-def apply_release(host, binding, outcome):
+def apply_release(client, host, binding, outcome):
     if outcome.get('host_released'):
+        directory = Path(client.outbox).parent
+        CL.durable_json(directory / 'retirement-request.json', dict(binding=binding, outcome=outcome))
         host.release_authority(binding['dispatch_id'], binding['contract_digest'], outcome)
+        # This signed confirmation is the only operation that frees Linux capacity.
+        outcome = client.retired(binding)
+        CL.durable_json(directory / 'delivery-complete.json', outcome)
+    return outcome
 
 
 def receive(config, request):
+    # A resumed outbox and an operator wake may race the original receiver.
+    locks = Path(config['runs']) / '.locks'
+    locks.mkdir(parents=True, exist_ok=True)
+    with (locks / C.P.digest(request['dispatch_id']).split(':')[-1]).open('a') as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | (fcntl.LOCK_NB if request.get('action') == 'resume' else 0))
+        except BlockingIOError:
+            return None
+        return receive_locked(config, request)
+
+
+def receive_locked(config, request):
     """Installed Mac endpoint: resolve a dispatch through its configured Linux relay.
 
     Source mirror, account profiles, host qualification and keys are operator
@@ -136,29 +169,29 @@ def receive(config, request):
         raise C.P.Refused('binding_mismatch:receiver_repository')
     directory = Path(config['runs']) / C.P.digest(request['dispatch_id']).split(':')[-1]
     evidence = directory / 'result-evidence.json'
-    if request.get('action') == 'release' or (directory.exists() and not evidence.exists()):
-        # Transport input is only a wake. Ask the authority through the signed,
-        # configured relay before changing local capacity; never trust stdin.
-        outcome = client.status(request['dispatch_id'])
-        host.release_authority(request['dispatch_id'], request['contract_digest'], outcome)
-        return outcome
+    client.outbox = directory / 'result-request.json'
+    # Flush retained measurement before any release confirmation, including an
+    # operator wake after a crash. A transport wake never authorizes execution.
     if evidence.exists():
         retained = json.loads(evidence.read_text())
         if retained['binding']['contract_digest'] != request.get('contract_digest'):
             raise C.P.Refused('binding_mismatch:receiver_contract')
-        client.outbox = directory / 'result-request.json'
         acknowledgement = Path(str(client.outbox) + '.ack')
         if acknowledgement.exists():
             outcome = json.loads(acknowledgement.read_text())
-            if outcome.get('host_released'):
-                apply_release(host, retained['binding'], outcome)
-                return outcome
-        if client.outbox.exists():
+        elif client.outbox.exists():
             outcome = client.retry_result()
         else:
             outcome = client.result(**retained)
-        apply_release(host, retained['binding'], outcome)
-        return outcome
+        if not outcome.get('host_released'):
+            outcome = client.status(request['dispatch_id'])
+        return apply_release(client, host, retained['binding'], outcome)
+    if request.get('action') in ('release', 'resume') or directory.exists():
+        outcome = client.status(request['dispatch_id'])
+        directory.mkdir(parents=True, exist_ok=True)
+        return apply_release(client, host, dict(dispatch_id=request['dispatch_id'],
+            contract_digest=request['contract_digest'], host=outcome['binding']['host'],
+            unit=outcome['binding']['unit']), outcome)
     claim = client.claim(request['dispatch_id'])
     contract = claim['contract']
     if (claim['binding']['contract_digest'] != request.get('contract_digest')
@@ -176,7 +209,55 @@ def receive(config, request):
     return run(client, host, request['dispatch_id'], str(clone), str(scratch), account, claim=claim)
 
 
+def resume_pending(config):
+    """Startup/periodic outbox drain. It never claims or starts an engine."""
+    for directory in Path(config['runs']).iterdir():
+        if not directory.is_dir() or (directory / 'delivery-complete.json').exists():
+            continue
+        for name in ('result-evidence.json', 'retirement-request.json'):
+            path = directory / name
+            if path.exists():
+                retained = json.loads(path.read_text())
+                binding = retained['binding']
+                receive(config, dict(action='resume', domain=config['binding']['domain_uuid'],
+                    repository=config['binding']['repository_uuid'], dispatch_id=binding['dispatch_id'],
+                    contract_digest=binding['contract_digest']))
+                break
+
+
+def install_resumer(config_path, config):
+    """Install the delivery-only launch agent before accepting work on this Mac."""
+    label = 'org.veldo.result-delivery.' + C.P.digest(str(Path(config_path).resolve())).split(':')[-1][:16]
+    agents = Path(config['profile']['home']) / 'Library' / 'LaunchAgents'
+    agents.mkdir(parents=True, exist_ok=True)
+    path = agents / (label + '.plist')
+    job = dict(Label=label, ProgramArguments=[sys.executable, str(Path(__file__).resolve()),
+        str(Path(config_path).resolve()), '--resume'], RunAtLoad=True, KeepAlive=True, ThrottleInterval=30)
+    payload = plistlib.dumps(job)
+    if not path.exists() or path.read_bytes() != payload:
+        temporary = path.with_suffix('.tmp')
+        with temporary.open('wb') as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    domain = 'gui/' + str(os.getuid())
+    if subprocess.run(['launchctl', 'print', domain + '/' + label], capture_output=True).returncode:
+        subprocess.run(['launchctl', 'bootstrap', domain, str(path)], check=True, capture_output=True)
+
+
+def main(config_path, resume=False):
+    config = json.loads(Path(config_path).read_text())
+    Path(config['runs']).mkdir(parents=True, exist_ok=True)
+    if resume:
+        while True:
+            resume_pending(config)
+            time.sleep(30)
+    else:
+        install_resumer(config_path, config)
+        result = receive(config, json.loads(sys.stdin.readline(65536)))
+        print(json.dumps(dict(state=result['record']['state'])), flush=True)
+
+
 if __name__ == '__main__':
-    config = json.loads(Path(sys.argv[1]).read_text())
-    result = receive(config, json.loads(sys.stdin.readline(65536)))
-    print(json.dumps(dict(state=result['record']['state'])), flush=True)
+    main(sys.argv[1], '--resume' in sys.argv[2:])

@@ -439,7 +439,10 @@ class Reservations:
                         remote.get('host') != current['remote_hold']['host'] or
                         remote.get('contract_digest') != current['remote_hold']['contract_digest'] or
                         observation.get('observer') != (release.get('principal') or remote.get('principal')) or
-                        observation.get('command_id') != (remote.get('commands') or [{}])[-1].get('command_id') or
+                        remote.get('release_state') != 'confirmed' or
+                        remote.get('retirement_confirmation') != (remote.get('commands') or [{}])[-1].get('command_id') or
+                        (remote.get('commands') or [{}])[-1].get('operation') != 'worker_retired' or
+                        observation != remote.get('retirement') or
                         any(cleanup.get(key) is not True for key in ('terminated', 'cleaned', 'clone_removed'))):
                     raise Refused('missing_evidence:remote_cleanup')
             if observation.get('terminated') is not True:

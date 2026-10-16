@@ -23,6 +23,8 @@ def _v125_suite():
         result = operator.release(binding, reason='operator collected files and completed host cleanup',
                                   cleanup=dict(terminated=True, cleaned=True, clone_removed=True))
         assert client.status(binding['dispatch_id'])['host_released']
+        assert not f.res.worker('dispatch/test')['retired']
+        result = client.retired(binding)
         sent = client.sent + operator.sent
         assert {r['command']['command']['operation'] for r in sent} == set(T.CL.OPERATIONS)
         assert f.res.worker('dispatch/test')['retired']
@@ -37,7 +39,7 @@ def _v125_suite():
                 ('worker-spend:dispatch/test',)).fetchone()[0])
             assert all(spend[k] == data[k] for k in ('unit', 'host', 'dispatch_id', 'invocation', 'usage'))
             assert spend['receipt']['seq'] > 0
-            assert independent.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == operator.watermark
+            assert independent.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == client.watermark
         assert data['host'] == 'mac' and data['unit'] == 'unit' and data['dispatch_id'] == 'dispatch/test'
         assert all(next(c for c in data['commands'] if c['command_id'] == r['command']['command']['command_id'])['digest']
                    == T.S.digest_of(r['command']['command']) for r in sent
