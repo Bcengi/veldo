@@ -1,0 +1,5 @@
+--- project_runner_macos.py
++++ project_runner_macos.py
+@@ -87 +87 @@
+-        states = self.live_slots().values()
++        states = [read(p)['state'] for p in self.root.glob('*/slot.json') if read(p)['state'] != 'retired']

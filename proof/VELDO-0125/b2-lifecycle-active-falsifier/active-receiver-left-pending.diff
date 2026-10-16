@@ -1,0 +1,5 @@
+--- control_worker.py
++++ control_worker.py
+@@ -165 +165 @@
+-            OUT.move(root, OUT.locate(root, request['dispatch_id']), '.active', CL.durable_json)
++            OUT.move(root, OUT.locate(root, request['dispatch_id']), '.pending', CL.durable_json)

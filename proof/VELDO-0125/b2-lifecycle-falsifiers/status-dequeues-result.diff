@@ -1,0 +1,5 @@
+--- control_worker.py
++++ control_worker.py
+@@ -282,2 +281,0 @@
+-        if not outcome.get('host_released'):
+-            raise OUT.WaitingForRelease('release_not_yet_authorized')

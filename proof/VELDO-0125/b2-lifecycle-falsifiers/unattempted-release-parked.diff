@@ -1,0 +1,5 @@
+--- control_worker_outbox.py
++++ control_worker_outbox.py
+@@ -124 +124 @@
+-        if upgraded:
++        if False:

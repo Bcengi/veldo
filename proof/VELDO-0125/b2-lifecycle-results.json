@@ -1,0 +1,116 @@
+{
+  "implementation_commit": "b7a06bb671b4c2f5f4718e1c67a6f0707e500db2",
+  "scope": "Targeted VELDO-0125 regression and mutation evidence; not a canonical gate or native qualification claim",
+  "sources": {
+    ".veldo/control_worker.py": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+    ".veldo/control_worker_outbox.py": "650fe94024c3901bd99a3476606d131dd6c371f6c8163ef4cb96f8a83a10c052",
+    ".veldo/project_runner_macos.py": "224c0bb286c345044fcc8769fd5d79950af3f0b25038605f36a86b99d16d261a",
+    "scripts/suites/106_veldo_0125_routing.py": "4d199cf74cce18f00668bef70eda1280a116fec2d4eaabca556bef0fd6350901",
+    "proof/VELDO-0125/lifecycle_checks.py": "fbbb88a5b6115c993bb9af12824830a232a04d53b1c1fa8ecc5f69c357830d8f"
+  },
+  "controls": [
+    {
+      "case": "operator-status-polling",
+      "row": "AC3/operator-wait-no-status-timer",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+      "patch": "operator-status-polling.diff",
+      "log": "operator-status-polling.log",
+      "directory": "b2-lifecycle-falsifiers"
+    },
+    {
+      "case": "unattempted-release-parked",
+      "row": "AC3/upgraded-release-attempted",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "650fe94024c3901bd99a3476606d131dd6c371f6c8163ef4cb96f8a83a10c052",
+      "patch": "unattempted-release-parked.diff",
+      "log": "unattempted-release-parked.log",
+      "directory": "b2-lifecycle-falsifiers"
+    },
+    {
+      "case": "status-dequeues-result",
+      "row": "AC3/status-is-not-result-ack",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+      "patch": "status-dequeues-result.diff",
+      "log": "status-dequeues-result.log",
+      "directory": "b2-lifecycle-falsifiers"
+    },
+    {
+      "case": "original-replay-drops-output",
+      "row": "AC3/original-replay-retains-usage",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+      "patch": "original-replay-drops-output.diff",
+      "log": "original-replay-drops-output.log",
+      "directory": "b2-lifecycle-falsifiers"
+    },
+    {
+      "case": "lock-error-unrecorded",
+      "row": "AC3/lock-errors-bounded-recorded",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+      "patch": "lock-error-unrecorded.diff",
+      "log": "lock-error-unrecorded.log",
+      "directory": "b2-lifecycle-falsifiers"
+    },
+    {
+      "case": "admission-scans-history",
+      "row": "AC2/live-slot-admission-index",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "224c0bb286c345044fcc8769fd5d79950af3f0b25038605f36a86b99d16d261a",
+      "patch": "admission-scans-history.diff",
+      "log": "admission-scans-history.log",
+      "directory": "b2-lifecycle-falsifiers"
+    },
+    {
+      "case": "park-parent-unsynced",
+      "row": "AC3/park-parent-durable",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "650fe94024c3901bd99a3476606d131dd6c371f6c8163ef4cb96f8a83a10c052",
+      "patch": "park-parent-unsynced.diff",
+      "log": "park-parent-unsynced.log",
+      "directory": "b2-lifecycle-falsifiers"
+    },
+    {
+      "case": "release-skipped-after-result-refusal",
+      "row": "AC3/upgraded-release-attempted",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+      "patch": "release-skipped-after-result-refusal.diff",
+      "log": "release-skipped-after-result-refusal.log",
+      "directory": "b2-lifecycle-falsifiers"
+    },
+    {
+      "case": "active-receiver-left-pending",
+      "row": "AC3/active-receiver-no-timer",
+      "rejected": true,
+      "returncode": 1,
+      "source_sha256": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+      "patch": "active-receiver-left-pending.diff",
+      "log": "active-receiver-left-pending.log",
+      "directory": "b2-lifecycle-active-falsifier"
+    }
+  ],
+  "superseded_controls": [
+    {
+      "case": "healthy-run-enqueued",
+      "row": "AC3/active-receiver-no-timer",
+      "rejected": false,
+      "returncode": 2,
+      "source_sha256": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+      "patch": "healthy-run-enqueued.diff",
+      "log": "healthy-run-enqueued.log",
+      "directory": "b2-lifecycle-falsifiers",
+      "explanation": "Initial insertion was superseded by the subsequent active transition; replacement mutates the held execution state."
+    }
+  ]
+}

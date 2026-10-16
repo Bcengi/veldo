@@ -1,0 +1,83 @@
+[
+  {
+    "case": "healthy-run-enqueued",
+    "row": "AC3/active-receiver-no-timer",
+    "rejected": false,
+    "returncode": 2,
+    "source_sha256": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+    "patch": "healthy-run-enqueued.diff",
+    "log": "healthy-run-enqueued.log"
+  },
+  {
+    "case": "operator-status-polling",
+    "row": "AC3/operator-wait-no-status-timer",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+    "patch": "operator-status-polling.diff",
+    "log": "operator-status-polling.log"
+  },
+  {
+    "case": "unattempted-release-parked",
+    "row": "AC3/upgraded-release-attempted",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "650fe94024c3901bd99a3476606d131dd6c371f6c8163ef4cb96f8a83a10c052",
+    "patch": "unattempted-release-parked.diff",
+    "log": "unattempted-release-parked.log"
+  },
+  {
+    "case": "status-dequeues-result",
+    "row": "AC3/status-is-not-result-ack",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+    "patch": "status-dequeues-result.diff",
+    "log": "status-dequeues-result.log"
+  },
+  {
+    "case": "original-replay-drops-output",
+    "row": "AC3/original-replay-retains-usage",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+    "patch": "original-replay-drops-output.diff",
+    "log": "original-replay-drops-output.log"
+  },
+  {
+    "case": "lock-error-unrecorded",
+    "row": "AC3/lock-errors-bounded-recorded",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+    "patch": "lock-error-unrecorded.diff",
+    "log": "lock-error-unrecorded.log"
+  },
+  {
+    "case": "admission-scans-history",
+    "row": "AC2/live-slot-admission-index",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "224c0bb286c345044fcc8769fd5d79950af3f0b25038605f36a86b99d16d261a",
+    "patch": "admission-scans-history.diff",
+    "log": "admission-scans-history.log"
+  },
+  {
+    "case": "park-parent-unsynced",
+    "row": "AC3/park-parent-durable",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "650fe94024c3901bd99a3476606d131dd6c371f6c8163ef4cb96f8a83a10c052",
+    "patch": "park-parent-unsynced.diff",
+    "log": "park-parent-unsynced.log"
+  },
+  {
+    "case": "release-skipped-after-result-refusal",
+    "row": "AC3/upgraded-release-attempted",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+    "patch": "release-skipped-after-result-refusal.diff",
+    "log": "release-skipped-after-result-refusal.log"
+  }
+]

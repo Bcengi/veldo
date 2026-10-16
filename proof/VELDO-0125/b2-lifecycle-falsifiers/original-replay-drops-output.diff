@@ -1,0 +1,5 @@
+--- control_worker.py
++++ control_worker.py
+@@ -250 +250 @@
+-    if not evidence.exists() and (directory_existed or request.get('action') in ('release', 'resume')):
++    if not evidence.exists() and request.get('action') in ('release', 'resume'):

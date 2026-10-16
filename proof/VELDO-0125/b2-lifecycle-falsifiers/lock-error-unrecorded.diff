@@ -1,0 +1,6 @@
+--- control_worker.py
++++ control_worker.py
+@@ -171 +171,2 @@
+-        OUT.failure(config, request, error, CL.durable_json)
++        if not isinstance(error, PermissionError):
++            OUT.failure(config, request, error, CL.durable_json)

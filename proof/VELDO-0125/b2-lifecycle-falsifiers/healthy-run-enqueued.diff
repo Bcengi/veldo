@@ -1,0 +1,5 @@
+--- control_worker.py
++++ control_worker.py
+@@ -152 +152 @@
+-                    OUT.move(root, path, '.active', CL.durable_json,
++                    OUT.move(root, path, '.pending', CL.durable_json,

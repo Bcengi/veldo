@@ -1,0 +1,11 @@
+[
+  {
+    "case": "active-receiver-left-pending",
+    "row": "AC3/active-receiver-no-timer",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "4b3fb0dc4df88a2296a3b26fb910cf9fbee0d1295fb5ce9918d766d994da0ef9",
+    "patch": "active-receiver-left-pending.diff",
+    "log": "active-receiver-left-pending.log"
+  }
+]

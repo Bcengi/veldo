@@ -1,0 +1,8 @@
+--- control_worker_outbox.py
++++ control_worker_outbox.py
+@@ -69,0 +70,5 @@
++    if state == '.parked':
++        target = destination / path.name
++        write(target, entry or json.loads(path.read_text()))
++        sync_remove(path)
++        return target

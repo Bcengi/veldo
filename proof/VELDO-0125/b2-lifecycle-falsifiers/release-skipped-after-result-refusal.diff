@@ -1,0 +1,4 @@
+--- control_worker.py
++++ control_worker.py
+@@ -272,0 +273 @@
++            raise error

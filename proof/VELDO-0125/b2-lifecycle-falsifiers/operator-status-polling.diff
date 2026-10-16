@@ -1,0 +1,5 @@
+--- control_worker.py
++++ control_worker.py
+@@ -210 +210 @@
+-        raise OUT.WaitingForRelease('release_not_yet_authorized')
++        raise OSError('release_not_yet_authorized')
