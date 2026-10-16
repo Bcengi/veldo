@@ -1,0 +1,107 @@
+{
+  "scope": "Selected-suite observations only; not a gate pass, proof manifest, native macOS qualification, or landing decision.",
+  "baseline_product_commit": "9e8b278e",
+  "regression_commit": "5e763816f7810c509a7d0b77a39af28888e38ac5",
+  "implementation_commit": "2089649273deca90237f144ee66b15e3ae646244",
+  "sources_sha256": {
+    ".veldo/control_worker_outbox.py": "53b08a172aceb04a601de38babb82595f64cbaaf5108c8a8f93d45b5fac249d6",
+    "engine/.veldo/control_worker_outbox.py": "53b08a172aceb04a601de38babb82595f64cbaaf5108c8a8f93d45b5fac249d6",
+    "scripts/suites/106_veldo_0125_routing.py": "0de81a3efab7f6f0932da2d606b67ce54dc33ba96c4bea7e83db7c6fa4786f40",
+    "proof/VELDO-0125/round15_checks.py": "8af9f52d2f5b01841dd2a79887c6fdbd349c8ed32c3b805b8078a15b2d5dd74a",
+    "proof/VELDO-0125/round14_checks.py": "b1dfdf3ff77eb8e1b14d34c26dd48ab7014415b593daf5e13f1fc519a927efc0"
+  },
+  "runs": [
+    {
+      "phase": "before",
+      "command": "python3 scripts/selftest.py --suite 103_veldo_0124_macos",
+      "log": "proof/VELDO-0125/b2-round15/before-103.log",
+      "log_sha256": "2ded2587f40e638d65aab8f69d981120c77846c62e4a78a4ab6f8404420cb172",
+      "exit_code": 2,
+      "suite_passed": 23,
+      "passed_including_prerequisites": 49,
+      "failed": 0,
+      "seconds": 4.74
+    },
+    {
+      "phase": "before",
+      "command": "python3 scripts/selftest.py --suite 104_veldo_0124_control",
+      "log": "proof/VELDO-0125/b2-round15/before-104.log",
+      "log_sha256": "2f3cb7f29754a675b77010ff7fee65d19e0fb1c1d70e97a5b324a5405b57f4b2",
+      "exit_code": 2,
+      "suite_passed": 6,
+      "passed_including_prerequisites": 32,
+      "failed": 0,
+      "seconds": 3.78
+    },
+    {
+      "phase": "before",
+      "command": "python3 scripts/selftest.py --suite 105_veldo_0125_relay",
+      "log": "proof/VELDO-0125/b2-round15/before-105.log",
+      "log_sha256": "cc8efdb8a34bcba203ebf5ada656f29ccc0149cd15a66d1d960e2502435666da",
+      "exit_code": 2,
+      "suite_passed": 17,
+      "passed_including_prerequisites": 43,
+      "failed": 0,
+      "seconds": 7.52
+    },
+    {
+      "phase": "before",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "log": "proof/VELDO-0125/b2-round15/before-106.log",
+      "log_sha256": "95496ad2c5d7178e7912954aa499513f7d5df41224bb0b585abe9a73743009cc",
+      "exit_code": 1,
+      "suite_passed": 135,
+      "passed_including_prerequisites": 161,
+      "failed": 11,
+      "seconds": 62.68
+    },
+    {
+      "phase": "after",
+      "command": "python3 scripts/selftest.py --suite 103_veldo_0124_macos",
+      "log": "proof/VELDO-0125/b2-round15/after-103.log",
+      "log_sha256": "0b1921b61c73c13bd4f880ab1d17f773e8b89ace7755411dbc647bc5f1e6b3d1",
+      "exit_code": 2,
+      "suite_passed": 23,
+      "passed_including_prerequisites": 49,
+      "failed": 0,
+      "seconds": 4.75
+    },
+    {
+      "phase": "after",
+      "command": "python3 scripts/selftest.py --suite 104_veldo_0124_control",
+      "log": "proof/VELDO-0125/b2-round15/after-104.log",
+      "log_sha256": "710203ef88eaaf9c656313c2e51de939cb396dcc0c6fd901fc8bd7b3612a308b",
+      "exit_code": 2,
+      "suite_passed": 6,
+      "passed_including_prerequisites": 32,
+      "failed": 0,
+      "seconds": 3.78
+    },
+    {
+      "phase": "after",
+      "command": "python3 scripts/selftest.py --suite 105_veldo_0125_relay",
+      "log": "proof/VELDO-0125/b2-round15/after-105.log",
+      "log_sha256": "b216fd78a7ad37b753c44ed67eed82f44854d002084e550acb345d58ef619295",
+      "exit_code": 2,
+      "suite_passed": 17,
+      "passed_including_prerequisites": 43,
+      "failed": 0,
+      "seconds": 7.51
+    },
+    {
+      "phase": "after",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "log": "proof/VELDO-0125/b2-round15/after-106.log",
+      "log_sha256": "f629da7fa7eb5c5113a6b915262ddb4ba85cf031a3bc9c9a1c7d2488f44acee8",
+      "exit_code": 2,
+      "suite_passed": 146,
+      "passed_including_prerequisites": 172,
+      "failed": 0,
+      "seconds": 64.12
+    }
+  ],
+  "template_sync": {
+    "command": "cmp engine/.veldo/control_worker_outbox.py .veldo/control_worker_outbox.py",
+    "exit_code": 0
+  }
+}

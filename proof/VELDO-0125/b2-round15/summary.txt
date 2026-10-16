@@ -1,0 +1,25 @@
+VELDO-0125 B2 round 15: malformed decoded outbox entries
+
+The recovery decode block now checks the entry object, request object, string
+dispatch_id, numeric due time and integer attempts count before operational
+recovery. Invalid shapes follow the same byte-preserving quarantine path as
+undecodable bytes. Filesystem and lock recovery behavior is unchanged. The
+engine and installed outbox copies are byte-identical.
+
+Before: suites 103, 104 and 105 had zero failures. Suite 106 reproduced all
+11 new malformed-entry failures against unchanged baseline product code.
+The rows include {}, [], "x" and {"request":{}} as requested, plus missing
+request, invalid request/dispatch types and missing/invalid due/attempts fields.
+
+After: suites 103, 104, 105 and 106 had zero failures, with 23, 6, 17 and 146
+suite rows passing respectively. Each selected run passed 26 prerequisites.
+Each new row checks first-pass quarantine of original bytes, scheduling and
+draining a healthy active peer, and no repeated recovery diagnostics. Existing
+round 14 rows still verify ENOSPC retention in .active and subsequent delivery,
+undecodable-byte quarantine and sleeping despite operational recovery errors.
+
+All eight suite commands ran individually and sequentially. Successful selected
+runs exit 2 by design; the before routing run exits 1. results.json records
+commands, counts, source hashes, log hashes and implementation commit binding.
+These are partial-run observations, not accepted unit/gate proof. No full gate,
+mutation runner, native Mac qualification, merge or push was run or claimed.
