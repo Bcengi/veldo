@@ -1,0 +1,105 @@
+{
+  "scope": "Selected-suite observations only; not a gate pass, proof manifest, native macOS qualification, or landing decision.",
+  "baseline_product_commit": "4122b54a",
+  "regression_commit": "6c4b6c52015539971dcf4b2894bcb92cfae76fed",
+  "implementation_commit": "33c4b5246910d90eea40218222669af8514918b6",
+  "sources_sha256": {
+    ".veldo/control_worker.py": "b0131066aec3eebb892c4b618d6b6b69a53fe67860238ee01967aef5a265ab51",
+    ".veldo/control_worker_outbox.py": "bf1a88b48db8ba98c5dccd26d04dfdb388c99d64969622532471dfe3b7c55bcc",
+    "engine/.veldo/control_worker.py": "b0131066aec3eebb892c4b618d6b6b69a53fe67860238ee01967aef5a265ab51",
+    "engine/.veldo/control_worker_outbox.py": "bf1a88b48db8ba98c5dccd26d04dfdb388c99d64969622532471dfe3b7c55bcc",
+    "scripts/suites/106_veldo_0125_routing.py": "18c83da91cfd227b948c875dfdfdec27b91d9906427c57032454af6c1b6f9440",
+    "proof/VELDO-0125/round14_checks.py": "b1dfdf3ff77eb8e1b14d34c26dd48ab7014415b593daf5e13f1fc519a927efc0"
+  },
+  "runs": [
+    {
+      "phase": "before",
+      "command": "python3 scripts/selftest.py --suite 103_veldo_0124_macos",
+      "log": "proof/VELDO-0125/b2-round14/before-103.log",
+      "log_sha256": "50426019eb21dc2ac0511ec04d5b05a53caf0a350f32c16c4e410cf31ea0914d",
+      "exit_code": 2,
+      "suite_passed": 23,
+      "passed_including_prerequisites": 49,
+      "failed": 0,
+      "seconds": 5.56
+    },
+    {
+      "phase": "before",
+      "command": "python3 scripts/selftest.py --suite 104_veldo_0124_control",
+      "log": "proof/VELDO-0125/b2-round14/before-104.log",
+      "log_sha256": "1977e66323b84ad04eb22c6df6c302ca463570d9664e5b908c99b31df526c06a",
+      "exit_code": 2,
+      "suite_passed": 6,
+      "passed_including_prerequisites": 32,
+      "failed": 0,
+      "seconds": 4.75
+    },
+    {
+      "phase": "before",
+      "command": "python3 scripts/selftest.py --suite 105_veldo_0125_relay",
+      "log": "proof/VELDO-0125/b2-round14/before-105.log",
+      "log_sha256": "406d9e95562c72bb2151199b8de8579c85a8f016302059ea4fd7e7a17b951ba0",
+      "exit_code": 2,
+      "suite_passed": 17,
+      "passed_including_prerequisites": 43,
+      "failed": 0,
+      "seconds": 40.7
+    },
+    {
+      "phase": "before",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "log": "proof/VELDO-0125/b2-round14/before-106.log",
+      "log_sha256": "008ed34f409c272473429e99b2d23ef8b4932556fa971a786b559053899381da",
+      "exit_code": 1,
+      "suite_passed": 132,
+      "passed_including_prerequisites": 158,
+      "failed": 3,
+      "seconds": 101.18
+    },
+    {
+      "phase": "after",
+      "command": "python3 scripts/selftest.py --suite 103_veldo_0124_macos",
+      "log": "proof/VELDO-0125/b2-round14/after-103.log",
+      "log_sha256": "afbf1a364c8e95a518ea45b59ba1aaac2802e9044b1a2f380ff06eb300164404",
+      "exit_code": 2,
+      "suite_passed": 23,
+      "passed_including_prerequisites": 49,
+      "failed": 0,
+      "seconds": 12.17
+    },
+    {
+      "phase": "after",
+      "command": "python3 scripts/selftest.py --suite 104_veldo_0124_control",
+      "log": "proof/VELDO-0125/b2-round14/after-104.log",
+      "log_sha256": "cfd3efecf945121a82790e85d2d19c2e565f26b224419c630da33f1d77f1c5aa",
+      "exit_code": 2,
+      "suite_passed": 6,
+      "passed_including_prerequisites": 32,
+      "failed": 0,
+      "seconds": 8.58
+    },
+    {
+      "phase": "after",
+      "command": "python3 scripts/selftest.py --suite 105_veldo_0125_relay",
+      "log": "proof/VELDO-0125/b2-round14/after-105.log",
+      "log_sha256": "f77124dbabbf5f1ea531a90d2849f0c69c0af8675024963d784914794d2409f7",
+      "exit_code": 2,
+      "suite_passed": 17,
+      "passed_including_prerequisites": 43,
+      "failed": 0,
+      "seconds": 14.09
+    },
+    {
+      "phase": "after",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "log": "proof/VELDO-0125/b2-round14/after-106.log",
+      "log_sha256": "88d52a5fa8bb54324613e436eaa085963414f523468116fce1335908adcbc857",
+      "exit_code": 2,
+      "suite_passed": 135,
+      "passed_including_prerequisites": 161,
+      "failed": 0,
+      "seconds": 97.32
+    }
+  ],
+  "changed_mirrors_byte_identical": true
+}

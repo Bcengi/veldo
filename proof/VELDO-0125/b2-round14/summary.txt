@@ -1,0 +1,28 @@
+VELDO-0125 round 14 selected-suite observations
+
+Baseline product: 4122b54a; regression commit: 6c4b6c52015539971dcf4b2894bcb92cfae76fed.
+Implementation: 33c4b5246910d90eea40218222669af8514918b6.
+
+The change is limited to the two reported recovery defects. Entry read/decode
+failures remain quarantined. Operational failures are logged and preserve the
+orphan for a subsequent recovery. Per-entry recovery failures do not abort the
+drain before it can sleep until the earliest pending retry deadline. Both
+changed engine files and their installed .veldo copies are byte-identical.
+
+Before: suites 103, 104 and 105 had zero failures. Suite 106 reproduced three
+failures: lock-file ENOSPC parked a healthy orphan, and blocked movement or
+quarantine aborted the drain before future-due work. The undecodable-entry
+quarantine control already passed. These regressions ran against unchanged
+baseline product code; no mutation runner was used.
+
+After: suites 103, 104, 105 and 106 had zero failures, with respectively 23, 6,
+17 and 135 suite rows passing. Each selected run also passed 26 prerequisites.
+The new rows verify byte-preserving retention and delivery after ENOSPC clears,
+quarantine of undecodable original bytes, and sleeping to two successive retry
+deadlines despite a retained unmovable or unparkable active entry.
+
+All eight suite commands ran individually and sequentially. Successful selected
+runs exit 2 by design; the failing before routing run exits 1. Logs, exact
+commands, counts, source hashes and log hashes are recorded in results.json.
+These are partial-run observations, not accepted unit/gate proof. No full gate,
+mutation runner, native Mac qualification, merge or push was run or claimed.
