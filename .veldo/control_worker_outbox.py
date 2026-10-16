@@ -107,6 +107,13 @@ def recover_active(config):
         for path in sorted((root / '.active').glob('*.json')):
             try:
                 entry = json.loads(path.read_text())
+                # Decodable JSON must also contain the fields delivery and retry use.
+                if (not isinstance(entry, dict)
+                        or not isinstance(entry.get('request'), dict)
+                        or not isinstance(entry['request'].get('dispatch_id'), str)
+                        or type(entry.get('due')) not in (int, float)
+                        or type(entry.get('attempts')) is not int):
+                    raise ValueError('invalid outbox entry shape')
             except Exception as error:
                 print(json.dumps(dict(operation='worker_recovery_failed', entry=path.name,
                     reason=str(error))), file=sys.stderr, flush=True)
