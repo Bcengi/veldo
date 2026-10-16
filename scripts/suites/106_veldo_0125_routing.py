@@ -920,7 +920,7 @@ def _v125_routing_suite():
         assert calls[-1][1] == 'bootstrap'
         invoked = []
         worker.resume_pending = lambda config, **kwargs: invoked.append((config, kwargs))
-        worker.time = types.SimpleNamespace(sleep=lambda seconds: (_ for _ in ()).throw(KeyboardInterrupt()))
+        worker.sleep = lambda seconds: (_ for _ in ()).throw(KeyboardInterrupt())
         try:
             worker.main(str(path), resume=True)
         except KeyboardInterrupt:
@@ -1189,7 +1189,7 @@ def _v125_routing_suite():
                                      'run', 'codex', 'unused.json'], capture_output=True, text=True)
             assert result.returncode == 2 and json.loads(result.stdout)['status'] == 'not_run'
 
-    events = helper('v125_event_checks', 'proof/VELDO-0125/event_checks.py')
+    events = helper('v125_event_checks', 'proof/VELDO-0125/event_checks_r11.py')
     lifecycle = helper('v125_lifecycle_checks', 'proof/VELDO-0125/lifecycle_checks_r11.py')
     crash_events = helper('v125_crash_events', 'proof/VELDO-0125/crash_event_checks.py')
     for row, test in {**crash_events.cases(T, helper), **lifecycle.cases(T, helper), **events.cases(T, helper, release_endpoint, finish_release), 'AC1/installed-routing': installed_routing,
