@@ -1,0 +1,161 @@
+{
+  "scope": "Selected-suite observations only. No full gate, native macOS qualification, independent approval, or landing decision is claimed.",
+  "baseline_product_commit": "b431891b8d4d23ba66eb61ff3c9fce90aad6017b",
+  "regression_commit": "8976aeb9e2b2e27f2a4d9d65663d042bbebd991c",
+  "implementation_commit": "5e19329cb96fef93a2cb9cf75dca5c2bc7679b79",
+  "contract": {
+    "required_fields": {
+      "request": "exact dict; dispatch_id is a non-empty exact str; filename equals key(dispatch_id)",
+      "attempts": "exact int >= 0; bool excluded",
+      "due": "exact int or float; bool excluded; finite; 0 <= due <= now + 300 seconds"
+    },
+    "optional_fields": {
+      "reason": "exact str; failure() writes it"
+    },
+    "unknown_fields": "rejected",
+    "request_fields": "opaque writer-preserved request data except for dispatch_id",
+    "maximum_backoff_seconds": 300,
+    "minimum_drain_sleep_seconds": 1,
+    "invalid_sleep": "non-finite or non-positive delays logged and clamped to 1 second; all sleeps capped at 300 seconds",
+    "invalid_entry": "logged and original bytes quarantined before exposing fields",
+    "operational_recovery_error": "lock ENOSPC retains original active entry for later recovery"
+  },
+  "sources_sha256": {
+    ".veldo/control_worker.py": "1c181175fd91852c6d9af3a00fd649fd4586a0ac7168a7bd40b0d014395270d7",
+    ".veldo/control_worker_outbox.py": "566bb7424f61437691f7554a98ed4713f7a0d5df4b89424666c587b531428f08",
+    "engine/.veldo/control_worker.py": "1c181175fd91852c6d9af3a00fd649fd4586a0ac7168a7bd40b0d014395270d7",
+    "engine/.veldo/control_worker_outbox.py": "566bb7424f61437691f7554a98ed4713f7a0d5df4b89424666c587b531428f08",
+    "scripts/suites/106_veldo_0125_routing.py": "1438fdb422fb178994cab8c5858bc301119e9ffb6efc39bb4fe64569cbe4acc3",
+    "proof/VELDO-0125/round16_checks.py": "b77a4b7ba1006db33c7de5fac8cbd60b31e16ea7cc96b59150da41dfba692641",
+    "proof/VELDO-0125/round14_checks.py": "b1dfdf3ff77eb8e1b14d34c26dd48ab7014415b593daf5e13f1fc519a927efc0"
+  },
+  "regression_observations": {
+    "new_rows": 65,
+    "failed_on_old_implementation": 63,
+    "passed_after_fix": 65,
+    "existing_routing_rows": 146,
+    "existing_routing_rows_passed_after_fix": 146,
+    "required_cases": [
+      "name/key mismatch",
+      "Infinity",
+      "NaN",
+      "1e300",
+      "attempts=-1",
+      "attempts=\"1\"",
+      "unknown field"
+    ],
+    "read_paths": [
+      "recovery",
+      "drain",
+      "queued receive",
+      "new receive",
+      "enqueue",
+      "acknowledge",
+      "failure",
+      "move"
+    ],
+    "additional_cases": "missing fields, exact type checks including bool, empty and invalid dispatch ids, negative deadlines, huge integers, above-bound deadlines, optional reason type, writer retries at maximum backoff, old deadlines, invalid computed sleeps",
+    "retained_regression": "AC3/recovery-lock-enospc-retries"
+  },
+  "runs": [
+    {
+      "phase": "before",
+      "command": "python3 scripts/selftest.py --suite 103_veldo_0124_macos",
+      "log": "proof/VELDO-0125/b2-round16/before-103.log",
+      "log_sha256": "46bee52cb92d7321037541e81a06f98a9a1dbdfc2a97c4bdf99c2f8de245812f",
+      "exit_code": 2,
+      "suite_passed": 23,
+      "passed_including_prerequisites": 49,
+      "failed": 0,
+      "seconds": 6.46
+    },
+    {
+      "phase": "before",
+      "command": "python3 scripts/selftest.py --suite 104_veldo_0124_control",
+      "log": "proof/VELDO-0125/b2-round16/before-104.log",
+      "log_sha256": "4276f948dfed225ccffa9d51deee450a559d882ebdde84b124f5497174d88ee4",
+      "exit_code": 2,
+      "suite_passed": 6,
+      "passed_including_prerequisites": 32,
+      "failed": 0,
+      "seconds": 5.52
+    },
+    {
+      "phase": "before",
+      "command": "python3 scripts/selftest.py --suite 105_veldo_0125_relay",
+      "log": "proof/VELDO-0125/b2-round16/before-105.log",
+      "log_sha256": "5a126fcaeb493e85e6dba052fe2182b8c45f2eef39ddbdc5fb60d0ec45ef7bcf",
+      "exit_code": 2,
+      "suite_passed": 17,
+      "passed_including_prerequisites": 43,
+      "failed": 0,
+      "seconds": 9.44
+    },
+    {
+      "phase": "before",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "log": "proof/VELDO-0125/b2-round16/before-106.log",
+      "log_sha256": "5c893c4199d5c2c045281ab593b5ae7d37e680a7002d946b8ef62f6e8ade392b",
+      "exit_code": 2,
+      "suite_passed": 146,
+      "passed_including_prerequisites": 172,
+      "failed": 0,
+      "seconds": 87.09
+    },
+    {
+      "phase": "regression-before",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "log": "proof/VELDO-0125/b2-round16/regression-before-106.log",
+      "log_sha256": "6f0de595ba60199fca63814085d0c98b94515f017687088011183cb2317c6c2d",
+      "exit_code": 1,
+      "suite_passed": 148,
+      "passed_including_prerequisites": 174,
+      "failed": 63,
+      "seconds": 158.29
+    },
+    {
+      "phase": "after",
+      "command": "python3 scripts/selftest.py --suite 103_veldo_0124_macos",
+      "log": "proof/VELDO-0125/b2-round16/after-103.log",
+      "log_sha256": "43fd755b8cdf3c5e5ed73f5fcdd44b28bb006de0dfb291536f22c4784c5b7fdb",
+      "exit_code": 2,
+      "suite_passed": 23,
+      "passed_including_prerequisites": 49,
+      "failed": 0,
+      "seconds": 4.71
+    },
+    {
+      "phase": "after",
+      "command": "python3 scripts/selftest.py --suite 104_veldo_0124_control",
+      "log": "proof/VELDO-0125/b2-round16/after-104.log",
+      "log_sha256": "7245e00e42f353903dc71ce9c9bb5f7210fb03ee269a0c1238bf8df5a90d7aff",
+      "exit_code": 2,
+      "suite_passed": 6,
+      "passed_including_prerequisites": 32,
+      "failed": 0,
+      "seconds": 3.76
+    },
+    {
+      "phase": "after",
+      "command": "python3 scripts/selftest.py --suite 105_veldo_0125_relay",
+      "log": "proof/VELDO-0125/b2-round16/after-105.log",
+      "log_sha256": "d2d02053dc9393f0b6770990d31f4d7f561867a3f7422eaf4de5165385355d01",
+      "exit_code": 2,
+      "suite_passed": 17,
+      "passed_including_prerequisites": 43,
+      "failed": 0,
+      "seconds": 7.62
+    },
+    {
+      "phase": "after",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "log": "proof/VELDO-0125/b2-round16/after-106.log",
+      "log_sha256": "f461c5b76d521d65ac1c38ddb88511c9aa5d7396a762a1302cc0704a5d3728a4",
+      "exit_code": 2,
+      "suite_passed": 211,
+      "passed_including_prerequisites": 237,
+      "failed": 0,
+      "seconds": 102.24
+    }
+  ]
+}
