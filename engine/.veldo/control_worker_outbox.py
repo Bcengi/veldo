@@ -31,6 +31,19 @@ def sync_remove(path):
         os.close(descriptor)
 
 
+def replace_entry(root, path, value, write):
+    # A crash during serialization must not leave a .tmp file inside the watched
+    # directory: QueueDirectories would otherwise keep launching an empty drain.
+    staging = root / '.pending-write.json'
+    write(staging, value)
+    os.replace(staging, path)
+    descriptor = os.open(path.parent, os.O_RDONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
 def enqueue(config, request, write):
     with locked(config) as root:
         pending = root / '.pending'
@@ -41,7 +54,7 @@ def enqueue(config, request, write):
             # A release event upgrades an ordinary result delivery, never the reverse.
             if previous['request'].get('action') == 'release':
                 return
-        write(path, dict(request=request, attempts=0, due=0))
+        replace_entry(root, path, dict(request=request, attempts=0, due=0), write)
 
 
 def acknowledge(config, dispatch, *, release=False):
@@ -71,7 +84,7 @@ def failure(config, request, error, write):
         entry.update(reason=reason, attempts=entry['attempts'] + 1)
         if transient:
             entry['due'] = time.time() + min(300, 2 ** min(entry['attempts'] - 1, 9))
-            write(path, entry)
+            replace_entry(root, path, entry, write)
         else:
             parked = root / '.parked'
             parked.mkdir(exist_ok=True)

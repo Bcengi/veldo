@@ -29,7 +29,11 @@ def cases(T, helper, release_endpoint, finish_release):
         def scandir(path):
             assert Path(path) != runs, 'startup enumerated historical run directories'
             return original_scandir(path)
-        with patch('os.scandir', scandir), patch.object(worker, 'time', types.SimpleNamespace(
+        original_listdir = __import__('os').listdir
+        def listdir(path):
+            assert Path(path) != runs, 'startup enumerated historical run directories'
+            return original_listdir(path)
+        with patch('os.scandir', scandir), patch('os.listdir', listdir), patch.object(worker, 'time', types.SimpleNamespace(
                 time=time.time, sleep=lambda delay: (_ for _ in ()).throw(AssertionError('idle timer')))):
             worker.main(str(path), resume=True)
             worker.main(str(path), resume=True)

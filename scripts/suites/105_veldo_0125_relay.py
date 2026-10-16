@@ -126,9 +126,12 @@ def _v125_suite():
         f.start()
         client = f.client()
         bound = T.launch(client)
-        client.result(bound, dict(state='unknown', process=T.process()), usage={'tokens': 0})
+        client.result(bound, dict(state='unknown', process=T.process()))
         assert f.ds.record(bound['dispatch_id'])['state'] == 'unknown'
         assert f.service.get(bound['dispatch_id'])['charge'] == 'unknown'
+        client.result(bound, dict(state='unknown', process=T.process()), usage={'tokens': 0})
+        assert f.service.get(bound['dispatch_id'])['charge'] == 'reported'
+        assert f.service.get(bound['dispatch_id'])['usage'] == {'tokens': 0}
         assert not f.res.worker(bound['dispatch_id'])['retired']
         T.refused(lambda: client.claim(bound['dispatch_id']), 'stale_version:already_claimed')
 
