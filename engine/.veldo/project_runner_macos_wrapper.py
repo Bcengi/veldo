@@ -13,10 +13,11 @@ import signal
 import subprocess
 import sys
 import time
+import threading
 
 # Script use and library use deliberately share the installed sibling modules.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from project_runner_macos_os import coalition, coalition_members, identity
+from project_runner_macos_os import coalition, coalition_members, identity, wait_file, wait_members
 
 
 def write(path, value):
@@ -39,13 +40,9 @@ def main(path):
     if os.getpgrp() != os.getpid():
         raise RuntimeError('launchd_process_group_mismatch')
     write(directory / 'ready.json', dict(process=parent, pgid=os.getpgrp()))
-    until = time.monotonic() + request['startup_seconds']
+    if not wait_file(directory / 'go', request['startup_seconds']):
+        return 125
     go = read(directory / 'go')
-    while go is None:
-        if time.monotonic() >= until:
-            return 125
-        time.sleep(0.02)
-        go = read(directory / 'go')
     deadline = time.monotonic() + go['runtime_seconds']
     # Pin checked again at the last trusted boundary before execution.
     with open(request['argv'][0], 'rb') as stream:
@@ -81,33 +78,38 @@ def main(path):
         # Keep this unsandboxed wrapper alive until waitpid observes engine exit and
         # the coalition holds no other process, or the backstop has spent its bounds.
         write(directory / 'worker.json', dict(process=identity(child.pid), pgid=os.getpgid(child.pid)))
-        returncode, stage, due = None, None, float('inf')
+        finished = threading.Event()
+        def reap():
+            child.wait()  # Blocking waitpid, with no subprocess timeout polling.
+            finished.set()
+        threading.Thread(target=reap, daemon=True).start()
+        returncode, stage, due = None, None, deadline
+        deadline_stop = False
         while True:
-            write(directory / 'heartbeat.json', dict(monotonic=time.monotonic(), dispatch_id=request['dispatch_id']))
             if returncode is None:
-                try:
-                    returncode = child.wait(timeout=request['heartbeat_seconds'])
+                finished.wait(max(0, due - time.monotonic()))
+                if finished.is_set():
+                    returncode = child.returncode
                     write(directory / 'engine-exit.json', dict(returncode=returncode))
-                except subprocess.TimeoutExpired:
-                    pass
-            else:
-                time.sleep(min(request['heartbeat_seconds'], 0.05))
             remaining = others()
             if returncode is not None and remaining == []:
                 break
             now = time.monotonic()
-            if stage is None and now >= deadline:
+            if stage is None and (returncode is not None or now >= deadline):
+                deadline_stop = now >= deadline
                 stage, due = 'terminate', now + request['kill_grace_seconds']
                 signal_all(signal.SIGTERM, remaining)
             elif stage == 'terminate' and now >= due:
                 stage, due = 'kill', now + request['settle_seconds']
                 signal_all(signal.SIGKILL, remaining)
-            elif stage == 'kill':
-                signal_all(signal.SIGKILL, remaining)
-                if now >= due:
-                    break
+            elif stage == 'kill' and now >= due:
+                break
+            if returncode is not None:
+                if remaining is None:
+                    raise OSError('coalition_unreadable')
+                wait_members(remaining, due - time.monotonic())
     write(directory / 'result.json', dict(returncode=returncode, process=parent, dispatch_id=request['dispatch_id'],
-                                          deadline_stop=stage is not None, remaining=remaining))
+                                          deadline_stop=deadline_stop, remaining=remaining))
     return 0
 
 

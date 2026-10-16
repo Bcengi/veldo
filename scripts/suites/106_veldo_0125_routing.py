@@ -10,6 +10,8 @@ def _v125_routing_suite():
     from pathlib import Path
 
     def helper(name, relative):
+        if relative == "proof/VELDO-0124/checks.py":
+            relative = "proof/VELDO-0125/macos_event_fixture.py"
         spec = importlib.util.spec_from_file_location(name, ROOT / relative)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
@@ -70,7 +72,7 @@ def _v125_routing_suite():
             f.close()
 
     def signing_key_read(base):
-        P = helper('v125_key_host', 'proof/VELDO-0124/checks.py')
+        P = helper('v125_key_host', 'proof/VELDO-0125/macos_event_fixture.py')
         host, backend, request, paths = P.start(base)
         signing_key = paths['authority'] / 'worker-signing'
         signing_key.write_text('synthetic signing material')
@@ -89,7 +91,7 @@ def _v125_routing_suite():
             fixture_temp=str(paths['usertemp']), fixture_marker=str(base / 'release-marker.json'),
             fixture_exchange=str(exchange))))
         f.config['receiver'] = dict(remote_receivers={backend.facts()['host']: dict(argv=[sys.executable,
-            str(ROOT / 'proof/VELDO-0125/receiver_fixture.py'), str(endpoint)])})
+            str(ROOT / 'proof/VELDO-0125/receiver_fixture_r11.py'), str(endpoint)])})
         return exchange
 
     def finish_release(f, host, exchange):
@@ -112,7 +114,7 @@ def _v125_routing_suite():
 
     def actual_launch(base, lost_result=False, default_collect=False, empty_collect=False, cleanup_failed=False,
                       unknown=False, lost_running=False, incomplete_retirement=False):
-        P = helper('v124_host', 'proof/VELDO-0124/checks.py')
+        P = helper('v124_host', 'proof/VELDO-0125/macos_event_fixture.py')
         host, backend, request, paths = P.start(base / 'mac', mode='killed' if unknown else 'natural')
         f = T.Fixture(base / 'linux')
         worker = T.load('control_worker')
@@ -355,7 +357,7 @@ def _v125_routing_suite():
         import select
         import sys
         import time
-        P = helper('v125_delivery_host', 'proof/VELDO-0124/checks.py')
+        P = helper('v125_delivery_host', 'proof/VELDO-0125/macos_event_fixture.py')
         host, backend, request, paths = P.start(base / 'mac')
         f = T.Fixture(base / 'linux')
         service_module = T.W.SV
@@ -389,7 +391,7 @@ def _v125_routing_suite():
             receiver_path.write_text(json.dumps(dict(workspace=str(f.repo), store=str(f.store), host='linux',
                 host_trust=f.config['host_trust'], adapters={'codex': {'engine': 'codex'}},
                 remote_receivers={remote_host: {'argv': [sys.executable,
-                    str(ROOT / 'proof/VELDO-0125/receiver_fixture.py'), str(endpoint_path)]}})))
+                    str(ROOT / 'proof/VELDO-0125/receiver_fixture_r11.py'), str(endpoint_path)]}})))
             loop = service_module.FactoryLoop.__new__(service_module.FactoryLoop)
             loop.service, loop.deadlines, loop.wakes, loop.ended = f.service, {}, [], []
             line = service_module.Line(loop, 'repo', {}, str(receiver_path))
@@ -749,7 +751,7 @@ def _v125_routing_suite():
         # A pending bootstrap has a durable local slot but cannot be recovered
         # as a Run. Drive the real receiver's release-only endpoint for each
         # authority release, including a crash before its post-commit wake.
-        P = helper('v125_release_host', 'proof/VELDO-0124/checks.py')
+        P = helper('v125_release_host', 'proof/VELDO-0125/macos_event_fixture.py')
         for kind in ('operator', 'unknown', 'refused'):
             for recovery in ('replay', 'restart'):
                 directory = base / kind / recovery
@@ -767,6 +769,8 @@ def _v125_routing_suite():
                     client.launch(binding, 'accept', receiver=backend.process, runtime_seconds=5)
                     slot = host.root / host.label('dispatch/test')
                     slot.mkdir()
+                    with host.lock():
+                        host.index_slot(host.label('dispatch/test'), 'unknown')
                     P.M.write(slot / 'slot.json', dict(dispatch_id='dispatch/test', state='unknown'))
                     P.M.write(slot / 'request.json', dict(dispatch_id='dispatch/test',
                                                         contract_digest=binding['contract_digest']))
@@ -879,7 +883,7 @@ def _v125_routing_suite():
             f.close()
 
     def release_before_start(base):
-        P = helper('v125_early_release', 'proof/VELDO-0124/checks.py')
+        P = helper('v125_early_release', 'proof/VELDO-0125/macos_event_fixture.py')
         host, backend, request, paths = P.start(base)
         dispatch = request['contract']['dispatch_id']
         outcome = dict(ok=True, host_released=True, binding=dict(dispatch_id=dispatch,
@@ -1184,8 +1188,9 @@ def _v125_routing_suite():
             assert result.returncode == 2 and json.loads(result.stdout)['status'] == 'not_run'
 
     events = helper('v125_event_checks', 'proof/VELDO-0125/event_checks.py')
-    lifecycle = helper('v125_lifecycle_checks', 'proof/VELDO-0125/lifecycle_checks.py')
-    for row, test in {**lifecycle.cases(T, helper), **events.cases(T, helper, release_endpoint, finish_release), 'AC1/installed-routing': installed_routing,
+    lifecycle = helper('v125_lifecycle_checks', 'proof/VELDO-0125/lifecycle_checks_r11.py')
+    crash_events = helper('v125_crash_events', 'proof/VELDO-0125/crash_event_checks.py')
+    for row, test in {**crash_events.cases(T, helper), **lifecycle.cases(T, helper), **events.cases(T, helper, release_endpoint, finish_release), 'AC1/installed-routing': installed_routing,
                       'AC1/worker-signing-key-read': signing_key_read,
                       'AC2/capability-selection': selection, 'AC2/host-routing-refusal': blocked,
                       'AC2/qualification': qualification, 'AC2/factory-remote-delivery': factory_delivery,

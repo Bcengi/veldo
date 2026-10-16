@@ -29,6 +29,11 @@ def organ(name):
 C = organ('project_runner_macos_control')
 CL = organ('control_worker_client')
 OUT = organ('control_worker_outbox')
+sleep = time.sleep  # Worker-local seam; never patch process-wide time.
+
+
+class RecorderFailure(OSError):
+    """Delivery cannot continue safely without recording its next retry."""
 
 
 def engine_usage(started, engine):
@@ -168,19 +173,32 @@ def receive(config, request, *, queued=False):
                         release=result.get('host_released') or request.get('action') == 'release')
         return result
     except Exception as error:
-        OUT.failure(config, request, error, CL.durable_json)
+        try:
+            OUT.failure(config, request, error, CL.durable_json)
+        except Exception as recording_error:
+            print(json.dumps(dict(operation='worker_delivery_recorder_failed',
+                dispatch_id=request['dispatch_id'], reason=str(recording_error))),
+                file=sys.stderr, flush=True)
+            raise RecorderFailure(str(recording_error)) from recording_error
         if not isinstance(error, OUT.WaitingForRelease):
             raise
         return None
     finally:
-        if acquired:
-            with OUT.locked(config) as root:
-                fcntl.flock(lock, fcntl.LOCK_UN)
-                path = root / '.active' / OUT.key(request['dispatch_id'])
-                if path.exists():
-                    OUT.move(root, path, '.pending', CL.durable_json)
-        if lock is not None:
-            lock.close()
+        try:
+            if acquired:
+                with OUT.locked(config) as root:
+                    fcntl.flock(lock, fcntl.LOCK_UN)
+                    path = root / '.active' / OUT.key(request['dispatch_id'])
+                    if path.exists():
+                        OUT.move(root, path, '.pending', CL.durable_json)
+        except Exception as recording_error:
+            print(json.dumps(dict(operation='worker_delivery_recorder_failed',
+                dispatch_id=request['dispatch_id'], reason=str(recording_error))),
+                file=sys.stderr, flush=True)
+            raise RecorderFailure(str(recording_error)) from recording_error
+        finally:
+            if lock is not None:
+                lock.close()
 
 
 def retain_crashed_output(host, client, request, directory):
@@ -315,6 +333,8 @@ def resume_pending(config, *, drain=False):
                 request['action'] = 'resume'
             try:
                 receive(config, request, queued=True)
+            except RecorderFailure:
+                raise
             except Exception:
                 pass  # receive durably records/parks this dispatch; drain its peers.
         if not drain:
@@ -322,7 +342,7 @@ def resume_pending(config, *, drain=False):
         entries = OUT.entries(config, ready_only=True)
         if not entries:
             return
-        time.sleep(max(0, min(entry['due'] for entry in entries) - time.time()))
+        sleep(max(0, min(entry['due'] for entry in entries) - time.time()))
 
 
 def install_resumer(config_path, config):
@@ -361,6 +381,7 @@ def main(config_path, resume=False):
         resume_pending(config, drain=True)
     else:
         install_resumer(config_path, config)
+        resume_pending(config)  # Worker-start event replays orphaned active owners.
         try:
             result = receive(config, json.loads(sys.stdin.readline(65536)))
         except Exception as error:

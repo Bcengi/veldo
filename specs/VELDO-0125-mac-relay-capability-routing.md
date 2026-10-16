@@ -38,6 +38,10 @@ footprint:
   - ".veldo/control_dispatch.py"
   - "engine/.veldo/control_reservations.py"
   - ".veldo/control_reservations.py"
+  - "engine/.veldo/project_runner_macos_os.py"
+  - ".veldo/project_runner_macos_os.py"
+  - "engine/.veldo/project_runner_macos_wrapper.py"
+  - ".veldo/project_runner_macos_wrapper.py"
   - "engine/.veldo/project_runner_macos.py"
   - ".veldo/project_runner_macos.py"
   - "engine/.veldo/project_runner_macos_profile.py"
@@ -227,3 +231,13 @@ uses a live slot index, and parking persists its parent before removing pending
 work. New lifecycle regression rows and isolated falsifiers extend the evidence
 without rewriting earlier proof records. The reviewer still owns the full gate,
 merged-tree stamp and real Mac qualification under the owner's run restrictions.
+
+2026-10-16: the owner requires crash reconciliation of local slot records and their
+live index, migration before admission, active-owner replay on worker startup,
+fail-loud recorder errors, blocking native process and startup waits, and a
+regression for evidence plus an unauthorized release event. Round 11 adds new
+proof modules and records under proof/VELDO-0125/b2-crash-events, preserving the
+prior proof corpus. Heartbeat timeouts remain accepted profile fields for
+compatibility; healthy runs use exit events and the existing runtime deadline.
+The updated simulator models blocking exit events. The reviewer owns the full
+gate and native macOS qualification under the owner's explicit suite limits.

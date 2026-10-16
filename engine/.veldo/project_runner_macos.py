@@ -55,6 +55,7 @@ class Supervisor:
         self.root = Path(P.canonical(profile['root']))
         self.observe = observe or (lambda event: None)
         self.counts = dict(accepted=0, refused=0)
+        self.initialize_slots()
 
     @contextlib.contextmanager
     def lock(self):
@@ -62,15 +63,42 @@ class Supervisor:
             fcntl.flock(stream, fcntl.LOCK_EX)
             yield
 
+    def initialize_slots(self):
+        """Migrate once at supervisor construction, never during admission."""
+        with self.lock():
+            path = self.root / '.live-slots.json'
+            if read(path) is None:
+                slots = {}
+                for record in self.root.glob('*/slot.json'):
+                    slot = read(record)
+                    if slot['state'] != 'retired':
+                        slots[record.parent.name] = slot['state']
+                write(path, slots)
+            self.reconcile_slots()
+
     def live_slots(self):
-        """Called under admission.lock; migrate old pools once, then read live work only."""
-        path = self.root / '.live-slots.json'
-        slots = read(path)
-        if slots is None:
-            slots = {p.parent.name: read(p)['state'] for p in self.root.glob('*/slot.json')
-                     if read(p)['state'] != 'retired'}
-            write(path, slots)
-        return slots
+        return read(self.root / '.live-slots.json')
+
+    def reconcile_slots(self):
+        """The write-ahead index bounds reconciliation to potentially live records.
+
+        Missing records never launched. A committed starting record precedes the
+        launch intent and is safe to retire. Launching/unknown slots retain their
+        hold because bootstrap may have succeeded before its caller died.
+        """
+        indexed = self.live_slots()
+        live = {}
+        for label in indexed:
+            path = self.root / label / 'slot.json'
+            slot = read(path)
+            if slot and slot['state'] == 'starting' and slot.get('launch_protocol') == 2:
+                slot = dict(slot, state='retired', cause='interrupted_before_launch')
+                write(path, slot)
+            if slot and slot['state'] != 'retired':
+                live[label] = slot['state']
+        if live != indexed:
+            write(self.root / '.live-slots.json', live)
+        return live
 
     def index_slot(self, label, state):
         slots = self.live_slots()
@@ -84,6 +112,7 @@ class Supervisor:
         if not locked:
             with self.lock():
                 return self.status(locked=True)
+        self.reconcile_slots()
         states = self.live_slots().values()
         return dict(self.counts, pending=len(states), stopped=sum(s == 'unknown' for s in states))
 
@@ -181,13 +210,14 @@ class Supervisor:
             write(directory / 'request.json', wrapper_request)
             run.save('starting', locked=True)
             try:
+                run.save('launching', locked=True)
                 # An acceptance digest is already committed; only now can launchd run a wrapper.
                 self.os.bootstrap(label, [p['interpreter'], str(Path(__file__).with_name(
                     'project_runner_macos_wrapper.py')), str(directory)], directory, p['kill_grace_seconds'])
                 until = min(run.deadline, self.os.monotonic() + p['startup_seconds'])
                 ready = read(directory / 'ready.json')
-                while ready is None and self.os.monotonic() < until:
-                    self.os.sleep(0.02)
+                if ready is None:
+                    self.os.wait_file(directory / 'ready.json', until - self.os.monotonic())
                     ready = read(directory / 'ready.json')
                 if not ready or ready['pgid'] != ready['process']['pid']:
                     raise OSError('wrapper_identity_missing')
@@ -295,7 +325,7 @@ class Run:
         # Admission is durable before launch; retirement is durable before removal.
         if state != 'retired':
             self.supervisor.index_slot(self.label, state)
-        write(self.directory / 'slot.json', dict(dispatch_id=self.dispatch, label=self.label, state=state,
+        write(self.directory / 'slot.json', dict(dispatch_id=self.dispatch, label=self.label, state=state, launch_protocol=2,
                                                  process=self.process, pgid=self.pgid, coalition=self.coalition,
                                                  deadline=self.deadline, deadline_wall=self.deadline_wall,
                                                  temp=self.temp, cause=self.cause, steps=self.steps))
@@ -335,11 +365,6 @@ class Run:
         members = self.os.members(self.coalition)
         others = [pid for pid in members if pid != self.process['pid']]
         engine_done = self.exit_seen or (self.directory / 'engine-exit.json').exists()
-        heartbeat = read(self.directory / 'heartbeat.json')
-        if heartbeat and heartbeat.get('dispatch_id') == self.dispatch:
-            observed = heartbeat['monotonic']
-            if self.last_heartbeat <= observed <= now:
-                self.last_heartbeat = observed
         if self.exit_seen and not members:
             if now >= self.deadline and self.cause is None:
                 self.cause = 'runtime_cap'
@@ -351,8 +376,6 @@ class Run:
         elif engine_done and others and self.stage in (None, 'cooperative'):
             self.cause = self.cause or 'exit'
             self.step('terminate', now)
-        elif self.stage is None and now - self.last_heartbeat >= self.p['heartbeat_window_seconds']:
-            self.stop('heartbeat_missing')
         if now >= self.due:
             following = {'cooperative': 'terminate', 'terminate': 'kill'}.get(self.stage)
             if following:
@@ -364,7 +387,14 @@ class Run:
     def wait(self):
         try:
             while not self.poll():
-                self.os.sleep(0.02)
+                # NOTE_EXIT blocks for the healthy run. Only deadline/stop stages
+                # schedule a timeout; no recurring heartbeat or process scan.
+                until = self.due if self.stage else self.deadline
+                seconds = max(0, until - self.os.monotonic())
+                if self.exit_seen:
+                    self.os.sleep(seconds)  # Bounded shutdown of orphan descendants.
+                else:
+                    self.exit_seen = self.os.exited(self.watch, seconds)
             result = read(self.directory / 'result.json')
             if (not result or result.get('dispatch_id') != self.dispatch
                     or result.get('process') != self.process or type(result.get('returncode')) is not int):

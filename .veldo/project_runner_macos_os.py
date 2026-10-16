@@ -84,7 +84,44 @@ def coalition_members(wanted):
     return live_members(entries, wanted)
 
 
+def wait_file(path, seconds):
+    """Watch the parent before checking the file, closing the rename/wait race."""
+    deadline = time.monotonic() + max(0, seconds)
+    descriptor = os.open(path.parent, os.O_RDONLY)
+    try:
+        with select.kqueue() as queue:
+            queue.control([select.kevent(descriptor, filter=select.KQ_FILTER_VNODE,
+                flags=select.KQ_EV_ADD | select.KQ_EV_CLEAR,
+                fflags=select.KQ_NOTE_WRITE)], 0, 0)
+            while not path.exists():
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    return False
+                events = queue.control(None, 1, remaining)
+                if any(event.flags & select.KQ_EV_ERROR for event in events):
+                    raise OSError('file_notification_failed')
+            return True
+    finally:
+        os.close(descriptor)
+
+
+def wait_members(pids, seconds):
+    """Wait for an observed descendant exit or the next shutdown deadline."""
+    with select.kqueue() as queue:
+        for pid in pids:
+            try:
+                queue.control([select.kevent(pid, filter=select.KQ_FILTER_PROC,
+                    flags=select.KQ_EV_ADD | select.KQ_EV_ONESHOT,
+                    fflags=select.KQ_NOTE_EXIT)], 0, 0)
+            except ProcessLookupError:
+                return  # Exit raced registration; rescan the coalition.
+        events = queue.control(None, 1, max(0, seconds))
+        if any(event.flags & select.KQ_EV_ERROR for event in events):
+            raise OSError('exit_notification_failed')
+
+
 class Native:
+    wait_file = staticmethod(wait_file)
     monotonic = staticmethod(time.monotonic)
     wall = staticmethod(time.time)
     sleep = staticmethod(time.sleep)
