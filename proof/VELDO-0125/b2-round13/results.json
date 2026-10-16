@@ -1,0 +1,98 @@
+{
+  "scope": "Selected-suite development observations only; not accepted unit evidence, gate verification or native qualification.",
+  "baseline_product_commit": "71436363eed66f232fb3964f1f2b1b99563412ad",
+  "implementation_commit": "8cff6ce578e6f0d552289dcfc206c96d81b9551d",
+  "before": [
+    {
+      "log": "before-103.log",
+      "sha256": "b5ffbef4ab17f5756f5589d63fa554aaa21d322bf03c0609a0c84b40b509803b",
+      "command": "python3 scripts/selftest.py --suite 103_veldo_0124_macos",
+      "passed_including_prerequisites": 31,
+      "failed": 18,
+      "seconds": 0.55
+    },
+    {
+      "log": "before-104.log",
+      "sha256": "34b1c8ab7bd6290cf47bf8f619684981ca2f95ee0d608529350d6e2187090570",
+      "command": "python3 scripts/selftest.py --suite 104_veldo_0124_control",
+      "passed_including_prerequisites": 26,
+      "failed": 6,
+      "seconds": 1.06
+    },
+    {
+      "log": "before-106.log",
+      "sha256": "800ea35202dd4de5005c3071befaf5af9f348c23fe7f23f3446eb1be6302c750",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "passed_including_prerequisites": 152,
+      "failed": 5,
+      "seconds": 61.36
+    },
+    {
+      "log": "before-106-rename.log",
+      "sha256": "15a8913fc47724bc54a10606451924c123c4363355ad7f3cbff61dcba942aeda",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "passed_including_prerequisites": 152,
+      "failed": 5,
+      "seconds": 61.6
+    }
+  ],
+  "after": [
+    {
+      "log": "after-103-final.log",
+      "sha256": "530d286c3a6e73aa657f8bfb02d5dab4404bfe2770abeefec0327a53af5ebd6c",
+      "command": "python3 scripts/selftest.py --suite 103_veldo_0124_macos",
+      "passed_including_prerequisites": 49,
+      "failed": 0,
+      "seconds": 4.85
+    },
+    {
+      "log": "after-104-final.log",
+      "sha256": "8f3150cde3c9da021373dc3c1b115b9b6d8c742b4566d64354e2ac68cd416a4b",
+      "command": "python3 scripts/selftest.py --suite 104_veldo_0124_control",
+      "passed_including_prerequisites": 32,
+      "failed": 0,
+      "seconds": 3.88
+    },
+    {
+      "log": "after-105-final.log",
+      "sha256": "c715c8ed2cac808b8b48b721c2c2864d9b23a630d78c75bd7b0d6cb65ac41921",
+      "command": "python3 scripts/selftest.py --suite 105_veldo_0125_relay",
+      "passed_including_prerequisites": 43,
+      "failed": 0,
+      "seconds": 7.59
+    },
+    {
+      "log": "after-106-final.log",
+      "sha256": "5f48615becf59f9863102ea2d5698a3bc299628934dffb588848fedd866aa45e",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "passed_including_prerequisites": 157,
+      "failed": 0,
+      "seconds": 62.79
+    }
+  ],
+  "regression_rows": [
+    "AC1/v1-profile-migration",
+    "AC3/missing-index-retries",
+    "AC3/refused-receiver-recovers-orphans",
+    "AC3/unwritable-outbox-reports-failure",
+    "AC3/unreadable-active-isolated"
+  ],
+  "source_sha256": {
+    "engine/.veldo/control_worker.py": "eb616be8788049f8b15408223ac5720f445d76e0741425d5701cb1069186fa8c",
+    "engine/.veldo/control_worker_outbox.py": "61c7579e10d7e37a86747b054caa0e0aab93025186b7d18b4d979c2f07b1917a",
+    "engine/.veldo/project_runner_macos.py": "b8f9147c1160ebb3f3a946833895c95e8572960b255583d1486d183d31da2b50",
+    "engine/.veldo/project_runner_macos_profile.py": "b2c0d8439263348c32624dc5ec07c7de1fe8a971298945997ebcea8d69d8a349",
+    "engine/.veldo/project_runner_macos_wrapper.py": "4ee8859110e040d0da0b78e2674456516fcbc67e9d5f60bef625d4f4fdce2b34",
+    ".veldo/control_worker.py": "eb616be8788049f8b15408223ac5720f445d76e0741425d5701cb1069186fa8c",
+    ".veldo/control_worker_outbox.py": "61c7579e10d7e37a86747b054caa0e0aab93025186b7d18b4d979c2f07b1917a",
+    ".veldo/project_runner_macos.py": "b8f9147c1160ebb3f3a946833895c95e8572960b255583d1486d183d31da2b50",
+    ".veldo/project_runner_macos_profile.py": "b2c0d8439263348c32624dc5ec07c7de1fe8a971298945997ebcea8d69d8a349",
+    ".veldo/project_runner_macos_wrapper.py": "4ee8859110e040d0da0b78e2674456516fcbc67e9d5f60bef625d4f4fdce2b34",
+    "proof/VELDO-0124/checks.py": "5b3103d6befe58999595c2f0f2f81819f329a94b7340f45617d09e26381397da",
+    "proof/VELDO-0125/macos_event_fixture.py": "3918a2337c10e8230911e2051e0096f364222ccf055d0f3690024f80ee526634",
+    "proof/VELDO-0125/round13_checks.py": "2b66a829888e50a2b95fa8c8c433309214b9a779b43ae3bf5929428a7e0130f9",
+    "scripts/suites/106_veldo_0125_routing.py": "36faf547031e14ea9c8c1880dd8d96a2793939f9d2a480937d0b33157a9fd16d"
+  },
+  "canonical_gate": "not run: owner reserves it for the reviewer",
+  "original_0124_suite_assertions": "Both complete suite files are byte-identical to 71436363."
+}

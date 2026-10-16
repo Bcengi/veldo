@@ -46,10 +46,14 @@ the owner. The reviewer runs the canonical gate on the final/merged tree.
 | Recorder | AC3/unwritable-outbox-reports-failure | Recorder failure silently swallowed |
 | Active recovery | AC3/unreadable-active-isolated | PermissionError aborts the drain |
 
-All five fail with product files from 71436363 in `before-106.log`. Baseline
+All five fail with product files from 71436363 in `before-106.log`.
+`before-106-rename.log` repeats the strengthened rename row against a plain
+archive of 71436363 `.veldo` files via the existing VELDO_0124_MODULES and
+VELDO_0125_MODULES fixture seams; it creates no branch or git worktree. Baseline
 103 and 104 runs reproduce 18 and 6 failures respectively. The recorder row
 chmods the outbox root and active directory, using the actual non-root filesystem:
-it does not stub OUT.failure or the park rename. The unreadable row chmods the
+it pre-creates `.parked` and asserts that the rename itself fails, rather than
+only its directory creation. It does not stub OUT.failure or the park rename. The unreadable row chmods the
 active file and verifies healthy delivery, quarantine and a second idle drain.
 The missing-index row models an already loaded, unchanged launch agent; a real
 Supervisor migration and retry finish the queued event without operator resend.
@@ -60,3 +64,13 @@ unversioned wrapper request's leftover heartbeat field; legacy behavior must
 require an explicit v1 marker. Final selected-suite results and source/log
 hashes are recorded separately. All selected runs report PARTIAL and are not
 accepted unit or gate proof.
+
+## Final selected-suite observations
+
+On implementation commit 8cff6ce5, final runs passed all 23 macOS rows (103),
+6 control rows (104), 17 relay rows (105), and 131 routing rows (106), with zero
+failures. Each selected run also passes 26 prerequisite rows. The strengthened
+rename regression fails with the baseline and passes in the final routing run.
+`results.json` binds the commands, counts, product/test source hashes and log
+hashes. Suites 103 and 104 remain byte-identical to 71436363. No canonical gate,
+mutation runner or native qualification was run or claimed.

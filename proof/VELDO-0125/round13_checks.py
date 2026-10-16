@@ -85,6 +85,7 @@ def cases(T, helper):
         w = T.load('control_worker')
         config = dict(runs=str(base))
         request = dict(dispatch_id='unwritable')
+        (base / '.parked').mkdir()  # Reach rename, rather than failing mkdir first.
         w.OUT.enqueue(config, request, w.CL.durable_json)
         def fail(config, request):
             # Both JSON recording and parking now fail at the real filesystem.
@@ -106,7 +107,8 @@ def cases(T, helper):
         assert caught, 'unwritable outbox silently swallowed recorder failure'
         records = [json.loads(line) for line in output.getvalue().splitlines()]
         assert any(r['operation'] == 'worker_delivery_recorder_failed' for r in records), records
-        assert any(r.get('operation') == 'worker_delivery_park_failed' for r in records), records
+        parking = [r for r in records if r.get('operation') == 'worker_delivery_park_failed']
+        assert len(parking) == 1 and ' -> ' in parking[0]['reason'], records
         retained = base / '.active' / w.OUT.key(request['dispatch_id'])
         assert json.loads(retained.read_text())['request'] == request
         assert not list((base / '.pending').iterdir())
