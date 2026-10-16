@@ -1,0 +1,5 @@
+--- control_worker.py
++++ control_worker.py
+@@ -285 +285 @@
+-                pass  # receive durably records/parks this dispatch; drain its peers.
++                raise  # defect: one refusal aborts the remaining deliveries

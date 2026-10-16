@@ -1,0 +1,7 @@
+--- control_worker.py
++++ control_worker.py
+@@ -327 +327,3 @@
+-        resume_pending(config, drain=True)
++        while True:
++            resume_pending(config, drain=True)
++            time.sleep(30)

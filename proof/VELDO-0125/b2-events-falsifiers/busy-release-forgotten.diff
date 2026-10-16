@@ -1,0 +1,6 @@
+--- control_worker.py
++++ control_worker.py
+@@ -150,2 +150 @@
+-            if not queued:
+-                OUT.enqueue(config, request, CL.durable_json)
++            pass

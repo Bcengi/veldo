@@ -1,0 +1,5 @@
+--- control_worker_outbox.py
++++ control_worker_outbox.py
+@@ -78 +78 @@
+-    transient = isinstance(error, (OSError, TimeoutError)) or reason.startswith('AUTHORITY_UNAVAILABLE:')
++    transient = True

@@ -1,0 +1,5 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -123 +123 @@
+-                if result.returncode == 0:
++                if True:

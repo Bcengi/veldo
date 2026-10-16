@@ -1,0 +1,5 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -127 +127 @@
+-                reason = type(error).__name__
++                continue

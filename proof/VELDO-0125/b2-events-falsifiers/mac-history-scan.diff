@@ -1,0 +1,4 @@
+--- control_worker_outbox.py
++++ control_worker_outbox.py
+@@ -72,0 +73 @@
++        list(root.iterdir())

@@ -1,0 +1,92 @@
+[
+  {
+    "case": "idle-polling",
+    "row": "AC3/event-index-idle-and-history",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "f1ccd9dad022fa85636f85b3f9c9822caaed833a5ccc039bb4c33473880df0e9",
+    "patch": "idle-polling.diff",
+    "log": "idle-polling.log"
+  },
+  {
+    "case": "mac-history-scan",
+    "row": "AC3/event-index-idle-and-history",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "bfab124e685470af3abc48731823bf9c16c505ca93b4a4a9eac3a642ba104d8f",
+    "patch": "mac-history-scan.diff",
+    "log": "mac-history-scan.log"
+  },
+  {
+    "case": "dispatch-aborts-pass",
+    "row": "AC3/event-dispatch-error-isolation",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "f1ccd9dad022fa85636f85b3f9c9822caaed833a5ccc039bb4c33473880df0e9",
+    "patch": "dispatch-aborts-pass.diff",
+    "log": "dispatch-aborts-pass.log"
+  },
+  {
+    "case": "permanent-refusal-retried",
+    "row": "AC3/event-dispatch-error-isolation",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "bfab124e685470af3abc48731823bf9c16c505ca93b4a4a9eac3a642ba104d8f",
+    "patch": "permanent-refusal-retried.diff",
+    "log": "permanent-refusal-retried.log"
+  },
+  {
+    "case": "ssh-failure-marked-sent",
+    "row": "AC3/failed-release-wake-retry",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+    "patch": "ssh-failure-marked-sent.diff",
+    "log": "ssh-failure-marked-sent.log"
+  },
+  {
+    "case": "ssh-timeout-marked-sent",
+    "row": "AC3/failed-release-wake-retry",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+    "patch": "ssh-timeout-marked-sent.diff",
+    "log": "ssh-timeout-marked-sent.log"
+  },
+  {
+    "case": "unknown-usage-discarded",
+    "row": "AC3/unknown-measured-usage-once",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+    "patch": "unknown-usage-discarded.diff",
+    "log": "unknown-usage-discarded.log"
+  },
+  {
+    "case": "crash-output-unread",
+    "row": "AC3/crash-before-evidence-usage",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "f1ccd9dad022fa85636f85b3f9c9822caaed833a5ccc039bb4c33473880df0e9",
+    "patch": "crash-output-unread.diff",
+    "log": "crash-output-unread.log"
+  },
+  {
+    "case": "busy-release-forgotten",
+    "row": "AC3/busy-release-durable-event",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "f1ccd9dad022fa85636f85b3f9c9822caaed833a5ccc039bb4c33473880df0e9",
+    "patch": "busy-release-forgotten.diff",
+    "log": "busy-release-forgotten.log"
+  },
+  {
+    "case": "acknowledgement-not-dequeued",
+    "row": "AC3/event-index-idle-and-history",
+    "rejected": true,
+    "returncode": 1,
+    "source_sha256": "bfab124e685470af3abc48731823bf9c16c505ca93b4a4a9eac3a642ba104d8f",
+    "patch": "acknowledgement-not-dequeued.diff",
+    "log": "acknowledgement-not-dequeued.log"
+  }
+]

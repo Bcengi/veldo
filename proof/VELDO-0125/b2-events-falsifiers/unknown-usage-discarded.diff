@@ -1,0 +1,5 @@
+--- control_worker_service.py
++++ control_worker_service.py
+@@ -466 +466 @@
+-                    data['invocation'], sequence, usage or data.get('usage') or {}, final=True, now=now)
++                    data['invocation'], sequence, {}, final=True, now=now)

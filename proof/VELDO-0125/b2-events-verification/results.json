@@ -1,0 +1,40 @@
+{
+  "implementation_commit": "1f016386",
+  "scope": "targeted suites only; no full-gate or native-host qualification",
+  "suites": [
+    {
+      "name": "105_veldo_0125_relay",
+      "rows": 17,
+      "failed": 0,
+      "exit_status": 2
+    },
+    {
+      "name": "106_veldo_0125_routing",
+      "rows": 48,
+      "failed": 0,
+      "exit_status": 2
+    }
+  ],
+  "files": [
+    {
+      "path": "engine/.veldo/control_worker.py",
+      "sha256": "f1ccd9dad022fa85636f85b3f9c9822caaed833a5ccc039bb4c33473880df0e9",
+      "installed_identical": true
+    },
+    {
+      "path": "engine/.veldo/control_worker_outbox.py",
+      "sha256": "bfab124e685470af3abc48731823bf9c16c505ca93b4a4a9eac3a642ba104d8f",
+      "installed_identical": true
+    },
+    {
+      "path": "engine/.veldo/control_worker_client.py",
+      "sha256": "455d5cb81011c8ac1e21c77452b333d3a0d8e0b281700b7d74a1e26d4cf0c6ad",
+      "installed_identical": true
+    },
+    {
+      "path": "engine/.veldo/control_worker_service.py",
+      "sha256": "4e56d84b820ddef8f5e21e5790533af502e8963d351581ce4da20cf5419aee58",
+      "installed_identical": true
+    }
+  ]
+}

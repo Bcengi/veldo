@@ -1,0 +1,5 @@
+--- control_worker.py
++++ control_worker.py
+@@ -231 +231 @@
+-        retain_crashed_output(host, client, request, directory)
++        pass  # defect: release without reading retained wrapper output
