@@ -162,6 +162,7 @@ def receive(config, request, *, queued=False):
     lock = None
     acquired = False
     recorder_failed = False
+    accepting_event = not queued
     try:
         # Serialize queue transitions with execution-lock acquisition/completion.
         # Active entries are durable but outside launchd's watched directory.
@@ -175,9 +176,10 @@ def receive(config, request, *, queued=False):
                     if OUT.enqueue_locked(root, request, CL.durable_json) is None:
                         return None
             path = OUT.locate(root, request['dispatch_id'])
-            entry = OUT.read_entry(root, path)
+            entry = OUT.read_entry(root, path, raise_read_errors=not queued)
             if entry is None:
                 return None
+            accepting_event = False
             locks = root / '.locks'
             locks.mkdir(exist_ok=True)
             lock = (locks / C.P.digest(request['dispatch_id']).split(':')[-1]).open('a')
@@ -193,6 +195,9 @@ def receive(config, request, *, queued=False):
                         release=result.get('host_released') or request.get('action') == 'release')
         return result
     except Exception as error:
+        if accepting_event:
+            # Linux must resend a failed handoff; leave the prior entry untouched.
+            raise
         try:
             OUT.failure(config, request, error, CL.durable_json)
         except Exception as recording_error:

@@ -44,13 +44,15 @@ def validate_entry(entry, path):
     return entry
 
 
-def read_entry(root, path, *, operation='worker_delivery_invalid_entry'):
+def read_entry(root, path, *, operation='worker_delivery_invalid_entry', raise_read_errors=False):
     """Read under locked(); quarantine invalid content, retain operational failures."""
     try:
         return validate_entry(json.loads(path.read_text()), path)
     except OSError as error:
         print(json.dumps(dict(operation='worker_delivery_read_failed', entry=path.name,
             reason=str(error))), file=sys.stderr, flush=True)
+        if raise_read_errors:
+            raise
         return None
     except (ValueError, RecursionError) as error:
         print(json.dumps(dict(operation=operation, entry=path.name, reason=str(error))),
@@ -192,7 +194,7 @@ def enqueue_locked(root, request, write):
     path = locate(root, request['dispatch_id'])
     previous = None
     if path.exists():
-        previous = read_entry(root, path)
+        previous = read_entry(root, path, raise_read_errors=True)
         if previous is None:
             return None
     if previous and previous['request'].get('action') == 'release':
