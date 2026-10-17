@@ -1,0 +1,137 @@
+[
+  {
+    "path": ".veldo/claim.py",
+    "blobs": {
+      "9763249e": "3cf783637083ebfbf1785fada8210f6a159b1463",
+      "d2288a28": "3cf783637083ebfbf1785fada8210f6a159b1463",
+      "6eec919a": "3cf783637083ebfbf1785fada8210f6a159b1463"
+    },
+    "unchanged": true
+  },
+  {
+    "path": ".veldo/contract_loader.py",
+    "blobs": {
+      "9763249e": "1f2c74df793122e836321f46209cfb4257e9663a",
+      "d2288a28": "1f2c74df793122e836321f46209cfb4257e9663a",
+      "6eec919a": "1f2c74df793122e836321f46209cfb4257e9663a"
+    },
+    "unchanged": true
+  },
+  {
+    "path": ".veldo/control_event_vocabulary.py",
+    "blobs": {
+      "9763249e": "f1e26ddc75bcbf39db5305d5a5854a82f3e32b29",
+      "d2288a28": "f1e26ddc75bcbf39db5305d5a5854a82f3e32b29",
+      "6eec919a": "f1e26ddc75bcbf39db5305d5a5854a82f3e32b29"
+    },
+    "unchanged": true
+  },
+  {
+    "path": ".veldo/estimate.py",
+    "blobs": {
+      "9763249e": "cce6f904c4669c36fe36a0d0cc534104c391ed4a",
+      "d2288a28": "cce6f904c4669c36fe36a0d0cc534104c391ed4a",
+      "6eec919a": "cce6f904c4669c36fe36a0d0cc534104c391ed4a"
+    },
+    "unchanged": true
+  },
+  {
+    "path": ".veldo/git_process.py",
+    "blobs": {
+      "9763249e": "bbf3fbb2b4700c90cb1a3b2254b01f9d5bb8f07f",
+      "d2288a28": "bbf3fbb2b4700c90cb1a3b2254b01f9d5bb8f07f",
+      "6eec919a": "bbf3fbb2b4700c90cb1a3b2254b01f9d5bb8f07f"
+    },
+    "unchanged": true
+  },
+  {
+    "path": ".veldo/metrics.py",
+    "blobs": {
+      "9763249e": "f866271682afcde9e9924124edc9f9f1e0af1239",
+      "d2288a28": "f866271682afcde9e9924124edc9f9f1e0af1239",
+      "6eec919a": "f866271682afcde9e9924124edc9f9f1e0af1239"
+    },
+    "unchanged": true
+  },
+  {
+    "path": ".veldo/metrics_event_stream.py",
+    "blobs": {
+      "9763249e": "609801698e160bd0fde00a32649fffeeb14bb551",
+      "d2288a28": "609801698e160bd0fde00a32649fffeeb14bb551",
+      "6eec919a": "609801698e160bd0fde00a32649fffeeb14bb551"
+    },
+    "unchanged": true
+  },
+  {
+    "path": ".veldo/toe_analogy.py",
+    "blobs": {
+      "9763249e": "b67d13e44227fcb487aae0350a85a6c2535f97db",
+      "d2288a28": "b67d13e44227fcb487aae0350a85a6c2535f97db",
+      "6eec919a": "b67d13e44227fcb487aae0350a85a6c2535f97db"
+    },
+    "unchanged": true
+  },
+  {
+    "path": ".veldo/toe_corpus.py",
+    "blobs": {
+      "9763249e": "51448dc9feb46d7441218c315db1aad2ffed5a19",
+      "d2288a28": "51448dc9feb46d7441218c315db1aad2ffed5a19",
+      "6eec919a": "51448dc9feb46d7441218c315db1aad2ffed5a19"
+    },
+    "unchanged": true
+  },
+  {
+    "path": ".veldo/toe_normalize.py",
+    "blobs": {
+      "9763249e": "5b8cffa5ee7fce695129017e58435bb85721ec27",
+      "d2288a28": "5b8cffa5ee7fce695129017e58435bb85721ec27",
+      "6eec919a": "5b8cffa5ee7fce695129017e58435bb85721ec27"
+    },
+    "unchanged": true
+  },
+  {
+    "path": ".veldo/tracker.py",
+    "blobs": {
+      "9763249e": "44b00e73f4762acd11b3fc6fc46be789c33c0d78",
+      "d2288a28": "44b00e73f4762acd11b3fc6fc46be789c33c0d78",
+      "6eec919a": "44b00e73f4762acd11b3fc6fc46be789c33c0d78"
+    },
+    "unchanged": true
+  },
+  {
+    "path": ".veldo/validate.py",
+    "blobs": {
+      "9763249e": "ccc15ae935347ef50aae4ac7d93f656dd618959e",
+      "d2288a28": "ccc15ae935347ef50aae4ac7d93f656dd618959e",
+      "6eec919a": "ccc15ae935347ef50aae4ac7d93f656dd618959e"
+    },
+    "unchanged": true
+  },
+  {
+    "path": ".veldo/validate_checks.py",
+    "blobs": {
+      "9763249e": "1fdfc4b92de8d36b7003ee1e317eda265745c843",
+      "d2288a28": "1fdfc4b92de8d36b7003ee1e317eda265745c843",
+      "6eec919a": "1fdfc4b92de8d36b7003ee1e317eda265745c843"
+    },
+    "unchanged": true
+  },
+  {
+    "path": ".veldo/verdict_corpus.py",
+    "blobs": {
+      "9763249e": "7572a12861e7bc67aa7f2807ed97446ea53e0074",
+      "d2288a28": "7572a12861e7bc67aa7f2807ed97446ea53e0074",
+      "6eec919a": "7572a12861e7bc67aa7f2807ed97446ea53e0074"
+    },
+    "unchanged": true
+  },
+  {
+    "path": ".veldo/yamlish.py",
+    "blobs": {
+      "9763249e": "02459d4cdfea650369ca6407f219804b83543216",
+      "d2288a28": "02459d4cdfea650369ca6407f219804b83543216",
+      "6eec919a": "02459d4cdfea650369ca6407f219804b83543216"
+    },
+    "unchanged": true
+  }
+]

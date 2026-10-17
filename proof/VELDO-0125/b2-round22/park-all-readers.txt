@@ -1,0 +1,65 @@
+specs/VELDO-0125-mac-relay-capability-routing.md:253:Recorder failures retain the original entry in .parked using rename, outside
+.veldo/control_worker_outbox.py:61:            park_path(root, path)
+.veldo/control_worker_outbox.py:128:    if state == '.parked':
+.veldo/control_worker_outbox.py:130:        return park_path(root, path)
+.veldo/control_worker_outbox.py:142:def park_path(root, path):
+.veldo/control_worker_outbox.py:150:    directory = root / '.parked'
+.veldo/control_worker_outbox.py:174:            park_path(root, path)
+.veldo/control_worker_outbox.py:279:            state = '.parked'
+.veldo/control_worker_outbox.py:282:        state={'.pending': 'retry_pending', '.waiting': 'waiting', '.parked': 'parked'}[state],
+engine/.veldo/control_assignment.py:638:        parked = next((p for p in self.parked_units() if p['assignment_id'] == aid), None)
+engine/.veldo/control_assignment.py:1231:        parked = self.parked_units()
+engine/.veldo/control_worker_outbox.py:61:            park_path(root, path)
+engine/.veldo/control_worker_outbox.py:128:    if state == '.parked':
+engine/.veldo/control_worker_outbox.py:130:        return park_path(root, path)
+engine/.veldo/control_worker_outbox.py:142:def park_path(root, path):
+engine/.veldo/control_worker_outbox.py:150:    directory = root / '.parked'
+engine/.veldo/control_worker_outbox.py:174:            park_path(root, path)
+engine/.veldo/control_worker_outbox.py:279:            state = '.parked'
+engine/.veldo/control_worker_outbox.py:282:        state={'.pending': 'retry_pending', '.waiting': 'waiting', '.parked': 'parked'}[state],
+scripts/suites/69_veldo_0133_dispositions.py:380:                return {p.get('unit_id'): p for p in inbox.parked_units()}
+.veldo/control_assignment.py:638:        parked = next((p for p in self.parked_units() if p['assignment_id'] == aid), None)
+.veldo/control_assignment.py:1231:        parked = self.parked_units()
+proof/VELDO-0064/README.md:246:| s6 | A unit parked on a declined or canceled assignment, or on an answer that does not admit, was invisible: `waiting_resources`, the inbox metrics and `receiver.pending` all showed nothing | `Inbox.parked_units()` lists every parked unit with its unit, claim, assignment and why it is parked (`awaiting_answer`, `ready_to_resume`, `answer_not_admitted` with the admission refusal, `declined`, `canceled`, `expired`, `invalid_assignment`, `missing_assignment`); `metrics()` adds `parked` and `parked_by_reason` | `inbox/parked-units-visible` | `inbox-parked-only-awaiting`, `inbox-parked-metric-omitted`, `inbox-parked-refusal-shown-ready` |
+proof/VELDO-0125/event_checks.py:69:        parked = json.loads((base / '.parked' / worker.OUT.key('bad')).read_text())
+proof/VELDO-0125/crash_event_checks_r12.py:191:        assert (base / '.parked' / worker.OUT.key(request['dispatch_id'])).exists()
+proof/VELDO-0125/lifecycle_falsifiers.py:37:        "    if state == '.parked':\n        target = destination / path.name\n        write(target, entry or json.loads(path.read_text()))\n        sync_remove(path)\n        return target\n"
+proof/VELDO-0125/lifecycle_checks_r12.py:89:                assert not list((base / '.parked').glob('*.json'))
+proof/VELDO-0125/lifecycle_checks_r12.py:257:            parked = base / '.parked'
+proof/VELDO-0125/lifecycle_checks_r12.py:260:            if Path(source).parent.name == '.pending' and Path(target).parent.name == '.parked':
+proof/VELDO-0125/lifecycle_checks_r12.py:270:        assert json.loads((base / '.parked' / worker.OUT.key('permanent')).read_text())['reason'].startswith('binding_mismatch')
+proof/VELDO-0125/b2-round22/park_checks.py:13:        return [path.read_bytes() for path in sorted((base / '.parked').glob('*.json'))]
+proof/VELDO-0125/b2-round22/park_checks.py:85:            if interrupted and inode == (base / '.parked').stat().st_ino:
+proof/VELDO-0125/b2-round22/park_checks.py:93:                assert (base / '.parked').stat().st_ino in synced, 'park link not synced before dequeue'
+proof/VELDO-0125/b2-round22/park_checks.py:98:                w.OUT.park_path(base, path)
+proof/VELDO-0125/b2-round22/park_checks.py:105:            retained, = (base / '.parked').glob('*.json')
+proof/VELDO-0125/b2-round22/park_checks.py:108:            w.OUT.park_path(base, path)
+proof/VELDO-0125/b2-round13/README.md:34:   renamed to `.parked` without decoding it. Healthy pending work proceeds.
+proof/VELDO-0125/b2-round13/README.md:55:it pre-creates `.parked` and asserts that the rename itself fails, rather than
+proof/VELDO-0125/b2-round21/receiver_checks.py:56:        assert (root / '.parked' / path.name).read_bytes() == content
+proof/VELDO-0125/b2-round21/receiver_checks.py:65:        assert (root / '.parked' / path.name).read_bytes() == content
+proof/VELDO-0125/round12_checks.py:37:        parked = base / '.parked' / w.OUT.key(request['dispatch_id'])
+proof/VELDO-0125/round14_checks.py:33:        assert not list((base / '.parked').glob('*.json'))
+proof/VELDO-0125/round14_checks.py:48:        assert (base / '.parked' / path.name).read_bytes() == b'\xffnot-json'
+proof/VELDO-0125/round13_checks.py:88:        (base / '.parked').mkdir()  # Reach rename, rather than failing mkdir first.
+proof/VELDO-0125/round13_checks.py:136:            assert not (base / '.parked' / bad.name).exists(), 'read failure quarantined valid content'
+proof/VELDO-0125/round13_checks.py:142:            for path in (bad, base / '.parked' / bad.name):
+proof/VELDO-0125/round16_checks.py:52:            assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
+proof/VELDO-0125/round12_falsifiers.py:16:        "            target = root / '.parked'", "            target = root / '.pending'"),
+proof/VELDO-0125/lifecycle_checks.py:89:                assert not list((base / '.parked').glob('*.json'))
+proof/VELDO-0125/lifecycle_checks.py:234:            parked = base / '.parked'
+proof/VELDO-0125/lifecycle_checks.py:237:            if Path(source).parent.name == '.pending' and Path(target).parent.name == '.parked':
+proof/VELDO-0125/lifecycle_checks.py:247:        assert json.loads((base / '.parked' / worker.OUT.key('permanent')).read_text())['reason'].startswith('binding_mismatch')
+proof/VELDO-0125/b2-events.md:30:refusal is moved to `runs/.parked/`, including its reason, and logged to
+proof/VELDO-0125/b2-events.md:41:every `*.json` file in `runs/.parked/`, including numbered siblings. A corrupt
+proof/VELDO-0125/round17_checks.py:59:        assert not list((base / '.parked').glob('*.json')), 'read error quarantined valid content'
+proof/VELDO-0125/round17_checks.py:66:        assert not path.exists() and not list((base / '.parked').glob('*.json'))
+proof/VELDO-0125/round17_checks.py:102:        assert not w.OUT.entries(config) and not list((base / '.parked').glob('*.json'))
+proof/VELDO-0125/lifecycle_checks_r11.py:89:                assert not list((base / '.parked').glob('*.json'))
+proof/VELDO-0125/lifecycle_checks_r11.py:257:            parked = base / '.parked'
+proof/VELDO-0125/lifecycle_checks_r11.py:260:            if Path(source).parent.name == '.pending' and Path(target).parent.name == '.parked':
+proof/VELDO-0125/lifecycle_checks_r11.py:270:        assert json.loads((base / '.parked' / worker.OUT.key('permanent')).read_text())['reason'].startswith('binding_mismatch')
+proof/VELDO-0125/b2-round20/receiver_checks.py:61:        assert not list((root / '.parked').glob('*.json')), 'read error quarantined valid content'
+proof/VELDO-0125/event_checks_r12.py:71:        parked = json.loads((base / '.parked' / worker.OUT.key('bad')).read_text())
+proof/VELDO-0125/event_checks_r11.py:69:        parked = json.loads((base / '.parked' / worker.OUT.key('bad')).read_text())
+proof/VELDO-0125/round15_checks.py:23:        assert (base / '.parked' / bad.name).read_bytes() == original, 'quarantine changed original bytes'

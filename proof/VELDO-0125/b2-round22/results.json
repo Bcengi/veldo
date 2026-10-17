@@ -1,0 +1,96 @@
+{
+  "final_implementation_commit": "d6efaf095325f9b2fe08a2fb2976caa97697b61f",
+  "runs": [
+    {
+      "run": "15-before",
+      "command": "python3 scripts/selftest.py --suite 15_warp_1404_historical_analogy",
+      "exit_code": 2,
+      "passed_including_shared": 64,
+      "failed": 0,
+      "log": "15-before.log",
+      "sha256": "6cfbcd69afb5480310a5d929624c2ce39f48266da6816266f09044faa6414dd1"
+    },
+    {
+      "run": "15-closure",
+      "command": "python3 scripts/selftest.py --suite 15_warp_1404_historical_analogy",
+      "exit_code": 2,
+      "passed_including_shared": 64,
+      "failed": 0,
+      "log": "15-closure.log",
+      "sha256": "b7c7c3d02bd927530584e4ba1db31c1363f84529badf42cf4390ef8bda11f040"
+    },
+    {
+      "run": "106-before",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "exit_code": 1,
+      "passed_including_shared": 266,
+      "failed": 6,
+      "log": "106-before.log",
+      "sha256": "d7b600c569b0a4ab8229406f7b08bad51ad2b6d49aa27f1353434923fae27e77"
+    },
+    {
+      "run": "15-cold-readonly-before",
+      "command": "python3 scripts/selftest.py --suite 15_warp_1404_historical_analogy",
+      "exit_code": 1,
+      "passed_including_shared": 63,
+      "failed": 1,
+      "log": "15-cold-readonly-before.log",
+      "sha256": "a78d64289bd10eb52e4d7ffbfb508478b6850a57e3bad53c18b2ed80fd0fdd79"
+    },
+    {
+      "run": "106-after",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "exit_code": 1,
+      "passed_including_shared": 270,
+      "failed": 2,
+      "log": "106-after.log",
+      "sha256": "9a61344dac353112f9a932b536789c4923f407f733335979e76090ce082a035a"
+    },
+    {
+      "run": "106-final",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "exit_code": 2,
+      "passed_including_shared": 272,
+      "failed": 0,
+      "log": "106-final.log",
+      "sha256": "f4f2c0d54df3110184a87e640f7c3b44861a6e0aa6abcb8ac15b08120e22d192"
+    },
+    {
+      "run": "103-after",
+      "command": "python3 scripts/selftest.py --suite 103_veldo_0124_macos",
+      "exit_code": 2,
+      "passed_including_shared": 49,
+      "failed": 0,
+      "log": "103-after.log",
+      "sha256": "2b38746a8e12059f92648a3b81719623050c5055e1714582fc634fa29cf95ffe"
+    },
+    {
+      "run": "104-after",
+      "command": "python3 scripts/selftest.py --suite 104_veldo_0124_control",
+      "exit_code": 2,
+      "passed_including_shared": 32,
+      "failed": 0,
+      "log": "104-after.log",
+      "sha256": "8d1f04cf709b1e767410daf52037fcd3d2db3ab8fbfdb0e1ed847cd0e3870777"
+    },
+    {
+      "run": "105-after",
+      "command": "python3 scripts/selftest.py --suite 105_veldo_0125_relay",
+      "exit_code": 2,
+      "passed_including_shared": 43,
+      "failed": 0,
+      "log": "105-after.log",
+      "sha256": "b6960a92d9adc09ef1f1e2fa4cc98134069f2bc5d8d0ca93e74be2bf67386cea"
+    },
+    {
+      "run": "15-after",
+      "command": "python3 scripts/selftest.py --suite 15_warp_1404_historical_analogy",
+      "exit_code": 2,
+      "passed_including_shared": 64,
+      "failed": 0,
+      "log": "15-after.log",
+      "sha256": "4fadc6e25004515edc575705c9fa205f426dd8a9b13c5ff44e604df49d594d4b"
+    }
+  ],
+  "scope": "Selected suites only, serial; not canonical verification. Cold-readonly probe is an additional filesystem permission-denial condition."
+}

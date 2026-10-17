@@ -1,0 +1,8 @@
+{
+  "NoNewPrivs": "1",
+  "Seccomp": "2",
+  "Seccomp_filters": "1",
+  "uid": 1000,
+  "pycache_restored": 509,
+  "probe": "Existing ignored .veldo/__pycache__ moved aside; empty mode-0555 directory installed for one selected-suite run; original restored by EXIT trap."
+}

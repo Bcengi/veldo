@@ -1,0 +1,14 @@
+[
+  {
+    "canonical": "engine/.veldo/control_worker.py",
+    "installed": ".veldo/control_worker.py",
+    "identical": true,
+    "sha256": "2e37cfc790b1c0e8137f5251b960d9264858876f34277e85ef786bc029160735"
+  },
+  {
+    "canonical": "engine/.veldo/control_worker_outbox.py",
+    "installed": ".veldo/control_worker_outbox.py",
+    "identical": true,
+    "sha256": "62977972718c69f76f721aee544d5c8bb69d5cffe5115bde7d7de5d76fbaf3f7"
+  }
+]

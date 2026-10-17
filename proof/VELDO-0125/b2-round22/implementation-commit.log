@@ -1,0 +1,2 @@
+[agent/codex/veldo-0125-b2 8a12d9f3] fix: preserve every parked outbox record with exclusive durable publication
+ 6 files changed, 66 insertions(+), 16 deletions(-)
