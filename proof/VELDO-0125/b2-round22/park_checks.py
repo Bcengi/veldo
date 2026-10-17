@@ -101,6 +101,9 @@ def cases(T, helper):
             else:
                 assert not interrupted and not path.exists()
         assert parked(base) == [original]
+        if not interrupted:
+            retained, = (base / '.parked').glob('*.json')
+            assert retained.stat().st_ino in synced, 'parked file bytes were never fsynced'
         if interrupted:
             w.OUT.park_path(base, path)
             assert parked(base) == [original, original], 'recovery overwrote the already published park'

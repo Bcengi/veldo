@@ -125,6 +125,9 @@ def move(root, path, state, write, entry=None):
     destination.mkdir(exist_ok=True)
     # Persist the new directory name before removing the old recovery record.
     sync_directory(root)
+    if state == '.parked':
+        replace_entry(root, path, value, write)
+        return park_path(root, path)
     target = destination / path.name
     if path.exists() and target != path:
         replace_entry(root, path, value, write)
@@ -137,13 +140,30 @@ def move(root, path, state, write, entry=None):
 
 
 def park_path(root, path):
-    """Quarantine original bytes even when reading or serialization is broken."""
-    target = root / '.parked'
-    target.mkdir(exist_ok=True)
+    """Publish original bytes without ever replacing an earlier parked record.
+
+    The first record keeps the legacy key; later records get ordered siblings.
+    link() atomically refuses an occupied name (including a dangling symlink).
+    Sync the bytes and published link before removing the live recovery record:
+    an interruption can leave two copies, but cannot lose either record.
+    """
+    directory = root / '.parked'
+    directory.mkdir(exist_ok=True)
     sync_directory(root)
-    os.replace(path, target / path.name)
-    sync_directory(target)
-    sync_directory(path.parent)
+    with path.open('rb') as stream:
+        os.fsync(stream.fileno())
+    sequence = 0
+    while True:
+        name = path.name if sequence == 0 else f'{path.stem}.{sequence:08d}.json'
+        target = directory / name
+        try:
+            os.link(path, target)
+            break
+        except FileExistsError:
+            sequence += 1
+    sync_directory(directory)
+    sync_remove(path)
+    return target
 
 
 def park_recorder_failure(config, dispatch):

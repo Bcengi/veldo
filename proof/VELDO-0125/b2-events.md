@@ -35,6 +35,15 @@ authorized `release` request. This explicitly re-enqueues that dispatch. Old
 pre-index deliveries can likewise be explicitly re-enqueued by identity; this
 change does not discover them by scanning history.
 
+Parked files are retained evidence, and one dispatch can have several. The first
+park keeps `<sha256(dispatch_id)>.json`; later parks use
+`<sha256(dispatch_id)>.<sequence padded to eight digits>.json`. Inspect and count
+every `*.json` file in `runs/.parked/`, including numbered siblings. A corrupt
+record may not contain readable JSON; its filename still identifies the dispatch
+hash. Replaying a dispatch does not remove or overwrite its parked evidence.
+Publication refuses an occupied filename and syncs the file and directory before
+removing the live queue entry. An interrupted publication can retain both copies.
+
 A result acknowledgement removes the pending entry even when cleanup is absent
 and the authority still holds capacity. There is no repeated `worker_status`
 query while waiting for an operator. A later committed authority release sends

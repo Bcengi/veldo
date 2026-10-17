@@ -173,8 +173,7 @@ def receive(config, request, *, queued=False):
                     OUT.move(root, path, '.active', CL.durable_json,
                              dict(request=request, attempts=0, due=0))
                 else:
-                    if OUT.enqueue_locked(root, request, CL.durable_json) is None:
-                        return None
+                    OUT.enqueue_locked(root, request, CL.durable_json)
             path = OUT.locate(root, request['dispatch_id'])
             entry = OUT.read_entry(root, path, raise_read_errors=not queued)
             if entry is None:
