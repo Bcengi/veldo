@@ -51,7 +51,7 @@ def read_entry(root, path, *, operation='worker_delivery_invalid_entry'):
     except OSError as error:
         print(json.dumps(dict(operation='worker_delivery_read_failed', entry=path.name,
             reason=str(error))), file=sys.stderr, flush=True)
-        raise
+        return None
     except (ValueError, RecursionError) as error:
         print(json.dumps(dict(operation=operation, entry=path.name, reason=str(error))),
               file=sys.stderr, flush=True)
