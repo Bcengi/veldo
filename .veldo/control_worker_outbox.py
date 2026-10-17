@@ -162,7 +162,12 @@ def park_path(root, path):
         except FileExistsError:
             sequence += 1
     sync_directory(directory)
-    sync_remove(path)
+    try:
+        sync_remove(path)
+    except OSError as error:
+        # Publication succeeded but dequeue did not. Retain both records and
+        # identify both paths, as the former rename failure diagnostic did.
+        raise OSError(error.errno, error.strerror, str(path), None, str(target)) from error
     return target
 
 

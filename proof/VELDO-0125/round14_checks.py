@@ -60,10 +60,15 @@ def cases(T, helper):
                 w.OUT.move(root, w.OUT.locate(root, dispatch), '.pending', w.CL.durable_json,
                            dict(request=dict(dispatch_id=dispatch), due=due, attempts=1))
         real_replace = w.OUT.os.replace
+        real_link = w.OUT.os.link
         def replace(source, target):
             if Path(source) == path:
                 raise PermissionError(errno.EACCES, 'entry cannot be moved or parked')
             return real_replace(source, target)
+        def link(source, target):
+            if Path(source) == path:
+                raise PermissionError(errno.EACCES, 'entry cannot be moved or parked')
+            return real_link(source, target)
         calls, sleeps = [], []
         w.receive_locked = lambda config, request: calls.append((request['dispatch_id'], now[0])) or dict(host_released=True)
         def sleep(seconds):
@@ -71,7 +76,8 @@ def cases(T, helper):
             assert seconds > 0, 'recovery failure caused a busy loop'
             now[0] += seconds
         errors = io.StringIO()
-        with patch.object(w.OUT.os, 'replace', replace), patch.object(w.time, 'time', lambda: now[0]), \
+        with patch.object(w.OUT.os, 'replace', replace), patch.object(w.OUT.os, 'link', link), \
+                patch.object(w.time, 'time', lambda: now[0]), \
                 patch.object(w, 'sleep', sleep), contextlib.redirect_stderr(errors):
             w.resume_pending(config, drain=True)
         assert sleeps == [20.0, 20.0], 'drain did not wait for earliest due entry'
