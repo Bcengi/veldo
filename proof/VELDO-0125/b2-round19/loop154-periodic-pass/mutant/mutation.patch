@@ -1,0 +1,11 @@
+--- .veldo/control_service.py
++++ .veldo/control_service.py
+@@ -2224,7 +2224,7 @@
+                 del self.deadlines[dispatch_id]
+                 if launch.pump(read=False):
+                     self.saw_end(line, launch, 'remote_deadline')
+-        if self.due(now):
++        if True:  # defect: every turn of the service loop starts a pass
+             self.timer = None
+             self.wake('account_reset')
+ 

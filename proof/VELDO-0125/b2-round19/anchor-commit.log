@@ -1,0 +1,10 @@
+[agent/codex/veldo-0125-b2 85d389ff] Re-anchor local retirement and periodic factory pass mutants
+ 9 files changed, 16567 insertions(+), 4 deletions(-)
+ create mode 100644 proof/VELDO-0125/b2-round19/anchors-after.json
+ create mode 100644 proof/VELDO-0125/b2-round19/anchors-after.log
+ create mode 100644 proof/VELDO-0125/b2-round19/anchors-before-complete.log
+ create mode 100644 proof/VELDO-0125/b2-round19/anchors-before.json
+ create mode 100644 proof/VELDO-0125/b2-round19/anchors-before.log
+ create mode 100644 proof/VELDO-0125/b2-round19/audit_anchors.py
+ create mode 100644 proof/VELDO-0125/b2-round19/branch-files.txt
+ create mode 100644 proof/VELDO-0125/b2-round19/registry.patch

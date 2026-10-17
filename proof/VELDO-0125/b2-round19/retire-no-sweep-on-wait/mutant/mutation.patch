@@ -1,0 +1,15 @@
+--- .veldo/control_launch.py
++++ .veldo/control_launch.py
+@@ -708,11 +708,7 @@
+             if not getattr(launch, 'remote', False):
+                 self._left(record['dispatch_id'], getattr(launch, 'group', None), record.get('process'))
+             self._retire(record['dispatch_id'], 'unknown', 'outcome_unknown')
+-        self.launches.pop(launch.dispatch_id, None)
+-        # A local group ending can complete another local obligation. Remote events settle only
+-        # their own reservation and never cause an unrelated Linux cleanup sweep.
+-        if not getattr(launch, 'remote', False):
+-            self.sweep()
++        self.launches.pop(launch.dispatch_id, None)  # defect: a wait sweeps no pending retirement
+         if timeout_error is not None:
+             raise timeout_error
+         return record

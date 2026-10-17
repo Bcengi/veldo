@@ -1,0 +1,21 @@
+{
+  "name": "retire-no-sweep-on-wait",
+  "mode": "baseline",
+  "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "67_veldo_0041_heartbeat"
+  ],
+  "target_rows": [
+    "retirement/live-descendant"
+  ],
+  "head": "85d389ff8779a4f945b468038d857ef30f0f4962",
+  "source": ".veldo/control_launch.py",
+  "original_sha256": "37bb0535b7aaae8cd7011db4781d1018a30a6ef55563c7d3f3572dfbee32c556",
+  "applied_sha256": "37bb0535b7aaae8cd7011db4781d1018a30a6ef55563c7d3f3572dfbee32c556",
+  "returncode": 1,
+  "restored": true,
+  "elapsed_seconds": 0.10302042961120605,
+  "log_sha256": "a7444e38f443c381e2bd6eee7490606c459c37114eee5d0d5e909ca0db378ba4"
+}

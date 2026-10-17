@@ -1,0 +1,21 @@
+{
+  "name": "loop154-periodic-pass",
+  "mode": "mutant",
+  "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "83_veldo_0154_factory_loop"
+  ],
+  "target_rows": [
+    "loop/no-other-timer"
+  ],
+  "head": "85d389ff8779a4f945b468038d857ef30f0f4962",
+  "source": ".veldo/control_service.py",
+  "original_sha256": "5cbd68bfd9da5bb0dd2728caf4552ee35bdb80350e4df7272934f4bbf5ba1cde",
+  "applied_sha256": "f47a65eff265992835ce01c6b442d1ae840ea92f074da1e3518273e21a4d6a63",
+  "returncode": 1,
+  "restored": true,
+  "elapsed_seconds": 6.242983341217041,
+  "log_sha256": "93e8ceabcf44290ed71b85f4602989c95f4aae8596c9e3bb5bd3bf6fdd14c08b"
+}

@@ -1,0 +1,65 @@
+62cea275 Clarify preserved diagnostic whitespace in round 18 evidence
+d1771966 Record round 18 regression results and gate investigation limits
+15787c77 Fix worker Git boundaries and declare release transport sends
+0b9d7bfd docs: record round 17 outbox regression results
+169a9063 fix: skip failed outbox reads without invoking recorder parking
+8477b0e5 test: retain unreadable outbox entries across receiver handling
+c2f34471 fix: retain outbox entries on read errors and clock rollback
+7c02cc4d test: cover outbox read failures and clock rollback
+5d2943bf docs: record round 16 outbox regression results
+5e19329c fix: validate every outbox read and bound drain sleeps
+8976aeb9 test: cover complete outbox contract at every read boundary
+b431891b proof: record round 15 entry quarantine regression results
+20896492 fix: quarantine invalid decoded worker outbox entries
+5e763816 test: cover malformed decoded worker recovery entries
+9e8b278e proof: record round 14 recovery regression results
+33c4b524 fix: retain recoverable worker orphans and honor retry deadlines
+6c4b6c52 test: reproduce round 14 worker recovery failures
+4122b54a test: record round 13 baseline failures and passing targeted suites
+8cff6ce5 fix: preserve profile compatibility and isolate worker recovery failures
+ce058975 test: reproduce round 13 profile and worker recovery defects
+71436363 Record round 12 suite results and 13 rejected falsifiers
+5dcad4e4 Record recorder-loop rejection and corrected falsifier continuation
+533843ea Fix worker recovery isolation and Mac event lifetime for round 12
+8f402066 Record round 11 crash regressions and 23 rejected falsifiers
+67f318e9 Preserve idle timer assertions on the worker-local sleep seam
+c5c3d826 Record completed Mac routing checks and native wait control
+bb204215 Use a pipe to wake Mac exit waits on supported Python versions
+5f184b77 Prove worker sleep patches cannot affect subprocess waits
+b22d5258 Wake blocking Mac exit waits when a stop changes the deadline
+277045cc Fix Mac slot crash reconciliation and event-driven worker recovery
+f52eda63 Clarify partial suite exit codes without rewriting evidence
+95af5f77 Record lifecycle regressions and failing mutation controls
+b7a06bb6 Fix receiver event holds and index live Mac slots
+905f1bcf Record event delivery regressions and ten rejecting falsifiers
+1f016386 Keep incomplete index writes outside the launch event directory
+b57f7bea Drive Mac delivery from a durable pending index and preserve retained usage
+3f77a189 Record retirement and durable delivery regressions with eight falsifiers
+d00a74b5 Cover release races and cancel queued wakes after confirmation
+1b3cafd7 Require Mac retirement confirmation and resume durable usage delivery
+78b9a8cc Record final release and accounting regression verification
+052fd5d8 Amend missing usage on recorded exits and retain release falsifiers
+3c0416aa Recover committed Mac releases across crashes and preserve retired slots
+3389f7ae Release Mac capacity from authority outcomes and correct late usage
+ab921c44 Record reachable cleanup and delivery falsifiers with actual results
+5b7a64f6 Retire cleaned unknown Mac runs and prove result recovery
+ffb6d644 Retain and retry remote results and release signed cleanup holds
+10644dd1 Record current-head checks and six remote lifecycle falsifiers
+75223fdd Verify post-deadline remote results against authority time and spend
+fdbf5c3a Preserve delayed remote release paths and record deadline regressions
+9946cd20 Persist remote cleanup holds and release them on signed host evidence
+aca4f236 Wake remote launches only on signed results and per-launch deadlines
+762e0e45 Bound remote transport tracking by authority state and dispatch deadline
+32a607b4 Keep remote reservations held until host cleanup is evidenced
+85e2c617 Record B2 remote launch regressions and targeted falsifiers
+bdc73e5c Deliver remote factory work to a tracked Mac receiver
+95054bb1 Recheck remote worker eligibility atomically before acceptance
+3ca38399 Record batch 2 checks, falsifiers and remaining host blockers
+4de0f068 Verify installed routing and document batch 2 review disposition
+00966396 Keep relay falsifiers within ticket suites and repair pending proof metadata
+2ac81bec Resolve suite registry conflicts preserving both ticket and main suites
+95a33d9b Seed VELDO-0125 batch 2: Veldo main 9763249e merged in; conflicts left marked for the implementer: scripts/suites/manifest.json scripts/suites/requires.json
+9763249e Account pool: per-account roles, so a review-only login (codex2) is always listed and never given a build (Telegram 33548, 33550)
+184e96db Gate stamp for fc102644: Veldo batch 1 green against a clean tree, bound to the commit it verified
+fc102644 Batch 1: suite 106's journey bound stays under the gate's 120 s worker budget, and a failing teardown no longer skips the shared fixture's /dev/shm cleanup
+28fc8f8f Record prompt race proof and pending host verification
