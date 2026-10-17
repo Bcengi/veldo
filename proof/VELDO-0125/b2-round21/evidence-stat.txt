@@ -1,0 +1,31 @@
+ proof/VELDO-0125/b2-round21/103-after.exit         |   1 +
+ proof/VELDO-0125/b2-round21/103-after.log          |  42 +++
+ proof/VELDO-0125/b2-round21/104-after.exit         |   1 +
+ proof/VELDO-0125/b2-round21/104-after.log          |  42 +++
+ proof/VELDO-0125/b2-round21/105-after.exit         |   1 +
+ proof/VELDO-0125/b2-round21/105-after.log          |  42 +++
+ proof/VELDO-0125/b2-round21/106-after.exit         |   1 +
+ proof/VELDO-0125/b2-round21/106-after.log          |  52 +++
+ proof/VELDO-0125/b2-round21/106-before.exit        |   1 +
+ proof/VELDO-0125/b2-round21/106-before.log         | 402 +++++++++++++++++++++
+ proof/VELDO-0125/b2-round21/106-raise-default.exit |   1 +
+ proof/VELDO-0125/b2-round21/106-raise-default.log  | 268 ++++++++++++++
+ proof/VELDO-0125/b2-round21/README.md              |  86 +++++
+ .../VELDO-0125/b2-round21/before-failing-rows.txt  |  20 +
+ proof/VELDO-0125/b2-round21/canonical-change.diff  |  16 +
+ proof/VELDO-0125/b2-round21/final-diff-check.exit  |   1 +
+ proof/VELDO-0125/b2-round21/final-diff-check.log   |   0
+ proof/VELDO-0125/b2-round21/fix-commit.log         |   2 +
+ proof/VELDO-0125/b2-round21/fix-diff-check.log     |   0
+ proof/VELDO-0125/b2-round21/implementation.diff    |  32 ++
+ .../b2-round21/mutation-failing-rows.txt           |  12 +
+ proof/VELDO-0125/b2-round21/mutation-restored.exit |   1 +
+ proof/VELDO-0125/b2-round21/mutation-restored.log  |   0
+ .../b2-round21/raise-default-mutation.diff         |  26 ++
+ proof/VELDO-0125/b2-round21/results.json           |  78 ++++
+ proof/VELDO-0125/b2-round21/round16-test.diff      |  46 +++
+ proof/VELDO-0125/b2-round21/round17-test.diff      |  64 ++++
+ proof/VELDO-0125/b2-round21/template-sync.json     |   7 +
+ proof/VELDO-0125/b2-round21/test-commit.log        |   3 +
+ proof/VELDO-0125/b2-round21/tests-diff-check.log   |   0
+ 30 files changed, 1248 insertions(+)

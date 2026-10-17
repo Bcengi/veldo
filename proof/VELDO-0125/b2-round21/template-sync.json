@@ -1,0 +1,7 @@
+{
+  "equal": true,
+  "files": {
+    "engine/.veldo/control_worker_outbox.py": "9bcfcacbdd0f1b6451eb3cdb24fc646b9c49cb9b29f88edd56e5bb22bce37a90",
+    ".veldo/control_worker_outbox.py": "9bcfcacbdd0f1b6451eb3cdb24fc646b9c49cb9b29f88edd56e5bb22bce37a90"
+  }
+}

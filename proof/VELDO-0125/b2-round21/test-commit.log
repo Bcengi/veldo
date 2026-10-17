@@ -1,0 +1,3 @@
+[agent/codex/veldo-0125-b2 ba642b60] test: require fresh releases and continued outbox reads after corruption
+ 4 files changed, 119 insertions(+), 15 deletions(-)
+ create mode 100644 proof/VELDO-0125/b2-round21/receiver_checks.py

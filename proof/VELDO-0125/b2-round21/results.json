@@ -1,0 +1,78 @@
+{
+  "scope": "selected-suite observations only",
+  "starting_revision": "d2288a28",
+  "regression_commit": "ba642b60",
+  "implementation_commit": "c5796beb",
+  "full_gate_run": false,
+  "pushed": false,
+  "merged": false,
+  "files": {
+    "engine/.veldo/control_worker_outbox.py": "9bcfcacbdd0f1b6451eb3cdb24fc646b9c49cb9b29f88edd56e5bb22bce37a90",
+    ".veldo/control_worker_outbox.py": "9bcfcacbdd0f1b6451eb3cdb24fc646b9c49cb9b29f88edd56e5bb22bce37a90",
+    "proof/VELDO-0125/round16_checks.py": "25f5f1495b723f2fcd83458d30c4ed3db759c0406db9ebed63637af79ff16a98",
+    "proof/VELDO-0125/round17_checks.py": "81a3bab1746d3896f865b8175eea72f7ea93e51ef71723e7ad22127e799d84f9",
+    "proof/VELDO-0125/b2-round21/receiver_checks.py": "fd811aa0845a2240dc07f7e7a287fe28af841cd0c980755274c8dde06c3e3ae0",
+    "scripts/suites/106_veldo_0125_routing.py": "2b1e3bfc83406c95831e26934ef94ad572d50929ff5a67e16a75c4f7d35da12e"
+  },
+  "negative_control": {
+    "diff": "raise-default-mutation.diff",
+    "sha256": "93bdf03ed0caf2afbc84d08e00375a947dddba185ae2187d8e1540af7e77f715",
+    "restoration_exit_code": 0
+  },
+  "runs": [
+    {
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "log": "106-before.log",
+      "log_sha256": "2faf9a4b7a971627d87911ed242acdf3fa0eee60def186a0334830924ee0dd3d",
+      "exit_code": 1,
+      "passed_including_shared": 245,
+      "failed": 20,
+      "seconds": 78.09
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "log": "106-raise-default.log",
+      "log_sha256": "9cc860f5759b7d3fdad9995ae24f74a4739e1037c5c69d867a7115c085ca57b7",
+      "exit_code": 1,
+      "passed_including_shared": 253,
+      "failed": 12,
+      "seconds": 83.07
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 103_veldo_0124_macos",
+      "log": "103-after.log",
+      "log_sha256": "055fc9901d383758c0bcd2a4d9afc2b076f111d39d92fc22f2b0ef1c7ce7e43b",
+      "exit_code": 2,
+      "passed_including_shared": 49,
+      "failed": 0,
+      "seconds": 7.05
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 104_veldo_0124_control",
+      "log": "104-after.log",
+      "log_sha256": "88c4ec08fbdae74d6ac5c7266e041ae6ef7c3946fbef5ef799e4818eea9aca50",
+      "exit_code": 2,
+      "passed_including_shared": 32,
+      "failed": 0,
+      "seconds": 6.61
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 105_veldo_0125_relay",
+      "log": "105-after.log",
+      "log_sha256": "031742833967e0730131907e11b7135e415a282a9c1ab5c4c96cf99169ca6108",
+      "exit_code": 2,
+      "passed_including_shared": 43,
+      "failed": 0,
+      "seconds": 16.94
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+      "log": "106-after.log",
+      "log_sha256": "e2d3552d1ebdf4e0fb6270fa92abe2e9d48175261f050e55ae3f1b740dfe30a7",
+      "exit_code": 2,
+      "passed_including_shared": 265,
+      "failed": 0,
+      "seconds": 129.82
+    }
+  ]
+}

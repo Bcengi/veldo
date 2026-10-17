@@ -1,0 +1,12 @@
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-recovery-read-eio-retries
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-recovery-read-emfile-retries
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-recovery-read-enfile-retries
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-recovery-read-eacces-retries
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-entries-read-eio-retries
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-entries-read-emfile-retries
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-entries-read-enfile-retries
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-entries-read-eacces-retries
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-drain-read-eio-retries
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-drain-read-emfile-retries
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-drain-read-enfile-retries
+  SELFTEST FAIL: VELDO-0125 AC3/outbox-drain-read-eacces-retries

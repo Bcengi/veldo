@@ -1,0 +1,26 @@
+diff --git a/.veldo/control_worker_outbox.py b/.veldo/control_worker_outbox.py
+index 6f79eb6e..ef1abe49 100644
+--- a/.veldo/control_worker_outbox.py
++++ b/.veldo/control_worker_outbox.py
+@@ -44,7 +44,7 @@ def validate_entry(entry, path):
+     return entry
+ 
+ 
+-def read_entry(root, path, *, operation='worker_delivery_invalid_entry', raise_read_errors=False):
++def read_entry(root, path, *, operation='worker_delivery_invalid_entry', raise_read_errors=True):
+     """Read under locked(); quarantine invalid content, retain operational failures."""
+     try:
+         return validate_entry(json.loads(path.read_text()), path)
+diff --git a/engine/.veldo/control_worker_outbox.py b/engine/.veldo/control_worker_outbox.py
+index 6f79eb6e..ef1abe49 100644
+--- a/engine/.veldo/control_worker_outbox.py
++++ b/engine/.veldo/control_worker_outbox.py
+@@ -44,7 +44,7 @@ def validate_entry(entry, path):
+     return entry
+ 
+ 
+-def read_entry(root, path, *, operation='worker_delivery_invalid_entry', raise_read_errors=False):
++def read_entry(root, path, *, operation='worker_delivery_invalid_entry', raise_read_errors=True):
+     """Read under locked(); quarantine invalid content, retain operational failures."""
+     try:
+         return validate_entry(json.loads(path.read_text()), path)
