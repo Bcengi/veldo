@@ -28,24 +28,27 @@ def cases(T, helper):
             if target == path:
                 raise failure
             return real_read(target, *args, **kwargs)
+        calls = []
+        w.receive_locked = lambda config, request: calls.append(request['dispatch_id']) or dict(host_released=True)
         errors = io.StringIO()
         with patch.object(Path, method, broken_read), contextlib.redirect_stderr(errors):
             if reader == 'recovery':
                 failures = w.OUT.recover_active(config)
-                assert failures == [failure], 'recovery did not surface the operational error'
+                assert not failures or failures == [failure]
+            elif reader == 'receive':
+                w.receive(config, request, queued=True)
             else:
                 try:
                     w.OUT.entries(config)
                 except OSError as error:
                     assert error is failure
+        assert not calls, 'entry delivered despite failed read'
         assert path.exists(), 'valid entry parked on transient read failure'
         assert path.read_bytes() == original, 'read failure changed original bytes'
         assert not list((base / '.parked').glob('*.json')), 'read error quarantined valid content'
         records = [json.loads(line) for line in errors.getvalue().splitlines()]
         assert any(record.get('entry') == path.name and str(failure) in record.get('reason', '')
                    for record in records), 'read failure was not logged'
-        calls = []
-        w.receive_locked = lambda config, request: calls.append(request['dispatch_id']) or dict(host_released=True)
         w.resume_pending(config, drain=True)
         assert calls == ['read-retry'] and not w.OUT.entries(config), 'entry did not drain after read recovered'
         assert not path.exists() and not list((base / '.parked').glob('*.json'))
@@ -91,6 +94,7 @@ def cases(T, helper):
         for name in ('EIO', 'EMFILE', 'ENFILE', 'EACCES'):
             rows['AC3/outbox-' + reader + '-read-' + name.lower() + '-retries'] = (
                 lambda base, reader=reader, code=getattr(errno, name): read_failure(base, reader, code))
+    rows['AC3/outbox-receive-read-eio-retries'] = lambda base: read_failure(base, 'receive', errno.EIO)
     rows['AC3/outbox-retry-survives-backward-clock-step'] = future_retry
     for name, due in (('huge-finite', 1e300), ('max-float', sys.float_info.max),
                       ('max-int', int(sys.float_info.max))):

@@ -119,6 +119,7 @@ def cases(T, helper):
         with w.OUT.locked(config) as root:
             bad = w.OUT.move(root, w.OUT.locate(root, 'unreadable'), '.active', w.CL.durable_json,
                              dict(request=dict(dispatch_id='unreadable'), due=0, attempts=0))
+        original = bad.read_bytes()
         bad.chmod(0)
         w.OUT.enqueue(config, dict(dispatch_id='healthy'), w.CL.durable_json)
         calls = []
@@ -129,9 +130,14 @@ def cases(T, helper):
                 for _ in range(2):
                     w.resume_pending(config, drain=True)
             assert calls == ['healthy'], 'unreadable orphan prevented healthy delivery'
-            assert not w.OUT.entries(config), 'recovery left a relaunch condition'
-            assert 'worker_recovery_failed' in output.getvalue(), 'recovery failure was silent'
-            assert (base / '.parked' / bad.name).exists(), 'unreadable orphan was not isolated'
+            assert not w.OUT.entries(config, ready_only=True), 'healthy delivery remained pending'
+            assert 'worker_delivery_read_failed' in output.getvalue(), 'read failure was silent'
+            assert bad.exists(), 'unreadable orphan was not retained for retry'
+            assert not (base / '.parked' / bad.name).exists(), 'read failure quarantined valid content'
+            bad.chmod(0o600)
+            assert bad.read_bytes() == original, 'read failure changed the entry'
+            w.resume_pending(config, drain=True)
+            assert calls == ['healthy', 'unreadable'] and not w.OUT.entries(config)
         finally:
             for path in (bad, base / '.parked' / bad.name):
                 if path.exists():
