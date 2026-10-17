@@ -1,0 +1,8 @@
+.veldo/project_runner_macos_os.py:250: Git must use git_process
+.veldo/project_runner_macos_os.py:247: Git must use git_process
+.veldo/control_worker.py:329: Git must use git_process
+.veldo/control_worker.py:331: Git must use git_process
+engine/.veldo/project_runner_macos_os.py:250: Git must use git_process
+engine/.veldo/project_runner_macos_os.py:247: Git must use git_process
+engine/.veldo/control_worker.py:329: Git must use git_process
+engine/.veldo/control_worker.py:331: Git must use git_process

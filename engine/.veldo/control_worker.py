@@ -30,6 +30,7 @@ def organ(name):
 C = organ('project_runner_macos_control')
 CL = organ('control_worker_client')
 OUT = organ('control_worker_outbox')
+_git_process = organ('git_process')
 sleep = time.sleep  # Worker-local seam; never patch process-wide time.
 
 
@@ -326,9 +327,9 @@ def receive_locked(config, request):
     clone, scratch = directory / 'clone', directory / 'scratch'
     scratch.mkdir()
     # The source mirror is installed configuration, never a source URL from work.
-    subprocess.run(['git', 'clone', '--no-local', '--no-checkout', '--', config['source'], str(clone)],
+    _git_process.run(['git', 'clone', '--no-local', '--no-checkout', '--', config['source'], str(clone)],
                    check=True, capture_output=True, timeout=60)
-    subprocess.run(['git', '-C', str(clone), 'checkout', '--detach', contract['source']['commit']],
+    _git_process.run(['git', '-C', str(clone), 'checkout', '--detach', contract['source']['commit']],
                    check=True, capture_output=True, timeout=30)
     return run(client, host, request['dispatch_id'], str(clone), str(scratch), account, claim=claim)
 

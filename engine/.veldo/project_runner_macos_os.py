@@ -11,6 +11,7 @@ spawns as separate jobs for a descendant (XPC services, the Simulator) are in th
 own coalitions; that escape matrix and PID reuse are Release 2.
 """
 import ctypes
+import importlib.util
 import os
 from pathlib import Path
 import plistlib
@@ -21,6 +22,10 @@ import subprocess
 import sys
 import time
 import threading
+
+_git_spec = importlib.util.spec_from_file_location('macos_git_process', Path(__file__).with_name('git_process.py'))
+_git_process = importlib.util.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
 
 ENV = {'PATH': '/usr/bin:/bin:/usr/sbin:/sbin', 'LC_ALL': 'C', 'TZ': 'UTC'}
 
@@ -244,8 +249,18 @@ class Native:
 
     def check_clone(self, clone, source):
         for kind in ('commit', 'tree'):
-            observed = command(['/usr/bin/git', '-C', clone, 'rev-parse', 'HEAD^{%s}' % kind])
+            result = _git_process.run(['/usr/bin/git', '-C', clone, 'rev-parse', 'HEAD^{%s}' % kind],
+                                      env=ENV, stdin=subprocess.DEVNULL, capture_output=True,
+                                      text=True, timeout=5)
+            if result.returncode:
+                raise OSError('macos_tool_failed:git')
+            observed = result.stdout.strip()
             if observed != source[kind]:
                 raise ValueError('binding_mismatch:clone_' + kind)
-        if command(['/usr/bin/git', '-C', clone, 'status', '--porcelain', '--untracked-files=all']):
+        result = _git_process.run(['/usr/bin/git', '-C', clone, 'status', '--porcelain', '--untracked-files=all'],
+                                  env=ENV, stdin=subprocess.DEVNULL, capture_output=True,
+                                  text=True, timeout=5)
+        if result.returncode:
+            raise OSError('macos_tool_failed:git')
+        if result.stdout.strip():
             raise ValueError('binding_mismatch:clone_dirty')
