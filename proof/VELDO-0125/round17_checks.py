@@ -20,6 +20,15 @@ def cases(T, helper):
             path = w.OUT.move(root, w.OUT.locate(root, request['dispatch_id']), state,
                               w.CL.durable_json, dict(request=request, attempts=0, due=0))
         original = path.read_bytes()
+        healthy = None
+        if reader != 'receive':
+            # Both readers sort filenames: prove continuation AFTER the failed read.
+            dispatch = next('healthy-' + str(i) for i in range(1000)
+                            if w.OUT.key('healthy-' + str(i)) > path.name)
+            healthy = dict(dispatch_id=dispatch)
+            with w.OUT.locked(config) as root:
+                peer = w.OUT.move(root, w.OUT.locate(root, dispatch), state,
+                                 w.CL.durable_json, dict(request=healthy, attempts=0, due=0))
         # Exercise opening in recovery and reading in entries().
         method = 'open' if reader == 'recovery' else 'read_text'
         real_read = getattr(Path, method)
@@ -34,15 +43,17 @@ def cases(T, helper):
         with patch.object(Path, method, broken_read), contextlib.redirect_stderr(errors):
             if reader == 'recovery':
                 failures = w.OUT.recover_active(config)
-                assert not failures or failures == [failure]
+                assert failures == [], 'read error escaped recovery as a failure'
+                assert not peer.exists(), 'recovery stopped before the healthy peer'
+                assert (base / '.pending' / peer.name).exists()
             elif reader == 'receive':
                 w.receive(config, request, queued=True)
-            else:
-                try:
-                    w.OUT.entries(config)
-                except OSError as error:
-                    assert error is failure
-        assert not calls, 'entry delivered despite failed read'
+            elif reader == 'entries':
+                assert w.OUT.entries(config) == [dict(request=healthy, attempts=0, due=0)]
+            if healthy:
+                w.resume_pending(config, drain=True)
+                assert calls == [healthy['dispatch_id']], 'drain failed to skip unread entry and deliver peer'
+        assert 'read-retry' not in calls, 'entry delivered despite failed read'
         assert path.exists(), 'valid entry parked on transient read failure'
         assert path.read_bytes() == original, 'read failure changed original bytes'
         assert not list((base / '.parked').glob('*.json')), 'read error quarantined valid content'
@@ -50,7 +61,8 @@ def cases(T, helper):
         assert any(record.get('entry') == path.name and str(failure) in record.get('reason', '')
                    for record in records), 'read failure was not logged'
         w.resume_pending(config, drain=True)
-        assert calls == ['read-retry'] and not w.OUT.entries(config), 'entry did not drain after read recovered'
+        expected = ([healthy['dispatch_id']] if healthy else []) + ['read-retry']
+        assert calls == expected and not w.OUT.entries(config), 'entry did not drain after read recovered'
         assert not path.exists() and not list((base / '.parked').glob('*.json'))
 
     def future_retry(base, due=None):
@@ -90,7 +102,7 @@ def cases(T, helper):
         assert not w.OUT.entries(config) and not list((base / '.parked').glob('*.json'))
 
     rows = {}
-    for reader in ('recovery', 'entries'):
+    for reader in ('recovery', 'entries', 'drain'):
         for name in ('EIO', 'EMFILE', 'ENFILE', 'EACCES'):
             rows['AC3/outbox-' + reader + '-read-' + name.lower() + '-retries'] = (
                 lambda base, reader=reader, code=getattr(errno, name): read_failure(base, reader, code))

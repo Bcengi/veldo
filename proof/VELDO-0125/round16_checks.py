@@ -20,12 +20,13 @@ def cases(T, helper):
         bad.write_bytes(original)
         w.OUT.enqueue(config, dict(dispatch_id='healthy'), w.CL.durable_json)
         calls, sleeps = [], []
-        w.receive_locked = lambda config, request: calls.append(request['dispatch_id']) or dict(host_released=True)
+        w.receive_locked = lambda config, request: calls.append(dict(request)) or dict(host_released=True)
         def sleep(seconds):
             sleeps.append(seconds)
             assert math.isfinite(seconds) and seconds > 0, 'unsafe drain sleep'
             raise AssertionError('invalid entry scheduled a retry')
-        request = dict(dispatch_id='wrong-name' if mismatch else 'bad')
+        request = dict(dispatch_id='wrong-name' if mismatch else 'bad', action='release',
+                       event='fresh-valid-event')
         errors = io.StringIO()
         with patch.object(w, 'sleep', sleep), contextlib.redirect_stderr(errors):
             if reader == 'recovery':
@@ -43,12 +44,22 @@ def cases(T, helper):
             elif reader == 'move':
                 with w.OUT.locked(config) as root:
                     w.OUT.move(root, bad, '.active', w.CL.durable_json)
-            assert not bad.exists(), reader + ': invalid entry retained'
+            if reader == 'enqueue':
+                assert json.loads(bad.read_text()) == dict(request=request, attempts=0, due=0), \
+                    'new event did not replace quarantined content'
+            else:
+                assert not bad.exists(), reader + ': invalid entry retained'
             assert (base / '.parked' / bad.name).read_bytes() == original, reader + ': original bytes not quarantined'
-            assert not any(call != 'healthy' for call in calls), reader + ': invalid entry delivered'
+            expected = ([request] if reader == 'new-receive' else
+                        [dict(dispatch_id='healthy', action='resume')] if reader == 'drain' else [])
+            assert calls == expected, reader + ': corrupt content delivered or fresh event lost'
             assert not sleeps, reader + ': invalid entry reached sleep'
             w.resume_pending(config, drain=True)
-        assert calls == ['healthy'] and not w.OUT.entries(config), reader + ': healthy peer failed to drain'
+        expected = [dict(dispatch_id='healthy', action='resume')]
+        if reader in ('enqueue', 'new-receive'):
+            expected.append(request)
+        assert sorted(calls, key=lambda r: r['dispatch_id']) == sorted(expected, key=lambda r: r['dispatch_id'])
+        assert not w.OUT.entries(config), reader + ': healthy peer failed to drain'
         records = [json.loads(line) for line in errors.getvalue().splitlines()]
         assert any(record.get('entry') == bad.name for record in records), 'missing quarantine diagnostic'
 
