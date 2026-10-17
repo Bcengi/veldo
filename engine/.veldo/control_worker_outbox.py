@@ -17,13 +17,13 @@ def key(dispatch):
     return hashlib.sha256(dispatch.encode()).hexdigest() + '.json'
 
 
-def validate_entry(entry, path, now):
+def validate_entry(entry, path):
     """Writer contract: required request/attempts/due, optional failure reason.
 
     Request is an opaque dict except for its non-empty string dispatch_id, whose
     key must name this file. Attempts is a non-negative int (never bool); due is
-    an int or float (never bool), finite and in [0, now + MAX_BACKOFF]. Zero is
-    immediate and old retries remain valid. Only failure() adds reason, a str.
+    an int or float (never bool), finite and in [0, sys.float_info.max]. Zero is
+    immediate; validity is independent of the clock. Only failure() adds reason, a str.
     """
     if (type(entry) is not dict or not {'request', 'attempts', 'due'} <= entry.keys()
             or entry.keys() - {'request', 'attempts', 'due', 'reason'}
@@ -39,16 +39,20 @@ def validate_entry(entry, path, now):
     due = entry['due']
     # Check the range first so an arbitrarily large JSON int never overflows
     # float conversion inside isfinite().
-    if due < 0 or due > now + MAX_BACKOFF or not math.isfinite(due):
-        raise ValueError('outbox due must be finite and in [0, now + 300 seconds]')
+    if due < 0 or due > sys.float_info.max or not math.isfinite(due):
+        raise ValueError('outbox due must be finite and in [0, sys.float_info.max]')
     return entry
 
 
 def read_entry(root, path, *, operation='worker_delivery_invalid_entry'):
-    """Read under locked(); quarantine original bytes before exposing any fields."""
+    """Read under locked(); quarantine invalid content, retain operational failures."""
     try:
-        return validate_entry(json.loads(path.read_text()), path, time.time())
-    except Exception as error:
+        return validate_entry(json.loads(path.read_text()), path)
+    except OSError as error:
+        print(json.dumps(dict(operation='worker_delivery_read_failed', entry=path.name,
+            reason=str(error))), file=sys.stderr, flush=True)
+        raise
+    except (ValueError, RecursionError) as error:
         print(json.dumps(dict(operation=operation, entry=path.name, reason=str(error))),
               file=sys.stderr, flush=True)
         try:
