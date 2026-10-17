@@ -1,0 +1,87 @@
+[
+  {
+    "path": "scripts/suites/15_warp_1404_historical_analogy.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "6838b0b55898eb1e11027a1dacf33cdfc68d5476a345402c42becd301035f7e6"
+  },
+  {
+    "path": "scripts/selftest.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "ccc6dc7d421552a909a7eedad9a3a19cb912ca3198e884ab2a07d1a0fabc0471"
+  },
+  {
+    "path": "scripts/suites/shared.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "213c07a8d293df2d295cc9399246da0f4defb1709f0d2eae310b31e3c90cf179"
+  },
+  {
+    "path": "scripts/run_scope.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "224b3774ead27ba9440daa586cee32e3f4972acb5f7a85c8a9977f8c7c302f66"
+  },
+  {
+    "path": "scripts/gate_legs.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "a35a7301cbe62144e8ac673aebde18f25879527142b3096826c78b49e0adaf0b"
+  },
+  {
+    "path": "scripts/gate_candidate.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "da1126582d7afe18c469af01e1c70e3250fa576880e7e608246e02b97710bfa2"
+  },
+  {
+    "path": "scripts/agent_sandbox.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "183929c32d43d5ca26f234a1f1f345de8ca7c1a90bf6115979a6ab53b47cd14b"
+  },
+  {
+    "path": "scripts/agent_sandbox.json",
+    "identical_to_main_9763249e": true,
+    "sha256": "86850a6601b342f37f23bcf745c339764a7dc5754ac78fc176d78dcda8eacbb1"
+  },
+  {
+    "path": ".veldo/toe_analogy.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "fcdebca8b58837a115d5183010bcfdc0f431498f2ff28dc8b85f5a26a131aee7"
+  },
+  {
+    "path": ".veldo/toe_corpus.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "4ff5ed8e4d9a104eb3803cd908597f52ec804fb17df9597ff73075312a78190d"
+  },
+  {
+    "path": ".veldo/toe_normalize.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "091752e6fddf5d57c937fa62519faf06d2f7a6df890346efce4b6df63e48a62f"
+  },
+  {
+    "path": ".veldo/estimate.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "9dadd3bdd394ecca0532e0c720a7072f8d4004196d7117b29f0ec53b8b6324f4"
+  },
+  {
+    "path": ".veldo/metrics.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "2b29ef5680c9517a53ee50b2767c5d84748902c45a55a73eda0eb1e703359240"
+  },
+  {
+    "path": ".veldo/validate.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "4231fbaa26044a874dcb45df687db8a550a8406f22688ad49e35979088972f99"
+  },
+  {
+    "path": ".veldo/validate_checks.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "480953c46489f411ba636eef8b94abda1923374dd520e86591373b6c94f5ea37"
+  },
+  {
+    "path": ".veldo/yamlish.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6"
+  },
+  {
+    "path": ".veldo/git_process.py",
+    "identical_to_main_9763249e": true,
+    "sha256": "bcf1c73090a53b5f28df75882121ce1827e54e7f411b1997264269a19f58d187"
+  }
+]

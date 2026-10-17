@@ -1,0 +1,55 @@
+{
+  "scope": "Selected suites only, no canonical verification. Successful selected selftests intentionally return 2.",
+  "runs": [
+    {
+      "command": "python3 scripts/check_git_boundary.py",
+      "log": "git-boundary-before.log",
+      "exit_code": 1,
+      "result": "8 raw Git violations before repair"
+    },
+    {
+      "command": "python3 scripts/check_git_boundary.py",
+      "log": "git-boundary-after.log",
+      "exit_code": 0,
+      "result": "Git subprocess boundary: pass"
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 86_veldo_0168_text",
+      "log": "0168.log",
+      "exit_code": 2,
+      "suite_passed": 26,
+      "total_passed": 52,
+      "failed": 0
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 15_warp_1404_historical_analogy",
+      "log": "warp1404-1.log",
+      "exit_code": 2,
+      "suite_passed": 38,
+      "total_passed": 64,
+      "failed": 0
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 15_warp_1404_historical_analogy",
+      "log": "warp1404-2.log",
+      "exit_code": 2,
+      "suite_passed": 38,
+      "total_passed": 64,
+      "failed": 0
+    },
+    {
+      "command": "python3 -I -S scripts/gate_candidate.py --root \"$PWD\" -- python3 scripts/selftest.py --suite 15_warp_1404_historical_analogy",
+      "log": "warp1404-confined-1.log",
+      "exit_code": 2,
+      "result": "Launcher refused before suite execution: missing inherited sandbox marker"
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 105_veldo_0125_relay",
+      "log": "0125-relay.log",
+      "exit_code": 2,
+      "suite_passed": 17,
+      "total_passed": 43,
+      "failed": 0
+    }
+  ]
+}

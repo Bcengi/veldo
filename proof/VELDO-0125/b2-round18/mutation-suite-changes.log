@@ -1,0 +1,11 @@
+M	scripts/check_teeth_mutations.py
+A	scripts/suites/103_veldo_0124_macos.py
+A	scripts/suites/104_veldo_0124_control.py
+A	scripts/suites/105_veldo_0125_relay.py
+A	scripts/suites/106_veldo_0125_routing.py
+M	scripts/suites/33_veldo_0020_authority.py
+M	scripts/suites/36_veldo_0023_journal.py
+M	scripts/suites/68_veldo_0134_acceptance.py
+M	scripts/suites/86_veldo_0168_text.py
+M	scripts/suites/manifest.json
+M	scripts/suites/requires.json

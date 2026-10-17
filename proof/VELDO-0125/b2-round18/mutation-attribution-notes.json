@@ -1,0 +1,29 @@
+{
+  "reported_counts": {
+    "registered": 2546,
+    "executed": 1227,
+    "rejected": 1216
+  },
+  "reported_counts_source": "Owner prompt; original run receipt is not available in this checkout.",
+  "rejected_meaning": "Number of case identities with validated result records; successful mutant rejection, not a driver failure. scripts/check_gate_mutations.py:844-851,895-906.",
+  "inference_limit": "Counts do not identify invalid_results, error/detail, pending cases, reused cases, timeouts, or baseline/no-op failures. Cannot attribute failure to branch or establish the same failure on main without case-level receipts.",
+  "reference_limit": "No main ref exists here; 9763249e is the last main revision explicitly named by the batch-2 seed merge 95a33d9b. No other branch/worktree checked out or modified.",
+  "driver_mentions": [
+    {
+      "path": "scripts/check_teeth_mutations.py",
+      "main_mentions_0124_or_0125": false,
+      "current_mentions_0124_or_0125": false
+    },
+    {
+      "path": "scripts/check_gate_mutations.py",
+      "main_mentions_0124_or_0125": false,
+      "current_mentions_0124_or_0125": false
+    },
+    {
+      "path": "scripts/check_review_mutations.py",
+      "main_mentions_0124_or_0125": false,
+      "current_mentions_0124_or_0125": false
+    }
+  ],
+  "runtime_mutation_commands_run": []
+}

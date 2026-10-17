@@ -1,0 +1,138 @@
+{
+  "main_reference": "9763249e",
+  "method": "Static AST and Git object reads only; no mutation driver imported or run. Call digest is not a runtime registry count.",
+  "files": [
+    {
+      "path": "scripts/check_teeth_mutations.py",
+      "identical_to_main": false,
+      "main_sha256": "2cc2e84f6ba6e5b875ee099172ba63db2076a51967287ef2e3df4e554e8eeec0",
+      "current_sha256": "6dad8ce3e47457c1038d2e70ade639151365c776237b4913e912ae397364c1a3"
+    },
+    {
+      "path": "scripts/check_gate_mutations.py",
+      "identical_to_main": true,
+      "main_sha256": "1bd1ab532e218e984dc6b2a062f81499ea48a370df3deb3d12b0568e8e08d611",
+      "current_sha256": "1bd1ab532e218e984dc6b2a062f81499ea48a370df3deb3d12b0568e8e08d611"
+    },
+    {
+      "path": "scripts/check_review_mutations.py",
+      "identical_to_main": true,
+      "main_sha256": "95fd98417bf4d5874a13546edd4f0990ba4559c9f11be62c5684f325400ce834",
+      "current_sha256": "95fd98417bf4d5874a13546edd4f0990ba4559c9f11be62c5684f325400ce834"
+    },
+    {
+      "path": "scripts/mutation_sandbox.py",
+      "identical_to_main": true,
+      "main_sha256": "2843a9cb0bf5aa40a9baede16349af7f6bb1cdb16033dd44ee54ad76bcfd8309",
+      "current_sha256": "2843a9cb0bf5aa40a9baede16349af7f6bb1cdb16033dd44ee54ad76bcfd8309"
+    },
+    {
+      "path": "scripts/mutation_reuse.py",
+      "identical_to_main": true,
+      "main_sha256": "129ddb795b99a434c285af58a79dea6e9c1853190781e59c093b9a6f8b327d12",
+      "current_sha256": "129ddb795b99a434c285af58a79dea6e9c1853190781e59c093b9a6f8b327d12"
+    },
+    {
+      "path": "scripts/mutation_ownership.py",
+      "identical_to_main": true,
+      "main_sha256": "ee1ec150aeed2a8be8e710897bb91a6a8dde3df730b6636acd5b10944f96384c",
+      "current_sha256": "ee1ec150aeed2a8be8e710897bb91a6a8dde3df730b6636acd5b10944f96384c"
+    },
+    {
+      "path": "scripts/mutation_observer.py",
+      "identical_to_main": true,
+      "main_sha256": "a9b69e29aa615d919b2279eb14281c48907efe989337625d56425cf38e278430",
+      "current_sha256": "a9b69e29aa615d919b2279eb14281c48907efe989337625d56425cf38e278430"
+    },
+    {
+      "path": "scripts/mutation_case_inputs.json",
+      "identical_to_main": true,
+      "main_sha256": "3fc46ffa00ab9e19d9716a9d72e45fa40e9ed5f226ce0aaea3efa82f5b778035",
+      "current_sha256": "3fc46ffa00ab9e19d9716a9d72e45fa40e9ed5f226ce0aaea3efa82f5b778035"
+    },
+    {
+      "path": "scripts/mutation_reuse_profiles.json",
+      "identical_to_main": true,
+      "main_sha256": "9adcd4eda8ebe2d018ccc8c3d88554b03c73bc296156bac4cf346a145147b090",
+      "current_sha256": "9adcd4eda8ebe2d018ccc8c3d88554b03c73bc296156bac4cf346a145147b090"
+    }
+  ],
+  "registrations": {
+    "9763249e": {
+      "affected_registrations": [
+        {
+          "name": "owners37-different-owner-adds",
+          "module": "control_store.py",
+          "anchor": "if (prior[2] == row[2] and prior[4:] == row[4:]\n",
+          "replacement": "if (prior[4:] == row[4:]\n",
+          "anchor_matches": 1,
+          "expected_rows": [
+            "owners/different-owner/kinds",
+            "owners/different-owner/prefixes"
+          ]
+        },
+        {
+          "name": "owners37-bound-command-added",
+          "module": "control_store.py",
+          "anchor": "if bound.get(command, row[4:]) != row[4:]:",
+          "replacement": "if False:  # defect: a command already bound elsewhere is accepted",
+          "anchor_matches": 1,
+          "expected_rows": [
+            "owners/bound-elsewhere/kinds",
+            "owners/bound-elsewhere/prefixes"
+          ]
+        },
+        {
+          "name": "owners-may-name-generic-commands",
+          "module": "control_store.py",
+          "anchor": "            builtin = sorted(set(commands) & set(COMMAND_REGISTRY))",
+          "replacement": "            builtin = []",
+          "anchor_matches": 1,
+          "expected_rows": [
+            "aliases/owned-by-code-not-name"
+          ]
+        }
+      ],
+      "literal_first_argument_call_count": 2152,
+      "literal_first_argument_call_digest": "01daedfd8faff1c2db2daa08e954820c8308498af8fa28a559e5da21189459b4"
+    },
+    "HEAD": {
+      "affected_registrations": [
+        {
+          "name": "owners37-different-owner-adds",
+          "module": "control_store.py",
+          "anchor": "if (prior[2] == row[2] and prior[5] == row[5]\n",
+          "replacement": "if (prior[5] == row[5]\n",
+          "anchor_matches": 1,
+          "expected_rows": [
+            "owners/different-owner/kinds",
+            "owners/different-owner/prefixes"
+          ]
+        },
+        {
+          "name": "owners37-bound-command-added",
+          "module": "control_store.py",
+          "anchor": "if bound.get(command, row[4:])[1] != row[5]:",
+          "replacement": "if False:  # defect: a command already bound elsewhere is accepted",
+          "anchor_matches": 1,
+          "expected_rows": [
+            "owners/bound-elsewhere/kinds",
+            "owners/bound-elsewhere/prefixes"
+          ]
+        },
+        {
+          "name": "owners-may-name-generic-commands",
+          "module": "control_store.py",
+          "anchor": "            builtin = sorted(set(commands) & GENERIC_OPERATIONS)",
+          "replacement": "            builtin = []",
+          "anchor_matches": 1,
+          "expected_rows": [
+            "aliases/owned-by-code-not-name"
+          ]
+        }
+      ],
+      "literal_first_argument_call_count": 2152,
+      "literal_first_argument_call_digest": "01daedfd8faff1c2db2daa08e954820c8308498af8fa28a559e5da21189459b4"
+    }
+  }
+}

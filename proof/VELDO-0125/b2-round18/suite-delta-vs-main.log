@@ -1,0 +1,10 @@
+scripts/suites/103_veldo_0124_macos.py
+scripts/suites/104_veldo_0124_control.py
+scripts/suites/105_veldo_0125_relay.py
+scripts/suites/106_veldo_0125_routing.py
+scripts/suites/33_veldo_0020_authority.py
+scripts/suites/36_veldo_0023_journal.py
+scripts/suites/68_veldo_0134_acceptance.py
+scripts/suites/86_veldo_0168_text.py
+scripts/suites/manifest.json
+scripts/suites/requires.json

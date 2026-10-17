@@ -1,0 +1,10 @@
+{
+  "command": "python3 scripts/selftest.py --suite 106_veldo_0125_routing",
+  "log": "0125-routing.log",
+  "exit_code": 2,
+  "suite_passed": 224,
+  "total_passed": 250,
+  "failed": 0,
+  "elapsed_seconds": 132.81,
+  "scope": "Partial selected-suite run, not canonical verification."
+}

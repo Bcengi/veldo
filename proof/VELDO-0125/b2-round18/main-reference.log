@@ -1,0 +1,15 @@
+commit 95a33d9b8c45102e070bd2eef379334ee819f40c
+Merge: d65118eb 9763249e
+Author:     Dmitry Grinberg <dmitry@bcengi.com>
+AuthorDate: Thu Oct 15 08:52:56 2026 -0400
+Commit:     Dmitry Grinberg <dmitry@bcengi.com>
+CommitDate: Thu Oct 15 08:52:56 2026 -0400
+
+    Seed VELDO-0125 batch 2: Veldo main 9763249e merged in; conflicts left marked for the implementer: scripts/suites/manifest.json scripts/suites/requires.json
+commit 9763249e09c689d850973eaa5e39ea030eb59df4
+Author:     Dmitry Grinberg <dmitry@bcengi.com>
+AuthorDate: Wed Oct 14 11:33:13 2026 -0400
+Commit:     Dmitry Grinberg <dmitry@bcengi.com>
+CommitDate: Wed Oct 14 11:33:13 2026 -0400
+
+    Account pool: per-account roles, so a review-only login (codex2) is always listed and never given a build (Telegram 33548, 33550)

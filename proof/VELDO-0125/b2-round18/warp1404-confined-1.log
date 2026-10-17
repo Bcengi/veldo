@@ -1,0 +1,2 @@
+agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()
+candidate execution failed in store-denied domain (publication forbidden)
