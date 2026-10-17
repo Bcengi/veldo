@@ -3,6 +3,7 @@ import contextlib
 import io
 import json
 import math
+import sys
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -53,7 +54,7 @@ def cases(T, helper):
 
     valid = dict(request=dict(dispatch_id='bad'), attempts=0, due=0)
     required = {'name-key-mismatch': valid, 'infinity': dict(valid, due=float('inf')),
-                'nan': dict(valid, due=float('nan')), 'huge-float': dict(valid, due=1e300),
+                'nan': dict(valid, due=float('nan')), 'out-of-float-range': dict(valid, due=int(sys.float_info.max) + 1),
                 'negative-attempts': dict(valid, attempts=-1), 'string-attempts': dict(valid, attempts='1'),
                 'unknown-field': dict(valid, unknown=True)}
     rows = {}
@@ -78,7 +79,7 @@ def cases(T, helper):
                 'attempts-null': dict(valid, attempts=None), 'due-bool': dict(valid, due=False),
                 'due-string': dict(valid, due='0'), 'due-null': dict(valid, due=None),
                 'due-negative': dict(valid, due=-1), 'due-negative-infinity': dict(valid, due=-float('inf')),
-                'due-huge-int': dict(valid, due=10 ** 400), 'due-over-bound': dict(valid, due=1300.01),
+                'due-huge-int': dict(valid, due=10 ** 400), 'due-over-float-bound': dict(valid, due=int(sys.float_info.max) + 1),
                 'reason-number': dict(valid, reason=1), 'reason-null': dict(valid, reason=None)}
         # Freeze both queue and drain clocks without altering process-wide time.
         for name, value in more.items():

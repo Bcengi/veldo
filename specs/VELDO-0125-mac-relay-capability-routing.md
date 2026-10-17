@@ -312,3 +312,16 @@ Drain sleeps are bounded to 1-300 seconds, with invalid computed delays logged
 and clamped. The regression matrix and before/after selected-suite observations
 live under proof/VELDO-0125/b2-round16; the full gate and native qualification
 remain the reviewer's responsibility under the owner's run restrictions.
+
+2026-10-16, round 17: the owner narrows quarantine to invalid entry content.
+Opening or reading an entry with an OSError logs and retains the original file
+for another pass, including EIO, EMFILE, ENFILE and EACCES. This supersedes
+round 16's read-time deadline bound: due remains a non-negative finite int or
+float (never bool), bounded only by sys.float_info.max, independent of the
+wall clock. A backward clock step cannot invalidate a writer-created retry.
+The existing 1-300 second drain sleep clamp bounds far-future waits. The
+round 16 invalid-entry matrix now tests the absolute float boundary in place
+of formerly rejected finite future deadlines; all other content checks remain.
+Selected-suite before/after observations and regression rows live under
+proof/VELDO-0125/b2-round17 and round17_checks.py. The reviewer retains the
+full gate and native qualification; no merge or independent approval is claimed.
