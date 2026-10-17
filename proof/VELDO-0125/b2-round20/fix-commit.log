@@ -1,0 +1,2 @@
+[agent/codex/veldo-0125-b2 37b64d9d] fix: reject receiver handoffs when outbox reads fail
+ 4 files changed, 20 insertions(+), 6 deletions(-)

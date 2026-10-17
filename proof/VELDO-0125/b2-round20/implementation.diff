@@ -1,0 +1,64 @@
+diff --git a/engine/.veldo/control_worker.py b/engine/.veldo/control_worker.py
+index f86d4d33..7fd18421 100644
+--- a/engine/.veldo/control_worker.py
++++ b/engine/.veldo/control_worker.py
+@@ -162,6 +162,7 @@ def receive(config, request, *, queued=False):
+     lock = None
+     acquired = False
+     recorder_failed = False
++    accepting_event = not queued
+     try:
+         # Serialize queue transitions with execution-lock acquisition/completion.
+         # Active entries are durable but outside launchd's watched directory.
+@@ -175,9 +176,10 @@ def receive(config, request, *, queued=False):
+                     if OUT.enqueue_locked(root, request, CL.durable_json) is None:
+                         return None
+             path = OUT.locate(root, request['dispatch_id'])
+-            entry = OUT.read_entry(root, path)
++            entry = OUT.read_entry(root, path, raise_read_errors=not queued)
+             if entry is None:
+                 return None
++            accepting_event = False
+             locks = root / '.locks'
+             locks.mkdir(exist_ok=True)
+             lock = (locks / C.P.digest(request['dispatch_id']).split(':')[-1]).open('a')
+@@ -193,6 +195,9 @@ def receive(config, request, *, queued=False):
+                         release=result.get('host_released') or request.get('action') == 'release')
+         return result
+     except Exception as error:
++        if accepting_event:
++            # Linux must resend a failed handoff; leave the prior entry untouched.
++            raise
+         try:
+             OUT.failure(config, request, error, CL.durable_json)
+         except Exception as recording_error:
+diff --git a/engine/.veldo/control_worker_outbox.py b/engine/.veldo/control_worker_outbox.py
+index 19d25c34..e3cee62c 100644
+--- a/engine/.veldo/control_worker_outbox.py
++++ b/engine/.veldo/control_worker_outbox.py
+@@ -44,13 +44,15 @@ def validate_entry(entry, path):
+     return entry
+ 
+ 
+-def read_entry(root, path, *, operation='worker_delivery_invalid_entry'):
++def read_entry(root, path, *, operation='worker_delivery_invalid_entry', raise_read_errors=False):
+     """Read under locked(); quarantine invalid content, retain operational failures."""
+     try:
+         return validate_entry(json.loads(path.read_text()), path)
+     except OSError as error:
+         print(json.dumps(dict(operation='worker_delivery_read_failed', entry=path.name,
+             reason=str(error))), file=sys.stderr, flush=True)
++        if raise_read_errors:
++            raise
+         return None
+     except (ValueError, RecursionError) as error:
+         print(json.dumps(dict(operation=operation, entry=path.name, reason=str(error))),
+@@ -192,7 +194,7 @@ def enqueue_locked(root, request, write):
+     path = locate(root, request['dispatch_id'])
+     previous = None
+     if path.exists():
+-        previous = read_entry(root, path)
++        previous = read_entry(root, path, raise_read_errors=True)
+         if previous is None:
+             return None
+     if previous and previous['request'].get('action') == 'release':

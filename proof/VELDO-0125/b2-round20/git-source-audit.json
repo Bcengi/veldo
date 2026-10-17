@@ -1,0 +1,31 @@
+{
+  "available_network_profile_not_used_by_receiver": {
+    "GIT_ASKPASS": "/example/askpass",
+    "GIT_CONFIG_GLOBAL": "/example/gitconfig",
+    "GIT_CONFIG_SYSTEM": "/example/system-gitconfig",
+    "GIT_NO_REPLACE_OBJECTS": "1",
+    "GIT_SSH_COMMAND": "ssh -i /example/key",
+    "GIT_TERMINAL_PROMPT": "0",
+    "HOME": "/example/operator",
+    "SSH_AUTH_SOCK": "/example/agent"
+  },
+  "input": {
+    "GIT_ASKPASS": "/example/askpass",
+    "GIT_CONFIG_GLOBAL": "/example/gitconfig",
+    "GIT_CONFIG_SYSTEM": "/example/system-gitconfig",
+    "GIT_DIR": "/example/unrelated-repo",
+    "GIT_SSH_COMMAND": "ssh -i /example/key",
+    "HOME": "/example/operator",
+    "SSH_AUTH_SOCK": "/example/agent"
+  },
+  "kind": "environment transformation inspection; synthetic values, no network operation",
+  "round18_clone_default": {
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_SYSTEM": "/dev/null",
+    "GIT_NO_REPLACE_OBJECTS": "1",
+    "GIT_TERMINAL_PROMPT": "0",
+    "HOME": "/example/operator",
+    "SSH_AUTH_SOCK": "/example/agent"
+  }
+}

@@ -1,0 +1,3 @@
+[agent/codex/veldo-0125-b2 a178110b] test: reproduce receiver wake loss on outbox read errors
+ 2 files changed, 83 insertions(+), 1 deletion(-)
+ create mode 100644 proof/VELDO-0125/b2-round20/receiver_checks.py
