@@ -115,7 +115,10 @@ launch. `diff-check-implementation.log` and `diff-check-final.log` are empty
 successful `git diff --check` outputs. The first staged check warned about a
 blank context line in the saved raw patch (`staged-diff-check.log`); the exact patch
 is now encoded in JSON to preserve its bytes without introducing trailing
-whitespace. `staged-diff-check-final.log` records the final staged check.
+whitespace. `staged-diff-check-final.log` records a second warning solely because
+the first warning log itself echoes that raw context line. Both diagnostic logs
+are preserved verbatim, including that whitespace; production code has no
+whitespace errors. These warnings do not represent test failures.
 
 ## Validation limits
 
