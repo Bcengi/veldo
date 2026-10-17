@@ -39,3 +39,10 @@ success exits 2 by repository design; it is not a gate pass. The full gate,
 mutation scripts, native qualification, independent approval, merge and push
 were not run. These are scoped observations for the reviewer, not a passed
 unit-evidence manifest or landing decision.
+
+Final selected-suite observations: 103: 23 rows passed; 104: 6; 105: 17;
+106: 224. Each has zero failures and the expected partial-run exit code 2.
+All twelve initial new regressions failed on the original implementation. The
+additional receiver regression failed on the propagating implementation; all
+thirteen pass on the final implementation. Intermediate failures are retained
+in the logs, including the superseded unreadable-entry parking expectation.
