@@ -195,8 +195,9 @@ def enqueue_locked(root, request, write):
     previous = None
     if path.exists():
         previous = read_entry(root, path, raise_read_errors=True)
-        if previous is None:
-            return None
+        # None here means corrupt content was durably quarantined, not that the
+        # incoming event was accepted. Persist that event under the same dispatch
+        # identity; operational read/park/write errors still reject the handoff.
     if previous and previous['request'].get('action') == 'release':
         request = previous['request']
     entry = dict(request=request, attempts=0, due=0)
