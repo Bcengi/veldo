@@ -1,0 +1,39 @@
+{
+  "checked": 417,
+  "failed": [
+    {
+      "driver": "check_teeth_mutations.py",
+      "name": "retire-no-sweep-on-wait",
+      "path": ".veldo/control_launch.py",
+      "suite": "67_veldo_0041_heartbeat.py",
+      "rows": [
+        "retirement/live-descendant"
+      ],
+      "anchors": [
+        {
+          "count": 0,
+          "old_sha256": "3203fee64457b631a2ca3390a1e43d7a5ab3d2b1e81b688867746078e8f4e1b5",
+          "new_sha256": "948de9fc66bf80cf94483853c20070c7e47ea3f6247e9ec6ee9215ee2160c0cf"
+        }
+      ],
+      "applies": false
+    },
+    {
+      "driver": "check_teeth_mutations.py",
+      "name": "loop154-periodic-pass",
+      "path": ".veldo/control_service.py",
+      "suite": "83_veldo_0154_factory_loop.py",
+      "rows": [
+        "loop/no-other-timer"
+      ],
+      "anchors": [
+        {
+          "count": 0,
+          "old_sha256": "924f5a9e8a15622f2590724432cdb65e889a5e2c8d6ee3ad8685c1d3ebfacca0",
+          "new_sha256": "d2085a0bb838b352059ce11cf63b2a92f0100d949d15e8fdc2f043283452c06b"
+        }
+      ],
+      "applies": false
+    }
+  ]
+}

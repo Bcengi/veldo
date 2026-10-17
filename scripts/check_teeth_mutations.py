@@ -3439,8 +3439,10 @@ def cases():
          'retirement/clone-files')
     beat('retire-no-sweep-on-wait', 'control_launch.py',
          "        self.launches.pop(launch.dispatch_id, None)\n"
-         "        # This dispatch's end may have completed another's obligation (a group the kernel emptied).\n"
-         "        self.sweep()\n",
+         "        # A local group ending can complete another local obligation. Remote events settle only\n"
+         "        # their own reservation and never cause an unrelated Linux cleanup sweep.\n"
+         "        if not getattr(launch, 'remote', False):\n"
+         "            self.sweep()\n",
          "        self.launches.pop(launch.dispatch_id, None)  # defect: a wait sweeps no pending retirement\n",
          'retirement/live-descendant')
     beat('retire-no-sweep-on-prepare', 'control_launch.py',
@@ -9086,8 +9088,12 @@ def cases():
             "            return self.rerun(record, report)\n",
             ['loop/ask-before-rerun'])
     loop154('loop154-periodic-pass', 'control_service.py',
-            "                    if service.loop is not None and service.loop.due(time.time()):\n",
-            "                    if service.loop is not None:  # defect: every turn of the service loop starts a pass\n",
+            "        if self.due(now):\n"
+            "            self.timer = None\n"
+            "            self.wake('account_reset')\n",
+            "        if True:  # defect: every turn of the service loop starts a pass\n"
+            "            self.timer = None\n"
+            "            self.wake('account_reset')\n",
             ['loop/no-other-timer'])
     loop154('loop154-journal-wake-dropped', 'control_service.py',
             "        if self.loop is not None and self.watermark() > before:\n            self.loop.wake('journal')\n",
