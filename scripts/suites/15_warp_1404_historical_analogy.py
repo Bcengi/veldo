@@ -177,6 +177,11 @@ _W1404_NO_WRITER_DRIVER = r'''
 import ast, importlib.util, io as _io, json, os, sys
 from contextlib import redirect_stdout as _redirect
 
+# CPython cache writes are not module side effects. Disable them before installing the hook:
+# a cold, read-only checkout must be measured identically to a checkout with warm .pyc files.
+# Keep every audited write, spawn and socket event (including failed attempts) observable.
+sys.dont_write_bytecode = True
+
 ROOT = sys.argv[1]
 payload = json.loads(sys.stdin.read())
 pure, repo_writes, repo_spawn = [], [], set()
@@ -858,12 +863,14 @@ with tempfile.TemporaryDirectory() as _d:
     # would be a side effect on every fragment after it.
     _w1404_wdir = Path(_d) / "auditcwd"
     _w1404_wdir.mkdir()
+    _w1404_payload = json.dumps({
+        "corpus": list(_W1404_SEEDED), "nospend": list(_W1404_NOSPEND),
+        "features": {"risk": "standard", "acceptance_criteria": 2,
+                     "footprint_declared": 2, "protected_touch": False},
+        "target": _W1404_TARGET, "spec": str(_w1404_fix), "at": _W1404_AT})
     _w1404_writerun = subprocess.run(
         [sys.executable, "-c", _W1404_NO_WRITER_DRIVER, str(ROOT)],
-        input=json.dumps({"corpus": list(_W1404_SEEDED), "nospend": list(_W1404_NOSPEND),
-                          "features": {"risk": "standard", "acceptance_criteria": 2,
-                                       "footprint_declared": 2, "protected_touch": False},
-                          "target": _W1404_TARGET, "spec": str(_w1404_fix), "at": _W1404_AT}),
+        input=_w1404_payload,
         capture_output=True, text=True, cwd=str(_w1404_wdir))
     _w1404_audited = (json.loads(_w1404_writerun.stdout) if _w1404_writerun.stdout.strip()
                       else {"pure": ["DRIVER DID NOT REPORT: " + _w1404_writerun.stderr[-400:]],
@@ -913,6 +920,66 @@ with tempfile.TemporaryDirectory() as _d:
            and set(_w1404_audited["imports"]) == _W1404_IMPORTS
            and set(_w1404_audited["named_calls"]) & {"open", "__import__", "eval", "exec",
                                                      "compile", "input", "breakpoint"} == set())
+
+    # Cold-cache regression and falsifiers use the SAME driver and all four windows. Copy only
+    # runtime source; link the repository's read-only evidence and git metadata so repo_basis and
+    # the CLI still consume the real corpus. Mutations never touch the checkout's product code.
+    _w1404_auditroot = Path(_d) / "auditrepo"
+    _w1404_auditroot.mkdir()
+    for _w1404_entry in ROOT.iterdir():
+        if _w1404_entry.name != ".veldo":
+            (_w1404_auditroot / _w1404_entry.name).symlink_to(_w1404_entry)
+    (_w1404_auditroot / ".veldo").mkdir()
+    for _w1404_entry in (ROOT / ".veldo").iterdir():
+        _w1404_dest = _w1404_auditroot / ".veldo" / _w1404_entry.name
+        if _w1404_entry.suffix == ".py":
+            _w1404_shutil.copyfile(_w1404_entry, _w1404_dest)
+        elif _w1404_entry.name != "__pycache__":
+            _w1404_dest.symlink_to(_w1404_entry)
+    _w1404_cache = Path(_d) / "readonly-pycache"
+    _w1404_cache.mkdir(mode=0o555)
+    _w1404_auditenv = dict(os.environ, PYTHONPYCACHEPREFIX=str(_w1404_cache))
+    # The fixture must expose the pre-fix bug even when the outer gate disables bytecode itself.
+    _w1404_auditenv.pop("PYTHONDONTWRITEBYTECODE", None)
+    _w1404_subject = _w1404_auditroot / ".veldo" / "toe_analogy.py"
+    _w1404_source = _w1404_subject.read_text()
+    try:
+        for _w1404_case, _w1404_injection in (
+                ("cold cache", ""),
+                ("import writer", "\nPath('import-write.txt').write_text('caught')\n"),
+                ("import spawn", "\nimport subprocess as _spawn\n"
+                 "_spawn.run([sys.executable, '-c', 'pass'], check=True)\n")):
+            _w1404_subject.write_text(_w1404_source + _w1404_injection)
+            _w1404_run = subprocess.run(
+                [sys.executable, "-c", _W1404_NO_WRITER_DRIVER, str(_w1404_auditroot)],
+                input=_w1404_payload, capture_output=True, text=True,
+                cwd=str(_w1404_wdir), env=_w1404_auditenv)
+            _w1404_report = json.loads(_w1404_run.stdout) if _w1404_run.stdout.strip() else {}
+            _w1404_complete = (
+                _w1404_run.returncode == 0
+                and _w1404_report.get("drives") == 8
+                and _w1404_report.get("cli_reported") is True
+                and _w1404_report.get("repo_records", 0) > 100
+                and _w1404_report.get("predicted") == [True, False, False, False, False]
+                and _w1404_report.get("pure") == []
+                and bool(_w1404_report.get("repo_spawn"))
+                and set(_w1404_report.get("repo_spawn", [])) <= _W1404_READONLY_GIT)
+            _w1404_events = _w1404_report.get("repo_writes", [])
+            if _w1404_case == "cold cache":
+                expect("WARP-1404 AC5 BYTECODE: empty read-only cache passes all audit windows",
+                       _w1404_complete and _w1404_events == []
+                       and not os.access(_w1404_cache, os.W_OK)
+                       and list(_w1404_cache.iterdir()) == []
+                       and set(_w1404_report.get("imports", [])) == _W1404_IMPORTS)
+            elif _w1404_case == "import writer":
+                expect("WARP-1404 AC5 BYTECODE: import writer still makes AC5 red",
+                       _w1404_complete and _w1404_events == ["open import-write.txt mode w"]
+                       and (_w1404_wdir / "import-write.txt").read_text() == "caught")
+            else:
+                expect("WARP-1404 AC5 BYTECODE: import spawn still makes AC5 red",
+                       _w1404_complete and _w1404_events == [sys.executable + " -c"])
+    finally:
+        _w1404_cache.chmod(0o755)
 
     _W1404_MALFORMED = (
         ("not a list", "not a list"),
