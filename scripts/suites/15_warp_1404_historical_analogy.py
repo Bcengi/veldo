@@ -1000,7 +1000,8 @@ with tempfile.TemporaryDirectory() as _d:
             and report.get("cli_reported") is True
             and report.get("repo_records", 0) > 100
             and report.get("predicted") == [True, False, False, False, False]
-            and report.get("pure") == []
+            and isinstance(report.get("pure"), list)
+            and isinstance(report.get("repo_writes"), list)
             and bool(report.get("repo_spawn"))
             and set(report.get("repo_spawn", [])) <= _W1404_READONLY_GIT
             and set(report.get("imports", [])) == _W1404_IMPORTS
@@ -1008,9 +1009,10 @@ with tempfile.TemporaryDirectory() as _d:
                      & {"open", "__import__", "eval", "exec", "compile", "input", "breakpoint"}))
         print("WARP-1404 AC5 AUDIT REPORT " + json.dumps({
             "case": case, "phase": phase, "complete": complete,
-            "ac5_green": complete and report.get("repo_writes") == [],
+            "ac5_green": complete and report.get("pure") == []
+            and report.get("repo_writes") == [],
             "report": report, "stderr": run.stderr[-400:]}))
-        return complete, report.get("repo_writes")
+        return complete, report.get("pure", []) + report.get("repo_writes", [])
 
     # The read-only cold-cache row above remains intact. Exercise writable cold and warm
     # caches too, without relying on the caller's cache state or bytecode environment.
