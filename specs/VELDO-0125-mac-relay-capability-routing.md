@@ -250,8 +250,9 @@ The delivery worker migrates the live slot index at its RunAtLoad startup;
 receiver construction disables migration and requires that installed index.
 Recovery schedules orphaned entries with their original deadline and attempt
 count. It does not perform backlog network calls on the receiver's stdin path.
-Recorder failures retain the original entry in .parked using rename, outside
-launchd's watched queue. Explicit new events can retry operator-repaired work.
+Recorder failures publish the original entry with os.link to a non-colliding name
+in .parked, fsync .parked, then unlink the live entry from launchd's watched queue.
+Explicit new events can retry operator-repaired work.
 
 The macOS worker profile changes from veldo.macos_worker_profile/v1 to v2.
 Both heartbeat_seconds and heartbeat_window_seconds are removed, including

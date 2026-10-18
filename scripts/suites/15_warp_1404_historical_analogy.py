@@ -180,7 +180,6 @@ from contextlib import redirect_stdout as _redirect
 ROOT = sys.argv[1]
 payload = json.loads(sys.stdin.read())
 pure, repo_writes, repo_spawn = [], [], set()
-loaded = set()
 watching = [None]
 WRITE_FLAGS = os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_CREAT | os.O_TRUNC
 SPAWN = ("subprocess.Popen", "os.system", "os.exec", "os.posix_spawn", "os.spawn", "os.fork",
@@ -197,8 +196,6 @@ def hook(event, args):
     where = watching[0]
     if where is None:
         return
-    if event == "exec":
-        loaded.add(args[0].co_filename)
     seen = None
     if event == "open":
         mode = args[1] if len(args) > 1 else None
@@ -287,7 +284,6 @@ finally:
     watching[0] = None
 sys.stdout.write(json.dumps({
     "pure": pure, "repo_writes": repo_writes, "repo_spawn": sorted(repo_spawn),
-    "loaded": sorted(loaded),
     "cli_reported": cli_reported,
     "drives": drives, "repo_records": repo_records, "imports": sorted(imports),
     "named_calls": sorted(named_calls),
@@ -874,7 +870,6 @@ with tempfile.TemporaryDirectory() as _d:
                             "repo_writes": [], "repo_spawn": [], "drives": 0,
                             "repo_records": 0, "predicted": [], "imports": [], "cli_reported": False,
                             "named_calls": []})
-    print("WARP-1404 audit observations: " + json.dumps(_w1404_audited, sort_keys=True))
 
     # MEASUREMENT TWO, reported by the same driver from the parsed AST: what the module IMPORTS, as
     # a set to be asserted by EQUALITY rather than searched for four forbidden spellings. `import os
