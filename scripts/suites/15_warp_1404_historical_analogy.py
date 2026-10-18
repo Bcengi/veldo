@@ -1090,6 +1090,27 @@ with tempfile.TemporaryDirectory() as _d:
          "_libc = _act.CDLL(None)\n"
          "_getpid = _act.cast(_libc.getpid, _act.c_void_p).value\n"
          "assert _acraw.call_function(_getpid, ()) == _ao.getpid()"),
+        # Raw-address function pointers need not emit any ctypes.* event. Use only
+        # _ctypes and copy zero bytes between valid byte strings: the call is real
+        # but changes no memory. The generic import must be sufficient on its own.
+        ("_ctypes raw address call", "import _ctypes", "import _ctypes as _acraw\n"
+         "class _CharP(_acraw._SimpleCData):\n    _type_ = 'z'\n"
+         "class _Size(_acraw._SimpleCData):\n    _type_ = 'L'\n"
+         "class _Memmove(_acraw.CFuncPtr):\n"
+         "    _flags_ = _acraw.FUNCFLAG_CDECL\n"
+         "    _argtypes_ = (_CharP, _CharP, _Size)\n"
+         "    _restype_ = None\n"
+         "assert _Memmove(_acraw._memmove_addr)(b'', b'', 0) is None"),
+        ("ctypes.dlsym", "ctypes.dlsym", "import ctypes as _act\n"
+         "assert _act.CDLL(None).getpid() == _ao.getpid()"),
+        ("ctypes.dlsym/handle", "ctypes.dlsym/handle",
+         "import ctypes as _act, _ctypes as _acraw\n"
+         "_libc = _act.CDLL(None)\n"
+         "_getpid = _acraw.dlsym(_libc._handle, 'getpid')\n"
+         "assert _act.CFUNCTYPE(_act.c_int)(_getpid)() == _ao.getpid()"),
+        ("ctypes.cdata", "ctypes.cdata", "import ctypes as _act\n"
+         "_owned = _act.c_int(1404)\n"
+         "assert _act.c_int.from_address(_act.addressof(_owned)).value == 1404"),
     )
     _w1404_dependency = _w1404_auditroot / ".veldo" / "estimate.py"
     _w1404_dependency_source = _w1404_dependency.read_text()
@@ -1104,7 +1125,9 @@ with tempfile.TemporaryDirectory() as _d:
                 _w1404_complete, _w1404_events = _w1404_audit_trial(_w1404_case, "injected")
                 expect("WARP-1404 AC5 AUDIT: " + _w1404_case
                        + " makes AC5 red with " + _w1404_event + " recorded",
-                       _w1404_complete and _w1404_event in (_w1404_events or []))
+                       _w1404_complete and _w1404_event in (_w1404_events or [])
+                       and (_w1404_case != "_ctypes raw address call"
+                            or all(e == "import _ctypes" for e in _w1404_events)))
             finally:
                 _w1404_dependency.write_text(_w1404_dependency_source)
             _w1404_complete, _w1404_events = _w1404_audit_trial(_w1404_case, "restored")
