@@ -1026,10 +1026,11 @@ with tempfile.TemporaryDirectory() as _d:
            and not list(_w1404_writable_cache.rglob("estimate.*.pyc")))
     _w1404_warmup = subprocess.run(
         [sys.executable, "-c",
-         "import importlib.util, sys; "
-         "s = importlib.util.spec_from_file_location('warm_analogy', sys.argv[1]); "
-         "s.loader.exec_module(importlib.util.module_from_spec(s))",
-         str(_w1404_subject)],
+         "import importlib.util, sys\n"
+         "for path in sys.argv[1:]:\n"
+         "    s = importlib.util.spec_from_file_location('warm_module', path)\n"
+         "    s.loader.exec_module(importlib.util.module_from_spec(s))\n",
+         str(_w1404_subject), str(_w1404_auditroot / ".veldo" / "estimate.py")],
         capture_output=True, text=True, cwd=str(_w1404_wdir), env=_w1404_auditenv)
     _w1404_complete, _w1404_events = _w1404_audit_trial("warm cache", "baseline")
     expect("WARP-1404 AC5 BYTECODE: warm cache passes all audit windows",
