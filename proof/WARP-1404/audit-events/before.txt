@@ -1,0 +1,16 @@
+Initial run: original event tuple plus new regression rows. Exit 1.
+  SELFTEST FAIL: WARP-1404 AC5 BYTECODE: warm cache passes all audit windows
+  SELFTEST FAIL: WARP-1404 AC5 AUDIT: os.utime makes AC5 red with os.utime recorded
+  SELFTEST FAIL: WARP-1404 AC5 AUDIT: os.chflags synthetic (unavailable) makes AC5 red with os.chflags recorded
+  SELFTEST FAIL: WARP-1404 AC5 AUDIT: os.lchown makes AC5 red with os.chown recorded
+  SELFTEST FAIL: WARP-1404 AC5 AUDIT: os.setxattr makes AC5 red with os.setxattr recorded
+  SELFTEST FAIL: WARP-1404 AC5 AUDIT: os.removexattr makes AC5 red with os.removexattr recorded
+  SELFTEST FAIL: WARP-1404 AC5 AUDIT: shutil.make_archive makes AC5 red with shutil.make_archive recorded
+  SELFTEST FAIL: WARP-1404 AC5 AUDIT: shutil.unpack_archive makes AC5 red with shutil.unpack_archive recorded
+  SELFTEST FAIL: WARP-1404 AC5 AUDIT: socket.__new__ makes AC5 red with socket.__new__ recorded
+  SELFTEST FAIL: WARP-1404 AC5 AUDIT: socket.sendto makes AC5 red with socket.sendto recorded
+  SELFTEST FAIL: WARP-1404 AC5 AUDIT: socket.sendmsg makes AC5 red with socket.sendmsg recorded
+  SELFTEST FAIL: WARP-1404 AC5 AUDIT: os.replace makes AC5 red with os.rename recorded
+  SELFTEST FAIL: WARP-1404 AC5 AUDIT: os.truncate makes AC5 red with os.truncate recorded
+  15_warp_1404_historical_analogy                 54 passed  287.31s
+selftest (PARTIAL, 1 of 162 suites): 80 passed, 13 failed in 287.31s
