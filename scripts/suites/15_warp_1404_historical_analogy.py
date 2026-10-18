@@ -979,6 +979,113 @@ with tempfile.TemporaryDirectory() as _d:
                 expect("WARP-1404 AC5 BYTECODE: import spawn still makes AC5 red",
                        _w1404_complete and _w1404_events == [sys.executable + " -c"])
     finally:
+        _w1404_subject.write_text(_w1404_source)
+        _w1404_cache.chmod(0o755)
+
+    def _w1404_audit_trial(case, phase):
+        """Require a complete AC5 drive; a missing report cannot be a clean restoration."""
+        run = subprocess.run(
+            [sys.executable, "-c", _W1404_NO_WRITER_DRIVER, str(_w1404_auditroot)],
+            input=_w1404_payload, capture_output=True, text=True,
+            cwd=str(_w1404_wdir), env=_w1404_auditenv)
+        report = json.loads(run.stdout) if run.stdout.strip() else {}
+        complete = (
+            run.returncode == 0
+            and report.get("drives") == 8
+            and report.get("cli_reported") is True
+            and report.get("repo_records", 0) > 100
+            and report.get("predicted") == [True, False, False, False, False]
+            and report.get("pure") == []
+            and bool(report.get("repo_spawn"))
+            and set(report.get("repo_spawn", [])) <= _W1404_READONLY_GIT
+            and set(report.get("imports", [])) == _W1404_IMPORTS
+            and not (set(report.get("named_calls", []))
+                     & {"open", "__import__", "eval", "exec", "compile", "input", "breakpoint"}))
+        print("WARP-1404 AC5 AUDIT REPORT " + json.dumps({
+            "case": case, "phase": phase, "complete": complete,
+            "ac5_green": complete and report.get("repo_writes") == [],
+            "report": report, "stderr": run.stderr[-400:]}))
+        return complete, report.get("repo_writes")
+
+    # The read-only cold-cache row above remains intact. Exercise writable cold and warm
+    # caches too, without relying on the caller's cache state or bytecode environment.
+    _w1404_writable_cache = Path(_d) / "writable-pycache"
+    _w1404_writable_cache.mkdir()
+    _w1404_auditenv["PYTHONPYCACHEPREFIX"] = str(_w1404_writable_cache)
+    _w1404_complete, _w1404_events = _w1404_audit_trial("cold writable cache", "baseline")
+    expect("WARP-1404 AC5 BYTECODE: cold writable cache passes all audit windows",
+           _w1404_complete and _w1404_events == []
+           and not list(_w1404_writable_cache.rglob("toe_analogy.*.pyc"))
+           and not list(_w1404_writable_cache.rglob("estimate.*.pyc")))
+    _w1404_warmup = subprocess.run(
+        [sys.executable, "-c",
+         "import importlib.util, sys; "
+         "s = importlib.util.spec_from_file_location('warm_analogy', sys.argv[1]); "
+         "s.loader.exec_module(importlib.util.module_from_spec(s))",
+         str(_w1404_subject)],
+        capture_output=True, text=True, cwd=str(_w1404_wdir), env=_w1404_auditenv)
+    _w1404_complete, _w1404_events = _w1404_audit_trial("warm cache", "baseline")
+    expect("WARP-1404 AC5 BYTECODE: warm cache passes all audit windows",
+           _w1404_warmup.returncode == 0 and _w1404_complete and _w1404_events == []
+           and bool(list(_w1404_writable_cache.rglob("toe_analogy.*.pyc")))
+           and bool(list(_w1404_writable_cache.rglob("estimate.*.pyc"))))
+    _w1404_auditenv["PYTHONPYCACHEPREFIX"] = str(_w1404_cache)
+    _w1404_cache.chmod(0o555)
+
+    # Mutate a dependency at module scope, as in the independent review. This leaves the
+    # toe_analogy AST allowlist satisfied, so only the actual audit event can reject it.
+    # All paths are scratch files. Failed OS attempts still emit events and must be caught.
+    (_w1404_wdir / "audit-target").write_text("timestamp, ownership and xattr target")
+    (_w1404_wdir / "archive-input").mkdir()
+    (_w1404_wdir / "archive-input" / "member.txt").write_text("archive member")
+    _w1404_shutil.make_archive(str(_w1404_wdir / "archive-source"), "zip",
+                              str(_w1404_wdir / "archive-input"))
+    # chflags is unavailable on Linux. Exercise its documented event explicitly there;
+    # never label that fallback as a native syscall test or silently skip the row.
+    _w1404_chflags_native = hasattr(os, "chflags")
+    _w1404_cases = (
+        ("os.utime", "os.utime", "_ao.utime('audit-target', ns=(1000000000, 2000000000))"),
+        ("os.chflags" + (" native" if _w1404_chflags_native else " synthetic (unavailable)"),
+         "os.chflags", "_ao.chflags('audit-target', 0)" if _w1404_chflags_native else
+         "_asys.audit('os.chflags', 'audit-target', 0)"),
+        ("os.lchown", "os.chown", "_ao.lchown('audit-target', -1, -1)"),
+        ("os.setxattr", "os.setxattr", "_ao.setxattr('audit-target', 'user.w1404', b'caught')"),
+        ("os.removexattr", "os.removexattr", "_ao.removexattr('audit-target', 'user.w1404')"),
+        ("shutil.make_archive", "shutil.make_archive",
+         "_ash.make_archive('archive-made', 'zip', 'archive-input')"),
+        ("shutil.unpack_archive", "shutil.unpack_archive",
+         "_ash.unpack_archive('archive-source.zip', 'archive-output', 'zip')"),
+        ("socket.__new__", "socket.__new__", "_aso.socket().close()"),
+        ("socket.sendto", "socket.sendto",
+         "_s = _aso.socket(type=_aso.SOCK_DGRAM)\n_s.close()\n"
+         "_s.sendto(b'caught', ('127.0.0.1', 9))"),
+        ("socket.sendmsg", "socket.sendmsg",
+         "_s = _aso.socket(type=_aso.SOCK_DGRAM)\n_s.close()\n"
+         "_s.sendmsg([b'caught'], [], 0, ('127.0.0.1', 9))"),
+        ("os.replace", "os.rename", "_ao.replace('audit-target', 'audit-replaced')"),
+        ("os.truncate", "os.truncate", "_ao.truncate('audit-replaced', 0)"),
+    )
+    _w1404_dependency = _w1404_auditroot / ".veldo" / "estimate.py"
+    _w1404_dependency_source = _w1404_dependency.read_text()
+    try:
+        for _w1404_case, _w1404_event, _w1404_call in _w1404_cases:
+            _w1404_injection = (
+                "\nimport os as _ao, sys as _asys, shutil as _ash, socket as _aso\ntry:\n"
+                + "\n".join("    " + line for line in _w1404_call.splitlines())
+                + "\nexcept OSError:\n    pass\n")
+            try:
+                _w1404_dependency.write_text(_w1404_dependency_source + _w1404_injection)
+                _w1404_complete, _w1404_events = _w1404_audit_trial(_w1404_case, "injected")
+                expect("WARP-1404 AC5 AUDIT: " + _w1404_case
+                       + " makes AC5 red with " + _w1404_event + " recorded",
+                       _w1404_complete and _w1404_event in (_w1404_events or []))
+            finally:
+                _w1404_dependency.write_text(_w1404_dependency_source)
+            _w1404_complete, _w1404_events = _w1404_audit_trial(_w1404_case, "restored")
+            expect("WARP-1404 AC5 AUDIT: " + _w1404_case + " restored is green",
+                   _w1404_complete and _w1404_events == [])
+    finally:
+        _w1404_dependency.write_text(_w1404_dependency_source)
         _w1404_cache.chmod(0o755)
 
     _W1404_MALFORMED = (
