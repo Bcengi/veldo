@@ -1072,6 +1072,23 @@ with tempfile.TemporaryDirectory() as _d:
          "_s.sendmsg([b'caught'], [], 0, ('127.0.0.1', 9))"),
         ("os.replace", "os.rename", "_ao.replace('audit-target', 'audit-replaced')"),
         ("os.truncate", "os.truncate", "_ao.truncate('audit-replaced', 0)"),
+        # Invalid signal and oversized hostname fail even with elevated privileges.
+        # Require failure as well as the audit event; neither may change the machine.
+        ("os.killpg", "os.killpg", "_ao.killpg(_ao.getpgrp(), -1)\n"
+         "raise AssertionError('invalid signal unexpectedly accepted')"),
+        ("socket.sethostname", "socket.sethostname", "_aso.sethostname(b'x' * 65536)\n"
+         "raise AssertionError('oversized hostname unexpectedly accepted')"),
+        # A real libc call in estimate.py bypasses the toe_analogy import allowlist.
+        # getpid is harmless and its checked result proves the foreign call ran.
+        ("ctypes.dlopen", "ctypes.dlopen", "import ctypes as _act\n"
+         "assert _act.CDLL(None).getpid() == _ao.getpid()"),
+        # Ordinary CDLL function calls need not emit call_function. Exercise the
+        # low-level entry point explicitly and demand its own event, not just dlopen.
+        ("ctypes.call_function", "ctypes.call_function",
+         "import ctypes as _act, _ctypes as _acraw\n"
+         "_libc = _act.CDLL(None)\n"
+         "_getpid = _act.cast(_libc.getpid, _act.c_void_p).value\n"
+         "assert _acraw.call_function(_getpid, ()) == _ao.getpid()"),
     )
     _w1404_dependency = _w1404_auditroot / ".veldo" / "estimate.py"
     _w1404_dependency_source = _w1404_dependency.read_text()
