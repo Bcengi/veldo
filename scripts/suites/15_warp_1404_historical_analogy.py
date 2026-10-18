@@ -199,7 +199,8 @@ WRITES = ("os.mkdir", "os.rmdir", "os.remove", "os.rename", "os.link",
           "shutil.make_archive", "shutil.unpack_archive", "socket.__new__",
           "socket.connect", "socket.bind", "socket.sendto", "socket.sendmsg",
           "socket.getaddrinfo", "socket.sethostname", "urllib.Request",
-          "ctypes.dlopen", "ctypes.call_function",
+          "ctypes.dlopen", "ctypes.dlsym", "ctypes.dlsym/handle",
+          "ctypes.call_function", "ctypes.cdata",
           "ftplib.connect", "smtplib.connect", "sqlite3.connect", "signal.pthread_kill")
 
 
@@ -215,6 +216,11 @@ def hook(event, args):
             seen = "open %s mode %s" % (args[0], mode)
         elif mode is None and isinstance(flags, int) and flags & WRITE_FLAGS:
             seen = "os.open %s flags %d" % (args[0], flags)
+    elif (event == "import" and args and isinstance(args[0], str)
+          and args[0].split(".", 1)[0] in ("ctypes", "_ctypes")):
+        # A raw-address _ctypes function pointer can run without a ctypes.* event.
+        # Treat access to either module family as strict in EVERY active window.
+        seen = "import " + args[0]
     elif event in WRITES:
         seen = event
     elif event in SPAWN:
