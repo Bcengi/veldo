@@ -189,11 +189,16 @@ watching = [None]
 WRITE_FLAGS = os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_CREAT | os.O_TRUNC
 SPAWN = ("subprocess.Popen", "os.system", "os.exec", "os.posix_spawn", "os.spawn", "os.fork",
          "os.forkpty", "pty.spawn", "os.startfile", "webbrowser.open")
-WRITES = ("os.mkdir", "os.rmdir", "os.remove", "os.rename", "os.replace", "os.link",
-          "os.symlink", "os.truncate", "os.chmod", "os.chown", "os.putenv", "os.unsetenv",
+# Names checked against https://docs.python.org/3.12/library/audit_events.html.
+# os.replace emits os.rename; os.lchown emits os.chown. Neither API name is an event.
+WRITES = ("os.mkdir", "os.rmdir", "os.remove", "os.rename", "os.link",
+          "os.symlink", "os.truncate", "os.chmod", "os.chown", "os.chflags", "os.utime",
+          "os.setxattr", "os.removexattr", "os.putenv", "os.unsetenv",
           "os.kill", "tempfile.mkstemp", "shutil.copyfile", "shutil.copymode",
-          "shutil.copystat", "shutil.move", "shutil.rmtree", "shutil.chown", "socket.socket",
-          "socket.connect", "socket.bind", "socket.getaddrinfo", "urllib.Request",
+          "shutil.copystat", "shutil.move", "shutil.rmtree", "shutil.chown",
+          "shutil.make_archive", "shutil.unpack_archive", "socket.__new__",
+          "socket.connect", "socket.bind", "socket.sendto", "socket.sendmsg",
+          "socket.getaddrinfo", "urllib.Request",
           "ftplib.connect", "smtplib.connect", "sqlite3.connect", "signal.pthread_kill")
 
 
