@@ -1,0 +1,110 @@
+--- proposed_check.py
++++ check-outcome.py
+@@ -35 +35 @@
+-        if ch.get("name") and evidence_passed(ch):
++        if ch.get("name"):
+
+PASS generic test is not integration
+PASS unit is not integration
+PASS passing unit check is not integration
+PASS empty proof refuses
+PASS unknown required kind refuses
+PASS evidence refuses {}
+FAIL check refuses {}
+PASS evidence refuses {"status": null}
+FAIL check refuses {"status": null}
+PASS evidence refuses {"status": "failed"}
+FAIL check refuses {"status": "failed"}
+PASS evidence refuses {"status": "pending"}
+FAIL check refuses {"status": "pending"}
+PASS evidence refuses {"status": "not_run"}
+FAIL check refuses {"status": "not_run"}
+PASS evidence refuses {"status": "pass"}
+FAIL check refuses {"status": "pass"}
+PASS evidence refuses {"status": "PASSED"}
+FAIL check refuses {"status": "PASSED"}
+PASS evidence refuses {"status": true}
+FAIL check refuses {"status": true}
+PASS evidence refuses {"status": "passed, 12 tests"}
+FAIL check refuses {"status": "passed, 12 tests"}
+PASS evidence refuses {"result": "failed"}
+FAIL check refuses {"result": "failed"}
+PASS evidence refuses {"result": "pending"}
+FAIL check refuses {"result": "pending"}
+PASS evidence refuses {"result": "not run"}
+FAIL check refuses {"result": "not run"}
+PASS evidence refuses {"result": "green"}
+FAIL check refuses {"result": "green"}
+PASS evidence refuses {"result": null}
+FAIL check refuses {"result": null}
+PASS evidence refuses {"result": "pass", "status": "failed"}
+FAIL check refuses {"result": "pass", "status": "failed"}
+PASS evidence refuses {"result": "fail", "status": "passed"}
+FAIL check refuses {"result": "fail", "status": "passed"}
+PASS passing evidence {"status": "passed"}
+PASS passing check {"status": "passed"}
+PASS passing evidence {"result": "pass"}
+PASS passing check {"result": "pass"}
+PASS passing evidence {"result": "passed"}
+PASS passing check {"result": "passed"}
+PASS passing evidence {"result": "pass", "status": "passed"}
+PASS passing check {"result": "pass", "status": "passed"}
+PASS passing alias unit/unit
+PASS absent outcome alias unit/unit
+PASS passing alias unit/test
+PASS absent outcome alias unit/test
+PASS passing alias integration/integration
+PASS absent outcome alias integration/integration
+PASS passing alias journeys/journeys
+PASS absent outcome alias journeys/journeys
+PASS passing alias journeys/journey
+PASS absent outcome alias journeys/journey
+PASS passing alias journeys/e2e
+PASS absent outcome alias journeys/e2e
+PASS passing alias ui_states/ui_states
+PASS absent outcome alias ui_states/ui_states
+PASS passing alias ui_states/state_capture
+PASS absent outcome alias ui_states/state_capture
+PASS passing alias figma_composite/figma_composite
+PASS absent outcome alias figma_composite/figma_composite
+PASS passing alias figma_composite/composite
+PASS absent outcome alias figma_composite/composite
+PASS passing alias figma_composite/visual
+PASS absent outcome alias figma_composite/visual
+PASS passing alias interaction_recording/interaction_recording
+PASS absent outcome alias interaction_recording/interaction_recording
+PASS passing alias interaction_recording/recording
+PASS absent outcome alias interaction_recording/recording
+PASS passing alias interaction_recording/video
+PASS absent outcome alias interaction_recording/video
+PASS passing alias baseline/baseline
+PASS absent outcome alias baseline/baseline
+PASS passing alias baseline/visual_baselines
+PASS absent outcome alias baseline/visual_baselines
+PASS passing alias device_matrix/device_matrix
+PASS absent outcome alias device_matrix/device_matrix
+PASS passing alias device_matrix/matrix
+PASS absent outcome alias device_matrix/matrix
+PASS passing alias operational/operational
+PASS absent outcome alias operational/operational
+PASS passing alias staging_run/staging_run
+PASS absent outcome alias staging_run/staging_run
+PASS passing alias staging_run/staging
+PASS absent outcome alias staging_run/staging
+PASS failed integration plus passed unit refuses
+PASS matching passing entry survives unrelated failure
+PASS a pass on another entry cannot bless missing integration outcome
+PASS every required kind needs a pass
+PASS both required kinds passed
+PASS no declared requirements is unchanged
+PASS absent design verdict refuses
+PASS design verdict refuses {}
+PASS design verdict refuses {"verdict": "fail"}
+PASS design verdict refuses {"verdict": "pending"}
+PASS design verdict refuses {"verdict": "escalate"}
+PASS design verdict refuses []
+PASS design verdict refuses {"verdict": "passed"}
+PASS unreadable design verdict refuses
+PASS passing design verdict pass
+PASS passing design verdict pass_with_notes
+{"mode": "check-outcome", "passed": 87, "failed": 16}

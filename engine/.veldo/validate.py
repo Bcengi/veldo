@@ -4,6 +4,7 @@ not a schema stack. Used by verify.sh; also runnable directly.
 
 Usage:
   python3 .veldo/validate.py all                 # validate specs, plans, proofs, examples
+  python3 .veldo/validate.py evidence-debt       # emit sorted debt register; review and commit
   python3 .veldo/validate.py spec <file.md>
   python3 .veldo/validate.py plan <file.md>
   python3 .veldo/validate.py proof <manifest.json>
@@ -673,6 +674,20 @@ def check_requests(requests_dir=None, root=None):
     return _request_module().check_requests_dir(rdir, base, parse_yamlish, fail)
 
 
+def evidence_debt_module():
+    loader = importlib.util.spec_from_file_location(
+        "veldo_evidence_debt", Path(__file__).with_name("evidence_debt.py"))
+    module = importlib.util.module_from_spec(loader)
+    loader.loader.exec_module(module)
+    return module
+
+
+def evidence_validator():
+    # File-location loaders need not register this module in sys.modules.
+    import types
+    return types.SimpleNamespace(**globals())
+
+
 def run_all():
     errs = 0
     errs += check_events(ROOT / ".veldo" / "events.jsonl")
@@ -701,6 +716,7 @@ def run_all():
         fm = front_matter(p.read_text())
         if fm and fm.get("id"):
             spec_by_id[fm["id"]] = p
+    evidence_pairs = []
     for p in _corpus(_CORPUS.MANIFEST_PATTERN):
         errs += check_json(p, PROOF_REQ, "proof")
         try:
@@ -708,8 +724,9 @@ def run_all():
         except Exception:
             sid = None
         if sid and sid in spec_by_id:
-            errs += check_required_evidence(spec_by_id[sid], p)
+            evidence_pairs.append((spec_by_id[sid], p))
             errs += check_criteria_coverage(spec_by_id[sid], p)
+    errs += evidence_debt_module().validate(evidence_validator(), ROOT, evidence_pairs)
     # actual verdicts and approvals are validated too, not just the examples
     for p in _corpus(_CORPUS.VERDICT_PATTERN):
         errs += check_json(p, VERDICT_REQ, "verdict")
@@ -748,6 +765,15 @@ def main():
     mode = sys.argv[1]
     if mode == "all":
         errs = run_all()
+    elif mode == "evidence-debt":
+        debt = evidence_debt_module()
+        validator = evidence_validator()
+        try:
+            print(debt.render(debt.compute(validator, ROOT, debt.pairs(validator, ROOT))), end="")
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            print("evidence-debt: " + str(exc), file=sys.stderr)
+            return 1
+        return 0
     elif mode == "spec":
         errs = check_spec(sys.argv[2])
     elif mode == "plan":

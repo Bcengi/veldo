@@ -29,6 +29,24 @@ else:
     tree.body = [node for node in tree.body if isinstance(node, (ast.Import, ast.ImportFrom, ast.FunctionDef))]
     namespace = {}
     exec(compile(tree, str(suite), "exec"), namespace)
+    if mode.startswith("ratchet-"):
+        import difflib
+        original = (ROOT / "engine/.veldo/evidence_debt.py").read_text()
+        mutations = {
+            "ratchet-touch": ("if touched:", "if False:"),
+            "ratchet-global": ('touched = row["spec"] in changed or any(p.startswith(proof_dir) for p in changed)', 'touched = True'),
+            "ratchet-register": ("if actual != expected:", "if False:"),
+            "ratchet-growth": ("if previous is not None:", "if False:"),
+        }
+        before, after = mutations[mode]
+        assert original.count(before) == 1
+        mutated = original.replace(before, after)
+        print("".join(difflib.unified_diff(original.splitlines(True), mutated.splitlines(True),
+                                           fromfile="evidence_debt.py", tofile=mode + ".py", n=0)))
+        namespace["_w1712_ratchet"](ROOT, report, mutated)
+        failed = sum(not row["passed"] for row in rows)
+        print(json.dumps({"mode": mode, "passed": len(rows) - failed, "failed": failed}))
+        sys.exit(1 if failed else 0)
     old, new, source, proposal = validators()
     if mode == "base":
         validator = old

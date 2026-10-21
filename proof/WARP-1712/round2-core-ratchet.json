@@ -1,0 +1,1476 @@
+{
+  "root": "/home/dmitry/projects/core",
+  "method": "Read-only input digests and declared corpus reconciliation; actual strict predicate and ratchet check on a byte-identical temporary corpus mirror. Hypothetical changed-path sets, not a core gate invocation.",
+  "implementation_sha256": {
+    ".veldo/validate.py": "7489ca874147ccc485081272dc8191513e5127993e9ec3d510c260dbe991f22b",
+    ".veldo/evidence_debt.py": "98ce48ff769a921142f0e6e9e325e617c00ff212d9c00fa7f12711e165102b89"
+  },
+  "inputs_unchanged": true,
+  "input_sha256": {
+    "proof/DEV-1175/manifest.json": "1908bd06a0f543c05de751ac79d72531f118cda2c7ee0fe301d43f683dec0c7d",
+    "proof/DEV-1177/manifest.json": "04483581f20151533619852d3e6bc0fbcc5c6131d995b27facddb790ca8732a3",
+    "proof/DEV-1191/manifest.json": "519f274459e1381ff3957701fa7cf501f341250481004aae4adf8bdfba665016",
+    "proof/DEV-1198/manifest.json": "ded52baa486cef394a56fcafcd9eb3baf23abad24921e78e1cf18bbfe8fba111",
+    "proof/DEV-1200/manifest.json": "e24317963597178be70a685512ad1d2e324616298b5cd55f450942093a3f2b65",
+    "proof/DEV-1202/manifest.json": "8678db606b13bce478370b184fae8bb38c8db10034271b4d5fdaa2b6a2befb7d",
+    "proof/DEV-1203/manifest.json": "3a214006419685a104b619a0916c94b96e74fb3579d1ee4a15e594568af66674",
+    "proof/DEV-1204/manifest.json": "97fc27515a178a16ead5cd3c0221404593d246cbb9aaba9a1401514886adcc9d",
+    "proof/DEV-1205/manifest.json": "5c120aa2a318dfc4ed25041c741fedcfbee457eed68edda45346dbda2f01354c",
+    "proof/DEV-1206/manifest.json": "b0550317d90f827d3a333c4b2124f213c377f7d21a7cd7e557140c31a5f511d9",
+    "proof/DEV-1207/manifest.json": "6178b865a8c9558d18fe7bb792101c48a1de9c3e176098d80a5ffec894a35b6f",
+    "proof/DEV-1212/manifest.json": "ccc5c70a0260a9791b8a221ea9e09f24f9bb573e7528340ec093af08c4c278b4",
+    "proof/DEV-1214/manifest.json": "5d85f0ff22520fab49eb340654144a0c6dc73486f8b54c5a5184324a21db4186",
+    "proof/DEV-1216/manifest.json": "a9873bed672a47843598a58cf2b12df2f92f956419008e560c4b95035963ecd5",
+    "proof/DEV-1217/manifest.json": "75d77cd229152ca9ec104b959bee9a7e99eb0b7efae5433d3a530201f650dcaf",
+    "proof/DEV-1218/manifest.json": "896cc4b180795f0074327af22310ed27949883e23f03129ac3bbe1cf000e86f6",
+    "proof/DEV-1220/manifest.json": "d6b87a43324f5bf36516d817414703019886c9f9a0bc6db79dbe6943e338ed3b",
+    "proof/VELDO-0001/manifest.json": "6835d8acdcd85e00b9ad2bc30a52a3c2346c7d26e924af9c70cd1dbdf85fc82f",
+    "proof/VELDO-0002/manifest.json": "6b13a7095056956f131443736deffa4e2ecc94caf70e072510d7d77546023f78",
+    "proof/VELDO-0003/manifest.json": "f8adeece10b434af7ae728e4dfc75520551183dffe7fafbfbdaeeccacdb01fec",
+    "proof/VELDO-0004/manifest.json": "2d0b5a019198fdd3ef8bcab8a8db9d6aff205527a9d663c236b58fff33c81d4f",
+    "proof/VELDO-0005/manifest.json": "ef6b91e3f48b9b5a11d348a2e4a8feefcd723bfb66e88aa1fcdb2f6ef61506b6",
+    "proof/VELDO-0006/manifest.json": "d5acaf8ca271f332b0ae4d37d37026f69bfe57f5ed31b69efd4ca71e563648c7",
+    "proof/VELDO-0007/manifest.json": "11cece8f52089a6f962c32c86c74f6ac5acf9e9fa44ff396c4a093df896a9c60",
+    "proof/VELDO-0008/manifest.json": "561dd67e9fe7e029acdbe8ee30dc986f18b657ac0c2adb6678777d0aaf222eed",
+    "proof/VELDO-0009/manifest.json": "05ccfdd2205fc14e0c632ef4d46b60d58eee5bbf92f8d661f3b5404184fe122d",
+    "proof/VELDO-0010/manifest.json": "6bc01a7ee842d44ab47bf58b6bc89e83ec3ff38da1e0bb8d38c7da1a859bd462",
+    "proof/VELDO-0011/manifest.json": "28d48a10699465f4c866bb71a5b88af4c8bd2ed9a8ba2dfce9e5bcf8e767a07c",
+    "proof/VELDO-0012/manifest.json": "13735c5449c3b8179666a5dc0ebf11a4aca4e1c6ccdc848e0efb84d2a2ebbd82",
+    "proof/VELDO-0013/manifest.json": "cb695c84b736ca82b1b4e676c7e68aac973f56a10fab860817328c04f540c662",
+    "proof/VELDO-0014/manifest.json": "06eebd07fec2fce576d9bd82b14808e02c1fac3a5a49dd5add5899540d747d00",
+    "proof/VELDO-0015/manifest.json": "95007dc80d4333575e3b96b8f6ebae2d36bda60654924b6483d3f4c71c522690",
+    "proof/VELDO-0016/manifest.json": "6faccd9d14e40fdc8338babb8bac9839025a26afc7e3760be6663b1f9d9146c2",
+    "proof/VELDO-0017/manifest.json": "788412e6436e3fe4bd305ca125a3ea09cb83e6353312a2e7ad354928cd7cd448",
+    "proof/VELDO-0018/manifest.json": "6b039fb291ad0897ae82376c9fcd88cee595e8f27eb35a3b9a5ea1f51ae31611",
+    "proof/VELDO-0019/manifest.json": "da1f1bf937a27e4cd2846ae3790668200d10973e468c1ddb2274263aee6381ed",
+    "proof/VELDO-0022/manifest.json": "0c15f14c8f93c49c01bc28785ca2fb87907771113239a56f933262bce0350ac2",
+    "proof/VELDO-0023/manifest.json": "eb0f4ccfff654ee759898e04e8e82baa21b07b5847b8dd2949a146de49b2e365",
+    "proof/VELDO-0024/manifest.json": "e50f12f4c9cd30bb13e0fd09cf4d76670d267b5766d8eeff5c3bb9bae861c2fc",
+    "proof/VELDO-0025/manifest.json": "cb8cac38911c28a4cf8a64d0c5bdcfc9704c7d6b2feba560199bc693a981bb44",
+    "proof/VELDO-0030/manifest.json": "3080ca27bbd480facf4a801cf928d68dda7de81cee40f8b2e3a15501b6c60438",
+    "proof/VELDO-0031/manifest.json": "e13ecc1090d410e1919b4a715563c50b6c3bfc7df57e83cff8ef0b62daae8d47",
+    "proof/VELDO-0032/manifest.json": "f0b68a324ab0ad2ac62c50786e60f9f334cec4cc9016ec19555edb8e5a00471e",
+    "proof/VELDO-0033/manifest.json": "44c2eb598d2664d1c158a1451e1e79c968ec3401f95858418f479ab4ac26a6c1",
+    "proof/VELDO-0040/manifest.json": "53ad09d60ba4d0e08bba55a5052d17c8be2e907789f0a20ae8471ff96fe73eb0",
+    "proof/VELDO-0041/manifest.json": "abc2641502e2b8e697a1463aeadb082b48d4b6da2f33436996823eabe3b5197a",
+    "proof/VELDO-0050/manifest.json": "c234209e89b50d8dc9d79f38d5076164acb1a231b8af95b3b79fcf387f782153",
+    "proof/VELDO-0060/manifest.json": "5c7e2b2dc9bd5434e5e6f90c6a5376b6f7c9afeaf875277b6c795de0ba3b1288",
+    "proof/VELDO-0080/manifest.json": "676b1af5b9713be597ec3b1f39f891103c4ffbda354658633e2d77182a888f7a",
+    "proof/VELDO-0081/manifest.json": "e4296a4eae36790d75b853fd3e28c5c23ed5f05df00b102810d6353c193186e7",
+    "proof/VELDO-0084/manifest.json": "51e7bed920aa6ad8e6d6faa71bc50d515d1c51556d59f995c407c38397790456",
+    "proof/VELDO-0130/manifest.json": "a570fda090d4dc72e5e61d496b54a600f1faec50f0f57900c9c6bd4d6f85e7d5",
+    "proof/VELDO-0131/manifest.json": "5cc2e0042162fe8b007d1fd95f8837e9d9edd072a1e2ed91065c81883c760861",
+    "proof/VELDO-0132/manifest.json": "ec0cd82a7779c09168fc7ac1980d10d7d020ca0fae79dfd1dba87f25ecc83f77",
+    "proof/VELDO-0133/manifest.json": "1e5715ee82e557efaf745094291f9ad7bc8df9292af2b38a764928573986e0cd",
+    "proof/VELDO-0140/manifest.json": "dcf0f7d5712cc2187d4668c350e69ebe95c0ba6dc95aca28f30265c935232f0c",
+    "proof/VELDO-0141/manifest.json": "adb55c89cdb5d086542b70bd641bd8e0f15647a64f2c70cc94b27cf38827b265",
+    "proof/VELDO-0142/manifest.json": "b023f675de2e2b496acc3fa4dfeee75ccea4b56bb731f3a085ea430e0c84b878",
+    "proof/VELDO-0143/manifest.json": "53acefa889b06933a4c8820bf32999cfdb73085449427dc5ffd4e8b7af8a2a1b",
+    "proof/VELDO-0150/manifest.json": "54dc50c6905ab799b3bc3bb877d0deabcc8d95b7ec2560afb3643455360e0fb3",
+    "proof/VELDO-0151/manifest.json": "45b8350c80ca933f75ef0eb12e42090a2aa17d40c82f53f9a793a8721d92cc19",
+    "proof/VELDO-0160/manifest.json": "aee5ee5a06de490f2b7733d6b00f347ab4cb855657538d35a7d14b48aa80f9c8",
+    "proof/VELDO-0161/manifest.json": "303777f0cc3076427b99053a84004be428cbf4635d18ed907efd650e0340c6e2",
+    "proof/VELDO-0162/manifest.json": "0fda7e506328aa3988b4781e062db761a39a8199e34cd8f1a4248ebae7956004",
+    "proof/VELDO-0163/manifest.json": "33bcf8c435795d5356127565a27ce1c9f21aaf162f69d41b6f957ec38eef016f",
+    "proof/VELDO-0170/manifest.json": "cef679c23de81f651577d0c791f803458971974b121dcc85972ffe02a9c6df71",
+    "proof/VELDO-0171/manifest.json": "9770de9101c69e75766b2c73d3ad31d28460e6654c18d3bcefedd7e5b02b71f8",
+    "proof/VELDO-0180/manifest.json": "b51efc57aad0a9f1d1625cf33b7c509c7ceda9e0758710e6fc03abddb3514ab7",
+    "proof/VELDO-0181/manifest.json": "3eb96a918582f99f66f2c43e35382e66c46711cc7cb765a64fca1e3387a5f1e8",
+    "proof/VELDO-0182/manifest.json": "66130d72ab54102c88e10df5c3026e46f98160abbe61222ddd34053274c9d267",
+    "proof/VELDO-0183/manifest.json": "c8fd274ac9c160f4ad44bbbc61eb0d0acf08b3d4a1d85d0ee0f3b2d6963acd6d",
+    "proof/VELDO-0190/manifest.json": "d1bc019231213ebc0732557efaf3283856ec58d9d9772774a30ab3c4e96dc9e4",
+    "proof/VELDO-0200/manifest.json": "96b605d9f70cf96f73d5d781219f6f2b723e5c05793198147a9f418765494aa9",
+    "proof/VELDO-0201/manifest.json": "90e95d57913d19addb849e4ae1ced173e0e8e9a1918d690bb1da2664a75e048e",
+    "proof/VELDO-0210/manifest.json": "48d6bf64e0fcfe8b7c456acf2b61b2e16929c835026d11ec388330ce9056e518",
+    "proof/VELDO-0220/manifest.json": "a23e56f60e7c5d3bc4da47f108a109daa3d3e5cc1cd345c94574bbfc202dc5e9",
+    "proof/VELDO-0221/manifest.json": "1186bd1b0c4268cac7b219e621a81ce265b106306e6ce7509989f965612669a3",
+    "proof/VELDO-0222/manifest.json": "2e9ac6f9681daddf1d1925e580bba65561d029b506ff15716ef571aa902aeedb",
+    "proof/VELDO-0230/manifest.json": "444bfdea1e886eeb2749ed1209b161db80f90d6b4006f7da6664084094481e40",
+    "proof/VELDO-0231/manifest.json": "2dd5d9bd64ab1e49b17018062e4739c5e6c1f887c299a15600a39a86e08b18a7",
+    "proof/VELDO-0232/manifest.json": "b6d6d3b632fc63bcc14240daf0e42645b7e5d1e3c96779d8a0eec6e2cad9b39a",
+    "proof/VELDO-0240/manifest.json": "84d9852af420155770f842699c7270db59c90f5ee7e204cba46291171136d030",
+    "proof/VELDO-0241/manifest.json": "0c3f8cacfc5b51932f44f48e8e591f5846b9c93eceb1fc7bff435836638cb57b",
+    "proof/VELDO-0242/manifest.json": "4d2134fa35892be0a8f97cb7d9abf6f96a2e1e95a92327bcacebb9f86621192e",
+    "proof/VELDO-0250/manifest.json": "d1f33feb8d67d11a48879af70fb5f7193e4fef5a855da64af7cd305607e601ac",
+    "proof/VELDO-0251/manifest.json": "f24fc0eba9fd23f5cc16aa89ba3d7e001b48c6bae8d7ec9b83ea2ffcd7ca1150",
+    "proof/VELDO-0260/manifest.json": "e89ba74c1c5ebd20cfe6ee5dbf162467e017d622c0780b22cb2a80e335b16ee7",
+    "proof/VELDO-0261/manifest.json": "d5dc16b4caea21e6c634f2733c9d3f24a59d3049d7ab7d5abd41891fcca0431d",
+    "proof/VELDO-0262/manifest.json": "5a11d43bdbdd8e17c9e5411d3e23605a2340c462de9d0d297bf78446c22a4d2f",
+    "proof/VELDO-0270/manifest.json": "1c2edd7e4ad1573c947a4bb582938266af3d630d995372eab9199e7a9be5fc38",
+    "proof/VELDO-0271/manifest.json": "460237fc5b81b68e5ec4ccfb149413959e591082189953e4ab2822787556922d",
+    "proof/VELDO-0280/manifest.json": "2896d8dda79e70585b15b6131f15a4ac74221fcb92277789db48a2632f2575cf",
+    "proof/VELDO-0281/manifest.json": "7e6d31e82715e8ae176c4671aea87b204c28a7f23049b78e9fce5d5ee24b4d6e",
+    "proof/VELDO-0290/manifest.json": "08988f9a2961fc124853bef13901e5e3c526bf9f501b2d6e8920e6da2dbb61de",
+    "proof/VELDO-0291/manifest.json": "7d5c82c453a201238891ecace72ec6279013dbc58d860c020927fb0570717df1",
+    "proof/VELDO-0300/manifest.json": "96e03691124b26f8a3eb4bf0939c0dc25f12badbe54ace1045301e1b1e93d7ef",
+    "proof/VELDO-0301/manifest.json": "a9926ef46a73695abb9896e43a6fc352176c6ec9cd1ea29c1c7e31682c7bdc73",
+    "proof/VELDO-0302/manifest.json": "ef57f083e2bfb52480efdb5076b897653d75540ab0fe1ab6650b0f57f5a88e54",
+    "proof/VELDO-0303/manifest.json": "a1d37aa2c06ccd58c9ba94734a9980786eb4df4fc84981a3e377c4cb39ec19ad",
+    "proof/VELDO-0320/manifest.json": "65af8634451e10eaaaf0d889a006835454f84601d4f430a980bd0d2551fbbda2",
+    "proof/VELDO-0321/manifest.json": "eb0ca840ada4d07b0b1915f34ca839c1c72ac4ec001641813992d7e5b7f07cd3",
+    "proof/VELDO-0322/manifest.json": "2727c527c0cd42d4c15e666733ee3e180dd8c706ce008abc0a89c3add2eb4aed",
+    "proof/VELDO-0323/manifest.json": "f81e15ae2eccf2faf0cc3de5dba12c3510189006f89bb7f95c53844f4617edc4",
+    "proof/VELDO-0324/manifest.json": "743bd47c2430b8582e6f0e143380bacb058457004b4521feb30064c4fcb7eeae",
+    "proof/VELDO-0325/manifest.json": "86b06d5e48c295be59c72f1e9053e803fb5adf9363bc042754682b607eb44901",
+    "proof/VELDO-0330/manifest.json": "d95d3370896a37bd7207af6b303f97d95b18820b213863dbbeadcec774f23f71",
+    "proof/VELDO-0340/manifest.json": "266691acfb2eb7cf41995389765fa67890983d88c2cb76412ad714362b96aa2a",
+    "proof/VELDO-0341/manifest.json": "9b5ea9c67d5aa65b19b9fd900732807f64d2d575606bfed685b8d7f0987d41cc",
+    "proof/VELDO-0342/manifest.json": "c612d2ed0a6dc550e174d0940bbc95e1f89c16be536938c43c61a8f62a878676",
+    "proof/VELDO-0350/manifest.json": "65f1f4a8802d7ac89fe545a0d7755cb9026d56b053b012f44feaab189a2f7aa5",
+    "proof/VELDO-0351/manifest.json": "83564d89476b415ab476730eb7b423d9ecf6997bee8db04fe9495cf1c3371bcb",
+    "proof/VELDO-0360/manifest.json": "0ad673311152ff075bab563b2435341683d47e9f02ec84f3b168f69217a38fae",
+    "proof/VELDO-0361/manifest.json": "ee95388a92f8db9337e2d4462c648b4660b9c9d21a2a14dd23b6aba1df02cba5",
+    "proof/VELDO-0370/manifest.json": "4132b9c3d3e24ef0bc8d8a0b6d5b0c6ce5d0045691928d39d79420aa5d5a64ca",
+    "proof/VELDO-0371/manifest.json": "49ac4ca8fb613657b54a2c3bc6f32bd05e06c1a49d5ad1bf8a75ce028bcd79ab",
+    "proof/VELDO-0380/manifest.json": "38193fe7e8e24bb054f931e5241a5ea29afbc80b99fcf3303f0da020638c3fe8",
+    "proof/VELDO-0381/manifest.json": "fab17977a1b83a2883e9bc8f25f1187c92e714bd59418e35515df9ea9855fd9d",
+    "proof/VELDO-0390/manifest.json": "a99a20c066cf55c5be205897fc82fa35a3b2380d007ffd6f3fd3535f9b82b4c6",
+    "proof/VELDO-0410/manifest.json": "27f4fec4ef181232be6da2520f180f9f74df7503ee8b56c7d8f09c27945175ae",
+    "proof/VELDO-0420/manifest.json": "86dbfe18db9198c2b3ab8e3df6a75772c2b49ff6ae6c78899907b2fdfefb8574",
+    "proof/VELDO-0430/manifest.json": "741075843cdb08f8ec684fc306002d7326e9fb80d7ca3c4792a9676f1896417e",
+    "proof/VELDO-0440/manifest.json": "bb71946715ed7c0a70af8fce7f945d39873382665c915d632951abfb5e28477a",
+    "proof/VELDO-0450/manifest.json": "eef1883c5545be2e019bf089b00d69c257d016e3744c0c4e4e0d2548fe100c39",
+    "proof/VELDO-0460/manifest.json": "08ab1fb846c37705caa8e7b41ca003a50f8a5200938bbfa8c3daf8fb7a93b6a3",
+    "proof/VELDO-0470/manifest.json": "bc3598272fd8d77e130b64131b7f1ab3955e809f90bb98f53043edc20710f60d",
+    "proof/VELDO-0480/manifest.json": "e7d86c2897579312755290b0bff63867966c04ff2d97dd84a1b577347bb42cc2",
+    "proof/VELDO-0490/manifest.json": "888e6dab1776607b32603b4ab011b41f0077ff648fc0dc30608449c21ae1f2b8",
+    "proof/VELDO-0500/manifest.json": "1b2270a2ae1a08fb0f804b0ce8228069cd5afdbbe5b9644040efa4fe5bc1c2c0",
+    "proof/VELDO-0510/manifest.json": "a5c613458e824d48d69dd29342d7411aab4cdbc35de5f31ba5d44a41961393cc",
+    "proof/VELDO-0520/manifest.json": "1cc50dad584075ecb1b061534b8d2d99c8a12895c05807ad10b98ebf3e41c3fc",
+    "proof/VELDO-0530/manifest.json": "25b605e0069fa57bf35688be48ab02e1e451d15e2e8550bc5684293a4d5c363a",
+    "proof/VELDO-0540/manifest.json": "e6fabdd8bf2f7831cf20755c0e8fed0dbfac608adcd217bc8e3024ab87f736c9",
+    "proof/VELDO-0550/manifest.json": "401e8412c2e82dbbe73055ca0bb20f7f7beda0756b47985395d716d128c62028",
+    "proof/VELDO-0570/manifest.json": "96641ae2d72c15c5188b4e4f595e6b5f1f5b6279e560b7d55ba480596ecca49b",
+    "proof/VELDO-0580/manifest.json": "b7d9622c2fa676954a954014855f1aa2a454eba9bce2ccc37b0da6d4c7eaa1ba",
+    "proof/VELDO-0590/manifest.json": "ec8b0cb1231c73cf41c070c420d6feb0e0ffb490fd3457f5a2f3f5cbfba8d6f9",
+    "proof/VELDO-0600/manifest.json": "5471c54b4d2cf720bc081db2537ddd40702c850eb76a5b22fcf22263e3fe9fd5",
+    "proof/VELDO-0610/manifest.json": "95d617c78e81de8e98a17600169cd789cf0faf72985196caa7e64de296f586e6",
+    "proof/VELDO-0620/manifest.json": "e6aa8d749b2e0b89910664a678f7db7dcb62d62ff773c739d6833053ad6c8ef0",
+    "proof/VELDO-0630/manifest.json": "9f92b35610dde4ac9d8c3485af02356743071636bd1010ae3d8debbecba94f22",
+    "proof/VELDO-0640/manifest.json": "4b475dd1d72aa2838f285f1be9ed30d5c39d0f277514e9165b89820920161811",
+    "proof/VELDO-0650/manifest.json": "af10812a2c99d2c1502a96a1109f271c61d93da6f5e265d8f989d56211318b95",
+    "proof/VELDO-0660/manifest.json": "8711f7d1197367bed541987ab24180a9cf7dee58817656e41a98a302e2d141f3",
+    "proof/VELDO-0670/manifest.json": "80281b0a2ba00bd64c284f7473b882432d7d7e450872401f8f96e69151d1c532",
+    "proof/VELDO-0680/manifest.json": "d501088dbb88fad59d6b41249f2f77d33bc9705401b373b36b9e8c0557f4cb3f",
+    "proof/VELDO-0690/manifest.json": "e27d656b3bc1736eacf8730e20e3096671f1310299f14765c0e5c1a2b2284c91",
+    "proof/VELDO-0700/manifest.json": "2a6078549bf8d51106927d603447a3959bba5a7fbeee91559c44fb262fdafee5",
+    "proof/VELDO-0710/manifest.json": "90003ae035739afcf378b7b6c130524c4d4ab02707ec5bd670457cbc4547fa86",
+    "proof/VELDO-0720/manifest.json": "0997b6a31c557c861db6f8f51c06a84262e6a8d40f5f44ba2b48c151a7d87956",
+    "proof/VELDO-0730/manifest.json": "cef10dde73bba84e5cdadcb42cc7d2bb5088fc027d4b9a4421b103b7b35e4f0d",
+    "proof/VELDO-0740/manifest.json": "17a6e493121cd093021ad8533a408a9f222f8139372b26a7f757773e587f9b51",
+    "proof/VELDO-0750/manifest.json": "507be17e62b2105f39ea852f083461eb17a259646e69f33b0ec0820ada18a662",
+    "proof/VELDO-0760/manifest.json": "0a7fcae33a4fef1f0897f0fb8fc320bca51e3c809dd328470a4d0ca60f667bd9",
+    "proof/VELDO-0770/manifest.json": "e54006303d84b902bf2b810a65bb020ffd09fac194db5bd13afb0ec7099f2d97",
+    "proof/VELDO-0780/manifest.json": "a6e799712108f96c15d52ade52dff8555784cb9f30f596776f4b6b511ac3c33a",
+    "proof/VELDO-0790/manifest.json": "4311be184c6dcf976f588cbe4580ad5629bdc5c9f960c70c04af8c687c3fe8e1",
+    "proof/VELDO-0800/manifest.json": "9d45324fe85d5edb1c1e1b112efdf09c9493bb89d69a0e635b0fa136277db7e5",
+    "proof/VELDO-0810/manifest.json": "466afee13e3f382181675640334314fb7a78333a23c476e8196b3a5fa2991ddf",
+    "proof/VELDO-0820/manifest.json": "b15843722e300a3b62fd17668efd009c751a383cc9e7c6ee60be906c4e0bc9a1",
+    "proof/VELDO-0830/manifest.json": "c6c46392c65deac23d80fe2fa11d04c769011d88e1e323bf25cb80bbbd6afccf",
+    "proof/VELDO-0840/manifest.json": "4babff9b45805dbc91cf04fe4aa77e66f76a3cb191fe84e1292f3d4259954477",
+    "proof/VELDO-0850/manifest.json": "69b20560ae519af7bac48b9b94c2f0d82547eb3a61eb88f39d0a5c2036611851",
+    "proof/VELDO-0860/manifest.json": "ce346023e2bd855b9d0ca912ab9f84d6cfb21bb97baa968e8041605ea65a28a0",
+    "proof/VELDO-0870/manifest.json": "edc2d4947761c531df558eca24a0e082c34d00deda0d25424cd390095550a956",
+    "proof/VELDO-0880/manifest.json": "7e935f92e1ea3a806d61cb2fc02ebe870684f85cc3638085ad00846ffe2350ef",
+    "proof/VELDO-0890/manifest.json": "94fa41bde5ef607449152d0c22d198f02e9da616d96b7b58016279c62d85cf0b",
+    "proof/VELDO-0900/manifest.json": "c902f82362bdfeef9f408050ed1b0d39c2758c82b36a4e517007c61c5564dcd4",
+    "proof/VELDO-0910/manifest.json": "28aab31c044c1a4e858e42eab245a35e871e5217fbee97de708f5058989e7020",
+    "proof/VELDO-0920/manifest.json": "b46c668f8e52aa5de1b92517b3d041039af067cdf07899ccdb5d68a511a31d93",
+    "proof/VELDO-0930/manifest.json": "c819009fe083d658968ad81010abfe06a70b972ca600787bf33d938a6583f503",
+    "proof/VELDO-0940/manifest.json": "0a07b9511936c6453ebbc3e356a8c145a80e98df9d8a47a96ae828baeeb7e3b8",
+    "proof/VELDO-0950/manifest.json": "2bcde4f108468f442e5d7443dd19ec6df232cf9c83f4f6d43fe264ea57362bfc",
+    "proof/VELDO-0966/manifest.json": "1122f5d1eb71762dd9116258657bb9815594c774994470aab5ee1efe77b4d602",
+    "specs/DEV-1175-ngap-tunnel-allowance-binding.md": "e050ed163c69e4f251edb383c561e4272ba73e75ccce6ba9ad797833e717f7aa",
+    "specs/DEV-1177-one-reference-one-pfcp-session.md": "c5dc76335e9f65d186f0486e74b8331f3a683c67c317887cdb29924577334f00",
+    "specs/DEV-1191-release-ownership-and-create-recovery.md": "6471f73fd14124886090fd680bfd350820e6f497cb7640f6693a43967f20e081",
+    "specs/DEV-1198-an-index-entry-goes-with-its-last-session.md": "1fa35a92f911a0694af21bc7fb108341212875f9fbd08ce51f4b68edf24e91f2",
+    "specs/DEV-1200-a-session-owns-its-allowance-and-its-tunnels.md": "e9f726e62e2d9c7a84416d5e020b4895baeefc7cbe3b82caf415e9114ce11583",
+    "specs/DEV-1202-the-mme-stores-name-a-ceiling.md": "0ef7e0bf8f180ea13f881461bb2a07b95e5557137caf04b6ac39276761e33e7c",
+    "specs/DEV-1203-a-deadline-scheduling-cannot-consume.md": "91691b41f948d77547e30b8b5bd34a8a94fed06e15a9e056529e8323f83443a7",
+    "specs/DEV-1204-a-tunnels-fate-is-not-the-sessions.md": "2b5daf43128e3c2a7bf8d5a3aed2c875d45c9fd6928003cd210a73a518dbbacb",
+    "specs/DEV-1205-a-teardown-settles-what-it-carried.md": "672d3e70eea3b40d1285789012e6e7b8921c62979ebaac282be33028d2fad562",
+    "specs/DEV-1206-a-deletion-reaches-the-kernel-too.md": "c066b76f7ea49afcda735c2dab6662a85f91c1d4456edabd6205fc2c853a22ac",
+    "specs/DEV-1207-a-measurement-is-never-nowhere.md": "3931cf1e4038682248fabc408f45d40c6d26666466c9f075eff76e7f4a68e658",
+    "specs/DEV-1212-a-read-that-zeroes-takes-only-its-own.md": "a6f01c611570ad956e782d470741ee542e8a5f9d5c13f2d0150a5d307689245b",
+    "specs/DEV-1214-a-throttle-that-throttles.md": "97d6f0947b5b146a266b452dd9855dbdbd034a69d3a2ada7e03393c042369a96",
+    "specs/DEV-1216-taken-means-zeroed-in-both-captures.md": "a81d9bb9b36bb39940d7a697e523f6063534b98462d26c49562e33113ca37530",
+    "specs/DEV-1217-monotonic-usage-counters.md": "15ea3dbd7234080af25ddcde5f6d6c5c752a2297e8d261377306fe0096a48da1",
+    "specs/DEV-1218-a-stop-reaches-every-tunnel.md": "c81917f6e40917f4409cb1fec7bada0277c35fc6e5e8ba5a0b3cc73bc473690c",
+    "specs/DEV-1220-refuse-incomplete-gate-writes.md": "4123e550a79c333bc393b371b5f8e2a40605f6870e429183c0aa5f1c05eee2a4",
+    "specs/TEMPLATE-standing.md": "355a7b42c2482903e8b5c740e75a698ea53e10773092114dd7b97264cb124245",
+    "specs/TEMPLATE.md": "f2aea5a19b19e258089fde61ed8393b721d1ef5fda0bf0482a0497fac622e1a0",
+    "specs/VELDO-0001-refuse-unpriced-and-nonpositive-rates.md": "96c33b3db223b6c891535a333c7e54a3d65b3cbd16a5be28fc48f5eed3107119",
+    "specs/VELDO-0002-one-floored-idempotent-debit-path.md": "c73beb247019ce054521e78ce7f02967d1875d441872601c7da1f16646f13cbb",
+    "specs/VELDO-0003-rate-usage-where-it-was-used.md": "fe414b7bf18b096798036f1248e7cc3e8aae0735ca38b894be51f328871e3082",
+    "specs/VELDO-0004-pin-the-toolchain-and-refresh-the-lock.md": "72486ba6a9d8e8c454972d34bf6000dc64458dadd7fba12d68a34ee819d0245a",
+    "specs/VELDO-0005-prometheus-014.md": "f11bce892325d07f301917c9fb56e16ae73574983425e809285911854ed349eb",
+    "specs/VELDO-0006-published-crypto-vectors.md": "1f01422333fcea1f78d14fb9c9a558e661413f1043ddf783f400292d69be9ce4",
+    "specs/VELDO-0007-charging-proven-against-a-real-database.md": "a494dce1393dde7cec4ae4c69ef1ecc7c3e28607717b07b95624c40350419638",
+    "specs/VELDO-0008-wire-the-shape-rules-into-the-gate.md": "2668bf962902097a71035cc7d27b62a6d13e2f2eb2e79976205b92f3f5a804aa",
+    "specs/VELDO-0009-stream-ciphers-corrected-against-published-vectors.md": "d8a8da05ee57f69eaa9493606946a1daa9fa7555bbfd29da71726fbbe05a1a4d",
+    "specs/VELDO-0010-diameter-peer-layer.md": "cc3af968c1dca95c109a37896e1037125834ff13bc14c42eec998a39611decf8",
+    "specs/VELDO-0011-diameter-credit-control-server.md": "b4a566f619ff34579cfa9811ba86a22cf27e993a8b479d7cdb2b2b654472e222",
+    "specs/VELDO-0012-the-ui-type-check-provisions-itself.md": "5a92df5261a28c72d9a3709b776150e93d40396784bf3457d9a85ffb754232b0",
+    "specs/VELDO-0013-an-exhausted-balance-is-a-refusal.md": "89bcfb52eadfd9c6534acb5468a18de9482bf5911e0c40501f3f6d3c406a9a8f",
+    "specs/VELDO-0014-the-gate-declares-what-it-needs.md": "082d76b07c6bba25f1e1b7507e6d951ea98bec430a80539ff9c8b2e08b9085de",
+    "specs/VELDO-0015-the-gate-fits-the-machine-it-runs-on.md": "dc2a4727e4e4bca6a7caee57d3d962396b9411fc50b612cc77fae8b4110d6da8",
+    "specs/VELDO-0016-idempotency-holds-for-every-outstanding-request.md": "b4b0484a4761281c5e0deb02b1b0bbb53981bf6efcd829cc14a14ffa2a9dda66",
+    "specs/VELDO-0017-a-stop-means-the-money-ran-out.md": "097f4ab79d37e60e759a5446dbaf17979b8dbbbd8bf63a015a0a6e727fc3cd86",
+    "specs/VELDO-0018-wire-values-are-converted-safely.md": "2476275e61e50463853625d391b38106a655e2d45416f5315d1878208156d750",
+    "specs/VELDO-0019-a-final-report-charges-what-it-owes.md": "17e6c1b9a89b31be3dea17299a070635915651dc232573ed9cd87d73748c5269",
+    "specs/VELDO-0020-session-counters-survive-an-impossible-report.md": "58ef7bedb89753b20c0ac2e2155cf5cc8879071c94e17bd14b0b9376f498ac41",
+    "specs/VELDO-0021-a-finished-conversation-stops-costing-memory.md": "0ed386d3741323826e6460c107e82df844a34b961c8606aee5822d6cc4b25e9d",
+    "specs/VELDO-0022-a-hold-is-a-named-row-with-one-owner.md": "144891646386381308c036424a7a64519abdbd0b7d30d7e2c4cce80991f89279",
+    "specs/VELDO-0023-one-conversation-per-epoch-one-durable-answer-per-request.md": "0b379db31866a6f227ae4e474189153773ad9ae2500d4a31f13c8351694200bf",
+    "specs/VELDO-0024-a-durable-name-is-unique-everywhere.md": "8907ba7b518b1a8fc7e24b1bfc2cc23f86193a6cc51cad52b4dc43189e705a82",
+    "specs/VELDO-0025-a-create-is-claimed-under-the-callers-key.md": "c6a8b30fb6a112fd5034f0c94bed3951b5c6e43db0938cc72016f80c33f1fc34",
+    "specs/VELDO-0030-subscriber-identity-concealment-against-published-vectors.md": "0f87e9272f224cddaa3ad4cd77736e556fa2188d7ed37e23b67e46ef6326e656",
+    "specs/VELDO-0031-the-create-key-names-the-intent.md": "a60724ee372c90af29a29e59869fbc87d5ea3dc70ee3a84267706b41b9e0ac0e",
+    "specs/VELDO-0032-an-evicted-session-never-keeps-a-hold.md": "9131234f8dc2eac48f96c355b51a0733325ab327bc3bc9815865eebdda5447fb",
+    "specs/VELDO-0033-the-refusal-cause-survives-the-client.md": "16136eedc4ca365eae588ce6f9d6d78b8adb22a9daf934b0c97409b60b62b8cd",
+    "specs/VELDO-0040-nas5g-algorithms-are-real-or-refused.md": "c6327f21c5c57335dd601f06107ef9c2a891ae08c8783f8d5360daf02843b104",
+    "specs/VELDO-0041-mme-applies-the-algorithms-it-agreed.md": "91f8511ef11366b0352eb151520f048912d577e1e40a64b483dc8e1633f6d358",
+    "specs/VELDO-0050-a-machine-that-walks-sessions.md": "711ae92e2d168e66d02d46a03a7ea0e82f67ccaaf56cff14c770600aeaeae804",
+    "specs/VELDO-0060-the-review-classes-get-a-mechanical-refusal.md": "a93e788b2c15b0d6c048e6687c561f0c4c925cf26a7b2159b9b6ec52e8bd0656",
+    "specs/VELDO-0061-every-reported-figure-is-converted-safely-everywhere.md": "6989a18842641680d6d7b22cd7effde325ff7a3654304bf6e2368945e1ec4a22",
+    "specs/VELDO-0062-an-identifier-survives-the-process-that-made-it.md": "512142aa15bb1413f3548824370e42f9ae77afa513333f0a57281ccf5cd3303a",
+    "specs/VELDO-0063-the-codecs-are-proven-against-published-encodings.md": "689b27b51e7e8478f1c7cc84e15abf422ef7318c377551f31c02c5b6b5de5c08",
+    "specs/VELDO-0064-a-guard-that-cannot-refuse-is-removed-or-made-real.md": "fcd551fbb383b19d95dee82e9dba4438327562102e3a8109846a34f040eceeef",
+    "specs/VELDO-0080-one-bound-for-a-reported-figure.md": "3d44933aab32abc65ac2b855f7316f343a1b726dedaf0e07a83227bef6cb1399",
+    "specs/VELDO-0081-the-bound-lives-at-the-site.md": "3036b775d156f2ff7011478ab1bae27a28e4caf300e7ead297865bbadb9b9abf",
+    "specs/VELDO-0082-a-reference-is-served-by-the-session-it-names.md": "4a301f01d0e44d4463df590aa3ea1624f45ee1ae4b31715bc4fe30d5f2fee9c0",
+    "specs/VELDO-0083-a-post-paid-report-is-idempotent-too.md": "3ba268ec3d499595517dfed81a5f1d2ea2f445c059afb1400fa1b1ff9747c037",
+    "specs/VELDO-0084-the-walker-catches-up-with-the-merged-charging-stack.md": "5ddbe7904f2ce4b544ebcefa1fed1dd7534e72d93cd3d70f5d2cb18a26ce715e",
+    "specs/VELDO-0130-a-request-is-served-by-the-subject-it-names.md": "0ee64e8eb14c45700cba75ff9e657cfbbbdd22882af14a7b153cb784ea1577a3",
+    "specs/VELDO-0131-a-grant-is-bounded-by-what-the-hold-can-pay-for.md": "22bba0e85169183f9b5a1599759049c2f6b7cc6b39ceb263493ad0b57f26602f",
+    "specs/VELDO-0132-a-report-is-named-by-an-identifier-its-caller-sends.md": "d0b5c93dc92aea04fa87471478439c3394b00caac330daf078993f2d506f879e",
+    "specs/VELDO-0133-the-search-cannot-report-a-clean-sweep-of-nothing.md": "76698155c9fca891c13be0b40477abef2e73a94729b80778be07ded597a8c534",
+    "specs/VELDO-0140-a-request-is-identified-by-the-party-it-is-about.md": "fdeb6959b22a33c6918fd5de5424075776f29fa02f5364fd5cbbac791e454224",
+    "specs/VELDO-0141-the-search-reaches-the-two-customer-sequence.md": "da955a2bc9bf5bf6f723e8f6392971d6c87ebb2fc4afaa554d8383911ea32ddd",
+    "specs/VELDO-0142-a-reported-figure-is-bounded-and-never-runs-backwards.md": "736136703bda6e9df5362c574544f7609d721621e8f2246faed412d08a3d5462",
+    "specs/VELDO-0143-the-answer-carries-the-reference-the-decision-returned.md": "1ef5e463e25b485bd25e40724a584dd41b0c49d270da5bb4947e30447871c3f9",
+    "specs/VELDO-0150-a-refusal-tells-the-caller-only-about-its-own-request.md": "9855f0e57bd2185d6c8fc682182cc97b064d6d47e9cad970313d599d0c77dbd6",
+    "specs/VELDO-0151-a-floor-under-a-set-a-check-may-be-empty-about.md": "162a4e8a69c9f83624fc71b96d1424d03eb7f95efab096fa8e20eb744fb77edb",
+    "specs/VELDO-0160-the-suite-states-the-defect-instead-of-certifying-it.md": "ccc1493540048d12d395dfd63c5765781bddbdf920f9db537dd5548eef473483",
+    "specs/VELDO-0161-every-interface-has-a-test-that-a-caller-without-credentials-is-refused.md": "ebc3cfba19d399e395644732a0ef65a89f0c7813a995242f96abbd87e699cf35",
+    "specs/VELDO-0162-the-merge-guard-is-wired-and-has-been-watched-refuse.md": "f39b3a259bd87d6ae7c1e6fc6d2dffb18e290a92d188396ce74c89c0a23cffd3",
+    "specs/VELDO-0163-nothing-reads-as-coverage-without-being-compiled.md": "38bc965e30533057143358141280bd229de73b4755ff0216139994e4ba57682a",
+    "specs/VELDO-0170-an-answer-tells-the-caller-only-its-own-request.md": "509d8d501da2c8ec033176de06142c9bb8c428210eb0aec32a673b1c235cd9ef",
+    "specs/VELDO-0171-a-post-paid-report-is-answered-once.md": "04d2288be7b33936da251b682b1d35398f3f0030fba4912675664f193d5549bd",
+    "specs/VELDO-0180-a-refusal-test-proves-the-refusal-it-names.md": "84b4f8ff636a1a6217a540b308a13f5cee06780dee64f6dfe10b7893fb0c3521",
+    "specs/VELDO-0181-the-census-names-every-router-and-every-socket.md": "e3d303b1b282c01c9a00a8ef8f0326012455e160d68acae14eaa4dd423006307",
+    "specs/VELDO-0182-the-push-guard-validates-what-is-being-pushed.md": "0e84c01e7a9923da6697cf9356cd9f35ec83ed8bfb66687908214cd2f2374504",
+    "specs/VELDO-0183-the-register-carries-the-instance-that-proves-its-own-rule.md": "7468495a69ef8941c0f3e11fbc0cdd4f165715ea0520193de3102497d8b9d62c",
+    "specs/VELDO-0190-key-material-cannot-be-formatted-or-served.md": "91ef15f9c500ffbb0c510c95e90b3d7b91e7d2cea81bedf8c297416500193dd0",
+    "specs/VELDO-0200-measured-usage-reaches-the-charging-path.md": "8861dde84a57107717c6ca5b00e07b17e4ab8e2f40b559fccfff47e0ea9f19a8",
+    "specs/VELDO-0201-a-spent-grant-stops-the-session-in-the-packet-path.md": "a7c06e5d96a424b98d804310290ea3568208c5b4e2dd1830fd2d274a27e69886",
+    "specs/VELDO-0210-a-report-is-charged-at-the-grant-that-authorised-it.md": "1d2f106c8886633d1aafd07063061c648f44d0c29e95c2d10040b7a683d84875",
+    "specs/VELDO-0220-a-claim-cannot-poison-the-session-it-is-about.md": "4c40670ce7f8843cf518b1094bda86ac81763d6c91ebd48d4d8b68e8b7288d50",
+    "specs/VELDO-0221-a-grant-bounds-the-packet-path.md": "73e453c7e2954d6ccb7ee6f38cf1f2a227613990446043be07a2b67013e508d9",
+    "specs/VELDO-0222-the-record-commits-with-the-money.md": "92355a12ac3895944d5fa2bae50750a33a0ab2cd3db029759a85751c422eb578",
+    "specs/VELDO-0230-a-packet-is-attributed-by-the-tunnel-it-arrived-on.md": "946f5c30ba119b63831dbcad1e3e0da1b17db92f5575e5365715bd6b54c1c5b3",
+    "specs/VELDO-0231-a-session-command-is-served-only-for-the-peer-that-owns-it.md": "580e85364a339604f9786113749b2e7b455847c7fd217b9323f97fdb3f7af027",
+    "specs/VELDO-0232-a-renewal-does-not-give-away-the-tail.md": "57c9c94a59ccf3927e792d6ab248a30d77d762c6c6d6c77ba32ef8425c5ad66b",
+    "specs/VELDO-0240-a-boundary-decides-reach-not-the-caller.md": "488f3e9c7953078343e2818a9812d3097fcee1e1cb84ad51ac39667b5b359927",
+    "specs/VELDO-0241-the-roaming-boundary-forwards-only-where-we-said-it-may.md": "8630bc1da41aef31b271021e21351ed3b0a608cdcf9b3544e61f2ae039205dd2",
+    "specs/VELDO-0242-the-console-decides-whose-data-a-request-touches.md": "e239a1c4d8aa7bff6a3add5433684346d1393bee4b6175fbc37b16f64f691fbf",
+    "specs/VELDO-0250-a-decoder-refuses-hostile-input-rather-than-panicking.md": "19b73fe87a676cd9cd4d3b3cfab105ddf493ac03b31b619e3cc53410a4ec77b2",
+    "specs/VELDO-0251-the-metrics-listener-changes-nothing.md": "4ed1a3a410301c57b8bb208dd55cc916f833d554a08c7d1072ad078584cfd7b0",
+    "specs/VELDO-0260-a-subscriber-cannot-reach-the-user-planes-own-control-surfaces.md": "84e71c797080506ae61e7f57dc62ef1bb739c85be299f0aad9a6f128b3f8653c",
+    "specs/VELDO-0261-the-user-plane-reads-its-own-settings-from-its-own-file.md": "ae374170a8a593b473cb2d2aaf0c62f1f4ef4b2ada0e3f659352a1c6b4cd858e",
+    "specs/VELDO-0262-usage-carried-since-the-last-tick-survives-the-tunnel.md": "b294089f4a3932dcd09f5212b12ade8b18724abae86ac910f2c694f22cbbfd69",
+    "specs/VELDO-0270-the-transport-may-not-change-a-decided-request.md": "8b82eb06cd631e055f6e02e20e913eaf2a92dc62c4522d2e03a61feec72d4764",
+    "specs/VELDO-0271-the-tenant-boundary-reaches-every-transport.md": "7c31bb32b42b57a5f78ecb3f2c48b6065c7e3322e52533293bd685fe1135d3e0",
+    "specs/VELDO-0280-a-usage-report-is-charged-only-for-the-user-plane-that-owns-the-session.md": "a26238d076915bda23b552812b27138efd1183a11d00763afd25a36bfd067391",
+    "specs/VELDO-0281-uplink-from-an-address-that-is-not-the-tunnels-base-station-is-refused.md": "c60ad8f51f2b6a7b4f77ab9630779199e26309120b207670bdd75550c1d160ca",
+    "specs/VELDO-0290-an-answer-belongs-to-the-request-that-asked-for-it.md": "36b4e7613107a80d2e74b638d18538ccfdf350c80872dfc2c94ef14f5678a0cb",
+    "specs/VELDO-0291-enabling-the-xdp-path-would-remove-three-protections-and-is-refused.md": "45b93d85a5563aefc4eef4891fa6334373725989b4ff2ada9f1ada68321845f3",
+    "specs/VELDO-0300-deleting-a-tenant-never-widens-a-scope.md": "86e0d3d0926da18b819af71adb8f6c7b483f0ecd186885d3936a74bef1fd70f7",
+    "specs/VELDO-0301-a-decision-and-the-write-it-authorises-are-one-operation.md": "316fd116bf80296b745cf6bec66348ca82f3f92782e33df7b8af81376ef2d48a",
+    "specs/VELDO-0302-authority-is-the-record-not-the-token.md": "14ee6cb3d0bc8427e8ca4efc1039c9f07384a29001366a8db1bfe2b4dd2e8e86",
+    "specs/VELDO-0303-a-record-is-scoped-by-where-it-happened.md": "56af7404142a7b743b7bb923d8a3316870c2747f7ea87b32230ca15e71fae35d",
+    "specs/VELDO-0320-the-xdp-data-plane-enforces-the-three-protections-the-userspace-forwarder-does.md": "3a9bd57ff443538c4593a02dee6ea019b50c45b81017877ed403a21c9dadecc4",
+    "specs/VELDO-0321-a-decision-table-in-a-doc-comment-is-prose-not-a-rust-example.md": "6495a3e4002c3a3ca676f964cb766d6a9d3c54a8ace6f6f553523acffe96b1c8",
+    "specs/VELDO-0322-a-source-scan-reads-code-not-the-prose-inside-a-string.md": "6db37e519526c3e823cd6cca3c71a35da93c315ae88a7306301fc90300c7d4d7",
+    "specs/VELDO-0323-the-suite-audit-covers-the-suite-that-exists.md": "52274c7cc5b3cf404b1e2e0b118f9a6ac74eed7713afd1fdc09ef2a2f5c64f44",
+    "specs/VELDO-0324-the-interface-census-catches-up-with-the-doors-that-exist.md": "3b45d47bfdb9e7e6303f262b641d3587e095294b056ce97fced2159ebf4e24c7",
+    "specs/VELDO-0325-a-refusal-names-the-algorithms-and-a-security-mode-command-is-not-logged.md": "4bc5fa04033976c4d3e122675443ddcd559ae794b940cbd5fd40c3eccafb901b",
+    "specs/VELDO-0330-a-negotiating-peer-can-do-nothing.md": "7a2435cbf288f250ee3f227bd30edbce51826ec3e61fa2d6a62d910714320704",
+    "specs/VELDO-0340-the-declared-red-comparison-speaks-for-the-run-it-read.md": "6bd260f7680e044f77f3e851e6e6a9efee19d258c0294299efd7437c03f869f5",
+    "specs/VELDO-0341-the-guard-says-which-of-its-reasons-refused.md": "aaf9850b4a989c35f7fda0e4108b1460b9eded036a0b4b46e46374de00061601",
+    "specs/VELDO-0342-a-commit-inherits-a-gate-result-only-when-it-changes-nothing-the-gate-reads.md": "7358ee92f847854f27a6bcec88b264ce1a3f821be0b3a796618d2ba6a0feeb1f",
+    "specs/VELDO-0350-a-proof-names-the-content-it-measured-not-an-address-the-project-can-change.md": "cb55532db89de396ff38ac69bea94efb9d91bf108ea0ffb52ff696b91ba1c3f0",
+    "specs/VELDO-0351-the-ignore-rule-covers-the-build-directories-the-practice-produces.md": "efbb40dc003916aa9f9630a5ee1a741bb498eda9b4eefecff2122802c8f52898",
+    "specs/VELDO-0360-a-caller-nobody-established-is-refused-before-the-handler.md": "ce9a6480bebfb8afe8b712a5e022e8a45125c45bed2eb8470870ee7acf1ac316",
+    "specs/VELDO-0361-a-session-from-a-peer-that-never-associated-is-not-dispatched.md": "29caaf86776dc80e242a3640b10de59a53bf3f2291439937ce5f23d501309f08",
+    "specs/VELDO-0370-a-merge-is-proven-by-a-record-of-its-own.md": "5537b96fa6cc97a7a8616a54f8f3abfecaca4c5798aec2fc16b095b216cde059",
+    "specs/VELDO-0371-what-a-merge-changed-is-the-content-that-is-in-neither-parent.md": "6fe5ab201b8add4230ae3d5e4ffeece6d25565092438a5c7e741285ac36417b2",
+    "specs/VELDO-0380-continuous-integration-tells-a-declared-red-from-a-regression.md": "ba84722bed9c1faea5e18cb80a48d16e43a642903b4b48038fd0e184686e0aff",
+    "specs/VELDO-0381-where-else-the-rule-lives.md": "fc969ed99612c29010f38a4c0dc293698fbeac27a597ad7321cbfbc27648dafa",
+    "specs/VELDO-0390-authentication-succeeds-only-when-the-response-is-present-parsed-and-equal.md": "b4c075d7f99b4c376c5286bff157cd94c70cd74356c5cd614bfd3b921d80809c",
+    "specs/VELDO-0410-the-whole-red-is-accounted-for-in-one-place-and-an-empty-register-is-the-finish-line.md": "ebf8b881b52750057e2382042c8b5d75c2386d0cffc4062820fe3688107d1d88",
+    "specs/VELDO-0420-a-target-that-failed-without-naming-a-test.md": "e49696466850192f7f2b30f7aab99ff9418e1a1a6bf0f07d6b7574f6da8c7ff5",
+    "specs/VELDO-0430-a-run-that-was-killed-is-not-a-green-suite.md": "07d20b1ad68487dbd17af2563cee5ac1ed449fc8d1ceb136a65dc1b885006892",
+    "specs/VELDO-0440-a-credit-control-request-is-served-as-the-peer-the-exchange-named.md": "5ab19ac4f6ff2723fc441734681ee0250bb5d387e7045a56d3bad6b292f55b1c",
+    "specs/VELDO-0450-a-charging-decision-is-taken-only-for-the-tenant-the-subscriber-belongs-to.md": "3c15f54553bbc7d1461bc6ec373b7882eddb3f5ea22e8006e6ad8063d332e287",
+    "specs/VELDO-0460-a-diameter-peer-presents-a-name-its-credential-carries.md": "c7a7ee4f419d98c39e334b758a47ec905d2262454b9405481c1d1bed17cd0de4",
+    "specs/VELDO-0470-the-same-walk-every-time.md": "018552ef281f10550abdb5af609c43b3b76af0a762b9f1dd8bf0efb5875d570f",
+    "specs/VELDO-0480-no-signing-key-has-a-literal-default.md": "700ff3736520e8757ac23d4969d319705463599e3f214b5b33ba6469e4bf7e56",
+    "specs/VELDO-0490-a-generated-key-renders-the-chart-and-the-refusal-is-asserted-beside-it.md": "68a0e1d31a29923b882cda36ad3497453a2f5740dcd527ca7b8b3fe297708d34",
+    "specs/VELDO-0500-a-timing-check-compares-a-ratio-not-two-positions-on-a-clock.md": "afa344d80b56e8e4e166540a042caae05c15b552b0713c7b5c4a9da3b8a91fd7",
+    "specs/VELDO-0510-the-judge-and-the-line-it-looks-for-are-asserted-to-agree.md": "9990d68cc728337936345732d87f28c5e5d5d0d621a4efe0a28bfa54056077e4",
+    "specs/VELDO-0520-a-write-that-changes-who-can-authenticate-carries-the-callers-admission.md": "ce9bfbe978d9a1067fc7a9ec5860a13c6a5fe9e59cddde9872f1e94f2ba23281",
+    "specs/VELDO-0530-every-identity-composition-site-says-whether-the-subject-is-part-of-it.md": "c8d789a927dc166d9a4bded2a476d5851d605bd8cd472d9026d10699e70d9f69",
+    "specs/VELDO-0540-the-service-based-charging-door-serves-a-caller-as-the-network-function-its-certificate-names.md": "886ca56a46dd3ed3b37feeb766cfc7e659d74ca18def0f9fdc6cc7bebf1f7a18",
+    "specs/VELDO-0550-a-credit-claims-its-idempotency-key-inside-the-transaction-that-moves-the-balance.md": "95aa6d0bceada3d5feaefd13457f41d736191b8c7936fab7cf440a14004bde3e",
+    "specs/VELDO-0570-a-policy-is-published-before-it-decides.md": "340d5aba29df54e715db227fa59a451507632ad58dc1fe812a94f61bd7570d56",
+    "specs/VELDO-0580-a-rate-version-is-allocated-under-a-lock-that-is-stated-rather-than-incidental.md": "9fd9fc8055a7db77bd0da3e3faa7914bfd860feced377c567e86533f6d2c005d",
+    "specs/VELDO-0590-a-price-nobody-chose-is-refused-rather-than-defaulted.md": "73a1bb49d0036e66b0619bdd384bad73a341473cf0588ac9d3ca69dba8ab9d1b",
+    "specs/VELDO-0600-a-shared-price-answers-only-to-the-platform.md": "dedcf07a11fc0407c2db569bfed63fc75b49409495648e343d8dbf0c9310baee",
+    "specs/VELDO-0610-a-census-decides-coverage-not-presence.md": "c20b1baa7fe159bf373787d208ba18dae092804d465b197bf2f4fbc5b85bbdec",
+    "specs/VELDO-0620-a-published-policy-reaches-a-running-core.md": "c726ae9f11045829d6f3269666a20e71ec8b2a78275c35af99eddc0ab8c632ad",
+    "specs/VELDO-0630-credit-is-an-exhaustible-balance.md": "e4d1b2968b06d72b952c8f78f7a9b7126498571d4449367f46fade56290e7584",
+    "specs/VELDO-0640-a-credit-limit-is-spendable.md": "4ac7306d9b3838bc81f01efbbced8e534de97b0d8f428d24bf0ef672ec6c380b",
+    "specs/VELDO-0650-a-payment-settles-the-credit-it-was-spent-against.md": "1cd034f0163bcc395013e62b2611e294bc0dd3c55c5b847b62b2230bf0a8e725",
+    "specs/VELDO-0660-a-payment-holds-the-ownership-it-depends-on.md": "a28964208c7e02e91100488d05a34d83f874698671dfb7373030238489f4892d",
+    "specs/VELDO-0670-a-balance-read-answers-from-one-statement.md": "5af90ff41909f2c137273f7a79eee4a87b5e7d38cc1dcea9c499244d20be5e6b",
+    "specs/VELDO-0680-a-claim-carries-the-tenant-it-was-made-for.md": "1da7b24fc902e34e9820c8f4e582c5414fe98384d1a8605ce832d76f5dea4319",
+    "specs/VELDO-0690-the-browser-sends-no-price-nobody-entered.md": "61e2ef4edb3adfa3602a5e1ce3bc396d3f6b0d371005c173c886f5bbb35d94ee",
+    "specs/VELDO-0700-a-price-the-api-accepts-and-the-browser-refuses.md": "53ba2193025ba40dd55bd4acea6b422b14de4180c5e73a0d6111f21ac5961d80",
+    "specs/VELDO-0710-an-import-carries-only-what-the-file-says.md": "ee566c2ce2478fda86cf97280b7934eab08d1f61808e0fd21de11b720bc96477",
+    "specs/VELDO-0720-a-blocked-column-is-read-or-it-is-not-there.md": "60953a1516e3ed37c91a0f71c3cd50730ea569de79c482a458ff62f19274f3b0",
+    "specs/VELDO-0730-a-record-is-as-wide-as-its-header.md": "8f4971b1fc6936ff242d3be36df895d887baf34928cd7fd87abae5ad1125cd37",
+    "specs/VELDO-0740-a-blocking-instruction-survives-every-path.md": "6fb473fbf39dfe8a05760e749246f73046ab3ffd87e0a96cca94ed82ba7c6199",
+    "specs/VELDO-0750-which-column-is-the-price-is-decided-without-guessing.md": "c2a802ca61c3efd1ea2d355f6bf4420669145f9b473b54caa45343b13710ec0e",
+    "specs/VELDO-0760-a-price-column-is-named-exactly-or-the-file-is-refused.md": "2caf781efa3869351c0e5ec2ba49e21d9e4983c64106e99710c07378ee454748",
+    "specs/VELDO-0770-a-price-list-is-applied-in-full-or-not-at-all.md": "75627852727660974572c73300e2a779ecf100a4ed39bc374b997bf96faca86a",
+    "specs/VELDO-0780-no-column-is-chosen-by-position.md": "d723e01f9beaf9a925ec4d00ae905700860697dcfa2b78cf2a01a13e96fba8e5",
+    "specs/VELDO-0790-a-published-rate-book-reaches-a-running-core.md": "3d5e68b4136ec099165775c5e650227f873c0235b7ed50e587ae7d0d1f3970c3",
+    "specs/VELDO-0800-which-network-a-row-is-about-is-stated-or-refused.md": "30d551adf565918ba5a50203dc537a6f8a6703ed92a3493eb4cf06d45c37522e",
+    "specs/VELDO-0810-half-an-identity-is-not-an-identity.md": "600f63794bff54e68fbc2b9f5ea47990151c2768b68101fab513e831b61c9f3c",
+    "specs/VELDO-0820-the-api-compares-identities-and-the-wildcard-is-refused.md": "3a376a60436caa3803759962fc75f087e3102038ea42a5a48ab7effd8ba225b8",
+    "specs/VELDO-0830-a-create-is-a-create.md": "9ff9888e3885306f370897de91d77d924fd361c6c51ca20ec10ee29249ce405d",
+    "specs/VELDO-0840-seven-routes-that-decide-access-have-now-been-run.md": "0f7ccf0e23fe2251a13c021e2a518afbf17e262f36804aac7dce0f2f498b6fe6",
+    "specs/VELDO-0850-a-grant-settles-at-the-tariff-that-authorised-it.md": "22f68d631dd2af7338feee900c2a52acb827044e87d94f8b288fa1eba37a96e7",
+    "specs/VELDO-0860-one-answer-to-whether-a-network-may-carry-traffic.md": "c6c70e325c47a426caa74d61c585ca804cfb5a6e8cb51b6d27cb7f2f8f5b79ca",
+    "specs/VELDO-0870-an-unavailable-network-stops-the-sessions-already-on-it.md": "fc00c88e4ebd2a383602e17e54ce34cfad24bc5b60ffcbd9a24d68ff612a5eb3",
+    "specs/VELDO-0880-the-answer-says-whether-the-session-is-over.md": "a9d4b3068957611a41784499ac1c9678cbe64f75b0db1445701c32143526711b",
+    "specs/VELDO-0890-an-agreement-carries-traffic-only-while-it-is-in-force.md": "df628961c70d2bdf1fe8abe602211b93532896d7671305536798579a3fc0f7ed",
+    "specs/VELDO-0900-a-grants-deadline-reaches-the-user-plane.md": "d5f767cd97568b2ef57e07e3d6a46956b7f914c9b80dca31966f13f7ac38cc64",
+    "specs/VELDO-0910-a-quiet-session-still-counts-the-time-that-passes.md": "2de778915d3d4726de4ffa41d39fbd89d900749acb6b0f3bdab9dfb9a0582a83",
+    "specs/VELDO-0920-charging-is-not-a-passenger-on-the-analytics-feed.md": "eec97d1ab515fa457f3c03b62023b46a70af99bb0550b5be7a59f11a18b4d86e",
+    "specs/VELDO-0930-a-report-is-owned-until-it-is-answered.md": "d1a899dfde2a0100a6b136b9b82d845428b4c806786440360ad2e2fa6777048f",
+    "specs/VELDO-0940-a-caller-presents-the-credential-its-door-requires.md": "3f86059ebc17f54bc3455605375cc15441ec47bf9d8193d8c465ce9c08ff1cb5",
+    "specs/VELDO-0950-one-authority-decision-for-every-network-function-door.md": "fe36a17dc4e485bf74eeb83b06b20314dbd9e0054ca41903b037943027cb22d9",
+    "specs/VELDO-0961-one-authorization-is-applied-once.md": "c8b4128544623e03ac04e95ba70738d8bbfd0a34700b5a896b20636c6bdfe157",
+    "specs/VELDO-0962-a-measurement-survives-the-thing-that-carried-it.md": "0e9c1bdcf7b8652efc24538a5a4f8362099182fe99082decc1b72af2cb4a0d23",
+    "specs/VELDO-0963-the-4g-path-is-charged-like-the-5g-one.md": "35f0b1c1afdbb9433cdb3bc1814fd48d428dd31670fb9a740acf3ec206809663",
+    "specs/VELDO-0966-the-policy-requirements-are-written-and-reviewed.md": "75ca852fb15cef3dec51346febc482fface647aed6012cb8998fe2a163068b56",
+    "specs/index.md": "4e7cd8b8a2e0c04bafe31ef46fc83754821276dc3d7b006b4811e6fd92fd3922"
+  },
+  "matched_pairs": 173,
+  "strict_pass": 61,
+  "historical_debt": 107,
+  "unchanged_ratchet_errors": 0,
+  "single_pair_touch_refusals": 214,
+  "parser_errors": [
+    {
+      "spec": "specs/DEV-1202-the-mme-stores-name-a-ceiling.md",
+      "proof": "proof/DEV-1202/manifest.json",
+      "error": "<text>:31: colon in plain scalar; quote literal text"
+    },
+    {
+      "spec": "specs/DEV-1204-a-tunnels-fate-is-not-the-sessions.md",
+      "proof": "proof/DEV-1204/manifest.json",
+      "error": "<text>:30: colon in plain scalar; quote literal text"
+    },
+    {
+      "spec": "specs/DEV-1205-a-teardown-settles-what-it-carried.md",
+      "proof": "proof/DEV-1205/manifest.json",
+      "error": "<text>:31: colon in plain scalar; quote literal text"
+    },
+    {
+      "spec": "specs/DEV-1207-a-measurement-is-never-nowhere.md",
+      "proof": "proof/DEV-1207/manifest.json",
+      "error": "<text>:21: colon in plain scalar; quote literal text"
+    },
+    {
+      "spec": "specs/DEV-1214-a-throttle-that-throttles.md",
+      "proof": "proof/DEV-1214/manifest.json",
+      "error": "<text>:36: colon in plain scalar; quote literal text"
+    }
+  ],
+  "refusals": [
+    {
+      "touched": "specs/DEV-1175-ngap-tunnel-allowance-binding.md",
+      "errors": 1,
+      "diagnostic": "proof/DEV-1175/manifest.json: touched pair requires passing evidence: proof/DEV-1175/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/DEV-1175/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/DEV-1175/manifest.json: touched pair requires passing evidence: proof/DEV-1175/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/DEV-1191-release-ownership-and-create-recovery.md",
+      "errors": 1,
+      "diagnostic": "proof/DEV-1191/manifest.json: touched pair requires passing evidence: proof/DEV-1191/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/DEV-1191/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/DEV-1191/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/DEV-1191/manifest.json: touched pair requires passing evidence: proof/DEV-1191/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/DEV-1191/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0007-charging-proven-against-a-real-database.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0007/manifest.json: touched pair requires passing evidence: proof/VELDO-0007/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0007/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0007/manifest.json: touched pair requires passing evidence: proof/VELDO-0007/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0022-a-hold-is-a-named-row-with-one-owner.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0022/manifest.json: touched pair requires passing evidence: proof/VELDO-0022/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0022/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0022/manifest.json: touched pair requires passing evidence: proof/VELDO-0022/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0023-one-conversation-per-epoch-one-durable-answer-per-request.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0023/manifest.json: touched pair requires passing evidence: proof/VELDO-0023/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0023/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0023/manifest.json: touched pair requires passing evidence: proof/VELDO-0023/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0024-a-durable-name-is-unique-everywhere.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0024/manifest.json: touched pair requires passing evidence: proof/VELDO-0024/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0024/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0024/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0024/manifest.json: touched pair requires passing evidence: proof/VELDO-0024/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0024/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0025-a-create-is-claimed-under-the-callers-key.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0025/manifest.json: touched pair requires passing evidence: proof/VELDO-0025/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0025/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0025/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0025/manifest.json: touched pair requires passing evidence: proof/VELDO-0025/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0025/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0031-the-create-key-names-the-intent.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0031/manifest.json: touched pair requires passing evidence: proof/VELDO-0031/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0031/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0031/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0031/manifest.json: touched pair requires passing evidence: proof/VELDO-0031/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0031/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0032-an-evicted-session-never-keeps-a-hold.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0032/manifest.json: touched pair requires passing evidence: proof/VELDO-0032/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0032/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0032/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0032/manifest.json: touched pair requires passing evidence: proof/VELDO-0032/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0032/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0033-the-refusal-cause-survives-the-client.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0033/manifest.json: touched pair requires passing evidence: proof/VELDO-0033/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0033/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0033/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0033/manifest.json: touched pair requires passing evidence: proof/VELDO-0033/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0033/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0060-the-review-classes-get-a-mechanical-refusal.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0060/manifest.json: touched pair requires passing evidence: proof/VELDO-0060/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0060/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0060/manifest.json: touched pair requires passing evidence: proof/VELDO-0060/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0084-the-walker-catches-up-with-the-merged-charging-stack.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0084/manifest.json: touched pair requires passing evidence: proof/VELDO-0084/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0084/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0084/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0084/manifest.json: touched pair requires passing evidence: proof/VELDO-0084/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0084/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0130-a-request-is-served-by-the-subject-it-names.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0130/manifest.json: touched pair requires passing evidence: proof/VELDO-0130/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0130/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0130/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0130/manifest.json: touched pair requires passing evidence: proof/VELDO-0130/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0130/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0131-a-grant-is-bounded-by-what-the-hold-can-pay-for.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0131/manifest.json: touched pair requires passing evidence: proof/VELDO-0131/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0131/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0131/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0131/manifest.json: touched pair requires passing evidence: proof/VELDO-0131/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0131/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0132-a-report-is-named-by-an-identifier-its-caller-sends.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0132/manifest.json: touched pair requires passing evidence: proof/VELDO-0132/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0132/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0132/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0132/manifest.json: touched pair requires passing evidence: proof/VELDO-0132/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0132/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0133-the-search-cannot-report-a-clean-sweep-of-nothing.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0133/manifest.json: touched pair requires passing evidence: proof/VELDO-0133/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0133/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0133/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0133/manifest.json: touched pair requires passing evidence: proof/VELDO-0133/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0133/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0140-a-request-is-identified-by-the-party-it-is-about.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0140/manifest.json: touched pair requires passing evidence: proof/VELDO-0140/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0140/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0140/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0140/manifest.json: touched pair requires passing evidence: proof/VELDO-0140/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0140/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0141-the-search-reaches-the-two-customer-sequence.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0141/manifest.json: touched pair requires passing evidence: proof/VELDO-0141/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0141/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0141/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0141/manifest.json: touched pair requires passing evidence: proof/VELDO-0141/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0141/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0142-a-reported-figure-is-bounded-and-never-runs-backwards.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0142/manifest.json: touched pair requires passing evidence: proof/VELDO-0142/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0142/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0142/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0142/manifest.json: touched pair requires passing evidence: proof/VELDO-0142/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0142/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0143-the-answer-carries-the-reference-the-decision-returned.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0143/manifest.json: touched pair requires passing evidence: proof/VELDO-0143/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0143/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0143/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0143/manifest.json: touched pair requires passing evidence: proof/VELDO-0143/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0143/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0150-a-refusal-tells-the-caller-only-about-its-own-request.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0150/manifest.json: touched pair requires passing evidence: proof/VELDO-0150/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0150/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0150/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0150/manifest.json: touched pair requires passing evidence: proof/VELDO-0150/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0150/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0151-a-floor-under-a-set-a-check-may-be-empty-about.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0151/manifest.json: touched pair requires passing evidence: proof/VELDO-0151/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0151/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0151/manifest.json: touched pair requires passing evidence: proof/VELDO-0151/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0160-the-suite-states-the-defect-instead-of-certifying-it.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0160/manifest.json: touched pair requires passing evidence: proof/VELDO-0160/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0160/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0160/manifest.json: touched pair requires passing evidence: proof/VELDO-0160/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0161-every-interface-has-a-test-that-a-caller-without-credentials-is-refused.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0161/manifest.json: touched pair requires passing evidence: proof/VELDO-0161/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0161/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0161/manifest.json: touched pair requires passing evidence: proof/VELDO-0161/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0162-the-merge-guard-is-wired-and-has-been-watched-refuse.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0162/manifest.json: touched pair requires passing evidence: proof/VELDO-0162/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0162/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0162/manifest.json: touched pair requires passing evidence: proof/VELDO-0162/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0170-an-answer-tells-the-caller-only-its-own-request.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0170/manifest.json: touched pair requires passing evidence: proof/VELDO-0170/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0170/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0170/manifest.json: touched pair requires passing evidence: proof/VELDO-0170/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0171-a-post-paid-report-is-answered-once.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0171/manifest.json: touched pair requires passing evidence: proof/VELDO-0171/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0171/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0171/manifest.json: touched pair requires passing evidence: proof/VELDO-0171/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0180-a-refusal-test-proves-the-refusal-it-names.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0180/manifest.json: touched pair requires passing evidence: proof/VELDO-0180/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0180/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0180/manifest.json: touched pair requires passing evidence: proof/VELDO-0180/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0190-key-material-cannot-be-formatted-or-served.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0190/manifest.json: touched pair requires passing evidence: proof/VELDO-0190/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0190/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0190/manifest.json: touched pair requires passing evidence: proof/VELDO-0190/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0200-measured-usage-reaches-the-charging-path.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0200/manifest.json: touched pair requires passing evidence: proof/VELDO-0200/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0200/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0200/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0200/manifest.json: touched pair requires passing evidence: proof/VELDO-0200/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0200/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0201-a-spent-grant-stops-the-session-in-the-packet-path.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0201/manifest.json: touched pair requires passing evidence: proof/VELDO-0201/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0201/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0201/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0201/manifest.json: touched pair requires passing evidence: proof/VELDO-0201/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0201/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0210-a-report-is-charged-at-the-grant-that-authorised-it.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0210/manifest.json: touched pair requires passing evidence: proof/VELDO-0210/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0210/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0210/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0210/manifest.json: touched pair requires passing evidence: proof/VELDO-0210/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0210/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0220-a-claim-cannot-poison-the-session-it-is-about.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0220/manifest.json: touched pair requires passing evidence: proof/VELDO-0220/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0220/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0220/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0220/manifest.json: touched pair requires passing evidence: proof/VELDO-0220/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0220/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0221-a-grant-bounds-the-packet-path.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0221/manifest.json: touched pair requires passing evidence: proof/VELDO-0221/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0221/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0221/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0221/manifest.json: touched pair requires passing evidence: proof/VELDO-0221/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0221/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0222-the-record-commits-with-the-money.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0222/manifest.json: touched pair requires passing evidence: proof/VELDO-0222/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0222/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0222/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0222/manifest.json: touched pair requires passing evidence: proof/VELDO-0222/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0222/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0230-a-packet-is-attributed-by-the-tunnel-it-arrived-on.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0230/manifest.json: touched pair requires passing evidence: proof/VELDO-0230/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0230/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0230/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0230/manifest.json: touched pair requires passing evidence: proof/VELDO-0230/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0230/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0231-a-session-command-is-served-only-for-the-peer-that-owns-it.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0231/manifest.json: touched pair requires passing evidence: proof/VELDO-0231/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0231/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0231/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0231/manifest.json: touched pair requires passing evidence: proof/VELDO-0231/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0231/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0232-a-renewal-does-not-give-away-the-tail.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0232/manifest.json: touched pair requires passing evidence: proof/VELDO-0232/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0232/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0232/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0232/manifest.json: touched pair requires passing evidence: proof/VELDO-0232/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0232/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0240-a-boundary-decides-reach-not-the-caller.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0240/manifest.json: touched pair requires passing evidence: proof/VELDO-0240/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0240/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0240/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0240/manifest.json: touched pair requires passing evidence: proof/VELDO-0240/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0240/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0241-the-roaming-boundary-forwards-only-where-we-said-it-may.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0241/manifest.json: touched pair requires passing evidence: proof/VELDO-0241/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0241/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0241/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0241/manifest.json: touched pair requires passing evidence: proof/VELDO-0241/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0241/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0242-the-console-decides-whose-data-a-request-touches.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0242/manifest.json: touched pair requires passing evidence: proof/VELDO-0242/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0242/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0242/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0242/manifest.json: touched pair requires passing evidence: proof/VELDO-0242/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0242/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0250-a-decoder-refuses-hostile-input-rather-than-panicking.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0250/manifest.json: touched pair requires passing evidence: proof/VELDO-0250/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0250/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0250/manifest.json: touched pair requires passing evidence: proof/VELDO-0250/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0251-the-metrics-listener-changes-nothing.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0251/manifest.json: touched pair requires passing evidence: proof/VELDO-0251/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0251/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0251/manifest.json: touched pair requires passing evidence: proof/VELDO-0251/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0260-a-subscriber-cannot-reach-the-user-planes-own-control-surfaces.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0260/manifest.json: touched pair requires passing evidence: proof/VELDO-0260/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0260/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0260/manifest.json: required evidence kind 'operational' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0260/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0260/manifest.json: touched pair requires passing evidence: proof/VELDO-0260/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0260/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0260/manifest.json: required evidence kind 'operational' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0261-the-user-plane-reads-its-own-settings-from-its-own-file.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0261/manifest.json: touched pair requires passing evidence: proof/VELDO-0261/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0261/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0261/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0261/manifest.json: touched pair requires passing evidence: proof/VELDO-0261/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0261/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0262-usage-carried-since-the-last-tick-survives-the-tunnel.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0262/manifest.json: touched pair requires passing evidence: proof/VELDO-0262/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0262/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0262/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0262/manifest.json: touched pair requires passing evidence: proof/VELDO-0262/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0262/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0270-the-transport-may-not-change-a-decided-request.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0270/manifest.json: touched pair requires passing evidence: proof/VELDO-0270/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0270/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0270/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0270/manifest.json: touched pair requires passing evidence: proof/VELDO-0270/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0270/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0271-the-tenant-boundary-reaches-every-transport.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0271/manifest.json: touched pair requires passing evidence: proof/VELDO-0271/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0271/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0271/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0271/manifest.json: touched pair requires passing evidence: proof/VELDO-0271/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0271/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0280-a-usage-report-is-charged-only-for-the-user-plane-that-owns-the-session.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0280/manifest.json: touched pair requires passing evidence: proof/VELDO-0280/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0280/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0280/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0280/manifest.json: touched pair requires passing evidence: proof/VELDO-0280/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0280/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0281-uplink-from-an-address-that-is-not-the-tunnels-base-station-is-refused.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0281/manifest.json: touched pair requires passing evidence: proof/VELDO-0281/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0281/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0281/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0281/manifest.json: touched pair requires passing evidence: proof/VELDO-0281/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0281/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0290-an-answer-belongs-to-the-request-that-asked-for-it.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0290/manifest.json: touched pair requires passing evidence: proof/VELDO-0290/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0290/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0290/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0290/manifest.json: touched pair requires passing evidence: proof/VELDO-0290/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0290/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0291-enabling-the-xdp-path-would-remove-three-protections-and-is-refused.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0291/manifest.json: touched pair requires passing evidence: proof/VELDO-0291/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0291/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0291/manifest.json: touched pair requires passing evidence: proof/VELDO-0291/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0300-deleting-a-tenant-never-widens-a-scope.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0300/manifest.json: touched pair requires passing evidence: proof/VELDO-0300/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0300/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0300/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0300/manifest.json: touched pair requires passing evidence: proof/VELDO-0300/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0300/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0301-a-decision-and-the-write-it-authorises-are-one-operation.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0301/manifest.json: touched pair requires passing evidence: proof/VELDO-0301/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0301/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0301/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0301/manifest.json: touched pair requires passing evidence: proof/VELDO-0301/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0301/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0302-authority-is-the-record-not-the-token.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0302/manifest.json: touched pair requires passing evidence: proof/VELDO-0302/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0302/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0302/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0302/manifest.json: touched pair requires passing evidence: proof/VELDO-0302/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0302/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0303-a-record-is-scoped-by-where-it-happened.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0303/manifest.json: touched pair requires passing evidence: proof/VELDO-0303/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0303/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0303/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0303/manifest.json: touched pair requires passing evidence: proof/VELDO-0303/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0303/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0320-the-xdp-data-plane-enforces-the-three-protections-the-userspace-forwarder-does.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0320/manifest.json: touched pair requires passing evidence: proof/VELDO-0320/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0320/manifest.json: required evidence kind 'operational' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0320/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0320/manifest.json: touched pair requires passing evidence: proof/VELDO-0320/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0320/manifest.json: required evidence kind 'operational' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0321-a-decision-table-in-a-doc-comment-is-prose-not-a-rust-example.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0321/manifest.json: touched pair requires passing evidence: proof/VELDO-0321/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0321/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0321/manifest.json: touched pair requires passing evidence: proof/VELDO-0321/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0323-the-suite-audit-covers-the-suite-that-exists.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0323/manifest.json: touched pair requires passing evidence: proof/VELDO-0323/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0323/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0323/manifest.json: touched pair requires passing evidence: proof/VELDO-0323/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0324-the-interface-census-catches-up-with-the-doors-that-exist.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0324/manifest.json: touched pair requires passing evidence: proof/VELDO-0324/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0324/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0324/manifest.json: touched pair requires passing evidence: proof/VELDO-0324/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0360-a-caller-nobody-established-is-refused-before-the-handler.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0360/manifest.json: touched pair requires passing evidence: proof/VELDO-0360/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0360/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0360/manifest.json: touched pair requires passing evidence: proof/VELDO-0360/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0361-a-session-from-a-peer-that-never-associated-is-not-dispatched.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0361/manifest.json: touched pair requires passing evidence: proof/VELDO-0361/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0361/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0361/manifest.json: touched pair requires passing evidence: proof/VELDO-0361/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0370-a-merge-is-proven-by-a-record-of-its-own.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0370/manifest.json: touched pair requires passing evidence: proof/VELDO-0370/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0370/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0370/manifest.json: touched pair requires passing evidence: proof/VELDO-0370/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0371-what-a-merge-changed-is-the-content-that-is-in-neither-parent.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0371/manifest.json: touched pair requires passing evidence: proof/VELDO-0371/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0371/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0371/manifest.json: touched pair requires passing evidence: proof/VELDO-0371/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0380-continuous-integration-tells-a-declared-red-from-a-regression.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0380/manifest.json: touched pair requires passing evidence: proof/VELDO-0380/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0380/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0380/manifest.json: touched pair requires passing evidence: proof/VELDO-0380/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0381-where-else-the-rule-lives.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0381/manifest.json: touched pair requires passing evidence: proof/VELDO-0381/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0381/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0381/manifest.json: touched pair requires passing evidence: proof/VELDO-0381/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0390-authentication-succeeds-only-when-the-response-is-present-parsed-and-equal.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0390/manifest.json: touched pair requires passing evidence: proof/VELDO-0390/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0390/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0390/manifest.json: touched pair requires passing evidence: proof/VELDO-0390/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0440-a-credit-control-request-is-served-as-the-peer-the-exchange-named.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0440/manifest.json: touched pair requires passing evidence: proof/VELDO-0440/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0440/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0440/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0440/manifest.json: touched pair requires passing evidence: proof/VELDO-0440/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0440/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0450-a-charging-decision-is-taken-only-for-the-tenant-the-subscriber-belongs-to.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0450/manifest.json: touched pair requires passing evidence: proof/VELDO-0450/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0450/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0450/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0450/manifest.json: touched pair requires passing evidence: proof/VELDO-0450/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0450/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0470-the-same-walk-every-time.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0470/manifest.json: touched pair requires passing evidence: proof/VELDO-0470/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0470/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0470/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0470/manifest.json: touched pair requires passing evidence: proof/VELDO-0470/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0470/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0500-a-timing-check-compares-a-ratio-not-two-positions-on-a-clock.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0500/manifest.json: touched pair requires passing evidence: proof/VELDO-0500/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0500/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0500/manifest.json: touched pair requires passing evidence: proof/VELDO-0500/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0510-the-judge-and-the-line-it-looks-for-are-asserted-to-agree.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0510/manifest.json: touched pair requires passing evidence: proof/VELDO-0510/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0510/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0510/manifest.json: touched pair requires passing evidence: proof/VELDO-0510/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0520-a-write-that-changes-who-can-authenticate-carries-the-callers-admission.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0520/manifest.json: touched pair requires passing evidence: proof/VELDO-0520/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0520/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0520/manifest.json: touched pair requires passing evidence: proof/VELDO-0520/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0530-every-identity-composition-site-says-whether-the-subject-is-part-of-it.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0530/manifest.json: touched pair requires passing evidence: proof/VELDO-0530/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0530/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0530/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0530/manifest.json: touched pair requires passing evidence: proof/VELDO-0530/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0530/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0620-a-published-policy-reaches-a-running-core.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0620/manifest.json: touched pair requires passing evidence: proof/VELDO-0620/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0620/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0620/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0620/manifest.json: touched pair requires passing evidence: proof/VELDO-0620/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0620/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0630-credit-is-an-exhaustible-balance.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0630/manifest.json: touched pair requires passing evidence: proof/VELDO-0630/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0630/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0630/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0630/manifest.json: touched pair requires passing evidence: proof/VELDO-0630/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0630/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0640-a-credit-limit-is-spendable.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0640/manifest.json: touched pair requires passing evidence: proof/VELDO-0640/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0640/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0640/manifest.json: touched pair requires passing evidence: proof/VELDO-0640/manifest.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0650-a-payment-settles-the-credit-it-was-spent-against.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0650/manifest.json: touched pair requires passing evidence: proof/VELDO-0650/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0650/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0650/manifest.json: touched pair requires passing evidence: proof/VELDO-0650/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0660-a-payment-holds-the-ownership-it-depends-on.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0660/manifest.json: touched pair requires passing evidence: proof/VELDO-0660/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0660/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0660/manifest.json: touched pair requires passing evidence: proof/VELDO-0660/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0670-a-balance-read-answers-from-one-statement.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0670/manifest.json: touched pair requires passing evidence: proof/VELDO-0670/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0670/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0670/manifest.json: touched pair requires passing evidence: proof/VELDO-0670/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0680-a-claim-carries-the-tenant-it-was-made-for.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0680/manifest.json: touched pair requires passing evidence: proof/VELDO-0680/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0680/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0680/manifest.json: touched pair requires passing evidence: proof/VELDO-0680/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0690-the-browser-sends-no-price-nobody-entered.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0690/manifest.json: touched pair requires passing evidence: proof/VELDO-0690/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0690/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0690/manifest.json: touched pair requires passing evidence: proof/VELDO-0690/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0700-a-price-the-api-accepts-and-the-browser-refuses.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0700/manifest.json: touched pair requires passing evidence: proof/VELDO-0700/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0700/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0700/manifest.json: touched pair requires passing evidence: proof/VELDO-0700/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0710-an-import-carries-only-what-the-file-says.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0710/manifest.json: touched pair requires passing evidence: proof/VELDO-0710/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0710/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0710/manifest.json: touched pair requires passing evidence: proof/VELDO-0710/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0720-a-blocked-column-is-read-or-it-is-not-there.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0720/manifest.json: touched pair requires passing evidence: proof/VELDO-0720/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0720/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0720/manifest.json: touched pair requires passing evidence: proof/VELDO-0720/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0730-a-record-is-as-wide-as-its-header.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0730/manifest.json: touched pair requires passing evidence: proof/VELDO-0730/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0730/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0730/manifest.json: touched pair requires passing evidence: proof/VELDO-0730/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0740-a-blocking-instruction-survives-every-path.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0740/manifest.json: touched pair requires passing evidence: proof/VELDO-0740/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0740/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0740/manifest.json: touched pair requires passing evidence: proof/VELDO-0740/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0750-which-column-is-the-price-is-decided-without-guessing.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0750/manifest.json: touched pair requires passing evidence: proof/VELDO-0750/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0750/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0750/manifest.json: touched pair requires passing evidence: proof/VELDO-0750/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0760-a-price-column-is-named-exactly-or-the-file-is-refused.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0760/manifest.json: touched pair requires passing evidence: proof/VELDO-0760/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0760/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0760/manifest.json: touched pair requires passing evidence: proof/VELDO-0760/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0770-a-price-list-is-applied-in-full-or-not-at-all.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0770/manifest.json: touched pair requires passing evidence: proof/VELDO-0770/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0770/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0770/manifest.json: touched pair requires passing evidence: proof/VELDO-0770/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0780-no-column-is-chosen-by-position.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0780/manifest.json: touched pair requires passing evidence: proof/VELDO-0780/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0780/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0780/manifest.json: touched pair requires passing evidence: proof/VELDO-0780/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0790-a-published-rate-book-reaches-a-running-core.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0790/manifest.json: touched pair requires passing evidence: proof/VELDO-0790/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0790/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0790/manifest.json: touched pair requires passing evidence: proof/VELDO-0790/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0800-which-network-a-row-is-about-is-stated-or-refused.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0800/manifest.json: touched pair requires passing evidence: proof/VELDO-0800/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0800/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0800/manifest.json: touched pair requires passing evidence: proof/VELDO-0800/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0810-half-an-identity-is-not-an-identity.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0810/manifest.json: touched pair requires passing evidence: proof/VELDO-0810/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0810/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0810/manifest.json: touched pair requires passing evidence: proof/VELDO-0810/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0820-the-api-compares-identities-and-the-wildcard-is-refused.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0820/manifest.json: touched pair requires passing evidence: proof/VELDO-0820/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0820/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0820/manifest.json: touched pair requires passing evidence: proof/VELDO-0820/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0830-a-create-is-a-create.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0830/manifest.json: touched pair requires passing evidence: proof/VELDO-0830/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0830/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0830/manifest.json: touched pair requires passing evidence: proof/VELDO-0830/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0840-seven-routes-that-decide-access-have-now-been-run.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0840/manifest.json: touched pair requires passing evidence: proof/VELDO-0840/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0840/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0840/manifest.json: touched pair requires passing evidence: proof/VELDO-0840/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0850-a-grant-settles-at-the-tariff-that-authorised-it.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0850/manifest.json: touched pair requires passing evidence: proof/VELDO-0850/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0850/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0850/manifest.json: touched pair requires passing evidence: proof/VELDO-0850/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0860-one-answer-to-whether-a-network-may-carry-traffic.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0860/manifest.json: touched pair requires passing evidence: proof/VELDO-0860/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0860/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0860/manifest.json: touched pair requires passing evidence: proof/VELDO-0860/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0870-an-unavailable-network-stops-the-sessions-already-on-it.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0870/manifest.json: touched pair requires passing evidence: proof/VELDO-0870/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0870/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0870/manifest.json: touched pair requires passing evidence: proof/VELDO-0870/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0880-the-answer-says-whether-the-session-is-over.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0880/manifest.json: touched pair requires passing evidence: proof/VELDO-0880/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0880/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0880/manifest.json: touched pair requires passing evidence: proof/VELDO-0880/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0890-an-agreement-carries-traffic-only-while-it-is-in-force.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0890/manifest.json: touched pair requires passing evidence: proof/VELDO-0890/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0890/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0890/manifest.json: touched pair requires passing evidence: proof/VELDO-0890/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0900-a-grants-deadline-reaches-the-user-plane.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0900/manifest.json: touched pair requires passing evidence: proof/VELDO-0900/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0900/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0900/manifest.json: touched pair requires passing evidence: proof/VELDO-0900/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0910-a-quiet-session-still-counts-the-time-that-passes.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0910/manifest.json: touched pair requires passing evidence: proof/VELDO-0910/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0910/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0910/manifest.json: touched pair requires passing evidence: proof/VELDO-0910/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0920-charging-is-not-a-passenger-on-the-analytics-feed.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0920/manifest.json: touched pair requires passing evidence: proof/VELDO-0920/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0920/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0920/manifest.json: touched pair requires passing evidence: proof/VELDO-0920/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0930-a-report-is-owned-until-it-is-answered.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0930/manifest.json: touched pair requires passing evidence: proof/VELDO-0930/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0930/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0930/manifest.json: touched pair requires passing evidence: proof/VELDO-0930/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "specs/VELDO-0950-one-authority-decision-for-every-network-function-door.md",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0950/manifest.json: touched pair requires passing evidence: proof/VELDO-0950/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0950/manifest.json: required evidence kind 'operational' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    },
+    {
+      "touched": "proof/VELDO-0950/manifest.json",
+      "errors": 1,
+      "diagnostic": "proof/VELDO-0950/manifest.json: touched pair requires passing evidence: proof/VELDO-0950/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result); proof/VELDO-0950/manifest.json: required evidence kind 'operational' absent from passing proof entries (matching evidence type or check name needs a passing result)"
+    }
+  ],
+  "limitations": "Five existing pair parser errors remain errors, excluded from ratchet scenarios and reported separately. No whole-core gate pass is claimed."
+}

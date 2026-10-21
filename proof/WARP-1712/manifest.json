@@ -158,6 +158,42 @@
           "digest": "sha256:42dc21aa753ee05f3a99692da29313fc2cae7caa0e521224869eb8f197a33d44"
         }
       ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-focused.txt",
+          "digest": "sha256:31c61e41a900dbf1d4649e202d3cb6cb3e419d702e574bb9e80c3d7ac5b15dd2"
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-focused.txt",
+          "digest": "sha256:31c61e41a900dbf1d4649e202d3cb6cb3e419d702e574bb9e80c3d7ac5b15dd2"
+        }
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-core-ratchet.json",
+          "digest": "sha256:6f461ed214cb760453cf5256df8f3592d62ad5dd08d2d0ba81c22f5a89ff2815"
+        }
+      ]
     }
   ],
   "checks": [
@@ -222,5 +258,9 @@
   ],
   "rollback": "Revert the WARP-1712 implementation commits; preserve the impact measurement.",
   "completion": "blocked_for_landing",
-  "digest": "sha256:349bcc7968ce8ea9"
+  "digest": "sha256:349bcc7968ce8ea9",
+  "round2": {
+    "owner_decision": "Telegram 35399: agree to strict touched-pair enforcement with a shrinking historical debt register",
+    "status": "implementation and focused checks complete; canonical gate pending"
+  }
 }

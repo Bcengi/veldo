@@ -134,6 +134,123 @@ def _w1712_cli(repo, report, validator_source=None):
             report("CLI " + label + ("\n" + output if not ok else ""), ok, not passes)
 
 
+def _w1712_ratchet(repo, report, debt_source=None):
+    """Real commits and the shipped CLI: the register is never an exemption for a touch."""
+    with tempfile.TemporaryDirectory(prefix="warp1712-ratchet-") as directory:
+        root = Path(directory)
+        shutil.copytree(repo / "engine/.veldo", root / ".veldo",
+                        ignore=shutil.ignore_patterns("__pycache__", "decision_reviews"))
+        if debt_source is not None:
+            (root / ".veldo/evidence_debt.py").write_text(debt_source)
+        (root / "specs").mkdir()
+        spec = root / "specs/WARP-1712.md"
+        spec.write_text(
+            "---\nschema: veldo.spec/v1\nid: WARP-1712\ntitle: Fixture\nstatus: ready\n"
+            "risk: standard\nowner: dmitry\nlane: standalone\nacceptance_criteria:\n  - id: AC1\n"
+            "    text: A passing integration test.\nrequired_evidence: [integration]\n---\n")
+        proof = root / "proof/WARP-1712/manifest.json"
+        proof.parent.mkdir(parents=True)
+        data = {"schema": "veldo.proof/v1", "spec_id": "WARP-1712", "commit": "deadbeef",
+                "producer": "fixture", "rollback": "revert",
+                "criteria": [{"id": "AC1", "status": "passed",
+                              "evidence": [{"type": "integration"}]}], "checks": []}
+        proof.write_text(json.dumps(data))
+
+        def git(*args):
+            return subprocess.check_output(
+                ["git", "-c", "user.name=Dmitry Grinberg", "-c", "user.email=dmitry@bcengi.com",
+                 *args], cwd=root, text=True, stderr=subprocess.STDOUT).strip()
+
+        def commit():
+            git("add", ".")
+            git("commit", "-qm", "fixture")
+
+        def base():
+            git("update-ref", "refs/remotes/origin/main", "HEAD")
+
+        def cli(mode="all"):
+            return subprocess.run([sys.executable, str(root / ".veldo/validate.py"), mode],
+                                  cwd=root, text=True, capture_output=True)
+
+        def check(label, passes, diagnostic=None):
+            run = cli()
+            output = run.stdout + run.stderr
+            ok = run.returncode == (0 if passes else 1)
+            if diagnostic:
+                ok = ok and diagnostic in output
+            report("ratchet " + label + ("\n" + output if not ok else ""), ok, False)
+
+        git("init", "-q")
+        commit()
+        base()
+        register = root / ".veldo/required-evidence-debt.jsonl"
+        generated = cli("evidence-debt")
+        report("ratchet generator succeeds", generated.returncode == 0, False)
+        original = generated.stdout
+        report("ratchet one sorted pair with cause", len(original.splitlines()) == 1
+               and "passing result" in original and "specs/WARP-1712.md" in original, False)
+        check("unlisted unchanged failure refuses", False, "debt register differs")
+        register.write_text(original)
+        commit()
+        check("untouched historical pair listed passes initial adoption", True)
+        base()
+        check("untouched historical pair listed passes established register", True)
+
+        spec.write_text(spec.read_text() + "Touched spec.\n")
+        commit()
+        check("touched historical spec refuses", False, "touched pair requires passing evidence")
+        base()
+        proof.write_text(proof.read_text() + "\n")
+        commit()
+        check("touched historical manifest refuses", False, "touched pair requires passing evidence")
+        base()
+        (proof.parent / "runner.txt").write_text("Changed proof artifact.\n")
+        commit()
+        check("touched historical proof artifact refuses", False, "touched pair requires passing evidence")
+        base()
+        (proof.parent / "design-verdict-note.txt").write_text("Changed design artifact.\n")
+        commit()
+        check("touched historical design artifact refuses", False, "touched pair requires passing evidence")
+        base()
+
+        row = json.loads(original)
+        row["proof"] = "proof/WARP-9999/manifest.json"
+        register.write_text(original + json.dumps(row, sort_keys=True) + "\n")
+        commit()
+        check("hand-added entry refuses", False, "debt register differs")
+        register.write_text(original)
+        commit()
+        check("restored exact register passes", True)
+        register.write_text(original + original)
+        check("duplicate entry refuses", False, "debt register differs")
+        row = json.loads(original)
+        row["causes"] = ["hand-edited cause"]
+        register.write_text(json.dumps(row, sort_keys=True) + "\n")
+        check("hand-edited cause refuses", False, "debt register differs")
+        register.write_text("")
+        check("removed still-failing entry refuses", False, "debt register differs")
+        register.write_text(original)
+
+        data["criteria"][0]["evidence"][0]["status"] = "passed"
+        proof.write_text(json.dumps(data))
+        commit()
+        check("now-passing listed entry refuses", False, "debt register differs")
+        register.write_text(cli("evidence-debt").stdout)
+        commit()
+        check("passing entry removed passes", True)
+        base()
+        data["criteria"][0]["evidence"][0].pop("status")
+        proof.write_text(json.dumps(data))
+        commit()
+        # Advance the range to demonstrate that even an unchanged failure cannot be
+        # laundered into an already-adopted register by running the generator again.
+        base()
+        check("new unchanged unlisted failure refuses", False, "new required-evidence debt forbidden")
+        register.write_text(cli("evidence-debt").stdout)
+        commit()
+        check("computed new debt cannot grow register", False, "new required-evidence debt forbidden")
+
+
 for _w1712_relative in ("engine/.veldo/validate.py", ".veldo/validate.py"):
     _w1712_loader = importlib.util.spec_from_file_location("w1712_validator", ROOT / _w1712_relative)
     _w1712_validator = importlib.util.module_from_spec(_w1712_loader)
@@ -141,3 +258,5 @@ for _w1712_relative in ("engine/.veldo/validate.py", ".veldo/validate.py"):
     _w1712_exercise(_w1712_validator, lambda label, ok, old_refusal:
                    expect("WARP-1712 " + _w1712_relative + ": " + label, ok))
 _w1712_cli(ROOT, lambda label, ok, old_refusal: expect("WARP-1712 " + label, ok))
+
+_w1712_ratchet(ROOT, lambda label, ok, old_refusal: expect("WARP-1712 " + label, ok))
