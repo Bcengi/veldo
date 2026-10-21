@@ -1,0 +1,8 @@
+{
+  "matched_pairs": 173,
+  "strict_pass": 61,
+  "historical_debt": 107,
+  "unchanged_ratchet_errors": 0,
+  "single_pair_touch_refusals": 214,
+  "inputs_unchanged": true
+}

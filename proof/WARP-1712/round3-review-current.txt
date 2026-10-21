@@ -1,0 +1,24 @@
+PASS review R1 manifest relabeled
+PASS review R1 manifest deleted
+PASS review R1 spec deleted
+PASS review R1 requirements emptied
+PASS review R1 requirements reduced
+PASS review R1 both ids relabeled
+PASS review R1 spec renamed
+PASS review R1 proof moved
+PASS review R1 real payoff
+PASS review R2 feature upstream touch
+PASS review R2 feature upstream growth
+PASS review R2 explicit policy base
+PASS review R2 invalid policy base
+PASS review R3 vendored unchanged
+PASS review R3 vendored adoption touch
+PASS review R3 vendored payoff
+PASS review R4 moved trunk
+PASS review R4 moved trunk register
+PASS review R5 nonzero exit
+PASS review R5 expected nonzero exit
+PASS review R5 boolean exit
+PASS review R5 zero without outcome
+PASS review R5 zero exit
+{"mode": "review-current", "passed": 23, "failed": 0}

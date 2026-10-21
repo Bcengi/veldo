@@ -1,3 +1,54 @@
+# WARP-1712 round 3: independent review corrections
+
+Implementation: `follows the round 3 spec commit 4b80fe8f` (see manifest commit).
+All five findings from the independent review of `5b2a5a95` are addressed.
+
+- R1: walk the base register as well as current failures. A removed row requires the
+  original spec and proof paths, unchanged paired identity, every base-required kind,
+  and a strict pass. Remaining failing rows still refuse when touched. Tests cover
+  deleting either half, relabeling, reducing requirements, moving paths, and real payoff.
+- R2: use an explicit policy BASE when provided, otherwise origin/HEAD or origin/main.
+  Never use a feature upstream or HEAD~20 to authorize debt. The policy object can be
+  supplied to the ratchet; the default CLI loads the sibling policy. Tests include an
+  earlier feature push containing both touches and new debt, plus explicit-base controls.
+- R3: obtain Git's VELDO-root prefix once, strip it from changed paths, and prepend it
+  to historical object reads. Vendored adoption, unchanged debt, and payoff are tested.
+- R4: use the merge base for both changed paths and the prior register. Independent
+  trunk proof changes and trunk debt payoff cannot make an untouched branch fail.
+- R5: a supplied exit_code must be integer zero as well as an explicit passing outcome.
+  This deliberately follows the owner's stricter instruction over the review's proposed
+  expected_exit allowance: expected_exit=1 cannot bless exit_code=1. Legacy result=pass
+  and result=passed remain supported; a zero exit alone is insufficient.
+
+## Checks before the canonical gate
+
+`round3-focused.txt`: 257 passed, zero failed. This includes 23 review controls.
+`round3-review-round2.txt`: expected exit 1, exactly 16 assertions fail on the actual
+round 2 validators from `5b2a5a95`, with seven compatibility controls passing. The driver
+asserts the per-case result and requires a failing assertion for each of R1 through R5.
+`round3-base.txt` retains the original 69 old-code refusals and 41 passing controls.
+All 11 existing mutations are rejected; see `round3-falsifiers.json` and their logs.
+The last-commit-only mutant now fails three controls because it also loses the base
+spec needed to authorize a genuine payoff. No historical evidence was rewritten.
+Contracts, lint, Git subprocess boundary, template sync, and generated files pass.
+
+## Core remeasurement, read-only
+
+Both shipped validators reproduce all 173 original pair verdicts and the frozen proposal
+plus the explicit exit-code guard. All 357 original input digests and corpus membership
+are unchanged. The actual strict predicate and ratchet on a temporary byte-identical
+mirror yield 61 strict passes, 107 historical failures, zero errors for untouched debt,
+and 214 single-pair touch refusals. Five existing parser errors remain separate errors.
+See `round3-confirmation.txt`, `round3-core-ratchet.json`, and `round3-core-debt.jsonl`.
+Nothing was written or installed into core; this is not a whole-core gate claim.
+
+## Canonical gate
+
+Pending the complete `./scripts/verify.sh` run on the committed implementation below.
+The final command record and result will be appended after the process finishes.
+
+## Preserved round 2 report
+
 # WARP-1712 round 2: strict touched pairs and shrinking historical debt
 
 Owner decision: Telegram 35399, "agree". Ready-spec amendment: `92cc0d4b`.

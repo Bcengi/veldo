@@ -1,0 +1,365 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "WARP-1712",
+  "commit": "414e24ccab81589dd7b0cca1d207c4adc7f5cd99",
+  "produced_at": "2026-10-21T15:04:56.408764+00:00",
+  "producer": {
+    "role": "implementation",
+    "model": "gpt-6",
+    "runtime": "codex"
+  },
+  "owner_decision": "Telegram 35399: agree to strict touched-pair enforcement with a shrinking historical debt register",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-focused.txt",
+          "digest": "sha256:81343ee546e008bc3f15154c3374f6cabfe8813443d8ab6269a5c9de07575d57"
+        },
+        {
+          "type": "falsification",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-base.txt",
+          "digest": "sha256:d7347c209ca828c753a730b2c823dfc6d98036a91dca1a8453800869feb2ab66",
+          "expected_exit": 1,
+          "interpretation": "Successful falsification experiment: the deliberately broken implementation fails assertions, not a passing broken-product execution."
+        },
+        {
+          "type": "falsification",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-integration-alias.txt",
+          "digest": "sha256:b4d5624ed60978e102c9f52babce5d2e8ce7e3a32f64054733dcc96b47b7d12d",
+          "expected_exit": 1,
+          "interpretation": "Successful falsification experiment: the deliberately broken implementation fails assertions, not a passing broken-product execution."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-focused.txt",
+          "digest": "sha256:81343ee546e008bc3f15154c3374f6cabfe8813443d8ab6269a5c9de07575d57"
+        },
+        {
+          "type": "falsification",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-evidence-outcome.txt",
+          "digest": "sha256:486e8e46904e840b8264b6451411fa1254a8166e73498397ebf518e728b64d10",
+          "expected_exit": 1,
+          "interpretation": "Successful falsification experiment: the deliberately broken implementation fails assertions, not a passing broken-product execution."
+        },
+        {
+          "type": "falsification",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-check-outcome.txt",
+          "digest": "sha256:a118e6534d54dc7c54166ad3c46c9cb0df50fe44f9dbafe18623e3d828790b59",
+          "expected_exit": 1,
+          "interpretation": "Successful falsification experiment: the deliberately broken implementation fails assertions, not a passing broken-product execution."
+        },
+        {
+          "type": "falsification",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-conflicting-outcome.txt",
+          "digest": "sha256:cd6fa4e05482e13f7b83fe2b7d6ad9350bf14e7b6dda7f5ba68920a880b8933a",
+          "expected_exit": 1,
+          "interpretation": "Successful falsification experiment: the deliberately broken implementation fails assertions, not a passing broken-product execution."
+        },
+        {
+          "type": "falsification",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-design-existence.txt",
+          "digest": "sha256:a4653531646056cbac5f497a2d1c49257ea356ac89c0567b4bf7c6abce9b72de",
+          "expected_exit": 1,
+          "interpretation": "Successful falsification experiment: the deliberately broken implementation fails assertions, not a passing broken-product execution."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/core-blast-radius.json",
+          "digest": "sha256:7eba3fa0114e78b83798b61df9425a50c468c24d9ae8f9312e4735e85193e516"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/core-blast-radius.md",
+          "digest": "sha256:ade18e5901d3503ceca300a38bbe661e1722795677b581d8f2a6468a6652a95a"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/corpus-confirmation.txt",
+          "digest": "sha256:9f1819f249fc101923625a18917c21a3e8ee4ee60c46bd49f5b13b7b753f71c9"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/corpus-confirmation-final.txt",
+          "digest": "sha256:9f1819f249fc101923625a18917c21a3e8ee4ee60c46bd49f5b13b7b753f71c9"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-confirmation.txt",
+          "digest": "sha256:9f1819f249fc101923625a18917c21a3e8ee4ee60c46bd49f5b13b7b753f71c9"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "blocked",
+      "evidence": [
+        {
+          "type": "integration",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-focused.txt",
+          "digest": "sha256:81343ee546e008bc3f15154c3374f6cabfe8813443d8ab6269a5c9de07575d57"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-scaffold.json",
+          "digest": "sha256:de44d6ce8d17b573dfaa2c2537d1a9dfc3c6e2a5624e170b0d2656fe7ced6389"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-git-boundary-final.txt",
+          "digest": "sha256:456267e1484d4c7facd9b1e167f547896f762f173f076ecf04c90efcd641ae83"
+        },
+        {
+          "type": "operational",
+          "status": "blocked",
+          "ref": "proof/WARP-1712/round2-gate-command.json",
+          "digest": "sha256:fc12122321a1acf8d336436c1b7e759da08aa66464cae84837438308bf56e164"
+        },
+        {
+          "type": "operational",
+          "status": "blocked",
+          "ref": "proof/WARP-1712/round2-gate.txt",
+          "digest": "sha256:ab9ac7049bbbfce3327c771ef5e44ea60b5e48511c63e988ce107badf83505e1"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-contracts.txt",
+          "digest": "sha256:b45ab417592119d6434d3b2b8de784044ecdbf9dca0e6ec9b2e10d33935eb955"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-lint.txt",
+          "digest": "sha256:d9dc0fc2ebf288ff185ba66ac51c139088e18dcf586654d461bf547121819f35"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-template-sync.txt",
+          "digest": "sha256:f631e3185082a05619298349e5e6b26f2b7be1a19231b4639f5096d0850bc415"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-generated.txt",
+          "digest": "sha256:f11b77ff165398767a2894fd34d9592c5d6d516b2828368d967fa7663a9d1217"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-spec-final.txt",
+          "digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-focused.txt",
+          "digest": "sha256:81343ee546e008bc3f15154c3374f6cabfe8813443d8ab6269a5c9de07575d57"
+        },
+        {
+          "type": "falsification",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-ratchet-touch.txt",
+          "digest": "sha256:1175a25a0327774cd03248d5002ca67244b021ab726019ee532924ba16eddbf5",
+          "expected_exit": 1,
+          "interpretation": "Successful falsification experiment: the deliberately broken implementation fails assertions, not a passing broken-product execution."
+        },
+        {
+          "type": "falsification",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-ratchet-global.txt",
+          "digest": "sha256:cfa28f86f47559bf089451f8e1e65e167a4ab7aab76e5ac9fb550649587bea5c",
+          "expected_exit": 1,
+          "interpretation": "Successful falsification experiment: the deliberately broken implementation fails assertions, not a passing broken-product execution."
+        },
+        {
+          "type": "falsification",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-ratchet-range.txt",
+          "digest": "sha256:7ac434fc31d2648b3096974f094c69e1abd0060190f5df295c6e30fdf6f7ab71",
+          "expected_exit": 1,
+          "interpretation": "Successful falsification experiment: the deliberately broken implementation fails assertions, not a passing broken-product execution."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-focused.txt",
+          "digest": "sha256:81343ee546e008bc3f15154c3374f6cabfe8813443d8ab6269a5c9de07575d57"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": ".veldo/required-evidence-debt.jsonl",
+          "digest": "sha256:30735486c63d42cfd40dd679a284f9751dc052b88c0fb7b758615bebb67076ab"
+        },
+        {
+          "type": "falsification",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-ratchet-register.txt",
+          "digest": "sha256:ee7daf4baa8b67cf2d1eced9c1f83e8ce3345acb24d1d3f182ebd570f31a8033",
+          "expected_exit": 1,
+          "interpretation": "Successful falsification experiment: the deliberately broken implementation fails assertions, not a passing broken-product execution."
+        },
+        {
+          "type": "falsification",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-ratchet-growth.txt",
+          "digest": "sha256:0f76e053845846a5733a8fe83bc5fa680c5427910cecdf10899b70879632c5f1",
+          "expected_exit": 1,
+          "interpretation": "Successful falsification experiment: the deliberately broken implementation fails assertions, not a passing broken-product execution."
+        },
+        {
+          "type": "falsification",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-ratchet-reset.txt",
+          "digest": "sha256:7d96e0ac6cf9eeef62d60d1c1804dc663fd3d50c35a3de8505f9a34ab3d2e3ce",
+          "expected_exit": 1,
+          "interpretation": "Successful falsification experiment: the deliberately broken implementation fails assertions, not a passing broken-product execution."
+        }
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-core-ratchet.json",
+          "digest": "sha256:4b91ae6d8e4e39ddc1224725a35a47d673817f5dd0db531e4ce92f2eb0d0a719"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-core-debt.jsonl",
+          "digest": "sha256:07fde2cc6a5a31aca86626984d5f5cd8559f471a132a40c2d4e7bcfcd3844667"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "required-evidence matrix and ratchet CLI",
+      "command": "python3 proof/WARP-1712/drive.py current",
+      "status": "passed",
+      "result_detail": "234 passed, zero failed; original 213 plus 21 ratchet controls. Bounded checks, not a full-gate pass."
+    },
+    {
+      "name": "old-code falsifiers",
+      "command": "python3 proof/WARP-1712/drive.py base",
+      "status": "passed",
+      "expected_exit": 1,
+      "result_detail": "All 69 original refusal assertions fail on old code; all 41 compatibility controls pass."
+    },
+    {
+      "name": "targeted mutations",
+      "status": "passed",
+      "result_detail": "All 11 mutants rejected. Expected failure counts are in round2-falsifiers.json. The separate omitted-module scaffold mutant also refuses."
+    },
+    {
+      "name": "core read-only ratchet measurement",
+      "command": "python3 proof/WARP-1712/measure_ratchet.py",
+      "status": "passed",
+      "result_detail": "173 matched pairs; 61 strict passes, 107 historical debts, 5 separately reported parser errors. Zero untouched ratchet errors and 214 single-pair spec/proof touch refusals. Inputs unchanged."
+    },
+    {
+      "name": "fresh scaffold and reinstall",
+      "status": "passed",
+      "result_detail": "Both actual scaffold gates exit 0; omitted new module exits 1. Repeated after final corrections; round2-scaffold.json."
+    },
+    {
+      "name": "Git subprocess boundary",
+      "command": "python3 scripts/check_git_boundary.py",
+      "status": "passed"
+    },
+    {
+      "name": "lint",
+      "command": "bash scripts/check_lint.sh",
+      "status": "passed"
+    },
+    {
+      "name": "template sync",
+      "command": "bash scripts/check_template_sync.sh",
+      "status": "passed"
+    },
+    {
+      "name": "generated",
+      "command": "bash scripts/check_generated.sh",
+      "status": "passed"
+    },
+    {
+      "name": "spec structure",
+      "command": "python3 .veldo/validate.py spec specs/WARP-1712-passing-evidence-of-the-required-kind.md",
+      "status": "passed"
+    },
+    {
+      "name": "contracts",
+      "command": "python3 .veldo/validate.py all",
+      "status": "passed",
+      "result_detail": "Zero contract problems; 79 historical pairs registered, no historical proof rewritten."
+    },
+    {
+      "name": "verify",
+      "command": "./scripts/verify.sh",
+      "status": "blocked",
+      "verifier_exit_code": null,
+      "tested_commit": "3ef567d531d0be301307e5ac1ada3856a7b27cad",
+      "result_detail": "Confined unit 7953 passed / 1 Git-boundary source failure; unconfined unit 871 passed / 0 failed. Interrupted during integration. Source binding and empty-register reset corrected afterward at 414e24cc, with focused checks passing. No complete final-tree gate result."
+    }
+  ],
+  "limitations": [
+    "Full canonical validation of the final tree remains outstanding. Integration and later catalog stages were not completed; no final verifier exit or green gate is claimed.",
+    "Round 1 historical-corpus failures and incomplete-trace exception did not recur in the completed unit legs. The observed confined source-boundary failure was fixed afterward and checked directly.",
+    "Five core pairs retain pre-existing parser errors. Ratchet scenarios are hypothetical changed-path sets on a byte-identical temporary corpus mirror, not a full core gate run.",
+    "Core was read only. No install, push, merge, branch switch, or other-worktree edit.",
+    "No independent review or shipped status is claimed. Partial diagnostic suite runs are not passing proof evidence."
+  ],
+  "rollback": "Revert the WARP-1712 implementation commits; preserve the impact measurement.",
+  "completion": "blocked_for_landing",
+  "round1_manifest": "proof/WARP-1712/round1-manifest.json",
+  "digest": "sha256:87ca9378094e6c0f"
+}
