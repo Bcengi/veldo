@@ -101,13 +101,14 @@ def _w1712_cli(repo, report, validator_source=None):
     """Exercise run_all's spec/proof join through the shipped CLI in a temporary adopter."""
     with tempfile.TemporaryDirectory(prefix="warp1712-cli-") as directory:
         root = Path(directory)
-        shutil.copytree(repo / "engine/.veldo", root / ".veldo", ignore=shutil.ignore_patterns("__pycache__"))
+        shutil.copytree(repo / "engine/.veldo", root / ".veldo",
+                        ignore=shutil.ignore_patterns("__pycache__", "decision_reviews"))
         if validator_source is not None:
             (root / ".veldo/validate.py").write_text(validator_source)
         (root / "specs").mkdir()
         (root / "specs/WARP-1712.md").write_text(
             "---\nschema: veldo.spec/v1\nid: WARP-1712\ntitle: Fixture\nstatus: ready\n"
-            "risk: standard\nowner: dmitry\nacceptance_criteria:\n  - id: AC1\n"
+            "risk: standard\nowner: dmitry\nlane: standalone\nacceptance_criteria:\n  - id: AC1\n"
             "    text: A passing integration test.\nrequired_evidence: [integration]\n---\n")
         proof = root / "proof/WARP-1712/manifest.json"
         proof.parent.mkdir(parents=True)

@@ -26,7 +26,7 @@
       "evidence": [
         {
           "type": "integration",
-          "ref": "tests/payments/retry_test.py::test_returns_original_id",
+          "ref": "tests/integration/payments/test_retry_api.py::test_returns_original_id",
           "status": "passed"
         }
       ]
