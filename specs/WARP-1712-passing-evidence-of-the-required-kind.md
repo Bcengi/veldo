@@ -100,7 +100,9 @@ write the register. Each line contains relative spec/proof paths and determinist
 failure diagnostics. The gate compares bytes with the same computation. Existing entries
 are additionally bounded by the register at the resolved push base, so recomputing the
 file cannot silently add a new debt. With no register at that base, adoption is restricted
-to unchanged pairs. Without a resolvable range, no debt exemption is granted. A spec change
+to unchanged pairs. Once adopted, retain an empty register after the last entry is removed;
+deleting it must not reset adoption and allow debt to grow again. Without a resolvable range,
+no debt exemption is granted. A spec change
 or any file change beneath its proof directory activates strict enforcement, including a
 design-verdict change. Range resolution reuses policy_check's existing resolver.
 
