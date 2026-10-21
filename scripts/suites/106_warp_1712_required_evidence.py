@@ -261,6 +261,167 @@ def _w1712_ratchet(repo, report, debt_source=None):
         check("computed new debt cannot grow register", False, "new required-evidence debt forbidden")
 
 
+def _w1712_review(repo, report, old_sources=None):
+    """Independent-review regressions through real Git histories and the shipped CLI."""
+    cases = [
+        ("R1 manifest relabeled", False, True),
+        ("R1 manifest deleted", False, True),
+        ("R1 spec deleted", False, True),
+        ("R1 requirements emptied", False, True),
+        ("R1 requirements reduced", False, True),
+        ("R1 both ids relabeled", False, True),
+        ("R1 spec renamed", False, False),
+        ("R1 proof moved", False, False),
+        ("R1 real payoff", True, False),
+        ("R2 feature upstream touch", False, True),
+        ("R2 feature upstream growth", False, True),
+        ("R2 explicit policy base", False, False),
+        ("R2 invalid policy base", False, False),
+        ("R3 vendored unchanged", True, True),
+        ("R3 vendored adoption touch", False, True),
+        ("R3 vendored payoff", True, True),
+        ("R4 moved trunk", True, True),
+        ("R4 moved trunk register", True, True),
+        ("R5 nonzero exit", False, True),
+        ("R5 expected nonzero exit", False, True),
+        ("R5 boolean exit", False, True),
+        ("R5 zero without outcome", False, False),
+        ("R5 zero exit", True, False),
+    ]
+    for label, passes, old_fails in cases:
+        with tempfile.TemporaryDirectory(prefix="warp1712-review-") as directory:
+            host = Path(directory)
+            root = host / "vendor/v" if label.startswith("R3") else host
+            root.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(repo / "engine/.veldo", root / ".veldo",
+                            ignore=shutil.ignore_patterns("__pycache__", "decision_reviews"))
+            for name, source in (old_sources or {}).items():
+                (root / ".veldo" / name).write_text(source)
+            spec = root / "specs/WARP-1712.md"
+            spec.parent.mkdir()
+            original_spec = (
+                "---\nschema: veldo.spec/v1\nid: WARP-1712\ntitle: Fixture\nstatus: ready\n"
+                "risk: standard\nowner: dmitry\nlane: standalone\nacceptance_criteria:\n  - id: AC1\n"
+                "    text: Passing evidence.\nrequired_evidence: [unit, integration]\n---\n")
+            spec.write_text(original_spec)
+            proof = root / "proof/WARP-1712/manifest.json"
+            proof.parent.mkdir(parents=True)
+            data = {"schema": "veldo.proof/v1", "spec_id": "WARP-1712", "commit": "deadbeef",
+                    "producer": "fixture", "rollback": "revert",
+                    "criteria": [{"id": "AC1", "status": "passed",
+                                  "evidence": [{"type": "unit", "status": "passed"}]}],
+                    "checks": [{"name": "unit", "status": "passed"}]}
+            proof.write_text(json.dumps(data))
+
+            def git(*args):
+                return subprocess.check_output(
+                    ["git", "-c", "user.name=Dmitry Grinberg", "-c", "user.email=dmitry@bcengi.com",
+                     *args], cwd=host, text=True, stderr=subprocess.STDOUT).strip()
+
+            def commit():
+                git("add", ".")
+                git("commit", "-qm", "fixture")
+                return git("rev-parse", "HEAD")
+
+            def cli(mode="all"):
+                return subprocess.run([sys.executable, str(root / ".veldo/validate.py"), mode],
+                                      cwd=root, text=True, capture_output=True)
+
+            def regenerate():
+                run = cli("evidence-debt")
+                assert run.returncode == 0, run.stdout + run.stderr
+                register.write_text(run.stdout)
+
+            register = root / ".veldo/required-evidence-debt.jsonl"
+            git("init", "-q")
+            if label != "R3 vendored adoption touch":
+                regenerate()
+            base = commit()
+            git("update-ref", "refs/remotes/origin/main", base)
+            if label == "R1 manifest relabeled":
+                data["spec_id"] += "-retired"
+                proof.write_text(json.dumps(data))
+            elif label == "R1 manifest deleted":
+                proof.unlink()
+            elif label == "R1 spec deleted":
+                spec.unlink()
+            elif label in ("R1 requirements emptied", "R1 requirements reduced"):
+                spec.write_text(original_spec.replace("[unit, integration]",
+                                "[]" if label.endswith("emptied") else "[unit]"))
+            elif label == "R1 both ids relabeled":
+                spec.write_text(original_spec.replace("id: WARP-1712", "id: WARP-1713"))
+                data["spec_id"] = "WARP-1713"
+                data["checks"].append({"name": "integration", "status": "passed"})
+                proof.write_text(json.dumps(data))
+            elif label == "R1 spec renamed":
+                spec.rename(spec.with_name("WARP-1712-renamed.md"))
+            elif label == "R1 proof moved":
+                proof.parent.rename(proof.parent.with_name("WARP-1712-moved"))
+            elif label in ("R1 real payoff", "R3 vendored payoff"):
+                data["checks"].append({"name": "integration", "status": "passed", "exit_code": 0})
+                proof.write_text(json.dumps(data))
+            elif label.startswith("R2"):
+                if label.endswith("growth"):
+                    other_spec = spec.with_name("WARP-1713.md")
+                    other_spec.write_text(original_spec.replace("WARP-1712", "WARP-1713"))
+                    other_proof = proof.parent.with_name("WARP-1713") / "manifest.json"
+                    other_proof.parent.mkdir()
+                    other_proof.write_text(json.dumps(dict(data, spec_id="WARP-1713")))
+                else:
+                    spec.write_text(original_spec + "Touched before the earlier feature push.\n")
+                regenerate()
+                earlier = commit()
+                git("update-ref", "refs/remotes/origin/feature", earlier)
+                branch = git("symbolic-ref", "--short", "HEAD")
+                git("config", "branch." + branch + ".remote", "origin")
+                git("config", "branch." + branch + ".merge", "refs/heads/feature")
+                git("config", "remote.origin.fetch", "+refs/heads/*:refs/remotes/origin/*")
+                if "policy base" in label:
+                    git("update-ref", "refs/remotes/origin/main", earlier)
+            elif label == "R3 vendored adoption touch":
+                spec.write_text(original_spec + "Touched during adoption.\n")
+                (proof.parent / "artifact.txt").write_text("Also touched.\n")
+            elif label.startswith("R4"):
+                (proof.parent / "mainnote.txt").write_text("Only trunk touched this pair.\n")
+                if label.endswith("register"):
+                    data["checks"].append({"name": "integration", "status": "passed"})
+                    proof.write_text(json.dumps(data))
+                    regenerate()
+                trunk = commit()
+                git("update-ref", "refs/remotes/origin/main", trunk)
+                git("reset", "--hard", base)
+            elif label.startswith("R5"):
+                check = {"name": "integration", "status": "passed", "exit_code": 0}
+                if label == "R5 nonzero exit":
+                    check["exit_code"] = 1
+                elif label == "R5 expected nonzero exit":
+                    check.update(exit_code=1, expected_exit=1)
+                elif label == "R5 boolean exit":
+                    check["exit_code"] = False
+                elif label == "R5 zero without outcome":
+                    check.pop("status")
+                data["checks"].append(check)
+                proof.write_text(json.dumps(data))
+            regenerate()
+            (root / "README.md").write_text("Unrelated followup.\n")
+            commit()
+            if "policy base" in label:
+                policy_path = root / ".veldo/policy_check.py"
+                policy_path.write_text(policy_path.read_text().replace(
+                    "BASE = None", "BASE = " + repr("absent-trunk" if "invalid" in label else base)))
+            run = cli()
+            output = run.stdout + run.stderr
+            ok = run.returncode == (0 if passes else 1)
+            if not passes:
+                diagnostic = ("new required-evidence debt forbidden" if label in ("R1 spec renamed", "R1 proof moved")
+                              else "historical pair requires passing evidence" if label.startswith("R1")
+                              else "new required-evidence debt forbidden" if label.endswith("growth")
+                              else "no exemption granted" if "invalid policy" in label
+                              else "touched pair requires passing evidence")
+                ok = ok and diagnostic in output
+            report("review " + label + ("\n" + output if not ok else ""), ok, old_fails)
+
+
 for _w1712_relative in ("engine/.veldo/validate.py", ".veldo/validate.py"):
     _w1712_loader = importlib.util.spec_from_file_location("w1712_validator", ROOT / _w1712_relative)
     _w1712_validator = importlib.util.module_from_spec(_w1712_loader)
@@ -270,3 +431,5 @@ for _w1712_relative in ("engine/.veldo/validate.py", ".veldo/validate.py"):
 _w1712_cli(ROOT, lambda label, ok, old_refusal: expect("WARP-1712 " + label, ok))
 
 _w1712_ratchet(ROOT, lambda label, ok, old_refusal: expect("WARP-1712 " + label, ok))
+
+_w1712_review(ROOT, lambda label, ok, old_refusal: expect("WARP-1712 " + label, ok))

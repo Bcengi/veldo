@@ -157,7 +157,9 @@ def evidence_passed(entry):
     """
     outcomes = [entry[key] in allowed for key, allowed in (
         ("status", ("passed",)), ("result", ("pass", "passed"))) if key in entry]
-    return bool(outcomes) and all(outcomes)
+    exit_ok = "exit_code" not in entry or (
+        type(entry["exit_code"]) is int and entry["exit_code"] == 0)
+    return bool(outcomes) and all(outcomes) and exit_ok
 
 
 def evidence_kinds_in_proof(data):

@@ -68,7 +68,7 @@ with tempfile.TemporaryDirectory(prefix='warp1712-core-ratchet-') as directory:
             assert errors == 1
             refusals.append({'touched': touched, 'errors': errors, 'diagnostic': output.getvalue().strip()})
     # The register is an artifact of this measurement, never written into core.
-    Path(__file__).with_name('round2-core-debt.jsonl').write_text(register)
+    Path(__file__).with_name('round3-core-debt.jsonl').write_text(register)
 assert before == snapshot(), 'core input changed during measurement'
 report = {'root': str(CORE), 'method': 'Read-only input digests and declared corpus reconciliation; actual strict predicate and ratchet check on a byte-identical temporary corpus mirror. Hypothetical changed-path sets, not a core gate invocation.',
           'implementation_sha256': {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest()
@@ -79,6 +79,6 @@ report = {'root': str(CORE), 'method': 'Read-only input digests and declared cor
           'single_pair_touch_refusals': len(refusals), 'parser_errors': parser_errors,
           'refusals': refusals,
           'limitations': 'Five existing pair parser errors remain errors, excluded from ratchet scenarios and reported separately. No whole-core gate pass is claimed.'}
-Path(__file__).with_name('round2-core-ratchet.json').write_text(json.dumps(report, indent=2) + '\n')
+Path(__file__).with_name('round3-core-ratchet.json').write_text(json.dumps(report, indent=2) + '\n')
 print(json.dumps({k: report[k] for k in ('matched_pairs', 'strict_pass', 'historical_debt',
                                       'unchanged_ratchet_errors', 'single_pair_touch_refusals', 'inputs_unchanged')}, indent=2))

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Confirm the shipped code matches the pre-change proposal and its corpus predictions."""
+"""Confirm the round 3 predicate preserves corpus predictions with the explicit exit-code guard."""
 import contextlib
 import hashlib
 import importlib.util
@@ -24,7 +24,11 @@ for relative in ("engine/.veldo/validate.py", ".veldo/validate.py"):
     source = path.read_text()
     start = source.index("EVIDENCE_KIND_ALIASES =")
     end = source.index("\ndef spec_criterion_ids", start)
-    assert source[start:end] == proposal, relative
+    expected = proposal.replace("    return bool(outcomes) and all(outcomes)",
+        '    exit_ok = "exit_code" not in entry or (\n'
+        '        type(entry["exit_code"]) is int and entry["exit_code"] == 0)\n'
+        '    return bool(outcomes) and all(outcomes) and exit_ok')
+    assert source[start:end] == expected, relative
     loader = importlib.util.spec_from_file_location("confirmed_validator", path)
     module = importlib.util.module_from_spec(loader)
     loader.loader.exec_module(module)
@@ -43,4 +47,4 @@ for relative in ("engine/.veldo/validate.py", ".veldo/validate.py"):
         assert verdict == pair["new"], pair
     results.append({"validator": relative, "pairs_confirmed": len(report["pairs"])})
 print(json.dumps({"core_inputs_unchanged": len(report["input_sha256"]),
-                  "proposal_matches_both_copies": True, "results": results}, indent=2))
+                  "proposal_plus_exit_guard_matches_both_copies": True, "results": results}, indent=2))

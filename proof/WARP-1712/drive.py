@@ -29,6 +29,20 @@ else:
     tree.body = [node for node in tree.body if isinstance(node, (ast.Import, ast.ImportFrom, ast.FunctionDef))]
     namespace = {}
     exec(compile(tree, str(suite), "exec"), namespace)
+    if mode in ("review-current", "review-round2"):
+        import subprocess
+        sources = None
+        if mode == "review-round2":
+            sources = {name: subprocess.check_output(
+                ["git", "show", "5b2a5a95:engine/.veldo/" + name], cwd=ROOT, text=True)
+                for name in ("validate.py", "evidence_debt.py")}
+        namespace["_w1712_review"](ROOT, report, sources)
+        failed = sum(not row["passed"] for row in rows)
+        if sources:
+            assert all(not row["passed"] if row["new_refusal"] else row["passed"] for row in rows), rows
+            assert {row["label"].split()[1] for row in rows if not row["passed"]} == {"R1", "R2", "R3", "R4", "R5"}
+        print(json.dumps({"mode": mode, "passed": len(rows) - failed, "failed": failed}))
+        sys.exit(1 if failed else 0)
     if mode.startswith("ratchet-"):
         import difflib
         original = (ROOT / "engine/.veldo/evidence_debt.py").read_text()
@@ -37,7 +51,7 @@ else:
             "ratchet-global": ('touched = row["spec"] in changed or any(p.startswith(proof_dir) for p in changed)', 'touched = True'),
             "ratchet-register": ("if actual != expected:", "if False:"),
             "ratchet-growth": ("if previous is not None:", "if False:"),
-            "ratchet-range": ("for push_range in policy._range_specs():", 'for push_range in ["HEAD~1..HEAD"]:'),
+            "ratchet-range": ('refs = [str(policy.BASE)] if policy.BASE is not None else ["origin/HEAD", "origin/main"]', 'refs = ["HEAD~1"]'),
             "ratchet-reset": ("if previous is not None and not path.exists():", "if False:"),
         }
         before, after = mutations[mode]
