@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only corpus comparison. Never imports or runs code from the measured repo."""
+"""Read-only corpus comparison; executable code comes only from this Veldo worktree."""
 import argparse
 import collections
 import contextlib

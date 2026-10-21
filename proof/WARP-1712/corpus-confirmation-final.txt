@@ -1,0 +1,14 @@
+{
+  "core_inputs_unchanged": 357,
+  "proposal_matches_both_copies": true,
+  "results": [
+    {
+      "validator": "engine/.veldo/validate.py",
+      "pairs_confirmed": 173
+    },
+    {
+      "validator": ".veldo/validate.py",
+      "pairs_confirmed": 173
+    }
+  ]
+}

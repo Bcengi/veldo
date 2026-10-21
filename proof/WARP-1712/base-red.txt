@@ -1,0 +1,147 @@
+FAIL generic test is not integration
+PASS unit is not integration
+PASS passing unit check is not integration
+PASS empty proof refuses
+PASS unknown required kind refuses
+FAIL evidence refuses {}
+FAIL check refuses {}
+FAIL evidence refuses {"status": null}
+FAIL check refuses {"status": null}
+FAIL evidence refuses {"status": "failed"}
+FAIL check refuses {"status": "failed"}
+FAIL evidence refuses {"status": "pending"}
+FAIL check refuses {"status": "pending"}
+FAIL evidence refuses {"status": "not_run"}
+FAIL check refuses {"status": "not_run"}
+FAIL evidence refuses {"status": "pass"}
+FAIL check refuses {"status": "pass"}
+FAIL evidence refuses {"status": "PASSED"}
+FAIL check refuses {"status": "PASSED"}
+FAIL evidence refuses {"status": true}
+FAIL check refuses {"status": true}
+FAIL evidence refuses {"status": "passed, 12 tests"}
+FAIL check refuses {"status": "passed, 12 tests"}
+FAIL evidence refuses {"result": "failed"}
+FAIL check refuses {"result": "failed"}
+FAIL evidence refuses {"result": "pending"}
+FAIL check refuses {"result": "pending"}
+FAIL evidence refuses {"result": "not run"}
+FAIL check refuses {"result": "not run"}
+FAIL evidence refuses {"result": "green"}
+FAIL check refuses {"result": "green"}
+FAIL evidence refuses {"result": null}
+FAIL check refuses {"result": null}
+FAIL evidence refuses {"result": "pass", "status": "failed"}
+FAIL check refuses {"result": "pass", "status": "failed"}
+FAIL evidence refuses {"result": "fail", "status": "passed"}
+FAIL check refuses {"result": "fail", "status": "passed"}
+PASS passing evidence {"status": "passed"}
+PASS passing check {"status": "passed"}
+PASS passing evidence {"result": "pass"}
+PASS passing check {"result": "pass"}
+PASS passing evidence {"result": "passed"}
+PASS passing check {"result": "passed"}
+PASS passing evidence {"result": "pass", "status": "passed"}
+PASS passing check {"result": "pass", "status": "passed"}
+PASS passing alias unit/unit
+FAIL absent outcome alias unit/unit
+PASS passing alias unit/test
+FAIL absent outcome alias unit/test
+PASS passing alias integration/integration
+FAIL absent outcome alias integration/integration
+PASS passing alias journeys/journeys
+FAIL absent outcome alias journeys/journeys
+PASS passing alias journeys/journey
+FAIL absent outcome alias journeys/journey
+PASS passing alias journeys/e2e
+FAIL absent outcome alias journeys/e2e
+PASS passing alias ui_states/ui_states
+FAIL absent outcome alias ui_states/ui_states
+PASS passing alias ui_states/state_capture
+FAIL absent outcome alias ui_states/state_capture
+PASS passing alias figma_composite/figma_composite
+FAIL absent outcome alias figma_composite/figma_composite
+PASS passing alias figma_composite/composite
+FAIL absent outcome alias figma_composite/composite
+PASS passing alias figma_composite/visual
+FAIL absent outcome alias figma_composite/visual
+PASS passing alias interaction_recording/interaction_recording
+FAIL absent outcome alias interaction_recording/interaction_recording
+PASS passing alias interaction_recording/recording
+FAIL absent outcome alias interaction_recording/recording
+PASS passing alias interaction_recording/video
+FAIL absent outcome alias interaction_recording/video
+PASS passing alias baseline/baseline
+FAIL absent outcome alias baseline/baseline
+PASS passing alias baseline/visual_baselines
+FAIL absent outcome alias baseline/visual_baselines
+PASS passing alias device_matrix/device_matrix
+FAIL absent outcome alias device_matrix/device_matrix
+PASS passing alias device_matrix/matrix
+FAIL absent outcome alias device_matrix/matrix
+PASS passing alias operational/operational
+FAIL absent outcome alias operational/operational
+PASS passing alias staging_run/staging_run
+FAIL absent outcome alias staging_run/staging_run
+PASS passing alias staging_run/staging
+FAIL absent outcome alias staging_run/staging
+FAIL failed integration plus passed unit refuses
+PASS matching passing entry survives unrelated failure
+FAIL a pass on another entry cannot bless missing integration outcome
+FAIL every required kind needs a pass
+PASS both required kinds passed
+PASS no declared requirements is unchanged
+PASS absent design verdict refuses
+FAIL design verdict refuses {}
+FAIL design verdict refuses {"verdict": "fail"}
+FAIL design verdict refuses {"verdict": "pending"}
+FAIL design verdict refuses {"verdict": "escalate"}
+FAIL design verdict refuses []
+FAIL design verdict refuses {"verdict": "passed"}
+FAIL unreadable design verdict refuses
+PASS passing design verdict pass
+PASS passing design verdict pass_with_notes
+PASS CLI integration passes
+FAIL CLI generic test refuses
+  /tmp/warp1712-cli-a2a7m40d/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-cli-a2a7m40d/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-cli-a2a7m40d/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  proof: git could not enumerate the corpus, so the domain and the validated set were not compared for verdict*.json, design-verdict*.json, approval*.json, manifest.json (the projection can append nothing without git, so containment holds; the equality check did not run)
+  /tmp/warp1712-cli-a2a7m40d/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-cli-a2a7m40d/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+FAIL CLI missing result refuses
+  /tmp/warp1712-cli-a2a7m40d/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-cli-a2a7m40d/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-cli-a2a7m40d/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  proof: git could not enumerate the corpus, so the domain and the validated set were not compared for verdict*.json, design-verdict*.json, approval*.json, manifest.json (the projection can append nothing without git, so containment holds; the equality check did not run)
+  /tmp/warp1712-cli-a2a7m40d/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-cli-a2a7m40d/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+FAIL CLI failed result refuses
+  /tmp/warp1712-cli-a2a7m40d/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-cli-a2a7m40d/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-cli-a2a7m40d/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  proof: git could not enumerate the corpus, so the domain and the validated set were not compared for verdict*.json, design-verdict*.json, approval*.json, manifest.json (the projection can append nothing without git, so containment holds; the equality check did not run)
+  /tmp/warp1712-cli-a2a7m40d/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-cli-a2a7m40d/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+FAIL CLI pending result refuses
+  /tmp/warp1712-cli-a2a7m40d/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-cli-a2a7m40d/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-cli-a2a7m40d/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  proof: git could not enumerate the corpus, so the domain and the validated set were not compared for verdict*.json, design-verdict*.json, approval*.json, manifest.json (the projection can append nothing without git, so containment holds; the equality check did not run)
+  /tmp/warp1712-cli-a2a7m40d/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-cli-a2a7m40d/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+FAIL CLI bare check refuses
+  /tmp/warp1712-cli-a2a7m40d/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-cli-a2a7m40d/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-cli-a2a7m40d/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  proof: git could not enumerate the corpus, so the domain and the validated set were not compared for verdict*.json, design-verdict*.json, approval*.json, manifest.json (the projection can append nothing without git, so containment holds; the equality check did not run)
+  /tmp/warp1712-cli-a2a7m40d/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-cli-a2a7m40d/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+PASS CLI passing check passes
+Every new refusal is red on old code; every compatibility control is green.
+{"mode": "base", "passed": 41, "failed": 69}

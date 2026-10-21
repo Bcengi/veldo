@@ -1,0 +1,214 @@
+PASS WARP-1712 engine/.veldo/validate.py: generic test is not integration
+PASS WARP-1712 engine/.veldo/validate.py: unit is not integration
+PASS WARP-1712 engine/.veldo/validate.py: passing unit check is not integration
+PASS WARP-1712 engine/.veldo/validate.py: empty proof refuses
+PASS WARP-1712 engine/.veldo/validate.py: unknown required kind refuses
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"status": null}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"status": null}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"status": "failed"}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"status": "failed"}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"status": "pending"}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"status": "pending"}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"status": "not_run"}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"status": "not_run"}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"status": "pass"}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"status": "pass"}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"status": "PASSED"}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"status": "PASSED"}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"status": true}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"status": true}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"status": "passed, 12 tests"}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"status": "passed, 12 tests"}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"result": "failed"}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"result": "failed"}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"result": "pending"}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"result": "pending"}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"result": "not run"}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"result": "not run"}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"result": "green"}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"result": "green"}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"result": null}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"result": null}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"result": "pass", "status": "failed"}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"result": "pass", "status": "failed"}
+PASS WARP-1712 engine/.veldo/validate.py: evidence refuses {"result": "fail", "status": "passed"}
+PASS WARP-1712 engine/.veldo/validate.py: check refuses {"result": "fail", "status": "passed"}
+PASS WARP-1712 engine/.veldo/validate.py: passing evidence {"status": "passed"}
+PASS WARP-1712 engine/.veldo/validate.py: passing check {"status": "passed"}
+PASS WARP-1712 engine/.veldo/validate.py: passing evidence {"result": "pass"}
+PASS WARP-1712 engine/.veldo/validate.py: passing check {"result": "pass"}
+PASS WARP-1712 engine/.veldo/validate.py: passing evidence {"result": "passed"}
+PASS WARP-1712 engine/.veldo/validate.py: passing check {"result": "passed"}
+PASS WARP-1712 engine/.veldo/validate.py: passing evidence {"result": "pass", "status": "passed"}
+PASS WARP-1712 engine/.veldo/validate.py: passing check {"result": "pass", "status": "passed"}
+PASS WARP-1712 engine/.veldo/validate.py: passing alias unit/unit
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias unit/unit
+PASS WARP-1712 engine/.veldo/validate.py: passing alias unit/test
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias unit/test
+PASS WARP-1712 engine/.veldo/validate.py: passing alias integration/integration
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias integration/integration
+PASS WARP-1712 engine/.veldo/validate.py: passing alias journeys/journeys
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias journeys/journeys
+PASS WARP-1712 engine/.veldo/validate.py: passing alias journeys/journey
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias journeys/journey
+PASS WARP-1712 engine/.veldo/validate.py: passing alias journeys/e2e
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias journeys/e2e
+PASS WARP-1712 engine/.veldo/validate.py: passing alias ui_states/ui_states
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias ui_states/ui_states
+PASS WARP-1712 engine/.veldo/validate.py: passing alias ui_states/state_capture
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias ui_states/state_capture
+PASS WARP-1712 engine/.veldo/validate.py: passing alias figma_composite/figma_composite
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias figma_composite/figma_composite
+PASS WARP-1712 engine/.veldo/validate.py: passing alias figma_composite/composite
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias figma_composite/composite
+PASS WARP-1712 engine/.veldo/validate.py: passing alias figma_composite/visual
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias figma_composite/visual
+PASS WARP-1712 engine/.veldo/validate.py: passing alias interaction_recording/interaction_recording
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias interaction_recording/interaction_recording
+PASS WARP-1712 engine/.veldo/validate.py: passing alias interaction_recording/recording
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias interaction_recording/recording
+PASS WARP-1712 engine/.veldo/validate.py: passing alias interaction_recording/video
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias interaction_recording/video
+PASS WARP-1712 engine/.veldo/validate.py: passing alias baseline/baseline
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias baseline/baseline
+PASS WARP-1712 engine/.veldo/validate.py: passing alias baseline/visual_baselines
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias baseline/visual_baselines
+PASS WARP-1712 engine/.veldo/validate.py: passing alias device_matrix/device_matrix
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias device_matrix/device_matrix
+PASS WARP-1712 engine/.veldo/validate.py: passing alias device_matrix/matrix
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias device_matrix/matrix
+PASS WARP-1712 engine/.veldo/validate.py: passing alias operational/operational
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias operational/operational
+PASS WARP-1712 engine/.veldo/validate.py: passing alias staging_run/staging_run
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias staging_run/staging_run
+PASS WARP-1712 engine/.veldo/validate.py: passing alias staging_run/staging
+PASS WARP-1712 engine/.veldo/validate.py: absent outcome alias staging_run/staging
+PASS WARP-1712 engine/.veldo/validate.py: failed integration plus passed unit refuses
+PASS WARP-1712 engine/.veldo/validate.py: matching passing entry survives unrelated failure
+PASS WARP-1712 engine/.veldo/validate.py: a pass on another entry cannot bless missing integration outcome
+PASS WARP-1712 engine/.veldo/validate.py: every required kind needs a pass
+PASS WARP-1712 engine/.veldo/validate.py: both required kinds passed
+PASS WARP-1712 engine/.veldo/validate.py: no declared requirements is unchanged
+PASS WARP-1712 engine/.veldo/validate.py: absent design verdict refuses
+PASS WARP-1712 engine/.veldo/validate.py: design verdict refuses {}
+PASS WARP-1712 engine/.veldo/validate.py: design verdict refuses {"verdict": "fail"}
+PASS WARP-1712 engine/.veldo/validate.py: design verdict refuses {"verdict": "pending"}
+PASS WARP-1712 engine/.veldo/validate.py: design verdict refuses {"verdict": "escalate"}
+PASS WARP-1712 engine/.veldo/validate.py: design verdict refuses []
+PASS WARP-1712 engine/.veldo/validate.py: design verdict refuses {"verdict": "passed"}
+PASS WARP-1712 engine/.veldo/validate.py: unreadable design verdict refuses
+PASS WARP-1712 engine/.veldo/validate.py: passing design verdict pass
+PASS WARP-1712 engine/.veldo/validate.py: passing design verdict pass_with_notes
+PASS WARP-1712 .veldo/validate.py: generic test is not integration
+PASS WARP-1712 .veldo/validate.py: unit is not integration
+PASS WARP-1712 .veldo/validate.py: passing unit check is not integration
+PASS WARP-1712 .veldo/validate.py: empty proof refuses
+PASS WARP-1712 .veldo/validate.py: unknown required kind refuses
+PASS WARP-1712 .veldo/validate.py: evidence refuses {}
+PASS WARP-1712 .veldo/validate.py: check refuses {}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"status": null}
+PASS WARP-1712 .veldo/validate.py: check refuses {"status": null}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"status": "failed"}
+PASS WARP-1712 .veldo/validate.py: check refuses {"status": "failed"}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"status": "pending"}
+PASS WARP-1712 .veldo/validate.py: check refuses {"status": "pending"}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"status": "not_run"}
+PASS WARP-1712 .veldo/validate.py: check refuses {"status": "not_run"}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"status": "pass"}
+PASS WARP-1712 .veldo/validate.py: check refuses {"status": "pass"}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"status": "PASSED"}
+PASS WARP-1712 .veldo/validate.py: check refuses {"status": "PASSED"}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"status": true}
+PASS WARP-1712 .veldo/validate.py: check refuses {"status": true}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"status": "passed, 12 tests"}
+PASS WARP-1712 .veldo/validate.py: check refuses {"status": "passed, 12 tests"}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"result": "failed"}
+PASS WARP-1712 .veldo/validate.py: check refuses {"result": "failed"}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"result": "pending"}
+PASS WARP-1712 .veldo/validate.py: check refuses {"result": "pending"}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"result": "not run"}
+PASS WARP-1712 .veldo/validate.py: check refuses {"result": "not run"}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"result": "green"}
+PASS WARP-1712 .veldo/validate.py: check refuses {"result": "green"}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"result": null}
+PASS WARP-1712 .veldo/validate.py: check refuses {"result": null}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"result": "pass", "status": "failed"}
+PASS WARP-1712 .veldo/validate.py: check refuses {"result": "pass", "status": "failed"}
+PASS WARP-1712 .veldo/validate.py: evidence refuses {"result": "fail", "status": "passed"}
+PASS WARP-1712 .veldo/validate.py: check refuses {"result": "fail", "status": "passed"}
+PASS WARP-1712 .veldo/validate.py: passing evidence {"status": "passed"}
+PASS WARP-1712 .veldo/validate.py: passing check {"status": "passed"}
+PASS WARP-1712 .veldo/validate.py: passing evidence {"result": "pass"}
+PASS WARP-1712 .veldo/validate.py: passing check {"result": "pass"}
+PASS WARP-1712 .veldo/validate.py: passing evidence {"result": "passed"}
+PASS WARP-1712 .veldo/validate.py: passing check {"result": "passed"}
+PASS WARP-1712 .veldo/validate.py: passing evidence {"result": "pass", "status": "passed"}
+PASS WARP-1712 .veldo/validate.py: passing check {"result": "pass", "status": "passed"}
+PASS WARP-1712 .veldo/validate.py: passing alias unit/unit
+PASS WARP-1712 .veldo/validate.py: absent outcome alias unit/unit
+PASS WARP-1712 .veldo/validate.py: passing alias unit/test
+PASS WARP-1712 .veldo/validate.py: absent outcome alias unit/test
+PASS WARP-1712 .veldo/validate.py: passing alias integration/integration
+PASS WARP-1712 .veldo/validate.py: absent outcome alias integration/integration
+PASS WARP-1712 .veldo/validate.py: passing alias journeys/journeys
+PASS WARP-1712 .veldo/validate.py: absent outcome alias journeys/journeys
+PASS WARP-1712 .veldo/validate.py: passing alias journeys/journey
+PASS WARP-1712 .veldo/validate.py: absent outcome alias journeys/journey
+PASS WARP-1712 .veldo/validate.py: passing alias journeys/e2e
+PASS WARP-1712 .veldo/validate.py: absent outcome alias journeys/e2e
+PASS WARP-1712 .veldo/validate.py: passing alias ui_states/ui_states
+PASS WARP-1712 .veldo/validate.py: absent outcome alias ui_states/ui_states
+PASS WARP-1712 .veldo/validate.py: passing alias ui_states/state_capture
+PASS WARP-1712 .veldo/validate.py: absent outcome alias ui_states/state_capture
+PASS WARP-1712 .veldo/validate.py: passing alias figma_composite/figma_composite
+PASS WARP-1712 .veldo/validate.py: absent outcome alias figma_composite/figma_composite
+PASS WARP-1712 .veldo/validate.py: passing alias figma_composite/composite
+PASS WARP-1712 .veldo/validate.py: absent outcome alias figma_composite/composite
+PASS WARP-1712 .veldo/validate.py: passing alias figma_composite/visual
+PASS WARP-1712 .veldo/validate.py: absent outcome alias figma_composite/visual
+PASS WARP-1712 .veldo/validate.py: passing alias interaction_recording/interaction_recording
+PASS WARP-1712 .veldo/validate.py: absent outcome alias interaction_recording/interaction_recording
+PASS WARP-1712 .veldo/validate.py: passing alias interaction_recording/recording
+PASS WARP-1712 .veldo/validate.py: absent outcome alias interaction_recording/recording
+PASS WARP-1712 .veldo/validate.py: passing alias interaction_recording/video
+PASS WARP-1712 .veldo/validate.py: absent outcome alias interaction_recording/video
+PASS WARP-1712 .veldo/validate.py: passing alias baseline/baseline
+PASS WARP-1712 .veldo/validate.py: absent outcome alias baseline/baseline
+PASS WARP-1712 .veldo/validate.py: passing alias baseline/visual_baselines
+PASS WARP-1712 .veldo/validate.py: absent outcome alias baseline/visual_baselines
+PASS WARP-1712 .veldo/validate.py: passing alias device_matrix/device_matrix
+PASS WARP-1712 .veldo/validate.py: absent outcome alias device_matrix/device_matrix
+PASS WARP-1712 .veldo/validate.py: passing alias device_matrix/matrix
+PASS WARP-1712 .veldo/validate.py: absent outcome alias device_matrix/matrix
+PASS WARP-1712 .veldo/validate.py: passing alias operational/operational
+PASS WARP-1712 .veldo/validate.py: absent outcome alias operational/operational
+PASS WARP-1712 .veldo/validate.py: passing alias staging_run/staging_run
+PASS WARP-1712 .veldo/validate.py: absent outcome alias staging_run/staging_run
+PASS WARP-1712 .veldo/validate.py: passing alias staging_run/staging
+PASS WARP-1712 .veldo/validate.py: absent outcome alias staging_run/staging
+PASS WARP-1712 .veldo/validate.py: failed integration plus passed unit refuses
+PASS WARP-1712 .veldo/validate.py: matching passing entry survives unrelated failure
+PASS WARP-1712 .veldo/validate.py: a pass on another entry cannot bless missing integration outcome
+PASS WARP-1712 .veldo/validate.py: every required kind needs a pass
+PASS WARP-1712 .veldo/validate.py: both required kinds passed
+PASS WARP-1712 .veldo/validate.py: no declared requirements is unchanged
+PASS WARP-1712 .veldo/validate.py: absent design verdict refuses
+PASS WARP-1712 .veldo/validate.py: design verdict refuses {}
+PASS WARP-1712 .veldo/validate.py: design verdict refuses {"verdict": "fail"}
+PASS WARP-1712 .veldo/validate.py: design verdict refuses {"verdict": "pending"}
+PASS WARP-1712 .veldo/validate.py: design verdict refuses {"verdict": "escalate"}
+PASS WARP-1712 .veldo/validate.py: design verdict refuses []
+PASS WARP-1712 .veldo/validate.py: design verdict refuses {"verdict": "passed"}
+PASS WARP-1712 .veldo/validate.py: unreadable design verdict refuses
+PASS WARP-1712 .veldo/validate.py: passing design verdict pass
+PASS WARP-1712 .veldo/validate.py: passing design verdict pass_with_notes
+PASS WARP-1712 CLI integration passes
+PASS WARP-1712 CLI generic test refuses
+PASS WARP-1712 CLI missing result refuses
+PASS WARP-1712 CLI failed result refuses
+PASS WARP-1712 CLI pending result refuses
+PASS WARP-1712 CLI bare check refuses
+PASS WARP-1712 CLI passing check passes
+{"mode": "current", "passed": 213, "failed": 0}

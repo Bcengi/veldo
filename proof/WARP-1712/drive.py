@@ -45,7 +45,7 @@ else:
         mutated = proposal.replace(before, after)
         import difflib
         print("".join(difflib.unified_diff(proposal.splitlines(True), mutated.splitlines(True),
-                                           fromfile="proposed_check.py", tofile=mode + ".py")))
+                                           fromfile="proposed_check.py", tofile=mode + ".py", n=0)))
         exec(compile(mutated, mode, "exec"), new.__dict__)
         validator = new
     namespace["_w1712_exercise"](validator, report)

@@ -1,0 +1,26 @@
+{
+  "command": "./scripts/verify.sh",
+  "implementation_commit": "8be1f0d8d9206c1699b67d340f831e7ded21b23a",
+  "status": "interrupted_after_confirmed_blockers",
+  "capture_exit_code": 130,
+  "verifier_exit_code": null,
+  "completed_stages": {
+    "lint": "passed",
+    "unit_confined": {
+      "passed": 7933,
+      "failed": 3
+    },
+    "unit_unconfined": {
+      "status": "failed",
+      "error": "ValueError: incomplete file-read trace in VELDO-0208 profiles/case-input-proposal-tcp-suite-confined"
+    }
+  },
+  "interrupted_stage": "integration confined leg, nested first-use suite",
+  "later_stages_completed": false,
+  "standalone_contract_check": {
+    "exit_code": 1,
+    "required_kind_refusals": 111,
+    "affected_historical_manifests": 79
+  },
+  "reason": "The strict rule exposes immutable historical proofs without passing entry outcomes. No waiver, invented outcome or weakened assertion was applied. WARP-1712 is blocked for landing."
+}

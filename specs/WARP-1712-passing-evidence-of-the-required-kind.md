@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: WARP-1712
 title: Required evidence must have the required kind and a recorded passing result
-status: ready
+status: blocked
 risk: standard
 owner: dmitry
 human_approval: not_required
@@ -71,4 +71,19 @@ and outcome matching, positive controls, corpus completeness, and fidelity of th
 Artifact execution, cryptographic authenticity, and the separate control_proof observation protocol
 are outside this change. Core is read-only. No install, push, merge, branch switch or other worktree
 change is authorized. WARP-1712 follows the user's explicit numbering instruction over the repository's
-general VELDO naming convention. This spec is ready on the user's build instruction.
+general VELDO naming convention. This spec entered ready on the user's build instruction.
+
+## Validation and landing blocker
+
+The implementation and targeted proof are complete. The driver passes 213 cases, all 69 new
+refusal assertions fail on the old code, and five targeted mutants are rejected. The measured
+core impact is 107 changed verdicts among 173 matched pairs, with five unchanged parser errors.
+
+Landing is blocked: the strict check refuses 111 required-kind claims across 79 historical
+Veldo proofs. Three assertions in the canonical confined unit run require that historical corpus
+to remain accepted (7,933 passed, 3 failed). The unconfined leg also stopped in the unchanged
+VELDO-0208 trace test with an incomplete file-read trace. The remaining gate run was interrupted
+while integration was running after these blockers were established; the capture command exited
+130 and no final verifier exit was recorded. No complete gate result or gate pass is claimed.
+Historical evidence was not rewritten, requirements were not waived,
+and no assertion was weakened to force green. See proof/WARP-1712/README.md and manifest.json.

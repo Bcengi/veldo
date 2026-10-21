@@ -1,0 +1,3 @@
+  proof/WARP-1712/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+Spec and proof structure, criterion coverage, evidence kinds/outcomes and digest: pass.
+Landing remains blocked: AC4 and verify are explicitly blocked; no full gate result is claimed.
