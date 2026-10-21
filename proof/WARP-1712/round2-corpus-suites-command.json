@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "18_veldo_0012_behaviour_floor_contract,27_veldo_0010_evidence_provenance,43_veldo_0104_proofcheck"
+  ],
+  "exit_code": 2,
+  "elapsed_seconds": 17.91,
+  "interpretation": "Selected suite run; exit 2 means partial, never a full unit or gate pass."
+}

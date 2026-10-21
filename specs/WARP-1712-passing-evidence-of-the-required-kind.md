@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: WARP-1712
 title: Required evidence must have the required kind and a recorded passing result
-status: ready
+status: blocked
 risk: standard
 owner: dmitry
 human_approval: not_required
@@ -120,3 +120,23 @@ while integration was running after these blockers were established; the capture
 130 and no final verifier exit was recorded. No complete gate result or gate pass is claimed.
 Historical evidence was not rewritten, requirements were not waived,
 and no assertion was weakened to force green. See proof/WARP-1712/README.md and manifest.json.
+
+## Round 2 validation and remaining blocker
+
+The ratchet and its delivery fixes are implemented at `414e24cc`. The generated Veldo
+register contains 79 unchanged historical pairs, with no historical proof rewritten.
+Final focused checks report 234 passed, zero failed; all 69 old-code refusal assertions
+and all 11 strict-rule/ratchet mutants are rejected. The Git subprocess boundary and
+fresh install/reinstall gates pass. Core still has 107 strict failures: the untouched
+registered set has zero ratchet errors, and 214 individual spec/proof touches refuse.
+The five existing core pair parser errors remain separately reported errors.
+
+The canonical attempt at `3ef567d5` completed confined unit with 7,953 passed and one
+Git-boundary source-check failure, then unconfined unit with 871 passed and zero failed.
+Round 1's three historical-corpus failures and its incomplete-trace exception did not
+recur. The source binding was corrected in `414e24cc`; that commit also closes the
+empty-register reset edge and adds multi-commit range coverage. Its focused checks pass.
+The gate attempt was stopped during integration before those final corrections. No
+complete final-tree gate result is claimed: full canonical validation, including the
+remaining integration and later stages, is the outstanding landing blocker. No independent
+review, push, merge, or shipped status is claimed. See the round 2 command record and README.

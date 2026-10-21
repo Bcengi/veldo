@@ -1,0 +1,26 @@
+{
+  "command": [
+    "./scripts/verify.sh"
+  ],
+  "implementation_commit": "3ef567d531d0be301307e5ac1ada3856a7b27cad",
+  "started_at": "2026-10-21T14:14:06.036218+00:00",
+  "status": "interrupted_after_unit_results_before_final_fixes",
+  "verifier_exit_code": null,
+  "elapsed_seconds": 2815.19,
+  "terminated_process_returncode": -15,
+  "completed_stages": {
+    "lint": "passed",
+    "unit_confined": {
+      "passed": 7953,
+      "failed": 1,
+      "failure": "git-boundary/no-private-git-invocations"
+    },
+    "unit_unconfined": {
+      "passed": 871,
+      "failed": 0
+    }
+  },
+  "interrupted_stage": "integration confined first-use nested suite",
+  "later_stages_completed": false,
+  "reason": "Stop the already-red attempt to repair the Git-boundary source binding and the separately reproduced empty-register reset edge. No complete or final-tree gate result is claimed. Round 1 incomplete-trace failure did not recur."
+}

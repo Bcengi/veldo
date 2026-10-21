@@ -1,3 +1,109 @@
+# WARP-1712 round 2: strict touched pairs and shrinking historical debt
+
+Owner decision: Telegram 35399, "agree". Ready-spec amendment: `92cc0d4b`.
+Implementation: `9fab5024e5664bf0a89826bcd574a838f46fa291`; scaffold delivery fix: `3ef567d5`.
+Final Git-boundary/adoption fixes: `414e24cc` (empty-register spec amendment: `77c50382`).
+All commits use Dmitry Grinberg <dmitry@bcengi.com>, with no co-author trailer.
+No push, branch switch, other-worktree edit, core edit, or core install.
+
+## Rule and maintenance
+
+The round 1 strict predicate is byte-for-byte unchanged (`round2-confirmation.txt`).
+The validator applies it to pairs touched by the push: the spec itself or any path in
+its proof directory, including supporting artifacts and design verdicts. The range
+uses `policy_check._range_specs()` and its Git boundary, including upstream/origin
+fallback order. No resolvable range means no debt exemption.
+
+The repository-local `.veldo/required-evidence-debt.jsonl` records 79 historical pairs,
+sorted by spec and proof path, with their actual strict failure causes. Generate it with:
+
+```sh
+python3 .veldo/validate.py evidence-debt > /tmp/required-evidence-debt.jsonl
+```
+
+Review the difference, replace the committed register with that output, and commit it.
+The command does not edit evidence. The gate requires exact computed contents, rejects
+stale passing entries and fabricated, duplicated, omitted or altered entries, and bounds
+membership by the push-base register. Recomputing cannot authorize new debt. Initial
+adoption permits only unchanged historical failures. Keep the empty register after the
+last entry is removed: deleting it must not reset adoption. Pay down individual pairs by
+recording real passing evidence and removing their register entries in the same push.
+No historical proof was relabeled or bulk-rewritten in this round.
+
+## Recorded checks
+
+- `round2-focused.txt`: 234 passed, zero failed. The original 213 assertions remain;
+  21 ratchet controls use a temporary Git repository and the shipped CLI, with real
+  commits and the real range resolver.
+- `round2-base.txt`: expected exit 1, all 69 original refusal assertions fail on the
+  old validator, while all 41 compatibility controls pass.
+- The five original mutations still fail by exactly 2, 40, 16, 4, and 7 assertions.
+  Their reruns are `round2-integration-alias.txt`, `round2-evidence-outcome.txt`,
+  `round2-check-outcome.txt`, `round2-conflicting-outcome.txt`, and
+  `round2-design-existence.txt`.
+- Six new mutations fail: disabling touch refusal (5 assertions), reapplying strict
+  enforcement globally (3), skipping computed-register equality (6), and permitting
+  register growth (2), narrowing the push to its last commit (2), and allowing an empty
+  adopted register to be deleted (1). See `round2-ratchet-*.txt` and `round2-falsifiers.json`. These expected process failures are
+  successful falsification experiments, not passing broken-product executions.
+- Standalone contracts, lint, template synchronization, generated-file freshness, and
+  the spec contract check pass. Their `round2-*.txt` captures are retained.
+
+## Core read-only measurement
+
+`python3 proof/WARP-1712/measure_ratchet.py` reads core's declared corpus, reconciles
+membership and all round 1 input digests, and applies the shipped strict predicate and
+ratchet to a temporary byte-identical corpus mirror. It never writes into core or
+imports code from core. The hypothetical ranges are explicit changed-path sets, not a
+claim to have run core's entire canonical gate.
+
+Of 173 matched pairs, 61 pass strictly and the same 107 fail strictly. With all 107
+registered, a push touching none has zero ratchet errors. Touching each historical
+pair's spec and manifest separately produces 214 single-pair refusals. Five existing
+pair parser errors are separately reported and remain errors, not passes. Input bytes
+and corpus membership are unchanged. See `round2-core-ratchet.json` and the generated
+`round2-core-debt.jsonl`; neither was installed into core.
+
+## Canonical gate
+
+The first round 2 gate exposed two fresh-scaffold assertions: the new module had not
+been added to the scaffolder's explicit install list. That attempt was stopped to fix
+the defect. `round2-gate-first-command.json` and `round2-gate-first.txt` preserve it.
+Both scaffold copies now include the module in the install list and required substrate.
+`round2-scaffold.json` records fresh install and reinstall gates passing, and a mutant omitting the module refusing. Both install checks were repeated after the final corrections.
+
+The canonical attempt at `3ef567d5` completed confined unit with **7,953 passed and one
+failed**, then unconfined unit with **871 passed and zero failed**. All three round 1
+historical-corpus assertions now pass, and the round 1 incomplete-trace exception did
+not recur. The one confined failure was `git-boundary/no-private-git-invocations`: the
+shared boundary was called through `policy._git_process`, while the source contract
+recognizes the local `_git_process` binding. The call now uses that supported binding;
+`round2-git-boundary-final.txt` records the complete source-boundary scan passing.
+
+The final review also reproduced an empty-register reset defect: deleting a fully paid
+register could permit later adoption to start over. `round2-empty-reset-red.txt` records
+the defect, and the final CLI matrix plus `round2-ratchet-reset.txt` prove the refusal.
+The same final matrix covers a spec touched earlier in a multi-commit push, with a
+last-commit-only mutation as its falsifier. These fixes are in `414e24cc`.
+
+The gate attempt was **interrupted during integration**, before applying those final
+corrections. Its terminated process returned -15; there is no final verifier exit.
+`round2-gate-command.json` and `round2-gate.txt` record the exact attempt and its scope.
+The final tree has passing focused and standalone checks, but **no complete final-tree
+canonical gate run**. Full canonical validation, including remaining integration and
+later catalog stages, remains the landing blocker. No green gate or independent review
+is claimed. The spec stays blocked for landing, not shipped.
+
+The three suites containing round 1's corpus failures were also run as a diagnostic
+selection: 149 assertions passed, zero failed, exit 2 because the run is partial. This
+is not full-unit or gate evidence and does not appear as passing evidence in the proof
+manifest. See `round2-corpus-suites-command.json` and `round2-corpus-suites.txt`.
+
+## Preserved round 1 report
+
+The report below describes round 1 and its historical blockers. The original manifest
+is retained as `round1-manifest.json`; the active manifest records the current round.
+
 # WARP-1712: required evidence of the right kind, with a passing outcome
 
 Implementation: `8be1f0d8d9206c1699b67d340f831e7ded21b23a`.
