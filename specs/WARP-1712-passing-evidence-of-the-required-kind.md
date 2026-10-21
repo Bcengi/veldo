@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: WARP-1712
 title: Required evidence must have the required kind and a recorded passing result
-status: blocked
+status: ready
 risk: standard
 owner: dmitry
 human_approval: not_required
@@ -11,6 +11,9 @@ placement: [contracts]
 footprint:
   - engine/.veldo/validate.py
   - .veldo/validate.py
+  - engine/.veldo/evidence_debt.py
+  - .veldo/evidence_debt.py
+  - .veldo/required-evidence-debt.jsonl
   - engine/.veldo/examples/proof-example.json
   - .veldo/examples/proof-example.json
   - scripts/suites/14_warp_0717_subset_runner.py
@@ -39,6 +42,15 @@ acceptance_criteria:
   - id: AC4
     text: Veldo's own suite exercises positive controls and refusals in both validator copies. Each new refusal has an assertion that fails against the old implementation. Record focused tests, falsifiers and the canonical gate honestly without rewriting historical proofs to invent passing results.
     falsified_by: Run the refusal matrix against the base validator and it must fail by assertion while the positive controls still pass.
+  - id: AC5
+    text: Apply the unchanged strict kind/outcome rule to every pair whose spec or proof directory changes in the gate-resolved push range. Unchanged historical failures pass only when listed in the computed debt register. Other contract checks remain enforced.
+    falsified_by: Exempt a touched historical pair or refuse an untouched listed pair and the ratchet CLI controls fail.
+  - id: AC6
+    text: A command produces a sorted committed JSONL register with one spec/proof pair and its strict failure causes per line. The gate requires exact equality with computed failures, rejects passing or fabricated entries and unlisted failures, and refuses additions relative to the push-base register. Initial adoption can register only unchanged historical failures. Later cleanup removes entries incrementally without rewriting old evidence.
+    falsified_by: Accept a now-passing entry, a hand-added entry, an omitted failure, a changed cause, or a reintroduced debt and the refusal controls fail.
+  - id: AC7
+    text: Remeasure core read-only with input digests. The ratchet accepts a push touching none of the 107 historical strict failures and refuses a push touching one of them. Preserve and report the five existing parser errors separately, without claiming that the whole core gate passes.
+    falsified_by: Exempt a touched core failure or reject the unchanged registered failures and the measurement assertions fail.
 required_evidence: [unit, integration]
 rollback: Revert the implementation commits; retain the measurement as historical evidence.
 ---
@@ -73,7 +85,24 @@ are outside this change. Core is read-only. No install, push, merge, branch swit
 change is authorized. WARP-1712 follows the user's explicit numbering instruction over the repository's
 general VELDO naming convention. This spec entered ready on the user's build instruction.
 
-## Validation and landing blocker
+## Round 2 owner decision and ratchet
+
+Owner decision: Telegram 35399, "agree", authorizes the strict rule for every ticket a
+push touches from now on, with unchanged historical failures as nonblocking debt, paid
+down over time, never by a bulk rewrite. This supersedes round 1's whole-corpus enforcement
+scope, not its strict predicate, refusals, or falsifiers. Round 2 starts ready on this instruction.
+
+The register is repository-local `.veldo/required-evidence-debt.jsonl`, not an engine template.
+`python3 .veldo/validate.py evidence-debt` emits its canonical contents to stdout; it does not
+write the register. Each line contains relative spec/proof paths and deterministic strict
+failure diagnostics. The gate compares bytes with the same computation. Existing entries
+are additionally bounded by the register at the resolved push base, so recomputing the
+file cannot silently add a new debt. With no register at that base, adoption is restricted
+to unchanged pairs. Without a resolvable range, no debt exemption is granted. A spec change
+or any file change beneath its proof directory activates strict enforcement, including a
+design-verdict change. Range resolution reuses policy_check's existing resolver.
+
+## Round 1 validation and landing blocker
 
 The implementation and targeted proof are complete. The driver passes 213 cases, all 69 new
 refusal assertions fail on the old code, and five targeted mutants are rejected. The measured
