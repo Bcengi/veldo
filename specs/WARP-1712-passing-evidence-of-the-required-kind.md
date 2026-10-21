@@ -13,6 +13,8 @@ footprint:
   - .veldo/validate.py
   - engine/.veldo/evidence_debt.py
   - .veldo/evidence_debt.py
+  - engine/.veldo/init_scaffold.py
+  - .veldo/init_scaffold.py
   - .veldo/required-evidence-debt.jsonl
   - engine/.veldo/examples/proof-example.json
   - .veldo/examples/proof-example.json
