@@ -1,0 +1,17 @@
+{
+  "command": [
+    "./scripts/verify.sh"
+  ],
+  "cwd": "/home/dmitry/projects/veldo-worktrees/warp-integration-evidence",
+  "commit": "67dec0c0fdc69242a4858ba4c671f6688bafb43f",
+  "started_at": "2026-10-21T15:39:49.005500+00:00",
+  "log": "/tmp/warp1712-round3-gate-1fhm2eyg/gate.txt",
+  "exit_code": 0,
+  "elapsed_seconds": 10419.82,
+  "finished_at": "2026-10-21T18:33:28.830333+00:00",
+  "raw_log_artifact": "proof/WARP-1712/round3-gate.txt.gz",
+  "raw_log_sha256": "deb079be9b915a8b10bec5e67d2ab49aa3aa4725a18b7de8b1ffa194f2223e65",
+  "compressed_log_sha256": "b46ea4e0baeb3a459f31fd1d6662d2d6da1c0823519e8ed4962426152b5204d4",
+  "readable_log_artifact": "proof/WARP-1712/round3-gate.txt",
+  "readable_log_note": "One large JSON mutation receipt is replaced with an explicit marker and summary. The gzip artifact decompresses to the complete, unchanged process output."
+}

@@ -1,6 +1,6 @@
 # WARP-1712 round 3: independent review corrections
 
-Implementation: `follows the round 3 spec commit 4b80fe8f` (see manifest commit).
+Implementation: `90290e15`, following the round 3 spec commit `4b80fe8f`.
 All five findings from the independent review of `5b2a5a95` are addressed.
 
 - R1: walk the base register as well as current failures. A removed row requires the
@@ -44,8 +44,29 @@ Nothing was written or installed into core; this is not a whole-core gate claim.
 
 ## Canonical gate
 
-Pending the complete `./scripts/verify.sh` run on the committed implementation below.
-The final command record and result will be appended after the process finishes.
+`./scripts/verify.sh` completed **GREEN, exit 0**, at
+`67dec0c0fdc69242a4858ba4c671f6688bafb43f`, from 2026-10-21 15:39:49 UTC to
+18:33:28 UTC (10,419.82 seconds). The run was uninterrupted and used the documented
+command with its configured confined and unconfined legs.
+
+- Unit: 7,980 confined assertions and 871 unconfined assertions passed, zero failures.
+- Integration: the real first-use spend mutation preserved the same 7,980 and 871
+  passing assertions, zero failures (1,767 and 765 seconds for the nested runs).
+- Mutation: all 2,546 registered cases executed fresh and were rejected; zero reuse
+  and zero invalid results. The 3,284 worker invocations include 369 baseline and
+  369 no-op controls as well as the 2,546 mutants. Stage elapsed: 5,082.551 seconds.
+- Lint, security inventory, generated files, docs, all seven pack install/run gates,
+  template synchronization, and the remaining built-in checks passed. Catalog: nine
+  run, 15 not applicable with reasons, zero waived and zero undeclared.
+
+`round3-gate-command.json` records the command, tested commit, times and actual exit.
+`round3-gate-stamp.json` preserves the gate's own green stamp. `round3-gate.txt` is a
+readable transcript with only the large mutation JSON receipt replaced by an explicit
+marker and summary. `round3-gate.txt.gz` preserves the complete raw output, including
+that receipt, byte-for-byte; its raw and compressed SHA-256 digests are recorded in the
+command record. The final follow-up commit only records evidence and the gate's own
+observations; implementation and specification bytes remain those tested at `67dec0c0`.
+No fresh independent review, push, merge, or shipped status is claimed.
 
 ## Preserved round 2 report
 

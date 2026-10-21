@@ -1,0 +1,17 @@
+{
+  "scope": "Supplemental checks after packaging the gate evidence; not a second canonical gate run.",
+  "checks": [
+    {
+      "command": "python3 .veldo/validate.py all",
+      "exit_code": 0,
+      "log": "proof/WARP-1712/round3-final-contracts.txt",
+      "sha256": "b45ab417592119d6434d3b2b8de784044ecdbf9dca0e6ec9b2e10d33935eb955"
+    },
+    {
+      "command": "bash scripts/check_docs.sh",
+      "exit_code": 0,
+      "log": "proof/WARP-1712/round3-final-docs.txt",
+      "sha256": "c19bca8b6dc8b9d4fe4b0df8ccfcd5a195b58aaead454af07185061ad88791a3"
+    }
+  ]
+}

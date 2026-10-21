@@ -86,6 +86,18 @@
           "ref": "proof/WARP-1712/round3-review-round2.txt",
           "digest": "sha256:8df8da39a39f3859f42655aaf50d6291a890e8dd73a0b924785916df31174706",
           "interpretation": "The driver asserts exactly 16 failing assertions on round 2 and seven passing controls, with R1-R5 each falsified. Expected process exit 1 is a successful experiment, not passing product evidence."
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round3-gate-command.json",
+          "digest": "sha256:2d8b0d771a506b575189e87168a47c0d96f427c886a308c8010897603d026e82"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round3-gate-stamp.json",
+          "digest": "sha256:c39928ae5aa7cf3684dee0caf391928643e739b5a702c8adf9a71022598aa7ce"
         }
       ]
     },
@@ -149,14 +161,18 @@
     {
       "name": "verify",
       "command": "./scripts/verify.sh",
-      "status": "pending",
-      "result_detail": "Complete round 3 gate pending."
+      "status": "passed",
+      "result_detail": "Canonical command completed GREEN. Unit and first-use integration each passed 7980 confined and 871 unconfined assertions with zero failures. All 2546 mutations executed fresh and were rejected; zero invalid results. Remaining catalog and built-in checks passed.",
+      "exit_code": 0,
+      "tested_commit": "67dec0c0fdc69242a4858ba4c671f6688bafb43f",
+      "elapsed_seconds": 10419.82
     }
   ],
   "limitations": [
-    "Canonical gate pending. No green gate or fresh independent review is claimed.",
-    "Five existing core parser errors remain separate errors; no whole-core gate was run.",
-    "No push, merge, branch switch, other-worktree edit, core write or installation."
+    "The complete canonical gate is green at 67dec0c0. The following evidence-only commit records that run; it does not claim a separate gate run on its own commit id.",
+    "No fresh independent review or shipped status is claimed.",
+    "Five existing core parser errors remain separate errors. The core measurement is read-only and uses a byte-identical temporary mirror, not a whole-core gate invocation.",
+    "No push, merge, branch switch, other existing worktree edit, core write or installation."
   ],
   "rollback": "Revert the WARP-1712 implementation commits; preserve the impact measurement.",
   "completion": "blocked_for_landing",
