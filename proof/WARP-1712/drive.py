@@ -37,6 +37,8 @@ else:
             "ratchet-global": ('touched = row["spec"] in changed or any(p.startswith(proof_dir) for p in changed)', 'touched = True'),
             "ratchet-register": ("if actual != expected:", "if False:"),
             "ratchet-growth": ("if previous is not None:", "if False:"),
+            "ratchet-range": ("for push_range in policy._range_specs():", 'for push_range in ["HEAD~1..HEAD"]:'),
+            "ratchet-reset": ("if previous is not None and not path.exists():", "if False:"),
         }
         before, after = mutations[mode]
         assert original.count(before) == 1

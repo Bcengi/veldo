@@ -1,0 +1,74 @@
+[
+  {
+    "exit_code": 1,
+    "mode": "base",
+    "passed": 41,
+    "failed": 69
+  },
+  {
+    "exit_code": 1,
+    "mode": "integration-alias",
+    "passed": 101,
+    "failed": 2
+  },
+  {
+    "exit_code": 1,
+    "mode": "evidence-outcome",
+    "passed": 63,
+    "failed": 40
+  },
+  {
+    "exit_code": 1,
+    "mode": "check-outcome",
+    "passed": 87,
+    "failed": 16
+  },
+  {
+    "exit_code": 1,
+    "mode": "conflicting-outcome",
+    "passed": 99,
+    "failed": 4
+  },
+  {
+    "exit_code": 1,
+    "mode": "design-existence",
+    "passed": 96,
+    "failed": 7
+  },
+  {
+    "exit_code": 1,
+    "mode": "ratchet-touch",
+    "passed": 16,
+    "failed": 5
+  },
+  {
+    "exit_code": 1,
+    "mode": "ratchet-global",
+    "passed": 18,
+    "failed": 3
+  },
+  {
+    "exit_code": 1,
+    "mode": "ratchet-register",
+    "passed": 15,
+    "failed": 6
+  },
+  {
+    "exit_code": 1,
+    "mode": "ratchet-growth",
+    "passed": 19,
+    "failed": 2
+  },
+  {
+    "exit_code": 1,
+    "mode": "ratchet-range",
+    "passed": 19,
+    "failed": 2
+  },
+  {
+    "exit_code": 1,
+    "mode": "ratchet-reset",
+    "passed": 20,
+    "failed": 1
+  }
+]

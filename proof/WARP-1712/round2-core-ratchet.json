@@ -3,7 +3,7 @@
   "method": "Read-only input digests and declared corpus reconciliation; actual strict predicate and ratchet check on a byte-identical temporary corpus mirror. Hypothetical changed-path sets, not a core gate invocation.",
   "implementation_sha256": {
     ".veldo/validate.py": "7489ca874147ccc485081272dc8191513e5127993e9ec3d510c260dbe991f22b",
-    ".veldo/evidence_debt.py": "98ce48ff769a921142f0e6e9e325e617c00ff212d9c00fa7f12711e165102b89"
+    ".veldo/evidence_debt.py": "65f2d672c8b3ba70806cf46c9eb8c3f3ca40b668fe9215ffca7a5eea5cad087f"
   },
   "inputs_unchanged": true,
   "input_sha256": {

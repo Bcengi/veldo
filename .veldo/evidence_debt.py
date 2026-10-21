@@ -52,9 +52,10 @@ def push_context(root):
     policy = importlib.util.module_from_spec(loader)
     loader.loader.exec_module(policy)
     policy.ROOT = root
+    _git_process = policy._git_process
 
     def git(*args):
-        return policy._git_process.run(["git", *args], cwd=root, text=True, capture_output=True)
+        return _git_process.run(["git", *args], cwd=root, text=True, capture_output=True)
 
     for push_range in policy._range_specs():
         changed = git("diff", "--name-only", "--no-renames", "-z", push_range)
@@ -89,6 +90,8 @@ def check(validator, root, rows, changed, previous):
         errs += validator.fail(path, "debt register differs from computed strict failures; "
                                "run python3 .veldo/validate.py evidence-debt and review the diff "
                                "(remove passing entries; no missing or hand-added entries)")
+    if previous is not None and not path.exists():
+        errs += validator.fail(path, "adopted debt register missing; retain the empty register after payoff")
     if previous is not None:
         old_rows = [json.loads(line) for line in previous.splitlines()]
         old_pairs = {(row["spec"], row["proof"]) for row in old_rows}
@@ -106,14 +109,18 @@ def check(validator, root, rows, changed, previous):
 
 def validate(validator, root, matched):
     rows = compute(validator, root, matched)
-    # Fresh adopters with no debt remain usable without Git (including CLI fixtures).
-    if not rows and not (root / REGISTER).exists():
-        return 0
     try:
         changed, previous = push_context(root)
-        return check(validator, root, rows, changed, previous)
     except (OSError, ValueError, KeyError, TypeError) as exc:
+        # No exemption is needed by a debt-free fresh adopter, including non-Git
+        # CLI fixtures. When a range exists, still check its adoption boundary.
+        if not rows and not (root / REGISTER).exists():
+            return 0
         for row in rows:
             for cause in row["causes"]:
                 validator.fail(REGISTER, cause)
+        return validator.fail(REGISTER, str(exc))
+    try:
+        return check(validator, root, rows, changed, previous)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
         return validator.fail(REGISTER, str(exc))

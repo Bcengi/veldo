@@ -1,0 +1,3 @@
+Pre-fix defect reproduced: push-base register is empty but present; candidate deletes it.
+Actual ratchet errors: 0. Required result: refusal, to preserve the adoption boundary.
+This is evidence of a defect, not a passing product test.

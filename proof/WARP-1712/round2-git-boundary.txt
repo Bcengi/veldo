@@ -1,0 +1,36 @@
+Current source boundary violations: [57]
+Proposed source boundary violations: []
+--- evidence_debt.py
++++ evidence_debt.py
+@@ -52,9 +52,10 @@
+     policy = importlib.util.module_from_spec(loader)
+     loader.loader.exec_module(policy)
+     policy.ROOT = root
++    _git_process = policy._git_process
+ 
+     def git(*args):
+-        return policy._git_process.run(["git", *args], cwd=root, text=True, capture_output=True)
++        return _git_process.run(["git", *args], cwd=root, text=True, capture_output=True)
+ 
+     for push_range in policy._range_specs():
+         changed = git("diff", "--name-only", "--no-renames", "-z", push_range)
+
+PASS ratchet generator succeeds
+PASS ratchet one sorted pair with cause
+PASS ratchet unlisted unchanged failure refuses
+PASS ratchet untouched historical pair listed passes initial adoption
+PASS ratchet untouched historical pair listed passes established register
+PASS ratchet touched historical spec refuses
+PASS ratchet touched historical manifest refuses
+PASS ratchet touched historical proof artifact refuses
+PASS ratchet touched historical design artifact refuses
+PASS ratchet hand-added entry refuses
+PASS ratchet restored exact register passes
+PASS ratchet duplicate entry refuses
+PASS ratchet hand-edited cause refuses
+PASS ratchet removed still-failing entry refuses
+PASS ratchet now-passing listed entry refuses
+PASS ratchet passing entry removed passes
+PASS ratchet new unchanged unlisted failure refuses
+PASS ratchet computed new debt cannot grow register
+Ratchet controls: 18 passed, 0 failed

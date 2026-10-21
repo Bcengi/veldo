@@ -217,6 +217,7 @@ PASS WARP-1712 ratchet unlisted unchanged failure refuses
 PASS WARP-1712 ratchet untouched historical pair listed passes initial adoption
 PASS WARP-1712 ratchet untouched historical pair listed passes established register
 PASS WARP-1712 ratchet touched historical spec refuses
+PASS WARP-1712 ratchet earlier push commit still activates strict rule
 PASS WARP-1712 ratchet touched historical manifest refuses
 PASS WARP-1712 ratchet touched historical proof artifact refuses
 PASS WARP-1712 ratchet touched historical design artifact refuses
@@ -227,6 +228,8 @@ PASS WARP-1712 ratchet hand-edited cause refuses
 PASS WARP-1712 ratchet removed still-failing entry refuses
 PASS WARP-1712 ratchet now-passing listed entry refuses
 PASS WARP-1712 ratchet passing entry removed passes
+PASS WARP-1712 ratchet empty adopted register cannot be deleted
+PASS WARP-1712 ratchet retained empty register passes
 PASS WARP-1712 ratchet new unchanged unlisted failure refuses
 PASS WARP-1712 ratchet computed new debt cannot grow register
-{"mode": "current", "passed": 231, "failed": 0}
+{"mode": "current", "passed": 234, "failed": 0}
