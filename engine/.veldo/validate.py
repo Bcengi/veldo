@@ -133,9 +133,9 @@ def check_spec(path, repo_root=None):
 
 
 EVIDENCE_KIND_ALIASES = {
-    # spec vocabulary -> acceptable evidence "type" values or check names in the proof
+    # Equivalent kind spellings only. A generic test is legacy unit evidence, never integration.
     "unit": {"unit", "test"},
-    "integration": {"integration", "test"},
+    "integration": {"integration"},
     "journeys": {"journeys", "journey", "e2e"},
     "ui_states": {"ui_states", "state_capture"},
     "figma_composite": {"figma_composite", "composite", "visual"},
@@ -148,14 +148,25 @@ EVIDENCE_KIND_ALIASES = {
 }
 
 
+def evidence_passed(entry):
+    """Require an explicit outcome on this entry, never inherit a criterion's status.
+
+    Proof writers use status=passed or the example's result=pass. All supplied
+    outcome fields must agree; prose, missing results and near misses fail closed.
+    """
+    outcomes = [entry[key] in allowed for key, allowed in (
+        ("status", ("passed",)), ("result", ("pass", "passed"))) if key in entry]
+    return bool(outcomes) and all(outcomes)
+
+
 def evidence_kinds_in_proof(data):
     kinds = set()
     for c in data.get("criteria", []):
         for e in c.get("evidence", []):
-            if e.get("type"):
+            if e.get("type") and evidence_passed(e):
                 kinds.add(e["type"])
     for ch in data.get("checks", []):
-        if ch.get("name"):
+        if ch.get("name") and evidence_passed(ch):
             kinds.add(ch["name"])
     return kinds
 
@@ -164,9 +175,9 @@ CANONICAL_KINDS = set(EVIDENCE_KIND_ALIASES.keys())
 
 
 def check_required_evidence(spec_path, proof_path):
-    """Every kind the spec declares in required_evidence must appear in the
-    proof (as an evidence type or a check name, via the alias table).
-    design_review is satisfied by a design-verdict file next to the manifest."""
+    """Require passing evidence of each declared kind (or a passing named check).
+    design_review requires a passing design-verdict file next to the manifest.
+    """
     errs = 0
     fm = front_matter(Path(spec_path).read_text())
     declared = []
@@ -192,13 +203,22 @@ def check_required_evidence(spec_path, proof_path):
             # and the answer is narrowed to the manifest's own spec directory, so the membership
             # rule that decides the corpus decides this too.
             _spec_dir = Path(proof_path).parent
-            if not [p for p in _CORPUS.corpus_in_dir(_spec_dir.parent,
-                                                     _CORPUS.DESIGN_VERDICT_PATTERN)
-                    if p.parent == _spec_dir]:
-                errs += fail(proof_path, "required design_review: no design-verdict*.json beside the manifest")
+            reviews = [p for p in _CORPUS.corpus_in_dir(_spec_dir.parent,
+                                                       _CORPUS.DESIGN_VERDICT_PATTERN)
+                       if p.parent == _spec_dir]
+            passed = False
+            for review in reviews:
+                try:
+                    verdict = json.loads(review.read_text())
+                except (OSError, ValueError):
+                    continue
+                if isinstance(verdict, dict) and verdict.get("verdict") in ("pass", "pass_with_notes"):
+                    passed = True
+            if not passed:
+                errs += fail(proof_path, "required design_review: no passing design-verdict*.json beside the manifest")
             continue
         if not (accepted & present):
-            errs += fail(proof_path, f"required evidence kind '{kind}' absent from proof (no matching evidence type or check name)")
+            errs += fail(proof_path, f"required evidence kind '{kind}' absent from passing proof entries (matching evidence type or check name needs a passing result)")
     return errs
 
 

@@ -16,6 +16,7 @@ footprint:
   - scripts/suites/14_warp_0717_subset_runner.py
   - scripts/suites/106_warp_1712_required_evidence.py
   - scripts/suites/manifest.json
+  - scripts/suites/requires.json
   - specs/WARP-1712-passing-evidence-of-the-required-kind.md
   - specs/index.md
   - proof/WARP-1712/**

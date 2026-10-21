@@ -1469,6 +1469,15 @@
    ],
    "regions": "Shared signed memory, profile exclusion, setup reruns and sampled loss checks over five stores.",
    "requires_note": "Only ROOT, expect and fast_temp from shared. Synthetic captured-layout stores, real signed SQLite authority, setup and Runner with foreground fake engines and local stand-ins."
+  },
+  {
+   "name": "106_warp_1712_required_evidence",
+   "file": "106_warp_1712_required_evidence.py",
+   "requires": [
+    "106_warp_1712_required_evidence"
+   ],
+   "regions": "Required evidence kind and recorded passing outcome; both validator copies.",
+   "requires_note": "Only ROOT and expect from shared; private temporary fixtures."
   }
  ],
  "resource_capacities": {

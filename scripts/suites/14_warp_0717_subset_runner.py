@@ -142,15 +142,13 @@ with tempfile.TemporaryDirectory() as _d:
            "spec's required_evidence [unit] is SATISFIED, and with the entry removed, which "
            "is exactly what a partial run is left with because the scope refuses to make "
            "one, it is REFUSED. The criterion's own evidence is a different kind on purpose, "
-           "so the entry is the only thing under test. STATED AS MEASURED, NOT AS HOPED: "
-           "check_required_evidence reads the KIND and NOT the status, so flipping the "
-           "entry's status to failed does NOT make it refuse; withholding the entry is the "
-           "whole of what the refusal buys here",
+           "so the entry is the only thing under test. WARP-1712 also requires the check's "
+           "recorded outcome: flipping the entry's status to failed must refuse",
            V.check_required_evidence(_w17_spec, _w17_pf_with) == 0
            and V.check_required_evidence(_w17_spec, _w17_pf_without) > 0
            and V.check_required_evidence(
                _w17_spec, tmpfile(_d, "proof-failed.json", json.dumps(
-                   dict(_w17_proof, checks=[{"name": "unit", "status": "failed"}])))) == 0)
+                   dict(_w17_proof, checks=[{"name": "unit", "status": "failed"}])))) > 0)
 
 # ---------------------------------------------------------------------------------------
 # AC2. THE EXIT CODE, which is the PRESENT-DAY mechanism by which a partial run cannot
