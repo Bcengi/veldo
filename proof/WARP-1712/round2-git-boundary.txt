@@ -1,19 +1,13 @@
 Current source boundary violations: [57]
 Proposed source boundary violations: []
+Diff rendered with zero context; assertion transcript unchanged.
 --- evidence_debt.py
 +++ evidence_debt.py
-@@ -52,9 +52,10 @@
-     policy = importlib.util.module_from_spec(loader)
-     loader.loader.exec_module(policy)
-     policy.ROOT = root
+@@ -54,0 +55 @@
 +    _git_process = policy._git_process
- 
-     def git(*args):
+@@ -57 +58 @@
 -        return policy._git_process.run(["git", *args], cwd=root, text=True, capture_output=True)
 +        return _git_process.run(["git", *args], cwd=root, text=True, capture_output=True)
- 
-     for push_range in policy._range_specs():
-         changed = git("diff", "--name-only", "--no-renames", "-z", push_range)
 
 PASS ratchet generator succeeds
 PASS ratchet one sorted pair with cause
