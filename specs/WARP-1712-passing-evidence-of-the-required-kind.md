@@ -104,7 +104,7 @@ to unchanged pairs. Once adopted, retain an empty register after the last entry 
 deleting it must not reset adoption and allow debt to grow again. Without a resolvable range,
 no debt exemption is granted. A spec change
 or any file change beneath its proof directory activates strict enforcement, including a
-design-verdict change. Range resolution reuses policy_check's existing resolver.
+design-verdict change. Round 3 resolves the range against trunk as specified below.
 
 ## Round 1 validation and landing blocker
 
@@ -140,3 +140,19 @@ The gate attempt was stopped during integration before those final corrections. 
 complete final-tree gate result is claimed: full canonical validation, including the
 remaining integration and later stages, is the outstanding landing blocker. No independent
 review, push, merge, or shipped status is claimed. See the round 2 command record and README.
+
+## Round 3 independent review corrections
+
+The owner's round 3 instruction authorizes these corrections to R1-R5 and their falsifiers.
+A base-register pair can disappear only after the same spec and proof paths still pair by
+id, retain every base-required kind, and pass the strict check. Renaming, moving, deleting,
+relabeling, or dropping requirements cannot pay down debt. Touched failing pairs refuse.
+The register bound and touched set use the same trunk merge base: an explicit policy BASE
+when provided, otherwise origin/HEAD or origin/main. A feature branch's upstream and an
+arbitrary commit window cannot grant an exemption. Trunk-only changes after divergence
+are excluded. Paths are relative to the VELDO root, including a root vendored in a host repo.
+A supplied exit_code must be an integer zero, in addition to an explicit passing outcome;
+expected_exit cannot turn a nonzero execution into passing required evidence. Legacy result
+spellings remain supported. Each review finding gets a control that fails on round 2 code.
+Core is remeasured read-only, then the documented canonical gate runs to completion and its
+actual result is recorded, without claiming green from focused checks.
