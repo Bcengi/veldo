@@ -52,6 +52,7 @@ _FILES = [
     "VELDO.md",
     ".veldo/validate.py",
     ".veldo/validate_checks.py",
+    ".veldo/evidence_debt.py",
     # VELDO-0016 (PLAN-0019 W1): the project-layer policy contract, loaded by the suite and by
     # the packages above it; laid down beside the loader whose adapters it registers. Not in
     # REQUIRED_SUBSTRATE: no gate stage of validate_checks loads it. The LOADER it registers the
@@ -485,6 +486,7 @@ REQUIRED_SUBSTRATE = [
     "scripts/veldo-guard.sh",
     ".veldo/validate.py",
     ".veldo/validate_checks.py",
+    ".veldo/evidence_debt.py",
     # VELDO-0016 AC3: validate_checks loads the contract loader EAGERLY (consumers catch its
     # refusal by name), so a scaffolded repository without it has no validator at all.
     ".veldo/contract_loader.py",

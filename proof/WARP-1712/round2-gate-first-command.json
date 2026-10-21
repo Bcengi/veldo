@@ -1,0 +1,12 @@
+{
+  "command": [
+    "./scripts/verify.sh"
+  ],
+  "implementation_commit": "9fab5024e5664bf0a89826bcd574a838f46fa291",
+  "started_at": "2026-10-21T14:05:41.232659+00:00",
+  "status": "interrupted_after_scaffold_regression",
+  "verifier_exit_code": null,
+  "elapsed_seconds": 456.4,
+  "reason": "Two fresh-scaffold gate assertions fail because evidence_debt.py was absent from the explicit install list; stop this attempt to repair and rerun.",
+  "terminated_process_returncode": -15
+}
