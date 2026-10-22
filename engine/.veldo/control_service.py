@@ -246,6 +246,8 @@ ASK_SECONDS = 7 * 86400
 GRANT_KIND = 'land_approval'
 GRANT_CHOICES = ('grant', 'stop')
 ACCEPT_SECONDS = 0.25
+# VELDO-0161: how long a repository record whose taking on faulted unexpectedly waits before it is judged again.
+ADOPTION_RETRY_SECONDS = 5.0
 TEMPLATE = HERE / 'services' / 'veldo-authority.service'
 LOCK_NAME = 'authority.lock'
 # VELDO-0189: the previous engine an upgrade keeps beside `bin` until its restart succeeded
@@ -1195,7 +1197,7 @@ class Service:
         # watermark take_on last read the repository records at.
         self.instance = {'pid': os.getpid(), 'process_start': process_start(os.getpid()), 'serving_since': time.time(),
                          'token': os.urandom(16).hex()}
-        self.adoption_mark = None
+        self.adoption_mark, self.adoption_retry = None, 0.0
         # The counts are the observation log's, so they cover every instance that served this
         # installation, not only this process.
         with contextlib.suppress(OSError):
@@ -1543,7 +1545,7 @@ class Service:
         REPOSITORIES). Reads the records only when the journal advanced since the last reading. Returns the
         observations made."""
         mark = self.watermark()
-        if mark == self.adoption_mark:
+        if mark == self.adoption_mark or (self.adoption_mark is None and time.monotonic() < self.adoption_retry):
             return []
         self.adoption_mark = mark
         made = []
@@ -1568,12 +1570,12 @@ class Service:
                     with contextlib.suppress(REPO.Refused, S.StoreRefused, sqlite3.Error):
                         REPO.write(S, self.conn, (self.principal, self.sign), repository, 'failed', step='take_on',
                                    generation=self.generation, reason=code)
-            except Exception as error:  # noqa: BLE001 - never the end of the service; judged again at the next advance
+            except Exception as error:  # noqa: BLE001 - never the end of the service; judged again shortly
                 code = 'not_taken_on:unknown_outcome:' + type(error).__name__
                 observation.update(outcome='refused', refusal=code, reason=REPO.reason(code))
                 self._log(observation)
                 made.append(observation)
-                self.adoption_mark = None
+                self.adoption_mark, self.adoption_retry = None, time.monotonic() + ADOPTION_RETRY_SECONDS
                 continue
             self.adoption_mark = self.watermark()
             self._log(observation)
