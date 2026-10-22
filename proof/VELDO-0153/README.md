@@ -1,5 +1,10 @@
 # VELDO-0153 review fixes
 
+Current record: [merged-main-2026-10-22/README.md](merged-main-2026-10-22/README.md). Main d49581b4
+merged into the candidate on agent/claude/fix-VELDO-0153; secret inventory 0 outstanding, static
+checks green, 22 mutation anchors intact, suite 108 green; suites 107, 58, 103 and 67 die at the
+fixture SSH agent's AF_UNIX socket in this sandbox, so consumer repair still needs a host.
+
 Current batch-2 record: [independent-review corrections](review-corrections.md). The remaining text and earlier
 JSON receipts below are historical. The current manifest names the final code commit
 and retains incomplete integration and host qualification explicitly.
