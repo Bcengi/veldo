@@ -1,0 +1,9 @@
+candidate validate.py all exit 0
+authority ratchet exit 1
+  $TMPDIR/tmphuz1yp_8/candidate/.veldo/required-evidence-debt.jsonl: new required-evidence debt forbidden: proof/WARP-1713/manifest.json
+  proof/WARP-1712/manifest.json: touched pair requires passing evidence: proof/WARP-1712/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)
+  proof/WARP-1713/manifest.json: touched pair requires passing evidence: proof/WARP-1713/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)
+veldo evidence ratchet: 3 problem(s)
+
+SKIP FALSIFIER: PASS
+exit 0

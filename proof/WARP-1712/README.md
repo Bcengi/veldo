@@ -1,3 +1,54 @@
+# WARP-1712 round 5: the ratchet as an authority stage
+
+Round 4 injected the installed ratchet into the candidate's own `validate.py` run, so the
+candidate still decided whether the ratchet ran. Round 5 (implementation `504ffd31`) restores
+the contracts stage to `python3 .veldo/validate.py all` and adds a separate built-in stage,
+`control_verification.py ratchet <root> <base>`. It runs no candidate code: the installed
+validate.py predicate, evidence_debt.py and policy_check.py read the candidate's specs, proofs
+and register as data, against the base verify.sh froze before any candidate stage (or the
+caller's watermark). A debt-free adopter with no register passes without a base. Debt without
+a base is refused, and a supplied base must be an ancestor commit.
+
+## Cause of the round 4 reds
+
+- VELDO-0045 `enforcement/entries-enumerated`: caused by round 4 (the contracts entry stopped
+  being `.veldo/validate.py all`). Green again at `504ffd31` (47 passed, 0 failed); it failed
+  1 row at `ce66a1f2` in the same sandbox.
+- VELDO-0123 coordinator qualification: caused by round 4. Its wiring fixture stubs the
+  built-in gate modules but not `control_verification.py`, which round 4's contracts line
+  started invoking, so the fixture gate went red. Round 5 still calls that module (ratchet
+  stage), so the fixture now stubs it like the other built-ins. This suite cannot run in the
+  agent sandbox (below), so the repair is not observed here.
+- VELDO-0208 `sandbox/unavailable-refuses-before-exec` and `sandbox/old-abi-refuses-before-exec`:
+  not caused by round 4. Those rows drive only `scripts/agent_sandbox.py` with an injected
+  kernel; neither that file, its config, nor the suite changed between `4c230340` and
+  `ce66a1f2`. Run from inside an agent launcher tree whose marker descriptor was closed, the
+  launcher refuses for the missing marker (exit 2, no `Landlock unavailable` text), measured
+  here. That matches both rows failing, so they are environmental where the marker is lost.
+
+## Checks in the agent sandbox
+
+`round5-focused.txt`. The sandbox refuses every confined candidate launch ("holds no marker")
+and denies `os.openpty`, and the worktree has no `origin` refs. Those conditions, not this
+change, account for: the three WARP-1712 106 rows that need a confined stage to pass
+(their ratchet-stage output is correct in each), VELDO-0058 (same 10 failures at `4c230340`),
+VELDO-0012 AC7 (same failure at `4c230340` once `origin` is removed), and VELDO-0123/0208
+crashing before their summaries at both commits. 106 otherwise passes 289 rows, including D1
+(refs moved before contracts: touch and growth refused by the ratchet stage), invalid and
+absent bases, and debt without a base. The gate-domain suites (1402, 1409) and the subset runner pass.
+`round5-skip-falsifier.txt` runs without confinement: a candidate whose validate.py skips its
+ratchet call passes its own `validate.py all` (exit 0); the authority stage refuses with the
+touch and growth refusals (exit 1).
+
+## Canonical gate
+
+`round5-verify.txt`: `./scripts/verify.sh` with no environment override ran to completion in
+3m23s and is **RED** (exit 1). All nine confined stages failed with the sandbox's launcher
+refusal, and the ratchet stage refused because no trunk base resolves without `origin`
+("gate requires authority BASE"). This is not a green gate; the host must run it.
+
+## Preserved round 4 report
+
 # WARP-1712 round 4: authority-bound contracts
 
 Implementation: `6c24fb27`, following the round 4 spec commit `84c5623c`.

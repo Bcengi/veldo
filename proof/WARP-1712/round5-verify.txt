@@ -1,0 +1,168 @@
+== lint
+agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()
+candidate execution failed in store-denied domain (publication forbidden)
+   lint: FAIL
+== unit
+   unit: confined leg - every suite except the 33 listed whole, and of the 2 listed for some rows, every row but those
+agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()
+candidate execution failed in store-denied domain (publication forbidden)
+   unit: confined leg: FAIL
+   unit: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, gate_unconfined.json), 35 entries: 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0049_floor, 64_veldo_0050_proof, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 67_veldo_0135_offers, 71_veldo_0076_projects, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0129_worker_wiring, 82_veldo_0141_execution_record, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 85_veldo_0171_setup_api, 86_veldo_0127_agent_configuration, 86_veldo_0148_re_land, 86_veldo_0189_engine_upgrade, 87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 106_veldo_0185_dispatch_setup, 65_veldo_0067_edges, 100_veldo_0207_case_reuse:strace, 101_veldo_0208_landing_reuse:strace
+selftest leg unconfined: runs only the 35 listed suite(s) present, and of a row-scoped one only its rows. Whole: 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0049_floor, 64_veldo_0050_proof, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 67_veldo_0135_offers, 71_veldo_0076_projects, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0129_worker_wiring, 82_veldo_0141_execution_record, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 85_veldo_0171_setup_api, 86_veldo_0127_agent_configuration, 86_veldo_0148_re_land, 86_veldo_0189_engine_upgrade, 87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 106_veldo_0185_dispatch_setup, 65_veldo_0067_edges. Rows: 100_veldo_0207_case_reuse:strace, 101_veldo_0208_landing_reuse:strace. Declaration: sha256:6469145c8d042f1a72c16ddf6e0306ea8d3c96f9d885603246178db965a02a63.
+  $TMPDIR/tmpdi6yaf4y: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  $TMPDIR/tmpdi6yaf4y/nocrit.md: no acceptance criteria
+  $TMPDIR/tmpdi6yaf4y/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  $TMPDIR/tmpdi6yaf4y/status.md: bad status: donezo
+  $TMPDIR/tmpdi6yaf4y/proof.json: proof criterion AC9 not in the specification (invented)
+  $TMPDIR/tmpdi6yaf4y/proof2.json: spec criterion AC1 missing from proof
+  $TMPDIR/tmpdi6yaf4y/proof3.json: required evidence kind 'unit' absent from passing proof entries (matching evidence type or check name needs a passing result)
+  $TMPDIR/tmpdi6yaf4y/proof4.json: criterion AC1 passed without evidence
+  $TMPDIR/tmpdi6yaf4y/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  $TMPDIR/tmpdi6yaf4y/verdict.json: bad verdict: looks_fine
+  $TMPDIR/tmp3ckliu95/cycle.md: dependency cycle through WARP-9101
+  $TMPDIR/tmp3ckliu95/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  $TMPDIR/tmp3ckliu95/oref.md: feature F1: unknown outcome ref O7
+  $TMPDIR/tmp3ckliu95/fref.md: work W1: unknown feature ref F9
+  $TMPDIR/tmp3ckliu95/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  $TMPDIR/tmp3ckliu95/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  $TMPDIR/tmp3ckliu95/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  $TMPDIR/tmp3ckliu95/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  $TMPDIR/tmp3ckliu95/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  $TMPDIR/tmp3ckliu95/dupspec.md: duplicate spec ids across work items
+  $TMPDIR/tmp3ckliu95/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  $TMPDIR/tmp3ckliu95/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  x.md: declares plan PLAN-9002 but no such plan exists
+  x.md: plan PLAN-9001 has no work item W9
+  x.md: plan and work must be declared together
+  SELFTEST FAIL: VELDO-0039 dispatch/contract-before-launch
+  SELFTEST FAIL: VELDO-0039 dispatch/one-active-per-unit-station
+  SELFTEST FAIL: VELDO-0039 dispatch/launch-results
+  SELFTEST FAIL: VELDO-0039 dispatch/deadline-after-closed-output
+  SELFTEST FAIL: VELDO-0039 dispatch/unknown-never-relaunched
+  SELFTEST FAIL: VELDO-0039 dispatch/transitions-from-schema
+  SELFTEST FAIL: VELDO-0039 dispatch/result-binding
+  SELFTEST FAIL: VELDO-0039 dispatch/terminal-not-completion
+  SELFTEST FAIL: VELDO-0039 dispatch/service-principals-only
+  SELFTEST FAIL: VELDO-0039 dispatch/observations
+  SELFTEST FAIL: VELDO-0040 containment/dedicated-group
+  SELFTEST FAIL: VELDO-0040 containment/ordinary-exit
+  SELFTEST FAIL: VELDO-0040 containment/unqualified-profile-refused
+  SELFTEST FAIL: VELDO-0040 containment/required-settings-refused
+  SELFTEST FAIL: VELDO-0040 containment/exit-notified: {"exit_at": null, "idle_worker_alive_in_window": false, "latency": null, "receiver_wakes": null, "recorded_at": null, "window_seconds": 1.5}
+  SELFTEST FAIL: VELDO-0040 containment/caps-installed
+  SELFTEST FAIL: VELDO-0040 containment/runtime-cap: {"active": 0.0, "beats": [], "beats_monotonic": [], "began": 1792676336.1656046, "bound": 2.7, "checks": {"beats_present": false, "cap_stop_bound": false, "cause_runtime_cap": false, "deadline_stop": false, "first_beat_after_active": false, "last_beat_before_inactive": false, "result_timeout": false, "runtime_bound": false, "state_exited": false, "stubborn_not_living": true, "stubborn_present": false, "supervision_empty": false, "term_present": false, "timestamps_ordered": false, "unit_not_found": false}, "false_conjuncts": ["state_exited", "deadline_stop", "cause_runtime_cap", "result_timeout", "stubborn_present", "beats_present", "timestamps_ordered", "first_beat_after_active", "last_beat_before_inactive", "runtime_bound", "cap_stop_bound", "term_present", "supervision_empty", "unit_not_found"], "inactive": 0, "last_beat_after_active": null, "last_beat_after_running": null, "running_at": null, "state": "refused", "stopping": 0.0, "stubborn": {}, "stubborn_living": false, "supervision": {}, "term_count": 0, "term_monotonic": [], "termination": null, "terms": [], "unit_after": null, "unit_error": null}
+  SELFTEST FAIL: VELDO-0040 containment/cooperative-stop
+  SELFTEST FAIL: VELDO-0040 containment/stop-escalation
+  SELFTEST FAIL: VELDO-0040 containment/retire-after-empty
+  SELFTEST FAIL: VELDO-0040 containment/observations
+  SELFTEST FAIL: VELDO-0049 floor/build-acceptance
+  SELFTEST FAIL: VELDO-0049 floor/review-independence
+  SELFTEST FAIL: VELDO-0049 floor/review-binding
+  SELFTEST FAIL: VELDO-0049 floor/land-retry-from-handoff
+  SELFTEST FAIL: VELDO-0049 floor/review-policy-count
+  SELFTEST FAIL: VELDO-0049 floor/no-builder-reviews
+  SELFTEST FAIL: VELDO-0049 floor/finding-not-erased
+  SELFTEST FAIL: VELDO-0049 floor/completion-by-lander-only
+  SELFTEST FAIL: VELDO-0049 floor/blocking-verdicts-stay-open
+  SELFTEST FAIL: VELDO-0049 floor/authority-to-projection
+  SELFTEST FAIL: VELDO-0049 floor/observations
+  SELFTEST FAIL: VELDO-0049 ran/floor/status-write-sites
+  SELFTEST FAIL: VELDO-0049 ran/floor/review-independence
+  SELFTEST FAIL: VELDO-0050 proof/accepted-before-offer
+  SELFTEST FAIL: VELDO-0050 proof/actual-checks
+  SELFTEST FAIL: VELDO-0050 proof/build-only-no-landing
+  SELFTEST FAIL: VELDO-0050 proof/fresh-reviewer-resolves
+  SELFTEST FAIL: VELDO-0050 proof/contextual-refusals
+  SELFTEST FAIL: VELDO-0050 proof/owning-services
+  SELFTEST FAIL: VELDO-0050 proof/no-default-success
+  SELFTEST FAIL: VELDO-0050 proof/observations
+  SELFTEST FAIL: VELDO-0050 ran/proof/accepted-before-offer
+  SELFTEST FAIL: VELDO-0050 ran/proof/no-default-success
+  VELDO-0067 custody/worker-cannot-read-key detail: the confined worker tool's read of the private edge key is denied by the kernel (EACCES)
+  VELDO-0067 custody/worker-cannot-read-key detail: the confined worker cannot link the key out of the protected directory
+  VELDO-0067 custody/worker-cannot-read-key detail: the confined worker keeps everything else: it reads beside the key, lists the directory and writes its work
+  SELFTEST FAIL: VELDO-0067 custody/worker-cannot-read-key
+VELDO-0067 suite seconds: 4.537
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/claude/warp-1712-r5/scripts/selftest.py", line 256, in <module>
+    exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
+  File "/home/dmitry/projects/veldo-worktrees/agent/claude/warp-1712-r5/scripts/suites/66_veldo_0042_clones.py", line 851, in <module>
+    _v42_suite()
+  File "/home/dmitry/projects/veldo-worktrees/agent/claude/warp-1712-r5/scripts/suites/66_veldo_0042_clones.py", line 69, in _v42_suite
+    with tempfile.TemporaryDirectory(prefix='v42-', dir=runtime) as directory:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/tempfile.py", line 1021, in __init__
+    self.name = mkdtemp(suffix, prefix, dir)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/tempfile.py", line 523, in mkdtemp
+    _os.mkdir(file, 0o700)
+PermissionError: [Errno 13] Permission denied: '/run/user/1000/v42-tyiwum4z'
+   unit: unconfined leg: FAIL
+   unit: FAIL
+== integration
+   integration: confined leg - every suite except the 33 listed whole, and of the 2 listed for some rows, every row but those
+agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()
+candidate execution failed in store-denied domain (publication forbidden)
+   integration: confined leg: FAIL
+   integration: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, gate_unconfined.json), 35 entries: 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0049_floor, 64_veldo_0050_proof, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 67_veldo_0135_offers, 71_veldo_0076_projects, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0129_worker_wiring, 82_veldo_0141_execution_record, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 85_veldo_0171_setup_api, 86_veldo_0127_agent_configuration, 86_veldo_0148_re_land, 86_veldo_0189_engine_upgrade, 87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 106_veldo_0185_dispatch_setup, 65_veldo_0067_edges, 100_veldo_0207_case_reuse:strace, 101_veldo_0208_landing_reuse:strace
+== first use: no suite may require this repository's current emptiness
+   pristine copy: linked worktree, given its own repository from /home/dmitry/projects/veldo-worktrees/.agent-repos/claude/warp-1712-r5.git
+   pristine copy: $TMPDIR/veldo-first-use-r0zjxow0/pristine
+   family spend_recorded: somebody used .veldo/spend.py, which is the whole point of the estimation layer: a token count is not derivable from inside the repository, so a record is the only way the corpus is ever nonempty
+   mutation applied: events in .veldo/events.jsonl carrying tokens, cost_usd or human_minutes went 0 -> 2 (2 writes through .veldo/spend.py)
+
+FIRST USE: CANNOT ANSWER: the mutated(spend_recorded) run produced 0 summary lines, expected exactly 1; its exit was 1 and its last output line was "PermissionError: [Errno 13] Permission denied: '/run/user/1000/v42-5r7fmmp7'". Without the summary this check cannot tell a clean run from a crash
+This is red, not a stand-down. The check could not measure its property, and a check that passed on its own inability would be a worse version of the defect it refuses.
+   integration: unconfined leg: FAIL
+   integration: FAIL
+== security
+agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()
+candidate execution failed in store-denied domain (publication forbidden)
+   security: FAIL
+== generated
+agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()
+candidate execution failed in store-denied domain (publication forbidden)
+   generated: FAIL
+== docs
+agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()
+candidate execution failed in store-denied domain (publication forbidden)
+   docs: FAIL
+== packaging
+agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()
+candidate execution failed in store-denied domain (publication forbidden)
+   packaging: FAIL
+== extra
+agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()
+candidate execution failed in store-denied domain (publication forbidden)
+   extra: FAIL
+== mutation
+{"case_receipts": [], "detail": "candidate_execution_denied: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()\ncandidate execution failed in store-denied domain (publication forbidden)\n", "drivers": {}, "elapsed": 0.07552400400163606, "error": "candidate_execution_denied", "executed": 0, "invalid_results": [], "parallel_workers": 16, "peak_workers": 0, "registered": 0, "rejected": 0, "results": [], "reuse_integrity_errors": [], "reused": 0, "schema": "veldo.mutation-stage/v1", "status": "failed", "surviving_workers": 0, "worker_invocations": 0, "worker_outcomes": []}
+   mutation: confined leg - every case except those of the 35 suites the list names (a case runs its whole suite, so a case of a suite listed only for some rows is refused)
+   mutation: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, gate_unconfined.json sha256:6469145c8d042f1a72c16ddf6e0306ea8d3c96f9d885603246178db965a02a63), 35 entries: 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0049_floor, 64_veldo_0050_proof, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 67_veldo_0135_offers, 71_veldo_0076_projects, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0129_worker_wiring, 82_veldo_0141_execution_record, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 85_veldo_0171_setup_api, 86_veldo_0127_agent_configuration, 86_veldo_0148_re_land, 86_veldo_0189_engine_upgrade, 87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 106_veldo_0185_dispatch_setup, 65_veldo_0067_edges, 100_veldo_0207_case_reuse:strace, 101_veldo_0208_landing_reuse:strace
+   mutation: unconfined leg ran 0 cases, 0 rejected: none
+mutations: failed registered=0 executed=0 reused=0 rejected=0 workers=0 elapsed=0.076s
+   mutation: FAIL
+== secret scan (built-in)
+   secret scan: pass
+== veldo contracts (built-in: fails closed if unavailable)
+agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()
+candidate execution failed in store-denied domain (publication forbidden)
+   contracts: FAIL
+== evidence ratchet (built-in: installed predicate and ratchet against the frozen base)
+  .veldo/required-evidence-debt.jsonl: gate requires authority BASE; no exemption granted
+veldo evidence ratchet: 1 problem(s)
+   evidence ratchet: FAIL
+== shape gate (built-in: mechanizable architecture-contract rules; adoption safe, fails closed)
+agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()
+candidate execution failed in store-denied domain (publication forbidden)
+== review events (built-in: derived from the verdict artifacts; appends and reports, never judges)
+   review events: 188 verdict artifact(s) tracked, 35 already recorded, 0 derivable but not appended, 154 earlier event(s) this repository cannot resolve (proof/WARP-0100/verdict-l2-resolution.json; proof/WARP-0100/verdict-l2.json) so 153 append(s) WITHHELD - FLATTENED AT MIGRATION: the commits those earlier events name are absent from this history and cannot be fetched, so the appends stay WITHHELD rather than being re-pointed at a commit where the review did not happen, 5 superseded review(s) on record
+mutation reuse: no stamp fields: the mutation stage failed (candidate_execution_denied); the gate is RED and claims no reuse
+
+catalog: 9 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared
+GATE: RED (504ffd31a6759b39b044382046b9607cf051a00b)
+
+real	3m23.177s
+user	0m22.700s
+sys	0m6.884s
+verify exit 1

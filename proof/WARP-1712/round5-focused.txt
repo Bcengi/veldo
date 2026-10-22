@@ -1,0 +1,76 @@
+### 106_warp_1712_required_evidence at 504ffd31
+  SELFTEST FAIL: WARP-1712 D1 missing base debt-free passes
+  SELFTEST FAIL: WARP-1712 D1 unchanged historical debt passes
+  SELFTEST FAIL: WARP-1712 D1 candidate validator skips its ratchet call
+selftest (PARTIAL, 1 of 163 suites): 289 passed, 3 failed in 13.58s
+exit 1
+### 62_veldo_0045_runtime at 504ffd31
+selftest (PARTIAL, 1 of 163 suites): 47 passed, 0 failed in 12.62s
+exit 2
+### 53_veldo_0123_mutations at 504ffd31
+    raise Refused('candidate_execution_denied', result.stderr[-2000:])
+gate123.Refused: candidate_execution_denied: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one clos
+exit 1
+### 101_veldo_0208_landing_reuse at 504ffd31
+  SELFTEST FAIL: VELDO-0208 candidate/planted-suite-publication-red
+PermissionError: [Errno 13] Permission denied
+exit 1
+### 15_warp_1402_estimate_record at 504ffd31
+selftest (PARTIAL, 1 of 163 suites): 84 passed, 0 failed in 0.08s
+exit 2
+### 15_warp_1409_cost_to_change_per_area at 504ffd31
+selftest (PARTIAL, 1 of 163 suites): 81 passed, 0 failed in 10.22s
+exit 2
+### 18_veldo_0012_behaviour_floor_contract at 504ffd31
+  SELFTEST FAIL: VELDO-0012 AC7: validate.run_all's (count, output) over THIS repository is byte-identical with the check added to it, which is the property the registration line must not break. Asserted over the EXACT call run_all makes. M
+selftest (PARTIAL, 1 of 163 suites): 113 passed, 1 failed in 4.71s
+exit 1
+### 69_veldo_0058_gate_output at 504ffd31
+  SELFTEST FAIL: VELDO-0058 gate-output/review-write
+  SELFTEST FAIL: VELDO-0058 gate-output/sink-refusals
+  SELFTEST FAIL: VELDO-0058 gate-output/post-run-mutation
+  SELFTEST FAIL: VELDO-0058 gate-output/installed-policy
+  SELFTEST FAIL: VELDO-0058 gate-output/installed-policy-list
+  SELFTEST FAIL: VELDO-0058 gate-output/range-base-from-lander
+  SELFTEST FAIL: VELDO-0058 gate-output/refs-bound
+  SELFTEST FAIL: VELDO-0058 gate-output/live-loop-siblings
+  SELFTEST FAIL: VELDO-0058 ran/gate-output/post-run-mutation
+  SELFTEST FAIL: VELDO-0058 ran/gate-output/installed-policy
+selftest (PARTIAL, 1 of 163 suites): 32 passed, 10 failed in 142.05s
+exit 1
+### 14_warp_0717_subset_runner at 504ffd31
+selftest (PARTIAL, 1 of 163 suites): 53 passed, 0 failed in 9.76s
+exit 2
+
+### comparison at 4c230340 (temporary clone, same sandbox)
+## 62_veldo_0045_runtime
+selftest (PARTIAL, 1 of 163 suites): 47 passed, 0 failed in 12.54s
+exit 2
+## 53_veldo_0123_mutations
+    raise Refused('candidate_execution_denied', result.stderr[-2000:])
+gate123.Refused: candidate_execution_denied: agent sandbox refused to start: this launcher runs in a tree the helper made (label veldo-userns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one clos
+exit 1
+## 101_veldo_0208_landing_reuse
+  SELFTEST FAIL: VELDO-0208 candidate/planted-suite-publication-red
+PermissionError: [Errno 13] Permission denied
+exit 1
+## 18_veldo_0012_behaviour_floor_contract
+selftest (PARTIAL, 1 of 163 suites): 114 passed, 0 failed in 4.64s
+exit 2
+## 69_veldo_0058_gate_output
+  SELFTEST FAIL: VELDO-0058 gate-output/review-write
+  SELFTEST FAIL: VELDO-0058 gate-output/sink-refusals
+  SELFTEST FAIL: VELDO-0058 gate-output/post-run-mutation
+  SELFTEST FAIL: VELDO-0058 gate-output/installed-policy
+  SELFTEST FAIL: VELDO-0058 gate-output/installed-policy-list
+  SELFTEST FAIL: VELDO-0058 gate-output/range-base-from-lander
+  SELFTEST FAIL: VELDO-0058 gate-output/refs-bound
+  SELFTEST FAIL: VELDO-0058 gate-output/live-loop-siblings
+  SELFTEST FAIL: VELDO-0058 ran/gate-output/post-run-mutation
+  SELFTEST FAIL: VELDO-0058 ran/gate-output/installed-policy
+selftest (PARTIAL, 1 of 163 suites): 32 passed, 10 failed in 138.31s
+exit 1
+## 18_veldo_0012 at 4c230340 with origin removed: 113 passed, 1 failed (AC7 run_all byte-identical)
+### ce66a1f2 (before round 5)
+  SELFTEST FAIL: VELDO-0045 enforcement/entries-enumerated
+selftest (PARTIAL, 1 of 163 suites): 46 passed, 1 failed in 12.35s
