@@ -20,6 +20,9 @@ real writer of that kind commits:
                        build into review (accept_build), records a review that passes or returns the unit
                        (record_review), or hands it off to landing (handoff);
   stop                 a VELDO-0075 `andon_stop` recorded (control_andon);
+  project_ready        VELDO-0143: a new-project decision (`new_project`, control_project_proposal, the one
+                       writer of that kind) entering `activated` ("<name> is ready; the first objective is
+                       next") or `failed` (it could not be set up, named by its reason, and nothing activated);
   completion           a confirmed landing: VELDO-0051's spec.shipped, derived by its own public reader
                        (control_event_projection.Projection.derive) from a revision_landed receipt for the
                        exact unit and a confirmed publication of its dispatch. Nothing else is a completion:
@@ -130,6 +133,7 @@ FLOOR_KIND = 'floor_unit'                                             # dispatch
 FLOOR_RESULTS = ('accept_build', 'record_review', 'handoff')          # dispatch.FLOOR_TRANSITIONS reported
 UNIT_KIND = 'execution_unit'                                          # entity_contract R13
 STOP_KIND, STOPPED = 'andon_stop', 'stopped'                          # control_andon (VELDO-0075)
+NEW_PROJECT_KIND = 'new_project'                                      # control_project_proposal.KIND (VELDO-0143)
 
 # The declared event set: (event, source entity kinds, handler). The completion handler reads VELDO-0051's
 # journal projection instead of one entity kind.
@@ -140,6 +144,7 @@ REGISTRY = (
     ('work_progress', (DISPATCH_KIND,), '_progress'),
     ('gate_result', (OBSERVATION_KIND, FLOOR_KIND), '_gate'),
     ('stop', (STOP_KIND,), '_stop'),
+    ('project_ready', (NEW_PROJECT_KIND,), '_new_project'),
     ('completion', None, '_completions'),
 )
 
@@ -409,6 +414,24 @@ class Reporter:
                 'next': 'Features may now be proposed under it; the acceptance admits none of them.',
                 'evidence': 'settlement %s, receipt %s' % (_shown(acceptance.get('settlement_id')),
                                                           _shown(acceptance.get('receipt_id')))}
+
+    def _new_project(self, eid, entry, prior, state):
+        data, before = self._data(entry), self._data(prior)
+        if data.get('state') not in ('activated', 'failed') or data.get('state') == before.get('state'):
+            return None
+        name = _shown(data.get('project'))
+        if data['state'] == 'activated':
+            return {'unit': None, 'run': data.get('dispatch'), 'project': data.get('project'),
+                    'headline': '%s is ready; the first objective is next.' % name,
+                    'fact': 'project %s is active on repository %s, its first objective accepted by decision %s'
+                            % (name, _shown(data.get('repository')), eid),
+                    'next': 'The project manager elaborates the first objective as the project\'s first unit.',
+                    'evidence': 'decision %s, settled by %s' % (eid, _shown(data.get('path')))}
+        return {'unit': None, 'run': data.get('dispatch'), 'project': data.get('project'),
+                'headline': '%s could not be set up.' % name,
+                'fact': 'decision %s failed: %s; nothing was activated' % (eid, _shown(data.get('reason'))),
+                'next': 'Whatever was made stays as it is, for you to remove by hand; ask again to retry.',
+                'evidence': 'decision %s' % eid}
 
     def _stop_request(self, request, state):
         """Whether `request` is an andon stop's own request (its notice is the decision message)."""

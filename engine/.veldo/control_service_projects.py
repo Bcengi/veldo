@@ -10,13 +10,14 @@ what was adopted (control_service.Service.take_on), the service's NewProjectPass
      registered protected effect control_effect_executor_creation (PROTECTED_EFFECTS), as its own process
      with the installation's provisioner configuration, once per decision; an installation that names none
      refuses unavailable_service:provisioner by name and the decision waits;
-  3. for each settled decision whose repository ended `failed`, fails the decision with that reason and
-     tells the owner (never ready);
+  3. for each settled decision whose repository ended `failed`, fails the decision with that reason (its
+     VELDO-0128 report tells the owner; never ready);
   4. for each settled decision whose repository is `active`, the running service having taken it on in this
      process, applies the same settlement as the project's activation (control_project_proposal.activate):
      first the repository's accepted base and the default team's capability configurations at the
      revisions the team names (so the new repository's Runner binds them), then the activation, the first
-     team revision, the first objective proposed and accepted, the owner told; and the factory loop gains the
+     team revision, the first objective proposed and accepted, the decision activated (its report tells the
+     owner); and the factory loop gains the
      repository's line (FactoryLoop.add_line), so its first unit is dispatched in it.
 
 Every step is observed (kind `new_project`) with the decision, the repository and the outcome or named
@@ -47,24 +48,6 @@ PP = organ('control_project_proposal')
 # The protected effects this service starts, by name, each the trusted executable it runs.
 PROTECTED_EFFECTS = {'repository_provisioning': 'control_effect_executor_creation.py'}
 INITIAL_REVISION = 'initial-revision:'
-
-
-def tell_owner(conn, edge, record, text):
-    """Send the owner `text` about the decision `record`: as a reply to his message when it came by Telegram,
-    otherwise to his enrolled Telegram chat. Returns the delivery (channel, chat, message), or a refusal."""
-    proposal = record.get('proposal') or record.get('presented') or {}
-    source = PP._row(conn, (proposal.get('source') or {}).get('intake_source'))
-    command = ((source or {}).get('data') or {}).get('command') or {}
-    where = command.get('provenance') or {}
-    if command.get('source_kind') == 'telegram_message' and where.get('chat_id') is not None:
-        chat, reply = where['chat_id'], where.get('message_id')
-    else:
-        enrolled = PP._row(conn, 'channel-enrollment:telegram_chat:%s' % proposal.get('owner'))
-        chat, reply = ((enrolled or {}).get('data') or {}).get('chat_id'), None
-    if chat is None or edge is None:
-        return {'refusal': 'unavailable_service:owner_channel'}
-    sent = edge.send(chat, text, reply_to=reply)
-    return {'channel': 'telegram_chat', 'chat_id': sent.get('chat_id'), 'message_id': sent.get('message_id')}
 
 
 def accept_base(store, path, domain, repository, workspace, commit, principal, sign, generation):
@@ -139,9 +122,7 @@ class NewProjectPass:
             self.decisions = PP.NewProjects(
                 self.m['S'], self.m['CM'], s.conn, self._ids(), s.principal, s.sign, inbox=ingress.inbox,
                 settlement=ingress.settlement, presenter=ingress.presenter, assignment=self.m['I'], requester='pm',
-                request_sign=self.pm_sign, templates=(config or {}).get('templates'),
-                tell=lambda text, record: tell_owner(s.conn, ingress.presenter.edge, record, text),
-                generation=s.generation)
+                request_sign=self.pm_sign, templates=(config or {}).get('templates'), generation=s.generation)
         return self.decisions
 
     def provisioner(self):
@@ -173,9 +154,9 @@ class NewProjectPass:
             if held is None:
                 event = self.provision(record)
             elif held.get('state') == 'failed':
-                done = decisions.finish(record['id'], activated=False, reason=held.get('reason'))
+                decisions.finish(record['id'], activated=False, reason=held.get('reason'))
                 event = {'operation': 'failed', 'decision': record['id'], 'repository': repository,
-                         'refusal': held.get('reason'), 'step': held.get('failed_step'), 'told': done.get('told')}
+                         'refusal': held.get('reason'), 'step': held.get('failed_step')}
             elif held.get('state') == 'active':
                 event = self.activate(record, held)
             else:
@@ -201,8 +182,8 @@ class NewProjectPass:
             except (OSError, ValueError, IndexError):
                 reason = 'unknown_outcome:provisioner'
             if self.m['REPO'].read(self.service.conn, record['proposal']['repository']) is None:
-                done = self.decisions.finish(decision, activated=False, reason=reason or 'unknown_outcome:provisioner')
-                return dict(about, outcome='refused', refusal=reason, told=done.get('told'))
+                self.decisions.finish(decision, activated=False, reason=reason or 'unknown_outcome:provisioner')
+                return dict(about, outcome='refused', refusal=reason)
             return dict(about, outcome='ended')
         config = self.service.config.get('provisioner')
         if not config:
@@ -261,4 +242,4 @@ class NewProjectPass:
             receiver = ((s.config.get('receiver') or {}).get('configs') or {}).get(repository)
             result['line'] = s.loop.add_line(repository, receiver)
         return dict(about, outcome='activated' if result.get('ok') else 'refused', step=result.get('step'),
-                    refusal=result.get('reason'), project=result.get('project'), told=result.get('told'))
+                    refusal=result.get('reason'), project=result.get('project'))

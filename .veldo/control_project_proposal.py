@@ -36,8 +36,9 @@ repository is not active), its first team revision, which is the default team re
 (first_team, VELDO-0162 AC4, after VELDO-0089's staffing checks), the message moved into the project as its
 first objective proposal (control_intake_routes.resolve_new_project), that objective proposed by the
 project's PM with the proposal's first objective as its outcome and accepted by the decision
-(control_objective accept_decided), and the owner told "<name> is ready; the first objective is next". A
-repository that ended `failed` activates nothing and he is told why. settled() judges the decision from its evidence
+(control_objective accept_decided); the decision is then `activated`, and VELDO-0128's report of it tells the
+owner "<name> is ready; the first objective is next". A repository that ended `failed` activates nothing, the
+decision is `failed`, and its report tells him why. settled() judges the decision from its evidence
 (the intake source, the request, its settlement and effect, the brief), never from the record's state, and
 refuses no_settled_decision:<why> by name. The repository provisioner, the adoption signer, the running
 service's take-on and the project's activation all call it (repository_decision adapts it to the shape
@@ -585,16 +586,17 @@ def pending(conn):
 class NewProjects:
     """The factory's new-project decisions on the service's connection. `inbox`, `settlement` and `presenter`
     are the VELDO-0064/0068/0065 services of this connection, `assignment` the control_assignment module;
-    `requester` and `request_sign` sign the presented request (the factory PM's principal); `tell(text,
-    source)` sends the owner a plain message about the decision and returns its delivery."""
+    `requester` and `request_sign` sign the presented request (the factory PM's principal). The owner is told
+    what became of a decision by its record: VELDO-0128's report projects it entering activated or failed
+    (control_telegram_report project_ready) through the reporter's one rendered send."""
 
     def __init__(self, store, membership, conn, ids, journal_signer, sign, *, inbox=None, settlement=None,
-                 presenter=None, assignment=None, requester='pm', request_sign=None, templates=None, tell=None,
+                 presenter=None, assignment=None, requester='pm', request_sign=None, templates=None,
                  generation=1, clock=time.time):
         self.store, self.membership, self.conn, self.ids = store, membership, conn, dict(ids)
         self.journal_signer, self.sign, self.generation, self.clock = journal_signer, sign, generation, clock
         self.inbox, self.settlement, self.presenter, self.assignment = inbox, settlement, presenter, assignment
-        self.requester, self.request_sign, self.templates, self.tell = requester, request_sign, templates, tell
+        self.requester, self.request_sign, self.templates = requester, request_sign, templates
         self.observations = []
         conn.command_registry[OPERATION] = {'transition': self._transition, 'writes': WRITES}
 
@@ -750,9 +752,7 @@ class NewProjects:
             correction = dict(record['correction'], dispatch=dispatch, document=document)
             if proposal['identity'] is None:
                 self.write(decision, 'failed', step='correction', reason='invalid_input:identity',
-                           correction=correction)
-                self._tell(record, 'The corrected proposal for %s names no identity, so nothing was created.'
-                           % proposal['project'])
+                           correction=correction, project=proposal['project'])
                 return dict(self._observe('correct', 'failed', 'invalid_input:identity', **about), ok=False,
                             reason='invalid_input:identity')
             correction['digest'] = digest(proposal)
@@ -763,34 +763,21 @@ class NewProjects:
         return dict(self._observe('correct', 'settled', path='correction', project=proposal['project'],
                                   identity=proposal['identity'], **about), ok=True)
 
-    def _tell(self, record, text):
-        if self.tell is None:
-            return None
-        try:
-            return self.tell(text, record)
-        except Exception as error:  # noqa: BLE001 - a failed send is named, never the end of the decision
-            return {'refusal': getattr(error, 'code', 'unknown_outcome:' + type(error).__name__)}
-
     def settled_decisions(self):
         """The decisions settled and not yet activated or failed, oldest first."""
         return [r for r in records(self.conn) if r['state'] == 'settled']
 
-    def finish(self, decision, *, activated, reason=None, text=None):
-        """The decision activated (the project and its first objective) or failed by name, and the owner told
-        which. A failed repository is never reported ready."""
+    def finish(self, decision, *, activated, reason=None):
+        """The decision activated (the project and its first objective) or failed by name; its report tells the
+        owner which (project_ready). A failed repository is never reported ready."""
         record = read(self.conn, decision)
         name = (record.get('proposal') or {}).get('project')
         if activated:
-            text = '%s is ready; the first objective is next.' % name
             self.write(decision, 'activated', step='activated', reason=None)
         else:
-            text = text or '%s could not be set up: %s. Nothing was activated.' % (name, reason)
             self.write(decision, 'failed', step='failed', reason=reason)
-        told = self._tell(record, text)
-        current = read(self.conn, decision)
-        self._observe('finish', 'activated' if activated else 'failed', reason, decision=decision, project=name,
-                      told=told is not None and not (told or {}).get('refusal'))
-        return dict(current, told=told, text=text)
+        self._observe('finish', 'activated' if activated else 'failed', reason, decision=decision, project=name)
+        return read(self.conn, decision)
 
 
 def metrics(conn, observations=()):
@@ -897,6 +884,5 @@ def activate(decisions, decision, *, projects, teams, intake, objectives, pm, pm
                                            revision=current['revision'], bound_digest=current['bound_digest']))
         if not accepted.get('ok'):
             return {'ok': False, 'step': 'acceptance', 'reason': accepted.get('reason')}
-    finished = decisions.finish(decision, activated=True)
-    return {'ok': True, 'step': 'activated', 'project': name, 'objective': oid, 'told': finished.get('told'),
-            'text': finished.get('text')}
+    decisions.finish(decision, activated=True)
+    return {'ok': True, 'step': 'activated', 'project': name, 'objective': oid}

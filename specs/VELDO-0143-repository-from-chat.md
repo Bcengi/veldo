@@ -49,6 +49,10 @@ footprint:
   - "packs/*/.veldo/control_backlog.py"
   - "scripts/suites/*_veldo_0143_*.py"
   - "scripts/suites/106_veldo_0185_dispatch_setup.py"
+  - "engine/.veldo/control_telegram_report.py"
+  - ".veldo/control_telegram_report.py"
+  - "packs/*/.veldo/control_telegram_report.py"
+  - "scripts/suites/72_veldo_0128_reports.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -221,7 +225,9 @@ and the default team's capability configurations copied at the revisions the tea
 them; the activation; the first team revision, the named default revision, after VELDO-0089's staffing checks;
 the message moved into the project (control_intake_routes, on intake's own route command); the first objective
 proposed by the project's PM and accepted by the decision (control_objective accept_decided, acceptance path
-new_project); the owner told; and the factory loop gains the repository's line. Setup creates the factory
+new_project); the decision activated; and the factory loop gains the repository's line. The owner is told
+"<name> is ready; the first objective is next", or that it could not be set up and why, by VELDO-0128's report
+of the decision record (event project_ready), through the reporter's one rendered send (VELDO-0168). Setup creates the factory
 project's own repository at <state root>/factory, holding only team.json, enrolled by the owner, bound to the
 workspace's identity and by the store, and activates the factory project on it; it writes host/provisioner.json.
 The factory project's cycles run on the loop's factory line, the first line the work configuration names, since
@@ -234,8 +240,9 @@ control_objective (the first objective accepted by his answer, which VELDO-0077'
 bind: the objective does not exist when he answers); control_grooming_request and control_backlog (work under
 that objective admitted at the default priority with no further question, AC3, as VELDO-0079 admits work under an
 objective his own message accepted); suite 106's fresh/team row, which asserted the factory project on the
-workspace's repository and now asserts it on its own. init_scaffold's version-reader load names its file through
-one binding so the installer's closure, which now reaches it through the provisioner, can name it; behavior is
+workspace's repository and now asserts it on its own; control_telegram_report (the owner told, AC3, as a
+report event rather than a new send site) and suite 72's registry row, which enumerates every event.
+init_scaffold's version-reader load names its file through one binding so the installer's closure, which now reaches it through the provisioner, can name it; behavior is
 unchanged. Suite 110_veldo_0143_new_project carries the rows; finding 143 registers nine mutations, the three
 declared falsifiers first. A factory set up before this change keeps its factory project on the workspace; a
 re-run neither moves it nor requires the factory repository. Acceptance criteria, risk, readiness and approval
