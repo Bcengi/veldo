@@ -1,9 +1,9 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0161",
-  "commit": "f0b634da15c1c17a917bfa454dc2ac026c1eb9e4",
+  "commit": "19b38a30d7ad53bb7005c6798b9adca67bfb78bd",
   "producer": "Claude implementation agent (Claude Code)",
-  "produced_at": "2026-10-22T20:55:25.908048+00:00",
+  "produced_at": "2026-10-22T20:59:49.770614+00:00",
   "plan": "PLAN-0019",
   "work": "W121",
   "plan_revision": 4,
@@ -20,7 +20,7 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0161/falsifiers.json",
-          "detail": "Declared falsifiers run through the teeth driver's worker mode: adoption161-signer-unscoped turns adoption/signer-scope red and adoption161-scaffold-relaid turns adoption/scaffold-commit red, each alone; baseline green before and after. Three further mutations (settlement unchecked, remote owner unchecked, signature unjournaled) are killed."
+          "detail": "Declared falsifiers run through the teeth driver's worker mode: adoption161-signer-unscoped turns adoption/signer-scope red and adoption161-scaffold-relaid turns adoption/scaffold-commit red, each alone; baseline green before and after. Four further mutations (settlement unchecked, remote owner unchecked, signature unjournaled, the repository's hooks run) are killed."
         },
         {
           "type": "integration",
@@ -60,7 +60,7 @@
     {
       "name": "ac1_falsifiers",
       "status": "passed",
-      "detail": "Both declared AC1 falsifiers and three further mutations killed through check_teeth_mutations.py --worker; the coordinator itself refuses to start in this sandbox (candidate_execution_denied). See falsifiers.json."
+      "detail": "Both declared AC1 falsifiers and four further mutations killed through check_teeth_mutations.py --worker; the coordinator itself refuses to start in this sandbox (candidate_execution_denied). See falsifiers.json."
     },
     {
       "name": "ac2_falsifier",
@@ -70,7 +70,7 @@
     {
       "name": "lint",
       "status": "passed",
-      "detail": "bash scripts/check_lint.sh: lint pass (1001 python, 34 shell)."
+      "detail": "bash scripts/check_lint.sh: lint pass."
     },
     {
       "name": "template_sync",
@@ -95,5 +95,5 @@
     "Independent critical-risk review and the owner's approval are outstanding."
   ],
   "rollback": "Stop adoption and disable the adoption signer (remove its line from the host's enrollment signers); repositories already adopted stay as they are, with their records, for the owner to remove by hand. No automatic rollback.",
-  "proof_digest": "sha256:e8dd6521bc4cb878"
+  "proof_digest": "sha256:43281f9068ceee02"
 }

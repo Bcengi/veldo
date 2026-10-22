@@ -1,6 +1,6 @@
 {
  "command": "python3 scripts/selftest.py --suite <name>, one at a time",
- "commit_code": "5b6631b5 (code identical at f0b634da)",
+ "commit_code": "5b6631b5; the later code commit 19b38a30 changes only control_repository_provisioner.py, which none of these suites loads",
  "schema": "veldo.observation/v1",
  "spec_id": "VELDO-0161",
  "suites": [

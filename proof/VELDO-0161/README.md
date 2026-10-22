@@ -1,7 +1,8 @@
 # VELDO-0161: repository adoption on the owner's settled answer, taken on without a restart
 
 Branch agent/claude/veldo-0161, built on VELDO-0153 (b44736c0, which is not landed yet). Code commits
-bbe023d3, a2af558b and 5b6631b5; the specification's history entry is f0b634da. Nothing here is a gate
+bbe023d3, a2af558b, 5b6631b5 and 19b38a30; the specification's history entry is f0b634da and its addendum
+follows the bundle. Nothing here is a gate
 result, a review verdict or an approval. The full gate, the AC2 rows and the AC2 falsifier are the host's to
 run (Host runs, below).
 
@@ -10,12 +11,12 @@ run (Host runs, below).
 | Piece | Where |
 | --- | --- |
 | Repository record (`repository:<uuid>`, provisioning, active or failed with a named reason, history), adoption proposal and brief, the settled-decision check, the adoption signer | `engine/.veldo/control_repository.py` |
-| Provisioner steps: VELDO-0153 owner check (operation `adoption`), the missing scaffold as one commit recorded under `refs/veldo/adoption/<uuid>` before he is asked, fast-forward and identity-profile push of exactly that commit on his answer | `engine/.veldo/control_repository_provisioner.py` |
+| Provisioner steps: VELDO-0153 owner check (operation `adoption`), the missing scaffold as one commit recorded under `refs/veldo/adoption/<uuid>` before he is asked, fast-forward and identity-profile push of exactly that commit on his answer; no local step runs a hook of the repository | `engine/.veldo/control_repository_provisioner.py` |
 | The adoption effect: settlement first, record, remote, scaffold, identity, signature, store binding, each recorded and stopping by name | `engine/.veldo/control_effect_executor_adoption.py` |
 | The running service takes an adopted repository on (judges decision, signature, binding and store binding again; writes its receiver configuration; record active naming this process and instance); a new instance serves adopted repositories again at its start; `inspect` reports the instance and the repositories served | `engine/.veldo/control_service.py` (`Service.take_on`, `serve`) |
 | Setup generates the adoption signer in the protected key directory and enrolls it among the host's enrollment signers | `engine/.veldo/control_factory_setup.py` (`adoption_signer`, `host_files`) |
 | The three modules in the scaffold's file list | `engine/.veldo/init_scaffold.py` |
-| Suite `109_veldo_0161_adoption`, finding 161 (seven mutations) | `scripts/suites/`, `scripts/check_teeth_mutations.py` |
+| Suite `109_veldo_0161_adoption`, finding 161 (eight mutations) | `scripts/suites/`, `scripts/check_teeth_mutations.py` |
 
 Each `.veldo/` copy is byte-identical to its engine file (template sync).
 
@@ -28,8 +29,9 @@ names, signed only for a repository a settled decision names). Rows: `adoption/r
 `adoption/push-refused`, `adoption/observed`. All green in this sandbox (observations.json). Declared
 falsifiers: `adoption161-signer-unscoped` turns `adoption/signer-scope` red and only it;
 `adoption161-scaffold-relaid` turns `adoption/scaffold-commit` red and only it; both green again on the
-restored baseline (falsifiers.json). Further teeth: settlement unchecked, remote owner unchecked and
-signature unjournaled each turn their rows red.
+restored baseline (falsifiers.json). Further teeth: settlement unchecked, remote owner unchecked,
+signature unjournaled and the repository's hooks running (a post-merge, reference-transaction, post-checkout
+and pre-push hook are planted in the repository the scaffold is pushed from) each turn their rows red.
 
 **AC2** (taken on by the running service without a restart or reinstallation). Rows:
 `adoption/taken-on-running`, `adoption/same-process`, `adoption/packet-accepted`,
@@ -70,7 +72,7 @@ finding 161 resolve and compile.
 
 1. `bash scripts/verify.sh` (full gate, both legs, mutation stage).
 2. `python3 scripts/selftest.py --suite 109_veldo_0161_adoption`: all rows green, the four AC2 rows included.
-3. `python3 scripts/check_teeth_mutations.py --finding 161`: all seven cases killed, in particular
+3. `python3 scripts/check_teeth_mutations.py --finding 161`: all eight cases killed, in particular
    `adoption161-restart-take-on` (AC2's declared falsifier) on `adoption/same-process`.
 4. Unconfined suites this change touches: 66_veldo_0047_authority and 86_veldo_0189_engine_upgrade (the
    service and its closure), 73_veldo_0139_factory_setup, 85_veldo_0171_setup_api, 91_veldo_0167_setup_records

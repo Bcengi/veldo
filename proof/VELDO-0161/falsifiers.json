@@ -160,6 +160,28 @@
   },
   {
    "baseline_target_rows": {
+    "adoption/scaffold-commit": true
+   },
+   "case": "adoption161-provisioner-hooks",
+   "criterion": "AC1",
+   "defect": "A hook of the adopted repository runs during the provisioner's local Git steps",
+   "kind": "threat model",
+   "module": ".veldo/control_repository_provisioner.py",
+   "mutant_digest": "078ebe3867d7dcf93038c07a11955983462438c15621c161187643f6c95fb21b",
+   "mutant_target_rows": {
+    "adoption/scaffold-commit": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/scaffold-commit"
+   ],
+   "result": "killed: the target row is green at baseline and red on the mutant",
+   "source_digest": "9e7b634b1d74da10aab17d661a79c099b0ef89f78a551c8fdf3aa669225331fb",
+   "target_rows": [
+    "adoption/scaffold-commit"
+   ]
+  },
+  {
+   "baseline_target_rows": {
     "adoption/taken-on-running": false
    },
    "case": "adoption161-receiver-configuration-absent",
@@ -179,7 +201,7 @@
    ]
   }
  ],
- "commit": "f0b634da15c1c17a917bfa454dc2ac026c1eb9e4",
+ "commit": "19b38a30d7ad53bb7005c6798b9adca67bfb78bd",
  "how": "python3 proof/VELDO-0161/run_falsifiers.py <checkout> <out>: scripts/check_teeth_mutations.py --worker per case (finding 161), the mutant copy written outside the tree by the driver's own materialize and substituted at the suite's PRODUCTION anchor; no source file was edited. The mutation coordinator (check_teeth_mutations.py --finding 161) refuses to start in this sandbox: candidate_execution_denied (agent sandbox marker).",
  "inprocess_observation": {
   "case": "adoption161-receiver-configuration-absent",

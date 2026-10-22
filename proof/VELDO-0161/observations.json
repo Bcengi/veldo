@@ -1,5 +1,5 @@
 {
- "commit": "f0b634da15c1c17a917bfa454dc2ac026c1eb9e4",
+ "commit": "19b38a30d7ad53bb7005c6798b9adca67bfb78bd",
  "inprocess_harness_baseline": {
   "command": "python3 proof/VELDO-0161/inprocess_harness.py <checkout>",
   "rows": [
@@ -210,7 +210,7 @@
    "the worker profile does not qualify here (no systemd user manager): installation ran with the containment qualification answered qualified, printed by the suite",
    "the identity wire fence ran without its recording SSH agent (an AF_UNIX socket); SSH_AUTH_SOCK named a path where nothing listens"
   ],
-  "summary": "selftest (PARTIAL, 1 of 165 suites): 43 passed, 4 failed in 7.27s",
+  "summary": "selftest (PARTIAL, 1 of 165 suites): 43 passed, 4 failed in 7.23s",
   "why_failed": "AF_UNIX sockets are refused in this sandbox (seccomp), so no authority service can bind its socket: the four AC2 rows are red by name, never stood down"
  }
 }

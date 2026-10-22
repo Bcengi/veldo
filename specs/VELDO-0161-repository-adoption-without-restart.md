@@ -159,3 +159,8 @@ falsifiers first. The AC1 rows ran green in the sandbox and both declared AC1 fa
 red; the AC2 rows need a local socket the sandbox refuses, are red there by name, and with the AC2 falsifier
 are the host's to run (proof/VELDO-0161/README.md). Acceptance criteria, risk, readiness and approval
 requirements are unchanged.
+
+2026-10-22, same branch: the provisioner's local Git steps in the adopted repository (the scaffold's fetch,
+the fast-forward) run no hook of the repository, as no identity push does (VELDO-0153); the scaffold-commit
+row plants four hooks and a registered mutation proves the part. Finding 161 now registers eight mutations.
+Criteria unchanged.
