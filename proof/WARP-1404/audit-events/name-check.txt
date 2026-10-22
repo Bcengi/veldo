@@ -1,0 +1,61 @@
+{
+  "source": "https://docs.python.org/3.12/library/audit_events.html",
+  "original_tuples": {
+    "SPAWN": {
+      "subprocess.Popen": true,
+      "os.system": true,
+      "os.exec": true,
+      "os.posix_spawn": true,
+      "os.spawn": true,
+      "os.fork": true,
+      "os.forkpty": true,
+      "pty.spawn": true,
+      "os.startfile": true,
+      "webbrowser.open": true
+    },
+    "WRITES": {
+      "os.mkdir": true,
+      "os.rmdir": true,
+      "os.remove": true,
+      "os.rename": true,
+      "os.replace": false,
+      "os.link": true,
+      "os.symlink": true,
+      "os.truncate": true,
+      "os.chmod": true,
+      "os.chown": true,
+      "os.putenv": true,
+      "os.unsetenv": true,
+      "os.kill": true,
+      "tempfile.mkstemp": true,
+      "shutil.copyfile": true,
+      "shutil.copymode": true,
+      "shutil.copystat": true,
+      "shutil.move": true,
+      "shutil.rmtree": true,
+      "shutil.chown": true,
+      "socket.socket": false,
+      "socket.connect": true,
+      "socket.bind": true,
+      "socket.getaddrinfo": true,
+      "urllib.Request": true,
+      "ftplib.connect": true,
+      "smtplib.connect": true,
+      "sqlite3.connect": true,
+      "signal.pthread_kill": true
+    }
+  },
+  "requested": {
+    "os.utime": true,
+    "os.chflags": true,
+    "os.lchown": false,
+    "os.setxattr": true,
+    "os.removexattr": true,
+    "shutil.make_archive": true,
+    "shutil.unpack_archive": true,
+    "socket.__new__": true,
+    "socket.sendto": true,
+    "socket.sendmsg": true,
+    "os.truncate": true
+  }
+}

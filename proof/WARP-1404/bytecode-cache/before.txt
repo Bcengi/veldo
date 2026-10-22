@@ -1,0 +1,6 @@
+  SELFTEST FAIL: WARP-1404 AC5 BYTECODE: empty read-only cache passes all audit windows
+  SELFTEST FAIL: WARP-1404 AC5 BYTECODE: import writer still makes AC5 red
+  SELFTEST FAIL: WARP-1404 AC5 BYTECODE: import spawn still makes AC5 red
+  15_warp_1404_historical_analogy                 38 passed   40.53s
+selftest (PARTIAL, 1 of 162 suites): 64 passed, 3 failed in 40.53s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

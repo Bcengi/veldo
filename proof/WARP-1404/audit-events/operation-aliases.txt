@@ -1,0 +1,3 @@
+Source: https://docs.python.org/3.12/library/os.html
+os.lchown emits os.chown
+os.replace emits os.rename
