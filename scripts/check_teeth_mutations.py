@@ -10619,6 +10619,59 @@ def cases():
         '            self.common_dir = common or None\n', '',
         ['candidate/every-git-operation-checked'])
 
+    # VELDO-0161: each criterion's declared falsifiers first, then the threat model's other shapes. The rows
+    # of the service (AC2) need local sockets, so their cases run where the suite's service runs.
+    def adoption(name, module, old, new, rows):
+        add(161, name, '109_veldo_0161_adoption.py', module, old, new, rows)
+
+    # AC1 (declared): the adoption signer signs a binding for a repository no settled decision names.
+    adoption('adoption161-signer-unscoped', 'control_repository.py',
+             "            if problems:\n                raise Refused(problems[0], '; '.join(problems))\n"
+             "            event.update(",
+             "            event.update(  # defect: the signer does not judge the settled decision\n                ",
+             ['adoption/signer-scope'])
+    # AC1 (declared): the missing scaffold laid in a commit the answered proposal does not name.
+    adoption('adoption161-scaffold-relaid', 'control_effect_executor_adoption.py',
+             "                P.advance(proposal)\n",
+             "                __import__('time').sleep(1.1)\n"
+             "                proposal = dict(proposal, scaffold_commit=P.lay_scaffold(  # defect: a fresh scaffold commit\n"
+             "                    proposal['path'], proposal['base_commit'], record, config['templates'],\n"
+             "                    'refs/veldo/relaid/' + repository))\n"
+             "                P.advance(proposal)\n",
+             ['adoption/scaffold-commit'])
+    # AC2 (declared): the adopted repository taken on only by restarting the authority service.
+    adoption('adoption161-restart-take-on', 'control_service.py',
+             "                    if not stopping:\n                        service.take_on()\n",
+             "                    if not stopping and any(r.get('state') == 'provisioning' and r.get('enrollment')\n"
+             "                                            for r in REPO.records(service.conn, service.domain)):\n"
+             "                        # defect: the repository is taken on only by restarting the authority service\n"
+             "                        listener.close()\n"
+             "                        os.unlink(config['socket'])\n"
+             "                        os.execv(sys.executable, [sys.executable, '-B', os.path.realpath(__file__), 'serve',\n"
+             "                                                  config_path])\n",
+             ['adoption/same-process'])
+    adoption('adoption161-settlement-unchecked', 'control_effect_executor_adoption.py',
+             "            decision = R.settled(S, CM, conn, request)\n",
+             "            subject = json.loads(conn.execute('SELECT data FROM entities WHERE id=?', (request,)).fetchone()[0])\n"
+             "            terms = json.loads(conn.execute('SELECT data FROM entities WHERE id=?',  # defect: unsettled\n"
+             "                                            (subject['subject']['ref'],)).fetchone()[0])\n"
+             "            decision = {'proposal': terms['proposal'], 'settlement_id': None, 'request': request}\n",
+             ['adoption/settlement-before-signature'])
+    adoption('adoption161-remote-owner-unchecked', 'control_effect_executor_adoption.py',
+             "            checked = P.check_remote(record, proposal['remote'], repository=repository, request=request,\n"
+             "                                     observe=lambda event: _observe(config, events, dict(event, at=clock())))\n",
+             "            checked = {'owner': None}  # defect: the remote owner is not checked\n",
+             ['adoption/remote-owner-refused'])
+    adoption('adoption161-signature-unjournaled', 'control_repository.py',
+             "            _journal_command(self.conn, self.store, self.journal, SIGN_OPERATION, transition, {'signature': record},\n"
+             "                             {eid: 0}, 'adoption-signature:' + str(decision['settlement_id']))\n",
+             "            pass  # defect: the signature is not journaled\n",
+             ['adoption/signer-scope', 'adoption/signatures-journaled'])
+    adoption('adoption161-receiver-configuration-absent', 'control_service.py',
+             "        receiver = self._receiver_configuration(repository, os.path.realpath(path))\n",
+             "        receiver = None  # defect: no receiver configuration is written\n",
+             ['adoption/taken-on-running'])
+
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
     add(142, 'identity142-clone-global-author', '103_veldo_0142_git_identities.py', 'control_clone.py', "for section in ('user', 'author', 'committer'):", 'for section in ():', ['clone/identity-authors'])

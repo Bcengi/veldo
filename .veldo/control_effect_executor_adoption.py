@@ -141,15 +141,10 @@ def adopt(config, request, *, wait=0.0, clock=time.time, signer=None):
             remote['owner'] = checked['owner']
             # 3. The scaffold: exactly the commit he answered, laid when he was asked, pushed now.
             step = 'scaffold'
-            commit = proposal['scaffold_commit']
-            if commit is None:
-                problems = P.scaffold_problems(proposal)
-                if problems:
-                    raise R.Refused(problems[0])
-            else:
-                problems = P.scaffold_problems(proposal)
-                if problems:
-                    raise R.Refused(problems[0])
+            problems = P.scaffold_problems(proposal)
+            if problems:
+                raise R.Refused(problems[0])
+            if proposal['scaffold_commit'] is not None:
                 P.advance(proposal)
                 P.push(proposal, record)
                 _observe(config, events, dict(base, operation='scaffold_push', outcome='pushed', remote_owner=checked['owner'],
