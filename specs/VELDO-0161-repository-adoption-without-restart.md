@@ -140,3 +140,22 @@ marks a specification ready.
 2026-09-25, PLAN-0019 revision 4, fourth review: AC1's scaffold half, one recorded commit named by the
 proposal he answered, gets a falsifier of its own beside the signer-scope one. Criterion meaning
 unchanged. A draft.
+
+2026-10-22 implementation on agent/claude/veldo-0161, built on VELDO-0153 (b44736c0, not yet landed).
+control_repository holds the repository record, the adoption proposal and its brief, the settled-decision
+check and the adoption signer, which judges the settled decision itself, signs one binding per decision and
+journals every signature before handing it back. control_repository_provisioner checks the remote owner with
+VELDO-0153's one check, lays a missing scaffold as one commit recorded under refs/veldo/adoption/ before the
+owner is asked (no branch moves, nothing is pushed), so the proposal names it, and pushes exactly that commit
+through the identity profile on his answer. control_effect_executor_adoption checks the settlement before
+anything else. The authority service takes an adopted repository on in its running process: it judges the
+decision, the signature, the binding and the store binding again, writes the repository's receiver
+configuration beside the installed ones and writes the record active naming its own process and instance;
+a new instance serves adopted repositories again at its start. Factory setup generates the adoption signer
+and enrolls it among the host's enrollment signers; a factory set up before this change keeps its signers
+file, a re-run neither adds nor requires the signer, and adoption there refuses signature_refused:not_enrolled.
+Suite 109_veldo_0161_adoption carries the rows; finding 161 registers seven mutations, the three declared
+falsifiers first. The AC1 rows ran green in the sandbox and both declared AC1 falsifiers turned their rows
+red; the AC2 rows need a local socket the sandbox refuses, are red there by name, and with the AC2 falsifier
+are the host's to run (proof/VELDO-0161/README.md). Acceptance criteria, risk, readiness and approval
+requirements are unchanged.
