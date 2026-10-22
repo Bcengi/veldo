@@ -36,6 +36,7 @@ footprint:
   - "specs/VELDO-0161-repository-adoption-without-restart.md"
   - "specs/index.md"
   - "proof/VELDO-0161/*"
+  - "proof/VELDO-0161/round2/*"
 behavior_bearing: true
 observability:
   logs: >
@@ -164,3 +165,26 @@ requirements are unchanged.
 the fast-forward) run no hook of the repository, as no identity push does (VELDO-0153); the scaffold-commit
 row plants four hooks and a registered mutation proves the part. Finding 161 now registers eight mutations.
 Criteria unchanged.
+
+2026-10-22, round 2 on the same branch, on the host run and the independent review of b44736c0..da39f3fb.
+The host's fence counted 137 SSH agent contacts: they were the suite's own ssh-keygen calls (sign_as and key
+generation), which now run without SSH_AUTH_SOCK and SSH_AGENT_PID; every ssh-keygen of control_repository
+goes through one _quiet_env, and a row proves with a recording stand-in ssh-keygen that no signer call is
+started with an agent named. The adoption effect runs every check that changes nothing (the named scaffold
+commit, the configured remote, the repository's own commands, an existing binding, the host trust, the signer
+enrolled, a missing key not enrolled) before it fast-forwards or pushes; any other fault ends the record
+failed with unknown_outcome:<type>; a push Git accepted whose branch does not read back is
+push_unconfirmed:remote. Every local Git step runs with core.fsmonitor off and a repository whose
+configuration names a filter command or an fsmonitor is refused by name. prepare checks the remote is the one
+the repository is configured with and that the repository id is one ref component, and the scaffold ref is
+removed after the push or a refusal. The adoption signer pins host_identity and authority_generation and
+refuses a generation below the store's. The serve-loop poll of the journal and the effect's 50 ms wait are
+gone: the effect hands the record to the running service over its authenticated socket (a take_on packet from
+the adopted repository's workspace, signed with the journal key in its own namespace, which only that packet
+is verified under) and reports the service's synchronous answer; the reconcile at start stays, and a faulted
+take-on is judged again by a timer ADOPTION_RETRY_SECONDS after its own fault. The service writes a record
+active before it serves the repository, serves an active record again on its signature, binding and store
+binding rather than on current membership, and writes again a receiver configuration it wrote. The instance's
+token is instance_id. Finding 161 now registers 37 mutations, one at least for each fix. The footprint gains
+proof/VELDO-0161/round2/*, the directory this round's evidence was asked for, which the one-segment glob
+proof/VELDO-0161/* does not cover. Criteria, risk, readiness and approval requirements are unchanged.
