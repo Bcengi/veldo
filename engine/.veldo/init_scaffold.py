@@ -340,6 +340,12 @@ _FILES = [
     ".veldo/control_repository.py",
     ".veldo/control_repository_provisioner.py",
     ".veldo/control_effect_executor_adoption.py",
+    # VELDO-0143: a new project from chat: the factory PM's one proposal and the owner's one answer, the
+    # provisioner's creation steps, its registered effect, and the running service's part of it. Not substrate.
+    ".veldo/control_project_proposal.py",
+    ".veldo/control_repository_creation.py",
+    ".veldo/control_effect_executor_creation.py",
+    ".veldo/control_service_projects.py",
     # VELDO-0104 (PLAN-0020 W4): the fix-validation record and the rule the proof check applies.
     # validate_checks registers its loader, so a scaffolded repository without it has no proof stage;
     # and it loads the runner by path, which loads the capsule module, so all three travel together.
@@ -585,11 +591,12 @@ def _version_reader():
     its substrate lists alone, and an import that can fail must not fail then."""
     global _VERSION_READER
     if _VERSION_READER is None:
-        p = Path(__file__).resolve().parent / "version.py"
+        # One binding, so the installer's closure (control_service._Loads) names the file this loads.
+        version_path = Path(__file__).resolve().parent / "version.py"
         _VERSION_READER = False
-        if p.is_file():
+        if version_path.is_file():
             try:
-                spec = importlib.util.spec_from_file_location("veldo_version_for_stamp", p)
+                spec = importlib.util.spec_from_file_location("veldo_version_for_stamp", version_path)
                 mod = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(mod)
                 _VERSION_READER = mod

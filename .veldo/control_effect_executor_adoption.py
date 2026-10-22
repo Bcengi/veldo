@@ -108,7 +108,6 @@ def adopt(config, request, *, wait=0.0, clock=time.time, signer=None):
     conn = S.open_store(config['store'])
     journal = (config['journal']['principal'], _ssh_signer(config['journal']['key'], 'veldo-journal'))
     generation = config.get('authority_generation') or 1
-    ids = {'domain_uuid': config['domain_uuid'], 'store_uuid': config['store_uuid'], 'store_path': config['store']}
     base = {'operation': 'adopt', 'request': request, 'at': clock()}
     repository = None
     try:
@@ -133,14 +132,15 @@ def adopt(config, request, *, wait=0.0, clock=time.time, signer=None):
                 path=proposal['path'], remote=remote, request=request, settlement=decision['settlement_id'],
                 scaffold_commit=proposal['scaffold_commit'], base_commit=proposal['base_commit'], enrollment=None,
                 reason=None)
-        step = 'remote'
+        context = Context(config, conn, journal, generation, events, base, clock)
+        step = ['remote']
         try:
             record = P.identity_record(conn, config['domain_uuid'], proposal['identity'])
             checked = P.check_remote(record, proposal['remote'], repository=repository, request=request,
                                      observe=lambda event: _observe(config, events, dict(event, at=clock())))
             remote['owner'] = checked['owner']
             # 3. The scaffold: exactly the commit he answered, laid when he was asked, pushed now.
-            step = 'scaffold'
+            step[0] = 'scaffold'
             problems = P.scaffold_problems(proposal)
             if problems:
                 raise R.Refused(problems[0])
@@ -149,67 +149,98 @@ def adopt(config, request, *, wait=0.0, clock=time.time, signer=None):
                 P.push(proposal, record)
                 _observe(config, events, dict(base, operation='scaffold_push', outcome='pushed', remote_owner=checked['owner'],
                                               at=clock()))
-            if P.enrolled(proposal['path']):
-                raise R.Refused('invalid_input:already_enrolled', proposal['path'])
-            # 4. The one identity, recorded, never changed.
-            step = 'identity'
-            try:
-                R.GI.configure_identities(conn, config['domain_uuid'], [record],
-                                          {repository: {'path': proposal['path'], 'identity': proposal['identity']}})
-            except R.GI.Refused as error:
-                raise R.Refused(error.code) from None
-            # 5. The binding, signed by the adoption signer for this decision alone.
-            step = 'signature'
-            trust = EL.load_host_trust(config['host_trust'])
-            if trust is None:
-                raise R.Refused('signature_refused:host_trust')
-            key = config['adoption_signer']['key']
-            if not R.enrolled(Path(trust.enrollment_signers).read_text(), key):
-                raise R.Refused('signature_refused:not_enrolled', 'the adoption signer is not among this host\'s '
-                                'enrollment signers')
-            signer = signer or R.AdoptionSigner(key, S, CM, conn, ids, journal, clock=clock)
-            try:
-                binding = CE.enroll(proposal['path'], config['domain_uuid'], config['store_uuid'], config['store'],
-                                    trust.host_identity, generation, signer.signer(request), R.SIGNER_PRINCIPAL,
-                                    clock(), repository_uuid=repository)
-            finally:
-                for event in signer.observations:
-                    _observe(config, events, event)
-                signer.observations[:] = []
-            problems = CE.verify_binding(proposal['path'], binding, trust.verifier(R.SIGNER_PRINCIPAL, proposal['path']),
-                                         trust.host_identity, config['domain_uuid'], config['store_uuid'], generation)
-            if problems:
-                raise R.Refused('signature_refused:verify:' + problems[0][0])
-            # 6. The store binds it.
-            step = 'binding'
-            try:
-                S.bind_repositories(conn, config['domain_uuid'], {repository: proposal['path']})
-            except S.StoreRefused as error:
-                raise R.Refused(error.code) from None
+            binding = enroll(context, request, proposal, record, step, signer)
         except (R.Refused, CE.EnrollmentRefused) as error:
-            code = getattr(error, 'code', None) or 'signature_refused:' + getattr(error, 'reason', 'enrollment')
-            R.write(S, conn, journal, repository, 'failed', step=step, at=clock(), generation=generation,
-                    remote=remote, reason=code)
-            _observe(config, events, dict(base, outcome='refused', refusal=code, reason=R.reason(code), step=step))
-            return dict(result, reason=code, repository=repository, state='failed')
+            return context.failed(result, repository, remote, step[0], error)
+        return context.enrolled(result, repository, remote, binding, proposal, wait)
+    finally:
+        conn.close()
+
+
+class Context:
+    """One run of the effect: its configuration, store connection, journal signer and observations."""
+
+    def __init__(self, config, conn, journal, generation, events, base, clock):
+        self.config, self.conn, self.journal, self.generation = config, conn, journal, generation
+        self.events, self.base, self.clock = events, base, clock
+
+    def observe(self, event):
+        _observe(self.config, self.events, event)
+
+    def failed(self, result, repository, remote, step, error):
+        """The record `failed` at `step` with the refusal's code, and the refusal observed."""
+        code = getattr(error, 'code', None) or 'signature_refused:' + getattr(error, 'reason', 'enrollment')
+        R.write(S, self.conn, self.journal, repository, 'failed', step=step, at=self.clock(), generation=self.generation,
+                remote=remote, reason=code, failed_step=step)
+        self.observe(dict(self.base, outcome='refused', refusal=code, reason=R.reason(code), step=step))
+        return dict(result, reason=code, repository=repository, state='failed', step=step)
+
+    def enrolled(self, result, repository, remote, binding, proposal, wait):
+        """The record names its signed binding and waits for the running service (module docstring)."""
         digest = CE.binding_digest(binding)
-        R.write(S, conn, journal, repository, 'provisioning', step='enrolled', at=clock(), generation=generation,
-                remote=remote, enrollment=digest)
-        _observe(config, events, dict(base, outcome='enrolled', binding_digest=digest, at=clock()))
-        state = _await(conn, repository, wait)
+        R.write(S, self.conn, self.journal, repository, 'provisioning', step='enrolled', at=self.clock(),
+                generation=self.generation, remote=remote, enrollment=digest)
+        self.observe(dict(self.base, outcome='enrolled', binding_digest=digest, at=self.clock()))
+        state = _await(self.conn, repository, wait)
         if state != 'active':
             code = 'not_taken_on:timeout' if state == 'provisioning' else 'not_taken_on:' + str(
-                (R.read(conn, repository) or {}).get('reason'))
-            _observe(config, events, dict(base, outcome='waiting' if state == 'provisioning' else 'refused',
-                                          refusal=code, reason=R.reason(code), at=clock()))
+                (R.read(self.conn, repository) or {}).get('reason'))
+            self.observe(dict(self.base, outcome='waiting' if state == 'provisioning' else 'refused',
+                              refusal=code, reason=R.reason(code), at=self.clock()))
             return dict(result, ok=state == 'provisioning' and not wait, reason=None if not wait else code,
                         repository=repository, state=state, binding_digest=digest,
                         scaffold_commit=proposal['scaffold_commit'])
-        _observe(config, events, dict(base, outcome='adopted', binding_digest=digest, at=clock()))
+        self.observe(dict(self.base, outcome='adopted', binding_digest=digest, at=self.clock()))
         return dict(result, ok=True, reason=None, repository=repository, state=state, binding_digest=digest,
                     scaffold_commit=proposal['scaffold_commit'])
+
+
+def enroll(context, request, proposal, record, step, signer=None):
+    """Steps 4 to 6 (module docstring), for an adoption and for the end of a creation (VELDO-0143): the one
+    identity, the binding the adoption signer signs for the settled decision `request` alone, and the store
+    binding. `step` holds the current step's name for the failure record. Returns the binding."""
+    config, conn = context.config, context.conn
+    repository = proposal['repository']
+    if P.enrolled(proposal['path']):
+        raise R.Refused('invalid_input:already_enrolled', proposal['path'])
+    # 4. The one identity, recorded, never changed.
+    step[0] = 'identity'
+    try:
+        R.GI.configure_identities(conn, config['domain_uuid'], [record],
+                                  {repository: {'path': proposal['path'], 'identity': proposal['identity']}})
+    except R.GI.Refused as error:
+        raise R.Refused(error.code) from None
+    # 5. The binding, signed by the adoption signer for this decision alone.
+    step[0] = 'signature'
+    trust = EL.load_host_trust(config['host_trust'])
+    if trust is None:
+        raise R.Refused('signature_refused:host_trust')
+    key = config['adoption_signer']['key']
+    if not R.enrolled(Path(trust.enrollment_signers).read_text(), key):
+        raise R.Refused('signature_refused:not_enrolled', 'the adoption signer is not among this host\'s '
+                        'enrollment signers')
+    generation = context.generation
+    ids = {'domain_uuid': config['domain_uuid'], 'store_uuid': config['store_uuid'], 'store_path': config['store']}
+    signer = signer or R.AdoptionSigner(key, S, CM, conn, ids, context.journal, clock=context.clock)
+    try:
+        binding = CE.enroll(proposal['path'], config['domain_uuid'], config['store_uuid'], config['store'],
+                            trust.host_identity, generation, signer.signer(request), R.SIGNER_PRINCIPAL,
+                            context.clock(), repository_uuid=repository)
     finally:
-        conn.close()
+        for event in signer.observations:
+            context.observe(event)
+        signer.observations[:] = []
+    problems = CE.verify_binding(proposal['path'], binding, trust.verifier(R.SIGNER_PRINCIPAL, proposal['path']),
+                                 trust.host_identity, config['domain_uuid'], config['store_uuid'], generation)
+    if problems:
+        raise R.Refused('signature_refused:verify:' + problems[0][0])
+    # 6. The store binds it.
+    step[0] = 'binding'
+    try:
+        S.bind_repositories(conn, config['domain_uuid'], {repository: proposal['path']})
+    except S.StoreRefused as error:
+        raise R.Refused(error.code) from None
+    return binding
 
 
 def _await(conn, repository, wait):
