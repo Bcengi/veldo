@@ -28,6 +28,8 @@ CT = organ('control_team')
 CFG = organ('control_agent_config')
 CY = organ('control_workflow_cycle')
 IR = organ('control_intake_routes')
+# VELDO-0143: a message the factory PM routed as a new project, read again for its one proposal.
+NP = organ('control_project_proposal')
 SCHEMA = 'veldo.pm_cycle/v1'
 DOCUMENT = 'veldo.pm_proposals/v1'
 KIND = 'pm_cycle'
@@ -220,6 +222,8 @@ class ProjectCycles:
             'entities': {'project': '$project', 'team': '$team'}, 'collections': {
                 'objectives': {'kind': 'objective', 'where': {'project': '$name'}, 'references': ['proposal_id']},
                 'inbox': {'kind': 'intake_proposal', 'where': {'project': '$name', 'state': 'AWAITING_ROUTE'}},
+                'new_projects': {'kind': 'intake_proposal', 'where': {'project': '$name', 'state': NP.NEW_PROJECT_STATE}},
+                'new_project_decisions': {'kind': NP.KIND, 'where': {'state': 'correcting'}},
                 'decisions': {'kind': 'assignment', 'where': {}},
                 'dispatches': {'kind': 'dispatch', 'where': {}}}})
 
@@ -242,12 +246,16 @@ class ProjectCycles:
     def input_members(self, project):
         """Relevant accepted input, excluding the cycle's own receipts and dispatch."""
         values = []
+        # VELDO-0143: a new-project message is input while the factory PM still has to read it.
+        waiting = ({p['proposal_id'] for p in NP.pending(self.conn)} | {p['decision'] for p in NP.pending(self.conn)}
+                   if project == NP.FACTORY_PROJECT else set())
         for identity, kind, version, digest, raw in self.conn.execute(
                 'SELECT id, kind, version, digest, data FROM entities ORDER BY id'):
             data = json.loads(raw)
             relevant = (identity in ('project:' + project, 'team:' + project)
                         or kind == 'accepted_revision' and data.get('repository_uuid') == self.repository
                         or kind == 'intake_proposal' and data.get('project') == project and data.get('state') == 'AWAITING_ROUTE'
+                        or identity in waiting
                         or kind == 'objective' and data.get('project') == project
                         or kind == 'assignment' and project in data.get('scope', []) and data.get('answer')
                         or kind == 'dispatch' and (data.get('contract') or {}).get('reservation', {}).get('project') == project
@@ -329,6 +337,10 @@ class ProjectCycles:
             if inbox:
                 selected = inbox[0]
                 record['route_subject'] = dict(id=selected['value']['data']['proposal_id'], version=selected['version'])
+            # VELDO-0143: with no message to route, the oldest new-project message the PM still has to read.
+            waiting = NP.pending(self.conn) if project == 'factory' and not inbox else []
+            if waiting:
+                record['new_project_subject'] = dict(waiting[0])
             payload = {'operation': 'coordinate', 'snapshot': snap['data'], 'workflow': record['workflow'],
                        'output_schema': DOCUMENT, 'required_roles': list(CT.REQUIRED_ROLES),
                        'instruction': 'Return one typed proposal document. For one unit write its requirements '
@@ -342,6 +354,20 @@ class ProjectCycles:
                     instruction='Return exactly one route document with schema, proposal_id, route and a nonempty reason. '
                                 'Route is new_project, existing_project or unclear. Only existing_project includes project, '
                                 'the id of one listed project.')
+            if waiting:
+                subject = waiting[0]
+                proposal = row(self.conn, subject['proposal_id'])['data']
+                identities = [{'id': r['id'], 'label': r['label'], 'remote_owner': r['remote_owner']}
+                              for r in NP.GI.records(self.conn, self.domain)]
+                payload = dict(operation='new_project', proposal_id=subject['proposal_id'], text=proposal['text'],
+                    clarifications=proposal['clarifications'], hints=proposal['hints'], identities=identities,
+                    correction=subject['correction'], output_schema=NP.DOCUMENT,
+                    instruction='Return exactly one new project document with schema, proposal_id, project, identity, '
+                                'visibility, objective and a nonempty reason, from the owner\'s words. project is the new '
+                                'project\'s name. identity is the id of one listed identity only when he named it, else '
+                                'null; visibility is private or public only when he said so, else null; objective is the '
+                                'first piece of work he asked for. With a correction, return the proposal it shows as '
+                                'his correction changes it.')
             self.runner.reservations.configure('pm-ceiling/' + record['cycle'], 'unit',
                 'pm-cycle:' + record['cycle'], dict(role['budget']), now=time.time())
             launch = self.runner.submit('pm-cycle:' + record['cycle'], 'coordination', holder=record['manager'],
@@ -356,6 +382,21 @@ class ProjectCycles:
         return self.save(record)
 
     def apply(self, record, value):
+        if record.get('new_project_subject'):
+            decisions = self.services.get('new_projects')
+            if decisions is None:
+                raise Refused('unavailable_service:proposal_owner:new_projects')
+            subject = record['new_project_subject']
+            if subject.get('decision'):
+                result = decisions.correct(subject['decision'], value, dispatch=record['dispatch'])
+            else:
+                result = decisions.propose(subject['proposal_id'], value, dispatch=record['dispatch'])
+            record['proposals'] = [dict(name=subject['proposal_id'], type='new_project', result=result)]
+            self.save(record)
+            if not result.get('ok'):
+                raise Refused('proposal_refused:' + subject['proposal_id'], str(result.get('reason')))
+            record.update(document=value, state='proposed')
+            return record
         if record.get('route_subject'):
             intake = self.services.get('intake')
             if intake is None:
@@ -482,8 +523,9 @@ class ProjectCycles:
         try:
             if not organ('control_dispatch').completed(dispatched):
                 raise Refused('missing_evidence:pm_result')
-            value = self.returned_document(dispatched, route=bool(record.get('route_subject')))
-            if not record.get('route_subject'):
+            subject = record.get('route_subject') or record.get('new_project_subject')
+            value = self.returned_document(dispatched, route=bool(subject))
+            if not subject:
                 document(value)
             # Only a digest goes into the graph process. It cannot invoke owners.
             supplied = [{'id': 'result', 'version': 1, 'digest': SN.digest(SN.canonical(value)),
@@ -505,7 +547,9 @@ class ProjectCycles:
         projects = [json.loads(r[0]) for r in self.conn.execute("SELECT data FROM entities WHERE kind='project'")]
         for project in projects:
             name = project['name']
-            if project.get('state') != 'ACTIVE' or project.get('execution_repository') != self.repository:
+            if project.get('state') != 'ACTIVE' or not (
+                    project.get('execution_repository') == self.repository
+                    or name == NP.FACTORY_PROJECT and getattr(self, 'factory_line', lambda: False)()):
                 continue
             current = self.inputs(name)
             active = next((r for r in self.records(name) if r['state'] not in FINAL), None)
@@ -523,7 +567,8 @@ class ProjectCycles:
                             self.observe(dict(operation='pm_start', project=name,
                                 refusal=getattr(error, 'code', 'unknown_outcome:' + type(error).__name__)))
                 continue
-            if name == 'factory' and not any(r[0].startswith('intake_proposal:') for r in self.input_members(name)):
+            if name == 'factory' and not any(r[0].startswith(('intake_proposal:', NP.ID_PREFIX))
+                                             for r in self.input_members(name)):
                 self.seen[name] = current
                 continue
             if self.seen.get(name) != current:
@@ -583,12 +628,19 @@ def from_line(line):
                     "SELECT data FROM entities WHERE kind='project'")], api_edge=ingress.settlement.api_edge,
                 journal_signer=service.principal, sign=service.sign, asker=ingress.presenter.edge,
                 authority_generation=service.generation)
+            # VELDO-0143: the factory's new-project decisions, the one owner of the PM's new-project document.
+            if callable(getattr(service, 'new_projects', None)):
+                services['new_projects'] = service.new_projects()
         services['grooming'] = organ('control_grooming').Grooming(store, membership, service.conn, ids,
             service.principal, service.sign, backlog=backlog_module, service=backlog, assignment=assignment,
             inbox=ingress.inbox, presenter=ingress.presenter, settlement=ingress.settlement,
             requester=(service.principal, signature), workspace=line.workspace,
             authority_generation=service.generation)
-    return ProjectCycles(store, service.conn, domain=service.domain, repository=line.repository,
+    cycles = ProjectCycles(store, service.conn, domain=service.domain, repository=line.repository,
         workspace=line.workspace, principal=service.principal, sign=service.sign, command_sign=signature,
         runner=line.runner, adapters=line.engines, services=services, generation=service.generation,
         execution_records=line.records, observe=service._log)
+    # VELDO-0143: the factory project's own repository holds only its team configuration and is no line, so
+    # its cycles run on the loop's factory line (control_service FactoryLoop.factory_line).
+    cycles.factory_line = lambda: getattr(getattr(line, 'loop', None), 'factory_line', None) == line.repository
+    return cycles

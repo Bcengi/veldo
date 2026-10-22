@@ -268,15 +268,16 @@ class Store:
     def head(self):
         return self.conn.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0]
 
-    def activate(self, command_id):
-        """The owner's signed control_project `activate` of `factory`, owned by him."""
+    def activate(self, command_id, execution_repository=None):
+        """The owner's signed control_project `activate` of `factory`, owned by him, on the factory project's own
+        repository (VELDO-0143) when there is one, else on the workspace's."""
         PJ = self.CT.PJ
         projects = PJ.Projects(self.S, self.CM, self.conn, self.ids, self.principal, self.sign,
                                stop=lambda *_: False, authority_generation=self.generation)
         command = dict(self.ids, operation='activate', project=PJ.FACTORY_PROJECT, principal=self.owner,
                        command_id=command_id, nonce=command_id, owner=self.owner,
                        charter={'purpose': 'The factory\'s own work, staffed by its default team.'},
-                       execution_repository=self.ids['repository_uuid'],
+                       execution_repository=execution_repository or self.ids['repository_uuid'],
                        authority_policy={'team_amendment': [PJ.OWNER_ROLE]}, coordination_budget=dict(FACTORY_BUDGET))
         return projects.apply({'command': command, 'signature': self.owner_sign(self.S.canonical_bytes(command))})
 

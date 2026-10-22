@@ -7,7 +7,8 @@ adoption signer below, which signs the repository's VELDO-0029 binding; and the 
 (control_service.Service.take_on), which takes the repository on without a restart.
 
 THE RECORD. Entity `repository:<uuid>` of kind `repository` (design section 5): the repository uuid and
-name, its one Git identity, its path, its remote (url, owner, default branch), its origin (`adopted`), the
+name, its one Git identity, its path, its remote (url, owner, default branch), its origin (`adopted`, or
+`created` by the provisioner's creation steps, VELDO-0143, whose record also names the step it failed at), the
 digest of its VELDO-0029 binding, the settled decision it was adopted on, the scaffold commit when one was
 laid, and its state: `provisioning`, `active` or `failed` with a named reason. Every write appends one
 entry to `history` and never changes an earlier one. provisioning -> active and provisioning -> failed are
@@ -19,7 +20,10 @@ name ADOPTION_TOUCHPOINT and a target of kind ADOPTION_TARGET for the record id 
 proposal, SATISFIED by the settlement of its current version, whose ruling is approve and whose typed
 effect approves exactly these terms and this proposal, whose brief (what the owner was shown) is exactly
 adoption_brief(proposal), and whose only principal is the owner the proposal names, an active person
-holding project_owner. Anything else refuses `no_settled_decision:<why>` by name, read only.
+holding project_owner. Anything else refuses `no_settled_decision:<why>` by name, read only. A decision id
+of control_project_proposal (`new-project:<intake proposal>`, VELDO-0143) is judged by that module's one
+judge instead (repository_decision): the owner's one answer to the factory PM's new-project proposal, or his
+own message when it named the project and the identity, naming the one repository it creates or adopts.
 
 THE ADOPTION SIGNER (AdoptionSigner). A service key setup generates in the protected key directory and
 enrolls among this host's enrollment signers (control_factory_setup.adoption_signer, host_files), under
@@ -70,6 +74,9 @@ STATES = ('provisioning', 'active', 'failed')
 # provisioning -> provisioning records a step (the binding's digest once it is signed).
 TRANSITIONS = {None: ('provisioning',), 'provisioning': ('provisioning', 'active', 'failed')}
 ORIGIN = 'adopted'
+ORIGINS = ('adopted', 'created')
+# VELDO-0143: the settled decisions control_project_proposal judges (a new project from chat).
+NEW_PROJECT_PREFIX = 'new-project:'
 # The adoption request a settled answer answers (VELDO-0068 terms).
 ADOPTION_TOUCHPOINT = 'decision_disposition'
 ADOPTION_TARGET = 'repository_adoption'
@@ -91,11 +98,15 @@ PROPOSAL_FIELDS = ('repository', 'name', 'owner', 'identity', 'path', 'remote', 
                    'scaffold_commit')
 # The error taxonomy (the spec's observability contract): each refusal's class.
 # push_unconfirmed: the push was accepted but the remote's branch could not be read back as the commit.
+# VELDO-0143 adds the creation steps' own: a directory that exists and is not empty, a remote that already
+# exists, an identity token that is not available and a creation the host refused.
 REASONS = ('remote_owner_mismatch', 'push_refused', 'push_unconfirmed', 'no_settled_decision', 'signature_refused',
-           'not_taken_on')
+           'not_taken_on', 'directory_not_empty', 'remote_exists', 'token_unavailable', 'creation_refused')
 TAXONOMY = {'binding_mismatch:remote_owner': 'remote_owner_mismatch', 'push_refused': 'push_refused',
             'push_unconfirmed': 'push_unconfirmed', 'no_settled_decision': 'no_settled_decision',
-            'signature_refused': 'signature_refused', 'not_taken_on': 'not_taken_on'}
+            'signature_refused': 'signature_refused', 'not_taken_on': 'not_taken_on',
+            'directory_not_empty': 'directory_not_empty', 'remote_exists': 'remote_exists',
+            'token_unavailable': 'token_unavailable', 'creation_refused': 'creation_refused'}
 _NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$')
 # A repository id is one Git ref component (refs/veldo/adoption/<id>): no slash, no '..', no '.lock' end.
 _REPOSITORY = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$')
@@ -215,6 +226,12 @@ def settled(store, membership, conn, request, now=None):
     """The settled owner decision `request` is, naming one repository for adoption, or Refused
     no_settled_decision:<why>. Reads only. Returns {proposal, request, request_version, settlement_id,
     effect_id, presentation_id, versions}."""
+    if isinstance(request, str) and request.startswith(NEW_PROJECT_PREFIX):
+        PP = organ('control_project_proposal')
+        try:
+            return PP.repository_decision(store, membership, conn, request, now)
+        except PP.Refused as error:
+            raise Refused(error.code, error.detail) from None
     found = _row(conn, request)
     data = found['data'] if found is not None and found['kind'] == REQUEST_KIND else None
     if not isinstance(data, dict) or type(data.get('request_version')) is not int:
@@ -296,9 +313,10 @@ def _journal_command(conn, store, journal, operation, transition, params, expect
     return store.execute(conn, command, principal, sign, generation)
 
 
-def write(store, conn, journal, repository, state, *, step, at=None, generation=1, **fields):
+def write(store, conn, journal, repository, state, *, step, at=None, generation=1, origin=None, **fields):
     """Write the record of `repository` into `state` (TRANSITIONS), appending one history entry naming the
-    step; `fields` set the record's other values. Refused invalid_transition by name, writing nothing."""
+    step; `fields` set the record's other values. Its origin is set when it is first written (`adopted`
+    unless named) and never changed. Refused invalid_transition by name, writing nothing."""
     if state not in STATES:
         raise Refused('invalid_input:state', state)
     prior = read(conn, repository)
@@ -308,7 +326,10 @@ def write(store, conn, journal, repository, state, *, step, at=None, generation=
     at = time.time() if at is None else at
     record = {k: v for k, v in (prior or {}).items() if k != 'version'}
     record.update(fields)
-    record.update(schema=SCHEMA, repository=repository, state=state, origin=ORIGIN, updated_at=at)
+    kept = (prior or {}).get('origin')
+    if origin not in (None, kept) and (kept is not None or origin not in ORIGINS):
+        raise Refused('invalid_input:origin', repository)
+    record.update(schema=SCHEMA, repository=repository, state=state, origin=kept or origin or ORIGIN, updated_at=at)
     entry = {'step': step, 'state': state, 'at': at}
     if fields.get('reason'):
         entry['reason'] = fields['reason']
@@ -331,7 +352,8 @@ def metrics(conn, observations=()):
         if event.get('outcome') == 'refused' and event.get('operation') in ('adopt', 'take_on'):
             code = reason(event.get('refusal'))
             refused[code] = refused.get(code, 0) + 1
-    return {'adopted': sum(1 for r in every if r.get('state') == 'active'),
+    return {'adopted': sum(1 for r in every if r.get('state') == 'active' and r.get('origin') == ORIGIN),
+            'created': sum(1 for r in every if r.get('state') == 'active' and r.get('origin') == 'created'),
             'provisioning': sum(1 for r in every if r.get('state') == 'provisioning'),
             'failed': sum(1 for r in every if r.get('state') == 'failed'),
             'failed_by_reason': {k: sum(1 for r in every if r.get('state') == 'failed' and reason(r.get('reason')) == k)

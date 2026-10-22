@@ -156,6 +156,19 @@ take-on that faults unexpectedly leaves its record as it was and is judged again
 waits on, ADOPTION_RETRY_SECONDS after that record's own fault, never sooner, whatever else is taken on
 meanwhile. inspect reports the instance and the repositories it serves.
 
+A NEW PROJECT FROM CHAT (VELDO-0143). After take_on, the instance runs its NewProjectPass
+(control_service_projects): the owner's settled answers to the factory PM's new-project proposals are
+applied, the repository provisioner (the registered protected effect control_effect_executor_creation, run
+as its own process with the provisioner configuration the installation names under `provisioner`) is
+started once for each settled decision, a repository that ended `failed` fails its decision and the owner is
+told, and once a created or adopted repository is `active` the same settlement activates the project with
+its first team and first objective in this process, and the factory loop gains the repository's line
+(FactoryLoop.add_line), with the roles of the loop's first line, so its first unit is dispatched in it. A
+repository this instance serves that the work configuration does not name gets that line at the loop's start
+too. The factory project, whose own repository holds only its team configuration and is no line, has its
+cycles run on the loop's factory line (FactoryLoop.factory_line): the line of its execution repository when
+there is one, otherwise the loop's first.
+
 KEY DIRECTORY. The custody wrapper (VELDO-0067) denies a confined worker every file created directly
 in an ancestor of a protected directory after the worker starts, so the key directory belongs where
 workers never write directly: outside the home and temporary directories. It is judged as named: a
@@ -224,6 +237,9 @@ RP = _organ('control_reservation_policies', lazy=True)
 EDGE = _organ('control_channel_enrollment')
 # VELDO-0161: the repository records and settled adoption decisions the running instance takes repositories on by.
 REPO = _organ('control_repository')
+# VELDO-0143: the running service's part of a new project from chat, and the provisioner it starts.
+NP = _organ('control_service_projects', lazy=True)
+PROVISIONER = _organ('control_effect_executor_creation', lazy=True)
 API_SERVICE = 'api-service.json'
 # VELDO-0154: the factory loop's organs: the person inbox its questions go to (VELDO-0064), the entity contract
 # the inbox reads its lifecycle from, and the re-run-or-ask decision over a limited run's record (VELDO-0160).
@@ -1217,6 +1233,8 @@ class Service:
                          'instance_id': os.urandom(16).hex()}
         self.installed_receivers = dict((config.get('receiver') or {}).get('configs') or {})
         self.adoption_faults, self.journal_public = {}, None
+        # VELDO-0143: this instance's new-project work, made when first asked for.
+        self.projects_pass = None
         # The counts are the observation log's, so they cover every instance that served this
         # installation, not only this process.
         with contextlib.suppress(OSError):
@@ -1696,6 +1714,29 @@ class Service:
         self.config.setdefault('receiver', {}).setdefault('configs', {})[repository] = receiver
         return receiver
 
+    def new_projects(self):
+        """VELDO-0143: the factory's new-project decisions on this instance's connection, or None while the
+        installation has no channel."""
+        if self.projects_pass is None:
+            self.projects_pass = NP.NewProjectPass(self, globals())
+        return self.projects_pass.new_projects()
+
+    def new_project_pass(self):
+        """VELDO-0143: one pass of this instance's new-project work (A NEW PROJECT FROM CHAT). Returns the
+        events, each logged; a fault is logged by name and never ends the service."""
+        if self.channel is None:
+            return []
+        if self.projects_pass is None:
+            self.projects_pass = NP.NewProjectPass(self, globals())
+        try:
+            return self.projects_pass.run()
+        except Exception as error:  # noqa: BLE001 - never the end of the service; judged again on the next pass
+            event = {'kind': 'new_project', 'operation': 'pass', 'at': time.time(), 'domain_uuid': self.domain,
+                     'outcome': 'refused', 'refusal': 'unknown_outcome:' + type(error).__name__}
+            with contextlib.suppress(OSError):
+                self._log(event)
+            return [event]
+
     def _receiver_configuration(self, repository, workspace):
         """The repository's launch receiver configuration beside the installed ones: an installed receiver
         configuration's fields with this repository and workspace, 0600. Returns (path, created). One this
@@ -1923,8 +1964,11 @@ class Line:
         if not lost and self.runner.orphans:
             released += self.runner.release_orphans()
         report['released'] += [{'repository': self.repository, 'dispatch_id': one} for one in released]
-        # Coordination uses this same event-driven pass and this line's Runner.
-        if any(data.get('execution_repository') == self.repository and data.get('state') == 'ACTIVE'
+        # Coordination uses this same event-driven pass and this line's Runner; the factory project's cycles
+        # run on the loop's factory line (VELDO-0143).
+        if any(data.get('state') == 'ACTIVE' and (data.get('execution_repository') == self.repository
+                                                  or data.get('name') == 'factory'
+                                                  and self.loop.factory_line == self.repository)
                for data in self._rows('project')) and self._rows('team'):
             if not hasattr(self, 'pm_cycles'):
                 self.pm_cycles = _organ('control_workflow_cycle_pm').from_line(self)
@@ -2333,9 +2377,41 @@ class FactoryLoop:
         receivers = (service.config.get('receiver') or {}).get('configs') or {}
         self.lines = {repository: Line(self, repository, roles, receivers[repository])
                       for repository, roles in sorted(work['repositories'].items())}
+        self.configured = sorted(self.lines)
+        # VELDO-0143: a repository this instance took on (VELDO-0161) that the work configuration does not name
+        # is served by a line of its own, with the roles of the first one.
+        for repository in sorted(set(service.repositories) - set(self.lines)):
+            if receivers.get(repository) and self.lines:
+                self.add_line(repository, receivers[repository])
         self.wakes, self.ended, self.timer = [], [], None
         self.passes, self.last = 0, None
         self.counts = {'offered': 0, 'refused': 0, 'waiting': 0, 'asked': 0, 'released': 0, 'faults': 0, 'lands': 0}
+
+    @property
+    def factory_line(self):
+        """VELDO-0143: the line the factory project's cycles run on: the line of its execution repository, else
+        the first line the work configuration names (its own repository holds only its team configuration and is
+        no line), never one added later."""
+        row = self.service.conn.execute("SELECT kind, data FROM entities WHERE id='project:factory'").fetchone()
+        repository = json.loads(row[1]).get('execution_repository') if row is not None and row[0] == 'project' else None
+        if repository in self.lines:
+            return repository
+        return self.configured[0] if self.configured else None
+
+    def add_line(self, repository, receiver_path):
+        """VELDO-0143: a line for `repository`, taken on by this instance, with the roles of the loop's first
+        line (the factory's default team's builder and reviewers), through the repository's own receiver
+        configuration. Returns the repository, or None when there is no receiver configuration or no line to take
+        the roles of; a repository that has a line keeps it."""
+        if repository in self.lines:
+            return repository
+        if not receiver_path or not self.lines:
+            return None
+        template = self.lines[self.configured[0]] if self.configured else self.lines[min(self.lines)]
+        roles = json.loads(json.dumps(template.roles))
+        roles.pop('land', None)
+        self.lines[repository] = Line(self, repository, roles, receiver_path)
+        return repository
 
     def start(self):
         """The service's start (VELDO-0158): each line's Runner sweeps the run directories left from before, removing
@@ -2586,6 +2662,9 @@ def serve(config_path):
                     # VELDO-0161: a faulted take-on, judged again when its time came (a timer, never a poll).
                     if not stopping and service.adoption_due() is not None and service.adoption_due() <= time.monotonic():
                         service.take_on()
+                    # VELDO-0143: a new project's decision provisioned, and activated once its repository is active.
+                    if not stopping:
+                        service.new_project_pass()
             finally:
                 notify('STOPPING=1')
                 listener.close()

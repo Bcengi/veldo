@@ -43,6 +43,16 @@ the activation commits pinned to the request, its terms, the settlement and the 
 The record is the signed command's, with the settlement as its provenance; a second application of
 the same settlement refuses already_exists.
 
+A NEW PROJECT FROM CHAT (VELDO-0143). activate_decided(decision) applies the owner's settled new-project
+decision (control_project_proposal: his one answer to the factory PM's proposal, or his own message when it
+named the project and the identity, judged there by its one judge) as the project's activation: owner,
+charter, execution repository (the repository the decision created or adopted), authority policy and
+coordination budget are the proposal's. It applies only once that repository's record
+(control_repository) is `active`, the running service having taken it on; a repository still
+`provisioning` or `failed` refuses not_ready:repository:<state> and activates nothing. The activating
+transaction reads the record again. The record's provenance names the decision and, when he answered,
+the settlement.
+
 THE LIFECYCLE is entity_contract's R05 vocabulary and nothing else: every transition is asked of
 entity_contract.transition with the evidence this service established, so an undeclared edge, a
 terminal source or a missing predicate is refused by name.
@@ -119,7 +129,7 @@ WRITES = ('entities', 'journal', 'commands', 'nonces')
 OPERATIONS = ('activate', 'pause', 'resume', 'cancel', 'complete')
 # VELDO-0149: the two paths an activation comes by, and the activation request a settled answer answers:
 # a VELDO-0068 request of this touchpoint whose terms target the project under this target kind.
-ACTIVATION_PATHS = ('signed_command', 'settled_answer')
+ACTIVATION_PATHS = ('signed_command', 'settled_answer', 'new_project')
 ACTIVATION_TOUCHPOINT = 'decision_disposition'
 ACTIVATION_TARGET = 'project_activation'
 # The VELDO-0068 records a settled answer is read from (control_request_settlement, control_assignment).
@@ -146,7 +156,8 @@ TAXONOMY = {'invalid_input': 'invalid_input', 'missing_field': 'invalid_input', 
             'inapplicable_policy': 'missing_authority', 'already_exists': 'stale_subject',
             'stale_subject': 'stale_subject', 'stale_version': 'stale_subject', 'invalid_transition': 'stale_subject',
             'open_obligation': 'missing_evidence', 'unavailable_service': 'unavailable_service',
-            'unsettled': 'missing_evidence', 'stale_answer': 'stale_subject', 'not_approved': 'missing_authority'}
+            'unsettled': 'missing_evidence', 'stale_answer': 'stale_subject', 'not_approved': 'missing_authority',
+            'no_settled_decision': 'missing_evidence', 'not_ready': 'stale_subject'}
 _NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$')
 
 # The optional prefixes of a project's ticket keys (VELDO-0152): `BCG` for `BCG-123`.
@@ -252,6 +263,14 @@ def read(store, conn, name):
     return dict(json.loads(row[2]), version=row[1])
 
 
+def _repository_state(conn, repository, decision):
+    """The state of the repository record `repository` the decision `decision` created or adopted, read on
+    `conn`: provisioning, active, failed, or absent (also for a record another decision made)."""
+    row = conn.execute('SELECT kind, data FROM entities WHERE id=?', ('repository:' + str(repository),)).fetchone()
+    data = json.loads(row[1]) if row is not None and row[0] == 'repository' else {}
+    return data.get('state') if data.get('request') == decision and data.get('state') else 'absent'
+
+
 def runner_stop(runner):
     """The host's ordinary stop of a running dispatch, as the VELDO-0039 runner holds it: the Launch
     it submitted asks its receiver to stop (R44's cooperative stop, then the group's escalation).
@@ -320,6 +339,14 @@ class Projects:
                            request_id=request if _is_str(request) else None, settlement_id=None, receipt_id=None,
                            presentation_id=None)
         return self._run(lambda: self._activate_settled(request, observation), observation)
+
+    def activate_decided(self, decision):
+        """VELDO-0143: activate the project a settled new-project decision names (A NEW PROJECT FROM CHAT).
+        Returns what apply returns."""
+        observation = dict(self.ids, schema=SCHEMA, operation='activate', project=None, command_id=None,
+                           accepted_versions={}, path='new_project', execution_repository=None, adoption=None,
+                           decision=decision if _is_str(decision) else None, settlement_id=None)
+        return self._run(lambda: self._activate_decided(decision, observation), observation)
 
     def _run(self, work, observation):
         try:
@@ -529,6 +556,47 @@ class Projects:
         return {'ok': True, 'reason': 'activate', 'project_id': pid, 'project': read(self.store, self.conn, name),
                 'receipt': receipt, 'stops': [], 'obligations': []}
 
+    def _activate_decided(self, decision, observation):
+        PP = _organ('control_project_proposal')
+        try:
+            judged = PP.settled(self.store, self.membership, self.conn, decision, self.clock())
+        except PP.Refused as error:
+            raise Refused(error.code, error.detail) from None
+        proposal = judged['proposal']
+        name, repository = proposal['project'], proposal['repository']
+        pid = project_id(name)
+        observation.update(project=pid, execution_repository=repository, settlement_id=judged['settlement_id'])
+        state = _repository_state(self.conn, repository, decision)
+        if state != 'active':
+            raise Refused('not_ready:repository:%s' % state, 'the repository is not active yet')
+        fields = self._bound_fields(dict(owner=proposal['owner'], charter=proposal['charter'],
+                                         execution_repository=repository, authority_policy=proposal['authority_policy'],
+                                         coordination_budget=proposal['coordination_budget']))
+        state = self.membership.authority_state(self.store, self.conn)
+        now = self.clock()
+        owner_problems = self._owner_problems(state, fields['owner'], name, now)
+        if owner_problems:
+            raise Refused(owner_problems[0], '; '.join(owner_problems))
+        if state['entities'].get(pid) is not None:
+            raise Refused('already_exists', pid)
+        observation['adoption'] = self._adoption(repository)
+        self._activation_evidence(fields, state, name, now)
+        command_id = 'project-activation:%s' % decision
+        observation['command_id'] = command_id
+        owner = fields['owner']
+        versions = dict(judged['versions'], **{pid: 0, owner: state['entities'].get(owner, {}).get('version', 0),
+                                               'repository:' + repository: self._row('repository:' + repository)['version']})
+        observation['accepted_versions'] = versions
+        params = dict(action='activate', project_id=pid, name=name, principal=owner, command_id=command_id, at=now,
+                      fields=fields, decision={'decision': decision, 'path': judged['path'],
+                                               'request_id': judged['request'], 'settlement_id': judged['settlement_id'],
+                                               'effect_id': judged['effect_id'], 'repository': repository})
+        stored = dict(command_id=command_id, principal=self.journal_signer, operation=OPERATION, parameters=params,
+                      expected_versions=versions, artifact_digests=[], nonce=command_id)
+        receipt = self.store.execute(self.conn, stored, self.journal_signer, self.sign, self.authority_generation)
+        return {'ok': True, 'reason': 'activate', 'project_id': pid, 'project': read(self.store, self.conn, name),
+                'receipt': receipt, 'stops': [], 'obligations': []}
+
     def _unsettled(self, request, data):
         """Why a request has no settlement to apply: closed some other way, answered only to a presentation or
         request version that has since changed, answered at its current presentation but not yet settled,
@@ -600,6 +668,12 @@ class Projects:
             fields = params['fields']
             if not self._adopted(conn, fields['execution_repository']):
                 raise Refused('invalid_input:execution_repository', 'not adopted in this domain')
+            decided = params.get('decision')
+            if decided is not None:
+                # VELDO-0143: the repository is active as this transaction reads it.
+                state = _repository_state(conn, fields['execution_repository'], decided['decision'])
+                if state != 'active':
+                    raise Refused('not_ready:repository:%s' % state, 'the repository is not active yet')
             evidence = {p: True for p in ACTIVATION_PREDICATES}
             self._edge('DRAFT', 'ACTIVE', evidence)
             provenance = {'source': 'activate', 'created_by': params['principal'], 'created_at': now}
@@ -608,6 +682,9 @@ class Projects:
                 # VELDO-0149: activated from the owner's settled answer, which the record names.
                 provenance.update(source='settled_answer', **settled)
                 entry['settlement_id'] = settled['settlement_id']
+            if decided is not None:
+                provenance.update(source='new_project', **decided)
+                entry['decision'] = decided['decision']
             data = dict(schema=SCHEMA, name=params['name'], state='ACTIVE', domain_uuid=self.ids['domain_uuid'],
                         repository_uuid=self.ids['repository_uuid'], charter_digest=_digest(fields['charter']),
                         charter_revision=1, provenance=provenance,
