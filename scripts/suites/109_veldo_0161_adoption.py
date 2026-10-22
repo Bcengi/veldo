@@ -725,6 +725,12 @@ def _v161_suite():
                 # AC1: the missing scaffold, one recorded commit the answered proposal names, pushed on his answer.
                 with region('adoption/scaffold-commit'):
                     beta = repos['beta']
+                    # Hooks of the adopted repository, which no step of the adoption may run.
+                    hooked = base / 'hook-ran'
+                    for hook in ('post-merge', 'reference-transaction', 'post-checkout', 'pre-push'):
+                        target = Path(beta['path']) / '.git' / 'hooks' / hook
+                        target.write_text('#!/bin/sh\necho %s >> %s\n' % (hook, hooked))
+                        target.chmod(0o700)
                     beta_proposal = prepared('beta', beta['uuid'], beta['remote'], beta['path'])
                     laid_commit = beta_proposal.get('scaffold_commit')
                     laid_ref = tip(beta['path'], 'refs/veldo/adoption/' + beta['uuid'])
@@ -757,6 +763,7 @@ def _v161_suite():
                         ('the branch holds exactly that one commit on the base', new == [laid_commit]),
                         ('the remote holds exactly that commit', tip(beta['bare']) == laid_commit),
                         ('it was pushed through the identity profile', len(pushes) >= 1),
+                        ('no hook of the repository ran', not hooked.exists()),
                         ('the record names the commit the proposal named',
                          beta_record.get('scaffold_commit') == laid_commit == beta_result.get('scaffold_commit'))])
 

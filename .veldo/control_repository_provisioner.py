@@ -11,6 +11,8 @@ repository under SCAFFOLD_REF (never on a branch, never pushed). The proposal it
 so the owner's answer approves exactly the commit that will be pushed; a repository that carries the
 scaffold gets a proposal whose scaffold commit is None and nothing is committed.
 
+Every local Git step runs under git_process's isolated profile with no hook of the repository.
+
 ON HIS SETTLED ANSWER (scaffold_problems, advance, push). The effect checks that the commit the proposal
 names is the one recorded under SCAFFOLD_REF, that its one parent is the proposal's base, that it only adds
 files and that the substrate is complete at it; fast-forwards the default branch to it (refused by name
@@ -48,7 +50,10 @@ def _scaffold_module():
 
 
 def git(path, *args, check=True, **kwargs):
-    done = GP.run(['git', '-C', str(path), *args], capture_output=True, text=True, timeout=STEP_SECONDS, **kwargs)
+    """One local Git step in `path` under the isolated profile, running no hook of the repository (as no
+    identity push does, VELDO-0153)."""
+    done = GP.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, *args], capture_output=True,
+                  text=True, timeout=STEP_SECONDS, **kwargs)
     if check and done.returncode:
         raise Refused('invalid_input:git', '%s: %s' % (args[0], done.stderr.strip()[:200]))
     return done

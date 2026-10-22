@@ -10667,6 +10667,10 @@ def cases():
              "                             {eid: 0}, 'adoption-signature:' + str(decision['settlement_id']))\n",
              "            pass  # defect: the signature is not journaled\n",
              ['adoption/signer-scope', 'adoption/signatures-journaled'])
+    adoption('adoption161-provisioner-hooks', 'control_repository_provisioner.py',
+             "    done = GP.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, *args], capture_output=True,\n",
+             "    done = GP.run(['git', '-C', str(path), *args], capture_output=True,  # defect: the repository's hooks run\n",
+             ['adoption/scaffold-commit'])
     adoption('adoption161-receiver-configuration-absent', 'control_service.py',
              "        receiver = self._receiver_configuration(repository, os.path.realpath(path))\n",
              "        receiver = None  # defect: no receiver configuration is written\n",
