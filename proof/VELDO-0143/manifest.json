@@ -1,0 +1,121 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0143",
+ "commit": "bf6c39119687922480abd59155a018c8a232b11c",
+ "producer": "Claude implementation agent (Claude Code)",
+ "produced_at": "2026-10-22T22:00:14.022158+00:00",
+ "plan": "PLAN-0019",
+ "work": "W103",
+ "plan_revision": 4,
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "not_run",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/observations.json",
+     "detail": "Suite 110 in this sandbox: factory/own-repository, intake/new-project-routed, proposal/nothing-asked, proposal/fields, proposal/one-answer, proposal/correction and proposal/refusals green. pm/new-project-run (the factory PM cycle through the factory loop, Runner, launch receiver and a fake engine) is red by name: no installed graph runtime here (runtime_unavailable). Partial run of one suite, not a gate pass."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/falsifiers.json",
+     "detail": "Declared falsifier newproject143-presented-when-named turns proposal/nothing-asked red; newproject143-second-question and newproject143-factory-repository-unbound are killed too."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/110_veldo_0143_new_project.py",
+     "detail": "Real store, intake by Telegram and API, VELDO-0068 settlement over a loopback Bot API; pm/new-project-run is the host's."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/observations.json",
+     "detail": "provision/settlement-required, provision/created, provision/answered-and-corrected, provision/directory-not-empty, provision/adoption-path, provision/step-failures, provision/observed and service/provisions green in this sandbox. Partial run of one suite, not a gate pass."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/falsifiers.json",
+     "detail": "Declared falsifier newproject143-provisioner-unsettled turns provision/settlement-required red; directory-overwritten, step-failure-continues, remote-owner-unchecked and ambient-push are killed too."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/110_veldo_0143_new_project.py",
+     "detail": "Real Git repositories, a loopback GitHub REST stand-in creating bare remotes, pushes through the VELDO-0153 identity profile inside the hermetic fence (without its recording agent here, printed), the provisioner as its own process started by the service."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/observations.json",
+     "detail": "activation/order, activation/applied, activation/failed-activates-nothing, activation/admitted-without-question and activation/new-line green in this sandbox. Partial run of one suite, not a gate pass."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/falsifiers.json",
+     "detail": "Declared falsifier newproject143-activated-while-provisioning turns activation/order red."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/110_veldo_0143_new_project.py",
+     "detail": "The authority service's take-on and new-project pass in this process; the owner told by the VELDO-0128 report through the loopback Bot API. The first unit's dispatch through the new project's PM cycle needs the graph runtime: the host's (README, Host runs)."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "not_run",
+   "detail": "Focused: suite 110 here 41 expects passed, 1 failed (pm/new-project-run, runtime_unavailable). Dependency and consumer suites: consumer-suites.json, identical to the starting commit in this sandbox. No full selftest."
+  },
+  {
+   "name": "integration",
+   "status": "not_run",
+   "detail": "The factory PM run and the setup suites need the host (graph runtime, systemd user manager)."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "detail": "All nine finding-143 mutations killed through check_teeth_mutations.py --worker (the coordinator does not start here); baseline before and after with only pm/new-project-run red. See falsifiers.json."
+  },
+  {
+   "name": "lint",
+   "status": "passed",
+   "detail": "bash scripts/check_lint.sh: lint pass."
+  },
+  {
+   "name": "template_sync",
+   "status": "passed",
+   "detail": "bash scripts/check_template_sync.sh: pass."
+  },
+  {
+   "name": "generated",
+   "status": "passed",
+   "detail": "bash scripts/check_generated.sh: pass; requires.json regenerated with run_scope.py --emit-requires."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "detail": "bash scripts/verify.sh is the host's to run (README.md, Host runs)."
+  }
+ ],
+ "assumptions": [
+  "VELDO-0161 and VELDO-0153 are the base of this branch and are not landed.",
+  "A correction is read by the factory PM and settles the decision without a second presentation.",
+  "\"Registered protected effect\" is the named effect repository_provisioning that only the running service starts with the trusted provisioner configuration.",
+  "The factory project's own repository is no line; its cycles run on the work configuration's first line.",
+  "A factory set up before this change keeps its factory project on the workspace and has no provisioner configuration until set up anew.",
+  "Independent critical-risk review and the owner's approval are outstanding."
+ ],
+ "rollback": "Stop provisioning and adoption and disable the adoption signer; repositories already created or adopted stay as they are, with their records, for the owner to remove by hand. No automatic rollback."
+}
