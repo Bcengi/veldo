@@ -21,7 +21,11 @@ already exist, in the order they depend on each other, checking each. It reimple
      (control_service_channel) opens the one qualification decision request as this requester when it
      accepts his qualify command, so the live qualification needs no other preparation;
   7. this host's trust (control_eligibility.host_trust_path, read by load_host_trust) naming this host's
-     identity, the owner as enrollment signer and the settlement signer;
+     identity, the owner and the adoption signer as enrollment signers and the settlement signer. The
+     adoption signer (VELDO-0161) is a service key generated in the protected key directory with the others,
+     whose only use is signing the VELDO-0029 binding of a repository a settled owner decision names
+     (control_repository.AdoptionSigner); a factory laid down before it existed keeps its signers file and has
+     no adoption signer, and a re-run neither adds nor requires one;
   8. the VELDO-0029 enrollment of the named workspace clone, signed by the owner (control_enrollment.enroll);
   9. the 0600 VELDO-0073 ingress configuration (control_channel_ingress.load_config and open_ingress read
      it), naming the account's own 0600 bot token file, never a copy of the token;
@@ -107,7 +111,7 @@ REQUESTER, REQUESTER_KEY, REQUESTER_SCOPE = _CHANNEL.REQUESTER, _CHANNEL.REQUEST
 PROJECT_MANAGER = 'pm'
 # The owner's name is none of them, nor a default team worker setup enrolls (VELDO-0185).
 RESERVED = (PROJECT_MANAGER, JOURNAL_PRINCIPAL, EDGE_PRINCIPAL, API_EDGE, SETTLEMENT_PRINCIPAL, 'launch-receiver', REQUESTER,
-            *organ('control_factory_setup_dispatch').TEAM_WORKERS)
+            'adoption-signer', *organ('control_factory_setup_dispatch').TEAM_WORKERS)
 # The owner's roles: the bootstrap's two (project_owner, membership_steward) and the authorities a factory
 # owner decides with.
 OWNER_ROLES = ['admission_authority', 'membership_steward', 'priority_authority', 'project_owner',
@@ -119,6 +123,8 @@ DELEGATION_DAYS = 90
 STORE_DIR, KEYS_DIR, EDGE_DIR, HOST_DIR = 'authority', 'keys', 'edge', 'host'
 STORE_NAME = 'control.sqlite3'
 JOURNAL_KEY, SETTLEMENT_KEY, CONNECTION_KEY = 'journal', 'settlement', 'edge-auth'
+# VELDO-0161: the adoption signer's key file and the principal its enrollment-signers line names.
+ADOPTION_KEY, ADOPTION_PRINCIPAL = 'adoption-signer', 'adoption-signer'
 PLAIN = re.compile(r'[a-z][a-z0-9._-]{0,62}')
 EXIT_REFUSED, EXIT_USAGE = 1, 2
 
@@ -323,12 +329,19 @@ def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
 # What the file steps write, built once for the first run and for every re-run's comparison
 # ---------------------------------------------------------------------------------------------
 
-def host_files(plan, settlement_public):
-    """The host trust and the two signer files it names: {path: text}."""
+def adoption_signer(keys):
+    """Generate the adoption signer's key in the protected key directory `keys` (VELDO-0161); its public key."""
+    return _keygen(os.path.join(keys, ADOPTION_KEY), 'veldo-adoption-signer')
+
+
+def host_files(plan, settlement_public, adoption_public=None):
+    """The host trust and the two signer files it names: {path: text}. The enrollment signers are the owner
+    and, when its key is given, the adoption signer (VELDO-0161)."""
     host = os.path.join(plan['root'], HOST_DIR)
     enrollment_signers, settlement_signers = os.path.join(host, 'enrollment_signers'), os.path.join(host, 'settlement_signers')
-    return {enrollment_signers: '%s namespaces="%s" %s\n' % (plan['owner'], organ('control_eligibility').ENROLLMENT_NAMESPACE,
-                                                             plan['owner_public']),
+    namespace = organ('control_eligibility').ENROLLMENT_NAMESPACE
+    adoption = ('%s namespaces="%s" %s\n' % (ADOPTION_PRINCIPAL, namespace, adoption_public)) if adoption_public else ''
+    return {enrollment_signers: '%s namespaces="%s" %s\n' % (plan['owner'], namespace, plan['owner_public']) + adoption,
             settlement_signers: '%s namespaces="%s" %s\n' % (SETTLEMENT_PRINCIPAL,
                                                              organ('control_decision_dependency').SETTLEMENT_NAMESPACE,
                                                              settlement_public),
@@ -439,7 +452,8 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                   'edge': _keygen(os.path.join(keys, E.edge_key_id(CHANNEL)), 'veldo-edge-telegram'),
                   'settlement': _keygen(os.path.join(keys, SETTLEMENT_KEY), 'veldo-settlement'),
                   'connection': _keygen(os.path.join(root, EDGE_DIR, CONNECTION_KEY), 'veldo-edge-connection'),
-                  'requester': _keygen(os.path.join(keys, REQUESTER_KEY), 'veldo-qualification-requester')}
+                  'requester': _keygen(os.path.join(keys, REQUESTER_KEY), 'veldo-qualification-requester'),
+                  'adoption': adoption_signer(keys)}
         journal_principal, journal_sign = IN.journal_signer({'principal': JOURNAL_PRINCIPAL,
                                                              'key': os.path.join(keys, JOURNAL_KEY)})
     conn, lock = None, None
@@ -527,7 +541,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             K.publish(S, conn, projection)
             os.chmod(projection, 0o600)
         with step('host_trust'):
-            texts = host_files(plan, public['settlement'])
+            texts = host_files(plan, public['settlement'], public['adoption'])
             for path in (os.path.join(host, 'enrollment_signers'), os.path.join(host, 'settlement_signers')):
                 _private(path, texts[path])
             os.makedirs(os.path.dirname(plan['host_trust']), mode=0o700, exist_ok=True)
@@ -621,6 +635,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'runtime_assets_installed': installed['runtime_assets_installed'],
             'pins_made': organ('control_factory_setup_engines').count_pins(root, engines),
             'home': installed['home'], 'started': False, 'qualification_requester': REQUESTER,
+            'adoption_signer': {'principal': ADOPTION_PRINCIPAL, 'key': os.path.join(keys, ADOPTION_KEY)},
             'steps': [name if isinstance(name, dict) else dict({'step': name, 'outcome': 'done'}, **details.get(name, {}))
                       for name in done]
             + [details[name] for name in ('account_login', 'dispatch') if name in details]
@@ -1129,7 +1144,9 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         if not os.path.isfile(path):
             raise _differs(path)
     # The files the earlier steps wrote: equal ones are left alone, absent ones written, none overwritten.
-    base = dict(host_files(plan, API.derived(os.path.join(keys, SETTLEMENT_KEY))), **ingress_files(plan, ids))
+    adoption = os.path.join(keys, ADOPTION_KEY)
+    base = dict(host_files(plan, API.derived(os.path.join(keys, SETTLEMENT_KEY)),
+                           API.derived(adoption) if os.path.isfile(adoption) else None), **ingress_files(plan, ids))
     base_states = {path: API.file_state(path, data, 0o600, _differs) for path, data in base.items()}
     # The memory step's readers and searches, exercised as a fresh setup does, when the step will write.
     if memory_plan is not None and memory_plan['outcome'] == 'done':

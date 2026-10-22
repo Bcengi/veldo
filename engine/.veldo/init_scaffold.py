@@ -334,6 +334,12 @@ _FILES = [
     ".veldo/credential_issue.py",
     ".veldo/control_effects.py",
     ".veldo/control_effect_executor.py",
+    # VELDO-0161: repository adoption on the owner's settled answer: the repository record, the settled
+    # decision and the adoption signer (loaded by the authority service, which takes an adopted repository
+    # on without a restart), the provisioner's adoption steps and the adoption effect. Not substrate.
+    ".veldo/control_repository.py",
+    ".veldo/control_repository_provisioner.py",
+    ".veldo/control_effect_executor_adoption.py",
     # VELDO-0104 (PLAN-0020 W4): the fix-validation record and the rule the proof check applies.
     # validate_checks registers its loader, so a scaffolded repository without it has no proof stage;
     # and it loads the runner by path, which loads the capsule module, so all three travel together.
