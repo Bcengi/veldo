@@ -177,6 +177,11 @@ _W1404_NO_WRITER_DRIVER = r'''
 import ast, importlib.util, io as _io, json, os, sys
 from contextlib import redirect_stdout as _redirect
 
+# CPython cache writes are not module side effects. Disable them before installing the hook:
+# a cold, read-only checkout must be measured identically to a checkout with warm .pyc files.
+# Keep every audited write, spawn and socket event (including failed attempts) observable.
+sys.dont_write_bytecode = True
+
 ROOT = sys.argv[1]
 payload = json.loads(sys.stdin.read())
 pure, repo_writes, repo_spawn = [], [], set()
@@ -184,11 +189,18 @@ watching = [None]
 WRITE_FLAGS = os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_CREAT | os.O_TRUNC
 SPAWN = ("subprocess.Popen", "os.system", "os.exec", "os.posix_spawn", "os.spawn", "os.fork",
          "os.forkpty", "pty.spawn", "os.startfile", "webbrowser.open")
-WRITES = ("os.mkdir", "os.rmdir", "os.remove", "os.rename", "os.replace", "os.link",
-          "os.symlink", "os.truncate", "os.chmod", "os.chown", "os.putenv", "os.unsetenv",
-          "os.kill", "tempfile.mkstemp", "shutil.copyfile", "shutil.copymode",
-          "shutil.copystat", "shutil.move", "shutil.rmtree", "shutil.chown", "socket.socket",
-          "socket.connect", "socket.bind", "socket.getaddrinfo", "urllib.Request",
+# Names checked against https://docs.python.org/3.12/library/audit_events.html.
+# os.replace emits os.rename; os.lchown emits os.chown. Neither API name is an event.
+WRITES = ("os.mkdir", "os.rmdir", "os.remove", "os.rename", "os.link",
+          "os.symlink", "os.truncate", "os.chmod", "os.chown", "os.chflags", "os.utime",
+          "os.setxattr", "os.removexattr", "os.putenv", "os.unsetenv",
+          "os.kill", "os.killpg", "tempfile.mkstemp", "shutil.copyfile", "shutil.copymode",
+          "shutil.copystat", "shutil.move", "shutil.rmtree", "shutil.chown",
+          "shutil.make_archive", "shutil.unpack_archive", "socket.__new__",
+          "socket.connect", "socket.bind", "socket.sendto", "socket.sendmsg",
+          "socket.getaddrinfo", "socket.sethostname", "urllib.Request",
+          "ctypes.dlopen", "ctypes.dlsym", "ctypes.dlsym/handle",
+          "ctypes.call_function", "ctypes.cdata",
           "ftplib.connect", "smtplib.connect", "sqlite3.connect", "signal.pthread_kill")
 
 
@@ -204,6 +216,11 @@ def hook(event, args):
             seen = "open %s mode %s" % (args[0], mode)
         elif mode is None and isinstance(flags, int) and flags & WRITE_FLAGS:
             seen = "os.open %s flags %d" % (args[0], flags)
+    elif (event == "import" and args and isinstance(args[0], str)
+          and args[0].split(".", 1)[0] in ("ctypes", "_ctypes")):
+        # A raw-address _ctypes function pointer can run without a ctypes.* event.
+        # Treat access to either module family as strict in EVERY active window.
+        seen = "import " + args[0]
     elif event in WRITES:
         seen = event
     elif event in SPAWN:
@@ -858,12 +875,14 @@ with tempfile.TemporaryDirectory() as _d:
     # would be a side effect on every fragment after it.
     _w1404_wdir = Path(_d) / "auditcwd"
     _w1404_wdir.mkdir()
+    _w1404_payload = json.dumps({
+        "corpus": list(_W1404_SEEDED), "nospend": list(_W1404_NOSPEND),
+        "features": {"risk": "standard", "acceptance_criteria": 2,
+                     "footprint_declared": 2, "protected_touch": False},
+        "target": _W1404_TARGET, "spec": str(_w1404_fix), "at": _W1404_AT})
     _w1404_writerun = subprocess.run(
         [sys.executable, "-c", _W1404_NO_WRITER_DRIVER, str(ROOT)],
-        input=json.dumps({"corpus": list(_W1404_SEEDED), "nospend": list(_W1404_NOSPEND),
-                          "features": {"risk": "standard", "acceptance_criteria": 2,
-                                       "footprint_declared": 2, "protected_touch": False},
-                          "target": _W1404_TARGET, "spec": str(_w1404_fix), "at": _W1404_AT}),
+        input=_w1404_payload,
         capture_output=True, text=True, cwd=str(_w1404_wdir))
     _w1404_audited = (json.loads(_w1404_writerun.stdout) if _w1404_writerun.stdout.strip()
                       else {"pure": ["DRIVER DID NOT REPORT: " + _w1404_writerun.stderr[-400:]],
@@ -913,6 +932,216 @@ with tempfile.TemporaryDirectory() as _d:
            and set(_w1404_audited["imports"]) == _W1404_IMPORTS
            and set(_w1404_audited["named_calls"]) & {"open", "__import__", "eval", "exec",
                                                      "compile", "input", "breakpoint"} == set())
+
+    # Cold-cache regression and falsifiers use the SAME driver and all four windows. Copy only
+    # runtime source; link the repository's read-only evidence and git metadata so repo_basis and
+    # the CLI still consume the real corpus. Mutations never touch the checkout's product code.
+    _w1404_auditroot = Path(_d) / "auditrepo"
+    _w1404_auditroot.mkdir()
+    for _w1404_entry in ROOT.iterdir():
+        if _w1404_entry.name != ".veldo":
+            (_w1404_auditroot / _w1404_entry.name).symlink_to(_w1404_entry)
+    (_w1404_auditroot / ".veldo").mkdir()
+    for _w1404_entry in (ROOT / ".veldo").iterdir():
+        _w1404_dest = _w1404_auditroot / ".veldo" / _w1404_entry.name
+        if _w1404_entry.suffix == ".py":
+            _w1404_shutil.copyfile(_w1404_entry, _w1404_dest)
+        elif _w1404_entry.name != "__pycache__":
+            _w1404_dest.symlink_to(_w1404_entry)
+    _w1404_cache = Path(_d) / "readonly-pycache"
+    _w1404_cache.mkdir(mode=0o555)
+    _w1404_auditenv = dict(os.environ, PYTHONPYCACHEPREFIX=str(_w1404_cache))
+    # The fixture must expose the pre-fix bug even when the outer gate disables bytecode itself.
+    _w1404_auditenv.pop("PYTHONDONTWRITEBYTECODE", None)
+    _w1404_subject = _w1404_auditroot / ".veldo" / "toe_analogy.py"
+    _w1404_source = _w1404_subject.read_text()
+    try:
+        for _w1404_case, _w1404_injection in (
+                ("cold cache", ""),
+                ("import writer", "\nPath('import-write.txt').write_text('caught')\n"),
+                ("import spawn", "\nimport subprocess as _spawn\n"
+                 "_spawn.run([sys.executable, '-c', 'pass'], check=True)\n")):
+            _w1404_subject.write_text(_w1404_source + _w1404_injection)
+            _w1404_run = subprocess.run(
+                [sys.executable, "-c", _W1404_NO_WRITER_DRIVER, str(_w1404_auditroot)],
+                input=_w1404_payload, capture_output=True, text=True,
+                cwd=str(_w1404_wdir), env=_w1404_auditenv)
+            _w1404_report = json.loads(_w1404_run.stdout) if _w1404_run.stdout.strip() else {}
+            _w1404_complete = (
+                _w1404_run.returncode == 0
+                and _w1404_report.get("drives") == 8
+                and _w1404_report.get("cli_reported") is True
+                and _w1404_report.get("repo_records", 0) > 100
+                and _w1404_report.get("predicted") == [True, False, False, False, False]
+                and _w1404_report.get("pure") == []
+                and bool(_w1404_report.get("repo_spawn"))
+                and set(_w1404_report.get("repo_spawn", [])) <= _W1404_READONLY_GIT)
+            _w1404_events = _w1404_report.get("repo_writes", [])
+            if _w1404_case == "cold cache":
+                expect("WARP-1404 AC5 BYTECODE: empty read-only cache passes all audit windows",
+                       _w1404_complete and _w1404_events == []
+                       and not os.access(_w1404_cache, os.W_OK)
+                       and list(_w1404_cache.iterdir()) == []
+                       and set(_w1404_report.get("imports", [])) == _W1404_IMPORTS)
+            elif _w1404_case == "import writer":
+                expect("WARP-1404 AC5 BYTECODE: import writer still makes AC5 red",
+                       _w1404_complete and _w1404_events == ["open import-write.txt mode w"]
+                       and (_w1404_wdir / "import-write.txt").read_text() == "caught")
+            else:
+                expect("WARP-1404 AC5 BYTECODE: import spawn still makes AC5 red",
+                       _w1404_complete and _w1404_events == [sys.executable + " -c"])
+    finally:
+        _w1404_subject.write_text(_w1404_source)
+        _w1404_cache.chmod(0o755)
+
+    def _w1404_audit_trial(case, phase):
+        """Require a complete AC5 drive; a missing report cannot be a clean restoration."""
+        run = subprocess.run(
+            [sys.executable, "-c", _W1404_NO_WRITER_DRIVER, str(_w1404_auditroot)],
+            input=_w1404_payload, capture_output=True, text=True,
+            cwd=str(_w1404_wdir), env=_w1404_auditenv)
+        report = json.loads(run.stdout) if run.stdout.strip() else {}
+        complete = (
+            run.returncode == 0
+            and report.get("drives") == 8
+            and report.get("cli_reported") is True
+            and report.get("repo_records", 0) > 100
+            and report.get("predicted") == [True, False, False, False, False]
+            and isinstance(report.get("pure"), list)
+            and isinstance(report.get("repo_writes"), list)
+            and bool(report.get("repo_spawn"))
+            and set(report.get("repo_spawn", [])) <= _W1404_READONLY_GIT
+            and set(report.get("imports", [])) == _W1404_IMPORTS
+            and not (set(report.get("named_calls", []))
+                     & {"open", "__import__", "eval", "exec", "compile", "input", "breakpoint"}))
+        print("WARP-1404 AC5 AUDIT REPORT " + json.dumps({
+            "case": case, "phase": phase, "complete": complete,
+            "ac5_green": complete and report.get("pure") == []
+            and report.get("repo_writes") == [],
+            "report": report, "stderr": run.stderr[-400:]}))
+        return complete, report.get("pure", []) + report.get("repo_writes", [])
+
+    # The read-only cold-cache row above remains intact. Exercise writable cold and warm
+    # caches too, without relying on the caller's cache state or bytecode environment.
+    _w1404_writable_cache = Path(_d) / "writable-pycache"
+    _w1404_writable_cache.mkdir()
+    _w1404_auditenv["PYTHONPYCACHEPREFIX"] = str(_w1404_writable_cache)
+    _w1404_complete, _w1404_events = _w1404_audit_trial("cold writable cache", "baseline")
+    expect("WARP-1404 AC5 BYTECODE: cold writable cache passes all audit windows",
+           _w1404_complete and _w1404_events == []
+           and not list(_w1404_writable_cache.rglob("toe_analogy.*.pyc"))
+           and not list(_w1404_writable_cache.rglob("estimate.*.pyc")))
+    _w1404_warmup = subprocess.run(
+        [sys.executable, "-c",
+         "import importlib.util, sys\n"
+         "for path in sys.argv[1:]:\n"
+         "    s = importlib.util.spec_from_file_location('warm_module', path)\n"
+         "    s.loader.exec_module(importlib.util.module_from_spec(s))\n",
+         str(_w1404_subject), str(_w1404_auditroot / ".veldo" / "estimate.py")],
+        capture_output=True, text=True, cwd=str(_w1404_wdir), env=_w1404_auditenv)
+    _w1404_complete, _w1404_events = _w1404_audit_trial("warm cache", "baseline")
+    expect("WARP-1404 AC5 BYTECODE: warm cache passes all audit windows",
+           _w1404_warmup.returncode == 0 and _w1404_complete and _w1404_events == []
+           and bool(list(_w1404_writable_cache.rglob("toe_analogy.*.pyc")))
+           and bool(list(_w1404_writable_cache.rglob("estimate.*.pyc"))))
+    _w1404_auditenv["PYTHONPYCACHEPREFIX"] = str(_w1404_cache)
+    _w1404_cache.chmod(0o555)
+
+    # Mutate a dependency at module scope, as in the independent review. This leaves the
+    # toe_analogy AST allowlist satisfied, so only the actual audit event can reject it.
+    # All paths are scratch files. Failed OS attempts still emit events and must be caught.
+    (_w1404_wdir / "audit-target").write_text("timestamp, ownership and xattr target")
+    (_w1404_wdir / "archive-input").mkdir()
+    (_w1404_wdir / "archive-input" / "member.txt").write_text("archive member")
+    _w1404_shutil.make_archive(str(_w1404_wdir / "archive-source"), "zip",
+                              str(_w1404_wdir / "archive-input"))
+    # chflags is unavailable on Linux. Exercise its documented event explicitly there;
+    # never label that fallback as a native syscall test or silently skip the row.
+    _w1404_chflags_native = hasattr(os, "chflags")
+    _w1404_cases = (
+        ("os.utime", "os.utime", "_ao.utime('audit-target', ns=(1000000000, 2000000000))"),
+        ("os.chflags" + (" native" if _w1404_chflags_native else " synthetic (unavailable)"),
+         "os.chflags", "_ao.chflags('audit-target', 0)" if _w1404_chflags_native else
+         "_asys.audit('os.chflags', 'audit-target', 0)"),
+        ("os.lchown", "os.chown", "_ao.lchown('audit-target', -1, -1)"),
+        ("os.setxattr", "os.setxattr", "_ao.setxattr('audit-target', 'user.w1404', b'caught')"),
+        ("os.removexattr", "os.removexattr", "_ao.removexattr('audit-target', 'user.w1404')"),
+        ("shutil.make_archive", "shutil.make_archive",
+         "_ash.make_archive('archive-made', 'zip', 'archive-input')"),
+        ("shutil.unpack_archive", "shutil.unpack_archive",
+         "_ash.unpack_archive('archive-source.zip', 'archive-output', 'zip')"),
+        ("socket.__new__", "socket.__new__", "_aso.socket().close()"),
+        ("socket.sendto", "socket.sendto",
+         "_s = _aso.socket(type=_aso.SOCK_DGRAM)\n_s.close()\n"
+         "_s.sendto(b'caught', ('127.0.0.1', 9))"),
+        ("socket.sendmsg", "socket.sendmsg",
+         "_s = _aso.socket(type=_aso.SOCK_DGRAM)\n_s.close()\n"
+         "_s.sendmsg([b'caught'], [], 0, ('127.0.0.1', 9))"),
+        ("os.replace", "os.rename", "_ao.replace('audit-target', 'audit-replaced')"),
+        ("os.truncate", "os.truncate", "_ao.truncate('audit-replaced', 0)"),
+        # Invalid signal and oversized hostname fail even with elevated privileges.
+        # Require failure as well as the audit event; neither may change the machine.
+        ("os.killpg", "os.killpg", "_ao.killpg(_ao.getpgrp(), -1)\n"
+         "raise AssertionError('invalid signal unexpectedly accepted')"),
+        ("socket.sethostname", "socket.sethostname", "_aso.sethostname(b'x' * 65536)\n"
+         "raise AssertionError('oversized hostname unexpectedly accepted')"),
+        # A real libc call in estimate.py bypasses the toe_analogy import allowlist.
+        # getpid is harmless and its checked result proves the foreign call ran.
+        ("ctypes.dlopen", "ctypes.dlopen", "import ctypes as _act\n"
+         "assert _act.CDLL(None).getpid() == _ao.getpid()"),
+        # Ordinary CDLL function calls need not emit call_function. Exercise the
+        # low-level entry point explicitly and demand its own event, not just dlopen.
+        ("ctypes.call_function", "ctypes.call_function",
+         "import ctypes as _act, _ctypes as _acraw\n"
+         "_libc = _act.CDLL(None)\n"
+         "_getpid = _act.cast(_libc.getpid, _act.c_void_p).value\n"
+         "assert _acraw.call_function(_getpid, ()) == _ao.getpid()"),
+        # Raw-address function pointers need not emit any ctypes.* event. Use only
+        # _ctypes and copy zero bytes between valid byte strings: the call is real
+        # but changes no memory. The generic import must be sufficient on its own.
+        ("_ctypes raw address call", "import _ctypes", "import _ctypes as _acraw\n"
+         "class _CharP(_acraw._SimpleCData):\n    _type_ = 'z'\n"
+         "class _Size(_acraw._SimpleCData):\n    _type_ = 'L'\n"
+         "class _Memmove(_acraw.CFuncPtr):\n"
+         "    _flags_ = _acraw.FUNCFLAG_CDECL\n"
+         "    _argtypes_ = (_CharP, _CharP, _Size)\n"
+         "    _restype_ = None\n"
+         "assert _Memmove(_acraw._memmove_addr)(b'', b'', 0) is None"),
+        ("ctypes.dlsym", "ctypes.dlsym", "import ctypes as _act\n"
+         "assert _act.CDLL(None).getpid() == _ao.getpid()"),
+        ("ctypes.dlsym/handle", "ctypes.dlsym/handle",
+         "import ctypes as _act, _ctypes as _acraw\n"
+         "_libc = _act.CDLL(None)\n"
+         "_getpid = _acraw.dlsym(_libc._handle, 'getpid')\n"
+         "assert _act.CFUNCTYPE(_act.c_int)(_getpid)() == _ao.getpid()"),
+        ("ctypes.cdata", "ctypes.cdata", "import ctypes as _act\n"
+         "_owned = _act.c_int(1404)\n"
+         "assert _act.c_int.from_address(_act.addressof(_owned)).value == 1404"),
+    )
+    _w1404_dependency = _w1404_auditroot / ".veldo" / "estimate.py"
+    _w1404_dependency_source = _w1404_dependency.read_text()
+    try:
+        for _w1404_case, _w1404_event, _w1404_call in _w1404_cases:
+            _w1404_injection = (
+                "\nimport os as _ao, sys as _asys, shutil as _ash, socket as _aso\ntry:\n"
+                + "\n".join("    " + line for line in _w1404_call.splitlines())
+                + "\nexcept OSError:\n    pass\n")
+            try:
+                _w1404_dependency.write_text(_w1404_dependency_source + _w1404_injection)
+                _w1404_complete, _w1404_events = _w1404_audit_trial(_w1404_case, "injected")
+                expect("WARP-1404 AC5 AUDIT: " + _w1404_case
+                       + " makes AC5 red with " + _w1404_event + " recorded",
+                       _w1404_complete and _w1404_event in (_w1404_events or [])
+                       and (_w1404_case != "_ctypes raw address call"
+                            or all(e == "import _ctypes" for e in _w1404_events)))
+            finally:
+                _w1404_dependency.write_text(_w1404_dependency_source)
+            _w1404_complete, _w1404_events = _w1404_audit_trial(_w1404_case, "restored")
+            expect("WARP-1404 AC5 AUDIT: " + _w1404_case + " restored is green",
+                   _w1404_complete and _w1404_events == [])
+    finally:
+        _w1404_dependency.write_text(_w1404_dependency_source)
+        _w1404_cache.chmod(0o755)
 
     _W1404_MALFORMED = (
         ("not a list", "not a list"),

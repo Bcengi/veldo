@@ -1,0 +1,12 @@
+os.utime: AC5 RED; recorded ["os.utime"]; restored GREEN, both buckets empty.
+os.chflags synthetic (unavailable): AC5 RED; recorded ["os.chflags"]; restored GREEN, both buckets empty.
+os.lchown: AC5 RED; recorded ["os.chown"]; restored GREEN, both buckets empty.
+os.setxattr: AC5 RED; recorded ["os.setxattr"]; restored GREEN, both buckets empty.
+os.removexattr: AC5 RED; recorded ["os.removexattr"]; restored GREEN, both buckets empty.
+shutil.make_archive: AC5 RED; recorded ["shutil.make_archive", "open archive-made.zip mode w+"]; restored GREEN, both buckets empty.
+shutil.unpack_archive: AC5 RED; recorded ["shutil.unpack_archive", "os.mkdir", "open archive-output/member.txt mode w"]; restored GREEN, both buckets empty.
+socket.__new__: AC5 RED; recorded ["socket.__new__"]; restored GREEN, both buckets empty.
+socket.sendto: AC5 RED; recorded ["socket.__new__", "socket.sendto"]; restored GREEN, both buckets empty.
+socket.sendmsg: AC5 RED; recorded ["socket.__new__", "socket.sendmsg"]; restored GREEN, both buckets empty.
+os.replace: AC5 RED; recorded ["os.rename"]; restored GREEN, both buckets empty.
+os.truncate: AC5 RED; recorded ["os.truncate"]; restored GREEN, both buckets empty.
