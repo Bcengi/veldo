@@ -1,0 +1,25 @@
+{
+  "case": "v174-offer-every-waiting-turn",
+  "source": "control_service.py",
+  "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "107_veldo_0174_conversations"
+  ],
+  "exit_code": 1,
+  "seconds": 11.84,
+  "target_rows": [
+    "AC2/one-offer-per-pass"
+  ],
+  "failed_rows": [
+    "AC1/restart-open",
+    "AC2/active-refusal-once",
+    "AC2/one-offer-per-pass",
+    "AC2/restart-turns",
+    "proof/mutation-dependencies"
+  ],
+  "targets_red": true,
+  "source_restored": true,
+  "log_sha256": "6e4c4989131e0439234561e8b7162bbe37ca0ba84e25e216ad3baaade02505d5"
+}

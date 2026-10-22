@@ -1,0 +1,23 @@
+{
+  "case": "v174-mutation-siblings-missing",
+  "source": "check_teeth_mutations.py",
+  "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "107_veldo_0174_conversations"
+  ],
+  "exit_code": 1,
+  "seconds": 11.5,
+  "target_rows": [
+    "proof/mutation-dependencies"
+  ],
+  "failed_rows": [
+    "AC1/restart-open",
+    "AC2/restart-turns",
+    "proof/mutation-dependencies"
+  ],
+  "targets_red": true,
+  "source_restored": true,
+  "log_sha256": "afd08f6191352727956f552cd795f752667feb6aac19e7f3799f878f5d66340d"
+}

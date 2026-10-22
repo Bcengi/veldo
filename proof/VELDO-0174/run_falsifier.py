@@ -19,11 +19,23 @@ def main():
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     cases = {}
-    for node in ast.walk(ast.parse((root / 'scripts/check_teeth_mutations.py').read_text())):
+    tree = ast.parse((root / 'scripts/check_teeth_mutations.py').read_text())
+    # The registrations name their suite through a constant such as S174; resolve those names from
+    # the string assignments in the same file instead of evaluating only literals.
+    names = {target.id: node.value.value for node in ast.walk(tree) if isinstance(node, ast.Assign)
+             and len(node.targets) == 1 and isinstance(target := node.targets[0], ast.Name)
+             and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str)}
+
+    def literal(node):
+        if isinstance(node, ast.Name) and node.id in names:
+            return names[node.id]
+        return ast.literal_eval(node)
+
+    for node in ast.walk(tree):
         if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'add'
                 and node.args and isinstance(node.args[0], ast.Constant) and node.args[0].value == 174):
-            name = ast.literal_eval(node.args[1])
-            cases[name] = tuple(ast.literal_eval(node.args[i]) for i in (3, 4, 5, 6))
+            name = literal(node.args[1])
+            cases[name] = tuple(literal(node.args[i]) for i in (3, 4, 5, 6))
     cases['v174-record-memory-only'][3].append('AC1/durable-store')
     cases['v174-ignore-record-version'] = ('control_conversation.py',
         "        if type(params.get('version')) is not int or params['version'] != record.get('version'):\n",
@@ -34,7 +46,12 @@ def main():
     if args.case not in cases:
         parser.error('unknown case: ' + args.case)
     filename, before, after, targets = cases[args.case]
-    path = root / '.veldo' / filename
+    # Production modules live in .veldo; the two proof cases edit the mutation registry and the
+    # suite itself, which the registry places in scripts and scripts/suites.
+    path = next((root / directory / filename for directory in ('.veldo', 'scripts', 'scripts/suites')
+                 if (root / directory / filename).is_file()), None)
+    if path is None:
+        raise RuntimeError('mutation target not found beside the registry: ' + filename)
     original = path.read_bytes()
     source = original.decode()
     if source.count(before) != 1:

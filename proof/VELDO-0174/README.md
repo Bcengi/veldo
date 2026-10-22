@@ -1,6 +1,12 @@
 # VELDO-0174 implementation and review record
 
-Latest round: [scope-review-fix.json](scope-review-fix.json). Project attachment
+Latest round: [merged-main-2026-10-22/README.md](merged-main-2026-10-22/README.md). Main d49581b4
+merged into the candidate on agent/claude/fix-VELDO-0174. Suite 107 keeps its 36 passing ticket rows
+with only the two AF_UNIX restart rows red; suites 105 and 103 now pass; six other affected suites
+fail identically on main's own commit in the same sandbox. run_falsifier.py, broken by 2cd6c93b, is
+repaired and drives all ten falsifiers red with the source restored.
+
+Previous round: [scope-review-fix.json](scope-review-fix.json). Project attachment
 now requires both ownership and current membership scope covering the project,
 checked inside the store transition. The signed-command `AC1/project-scope` row
 refuses attachment after a steward removes scope and preserves the durable row,

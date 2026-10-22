@@ -1,0 +1,23 @@
+{
+  "case": "v174-drop-skills",
+  "source": "control_agent_config_handoff.py",
+  "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "107_veldo_0174_conversations"
+  ],
+  "exit_code": 1,
+  "seconds": 11.89,
+  "target_rows": [
+    "AC2/role-skills"
+  ],
+  "failed_rows": [
+    "AC1/restart-open",
+    "AC2/restart-turns",
+    "AC2/role-skills"
+  ],
+  "targets_red": true,
+  "source_restored": true,
+  "log_sha256": "dbbae124bae3875ce52bc9e0aa772b5ecc89e166363b0329474f66b339e32975"
+}

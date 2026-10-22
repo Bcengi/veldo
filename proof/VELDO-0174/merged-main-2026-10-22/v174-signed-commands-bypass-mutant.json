@@ -1,0 +1,23 @@
+{
+  "case": "v174-signed-commands-bypass-mutant",
+  "source": "107_veldo_0174_conversations.py",
+  "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "107_veldo_0174_conversations"
+  ],
+  "exit_code": 1,
+  "seconds": 11.74,
+  "target_rows": [
+    "proof/signed-command-module"
+  ],
+  "failed_rows": [
+    "AC1/restart-open",
+    "AC2/restart-turns",
+    "proof/signed-command-module"
+  ],
+  "targets_red": true,
+  "source_restored": true,
+  "log_sha256": "26dc8bc820edc7baca2f6c5fee8c83d4c8daf9e911e7ca6d8d6a1bdc63960cf9"
+}

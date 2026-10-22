@@ -1,0 +1,24 @@
+{
+  "case": "v174-attach-outside-current-scope",
+  "source": "control_conversation.py",
+  "command": [
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "107_veldo_0174_conversations"
+  ],
+  "exit_code": 1,
+  "seconds": 11.85,
+  "target_rows": [
+    "AC1/project-scope"
+  ],
+  "failed_rows": [
+    "AC1/project-scope",
+    "AC1/restart-open",
+    "AC2/restart-turns",
+    "proof/mutation-dependencies"
+  ],
+  "targets_red": true,
+  "source_restored": true,
+  "log_sha256": "b9c111b4064673514dcc17ba4508fa32e38f7aba3cf3b7195bc780686f64096f"
+}
