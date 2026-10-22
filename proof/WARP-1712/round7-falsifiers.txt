@@ -1,0 +1,32 @@
+# WARP-1712 round 7 falsifiers, tree of 9d74ec40
+
+## Executor control keeps its teeth
+# scripts/suites/106_warp_1712_required_evidence.py, control row given the trunk instead of the
+# branch commit (observe_gate(..., base=trunk), command check ["--base", trunk]); restored and
+# byte-compared after.
+python3 scripts/selftest.py --suite 106_warp_1712_required_evidence
+  SELFTEST FAIL: WARP-1712 D1 missing base debt-free passes
+  SELFTEST FAIL: WARP-1712 D1 unchanged historical debt passes
+  SELFTEST FAIL: WARP-1712 D1 candidate validator skips its ratchet call
+  SELFTEST FAIL: WARP-1712 executor control: the branch commit as base admits its own debt
+selftest (PARTIAL, 1 of 163 suites): 292 passed, 4 failed in 15.08s
+# Unmutated: 293 passed, 3 failed (the three sandbox D1 rows only). With the trunk as base, the
+# ratchet stage's own lines carry the new-debt refusal and the control row is red.
+
+## The host failure, replayed against the round 7 reader
+# Lines 855-887 of host-gate-r6.log (the control's nested gate on the host: the candidate's
+# contracts stage prints "new required-evidence debt forbidden", the authority ratchet passes).
+old control over the whole output: False
+new control over the ratchet stage's lines: True
+# In this sandbox the confined contracts stage cannot start a launcher and prints nothing, which
+# is why round 6's sandbox run passed the whole-output control.
+
+## Mutation anchors
+# At 9a5c2dd0 two declared mutants cannot apply (anchor moved, count 0); the host stage's
+# baseline worker for 69_veldo_0058_gate_output.py:executor.py raised exactly that
+# (host-gate-r6.log, mutation receipt invalid_results[0]). At 9d74ec40, 0 of 2541.
+
+## Footprint
+# At 9a5c2dd0 the host shape gate refused scripts/suites/24_veldo_0007_install_and_run.py as outside
+# the WARP-1712 footprint (host-gate-r6.log line 1460); WARP-1102 AC5 and AC6 failed over the same
+# change set. At 9d74ec40, shape_gate.run over the branch range: problems [] (round7-focused.txt).

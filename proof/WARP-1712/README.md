@@ -1,3 +1,44 @@
+# WARP-1712 round 7: the host gate on round 6 was red
+
+Implementation `9d74ec40`. The host ran ./scripts/verify.sh on round 6 (`9a5c2dd0`); the full log is
+`host-gate-r6.log`. Each red stage was fixed at its cause:
+
+1. Shape gate, plus WARP-1102 AC5 and AC6 in unit. Round 6 touched
+   scripts/suites/24_veldo_0007_install_and_run.py without declaring it, and the host's change set
+   (trunk merge base..HEAD) caught it. The spec's footprint now declares it, along with
+   scripts/check_teeth_mutations.py (this round). shape_gate.run over the branch range from 4c230340
+   and from the first WARP-1712 commit's parent: no problems.
+2. Unit, "executor control: the branch commit as base admits its own debt". The control searched
+   the whole gate output for "new required-evidence debt". The candidate's contracts stage runs the
+   candidate's validate.py, whose ratchet measures against the candidate's own origin refs (the
+   fixture's trunk) whatever --base says. On the host, confinement lets that stage run, and it printed
+   the refusal. In the agent sandbox the confined stage cannot start and prints nothing, which is
+   why it passed there. The three executor rows now read the authority ratchet stage's own lines,
+   and the control also requires the gate to have been launched with `--base <branch commit>`. It
+   still proves the base alone decides: given the trunk, the control row is red.
+3. Mutation, driver_error. The stage failed because the baseline worker for
+   `69_veldo_0058_gate_output.py:executor.py` raised `('gate-output-live-loop-binds-refs', 'mutation
+   anchor moved', 0)`. Round 6 (executor.py) and round 4 (lander.py) added `base=` to the exact
+   lines two VELDO-0058 mutants rewrite. Both anchors now carry the base argument; the defects
+   (binding the caller's refs, not binding the workspace's) are unchanged and no mutant was removed.
+   The `unreviewed_declaration` receipts are reuse reasons, not failures: those cases' entries in
+   scripts/mutation_case_inputs.json are unreviewed proposals, so they run fresh. No round touched
+   a declaration or that file. All 2541 declared edits apply to the current bytes.
+4. The first contracts FAIL in the log (line 873) is the control's nested fixture gate from item 2,
+   not this repository's contracts stage, which passed (line 1437).
+
+## Checks in the agent sandbox
+
+`round7-focused.txt` and `round7-falsifiers.txt`, no environment override. 106: 293 passed,
+3 failed (the same three confined-stage D1 rows as rounds 5 and 6; they pass on the host). 07
+(owns WARP-1102): 1673/2, the WARP-1102 rows pass; the two failures are the scaffolded starter's
+nested gate, red here only for the refused confined launches (its ratchet stage passes). 62_veldo_0045
+47/0, 98 71/0, 104 28/0, 99 54/1 (agent sandbox broker unavailable). 24 and 69: the same sandbox
+failures round 6 recorded. 53_veldo_0123_mutations stops at candidate_execution_denied. No canonical
+gate was run here; the host runs ./scripts/verify.sh.
+
+## Preserved round 6 report
+
 # WARP-1712 round 6: the review's findings on round 5
 
 Implementation `9bb38722`. The review found the round 5 authority stage sound and named:

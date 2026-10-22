@@ -1,0 +1,56 @@
+# WARP-1712 round 7 focused checks, tree of 9d74ec40
+# python3 scripts/selftest.py --suite <name>, no environment override; agent-sandbox launcher lines omitted
+### 106_warp_1712_required_evidence
+  SELFTEST FAIL: WARP-1712 D1 missing base debt-free passes
+  SELFTEST FAIL: WARP-1712 D1 unchanged historical debt passes
+  SELFTEST FAIL: WARP-1712 D1 candidate validator skips its ratchet call
+selftest (PARTIAL, 1 of 163 suites): 293 passed, 3 failed in 15.08s
+### 07_warp_1103_completion_mandatory
+  SELFTEST FAIL: init scaffold gate is GREEN on the empty starter plan
+  SELFTEST FAIL: init scaffold gate still GREEN after a re-run
+selftest (PARTIAL, 5 of 163 suites): 1673 passed, 2 failed in 33.75s
+### 24_veldo_0007_install_and_run
+  SELFTEST FAIL: VELDO-0007 AC2 NEGATIVE CONTROL for the guard: the DEFAULT composer (the real publisher) produces packs and the stage passes, so the refusal above is a measurement of what was compose
+  SELFTEST FAIL: VELDO-0007 AC3: every scaffolded repository's OWN gate exited zero, over all 7 packs. Laying files down is not installing: 1.0 laid nothing and said so, but a scaffolder that lays a r
+  SELFTEST FAIL: VELDO-0007 AC3 THE ADOPTER'S GREEN IS A MEASUREMENT AND NOT A SCAN OF NOTHING: every scaffolded tree was COMMITTED before its own gate ran, the index the gate reads is non-empty, and 
+  SELFTEST FAIL: WARP-1712 packaging: every adopter gate ran as `bash scripts/verify.sh` with no --base, in a repository with no remote, and its evidence ratchet stage passed. Measured: [('aider', ['b
+  SELFTEST FAIL: VELDO-0007 AC3 A STAND-DOWN THE NESTED GATE RECORDED IS REPORTED BY THIS STAGE: every stand-down line the adopter's gate emitted appears on this stage's own output, named, with the ca
+  SELFTEST FAIL: VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows below being vacuous: the sandboxed stage composed with the real publisher, installed and ran a neste
+  SELFTEST FAIL: VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstra
+  SELFTEST FAIL: VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, sha256 and mtime before and after, ignored paths and this checkou
+  SELFTEST FAIL: VELDO-0007 VELDO-0099 special files and private reflogs: the block ran to completion rather than raising (PermissionError(1, 'Operation not permitted'))
+  SELFTEST FAIL: VELDO-0007 AC5: the checker is EXECUTABLE as a stage runs it - invoked as a subprocess over one pack, exiting zero
+selftest (PARTIAL, 1 of 163 suites): 119 passed, 10 failed in 20.45s
+### 62_veldo_0045_runtime
+selftest (PARTIAL, 1 of 163 suites): 47 passed, 0 failed in 12.56s
+### 69_veldo_0058_gate_output
+  SELFTEST FAIL: VELDO-0058 gate-output/review-write
+  SELFTEST FAIL: VELDO-0058 gate-output/sink-refusals
+  SELFTEST FAIL: VELDO-0058 gate-output/post-run-mutation
+  SELFTEST FAIL: VELDO-0058 gate-output/installed-policy
+  SELFTEST FAIL: VELDO-0058 gate-output/installed-policy-list
+  SELFTEST FAIL: VELDO-0058 gate-output/range-base-from-lander
+  SELFTEST FAIL: VELDO-0058 gate-output/refs-bound
+  SELFTEST FAIL: VELDO-0058 gate-output/live-loop-siblings
+  SELFTEST FAIL: VELDO-0058 ran/gate-output/post-run-mutation
+  SELFTEST FAIL: VELDO-0058 ran/gate-output/installed-policy
+selftest (PARTIAL, 1 of 163 suites): 32 passed, 10 failed in 142.75s
+### 98_veldo_0204_mutation_receipts
+selftest (PARTIAL, 1 of 163 suites): 71 passed, 0 failed in 0.47s
+### 99_veldo_0205_reuse
+  SELFTEST FAIL: VELDO-0205 repair/worker-and-child-cannot-access-store:  else install_filter(libc, ipc_program())
+selftest (PARTIAL, 1 of 163 suites): 54 passed, 1 failed in 1.65s
+### 104_veldo_0210_mutation_workers
+selftest (PARTIAL, 1 of 163 suites): 28 passed, 0 failed in 0.08s
+### 53_veldo_0123_mutations
+gate123.Refused: candidate_execution_denied: agent sandbox refused to start: this launcher runs in a tree the helper mad
+### mutation anchors (every check_teeth_mutations.cases() edit applied to its module's current bytes)
+cases 2541, anchor moved 0 []
+# at 9a5c2dd0 the same check: cases 2541, anchor moved 2 (gate-output-live-loop-binds-refs executor.py, gate-output-land-does-not-bind-refs lander.py)
+### shape gate over the branch change set (no origin here, so the range is given explicitly)
+shape_gate.run over 4c230340..HEAD (20 source paths): problems []
+shape_gate.run over 76ee535e^..HEAD (30 source paths): problems []
+### lint, template sync, generated
+lint: pass (993 python, 34 shell, 1.78s)
+template sync: pass (285 pair(s) compared, 6 declared per-repo, 131 engine-only)
+generated: pass
