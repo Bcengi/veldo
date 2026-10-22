@@ -32,7 +32,23 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_workflow_cycle_pm.py"
+  - ".veldo/control_workflow_cycle_pm.py"
+  - "packs/*/.veldo/control_workflow_cycle_pm.py"
+  - "engine/.veldo/control_intake_routes.py"
+  - ".veldo/control_intake_routes.py"
+  - "packs/*/.veldo/control_intake_routes.py"
+  - "engine/.veldo/control_objective.py"
+  - ".veldo/control_objective.py"
+  - "packs/*/.veldo/control_objective.py"
+  - "engine/.veldo/control_grooming_request.py"
+  - ".veldo/control_grooming_request.py"
+  - "packs/*/.veldo/control_grooming_request.py"
+  - "engine/.veldo/control_backlog.py"
+  - ".veldo/control_backlog.py"
+  - "packs/*/.veldo/control_backlog.py"
   - "scripts/suites/*_veldo_0143_*.py"
+  - "scripts/suites/106_veldo_0185_dispatch_setup.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -182,3 +198,45 @@ depends_on adds VELDO-0162. Criterion meaning unchanged. Draft; the owner decide
 
 2026-09-26, lead: AC1 names the factory PM's new-project route (VELDO-0152 AC3), since the owner replaced
 the keyword rule with routing by the factory PM (Telegram 29186, 29187 and 29191).
+
+2026-10-22 implementation on agent/claude/veldo-0143, built on VELDO-0161 (da39f3fb) and VELDO-0153 (b44736c0),
+neither landed yet. control_project_proposal holds the factory PM's new-project document, the one proposal it
+derives (repository uuid, directory under the identity's projects root, remote under the identity's owner and its
+visibility, the adoption proposal with its scaffold commit when the directory is already a Git repository, the
+default team's current revision, the default pipeline, charter, authority policy and budget), its brief, the
+nothing-asked rule, the one presentation, his answer, and the one judge of a settled decision that the
+provisioner, the adoption signer, the service's take-on and the activation all call. When the PM named no
+identity, every configured identity is offered in the same request and his approving answer names one; an answer
+that returns the proposal, or approves it naming none, is his correction: the factory PM's next run reads it and
+its corrected document settles the decision with no second presentation. control_repository_creation and
+control_effect_executor_creation are the provisioner: the registered protected effect `repository_provisioning`,
+which the running service starts as its own process for a settled decision (never a worker), checks the
+settlement before anything else, records each step and stops by name at the first failure, and ends in
+VELDO-0161's adoption tail, refactored into control_effect_executor_adoption.enroll with its text and its
+registered anchors unchanged. control_project.activate_decided refuses until the repository record is active,
+also inside the activating transaction. The running service (control_service_projects) applies the answers,
+starts the provisioner, fails a decision whose repository failed and tells the owner, and once the repository
+is active applies the same settlement: the repository's first accepted revision (its initial or scaffold commit)
+and the default team's capability configurations copied at the revisions the team names, so its Runner binds
+them; the activation; the first team revision, the named default revision, after VELDO-0089's staffing checks;
+the message moved into the project (control_intake_routes, on intake's own route command); the first objective
+proposed by the project's PM and accepted by the decision (control_objective accept_decided, acceptance path
+new_project); the owner told; and the factory loop gains the repository's line. Setup creates the factory
+project's own repository at <state root>/factory, holding only team.json, enrolled by the owner, bound to the
+workspace's identity and by the store, and activates the factory project on it; it writes host/provisioner.json.
+The factory project's cycles run on the loop's factory line, the first line the work configuration names, since
+its own repository is no line.
+
+Footprint added in this change, each because the criteria cannot be met without it: control_workflow_cycle_pm
+(the factory PM run that prepares the proposal from a NEW_PROJECT message, AC1, and the factory line);
+control_intake_routes (the message moved into the new project as its first objective proposal, AC3);
+control_objective (the first objective accepted by his answer, which VELDO-0077's acceptance by answer cannot
+bind: the objective does not exist when he answers); control_grooming_request and control_backlog (work under
+that objective admitted at the default priority with no further question, AC3, as VELDO-0079 admits work under an
+objective his own message accepted); suite 106's fresh/team row, which asserted the factory project on the
+workspace's repository and now asserts it on its own. init_scaffold's version-reader load names its file through
+one binding so the installer's closure, which now reaches it through the provisioner, can name it; behavior is
+unchanged. Suite 110_veldo_0143_new_project carries the rows; finding 143 registers nine mutations, the three
+declared falsifiers first. A factory set up before this change keeps its factory project on the workspace; a
+re-run neither moves it nor requires the factory repository. Acceptance criteria, risk, readiness and approval
+requirements are unchanged.

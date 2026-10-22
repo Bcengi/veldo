@@ -343,10 +343,16 @@ else:
                   'command id [%s]' % [(r['command_id'], r['principal']) for r in owner_saves],
                   len(owner_saves) == 5 and all(r['principal'] == owner and r['nonce'] == r['command_id'] for r in owner_saves))
             _kind, project = entity(store, 'project:factory')
-            check('fresh/team', 'the factory project is active and owned by the owner [%s]'
+            # VELDO-0143: the factory project runs on a small repository of its own, under the state root, that holds
+            # only its team configuration, never on the workspace's.
+            factory = steps.get('factory_repository', {})
+            factory_files = sorted(os.listdir(factory['path'])) if os.path.isdir(factory.get('path') or '') else None
+            check('fresh/team', 'the factory project is active, owned by the owner, on its own repository [%s]'
                   % {k: (project or {}).get(k) for k in ('owner', 'state', 'execution_repository')},
                   (project or {}).get('owner') == owner and (project or {}).get('state') == 'ACTIVE'
-                  and (project or {}).get('execution_repository') == repository)
+                  and (project or {}).get('execution_repository') == factory.get('repository_uuid')
+                  and factory.get('repository_uuid') not in (None, repository)
+                  and factory_files == ['.git', 'team.json'])
             check('fresh/team', 'setup reports each dispatch step done [%s]' % sorted(
                   (n, steps.get(n, {}).get('outcome')) for n in ('work_configuration', 'reservation_principals',
                                                                  'factory_project', 'default_team', 'account_registration',

@@ -10945,6 +10945,56 @@ def cases():
         "        elif False:  # defect: laid adoption signers owe no restart\n",
         ['restart/adoption-signer-kill'])
 
+    # VELDO-0143: each criterion's declared falsifier first, then the threat model's other shapes. The factory PM's
+    # run through the graph runtime (pm/new-project-run) is the host's, so no case targets it.
+    def new_project(name, module, old, new, rows):
+        add(143, name, '110_veldo_0143_new_project.py', module, old, new, rows)
+
+    # AC1 (declared): a proposal presented when his message already named the project and the identity.
+    new_project('newproject143-presented-when-named', 'control_project_proposal.py',
+                "            reasons = nothing_asked(self.conn, data, proposal, owner)\n",
+                "            reasons = nothing_asked(self.conn, data, proposal, owner) or ['presented']  # defect: always asked\n",
+                ['proposal/nothing-asked'])
+    # AC2 (declared): the provisioner run without a settled answer.
+    new_project('newproject143-provisioner-unsettled', 'control_effect_executor_creation.py',
+                "            judged = PP.settled(S, CM, conn, decision)\n",
+                "            held_ = PP.read(conn, decision) or {}  # defect: the provisioner does not judge the settlement\n"
+                "            judged = {'proposal': held_.get('proposal') or held_.get('presented') or {}, 'settlement_id': decision}\n",
+                ['provision/settlement-required'])
+    # AC3 (declared): the project activated while its repository is still provisioning.
+    new_project('newproject143-activated-while-provisioning', 'control_project.py',
+                "    return data.get('state') if data.get('request') == decision and data.get('state') else 'absent'\n",
+                "    return 'active'  # defect: the repository's state is not read before activating\n",
+                ['activation/order'])
+    new_project('newproject143-directory-overwritten', 'control_repository_creation.py',
+                "    if entries:\n        raise Refused('directory_not_empty', path)\n",
+                "    if False:  # defect: a directory that holds anything is used\n        raise Refused('directory_not_empty', path)\n",
+                ['provision/directory-not-empty'])
+    new_project('newproject143-step-failure-continues', 'control_effect_executor_creation.py',
+                "                done = STEP_FUNCTIONS[name](run) or {}\n",
+                "                try:\n"
+                "                    done = STEP_FUNCTIONS[name](run) or {}\n"
+                "                except REFUSALS:  # defect: a failed step does not stop the provisioner\n"
+                "                    done = {'base_commit': None} if name == 'commit' else {'owner': None} if name == 'remote' else {}\n",
+                ['provision/step-failures'])
+    new_project('newproject143-remote-owner-unchecked', 'control_repository_creation.py',
+                "    if not isinstance(made_owner, str) or made_owner.casefold() != owner.casefold():\n",
+                "    if False:  # defect: GitHub's answer is not checked against the identity's owner\n",
+                ['provision/step-failures'])
+    new_project('newproject143-ambient-push', 'control_repository_creation.py',
+                "                          profile='identity', push_identity=identity, remote_url=url)\n",
+                "                          profile='network')  # defect: the push takes the host's ambient credential\n",
+                ['provision/created'])
+    new_project('newproject143-second-question', 'control_project_proposal.py',
+                "            correction['digest'] = digest(proposal)\n",
+                "            correction['digest'] = digest(proposal)\n"
+                "            self._present(decision + ':again', proposal, presented['owner'])  # defect: a second question\n",
+                ['proposal/correction'])
+    new_project('newproject143-factory-repository-unbound', 'control_factory_setup.py',
+                "    S.bind_repositories(conn, ids['domain_uuid'], {repository: os.path.realpath(path)})\n",
+                "    pass  # defect: the factory project's repository is not bound by the store\n",
+                ['factory/own-repository'])
+
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
     add(142, 'identity142-clone-global-author', '103_veldo_0142_git_identities.py', 'control_clone.py', "for section in ('user', 'author', 'committer'):", 'for section in ():', ['clone/identity-authors'])
