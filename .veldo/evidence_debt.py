@@ -140,7 +140,9 @@ def check(validator, root, rows, changed, previous, base_specs=None):
     return errs
 
 
-def validate(validator, root, matched, policy=None):
+def validate(validator, root, matched, policy=None, gate=False):
+    if gate and (policy is None or policy.BASE is None):
+        return validator.fail(REGISTER, "gate requires authority BASE; no exemption granted")
     rows = compute(validator, root, matched)
     try:
         changed, previous, base_specs = push_context(root, policy)

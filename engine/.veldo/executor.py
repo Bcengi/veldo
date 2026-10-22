@@ -354,7 +354,7 @@ class LiveLoop(LoopSteps):
                 # explicitly, and merge_ready reads the spec). HEAD, its tree, the index and every
                 # file outside .git stay bound.
                 observed, _reference = CV.observe_gate(self.work_root, installed, Path(directory) / "gate",
-                                                       bind_refs=False)
+                                                       bind_refs=False, base=self.base)
             except CV.Refused as error:
                 return {"green": False, "detail": "gate not run: %s" % error.code}
         result = {"green": observed["green"], "detail": CP.detail(observed)}

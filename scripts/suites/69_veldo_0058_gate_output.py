@@ -251,7 +251,7 @@ def _v58_suite():
         git(seed, 'commit', '-q', '-m', 'Fixture repository')
         first = git(seed, 'rev-parse', 'HEAD')
         # The ordinary landing step, unchanged: the checkout's own gate, then its stamp committed.
-        ordinary = subprocess.run(['bash', 'scripts/verify.sh'], cwd=str(seed), capture_output=True, text=True,
+        ordinary = subprocess.run(['bash', 'scripts/verify.sh', '--base', first], cwd=str(seed), capture_output=True, text=True,
                                   stdin=subprocess.DEVNULL, env=clean, timeout=300, pass_fds=launcher_fds())
         stamp_path, log_path = seed / '.veldo' / 'last_verify', seed / '.veldo' / 'events.jsonl'
         observed['ordinary'] = {
@@ -560,7 +560,8 @@ def _v58_suite():
                      and (obs.get('command') or [None])[0] == 'bash'
                      and not inside((obs.get('command') or ['', ''])[1], landed['workspace'])
                      and (obs.get('command') or [])[2:] == ['--candidate', os.path.realpath(landed['workspace']),
-                                                            '--sink', (obs.get('outputs') or {}).get('sink')]
+                                                            '--sink', (obs.get('outputs') or {}).get('sink'),
+                                                            '--base', trunk_now]
                      and required == ['unit'] and (obs.get('catalog') or {}).get('required') == required
                      and (obs.get('catalog') or {}).get('results') == {'unit': 'pass'}
                      and '   unit: pass' in obs.get('stdout', '').splitlines()

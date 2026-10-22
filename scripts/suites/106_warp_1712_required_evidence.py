@@ -422,6 +422,121 @@ def _w1712_review(repo, report, old_sources=None):
             report("review " + label + ("\n" + output if not ok else ""), ok, old_fails)
 
 
+def _w1712_authority(repo, report, mutable_base=False):
+    """The real installed verifier runs a ref-moving candidate stage before contracts."""
+    import re
+    with tempfile.TemporaryDirectory(prefix="warp1712-authority-") as directory:
+        host = Path(directory)
+        root, authority = host / "candidate", host / "authority"
+        root.mkdir()
+        shutil.copytree(repo / "engine/.veldo", root / ".veldo",
+                        ignore=shutil.ignore_patterns("__pycache__", "decision_reviews"))
+        shutil.copytree(repo / "engine/.veldo", authority / ".veldo",
+                        ignore=shutil.ignore_patterns("__pycache__", "decision_reviews"))
+        shutil.copytree(repo / "scripts", authority / "scripts",
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        # Only the catalog is fixture-specific. All built-in contracts and the launcher remain real.
+        gate = (repo / "scripts/verify.sh").read_text()
+        gate = re.sub(r'(?m)^CHECK_([A-Za-z0-9_]+)=".*"$',
+                      lambda m: ('CHECK_unit="required:python3 move_refs.py"' if m[1] == "unit"
+                                 else 'CHECK_%s="na:fixture"' % m[1]), gate)
+        (authority / "scripts/verify.sh").write_text(gate)
+        (authority / "scripts/gate_unconfined.json").write_text(json.dumps({
+            "schema": "veldo.gate-unconfined/v1", "authority": "D1 fixture candidate stage",
+            "stages": {"unit": "python3 move_refs.py"},
+            "suites": [{"suite": "move_refs", "reason": "Exercise writable candidate refs"}]}))
+        loader = importlib.util.spec_from_file_location("w1712_authority", authority / ".veldo/control_verification.py")
+        cv = importlib.util.module_from_spec(loader)
+        loader.loader.exec_module(cv)
+
+        def git(*args):
+            return subprocess.check_output(
+                ["git", "-c", "user.name=Dmitry Grinberg", "-c", "user.email=dmitry@bcengi.com",
+                 *args], cwd=root, text=True, stderr=subprocess.STDOUT).strip()
+
+        def commit():
+            git("add", ".")
+            git("commit", "-qm", "fixture")
+            return git("rev-parse", "HEAD")
+
+        def regenerate():
+            run = subprocess.run([sys.executable, ".veldo/validate.py", "evidence-debt"],
+                                 cwd=root, text=True, capture_output=True)
+            assert run.returncode == 0, run.stdout + run.stderr
+            (root / ".veldo/required-evidence-debt.jsonl").write_text(run.stdout)
+
+        def pair(sid):
+            spec = root / ("specs/" + sid + ".md")
+            spec.parent.mkdir(exist_ok=True)
+            spec.write_text("---\nschema: veldo.spec/v1\nid: " + sid + "\ntitle: Fixture\n"
+                            "status: ready\nrisk: standard\nowner: dmitry\nlane: standalone\n"
+                            "acceptance_criteria:\n  - id: AC1\n    text: Passing integration.\n"
+                            "required_evidence: [integration]\n---\n")
+            proof = root / ("proof/" + sid + "/manifest.json")
+            proof.parent.mkdir(parents=True)
+            proof.write_text(json.dumps({"schema": "veldo.proof/v1", "spec_id": sid,
+                "commit": "deadbeef", "producer": "fixture", "rollback": "revert", "checks": [],
+                "criteria": [{"id": "AC1", "status": "passed",
+                              "evidence": [{"type": "unit", "status": "passed"}]}]}))
+            return spec
+
+        git("init", "-q")
+        # Debt-free candidates also require a gate base.
+        (root / "move_refs.py").write_text("print('candidate stage ran')\n")
+        commit()
+        (authority / ".veldo/authority_git_common").write_text(str(root / ".git") + "\n")
+        for label, base, diagnostic in (("missing base debt-free", None, "policy_base/invalid"),
+                                         ("invalid base", "origin/main", "policy_base/invalid"),
+                                         ("absent base", "f" * 40, "policy_base/absent")):
+            observed, _ = cv.observe_gate(root, authority, host / label.replace(" ", "-"),
+                                          bind_refs=False, base=base)
+            output = observed["stdout"] + observed["stderr"]
+            ok = observed["exit"] == 1 and diagnostic in output and "GATE: RED" in output
+            report("D1 " + label + ("\n" + output if not ok else ""), ok)
+        # The ratchet itself refuses a missing authority base before adoption-safe stand-down.
+        debt = cv._sibling("w1712_debt_guard", "evidence_debt.py")
+        import types
+        messages = []
+        validator = types.SimpleNamespace(fail=lambda path, message: messages.append(message) or 1)
+        refused = debt.validate(validator, root, [], gate=True)
+        report("D1 ratchet refuses missing gate BASE", refused == 1 and
+               messages == ["gate requires authority BASE; no exemption granted"])
+        historical = pair("WARP-1712")
+        regenerate()
+        watermark = commit()
+        git("update-ref", "refs/remotes/origin/main", watermark)
+        git("symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main")
+        observed, _ = cv.observe_gate(root, authority, host / "unchanged", bind_refs=False, base=watermark)
+        output = observed["stdout"] + observed["stderr"]
+        ok = observed["green"] and "contracts: pass" in output
+        report("D1 unchanged historical debt passes" + ("\n" + output if not ok else ""), ok)
+        historical.write_text(historical.read_text() + "Touched historical spec.\n")
+        pair("WARP-1713")
+        regenerate()
+        (root / "move_refs.py").write_text(
+            "import os, subprocess\n"
+            "if os.environ.get('VELDO_GATE_LEG') == 'confined': raise SystemExit(0)\n"
+            "for ref in ('refs/remotes/origin/main', 'refs/remotes/origin/HEAD'):\n"
+            "    subprocess.run(['git', 'update-ref', '--no-deref', ref, 'HEAD'], check=True)\n"
+            "print('candidate moved both origin refs to HEAD')\n")
+        head = commit()
+        if mutable_base:
+            # The D1 behavior: discard the supplied watermark at contracts time.
+            gate = gate.replace('contracts "$(pwd -P)" "$VELDO_BASE"',
+                                'contracts "$(pwd -P)" "$(git rev-parse origin/main)"')
+            (authority / "scripts/verify.sh").write_text(gate)
+        observed, _ = cv.observe_gate(root, authority, host / "attack", bind_refs=False, base=watermark)
+        output = observed["stdout"] + observed["stderr"]
+        moved = all(git("rev-parse", ref) == head for ref in ("origin/main", "origin/HEAD"))
+        ok = (moved and "candidate moved both origin refs to HEAD" in output
+              and output.index("candidate moved both") < output.index("== veldo contracts")
+              and "touched pair requires passing evidence" in output
+              and "new required-evidence debt forbidden" in output
+              and "contracts: FAIL" in output and "GATE: RED" in output
+              and observed["exit"] == 1 and not observed["green"])
+        report("D1 candidate moves both refs before contracts" + ("\n" + output if not ok else ""), ok, True)
+
+
 for _w1712_relative in ("engine/.veldo/validate.py", ".veldo/validate.py"):
     _w1712_loader = importlib.util.spec_from_file_location("w1712_validator", ROOT / _w1712_relative)
     _w1712_validator = importlib.util.module_from_spec(_w1712_loader)
@@ -433,3 +548,5 @@ _w1712_cli(ROOT, lambda label, ok, old_refusal: expect("WARP-1712 " + label, ok)
 _w1712_ratchet(ROOT, lambda label, ok, old_refusal: expect("WARP-1712 " + label, ok))
 
 _w1712_review(ROOT, lambda label, ok, old_refusal: expect("WARP-1712 " + label, ok))
+
+_w1712_authority(ROOT, lambda label, ok, old_refusal=False: expect("WARP-1712 " + label, ok))

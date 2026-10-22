@@ -29,6 +29,13 @@ else:
     tree.body = [node for node in tree.body if isinstance(node, (ast.Import, ast.ImportFrom, ast.FunctionDef))]
     namespace = {}
     exec(compile(tree, str(suite), "exec"), namespace)
+    if mode in ("authority-current", "authority-mutable-base"):
+        namespace["_w1712_authority"](ROOT, report, mode == "authority-mutable-base")
+        failed = sum(not row["passed"] for row in rows)
+        if mode == "authority-mutable-base":
+            assert all(not row["passed"] if row["new_refusal"] else row["passed"] for row in rows), rows
+        print(json.dumps({"mode": mode, "passed": len(rows) - failed, "failed": failed}))
+        sys.exit(1 if failed else 0)
     if mode in ("review-current", "review-round2"):
         import subprocess
         sources = None

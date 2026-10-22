@@ -60,14 +60,18 @@ veldo_stage() {
 # the landing step commits them from. The line below is the interface the installed caller
 # (control_verification.py) requires before it runs a verifier in candidate mode.
 # veldo-gate-interface: candidate-sink/v1
+VELDO_BASE=""
 VELDO_CANDIDATE=""; VELDO_SINK=""; VELDO_REFUSE=""; VELDO_OUT=".veldo"
 while [ "$#" -gt 0 ]; do
   case "$1" in
+    --base)
+      if [ "$#" -lt 2 ]; then VELDO_REFUSE="--base needs a value"; break; fi
+      VELDO_BASE="$2"; shift 2 ;;
     --candidate|--sink)
       if [ "$#" -lt 2 ] || [ -z "$2" ]; then VELDO_REFUSE="$1 needs a value"; break; fi
       if [ "$1" = --candidate ]; then VELDO_CANDIDATE="$2"; else VELDO_SINK="$2"; fi
       shift 2 ;;
-    *) VELDO_REFUSE="unknown argument (only --candidate <root> --sink <dir>)"; break ;;
+    *) VELDO_REFUSE="unknown argument (only --candidate <root> --sink <dir> --base <commit>)"; break ;;
   esac
 done
 if [ -z "$VELDO_REFUSE" ] && { [ -n "$VELDO_CANDIDATE" ] || [ -n "$VELDO_SINK" ]; } \
@@ -117,6 +121,13 @@ if [ -e .git ] || [ -L .git ]; then
     exit 1
   fi
 fi
+
+# Freeze checkout authority before any candidate code can move its origin refs.
+# Candidate mode receives the caller's watermark and never falls back to these refs.
+if [ -z "$VELDO_CANDIDATE" ] && [ -z "$VELDO_BASE" ]; then
+  VELDO_BASE=$(git merge-base origin/HEAD HEAD 2>/dev/null || git merge-base origin/main HEAD 2>/dev/null) || VELDO_BASE=""
+fi
+readonly VELDO_BASE
 
 # ---- the validation catalog: declare EVERY item (see header) ---------------
 CHECK_format="na:no formatter adopted yet"
@@ -230,7 +241,7 @@ fi
 
 echo "== veldo contracts (built-in: fails closed if unavailable)"
 if command -v python3 >/dev/null && [ -f .veldo/validate.py ]; then
-  if veldo_candidate python3 .veldo/validate.py all; then
+  if veldo_candidate python3 -I -S "$VELDO_AUTHORITY/.veldo/control_verification.py" contracts "$(pwd -P)" "$VELDO_BASE"; then
     echo "   contracts: pass"
   else
     echo "   contracts: FAIL"; FAIL=1

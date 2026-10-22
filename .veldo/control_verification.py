@@ -70,7 +70,7 @@ POLICY_SOURCE = "policy.yaml"
 # VELDO-0148: the loader helper that loads a file from outside every installed directory by design (the
 # trusted installation's policy_check.py, in a separate process of this module's own), declared so the
 # authority service's installation, whose land station loads this module, reads it as no module of its own.
-EXTERNAL_LOADERS = ("_policy_main",)
+EXTERNAL_LOADERS = ("_policy_main", "_contracts_main")
 INSTALLED_PATHS = ("scripts", ".veldo")
 # The line an installed verifier carries when it knows candidate mode. A verifier without it would
 # ignore the arguments and verify the directory it lives in, so it is refused, never run.
@@ -452,11 +452,13 @@ def judge(observation):
     return problems
 
 
-def observe_gate(candidate, installation, directory, *, bind_refs, timeout=None):
+def observe_gate(candidate, installation, directory, *, bind_refs, base=None, timeout=None):
     """Run the installed verifier against `candidate` in candidate mode and observe it. `directory` is
     a new or empty directory outside the candidate: it receives the sink and observation.json.
     `bind_refs` (required, True or False) is whether the repository's refs are part of the candidate
-    state compared before and after (see state). Returns (observation, reference); reference is
+    state compared before and after (see state). `base` is the caller's frozen trunk commit,
+    passed to contracts just as run_policy receives it; candidate gates refuse its absence.
+    Returns (observation, reference); reference is
     {path, digest} of the written observation."""
     CP = _proof()
     bind_refs = _bind_refs(bind_refs)
@@ -480,6 +482,8 @@ def observe_gate(candidate, installation, directory, *, bind_refs, timeout=None)
     seeded = _regular_bytes(str(candidate / ".veldo" / "events.jsonl")) or b""
     before = state(candidate, bind_refs=bind_refs)
     command = ["bash", str(root / GATE_PATH), "--candidate", str(candidate), "--sink", str(sink)]
+    if base is not None:
+        command.extend(["--base", base])
     started = time.time()
     try:
         # Inside a tree the agent launcher made, the gate's launcher needs the marker (VELDO-0210 AC6).
@@ -627,8 +631,34 @@ def _policy_main(policy, candidate, base):
     return module.main()
 
 
+def _contracts_main(candidate, base):
+    """Run candidate contracts with the installed ratchet and the authority's frozen base.
+
+    The candidate validator remains a candidate command, confined by the gate launcher.
+    Only the installed policy's Git boundary and the supplied commit authorize debt.
+    """
+    refused = _policy_base_refusal(base, candidate)
+    if refused:
+        print(refused)
+        return 2
+    policy = _sibling("veldo_contract_policy", "policy_check.py")
+    policy.BASE = base
+    debt = _sibling("veldo_contract_debt", "evidence_debt.py")
+    spec = importlib.util.spec_from_file_location(
+        "veldo_candidate_contracts", Path(candidate) / ".veldo/validate.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.evidence_debt_module = lambda: debt
+    errors = module.run_all(policy=policy, gate=True)
+    if errors:
+        print("veldo contracts: %s problem(s)" % errors)
+    return 1 if errors else 0
+
+
 if __name__ == "__main__":
     if len(sys.argv) == 5 and sys.argv[1] == "policy":
         sys.exit(_policy_main(sys.argv[2], sys.argv[3], sys.argv[4]))
+    if len(sys.argv) == 4 and sys.argv[1] == "contracts":
+        sys.exit(_contracts_main(sys.argv[2], sys.argv[3]))
     print("usage: control_verification.py policy <installed policy_check.py> <candidate root> <base commit>")
     sys.exit(2)

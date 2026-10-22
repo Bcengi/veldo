@@ -255,7 +255,9 @@ def install_and_run(pack_dir, target, gate=True):
     # THE ADOPTER'S REPOSITORY IS ITS OWN, and this stage created it, so this stage names its Git
     # common directory to the adopter's gate. Inherited, the variable would name the repository
     # this stage runs in, and every adopter gate would refuse its own .git as a redirect.
-    g = _run(["bash", ADOPTER_GATE], cwd=target,
+    # This stage owns the fresh initial commit; supply it as the bootstrap authority base.
+    base = _run(["git", "rev-parse", "HEAD"], cwd=target).stdout.strip()
+    g = _run(["bash", ADOPTER_GATE, "--base", base], cwd=target,
              env=dict(os.environ, VELDO_EXPECTED_GIT_COMMON=str((target / ".git").resolve())))
     out["gate_returncode"] = g.returncode
     full = g.stdout + g.stderr

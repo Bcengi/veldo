@@ -745,10 +745,16 @@ class GitLandOps(LandOps):
         try:
             c["observation_dir"] = tempfile.mkdtemp(prefix="veldo-observation-", dir=self.observations)
             installed = self._installed(c)
+            # Contracts read the watermark's tree inside confinement. Borrowed objects can
+            # live outside its read roots, so materialize reachable history in our workspace.
+            self._git(c["workspace"], "repack", "-a")
             # The refs are bound: the workspace is this land's own repository, sharing no refs with
             # anyone, so a ref that moves during the gate was moved by the candidate's code.
             observed, reference = CV.observe_gate(c["workspace"], installed, Path(c["observation_dir"]) / "gate",
-                                                  bind_refs=True)
+                                                  bind_refs=True, base=c["watermark"])
+        except CandidateRefused as error:
+            c["gate"] = {"exit": None, "terminal": None, "green": False, "refusals": [error.code]}
+            return self._refuse("gate", error)
         except CV.Refused as error:
             c["gate"] = {"exit": None, "terminal": None, "green": False, "refusals": [error.code]}
             return self._refuse("gate", CandidateRefused(error.code, str(error.detail)))
