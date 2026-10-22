@@ -4507,12 +4507,12 @@ def cases():
     # repository, so a sibling worktree's commit during its gate fails it; GitLandOps does not bind its
     # workspace's refs, so a candidate that moves them during the gate is not refused.
     gate_output('gate-output-live-loop-binds-refs', 'executor.py',
-                '                                                       bind_refs=False)\n',
-                '                                                       bind_refs=True)  # defect: the caller\'s refs are bound\n',
+                '                                                       bind_refs=False, base=self.trunk)\n',
+                '                                                       bind_refs=True, base=self.trunk)  # defect: the caller\'s refs are bound\n',
                 'live-loop-siblings')
     gate_output('gate-output-land-does-not-bind-refs', 'lander.py',
-                'Path(c["observation_dir"]) / "gate",\n                                                  bind_refs=True)\n',
-                'Path(c["observation_dir"]) / "gate",\n                                                  bind_refs=False)'
+                'Path(c["observation_dir"]) / "gate",\n                                                  bind_refs=True, base=c["watermark"])\n',
+                'Path(c["observation_dir"]) / "gate",\n                                                  bind_refs=False, base=c["watermark"])'
                 '  # defect: the workspace\'s refs are not bound\n',
                 'refs-bound',
                 also=[('c["workspace"], c["commit"],\n                                               bind_refs=True)\n',

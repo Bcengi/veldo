@@ -590,6 +590,18 @@ def _w1712_authority(repo, report, mutable_base=False):
         report("D1 candidate validator skips its ratchet call" + ("\n" + output if not ok else ""), ok, True)
 
 
+def _w1712_ratchet_stage(output):
+    """The authority ratchet stage's own lines of a gate's output: from its header to the next
+    stage header. The candidate's contracts stage runs the candidate's validator, whose ratchet
+    reads the candidate's own origin refs and never --base, so its lines say nothing about what
+    the base decided. Empty when the stage did not run."""
+    start = output.find("== evidence ratchet")
+    if start < 0:
+        return ""
+    end = output.find("\n== ", start + 1)
+    return output[start:] if end < 0 else output[start:end + 1]
+
+
 def _w1712_executor(repo, report):
     """The executor's gate hands the ratchet the trunk the run was built on, never its own HEAD.
 
@@ -662,21 +674,28 @@ def _w1712_executor(repo, report):
         result = loop.gate()
         observed = result.get("observation") or {}
         output = observed.get("stdout", "") + observed.get("stderr", "")
+        stage = _w1712_ratchet_stage(output)
         ok = (registered and resolved["base"] == branch and loop.trunk == trunk
               and "--base" in observed.get("command", []) and trunk in observed.get("command", [])
-              and "new required-evidence debt forbidden: proof/WARP-1712/manifest.json" in output
-              and "touched pair requires passing evidence: proof/WARP-1712/manifest.json" in output
-              and "evidence ratchet: FAIL" in output and "GATE: RED" in output
+              and "new required-evidence debt forbidden: proof/WARP-1712/manifest.json" in stage
+              and "touched pair requires passing evidence: proof/WARP-1712/manifest.json" in stage
+              and "evidence ratchet: FAIL" in stage and "GATE: RED" in output
               and result["green"] is False)
         report("executor gate measures branch debt against the trunk merge base"
                + ("\n" + str(result.get("detail")) + "\n" + output if not ok else ""), ok, True)
 
         # The control: measured against the branch commit itself (the pre-fix executor base), the
-        # same tree's ratchet passes, so only the base decides the refusal above.
+        # same tree's ratchet stage passes, so only the base decides the refusal above. Read off that
+        # stage's own lines: the candidate's contracts stage measures against the candidate's own
+        # origin refs whatever --base says, and where confinement lets it run (a real host) it
+        # prints the same debt refusal, which is not the authority stage's verdict.
         cv = executor.verification_organ()
         observed, _ = cv.observe_gate(root, authority, host / "branch-base", bind_refs=False, base=branch)
         output = observed["stdout"] + observed["stderr"]
-        ok = "evidence ratchet: pass" in output and "new required-evidence debt" not in output
+        stage = _w1712_ratchet_stage(output)
+        ok = (observed.get("command", [])[-2:] == ["--base", branch]
+              and "evidence ratchet: pass" in stage and "new required-evidence debt" not in stage
+              and "touched pair requires passing evidence" not in stage)
         report("executor control: the branch commit as base admits its own debt"
                + ("\n" + output if not ok else ""), ok)
 
@@ -688,8 +707,9 @@ def _w1712_executor(repo, report):
         result = loop.gate()
         observed = result.get("observation") or {}
         output = observed.get("stdout", "") + observed.get("stderr", "")
+        stage = _w1712_ratchet_stage(output)
         ok = (loop.trunk is None and "--base" not in observed.get("command", [])
-              and "gate requires authority BASE" in output and "evidence ratchet: FAIL" in output
+              and "gate requires authority BASE" in stage and "evidence ratchet: FAIL" in stage
               and result["green"] is False)
         report("executor without a trunk refuses debt" + ("\n" + output if not ok else ""), ok)
 

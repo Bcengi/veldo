@@ -18,6 +18,8 @@ footprint:
   - engine/scripts/verify.sh
   - scripts/verify.sh
   - scripts/check_install_and_run.py
+  - scripts/suites/24_veldo_0007_install_and_run.py
+  - scripts/check_teeth_mutations.py
   - scripts/suites/69_veldo_0058_gate_output.py
   - engine/.veldo/validate.py
   - .veldo/validate.py
