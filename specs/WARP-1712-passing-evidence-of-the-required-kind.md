@@ -200,3 +200,19 @@ commit. The D1 falsifier stays required, now refused by the ratchet stage. A new
 the candidate's validate.py to skip its ratchet call and replaces its evidence_debt.py: its
 contracts pass, and the gate still refuses touched and new debt. The gate-domain expectations
 list both stage modules.
+
+## Round 6 review corrections
+
+The independent review of round 5 found the authority stage sound and named one defect and three
+gaps. The executor gave the ratchet the work root's own HEAD at resolve() time, so a branch commit
+adding failing debt and its register row was its own authority and the executor recorded a false
+green (the lander's watermark still refused at landing). The executor now freezes, at resolve(),
+the trunk merge base of that commit (origin/HEAD, else origin/main, as a checkout gate freezes it)
+through control_verification.trunk_base and hands only that to the gate; with no trunk it hands
+none, and the ratchet refuses any debt. Its falsifier is a branch commit adding a failing pair and
+its register row: the executor gate is red with new-debt and touch refusals, while the same tree
+measured against the branch commit itself passes the ratchet. The fresh-adopter exemption gains a
+case with shortfall rows present, the register deleted and no base, which must refuse. Packaging
+runs each adopter's gate as `bash scripts/verify.sh` with no --base in a repository with no
+remote, and records the argv, the remotes and the ratchet stage, which must pass for a debt-free
+starter. observe_gate's docstring now states the behaviour above for a missing base.

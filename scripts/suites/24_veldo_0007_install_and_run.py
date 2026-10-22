@@ -1005,6 +1005,21 @@ def _iar_ac3():
                    and r["gate_substance"]["commit"] not in (None, "", "no-git")
                    for r in _IAR_REP["results"]))
 
+    # THE ADOPTER'S FIRST LOCAL RUN, NOT A BOOTSTRAPPED ONE (WARP-1712). Handing the nested gate
+    # --base made every packaging run a run no adopter makes: a fresh repository has no origin, so
+    # no trunk resolves, and its gate gets no base. A debt-free starter must be green exactly so,
+    # with the evidence ratchet stage itself passing, not standing down.
+    expect("WARP-1712 packaging: every adopter gate ran as `bash scripts/verify.sh` with no --base, in "
+           "a repository with no remote, and its evidence ratchet stage passed. Measured: %r"
+           % ([(r["pack"], r.get("gate_argv"), r.get("gate_remotes"), r.get("gate_ratchet"))
+               for r in _IAR_REP["results"]],),
+           _IAR_REP["results"]
+           and all(r.get("gate_argv") == ["bash", IAR.ADOPTER_GATE]
+                   and r.get("gate_remotes") == []
+                   and r.get("gate_ratchet") == "pass"
+                   and r["gate_returncode"] == 0
+                   for r in _IAR_REP["results"]))
+
     # RECORDED IS NOT REPORTED, which is PLAN-0018 finding 64 in a new place. The nested gate stands
     # two built-ins down (no releases directory, no architecture contract) and counts both as passes.
     # That is correct for an adoption-safe gate and invisible in the word GREEN, so this stage must

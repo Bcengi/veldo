@@ -261,6 +261,7 @@ class LiveLoop(LoopSteps):
         # the base commit resolve() found, laid down from Git objects outside the workspace.
         self.installation = str(installation) if installation is not None else None
         self.base = None
+        self.trunk = None
 
     def resolve(self, spec_id):
         self.spec_id = spec_id
@@ -278,6 +279,10 @@ class LiveLoop(LoopSteps):
         spec_path = matches[0].relative_to(self.root).as_posix()
         committed = CP.blob(self.root, base, spec_path) if base else None
         self.base = base
+        # WARP-1712: the gate's ratchet base is the trunk this run was built on, frozen here before
+        # anything is built, as the lander uses its watermark. Never `base` itself: a branch commit
+        # that adds failing debt and its register row would be its own authority and gate green.
+        self.trunk = verification_organ().trunk_base(self.root, base) if base else None
         return {
             "id": fm.get("id", spec_id),
             "status": fm.get("status"),
@@ -352,9 +357,9 @@ class LiveLoop(LoopSteps):
                 # worktrees commit and whose fetches move refs in normal use, and nothing after this
                 # gate reads a range from them (the proof service is handed the spec's base commit
                 # explicitly, and merge_ready reads the spec). HEAD, its tree, the index and every
-                # file outside .git stay bound.
+                # file outside .git stay bound. The ratchet's base is the trunk resolve() froze.
                 observed, _reference = CV.observe_gate(self.work_root, installed, Path(directory) / "gate",
-                                                       bind_refs=False, base=self.base)
+                                                       bind_refs=False, base=self.trunk)
             except CV.Refused as error:
                 return {"green": False, "detail": "gate not run: %s" % error.code}
         result = {"green": observed["green"], "detail": CP.detail(observed)}

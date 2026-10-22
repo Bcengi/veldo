@@ -456,8 +456,11 @@ def observe_gate(candidate, installation, directory, *, bind_refs, base=None, ti
     """Run the installed verifier against `candidate` in candidate mode and observe it. `directory` is
     a new or empty directory outside the candidate: it receives the sink and observation.json.
     `bind_refs` (required, True or False) is whether the repository's refs are part of the candidate
-    state compared before and after (see state). `base` is the caller's frozen trunk commit,
-    passed to contracts just as run_policy receives it; candidate gates refuse its absence.
+    state compared before and after (see state). `base` is the caller's frozen trunk commit (the
+    lander's watermark, the executor's trunk_base), handed to the verifier as --base and from there
+    to the evidence ratchet stage, just as run_policy receives it. Candidate mode never falls back to
+    the candidate's own refs: without a base the ratchet passes only a debt-free tree with no
+    register (a fresh adopter) and refuses anything with debt; a given base must be an ancestor.
     Returns (observation, reference); reference is
     {path, digest} of the written observation."""
     CP = _proof()
@@ -608,6 +611,24 @@ def _policy_base_refusal(base, candidate):
             return "missing_authority:policy_base/not_ancestor"
     except Refused as error:
         return "missing_authority:policy_base/" + error.code
+    return None
+
+
+def trunk_base(repo, commit):
+    """The trunk commit `commit` was built on: its merge base with origin/HEAD, else origin/main, the
+    way a checkout gate freezes its base; None when neither resolves. A caller that runs a candidate
+    gate without a lander's watermark (the executor) takes its base here, read before anything is
+    built, never from the commit itself: a branch's own commits are not trunk authority."""
+    if not isinstance(commit, str) or not _FULL_COMMIT.fullmatch(commit):
+        return None
+    for ref in ("origin/HEAD", "origin/main"):
+        try:
+            found = _git(repo, "merge-base", ref, commit, ok=(0, 1, 128))
+        except Refused:
+            return None
+        value = found.stdout.decode("utf-8", "replace").strip()
+        if found.returncode == 0 and _FULL_COMMIT.fullmatch(value):
+            return value
     return None
 
 

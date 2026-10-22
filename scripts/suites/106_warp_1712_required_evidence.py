@@ -513,6 +513,21 @@ def _w1712_authority(repo, report, mutable_base=False):
         refused = debt.validate(validator, root, [], gate=True)
         report("D1 ratchet refuses debt without gate BASE", refused == 1 and
                messages == ["gate requires authority BASE; no exemption granted"])
+        # The exemption is for a tree with no shortfall AND no register: deleting the register
+        # of a tree whose pairs still fall short must not turn it into a fresh adopter.
+        predicate = cv._sibling("w1712_predicate", "validate.py")
+        shortfall = types.SimpleNamespace(**{name: getattr(predicate, name) for name in
+                                             ("front_matter", "_CORPUS", "check_required_evidence")})
+        shortfall.fail = validator.fail
+        matched = debt.pairs(shortfall, root)
+        rows = debt.compute(shortfall, root, matched)
+        (root / ".veldo/required-evidence-debt.jsonl").unlink()
+        del messages[:]
+        refused = debt.validate(shortfall, root, matched, gate=True)
+        report("D1 ratchet refuses shortfall with the register deleted and no BASE",
+               len(rows) == 1 and refused == 1
+               and messages == ["gate requires authority BASE; no exemption granted"])
+        regenerate()
         observed, _ = cv.observe_gate(root, authority, host / "missing-base-debt", bind_refs=False)
         output = observed["stdout"] + observed["stderr"]
         ok = (observed["exit"] == 1 and "gate requires authority BASE" in output
@@ -575,6 +590,110 @@ def _w1712_authority(repo, report, mutable_base=False):
         report("D1 candidate validator skips its ratchet call" + ("\n" + output if not ok else ""), ok, True)
 
 
+def _w1712_executor(repo, report):
+    """The executor's gate hands the ratchet the trunk the run was built on, never its own HEAD.
+
+    A branch commit adds a failing pair and its register row. Measured against that commit the
+    register already holds the row, so nothing is new debt; measured against the trunk merge base,
+    the row is new debt and the gate is red."""
+    import re
+    with tempfile.TemporaryDirectory(prefix="warp1712-executor-") as directory:
+        host = Path(directory)
+        root, authority = host / "candidate", host / "authority"
+        root.mkdir()
+        shutil.copytree(repo / "engine/.veldo", root / ".veldo",
+                        ignore=shutil.ignore_patterns("__pycache__", "decision_reviews"))
+        shutil.copytree(repo / "engine/.veldo", authority / ".veldo",
+                        ignore=shutil.ignore_patterns("__pycache__", "decision_reviews"))
+        shutil.copytree(repo / "scripts", authority / "scripts",
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        gate = re.sub(r'(?m)^CHECK_([A-Za-z0-9_]+)=".*"$',
+                      lambda m: ('CHECK_unit="required:python3 stage.py"' if m[1] == "unit"
+                                 else 'CHECK_%s="na:fixture"' % m[1]),
+                      (repo / "scripts/verify.sh").read_text())
+        (authority / "scripts/verify.sh").write_text(gate)
+        (authority / "scripts/gate_unconfined.json").write_text(json.dumps({
+            "schema": "veldo.gate-unconfined/v1", "authority": "executor fixture candidate stage",
+            "stages": {"unit": "python3 stage.py"},
+            "suites": [{"suite": "stage", "reason": "Fixture stage"}]}))
+
+        def git(*args):
+            return subprocess.check_output(
+                ["git", "-c", "user.name=Dmitry Grinberg", "-c", "user.email=dmitry@bcengi.com",
+                 *args], cwd=root, text=True, stderr=subprocess.STDOUT).strip()
+
+        def commit():
+            git("add", ".")
+            git("commit", "-qm", "fixture")
+            return git("rev-parse", "HEAD")
+
+        git("init", "-q")
+        (root / "stage.py").write_text("print('candidate stage ran')\n")
+        # The trunk has adopted the ratchet: its register is present and empty.
+        (root / ".veldo/required-evidence-debt.jsonl").write_text("")
+        trunk = commit()
+        git("update-ref", "refs/remotes/origin/main", trunk)
+        git("symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main")
+        (authority / ".veldo/authority_git_common").write_text(str(root / ".git") + "\n")
+        git("checkout", "-qb", "feature")
+        spec = root / "specs/WARP-1712.md"
+        spec.parent.mkdir()
+        spec.write_text("---\nschema: veldo.spec/v1\nid: WARP-1712\ntitle: Fixture\n"
+                        "status: ready\nrisk: standard\nowner: dmitry\nlane: standalone\n"
+                        "acceptance_criteria:\n  - id: AC1\n    text: Passing integration.\n"
+                        "required_evidence: [integration]\n---\n")
+        proof = root / "proof/WARP-1712/manifest.json"
+        proof.parent.mkdir(parents=True)
+        proof.write_text(json.dumps({"schema": "veldo.proof/v1", "spec_id": "WARP-1712",
+            "commit": "deadbeef", "producer": "fixture", "rollback": "revert", "checks": [],
+            "criteria": [{"id": "AC1", "status": "passed",
+                          "evidence": [{"type": "unit", "status": "passed"}]}]}))
+        run = subprocess.run([sys.executable, ".veldo/validate.py", "evidence-debt"],
+                             cwd=root, text=True, capture_output=True)
+        (root / ".veldo/required-evidence-debt.jsonl").write_text(run.stdout)
+        branch = commit()
+        registered = "proof/WARP-1712/manifest.json" in run.stdout
+
+        loader = importlib.util.spec_from_file_location("w1712_executor", authority / ".veldo/executor.py")
+        executor = importlib.util.module_from_spec(loader)
+        loader.loader.exec_module(executor)
+        loop = executor.LiveLoop(root=root, installation=authority)
+        resolved = loop.resolve("WARP-1712")
+        result = loop.gate()
+        observed = result.get("observation") or {}
+        output = observed.get("stdout", "") + observed.get("stderr", "")
+        ok = (registered and resolved["base"] == branch and loop.trunk == trunk
+              and "--base" in observed.get("command", []) and trunk in observed.get("command", [])
+              and "new required-evidence debt forbidden: proof/WARP-1712/manifest.json" in output
+              and "touched pair requires passing evidence: proof/WARP-1712/manifest.json" in output
+              and "evidence ratchet: FAIL" in output and "GATE: RED" in output
+              and result["green"] is False)
+        report("executor gate measures branch debt against the trunk merge base"
+               + ("\n" + str(result.get("detail")) + "\n" + output if not ok else ""), ok, True)
+
+        # The control: measured against the branch commit itself (the pre-fix executor base), the
+        # same tree's ratchet passes, so only the base decides the refusal above.
+        cv = executor.verification_organ()
+        observed, _ = cv.observe_gate(root, authority, host / "branch-base", bind_refs=False, base=branch)
+        output = observed["stdout"] + observed["stderr"]
+        ok = "evidence ratchet: pass" in output and "new required-evidence debt" not in output
+        report("executor control: the branch commit as base admits its own debt"
+               + ("\n" + output if not ok else ""), ok)
+
+        # No trunk resolves (no origin): the executor hands no base, and the debt is refused.
+        git("update-ref", "-d", "refs/remotes/origin/HEAD")
+        git("update-ref", "-d", "refs/remotes/origin/main")
+        loop = executor.LiveLoop(root=root, installation=authority)
+        loop.resolve("WARP-1712")
+        result = loop.gate()
+        observed = result.get("observation") or {}
+        output = observed.get("stdout", "") + observed.get("stderr", "")
+        ok = (loop.trunk is None and "--base" not in observed.get("command", [])
+              and "gate requires authority BASE" in output and "evidence ratchet: FAIL" in output
+              and result["green"] is False)
+        report("executor without a trunk refuses debt" + ("\n" + output if not ok else ""), ok)
+
+
 for _w1712_relative in ("engine/.veldo/validate.py", ".veldo/validate.py"):
     _w1712_loader = importlib.util.spec_from_file_location("w1712_validator", ROOT / _w1712_relative)
     _w1712_validator = importlib.util.module_from_spec(_w1712_loader)
@@ -588,3 +707,5 @@ _w1712_ratchet(ROOT, lambda label, ok, old_refusal: expect("WARP-1712 " + label,
 _w1712_review(ROOT, lambda label, ok, old_refusal: expect("WARP-1712 " + label, ok))
 
 _w1712_authority(ROOT, lambda label, ok, old_refusal=False: expect("WARP-1712 " + label, ok))
+
+_w1712_executor(ROOT, lambda label, ok, old_refusal=False: expect("WARP-1712 " + label, ok))

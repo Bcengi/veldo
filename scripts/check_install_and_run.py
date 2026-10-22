@@ -206,6 +206,7 @@ def install_and_run(pack_dir, target, gate=True):
            "scaffolder_tree_has_engine_dir": None,
            "init_returncode": None, "init_tail": "", "files_created": None,
            "commit_returncode": None, "commit_tail": "", "tracked_files": None,
+           "gate_argv": None, "gate_remotes": None, "gate_ratchet": None,
            "gate_returncode": None, "gate_tail": "", "gate_substance": None, "failure": None}
     target.mkdir(parents=True, exist_ok=True)
     _run(["git", "init", "-q", "."], cwd=target)
@@ -255,12 +256,18 @@ def install_and_run(pack_dir, target, gate=True):
     # THE ADOPTER'S REPOSITORY IS ITS OWN, and this stage created it, so this stage names its Git
     # common directory to the adopter's gate. Inherited, the variable would name the repository
     # this stage runs in, and every adopter gate would refuse its own .git as a redirect.
-    # This stage owns the fresh initial commit; supply it as the bootstrap authority base.
-    base = _run(["git", "rev-parse", "HEAD"], cwd=target).stdout.strip()
-    g = _run(["bash", ADOPTER_GATE, "--base", base], cwd=target,
+    # THE GATE RUNS THE WAY AN ADOPTER FIRST RUNS IT: `bash scripts/verify.sh`, no --base, in a
+    # repository with no origin, so no trunk resolves. A debt-free starter must be green that way
+    # (WARP-1712: the ratchet needs no base when there is no debt and no register). The argv is
+    # read off the launch and the remotes off the repository, so the record cannot claim otherwise.
+    out["gate_remotes"] = _run(["git", "remote"], cwd=target).stdout.split()
+    g = _run(["bash", ADOPTER_GATE], cwd=target,
              env=dict(os.environ, VELDO_EXPECTED_GIT_COMMON=str((target / ".git").resolve())))
+    out["gate_argv"] = [str(a) for a in g.args]
     out["gate_returncode"] = g.returncode
     full = g.stdout + g.stderr
+    out["gate_ratchet"] = ("pass" if "   evidence ratchet: pass" in full
+                           else "FAIL" if "   evidence ratchet: FAIL" in full else None)
     out["gate_tail"] = full.strip()[-1200:]
     out["gate_substance"] = gate_substance(full)
     if g.returncode != 0:
