@@ -1,0 +1,99 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0161",
+  "commit": "f0b634da15c1c17a917bfa454dc2ac026c1eb9e4",
+  "producer": "Claude implementation agent (Claude Code)",
+  "produced_at": "2026-10-22T20:55:25.908048+00:00",
+  "plan": "PLAN-0019",
+  "work": "W121",
+  "plan_revision": 4,
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0161/observations.json",
+          "detail": "Suite 109_veldo_0161_adoption in this sandbox: every AC1 row green (remote-owner-refused, settlement-before-signature, signer-scope, scaffold-present, scaffold-commit, signatures-journaled, signer-enrolled, push-refused, observed). Partial run of one suite, not a gate pass."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0161/falsifiers.json",
+          "detail": "Declared falsifiers run through the teeth driver's worker mode: adoption161-signer-unscoped turns adoption/signer-scope red and adoption161-scaffold-relaid turns adoption/scaffold-commit red, each alone; baseline green before and after. Three further mutations (settlement unchecked, remote owner unchecked, signature unjournaled) are killed."
+        },
+        {
+          "type": "integration",
+          "ref": "scripts/suites/109_veldo_0161_adoption.py",
+          "detail": "Real store, VELDO-0068 settlement over a loopback Bot API, real Git repositories with bare remotes reached through the VELDO-0153 identity profile in the hermetic fence (run without its recording agent where AF_UNIX is refused, printed)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "not_run",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "scripts/suites/109_veldo_0161_adoption.py",
+          "detail": "Rows taken-on-running, same-process, packet-accepted and not-taken-on-named install the service and run its ExecStart as a separate process. Red by name here: this sandbox refuses socket(AF_UNIX), so no service can serve. Host must run them and the declared falsifier adoption161-restart-take-on."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0161/observations.json",
+          "detail": "Development observation only, not AC2 evidence: inprocess_harness.py runs the installed serve() in a thread over a socketpair; all 23 rows green, and the receiver-configuration mutant turns adoption/taken-on-running red. A thread shares the process, so same-process is not established."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "not_run",
+      "detail": "Focused: suite 109 here 43 passed, 4 failed (the four AC2 rows, AF_UNIX). Dependency suites 46, 69, 108, 77 and 26 green; 103, 107 and 58 stop at socket(AF_UNIX); 66 stands down and 73 is red at the user-manager qualification (unconfined list). See consumer-suites.json. No full selftest."
+    },
+    {
+      "name": "integration",
+      "status": "not_run",
+      "detail": "The AC2 rows need a host with local sockets; the gate's first-use integration was not run here."
+    },
+    {
+      "name": "ac1_falsifiers",
+      "status": "passed",
+      "detail": "Both declared AC1 falsifiers and three further mutations killed through check_teeth_mutations.py --worker; the coordinator itself refuses to start in this sandbox (candidate_execution_denied). See falsifiers.json."
+    },
+    {
+      "name": "ac2_falsifier",
+      "status": "not_run",
+      "detail": "adoption161-restart-take-on and adoption161-receiver-configuration-absent are registered; their rows are red at baseline here (AF_UNIX), so they are not judged. Host: check_teeth_mutations.py --finding 161."
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "detail": "bash scripts/check_lint.sh: lint pass (1001 python, 34 shell)."
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "detail": "bash scripts/check_template_sync.sh: 285 pairs identical."
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "detail": "bash scripts/check_generated.sh: pass, requires.json regenerated with run_scope.py --emit-requires."
+    },
+    {
+      "name": "gate",
+      "status": "not_run",
+      "detail": "bash scripts/verify.sh is the host's to run (README.md, Host runs)."
+    }
+  ],
+  "assumptions": [
+    "VELDO-0153 is the base of this branch and is not landed.",
+    "A factory set up before this change has no adoption signer; a re-run neither adds nor requires it, and adoption there refuses signature_refused:not_enrolled.",
+    "Where the systemd user manager cannot qualify the worker profile, the suite installs the service with the containment qualification answered qualified; the service under test launches no worker.",
+    "Independent critical-risk review and the owner's approval are outstanding."
+  ],
+  "rollback": "Stop adoption and disable the adoption signer (remove its line from the host's enrollment signers); repositories already adopted stay as they are, with their records, for the owner to remove by hand. No automatic rollback.",
+  "proof_digest": "sha256:e8dd6521bc4cb878"
+}

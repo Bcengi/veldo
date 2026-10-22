@@ -1,0 +1,191 @@
+{
+ "baseline_after": {
+  "count": 47,
+  "failed_rows": [
+   "VELDO-0161 adoption/taken-on-running",
+   "VELDO-0161 adoption/same-process",
+   "VELDO-0161 adoption/packet-accepted",
+   "VELDO-0161 adoption/not-taken-on-named"
+  ]
+ },
+ "baseline_before": {
+  "count": 47,
+  "failed_rows": [
+   "VELDO-0161 adoption/taken-on-running",
+   "VELDO-0161 adoption/same-process",
+   "VELDO-0161 adoption/packet-accepted",
+   "VELDO-0161 adoption/not-taken-on-named"
+  ]
+ },
+ "cases": [
+  {
+   "baseline_target_rows": {
+    "adoption/signer-scope": true
+   },
+   "case": "adoption161-signer-unscoped",
+   "criterion": "AC1",
+   "defect": "Let the adoption signer sign a binding for a repository no settled decision names",
+   "kind": "declared",
+   "module": ".veldo/control_repository.py",
+   "mutant_digest": "1f411368c64983c45d4e84045ea40af09b0e453ce3ec6f921d9c251baa9f6407",
+   "mutant_target_rows": {
+    "adoption/signer-scope": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/signer-scope"
+   ],
+   "result": "killed: the target row is green at baseline and red on the mutant",
+   "source_digest": "24e4587aa6a734874f779cce4d8c0a2b15bb6271a21d6398198aaa5a5f14254e",
+   "target_rows": [
+    "adoption/signer-scope"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/scaffold-commit": true
+   },
+   "case": "adoption161-scaffold-relaid",
+   "criterion": "AC1",
+   "defect": "Lay the missing scaffold in a commit the answered proposal does not name",
+   "kind": "declared",
+   "module": ".veldo/control_effect_executor_adoption.py",
+   "mutant_digest": "333ace6a40cc169cc4c056fb6fac11233c492ea8778b536ffdf9693e2f8b4920",
+   "mutant_target_rows": {
+    "adoption/scaffold-commit": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/scaffold-commit"
+   ],
+   "result": "killed: the target row is green at baseline and red on the mutant",
+   "source_digest": "b6978f97b766795df79a3b7445b9d7cb8c7ff23635547bea851ce23a0e588512",
+   "target_rows": [
+    "adoption/scaffold-commit"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/same-process": false
+   },
+   "case": "adoption161-restart-take-on",
+   "criterion": "AC2",
+   "defect": "Take the adopted repository on only by restarting the authority service (an exec of the serving process, which keeps its pid)",
+   "kind": "declared",
+   "module": ".veldo/control_service.py",
+   "mutant_digest": "bc17d3713f56b9b33ce76f5ff788d76cd3ed40464a577e1fee9065ff6eb02bc2",
+   "mutant_target_rows": {
+    "adoption/same-process": false
+   },
+   "new_failures_beyond_baseline": [],
+   "result": "not judged here: the target row is red at baseline because this sandbox refuses AF_UNIX sockets; the host runs it",
+   "source_digest": "5e40bb347e84bb7d1bed2b2640caac511fcb5e6b8c980510def39d315f022c69",
+   "target_rows": [
+    "adoption/same-process"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/settlement-before-signature": true
+   },
+   "case": "adoption161-settlement-unchecked",
+   "criterion": "AC1",
+   "defect": "The effect proceeds to the signer without a settled decision",
+   "kind": "threat model",
+   "module": ".veldo/control_effect_executor_adoption.py",
+   "mutant_digest": "9205daf46672fe0cbefba06275e03ae4970a67b4bda509ab14ab5b1cafc224e4",
+   "mutant_target_rows": {
+    "adoption/settlement-before-signature": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/observed",
+    "VELDO-0161 adoption/settlement-before-signature",
+    "VELDO-0161 adoption/signatures-journaled",
+    "VELDO-0161 ran/adoption/settlement-before-signature"
+   ],
+   "result": "killed: the target row is green at baseline and red on the mutant",
+   "source_digest": "b6978f97b766795df79a3b7445b9d7cb8c7ff23635547bea851ce23a0e588512",
+   "target_rows": [
+    "adoption/settlement-before-signature"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/remote-owner-refused": true
+   },
+   "case": "adoption161-remote-owner-unchecked",
+   "criterion": "AC1",
+   "defect": "A remote under another owner adopted (the effect skips the VELDO-0153 owner check)",
+   "kind": "threat model",
+   "module": ".veldo/control_effect_executor_adoption.py",
+   "mutant_digest": "c203b8fed3aed85f65c5ee9bb1afd1e2d9c8078dd6917766f9acdfe655609e5a",
+   "mutant_target_rows": {
+    "adoption/remote-owner-refused": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/observed",
+    "VELDO-0161 adoption/remote-owner-refused",
+    "VELDO-0161 adoption/scaffold-present"
+   ],
+   "result": "killed: the target row is green at baseline and red on the mutant",
+   "source_digest": "b6978f97b766795df79a3b7445b9d7cb8c7ff23635547bea851ce23a0e588512",
+   "target_rows": [
+    "adoption/remote-owner-refused"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/signatures-journaled": true,
+    "adoption/signer-scope": true
+   },
+   "case": "adoption161-signature-unjournaled",
+   "criterion": "AC1",
+   "defect": "A signature handed back without its journal record",
+   "kind": "threat model",
+   "module": ".veldo/control_repository.py",
+   "mutant_digest": "5c10c8fc1f43d5fa5863d545592c171392658503d6092833a958894765f9f460",
+   "mutant_target_rows": {
+    "adoption/signatures-journaled": false,
+    "adoption/signer-scope": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/observed",
+    "VELDO-0161 adoption/signatures-journaled",
+    "VELDO-0161 adoption/signer-scope"
+   ],
+   "result": "killed: the target row is green at baseline and red on the mutant",
+   "source_digest": "24e4587aa6a734874f779cce4d8c0a2b15bb6271a21d6398198aaa5a5f14254e",
+   "target_rows": [
+    "adoption/signer-scope",
+    "adoption/signatures-journaled"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/taken-on-running": false
+   },
+   "case": "adoption161-receiver-configuration-absent",
+   "criterion": "AC2",
+   "defect": "The repository served with no receiver configuration written",
+   "kind": "threat model",
+   "module": ".veldo/control_service.py",
+   "mutant_digest": "51a9fd7376cbc92d5b610fb71398c81fedfb100c8afbc3e6b23eb00dc3fc0202",
+   "mutant_target_rows": {
+    "adoption/taken-on-running": false
+   },
+   "new_failures_beyond_baseline": [],
+   "result": "not judged here: the target row is red at baseline because this sandbox refuses AF_UNIX sockets; the host runs it",
+   "source_digest": "5e40bb347e84bb7d1bed2b2640caac511fcb5e6b8c980510def39d315f022c69",
+   "target_rows": [
+    "adoption/taken-on-running"
+   ]
+  }
+ ],
+ "commit": "f0b634da15c1c17a917bfa454dc2ac026c1eb9e4",
+ "how": "python3 proof/VELDO-0161/run_falsifiers.py <checkout> <out>: scripts/check_teeth_mutations.py --worker per case (finding 161), the mutant copy written outside the tree by the driver's own materialize and substituted at the suite's PRODUCTION anchor; no source file was edited. The mutation coordinator (check_teeth_mutations.py --finding 161) refuses to start in this sandbox: candidate_execution_denied (agent sandbox marker).",
+ "inprocess_observation": {
+  "case": "adoption161-receiver-configuration-absent",
+  "detail": "proof/VELDO-0161/inprocess_harness.py with the mutant control_service.py: adoption/taken-on-running (and the later AC2 rows) red, every AC1 row green; at baseline all 23 rows green. See observations.json.",
+  "status": "development observation, not AC2 evidence"
+ },
+ "schema": "veldo.falsifiers/v1",
+ "spec_id": "VELDO-0161"
+}
