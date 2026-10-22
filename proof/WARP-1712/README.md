@@ -1,3 +1,42 @@
+# WARP-1712 round 6: the review's findings on round 5
+
+Implementation `9bb38722`. The review found the round 5 authority stage sound and named:
+
+1. Executor base (defect). LiveLoop.gate handed observe_gate `self.base`, the work root's HEAD at
+   resolve(). A branch commit adding a failing pair and its register row was then its own base, so
+   no new-debt refusal fired and the executor recorded a false green. resolve() now also freezes
+   `self.trunk = control_verification.trunk_base(root, base)`: the merge base with origin/HEAD,
+   else origin/main, the way verify.sh freezes a checkout gate's base. Only that reaches the gate;
+   with no trunk, no base is passed and the ratchet refuses any debt. `self.base` still selects
+   the installed verifier and the spec revision, unchanged. Falsifier: suite 106 "executor gate
+   measures branch debt against the trunk merge base" (red with new-debt and touch refusals) and
+   "executor without a trunk refuses debt"; the control row shows the same tree passing the
+   ratchet with the branch commit as base.
+2. Fresh-adopter exemption (test gap). Suite 106 "D1 ratchet refuses shortfall with the register
+   deleted and no BASE" calls the ratchet with real pairs (one shortfall row), the register
+   deleted and no base. The review's mutant `if not (root / REGISTER).exists(): return 0` fails it.
+3. Packaging (test gap). check_install_and_run.py runs each adopter's gate as `bash
+   scripts/verify.sh`, no --base, in a repository with no remote, recording the argv, the remotes
+   and the ratchet stage's result. Suite 24's new row requires all three and a zero exit. The
+   round 5 `--base HEAD` launch fails it.
+4. observe_gate's docstring now says what a missing base does: the ratchet passes only a debt-free
+   tree with no register and refuses anything with debt; a given base must be an ancestor.
+
+engine/.veldo copies are byte-identical to .veldo (template sync passes).
+
+## Checks in the agent sandbox
+
+`round6-focused.txt` and `round6-falsifiers.txt`, no environment override. 106: 293 passed,
+3 failed, the same three confined-stage rows as round 5. 62_veldo_0045_runtime 47/0,
+15_warp_1402 84/0, 15_warp_1409 81/0. 18_veldo_0012: 113/1, AC7, identical at 0192886f
+(no origin refs here). 53_veldo_0123_mutations stops at candidate_execution_denied (the sandbox
+refuses confined launches). 24_veldo_0007: the nested adopter gates are red only for the
+sandbox's refusal of confined stages (the ratchet stage passes with no base); its nine failures
+match 0192886f, plus the new row's exit clause. 69_veldo_0058: the same 10 failures round 5
+recorded. No canonical gate was run here; the host runs ./scripts/verify.sh.
+
+## Preserved round 5 report
+
 # WARP-1712 round 5: the ratchet as an authority stage
 
 Round 4 injected the installed ratchet into the candidate's own `validate.py` run, so the

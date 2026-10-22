@@ -1,0 +1,25 @@
+# WARP-1712 round 6 falsifiers, each run against the round 6 suite with one change reverted
+# (applied to engine/.veldo only, which the 106 fixtures copy; restored and byte-compared after).
+
+## Fix 1 and fix 2 mutants together
+# engine/.veldo/executor.py: observe_gate(..., base=self.base) (the round 5 executor base)
+# engine/.veldo/evidence_debt.py: `if not (root / REGISTER).exists(): return 0` (the review's mutant)
+python3 scripts/selftest.py --suite 106_warp_1712_required_evidence
+  SELFTEST FAIL: WARP-1712 D1 missing base debt-free passes                      (sandbox, also red unmutated)
+  SELFTEST FAIL: WARP-1712 D1 ratchet refuses shortfall with the register deleted and no BASE
+  SELFTEST FAIL: WARP-1712 D1 unchanged historical debt passes                   (sandbox, also red unmutated)
+  SELFTEST FAIL: WARP-1712 D1 candidate validator skips its ratchet call         (sandbox, also red unmutated)
+  SELFTEST FAIL: WARP-1712 executor gate measures branch debt against the trunk merge base
+  SELFTEST FAIL: WARP-1712 executor without a trunk refuses debt
+selftest (PARTIAL, 1 of 163 suites): 290 passed, 6 failed
+# Unmutated: 293 passed, 3 failed (the three sandbox rows only).
+# The executor control row passes in both runs: the same branch tree measured against the branch
+# commit itself prints "evidence ratchet: pass", so the base alone decides the refusal.
+
+## Fix 3 mutant
+# scripts/check_install_and_run.py relaunching the adopter gate with --base <its HEAD> (round 5),
+# check(only="claude"), the new packaging row's predicate without its exit clause:
+fixed  ['bash', 'scripts/verify.sh']           remotes [] ratchet pass  row: True
+mutant ['bash', 'scripts/verify.sh', '--base'] remotes [] ratchet pass  row: False
+# The row's exit clause is red in this sandbox for every pack (confined security and contracts
+# stages refused for the missing launcher marker), as are the round 5 AC3 rows at 0192886f.

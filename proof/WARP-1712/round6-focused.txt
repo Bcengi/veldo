@@ -1,0 +1,56 @@
+# WARP-1712 round 6 focused checks, tree of 9bb38722 (run before the commit; only the spec text differs)
+# python3 scripts/selftest.py --suite <name>, no environment override; agent-sandbox launcher lines omitted
+### 106_warp_1712_required_evidence
+  SELFTEST FAIL: WARP-1712 D1 missing base debt-free passes
+  SELFTEST FAIL: WARP-1712 D1 unchanged historical debt passes
+  SELFTEST FAIL: WARP-1712 D1 candidate validator skips its ratchet call
+selftest (PARTIAL, 1 of 163 suites): 293 passed, 3 failed in 15.24s
+### 62_veldo_0045_runtime
+selftest (PARTIAL, 1 of 163 suites): 47 passed, 0 failed in 12.27s
+### 53_veldo_0123_mutations
+    raise Refused('candidate_execution_denied', result.stderr[-2000:])
+### 15_warp_1402_estimate_record
+selftest (PARTIAL, 1 of 163 suites): 84 passed, 0 failed in 0.08s
+### 15_warp_1409_cost_to_change_per_area
+selftest (PARTIAL, 1 of 163 suites): 81 passed, 0 failed in 9.95s
+### 18_veldo_0012_behaviour_floor_contract
+  SELFTEST FAIL: VELDO-0012 AC7: validate.run_all's (count, output) over THIS repository is byte-identical with the check added to it, which is the property the registration line must not break. Asser
+selftest (PARTIAL, 1 of 163 suites): 113 passed, 1 failed in 4.62s
+### 24_veldo_0007_install_and_run
+  SELFTEST FAIL: VELDO-0007 AC2 NEGATIVE CONTROL for the guard: the DEFAULT composer (the real publisher) produces packs and the stage passes, so the refusal above is a measurement of what was compose
+  SELFTEST FAIL: VELDO-0007 AC3: every scaffolded repository's OWN gate exited zero, over all 7 packs. Laying files down is not installing: 1.0 laid nothing and said so, but a scaffolder that lays a r
+  SELFTEST FAIL: VELDO-0007 AC3 THE ADOPTER'S GREEN IS A MEASUREMENT AND NOT A SCAN OF NOTHING: every scaffolded tree was COMMITTED before its own gate ran, the index the gate reads is non-empty, and 
+  SELFTEST FAIL: WARP-1712 packaging: every adopter gate ran as `bash scripts/verify.sh` with no --base, in a repository with no remote, and its evidence ratchet stage passed. Measured: [('aider', ['b
+  SELFTEST FAIL: VELDO-0007 AC3 A STAND-DOWN THE NESTED GATE RECORDED IS REPORTED BY THIS STAGE: every stand-down line the adopter's gate emitted appears on this stage's own output, named, with the ca
+  SELFTEST FAIL: VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstra
+  SELFTEST FAIL: VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, sha256 and mtime before and after, ignored paths and this checkou
+  SELFTEST FAIL: VELDO-0007 VELDO-0099 special files and private reflogs: the block ran to completion rather than raising (PermissionError(1, 'Operation not permitted'))
+  SELFTEST FAIL: VELDO-0007 AC5: the checker is EXECUTABLE as a stage runs it - invoked as a subprocess over one pack, exiting zero
+selftest (PARTIAL, 1 of 163 suites): 119 passed, 10 failed in 19.78s
+### 24_veldo_0007_install_and_run at 0192886f (round 5 versions of the stage and suite)
+  SELFTEST FAIL: VELDO-0007 AC2 NEGATIVE CONTROL for the guard: the DEFAULT composer (the real publisher) produces packs and the stage passes, so the refusal above is a measurement of what was compose
+  SELFTEST FAIL: VELDO-0007 AC3: every scaffolded repository's OWN gate exited zero, over all 7 packs. Laying files down is not installing: 1.0 laid nothing and said so, but a scaffolder that lays a r
+  SELFTEST FAIL: VELDO-0007 AC3 THE ADOPTER'S GREEN IS A MEASUREMENT AND NOT A SCAN OF NOTHING: every scaffolded tree was COMMITTED before its own gate ran, the index the gate reads is non-empty, and 
+  SELFTEST FAIL: VELDO-0007 AC3 A STAND-DOWN THE NESTED GATE RECORDED IS REPORTED BY THIS STAGE: every stand-down line the adopter's gate emitted appears on this stage's own output, named, with the ca
+  SELFTEST FAIL: VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstra
+  SELFTEST FAIL: VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, sha256 and mtime before and after, ignored paths and this checkou
+  SELFTEST FAIL: VELDO-0007 VELDO-0099 special files and private reflogs: the block ran to completion rather than raising (PermissionError(1, 'Operation not permitted'))
+  SELFTEST FAIL: VELDO-0007 AC5: the checker is EXECUTABLE as a stage runs it - invoked as a subprocess over one pack, exiting zero
+selftest (PARTIAL, 1 of 163 suites): 119 passed, 9 failed in 19.52s
+### 69_veldo_0058_gate_output
+  SELFTEST FAIL: VELDO-0058 gate-output/review-write
+  SELFTEST FAIL: VELDO-0058 gate-output/sink-refusals
+  SELFTEST FAIL: VELDO-0058 gate-output/post-run-mutation
+  SELFTEST FAIL: VELDO-0058 gate-output/installed-policy
+  SELFTEST FAIL: VELDO-0058 gate-output/installed-policy-list
+  SELFTEST FAIL: VELDO-0058 gate-output/range-base-from-lander
+  SELFTEST FAIL: VELDO-0058 gate-output/refs-bound
+  SELFTEST FAIL: VELDO-0058 gate-output/live-loop-siblings
+  SELFTEST FAIL: VELDO-0058 ran/gate-output/post-run-mutation
+  SELFTEST FAIL: VELDO-0058 ran/gate-output/installed-policy
+selftest (PARTIAL, 1 of 163 suites): 32 passed, 10 failed in 142.21s
+### 18_veldo_0012 at 0192886f
+  SELFTEST FAIL: VELDO-0012 AC7 (same row)
+selftest (PARTIAL, 1 of 163 suites): 113 passed, 1 failed
+### lint, Git boundary, template sync
+lint: pass; Git subprocess boundary: pass; template sync: pass (285 pair(s) compared)
