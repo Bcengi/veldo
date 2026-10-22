@@ -935,7 +935,7 @@ def _v143_suite():
                     ('its units are authored by the identity alone', author == ('Olga Personal', 'personal@example.invalid'))])
 
             with region('service/provisions'):
-                provisioner = base / 'provisioner.json'
+                provisioner = state_root / 'host' / 'provisioner.json'
                 provisioner.write_text(json.dumps(effect_config))
                 provisioner.chmod(0o600)
                 decision_s, pid_s, _ = own_decision('lagoon')
@@ -958,6 +958,9 @@ def _v143_suite():
                     ('the running service starts the registered provisioner for a settled decision',
                      any(e.get('operation') == 'provision' and e.get('outcome') == 'started' and e.get('decision') == decision_s
                          for e in started) and process is not None and process.returncode == 0),
+                    ('a service with no provisioner configuration named finds the one setup lays in the state root',
+                     SP.NewProjectPass(SimpleNamespace(config={'store_path': str(state_root / 'authority' / 'control.sqlite3')}),
+                                       {}).provisioner_path() == str(state_root / 'host' / 'provisioner.json')),
                     ('the repository is created, taken on and the project activated',
                      lagoon.get('state') == 'ACTIVE' and (PP.read(conn, decision_s) or {}).get('state') == 'activated')])
 
