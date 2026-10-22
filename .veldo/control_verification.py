@@ -70,7 +70,7 @@ POLICY_SOURCE = "policy.yaml"
 # VELDO-0148: the loader helper that loads a file from outside every installed directory by design (the
 # trusted installation's policy_check.py, in a separate process of this module's own), declared so the
 # authority service's installation, whose land station loads this module, reads it as no module of its own.
-EXTERNAL_LOADERS = ("_policy_main", "_contracts_main")
+EXTERNAL_LOADERS = ("_policy_main",)
 INSTALLED_PATHS = ("scripts", ".veldo")
 # The line an installed verifier carries when it knows candidate mode. A verifier without it would
 # ignore the arguments and verify the directory it lives in, so it is refused, never run.
@@ -631,37 +631,42 @@ def _policy_main(policy, candidate, base):
     return module.main()
 
 
-def _contracts_main(candidate, base):
-    """Run candidate contracts with the installed ratchet and the authority's frozen base.
+def _ratchet_main(candidate, base):
+    """The required-evidence ratchet as an authority stage, run the way the policy check runs.
 
-    The candidate validator remains a candidate command, confined by the gate launcher.
-    Only the installed policy's Git boundary and the supplied commit authorize debt.
+    Every module here is the installation's: the strict predicate (validate.py), the ratchet
+    (evidence_debt.py) and the Git boundary (policy_check.py). The candidate's specs, proofs and
+    register are read as data and its code never runs, so it cannot skip, replace or shorten this
+    stage; its own `validate.py all` remains the separate contracts stage. `base` is the caller's
+    frozen trunk commit. Empty means no trunk was resolved: only a debt-free tree with no register
+    passes then (a fresh adopter); anything with debt is refused. A given base must be a real
+    ancestor commit.
     """
-    # An empty base means the checkout has no trunk (a fresh adopter): the ratchet then admits
-    # only a debt-free tree. A base that is given must be a real ancestor commit.
     refused = _policy_base_refusal(base, candidate) if base else None
     if refused:
         print(refused)
         return 2
-    policy = _sibling("veldo_contract_policy", "policy_check.py")
+    policy = _sibling("veldo_ratchet_policy", "policy_check.py")
     policy.BASE = base or None
-    debt = _sibling("veldo_contract_debt", "evidence_debt.py")
-    root = Path(candidate)
-    spec = importlib.util.spec_from_file_location(
-        "veldo_candidate_contracts", root / ".veldo" / "validate.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    module.evidence_debt_module = lambda: debt
-    errors = module.run_all(policy=policy, gate=True)
+    debt = _sibling("veldo_ratchet_debt", "evidence_debt.py")
+    validator = _sibling("veldo_ratchet_validator", "validate.py")
+    root = Path(candidate).resolve()
+    try:
+        matched = debt.pairs(validator, root)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+        errors = validator.fail(debt.REGISTER, "cannot pair specs and proofs: " + str(exc))
+    else:
+        errors = debt.validate(validator, root, matched, policy=policy, gate=True)
     if errors:
-        print("veldo contracts: %s problem(s)" % errors)
+        print("veldo evidence ratchet: %s problem(s)" % errors)
     return 1 if errors else 0
 
 
 if __name__ == "__main__":
     if len(sys.argv) == 5 and sys.argv[1] == "policy":
         sys.exit(_policy_main(sys.argv[2], sys.argv[3], sys.argv[4]))
-    if len(sys.argv) == 4 and sys.argv[1] == "contracts":
-        sys.exit(_contracts_main(sys.argv[2], sys.argv[3]))
+    if len(sys.argv) == 4 and sys.argv[1] == "ratchet":
+        sys.exit(_ratchet_main(sys.argv[2], sys.argv[3]))
     print("usage: control_verification.py policy <installed policy_check.py> <candidate root> <base commit>")
+    print("       control_verification.py ratchet <candidate root> <base commit or empty>")
     sys.exit(2)

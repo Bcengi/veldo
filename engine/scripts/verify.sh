@@ -191,7 +191,7 @@ fi
 
 echo "== veldo contracts (built-in: fails closed if unavailable)"
 if command -v python3 >/dev/null && [ -f .veldo/validate.py ]; then
-  if veldo_candidate python3 -I -S "$VELDO_AUTHORITY/.veldo/control_verification.py" contracts "$(pwd -P)" "$VELDO_BASE"; then
+  if veldo_candidate python3 .veldo/validate.py all; then
     echo "   contracts: pass"
   else
     echo "   contracts: FAIL"; FAIL=1
@@ -199,6 +199,18 @@ if command -v python3 >/dev/null && [ -f .veldo/validate.py ]; then
 else
   echo "   contracts: FAIL (python3 or .veldo/validate.py unavailable - the contract system is mandatory)"
   FAIL=1
+fi
+
+# THE REQUIRED-EVIDENCE RATCHET IS AN AUTHORITY STAGE (WARP-1712 round 5), run the way the policy
+# check runs. The candidate's validate.py also runs its ratchet above, but the candidate decides
+# whether that call happens. Here the installation's predicate, ratchet and Git boundary read the
+# candidate's specs, proofs and register as data against VELDO_BASE, frozen before any candidate
+# code ran (or the caller's watermark). No candidate code runs, and nothing above can skip it.
+echo "== evidence ratchet (built-in: installed predicate and ratchet against the frozen base)"
+if python3 -I -S "$VELDO_AUTHORITY/.veldo/control_verification.py" ratchet "$(pwd -P)" "$VELDO_BASE"; then
+  echo "   evidence ratchet: pass"
+else
+  echo "   evidence ratchet: FAIL"; FAIL=1
 fi
 
 echo "== shape gate (built-in: mechanizable architecture-contract rules; adoption safe, fails closed)"

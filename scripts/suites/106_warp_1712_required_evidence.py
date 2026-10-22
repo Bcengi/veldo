@@ -423,7 +423,10 @@ def _w1712_review(repo, report, old_sources=None):
 
 
 def _w1712_authority(repo, report, mutable_base=False):
-    """The real installed verifier runs a ref-moving candidate stage before contracts."""
+    """The real installed verifier runs a ref-moving candidate stage before its ratchet stage.
+
+    The ratchet is an authority stage: the candidate's own contracts may skip theirs, and the
+    installed predicate and ratchet still refuse touched and new debt against the frozen base."""
     import re
     with tempfile.TemporaryDirectory(prefix="warp1712-authority-") as directory:
         host = Path(directory)
@@ -481,28 +484,40 @@ def _w1712_authority(repo, report, mutable_base=False):
             return spec
 
         git("init", "-q")
-        # Debt-free candidates also require a gate base.
         (root / "move_refs.py").write_text("print('candidate stage ran')\n")
         commit()
         (authority / ".veldo/authority_git_common").write_text(str(root / ".git") + "\n")
-        for label, base, diagnostic in (("missing base debt-free", None, "policy_base/invalid"),
-                                         ("invalid base", "origin/main", "policy_base/invalid"),
+        # A debt-free fresh adopter (no shortfall, no register) passes without a base.
+        observed, _ = cv.observe_gate(root, authority, host / "missing-base-debt-free", bind_refs=False)
+        output = observed["stdout"] + observed["stderr"]
+        ok = observed["green"] and "evidence ratchet: pass" in output
+        report("D1 missing base debt-free passes" + ("\n" + output if not ok else ""), ok)
+        # A base that is given must be a real ancestor commit, debt or not.
+        for label, base, diagnostic in (("invalid base", "origin/main", "policy_base/invalid"),
                                          ("absent base", "f" * 40, "policy_base/absent")):
             observed, _ = cv.observe_gate(root, authority, host / label.replace(" ", "-"),
                                           bind_refs=False, base=base)
             output = observed["stdout"] + observed["stderr"]
-            ok = observed["exit"] == 1 and diagnostic in output and "GATE: RED" in output
+            ok = (observed["exit"] == 1 and diagnostic in output and "evidence ratchet: FAIL" in output
+                  and "GATE: RED" in output)
             report("D1 " + label + ("\n" + output if not ok else ""), ok)
-        # The ratchet itself refuses a missing authority base before adoption-safe stand-down.
         debt = cv._sibling("w1712_debt_guard", "evidence_debt.py")
         import types
         messages = []
         validator = types.SimpleNamespace(fail=lambda path, message: messages.append(message) or 1)
-        refused = debt.validate(validator, root, [], gate=True)
-        report("D1 ratchet refuses missing gate BASE", refused == 1 and
-               messages == ["gate requires authority BASE; no exemption granted"])
+        report("D1 ratchet admits a debt-free tree without BASE",
+               debt.validate(validator, root, [], gate=True) == 0 and messages == [])
         historical = pair("WARP-1712")
         regenerate()
+        # The ratchet itself refuses debt without an authority base, before any range fallback.
+        refused = debt.validate(validator, root, [], gate=True)
+        report("D1 ratchet refuses debt without gate BASE", refused == 1 and
+               messages == ["gate requires authority BASE; no exemption granted"])
+        observed, _ = cv.observe_gate(root, authority, host / "missing-base-debt", bind_refs=False)
+        output = observed["stdout"] + observed["stderr"]
+        ok = (observed["exit"] == 1 and "gate requires authority BASE" in output
+              and "evidence ratchet: FAIL" in output and "GATE: RED" in output)
+        report("D1 missing base with debt refuses" + ("\n" + output if not ok else ""), ok)
         watermark = commit()
         git("update-ref", "refs/remotes/origin/main", watermark)
         git("symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main")
@@ -521,20 +536,43 @@ def _w1712_authority(repo, report, mutable_base=False):
             "print('candidate moved both origin refs to HEAD')\n")
         head = commit()
         if mutable_base:
-            # The D1 behavior: discard the supplied watermark at contracts time.
-            gate = gate.replace('contracts "$(pwd -P)" "$VELDO_BASE"',
-                                'contracts "$(pwd -P)" "$(git rev-parse origin/main)"')
+            # The D1 behavior: discard the supplied watermark at ratchet time.
+            gate = gate.replace('ratchet "$(pwd -P)" "$VELDO_BASE"',
+                                'ratchet "$(pwd -P)" "$(git rev-parse origin/main)"')
             (authority / "scripts/verify.sh").write_text(gate)
         observed, _ = cv.observe_gate(root, authority, host / "attack", bind_refs=False, base=watermark)
         output = observed["stdout"] + observed["stderr"]
         moved = all(git("rev-parse", ref) == head for ref in ("origin/main", "origin/HEAD"))
         ok = (moved and "candidate moved both origin refs to HEAD" in output
               and output.index("candidate moved both") < output.index("== veldo contracts")
+              and output.index("== veldo contracts") < output.index("== evidence ratchet")
               and "touched pair requires passing evidence" in output
               and "new required-evidence debt forbidden" in output
-              and "contracts: FAIL" in output and "GATE: RED" in output
+              and "evidence ratchet: FAIL" in output and "GATE: RED" in output
               and observed["exit"] == 1 and not observed["green"])
         report("D1 candidate moves both refs before contracts" + ("\n" + output if not ok else ""), ok, True)
+        # The candidate's validate.py decides whether its own ratchet call runs. Edit it to skip
+        # that call and replace its evidence_debt.py with a pass-everything module: its contracts
+        # then pass, and the authority stage still refuses the touched and the new debt.
+        validate_path = root / ".veldo/validate.py"
+        call = ("    errs += evidence_debt_module().validate(evidence_validator(), ROOT, "
+                "evidence_pairs)\n")
+        source = validate_path.read_text()
+        validate_path.write_text(source.replace(call, "    pass  # ratchet skipped by the candidate\n"))
+        (root / ".veldo/evidence_debt.py").write_text(
+            (root / ".veldo/evidence_debt.py").read_text()
+            + "\n\ndef validate(*args, **kwargs):\n    return 0\n")
+        skipped = commit()
+        observed, _ = cv.observe_gate(root, authority, host / "skip", bind_refs=False, base=watermark)
+        output = observed["stdout"] + observed["stderr"]
+        ok = (call in source and "ratchet skipped by the candidate" in validate_path.read_text()
+              and git("rev-parse", "HEAD") == skipped
+              and "contracts: pass" in output
+              and "touched pair requires passing evidence" in output
+              and "new required-evidence debt forbidden" in output
+              and "evidence ratchet: FAIL" in output and "GATE: RED" in output
+              and observed["exit"] == 1 and not observed["green"])
+        report("D1 candidate validator skips its ratchet call" + ("\n" + output if not ok else ""), ok, True)
 
 
 for _w1712_relative in ("engine/.veldo/validate.py", ".veldo/validate.py"):

@@ -690,7 +690,7 @@ def evidence_validator():
     return types.SimpleNamespace(**globals())
 
 
-def run_all(policy=None, gate=False):
+def run_all():
     errs = 0
     errs += check_events(ROOT / ".veldo" / "events.jsonl")
     errs += check_arch()
@@ -728,7 +728,7 @@ def run_all(policy=None, gate=False):
         if sid and sid in spec_by_id:
             evidence_pairs.append((spec_by_id[sid], p))
             errs += check_criteria_coverage(spec_by_id[sid], p)
-    errs += evidence_debt_module().validate(evidence_validator(), ROOT, evidence_pairs, policy=policy, gate=gate)
+    errs += evidence_debt_module().validate(evidence_validator(), ROOT, evidence_pairs)
     # actual verdicts and approvals are validated too, not just the examples
     for p in _corpus(_CORPUS.VERDICT_PATTERN):
         errs += check_json(p, VERDICT_REQ, "verdict")

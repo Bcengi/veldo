@@ -29,6 +29,10 @@ footprint:
   - engine/.veldo/examples/proof-example.json
   - .veldo/examples/proof-example.json
   - scripts/suites/14_warp_0717_subset_runner.py
+  - scripts/suites/15_warp_1402_estimate_record.py
+  - scripts/suites/15_warp_1409_cost_to_change_per_area.py
+  - scripts/suites/18_veldo_0012_behaviour_floor_contract.py
+  - scripts/suites/53_veldo_0123_mutations.py
   - scripts/suites/106_warp_1712_required_evidence.py
   - scripts/suites/manifest.json
   - scripts/suites/requires.json
@@ -178,3 +182,21 @@ Standalone validation retains its existing trunk fallback. The falsifier runs a 
 stage that moves both origin refs to HEAD before contracts, and requires both touch and growth
 refusals and a red gate. Earlier falsifiers remain required. The canonical verification runs
 to completion without environment overrides, with its actual result recorded.
+
+## Round 5 authority ratchet stage
+
+Round 4 still let the candidate's own validate.py decide whether the ratchet ran, because the
+installed module was injected into the candidate's run_all. Round 5 separates the two. The
+contracts stage is again `python3 .veldo/validate.py all`, the candidate's own contracts, as
+enumerated and runtime-enforced before; its ratchet call is unchanged in local mode. The ratchet
+runs again as its own authority stage, the way the policy check runs: `control_verification.py
+ratchet <root> <base>` loads the installed validate.py predicate, evidence_debt.py and
+policy_check.py, pairs the candidate's specs and proofs itself, reading them as data, and checks
+touched and new debt against the frozen base (the caller's watermark or, in a checkout, the base
+verify.sh froze before any candidate code ran). No candidate code runs in that stage, and no
+earlier stage can skip it. A debt-free fresh adopter with no register passes without a base.
+Anything with debt and no base is refused, and a base that is supplied must be an ancestor
+commit. The D1 falsifier stays required, now refused by the ratchet stage. A new falsifier edits
+the candidate's validate.py to skip its ratchet call and replaces its evidence_debt.py: its
+contracts pass, and the gate still refuses touched and new debt. The gate-domain expectations
+list both stage modules.

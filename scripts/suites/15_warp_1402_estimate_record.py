@@ -977,9 +977,9 @@ with tempfile.TemporaryDirectory() as _d:
            and set(_w1402_stages) >= {"scripts/check_lint.sh", "scripts/selftest.py",
                                       "scripts/secret_inventory.py", "scripts/check_generated.sh",
                                       "scripts/check_docs.sh", "scripts/check_template_sync.sh",
-                                      ".veldo/control_verification.py", ".veldo/events.py"}
+                                      ".veldo/validate.py", ".veldo/control_verification.py",
+                                      ".veldo/events.py"}
            and _w1402_domain > set(_w1402_stages)
-           and ".veldo/validate.py" in _w1402_domain
            and sorted(_w1402_domain_texts) == sorted(_w1402_domain))
 
     expect("WARP-1402 AC5: NO FILE IN THAT DERIVED DOMAIN NAMES THIS MODULE OR ITS RECORDS "

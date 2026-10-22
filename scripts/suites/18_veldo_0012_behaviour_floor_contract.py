@@ -1124,10 +1124,9 @@ expect("VELDO-0012 AC7: THE GATE DOMAIN IS DERIVED AND IT IS REAL, which is the 
                                              "extra"}
        and set(_BF_STAGES) >= {"scripts/check_lint.sh", "scripts/selftest.py",
                                "scripts/check_generated.sh", "scripts/check_docs.sh",
-                               ".veldo/control_verification.py", ".veldo/shape_gate.py",
-                               ".veldo/events.py"}
+                               ".veldo/validate.py", ".veldo/control_verification.py",
+                               ".veldo/shape_gate.py", ".veldo/events.py"}
        and _BF_CLOSURE > set(_BF_STAGES)
-       and ".veldo/validate.py" in _BF_CLOSURE
        and sorted(_BF_TEXTS) == sorted(_BF_CLOSURE)
        and ".veldo/validate_checks.py" in _BF_CLOSURE
        and ".veldo/behavior_floor.py" in _BF_CLOSURE)
