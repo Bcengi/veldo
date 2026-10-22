@@ -1,0 +1,92 @@
+[
+  {
+    "mode": "base",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "summary": "{\"mode\": \"base\", \"passed\": 41, \"failed\": 69}"
+  },
+  {
+    "mode": "review-current",
+    "exit_code": 0,
+    "expected_exit": 0,
+    "summary": "{\"mode\": \"review-current\", \"passed\": 23, \"failed\": 0}"
+  },
+  {
+    "mode": "review-round2",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "summary": "{\"mode\": \"review-round2\", \"passed\": 7, \"failed\": 16}"
+  },
+  {
+    "mode": "integration-alias",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "summary": "{\"mode\": \"integration-alias\", \"passed\": 101, \"failed\": 2}"
+  },
+  {
+    "mode": "evidence-outcome",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "summary": "{\"mode\": \"evidence-outcome\", \"passed\": 63, \"failed\": 40}"
+  },
+  {
+    "mode": "check-outcome",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "summary": "{\"mode\": \"check-outcome\", \"passed\": 87, \"failed\": 16}"
+  },
+  {
+    "mode": "conflicting-outcome",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "summary": "{\"mode\": \"conflicting-outcome\", \"passed\": 99, \"failed\": 4}"
+  },
+  {
+    "mode": "design-existence",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "summary": "{\"mode\": \"design-existence\", \"passed\": 96, \"failed\": 7}"
+  },
+  {
+    "mode": "ratchet-touch",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "summary": "{\"mode\": \"ratchet-touch\", \"passed\": 16, \"failed\": 5}"
+  },
+  {
+    "mode": "ratchet-global",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "summary": "{\"mode\": \"ratchet-global\", \"passed\": 18, \"failed\": 3}"
+  },
+  {
+    "mode": "ratchet-register",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "summary": "{\"mode\": \"ratchet-register\", \"passed\": 15, \"failed\": 6}"
+  },
+  {
+    "mode": "ratchet-growth",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "summary": "{\"mode\": \"ratchet-growth\", \"passed\": 19, \"failed\": 2}"
+  },
+  {
+    "mode": "ratchet-range",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "summary": "{\"mode\": \"ratchet-range\", \"passed\": 18, \"failed\": 3}"
+  },
+  {
+    "mode": "ratchet-reset",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "summary": "{\"mode\": \"ratchet-reset\", \"passed\": 20, \"failed\": 1}"
+  },
+  {
+    "mode": "authority-mutable-base",
+    "exit_code": 1,
+    "expected_exit": 1,
+    "summary": "{\"mode\": \"authority-mutable-base\", \"passed\": 5, \"failed\": 1}"
+  }
+]

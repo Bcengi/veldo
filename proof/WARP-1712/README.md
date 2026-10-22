@@ -1,3 +1,50 @@
+# WARP-1712 round 4: authority-bound contracts
+
+Implementation: `6c24fb27`, following the round 4 spec commit `84c5623c`.
+D1 from the full fix check of `4c230340` is addressed. The lander passes its recorded
+watermark through `control_verification.observe_gate`, the installed verifier's `--base`,
+and the installed contracts entry. That entry validates the full commit and ancestry,
+loads the installed policy and ratchet, and supplies the policy BASE to candidate contracts.
+Gate contracts refuse absent or invalid authority bases even for a debt-free adopter.
+A checkout gate freezes its trunk merge base before any candidate command runs.
+Standalone `validate.py all` retains the existing trunk fallback.
+
+The lander materializes reachable Git objects in its own disposable workspace before the
+gate because borrowed objects can lie outside the confined contracts process's read roots.
+Bootstrap install checks supply the initial commit they created as their authority base.
+No sandbox grants or historical required-evidence entries were changed.
+
+The new falsifier uses the production installed verifier and launcher with a small fixture
+catalog. Its candidate unit stage moves both origin/main and origin/HEAD to HEAD before
+contracts. The exact historical touch and new-debt refusals remain, with a red gate.
+The fixture declares that unit command's unconfined leg: the actual confined gate profile
+makes the candidate read-only, despite the config file's general write_roots. The test uses
+`bind_refs=False` so its red result must come from contracts, independently of ref binding.
+Re-reading origin/main at contracts time makes the attack gate green and the assertion fail.
+
+## Focused checks
+
+`round4-focused.txt`: 263 passed, zero failed, including six D1 controls.
+All earlier falsifiers remain effective: 69 baseline refusals, 16 round 2 review refusals,
+and all 11 strict-rule/ratchet mutants. `round4-falsifiers.json` records every actual exit
+and assertion count. The new mutable-base mutant loses exactly the attack assertion while
+all five controls pass. Expected exit 1 is a falsification result, not a product pass.
+
+The regular selected WARP-1712 dispatcher reports 289 passed, zero failed, exit 2 by design.
+The authority regression dispatcher reports 42 passed, zero failed, exit 2 by design.
+These partial runs are diagnostics only, not gate or full-unit evidence. The initial
+pre-fix authority diagnostic is retained in `round4-authority-suite.txt`; it found the
+missing bootstrap base, unreadable borrowed objects, and the command-binding assertion
+that needed to include --base. Final results are in `round4-authority-suite-final.txt`.
+Lint, Git subprocess boundary, generated-file freshness and template synchronization pass.
+
+## Canonical gate
+
+Round 4 canonical verification is pending. No round 4 green gate is claimed.
+The active manifest is bound to round 4; `round3-manifest.json` preserves the previous one.
+
+## Preserved round 3 report
+
 # WARP-1712 round 3: independent review corrections
 
 Implementation: `90290e15`, following the round 3 spec commit `4b80fe8f`.

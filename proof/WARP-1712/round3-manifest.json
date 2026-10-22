@@ -1,0 +1,181 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "WARP-1712",
+  "commit": "90290e1516440ae137f2774f19d461053c9a6a2d",
+  "produced_at": "2026-10-21T15:04:56.408764+00:00",
+  "producer": {
+    "role": "implementation",
+    "model": "gpt-6",
+    "runtime": "codex"
+  },
+  "owner_decision": "Telegram 35399: agree to strict touched-pair enforcement with a shrinking historical debt register",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round3-focused.txt",
+          "digest": "sha256:78e5ab45020f6ef0306b246f4a7ef5024199cfeb9b68690cb53f89a554881332"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round3-focused.txt",
+          "digest": "sha256:78e5ab45020f6ef0306b246f4a7ef5024199cfeb9b68690cb53f89a554881332"
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/core-blast-radius.json",
+          "digest": "sha256:7eba3fa0114e78b83798b61df9425a50c468c24d9ae8f9312e4735e85193e516"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/core-blast-radius.md",
+          "digest": "sha256:ade18e5901d3503ceca300a38bbe661e1722795677b581d8f2a6468a6652a95a"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/corpus-confirmation.txt",
+          "digest": "sha256:9f1819f249fc101923625a18917c21a3e8ee4ee60c46bd49f5b13b7b753f71c9"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/corpus-confirmation-final.txt",
+          "digest": "sha256:9f1819f249fc101923625a18917c21a3e8ee4ee60c46bd49f5b13b7b753f71c9"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round2-confirmation.txt",
+          "digest": "sha256:9f1819f249fc101923625a18917c21a3e8ee4ee60c46bd49f5b13b7b753f71c9"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "blocked",
+      "evidence": [
+        {
+          "type": "integration",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round3-focused.txt",
+          "digest": "sha256:78e5ab45020f6ef0306b246f4a7ef5024199cfeb9b68690cb53f89a554881332"
+        },
+        {
+          "type": "falsification",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round3-review-round2.txt",
+          "digest": "sha256:8df8da39a39f3859f42655aaf50d6291a890e8dd73a0b924785916df31174706",
+          "interpretation": "The driver asserts exactly 16 failing assertions on round 2 and seven passing controls, with R1-R5 each falsified. Expected process exit 1 is a successful experiment, not passing product evidence."
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round3-gate-command.json",
+          "digest": "sha256:2d8b0d771a506b575189e87168a47c0d96f427c886a308c8010897603d026e82"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round3-gate-stamp.json",
+          "digest": "sha256:c39928ae5aa7cf3684dee0caf391928643e739b5a702c8adf9a71022598aa7ce"
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round3-focused.txt",
+          "digest": "sha256:78e5ab45020f6ef0306b246f4a7ef5024199cfeb9b68690cb53f89a554881332"
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round3-focused.txt",
+          "digest": "sha256:78e5ab45020f6ef0306b246f4a7ef5024199cfeb9b68690cb53f89a554881332"
+        }
+      ]
+    },
+    {
+      "id": "AC7",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round3-core-ratchet.json",
+          "digest": "sha256:c1c6ada22ac9a0df4b4e92109190d3a43ae24ff106af3ea09fe42d111a643e25"
+        },
+        {
+          "type": "operational",
+          "status": "passed",
+          "ref": "proof/WARP-1712/round3-confirmation.txt",
+          "digest": "sha256:43c59745e41e6d9848e418ff8a700cd678b8272c96e850e6bb6190d909520c9c"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "focused required evidence and CLI regressions",
+      "command": "python3 proof/WARP-1712/drive.py current",
+      "status": "passed",
+      "exit_code": 0,
+      "result_detail": "257 passed, zero failed"
+    },
+    {
+      "name": "core read-only remeasurement",
+      "status": "passed",
+      "exit_code": 0,
+      "result_detail": "173 pairs: 61 pass, 107 historical failures, five parser errors. 214 touch refusals. 357 original input digests unchanged."
+    },
+    {
+      "name": "verify",
+      "command": "./scripts/verify.sh",
+      "status": "passed",
+      "result_detail": "Canonical command completed GREEN. Unit and first-use integration each passed 7980 confined and 871 unconfined assertions with zero failures. All 2546 mutations executed fresh and were rejected; zero invalid results. Remaining catalog and built-in checks passed.",
+      "exit_code": 0,
+      "tested_commit": "67dec0c0fdc69242a4858ba4c671f6688bafb43f",
+      "elapsed_seconds": 10419.82
+    }
+  ],
+  "limitations": [
+    "The complete canonical gate is green at 67dec0c0. The following evidence-only commit records that run; it does not claim a separate gate run on its own commit id.",
+    "No fresh independent review or shipped status is claimed.",
+    "Five existing core parser errors remain separate errors. The core measurement is read-only and uses a byte-identical temporary mirror, not a whole-core gate invocation.",
+    "No push, merge, branch switch, other existing worktree edit, core write or installation."
+  ],
+  "rollback": "Revert the WARP-1712 implementation commits; preserve the impact measurement.",
+  "completion": "blocked_for_landing",
+  "round1_manifest": "proof/WARP-1712/round1-manifest.json",
+  "round2_manifest": "proof/WARP-1712/round2-manifest.json"
+}

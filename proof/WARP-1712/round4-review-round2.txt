@@ -1,0 +1,129 @@
+FAIL review R1 manifest relabeled
+  /tmp/warp1712-review-miam7xki/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-miam7xki/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-miam7xki/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/warp1712-review-miam7xki/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-miam7xki/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+FAIL review R1 manifest deleted
+  /tmp/warp1712-review-d9ai3res/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-d9ai3res/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-d9ai3res/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-d9ai3res/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+FAIL review R1 spec deleted
+  /tmp/warp1712-review-909f_oif/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-909f_oif/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/warp1712-review-909f_oif/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-909f_oif/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+FAIL review R1 requirements emptied
+  /tmp/warp1712-review-e82x1n6s/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-e82x1n6s/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-e82x1n6s/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/warp1712-review-e82x1n6s/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-e82x1n6s/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+FAIL review R1 requirements reduced
+  /tmp/warp1712-review-55r3d3y5/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-55r3d3y5/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-55r3d3y5/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/warp1712-review-55r3d3y5/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-55r3d3y5/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+FAIL review R1 both ids relabeled
+  /tmp/warp1712-review-gudoina8/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-gudoina8/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-gudoina8/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/warp1712-review-gudoina8/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-gudoina8/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+PASS review R1 spec renamed
+PASS review R1 proof moved
+PASS review R1 real payoff
+FAIL review R2 feature upstream touch
+  /tmp/warp1712-review-a0mhwaq5/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-a0mhwaq5/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-a0mhwaq5/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/warp1712-review-a0mhwaq5/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-a0mhwaq5/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+FAIL review R2 feature upstream growth
+  /tmp/warp1712-review-q6l39n_s/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-q6l39n_s/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-q6l39n_s/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/warp1712-review-q6l39n_s/proof/WARP-1713/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/warp1712-review-q6l39n_s/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-q6l39n_s/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+PASS review R2 explicit policy base
+PASS review R2 invalid policy base
+FAIL review R3 vendored unchanged
+  /tmp/warp1712-review-zu5jttky/vendor/v/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-zu5jttky/vendor/v/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-zu5jttky/vendor/v/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  .veldo/required-evidence-debt.jsonl: proof/WARP-1712/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)
+  .veldo/required-evidence-debt.jsonl: cannot read push-base debt register
+  /tmp/warp1712-review-zu5jttky/vendor/v/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-zu5jttky/vendor/v/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+veldo contracts: 1 problem(s)
+
+FAIL review R3 vendored adoption touch
+  /tmp/warp1712-review-3_zp5l32/vendor/v/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-3_zp5l32/vendor/v/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-3_zp5l32/vendor/v/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/warp1712-review-3_zp5l32/vendor/v/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-3_zp5l32/vendor/v/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+FAIL review R3 vendored payoff
+  /tmp/warp1712-review-s515jaw9/vendor/v/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-s515jaw9/vendor/v/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-s515jaw9/vendor/v/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  .veldo/required-evidence-debt.jsonl: cannot read push-base debt register
+  /tmp/warp1712-review-s515jaw9/vendor/v/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-s515jaw9/vendor/v/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+veldo contracts: 1 problem(s)
+
+FAIL review R4 moved trunk
+  /tmp/warp1712-review-y8208e0e/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-y8208e0e/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-y8208e0e/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  proof/WARP-1712/manifest.json: touched pair requires passing evidence: proof/WARP-1712/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)
+  /tmp/warp1712-review-y8208e0e/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-y8208e0e/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+veldo contracts: 1 problem(s)
+
+FAIL review R4 moved trunk register
+  /tmp/warp1712-review-1uq3fn1a/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-1uq3fn1a/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-1uq3fn1a/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/warp1712-review-1uq3fn1a/.veldo/required-evidence-debt.jsonl: new required-evidence debt forbidden: proof/WARP-1712/manifest.json
+  proof/WARP-1712/manifest.json: touched pair requires passing evidence: proof/WARP-1712/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)
+  /tmp/warp1712-review-1uq3fn1a/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-1uq3fn1a/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+veldo contracts: 2 problem(s)
+
+FAIL review R5 nonzero exit
+  /tmp/warp1712-review-z926kdsr/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-z926kdsr/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-z926kdsr/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/warp1712-review-z926kdsr/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-z926kdsr/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+FAIL review R5 expected nonzero exit
+  /tmp/warp1712-review-sqqdx0_9/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-sqqdx0_9/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-sqqdx0_9/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/warp1712-review-sqqdx0_9/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-sqqdx0_9/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+FAIL review R5 boolean exit
+  /tmp/warp1712-review-huryzxoj/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-review-huryzxoj/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-huryzxoj/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/warp1712-review-huryzxoj/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-review-huryzxoj/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+
+PASS review R5 zero without outcome
+PASS review R5 zero exit
+{"mode": "review-round2", "passed": 7, "failed": 16}

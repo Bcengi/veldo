@@ -7,8 +7,18 @@ risk: standard
 owner: dmitry
 human_approval: not_required
 lane: standalone
-placement: [contracts]
+placement: [contracts, enforcement, fleet, loop]
 footprint:
+  - engine/.veldo/control_verification.py
+  - .veldo/control_verification.py
+  - engine/.veldo/lander.py
+  - .veldo/lander.py
+  - engine/.veldo/executor.py
+  - .veldo/executor.py
+  - engine/scripts/verify.sh
+  - scripts/verify.sh
+  - scripts/check_install_and_run.py
+  - scripts/suites/69_veldo_0058_gate_output.py
   - engine/.veldo/validate.py
   - .veldo/validate.py
   - engine/.veldo/evidence_debt.py

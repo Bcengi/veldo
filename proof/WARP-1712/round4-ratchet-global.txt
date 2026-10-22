@@ -1,0 +1,52 @@
+--- evidence_debt.py
++++ ratchet-global.py
+@@ -136 +136 @@
+-        touched = row["spec"] in changed or any(p.startswith(proof_dir) for p in changed)
++        touched = True
+
+PASS ratchet generator succeeds
+PASS ratchet one sorted pair with cause
+PASS ratchet unlisted unchanged failure refuses
+FAIL ratchet untouched historical pair listed passes initial adoption
+  /tmp/warp1712-ratchet-9t68bp56/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-ratchet-9t68bp56/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-ratchet-9t68bp56/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  proof/WARP-1712/manifest.json: touched pair requires passing evidence: proof/WARP-1712/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)
+  /tmp/warp1712-ratchet-9t68bp56/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-ratchet-9t68bp56/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+veldo contracts: 1 problem(s)
+
+FAIL ratchet untouched historical pair listed passes established register
+  /tmp/warp1712-ratchet-9t68bp56/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-ratchet-9t68bp56/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-ratchet-9t68bp56/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  proof/WARP-1712/manifest.json: touched pair requires passing evidence: proof/WARP-1712/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)
+  /tmp/warp1712-ratchet-9t68bp56/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-ratchet-9t68bp56/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+veldo contracts: 1 problem(s)
+
+PASS ratchet touched historical spec refuses
+PASS ratchet earlier push commit still activates strict rule
+PASS ratchet touched historical manifest refuses
+PASS ratchet touched historical proof artifact refuses
+PASS ratchet touched historical design artifact refuses
+PASS ratchet hand-added entry refuses
+FAIL ratchet restored exact register passes
+  /tmp/warp1712-ratchet-9t68bp56/releases: release check STANDS DOWN, recorded rather than passed: no releases directory at all
+  /tmp/warp1712-ratchet-9t68bp56/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-ratchet-9t68bp56/proof/WARP-1712/manifest.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  proof/WARP-1712/manifest.json: touched pair requires passing evidence: proof/WARP-1712/manifest.json: required evidence kind 'integration' absent from passing proof entries (matching evidence type or check name needs a passing result)
+  /tmp/warp1712-ratchet-9t68bp56/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/warp1712-ratchet-9t68bp56/.veldo/examples/proof-example.json: fix validation advisory, no start line (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+veldo contracts: 1 problem(s)
+
+PASS ratchet duplicate entry refuses
+PASS ratchet hand-edited cause refuses
+PASS ratchet removed still-failing entry refuses
+PASS ratchet now-passing listed entry refuses
+PASS ratchet passing entry removed passes
+PASS ratchet empty adopted register cannot be deleted
+PASS ratchet retained empty register passes
+PASS ratchet new unchanged unlisted failure refuses
+PASS ratchet computed new debt cannot grow register
+{"mode": "ratchet-global", "passed": 18, "failed": 3}

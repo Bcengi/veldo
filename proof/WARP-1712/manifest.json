@@ -1,8 +1,8 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "WARP-1712",
-  "commit": "90290e1516440ae137f2774f19d461053c9a6a2d",
-  "produced_at": "2026-10-21T15:04:56.408764+00:00",
+  "commit": "6c24fb27d1b35c81603f594219141ff518d3cd4e",
+  "produced_at": "2026-10-22T12:32:24.672159+00:00",
   "producer": {
     "role": "implementation",
     "model": "gpt-6",
@@ -17,8 +17,8 @@
         {
           "type": "unit",
           "status": "passed",
-          "ref": "proof/WARP-1712/round3-focused.txt",
-          "digest": "sha256:78e5ab45020f6ef0306b246f4a7ef5024199cfeb9b68690cb53f89a554881332"
+          "ref": "proof/WARP-1712/round4-focused.txt",
+          "digest": "sha256:843eb466e0ad1dc972a5c0b7cc90fecb5fa089066a4d56bbb9b6df5068391bdd"
         }
       ]
     },
@@ -29,8 +29,8 @@
         {
           "type": "unit",
           "status": "passed",
-          "ref": "proof/WARP-1712/round3-focused.txt",
-          "digest": "sha256:78e5ab45020f6ef0306b246f4a7ef5024199cfeb9b68690cb53f89a554881332"
+          "ref": "proof/WARP-1712/round4-focused.txt",
+          "digest": "sha256:843eb466e0ad1dc972a5c0b7cc90fecb5fa089066a4d56bbb9b6df5068391bdd"
         }
       ]
     },
@@ -77,27 +77,15 @@
         {
           "type": "integration",
           "status": "passed",
-          "ref": "proof/WARP-1712/round3-focused.txt",
-          "digest": "sha256:78e5ab45020f6ef0306b246f4a7ef5024199cfeb9b68690cb53f89a554881332"
+          "ref": "proof/WARP-1712/round4-focused.txt",
+          "digest": "sha256:843eb466e0ad1dc972a5c0b7cc90fecb5fa089066a4d56bbb9b6df5068391bdd"
         },
         {
           "type": "falsification",
           "status": "passed",
-          "ref": "proof/WARP-1712/round3-review-round2.txt",
-          "digest": "sha256:8df8da39a39f3859f42655aaf50d6291a890e8dd73a0b924785916df31174706",
-          "interpretation": "The driver asserts exactly 16 failing assertions on round 2 and seven passing controls, with R1-R5 each falsified. Expected process exit 1 is a successful experiment, not passing product evidence."
-        },
-        {
-          "type": "operational",
-          "status": "passed",
-          "ref": "proof/WARP-1712/round3-gate-command.json",
-          "digest": "sha256:2d8b0d771a506b575189e87168a47c0d96f427c886a308c8010897603d026e82"
-        },
-        {
-          "type": "operational",
-          "status": "passed",
-          "ref": "proof/WARP-1712/round3-gate-stamp.json",
-          "digest": "sha256:c39928ae5aa7cf3684dee0caf391928643e739b5a702c8adf9a71022598aa7ce"
+          "ref": "proof/WARP-1712/round4-falsifiers.json",
+          "digest": "sha256:2f3bdd8726be45d9aa643b528b2df09ad7c50243e687c5a3370ec8b46091e1c0",
+          "interpretation": "Expected failing product runs are successful falsification experiments, not passing product evidence."
         }
       ]
     },
@@ -108,8 +96,8 @@
         {
           "type": "integration",
           "status": "passed",
-          "ref": "proof/WARP-1712/round3-focused.txt",
-          "digest": "sha256:78e5ab45020f6ef0306b246f4a7ef5024199cfeb9b68690cb53f89a554881332"
+          "ref": "proof/WARP-1712/round4-focused.txt",
+          "digest": "sha256:843eb466e0ad1dc972a5c0b7cc90fecb5fa089066a4d56bbb9b6df5068391bdd"
         }
       ]
     },
@@ -120,8 +108,8 @@
         {
           "type": "integration",
           "status": "passed",
-          "ref": "proof/WARP-1712/round3-focused.txt",
-          "digest": "sha256:78e5ab45020f6ef0306b246f4a7ef5024199cfeb9b68690cb53f89a554881332"
+          "ref": "proof/WARP-1712/round4-focused.txt",
+          "digest": "sha256:843eb466e0ad1dc972a5c0b7cc90fecb5fa089066a4d56bbb9b6df5068391bdd"
         }
       ]
     },
@@ -146,36 +134,28 @@
   ],
   "checks": [
     {
-      "name": "focused required evidence and CLI regressions",
+      "name": "focused required evidence and authority regressions",
       "command": "python3 proof/WARP-1712/drive.py current",
       "status": "passed",
       "exit_code": 0,
-      "result_detail": "257 passed, zero failed"
-    },
-    {
-      "name": "core read-only remeasurement",
-      "status": "passed",
-      "exit_code": 0,
-      "result_detail": "173 pairs: 61 pass, 107 historical failures, five parser errors. 214 touch refusals. 357 original input digests unchanged."
+      "result_detail": "263 passed, zero failed"
     },
     {
       "name": "verify",
       "command": "./scripts/verify.sh",
-      "status": "passed",
-      "result_detail": "Canonical command completed GREEN. Unit and first-use integration each passed 7980 confined and 871 unconfined assertions with zero failures. All 2546 mutations executed fresh and were rejected; zero invalid results. Remaining catalog and built-in checks passed.",
-      "exit_code": 0,
-      "tested_commit": "67dec0c0fdc69242a4858ba4c671f6688bafb43f",
-      "elapsed_seconds": 10419.82
+      "status": "pending",
+      "result_detail": "Round 4 canonical gate has not run yet."
     }
   ],
   "limitations": [
-    "The complete canonical gate is green at 67dec0c0. The following evidence-only commit records that run; it does not claim a separate gate run on its own commit id.",
-    "No fresh independent review or shipped status is claimed.",
-    "Five existing core parser errors remain separate errors. The core measurement is read-only and uses a byte-identical temporary mirror, not a whole-core gate invocation.",
+    "Round 4 canonical gate is pending; no fresh independent review or shipped status is claimed.",
+    "Core measurements in AC3 and AC7 are preserved historical evidence, not rerun in round 4.",
+    "Partial suite diagnostics are not full-unit or gate evidence.",
     "No push, merge, branch switch, other existing worktree edit, core write or installation."
   ],
   "rollback": "Revert the WARP-1712 implementation commits; preserve the impact measurement.",
   "completion": "blocked_for_landing",
   "round1_manifest": "proof/WARP-1712/round1-manifest.json",
-  "round2_manifest": "proof/WARP-1712/round2-manifest.json"
+  "round2_manifest": "proof/WARP-1712/round2-manifest.json",
+  "round3_manifest": "proof/WARP-1712/round3-manifest.json"
 }
