@@ -2,23 +2,30 @@
 recorded commit, and its push under the repository identity.
 
 BEFORE THE OWNER ANSWERS (prepare). For an existing repository the owner names and the identity he chose,
-the provisioner checks the remote's owner against the identity with VELDO-0153's one owner check
-(control_git_identity_transport.check_remote, operation `adoption`), refusing binding_mismatch:remote_owner
-before anything is written; reads the repository's default branch and its tip; and, when the tree at that
+the provisioner checks that the repository id is one ref component (invalid_input:proposal:repository), checks
+the remote's owner against the identity with VELDO-0153's one owner check (control_git_identity_transport.
+check_remote, operation `adoption`), refusing binding_mismatch:remote_owner before anything is written; reads
+the repository's default branch and its tip; checks that the remote it was given is the one the repository
+itself is configured with for that branch (invalid_input:remote_not_configured) and that the repository's own
+configuration names no command a local step could run (invalid_input:repository_command:<key>); and, when the tree at that
 tip lacks any of the scaffold's required substrate (init_scaffold.REQUIRED_SUBSTRATE), lays the scaffold as
 ONE commit on top of the tip, authored by the identity, in a private clone, and records it in the
 repository under SCAFFOLD_REF (never on a branch, never pushed). The proposal it returns names that commit,
 so the owner's answer approves exactly the commit that will be pushed; a repository that carries the
 scaffold gets a proposal whose scaffold commit is None and nothing is committed.
 
-Every local Git step runs under git_process's isolated profile with no hook of the repository.
+Every local Git step runs under git_process's isolated profile with no hook of the repository and with
+core.fsmonitor off; a repository whose own configuration names a filter command or an fsmonitor is refused by
+name (repository_commands) rather than having its commands run by a checkout or a merge.
 
 ON HIS SETTLED ANSWER (scaffold_problems, advance, push). The effect checks that the commit the proposal
 names is the one recorded under SCAFFOLD_REF, that its one parent is the proposal's base, that it only adds
 files and that the substrate is complete at it; fast-forwards the default branch to it (refused by name
 when the branch moved or the working tree is in the way); and pushes it through git_process's `identity`
 profile (VELDO-0153) to the literal remote URL the owner check accepted, with a lease on the base, then
-reads the remote's branch back. A rejected push is push_refused:remote.
+reads the remote's branch back. A rejected push is push_refused:remote; a push Git accepted whose branch
+cannot be read back as the commit is push_unconfirmed:remote (it may have landed). The ref the scaffold was
+recorded under is removed once the push is done or the adoption refused (remove_scaffold_ref).
 
 Standard library only; organs are loaded as siblings by path.
 """
@@ -52,8 +59,8 @@ def _scaffold_module():
 def git(path, *args, check=True, **kwargs):
     """One local Git step in `path` under the isolated profile, running no hook of the repository (as no
     identity push does, VELDO-0153)."""
-    done = GP.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, *args], capture_output=True,
-                  text=True, timeout=STEP_SECONDS, **kwargs)
+    done = GP.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, '-c', 'core.fsmonitor=false', *args],
+                  capture_output=True, text=True, timeout=STEP_SECONDS, **kwargs)
     if check and done.returncode:
         raise Refused('invalid_input:git', '%s: %s' % (args[0], done.stderr.strip()[:200]))
     return done
@@ -90,6 +97,54 @@ def repository_state(path):
     if head.returncode:
         raise Refused('invalid_input:no_commit', path)
     return {'path': path, 'branch': branch.stdout.strip(), 'head': head.stdout.strip()}
+
+
+def repository_commands(path):
+    """The keys of the repository's own configuration that name a command a local step could run: a filter's
+    clean, smudge or process command, or an fsmonitor. Read as Git reads it, includes followed; the values
+    this module passes on the command line (scope `command`) are not the repository's."""
+    listed = git(path, 'config', '--includes', '--show-scope', '--name-only', '-z', '--list', check=False)
+    if listed.returncode:
+        raise Refused('invalid_input:repository_config', listed.stderr.strip()[:200])
+    fields = listed.stdout.split('\0')
+    found = []
+    for scope, key in zip(fields[0::2], fields[1::2]):
+        lowered = key.strip().lower()
+        if scope == 'command':
+            continue
+        if lowered == 'core.fsmonitor' or (lowered.startswith('filter.')
+                                           and lowered.rsplit('.', 1)[-1] in ('clean', 'smudge', 'process')):
+            found.append(lowered)
+    return sorted(set(found))
+
+
+def refuse_commands(path, code='invalid_input:repository_command'):
+    found = repository_commands(path)
+    if found:
+        raise Refused('%s:%s' % (code, found[0]), ', '.join(found))
+
+
+def configured_remote(path, branch):
+    """The URL of the remote the repository is configured with for `branch` (its upstream remote, else
+    origin), or None."""
+    name = git(path, 'config', '--get', 'branch.%s.remote' % branch, check=False).stdout.strip() or 'origin'
+    url = git(path, 'config', '--get', 'remote.%s.url' % name, check=False)
+    return url.stdout.strip() if not url.returncode and url.stdout.strip() else None
+
+
+def check_configured_remote(path, branch, remote):
+    if configured_remote(path, branch) != remote:
+        raise Refused('invalid_input:remote_not_configured', 'the repository is not configured with this remote')
+
+
+def remove_scaffold_ref(path, repository):
+    """Remove the ref the scaffold commit was recorded under, when there is one. Never raises."""
+    if R.repository_id_problems(repository):
+        return False
+    try:
+        return git(path, 'update-ref', '-d', SCAFFOLD_REF + repository, check=False).returncode == 0
+    except Exception:  # noqa: BLE001 - removing the record of a laid commit never decides an outcome
+        return False
 
 
 def enrolled(path):
@@ -134,22 +189,30 @@ def lay_scaffold(path, base, record, templates, ref):
 def prepare(conn, domain, *, path, identity, remote, name, owner, repository, templates=None, observe=None):
     """The provisioner's steps before the owner answers (module docstring). Returns (proposal, observation)."""
     event = {'operation': 'prepare', 'repository': repository, 'identity': identity, 'path': None}
+    laid = None
     try:
+        problems = R.repository_id_problems(repository)
+        if problems:
+            raise Refused(problems[0], str(repository))
         record = identity_record(conn, domain, identity)
         check_remote(record, remote, repository=repository, observe=observe)
         state = repository_state(path)
         event['path'] = state['path']
+        check_configured_remote(state['path'], state['branch'], remote)
+        refuse_commands(state['path'])
         if enrolled(state['path']):
             raise Refused('invalid_input:already_enrolled', state['path'])
         scaffold = None
         if missing_scaffold(state['path'], state['head']):
-            scaffold = lay_scaffold(state['path'], state['head'], record, templates, SCAFFOLD_REF + repository)
+            scaffold = laid = lay_scaffold(state['path'], state['head'], record, templates, SCAFFOLD_REF + repository)
             if missing_scaffold(state['path'], scaffold):
                 raise Refused('invalid_input:scaffold_incomplete', state['path'])
         proposal = R.adoption_proposal(repository=repository, name=name, owner=owner, identity=identity,
                                        path=state['path'], remote=remote, default_branch=state['branch'],
                                        base_commit=state['head'], scaffold_commit=scaffold)
     except Refused as error:
+        if laid is not None:
+            remove_scaffold_ref(event['path'], repository)
         event.update(outcome='refused', refusal=error.code, reason=R.reason(error.code))
         raise
     event.update(outcome='prepared', scaffold_commit=scaffold, base_commit=state['head'])
@@ -192,6 +255,8 @@ def advance(proposal):
         raise Refused('stale_subject:branch_moved', branch)
     current = git(path, 'symbolic-ref', '--quiet', '--short', 'HEAD', check=False).stdout.strip()
     if current == branch:
+        # The checkout a fast-forward makes runs the repository's filters: none may be configured.
+        refuse_commands(path, 'stale_subject:repository_command')
         merged = git(path, 'merge', '--ff-only', '-q', commit, check=False)
         if merged.returncode:
             raise Refused('stale_subject:working_tree', merged.stderr.strip()[:200])
@@ -217,6 +282,8 @@ def push(proposal, record, observe=None):
                  '%s:%s' % (proposal['scaffold_commit'], ref))
     listed = run('ls-remote', remote, ref)
     tip = listed.stdout.split('\t', 1)[0].strip() if not listed.returncode and listed.stdout.strip() else None
-    if pushed.returncode or tip != proposal['scaffold_commit']:
+    if pushed.returncode:
         raise Refused('push_refused:remote', (pushed.stderr or '').strip()[:200])
+    if tip != proposal['scaffold_commit']:
+        raise Refused('push_unconfirmed:remote', 'the push was accepted; the remote branch reads back as %s' % tip)
     return tip

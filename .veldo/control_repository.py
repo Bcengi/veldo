@@ -25,11 +25,13 @@ THE ADOPTION SIGNER (AdoptionSigner). A service key setup generates in the prote
 enrolls among this host's enrollment signers (control_factory_setup.adoption_signer, host_files), under
 principal SIGNER_PRINCIPAL. Its only use is signing a VELDO-0029 binding for a repository a settled owner
 decision names: before it signs it judges the bytes it is asked to sign itself (a binding, enrolled by it,
-for this domain and store, naming exactly the repository the settled decision names, whose root commits
-are the repository's at the proposal's path) against that decision (scope), refuses a decision it has
-already signed for, and journals the signature (an `adoption_signature` entity naming the decision, the
+for this domain, store, host and authority generation, the generation not below the store's own, naming
+exactly the repository the settled decision names, whose root commits are the repository's at the
+proposal's path) against that decision (scope), refuses a decision it has already signed for, and journals
+the signature (an `adoption_signature` entity naming the decision, the
 repository and the binding digest) before it hands the signature back. A refusal is
-`signature_refused:<why>` and signs and journals nothing.
+`signature_refused:<why>` and signs and journals nothing. No ssh-keygen this module runs ever reaches an SSH
+agent (_quiet_env): the signer's key is the file named, never a key an agent offers.
 
 Observations name repositories, identities, decisions, commits and digests, never a token, a key or a
 signature. Standard library only; every organ is loaded as a sibling by path.
@@ -79,15 +81,24 @@ OWNER_ROLE = 'project_owner'
 SIGNER_PRINCIPAL = 'adoption-signer'
 # The namespace every VELDO-0029 binding signature is made under (control_eligibility.ENROLLMENT_NAMESPACE).
 CE_NAMESPACE = 'veldo-enrollment'
+# The take-on request the adoption effect hands the running authority service (control_service.Service.
+# take_on_request): its packet operation, and the namespace its journal-key signature is made under, which
+# nothing else signs in.
+TAKE_ON_OPERATION = 'take_on'
+TAKE_ON_NAMESPACE = 'veldo-adoption-take-on'
 # What a proposal binds, in the order a missing one is named.
 PROPOSAL_FIELDS = ('repository', 'name', 'owner', 'identity', 'path', 'remote', 'default_branch', 'base_commit',
                    'scaffold_commit')
 # The error taxonomy (the spec's observability contract): each refusal's class.
-REASONS = ('remote_owner_mismatch', 'push_refused', 'no_settled_decision', 'signature_refused', 'not_taken_on')
+# push_unconfirmed: the push was accepted but the remote's branch could not be read back as the commit.
+REASONS = ('remote_owner_mismatch', 'push_refused', 'push_unconfirmed', 'no_settled_decision', 'signature_refused',
+           'not_taken_on')
 TAXONOMY = {'binding_mismatch:remote_owner': 'remote_owner_mismatch', 'push_refused': 'push_refused',
-            'no_settled_decision': 'no_settled_decision', 'signature_refused': 'signature_refused',
-            'not_taken_on': 'not_taken_on'}
+            'push_unconfirmed': 'push_unconfirmed', 'no_settled_decision': 'no_settled_decision',
+            'signature_refused': 'signature_refused', 'not_taken_on': 'not_taken_on'}
 _NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$')
+# A repository id is one Git ref component (refs/veldo/adoption/<id>): no slash, no '..', no '.lock' end.
+_REPOSITORY = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$')
 _COMMIT = re.compile(r'^[0-9a-f]{40}([0-9a-f]{24})?$')
 
 
@@ -112,6 +123,19 @@ def record_id(repository):
 
 def _is_str(value):
     return isinstance(value, str) and value.strip() != ''
+
+
+def _quiet_env():
+    """The environment every ssh-keygen call runs in: never through an agent."""
+    return {k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}
+
+
+def repository_id_problems(repository):
+    """Why `repository` is not a repository id that names one ref component (empty when it is)."""
+    if (not isinstance(repository, str) or not _REPOSITORY.match(repository) or '..' in repository
+            or repository.endswith(('.lock', '.'))):
+        return ['invalid_input:proposal:repository']
+    return []
 
 
 def digest(value):
@@ -139,6 +163,8 @@ def proposal_problems(proposal):
     for field in ('repository', 'owner', 'identity', 'path', 'remote', 'default_branch'):
         if not _is_str(proposal[field]):
             problems.append('invalid_input:proposal:' + field)
+    if _is_str(proposal['repository']):
+        problems.extend(repository_id_problems(proposal['repository']))
     if not _is_str(proposal['name']) or not _NAME.match(proposal['name']):
         problems.append('invalid_input:proposal:name')
     if not isinstance(proposal['path'], str) or not os.path.isabs(proposal['path']):
@@ -322,8 +348,7 @@ def metrics(conn, observations=()):
 def public_key(key):
     """The OpenSSH public key of the private key file `key`, derived from it."""
     done = subprocess.run(['ssh-keygen', '-y', '-f', str(key)], capture_output=True, text=True, timeout=30,
-                          stdin=subprocess.DEVNULL,
-                          env={k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')})
+                          stdin=subprocess.DEVNULL, env=_quiet_env())
     if done.returncode:
         raise Refused('signature_refused:key', 'the adoption signer key does not load')
     return ' '.join(done.stdout.split()[:2])
@@ -331,8 +356,12 @@ def public_key(key):
 
 def enrolled(signers_text, key):
     """Whether `signers_text` (an OpenSSH allowed-signers file) names the adoption signer's key under its
-    principal for enrollment: the line setup writes for it (control_factory_setup.host_files)."""
-    want = public_key(key)
+    principal for enrollment: the line setup writes for it (control_factory_setup.host_files). A key that is
+    missing or does not load is not enrolled."""
+    try:
+        want = public_key(key)
+    except Refused:
+        return False
     for line in (signers_text or '').splitlines():
         parts = line.split()
         if (len(parts) >= 4 and parts[0] == SIGNER_PRINCIPAL and parts[1] == 'namespaces="%s"' % CE_NAMESPACE
@@ -341,9 +370,15 @@ def enrolled(signers_text, key):
     return False
 
 
+def store_generation(conn):
+    """The highest authority generation the store's journal records (1 for an empty journal)."""
+    return conn.execute('SELECT COALESCE(MAX(authority_generation), 1) FROM journal').fetchone()[0]
+
+
 class AdoptionSigner:
     """Signs one VELDO-0029 binding per settled adoption decision, and nothing else (see the module
-    docstring). `ids` are the store's coordinates (domain_uuid, store_uuid, store_path); `journal` is
+    docstring). `ids` are the coordinates it signs for: the store's (domain_uuid, store_uuid, store_path) and
+    this host's identity and authority generation (host_identity, authority_generation); `journal` is
     (principal, sign) for the journal record of each signature."""
 
     def __init__(self, key, store, membership, conn, ids, journal, clock=time.time):
@@ -368,6 +403,12 @@ class AdoptionSigner:
         if (fields.get('domain_uuid') != self.ids['domain_uuid'] or fields.get('store_uuid') != self.ids['store_uuid']
                 or fields.get('store_path') != os.path.realpath(self.ids['store_path'])):
             problems.append('signature_refused:scope:store')
+        if fields.get('host_identity') != self.ids.get('host_identity'):
+            problems.append('signature_refused:scope:host')
+        generation = fields.get('authority_generation')
+        if (type(generation) is not int or generation != self.ids.get('authority_generation')
+                or generation < store_generation(self.conn)):
+            problems.append('signature_refused:scope:generation')
         try:
             roots = CE.root_commits(proposal['path'])
         except CE.EnrollmentRefused:
@@ -398,8 +439,7 @@ class AdoptionSigner:
             if _row(self.conn, eid) is not None:
                 raise Refused('signature_refused:already_signed', 'this decision has its binding signature')
             done = subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', self.key, '-n', CE_NAMESPACE], input=message,
-                                  capture_output=True, timeout=30, stdin=None,
-                                  env={k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')})
+                                  capture_output=True, timeout=30, stdin=None, env=_quiet_env())
             if done.returncode:
                 raise Refused('signature_refused:key', 'the adoption signer key did not sign')
             binding_digest = 'sha256:' + hashlib.sha256(message).hexdigest()
