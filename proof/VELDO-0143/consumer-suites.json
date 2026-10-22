@@ -1,0 +1,353 @@
+{
+ "note": "Focused suite runs in this sandbox (AF_UNIX refused, no systemd user manager qualification, no installed graph runtime), on this branch and on an archive of the starting commit da39f3fb, same sandbox. Partial runs: not a gate result. 72_veldo_0128_reports and 86_veldo_0168_text are the reruns after the report change (f96e1407); the base runs of both were 44/0 and 52/0.",
+ "starting_commit_only": {
+  "71_veldo_0130_api": "no summary line in either tree: install refused (profile not qualified)"
+ },
+ "suites": [
+  {
+   "branch": {
+    "failed": 17,
+    "passed": 29
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 17,
+    "passed": 29
+   },
+   "suite": "106_veldo_0185_dispatch_setup",
+   "why_red_here": "user manager qualification"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 32
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 0,
+    "passed": 32
+   },
+   "suite": "108_veldo_0153_executor_profile"
+  },
+  {
+   "branch": {
+    "failed": 4,
+    "passed": 43
+   },
+   "same": null,
+   "starting_commit": null,
+   "suite": "109_veldo_0161_adoption",
+   "why_red_here": "the four AC2 rows need AF_UNIX, refused here"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 58
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 0,
+    "passed": 58
+   },
+   "suite": "26_veldo_0009_install_stamp"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 33
+   },
+   "same": null,
+   "starting_commit": null,
+   "suite": "46_veldo_0029_enrollment"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 27
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 0,
+    "passed": 27
+   },
+   "suite": "66_veldo_0047_authority"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 44
+   },
+   "same": null,
+   "starting_commit": null,
+   "suite": "68_veldo_0126_intake"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 33
+   },
+   "same": null,
+   "starting_commit": null,
+   "suite": "68_veldo_0136_hints"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 34
+   },
+   "same": null,
+   "starting_commit": null,
+   "suite": "69_veldo_0068_settlement"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 59
+   },
+   "same": null,
+   "starting_commit": null,
+   "suite": "69_veldo_0133_dispositions"
+  },
+  {
+   "branch": {
+    "failed": 8,
+    "passed": 50
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 8,
+    "passed": 50
+   },
+   "suite": "71_veldo_0076_projects",
+   "why_red_here": "worker launches are not available here"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 46
+   },
+   "same": null,
+   "starting_commit": null,
+   "suite": "72_veldo_0077_objectives"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 44
+   },
+   "same": null,
+   "starting_commit": null,
+   "suite": "72_veldo_0128_reports"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 46
+   },
+   "same": null,
+   "starting_commit": null,
+   "suite": "73_veldo_0078_backlog"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 52
+   },
+   "same": null,
+   "starting_commit": null,
+   "suite": "73_veldo_0089_team"
+  },
+  {
+   "branch": {
+    "failed": 16,
+    "passed": 27
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 16,
+    "passed": 27
+   },
+   "suite": "73_veldo_0139_factory_setup",
+   "why_red_here": "user manager qualification"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 39
+   },
+   "same": null,
+   "starting_commit": null,
+   "suite": "75_veldo_0150_own_message_acceptance"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 48
+   },
+   "same": null,
+   "starting_commit": null,
+   "suite": "76_veldo_0079_grooming"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 39
+   },
+   "same": null,
+   "starting_commit": null,
+   "suite": "77_veldo_0149_adopted_activation"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 41
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 0,
+    "passed": 41
+   },
+   "suite": "82_veldo_0085_decomposition"
+  },
+  {
+   "branch": {
+    "failed": 11,
+    "passed": 28
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 11,
+    "passed": 28
+   },
+   "suite": "83_veldo_0154_factory_loop",
+   "why_red_here": "graph runtime / worker launches unavailable here"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 53
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 0,
+    "passed": 53
+   },
+   "suite": "84_veldo_0169_project_handouts"
+  },
+  {
+   "branch": {
+    "failed": 15,
+    "passed": 29
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 15,
+    "passed": 29
+   },
+   "suite": "85_veldo_0171_setup_api",
+   "why_red_here": "user manager qualification"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 52
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 0,
+    "passed": 52
+   },
+   "suite": "86_veldo_0168_text"
+  },
+  {
+   "branch": {
+    "failed": 33,
+    "passed": 26
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 33,
+    "passed": 26
+   },
+   "suite": "86_veldo_0189_engine_upgrade",
+   "why_red_here": "user manager qualification"
+  },
+  {
+   "branch": {
+    "failed": 0,
+    "passed": 51
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 0,
+    "passed": 51
+   },
+   "suite": "91_veldo_0151_specialists"
+  },
+  {
+   "branch": {
+    "failed": 8,
+    "passed": 27
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 8,
+    "passed": 27
+   },
+   "suite": "91_veldo_0167_setup_records",
+   "why_red_here": "user manager qualification"
+  },
+  {
+   "branch": {
+    "failed": 20,
+    "passed": 31
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 20,
+    "passed": 31
+   },
+   "suite": "92_veldo_0088_pm_cycles",
+   "why_red_here": "graph runtime unavailable here (runtime_unavailable)"
+  },
+  {
+   "branch": {
+    "failed": 11,
+    "passed": 37
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 11,
+    "passed": 37
+   },
+   "suite": "93_veldo_0152_intake_routes",
+   "why_red_here": "graph runtime unavailable here (runtime_unavailable)"
+  },
+  {
+   "branch": {
+    "failed": 25,
+    "passed": 27
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 25,
+    "passed": 27
+   },
+   "suite": "94_veldo_0162_configuration_routes",
+   "why_red_here": "the systemd user manager cannot qualify the worker profile here"
+  },
+  {
+   "branch": {
+    "failed": 19,
+    "passed": 26
+   },
+   "same": true,
+   "starting_commit": {
+    "failed": 19,
+    "passed": 26
+   },
+   "suite": "96_veldo_0204_reservation_policies",
+   "why_red_here": "user manager qualification"
+  }
+ ]
+}
