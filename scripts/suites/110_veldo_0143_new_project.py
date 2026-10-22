@@ -363,11 +363,9 @@ def _v143_suite():
                             visibility=visibility, objective=objective,
                             reason='The owner asked for a new project; the PM read his words.')
 
-            def tell(text, record_):
-                return SP.tell_owner(conn, presenter.edge, record_, text)
             decisions = PP.NewProjects(S, CM, conn, ids, 'authority', journal_sign, inbox=inbox, settlement=settlement,
                                        presenter=presenter, assignment=I, requester='pm',
-                                       request_sign=lambda b: sign_as('pm', b), templates=str(ROOT / 'engine'), tell=tell)
+                                       request_sign=lambda b: sign_as('pm', b), templates=str(ROOT / 'engine'))
 
             def answer(rid, choice, rationale):
                 receipt = presenter.current(rid) or {}
@@ -823,10 +821,28 @@ def _v143_suite():
                      while_failed.get('reason') == 'not_ready:repository:failed' and PJ.read(S, conn, 'refusedpush') is None),
                     ('nothing is written', journal() == before)])
 
+            # The owner's progress reports (VELDO-0128), through the reporter's one rendered send, as suite 93 runs it.
+            TRP = load('v143_report', mods / 'control_telegram_report.py')
+            report_gate = SimpleNamespace(conn=conn, channel='telegram_chat')
+            report_edge = SimpleNamespace(activation=report_gate, send=presenter.edge.send)
+            reporter = TRP.Reporter(SimpleNamespace(conn=conn, inbox=inbox, gate=report_gate, presenter=SimpleNamespace(
+                conn=conn, P=f['P'], edge=report_edge, current=presenter.current)), owner=OWNER)
+
+            def reported():
+                """Each project_ready report not sent yet, sent now: [(entity, outcome, text)]."""
+                out = []
+                for fact in reporter.sources(since=0):
+                    if fact['event'] == 'project_ready':
+                        done = reporter.report(fact)
+                        if done.get('outcome') != 'already_reported':
+                            out.append((fact['source']['entity_id'], done.get('outcome'), fact['headline']))
+                return out
+
             with region('activation/applied'):
                 taken = service.take_on()
                 before_messages = bot_messages()
                 passed = service.new_project_pass()
+                ready = reported()
                 tide_project = PJ.read(S, conn, 'tidepool') or {}
                 tide_team = (entity('team:tidepool') or {}).get('data') or {}
                 tide_objective = OB.read(conn, OB.objective_id(pid1 + ':project')) or {}
@@ -856,21 +872,23 @@ def _v143_suite():
                      (OB.read(conn, OB.objective_id(pid2 + ':project')) or {}).get('acceptance', {}).get('via') == 'answer'
                      and (OB.read(conn, OB.objective_id(pid2 + ':project')) or {}).get('acceptance', {}).get(
                          'settlement_id') == drift_judged['settlement_id']),
-                    ('he is told "tidepool is ready; the first objective is next", in reply to his message',
-                     (chat, None, tide_message, 'tidepool is ready; the first objective is next.') in
-                     [(c, None, r, t) for c, _m, r, t in told]),
-                    ('the decisions are activated and nothing else is sent to him',
-                     all(t.endswith('is ready; the first objective is next.') or 'could not be set up' in t
-                         for _c, _m, _r, t in told)
+                    ('he is told "tidepool is ready; the first objective is next" in his chat, by its report',
+                     (tide_decision, 'sent', 'tidepool is ready; the first objective is next.') in ready
+                     and any(c == chat and 'Veldo: tidepool is ready; the first objective is next.' in t
+                             for c, _m, _r, t in told) and tide_message is not None),
+                    ('the decisions are activated, and the pass itself sends him nothing',
+                     len(told) == len([r for r in ready if r[1] == 'sent'])
                      and (PP.read(conn, tide_decision) or {}).get('state') == 'activated'
                      and any(e.get('operation') == 'activate' and e.get('outcome') == 'activated' for e in passed))])
 
             with region('activation/failed-activates-nothing'):
                 failed_records = [PP.read(conn, done['record'].get('request')) or {} for done in failures.values()]
                 check('activation/failed-activates-nothing', [
-                    ('every decision whose repository failed is failed with its reason, and he is told',
+                    ('every decision whose repository failed is failed with its reason, and its report tells him',
                      all(r.get('state') == 'failed' and r.get('reason') for r in failed_records)
-                     and any('refusedpush could not be set up' in t for _c, _m, _r, t in bot_messages())),
+                     and any(e == failures['push']['record'].get('request') and outcome == 'sent'
+                             and headline == 'refusedpush could not be set up.' for e, outcome, headline in ready)
+                     and not any('refusedpush is ready' in t for _c, _m, _r, t in bot_messages())),
                     ('none of them is activated', all(PJ.read(S, conn, case_name) is None for case_name in
                                                      ('readonly', 'noscaffold', 'noauthor', 'nocommit', 'notoken', 'taken',
                                                       'wrongowner', 'refusedrepo', 'refusedpush', 'occupied')))])

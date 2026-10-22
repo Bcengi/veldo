@@ -160,8 +160,8 @@ A NEW PROJECT FROM CHAT (VELDO-0143). After take_on, the instance runs its NewPr
 (control_service_projects): the owner's settled answers to the factory PM's new-project proposals are
 applied, the repository provisioner (the registered protected effect control_effect_executor_creation, run
 as its own process with the provisioner configuration the installation names under `provisioner`) is
-started once for each settled decision, a repository that ended `failed` fails its decision and the owner is
-told, and once a created or adopted repository is `active` the same settlement activates the project with
+started once for each settled decision, a repository that ended `failed` fails its decision (VELDO-0128's
+report tells the owner), and once a created or adopted repository is `active` the same settlement activates the project with
 its first team and first objective in this process, and the factory loop gains the repository's line
 (FactoryLoop.add_line), with the roles of the loop's first line, so its first unit is dispatched in it. A
 repository this instance serves that the work configuration does not name gets that line at the loop's start
