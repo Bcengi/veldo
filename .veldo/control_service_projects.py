@@ -8,7 +8,7 @@ what was adopted (control_service.Service.take_on), the service's NewProjectPass
      ever asked here);
   2. for each settled decision whose repository has no record yet, starts the repository provisioner, the
      registered protected effect control_effect_executor_creation (PROTECTED_EFFECTS), as its own process
-     with the installation's provisioner configuration, once per decision; an installation that names none
+     with the provisioner configuration (provisioner_path), once per decision; an installation that has none
      refuses unavailable_service:provisioner by name and the decision waits;
   3. for each settled decision whose repository ended `failed`, fails the decision with that reason (its
      VELDO-0128 report tells the owner; never ready);
@@ -48,6 +48,8 @@ PP = organ('control_project_proposal')
 # The protected effects this service starts, by name, each the trusted executable it runs.
 PROTECTED_EFFECTS = {'repository_provisioning': 'control_effect_executor_creation.py'}
 INITIAL_REVISION = 'initial-revision:'
+# What factory setup names the provisioner configuration in the state root's host directory.
+PROVISIONER_FILE = 'provisioner.json'
 
 
 def accept_base(store, path, domain, repository, workspace, commit, principal, sign, generation):
@@ -125,8 +127,19 @@ class NewProjectPass:
                 request_sign=self.pm_sign, templates=(config or {}).get('templates'), generation=s.generation)
         return self.decisions
 
+    def provisioner_path(self):
+        """The provisioner configuration: the installation's `provisioner`, else the one factory setup lays down in
+        the state root's host directory (<state root>/host/provisioner.json, beside the store's directory), when it
+        is there. The provisioner refuses a file that is not this account's own 0600 one."""
+        named = self.service.config.get('provisioner')
+        if named:
+            return named
+        store = self.service.config.get('store_path')
+        laid = os.path.join(os.path.dirname(os.path.dirname(store)), 'host', PROVISIONER_FILE) if store else None
+        return laid if laid and os.path.isfile(laid) else None
+
     def provisioner(self):
-        path = self.service.config.get('provisioner')
+        path = self.provisioner_path()
         if not path:
             return None
         try:
@@ -185,7 +198,7 @@ class NewProjectPass:
                 self.decisions.finish(decision, activated=False, reason=reason or 'unknown_outcome:provisioner')
                 return dict(about, outcome='refused', refusal=reason)
             return dict(about, outcome='ended')
-        config = self.service.config.get('provisioner')
+        config = self.provisioner_path()
         if not config:
             if decision in self.refused:
                 return None
