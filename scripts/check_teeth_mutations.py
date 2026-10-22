@@ -10619,10 +10619,11 @@ def cases():
         '            self.common_dir = common or None\n', '',
         ['candidate/every-git-operation-checked'])
 
-    # VELDO-0161: each criterion's declared falsifiers first, then the threat model's other shapes. The rows
-    # of the service (AC2) need local sockets, so their cases run where the suite's service runs.
-    def adoption(name, module, old, new, rows):
-        add(161, name, '109_veldo_0161_adoption.py', module, old, new, rows)
+    # VELDO-0161: each criterion's declared falsifiers first, then the threat model's other shapes, then one
+    # case per round-2 fix. The rows of the running service (AC2) need local sockets, so their cases run where
+    # the suite's service runs; every other row runs anywhere.
+    def adoption(name, module, old, new, rows, also=()):
+        add(161, name, '109_veldo_0161_adoption.py', module, old, new, rows, also)
 
     # AC1 (declared): the adoption signer signs a binding for a repository no settled decision names.
     adoption('adoption161-signer-unscoped', 'control_repository.py',
@@ -10639,16 +10640,25 @@ def cases():
              "                    'refs/veldo/relaid/' + repository))\n"
              "                P.advance(proposal)\n",
              ['adoption/scaffold-commit'])
-    # AC2 (declared): the adopted repository taken on only by restarting the authority service.
+    # AC2 (declared): the adopted repository taken on only by restarting the authority service. The take-on
+    # request is answered with a refusal and the serving process execs itself (keeping its pid and kernel
+    # start time), so the new instance takes the record on at its start; only the instance can tell.
     adoption('adoption161-restart-take-on', 'control_service.py',
-             "                    if not stopping:\n                        service.take_on()\n",
-             "                    if not stopping and any(r.get('state') == 'provisioning' and r.get('enrollment')\n"
-             "                                            for r in REPO.records(service.conn, service.domain)):\n"
-             "                        # defect: the repository is taken on only by restarting the authority service\n"
-             "                        listener.close()\n"
-             "                        os.unlink(config['socket'])\n"
-             "                        os.execv(sys.executable, [sys.executable, '-B', os.path.realpath(__file__), 'serve',\n"
-             "                                                  config_path])\n",
+             "        observation = self.take_on_record(record)\n        ok = observation.get('outcome') == 'accepted'\n",
+             "        import threading  # defect: the repository is taken on only by restarting the authority service\n"
+             "        home = os.path.dirname(os.path.dirname(self.config['executable']))\n"
+             "\n"
+             "        def restart():\n"
+             "            time.sleep(0.5)\n"
+             "            with contextlib.suppress(OSError):\n"
+             "                os.unlink(self.config['socket'])\n"
+             "            os.execv(self.config['python'], [self.config['python'], '-B', self.config['executable'], 'serve',\n"
+             "                                             os.path.join(home, 'config', 'service.json')])\n"
+             "        # Only the installed serving process restarts (never a process that judges in its own thread).\n"
+             "        if os.path.realpath(sys.argv[0]) == os.path.realpath(self.config['executable']):\n"
+             "            threading.Thread(target=restart, daemon=True).start()\n"
+             "        observation = {'outcome': 'refused', 'refusal': 'not_taken_on:restarting'}\n"
+             "        ok = observation.get('outcome') == 'accepted'\n",
              ['adoption/same-process'])
     adoption('adoption161-settlement-unchecked', 'control_effect_executor_adoption.py',
              "            decision = R.settled(S, CM, conn, request)\n",
@@ -10668,13 +10678,159 @@ def cases():
              "            pass  # defect: the signature is not journaled\n",
              ['adoption/signer-scope', 'adoption/signatures-journaled'])
     adoption('adoption161-provisioner-hooks', 'control_repository_provisioner.py',
-             "    done = GP.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, *args], capture_output=True,\n",
-             "    done = GP.run(['git', '-C', str(path), *args], capture_output=True,  # defect: the repository's hooks run\n",
+             "    done = GP.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, '-c', 'core.fsmonitor=false', *args],\n",
+             "    done = GP.run(['git', '-C', str(path), '-c', 'core.fsmonitor=false', *args],  # defect: the repository's hooks run\n",
              ['adoption/scaffold-commit'])
     adoption('adoption161-receiver-configuration-absent', 'control_service.py',
-             "        receiver = self._receiver_configuration(repository, os.path.realpath(path))\n",
-             "        receiver = None  # defect: no receiver configuration is written\n",
-             ['adoption/taken-on-running'])
+             "        receiver, created = self._receiver_configuration(repository, workspace)\n",
+             "        receiver, created = None, False  # defect: no receiver configuration is written\n",
+             ['adoption/receiver-configuration-used', 'adoption/taken-on-running'])
+
+    # Round 2, A: the signer's ssh-keygen reaches an SSH agent named in its environment.
+    adoption('adoption161-signer-agent', 'control_repository.py',
+             "                                  capture_output=True, timeout=30, stdin=None, env=_quiet_env())",
+             "                                  capture_output=True, timeout=30, stdin=None, env=dict(os.environ))  # defect: an agent",
+             ['adoption/signer-no-agent'])
+    # B1: the fast-forward and push happen before the checks that change nothing.
+    adoption('adoption161-push-before-checks', 'control_effect_executor_adoption.py',
+             "            P.check_configured_remote(proposal['path'], proposal['default_branch'], proposal['remote'])\n",
+             "            if proposal['scaffold_commit'] is not None:  # defect: pushed before the checks that change nothing\n"
+             "                P.advance(proposal)\n"
+             "                P.push(proposal, record)\n"
+             "            P.check_configured_remote(proposal['path'], proposal['default_branch'], proposal['remote'])\n",
+             ['adoption/signer-enrolled'],
+             also=[("            if proposal['scaffold_commit'] is not None:\n                P.advance(proposal)\n"
+                    "                P.push(proposal, record)\n",
+                    "            if proposal['scaffold_commit'] is not None:\n")])
+    # B1: a missing adoption signer key raises instead of being not enrolled.
+    adoption('adoption161-enrolled-missing-key-raises', 'control_repository.py',
+             "    try:\n        want = public_key(key)\n    except Refused:\n        return False\n",
+             "    want = public_key(key)  # defect: a missing key raises\n",
+             ['adoption/signer-enrolled'])
+    # B3: an unexpected fault in a step leaves the record provisioning.
+    adoption('adoption161-fault-stuck', 'control_effect_executor_adoption.py',
+             "        except Exception as error:  # noqa: BLE001 - every fault ends the record failed, by name\n",
+             "        except (R.Refused, CE.EnrollmentRefused) as error:  # defect: any other fault leaves it provisioning\n",
+             ['adoption/unknown-outcome'])
+    # B3: a push that landed and could not be confirmed is reported as a refused push.
+    adoption('adoption161-push-unconfirmed-as-refused', 'control_repository_provisioner.py',
+             "        raise Refused('push_unconfirmed:remote',",
+             "        raise Refused('push_refused:remote',  # defect: a push that may have landed, called refused\n                     ",
+             ['adoption/push-unconfirmed'])
+    # B4: a local step runs the repository's fsmonitor; the repository's own commands are not looked for.
+    adoption('adoption161-fsmonitor-on', 'control_repository_provisioner.py',
+             "'-c', 'core.hooksPath=' + os.devnull, '-c', 'core.fsmonitor=false', *args],",
+             "'-c', 'core.hooksPath=' + os.devnull, *args],  # defect: the repository's fsmonitor runs\n                 ",
+             ['adoption/repository-commands'])
+    adoption('adoption161-repository-commands-unchecked', 'control_repository_provisioner.py',
+             "    return sorted(set(found))\n",
+             "    return []  # defect: the repository's own commands are not looked for\n",
+             ['adoption/repository-commands'])
+    # B5: each check of the named scaffold commit.
+    adoption('adoption161-scaffold-unrecorded', 'control_repository_provisioner.py',
+             "    if recorded.returncode or recorded.stdout.strip() != commit:\n",
+             "    if False:  # defect: a commit not recorded for the repository is pushed\n",
+             ['adoption/scaffold-problems'])
+    adoption('adoption161-scaffold-parent', 'control_repository_provisioner.py',
+             "    if parents[1:] != [base]:\n",
+             "    if False:  # defect: a commit on another parent is pushed\n",
+             ['adoption/scaffold-problems'])
+    adoption('adoption161-scaffold-modifies', 'control_repository_provisioner.py',
+             "    if any(status not in ('A', '') for status in changes[0::2]):\n",
+             "    if False:  # defect: a commit that modifies files is pushed\n",
+             ['adoption/scaffold-problems'])
+    # B5: each refusal of the running service's take-on.
+    adoption('adoption161-take-on-decision-unchecked', 'control_service.py',
+             "                decision = REPO.settled(S, CM, self.conn, record.get('request'))\n",
+             "                decision = {'proposal': {'repository': repository, 'path': path},  # defect: no decision judged\n"
+             "                            'settlement_id': record.get('settlement')}\n",
+             ['adoption/take-on-refusals'])
+    adoption('adoption161-take-on-signature-unchecked', 'control_service.py',
+             "            raise Refused('no_adoption_signature')\n",
+             "            pass  # defect: no journaled adoption signature is required\n",
+             ['adoption/take-on-refusals'])
+    adoption('adoption161-take-on-binding-signer-unchecked', 'control_service.py',
+             "                or binding.get('enrolled_by') != REPO.SIGNER_PRINCIPAL or binding.get('repository_uuid') != repository\n",
+             "                or binding.get('repository_uuid') != repository  # defect: any enrollment signer's binding\n",
+             ['adoption/take-on-refusals'])
+    adoption('adoption161-take-on-store-binding-unchecked', 'control_service.py',
+             "            raise Refused('store_binding')\n",
+             "            pass  # defect: the store binding is not required\n",
+             ['adoption/take-on-refusals'])
+    # B5 and B8: each coordinate the adoption signer pins.
+    adoption('adoption161-signer-store-unchecked', 'control_repository.py',
+             "            problems.append('signature_refused:scope:store')\n",
+             "            pass  # defect: another store's binding is signed\n",
+             ['adoption/signer-scope'])
+    adoption('adoption161-signer-identity-unchecked', 'control_repository.py',
+             "            problems.append('signature_refused:scope:repository_identity')\n",
+             "            pass  # defect: a binding naming other root commits is signed\n",
+             ['adoption/signer-scope'])
+    adoption('adoption161-signer-host-unchecked', 'control_repository.py',
+             "            problems.append('signature_refused:scope:host')\n",
+             "            pass  # defect: another host's binding is signed\n",
+             ['adoption/signer-scope'])
+    adoption('adoption161-signer-generation-unpinned', 'control_repository.py',
+             "        if (type(generation) is not int or generation != self.ids.get('authority_generation')\n",
+             "        if (type(generation) is not int  # defect: another generation is signed\n",
+             ['adoption/signer-scope'])
+    adoption('adoption161-signer-generation-below-store', 'control_repository.py',
+             "                or generation < store_generation(self.conn)):\n",
+             "                ):  # defect: a generation below the store's is signed\n",
+             ['adoption/signer-scope'])
+    # B6: the record is not handed to the running service; a take-on request needs no journal-key signature.
+    adoption('adoption161-take-on-not-sent', 'control_effect_executor_adoption.py',
+             "        refusal = take_on(config, proposal, request, trust, send)\n",
+             "        refusal = None  # defect: the record is not handed to the running service\n",
+             ['adoption/take-on-answered', 'adoption/taken-on-running'])
+    adoption('adoption161-take-on-unauthenticated', 'control_service.py',
+             "                return self._journal_key_verifies(message, signature)\n",
+             "                return True  # defect: a take-on request needs no signature of the journal key\n",
+             ['adoption/take-on-answered'])
+    # B2: the repository is served before its record says active.
+    adoption('adoption161-served-before-write', 'control_service.py',
+             "        receiver, created = self._receiver_configuration(repository, workspace)\n",
+             "        receiver, created = self._receiver_configuration(repository, workspace)\n"
+             "        self.repositories[repository] = [workspace]  # defect: served before the record says active\n"
+             "        self.config.setdefault('receiver', {}).setdefault('configs', {})[repository] = receiver\n",
+             ['adoption/take-on-write-first'])
+    # B7: an active record judged on today's membership; a receiver configuration it wrote not written again.
+    adoption('adoption161-active-rejudged-membership', 'control_service.py',
+             "        if record.get('state') == 'provisioning':\n            # Taken on now:",
+             "        if True:  # defect: an active record is judged on today's membership\n            # Taken on now:",
+             ['adoption/active-served-again'])
+    adoption('adoption161-receiver-not-regenerated', 'control_service.py',
+             "        if Path(path).read_text() != text:\n            fresh = path + '.new'\n",
+             "        if Path(path).read_text() != text:\n"
+             "            raise Refused('receiver_configuration:differs')  # defect: not written again\n"
+             "            fresh = path + '.new'\n",
+             ['adoption/active-served-again'])
+    # B6 and the receiver configuration: the written configuration names the installed repository.
+    adoption('adoption161-receiver-configuration-wrong', 'control_service.py',
+             "        text = _json(dict(template, repository=repository, workspace=workspace))\n",
+             "        text = _json(dict(template, workspace=workspace))  # defect: the installed repository's receiver\n",
+             ['adoption/receiver-configuration-used'])
+    # B9: a later success forgets another record's fault.
+    adoption('adoption161-retry-reset', 'control_service.py',
+             "            observation.update(outcome='accepted', receiver_config=receiver, resumed=record.get('state') == 'active')\n"
+             "            self.adoption_faults.pop(repository, None)\n",
+             "            observation.update(outcome='accepted', receiver_config=receiver, resumed=record.get('state') == 'active')\n"
+             "            self.adoption_faults.clear()  # defect: a success forgets every other record's fault\n",
+             ['adoption/take-on-retry'])
+    # B10: the remote not checked against the repository's own; a repository id that is not one ref component;
+    # the scaffold ref kept.
+    adoption('adoption161-remote-configuration-unchecked', 'control_repository_provisioner.py',
+             "    if configured_remote(path, branch) != remote:\n",
+             "    if False:  # defect: any remote is accepted\n",
+             ['adoption/prepare-checks'])
+    adoption('adoption161-repository-id-unchecked', 'control_repository.py',
+             "        return ['invalid_input:proposal:repository']\n    return []\n",
+             "        return []  # defect: any repository id is a ref component\n    return []\n",
+             ['adoption/prepare-checks'])
+    adoption('adoption161-scaffold-ref-kept', 'control_repository_provisioner.py',
+             "    if R.repository_id_problems(repository):\n        return False\n    try:\n",
+             "    if True:  # defect: the scaffold ref is kept\n        return False\n    try:\n",
+             ['adoption/scaffold-commit', 'adoption/signer-enrolled', 'adoption/push-refused'])
 
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
