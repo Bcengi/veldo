@@ -1,5 +1,8 @@
 # VELDO-0161: repository adoption on the owner's settled answer, taken on without a restart
 
+Round 2 (the host run and the independent review): see round2/README.md, which supersedes the counts and the
+host-run list below. This page describes round 1 (code at 19b38a30).
+
 Branch agent/claude/veldo-0161, built on VELDO-0153 (b44736c0, which is not landed yet). Code commits
 bbe023d3, a2af558b, 5b6631b5 and 19b38a30; the specification's history entry is f0b634da and its addendum
 follows the bundle. Nothing here is a gate

@@ -1,0 +1,825 @@
+{
+ "baseline_after": {
+  "count": 69,
+  "exit": 0,
+  "failed_rows": [
+   "VELDO-0161 adoption/taken-on-running",
+   "VELDO-0161 adoption/same-process",
+   "VELDO-0161 adoption/packet-accepted",
+   "VELDO-0161 adoption/not-taken-on-named"
+  ],
+  "targets": {
+   "adoption/signer-scope": [
+    true
+   ]
+  }
+ },
+ "baseline_before": {
+  "count": 69,
+  "exit": 0,
+  "failed_rows": [
+   "VELDO-0161 adoption/taken-on-running",
+   "VELDO-0161 adoption/same-process",
+   "VELDO-0161 adoption/packet-accepted",
+   "VELDO-0161 adoption/not-taken-on-named"
+  ],
+  "targets": {
+   "adoption/signer-scope": [
+    true
+   ]
+  }
+ },
+ "cases": [
+  {
+   "baseline_target_rows": {
+    "adoption/signer-scope": true
+   },
+   "case": "adoption161-signer-unscoped",
+   "fix": "AC1 declared",
+   "module": ".veldo/control_repository.py",
+   "mutant_digest": "add42e4b07fd09433ed0913903382d89bbc125ac953839038fdfa54b7d0f7423",
+   "mutant_target_rows": {
+    "adoption/signer-scope": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/signer-scope"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "target_rows": [
+    "adoption/signer-scope"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/scaffold-commit": true
+   },
+   "case": "adoption161-scaffold-relaid",
+   "fix": "AC1 declared",
+   "module": ".veldo/control_effect_executor_adoption.py",
+   "mutant_digest": "5da4b1c06b8d3ed6b2a5704923e4d48359cff2682504a4057624fd7d85f87ca5",
+   "mutant_target_rows": {
+    "adoption/scaffold-commit": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/push-refused",
+    "VELDO-0161 adoption/push-unconfirmed",
+    "VELDO-0161 adoption/scaffold-commit"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "727e4e99380802cf44e1c008c021838a8d922d4879034af22cf2be3b181933c1",
+   "target_rows": [
+    "adoption/scaffold-commit"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/same-process": false
+   },
+   "case": "adoption161-restart-take-on",
+   "fix": "AC2 declared (B6 redesign)",
+   "module": ".veldo/control_service.py",
+   "mutant_digest": "0c06812c6611b82fc8b16210af56c99f7d8b31cfc14e75b8865840cce524448d",
+   "mutant_target_rows": {
+    "adoption/same-process": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/receiver-configuration-used",
+    "VELDO-0161 adoption/take-on-answered"
+   ],
+   "result": "not judged here: every target row is red at baseline because this sandbox refuses AF_UNIX sockets; the host runs it",
+   "source_digest": "a4c7f2e75dae75044902592e2ba9f474ad19887a4b48fcd76acd10a88b914cd1",
+   "target_rows": [
+    "adoption/same-process"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/settlement-before-signature": true
+   },
+   "case": "adoption161-settlement-unchecked",
+   "fix": "AC1 threat model",
+   "module": ".veldo/control_effect_executor_adoption.py",
+   "mutant_digest": "1aedfb4a79c461a6c9cb967932f293c956ba03df6e24423ead983f86e5c18ae2",
+   "mutant_target_rows": {
+    "adoption/settlement-before-signature": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/active-served-again",
+    "VELDO-0161 adoption/observed",
+    "VELDO-0161 adoption/settlement-before-signature",
+    "VELDO-0161 adoption/signatures-journaled"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "727e4e99380802cf44e1c008c021838a8d922d4879034af22cf2be3b181933c1",
+   "target_rows": [
+    "adoption/settlement-before-signature"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/remote-owner-refused": true
+   },
+   "case": "adoption161-remote-owner-unchecked",
+   "fix": "AC1 threat model; B5 real other-owner case",
+   "module": ".veldo/control_effect_executor_adoption.py",
+   "mutant_digest": "03d38d76cef86f5271f17f3818506c379f72fd81e82cd130e387650711966bcc",
+   "mutant_target_rows": {
+    "adoption/remote-owner-refused": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/observed",
+    "VELDO-0161 adoption/remote-owner-refused",
+    "VELDO-0161 adoption/scaffold-present",
+    "VELDO-0161 adoption/signatures-journaled"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "727e4e99380802cf44e1c008c021838a8d922d4879034af22cf2be3b181933c1",
+   "target_rows": [
+    "adoption/remote-owner-refused"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/signatures-journaled": true,
+    "adoption/signer-scope": true
+   },
+   "case": "adoption161-signature-unjournaled",
+   "fix": "AC1 threat model",
+   "module": ".veldo/control_repository.py",
+   "mutant_digest": "f6841f5178e0936417a5085a92879537b3d88a2b296649fd3ff1b8ac4be84c0d",
+   "mutant_target_rows": {
+    "adoption/signatures-journaled": false,
+    "adoption/signer-scope": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/active-served-again",
+    "VELDO-0161 adoption/observed",
+    "VELDO-0161 adoption/receiver-configuration-used",
+    "VELDO-0161 adoption/signatures-journaled",
+    "VELDO-0161 adoption/signer-scope",
+    "VELDO-0161 adoption/take-on-answered",
+    "VELDO-0161 adoption/take-on-refusals",
+    "VELDO-0161 adoption/take-on-retry",
+    "VELDO-0161 adoption/take-on-write-first"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "target_rows": [
+    "adoption/signer-scope",
+    "adoption/signatures-journaled"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/scaffold-commit": true
+   },
+   "case": "adoption161-provisioner-hooks",
+   "fix": "AC1 threat model",
+   "module": ".veldo/control_repository_provisioner.py",
+   "mutant_digest": "2bde854302716cb978170df36bc0360c222a12f3d34cd62e4ce8cd1cb0b8a3e1",
+   "mutant_target_rows": {
+    "adoption/scaffold-commit": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/scaffold-commit"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "7636910074f8dc03c3ba87abfecf316d3b9d506cd87b481443085225e4d09274",
+   "target_rows": [
+    "adoption/scaffold-commit"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/receiver-configuration-used": true,
+    "adoption/taken-on-running": false
+   },
+   "case": "adoption161-receiver-configuration-absent",
+   "fix": "AC2; B5 written receiver configuration",
+   "module": ".veldo/control_service.py",
+   "mutant_digest": "9eb031c58cf99864f252bce30122d0c9948855ee83ec28bf164b564dda2f8b09",
+   "mutant_target_rows": {
+    "adoption/receiver-configuration-used": false,
+    "adoption/taken-on-running": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/active-served-again",
+    "VELDO-0161 adoption/receiver-configuration-used"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "a4c7f2e75dae75044902592e2ba9f474ad19887a4b48fcd76acd10a88b914cd1",
+   "target_rows": [
+    "adoption/receiver-configuration-used",
+    "adoption/taken-on-running"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/signer-no-agent": true
+   },
+   "case": "adoption161-signer-agent",
+   "fix": "A",
+   "module": ".veldo/control_repository.py",
+   "mutant_digest": "a07e393d0d098e6778c9146418adcbfc8146adb05e83091bc47f7e17510677e5",
+   "mutant_target_rows": {
+    "adoption/signer-no-agent": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/signer-no-agent"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "target_rows": [
+    "adoption/signer-no-agent"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/signer-enrolled": true
+   },
+   "case": "adoption161-push-before-checks",
+   "fix": "B1",
+   "module": ".veldo/control_effect_executor_adoption.py",
+   "mutant_digest": "15cfdb93a71b391ab669250b38f31f1ebdeb359fd78b215a6ca7247bc9b7a064",
+   "mutant_target_rows": {
+    "adoption/signer-enrolled": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/repository-commands",
+    "VELDO-0161 adoption/signer-enrolled"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "727e4e99380802cf44e1c008c021838a8d922d4879034af22cf2be3b181933c1",
+   "target_rows": [
+    "adoption/signer-enrolled"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/signer-enrolled": true
+   },
+   "case": "adoption161-enrolled-missing-key-raises",
+   "fix": "B1",
+   "module": ".veldo/control_repository.py",
+   "mutant_digest": "02e4c58d80679cce57b578d3615d66f3d753317cebecf6d19d653af9e664dd49",
+   "mutant_target_rows": {
+    "adoption/signer-enrolled": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/signer-enrolled"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "target_rows": [
+    "adoption/signer-enrolled"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/unknown-outcome": true
+   },
+   "case": "adoption161-fault-stuck",
+   "fix": "B3",
+   "module": ".veldo/control_effect_executor_adoption.py",
+   "mutant_digest": "fa58e2f785148b9bb0de10b799955bc01d78beadea414762e7cffc8920c7063f",
+   "mutant_target_rows": {
+    "adoption/unknown-outcome": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/unknown-outcome"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "727e4e99380802cf44e1c008c021838a8d922d4879034af22cf2be3b181933c1",
+   "target_rows": [
+    "adoption/unknown-outcome"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/push-unconfirmed": true
+   },
+   "case": "adoption161-push-unconfirmed-as-refused",
+   "fix": "B3",
+   "module": ".veldo/control_repository_provisioner.py",
+   "mutant_digest": "44bad0bcdff88bc36ca349c44074184627a1729741ba495a992b0ec2dc5981e7",
+   "mutant_target_rows": {
+    "adoption/push-unconfirmed": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/push-unconfirmed"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "7636910074f8dc03c3ba87abfecf316d3b9d506cd87b481443085225e4d09274",
+   "target_rows": [
+    "adoption/push-unconfirmed"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/repository-commands": true
+   },
+   "case": "adoption161-fsmonitor-on",
+   "fix": "B4",
+   "module": ".veldo/control_repository_provisioner.py",
+   "mutant_digest": "e1d4d89e3ed0f6ceb92ff693987689993f3201ef9b3c12ff90654268a77886f2",
+   "mutant_target_rows": {
+    "adoption/repository-commands": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/repository-commands"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "7636910074f8dc03c3ba87abfecf316d3b9d506cd87b481443085225e4d09274",
+   "target_rows": [
+    "adoption/repository-commands"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/repository-commands": true
+   },
+   "case": "adoption161-repository-commands-unchecked",
+   "fix": "B4",
+   "module": ".veldo/control_repository_provisioner.py",
+   "mutant_digest": "d1961cf8deb7e2c28fde8cb611764ef5c22e4e5fcb08cfedcd52d36d53acc86d",
+   "mutant_target_rows": {
+    "adoption/repository-commands": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/repository-commands"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "7636910074f8dc03c3ba87abfecf316d3b9d506cd87b481443085225e4d09274",
+   "target_rows": [
+    "adoption/repository-commands"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/scaffold-problems": true
+   },
+   "case": "adoption161-scaffold-unrecorded",
+   "fix": "B5",
+   "module": ".veldo/control_repository_provisioner.py",
+   "mutant_digest": "14030284d0699f93cbd6cb4619559055b4398f59802f027362dffc44c5d920b0",
+   "mutant_target_rows": {
+    "adoption/scaffold-problems": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/scaffold-problems"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "7636910074f8dc03c3ba87abfecf316d3b9d506cd87b481443085225e4d09274",
+   "target_rows": [
+    "adoption/scaffold-problems"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/scaffold-problems": true
+   },
+   "case": "adoption161-scaffold-parent",
+   "fix": "B5",
+   "module": ".veldo/control_repository_provisioner.py",
+   "mutant_digest": "29fb3cad317b8deaf3f02a12eceb8e7244c40f84f8cdb3b61451ca7ec6dce293",
+   "mutant_target_rows": {
+    "adoption/scaffold-problems": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/scaffold-problems"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "7636910074f8dc03c3ba87abfecf316d3b9d506cd87b481443085225e4d09274",
+   "target_rows": [
+    "adoption/scaffold-problems"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/scaffold-problems": true
+   },
+   "case": "adoption161-scaffold-modifies",
+   "fix": "B5",
+   "module": ".veldo/control_repository_provisioner.py",
+   "mutant_digest": "38284f9d23451287336206bf14a68155adbb5ea45e42a7217870d6a2aad71d49",
+   "mutant_target_rows": {
+    "adoption/scaffold-problems": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/scaffold-problems"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "7636910074f8dc03c3ba87abfecf316d3b9d506cd87b481443085225e4d09274",
+   "target_rows": [
+    "adoption/scaffold-problems"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/take-on-refusals": true
+   },
+   "case": "adoption161-take-on-decision-unchecked",
+   "fix": "B5",
+   "module": ".veldo/control_service.py",
+   "mutant_digest": "94aff615dc00889babe3bf7e6db89ede5874bace9703320dc5028078587ddd53",
+   "mutant_target_rows": {
+    "adoption/take-on-refusals": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/take-on-refusals",
+    "VELDO-0161 adoption/take-on-retry"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "a4c7f2e75dae75044902592e2ba9f474ad19887a4b48fcd76acd10a88b914cd1",
+   "target_rows": [
+    "adoption/take-on-refusals"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/take-on-refusals": true
+   },
+   "case": "adoption161-take-on-signature-unchecked",
+   "fix": "B5",
+   "module": ".veldo/control_service.py",
+   "mutant_digest": "b91f38ea39986260be640adb1c72f89111b83e60da84dd4b72e8418caa8b60fc",
+   "mutant_target_rows": {
+    "adoption/take-on-refusals": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/take-on-refusals"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "a4c7f2e75dae75044902592e2ba9f474ad19887a4b48fcd76acd10a88b914cd1",
+   "target_rows": [
+    "adoption/take-on-refusals"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/take-on-refusals": true
+   },
+   "case": "adoption161-take-on-binding-signer-unchecked",
+   "fix": "B5",
+   "module": ".veldo/control_service.py",
+   "mutant_digest": "5d594077b37f656dff575abb8f94c8f1c76b31c42b67a55aeccba74533c8c79e",
+   "mutant_target_rows": {
+    "adoption/take-on-refusals": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/take-on-refusals"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "a4c7f2e75dae75044902592e2ba9f474ad19887a4b48fcd76acd10a88b914cd1",
+   "target_rows": [
+    "adoption/take-on-refusals"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/take-on-refusals": true
+   },
+   "case": "adoption161-take-on-store-binding-unchecked",
+   "fix": "B5",
+   "module": ".veldo/control_service.py",
+   "mutant_digest": "1ce2eaf1cd74e7f1c012a155b2e6b4dcd472451c18ed9c7f668a7e06ae824c65",
+   "mutant_target_rows": {
+    "adoption/take-on-refusals": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/take-on-refusals"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "a4c7f2e75dae75044902592e2ba9f474ad19887a4b48fcd76acd10a88b914cd1",
+   "target_rows": [
+    "adoption/take-on-refusals"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/signer-scope": true
+   },
+   "case": "adoption161-signer-store-unchecked",
+   "fix": "B5",
+   "module": ".veldo/control_repository.py",
+   "mutant_digest": "13f9d807ff0ed0ffeeb109e2d971922794073151af05745030f80697e9295691",
+   "mutant_target_rows": {
+    "adoption/signer-scope": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/signer-scope"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "target_rows": [
+    "adoption/signer-scope"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/signer-scope": true
+   },
+   "case": "adoption161-signer-identity-unchecked",
+   "fix": "B5",
+   "module": ".veldo/control_repository.py",
+   "mutant_digest": "2aa6b9ba38ecc29688918e2a88232f6fec1fa7fea56ea56061cb626f0fa1e290",
+   "mutant_target_rows": {
+    "adoption/signer-scope": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/signer-scope"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "target_rows": [
+    "adoption/signer-scope"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/signer-scope": true
+   },
+   "case": "adoption161-signer-host-unchecked",
+   "fix": "B8",
+   "module": ".veldo/control_repository.py",
+   "mutant_digest": "f8c4dc33986e7b2cfe4d4416fd677fb8eb6e63b40a404cab649d1cf1d9253a09",
+   "mutant_target_rows": {
+    "adoption/signer-scope": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/signer-scope"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "target_rows": [
+    "adoption/signer-scope"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/signer-scope": true
+   },
+   "case": "adoption161-signer-generation-unpinned",
+   "fix": "B8",
+   "module": ".veldo/control_repository.py",
+   "mutant_digest": "252dffc0738c4d5152a5ab853f98d8c247966eb8d19f1c1d3c7bd3a83ccbbb15",
+   "mutant_target_rows": {
+    "adoption/signer-scope": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/signer-scope"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "target_rows": [
+    "adoption/signer-scope"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/signer-scope": true
+   },
+   "case": "adoption161-signer-generation-below-store",
+   "fix": "B8",
+   "module": ".veldo/control_repository.py",
+   "mutant_digest": "0613e06d29a9e29572f418c069bbfea7f7f0797993a9b5c8b347c697ea14743d",
+   "mutant_target_rows": {
+    "adoption/signer-scope": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/signer-scope"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "target_rows": [
+    "adoption/signer-scope"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/take-on-answered": true,
+    "adoption/taken-on-running": false
+   },
+   "case": "adoption161-take-on-not-sent",
+   "fix": "B6",
+   "module": ".veldo/control_effect_executor_adoption.py",
+   "mutant_digest": "3541cb033feae72b7bc3376b40fce05194cb4007b7fb9e789d4a3005b98a047e",
+   "mutant_target_rows": {
+    "adoption/take-on-answered": false,
+    "adoption/taken-on-running": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/receiver-configuration-used",
+    "VELDO-0161 adoption/take-on-answered"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "727e4e99380802cf44e1c008c021838a8d922d4879034af22cf2be3b181933c1",
+   "target_rows": [
+    "adoption/take-on-answered",
+    "adoption/taken-on-running"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/take-on-answered": true
+   },
+   "case": "adoption161-take-on-unauthenticated",
+   "fix": "B6",
+   "module": ".veldo/control_service.py",
+   "mutant_digest": "eb8cdd4caa63b53857a977f2091ec69d32accd34765a665430126996c1dcff07",
+   "mutant_target_rows": {
+    "adoption/take-on-answered": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/take-on-answered"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "a4c7f2e75dae75044902592e2ba9f474ad19887a4b48fcd76acd10a88b914cd1",
+   "target_rows": [
+    "adoption/take-on-answered"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/take-on-write-first": true
+   },
+   "case": "adoption161-served-before-write",
+   "fix": "B2",
+   "module": ".veldo/control_service.py",
+   "mutant_digest": "fbbae4c1e241c8a8fde3ffb2fbd6f880ceb05c198c2ffddf78e333d387f9f062",
+   "mutant_target_rows": {
+    "adoption/take-on-write-first": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/take-on-write-first"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "a4c7f2e75dae75044902592e2ba9f474ad19887a4b48fcd76acd10a88b914cd1",
+   "target_rows": [
+    "adoption/take-on-write-first"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/active-served-again": true
+   },
+   "case": "adoption161-active-rejudged-membership",
+   "fix": "B7",
+   "module": ".veldo/control_service.py",
+   "mutant_digest": "d6ea10f8523d373fcd62aa59742db7d7978da9916aa20da11e64a38f1a7b2d11",
+   "mutant_target_rows": {
+    "adoption/active-served-again": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/active-served-again"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "a4c7f2e75dae75044902592e2ba9f474ad19887a4b48fcd76acd10a88b914cd1",
+   "target_rows": [
+    "adoption/active-served-again"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/active-served-again": true
+   },
+   "case": "adoption161-receiver-not-regenerated",
+   "fix": "B7",
+   "module": ".veldo/control_service.py",
+   "mutant_digest": "70c46c277581b63105b78019ecfbee82e8a9b4d207ed9ba19ad45acf0728ef93",
+   "mutant_target_rows": {
+    "adoption/active-served-again": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/active-served-again"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "a4c7f2e75dae75044902592e2ba9f474ad19887a4b48fcd76acd10a88b914cd1",
+   "target_rows": [
+    "adoption/active-served-again"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/receiver-configuration-used": true
+   },
+   "case": "adoption161-receiver-configuration-wrong",
+   "fix": "B5 written receiver configuration",
+   "module": ".veldo/control_service.py",
+   "mutant_digest": "c022b3741b05311cffdec377601a7d1d85f430c263ca8c235be615b75db05f12",
+   "mutant_target_rows": {
+    "adoption/receiver-configuration-used": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/active-served-again",
+    "VELDO-0161 adoption/receiver-configuration-used"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "a4c7f2e75dae75044902592e2ba9f474ad19887a4b48fcd76acd10a88b914cd1",
+   "target_rows": [
+    "adoption/receiver-configuration-used"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/take-on-retry": true
+   },
+   "case": "adoption161-retry-reset",
+   "fix": "B9",
+   "module": ".veldo/control_service.py",
+   "mutant_digest": "aaec41c5f59ea0bba22b8c5fcea25527a50eb6d3639e4aee0416053a5fae3403",
+   "mutant_target_rows": {
+    "adoption/take-on-retry": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/take-on-retry"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "a4c7f2e75dae75044902592e2ba9f474ad19887a4b48fcd76acd10a88b914cd1",
+   "target_rows": [
+    "adoption/take-on-retry"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/prepare-checks": true
+   },
+   "case": "adoption161-remote-configuration-unchecked",
+   "fix": "B10",
+   "module": ".veldo/control_repository_provisioner.py",
+   "mutant_digest": "ed57b681e8080bea0bbc8f3e1f951917897351d4c5b61db3652a5b4a2c8909e4",
+   "mutant_target_rows": {
+    "adoption/prepare-checks": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/prepare-checks"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "7636910074f8dc03c3ba87abfecf316d3b9d506cd87b481443085225e4d09274",
+   "target_rows": [
+    "adoption/prepare-checks"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/prepare-checks": true
+   },
+   "case": "adoption161-repository-id-unchecked",
+   "fix": "B10",
+   "module": ".veldo/control_repository.py",
+   "mutant_digest": "0013ff229d7a3f2286122948a6b6f8f7bdd18149c4dc93c7c91715ad77ccd289",
+   "mutant_target_rows": {
+    "adoption/prepare-checks": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/prepare-checks"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "target_rows": [
+    "adoption/prepare-checks"
+   ]
+  },
+  {
+   "baseline_target_rows": {
+    "adoption/push-refused": true,
+    "adoption/scaffold-commit": true,
+    "adoption/signer-enrolled": true
+   },
+   "case": "adoption161-scaffold-ref-kept",
+   "fix": "B10",
+   "module": ".veldo/control_repository_provisioner.py",
+   "mutant_digest": "ecdaf865e8cbfb378639ad483daedb6b18a91e89163ce893ad568456387287f0",
+   "mutant_target_rows": {
+    "adoption/push-refused": false,
+    "adoption/scaffold-commit": false,
+    "adoption/signer-enrolled": false
+   },
+   "new_failures_beyond_baseline": [
+    "VELDO-0161 adoption/push-refused",
+    "VELDO-0161 adoption/repository-commands",
+    "VELDO-0161 adoption/scaffold-commit",
+    "VELDO-0161 adoption/signer-enrolled"
+   ],
+   "result": "killed: every target row green at baseline is red on the mutant",
+   "source_digest": "7636910074f8dc03c3ba87abfecf316d3b9d506cd87b481443085225e4d09274",
+   "target_rows": [
+    "adoption/scaffold-commit",
+    "adoption/signer-enrolled",
+    "adoption/push-refused"
+   ]
+  }
+ ],
+ "commit": "a506b4d15bba35e7776f7a5eac2043104f341626",
+ "how": "proof/VELDO-0161/run_falsifiers.py: check_teeth_mutations.py --finding 161 --worker, the baseline, each registered case with its materialized mutant substituted at the suite PRODUCTION anchor (the source never edited), the baseline again. The restart case was rerun alone after its exec was confined to the installed serving process (first run: the in-process rows made the suite process exec itself).",
+ "round": 2,
+ "schema": "veldo.falsifier_run/v1",
+ "spec_id": "VELDO-0161",
+ "summary": {
+  "killed": 36,
+  "not_judged_here": 1,
+  "registered": 37,
+  "survived": 0
+ }
+}
