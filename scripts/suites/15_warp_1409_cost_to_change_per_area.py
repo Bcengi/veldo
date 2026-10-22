@@ -1237,9 +1237,10 @@ expect("WARP-1409 AC6: THE GATE DOMAIN IS DERIVED AND IT IS REAL, which is the p
                                   "scripts/secret_inventory.py", "scripts/check_generated.sh",
                                   "scripts/check_docs.sh", "scripts/check_template_sync.sh",
                                   "scripts/check_gate_mutations.py",
-                                  ".veldo/validate.py", ".veldo/shape_gate.py",
+                                  ".veldo/control_verification.py", ".veldo/shape_gate.py",
                                   ".veldo/events.py"}
        and _W1409_GATE_CLOSURE > set(_W1409_STAGES)
+       and ".veldo/validate.py" in _W1409_GATE_CLOSURE
        and sorted(_W1409_GATE_TEXTS) == sorted(_W1409_GATE_CLOSURE)
        and ".veldo/validate_checks.py" in _W1409_GATE_CLOSURE
        and ".veldo/secret_inventory.py" in _W1409_GATE_CLOSURE)

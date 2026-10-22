@@ -141,9 +141,13 @@ def check(validator, root, rows, changed, previous, base_specs=None):
 
 
 def validate(validator, root, matched, policy=None, gate=False):
-    if gate and (policy is None or policy.BASE is None):
-        return validator.fail(REGISTER, "gate requires authority BASE; no exemption granted")
     rows = compute(validator, root, matched)
+    if gate and (policy is None or policy.BASE is None):
+        # A debt-free fresh adopter (no shortfall and no register) has no trunk to measure
+        # and nothing to ratchet, so it needs no authority base. Anything with debt does.
+        if not rows and not (root / REGISTER).exists():
+            return 0
+        return validator.fail(REGISTER, "gate requires authority BASE; no exemption granted")
     try:
         changed, previous, base_specs = push_context(root, policy)
     except (OSError, ValueError, KeyError, TypeError) as exc:

@@ -637,15 +637,18 @@ def _contracts_main(candidate, base):
     The candidate validator remains a candidate command, confined by the gate launcher.
     Only the installed policy's Git boundary and the supplied commit authorize debt.
     """
-    refused = _policy_base_refusal(base, candidate)
+    # An empty base means the checkout has no trunk (a fresh adopter): the ratchet then admits
+    # only a debt-free tree. A base that is given must be a real ancestor commit.
+    refused = _policy_base_refusal(base, candidate) if base else None
     if refused:
         print(refused)
         return 2
     policy = _sibling("veldo_contract_policy", "policy_check.py")
-    policy.BASE = base
+    policy.BASE = base or None
     debt = _sibling("veldo_contract_debt", "evidence_debt.py")
+    root = Path(candidate)
     spec = importlib.util.spec_from_file_location(
-        "veldo_candidate_contracts", Path(candidate) / ".veldo/validate.py")
+        "veldo_candidate_contracts", root / ".veldo" / "validate.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     module.evidence_debt_module = lambda: debt
