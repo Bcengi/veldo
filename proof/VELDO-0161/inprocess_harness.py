@@ -41,6 +41,10 @@ suite = suite[:start] + """            def start_service():
 """ + suite[end:]
 rep("                    return CC.send(str(workspace), packet, CE, binding_verify,",
     "                    return DEV['send'](CC, str(workspace), packet, CE, binding_verify,")
+rep("            AD = load('v161_adoption', mods / 'control_effect_executor_adoption.py')\n",
+    "            AD = load('v161_adoption', mods / 'control_effect_executor_adoption.py')\n"
+    "            AD.CC.send = lambda workspace, packet, enrollment, verify, sign, host, timeout=20: DEV['send']("
+    "AD.CC, workspace, packet, enrollment, verify, sign, host, timeout)\n")
 rep("            def process_start(pid):\n                text",
     "            def process_start(pid):\n                pid = __import__('os').getpid()\n                text")
 if len(sys.argv) > 3:

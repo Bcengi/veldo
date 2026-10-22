@@ -16,8 +16,11 @@ control_factory_setup's own adoption_signer and host_files. The VELDO-0047 autho
 control_service.install from this .veldo copy and run as the installed unit's ExecStart, a real separate
 process serving its real socket; where this host's systemd user manager cannot qualify the worker profile
 (the sandbox), installation runs with the containment qualification answered qualified, said so in the
-output, since the service under test never launches a worker. No private key byte, signature or token is
-printed or retained.
+output, since the service under test never launches a worker. The rows after the service's own judge its
+parts in this process: control_service.Service over the installed configuration and this store, with
+control_client's Authority judging each request as the socket's serving side does, so they run where no local
+socket can be made. Every ssh-keygen this suite runs is kept from any SSH agent (the fence's recording agent
+names one that reaches it). No private key byte, signature or token is printed or retained.
 """
 
 
@@ -33,6 +36,7 @@ def _v161_suite():
     import runpy
     import shutil
     import signal
+    import sqlite3
     import subprocess
     import sys
     import tempfile
@@ -211,9 +215,14 @@ def _v161_suite():
             keyfile['edge'] = protected / 'edge-telegram'
             keyfile['edge-auth'] = edge_dir / 'edge-auth'
             public = {}
+
+            def quiet():
+                """The environment every ssh-keygen of this suite runs in: never through an agent (the fence's
+                recording agent names any process that reaches one)."""
+                return {k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}
             for who, path in keyfile.items():
                 subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v161-' + who, '-f', str(path)],
-                               check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                               check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL, env=quiet())
                 public[who] = ' '.join(path.with_name(path.name + '.pub').read_text().split()[:2])
             # The adoption signer, generated as factory setup generates it, in the protected key directory.
             adoption_public = FS.adoption_signer(str(skeys)) if hasattr(FS, 'adoption_signer') else None
@@ -221,7 +230,7 @@ def _v161_suite():
 
             def sign_as(who, data, namespace='veldo-command'):
                 return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keyfile[who]), '-n', namespace], input=data,
-                                      capture_output=True, check=True, timeout=20).stdout.decode()
+                                      capture_output=True, check=True, timeout=20, env=quiet()).stdout.decode()
 
             serial = [0]
 
@@ -543,11 +552,13 @@ def _v161_suite():
                              'adoption_signer': {'key': str(adoption_key)}, 'templates': str(ROOT / 'engine'),
                              'observations': str(observations)}
 
+            signer_ids = dict(domain_uuid=DOMAIN, store_uuid=STORE, store_path=str(db), host_identity=HOST,
+                              authority_generation=1)
+
             class Signer:
                 """The adoption signer, counting every time the effect asks it for a signature."""
                 def __init__(self):
-                    self.inner = R.AdoptionSigner(str(adoption_key), S, CM, conn,
-                                                  dict(domain_uuid=DOMAIN, store_uuid=STORE, store_path=str(db)),
+                    self.inner = R.AdoptionSigner(str(adoption_key), S, CM, conn, signer_ids,
                                                   ('authority', journal_sign))
                     self.asked = []
                     self.observations = self.inner.observations
@@ -558,8 +569,47 @@ def _v161_suite():
                         return self.inner.sign(message, request)
                     return sign
 
-            def adopt(request, wait=0.0, signer=None):
-                return AD.adopt(effect_config, request, wait=wait, signer=signer)
+            def adopt(request, signer=None, send=None, config=None):
+                return AD.adopt(config or effect_config, request, signer=signer, send=send)
+
+            def unsent(*args, **kwargs):
+                """A stand-in for the take-on request that reaches no service: the record stays provisioning."""
+                return {'accepted': False, 'reason': 'not_sent_by_this_row'}
+
+            def agent_recorder():
+                """A stand-in ssh-keygen first on PATH that records, for every invocation, whether it was started
+                with an SSH agent variable, and runs the real one; SSH_AUTH_SOCK and SSH_AGENT_PID are set while it
+                is in place. Returns (enter, leave, invocations)."""
+                shim = base / 'agent-shim'
+                shim.mkdir(exist_ok=True)
+                log = shim / 'invocations.jsonl'
+                real = shutil.which('ssh-keygen')
+                (shim / 'ssh-keygen').write_text(
+                    '#!%s\nimport json, os, sys\n'
+                    'with open(%r, "a") as f:\n'
+                    '    f.write(json.dumps({"agent": [os.environ.get(k) for k in ("SSH_AUTH_SOCK", "SSH_AGENT_PID")'
+                    ' if os.environ.get(k)], "argv": sys.argv[1:3]}) + "\\n")\n'
+                    'os.execv(%r, [%r] + sys.argv[1:])\n' % (sys.executable, str(log), real, real))
+                (shim / 'ssh-keygen').chmod(0o700)
+                saved = {}
+
+                def enter():
+                    log.write_text('')
+                    for k, v in (('PATH', str(shim) + os.pathsep + os.environ.get('PATH', os.defpath)),
+                                 ('SSH_AUTH_SOCK', str(shim / 'agent.sock')), ('SSH_AGENT_PID', '1')):
+                        saved[k] = os.environ.get(k)
+                        os.environ[k] = v
+
+                def leave():
+                    for k, v in saved.items():
+                        if v is None:
+                            os.environ.pop(k, None)
+                        else:
+                            os.environ[k] = v
+
+                def invocations():
+                    return [json.loads(line) for line in log.read_text().splitlines() if line.strip()]
+                return enter, leave, invocations
 
             def prepared(label, repository, remote, path):
                 proposal, _event = PR.prepare(conn, DOMAIN, path=path, identity='fixture', remote=remote, name=label,
@@ -574,10 +624,18 @@ def _v161_suite():
             wire = W['Wire'](base / 'wire')
             with fenced(wire):
                 repos = {}
-                for label, scaffold in (('alpha', True), ('beta', False), ('wrong', False), ('scope', False),
-                                        ('other', False), ('legacy', True), ('delta', True), ('lease', False)):
+                for label, scaffold in (('alpha', True), ('beta', False), ('wrong', True), ('scope', False),
+                                        ('other', False), ('legacy', False), ('delta', True), ('lease', False),
+                                        ('landed', False), ('monitored', False), ('filtered', False),
+                                        ('crafted', False), ('unconfigured', True), ('fault', True),
+                                        ('tk-answered', True), ('gamma', True), ('tk-store', True),
+                                        ('tk-retry-x', True), ('tk-retry-y', True), ('tk-signer', True),
+                                        ('tk-signature', True), ('agent', True)):
                     path, bare = make_repository(label, scaffold)
                     remote = wire.remote(label, bare, owner='stranger' if label == 'wrong' else W['OWNER'])
+                    # The remote the repository itself is configured with (prepare checks it is the one named).
+                    if label != 'unconfigured':
+                        git(path, 'remote', 'add', 'origin', remote)
                     repos[label] = {'path': path, 'bare': bare, 'remote': remote, 'uuid': 'repository-161-' + label,
                                     'base': tip(path)}
 
@@ -590,8 +648,6 @@ def _v161_suite():
                 fixed_before = fixed_state()
                 stray_before = note(stray_path, 'repository-161-stray') if proc else {}
                 alive = [proc is not None and proc.poll() is None]
-                # With the service running, an adoption is reported once the service took it on.
-                WAIT = 30 if proc else 0
 
                 # AC1: the remote owner, checked before anything is laid and again before anything is pushed.
                 with region('adoption/remote-owner-refused'):
@@ -609,6 +665,10 @@ def _v161_suite():
                     wrong_result = adopt(rid)
                     wrong_record = record(wrong['uuid']) or {}
                     check('adoption/remote-owner-refused', [
+                        ('the repository carries the scaffold and is configured with that remote, so only the owner '
+                         'check stands between it and its adoption under another owner',
+                         PR.missing_scaffold(wrong['path'], wrong['base']) == []
+                         and PR.configured_remote(wrong['path'], 'main') == wrong['remote']),
                         ('the provisioner refuses a remote under another owner before laying anything',
                          prepare_refusal == 'binding_mismatch:remote_owner' and laid == []),
                         ('the settled adoption of it refuses binding_mismatch:remote_owner',
@@ -619,7 +679,9 @@ def _v161_suite():
                          CE.read_binding(wrong['path']) is None
                          and not any(s.get('repository') == wrong['uuid'] for s in signature_rows())
                          and S.bound_repository(conn, DOMAIN, wrong['uuid']) is None
-                         and tip(wrong['bare']) == wrong['base'])])
+                         and tip(wrong['bare']) == wrong['base']),
+                        ('its record names no other owner\'s remote as adopted',
+                         (wrong_record.get('remote') or {}).get('owner') is None)])
 
                 # AC1: the effect checks the settlement before it asks the adoption signer for anything.
                 with region('adoption/settlement-before-signature'):
@@ -650,26 +712,27 @@ def _v161_suite():
                         ('each refusal is distinct', len({o.get('reason') for o, _a in cases.values()}) == 4)])
 
                 # AC1: the adoption signer judges, itself, that a settled decision names the repository it signs.
-                with region('adoption/signer-scope'):
+                with region('adoption/signer-scope', 'adoption/signer-no-agent'):
                     scope = repos['scope']
                     scope_proposal = prepared('scope', scope['uuid'], scope['remote'], scope['path'])
                     scope_settled, _r, _ = settle('A-scope', scope_proposal)
                     other_rid, _r, _ = settle('A-other-unadopted', dict(proposal, name='other-pending'), choice=None)
-                    signer = R.AdoptionSigner(str(adoption_key), S, CM, conn,
-                                              dict(domain_uuid=DOMAIN, store_uuid=STORE, store_path=str(db)),
+                    signer = R.AdoptionSigner(str(adoption_key), S, CM, conn, signer_ids, ('authority', journal_sign))
+                    # A signer pinned below the store's own authority generation.
+                    behind = R.AdoptionSigner(str(adoption_key), S, CM, conn, dict(signer_ids, authority_generation=0),
                                               ('authority', journal_sign))
 
-                    def binding_bytes(path, repository, enrolled_by='adoption-signer'):
-                        return CE.binding_signed_bytes({
+                    def binding_bytes(path, repository, enrolled_by='adoption-signer', **fields):
+                        return CE.binding_signed_bytes(dict({
                             'schema': CE.BINDING_SCHEMA, 'repository_uuid': repository,
                             'repository_root_commit': CE.root_commits(path), 'clone_uuid': 'clone-' + repository,
                             'domain_uuid': DOMAIN, 'store_uuid': STORE, 'store_path': os.path.realpath(str(db)),
                             'host_identity': HOST, 'authority_generation': 1, 'enrolled_at': 1.0,
-                            'enrolled_by': enrolled_by})
+                            'enrolled_by': enrolled_by}, **fields))
 
-                    def attempt(data, rid):
+                    def attempt(data, rid, by=None):
                         try:
-                            return ('signed', signer.sign(data, rid))
+                            return ('signed', (by or signer).sign(data, rid))
                         except R.Refused as error:
                             return ('refused', error.code)
                         except Exception as error:  # noqa: BLE001 - anything else is not a named refusal
@@ -684,6 +747,20 @@ def _v161_suite():
                         'not a binding': attempt(S.canonical_bytes({'operation': 'note', 'repository': scope['uuid']}),
                                                  scope_settled),
                         'a request that is no decision': attempt(binding_bytes(scope['path'], scope['uuid']), 'nothing')}
+                    # Each coordinate the signer pins, wrong by itself, refused by its own name.
+                    pinned = {
+                        'another store': ('signature_refused:scope:store', attempt(
+                            binding_bytes(scope['path'], scope['uuid'], store_uuid='store-elsewhere'), scope_settled)),
+                        'another repository\'s root commits': ('signature_refused:scope:repository_identity', attempt(
+                            binding_bytes(scope['path'], scope['uuid'], repository_root_commit=[other['base']]),
+                            scope_settled)),
+                        'another host': ('signature_refused:scope:host', attempt(
+                            binding_bytes(scope['path'], scope['uuid'], host_identity='host-elsewhere'), scope_settled)),
+                        'another generation': ('signature_refused:scope:generation', attempt(
+                            binding_bytes(scope['path'], scope['uuid'], authority_generation=2), scope_settled)),
+                        'a generation below the store\'s': ('signature_refused:scope:generation', attempt(
+                            binding_bytes(scope['path'], scope['uuid'], authority_generation=0), scope_settled,
+                            by=behind))}
                     after, signed_after = journal(), signature_rows()
                     control = attempt(binding_bytes(scope['path'], scope['uuid']), scope_settled)
                     control_rows = [s for s in signature_rows() if s.get('repository') == scope['uuid']]
@@ -692,6 +769,8 @@ def _v161_suite():
                         ('%s: refused signature_refused by name' % case,
                          outcome[0] == 'refused' and outcome[1].startswith('signature_refused:'))
                         for case, outcome in scoped.items()] + [
+                        ('%s: refused %s and nothing else' % (case, code), outcome == ('refused', code))
+                        for case, (code, outcome) in pinned.items()] + [
                         ('no refusal signs or journals anything', after == before and signed_after == signed_before),
                         ('control: the binding of the repository its settled decision names is signed',
                          control[0] == 'signed'
@@ -701,13 +780,35 @@ def _v161_suite():
                          and control_rows[0].get('binding_digest') == 'sha256:' + hashlib.sha256(
                              binding_bytes(scope['path'], scope['uuid'])).hexdigest()),
                         ('a decision is signed for once', again == ('refused', 'signature_refused:already_signed'))])
+                    # Every ssh-keygen the signer and the effect run, with an SSH agent named in the environment.
+                    agent_repo = repos['agent']
+                    agent_rid, _r, _ = settle('A-agent', prepared('agent', agent_repo['uuid'], agent_repo['remote'],
+                                                                  agent_repo['path']))
+                    enter, leave, invocations = agent_recorder()
+                    enter()
+                    try:
+                        derived = R.public_key(str(adoption_key))
+                        listed = R.enrolled(signers_text, str(adoption_key))
+                        agent_signed = attempt(binding_bytes(agent_repo['path'], agent_repo['uuid']), agent_rid)
+                        journal_signed = AD._ssh_signer(installed['journal_key'], 'veldo-journal')(b'v161')
+                    finally:
+                        leave()
+                    asked = invocations()
+                    check('adoption/signer-no-agent', [
+                        ('the signer derives its key, finds its line and signs, the effect signs with the journal key',
+                         derived == adoption_public and listed is True and agent_signed[0] == 'signed'
+                         and 'SSH SIGNATURE' in journal_signed),
+                        ('each ran ssh-keygen', ['-y', '-f'] in [a['argv'] for a in asked]
+                         and sum(a['argv'] == ['-Y', 'sign'] for a in asked) >= 2),
+                        ('no ssh-keygen was started with an SSH agent in its environment, though one was named',
+                         bool(asked) and all(a['agent'] == [] for a in asked))])
 
                 # AC1: a repository carrying the scaffold is adopted with nothing committed; AC2: taken on running.
                 with region('adoption/scaffold-present'):
                     alpha = repos['alpha']
                     alpha_proposal = prepared('alpha', alpha['uuid'], alpha['remote'], alpha['path'])
                     alpha_rid, alpha_receipt, _ = settle('A-alpha', alpha_proposal)
-                    alpha_result = adopt(alpha_rid, wait=WAIT)
+                    alpha_result = adopt(alpha_rid)
                     alpha_record = record(alpha['uuid']) or {}
                     check('adoption/scaffold-present', [
                         ('the proposal names no scaffold commit and nothing is laid',
@@ -741,7 +842,7 @@ def _v161_suite():
                     unmoved = (tip(beta['path']) == beta['base'] and tip(beta['bare']) == beta['base'])
                     beta_rid, beta_receipt, _ = settle('A-beta', beta_proposal)
                     pushes_before = len(wire.invocations())
-                    beta_result = adopt(beta_rid, wait=WAIT)
+                    beta_result = adopt(beta_rid)
                     beta_record = record(beta['uuid']) or {}
                     new = git(beta['path'], 'rev-list', '%s..main' % beta['base']).split()
                     pushes = [i for i in wire.invocations()[pushes_before:]
@@ -764,6 +865,7 @@ def _v161_suite():
                         ('the remote holds exactly that commit', tip(beta['bare']) == laid_commit),
                         ('it was pushed through the identity profile', len(pushes) >= 1),
                         ('no hook of the repository ran', not hooked.exists()),
+                        ('the ref the commit was recorded under is removed once it was pushed', refs(beta['path']) == []),
                         ('the record names the commit the proposal named',
                          beta_record.get('scaffold_commit') == laid_commit == beta_result.get('scaffold_commit'))])
 
@@ -787,8 +889,9 @@ def _v161_suite():
                          row.get('request') == rec.get('request') and row.get('settlement') == rec.get('settlement')
                          and row.get('binding_digest') == CE.binding_digest(binding) == rec.get('enrollment'))
                         for label, binding, row, rec in journaled] + [
-                        ('every signature the signer made is journaled: the two adoptions and the scope control',
-                         sorted(rows) == sorted([repos['alpha']['uuid'], repos['beta']['uuid'], repos['scope']['uuid']]))])
+                        ('every signature the signer made is journaled: the two adoptions, the scope control and the '
+                         'no-agent control', sorted(rows) == sorted([repos[label]['uuid'] for label in
+                                                                    ('alpha', 'beta', 'scope', 'agent')]))])
                     legacy = repos['legacy']
                     legacy_trust = base / 'ht' / 'legacy_trust.json'
                     legacy_signers = base / 'ht' / 'legacy_signers'
@@ -797,17 +900,24 @@ def _v161_suite():
                                                             enrollment_signers=str(legacy_signers))))
                     legacy_proposal = prepared('legacy', legacy['uuid'], legacy['remote'], legacy['path'])
                     legacy_rid, _r, _ = settle('A-legacy', legacy_proposal)
-                    legacy_result = AD.adopt(dict(effect_config, host_trust=str(legacy_trust)), legacy_rid)
+                    # A factory set up before the adoption signer existed: no line for it and no key.
+                    legacy_result = adopt(legacy_rid, config=dict(
+                        effect_config, host_trust=str(legacy_trust),
+                        adoption_signer={'key': str(base / 'no-adoption-key' / 'adoption-signer')}))
                     installed_signers = Path(service_config['enrollment_signers']).read_text()
                     check('adoption/signer-enrolled', [
                         ('setup\'s enrollment signers name the adoption signer\'s key for enrollment',
                          adoption_public is not None and R.enrolled(signers_text, str(adoption_key))
                          and 'adoption-signer namespaces="veldo-enrollment" %s' % adoption_public in signers_text),
                         ('the installed service trusts the same signers', installed_signers == signers_text),
-                        ('a host whose enrollment signers lack it refuses signature_refused:not_enrolled',
-                         legacy_result.get('reason') == 'signature_refused:not_enrolled'
+                        ('a host whose enrollment signers lack it, and that has no key for it, refuses '
+                         'signature_refused:not_enrolled', legacy_proposal.get('scaffold_commit') is not None
+                         and legacy_result.get('reason') == 'signature_refused:not_enrolled'
                          and (record(legacy['uuid']) or {}).get('state') == 'failed'
-                         and CE.read_binding(legacy['path']) is None)])
+                         and CE.read_binding(legacy['path']) is None),
+                        ('it refuses before the branch moves or the scaffold is pushed, and removes the ref it was '
+                         'recorded under', tip(legacy['path']) == legacy['base'] and tip(legacy['bare']) == legacy['base']
+                         and refs(legacy['path']) == [])])
 
                 # A push the remote refuses, named, with nothing signed or bound.
                 with region('adoption/push-refused'):
@@ -832,7 +942,8 @@ def _v161_suite():
                         ('the remote keeps the other push and nothing is signed, enrolled or bound',
                          tip(lease['bare']) == moved and CE.read_binding(lease['path']) is None
                          and S.bound_repository(conn, DOMAIN, lease['uuid']) is None
-                         and not any(x.get('repository') == lease['uuid'] for x in signature_rows()))])
+                         and not any(x.get('repository') == lease['uuid'] for x in signature_rows())),
+                        ('the ref the refused commit was recorded under is removed', refs(lease['path']) == [])])
 
                 with region('adoption/observed'):
                     events = [json.loads(line) for line in observations.read_text().splitlines()]
@@ -854,7 +965,7 @@ def _v161_suite():
                         ('refusals are named by class: remote owner, push, no settled decision, signature',
                          {'remote_owner_mismatch', 'push_refused', 'no_settled_decision', 'signature_refused'} <= reasons),
                         ('metrics count refusals by reason and adoption signatures issued',
-                         metrics.get('signatures') == 3
+                         metrics.get('signatures') == 4
                          and metrics.get('failed_by_reason') == {'remote_owner_mismatch': 1, 'push_refused': 1,
                                                                  'signature_refused': 1}
                          and (metrics.get('refused_by_reason') or {}).get('no_settled_decision') == 4),
@@ -900,17 +1011,20 @@ def _v161_suite():
                              and beta_record.get('state') == 'active'),
                             ('the service observes taking each on, naming the decision and the instance',
                              all((take_ons.get(repos[label]['uuid']) or {}).get('request') == (record(repos[label]['uuid']) or {}).get('request')
-                                 and (take_ons.get(repos[label]['uuid']) or {}).get('instance') == instance.get('token')
-                                 for label in ('alpha', 'beta')))])
+                                 and (take_ons.get(repos[label]['uuid']) or {}).get('instance_id') == instance.get('instance_id')
+                                 for label in ('alpha', 'beta'))),
+                            ('each adoption was answered by the running service before the effect returned: active, '
+                             'no refusal', all(r.get('state') == 'active' and r.get('reason') is None
+                                               for r in (alpha_result, beta_result)))])
                         taken = [(record(repos[label]['uuid']) or {}).get('taken_on') or {} for label in ('alpha', 'beta')]
                         check('adoption/same-process', [
                             ('the service process ran throughout', all(alive) and proc.poll() is None),
                             ('it is the same process: pid and kernel start time unchanged',
                              proc.pid == pid and process_start(pid) == started),
-                            ('the instance serving now is the one that served before (token and serving time)',
-                             bool(instance.get('token')) and served.get('instance') == instance),
+                            ('the instance serving now is the one that served before (instance_id and serving time)',
+                             bool(instance.get('instance_id')) and served.get('instance') == instance),
                             ('each record names that same instance as the one that took it on',
-                             all(t.get('token') == instance.get('token') and t.get('pid') == pid
+                             all(t.get('instance_id') == instance.get('instance_id') and t.get('pid') == pid
                                  and t.get('process_start') == started
                                  and t.get('serving_since') == instance.get('serving_since') for t in taken)),
                             ('nothing was reinstalled: the fixed executable, the unit and service.json are unchanged',
@@ -936,7 +1050,7 @@ def _v161_suite():
                         delta = repos['delta']
                         delta_proposal = prepared('delta', delta['uuid'], delta['remote'], delta['path'])
                         delta_rid, _r, _ = settle('A-delta', delta_proposal)
-                        delta_result = adopt(delta_rid, wait=1.0)
+                        delta_result = adopt(delta_rid)
                         delta_waiting = (record(delta['uuid']) or {}).get('state')
                         restarted = start_service()
                         delta_state = wait_state(delta['uuid'])
@@ -945,18 +1059,442 @@ def _v161_suite():
                         events = [json.loads(line) for line in observations.read_text().splitlines()]
                         metrics = R.metrics(conn, events)
                         check('adoption/not-taken-on-named', [
-                            ('with no service running the adoption reports not_taken_on:timeout and stays provisioning',
-                             delta_result.get('reason') == 'not_taken_on:timeout' and delta_waiting == 'provisioning'
+                            ('with no service running the adoption reports not_taken_on:authority_unavailable and stays '
+                             'provisioning', delta_result.get('reason') == 'not_taken_on:authority_unavailable'
+                             and delta_waiting == 'provisioning'
                              and any(e.get('reason') == 'not_taken_on' and e.get('repository') == delta['uuid']
                                      for e in events)),
                             ('the next instance takes it on at its start, named as itself',
                              delta_state == 'active' and delta_taken.get('pid') == restarted.pid
-                             and delta_taken.get('token') not in (None, instance.get('token'))),
+                             and delta_taken.get('instance_id') not in (None, instance.get('instance_id'))),
                             ('a repository adopted before the restart is served again',
                              alpha_again.get('accepted') is True and result_of(alpha_again).get('ok') is True),
                             ('metrics count the repositories adopted and taken on by the running service',
                              metrics.get('adopted') == 3 and metrics.get('taken_on') == 3)])
                         stop_service(restarted)
+
+                # ---------------------------------------------------------------------------------------------
+                # The effect's own refusals, before anything is moved or pushed, and its named outcomes.
+                # ---------------------------------------------------------------------------------------------
+                fixture_identity = ('Fixture', 'fixture@example.invalid')
+                record_identity = PR.identity_record(conn, DOMAIN, 'fixture')
+
+                def plumbing(path, *args, stdin=None):
+                    done = GP.run(['git', '-C', str(path), *args], capture_output=True, text=True, timeout=60,
+                                  input=stdin, identity=fixture_identity)
+                    if done.returncode:
+                        raise RuntimeError('git %s: %s' % (args[0], done.stderr.strip()[:300]))
+                    return done.stdout.strip()
+
+                def nothing_adopted(repo, uuid=None):
+                    uuid = uuid or repo['uuid']
+                    return (CE.read_binding(repo['path']) is None and S.bound_repository(conn, DOMAIN, uuid) is None
+                            and not any(x.get('repository') == uuid for x in signature_rows()))
+
+                def hand_proposal(repo, uuid, scaffold_commit=None, remote=None):
+                    return R.adoption_proposal(repository=uuid, name=uuid.rsplit('-', 1)[-1], owner='owner',
+                                               identity='fixture', path=repo['path'], remote=remote or repo['remote'],
+                                               default_branch='main', base_commit=repo['base'],
+                                               scaffold_commit=scaffold_commit)
+
+                with region('adoption/unknown-outcome'):
+                    fault = repos['fault']
+                    fault_rid, _r, _ = settle('A-fault', prepared('fault', fault['uuid'], fault['remote'], fault['path']))
+                    real_configured = AD.P.check_configured_remote
+
+                    def faulty(*args, **kwargs):
+                        raise RuntimeError('an unexpected fault in a step')
+                    AD.P.check_configured_remote = faulty
+                    try:
+                        try:
+                            fault_result = adopt(fault_rid)
+                        except Exception as error:  # noqa: BLE001 - a raise is what the row refuses
+                            fault_result = {'raised': type(error).__name__}
+                    finally:
+                        AD.P.check_configured_remote = real_configured
+                    fault_record = record(fault['uuid']) or {}
+                    check('adoption/unknown-outcome', [
+                        ('an unexpected fault is reported, never raised', 'raised' not in fault_result
+                         and fault_result.get('ok') is False),
+                        ('it is named unknown_outcome:<type>', fault_result.get('reason') == 'unknown_outcome:RuntimeError'),
+                        ('the record is failed and names it, never left provisioning',
+                         fault_record.get('state') == 'failed' and fault_record.get('reason') == 'unknown_outcome:RuntimeError'),
+                        ('nothing is signed, enrolled or bound', nothing_adopted(fault))])
+
+                with region('adoption/push-unconfirmed'):
+                    landed = repos['landed']
+                    # The remote accepts the push and then moves its branch back: the push landed and the branch
+                    # does not read back as the commit.
+                    receive = Path(landed['bare']) / 'hooks' / 'post-receive'
+                    receive.write_text('#!/bin/sh\nexec git update-ref refs/heads/main %s\n' % landed['base'])
+                    receive.chmod(0o700)
+                    landed_proposal = prepared('landed', landed['uuid'], landed['remote'], landed['path'])
+                    landed_rid, _r, _ = settle('A-landed', landed_proposal)
+                    try:
+                        landed_result = adopt(landed_rid)
+                    finally:
+                        receive.unlink()
+                    landed_record = record(landed['uuid']) or {}
+                    received = GP.run(['git', '-C', landed['bare'], 'cat-file', '-e',
+                                       '%s^{commit}' % landed_proposal.get('scaffold_commit')], capture_output=True)
+                    check('adoption/push-unconfirmed', [
+                        ('the remote received the commit and its branch does not hold it',
+                         received.returncode == 0 and tip(landed['bare']) == landed['base']),
+                        ('the adoption reports push_unconfirmed:remote, not a refused push',
+                         landed_result.get('ok') is False and landed_result.get('reason') == 'push_unconfirmed:remote'),
+                        ('its record is failed and names it, a class of its own',
+                         landed_record.get('state') == 'failed' and landed_record.get('reason') == 'push_unconfirmed:remote'
+                         and R.reason('push_unconfirmed:remote') == 'push_unconfirmed'),
+                        ('nothing is signed, enrolled or bound', nothing_adopted(landed))])
+
+                with region('adoption/repository-commands'):
+                    monitored, filtered = repos['monitored'], repos['filtered']
+                    marker = base / 'repository-command-ran'
+                    command = base / 'repository-command'
+                    command.write_text('#!/bin/sh\necho ran >> %s\ncat\n' % marker)
+                    command.chmod(0o700)
+                    # Laid when the owner was asked; the command is planted in the repository afterwards.
+                    monitored_commit = PR.lay_scaffold(monitored['path'], monitored['base'], record_identity,
+                                                       str(ROOT / 'engine'), 'refs/veldo/adoption/' + monitored['uuid'])
+                    git(monitored['path'], 'config', 'core.fsmonitor', str(command))
+                    git(filtered['path'], 'config', 'filter.v161.smudge', str(command))
+                    PR.git(monitored['path'], 'status', '--porcelain')
+                    status_ran = marker.exists()
+
+                    def prepare_code(repo, uuid, remote=None):
+                        try:
+                            prepared(uuid.rsplit('-', 1)[-1], uuid, remote or repo['remote'], repo['path'])
+                            return None
+                        except PR.Refused as error:
+                            return error.code
+                    monitored_prepare = prepare_code(monitored, 'repository-161-monitored2')
+                    filtered_prepare = prepare_code(filtered, filtered['uuid'])
+                    monitored_refs = refs(monitored['path'])
+                    monitored_rid, _r, _ = settle('A-monitored', hand_proposal(monitored, monitored['uuid'],
+                                                                                monitored_commit))
+                    monitored_result = adopt(monitored_rid)
+                    check('adoption/repository-commands', [
+                        ('a local step runs no fsmonitor of the repository (git status with one configured)',
+                         not status_ran),
+                        ('prepare refuses a repository whose configuration names an fsmonitor, laying nothing',
+                         monitored_prepare == 'invalid_input:repository_command:core.fsmonitor'
+                         and monitored_refs == ['refs/veldo/adoption/' + monitored['uuid']]),
+                        ('prepare refuses one whose configuration names a filter command, laying nothing',
+                         filtered_prepare == 'invalid_input:repository_command:filter.v161.smudge'
+                         and refs(filtered['path']) == []),
+                        ('the settled adoption of a repository that came to name one refuses it before the branch moves',
+                         monitored_result.get('reason') == 'invalid_input:repository_command:core.fsmonitor'
+                         and (record(monitored['uuid']) or {}).get('state') == 'failed'
+                         and tip(monitored['path']) == monitored['base'] and tip(monitored['bare']) == monitored['base']
+                         and nothing_adopted(monitored) and refs(monitored['path']) == []),
+                        ('no command of the repository ran', not marker.exists())])
+
+                with region('adoption/scaffold-problems'):
+                    crafted = repos['crafted']
+                    cpath, cbase = crafted['path'], crafted['base']
+                    good = PR.lay_scaffold(cpath, cbase, record_identity, str(ROOT / 'engine'), 'refs/veldo/elsewhere/crafted')
+                    tree = git(cpath, 'rev-parse', good + '^{tree}')
+                    side = plumbing(cpath, 'commit-tree', cbase + '^{tree}', '-p', cbase, '-m', 'side')
+                    on_side = plumbing(cpath, 'commit-tree', tree, '-p', side, '-m', 'the scaffold on another parent')
+                    blob = plumbing(cpath, 'hash-object', '-w', '--stdin', stdin='changed\n')
+                    entries = git(cpath, 'ls-tree', tree).splitlines()
+                    changed = plumbing(cpath, 'mktree', stdin=''.join(
+                        ('100644 blob %s\tREADME\n' % blob) if entry.split('\t', 1)[1] == 'README' else entry + '\n'
+                        for entry in entries))
+                    modifying = plumbing(cpath, 'commit-tree', changed, '-p', cbase, '-m', 'a scaffold that modifies')
+                    crafted_cases = {
+                        'a commit not recorded for the repository': ('a', good, None, 'stale_subject:scaffold_commit_not_named'),
+                        'a commit on another parent than the base': ('b', on_side, on_side, 'stale_subject:scaffold_parent'),
+                        'a commit that modifies a file': ('c', modifying, modifying, 'stale_subject:scaffold_changes_files')}
+                    crafted_outcomes = {}
+                    for case, (suffix, commit, recorded, expected) in crafted_cases.items():
+                        uuid = 'repository-161-crafted-' + suffix
+                        if recorded:
+                            git(cpath, 'update-ref', 'refs/veldo/adoption/' + uuid, recorded)
+                        rid, _r, _ = settle('A-crafted-' + suffix, hand_proposal(crafted, uuid, commit))
+                        crafted_outcomes[case] = (adopt(rid), record(uuid) or {}, expected, uuid)
+                    check('adoption/scaffold-problems', [
+                        ('%s: refused %s, its record failed naming it' % (case, expected),
+                         outcome.get('reason') == expected and rec.get('state') == 'failed' and rec.get('reason') == expected)
+                        for case, (outcome, rec, expected, uuid) in crafted_outcomes.items()] + [
+                        ('the branch never moved and nothing was pushed', tip(cpath) == cbase and tip(crafted['bare']) == cbase),
+                        ('nothing is signed, enrolled or bound', all(nothing_adopted(crafted, uuid)
+                                                                     for _o, _r, _e, uuid in crafted_outcomes.values()))])
+
+                with region('adoption/prepare-checks'):
+                    unconfigured = repos['unconfigured']
+                    not_configured = prepare_code(unconfigured, unconfigured['uuid'])
+                    another_remote = prepare_code(crafted, 'repository-161-crafted-d', remote=repos['landed']['remote'])
+                    not_ids = {text: prepare_code(crafted, text) for text in ('crafted/e', '..', 'crafted.lock', 'a..b')}
+                    unconfigured_rid, _r, _ = settle('A-unconfigured', hand_proposal(unconfigured, unconfigured['uuid']))
+                    unconfigured_result = adopt(unconfigured_rid)
+                    check('adoption/prepare-checks', [
+                        ('a remote the repository is not configured with is refused, laying nothing',
+                         not_configured == 'invalid_input:remote_not_configured' and refs(unconfigured['path']) == []),
+                        ('so is a remote other than the one it is configured with',
+                         another_remote == 'invalid_input:remote_not_configured'),
+                        ('a repository id that is not one ref component is refused, laying nothing',
+                         all(code == 'invalid_input:proposal:repository' for code in not_ids.values())
+                         and not any(ref.startswith('refs/veldo/adoption/crafted') or '..' in ref
+                                     for ref in refs(cpath))),
+                        ('the settled adoption of it refuses the remote again, before anything is signed',
+                         unconfigured_result.get('reason') == 'invalid_input:remote_not_configured'
+                         and (record(unconfigured['uuid']) or {}).get('state') == 'failed'
+                         and nothing_adopted(unconfigured))])
+
+                # ---------------------------------------------------------------------------------------------
+                # The service's judgment in this process: a Service over the installed configuration and this
+                # store, and control_client's Authority judging each request as the socket's serving side does.
+                # ---------------------------------------------------------------------------------------------
+                inproc_config = copy.deepcopy(service_config)
+                inproc_config['observations'] = str(base / 'inproc-observations.jsonl')
+
+                def in_process():
+                    return CS.Service(copy.deepcopy(inproc_config), conn)
+
+                def judged(svc):
+                    authority = CC.Authority(service_config['store_uuid'], DOMAIN, service_config['store_path'], CS.E,
+                                             svc.verify, HOST, svc.apply, watermark=svc.watermark, minimum_generation=1,
+                                             context=True)
+
+                    def send_to(workspace, packet, enrollment, verify, sign, host_identity, timeout=30.0):
+                        enrollment.resolve_store(workspace, verify, host_identity)
+                        binding = enrollment.read_binding(workspace)
+                        return authority.judge(CC.build_request(workspace, binding, packet, sign), os.getuid())
+                    return send_to
+
+                def receiver_path(repository):
+                    return os.path.join(os.path.dirname(config_path),
+                                        'receiver-%s.json' % hashlib.sha256(repository.encode()).hexdigest()[:16])
+
+                def take_on_packet(repo, request):
+                    return {'operation': 'take_on', 'repository_uuid': repo['uuid'], 'request': request}
+
+                with region('adoption/take-on-answered', 'adoption/receiver-configuration-used'):
+                    svc = in_process()
+                    answered = repos['tk-answered']
+                    answered_rid, _r, _ = settle('A-tk-answered', prepared('tk-answered', answered['uuid'],
+                                                                         answered['remote'], answered['path']))
+                    answered_result = adopt(answered_rid, send=judged(svc))
+                    answered_record = record(answered['uuid']) or {}
+                    answered_verify = trust.verifier('adoption-signer', answered['path'])
+                    by_member = judged(svc)(answered['path'], take_on_packet(answered, answered_rid), CS.E,
+                                            answered_verify, lambda d: sign_as('steward', d, 'veldo-adoption-take-on'), HOST)
+                    by_adoption_key = judged(svc)(answered['path'], take_on_packet(answered, answered_rid), CS.E,
+                                                  answered_verify, AD._ssh_signer(str(adoption_key), 'veldo-adoption-take-on'),
+                                                  HOST)
+                    stray_take_on = judged(svc)(stray_path, {'operation': 'take_on', 'repository_uuid': 'repository-161-stray',
+                                                             'request': answered_rid}, CS.E, binding_verify,
+                                                AD._ssh_signer(installed['journal_key'], 'veldo-adoption-take-on'), HOST)
+                    check('adoption/take-on-answered', [
+                        ('the effect hands the record to the service and gets its answer: active, no refusal',
+                         answered_result.get('state') == 'active' and answered_result.get('reason') is None),
+                        ('the record is active, naming the instance that answered',
+                         answered_record.get('state') == 'active'
+                         and (answered_record.get('taken_on') or {}).get('instance_id') == svc.instance['instance_id']),
+                        ('that instance serves it from then on', answered['uuid'] in svc.repositories),
+                        ('a take-on request signed by a member rather than the journal key is refused',
+                         by_member.get('accepted') is False and by_member.get('reason') == 'command_signature_invalid'),
+                        ('so is one signed by the adoption signer\'s key',
+                         by_adoption_key.get('accepted') is False
+                         and by_adoption_key.get('reason') == 'command_signature_invalid'),
+                        ('a take-on from a repository no record names takes nothing on',
+                         result_of(stray_take_on).get('ok') is False
+                         and result_of(stray_take_on).get('reason') == 'not_taken_on:no_record'
+                         and 'repository-161-stray' not in svc.repositories)])
+                    # The launch receiver, enrolled as the installation's receiver principal, run over the receiver
+                    # configuration the service wrote for the adopted repository.
+                    keyfile['launch-receiver'] = keys / 'launch-receiver'
+                    subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v161-launch-receiver', '-f',
+                                    str(keyfile['launch-receiver'])], check=True, capture_output=True, timeout=20,
+                                   stdin=subprocess.DEVNULL, env=quiet())
+                    admin('steward', 'enroll_principal', {
+                        'principal': 'launch-receiver', 'principal_type': 'service', 'roles': [],
+                        'public_key': ' '.join(Path(str(keyfile['launch-receiver']) + '.pub').read_text().split()[:2]),
+                        'independence_group': 'launch-receiver', 'scope': '*'}, enrollee='launch-receiver')
+                    written = (answered_record.get('taken_on') or {}).get('receiver_config')
+                    dispatch_id = 'dispatch-v161-receiver'
+                    contract = {'dispatch_id': dispatch_id, 'unit': 'VELDO-9161', 'station': 'build',
+                                'repository': answered['uuid'], 'domain': DOMAIN, 'capability': {'adapter': 'v161'}}
+                    fixture('dispatch:' + dispatch_id, 'dispatch', {
+                        'schema': 'veldo.dispatch/v1', 'dispatch_id': dispatch_id, 'state': 'prepared',
+                        'contract': contract, 'contract_digest': 'sha256:' + '0' * 64, 'receiver': None,
+                        'process': None, 'termination': None, 'refusal': None, 'stop': None, 'reason': None,
+                        'history': []})
+                    launched = subprocess.run([sys.executable, service_config['receiver']['executable'], str(written)],
+                                              input=json.dumps({'contract': contract}) + '\n', capture_output=True,
+                                              text=True, timeout=120, env=quiet())
+                    emitted_events = [json.loads(line) for line in launched.stdout.splitlines() if line.strip()]
+                    refused = (entity('dispatch:' + dispatch_id) or {}).get('data') or {}
+                    last = conn.execute('SELECT principal, command_id FROM journal ORDER BY seq DESC LIMIT 1').fetchone()
+                    check('adoption/receiver-configuration-used', [
+                        ('the service wrote it for the adopted repository', bool(written) and Path(written).is_file()
+                         and json.loads(Path(written).read_text()).get('repository') == answered['uuid']),
+                        ('the receiver run over it judges a packet as the adopted repository\'s',
+                         len(emitted_events) == 1 and emitted_events[0].get('event') == 'refused'
+                         and emitted_events[0].get('refusal') == 'binding_mismatch:contract_digest'
+                         and emitted_events[0].get('repository') == answered['uuid']
+                         and emitted_events[0].get('configuration') == os.path.realpath(str(written))),
+                        ('and records its refusal in this store, as the installation\'s receiver principal',
+                         refused.get('state') == 'refused' and refused.get('refusal') == 'binding_mismatch:contract_digest'
+                         and last is not None and last[0] == 'launch-receiver'
+                         and last[1].startswith('dispatch/refuse/' + dispatch_id))])
+
+                with region('adoption/take-on-write-first'):
+                    gamma = repos['gamma']
+                    gamma_rid, _r, _ = settle('A-gamma', prepared('gamma', gamma['uuid'], gamma['remote'], gamma['path']))
+                    gamma_result = adopt(gamma_rid, send=unsent)
+                    svc = in_process()
+                    real_write = CS.REPO.write
+                    write_outcomes = {}
+                    for label, fault in (('sqlite3.Error', sqlite3.OperationalError('database is locked')),
+                                         ('StoreRefused', CS.S.StoreRefused('stale_version', 'the record moved'))):
+                        def failing(store, conn_, journal_, repository, state, _fault=fault, **kwargs):
+                            if state == 'active':
+                                raise _fault
+                            return real_write(store, conn_, journal_, repository, state, **kwargs)
+                        CS.REPO.write = failing
+                        try:
+                            svc.adoption_faults.clear()
+                            observation = svc.take_on_record(record(gamma['uuid']))
+                        finally:
+                            CS.REPO.write = real_write
+                        write_outcomes[label] = (observation.get('refusal'), gamma['uuid'] in svc.repositories,
+                                                 gamma['uuid'] in svc.config['receiver']['configs'],
+                                                 os.path.lexists(receiver_path(gamma['uuid'])),
+                                                 (record(gamma['uuid']) or {}).get('state'))
+                    check('adoption/take-on-write-first', [
+                        ('the adoption left it provisioning for a service', gamma_result.get('state') == 'provisioning'),
+                        ('a store fault writing it active serves nothing and keeps no receiver configuration',
+                         write_outcomes['sqlite3.Error'] == ('not_taken_on:unknown_outcome:OperationalError', False, False,
+                                                             False, 'provisioning')),
+                        ('a refused write of it active serves nothing either, and it is failed by name',
+                         write_outcomes['StoreRefused'] == ('not_taken_on:stale_version', False, False, False, 'failed'))])
+
+                with region('adoption/take-on-refusals'):
+                    svc = in_process()
+
+                    def provisioning_record(repo, uuid, request, settlement, enrollment):
+                        R.write(S, conn, ('authority', journal_sign), uuid, 'provisioning', step='settled',
+                                domain_uuid=DOMAIN, name=uuid, identity='fixture', path=repo['path'],
+                                remote={'url': repo['remote'], 'owner': W['OWNER'], 'default_branch': 'main'},
+                                request=request, settlement=settlement, scaffold_commit=None, base_commit=repo['base'],
+                                enrollment=enrollment, reason=None)
+                    # The decision: the record names a request no owner settled.
+                    signature_repo = repos['tk-signature']
+                    provisioning_record(signature_repo, 'repository-161-tk-decision', unanswered, None, 'sha256:' + '1' * 64)
+                    # The signature: a settled decision names it, no adoption signature was journaled.
+                    signature_rid, _r, _ = settle('A-tk-signature', prepared('tk-signature', signature_repo['uuid'],
+                                                                           signature_repo['remote'], signature_repo['path']))
+                    provisioning_record(signature_repo, signature_repo['uuid'], signature_rid,
+                                        R.settled(S, CM, conn, signature_rid)['settlement_id'], 'sha256:' + '2' * 64)
+                    # The binding's signer: a settled decision and a journaled signature, the binding the owner's.
+                    signer_repo = repos['tk-signer']
+                    signer_rid, _r, _ = settle('A-tk-signer', prepared('tk-signer', signer_repo['uuid'], signer_repo['remote'],
+                                                                     signer_repo['path']))
+                    owner_binding = CE.enroll(signer_repo['path'], DOMAIN, STORE, str(db), HOST, 1,
+                                              lambda data: sign_as('owner', data, 'veldo-enrollment'), 'owner', time.time(),
+                                              repository_uuid=signer_repo['uuid'])
+                    signer_settlement = R.settled(S, CM, conn, signer_rid)['settlement_id']
+                    fixture('adoption-signature:' + signer_settlement, 'adoption_signature', {
+                        'repository': signer_repo['uuid'], 'request': signer_rid, 'settlement': signer_settlement,
+                        'binding_digest': CE.binding_digest(owner_binding), 'signer': 'adoption-signer',
+                        'domain_uuid': DOMAIN, 'at': 1.0})
+                    provisioning_record(signer_repo, signer_repo['uuid'], signer_rid, signer_settlement,
+                                        CE.binding_digest(owner_binding))
+                    # The store binding: adopted in full, except that the store does not bind it.
+                    store_repo = repos['tk-store']
+                    store_rid, _r, _ = settle('A-tk-store', prepared('tk-store', store_repo['uuid'], store_repo['remote'],
+                                                                   store_repo['path']))
+                    real_bind = AD.S.bind_repositories
+                    AD.S.bind_repositories = lambda *args, **kwargs: None
+                    try:
+                        store_result = adopt(store_rid, send=unsent)
+                    finally:
+                        AD.S.bind_repositories = real_bind
+                    take_on_cases = {
+                        'a record no settled decision answers': ('repository-161-tk-decision',
+                                                                 'not_taken_on:no_settled_decision:not_settled'),
+                        'no adoption signature journaled': (signature_repo['uuid'], 'not_taken_on:no_adoption_signature'),
+                        'a binding the adoption signer did not sign': (signer_repo['uuid'],
+                                                                       'not_taken_on:binding:not_the_adopted_binding'),
+                        'a repository the store does not bind': (store_repo['uuid'], 'not_taken_on:store_binding')}
+                    take_on_outcomes = {case: (svc.take_on_record(record(uuid)).get('refusal'), uuid in svc.repositories,
+                                               (record(uuid) or {}).get('state'), expected)
+                                        for case, (uuid, expected) in take_on_cases.items()}
+                    check('adoption/take-on-refusals', [
+                        ('the store-binding case was adopted in full but for the store binding',
+                         store_result.get('state') == 'provisioning' and CE.read_binding(store_repo['path']) is not None
+                         and S.bound_repository(conn, DOMAIN, store_repo['uuid']) is None)] + [
+                        ('%s: refused %s, not served, failed' % (case, expected),
+                         (code, served, state) == (expected, False, 'failed'))
+                        for case, (code, served, state, expected) in take_on_outcomes.items()])
+
+                with region('adoption/take-on-retry'):
+                    retry_x, retry_y = repos['tk-retry-x'], repos['tk-retry-y']
+                    for label in ('tk-retry-x', 'tk-retry-y'):
+                        repo = repos[label]
+                        rid, _r, _ = settle('A-' + label, prepared(label, repo['uuid'], repo['remote'], repo['path']))
+                        adopt(rid, send=unsent)
+                    svc = in_process()
+                    real_settled = CS.REPO.settled
+                    x_request = (record(retry_x['uuid']) or {}).get('request')
+
+                    def flaky(store, membership, conn_, request, now=None):
+                        if request == x_request:
+                            raise RuntimeError('a transient fault')
+                        return real_settled(store, membership, conn_, request, now)
+                    CS.REPO.settled = flaky
+                    try:
+                        first = {o.get('repository_uuid'): o for o in svc.take_on()}
+                    finally:
+                        CS.REPO.settled = real_settled
+                    due = svc.adoption_due()
+                    faulted_at = time.monotonic()
+                    second = {o.get('repository_uuid'): o for o in svc.take_on()}
+                    svc.adoption_faults[retry_x['uuid']] = time.monotonic() - 1
+                    third = {o.get('repository_uuid'): o for o in svc.take_on()}
+                    check('adoption/take-on-retry', [
+                        ('a fault taking one record on is named and leaves it provisioning',
+                         (first.get(retry_x['uuid']) or {}).get('refusal') == 'not_taken_on:unknown_outcome:RuntimeError'
+                         and retry_x['uuid'] not in second and (record(retry_x['uuid']) or {}).get('state') in ('provisioning', 'active')),
+                        ('another record taken on meanwhile', (first.get(retry_y['uuid']) or {}).get('outcome') == 'accepted'),
+                        ('the faulted record is not judged again before its own retry time, whatever was taken on since',
+                         retry_x['uuid'] not in second and due is not None
+                         and due - faulted_at > CS.ADOPTION_RETRY_SECONDS - 1),
+                        ('once its time came it is judged again and taken on',
+                         (third.get(retry_x['uuid']) or {}).get('outcome') == 'accepted'
+                         and (record(retry_x['uuid']) or {}).get('state') == 'active' and svc.adoption_due() is None)])
+
+                with region('adoption/active-served-again'):
+                    template_path = sorted(service_config['receiver']['configs'].values())[0]
+                    template = json.loads(Path(template_path).read_text())
+                    # A setup re-run rewrote the installed receiver configuration.
+                    Path(template_path).write_text(json.dumps(dict(template, adapters=dict(
+                        template.get('adapters') or {}, v161={'argv': ['true']})), indent=1, sort_keys=True) + '\n')
+                    rewritten = Path(template_path).read_text()
+                    # The owner no longer holds project_owner: a later change of membership.
+                    admin('steward', 'change_roles', {'principal': 'owner', 'roles': []})
+                    try:
+                        R.settled(S, CM, conn, answered_rid)
+                        now_settled = 'settled'
+                    except R.Refused as error:
+                        now_settled = error.code
+                    later = in_process()
+                    again = [o for o in later.take_on() if o.get('repository_uuid') == answered['uuid']]
+                    answered_receiver = (record(answered['uuid']) or {}).get('taken_on', {}).get('receiver_config')
+                    expected_receiver = json.dumps(dict(json.loads(rewritten), repository=answered['uuid'],
+                                                        workspace=answered['path']), indent=1, sort_keys=True) + '\n'
+                    check('adoption/active-served-again', [
+                        ('the owner no longer holds project_owner, so his decision would not be judged settled now',
+                         now_settled == 'no_settled_decision:not_owner'),
+                        ('a new instance serves the active repository again, on its signature, binding and store binding',
+                         len(again) == 1 and again[0].get('outcome') == 'accepted' and again[0].get('resumed') is True
+                         and answered['uuid'] in later.repositories),
+                        ('the receiver configuration it wrote is written again from the installed one as it is now',
+                         bool(answered_receiver) and Path(answered_receiver).read_text() == expected_receiver
+                         and (os.stat(answered_receiver).st_mode & 0o777) == 0o600),
+                        ('the installed receiver configuration is not written by it', Path(template_path).read_text() == rewritten)])
         finally:
             for proc in services:
                 if proc.poll() is None:

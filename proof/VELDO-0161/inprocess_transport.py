@@ -22,9 +22,12 @@ class Listener:
         self.r, self.w = socket.socketpair()
         self.queue = []
         self.lock = threading.Lock()
+        self.closed = False
         open(address, 'w').close()
 
     def connect(self):
+        if self.closed:
+            raise ConnectionRefusedError('the service stopped serving %s' % self.address)
         a, b = socket.socketpair()
         with self.lock:
             self.queue.append(b)
@@ -43,7 +46,7 @@ class Listener:
         pass
 
     def close(self):
-        pass
+        self.closed = True
 
 
 class Proc:
@@ -96,7 +99,14 @@ def start(executable, config_path, address):
 def send(CC, workspace, command, enrollment, verify, sign, host, timeout=20):
     enrollment.resolve_store(workspace, verify, host)
     binding = enrollment.read_binding(workspace)
-    conn = LISTENERS[CC.socket_path_for(binding)].connect()
+    listener = LISTENERS.get(CC.socket_path_for(binding))
+    try:
+        if listener is None:
+            raise ConnectionRefusedError('no service ever served here')
+        conn = listener.connect()
+    except OSError as error:
+        # As control_client.send names an authority that does not answer.
+        raise CC.RoutingRefused('authority_unavailable', str(error)) from None
     conn.sendall(json.dumps(CC.build_request(workspace, binding, command, sign)).encode())
     conn.shutdown(socket.SHUT_WR)
     chunks = []
