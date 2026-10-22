@@ -43,7 +43,10 @@ it from then on, whatever a later revision proposes. His message admits once per
 (`message_used`): as soon as a request of any item whose objective that same message accepted was opened
 to him (and so presented or ruled on), it admits no later item from that message, so work he rejected is
 never re-cut into a new feature under the same objective and admitted by his original message
-(`message_history`). The reasons are named.
+(`message_history`). The reasons are named. VELDO-0143: the first objective of a project activated from
+the owner's settled new-project decision (acceptance path `new_project`: his one answer, which accepted
+and admitted it, or his own message) admits the same way, once per decision's message, since his answer
+said nothing more was to be asked.
 
 HISTORY (`history`). Every decision request grooming opens for an admission request has its own alias
 (`alias`), so what the owner was asked, and what he ruled, is read from the store and not from the
@@ -84,6 +87,9 @@ RELEASE_AUTHORITY = 'land'
 EXPIRY_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 ADMISSION, PRIORITY = 'admission', 'priority'
 OWN_MESSAGE = 'own_message'
+# VELDO-0143: an objective accepted by the owner's settled new-project decision (control_objective DECIDED_PATH).
+NEW_PROJECT = 'new_project'
+ADMITTING = (OWN_MESSAGE, NEW_PROJECT)
 MESSAGE_USED = 'message_used'
 ITEM_KIND, OBJECTIVE_KIND = 'backlog_item', 'objective'
 
@@ -162,7 +168,7 @@ def message_of(objective):
     """What identifies the owner's own message that accepted `objective` (VELDO-0150): its intake command
     and its intake source, as the objectives service recorded them. () for an objective accepted otherwise."""
     acceptance = objective.get('acceptance') if isinstance(objective.get('acceptance'), dict) else {}
-    if acceptance.get('path') != OWN_MESSAGE:
+    if acceptance.get('path') not in ADMITTING:
         return ()
     return tuple('%s:%s' % (k, acceptance[k]) for k in ('intake_command', 'intake_source') if _is_str(acceptance.get(k)))
 
@@ -199,6 +205,10 @@ def derived(item, objective, project):
     if acceptance.get('path') == OWN_MESSAGE:
         accepted = {'path': OWN_MESSAGE, 'intake_command': acceptance.get('intake_command'),
                     'source_kind': acceptance.get('source_kind'), 'source_id': acceptance.get('source_id')}
+    elif acceptance.get('path') == NEW_PROJECT:
+        accepted = {'path': NEW_PROJECT, 'decision': acceptance.get('decision'), 'via': acceptance.get('via'),
+                    'intake_command': acceptance.get('intake_command'),
+                    'settlement_id': acceptance.get('settlement_id')}
     else:
         accepted = {'path': 'answer', 'request_id': acceptance.get('request_id'),
                     'settlement_id': acceptance.get('settlement_id')}
@@ -352,6 +362,7 @@ def brief(record, touchpoint):
     evidence = c['evidence']
     accepted = evidence['acceptance']
     how = ('by your own message (intake command %s)' % accepted.get('intake_command') if accepted.get('path') == OWN_MESSAGE
+           else 'with its new project (decision %s)' % accepted.get('decision') if accepted.get('path') == NEW_PROJECT
            else 'by your answer (settlement %s)' % accepted.get('settlement_id'))
     lines = [
         '%s, admission request %s revision %d, in project %s.' % (ask, record['uuid'], record['revision'], record['project']),
@@ -401,7 +412,7 @@ def route(fields, touchpoints, objective, owner, managers, author, opened, used=
     for any other item from the same message."""
     reasons = []
     acceptance = objective.get('acceptance') if isinstance(objective.get('acceptance'), dict) else {}
-    if acceptance.get('path') != OWN_MESSAGE or objective.get('accepted_revision') is None:
+    if acceptance.get('path') not in ADMITTING or objective.get('accepted_revision') is None:
         reasons.append('objective_by_answer')
     if ADMISSION not in touchpoints:
         reasons.append('fresh_priority')
