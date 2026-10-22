@@ -156,3 +156,15 @@ expected_exit cannot turn a nonzero execution into passing required evidence. Le
 spellings remain supported. Each review finding gets a control that fails on round 2 code.
 Core is remeasured read-only, then the documented canonical gate runs to completion and its
 actual result is recorded, without claiming green from focused checks.
+
+## Round 4 authority-bound ratchet
+
+D1 requires the contracts stage to receive the same authority base as the installed policy
+check: the lander's recorded watermark, passed through control_verification and the installed
+verifier. Candidate stages moving origin/main or origin/HEAD must not change the touched set
+or the prior register. Gate contracts refuse a missing or invalid base, including debt-free
+repositories. A checkout gate resolves its trunk commit before any candidate stage runs.
+Standalone validation retains its existing trunk fallback. The falsifier runs a candidate
+stage that moves both origin refs to HEAD before contracts, and requires both touch and growth
+refusals and a red gate. Earlier falsifiers remain required. The canonical verification runs
+to completion without environment overrides, with its actual result recorded.
