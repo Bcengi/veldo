@@ -1470,7 +1470,9 @@ def _v189_suite():
         # reads its enrollment signers only at its start. A run killed after it laid the signers and before that
         # restart leaves the restart owed in the step log; the next run must pay it, or the running service keeps the
         # old signers and refuses every adoption while setup reports the factory complete.
-        with section(AK):
+        # The row runs in a function of its own: its names (points, at, whole, restarted...) are its own, so the rows
+        # after it still read the kill host's whole-run points the kill-point section computed.
+        def adoption_signer_kill():
             serving = fresh.manager.alive(fresh.unit)
             ak_bridge = Bridge(fresh.manager, base / 'bridge-ak.sock')
             bridges.append(ak_bridge)
@@ -1573,6 +1575,9 @@ def _v189_suite():
             if serving:
                 ts.set('ready')
                 fresh.manager.start(fresh.unit)
+
+        with section(AK):
+            adoption_signer_kill()
 
         # AC2 (the review of 2026-09-28): the restart brings the unit up on the current engine, which rebinds the
         # store's ownership declarations to its bytes, and then fails; the switch back runs the current engine's
