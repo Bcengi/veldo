@@ -571,8 +571,7 @@ def closure():
     a control_eligibility.Gate, whose ValidatorSnapshot loads the validator from ITS OWN directory by
     module name rather than through a load any source spells, so the validator's files are taken from
     the declaration of the module that loads them, control_eligibility.VALIDATOR_ROLES. (The
-    scaffold's REQUIRED_SUBSTRATE declares a repository's gate, not what the snapshot loads, and
-    init_scaffold.py is not laid down in an adopter's tree, where this installer runs too.) Then every
+    scaffold's REQUIRED_SUBSTRATE declares a repository's gate, not what the snapshot loads.) Then every
     module a member loads (_Loads), followed to a fixed point. A load naming a module this directory
     lacks, or a load site whose module no literal names, refuses installation by name, so an
     installed program is never short of a module it loads and never finds that out when it runs.
