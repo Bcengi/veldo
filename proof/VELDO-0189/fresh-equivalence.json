@@ -41,6 +41,10 @@
   {
    "placeholder": "@RECEIVER@",
    "reason": "the store and domain identities: the receiver configuration's name, derived from the host's repository uuid"
+  },
+  {
+   "placeholder": "@ADOPTION_SIGNER@",
+   "reason": "a key id: the public half of the adoption signer key each host's own setup generates (VELDO-0161), derived from that host's private key; the enrollment-signers line naming it must otherwise be the fresh host's byte for byte"
   }
  ],
  "fields": [

@@ -703,13 +703,29 @@ def _v189_suite():
     # substituted and apart from the listed fields.
     equivalence = json.loads(EQUIVALENCE.read_text()) if EQUIVALENCE.is_file() else {}
 
+    def adoption_public(host):
+        """VELDO-0161: the public half of the adoption signer key the host's own setup generated, derived from the
+        private key; None when the host holds none."""
+        key = host.root / 'keys' / F.ADOPTION_KEY
+        if not key.is_file():
+            return None
+        env = {k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}
+        done = subprocess.run(['ssh-keygen', '-y', '-f', str(key)], capture_output=True, text=True, timeout=10,
+                              stdin=subprocess.DEVNULL, env=env)
+        return ' '.join(done.stdout.split()[:2]) if done.returncode == 0 and done.stdout.strip() else None
+
+    def adoption_line(host):
+        """The enrollment-signers line a fresh setup writes for the host's adoption signer (VELDO-0161 AC1)."""
+        public = adoption_public(host)
+        return ('%s namespaces="%s" %s\n' % (F.ADOPTION_PRINCIPAL, EL.ENROLLMENT_NAMESPACE, public)) if public else None
+
     def substitutions(host):
         record = host.record()
         repository = sorted(record.get('repositories') or {})
         found = {str(host.root): '@STATE_ROOT@', str(host.install): '@INSTALL_ROOT@', str(host.units): '@UNIT_DIR@',
                  str(host.trust.parent): '@HOST_TRUST_DIR@', str(host.clone): '@CLONE@',
                  record.get('service'): '@SERVICE@', record.get('domain_uuid'): '@DOMAIN@',
-                 record.get('store_uuid'): '@STORE@'}
+                 record.get('store_uuid'): '@STORE@', adoption_public(host): '@ADOPTION_SIGNER@'}
         for uuid in repository:
             found[uuid] = '@REPOSITORY@'
             found[hashlib.sha256(uuid.encode()).hexdigest()[:16]] = '@RECEIVER@'
@@ -857,6 +873,21 @@ def _v189_suite():
     def kept_after(row, host, before, owner_set, label):
         after = kept(host)
         check(row, label + ': existing runs tree unchanged', after['runs'] == before['runs'])
+        # VELDO-0161 AC1: the host's enrollment signers, and the installation's copy of them, gain the adoption
+        # signer's line after every byte they held, exactly as a fresh setup writes it; nothing else of them changes.
+        trust = json.loads(host.trust.read_text())
+        line = adoption_line(host)
+        host_signers, copy = str(Path(trust['enrollment_signers'])), str(host.home / 'config' / 'enrollment_signers')
+        held_signers = before['files'].get(host_signers, b'').decode()
+        check(row, '%s: the enrollment signers kept every line they held and gained the adoption signer\'s, with the key '
+              'its setup generated, as their last; the installation\'s copy equals them [%s]'
+              % (label, (after['files'].get(host_signers) or b'').decode().splitlines()[len(held_signers.splitlines()):]),
+              line is not None and line.encode() not in held_signers.encode()
+              and after['files'].get(host_signers) == (held_signers + line).encode()
+              and before['configs'].get('enrollment_signers') == held_signers
+              and after['configs'].get('enrollment_signers') == held_signers + line)
+        after['files'][host_signers] = before['files'].get(host_signers)
+        after['configs']['enrollment_signers'] = before['configs'].get('enrollment_signers')
         changed = sorted(p for p, data in before['files'].items() if after['files'].get(p) != data)
         check(row, '%s: every file under the key directory, the host trust and the files it names, the workspace '
               'binding, the token file and every registered account\'s profile directory (%d) is unchanged byte for '

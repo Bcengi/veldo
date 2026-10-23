@@ -10929,6 +10929,13 @@ def cases():
              "        refuse_transport_config(state['path'], remote)\n",
              "        pass  # defect: prepare lays a scaffold the push will refuse\n",
              ['adoption/transport-config'])
+    # Round 6: the engine upgrade (VELDO-0189) lays the adoption signer down as a fresh setup does (its key, its
+    # line in the host's enrollment signers and in the installation's copy); without that step an upgraded host
+    # has none, so it differs from a fresh one and every adoption there is refused signature_refused:not_enrolled.
+    add(161, 'upgrade161-adoption-signer-not-laid', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup.py',
+        "        report['adoption_signer'] = lay_adoption_signer(plan, adoption, lambda point: UP.point(engine['log'], point))\n",
+        "        report['adoption_signer'] = {'outcome': 'already_done'}  # defect: the upgrade lays no adoption signer\n",
+        ['upgrade/from-8bc34e94', 'upgrade/from-971186ac', 'switch/kill-points', 'upgrade/older-0186-equivalence'])
 
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
