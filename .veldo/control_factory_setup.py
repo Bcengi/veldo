@@ -370,12 +370,12 @@ def adoption_laying(plan, installed, home, settlement_public, differs):
     return {'key': key, 'public': public, 'signers': [host_signers, copy], 'settlement': settlement_public, 'due': due}
 
 
-def lay_adoption_signer(plan, laying, observe):
+def lay_adoption_signer(plan, laying, observe, UP):
     """Lay down what adoption_laying found missing, each write one point `observe` records after it is made, so
     a run killed at any of them is finished by the next: the key is generated beside its place and renamed into
-    it (its public half first), and each signers file is written whole to a new file renamed over it. A second
-    run finds everything laid and writes nothing."""
-    UP = organ('control_factory_setup_upgrade')
+    it (its public half first), and each signers file is written whole to a new file renamed over it (UP.replace,
+    `UP` the upgrade module the caller's inspection loaded, never a second load of it). A second run finds
+    everything laid and writes nothing."""
     key, public, wrote = laying['key'], laying['public'], []
     if public is None:
         fresh = key + '.upgrade'
@@ -1524,7 +1524,8 @@ def upgrade_engine(plan, engine, runner, running, adoption):
                                      lambda point: UP.point(engine['log'], point)) or {})
         # VELDO-0161: after the switch and before the restart, so the service the restart starts reads enrollment
         # signers that name the adoption signer; each write is a point of the step log.
-        report['adoption_signer'] = lay_adoption_signer(plan, adoption, lambda point: UP.point(engine['log'], point))
+        report['adoption_signer'] = lay_adoption_signer(plan, adoption, lambda point: UP.point(engine['log'], point),
+                                                        UP)
         return report
 
     return _api(lambda: UP.run(engine, runner=runner, running=running, answers=service_answers(plan),

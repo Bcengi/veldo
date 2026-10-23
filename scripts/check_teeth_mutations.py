@@ -10933,7 +10933,8 @@ def cases():
     # line in the host's enrollment signers and in the installation's copy); without that step an upgraded host
     # has none, so it differs from a fresh one and every adoption there is refused signature_refused:not_enrolled.
     add(161, 'upgrade161-adoption-signer-not-laid', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup.py',
-        "        report['adoption_signer'] = lay_adoption_signer(plan, adoption, lambda point: UP.point(engine['log'], point))\n",
+        "        report['adoption_signer'] = lay_adoption_signer(plan, adoption, lambda point: UP.point(engine['log'], point),\n"
+        "                                                        UP)\n",
         "        report['adoption_signer'] = {'outcome': 'already_done'}  # defect: the upgrade lays no adoption signer\n",
         ['upgrade/from-8bc34e94', 'upgrade/from-971186ac', 'switch/kill-points', 'upgrade/older-0186-equivalence'])
 
