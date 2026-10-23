@@ -81,12 +81,14 @@
   "artifacts": [
     "proof/VELDO-0214/local_check.py",
     "proof/VELDO-0214/local_checks.json",
-    "proof/VELDO-0214/HOST_RUNS.md"
+    "proof/VELDO-0214/HOST_RUNS.md",
+    "proof/VELDO-0214/host-runs.json"
   ],
   "artifact_digests": {
     "proof/VELDO-0214/local_check.py": "sha256:f2067d8ab6198d425af7d41f9dbfa2295ba8ef7aa8cb265cf5216828986738de",
     "proof/VELDO-0214/local_checks.json": "sha256:38a09c37258ed8aa8845440daafa32f903a014872319c7a91b467c5b5ec50a17",
-    "proof/VELDO-0214/HOST_RUNS.md": "sha256:8f661a5f3556a9202d196f6b8c6e837a453ffaa7eda3ea371f1829117663cd91"
+    "proof/VELDO-0214/HOST_RUNS.md": "sha256:eb7aa501eba61c0a2477d99dcf1011aee67d2cba1eb7dfdb2539a6369f427828",
+    "proof/VELDO-0214/host-runs.json": "sha256:2fdc879f75394dc846ffc1ee7465589bdfc180bc0702c2dc38d796ed166c8fe5"
   },
   "rollback": "Revert the five protected files, suite 111, its manifest entry and the four mutation cases.",
   "review": "Independent review, host gate and the owner approval for the protected paths are pending; no gate stamp or approval claimed."

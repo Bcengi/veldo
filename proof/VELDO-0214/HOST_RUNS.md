@@ -33,3 +33,7 @@ The host must run, from this checkout, in this order:
 
 The first gate on a host has no earlier measurement; that is expected, since its own unit stage
 records one before integration runs. The leg-time store is ~/.cache/veldo/gate-leg-seconds/.
+
+Host results for steps 1 and 2 (commit d03c4fba, 2026-10-23) are in host-runs.json: suite 111, suite 53
+and `--finding 214` passed; suite 101 failed two sandbox rows and aborted on a trace exception, in
+files unchanged from main. Step 3, the gate, is not yet run.
