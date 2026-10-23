@@ -15,18 +15,24 @@ THE ORDER, each step recorded on the repository record, stopping by name at the 
               record is made, nothing is pushed and the adoption signer is never asked
               (no_settled_decision:<why>).
   record      the repository record, `provisioning`, naming the identity, path, remote, the decision and
-              the scaffold commit (a repository already recorded refuses stale_subject:already_adopted).
+              the scaffold commit (a repository already recorded refuses stale_subject:already_adopted, but
+              see INTERRUPTED below).
   remote      VELDO-0153's owner check of the proposal's remote against the identity (binding_mismatch:
               remote_owner).
   checks      everything that changes nothing, before anything is moved or pushed: exactly the scaffold
               commit the proposal names (control_repository_provisioner.scaffold_problems), or with none the
               substrate present at the branch tip; the remote the repository is configured with
-              (invalid_input:remote_not_configured); no command in the repository's own configuration
-              (invalid_input:repository_command:<key>); no binding the repository already carries
+              (invalid_input:remote_not_configured); no key of the repository's own configuration outside
+              the local steps' allowlist (invalid_input:repository_command:<key>) and no borrowed objects
+              (invalid_input:repository_alternates); no binding the repository already carries
               (invalid_input:already_enrolled); this host's trust loads (signature_refused:host_trust) and
               names the adoption signer's key among its enrollment signers (signature_refused:not_enrolled;
-              a missing key is not enrolled).
-  scaffold    with a scaffold commit named: the default branch fast-forwarded to it and the commit pushed
+              a missing key is not enrolled); and every refusal the later steps would make from the store
+              alone: the identity binding (configure_identities, check only: binding_mismatch:<why>), the
+              store's binding of the repository (repository_binding_conflict) and the configured generation
+              against the store's (signature_refused:scope:generation).
+  scaffold    with a scaffold commit named: the step recorded on the record (a run that ends here leaves it
+              saying so), the default branch fast-forwarded to it and the commit pushed
               through the identity profile (push_refused:remote; push_unconfirmed:remote when Git accepted
               the push and the remote's branch does not read back as the commit).
   identity    the repository bound to its one identity (VELDO-0142 configure_identities; never changed).
@@ -40,19 +46,32 @@ Any other fault in these steps ends the record `failed` with unknown_outcome:<ty
 `provisioning` by an error. The ref the scaffold commit was recorded under is removed once the push is done
 or the adoption refused.
 
+INTERRUPTED. A run holds an exclusive lock for its repository from before it reads the record until it ends
+(lock_path, beside the store: flock, which the kernel releases when the process ends however it ends). A
+process that ended without an exception (killed, the host restarted) leaves the record `provisioning` with no
+enrollment. When the effect runs again for the same request, it takes the lock without waiting: if another
+run holds it, that run is live and this one refuses stale_subject:adoption_in_progress, touching nothing;
+if not, no live run holds the record, so it writes it `failed` with unknown_outcome:interrupted at the step
+the record names (scaffold: the commit may be on the remote) and removes the scaffold ref. Nothing waits for
+a time or polls.
+
 TAKING IT ON. The record, `provisioning` with its binding's digest, is then handed to the running authority
 service over its authenticated socket (control_client.send from the adopted repository's own workspace, the
 packet {operation: take_on, repository_uuid, request} signed with the journal key in TAKE_ON_NAMESPACE),
 which verifies all of it again and answers synchronously (control_service.Service.take_on_request): the
 repository's receiver configuration is added and the record becomes `active`, in the same process, before
 the answer comes back. Nothing waits or polls. A service that is not running leaves the record
-`provisioning`, reported not_taken_on:authority_unavailable, and the next instance takes it on at its start;
-a service that refuses it writes it `failed` with not_taken_on:<why>.
+`provisioning`, reported not_taken_on:authority_unavailable, and the next instance takes it on at its start
+(a service that is starting reads the records again once its socket is bound, so a hand-off refused while it
+started is taken on by that same instance); a service that refuses it writes it `failed` with
+not_taken_on:<why>. Every other fault of the hand-off is named (take_on), never raised.
 
 Every observation names the repository, the identity, the decision and the commit, never a token, a key or
 a signature. Standard library only.
 """
 import contextlib
+import fcntl
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -102,8 +121,11 @@ def _ssh_signer(key, namespace):
     import subprocess
 
     def sign(data):
-        done = subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(key), '-n', namespace], input=data,
-                              capture_output=True, timeout=30, env=R._quiet_env())
+        try:
+            done = subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(key), '-n', namespace], input=data,
+                                  capture_output=True, timeout=30, env=R._quiet_env())
+        except (OSError, subprocess.TimeoutExpired):
+            raise R.Refused('unavailable_service:journal_key', 'the journal key did not sign') from None
         if done.returncode:
             raise R.Refused('unavailable_service:journal_key', 'the journal key did not sign')
         return done.stdout.decode()
@@ -128,20 +150,55 @@ def _code(error):
     return 'unknown_outcome:' + type(error).__name__
 
 
+def lock_path(config, repository):
+    """The lock file a run of the effect for `repository` holds (INTERRUPTED), beside the store."""
+    digest = hashlib.sha256(str(repository).encode()).hexdigest()[:16]
+    return os.path.join(os.path.dirname(os.path.abspath(config['store'])), '.adoption-%s.lock' % digest)
+
+
+def hold(config, repository):
+    """The open lock of `repository`'s runs, held by this run until it is closed or the process ends; None
+    when another live run holds it."""
+    fd = os.open(lock_path(config, repository), os.O_RDWR | os.O_CREAT | os.O_CLOEXEC, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        os.close(fd)
+        return None
+    except BaseException:
+        os.close(fd)
+        raise
+    return fd
+
+
 def take_on(config, proposal, request, trust, send=None):
     """Hand the record of the adopted repository to the running service and return its answer's refusal
-    code, or None when the service took it on (TAKING IT ON). `send` is control_client.send's shape."""
+    code, or None when the service took it on (TAKING IT ON). `send` is control_client.send's shape. Never
+    raises: every fault of the hand-off is a named code. A refusal keeps its own (the journal key that did
+    not sign is unavailable_service:journal_key); an answer that did not come in time is
+    not_taken_on:timeout, since the request may have been delivered and taken on; no service to connect to
+    is not_taken_on:authority_unavailable; anything else not_taken_on:unknown_outcome:<type>."""
     send = CC.send if send is None else send
     packet = {'operation': R.TAKE_ON_OPERATION, 'repository_uuid': proposal['repository'], 'request': request}
     try:
         response = send(proposal['path'], packet, CE, trust.verifier(R.SIGNER_PRINCIPAL, proposal['path']),
                         _ssh_signer(config['journal']['key'], R.TAKE_ON_NAMESPACE), trust.host_identity,
                         timeout=TAKE_ON_SECONDS)
+    except R.Refused as error:
+        return error.code
     except CC.RoutingRefused as error:
+        # control_client names every socket fault authority_unavailable; the one it was raised from tells a
+        # service that did not answer in time from one that is not there.
+        if isinstance(error.__cause__ or error.__context__, TimeoutError):
+            return 'not_taken_on:timeout'
         return 'not_taken_on:' + str(error.reason)
+    except TimeoutError:
+        return 'not_taken_on:timeout'
     except OSError:
         # No local socket could be made to reach it: no running service answers here.
         return 'not_taken_on:authority_unavailable'
+    except Exception as error:  # noqa: BLE001 - a hand-off fault is named, never raised
+        return 'not_taken_on:unknown_outcome:' + type(error).__name__
     if not isinstance(response, dict) or not response.get('accepted'):
         return 'not_taken_on:' + str((response or {}).get('reason') if isinstance(response, dict) else 'malformed')
     answer = response.get('result') if isinstance(response.get('result'), dict) else {}
@@ -169,7 +226,7 @@ def adopt(config, request, *, clock=time.time, signer=None, send=None):
     journal = (config['journal']['principal'], _ssh_signer(config['journal']['key'], 'veldo-journal'))
     generation = config.get('authority_generation') or 1
     ids = {'domain_uuid': config['domain_uuid'], 'store_uuid': config['store_uuid'], 'store_path': config['store']}
-    repository, written = None, False
+    repository, written, held = None, False, None
     try:
         # 1. The settled decision, before anything is written or any signature is asked for.
         try:
@@ -181,7 +238,22 @@ def adopt(config, request, *, clock=time.time, signer=None, send=None):
         repository = proposal['repository']
         base.update(repository=repository, identity=proposal['identity'], settlement=decision['settlement_id'],
                     path=proposal['path'], scaffold_commit=proposal['scaffold_commit'])
-        if R.read(conn, repository) is not None:
+        held = hold(config, repository)
+        if held is None:
+            code = 'stale_subject:adoption_in_progress'
+            _observe(config, events, dict(base, outcome='refused', refusal=code, reason=R.reason(code)))
+            return dict(result, reason=code, repository=repository)
+        existing = R.read(conn, repository)
+        if (existing is not None and existing.get('state') == 'provisioning' and not existing.get('enrollment')
+                and existing.get('request') == request):
+            # INTERRUPTED: no live run holds it (this one holds the lock), so the run that wrote it ended.
+            code, step = 'unknown_outcome:interrupted', ((existing.get('history') or [{}])[-1]).get('step')
+            P.remove_scaffold_ref(existing.get('path'), repository)
+            R.write(S, conn, journal, repository, 'failed', step=step or 'settled', at=clock(), generation=generation,
+                    reason=code)
+            _observe(config, events, dict(base, outcome='refused', refusal=code, reason=R.reason(code), step=step))
+            return dict(result, reason=code, repository=repository, state='failed')
+        if existing is not None:
             code = 'stale_subject:already_adopted'
             _observe(config, events, dict(base, outcome='refused', refusal=code, reason=R.reason(code)))
             return dict(result, reason=code, repository=repository)
@@ -220,9 +292,25 @@ def adopt(config, request, *, clock=time.time, signer=None, send=None):
             if not R.enrolled(signers, key):
                 raise R.Refused('signature_refused:not_enrolled', 'the adoption signer is not among this host\'s '
                                 'enrollment signers')
+            # Every refusal the identity, signature and binding steps would make from the store alone.
+            step = 'identity'
+            try:
+                R.GI.configure_identities(conn, config['domain_uuid'], [record],
+                                          {repository: {'path': proposal['path'], 'identity': proposal['identity']}},
+                                          check_only=True)
+            except R.GI.Refused as error:
+                raise R.Refused(error.code) from None
+            step = 'binding'
+            if S.bound_repository(conn, config['domain_uuid'], repository) not in (None, os.path.realpath(proposal['path'])):
+                raise R.Refused('repository_binding_conflict', 'the store binds the repository at another path')
+            step = 'signature'
+            if generation < R.store_generation(conn):
+                raise R.Refused('signature_refused:scope:generation', 'the configured generation is below the store\'s')
             # 4. The scaffold: exactly the commit he answered, laid when he was asked, pushed now.
             step = 'scaffold'
             if proposal['scaffold_commit'] is not None:
+                R.write(S, conn, journal, repository, 'provisioning', step='scaffold', at=clock(), generation=generation,
+                        remote=remote)
                 P.advance(proposal)
                 P.push(proposal, record)
                 _observe(config, events, dict(base, operation='scaffold_push', outcome='pushed', remote_owner=checked['owner'],
@@ -294,6 +382,8 @@ def adopt(config, request, *, clock=time.time, signer=None, send=None):
                 state = (R.read(conn, repository) or {}).get('state')
         return dict(result, reason=code, repository=repository, state=state)
     finally:
+        if held is not None:
+            os.close(held)
         conn.close()
 
 

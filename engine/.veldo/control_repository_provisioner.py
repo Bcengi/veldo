@@ -15,8 +15,13 @@ so the owner's answer approves exactly the commit that will be pushed; a reposit
 scaffold gets a proposal whose scaffold commit is None and nothing is committed.
 
 Every local Git step runs under git_process's isolated profile with no hook of the repository and with
-core.fsmonitor off; a repository whose own configuration names a filter command or an fsmonitor is refused by
-name (repository_commands) rather than having its commands run by a checkout or a merge.
+core.fsmonitor off. The repository's own configuration is judged against an allowlist (LOCAL_CONFIGURATION):
+every key it sets must be one a local step reads as data, never one that names a command (a filter's clean or
+smudge, an fsmonitor, core.alternateRefsCommand, an editor, a pager, an ssh command, a URL rewrite, an include)
+or a key not known to be data. Anything else is refused by name (invalid_input:repository_command:<key>,
+repository_commands), and so is a repository that borrows objects from another (objects/info/alternates,
+invalid_input:repository_alternates: a fetch into it runs core.alternateRefsCommand and reads the other
+repository's refs), rather than having a command of its own run by the prepare fetch, a checkout or a merge.
 
 ON HIS SETTLED ANSWER (scaffold_problems, advance, push). The effect checks that the commit the proposal
 names is the one recorded under SCAFFOLD_REF, that its one parent is the proposal's base, that it only adds
@@ -99,10 +104,28 @@ def repository_state(path):
     return {'path': path, 'branch': branch.stdout.strip(), 'head': head.stdout.strip()}
 
 
+# THE ALLOWLIST: the keys of the repository's own configuration a local step (the prepare fetch and clone, the
+# fast-forward's checkout, the push) may find there, by section and name, each read as data and none naming a
+# command. A section listed with None allows every name in it. Anything else is refused by name.
+LOCAL_CONFIGURATION = {
+    'core': ('repositoryformatversion', 'filemode', 'bare', 'logallrefupdates', 'ignorecase', 'precomposeunicode',
+             'symlinks', 'autocrlf', 'eol', 'safecrlf', 'checkstat', 'trustctime'),
+    'extensions': ('objectformat', 'worktreeconfig', 'refstorage', 'preciousobjects', 'noop'),
+    'remote': ('url', 'pushurl', 'fetch', 'push', 'tagopt', 'prune', 'prunetags', 'mirror', 'skipdefaultupdate',
+               'skipfetchall'),
+    'branch': ('remote', 'pushremote', 'merge', 'rebase', 'description'),
+    'user': None, 'author': None, 'committer': None, 'color': None, 'advice': None, 'i18n': None,
+    'init': ('defaultbranch',), 'pull': ('rebase', 'ff'), 'push': ('default', 'autosetupremote', 'followtags'),
+    'fetch': ('prune', 'prunetags'), 'commit': ('gpgsign',), 'tag': ('gpgsign',),
+}
+
+
 def repository_commands(path):
-    """The keys of the repository's own configuration that name a command a local step could run: a filter's
-    clean, smudge or process command, or an fsmonitor. Read as Git reads it, includes followed; the values
-    this module passes on the command line (scope `command`) are not the repository's."""
+    """The keys of the repository's own configuration outside LOCAL_CONFIGURATION, any of which could name
+    a command a local step would run (a filter's clean, smudge or process command, an fsmonitor,
+    core.alternateRefsCommand, an editor, a pager, an ssh command, a URL rewrite, an include) or is not known
+    to be data. Read as Git reads it, includes followed; the values this module passes on the command line
+    (scope `command`) are not the repository's."""
     listed = git(path, 'config', '--includes', '--show-scope', '--name-only', '-z', '--list', check=False)
     if listed.returncode:
         raise Refused('invalid_input:repository_config', listed.stderr.strip()[:200])
@@ -110,18 +133,32 @@ def repository_commands(path):
     found = []
     for scope, key in zip(fields[0::2], fields[1::2]):
         lowered = key.strip().lower()
-        if scope == 'command':
+        if scope == 'command' or not lowered:
             continue
-        if lowered == 'core.fsmonitor' or (lowered.startswith('filter.')
-                                           and lowered.rsplit('.', 1)[-1] in ('clean', 'smudge', 'process')):
+        section, name = lowered.split('.', 1)[0], lowered.rsplit('.', 1)[-1]
+        allowed = LOCAL_CONFIGURATION.get(section, ())
+        if '.' not in lowered or (allowed is not None and name not in allowed):
             found.append(lowered)
     return sorted(set(found))
 
 
+def alternates(path):
+    """Whether the repository borrows objects from another (objects/info/alternates in its common
+    directory)."""
+    listed = git(path, 'rev-parse', '--path-format=absolute', '--git-path', 'objects/info/alternates', check=False)
+    if listed.returncode or not listed.stdout.strip():
+        raise Refused('invalid_input:repository_config', listed.stderr.strip()[:200])
+    return os.path.lexists(listed.stdout.strip())
+
+
 def refuse_commands(path, code='invalid_input:repository_command'):
+    """Refuse, by name, a repository whose own configuration has a key outside LOCAL_CONFIGURATION, or that
+    borrows objects from another (`code`'s first part with repository_alternates)."""
     found = repository_commands(path)
     if found:
         raise Refused('%s:%s' % (code, found[0]), ', '.join(found))
+    if alternates(path):
+        raise Refused('%s:repository_alternates' % code.split(':', 1)[0], 'objects/info/alternates')
 
 
 def configured_remote(path, branch):

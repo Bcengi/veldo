@@ -146,7 +146,10 @@ not_taken_on:<why>.
 At its start a new instance serves again every repository already `active` (take_on), judged on what was
 judged when it was taken on: the journaled signature, the binding and the store binding, never the owner's
 current membership, so a later change of membership or roles does not silently stop serving a repository he
-adopted; and it takes on a `provisioning` record whose effect could not reach a running service. A receiver
+adopted; and it takes on a `provisioning` record whose effect could not reach a running service. It reads
+the records once before it opens its parts and once more right after its socket is bound (serve), so a record
+written while it started, whose hand-off found no socket yet, is taken on by this same instance: a hand-off
+made after the bind waits in the backlog and is answered. A receiver
 configuration this service wrote for an adopted repository is written again from the installed one when it
 differs (a setup re-run rewrites the installed receiver configuration); an installed one is never written. A
 take-on that faults unexpectedly leaves its record as it was and is judged again, by a timer the serve loop
@@ -2538,6 +2541,10 @@ def serve(config_path):
                               'refusal': service.loop_refusal})
             listener = CC.bind(config['socket'])
             inode = os.stat(config['socket']).st_ino
+            # VELDO-0161: read once more now the socket is bound. An adoption that wrote its record after the
+            # read above handed it over before there was a socket (refused, authority_unavailable); from here
+            # on a hand-off waits in the backlog and is answered, so no record falls between the two.
+            service.take_on()
             listener.settimeout(ACCEPT_SECONDS)
             notify('READY=1\nSTATUS=serving %s' % config['unit'])
             service.announce_api()
