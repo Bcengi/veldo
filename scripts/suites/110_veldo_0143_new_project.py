@@ -1040,26 +1040,26 @@ def _v143_suite():
             with region('provision/handed-over'):
                 # VELDO-0161 TAKING IT ON, for a created repository: the provisioner hands its record to the running
                 # service, which judges it again and answers synchronously; the answer is the record active.
-                decision_e, _, _ = own_decision('estuary')
-                estuary_repo = PP.read(conn, decision_e)['proposal']['repository']
+                decision_e, _, _ = own_decision('inlet')
+                inlet_repo = PP.read(conn, decision_e)['proposal']['repository']
                 service.projects_due = False
                 with fenced(wire):
-                    estuary = provision(decision_e, send=judged(service))
-                estuary_record = record(estuary_repo) or {}
+                    inlet = provision(decision_e, send=judged(service))
+                inlet_record = record(inlet_repo) or {}
                 due = service.projects_due
-                estuary_pass = service.new_project_pass()
+                inlet_pass = service.new_project_pass()
                 check('provision/handed-over', [
                     ('the provisioner\'s answer is the running service\'s: active, no refusal',
-                     estuary.get('state') == 'active' and estuary.get('reason') is None and estuary.get('ok') is True),
+                     inlet.get('state') == 'active' and inlet.get('reason') is None and inlet.get('ok') is True),
                     ('the record was written active by that instance before the provisioner returned',
-                     estuary_record.get('state') == 'active'
-                     and (estuary_record.get('taken_on') or {}).get('instance_id') == service.instance['instance_id']
-                     and [h['step'] for h in estuary_record.get('history') or []][-2:] == ['enrolled', 'take_on']),
-                    ('the instance serves it from then on', estuary_repo in service.repositories),
+                     inlet_record.get('state') == 'active'
+                     and (inlet_record.get('taken_on') or {}).get('instance_id') == service.instance['instance_id']
+                     and [h['step'] for h in inlet_record.get('history') or []][-2:] == ['enrolled', 'take_on']),
+                    ('the instance serves it from then on', inlet_repo in service.repositories),
                     ('the take-on it answered makes the new-project pass due, which activates the project',
-                     due is True and (PJ.read(S, conn, 'estuary') or {}).get('state') == 'ACTIVE'
+                     due is True and (PJ.read(S, conn, 'inlet') or {}).get('state') == 'ACTIVE'
                      and any(e.get('operation') == 'activate' and e.get('decision') == decision_e
-                             and e.get('outcome') == 'activated' for e in estuary_pass))])
+                             and e.get('outcome') == 'activated' for e in inlet_pass))])
 
             with region('service/provisions', 'service/hand-off'):
                 provisioner = state_root / 'host' / 'provisioner.json'
@@ -1214,6 +1214,9 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                 for scope, subject in (('account', 'fixture-account'), ('project', 'factory')):
                     line.reservations.configure('policy/' + subject, scope, subject,
                                                 dict(capacity=5, invocations=100, wall_seconds=5000), now=time.time())
+                # Every identity configured when the PM runs is offered: the three above and the one bind_paths
+                # configured for the factory source.
+                offered_ids = sorted(r['id'] for r in GI.records(conn, DOMAIN))
                 estuary = send('api_request', 'start a new project called estuary for the river trail')
                 pid_e, _ = routed(estuary)
                 result_file.write_text(json.dumps(document(pid_e, 'estuary', None, objective='The river trail map')))
@@ -1238,7 +1241,8 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                      payload.get('operation') == 'new_project' and payload.get('proposal_id') == pid_e
                      and payload.get('text') == 'start a new project called estuary for the river trail'
                      and payload.get('output_schema') == PP.DOCUMENT
-                     and [i['id'] for i in payload.get('identities') or []] == ['bcengi', 'nokey', 'personal']),
+                     and [i['id'] for i in payload.get('identities') or []] == offered_ids
+                     and {'bcengi', 'nokey', 'personal'} <= set(offered_ids)),
                     ('the run\'s final document becomes the one proposal, presented once',
                      cycle.get('state') == 'proposed' and estuary_record.get('state') == 'presented'
                      and estuary_record.get('dispatch') == cycle.get('dispatch')
