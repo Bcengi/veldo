@@ -27,7 +27,7 @@ suite 110 runs here through `../round2/sandbox_run.py --stage --agent`, as in ro
   - After the failed first build, `new_project_record` is not registered at all.
 - `phrasings.py` over the module alone: `phrasings-round5.jsonl` 42 cases, 0 not as expected (10 recorded
   limits, printed and not judged). `phrasings-round4.jsonl` (the dca6b278 module): 23 not as expected.
-- Finding 143, `../run_falsifiers.py` in worker mode, on a `git archive` of b64f5167 (`falsifiers-143-round5.json`).
+- Finding 143, `../run_falsifiers.py` in worker mode, on the working commit below (`falsifiers-143-round5.json`).
   14 cases were run: the nine new ones and the five whose anchors moved. 13 were killed. The baseline before and
   after is red only on service/hand-off and pm/new-project-run (worker mode stands in for nothing).
   `newproject143-and-ends-clause` turned proposal/correction-negated red but left proposal/correction-phrasings
@@ -36,7 +36,7 @@ suite 110 runs here through `../round2/sandbox_run.py --stage --agent`, as in ro
   (d2dc5f36), which tells the two codes apart. Rerun on a `git archive` of d2dc5f36 (`falsifiers-and-ends-clause.json`): killed. So all 14 are killed.
   The other 31 cases of finding 143 have modules and rows that this round does not change. Their anchors are
   each found exactly once. They were not rerun here and are on the host list.
-- Consumer suites (`consumer-suites.json`, `../round2/consumer_suites.py`): ad37b673 compared with b64f5167, one
+- Consumer suites (`consumer-suites.json`, `../round2/consumer_suites.py`): ad37b673 compared with the working commit below, one
   after the other on `git archive` trees. These are round 4's 36 suites, plus 82_veldo_0141_execution_record and
   85_veldo_0158_credential_delivery, two more Intake callers. All 38 give the same result on both trees: the same
   table count and the same red rows. That is evidence only for the suites green here: among the Intake callers,
@@ -46,6 +46,12 @@ suite 110 runs here through `../round2/sandbox_run.py --stage --agent`, as in ro
   (11) and 96_veldo_0204_reservation_policies (19) are among them, so the R4-3 and R4-5 changes are not judged
   by them here. They are on the host list.
 - `.veldo/validate.py all` exits 0. check_lint, check_template_sync and check_generated pass.
+
+The 14-case falsifier run and the consumer suite comparison ran on a `git archive` of a working commit, 5ee4b369,
+which no branch names. Its engine and suite are those of b64f5167 with one byte-level difference: the two
+regular expressions in control_project_proposal.py (`_NEGATOR`, `_ANSWERED_NO`) held a literal right single
+quotation mark instead of the `\u2019` escape. The pattern is the same. That character was replaced before
+eb690f76 (ASCII only), and suite 110 at 8fdaa7f5 and the narrowed rerun ran on the committed code.
 
 ## Each finding: fix, row, falsifier
 
