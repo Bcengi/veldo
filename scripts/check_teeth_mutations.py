@@ -11104,6 +11104,37 @@ def cases():
                 "            pass  # defect: the decision waits, and he is never told\n",
                 ['proposal/no-provisioner'])
 
+    # Round 4: the round 3 review's findings. R3-1, the line the pass adds for a new project leaves the factory's own
+    # line whole: from_line attaches the connection's once-only owners before the backlog and team owners, and a
+    # refused build registers nothing; another line's refused build is not tried again; another line builds nothing
+    # while the factory line has not built its cycles; the activation leaves the connection's registrations as it
+    # found them.
+    new_project('newproject143-cycles-owners-after', 'control_workflow_cycle_pm.py',
+                "    registry = service.conn.command_registry\n    before = dict(registry)\n    try:\n"
+                "        allocations = organ('control_alias').attach(",
+                "    # defect: the round-3 order, the backlog and team owners registered before the allocation authority\n"
+                "    organ('control_backlog').Backlog(store, membership, service.conn, ids, service.principal,\n"
+                "        service.sign, workspace=line.workspace, authority_generation=service.generation)\n"
+                "    CT.Teams(store, membership, service.conn, ids, service.principal, service.sign,\n"
+                "        inbox=service.inbox(line.repository), assignment=assignment, requester=service.principal,\n"
+                "        request_sign=signature, authority_generation=service.generation)\n"
+                "    registry = service.conn.command_registry\n    before = dict(registry)\n    try:\n"
+                "        allocations = organ('control_alias').attach(",
+                ['activation/factory-line-kept', 'activation/factory-line-restart'])
+    new_project('newproject143-refused-cycles-retried', 'control_service.py',
+                "        if getattr(self, 'pm_refusal', None) is not None:\n            return False\n",
+                "",
+                ['activation/factory-line-kept'])
+    new_project('newproject143-factory-owners-taken', 'control_service.py',
+                "        if factory is not None and factory is not self and getattr(factory, 'pm_cycles', None) is None \\\n"
+                "                and factory.wants_cycles():\n",
+                "        if False:  # defect: a line that sorts first takes the owners from the factory line\n",
+                ['activation/factory-line-restart'])
+    new_project('newproject143-activation-owners-left', 'control_service_projects.py',
+                "        finally:\n            registry.clear()\n            registry.update(before)\n",
+                "        finally:\n            pass  # defect: the activation's team and intake owners stay registered\n",
+                ['activation/factory-line-kept'])
+
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
     add(142, 'identity142-clone-global-author', '103_veldo_0142_git_identities.py', 'control_clone.py', "for section in ('user', 'author', 'committer'):", 'for section in ():', ['clone/identity-authors'])
