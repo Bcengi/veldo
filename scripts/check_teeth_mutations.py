@@ -10660,6 +10660,14 @@ def cases():
         "        if not (TIMES_NAME.match(entry.name)\n",
         ['first-use-budget/leg-time-store-pruned'])
     result[-1]['dir'] = 'scripts'
+    # Round 4 (review F8): suite 101's authority copy driver loses its scratch HOME, so the copy's
+    # unit leg times go to the owner's store and the scratch store stays empty.
+    add(214, 'budget214-suite101-scratch-home-dropped', '101_veldo_0208_landing_reuse.py',
+        '101_veldo_0208_landing_reuse.py',
+        "authority=authority, home=authority_home, before=functions",
+        "authority=authority, before=functions",
+        ['unconfined-leg/authority-copy-records-under-its-scratch-home'])
+    result[-1]['dir'] = 'scripts/suites'
 
     return result
 

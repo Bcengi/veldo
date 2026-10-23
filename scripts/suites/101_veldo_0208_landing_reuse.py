@@ -1571,7 +1571,18 @@ def _v208_unconfined_leg():
             return written(live, expected='', authority=authority, home=authority_home, before=functions
                            + 'cd %s && veldo_stage %s "%s"\n' % (candidate, stage, command)
                            + ('rm -f "$VELDO_LEGS_RECORD"\n' if delete else ''))
+        def scratch_store():
+            # (file name, recorded authority) of every file in the scratch HOME's leg-time store.
+            store = authority_home / '.cache/veldo/gate-leg-seconds'
+            found = []
+            for entry in (sorted(store.iterdir()) if store.is_dir() else []):
+                try:
+                    found.append((entry.name, json.loads(entry.read_text()).get('authority')))
+                except (OSError, ValueError, AttributeError):
+                    found.append((entry.name, None))
+            return found
         kept = through_stage('unit', 'python3 scripts/selftest.py', False)
+        kept_store = scratch_store()
         deleted = through_stage('unit', 'python3 scripts/selftest.py', True)
         undeclared = through_stage('lint', 'true', False)
         expect('VELDO-0208 unconfined-leg/deleted-record-after-an-expected-leg-is-red-and-null: '
@@ -1589,6 +1600,8 @@ def _v208_unconfined_leg():
         for marker in outside.iterdir():
             marker.unlink()
         own_record = top / 'own-list-record'
+        # The list-read driver's own recording is checked on an emptied scratch store.
+        shutil.rmtree(authority_home / '.cache/veldo/gate-leg-seconds', ignore_errors=True)
         own = subprocess.run(['bash', '-c', 'VELDO_AUTHORITY=%s\nVELDO_LEGS_RECORD=%s\nVELDO_LEGS_EXPECTED=\n%s'
                               'cd %s && veldo_stage unit "python3 scripts/selftest.py" && echo "expected=$VELDO_LEGS_EXPECTED"'
                               % (authority, own_record, functions, candidate)],
@@ -1609,6 +1622,15 @@ def _v208_unconfined_leg():
                and '02_asks' not in own.stdout.split('UNCONFINED LEG', 1)[-1].split('\n', 1)[0]
                and L.stamp(own_record) == {'declaration': 'sha256:' + __import__('hashlib').sha256(
                    authority_list.read_bytes()).hexdigest(), 'legs': {'unit': ['01_listed', '03_rows:strace']}})
+        # The authority copy's unit leg times land in the scratch HOME given to each driver, one
+        # file naming the copy as its authority (VELDO-0214 AC6). A driver without the scratch HOME
+        # writes the owner's store instead, and the scratch store stays empty.
+        own_store = scratch_store()
+        copy_authority = str(authority.resolve())
+        expect('VELDO-0208 unconfined-leg/authority-copy-records-under-its-scratch-home: '
+               + repr((kept_store, own_store, copy_authority)),
+               len(kept_store) == 1 and kept_store[0][1] == copy_authority
+               and len(own_store) == 1 and own_store[0][1] == copy_authority)
 
         # No file in scripts/ or scripts/suites/ shadows a standard-library module the dispatcher
         # imports, nor one of the protected modules it imports by name. A candidate scripts/json.py

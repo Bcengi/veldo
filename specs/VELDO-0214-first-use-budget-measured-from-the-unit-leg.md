@@ -111,8 +111,9 @@ acceptance_criteria:
       module's owner store pointed at a scratch directory; a unit and an integration stage of a
       copy of gate_legs.py and its own list laid down under the system temporary directory, with
       that copy's owner store pointed at a scratch directory. Completeness: the rows
-      first-use-budget/leg-time-store-pruned, first-use-budget/suites-stay-out-of-the-owner-store
-      and first-use-budget/installed-authority-under-temp-is-measured.
+      first-use-budget/leg-time-store-pruned, first-use-budget/suites-stay-out-of-the-owner-store,
+      first-use-budget/installed-authority-under-temp-is-measured and suite 101's
+      unconfined-leg/authority-copy-records-under-its-scratch-home.
     falsified_by: >
       Refuse an authority under the system temporary directory again: mutation
       budget214-temporary-authority-refused must fail
