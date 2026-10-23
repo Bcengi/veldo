@@ -36,7 +36,9 @@ def _v161_suite():
     import runpy
     import shutil
     import signal
+    import socket
     import sqlite3
+    import struct
     import subprocess
     import sys
     import tempfile
@@ -175,6 +177,7 @@ def _v161_suite():
             found = wire.violations()
             if found and clean:
                 raise W['HermeticViolation']('VELDO HERMETIC FENCE: %d violation(s): %s' % (len(found), json.dumps(found)[:2000]))
+    watch = put_back = None
     connections, servers, services = [], [], []
     with tempfile.TemporaryDirectory(prefix='v161-', dir=fast_temp()) as directory:
         base = Path(directory)
@@ -576,40 +579,108 @@ def _v161_suite():
                 """A stand-in for the take-on request that reaches no service: the record stays provisioning."""
                 return {'accepted': False, 'reason': 'not_sent_by_this_row'}
 
-            def agent_recorder():
-                """A stand-in ssh-keygen first on PATH that records, for every invocation, whether it was started
-                with an SSH agent variable, and runs the real one; SSH_AUTH_SOCK and SSH_AGENT_PID are set while it
-                is in place. Returns (enter, leave, invocations)."""
-                shim = base / 'agent-shim'
-                shim.mkdir(exist_ok=True)
-                log = shim / 'invocations.jsonl'
-                real = shutil.which('ssh-keygen')
-                (shim / 'ssh-keygen').write_text(
-                    '#!%s\nimport json, os, sys\n'
-                    'with open(%r, "a") as f:\n'
-                    '    f.write(json.dumps({"agent": [os.environ.get(k) for k in ("SSH_AUTH_SOCK", "SSH_AGENT_PID")'
-                    ' if os.environ.get(k)], "argv": sys.argv[1:3]}) + "\\n")\n'
-                    'os.execv(%r, [%r] + sys.argv[1:])\n' % (sys.executable, str(log), real, real))
-                (shim / 'ssh-keygen').chmod(0o700)
-                saved = {}
+            class AgentWatch:
+                """adoption/signer-no-agent's own SSH agent, outside the fence's. While active, SSH_AUTH_SOCK and
+                SSH_AGENT_PID name it and a stand-in ssh-keygen first on PATH records each invocation's agent
+                variables, then runs the real one. Where local sockets may be made the agent is a recording socket
+                (every connection is kept, with the process that made it); where they may not, it is a path where
+                nothing listens or can, and the stand-in's record is the evidence. Nothing connecting is the row's
+                to judge, so a signer that reaches for an agent fails that row by name rather than the suite."""
 
-                def enter():
-                    log.write_text('')
-                    for k, v in (('PATH', str(shim) + os.pathsep + os.environ.get('PATH', os.defpath)),
-                                 ('SSH_AUTH_SOCK', str(shim / 'agent.sock')), ('SSH_AGENT_PID', '1')):
-                        saved[k] = os.environ.get(k)
-                        os.environ[k] = v
+                def __init__(self):
+                    self.shim = base / 'agent-shim'
+                    self.shim.mkdir(exist_ok=True)
+                    self.log = self.shim / 'invocations.jsonl'
+                    self.log.write_text('')
+                    real = shutil.which('ssh-keygen')
+                    (self.shim / 'ssh-keygen').write_text(
+                        '#!%s\nimport json, os, sys\n'
+                        'with open(%r, "a") as f:\n'
+                        '    f.write(json.dumps({"agent": [os.environ.get(k) for k in ("SSH_AUTH_SOCK", "SSH_AGENT_PID")'
+                        ' if os.environ.get(k)], "argv": sys.argv[1:3]}) + "\\n")\n'
+                        'os.execv(%r, [%r] + sys.argv[1:])\n' % (sys.executable, str(self.log), real, real))
+                    (self.shim / 'ssh-keygen').chmod(0o700)
+                    self.connections, self.signed, self.stop = [], 0, threading.Event()
+                    self.directory = self.agent = self.thread = None
+                    if UNIX:
+                        # A short path (sun_path is bounded), as the fence's own agent has.
+                        self.directory = tempfile.mkdtemp(prefix='v161a-')
+                        self.path = os.path.join(self.directory, 'agent')
+                        self.agent = socket.socket(socket.AF_UNIX)
+                        self.agent.bind(self.path)
+                        self.agent.listen(8)
+                        self.thread = threading.Thread(target=self._serve, daemon=True)
+                        self.thread.start()
+                    else:
+                        self.path = str(self.shim / 'agent.sock')
 
-                def leave():
-                    for k, v in saved.items():
-                        if v is None:
-                            os.environ.pop(k, None)
-                        else:
-                            os.environ[k] = v
+                def _serve(self):
+                    while not self.stop.is_set():
+                        try:
+                            peer, _ = self.agent.accept()
+                        except OSError:
+                            return
+                        if not self.stop.is_set():
+                            try:
+                                pid = struct.unpack('3i', peer.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, 12))[0]
+                                asked = Path('/proc/%d/cmdline' % pid).read_bytes().replace(b'\0', b' ').decode(
+                                    errors='replace').strip()[:300]
+                            except OSError:
+                                asked = 'unknown process'
+                            self.connections.append(asked)
+                        peer.close()
 
-                def invocations():
-                    return [json.loads(line) for line in log.read_text().splitlines() if line.strip()]
-                return enter, leave, invocations
+                @contextlib.contextmanager
+                def active(self):
+                    saved = {k: os.environ.get(k) for k in ('PATH', 'SSH_AUTH_SOCK', 'SSH_AGENT_PID')}
+                    os.environ.update(PATH=str(self.shim) + os.pathsep + (saved['PATH'] or os.defpath),
+                                      SSH_AUTH_SOCK=self.path, SSH_AGENT_PID='1')
+                    try:
+                        yield self
+                    finally:
+                        for k, v in saved.items():
+                            if v is None:
+                                os.environ.pop(k, None)
+                            else:
+                                os.environ[k] = v
+
+                def watch_signers(self, modules):
+                    """Every AdoptionSigner.sign of `modules` (the suite's and the effect's copies) runs active, so
+                    no adoption signature anywhere in this suite names the fence's agent to its ssh-keygen; returns
+                    the function that puts them back."""
+                    restore = []
+                    for cls in {id(m.AdoptionSigner): m.AdoptionSigner for m in modules}.values():
+                        original = cls.sign
+
+                        def sign(signer, message, request, _original=original):
+                            with self.active():
+                                self.signed += 1
+                                return _original(signer, message, request)
+                        cls.sign = sign
+                        restore.append((cls, original))
+
+                    def put_back():
+                        for cls, original in restore:
+                            cls.sign = original
+                    return put_back
+
+                def invocations(self):
+                    return [json.loads(line) for line in self.log.read_text().splitlines() if line.strip()]
+
+                def close(self):
+                    if self.agent is None:
+                        return
+                    self.stop.set()
+                    with contextlib.suppress(OSError):
+                        waker = socket.socket(socket.AF_UNIX)
+                        waker.connect(self.path)
+                        waker.close()
+                    self.agent.close()
+                    self.thread.join(timeout=5)
+                    with contextlib.suppress(OSError):
+                        os.unlink(self.path)
+                        os.rmdir(self.directory)
+                    self.agent = None
 
             def prepared(label, repository, remote, path):
                 proposal, _event = PR.prepare(conn, DOMAIN, path=path, identity='fixture', remote=remote, name=label,
@@ -622,6 +693,9 @@ def _v161_suite():
                 return rid, receipt, answered
 
             wire = W['Wire'](base / 'wire')
+            watch = AgentWatch()
+            agent_row = [('the signer-scope region reached its agent checks', False)]
+            put_back = watch.watch_signers((R, AD.R, PR.R))
             with fenced(wire):
                 repos = {}
                 for label, scaffold in (('alpha', True), ('beta', False), ('wrong', True), ('scope', False),
@@ -712,7 +786,7 @@ def _v161_suite():
                         ('each refusal is distinct', len({o.get('reason') for o, _a in cases.values()}) == 4)])
 
                 # AC1: the adoption signer judges, itself, that a settled decision names the repository it signs.
-                with region('adoption/signer-scope', 'adoption/signer-no-agent'):
+                with region('adoption/signer-scope'):
                     scope = repos['scope']
                     scope_proposal = prepared('scope', scope['uuid'], scope['remote'], scope['path'])
                     scope_settled, _r, _ = settle('A-scope', scope_proposal)
@@ -784,24 +858,21 @@ def _v161_suite():
                     agent_repo = repos['agent']
                     agent_rid, _r, _ = settle('A-agent', prepared('agent', agent_repo['uuid'], agent_repo['remote'],
                                                                   agent_repo['path']))
-                    enter, leave, invocations = agent_recorder()
-                    enter()
-                    try:
+                    with watch.active():
                         derived = R.public_key(str(adoption_key))
                         listed = R.enrolled(signers_text, str(adoption_key))
                         agent_signed = attempt(binding_bytes(agent_repo['path'], agent_repo['uuid']), agent_rid)
                         journal_signed = AD._ssh_signer(installed['journal_key'], 'veldo-journal')(b'v161')
-                    finally:
-                        leave()
-                    asked = invocations()
-                    check('adoption/signer-no-agent', [
+                    asked = watch.invocations()
+                    # Judged at the suite's end, with every adoption signature the other rows asked for.
+                    agent_row = [
                         ('the signer derives its key, finds its line and signs, the effect signs with the journal key',
                          derived == adoption_public and listed is True and agent_signed[0] == 'signed'
                          and 'SSH SIGNATURE' in journal_signed),
                         ('each ran ssh-keygen', ['-y', '-f'] in [a['argv'] for a in asked]
                          and sum(a['argv'] == ['-Y', 'sign'] for a in asked) >= 2),
                         ('no ssh-keygen was started with an SSH agent in its environment, though one was named',
-                         bool(asked) and all(a['agent'] == [] for a in asked))])
+                         bool(asked) and all(a['agent'] == [] for a in asked))]
 
                 # AC1: a repository carrying the scaffold is adopted with nothing committed; AC2: taken on running.
                 with region('adoption/scaffold-present'):
@@ -1495,7 +1566,22 @@ def _v161_suite():
                          bool(answered_receiver) and Path(answered_receiver).read_text() == expected_receiver
                          and (os.stat(answered_receiver).st_mode & 0o777) == 0o600),
                         ('the installed receiver configuration is not written by it', Path(template_path).read_text() == rewritten)])
+
+                # Every adoption signature of every row above, judged once they are all made and before the fence's
+                # own end: its stand-in records each one, and nothing may have connected to its agent.
+                put_back()
+                watch.close()
+                every, signatures = watch.invocations(), signature_rows()
+                check('adoption/signer-no-agent', agent_row + [
+                    ('every adoption signature the suite asked for ran with this row\'s agent named [%d asked, %d '
+                     'journaled]' % (watch.signed, len(signatures)), watch.signed >= max(2, len(signatures))),
+                    ('no ssh-keygen any row started there had an SSH agent in its environment',
+                     bool(every) and all(a['agent'] == [] for a in every)),
+                    ('nothing connected to this row\'s agent %s' % watch.connections[:3], watch.connections == [])])
         finally:
+            if watch is not None:
+                put_back()
+                watch.close()
             for proc in services:
                 if proc.poll() is None:
                     with contextlib.suppress(Exception):
