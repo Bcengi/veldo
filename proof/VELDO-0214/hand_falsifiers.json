@@ -84,7 +84,7 @@
    "killed": true
   },
   {
-   "case": "temporary-authority-allowed",
+   "case": "own-list-test-removed",
    "module": "gate_legs.py",
    "replacement_count": 1,
    "target": "suites-stay-out-of-the-owner-store",

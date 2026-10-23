@@ -1,4 +1,4 @@
-"""VELDO-0214 round 2: unregistered falsifiers for the new rows of suite 111 (review F1, F3, F4),
+"""VELDO-0214: unregistered falsifiers for the suite 111 rows added in round 2 (review F1, F3, F4),
 through the teeth driver's own materialize and worker. Each case must fail its target row. Prints
 JSON; exit 0 only when every case is killed."""
 import importlib.util
@@ -33,8 +33,8 @@ cases = [
  ('owner-store-guard-removed', 'gate_legs.py',
   '            refusal = owner_store_refusal(times, path)\n', '            refusal = None\n',
   'suites-stay-out-of-the-owner-store'),
- ('temporary-authority-allowed', 'gate_legs.py',
-  '    if authority == temporary or temporary in authority.parents:\n', '    if False:\n',
+ ('own-list-test-removed', 'gate_legs.py',
+  "    if Path(path).resolve() != (authority / 'scripts' / DECLARATION.name):\n", '    if False:\n',
   'suites-stay-out-of-the-owner-store'),
 ]
 out = []

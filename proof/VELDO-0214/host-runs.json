@@ -1,16 +1,19 @@
 {
  "schema": "veldo.host-runs/v1",
  "spec_id": "VELDO-0214",
- "round": 2,
- "commit": "d051aa13627eca10ae85ce34979f462981eeb651",
- "previous_round": "Round 1 host runs at d03c4fba are in this file at commit 3c742321 (suite 101 failed two sandbox rows and aborted on ValueError: incomplete file-read trace, twice, at load average 15 to 24).",
+ "round": 3,
+ "commit": "844b10ccae60840143dea5dd4cc4fc9eaa90afad",
+ "previous_round": "Round 2 host runs at d051aa13 are in this file at commit 2b8e4730; round 1 at d03c4fba is in this file at commit 3c742321.",
  "host": {
   "kernel": "7.0.0-38-generic",
   "python": "3.12.3",
-  "note": "Shared host, quieter than round 1: load average 3.4 to 11 (1, 5, 15 minute figures) across these runs."
+  "note": "Shared host, quiet: load average 1.6 to 5.1 (1, 5, 15 minute figures) across these runs."
  },
- "run_at": "2026-10-23T11:04Z to 2026-10-23T11:16Z",
- "logs": "/tmp/v214b (not committed); the two suite 101 outputs are committed as suite101-main-d49581b4.log and suite101-branch.log",
+ "run_at": "2026-10-23T11:28Z to 2026-10-23T11:33Z",
+ "logs": "/tmp/v214c (not committed); this round's suite 101 output is committed as suite101-branch.log, and main's from round 2 as suite101-main-d49581b4.log",
+ "suite_101_comparison": "Main d49581b4 (round 2 run, suite101-main-d49581b4.log) and this branch at 844b10cc fail the same two rows, VELDO-0208 sandbox/unavailable-refuses-before-exec and sandbox/old-abi-refuses-before-exec, with 184 rows passing in each and no exception. No new failure: the scratch HOME given to the drivers of the temporary authority copy changed no row's result. Main was not rerun this round.",
+ "not_run": "./scripts/verify.sh (the repository gate) is pending: it runs separately on a quiet machine.",
+ "veldo_state": ".veldo/last_verify and .veldo/events.jsonl unchanged by these runs (checksums equal before and after; no checkout needed).",
  "runs": [
   {
    "command": "python3 scripts/selftest.py --suite 101_veldo_0208_landing_reuse",
@@ -24,55 +27,47 @@
     "VELDO-0208 sandbox/old-abi-refuses-before-exec"
    ],
    "exception": null,
-   "output": "proof/VELDO-0214/suite101-main-d49581b4.log"
+   "output": "proof/VELDO-0214/suite101-main-d49581b4.log",
+   "run_in": "round 2 (2026-10-23T11:04Z), not rerun this round; kept here as the comparison base"
   },
   {
    "command": "python3 scripts/selftest.py --suite 111_veldo_0214_first_use_budget",
-   "tree": "this branch at d051aa13",
+   "tree": "this branch at 844b10cc",
    "exit": 2,
    "result": "passing partial run",
-   "summary": "selftest (PARTIAL, 1 of 163 suites): 35 passed, 0 failed in 1.33s",
-   "suite_line": "111_veldo_0214_first_use_budget 9 passed 1.33s"
+   "summary": "selftest (PARTIAL, 1 of 163 suites): 36 passed, 0 failed in 1.77s",
+   "suite_line": "111_veldo_0214_first_use_budget 10 passed 1.77s"
   },
   {
    "command": "python3 scripts/selftest.py --suite 53_veldo_0123_mutations",
-   "tree": "this branch at d051aa13",
+   "tree": "this branch at 844b10cc",
    "exit": 2,
    "result": "passing partial run",
-   "summary": "selftest (PARTIAL, 1 of 163 suites): 40 passed, 0 failed in 28.63s",
-   "suite_line": "53_veldo_0123_mutations 14 passed 28.63s"
+   "summary": "selftest (PARTIAL, 1 of 163 suites): 40 passed, 0 failed in 28.22s",
+   "suite_line": "53_veldo_0123_mutations 14 passed 28.22s"
   },
   {
    "command": "python3 scripts/selftest.py --suite 101_veldo_0208_landing_reuse",
-   "tree": "this branch at d051aa13",
+   "tree": "this branch at 844b10cc",
    "exit": 1,
    "result": "two rows failed, suite completed",
-   "summary": "selftest (PARTIAL, 1 of 163 suites): 210 passed, 2 failed in 229.51s",
-   "suite_line": "101_veldo_0208_landing_reuse 184 passed 229.51s",
+   "summary": "selftest (PARTIAL, 1 of 163 suites): 210 passed, 2 failed in 216.44s",
+   "suite_line": "101_veldo_0208_landing_reuse 184 passed 216.44s",
    "failed_rows": [
     "VELDO-0208 sandbox/unavailable-refuses-before-exec",
     "VELDO-0208 sandbox/old-abi-refuses-before-exec"
    ],
    "exception": null,
    "output": "proof/VELDO-0214/suite101-branch.log",
-   "leg_time_store": "~/.cache/veldo/gate-leg-seconds listed before and after: unchanged (round 1's runs of this suite had added a file to it on each run)"
+   "leg_time_store": "~/.cache/veldo/gate-leg-seconds listed before and after the four runs: empty both times. Suite 101 drives its temporary authority copy with a scratch HOME now, so its measurements go to that scratch store."
   },
   {
-   "command": "python3 scripts/check_teeth_mutations.py --finding 214 --worker-log-dir /tmp/v214b/wl --diff-dir /tmp/v214b/diff",
-   "tree": "this branch at d051aa13",
+   "command": "python3 scripts/check_teeth_mutations.py --finding 214 --worker-log-dir /tmp/v214c/wl --diff-dir /tmp/v214c/diff",
+   "tree": "this branch at 844b10cc",
    "exit": 0,
    "result": "passed",
-   "summary": "mutations: passed registered=5 executed=5 reused=0 rejected=5 workers=9 elapsed=5.258s",
+   "summary": "mutations: passed registered=7 executed=7 reused=0 rejected=7 workers=11 elapsed=6.198s",
    "cases": [
-    {
-     "case": "budget214-fixed-1800-restored",
-     "baseline_failed": [],
-     "noop_failed": [],
-     "mutant_failed": [
-      "VELDO-0214 first-use-budget/measured-budget-used",
-      "VELDO-0214 first-use-budget/ceiling-caps-the-budget"
-     ]
-    },
     {
      "case": "budget214-caller-value-kept",
      "baseline_failed": [],
@@ -98,19 +93,40 @@
      ]
     },
     {
+     "case": "budget214-temporary-authority-refused",
+     "baseline_failed": [],
+     "noop_failed": [],
+     "mutant_failed": [
+      "VELDO-0214 first-use-budget/installed-authority-under-temp-is-measured"
+     ]
+    },
+    {
+     "case": "budget214-keep-not-spared",
+     "baseline_failed": [],
+     "noop_failed": [],
+     "mutant_failed": [
+      "VELDO-0214 first-use-budget/leg-time-store-pruned"
+     ]
+    },
+    {
+     "case": "budget214-fixed-1800-restored",
+     "baseline_failed": [],
+     "noop_failed": [],
+     "mutant_failed": [
+      "VELDO-0214 first-use-budget/measured-budget-used",
+      "VELDO-0214 first-use-budget/ceiling-caps-the-budget"
+     ]
+    },
+    {
      "case": "budget214-main-drops-the-budget",
      "baseline_failed": [],
      "noop_failed": [],
      "mutant_failed": [
       "VELDO-0214 first-use-budget/measured-budget-used",
       "VELDO-0214 first-use-budget/ceiling-caps-the-budget"
-     ],
-     "applied_diff": "both call sites: _run_suite(tree, \"mutated(%s)\" % mut[\"family\"]) and _run_suite(pristine, \"baseline\")"
+     ]
     }
    ]
   }
- ],
- "suite_101_comparison": "Main d49581b4 and this branch fail the same two rows, VELDO-0208 sandbox/unavailable-refuses-before-exec and sandbox/old-abi-refuses-before-exec, with 184 rows passing in each; apart from the summary's suite count and the skipped list (which names suite 111 on the branch) the two outputs are identical. The two row failures are therefore pre-existing at main. The ValueError: incomplete file-read trace of round 1 did not recur in either run at this load, so this round shows it neither at main nor on the branch; both runs reached the end of the suite, _v208_case_input_proposal and _v208_mutation_leg included. It appeared twice in round 1 on the branch under load average 15 to 24, in files unchanged from main, and reads as load-dependent; it is not attributed either way by these runs.",
- "not_run": "./scripts/verify.sh (the repository gate) is pending: it runs separately on a quiet machine.",
- "veldo_state": ".veldo/last_verify and .veldo/events.jsonl unchanged by these runs (git status clean for .veldo)."
+ ]
 }
