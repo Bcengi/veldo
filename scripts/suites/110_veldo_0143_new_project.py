@@ -1836,10 +1836,11 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                 CB = load('v143_backlog', mods / 'control_backlog.py')
                 conn.command_registry.clear()
                 conn.command_registry.update(cycles_free)
+                # The factory line works in the factory's checkout, through the pm row's receiver configuration.
                 kept_service = SV.Service(dict(service.config, principal='team-service',
-                                               repositories={REPO: [str(base / 'workspace')]},
+                                               repositories={REPO: [str(source)]},
                                                observations=str(base / 'kept-service.jsonl'),
-                                               receiver={'configs': {REPO: str(receiver_config)}}), conn)
+                                               receiver={'configs': {REPO: str(pm_receiver)}}), conn)
                 kept_service.channel = service.channel
                 kept_loop = SV.FactoryLoop(kept_service, work)
                 kept_loop.wake('journal')
@@ -1909,10 +1910,9 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                 # them, its uuid sorting first) has its line from the loop's constructor.
                 conn.command_registry.clear()
                 conn.command_registry.update(cycles_free)
-                configs = dict(service.config['receiver']['configs'], **{REPO: str(receiver_config)})
+                configs = dict(service.config['receiver']['configs'], **{REPO: str(pm_receiver)})
                 restarted_service = SV.Service(dict(service.config, principal='team-service',
-                                                    repositories=dict(service.repositories, **{
-                                                        REPO: [str(base / 'workspace')]}),
+                                                    repositories=dict(service.repositories, **{REPO: [str(source)]}),
                                                     observations=str(base / 'restarted-service.jsonl'),
                                                     receiver={'configs': configs}), conn)
                 restarted_service.channel = service.channel
