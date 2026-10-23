@@ -148,18 +148,25 @@ REGISTRY = (
     ('completion', None, '_completions'),
 )
 
-# VELDO-0143 round 6: a correction refused because his words did not make a choice certain, in plain words. A
-# correction changes a value only when his words name exactly that one and hold no negator anywhere, and keeps the
-# value shown only when they name none (control_project_proposal.correction_problems).
-_RULE = ('I change something only when your words name exactly one choice for it and hold no "not", "no" or '
-         'similar word anywhere, and I keep what you were shown only when your words name none')
+# VELDO-0143 rounds 6 and 7: a refused correction, in plain words. A correction changes only the project's name
+# and its first objective; the identity and the visibility are changed only by the choice he picks
+# (control_project_proposal.correction_problems), and a new name only when his words name it with no "not", "no"
+# or similar word anywhere.
+_PICKED = ('a correction changes only the name and the first objective; the identity and the visibility change '
+           'only by the choice you pick')
 CORRECTION_UNCLEAR = {
-    'invalid_input:correction:identity': 'Your correction did not make clear which identity to use: ' + _RULE,
-    'invalid_input:correction:visibility': 'Your correction did not make clear whether it is private or public: '
-                                           + _RULE,
-    'invalid_input:correction:project': 'Your correction did not make the new name clear: ' + _RULE,
+    'invalid_input:correction:identity': 'Your correction would have set the identity: ' + _PICKED,
+    'invalid_input:correction:visibility': 'Your correction would have set the visibility: ' + _PICKED,
+    'invalid_input:correction:project': ('Your correction did not make the new name clear: I change the name only '
+                                         'when your words name it and hold no "not", "no" or similar word anywhere'),
     'invalid_input:correction:mode': 'Your correction would use a repository you were not shown',
 }
+CORRECTION_NEXT = {
+    'invalid_input:correction:project': 'Ask again and give the new name with no "not" or "no" in it, for example '
+                                        '"call it <name>".',
+}
+PICKED_NEXT = ('Ask again; when the question comes, pick the choice that names the identity and visibility you want, '
+               'for example "accept <identity> private", and use a correction only for the name or the objective.')
 
 TAXONOMY = {'invalid_input': 'invalid_input', 'no_enrolled_chat': 'missing_authority',
             'invalid_enrollment': 'missing_authority', 'chat_not_enrolled': 'missing_authority',
@@ -450,8 +457,7 @@ class Reporter:
         return {'unit': None, 'run': data.get('dispatch'), 'project': data.get('project'),
                 'headline': '%s could not be set up.' % name,
                 'fact': '%s. %s' % (fact, unclear),
-                'next': 'Ask again with one clear choice for each thing you change and no "not" or "no" in it, '
-                        'for example "use <identity> and make it private".',
+                'next': CORRECTION_NEXT.get(str(data.get('reason')), PICKED_NEXT),
                 'evidence': 'decision %s' % eid}
 
     def _stop_request(self, request, state):

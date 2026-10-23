@@ -5,7 +5,8 @@ proposal>` of kind `new_project`), and the one judge of whether such a decision 
 message the factory PM routed as a new project in state NEW_PROJECT (VELDO-0152 AC3); the factory project's
 next PM run reads it and returns one DOCUMENT naming only what needs judgment: the project's name, the
 identity when the owner said one, the visibility when he said one, and the first objective. Everything else
-the proposal binds is derived here, never chosen by the PM: the repository's uuid, the directory under the
+the proposal binds is derived here, never chosen by the PM: the identities it offers (every configured one),
+the repository's uuid, the directory under the
 identity's projects root, the remote under the identity's owner, whether the directory is already a Git
 repository (then the adoption path of VELDO-0161, its scaffold commit laid before he is asked), the default
 team's current revision (VELDO-0162 AC4), the default pipeline (the PM cycle's WORKFLOW, VELDO-0132), the
@@ -14,38 +15,35 @@ charter, the authority policy and the coordination budget.
 ONE ANSWER. The proposal is settled by exactly one of three paths, and nothing is asked after it:
 
   own_message  the message that started it is the answer and nothing is presented: it is the factory
-               owner's own authenticated message (his intake source), the PM named an identity, and the
-               message names both the project and that identity, each as a whole word (nothing_asked).
+               owner's own authenticated message (his intake source), the PM named an identity, the message
+               names the project and that identity, each as a whole word, and no other identity, and it is
+               plain ASCII with no negator anywhere; the PM named no visibility other than the identity's
+               default (nothing_asked). Any doubt presents it, so it costs him one choice.
   answer       otherwise the proposal is presented once to the factory owner as a VELDO-0068 request whose
-               terms target TARGET (the project and the digest of the proposal) and whose brief is exactly
-               brief(proposal); his approval settles it. When the PM named no identity, the proposal
-               offers every configured identity in the same request and his approving answer names one of
-               them, which resolves it (identity_named): an answer that answers a question offering exactly
-               those identities.
+               terms target TARGET (the project and the digest of the proposal), whose brief is exactly
+               brief(proposal) and whose choices are exactly choices(proposal); the choice he picks settles it.
   correction   his answer returns the proposal with his words (return_for_elaboration): the factory PM's
                next run reads the proposal and his words and returns the corrected document, which settles
-               it with no second presentation. A corrected document that still names no identity fails the
-               decision by name.
+               it with no second presentation.
 
-A reject settles nothing and the decision is `rejected`. An approval that names none of the identities the
-proposal offered settles nothing either: the identity was asked and his answer did not say it, so the decision
-is `failed` invalid_input:answer:identity and its report tells him why (VELDO-0143 F2).
+THE IDENTITY AND THE VISIBILITY ARE CHOSEN, NEVER READ (VELDO-0143 round 7, owner decision Telegram 36174 and
+36175). The proposal offers every configured identity, each with its directory, remote and mode, and its choices
+(VELDO-0065's choices mechanism, a pick each) are: `accept`, which approves exactly the identity and visibility it
+shows (offered only when it shows an identity), one pick `accept <identity> <visibility>` for every other pair of
+an offered identity and a visibility, `return_for_elaboration` and `reject`. The decision binds the identity and
+the visibility only from the choice he picked (answered): the values shown stay when he picks none of the
+alternatives. His words, his reason and the PM's document never change either: no text is read for them. A
+reject settles nothing and the decision is `rejected`.
 
-A CORRECTION IS BOUND TO HIS WORDS (correction_problems). The PM reads his correction; it never chooses for him.
-The corrected proposal settles only when each of its terms is one his words bind, by a rule that does not read
-what a negator applies to (VELDO-0143 round 6, DECISIONS 26). His words NAME a value of a field wherever its word
-occurs in them, even inside another word ("publicly", "bcengi-owned", "nonpublic"), and they NEGATE where a
-negator stands anywhere in them, on any line, joined to anything or not (non, not, no, never, neither, nor, none,
-nothing, without, cannot, avoid, except, instead of, rather than, other than, anything but, any word ending n't,
-dont, wont, cant, didnt and their kind, and the others _NEGATOR lists). For the identity and the visibility: a
-value other than the one he was shown is bound only when his words name exactly that value of the field and
-negate nothing; the value he was shown stays only when his words name no value of the field at all. For the
-project's name: a name other than the presented one only when his words name it and negate nothing. The mode is
-the one shown for that identity and name (an adoption is only ever an adoption he was shown, its scaffold commit
-the one shown; a name or identity he was not shown is a creation). An honest correction with a negator in it is
-refused rather than guessed. Anything else fails the decision by name, invalid_input:correction:<field>, before
-anything is built or laid, his report tells him in plain words that it could not be set up and why, and the one
-judge refuses it again (no_settled_decision:correction:<field>).
+A CORRECTION CHANGES ONLY THE NAME AND THE OBJECTIVE (correction_problems). The PM reads his correction; it never
+chooses for him. The corrected document's objective is the PM's reading of his words. Its project name other than
+the presented one is bound only where his words name it as a whole word and hold no negator anywhere (_NEGATOR).
+Its identity and visibility must be null or the ones he was shown (a proposal that showed no identity cannot be
+corrected: the identity is picked, never typed), and the mode is the one shown for that identity and name (an
+adoption is only ever an adoption he was shown, its scaffold commit the one shown; a name he was not shown is a
+creation). Anything else fails the decision by name, invalid_input:correction:<field>, before anything is built
+or laid, his report tells him in plain words that it could not be set up and why, and the one judge refuses it
+again (no_settled_decision:correction:<field>).
 
 A NAME IS ONE PROJECT (VELDO-0143 F3). A project whose name is already a project's, or the name of another
 new-project decision still live (presenting, presented, correcting or settled), compared without case as
@@ -121,6 +119,9 @@ PATHS = ('own_message', 'answer', 'correction')
 # The VELDO-0068 request the owner answers when his message did not settle it.
 TOUCHPOINT, TARGET = 'decision_disposition', 'new_project'
 CHOICES = ['accept', 'return_for_elaboration', 'reject']
+# The first word of a pick (control_channel_presentation.PICK_WORD): `accept <identity> <visibility>` approves with
+# that identity and visibility (choices).
+PICK = 'accept'
 REQUEST_KIND, TERMS_KIND, SETTLEMENT_KIND, EFFECT_KIND = 'assignment', 'settlement_terms', 'request_settlement', 'settlement_effect'
 SETTLED_STATE = 'SATISFIED'
 EFFECTS = {'approve': 'decision_approved', 'return_for_elaboration': 'decision_returned'}
@@ -130,7 +131,7 @@ INTAKE_PROPOSAL, INTAKE_SOURCE, NEW_PROJECT_STATE = 'intake_proposal', 'intake_s
 # What every proposal binds, in the order a missing one is named.
 PROPOSAL_FIELDS = ('project', 'repository', 'owner', 'identity', 'offered', 'directory', 'mode', 'remote', 'adoption',
                    'objective', 'charter', 'authority_policy', 'team', 'pipeline', 'coordination_budget', 'source')
-# What the chosen identity decides: one offered entry each when the PM named none.
+# What the chosen identity decides: one offered entry for each configured identity.
 IDENTITY_FIELDS = ('identity', 'directory', 'mode', 'remote', 'adoption')
 MODES = ('create', 'adopt')
 VISIBILITIES = ('private', 'public')
@@ -219,10 +220,10 @@ def names(text, word):
     return re.search(_LEFT_EDGE + re.escape(word) + _RIGHT_EDGE, text, re.IGNORECASE) is not None
 
 
-# VELDO-0143 round 6: where a value is named and whether a negator stands anywhere, failing closed. A value is named
-# wherever its word occurs, even inside another word ("publicly", "nonpublic"). A negator starts where no letter or
-# digit stands before it and, but for the prefix "non", ends where none follows it, so a hyphen, an underscore, a
-# period or a line break never joins it to another word.
+# VELDO-0143 round 6: whether a negator stands anywhere, failing closed. Since round 7 it guards only a changed
+# project name and the message that is its own answer; no text is read for an identity or a visibility. A negator
+# starts where no letter or digit stands before it and, but for the prefix "non", ends where none follows it, so a
+# hyphen, an underscore, a period or a line break never joins it to another word.
 _START, _END = r'(?<![^\W_])', r'(?![^\W_])'
 _NEGATOR = re.compile(_START + r"(?:non|(?:not|no|nope|nah|nay|none|nor|neither|never|nothing|nobody|nowhere"
                       r"|without|cannot|avoid|avoiding|except|excepting|exclude|excluding|instead\s+of|rather\s+than"
@@ -238,31 +239,8 @@ def negates(text):
     return isinstance(text, str) and _NEGATOR.search(text) is not None
 
 
-def named(text, words):
-    """Whether `text` names one of `words`: any occurrence, ignoring case, even inside another word."""
-    return isinstance(text, str) and any(re.search(re.escape(w), text, re.IGNORECASE) is not None
-                                         for w in words if _is_str(w))
-
-
-def bound(value, shown, said, negated):
-    """Whether his words bind `value` of a field he was shown `shown`, given `said`, the values of the field they
-    name, and `negated`, whether they negate anywhere: another value only when they name exactly it and negate
-    nothing; the shown value only when they name none."""
-    if value != shown:
-        return said == [value] and not negated
-    return not said
-
-
 def identity_words(record):
     return [w for w in (record.get('id'), record.get('label')) if _is_str(w)]
-
-
-def identity_named(text, offered):
-    """The one offered identity `text` names (by id or label), or None: an answer to a question that
-    offered exactly these identities."""
-    found = [entry['identity'] for entry in offered or []
-             if any(names(text, word) for word in entry.get('words') or [entry['identity']])]
-    return found[0] if len(set(found)) == 1 else None
 
 
 def identities_named(text, records):
@@ -271,32 +249,65 @@ def identities_named(text, records):
 
 
 def shown_entry(presented, identity):
-    """What `presented` showed him for `identity`: the proposal itself when it named that identity, else the
-    offered entry for it, else None (he was not shown it)."""
-    if not isinstance(presented, dict):
+    """What `presented` showed him for `identity`: its offered entry for it (the proposal itself once resolved),
+    else None (he was not shown it)."""
+    if not isinstance(presented, dict) or not _is_str(identity):
         return None
-    if presented.get('identity') is not None:
-        return presented if presented['identity'] == identity else None
-    return next((e for e in presented.get('offered') or [] if e.get('identity') == identity), None)
+    if presented.get('offered') is None:
+        return presented if presented.get('identity') == identity else None
+    return next((e for e in presented['offered'] if isinstance(e, dict) and e.get('identity') == identity), None)
 
 
-def correction_problems(presented, terms, rationale, records):
-    """Why the corrected `terms` ({project, identity, visibility, mode, adoption}) are not bound to his words
-    (A CORRECTION IS BOUND TO HIS WORDS), each invalid_input:correction:<field>. `records` are the configured
-    identities."""
+def visibility_of(entry):
+    return ((entry or {}).get('remote') or {}).get('visibility')
+
+
+# ---------------------------------------------------------------------------------------------
+# The choices: the identity and the visibility are picked, never read (VELDO-0143 round 7)
+# ---------------------------------------------------------------------------------------------
+
+def picks(proposal):
+    """{choice: (identity, visibility)} of every pick `proposal` offers (control_channel_presentation's pick kind,
+    `accept <identity> <visibility>`): each offered identity with each visibility, but the pair it shows, which
+    `accept` approves."""
+    shown = proposal.get('identity') if isinstance(proposal, dict) else None
+    shown_visibility = visibility_of(proposal) if shown else None
+    found = {}
+    for entry in (proposal.get('offered') if isinstance(proposal, dict) else None) or []:
+        for visibility in VISIBILITIES:
+            if (entry.get('identity'), visibility) != (shown, shown_visibility):
+                found['%s %s %s' % (PICK, entry.get('identity'), visibility)] = (entry.get('identity'), visibility)
+    return found
+
+
+def choices(proposal):
+    """The choices the owner is offered for `proposal`, in order: accept when it shows an identity, every pick,
+    return_for_elaboration and reject."""
+    shown = isinstance(proposal, dict) and _is_str(proposal.get('identity'))
+    return (['accept'] if shown else []) + list(picks(proposal)) + ['return_for_elaboration', 'reject']
+
+
+def answered(presented, choice):
+    """The resolved proposal his approving `choice` settles: `accept` what `presented` shows (only when it shows
+    an identity), a pick the identity and visibility it names; None for any other choice."""
+    if choice == 'accept':
+        return resolve(presented, presented['identity']) if _is_str(presented.get('identity')) else None
+    pick = picks(presented).get(choice) if isinstance(choice, str) else None
+    return None if pick is None else resolve(presented, *pick)
+
+
+def correction_problems(presented, terms, rationale):
+    """Why the corrected `terms` ({project, identity, visibility, mode, adoption}) are not what his correction may
+    change (A CORRECTION CHANGES ONLY THE NAME AND THE OBJECTIVE), each invalid_input:correction:<field>."""
     problems = []
     negated = negates(rationale)
     same_name = terms.get('project') == presented.get('project')
     if not same_name and not (names(rationale, terms.get('project')) and not negated):
         problems.append('invalid_input:correction:project')
-    identity = terms.get('identity')
-    said = sorted({r['id'] for r in records if named(rationale, identity_words(r))})
-    if not bound(identity, presented.get('identity'), said, negated):
+    shown = shown_entry(presented, presented.get('identity'))
+    if shown is None or terms.get('identity') != presented.get('identity'):
         problems.append('invalid_input:correction:identity')
-    shown = shown_entry(presented, identity)
-    reference = (shown or presented).get('remote') or {}
-    visibility = terms.get('visibility')
-    if not bound(visibility, reference.get('visibility'), [v for v in VISIBILITIES if named(rationale, [v])], negated):
+    if shown is None or terms.get('visibility') != visibility_of(shown):
         problems.append('invalid_input:correction:visibility')
     expected = shown.get('mode') if shown is not None and same_name else 'create'
     if terms.get('mode') != expected or (expected == 'adopt' and 'adoption' in terms
@@ -416,12 +427,15 @@ def intake_source(conn, intake_proposal):
     return key, data, (written[1] if written else None)
 
 
-def build(conn, domain, intake, document, *, repository, owner, templates=None, decision=None, shown=None):
-    """The proposal for the inbox proposal `intake` (its record's data) from the PM's `document`. Raises
-    Refused by name when the document is not one, names something that does not exist, or names a project
-    that is taken (A NAME IS ONE PROJECT; `decision` is the one being built, never its own rival). `shown` is
-    the proposal he was shown, for a correction: an adoption shown for the same identity and name is kept as
-    shown, its scaffold commit not laid again."""
+def build(conn, domain, intake, document, *, repository, owner, templates=None, decision=None, shown=None,
+          chosen=None):
+    """The proposal for the inbox proposal `intake` (its record's data) from the PM's `document`: every
+    configured identity offered, the one the document names shown. Raises Refused by name when the document
+    is not one, names something that does not exist, or names a project that is taken (A NAME IS ONE PROJECT;
+    `decision` is the one being built, never its own rival). `chosen` (identity, visibility), for a correction,
+    builds the resolved proposal for that identity and visibility alone, whatever the document says. `shown`
+    is the proposal he was shown, for a correction: an adoption shown for the same identity and name is kept
+    as shown, its scaffold commit not laid again."""
     problems = document_problems(document, intake.get('proposal_id'))
     if problems:
         raise Refused(problems[0], '; '.join(problems))
@@ -432,19 +446,23 @@ def build(conn, domain, intake, document, *, repository, owner, templates=None, 
         raise Refused('missing_authority:git_identities')
     if document['identity'] is not None and document['identity'] not in identities:
         raise Refused('invalid_input:document:identity', 'no configured identity is named so')
+    if chosen is not None and (chosen[0] not in identities or chosen[1] not in VISIBILITIES):
+        raise Refused('invalid_input:identity', 'not a configured identity and a visibility')
     found = intake_source(conn, intake['proposal_id'])
     if found is None:
         raise Refused('missing_evidence:intake_source', intake['proposal_id'])
     key, source, command = found
     name = document['project']
-    chosen = [identities[document['identity']]] if document['identity'] else [identities[i] for i in sorted(identities)]
+    records = [identities[chosen[0]]] if chosen else [identities[i] for i in sorted(identities)]
+    visibility = chosen[1] if chosen else document['visibility']
+
     def entry(record):
         kept = shown_entry(shown, record['id']) if shown and shown.get('project') == name else None
         if kept is not None and kept.get('mode') == 'adopt':
-            visibility = document['visibility'] or record.get('default_visibility') or 'private'
-            return dict({k: kept[k] for k in IDENTITY_FIELDS}, remote=dict(kept['remote'], visibility=visibility))
-        return offered_entry(conn, domain, record, name, repository, owner, document['visibility'], templates)
-    entries = [entry(record) for record in chosen]
+            chosen_visibility = visibility or record.get('default_visibility') or 'private'
+            return dict({k: kept[k] for k in IDENTITY_FIELDS}, remote=dict(kept['remote'], visibility=chosen_visibility))
+        return offered_entry(conn, domain, record, name, repository, owner, visibility, templates)
+    entries = [entry(record) for record in records]
     proposal = {'project': name, 'repository': repository, 'owner': owner, 'identity': None, 'offered': None,
                 'directory': None, 'mode': None, 'remote': None, 'adoption': None, 'objective': document['objective'],
                 'charter': {'purpose': document['objective']}, 'authority_policy': json.loads(json.dumps(AUTHORITY_POLICY)),
@@ -453,20 +471,26 @@ def build(conn, domain, intake, document, *, repository, owner, templates=None, 
                 'source': {'proposal_id': intake['proposal_id'], 'intake_source': key, 'intake_command': command,
                            'principal': source.get('principal'), 'source_kind': source.get('source_kind'),
                            'source_id': source.get('source_ref')}}
-    if document['identity']:
+    if chosen:
         proposal.update(entries[0])
-    else:
-        proposal['offered'] = [dict(entry, words=identity_words(identities[entry['identity']])) for entry in entries]
+        return proposal
+    proposal['offered'] = entries
+    if document['identity']:
+        proposal.update({k: v for k, v in next(e for e in entries if e['identity'] == document['identity']).items()
+                         if k in IDENTITY_FIELDS})
     return proposal
 
 
-def resolve(proposal, identity):
-    """The proposal with `identity`, one of those it offered, chosen."""
+def resolve(proposal, identity, visibility=None):
+    """The proposal with `identity`, one of those it offered, chosen, and `visibility` when one is given (else
+    the one shown for that identity)."""
     entry = next((e for e in proposal.get('offered') or [] if e['identity'] == identity), None)
     if entry is None:
         raise Refused('invalid_input:identity', 'not one of the offered identities')
     resolved = dict(proposal, offered=None)
     resolved.update({k: entry[k] for k in IDENTITY_FIELDS})
+    if visibility is not None:
+        resolved['remote'] = dict(entry['remote'], visibility=visibility)
     return resolved
 
 
@@ -491,6 +515,12 @@ def proposal_problems(proposal, resolved=True):
             problems.append('invalid_input:proposal:remote')
         if (proposal['mode'] == 'adopt') != isinstance(proposal['adoption'], dict):
             problems.append('invalid_input:proposal:adoption')
+    else:
+        offered = proposal['offered'] if isinstance(proposal['offered'], list) else []
+        ids = [e.get('identity') for e in offered if isinstance(e, dict)]
+        if not offered or len(ids) != len(offered) or len(set(ids)) != len(ids) or not all(_is_str(i) for i in ids) \
+                or (proposal['identity'] is not None and proposal['identity'] not in ids):
+            problems.append('invalid_input:proposal:offered')
     return problems
 
 
@@ -512,12 +542,17 @@ def brief(proposal):
         return 'directory %s (%s), remote %s (%s, under %s)' % (
             entry.get('directory'), how, remote.get('url'), remote.get('visibility'), remote.get('owner'))
     lines = ['Start project %s.' % _shown(p.get('project'))]
-    if p.get('identity'):
+    offered = p.get('offered') if isinstance(p.get('offered'), list) else None
+    if p.get('identity') and offered is None:
         lines += ['Identity: %s' % p['identity'], 'Where: %s' % where(p)]
     else:
-        lines.append('Identity: not named; answer with the one to use: %s.'
-                     % ', '.join(e.get('identity', '') for e in p.get('offered') or []))
-        lines += ['  %s: %s' % (e.get('identity'), where(e)) for e in p.get('offered') or []]
+        if p.get('identity'):
+            lines.append('Identity: %s, %s. Answer accept to approve exactly that.'
+                         % (p['identity'], (p.get('remote') or {}).get('visibility')))
+        else:
+            lines.append('Identity: not named; pick one with a choice below.')
+        lines.append('Each identity you can pick:')
+        lines += ['  %s: %s' % (e.get('identity'), where(e)) for e in offered or []]
     team, pipeline = p.get('team') or {}, p.get('pipeline') or {}
     lines += ['First objective: %s' % _shown(p.get('objective')),
               'Team: default team revision %s (%s)' % (team.get('revision'), team.get('digest')),
@@ -526,7 +561,11 @@ def brief(proposal):
               'Authority policy: %s' % _shown(p.get('authority_policy')),
               'Owner: %s. Repository id: %s.' % (_shown(p.get('owner')), _shown(p.get('repository'))),
               'Approving creates or adopts exactly this repository, activates the project and accepts its first '
-              'objective; answer with a correction instead to change any of it.']
+              'objective.']
+    if offered is not None:
+        lines += ['To use another identity or visibility, answer with the choice that names both, '
+                  '"%s <identity> <private or public>"; only a choice changes them, never your words. To change the '
+                  'name or the first objective, answer return_for_elaboration with the change.' % PICK]
     return '\n'.join(lines)
 
 
@@ -567,12 +606,25 @@ def nothing_asked(conn, intake, proposal, owner):
     if not owner or source.get('principal') != owner or (intake or {}).get('principal') != owner:
         reasons.append('not_the_owners_message')
     text = (intake or {}).get('text')
+    # VELDO-0143 round 7: an identity read from his words binds only where nothing in them could mean otherwise;
+    # any doubt presents it, and the identity is picked.
+    if not isinstance(text, str) or not text.isascii():
+        reasons.append('not_plain_text')
+    if negates(text):
+        reasons.append('negated')
     if not isinstance(proposal, dict) or not proposal.get('identity'):
         reasons.append('identity_not_named')
     else:
-        identity = next((r for r in GI.records(conn, (intake or {}).get('domain')) if r['id'] == proposal['identity']), {})
-        if not any(names(text, word) for word in identity_words(identity)):
+        records = GI.records(conn, (intake or {}).get('domain'))
+        identity = next((r for r in records if r['id'] == proposal['identity']), {})
+        said = identities_named(text, records)
+        if proposal['identity'] not in said:
             reasons.append('identity_not_in_message')
+        elif said != [proposal['identity']]:
+            reasons.append('identity_not_alone')
+        # The PM's document never sets the visibility: unasked, it is the identity's default.
+        if visibility_of(proposal) != (identity.get('default_visibility') or 'private'):
+            reasons.append('visibility_not_default')
     if not isinstance(proposal, dict) or not names(text, proposal.get('project')):
         reasons.append('project_not_in_message')
     return reasons
@@ -655,16 +707,17 @@ def settled(store, membership, conn, decision, now=None):
         raise Refused('no_settled_decision:not_this_proposal', 'the request presents another proposal')
     if data.get('brief') != brief(presented):
         raise Refused('no_settled_decision:brief', 'the owner was shown something other than this proposal')
+    if data.get('choices') != choices(presented):
+        raise Refused('no_settled_decision:choices', 'the owner was offered other choices than this proposal\'s')
     if s.get('principals') != [owner] or data.get('owner') != owner:
         raise Refused('no_settled_decision:not_owner', 'the settled answer is not the factory owner\'s')
     ruling = s.get('ruling')
     if e.get('type') != EFFECTS.get(ruling):
         raise Refused('no_settled_decision:not_approved:%s' % ruling, 'the owner did not approve or correct it')
-    named = presented['identity'] or identity_named(s.get('rationale'), presented.get('offered'))
     if path == 'answer':
-        if ruling != 'approve' or e.get('proposal') != presented or named is None:
+        expected = answered(presented, s.get('choice')) if ruling == 'approve' else None
+        if expected is None or e.get('proposal') != presented or e.get('choice') != s.get('choice'):
             raise Refused('no_settled_decision:answer', 'his answer does not settle this proposal')
-        expected = presented if presented['identity'] else resolve(presented, named)
         if proposal != expected:
             raise Refused('no_settled_decision:proposal', 'the decision names other values than his answer')
     else:
@@ -676,8 +729,7 @@ def settled(store, membership, conn, decision, now=None):
                 or document_problems(correction.get('document'), record['proposal_id'])
                 or proposal['repository'] != presented['repository'] or proposal['source'] != presented['source']):
             raise Refused('no_settled_decision:correction', 'the decision is not the PM\'s reading of his correction')
-        problems = correction_problems(presented, proposal_terms(proposal), s.get('rationale'),
-                                       GI.records(conn, idata.get('domain')))
+        problems = correction_problems(presented, proposal_terms(proposal), s.get('rationale'))
         if problems:
             raise Refused('no_settled_decision:' + problems[0].split(':', 1)[1], 'the correction is not his words')
     versions.update(result['versions'])
@@ -832,6 +884,7 @@ class NewProjects:
                              owner=owner, templates=self.templates, decision=decision)
             reasons = nothing_asked(self.conn, data, proposal, owner)
             if not reasons:
+                proposal = resolve(proposal, proposal['identity'])
                 self.write(decision, 'settled', step='own_message', proposal_id=intake_proposal, path='own_message',
                            document=document, dispatch=dispatch, presented=None, request=None, proposal=proposal,
                            correction=None, project=proposal['project'], repository=proposal['repository'], reason=None)
@@ -872,14 +925,15 @@ class NewProjects:
         self.inbox.apply(self._signed(operation='open', alias=alias, command_id=alias + '-open', nonce=alias + '-open',
                                       assignment=dict(kind='decision', owner=owner, scope=[FACTORY_PROJECT],
                                                       deadline=deadline, budget={'owner_minutes': 10},
-                                                      brief=brief(proposal), choices=list(CHOICES),
+                                                      brief=brief(proposal), choices=choices(proposal),
                                                       subject=terms['subject'])))
         request = self.assignment.assignment_id(self.ids['repository_uuid'], alias)
         if self.inbox.read(request) is None:
             raise Refused('unavailable_service:request')
         self.presenter.frame(self._signed(operation='frame', alias=alias, request_version=1,
-                                          risk_statement='Approving creates a repository under the identity shown and '
-                                                         'activates the project; it is removed only by hand.',
+                                          risk_statement='Approving creates a repository under the identity and with '
+                                                         'the visibility you choose and activates the project; it is '
+                                                         'removed only by hand.',
                                           command_id=alias + '-frame', nonce=alias + '-frame'))
         self.presenter.present(request)
         return request
@@ -903,9 +957,9 @@ class NewProjects:
         return made
 
     def apply_settled(self):
-        """Each presented decision whose request is settled: an approval naming the identity settles it, a
-        return or an approval naming none hands his words to the factory PM, a reject ends it. No question is
-        ever sent here. Returns the observations made."""
+        """Each presented decision whose request is settled: the choice he picked settles it (accept as shown, a
+        pick with the identity and visibility it names), a return hands his words to the factory PM, a reject ends
+        it. No question is ever sent here. Returns the observations made."""
         made = []
         for record in records(self.conn):
             if record['state'] != 'presented':
@@ -925,16 +979,16 @@ class NewProjects:
                     self.write(record['id'], 'rejected', step='answer', reason='rejected')
                     made.append(self._observe('answer', 'rejected', **about))
                     continue
-                named = presented['identity'] or identity_named(s.get('rationale'), presented.get('offered'))
-                if ruling == 'approve' and named is not None:
-                    proposal = presented if presented['identity'] else resolve(presented, named)
-                    self.write(record['id'], 'settled', step='answer', path='answer', proposal=proposal)
-                    made.append(self._observe('answer', 'settled', path='answer', identity=named, **about))
-                    continue
                 if ruling == 'approve':
-                    # The identity was asked and his approval did not say it: nothing is chosen for him.
-                    self._fail(record['id'], 'answer', 'invalid_input:answer:identity')
-                    made.append(self._observe('answer', 'failed', 'invalid_input:answer:identity', **about))
+                    proposal = answered(presented, s.get('choice'))
+                    if proposal is None:
+                        # A choice this proposal never offered: nothing is chosen for him.
+                        self._fail(record['id'], 'answer', 'invalid_input:answer:choice')
+                        made.append(self._observe('answer', 'failed', 'invalid_input:answer:choice', **about))
+                        continue
+                    self.write(record['id'], 'settled', step='answer', path='answer', proposal=proposal)
+                    made.append(self._observe('answer', 'settled', path='answer', identity=proposal['identity'],
+                                              choice=s.get('choice'), **about))
                     continue
                 self.write(record['id'], 'correcting', step='answer',
                            correction={'rationale': s.get('rationale'), 'ruling': ruling, 'dispatch': None,
@@ -946,7 +1000,8 @@ class NewProjects:
 
     def correct(self, decision, document, *, dispatch):
         """The factory PM's reading of his correction: the corrected proposal settles the decision, with no
-        second presentation; one that still names no identity fails it by name."""
+        second presentation, when it changes only the name and the objective (A CORRECTION CHANGES ONLY THE NAME
+        AND THE OBJECTIVE); anything else fails it by name."""
         about = dict(decision=decision, dispatch=dispatch)
         record = read(self.conn, decision)
         try:
@@ -960,28 +1015,28 @@ class NewProjects:
             correction = dict(record['correction'], dispatch=dispatch, document=document)
             rationale = correction.get('rationale')
             configured = {r['id']: r for r in GI.records(self.conn, self.ids['domain_uuid'])}
-            failure = None
-            if document['identity'] is None:
-                failure = 'invalid_input:identity'
-            elif document['identity'] not in configured:
+            if document['identity'] is not None and document['identity'] not in configured:
                 raise Refused('invalid_input:document:identity', 'no configured identity is named so')
-            else:
-                # Judged before anything is built, so nothing is laid for terms he did not say or see.
-                chosen = configured[document['identity']]
-                directory = os.path.join(chosen['projects_root'], document['project'])
-                terms = {'project': document['project'], 'identity': document['identity'],
-                         'visibility': document['visibility'] or chosen.get('default_visibility') or 'private',
-                         'mode': 'adopt' if directory_state(directory) == 'repository' else 'create'}
-                problems = correction_problems(presented, terms, rationale, configured.values())
-                if not problems and name_taken(self.conn, document['project'], decision):
-                    problems = ['stale_subject:project_exists']
-                failure = problems[0] if problems else None
+            # Judged before anything is built, so nothing is laid for terms he did not say or see. The identity
+            # and the visibility are the ones he was shown; a document that sets others is refused by name.
+            identity = document['identity'] or presented.get('identity')
+            shown = shown_entry(presented, presented.get('identity'))
+            terms = {'project': document['project'], 'identity': identity,
+                     'visibility': document['visibility'] or visibility_of(shown), 'mode': 'create'}
+            if identity in configured:
+                directory = os.path.join(configured[identity]['projects_root'], document['project'])
+                terms['mode'] = 'adopt' if directory_state(directory) == 'repository' else 'create'
+            problems = correction_problems(presented, terms, rationale)
+            if not problems and name_taken(self.conn, document['project'], decision):
+                problems = ['stale_subject:project_exists']
+            failure = problems[0] if problems else None
             proposal = None
             if failure is None:
                 proposal = build(self.conn, self.ids['domain_uuid'], intake, document,
                                  repository=presented['repository'], owner=presented['owner'],
-                                 templates=self.templates, decision=decision, shown=presented)
-                problems = correction_problems(presented, proposal_terms(proposal), rationale, configured.values())
+                                 templates=self.templates, decision=decision, shown=presented,
+                                 chosen=(terms['identity'], terms['visibility']))
+                problems = correction_problems(presented, proposal_terms(proposal), rationale)
                 failure = problems[0] if problems else None
             if failure is not None:
                 self._fail(decision, 'correction', failure, correction=correction, project=document['project'])

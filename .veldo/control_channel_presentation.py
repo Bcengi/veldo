@@ -39,7 +39,11 @@ choices and enrolled chat. Everything else refuses by name. The owner answers a 
 once. The answer record carries the signed assertion for the one settlement VELDO-0068 performs:
 its ruling is in the contract's RULINGS vocabulary, mapped from the offered choice in
 CHOICE_RULINGS and nowhere else, beside the choice the owner picked, the rationale and the edge's
-signature. `authority_contract.settle` currently consumes decision answers only. A
+signature. One kind of choice is not a fixed word: a pick (VELDO-0143 round 7), `accept` followed by the
+values it picks, each one word (`accept bcengi private`). Its ruling is approve; what each value binds is
+the requester's to read from the choice the settlement records, never from the owner's reason. Offered
+choices must stay distinct as the owner may type them (case, width, spaces and hyphens folded), or the
+request is not presented (ambiguous_choice). `authority_contract.settle` currently consumes decision answers only. A
 review_disposition answer is presented and recorded with its ruling in the same way, for VELDO-0068
 to settle (settle today refuses it as not a decision answer); an acknowledgement settles nothing.
 No second settlement record is written here.
@@ -66,6 +70,7 @@ import importlib.util
 from pathlib import Path
 import http.client
 import json
+import re
 import sqlite3
 import time
 import unicodedata
@@ -156,7 +161,7 @@ REFUSALS = {'unknown_renderer_version': 'missing_evidence', 'invalid_input': 'in
             'missing_framing': 'missing_evidence', 'no_enrolled_chat': 'missing_evidence',
             'invalid_enrollment': 'missing_evidence', 'group_chat': 'missing_evidence',
             'presentation_too_long': 'invalid_input', 'incomplete_parts': 'unknown_outcome',
-            'retry_after': 'unavailable_service', 'unmatched_choice': 'invalid_input',
+            'retry_after': 'unavailable_service', 'unmatched_choice': 'invalid_input', 'ambiguous_choice': 'invalid_input',
             'superseded_presentation': 'stale_subject', 'stale_presentation': 'stale_subject',
             'stale_subject': 'stale_subject', 'already_answered': 'stale_subject', 'request_closed': 'stale_subject', 'unmapped_choice': 'invalid_input',
             'stale_version': 'stale_subject',
@@ -168,6 +173,11 @@ REFUSALS = {'unknown_renderer_version': 'missing_evidence', 'invalid_input': 'in
 # acknowledgement word); a decision whose choices do not all map here is not presented.
 CHOICE_RULINGS = {'accept': 'approve', 'approve': 'approve', 'reject': 'reject',
                   'return_for_elaboration': 'return_for_elaboration', 'acknowledged': 'acknowledged'}
+# A pick (VELDO-0143 round 7): an approving choice that also names what the owner picks, `accept` and one or
+# more values, each a word of letters, digits, '_', '.' or '-' (a configured identity, a visibility), separated by
+# one space. Its ruling is approve; the requester reads what each value binds from the recorded choice.
+PICK_WORD = 'accept'
+_PICK = re.compile(re.escape(PICK_WORD) + r'(?: [A-Za-z0-9][A-Za-z0-9_.-]*)+')
 SETTLED_OUTCOMES = {'pending': 'unknown_outcome', 'unknown_outcome': 'unknown_outcome', 'anomaly': 'anomaly'}
 
 
@@ -242,8 +252,17 @@ def answer_command_id(chat, message):
     return 'presentation-answer:%s:%d:%d' % (CHANNEL, chat, message)
 
 
+def pick_of(choice):
+    """The values a pick names, in order, or None when `choice` is not a pick."""
+    if not isinstance(choice, str) or _PICK.fullmatch(choice) is None:
+        return None
+    return choice.split(' ')[1:]
+
+
 def ruling_of(choice):
-    return CHOICE_RULINGS.get(choice)
+    if isinstance(choice, str) and choice in CHOICE_RULINGS:
+        return CHOICE_RULINGS[choice]
+    return 'approve' if pick_of(choice) else None
 
 
 def usable_key(key, principal, now):
@@ -848,6 +867,9 @@ class Presenter:
         acknowledgement = self.assignment.KINDS.get(c['kind']) == 'acknowledgement'
         if not all(r == 'acknowledged' if acknowledgement else r in self.AC.RULINGS for r in rulings):
             return 'unmapped_choice', None, versions
+        if len({_fold(choice) for choice in c['choices']}) != len(c['choices']):
+            # Two choices the owner would type alike: his reply could not name one of them.
+            return 'ambiguous_choice', None, versions
         return None, {
             'request_id': request, 'request_version': c['request_version'], 'assignment_version': brief['version'],
             'request': content, 'request_digest': request_digest(request, c['request_version'], content),

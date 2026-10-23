@@ -367,8 +367,9 @@ class ProjectCycles:
                                 'visibility, objective and a nonempty reason, from the owner\'s words. project is the new '
                                 'project\'s name. identity is the id of one listed identity only when he named it, else '
                                 'null; visibility is private or public only when he said so, else null; objective is the '
-                                'first piece of work he asked for. With a correction, return the proposal it shows as '
-                                'his correction changes it.')
+                                'first piece of work he asked for. With a correction, change only the project name and '
+                                'the objective as his correction says, and return identity and visibility null: he '
+                                'chooses those by picking an offered choice, never in his words.')
             self.runner.reservations.configure('pm-ceiling/' + record['cycle'], 'unit',
                 'pm-cycle:' + record['cycle'], dict(role['budget']), now=time.time())
             launch = self.runner.submit('pm-cycle:' + record['cycle'], 'coordination', holder=record['manager'],
