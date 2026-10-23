@@ -77,8 +77,11 @@ it is fixing:
 
 THE BUDGET OF ONE NESTED RUN IS MEASURED, NOT FIXED (VELDO-0214). A fixed 1800s could not hold
 the confined leg: it ended "did not finish inside 1800s" on two gate runs while the suite was
-healthy. The budget per nested run is max(1800, 2.0 x the unit stage's measured seconds for the
-same leg). Only the authority's scripts/gate_legs.py measures that, and hands it in
+healthy. The budget per nested run is min(max(1800, 2.0 x the unit stage's measured seconds for
+the same leg), 21600): never under the old fixed 1800s, and never over 6 hours, because a value that
+removed the bound would let a hung nested run hold the gate open for good. The cap is printed
+when it applies, and a measurement whose budget is not a finite number of seconds is ignored by
+name. Only the authority's scripts/gate_legs.py measures that, and hands it in
 VELDO_GATE_UNIT_SECONDS bound to the leg and the declaration digest it runs this leg under: this
 gate run's unit leg when it ran fresh, else the last fresh measurement it recorded. A value that is
 not bound to the leg this run is in, or appears outside a gate leg, is ignored by name. With no
@@ -104,6 +107,7 @@ sys.path[:] = [p for p in sys.path if os.path.realpath(p or os.curdir) != _SCRIP
 
 import importlib.util  # noqa: E402 - only after the script directory is gone
 import json  # noqa: E402
+import math  # noqa: E402
 import shutil  # noqa: E402
 import stat  # noqa: E402
 import subprocess  # noqa: E402
@@ -130,6 +134,7 @@ SUMMARY_PREFIX = "selftest:"
 FAIL_MARK = "SELFTEST FAIL:"
 RUN_TIMEOUT_S = 1800  # the floor of the measured budget, and the whole budget with no measurement
 BUDGET_FACTOR = 2.0
+BUDGET_CEILING_S = 21600  # 6 hours: no measurement may remove the bound on a nested run
 UNIT_SECONDS = "VELDO_GATE_UNIT_SECONDS"
 WRITE_TIMEOUT_S = 120
 TMP_PREFIX = "veldo-first-use-"
@@ -309,9 +314,18 @@ def run_budget(environ):
                                "is ignored" % (floor, UNIT_SECONDS, leg))
     if not 0 < seconds < float("inf"):
         return RUN_TIMEOUT_S, "%s: %s carries no usable seconds, so it is ignored" % (floor, UNIT_SECONDS)
-    budget = max(RUN_TIMEOUT_S, BUDGET_FACTOR * seconds)
-    return budget, ("max(%d, %.1f x %.1fs): the unit stage's %s leg as the authority's gate_legs.py "
-                    "measured it in %s (%s)" % (RUN_TIMEOUT_S, BUDGET_FACTOR, seconds, leg, fresh, at))
+    derived = BUDGET_FACTOR * seconds
+    if not math.isfinite(derived):
+        return RUN_TIMEOUT_S, ("%s: %s carries %gs, and %.1f x that is not a finite number of "
+                               "seconds, so it is ignored" % (floor, UNIT_SECONDS, seconds, BUDGET_FACTOR))
+    budget = min(max(RUN_TIMEOUT_S, derived), BUDGET_CEILING_S)
+    source = ("min(max(%d, %.1f x %.1fs), %d): the unit stage's %s leg as the authority's gate_legs.py "
+              "measured it in %s (%s)" % (RUN_TIMEOUT_S, BUDGET_FACTOR, seconds, BUDGET_CEILING_S, leg,
+                                          fresh, at))
+    if derived > BUDGET_CEILING_S:
+        source += ("; CAPPED at the ceiling of %ds (6 hours), where %.1f x the measurement is %.0fs"
+                   % (BUDGET_CEILING_S, BUDGET_FACTOR, derived))
+    return budget, source
 
 
 def _run_suite(tree, label, budget=RUN_TIMEOUT_S):

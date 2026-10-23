@@ -10616,8 +10616,9 @@ def cases():
     # VELDO-0214: the first-use check's budget per nested run is measured, never a fixed constant.
     suite214 = '111_veldo_0214_first_use_budget.py'
     add(214, 'budget214-fixed-1800-restored', suite214, 'check_first_use.py',
-        '    budget = max(RUN_TIMEOUT_S, BUDGET_FACTOR * seconds)\n',
-        '    budget = RUN_TIMEOUT_S\n', ['first-use-budget/measured-budget-used'])
+        '    budget = min(max(RUN_TIMEOUT_S, derived), BUDGET_CEILING_S)\n',
+        '    budget = RUN_TIMEOUT_S\n',
+        ['first-use-budget/measured-budget-used', 'first-use-budget/ceiling-caps-the-budget'])
     result[-1]['dir'] = 'scripts'
     add(214, 'budget214-caller-value-kept', suite214, 'gate_legs.py',
         '    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST, UNIT_SECONDS)}\n',
@@ -10632,6 +10633,15 @@ def cases():
         'One nested full selftest of the leg it runs in,\n',
         'One nested full selftest, measured at about\n90 seconds, of the leg it runs in,\n',
         ['first-use-budget/by-hand-uses-1800-and-says-so'])
+    result[-1]['dir'] = 'scripts'
+    # Round 2 (review F1): main() drops the budget at both nested call sites, so every nested run
+    # is back on the 1800s default while the budget line still prints the measured number.
+    add(214, 'budget214-main-drops-the-budget', suite214, 'check_first_use.py',
+        '            _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"], budget)\n',
+        '            _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"])\n',
+        ['first-use-budget/measured-budget-used', 'first-use-budget/ceiling-caps-the-budget'],
+        also=[('                baseline = _run_suite(pristine, "baseline", budget)[2]\n',
+               '                baseline = _run_suite(pristine, "baseline")[2]\n')])
     result[-1]['dir'] = 'scripts'
 
     return result
