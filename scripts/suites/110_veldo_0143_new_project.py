@@ -648,7 +648,7 @@ def _v143_suite():
                 negated_cases = {}
                 for case, name, asked_identity, words, reading in (
                         # the review's words: both identities offered, he rules one out and one visibility out
-                        ('identity', 'tidepool', None, 'not under bcengi please, and keep it private, not public',
+                        ('identity', 'saltmarsh', None, 'not under bcengi please, and keep it private, not public',
                          ('bcengi', 'public')),
                         ('identity-shown', 'rockpool', 'bcengi', 'not under bcengi, use personal',
                          ('bcengi', None)),
