@@ -46,6 +46,11 @@
      "type": "unit",
      "ref": "proof/VELDO-0143/round7/README.md",
      "detail": "Round 7 (owner decision, Telegram 36174 and 36175; the round 6 review): the identity and the visibility are offered choices he picks (VELDO-0065 pick kind), bound only from his pick; a correction changes only the name and the objective. proposal/choices and proposal/own-message-doubt (new), proposal/fields, one-answer, correction, correction-bound, correction-negated, correction-phrasings and correction-told green here at c5266dd4 and red on the round-6 engine; suite 62 answer/pick-choices green at 8ff58403 and red on the round-6 module; round7/phrasings.py: 90 review phrasings, 0 not as claimed (79 on the round-6 module). Partial runs, not a gate pass."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/round8/README.md",
+     "detail": "Round 8 (the round 7 review): his own message settles unasked only at private and is presented on a word of visibility (R7-1); an adoption keeps its remote as it is, offered by its identity alone and never recording a visibility (R7-2); ids that fold alike refused, and a request the presenter refuses for good fails the decision by name (R7-3); the judge's choices check has a part (R7-4). proposal/adoption-visibility, identities-fold-alike and not-presentable (new) and own-message-doubt, choices and provision/adoption-path (changed) green here at ef991d51 and, but for choices, red on the round-7 engine. Partial runs, not a gate pass."
     }
    ]
   },
@@ -136,7 +141,7 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "detail": "Finding 143: all sixteen mutations killed through check_teeth_mutations.py --worker (rebase/falsifiers.json). Finding 161 on this branch: 55 cases run, 54 killed by a row green at baseline, adoption161-restart-take-on the host's (rebase/falsifiers-161.json). Round 6: all 44 finding-143 cases that target suite 110 killed in worker mode on d63442e5 (round6/falsifiers-143-round6.json); newproject143-scaffold-not-laid is the host's. Round 7: all 48 finding-143 cases that target suite 110 killed in worker mode on c5266dd4 (round7/falsifiers-143-round7.json); the two suite-62 cases each turn answer/pick-choices red (round7/62-*.json); newproject143-scaffold-not-laid is the host's."
+   "detail": "Finding 143: all sixteen mutations killed through check_teeth_mutations.py --worker (rebase/falsifiers.json). Finding 161 on this branch: 55 cases run, 54 killed by a row green at baseline, adoption161-restart-take-on the host's (rebase/falsifiers-161.json). Round 6: all 44 finding-143 cases that target suite 110 killed in worker mode on d63442e5 (round6/falsifiers-143-round6.json); newproject143-scaffold-not-laid is the host's. Round 7: all 48 finding-143 cases that target suite 110 killed in worker mode on c5266dd4 (round7/falsifiers-143-round7.json); the two suite-62 cases each turn answer/pick-choices red (round7/62-*.json); newproject143-scaffold-not-laid is the host's. Round 8: 56 of the 57 finding-143 cases that target suite 110 killed in worker mode on c95472a3, and newproject143-adoption-visibility-recorded, which survived there, killed on ef991d51 with the three other adoption cases (round8/falsifiers-143-round8.json)."
   },
   {
    "name": "lint",
