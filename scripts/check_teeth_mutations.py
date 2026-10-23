@@ -10937,6 +10937,13 @@ def cases():
         "                                                        UP)\n",
         "        report['adoption_signer'] = {'outcome': 'already_done'}  # defect: the upgrade lays no adoption signer\n",
         ['upgrade/from-8bc34e94', 'upgrade/from-971186ac', 'switch/kill-points', 'upgrade/older-0186-equivalence'])
+    # Round 8: laying the adoption signer owes the service a restart until one is made, across runs; without that
+    # debt in the step log, a run killed after the signers were laid on a current engine never restarts the service,
+    # which keeps the old enrollment signers and refuses every adoption.
+    add(161, 'upgrade161-adoption-restart-not-owed', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "        elif name == 'adoption_signers':\n",
+        "        elif False:  # defect: laid adoption signers owe no restart\n",
+        ['restart/adoption-signer-kill'])
 
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
