@@ -34,11 +34,14 @@ is `failed` invalid_input:answer:identity and its report tells him why (VELDO-01
 A CORRECTION IS BOUND TO HIS WORDS (correction_problems). The PM reads his correction; it never chooses for him.
 The corrected proposal settles only when each of its terms is the one he was shown or the one his correction
 says: the project's name is the presented one or named in his words; the identity is the presented one or the
-one configured identity his words name; the visibility is the one shown for that identity or named in his words;
-and the mode is the one shown for that identity and name (an adoption is only ever an adoption he was shown,
-its scaffold commit the one shown; a name or identity he was not shown is a creation). Anything else fails the
-decision by name, invalid_input:correction:<field>, before anything is built or laid, and the one judge refuses
-it again (no_settled_decision:correction:<field>).
+one configured identity his words name; the visibility is the one shown for that identity or the one visibility
+his words name; and the mode is the one shown for that identity and name (an adoption is only ever an adoption
+he was shown, its scaffold commit the one shown; a name or identity he was not shown is a creation). A word he
+negates is not said (VELDO-0143 R3-2): an identity or visibility counts only where no negator (not, no, never,
+nor, without, instead of, rather than, or a word ending n't) stands before it in its clause (the words since the
+last , . ; : ! ? ( ) or line break, or the last but, and, so), and an identity or visibility he was shown that
+his words negate does not stay. Anything else fails the decision by name, invalid_input:correction:<field>,
+before anything is built or laid, and the one judge refuses it again (no_settled_decision:correction:<field>).
 
 A NAME IS ONE PROJECT (VELDO-0143 F3). A project whose name is already a project's, or the name of another
 new-project decision still live (presenting, presented, correcting or settled), compared without case as
@@ -208,6 +211,35 @@ def names(text, word):
     return re.search(r'(?<!%s)%s(?!%s)' % (_WORD_EDGE, re.escape(word), _WORD_EDGE), text, re.IGNORECASE) is not None
 
 
+# VELDO-0143 R3-2: a negator, and where a clause begins, for what his words affirm.
+_NEGATOR = re.compile(r"(?<![A-Za-z0-9_])(?:not|no|never|nor|without|instead\s+of|rather\s+than|[A-Za-z]+n['\u2019]t)"
+                      r"(?![A-Za-z0-9_])", re.IGNORECASE)
+_CLAUSE = re.compile(r"[,.;:!?()\n]|(?<![A-Za-z0-9_])(?:but|and|so)(?![A-Za-z0-9_])", re.IGNORECASE)
+
+
+def mentions(text, word):
+    """For each whole-word occurrence of `word` in `text` (ignoring case), whether his words affirm it: False where
+    a negator stands before it in its clause ("not under bcengi", "don't make it public"), True otherwise."""
+    if not isinstance(text, str) or not _is_str(word):
+        return []
+    found = []
+    for match in re.finditer(r'(?<!%s)%s(?!%s)' % (_WORD_EDGE, re.escape(word), _WORD_EDGE), text, re.IGNORECASE):
+        clause = max((c.end() for c in _CLAUSE.finditer(text, 0, match.start())), default=0)
+        found.append(_NEGATOR.search(text, clause, match.start()) is None)
+    return found
+
+
+def affirmed(text, words):
+    """Whether `text` names one of `words` and negates none of them."""
+    seen = [flag for word in words for flag in mentions(text, word)]
+    return bool(seen) and all(seen)
+
+
+def negated(text, words):
+    """Whether `text` negates one of `words` anywhere."""
+    return any(not flag for word in words for flag in mentions(text, word))
+
+
 def identity_words(record):
     return [w for w in (record.get('id'), record.get('label')) if _is_str(w)]
 
@@ -244,11 +276,18 @@ def correction_problems(presented, terms, rationale, records):
     if not same_name and not names(rationale, terms.get('project')):
         problems.append('invalid_input:correction:project')
     identity = terms.get('identity')
-    if not (identity == presented.get('identity') or identities_named(rationale, records) == [identity]):
+    # A changed identity or visibility is said only where his words name exactly that one, never negated; one he
+    # was shown and negates does not stay (R3-2).
+    said = sorted({r['id'] for r in records if affirmed(rationale, identity_words(r))})
+    words = next((identity_words(r) for r in records if r.get('id') == identity), [identity])
+    if not (said == [identity] if identity != presented.get('identity') else not negated(rationale, words)):
         problems.append('invalid_input:correction:identity')
     shown = shown_entry(presented, identity)
     reference = (shown or presented).get('remote') or {}
-    if terms.get('visibility') != reference.get('visibility') and not names(rationale, terms.get('visibility')):
+    visibility = terms.get('visibility')
+    named = [v for v in VISIBILITIES if affirmed(rationale, [v])]
+    if not (named == [visibility] if visibility != reference.get('visibility')
+            else not negated(rationale, [visibility])):
         problems.append('invalid_input:correction:visibility')
     expected = shown.get('mode') if shown is not None and same_name else 'create'
     if terms.get('mode') != expected or (expected == 'adopt' and 'adoption' in terms

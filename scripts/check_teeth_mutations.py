@@ -11135,6 +11135,12 @@ def cases():
                 "        finally:\n            pass  # defect: the activation's team and intake owners stay registered\n",
                 ['activation/factory-line-kept'])
 
+    # R3-2, a word he negates is not said.
+    new_project('newproject143-negation-ignored', 'control_project_proposal.py',
+                "        found.append(_NEGATOR.search(text, clause, match.start()) is None)\n",
+                "        found.append(True)  # defect: a negated word counts as said\n",
+                ['proposal/correction-negated'])
+
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
     add(142, 'identity142-clone-global-author', '103_veldo_0142_git_identities.py', 'control_clone.py', "for section in ('user', 'author', 'committer'):", 'for section in ():', ['clone/identity-authors'])

@@ -105,7 +105,7 @@ def _v143_suite():
                       'service/hand-off', 'pm/new-project-run', 'proposal/correction-bound', 'proposal/name-taken',
                       'activation/name-taken', 'proposal/no-provisioner', 'proposal/presentation-interrupted',
                       'service/pm-settled-due', 'activation/line-from-pass', 'activation/first-unit',
-                      'activation/factory-line-kept', 'activation/factory-line-restart'):
+                      'activation/factory-line-kept', 'activation/factory-line-restart', 'proposal/correction-negated'):
             expect(PREFIX + label, False)
         return
 
@@ -640,6 +640,43 @@ def _v143_suite():
                      and len(hub['calls']) == calls_g and not (projects_root['bcengi'] / 'mooring-two').exists()),
                     ('none of it asks a second question or reaches GitHub',
                      len(new_project_requests()) == len(before_bound[2]) + 7 and len(hub['calls']) == before_bound[1])])
+
+            with region('proposal/correction-negated'):
+                # A word he negates is not said (VELDO-0143 R3-2): the PM's reading that takes the identity or the
+                # visibility he ruled out by name fails by name; the reading his words affirm settles.
+                before_negated = (len(hub['calls']), len(new_project_requests()))
+                negated_cases = {}
+                for case, name, asked_identity, words, reading in (
+                        # the review's words: both identities offered, he rules one out and one visibility out
+                        ('identity', 'tidepool', None, 'not under bcengi please, and keep it private, not public',
+                         ('bcengi', 'public')),
+                        ('identity-shown', 'rockpool', 'bcengi', 'not under bcengi, use personal',
+                         ('bcengi', None)),
+                        ('visibility', 'kelp', None, 'under personal please, keep it private, not public',
+                         ('personal', 'public')),
+                        ('visibility-said', 'kelpie', None, 'under personal please, keep it private, not public',
+                         ('personal', 'private')),
+                        ('identity-said', 'rockling', 'bcengi', 'not under bcengi, use personal',
+                         ('personal', None))):
+                    decision_n, pid_n, rid_n = asked_for(name, asked_identity)
+                    returned(rid_n, words)
+                    outcome_n = decisions.correct(decision_n, document(pid_n, name, *reading), dispatch=next_id('pm-npn'))
+                    negated_cases[case] = (state_of(decision_n), outcome_n, decision_n)
+                said_judged = {case: PP.settled(S, CM, conn, negated_cases[case][2])
+                               for case in ('visibility-said', 'identity-said')
+                               if negated_cases[case][1].get('ok') is True}
+                check('proposal/correction-negated', [
+                    ('a corrected %s his words negate fails the decision by name %s' % (case, negated_cases[case][0]),
+                     negated_cases[case][0] == ('failed', 'invalid_input:correction:' + case.split('-')[0])
+                     and negated_cases[case][1].get('ok') is False)
+                    for case in ('identity', 'identity-shown', 'visibility')] + [
+                    ('the reading his words affirm settles it, as he said it %s' % (negated_cases[case][0],),
+                     negated_cases[case][1].get('ok') is True and case in said_judged
+                     and said_judged[case]['proposal']['identity'] == 'personal'
+                     and said_judged[case]['proposal']['remote']['visibility'] == 'private')
+                    for case in ('visibility-said', 'identity-said')] + [
+                    ('none of it reaches GitHub or asks a second question',
+                     len(hub['calls']) == before_negated[0] and len(new_project_requests()) == before_negated[1] + 5)])
 
             with region('proposal/name-taken'):
                 # A name is one project (VELDO-0143 F3): another live decision's name, compared as GitHub compares.
