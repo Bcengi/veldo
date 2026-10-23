@@ -1847,7 +1847,8 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                 first_pass = kept_loop.run() or {}
                 factory = kept_loop.lines[REPO]
                 before_cycles = getattr(factory, 'pm_cycles', None)
-                decision_k, _, _ = own_decision('kestrel')
+                decision_k, pid_k, _ = own_decision('kestrel')
+                oid_k = OB.objective_id(pid_k + ':project')
                 kestrel_repo = PP.read(conn, decision_k)['proposal']['repository']
                 saved_loop, service.loop = service.loop, kept_loop
                 try:
@@ -1872,17 +1873,23 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                             and bound('team_operation') is cycles.services['teams']
                             and bound('accept_snapshot') is cycles.readsets)
 
-                def take(cycles, repository, name):
-                    # A RAW feature of the factory project in `repository`, under an accepted objective; the PM takes it.
-                    objective, feature = 'objective:r31-' + name, 'objective-feature:r31-' + name
-                    f['fixture'](objective, 'objective', dict(state='ACCEPTED', project='factory', title=name))
-                    f['fixture'](feature, CB.KIND, dict(state='RAW', repository_uuid=repository, project='factory',
-                                                        objective_uuid=objective, title=name, scope=['design']))
+                def take(cycles, name):
+                    # The PM proposes a feature in the factory's repository under the new project's accepted objective
+                    # (VELDO-0077: a RAW feature of that repository), and the factory line's backlog takes it.
+                    objectives = OB.Objectives(S, CM, conn, ids, 'authority', journal_sign)
+                    current = OB.read(conn, oid_k) or {}
+                    body = dict(ids, operation='propose_feature', principal='pm', command_id=next_id('r31-feature'),
+                                nonce=next_id('r31-feature-n'), objective=oid_k, objective_version=current.get('version'),
+                                feature=name, title='The ' + name + ' feature', scope=['kestrel'])
+                    proposed = objectives.apply({'command': body, 'signature': sign_as('pm', S.canonical_bytes(body))})
+                    if not proposed.get('ok'):
+                        return dict(proposed, reason='feature:' + str(proposed.get('reason')))
                     body = dict(ids, operation='take', principal='pm', command_id=next_id('r31-take'),
-                                nonce=next_id('r31-take-n'), feature=feature, work_class='PRODUCT_CHANGE')
+                                nonce=next_id('r31-take-n'), feature=proposed.get('feature_id'),
+                                work_class='PRODUCT_CHANGE')
                     return cycles.services['backlog'].apply({'command': body,
                                                              'signature': sign_as('pm', S.canonical_bytes(body))})
-                taken = take(factory.pm_cycles, REPO, 'kept') if getattr(factory, 'pm_cycles', None) else {}
+                taken = take(factory.pm_cycles, 'kept') if getattr(factory, 'pm_cycles', None) else {}
                 kept_faults = [fault for one in passes for fault in one.get('faults') or []
                                if fault.get('repository') == kestrel_repo]
                 if not taken.get('ok') or len(kept_faults) != 1:
@@ -1924,7 +1931,7 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                     restart_passes.append(restarted.run() or {})
                 rfactory = restarted.lines[REPO]
                 rcycles = getattr(rfactory, 'pm_cycles', None)
-                rtaken = take(rcycles, REPO, 'restarted') if rcycles is not None else {}
+                rtaken = take(rcycles, 'restarted') if rcycles is not None else {}
                 others = [line for repository, line in restarted.lines.items() if repository != REPO]
                 rfaults = [x for one in restart_passes for x in one.get('faults') or []]
                 if rcycles is None or not rtaken.get('ok'):
