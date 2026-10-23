@@ -346,6 +346,10 @@ _FILES = [
     ".veldo/control_repository_creation.py",
     ".veldo/control_effect_executor_creation.py",
     ".veldo/control_service_projects.py",
+    # The scaffold itself: the provisioner the authority service starts lays Veldo into the repository it
+    # creates with it, so it is in the installer's closure, and an adopter's tree, where the installer runs
+    # too, must hold it.
+    ".veldo/init_scaffold.py",
     # VELDO-0104 (PLAN-0020 W4): the fix-validation record and the rule the proof check applies.
     # validate_checks registers its loader, so a scaffolded repository without it has no proof stage;
     # and it loads the runner by path, which loads the capsule module, so all three travel together.
