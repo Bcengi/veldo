@@ -31,6 +31,11 @@
      "type": "integration",
      "ref": "proof/VELDO-0143/round2/110-head-stage-agent.json",
      "detail": "Round 2, c1bf6dec, this sandbox with the graph stage and the recording agent stood in (sandbox_run.py): pm/new-project-run green (the factory PM run through the installed LangGraph runtime); it was refused at a07ad991 because provision/handed-over created a project of the same name (round2/README.md, 3). Partial run, not a gate pass."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0143/round5/README.md",
+     "detail": "Round 5: proposal/correction-negated (extended) and proposal/correction-phrasings green here and red on the round-4 module; round5/phrasings.py measures the binding over the review's phrasings and the limits DECISIONS 24 records."
     }
    ]
   },
@@ -77,12 +82,22 @@
     {
      "type": "integration",
      "ref": "scripts/suites/110_veldo_0143_new_project.py",
-     "detail": "The authority service's take-on and new-project pass in this process; the owner told by the VELDO-0128 report through the loopback Bot API. The first unit's dispatch through the new project's PM cycle needs the graph runtime: the host's (README, Host runs)."
+     "detail": "The authority service's take-on and new-project pass in this process; the owner told by the VELDO-0128 report through the loopback Bot API. The first unit dispatched in the new repository with the identity as author is no longer AC3's observation: the owner moved it to VELDO-0188 AC1 (Telegram 36153, approved by 36156; 5e934808), and suite 110's row activation/first-unit was removed (ad37b673). Its logic, unchanged, is the seed proof/VELDO-0143/round4/first-unit-for-0188.py, run by no suite."
     },
     {
      "type": "integration",
      "ref": "proof/VELDO-0143/round2/110-a07-stage-agent.json",
      "detail": "Round 2: activation/order and activation/failed-activates-nothing ended in KeyError('push') at a07ad991 with the agent emulated (the fence raised in provision/step-failures first); green on c1bf6dec (round2/110-head-stage-agent.json)."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0143/round4/first-unit-for-0188.py",
+     "detail": "The former row activation/first-unit, kept unchanged to seed VELDO-0188 AC1's new-project row (owner, Telegram 36156). It was red only on its first part (the new line's project cycles on the service's one connection, VELDO-0188's job); nothing in VELDO-0143 is open on it."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0143/round5/README.md",
+     "detail": "Round 5 (the round 4 review's R4-1 to R4-6): suite 110 here, every row green except service/hand-off (AF_UNIX, the host's); activation/factory-intake-current, activation/factory-paused-resumed and activation/new-projects-kept red on the round-4 engine. Partial run of one suite, not a gate pass."
     }
    ]
   }
@@ -131,7 +146,8 @@
   "The factory project's own repository is no line; its cycles run on the work configuration's first line.",
   "A factory set up before this change keeps its factory project on the workspace and has no provisioner configuration until set up anew.",
   "Each interpretation of the specification is listed in DECISIONS.md for the reviewer to judge.",
-  "Independent critical-risk review and the owner's approval are outstanding."
+  "Independent critical-risk review and the owner's approval are outstanding.",
+  "AC3's first-unit observation is VELDO-0188 AC1's (owner decision, Telegram 36156); VELDO-0143 keeps AC3's claim, set and completeness, the owner told, and its falsifier."
  ],
  "rollback": "Stop provisioning and adoption and disable the adoption signer; repositories already created or adopted stay as they are, with their records, for the owner to remove by hand. No automatic rollback."
 }

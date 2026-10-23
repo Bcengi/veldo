@@ -62,13 +62,12 @@ here, AF_UNIX refused). Killed: `newproject143-checks-after-creation`,
 `newproject143-provisioner-end-unseen`.
 
 **AC3** (the same settlement activates the project once the repository is active; first objective accepted and
-admitted; the owner told; the first unit dispatched in the new repository). Rows: `activation/order`,
-`activation/applied`, `activation/failed-activates-nothing`, `activation/admitted-without-question`,
-`activation/new-line`, all green here. Declared falsifier `newproject143-activated-while-provisioning` turns
-`activation/order` red. The dispatch of the first unit itself goes through the new line's Runner after the new
-project's PM cycle elaborates the objective: that cycle needs the graph runtime, so here the row proves the line
-(its own receiver configuration, workspace and Gate, the team's configurations readable in it, its accepted base
-revision, the identity as the author of its units), and the host runs the cycle (see Host runs).
+admitted; the owner told). Rows: `activation/order`, `activation/applied`, `activation/failed-activates-nothing`,
+`activation/admitted-without-question`, `activation/new-line`, all green here. Declared falsifier
+`newproject143-activated-while-provisioning` turns `activation/order` red. The first unit dispatched in the new
+repository with the identity as author is no longer AC3's observation: the owner moved it to VELDO-0188 AC1
+(Telegram 36153, approved by 36156; 5e934808), and its row's logic is kept, unchanged, in
+`round4/first-unit-for-0188.py` (round4/README.md).
 
 Falsifiers: round 1 `falsifiers.json` (nine of nine); rebased branch `rebase/falsifiers.json`, sixteen of sixteen
 killed, run through the driver's own worker mode with `run_falsifiers.py` (the mutation coordinator does not start

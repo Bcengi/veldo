@@ -11,7 +11,8 @@ agent stood in. The full gate (`scripts/verify.sh`) cannot run here.
 ## Results here
 
 - Suite 110 at c918f776 (`110-head.json`): 69 passed. Red: service/hand-off (AF_UNIX, the host's) and
-  activation/first-unit (open, pending the owner's decision on VELDO-0188; below).
+  activation/first-unit, which was then pending the owner's decision. That row has since been removed from suite
+  110: the observation moved to VELDO-0188 (owner, Telegram 36156; below).
 - Suite 110's round-4 rows on the round-3 engine (`110-round3-engine.json`): the tree is 15ef0204 with the four
   changed `.veldo` modules (control_workflow_cycle_pm, control_service, control_service_projects,
   control_project_proposal) taken from 2ac953ea. It ran as the scratch commit object bf5a29f1, which no branch
@@ -59,20 +60,27 @@ connection is put back. That mutation is still killed.
   "nor" and the n't contractions are added to the review's list of negators. A shown value he negates does not
   stay. The limits of a textual binding are listed in entry 24.
 
-## activation/first-unit (open, unchanged in intent)
+## activation/first-unit (moved to VELDO-0188)
 
-It is red here on its first part only: the new line's project cycles cannot be built beside the factory line's
+The owner decided (Telegram 36153, approved by 36156 "ok 0143") that AC3's observation of the first unit
+dispatched in the new repository with the identity as author belongs to VELDO-0188 AC1, whose new-project row
+now also requires that commit authored and committed by the project's identity alone (5e934808). Suite 110's row
+activation/first-unit is removed (ad37b673). Its logic, unchanged, is kept in `first-unit-for-0188.py` here, to
+seed VELDO-0188's row; no suite runs it. So nothing in VELDO-0143 is open on it. What follows is what the row
+showed when it was still in suite 110.
+
+When it ran, it was red here on its first part only: the new line's project cycles cannot be built beside the factory line's
 on the service's one connection (`invalid_registration: connection already has an allocation authority`). That
 is VELDO-0188's job. The AC3 text is unchanged. With R3-1's change the refused build no longer stops the line's
 offers. So the row's other parts are green here: the unit is offered on the new line and dispatched through its
 Runner, its packet names the new repository and its build follows that repository's commit, and its commit is
-authored and committed by the identity alone. Part 1 stays red until the owner decides whether AC3's
-first-unit observation moves to VELDO-0188.
+authored and committed by the identity alone. Part 1 was red until the owner moved AC3's first-unit
+observation to VELDO-0188 (above).
 
 ## Host runs
 
-1. `python3 scripts/selftest.py --suite 110_veldo_0143_new_project`: every row green except
-   activation/first-unit (red on its first part, named). This includes service/hand-off,
+1. `python3 scripts/selftest.py --suite 110_veldo_0143_new_project`: every row green (activation/first-unit is
+   no longer a row of suite 110: moved to VELDO-0188). Superseded by round5/README.md's host list. This includes service/hand-off,
    provision/signing-no-agent with its recording socket, pm/new-project-run, and the three round-4 rows.
 2. `python3 scripts/selftest.py --suite 66_veldo_0047_authority`: every row green, authority/installed-assets included.
 3. `python3 scripts/check_gate_mutations.py --finding 143`: 36 of 36 killed (newproject143-scaffold-not-laid is
@@ -88,4 +96,5 @@ first-unit observation moves to VELDO-0188.
    - 16_warp_1403_sizing_pass
 
    Suites 83, 92, 93 and 96 drive `Line.run` and `from_line` directly. They are the ones to watch for R3-1.
-6. `bash scripts/verify.sh`: red until activation/first-unit is decided.
+6. `bash scripts/verify.sh`: activation/first-unit is decided (moved to VELDO-0188), so it no longer holds the
+   gate red. Superseded by round5/README.md's host list.
