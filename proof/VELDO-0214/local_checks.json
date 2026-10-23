@@ -1,0 +1,161 @@
+{
+ "scope": "suite 107 through selftest.py --suite; the four registered VELDO-0214 falsifiers through check_teeth_mutations.materialize and worker. No mutation coordinator, confinement or repository gate executed.",
+ "suite_line": [
+  "  107_veldo_0214_first_use_budget                  5 passed    0.91s"
+ ],
+ "suite_summary": "selftest (PARTIAL, 1 of 163 suites): 31 passed, 0 failed in 0.91s",
+ "falsifier_runs": [
+  {
+   "case": "budget214-fixed-1800-restored",
+   "mode": "baseline",
+   "module": "scripts/check_first_use.py",
+   "replacement_count": 1,
+   "old_digest": "67fb53f0bbe1a96c26af32cfade932220e5c52e4ac652431bf86b74052d87a8c",
+   "new_digest": "67fb53f0bbe1a96c26af32cfade932220e5c52e4ac652431bf86b74052d87a8c",
+   "rows_observed": 31,
+   "target_rows": [
+    "first-use-budget/measured-budget-used"
+   ],
+   "targets": {
+    "first-use-budget/measured-budget-used": [
+     true
+    ]
+   },
+   "failed_rows": []
+  },
+  {
+   "case": "budget214-fixed-1800-restored",
+   "mode": "mutant",
+   "module": "scripts/check_first_use.py",
+   "replacement_count": 1,
+   "old_digest": "67fb53f0bbe1a96c26af32cfade932220e5c52e4ac652431bf86b74052d87a8c",
+   "new_digest": "b26f3932d79454e3d3745aaffe37c10c530159f3bce944fd99b3abce120c4d42",
+   "rows_observed": 31,
+   "target_rows": [
+    "first-use-budget/measured-budget-used"
+   ],
+   "targets": {
+    "first-use-budget/measured-budget-used": [
+     false
+    ]
+   },
+   "failed_rows": [
+    "VELDO-0214 first-use-budget/measured-budget-used"
+   ]
+  },
+  {
+   "case": "budget214-caller-value-kept",
+   "mode": "baseline",
+   "module": "scripts/gate_legs.py",
+   "replacement_count": 1,
+   "old_digest": "67f78bd4a6198f6d08254459991fd8bd93a3e9d336ce5c9dbfaf7df92ddb1a04",
+   "new_digest": "67f78bd4a6198f6d08254459991fd8bd93a3e9d336ce5c9dbfaf7df92ddb1a04",
+   "rows_observed": 31,
+   "target_rows": [
+    "first-use-budget/candidate-set-value-ignored"
+   ],
+   "targets": {
+    "first-use-budget/candidate-set-value-ignored": [
+     true
+    ]
+   },
+   "failed_rows": []
+  },
+  {
+   "case": "budget214-caller-value-kept",
+   "mode": "mutant",
+   "module": "scripts/gate_legs.py",
+   "replacement_count": 1,
+   "old_digest": "67f78bd4a6198f6d08254459991fd8bd93a3e9d336ce5c9dbfaf7df92ddb1a04",
+   "new_digest": "dee722df47c07e5eb66c788e36b6d4f416b1bb5f4594be6b26b2aac0e4ae6a74",
+   "rows_observed": 31,
+   "target_rows": [
+    "first-use-budget/candidate-set-value-ignored"
+   ],
+   "targets": {
+    "first-use-budget/candidate-set-value-ignored": [
+     false
+    ]
+   },
+   "failed_rows": [
+    "VELDO-0214 first-use-budget/candidate-set-value-ignored"
+   ]
+  },
+  {
+   "case": "budget214-failed-leg-recorded",
+   "mode": "baseline",
+   "module": "scripts/gate_legs.py",
+   "replacement_count": 1,
+   "old_digest": "67f78bd4a6198f6d08254459991fd8bd93a3e9d336ce5c9dbfaf7df92ddb1a04",
+   "new_digest": "67f78bd4a6198f6d08254459991fd8bd93a3e9d336ce5c9dbfaf7df92ddb1a04",
+   "rows_observed": 31,
+   "target_rows": [
+    "first-use-budget/reused-stage-uses-last-fresh"
+   ],
+   "targets": {
+    "first-use-budget/reused-stage-uses-last-fresh": [
+     true
+    ]
+   },
+   "failed_rows": []
+  },
+  {
+   "case": "budget214-failed-leg-recorded",
+   "mode": "mutant",
+   "module": "scripts/gate_legs.py",
+   "replacement_count": 1,
+   "old_digest": "67f78bd4a6198f6d08254459991fd8bd93a3e9d336ce5c9dbfaf7df92ddb1a04",
+   "new_digest": "cbe44909571f22bd71fcb59143df67931fed7bdc6c94ff78d598a39ca93c050b",
+   "rows_observed": 31,
+   "target_rows": [
+    "first-use-budget/reused-stage-uses-last-fresh"
+   ],
+   "targets": {
+    "first-use-budget/reused-stage-uses-last-fresh": [
+     false
+    ]
+   },
+   "failed_rows": [
+    "VELDO-0214 first-use-budget/reused-stage-uses-last-fresh"
+   ]
+  },
+  {
+   "case": "budget214-stale-docstring",
+   "mode": "baseline",
+   "module": "scripts/check_first_use.py",
+   "replacement_count": 1,
+   "old_digest": "67fb53f0bbe1a96c26af32cfade932220e5c52e4ac652431bf86b74052d87a8c",
+   "new_digest": "67fb53f0bbe1a96c26af32cfade932220e5c52e4ac652431bf86b74052d87a8c",
+   "rows_observed": 31,
+   "target_rows": [
+    "first-use-budget/by-hand-uses-1800-and-says-so"
+   ],
+   "targets": {
+    "first-use-budget/by-hand-uses-1800-and-says-so": [
+     true
+    ]
+   },
+   "failed_rows": []
+  },
+  {
+   "case": "budget214-stale-docstring",
+   "mode": "mutant",
+   "module": "scripts/check_first_use.py",
+   "replacement_count": 1,
+   "old_digest": "67fb53f0bbe1a96c26af32cfade932220e5c52e4ac652431bf86b74052d87a8c",
+   "new_digest": "014878ed758cadf9a4301543542361b65cea7b70a8dab8abf62a1fe2767fadca",
+   "rows_observed": 31,
+   "target_rows": [
+    "first-use-budget/by-hand-uses-1800-and-says-so"
+   ],
+   "targets": {
+    "first-use-budget/by-hand-uses-1800-and-says-so": [
+     false
+    ]
+   },
+   "failed_rows": [
+    "VELDO-0214 first-use-budget/by-hand-uses-1800-and-says-so"
+   ]
+  }
+ ]
+}

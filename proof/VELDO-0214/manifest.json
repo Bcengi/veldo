@@ -1,0 +1,93 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0214",
+  "commit": "11fcdbde51cbd5b41cc165db07bc8d1bc3a48610",
+  "tree": "5e29a20e7e5e223515a6ab0fc13a7ae9edaccd53",
+  "producer": "Claude implementation agent; not an independent reviewer",
+  "produced_at": "2026-10-23T10:47:25.647676+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0214/local_checks.json",
+          "detail": "Row first-use-budget/measured-budget-used passes: budget 2276.8s from a recorded 1138.4s confined leg, used as the nested run timeout and printed with formula, leg and source. Mutation budget214-fixed-1800-restored fails exactly that row."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0214/HOST_RUNS.md",
+          "detail": "NOT RUN: the repository gate needs the host; this sandbox refuses ptys and nested launchers."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0214/local_checks.json",
+          "detail": "Row first-use-budget/candidate-set-value-ignored passes. Mutation budget214-caller-value-kept fails exactly that row."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0214/local_checks.json",
+          "detail": "Rows first-use-budget/stage-runner-hands-the-matching-leg and first-use-budget/reused-stage-uses-last-fresh pass. Mutation budget214-failed-leg-recorded fails exactly the reused-stage row."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0214/HOST_RUNS.md",
+          "detail": "NOT RUN: the repository gate needs the host; this sandbox refuses ptys and nested launchers."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0214/local_checks.json",
+          "detail": "Row first-use-budget/by-hand-uses-1800-and-says-so passes. Mutation budget214-stale-docstring fails exactly that row."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "command": "python3 proof/VELDO-0214/local_check.py"
+    },
+    {
+      "name": "integration",
+      "status": "not_run",
+      "reason": "The repository gate and suites 101 and 53 need the host; see HOST_RUNS.md."
+    },
+    {
+      "name": "gate",
+      "status": "not_run",
+      "reason": "Host run of ./scripts/verify.sh pending."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0214/local_check.py",
+    "proof/VELDO-0214/local_checks.json",
+    "proof/VELDO-0214/HOST_RUNS.md"
+  ],
+  "artifact_digests": {
+    "proof/VELDO-0214/local_check.py": "sha256:4cdb176b22611f7a3ddec92802d18b46668d3f4f10730fae59965145a67e0ff6",
+    "proof/VELDO-0214/local_checks.json": "sha256:38a09c37258ed8aa8845440daafa32f903a014872319c7a91b467c5b5ec50a17",
+    "proof/VELDO-0214/HOST_RUNS.md": "sha256:d986dfe71ac506a1c03fa7d9be702c9a7d50e6eda4f7e5fe6172f2a86a59aaba"
+  },
+  "rollback": "Revert the five protected files, suite 107, its manifest entry and the four mutation cases.",
+  "review": "Independent review, host gate and the owner approval for the protected paths are pending; no gate stamp or approval claimed."
+}
