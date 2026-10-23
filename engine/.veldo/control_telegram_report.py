@@ -159,11 +159,21 @@ CORRECTION_UNCLEAR = {
     'invalid_input:correction:visibility': 'Your correction would have set the visibility: ' + _PICKED,
     'invalid_input:correction:project': ('Your correction did not make the new name clear: I change the name only '
                                          'when your words name it and hold no "not", "no" or similar word anywhere'),
-    'invalid_input:correction:mode': 'Your correction would use a repository you were not shown',
+    'invalid_input:correction:mode': ('Your correction would change how the repository is set up, adopting a '
+                                      'directory you were not shown or creating one in place of the adoption you were '
+                                      'shown; only the question you answer decides that'),
+    # VELDO-0143 round 8 (R7-3): the question could not be asked at all.
+    'invalid_input:ambiguous_choice': ('I could not ask you: two of its choices would be typed alike, so your answer '
+                                       'could not name one of them'),
 }
 CORRECTION_NEXT = {
     'invalid_input:correction:project': 'Ask again and give the new name with no "not" or "no" in it, for example '
                                         '"call it <name>".',
+    # VELDO-0143 round 8: a refused mode is not about the identity or the visibility, so PICKED_NEXT does not fit it.
+    'invalid_input:correction:mode': ('Ask again with the name you want; the question then shows whether its directory '
+                                      'is adopted as it is or a new repository is created, and you answer that.'),
+    'invalid_input:ambiguous_choice': ('Give each Git identity an id that differs from the others by more than case, '
+                                       '"-" or "_", then ask again.'),
 }
 PICKED_NEXT = ('Ask again; when the question comes, pick the choice that names the identity and visibility you want, '
                'for example "accept <identity> private", and use a correction only for the name or the objective.')

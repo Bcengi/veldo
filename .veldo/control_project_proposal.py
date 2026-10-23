@@ -17,8 +17,10 @@ ONE ANSWER. The proposal is settled by exactly one of three paths, and nothing i
   own_message  the message that started it is the answer and nothing is presented: it is the factory
                owner's own authenticated message (his intake source), the PM named an identity, the message
                names the project and that identity, each as a whole word, and no other identity, and it is
-               plain ASCII with no negator anywhere; the PM named no visibility other than the identity's
-               default (nothing_asked). Any doubt presents it, so it costs him one choice.
+               plain ASCII with no negator and no word of visibility anywhere; the repository is created
+               private, never public and never an adoption, whatever the identity's default or the PM's
+               document says (nothing_asked, VELDO-0143 R7-1). Any doubt presents it, so it costs him one
+               choice; a repository that is not private always comes from a pick.
   answer       otherwise the proposal is presented once to the factory owner as a VELDO-0068 request whose
                terms target TARGET (the project and the digest of the proposal), whose brief is exactly
                brief(proposal) and whose choices are exactly choices(proposal); the choice he picks settles it.
@@ -33,7 +35,9 @@ shows (offered only when it shows an identity), one pick `accept <identity> <vis
 an offered identity and a visibility, `return_for_elaboration` and `reject`. The decision binds the identity and
 the visibility only from the choice he picked (answered): the values shown stay when he picks none of the
 alternatives. His words, his reason and the PM's document never change either: no text is read for them. A
-reject settles nothing and the decision is `rejected`.
+directory that is already a Git repository is adopted with its remote as it is on GitHub (AS_ON_REMOTE, R7-2):
+nothing on the adoption path applies a visibility, so its entry is offered no visibility pick, only `accept
+<identity>`, and the brief says so. A reject settles nothing and the decision is `rejected`.
 
 A CORRECTION CHANGES ONLY THE NAME AND THE OBJECTIVE (correction_problems). The PM reads his correction; it never
 chooses for him. The corrected document's objective is the PM's reading of his words. Its project name other than
@@ -59,7 +63,9 @@ PRESENTED ONCE, EVEN ACROSS A CRASH (VELDO-0143 F4). The decision is written `pr
 proposal, the request's alias and its deadline, before anything is presented; the presentation follows, then
 the decision is `presented`. A presentation interrupted by a crash or refused by the store is finished from the
 record (resume, at the running service's next new-project pass) with the same proposal and the same commands,
-which the store replays and the presenter does not send twice; nothing is built again.
+which the store replays and the presenter does not send twice; nothing is built again. A request the presenter
+refuses for a reason no retry changes (NOT_PRESENTABLE, e.g. two choices that fold alike) fails the decision
+invalid_input:<refusal>, so his report tells him, rather than leaving it presented to no one (R7-3).
 
 THE SAME SETTLEMENT ACTIVATES (activate, VELDO-0143 AC3). Once the repository the decision names is
 `active` (created and adopted, or adopted, and taken on by the running service), the decision is applied in
@@ -110,12 +116,15 @@ ID_PREFIX = 'new-project:'
 OPERATION = 'new_project_record'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
 STATES = ('presenting', 'presented', 'correcting', 'settled', 'rejected', 'failed', 'activated')
-TRANSITIONS = {None: ('presenting', 'settled', 'failed'), 'presenting': ('presented',),
+TRANSITIONS = {None: ('presenting', 'settled', 'failed'), 'presenting': ('presented', 'failed'),
                'presented': ('settled', 'correcting', 'rejected', 'failed'),
                'correcting': ('settled', 'failed'), 'settled': ('settled', 'failed', 'activated')}
 # A new-project decision still live: its name is taken (A NAME IS ONE PROJECT).
 LIVE = ('presenting', 'presented', 'correcting', 'settled')
 PATHS = ('own_message', 'answer', 'correction')
+# VELDO-0143 round 8 (R7-3): the presenter's refusals (control_channel_presentation compose) that the same request
+# meets again on every retry; the decision fails invalid_input:<refusal>.
+NOT_PRESENTABLE = ('ambiguous_choice', 'unmapped_choice', 'presentation_too_long')
 # The VELDO-0068 request the owner answers when his message did not settle it.
 TOUCHPOINT, TARGET = 'decision_disposition', 'new_project'
 CHOICES = ['accept', 'return_for_elaboration', 'reject']
@@ -135,14 +144,18 @@ PROPOSAL_FIELDS = ('project', 'repository', 'owner', 'identity', 'offered', 'dir
 IDENTITY_FIELDS = ('identity', 'directory', 'mode', 'remote', 'adoption')
 MODES = ('create', 'adopt')
 VISIBILITIES = ('private', 'public')
+# VELDO-0143 round 8 (R7-2): an adoption keeps the existing remote's visibility, which nothing on the adoption path
+# changes and nothing here reads, so its entry records this, is offered no visibility pick and is shown "as it is
+# on GitHub"; a resolved adoption naming any other visibility is not a proposal (proposal_problems).
+AS_ON_REMOTE = 'as_on_remote'
 # The defaults every new project starts with; the proposal names them, so his answer binds them.
 AUTHORITY_POLICY = {'team_amendment': [OWNER_ROLE]}
 COORDINATION_BUDGET = {'capacity': 4, 'invocations': 400, 'wall_seconds': 7 * 86400}
 DEFAULT_BRANCH = 'main'
 _NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$')
-# A whole word's edges, for a project's name and an identity his approval names (VELDO-0143 R4-1): a letter, digit or
-# underscore continues a word, and so does a '.' or '-' joined to one ("shoal-two", "fjord.io"); a '.' or '-' with
-# nothing after it ends the word.
+# A whole word's edges (VELDO-0143 R4-1), for a project's name his correction or his own message names and an identity
+# his own message names (nothing_asked): a letter, digit or underscore continues a word, and so does a '.' or '-'
+# joined to one ("shoal-two", "fjord.io"); a '.' or '-' with nothing after it ends the word.
 _LEFT_EDGE = r'(?<![A-Za-z0-9_])(?<![A-Za-z0-9_][.-])'
 _RIGHT_EDGE = r'(?![A-Za-z0-9_]|[.-][A-Za-z0-9_])'
 
@@ -151,6 +164,11 @@ class Refused(Exception):
     def __init__(self, code, detail=''):
         super().__init__('%s: %s' % (code, detail) if detail else code)
         self.code, self.detail = code, detail
+
+
+class NotPresented(Refused):
+    """The presenter refused the request for a reason no retry changes (NOT_PRESENTABLE): the decision fails by
+    that name, so his report tells him, rather than staying presented to no one."""
 
 
 def _is_str(value):
@@ -239,6 +257,17 @@ def negates(text):
     return isinstance(text, str) and _NEGATOR.search(text) is not None
 
 
+# VELDO-0143 round 8 (R7-1): a word that could say what he wants of the visibility. His own message that holds one is
+# presented, so the visibility is picked, never read from it; failing closed, a word joined to another still counts.
+_VISIBILITY_WORD = re.compile(r'(?<![^\W_])(?:private|privately|public|publicly|visib\w*|invisib\w*|hid\w*|secret\w*'
+                              r'|open|opened|closed|internal)(?![^\W_])', re.IGNORECASE)
+
+
+def says_visibility(text):
+    """Whether a word that could name a visibility stands anywhere in `text`."""
+    return isinstance(text, str) and _VISIBILITY_WORD.search(text) is not None
+
+
 def identity_words(record):
     return [w for w in (record.get('id'), record.get('label')) if _is_str(w)]
 
@@ -269,11 +298,16 @@ def visibility_of(entry):
 def picks(proposal):
     """{choice: (identity, visibility)} of every pick `proposal` offers (control_channel_presentation's pick kind,
     `accept <identity> <visibility>`): each offered identity with each visibility, but the pair it shows, which
-    `accept` approves."""
+    `accept` approves. An adoption keeps its remote's visibility (AS_ON_REMOTE), so its identity is offered alone,
+    `accept <identity>` (visibility None: the entry's), and never with a visibility it cannot keep."""
     shown = proposal.get('identity') if isinstance(proposal, dict) else None
     shown_visibility = visibility_of(proposal) if shown else None
     found = {}
     for entry in (proposal.get('offered') if isinstance(proposal, dict) else None) or []:
+        if entry.get('mode') == 'adopt':
+            if entry.get('identity') != shown:
+                found['%s %s' % (PICK, entry.get('identity'))] = (entry.get('identity'), None)
+            continue
         for visibility in VISIBILITIES:
             if (entry.get('identity'), visibility) != (shown, shown_visibility):
                 found['%s %s %s' % (PICK, entry.get('identity'), visibility)] = (entry.get('identity'), visibility)
@@ -289,7 +323,8 @@ def choices(proposal):
 
 def answered(presented, choice):
     """The resolved proposal his approving `choice` settles: `accept` what `presented` shows (only when it shows
-    an identity), a pick the identity and visibility it names; None for any other choice."""
+    an identity), a pick the identity and visibility it names (an adoption's own, AS_ON_REMOTE); None for any other
+    choice."""
     if choice == 'accept':
         return resolve(presented, presented['identity']) if _is_str(presented.get('identity')) else None
     pick = picks(presented).get(choice) if isinstance(choice, str) else None
@@ -310,8 +345,10 @@ def correction_problems(presented, terms, rationale):
     if shown is None or terms.get('visibility') != visibility_of(shown):
         problems.append('invalid_input:correction:visibility')
     expected = shown.get('mode') if shown is not None and same_name else 'create'
-    if terms.get('mode') != expected or (expected == 'adopt' and 'adoption' in terms
-                                          and terms['adoption'] != shown.get('adoption')):
+    # A renamed adoption would be a creation whose visibility he never picked (R7-2): only a proposal decides the mode.
+    renamed_adoption = shown is not None and not same_name and shown.get('mode') == 'adopt'
+    if terms.get('mode') != expected or renamed_adoption or (expected == 'adopt' and 'adoption' in terms
+                                                             and terms['adoption'] != shown.get('adoption')):
         problems.append('invalid_input:correction:mode')
     return problems
 
@@ -376,6 +413,8 @@ def offered_entry(conn, domain, identity, name, repository, owner, visibility, t
     chosen = visibility or identity.get('default_visibility') or 'private'
     remote = {'name': name, 'owner': identity['remote_owner'], 'url': remote_url(identity, name), 'visibility': chosen}
     if directory_state(directory) != 'repository':
+        if chosen not in VISIBILITIES:
+            raise Refused('invalid_input:visibility', 'a repository is created only as private or public')
         return {'identity': identity['id'], 'directory': directory, 'mode': 'create', 'remote': remote, 'adoption': None}
     origin = _origin(directory)
     if origin is None:
@@ -386,7 +425,8 @@ def offered_entry(conn, domain, identity, name, repository, owner, visibility, t
                                                name=name, owner=owner, repository=repository, templates=templates)
     except provisioner.Refused as error:
         raise Refused(error.code, directory) from None
-    remote = dict(remote, url=adoption['remote'])
+    # The adoption path applies no visibility: the remote stays as it is on GitHub, and the entry says so (R7-2).
+    remote = dict(remote, url=adoption['remote'], visibility=AS_ON_REMOTE)
     return {'identity': identity['id'], 'directory': adoption['path'], 'mode': 'adopt', 'remote': remote,
             'adoption': adoption}
 
@@ -446,7 +486,7 @@ def build(conn, domain, intake, document, *, repository, owner, templates=None, 
         raise Refused('missing_authority:git_identities')
     if document['identity'] is not None and document['identity'] not in identities:
         raise Refused('invalid_input:document:identity', 'no configured identity is named so')
-    if chosen is not None and (chosen[0] not in identities or chosen[1] not in VISIBILITIES):
+    if chosen is not None and (chosen[0] not in identities or chosen[1] not in VISIBILITIES + (AS_ON_REMOTE,)):
         raise Refused('invalid_input:identity', 'not a configured identity and a visibility')
     found = intake_source(conn, intake['proposal_id'])
     if found is None:
@@ -459,8 +499,7 @@ def build(conn, domain, intake, document, *, repository, owner, templates=None, 
     def entry(record):
         kept = shown_entry(shown, record['id']) if shown and shown.get('project') == name else None
         if kept is not None and kept.get('mode') == 'adopt':
-            chosen_visibility = visibility or record.get('default_visibility') or 'private'
-            return dict({k: kept[k] for k in IDENTITY_FIELDS}, remote=dict(kept['remote'], visibility=chosen_visibility))
+            return dict({k: kept[k] for k in IDENTITY_FIELDS}, remote=dict(kept['remote'], visibility=AS_ON_REMOTE))
         return offered_entry(conn, domain, record, name, repository, owner, visibility, templates)
     entries = [entry(record) for record in records]
     proposal = {'project': name, 'repository': repository, 'owner': owner, 'identity': None, 'offered': None,
@@ -487,6 +526,8 @@ def resolve(proposal, identity, visibility=None):
     entry = next((e for e in proposal.get('offered') or [] if e['identity'] == identity), None)
     if entry is None:
         raise Refused('invalid_input:identity', 'not one of the offered identities')
+    if visibility is not None and entry.get('mode') == 'adopt':
+        raise Refused('invalid_input:visibility', 'an adoption keeps its remote\'s visibility')
     resolved = dict(proposal, offered=None)
     resolved.update({k: entry[k] for k in IDENTITY_FIELDS})
     if visibility is not None:
@@ -511,7 +552,9 @@ def proposal_problems(proposal, resolved=True):
                 proposal['directory']):
             problems.append('invalid_input:proposal:directory')
         remote = proposal['remote'] if isinstance(proposal['remote'], dict) else {}
-        if set(remote) != {'name', 'owner', 'url', 'visibility'} or remote.get('visibility') not in VISIBILITIES:
+        # A creation is private or public; an adoption's is its remote's, as it is (R7-2), never one it cannot keep.
+        allowed = (AS_ON_REMOTE,) if proposal['mode'] == 'adopt' else VISIBILITIES
+        if set(remote) != {'name', 'owner', 'url', 'visibility'} or remote.get('visibility') not in allowed:
             problems.append('invalid_input:proposal:remote')
         if (proposal['mode'] == 'adopt') != isinstance(proposal['adoption'], dict):
             problems.append('invalid_input:proposal:adoption')
@@ -522,6 +565,11 @@ def proposal_problems(proposal, resolved=True):
                 or (proposal['identity'] is not None and proposal['identity'] not in ids):
             problems.append('invalid_input:proposal:offered')
     return problems
+
+
+def shown_visibility(visibility):
+    """A visibility as the brief says it."""
+    return 'visibility as it is on GitHub' if visibility == AS_ON_REMOTE else visibility
 
 
 def _shown(value):
@@ -540,7 +588,8 @@ def brief(proposal):
             if (entry.get('adoption') or {}).get('scaffold_commit') else 'already present')
             if entry.get('mode') == 'adopt' else 'created')
         return 'directory %s (%s), remote %s (%s, under %s)' % (
-            entry.get('directory'), how, remote.get('url'), remote.get('visibility'), remote.get('owner'))
+            entry.get('directory'), how, remote.get('url'), shown_visibility(remote.get('visibility')),
+            remote.get('owner'))
     lines = ['Start project %s.' % _shown(p.get('project'))]
     offered = p.get('offered') if isinstance(p.get('offered'), list) else None
     if p.get('identity') and offered is None:
@@ -548,7 +597,7 @@ def brief(proposal):
     else:
         if p.get('identity'):
             lines.append('Identity: %s, %s. Answer accept to approve exactly that.'
-                         % (p['identity'], (p.get('remote') or {}).get('visibility')))
+                         % (p['identity'], shown_visibility((p.get('remote') or {}).get('visibility'))))
         else:
             lines.append('Identity: not named; pick one with a choice below.')
         lines.append('Each identity you can pick:')
@@ -564,8 +613,10 @@ def brief(proposal):
               'objective.']
     if offered is not None:
         lines += ['To use another identity or visibility, answer with the choice that names both, '
-                  '"%s <identity> <private or public>"; only a choice changes them, never your words. To change the '
-                  'name or the first objective, answer return_for_elaboration with the change.' % PICK]
+                  '"%s <identity> <private or public>"; only a choice changes them, never your words. A directory '
+                  'that is adopted keeps its repository as it is on GitHub, so its choice names the identity alone, '
+                  '"%s <identity>". To change the name or the first objective, answer return_for_elaboration with '
+                  'the change.' % (PICK, PICK)]
     return '\n'.join(lines)
 
 
@@ -616,15 +667,18 @@ def nothing_asked(conn, intake, proposal, owner):
         reasons.append('identity_not_named')
     else:
         records = GI.records(conn, (intake or {}).get('domain'))
-        identity = next((r for r in records if r['id'] == proposal['identity']), {})
         said = identities_named(text, records)
         if proposal['identity'] not in said:
             reasons.append('identity_not_in_message')
         elif said != [proposal['identity']]:
             reasons.append('identity_not_alone')
-        # The PM's document never sets the visibility: unasked, it is the identity's default.
-        if visibility_of(proposal) != (identity.get('default_visibility') or 'private'):
-            reasons.append('visibility_not_default')
+    # VELDO-0143 round 8 (R7-1): unasked, a repository is only ever private. Neither the identity's default nor the
+    # PM's document makes it public, and an adoption keeps a visibility no one here knows: a repository that is not
+    # private always comes from a pick, and so does one his words say anything of.
+    if not isinstance(proposal, dict) or visibility_of(proposal) != 'private':
+        reasons.append('visibility_not_private')
+    if says_visibility(text):
+        reasons.append('visibility_in_message')
     if not isinstance(proposal, dict) or not names(text, proposal.get('project')):
         reasons.append('project_not_in_message')
     return reasons
@@ -898,7 +952,12 @@ class NewProjects:
                        document=document, dispatch=dispatch, presented=proposal, request=None, proposal=None,
                        correction=None, project=proposal['project'], repository=proposal['repository'], reason=None,
                        presentation={'alias': alias, 'deadline': deadline})
-            request = self._present(decision, proposal, owner, alias, deadline)
+            try:
+                request = self._present(decision, proposal, owner, alias, deadline)
+            except NotPresented as error:
+                self._fail(decision, 'presented', error.code)
+                return dict(self._observe('propose', 'failed', error.code, project=proposal['project'], **about),
+                            ok=False, reason=error.code)
             self.write(decision, 'presented', step='presented', request=request)
         except (Refused, self.store.StoreRefused) as error:
             return dict(self._observe('propose', 'refused', error.code, **about), ok=False, reason=error.code)
@@ -913,7 +972,7 @@ class NewProjects:
         """The one VELDO-0068 request that presents `proposal` to the owner: its terms, the inbox request,
         its framing and its presentation, under `alias` and `deadline` as the decision records them, so a retry
         carries the same commands (the store replays them; the presenter never sends a presentation twice).
-        Returns the request id."""
+        Returns the request id; raises NotPresented when the presenter refuses it for good (NOT_PRESENTABLE)."""
         if None in (self.settlement, self.inbox, self.presenter, self.assignment, self.request_sign):
             raise Refused('unavailable_service:presentation')
         terms = self.settlement.terms(self._signed(operation='terms', terms=alias, command_id=alias + '-terms',
@@ -935,7 +994,12 @@ class NewProjects:
                                                          'the visibility you choose and activates the project; it is '
                                                          'removed only by hand.',
                                           command_id=alias + '-frame', nonce=alias + '-frame'))
-        self.presenter.present(request)
+        shown = self.presenter.present(request) or {}
+        if shown.get('outcome') == 'refused' and shown.get('reason') in NOT_PRESENTABLE:
+            # Nothing was presented, so the request he could never answer is canceled, not left open to him.
+            self.inbox.apply(self._signed(operation='cancel', alias=alias, request_version=1,
+                                          command_id=alias + '-cancel', nonce=alias + '-cancel'))
+            raise NotPresented('invalid_input:' + shown['reason'], request)
         return request
 
     def resume(self):
@@ -952,6 +1016,9 @@ class NewProjects:
                                         presentation['deadline'])
                 self.write(record['id'], 'presented', step='presented', request=request)
                 made.append(self._observe('resume', 'presented', request=request, **about))
+            except NotPresented as error:
+                self._fail(record['id'], 'presented', error.code)
+                made.append(self._observe('resume', 'failed', error.code, **about))
             except (Refused, self.store.StoreRefused) as error:
                 made.append(self._observe('resume', 'refused', error.code, **about))
         return made
