@@ -1,0 +1,17 @@
+{
+ "commit": "c1bf6dec",
+ "details": [
+  "VELDO-0143 detail: service/hand-off: AF_UNIX sockets are refused on this host, so no provisioner can reach a running service over its socket"
+ ],
+ "exit": 1,
+ "failed_rows": [
+  "VELDO-0143 service/hand-off"
+ ],
+ "passed": 50,
+ "replacements": [],
+ "stood_in": [
+  "--agent",
+  "--stage"
+ ],
+ "suite": "110_veldo_0143_new_project"
+}

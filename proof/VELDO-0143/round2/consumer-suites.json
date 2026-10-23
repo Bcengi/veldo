@@ -1,0 +1,1003 @@
+{
+ "base": "base_a07ad991",
+ "note": "python3 proof/VELDO-0143/round2/consumer_suites.py <archive of a07ad991> base_a07ad991 . <out> <suites>, the branch at 6d2880b2 (round 2 fixes 1, 3 and 4), one after the other in this sandbox (AF_UNIX refused, no systemd user manager, graph stage not writable). 36 of 38 suites the same on both trees. 16_warp_1403_sizing_pass and 24_veldo_0007_install_and_run need a Git checkout, which the archive is not: see consumer-suites-git.json for both on Git clones. Not a gate result.",
+ "suites": [
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0185 every-account: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 fresh/adapters: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 fresh/one-engine",
+     "VELDO-0185 fresh/registered: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 fresh/team: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 login/named: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 login/receiver-refuses: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 login/recheck: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 login/retry-excludes: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 loop/configured: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 rerun/changes-nothing: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 rerun/missing-state-root: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 rerun/over-earlier-host",
+     "VELDO-0185 reservation/principals: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 reservation/state-root: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 team/newest-model: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 team/workers: setup laid the owner's host down [refused unavailable_service:profile:user_manager]"
+    ],
+    "passed": 3
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0185 every-account: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 fresh/adapters: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 fresh/one-engine",
+     "VELDO-0185 fresh/registered: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 fresh/team: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 login/named: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 login/receiver-refuses: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 login/recheck: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 login/retry-excludes: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 loop/configured: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 rerun/changes-nothing: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 rerun/missing-state-root: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 rerun/over-earlier-host",
+     "VELDO-0185 reservation/principals: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 reservation/state-root: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 team/newest-model: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+     "VELDO-0185 team/workers: setup laid the owner's host down [refused unavailable_service:profile:user_manager]"
+    ],
+    "passed": 3
+   },
+   "same": true,
+   "suite": "106_veldo_0185_dispatch_setup"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 6
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 6
+   },
+   "same": true,
+   "suite": "108_veldo_0153_executor_profile"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 32
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 32
+   },
+   "same": true,
+   "suite": "26_veldo_0009_install_stamp"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 7
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 7
+   },
+   "same": true,
+   "suite": "46_veldo_0029_enrollment"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 1
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 1
+   },
+   "same": true,
+   "suite": "66_veldo_0047_authority"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 18
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 18
+   },
+   "same": true,
+   "suite": "68_veldo_0126_intake"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 7
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 7
+   },
+   "same": true,
+   "suite": "68_veldo_0136_hints"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 8
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 8
+   },
+   "same": true,
+   "suite": "69_veldo_0068_settlement"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 33
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 33
+   },
+   "same": true,
+   "suite": "69_veldo_0133_dispositions"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0076 project/cancel",
+     "VELDO-0076 project/complete-resolved",
+     "VELDO-0076 project/observability",
+     "VELDO-0076 project/open-reservation",
+     "VELDO-0076 project/owner-revoked",
+     "VELDO-0076 project/paused-dispatch",
+     "VELDO-0076 project/resume",
+     "VELDO-0076 project/stop-policy"
+    ],
+    "passed": 24
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0076 project/cancel",
+     "VELDO-0076 project/complete-resolved",
+     "VELDO-0076 project/observability",
+     "VELDO-0076 project/open-reservation",
+     "VELDO-0076 project/owner-revoked",
+     "VELDO-0076 project/paused-dispatch",
+     "VELDO-0076 project/resume",
+     "VELDO-0076 project/stop-policy"
+    ],
+    "passed": 24
+   },
+   "same": true,
+   "suite": "71_veldo_0076_projects"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0130 events/retry-after-failure"
+    ],
+    "passed": null
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0130 events/retry-after-failure"
+    ],
+    "passed": null
+   },
+   "same": true,
+   "suite": "71_veldo_0130_api"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 20
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 20
+   },
+   "same": true,
+   "suite": "72_veldo_0077_objectives"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 18
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 18
+   },
+   "same": true,
+   "suite": "72_veldo_0128_reports"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 20
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 20
+   },
+   "same": true,
+   "suite": "73_veldo_0078_backlog"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 26
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 26
+   },
+   "same": true,
+   "suite": "73_veldo_0089_team"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0139 chat/enrolled",
+     "VELDO-0139 edge/enrolled-with-possession",
+     "VELDO-0139 genesis/owner-signed",
+     "VELDO-0139 host-trust/directory-checked",
+     "VELDO-0139 ingress/configuration",
+     "VELDO-0139 install/assets",
+     "VELDO-0139 journey/qualified-and-active",
+     "VELDO-0139 qualification/one-request-across-restart",
+     "VELDO-0139 qualification/opening-retried",
+     "VELDO-0139 refuse/existing-store",
+     "VELDO-0139 refuse/writes-nothing",
+     "VELDO-0139 rollback/rerun",
+     "VELDO-0139 service/starts-inert",
+     "VELDO-0139 setup/lays-down",
+     "VELDO-0139 store/private-and-closed",
+     "VELDO-0139 token/never-copied"
+    ],
+    "passed": 1
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0139 chat/enrolled",
+     "VELDO-0139 edge/enrolled-with-possession",
+     "VELDO-0139 genesis/owner-signed",
+     "VELDO-0139 host-trust/directory-checked",
+     "VELDO-0139 ingress/configuration",
+     "VELDO-0139 install/assets",
+     "VELDO-0139 journey/qualified-and-active",
+     "VELDO-0139 qualification/one-request-across-restart",
+     "VELDO-0139 qualification/opening-retried",
+     "VELDO-0139 refuse/existing-store",
+     "VELDO-0139 refuse/writes-nothing",
+     "VELDO-0139 rollback/rerun",
+     "VELDO-0139 service/starts-inert",
+     "VELDO-0139 setup/lays-down",
+     "VELDO-0139 store/private-and-closed",
+     "VELDO-0139 token/never-copied"
+    ],
+    "passed": 1
+   },
+   "same": true,
+   "suite": "73_veldo_0139_factory_setup"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 13
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 13
+   },
+   "same": true,
+   "suite": "75_veldo_0150_own_message_acceptance"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 22
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 22
+   },
+   "same": true,
+   "suite": "76_veldo_0079_grooming"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 13
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 13
+   },
+   "same": true,
+   "suite": "77_veldo_0149_adopted_activation"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 15
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 15
+   },
+   "same": true,
+   "suite": "82_veldo_0085_decomposition"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0154 install/assets",
+     "VELDO-0154 loop/ask-before-rerun",
+     "VELDO-0154 loop/journal-wake-offers",
+     "VELDO-0154 loop/no-other-timer",
+     "VELDO-0154 loop/owner-no-stops",
+     "VELDO-0154 loop/owner-yes-reruns",
+     "VELDO-0154 loop/receiver-death",
+     "VELDO-0154 loop/rerun-another-account",
+     "VELDO-0154 loop/reset-timer-wake",
+     "VELDO-0154 loop/review-offered",
+     "VELDO-0154 loop/runner-in-service"
+    ],
+    "passed": 2
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0154 install/assets",
+     "VELDO-0154 loop/ask-before-rerun",
+     "VELDO-0154 loop/journal-wake-offers",
+     "VELDO-0154 loop/no-other-timer",
+     "VELDO-0154 loop/owner-no-stops",
+     "VELDO-0154 loop/owner-yes-reruns",
+     "VELDO-0154 loop/receiver-death",
+     "VELDO-0154 loop/rerun-another-account",
+     "VELDO-0154 loop/reset-timer-wake",
+     "VELDO-0154 loop/review-offered",
+     "VELDO-0154 loop/runner-in-service"
+    ],
+    "passed": 2
+   },
+   "same": true,
+   "suite": "83_veldo_0154_factory_loop"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 27
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 27
+   },
+   "same": true,
+   "suite": "84_veldo_0169_project_handouts"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0171 api-edge/enrolled-by-owner",
+     "VELDO-0171 api-edge/installed-api-call",
+     "VELDO-0171 api-edge/running-service",
+     "VELDO-0171 api/content-security-policy",
+     "VELDO-0171 api/loopback-only",
+     "VELDO-0171 api/service-configuration",
+     "VELDO-0171 api/start-rules",
+     "VELDO-0171 api/unit",
+     "VELDO-0171 passkey/first-enrollment",
+     "VELDO-0171 rerun/arguments-compared",
+     "VELDO-0171 rerun/changes-nothing",
+     "VELDO-0171 rerun/differs-refused",
+     "VELDO-0171 rerun/over-0139-host",
+     "VELDO-0171 tailscale/refusals",
+     "VELDO-0171 tailscale/serve-bg"
+    ],
+    "passed": 3
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0171 api-edge/enrolled-by-owner",
+     "VELDO-0171 api-edge/installed-api-call",
+     "VELDO-0171 api-edge/running-service",
+     "VELDO-0171 api/content-security-policy",
+     "VELDO-0171 api/loopback-only",
+     "VELDO-0171 api/service-configuration",
+     "VELDO-0171 api/start-rules",
+     "VELDO-0171 api/unit",
+     "VELDO-0171 passkey/first-enrollment",
+     "VELDO-0171 rerun/arguments-compared",
+     "VELDO-0171 rerun/changes-nothing",
+     "VELDO-0171 rerun/differs-refused",
+     "VELDO-0171 rerun/over-0139-host",
+     "VELDO-0171 tailscale/refusals",
+     "VELDO-0171 tailscale/serve-bg"
+    ],
+    "passed": 3
+   },
+   "same": true,
+   "suite": "85_veldo_0171_setup_api"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 26
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 26
+   },
+   "same": true,
+   "suite": "86_veldo_0168_text"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0189 announce/before-first-write",
+     "VELDO-0189 engines/atomic-record",
+     "VELDO-0189 engines/codex-refusal",
+     "VELDO-0189 engines/refuse-record",
+     "VELDO-0189 engines/repair-record",
+     "VELDO-0189 engines/repair-report",
+     "VELDO-0189 install/assets",
+     "VELDO-0189 kept/owner-data",
+     "VELDO-0189 kept/runs",
+     "VELDO-0189 ownership/commit-refused",
+     "VELDO-0189 ownership/committed",
+     "VELDO-0189 ownership/restore-commands",
+     "VELDO-0189 ownership/restore-differs",
+     "VELDO-0189 ownership/restore-reported",
+     "VELDO-0189 ownership/start-drops",
+     "VELDO-0189 restart/rules",
+     "VELDO-0189 second-run/changes-nothing",
+     "VELDO-0189 switch/failed-after-start",
+     "VELDO-0189 switch/failed-restart",
+     "VELDO-0189 switch/kill-points",
+     "VELDO-0189 switch/resumed-failure",
+     "VELDO-0189 switch/rollback-kills",
+     "VELDO-0189 switch/stop-before-restore",
+     "VELDO-0189 switch/stop-refused",
+     "VELDO-0189 upgrade/census",
+     "VELDO-0189 upgrade/corrupt-runtime-record",
+     "VELDO-0189 upgrade/fresh-0186",
+     "VELDO-0189 upgrade/from-8bc34e94",
+     "VELDO-0189 upgrade/from-971186ac",
+     "VELDO-0189 upgrade/older-0186-equivalence",
+     "VELDO-0189 upgrade/receiver-without-store",
+     "VELDO-0189 upgrade/refused-by-name",
+     "VELDO-0189 upgrade/removed-module"
+    ],
+    "passed": 0
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0189 announce/before-first-write",
+     "VELDO-0189 engines/atomic-record",
+     "VELDO-0189 engines/codex-refusal",
+     "VELDO-0189 engines/refuse-record",
+     "VELDO-0189 engines/repair-record",
+     "VELDO-0189 engines/repair-report",
+     "VELDO-0189 install/assets",
+     "VELDO-0189 kept/owner-data",
+     "VELDO-0189 kept/runs",
+     "VELDO-0189 ownership/commit-refused",
+     "VELDO-0189 ownership/committed",
+     "VELDO-0189 ownership/restore-commands",
+     "VELDO-0189 ownership/restore-differs",
+     "VELDO-0189 ownership/restore-reported",
+     "VELDO-0189 ownership/start-drops",
+     "VELDO-0189 restart/rules",
+     "VELDO-0189 second-run/changes-nothing",
+     "VELDO-0189 switch/failed-after-start",
+     "VELDO-0189 switch/failed-restart",
+     "VELDO-0189 switch/kill-points",
+     "VELDO-0189 switch/resumed-failure",
+     "VELDO-0189 switch/rollback-kills",
+     "VELDO-0189 switch/stop-before-restore",
+     "VELDO-0189 switch/stop-refused",
+     "VELDO-0189 upgrade/census",
+     "VELDO-0189 upgrade/corrupt-runtime-record",
+     "VELDO-0189 upgrade/fresh-0186",
+     "VELDO-0189 upgrade/from-8bc34e94",
+     "VELDO-0189 upgrade/from-971186ac",
+     "VELDO-0189 upgrade/older-0186-equivalence",
+     "VELDO-0189 upgrade/receiver-without-store",
+     "VELDO-0189 upgrade/refused-by-name",
+     "VELDO-0189 upgrade/removed-module"
+    ],
+    "passed": 0
+   },
+   "same": true,
+   "suite": "86_veldo_0189_engine_upgrade"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 25
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 25
+   },
+   "same": true,
+   "suite": "91_veldo_0151_specialists"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0167 hints-without-api",
+     "VELDO-0167 installed-record",
+     "VELDO-0167 interrupted-record-write",
+     "VELDO-0167 late-subscriber",
+     "VELDO-0167 older-engine-host",
+     "VELDO-0167 older-host",
+     "VELDO-0167 record-hint-counts",
+     "VELDO-0167 upgrade-restart-answer"
+    ],
+    "passed": 1
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0167 hints-without-api",
+     "VELDO-0167 installed-record",
+     "VELDO-0167 interrupted-record-write",
+     "VELDO-0167 late-subscriber",
+     "VELDO-0167 older-engine-host",
+     "VELDO-0167 older-host",
+     "VELDO-0167 record-hint-counts",
+     "VELDO-0167 upgrade-restart-answer"
+    ],
+    "passed": 1
+   },
+   "same": true,
+   "suite": "91_veldo_0167_setup_records"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0088 cycle/combined-inputs",
+     "VELDO-0088 cycle/no-action",
+     "VELDO-0088 cycle/pending-follow-up",
+     "VELDO-0088 cycle/receipts",
+     "VELDO-0088 cycle/runner",
+     "VELDO-0088 cycle/serialized",
+     "VELDO-0088 cycle/waiting-release",
+     "VELDO-0088 followup/initial-fault",
+     "VELDO-0088 followup/pending-fault",
+     "VELDO-0088 followup/setup-pm",
+     "VELDO-0088 followup/setup-pm-authority",
+     "VELDO-0088 proposal/stop-on-refusal",
+     "VELDO-0088 review/build-refusal",
+     "VELDO-0088 review/current-publication",
+     "VELDO-0088 review/pending-budget",
+     "VELDO-0088 review/pm-principal",
+     "VELDO-0088 review/review-refusal",
+     "VELDO-0088 unit/factory-builder-ticket",
+     "VELDO-0088 unit/independent-review",
+     "VELDO-0088 unit/one-run-staging"
+    ],
+    "passed": 5
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0088 cycle/combined-inputs",
+     "VELDO-0088 cycle/no-action",
+     "VELDO-0088 cycle/pending-follow-up",
+     "VELDO-0088 cycle/receipts",
+     "VELDO-0088 cycle/runner",
+     "VELDO-0088 cycle/serialized",
+     "VELDO-0088 cycle/waiting-release",
+     "VELDO-0088 followup/initial-fault",
+     "VELDO-0088 followup/pending-fault",
+     "VELDO-0088 followup/setup-pm",
+     "VELDO-0088 followup/setup-pm-authority",
+     "VELDO-0088 proposal/stop-on-refusal",
+     "VELDO-0088 review/build-refusal",
+     "VELDO-0088 review/current-publication",
+     "VELDO-0088 review/pending-budget",
+     "VELDO-0088 review/pm-principal",
+     "VELDO-0088 review/review-refusal",
+     "VELDO-0088 unit/factory-builder-ticket",
+     "VELDO-0088 unit/independent-review",
+     "VELDO-0088 unit/one-run-staging"
+    ],
+    "passed": 5
+   },
+   "same": true,
+   "suite": "92_veldo_0088_pm_cycles"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0152 route/answers",
+     "VELDO-0152 route/asked-only-when-unclear",
+     "VELDO-0152 route/codex-result",
+     "VELDO-0152 route/existing-project",
+     "VELDO-0152 route/factory-refusal",
+     "VELDO-0152 route/malformed",
+     "VELDO-0152 route/new-project",
+     "VELDO-0152 route/read-and-report",
+     "VELDO-0152 route/runner-input",
+     "VELDO-0152 route/scope-refusal",
+     "VELDO-0152 route/stale"
+    ],
+    "passed": 11
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0152 route/answers",
+     "VELDO-0152 route/asked-only-when-unclear",
+     "VELDO-0152 route/codex-result",
+     "VELDO-0152 route/existing-project",
+     "VELDO-0152 route/factory-refusal",
+     "VELDO-0152 route/malformed",
+     "VELDO-0152 route/new-project",
+     "VELDO-0152 route/read-and-report",
+     "VELDO-0152 route/runner-input",
+     "VELDO-0152 route/scope-refusal",
+     "VELDO-0152 route/stale"
+    ],
+    "passed": 11
+   },
+   "same": true,
+   "suite": "93_veldo_0152_intake_routes"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0162 configuration/refusals",
+     "VELDO-0162 configuration/revisions",
+     "VELDO-0162 configuration/unauthorized-save",
+     "VELDO-0162 default/history",
+     "VELDO-0162 default/named-revision",
+     "VELDO-0162 default/refusals",
+     "VELDO-0162 default/staffing",
+     "VELDO-0162 format/fake-lines",
+     "VELDO-0162 install/assets",
+     "VELDO-0162 routes/contract",
+     "VELDO-0162 routes/redaction",
+     "VELDO-0162 team/application-exception",
+     "VELDO-0162 team/consumed",
+     "VELDO-0162 team/decider",
+     "VELDO-0162 team/decline",
+     "VELDO-0162 team/other-request",
+     "VELDO-0162 team/owner-answer",
+     "VELDO-0162 team/owner-save",
+     "VELDO-0162 team/reproposal",
+     "VELDO-0162 team/roundtrip",
+     "VELDO-0162 team/setup-requester",
+     "VELDO-0162 team/staffing",
+     "VELDO-0162 team/stale-team",
+     "VELDO-0162 team/telegram",
+     "VELDO-0162 team/unverified-assertion"
+    ],
+    "passed": 1
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0162 configuration/refusals",
+     "VELDO-0162 configuration/revisions",
+     "VELDO-0162 configuration/unauthorized-save",
+     "VELDO-0162 default/history",
+     "VELDO-0162 default/named-revision",
+     "VELDO-0162 default/refusals",
+     "VELDO-0162 default/staffing",
+     "VELDO-0162 format/fake-lines",
+     "VELDO-0162 install/assets",
+     "VELDO-0162 routes/contract",
+     "VELDO-0162 routes/redaction",
+     "VELDO-0162 team/application-exception",
+     "VELDO-0162 team/consumed",
+     "VELDO-0162 team/decider",
+     "VELDO-0162 team/decline",
+     "VELDO-0162 team/other-request",
+     "VELDO-0162 team/owner-answer",
+     "VELDO-0162 team/owner-save",
+     "VELDO-0162 team/reproposal",
+     "VELDO-0162 team/roundtrip",
+     "VELDO-0162 team/setup-requester",
+     "VELDO-0162 team/staffing",
+     "VELDO-0162 team/stale-team",
+     "VELDO-0162 team/telegram",
+     "VELDO-0162 team/unverified-assertion"
+    ],
+    "passed": 1
+   },
+   "same": true,
+   "suite": "94_veldo_0162_configuration_routes"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0204 census/writer",
+     "VELDO-0204 derive/values",
+     "VELDO-0204 fresh/dispatch",
+     "VELDO-0204 lock/second-connection",
+     "VELDO-0204 refuse/missing-source",
+     "VELDO-0204 refuse/principal",
+     "VELDO-0204 rerun/unchanged",
+     "VELDO-0204 service/added",
+     "VELDO-0204 service/pm-assigned",
+     "VELDO-0204 service/rerun",
+     "VELDO-0204 service/serve",
+     "VELDO-0204 service/start",
+     "VELDO-0204 service/team",
+     "VELDO-0204 source/absent",
+     "VELDO-0204 source/account",
+     "VELDO-0204 source/project",
+     "VELDO-0204 source/team",
+     "VELDO-0204 source/unit",
+     "VELDO-0204 source/windows"
+    ],
+    "passed": 0
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0204 census/writer",
+     "VELDO-0204 derive/values",
+     "VELDO-0204 fresh/dispatch",
+     "VELDO-0204 lock/second-connection",
+     "VELDO-0204 refuse/missing-source",
+     "VELDO-0204 refuse/principal",
+     "VELDO-0204 rerun/unchanged",
+     "VELDO-0204 service/added",
+     "VELDO-0204 service/pm-assigned",
+     "VELDO-0204 service/rerun",
+     "VELDO-0204 service/serve",
+     "VELDO-0204 service/start",
+     "VELDO-0204 service/team",
+     "VELDO-0204 source/absent",
+     "VELDO-0204 source/account",
+     "VELDO-0204 source/project",
+     "VELDO-0204 source/team",
+     "VELDO-0204 source/unit",
+     "VELDO-0204 source/windows"
+    ],
+    "passed": 0
+   },
+   "same": true,
+   "suite": "96_veldo_0204_reservation_policies"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [],
+    "passed": null
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 49
+   },
+   "same": false,
+   "suite": "16_warp_1403_sizing_pass"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0007 AC1: every install ran from a tree with NO engine/ directory - the COMPOSED PACK shape, where the base has been laid into the pack and the pack root IS the template source. That absence is the exact condition 1.0 broke on, and running from this repository (which HAS engine/) is what hid it, because every test ran against the one tree nobody installs. Asserted on the tree the EXECUTED scaffolder belongs to, derived from the argv the child received, never on the directory the function was passed",
+     "VELDO-0007 AC1: the block ran to completion rather than raising (IndexError('list index out of range'))",
+     "VELDO-0007 AC1: the scaffolder that ran is the PACK'S OWN copy - the executable path read OFF THE COMPLETED LAUNCH is the pack directory plus .veldo/init_scaffold.py, and it sits under /packs/<pack>, so the launch is under the composed pack and never under this repository. An unanswerable record (an argv naming no scaffolder, or several) reds this row by its own name rather than raising out of the reader. Recorded: []",
+     "VELDO-0007 AC2 NEGATIVE CONTROL for the guard: the DEFAULT composer (the real publisher) produces packs and the stage passes, so the refusal above is a measurement of what was composed rather than the guard firing always",
+     "VELDO-0007 AC2: the set installed EQUALS the set the publisher composed, and it is non-trivial (0 packs). A hand-kept list is the defect this repository has shipped twice: seven listed pairs guarded nine modules that arrived later",
+     "VELDO-0007 AC3 A STAND-DOWN THE NESTED GATE RECORDED IS REPORTED BY THIS STAGE: every stand-down line the adopter's gate emitted appears on this stage's own output, named, with the catalog split and the scan reach beside it. A stand-down counted into a green and never printed reads exactly like a measurement, and an operator cannot tell them apart. Reported 0 stand-down line(s)",
+     "VELDO-0007 AC3 THE ADOPTER'S GREEN IS A MEASUREMENT AND NOT A SCAN OF NOTHING: every scaffolded tree was COMMITTED before its own gate ran, the index the gate reads is non-empty, and the one `required:` slot the shipped catalog carries reached MORE THAN ZERO files. No count is pinned - a growing template moves all of these numbers and reds nothing - because what is a defect by construction is a green whose required check inspected an empty corpus. Measured: []",
+     "VELDO-0007 AC3: every scaffolded repository's OWN gate exited zero, over all 0 packs. Laying files down is not installing: 1.0 laid nothing and said so, but a scaffolder that lays a repository whose gate is RED is worse, because the adopter's first act fails and the failure looks like their fault",
+     "VELDO-0007 AC3: the block ran to completion rather than raising (IndexError('list index out of range'))",
+     "VELDO-0007 AC3: the real publisher composed a tree for the mutation below, so the teeth are proven against a real artifact rather than a fixture",
+     "VELDO-0007 AC4: the block ran to completion rather than raising (CalledProcessError(128, ['git', '-C', '<archive of a07ad991>', 'rev-parse', '--git-dir']))",
+     "VELDO-0007 AC5: the block ran to completion rather than raising (IndexError('list index out of range'))",
+     "VELDO-0007 VELDO-0099 special files and private reflogs: the block ran to completion rather than raising (PermissionError(1, 'Operation not permitted'))",
+     "VELDO-0007 publisher-parse: the block ran to completion rather than raising (CalledProcessError(128, ['git', '-C', '<archive of a07ad991>', 'ls-files', '-z']))"
+    ],
+    "passed": 68
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0007 AC2 NEGATIVE CONTROL for the guard: the DEFAULT composer (the real publisher) produces packs and the stage passes, so the refusal above is a measurement of what was composed rather than the guard firing always",
+     "VELDO-0007 AC3 A STAND-DOWN THE NESTED GATE RECORDED IS REPORTED BY THIS STAGE: every stand-down line the adopter's gate emitted appears on this stage's own output, named, with the catalog split and the scan reach beside it. A stand-down counted into a green and never printed reads exactly like a measurement, and an operator cannot tell them apart. Reported 0 stand-down line(s)",
+     "VELDO-0007 AC3 THE ADOPTER'S GREEN IS A MEASUREMENT AND NOT A SCAN OF NOTHING: every scaffolded tree was COMMITTED before its own gate ran, the index the gate reads is non-empty, and the one `required:` slot the shipped catalog carries reached MORE THAN ZERO files. No count is pinned - a growing template moves all of these numbers and reds nothing - because what is a defect by construction is a green whose required check inspected an empty corpus. Measured: [('aider', 0, 256, None), ('antigravity', 0, 257, None), ('claude', 0, 257, None), ('codex', 0, 256, None), ('copilot', 0, 256, None), ('cursor', 0, 256, None), ('opencode', 0, 256, None)]",
+     "VELDO-0007 AC3: every scaffolded repository's OWN gate exited zero, over all 7 packs. Laying files down is not installing: 1.0 laid nothing and said so, but a scaffolder that lays a repository whose gate is RED is worse, because the adopter's first act fails and the failure looks like their fault",
+     "VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows below being vacuous: the sandboxed stage composed with the real publisher, installed and ran a nested gate - exit zero, 'install-and-run: pass', more than ten files laid down - and the pack it installed FROM sits UNDER the TMPDIR it was given, so the bytes went where the criterion says they go. Said: 'rns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()\\n      candidate execution failed in store-denied domain (publication forbidden)\\ninstall-and-run: FAIL'",
+     "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, sha256 and mtime before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+     "VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstrably did the work. THE LIMIT IS NAMED RATHER THAN CLAIMED AWAY: the removal is in a `finally`, so a KILLED process leaves its tree behind and this row cannot see that - a review found 302MB of leftovers matching three interrupted runs. Asserted over the directory this row created, never over the machine's /tmp, which is live state nobody owns",
+     "VELDO-0007 AC5: the checker is EXECUTABLE as a stage runs it - invoked as a subprocess over one pack, exiting zero",
+     "VELDO-0007 VELDO-0099 special files and private reflogs: the block ran to completion rather than raising (PermissionError(1, 'Operation not permitted'))"
+    ],
+    "passed": 93
+   },
+   "same": false,
+   "suite": "24_veldo_0007_install_and_run"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 11
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 11
+   },
+   "same": true,
+   "suite": "86_veldo_0186_setup_assets"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0051 events/completion-owner",
+     "VELDO-0051 events/confirmed-landing-only",
+     "VELDO-0051 events/installed-assets",
+     "VELDO-0051 events/observations",
+     "VELDO-0051 events/projection-prefix",
+     "VELDO-0051 events/vocabulary-roundtrip",
+     "VELDO-0051 ran/events/projection-prefix"
+    ],
+    "passed": 4
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0051 events/completion-owner",
+     "VELDO-0051 events/confirmed-landing-only",
+     "VELDO-0051 events/installed-assets",
+     "VELDO-0051 events/observations",
+     "VELDO-0051 events/projection-prefix",
+     "VELDO-0051 events/vocabulary-roundtrip",
+     "VELDO-0051 ran/events/projection-prefix"
+    ],
+    "passed": 4
+   },
+   "same": true,
+   "suite": "66_veldo_0051_events"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0050 proof/accepted-before-offer",
+     "VELDO-0050 proof/actual-checks",
+     "VELDO-0050 proof/build-only-no-landing",
+     "VELDO-0050 proof/contextual-refusals",
+     "VELDO-0050 proof/fresh-reviewer-resolves",
+     "VELDO-0050 proof/no-default-success",
+     "VELDO-0050 proof/observations",
+     "VELDO-0050 proof/owning-services",
+     "VELDO-0050 ran/proof/accepted-before-offer",
+     "VELDO-0050 ran/proof/no-default-success"
+    ],
+    "passed": 4
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0050 proof/accepted-before-offer",
+     "VELDO-0050 proof/actual-checks",
+     "VELDO-0050 proof/build-only-no-landing",
+     "VELDO-0050 proof/contextual-refusals",
+     "VELDO-0050 proof/fresh-reviewer-resolves",
+     "VELDO-0050 proof/no-default-success",
+     "VELDO-0050 proof/observations",
+     "VELDO-0050 proof/owning-services",
+     "VELDO-0050 ran/proof/accepted-before-offer",
+     "VELDO-0050 ran/proof/no-default-success"
+    ],
+    "passed": 4
+   },
+   "same": true,
+   "suite": "64_veldo_0050_proof"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [],
+    "passed": null
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [],
+    "passed": null
+   },
+   "same": true,
+   "suite": "107_veldo_0153_identity_push"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/taken-on-running"
+    ],
+    "passed": 49
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/taken-on-running"
+    ],
+    "passed": 49
+   },
+   "same": true,
+   "suite": "109_veldo_0161_adoption"
+  }
+ ]
+}

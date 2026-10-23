@@ -60,6 +60,8 @@ footprint:
   - "specs/index.md"
   - "proof/VELDO-0143/*"
   - "proof/VELDO-0143/rebase/*"
+  - "proof/VELDO-0143/round2/*"
+  - "proof/VELDO-0152/fixture.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -264,3 +266,21 @@ longer on every loop iteration behind a journal watermark. Suite 110 gains provi
 provision/interrupted, provision/handed-over and service/hand-off (AF_UNIX), and service/provisions follows the
 new design; finding 143 registers seven more mutations, sixteen in all. Acceptance criteria, risk, readiness and
 approval requirements are unchanged.
+
+2026-10-23, round 2, the host's failures at a07ad991; each fix, its row and its falsifier are in
+proof/VELDO-0143/round2/README.md. (1) Suite 110's fenced rows found the SSH agent contacted: the signer of
+VELDO-0152's shared fixture (proof/VELDO-0152/fixture.py, added to the footprint for this), which suite 110's
+rows reach inside the identity wire's fence, ran ssh-keygen with SSH_AUTH_SOCK and SSH_AGENT_PID; it and suite
+110's own key generation now run without them, and row provision/signing-no-agent (with mutation
+newproject143-signer-reaches-agent) proves no signature on a new project's path reaches an agent. 0143's
+production code runs no ssh-keygen of its own; its signers already ran without an agent. (2) activation/order and
+activation/failed-activates-nothing ended in KeyError('push') because the fence's violation log accumulates: the
+first violation raised at provision/step-failures' first case, so no later case ran; fixed by (1). (3)
+pm/new-project-run was refused invalid_input:directory:no_remote because provision/handed-over, added by the
+rebase, created a project of the same name, estuary, under the same identity; that row's project is now inlet,
+and the PM row expects every configured identity offered, the factory source's fixture identity included. (4)
+Suite 66 authority/installed-assets: the installer's closure now reaches init_scaffold.py (the provisioner the
+service starts lays Veldo with it), which the scaffold did not lay, so an adopter's tree could not derive the
+closure; the scaffold now lays init_scaffold.py (mutation newproject143-scaffold-not-laid), every composed pack
+lays one file more. Finding 143 registers eighteen mutations. Acceptance criteria, risk, readiness and approval
+requirements are unchanged.
