@@ -10831,6 +10831,21 @@ def cases():
              "    if R.repository_id_problems(repository):\n        return False\n    try:\n",
              "    if True:  # defect: the scaffold ref is kept\n        return False\n    try:\n",
              ['adoption/scaffold-commit', 'adoption/signer-enrolled', 'adoption/push-refused'])
+    # Round 3, A: setup's enrollment signers are exactly the owner and the adoption signer (VELDO-0161 AC1: "a
+    # service key setup enrolls among the host's enrollment signers"), each with its own key; suite 73 reads them.
+    def setup_signers(name, old, new):
+        add(161, name, '73_veldo_0139_factory_setup.py', 'control_factory_setup.py', old, new, ['setup/lays-down'])
+
+    setup_signers('setup161-adoption-signer-omitted',
+                  "            texts = host_files(plan, public['settlement'], public['adoption'])\n",
+                  "            texts = host_files(plan, public['settlement'])  # defect: the adoption signer is not enrolled\n")
+    setup_signers('setup161-adoption-signer-wrong-key',
+                  "            texts = host_files(plan, public['settlement'], public['adoption'])\n",
+                  "            texts = host_files(plan, public['settlement'], public['settlement'])  # defect: another key\n")
+    setup_signers('setup161-extra-enrollment-signer',
+                  "plan['owner_public']) + adoption,\n",
+                  "plan['owner_public']) + adoption + adoption.replace(ADOPTION_PRINCIPAL, 'extra-signer', 1),"
+                  "  # defect: an extra signer\n")
 
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
