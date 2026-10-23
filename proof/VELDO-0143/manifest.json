@@ -36,6 +36,11 @@
      "type": "integration",
      "ref": "proof/VELDO-0143/round5/README.md",
      "detail": "Round 5: proposal/correction-negated (extended) and proposal/correction-phrasings green here and red on the round-4 module; round5/phrasings.py measures the binding over the review's phrasings and the limits DECISIONS 24 records."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/round6/README.md",
+     "detail": "Round 6 (the round 5 review's R5-1, R5-2, R5-4): a correction binds a value only where his words name exactly it and hold no negator anywhere, and keeps the shown one only where they name none. proposal/correction-negated and proposal/correction-phrasings (rewritten) and proposal/correction-told (new) green here at d63442e5 and red on the round-5 module; round6/phrasings.py measures each guarantee, refusal and limit DECISIONS 26 records (116 cases, 0 not as recorded)."
     }
    ]
   },
@@ -98,6 +103,11 @@
      "type": "integration",
      "ref": "proof/VELDO-0143/round5/README.md",
      "detail": "Round 5 (the round 4 review's R4-1 to R4-6): suite 110 here, every row green except service/hand-off (AF_UNIX, the host's); activation/factory-intake-current, activation/factory-paused-resumed and activation/new-projects-kept red on the round-4 engine. Partial run of one suite, not a gate pass."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/round6/README.md",
+     "detail": "Round 6 (R5-3): a line defers to the factory line only while the factory project can still run, and names each deferral (pm_cycles:deferred_to_factory_line). activation/factory-canceled (new), activation/factory-paused-resumed and activation/factory-line-restart (extended) green here and red on the round-5 engine. Partial run of one suite, not a gate pass."
     }
    ]
   }
@@ -116,7 +126,7 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "detail": "Finding 143: all sixteen mutations killed through check_teeth_mutations.py --worker (rebase/falsifiers.json). Finding 161 on this branch: 55 cases run, 54 killed by a row green at baseline, adoption161-restart-take-on the host's (rebase/falsifiers-161.json)."
+   "detail": "Finding 143: all sixteen mutations killed through check_teeth_mutations.py --worker (rebase/falsifiers.json). Finding 161 on this branch: 55 cases run, 54 killed by a row green at baseline, adoption161-restart-take-on the host's (rebase/falsifiers-161.json). Round 6: all 44 finding-143 cases that target suite 110 killed in worker mode on d63442e5 (round6/falsifiers-143-round6.json); newproject143-scaffold-not-laid is the host's."
   },
   {
    "name": "lint",
