@@ -65,6 +65,11 @@ footprint:
   - "proof/VELDO-0143/round4/*"
   - "proof/VELDO-0143/round5/*"
   - "proof/VELDO-0143/round6/*"
+  - "proof/VELDO-0143/round7/*"
+  - "engine/.veldo/control_channel_presentation.py"
+  - ".veldo/control_channel_presentation.py"
+  - "packs/*/.veldo/control_channel_presentation.py"
+  - "scripts/suites/62_veldo_0065_presentations.py"
   - "proof/VELDO-0152/fixture.py"
   - "specs/VELDO-0188-a-line-for-every-project-at-run-time.md"
   - "engine/.veldo/control_intake.py"
@@ -95,12 +100,16 @@ acceptance_criteria:
       tidepool" and a message that names no identity; intake sends each to the factory project,
       the factory PM routes it as a new project (VELDO-0152 AC3), and the factory PM run prepares one
       proposal naming the
-      project, the identity (asked in the same request when he did not say), the directory, the remote
-      name and visibility, the first objective, the default team's current revision (VELDO-0162 AC4) and
-      the default pipeline, and the coordination budget. His one answer, a yes or a correction, settles
-      the project and the first objective, and no further question is sent; the first message, which
-      named both, is itself that answer and nothing is presented. Falsifier: Present a proposal when his
-      message already named the project and the identity; the nothing-asked row must fail.
+      project, the directory and the remote name for each configured identity, the first objective, the
+      default team's current revision (VELDO-0162 AC4) and the default pipeline, and the coordination
+      budget, and offering the identity and the visibility as choices he picks in the same request: every
+      configured identity and both visibilities, with approve (what is shown, when an identity is shown)
+      and reject. Only the choice he picks binds the identity and the visibility; neither his typed words
+      nor the PM's document ever sets them. His one answer, a choice or a correction, settles the project
+      and the first objective, and no further question is sent; a correction changes only the project's
+      name and the first objective. The first message, which named both, is itself that answer and
+      nothing is presented. Falsifier: Present a proposal when his message already named the project and
+      the identity; the nothing-asked row must fail.
     falsified_by: >
       Present a proposal when his message already named the project and the identity; the
       nothing-asked row must fail.
@@ -366,3 +375,24 @@ paused-factory cost until VELDO-0188. Rows proposal/correction-negated and propo
 activation/factory-line-restart (extended). Finding 143 drops the seven clause-reading mutations, registers seven
 new ones and re-anchors five, forty-five in all. Acceptance criteria, risk, readiness and approval requirements
 are unchanged.
+
+2026-10-23, owner decision (Telegram 36174 asked, 36175 "Ok buttons"), approved as a change to this
+specification by 36175, and round 7: the round 6 independent review (proof/VELDO-0143/REVIEW-claude-r6-2026-10-23.md)
+found again typed wording that binds an identity or a visibility he never chose (R6-1 "Personally" binds personal,
+R6-2 "not this account" keeps the refused one, R6-3 lookalike characters), as rounds 3 to 5 had. Reading free text
+for these two settings cannot be made safe, so they become offered choices he picks. AC1's text now says so: the
+proposal offers every configured identity and both visibilities as choices in the same request, only the choice he
+picks binds them, and a correction changes only the project's name and the first objective. AC1's claim that
+nothing is asked when his message already names the project and the identity, and every falsifier, are unchanged.
+The choices are VELDO-0065's mechanism with one new choice kind, a pick (`accept <identity> <visibility>`, ruled
+approve), and one new refusal, `ambiguous_choice`, so control_channel_presentation.py and suite 62 (row
+answer/pick-choices) are added to this footprint. The free-text identity and visibility binding is removed from
+control_project_proposal (`named`, `bound`, `identity_named`); his own message settles unasked only where nothing in
+it could mean another identity and the PM set no visibility. Service/provisions now requires, on the socket branch
+too, that a provisioner's end alone makes the pass due (a second provisioner whose take-on is withheld), so
+newproject143-provisioner-end-unseen is killed on the host. DECISIONS 28 to 30; entries 24 and 26's limit lists for
+the identity and the visibility are replaced by what the choices guarantee. Rows proposal/choices and
+proposal/own-message-doubt (new) and proposal/fields, one-answer, correction, correction-bound, correction-negated,
+correction-phrasings, correction-told, provision/answered-and-corrected and service/provisions (changed); finding 143
+removes five mutations, re-targets two and registers eleven, fifty-one in all; proof/VELDO-0143/round7/README.md.
+Risk, readiness and approval requirements are unchanged.

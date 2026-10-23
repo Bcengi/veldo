@@ -260,15 +260,18 @@ Entries 1, 2 and 5 above are changed by round 3 as follows; the text above is ke
   negator before it in its clause. Words that negate one value of a field and affirm another through a bare "and"
   ("don't use bcengi and use personal") are refused as `invalid_input:correction:<field>:ambiguous`.
 - Round 6 replaces this reading (entry 26). The clause, the negator list above, "? no", the "and" rule and the
-  `:ambiguous` refusal are gone from the module; what the binding now guarantees, what it refuses and what it
-  still lets through are listed in entry 26, each measured. The round-5 limit list that stood here is withdrawn:
-  four of its items were not measured (R5-4), and it left out the fail-open cases of R5-1 and R5-2.
+  `:ambiguous` refusal are gone from the module. The round-5 limit list that stood here is withdrawn: four of its
+  items were not measured (R5-4), and it left out the fail-open cases of R5-1 and R5-2.
+- Round 7 (entry 28) withdraws the textual binding of the identity and the visibility altogether: no text is
+  read for either, so this entry has no limit list for them. What stands in its place is what the choices
+  guarantee (entry 28).
 
 **25. Round 5: what the round 4 review's fixes chose (R4-1 to R4-6).**
 - R4-1 and R4-2 were fixed in round 5 by widening the clause reading (a word's edge at a final period, a kept
   value failing closed, "neither", the "and" before another value, the `:ambiguous` refusal). Round 6 removes
-  that reading and replaces it with entry 26's rule. The word edge stays only for a project's name and an
-  identity his approval names (`names`), which entry 26 does not change.
+  that reading and replaces it with entry 26's rule, and round 7 removes that for the identity and the
+  visibility (entry 28). The word edge stays only for a project's name and the identity his own message names
+  (`names`); since round 7 no approval is read for an identity.
 - R4-3, Intake reads its projects when they are judged. `Intake(projects=...)` takes a list, as every caller
   before, or a callable called each time a transition (record, route) judges candidates. The factory line's
   intake and the activation's are given `control_intake.store_projects` over the service's connection, the
@@ -314,39 +317,14 @@ reading of entries 24 and 25).**
 - The trade-off, by choice. An honest correction with a negator in it is refused rather than guessed, and so is
   one that names the value it keeps. He is told why and answers again. The cost is a second message from him;
   the alternative was a repository under an owner or a visibility he ruled out.
-- What it guarantees, each measured by `round6/phrasings.py` (116 cases, 0 not as recorded on the round-6
-  module; 79 not as recorded on the round-5 module) and the rows named:
-  - Words with a negator: no reading that sets or keeps a value they name settles, over all 16 readings
-    (shown identity and visibility times the PM's), for 73 phrasings: every phrasing of the round 3, 4 and 5
-    reviews, "Keep it private, not public.", "not-public", "not_public", "non-public", "nonpublic", "not",
-    a line break, "public", "public!? no", "public?! no way", "public. No.", "neither personal nor bcengi",
-    "anything but public", "not-bcengi please, personal", the round-5 limits ("public, no", "public is wrong",
-    "skip public", "none of it public", "not only private but public", "don't use bcengi, and personal"), curly
-    and backquote apostrophes, "nicht", "kein" and the Russian "ne". Rows proposal/correction-phrasings (42 of
-    them, every review phrasing) and proposal/correction-negated (the decision failed by name end to end).
-  - A shown value kept while his words name another is refused (R5-1): "use personal" with bcengi kept, "make
-    it private" with public kept, "use personal and make it private" with bcengi/public kept. In phrasings.py,
-    16 cases: each of the four shown identity/visibility pairs kept under "use <the other identity>", "make it
-    <the other visibility>", "use <the shown identity>" and "make it <the shown visibility>", each refused on its
-    field. Rows proposal/correction-negated (identity-kept-named,
-    visibility-kept-named, both-kept-named) and proposal/correction-phrasings.
-  - Words with no negator settle exactly the readings they say and no other (9 phrasings, among them "use
-    personal", "make it private", "use personal and make it private", "Use personal. Keep it private." and the
-    same split over two lines). Rows proposal/correction-negated (settles-*) and proposal/correction-phrasings.
-  - A refused correction is told in plain words with how to answer: row proposal/correction-told.
-- What it refuses that he may mean, each measured as refused in `round6/phrasings.py` (kind `refusal`):
-  "Keep it private, not public." (shown public, read private); "not under bcengi, use personal"; "no, bcengi";
-  "use personal instead of bcengi"; "make it public, I don't mind"; "no rush, make it public"; "keep bcengi but
-  make it private" (bcengi kept but named); "keep it private" (private shown and kept, but named); a project
-  name that holds a value's word ("call it personal-site" with the identity kept, "call it public-api" with the
-  visibility kept); and an identity whose id or label is a short word found inside others ("me": "make it
-  public, meanwhile" is refused on the identity).
-- What it still lets through, each measured as settling in `round6/phrasings.py` (kind `limit`), not solved by
-  more words: a refusal said with no word of the negator set ("public would be awful", "steer clear of
-  public", "public is a terrible idea"); irony ("yeah right, public"); another language's negator outside the
-  set ("personal? nunca"); a negating prefix other than "non" ("impersonal" reads personal); and a project
-  name kept while his words name another ("call it reef-watch" with the presented name kept): names are not an
-  enumerable field, so "names no value of the field" cannot be judged for them.
+- Round 7 replaces this rule for the identity and the visibility (entry 28): a correction never changes either,
+  and no text is read for them. The round-6 lists of what the rule guaranteed, refused and let through for those
+  two fields are withdrawn with it; R6-1 to R6-3 (substring naming, an unnamed rejection kept, lookalike
+  characters) and R6-4 (this entry's list) were findings against them. What stands in their place is what the
+  choices guarantee, in entry 28, each measured. For the project's name the rule stands: a changed name binds only
+  where his words name it as a whole word and hold no negator anywhere, and a name kept while his words name
+  another ("call it reef-watch" with the presented name kept) still settles, since names are not an enumerable
+  field.
 - Removed with the clause reading (mutations too, finding 143): `_CLAUSE`, `_ANSWERED_NO`, `_clauses`,
   `_occurrences`, `mentions`, `affirmed`, `negated`, `ambiguous` and the `:ambiguous` code; the cases
   newproject143-negation-ignored, -word-edge-period, -kept-value-whole-word, -and-ends-clause,
@@ -372,3 +350,105 @@ reading of entries 24 and 25).**
 - A deferral entry is a fault, so it is counted in the loop's status (`counts['faults']`) like the refusal entry
   beside it. A loop that defers on its first pass, before the factory line builds later in the same pass,
   reports one entry for that pass; the restart row measures it.
+
+## Round 7: the round 6 review (REVIEW-claude-r6-2026-10-23.md) and the owner's decision (Telegram 36174, 36175)
+
+Rounds 3 to 6 each found typed wording that binds an identity or a visibility he never chose: R6-1 "Personally"
+binds personal, R6-2 "not this account" keeps the refused one, R6-3 lookalike characters. The owner decided
+(Telegram 36174 asked, 36175 "Ok buttons", 2026-10-23) that reading free text for these two settings cannot be made
+safe: they become offered choices he picks. Entries 2, 3, 9, 17, 18, 24 and 26 are changed by this section; their
+text above is kept as it was reviewed.
+
+**28. The identity and the visibility are offered choices he picks; nothing he types sets them (replaces the
+textual binding of entries 17, 18, 24 and 26 for these two fields).**
+- The mechanism is the channel's own (VELDO-0065's choices: REQUEST_FIELDS `choices`, CHOICE_RULINGS,
+  `ruling_of`, the `unmatched_choice` and `unmapped_choice` refusals), extended the way it maps a choice to a
+  ruling, with one new choice kind: a pick, `accept` followed by the values it picks, each one word
+  (`control_channel_presentation.PICK_WORD`, `pick_of`). Its ruling is approve. The channel matches a typed reply
+  to an offered pick as it matches any choice, by folding case, width, spaces and hyphens of the whole choice
+  (`offered_choice`), never by its parts; a request whose choices fold alike is not presented
+  (`ambiguous_choice`, a new refusal of the same contract). Suite 62's answer/pick-choices is the kind's own row.
+- One choice per field became one choice per pair. The owner answers a request version once, with one offered
+  choice (VELDO-0065: ANSWERS NAME WHAT WAS SHOWN), so a choice per field could not change both fields in one
+  answer, and a second answer is a second question, which AC1 forbids. The per-field sets are therefore offered
+  as their combinations: each pick names exactly one configured identity and exactly one visibility
+  (`accept bcengi private`). The choices are `accept` (approve exactly what is shown; offered only when the
+  proposal shows an identity), one pick for every other pair of an offered identity and a visibility,
+  `return_for_elaboration` and `reject` (`control_project_proposal.choices`, `picks`). With the suite's three
+  identities that is eight choices, or seven when no identity is shown.
+- Every configured identity is offered, always, with its own directory, mode, remote and (for a directory that
+  is already a repository) adoption, laid before he is asked as before. When the PM named an identity it is the
+  one shown and `accept` approves it; when it named none, nothing is shown and only the picks approve. The PM's
+  visibility, or else each identity's default, is the visibility shown (entry 9 stands for what is shown).
+- What binds (`answered`, `apply_settled`, and the one judge `settled`): the choice the settlement records. `accept`
+  settles the identity and the visibility shown; a pick settles exactly the identity and visibility it names; any
+  other choice settles nothing (`invalid_input:answer:choice`). The judge also requires the request's choices to
+  be exactly `choices(proposal)` (`no_settled_decision:choices`) and the decision's proposal to be exactly the one
+  his choice resolves (`no_settled_decision:proposal`). His reason text is recorded and never read for either
+  field (`identity_named` is removed).
+- A correction (`return_for_elaboration`) changes only the name and the first objective (`correction_problems`).
+  The corrected document's identity and visibility must be null or the ones shown; anything else fails the
+  decision `invalid_input:correction:identity` or `:visibility` before anything is built, and the judge refuses
+  it again. A proposal that showed no identity cannot be corrected into one (`:identity`): the identity is
+  picked, never typed. His report says so in plain words (`control_telegram_report.CORRECTION_UNCLEAR`: "Your
+  correction would have set the identity: a correction changes only the name and the first objective; the
+  identity and the visibility change only by the choice you pick", and to pick the choice that names what he
+  wants). The factory PM's instruction says the same (`control_workflow_cycle_pm`).
+- What the choices guarantee, each measured:
+  - Each configured identity and both visibilities are offered as choices, and his pick binds exactly that
+    value: rows proposal/fields (no identity shown: six picks, rulings approve), proposal/choices (identity shown:
+    accept, five picks; a pick binds its pair; accept keeps what is shown, whatever his reason says),
+    proposal/one-answer, provision/answered-and-corrected (the picked public is created public, the picked
+    organization's remote under it).
+  - A choice not offered is refused by name, `unmatched_choice`, with nothing recorded, and the request stays
+    answerable: a Cyrillic-e and a fullwidth-b "bcengi" pick, a pick naming an unconfigured identity, the pick of
+    the pair `accept` already approves, "use bcengi", "Personally", and `accept` where no identity is shown (row
+    proposal/choices; suite 62 answer/pick-choices for the Telegram path).
+  - No typed text changes the identity or the visibility. Over every phrasing of the round 3 to 6 reviews (90,
+    including "Personally I'd make it private", "not this account", the Cyrillic-e "bcengi", the 140,012-character
+    one), each of 16 readings (shown identity and visibility times the PM's), exactly the four readings that keep
+    what was shown settle (`round7/phrasings.py`: 0 not as claimed on this module, 79 on the round-6 module, 25
+    of them settling a value that was not shown). Rows proposal/correction-phrasings (the same 90) and
+    proposal/correction-negated (15 decisions end to end: a reading that changes either field fails by name, one
+    that keeps them settles exactly what was shown).
+  - The PM's document can never change them: a corrected document naming another identity or visibility fails
+    by name (proposal/correction-bound, proposal/correction-negated), and a decision written with an identity
+    other than his pick is refused by the judge (proposal/choices).
+- The cost, by choice. A correction whose words ask for another identity or visibility ("not this account", "keep
+  it hidden") settles what he was shown when the PM keeps those values, since no text is read for them; the brief
+  he answered says that only a choice changes them, and a PM reading that changes them fails by name. To change
+  the identity or the visibility and the name together, he picks the identity and visibility and corrects the name
+  in a later request, or corrects nothing and picks. The choices are typed (`<choice>: <reason>`): the channel has
+  no buttons today, and building them would be a second mechanism.
+- Removed (code): `named`, `bound`, `identity_named` and the offered entries' `words`; `correction_problems` no longer
+  takes the configured identities. Kept: `_NEGATOR` and `negates` (a changed name, and entry 29), `names`,
+  `identities_named`. Removed (mutations, finding 143): newproject143-correction-identity-unbound and
+  -correction-visibility-unbound (their anchors were the textual binding's `bound` lines), -kept-while-named and
+  -negation-affirms (`bound` itself), -bare-yes-corrected (the approval that named no identity: `accept` is no
+  longer offered without a shown identity, and the channel refuses it). Re-targeted: -hyphen-negator-ignored and
+  -negators-narrow now kill proposal/own-message-doubt, the negator set's remaining use for a decision. Added:
+  -identity-from-document, -visibility-from-text, -unmatched-choice-accepted, -pick-ignored,
+  -choices-not-offered, -pick-unmapped and -ambiguous-choices-presented (suite 62), and the four of entry 29.
+
+**29. His own message settles unasked only where nothing in it could mean another identity (changes entry 3).**
+- AC1 keeps its claim: a message that names the project and the identity is its own answer and nothing is
+  presented. That reads the identity from his words, the one place left where text decides it, so it now fails
+  closed to a presentation (one choice for him) on any doubt (`nothing_asked`): the message is not plain ASCII
+  (`not_plain_text`: lookalike letters, a zero-width space); a negator stands anywhere in it (`negated`); it names
+  another configured identity besides the PM's (`identity_not_alone`); or the PM's document sets a visibility
+  other than the identity's default (`visibility_not_default`: the PM's document never sets the visibility
+  unasked). Row proposal/own-message-doubt ("don't put it under bcengi; ...", "... for bcengi", "n" + Cyrillic o +
+  "t under bcengi: ...", "... fell, not-public", and a PM visibility of public), mutations
+  newproject143-own-message-visibility, -own-message-negated, -own-message-lookalike and
+  -own-message-two-identities.
+- Alternative: remove the path, so every proposal is presented. That contradicts AC1's claim and its declared
+  falsifier, which the owner's decision did not change; the owner may still choose it.
+
+**30. The provisioner's end alone makes the pass due, on the socket branch too (the host's surviving mutation).**
+- newproject143-provisioner-end-unseen survived on the host because service/provisions accepted
+  `ended != [] or active_before_start`: over the socket, the take-on the service answered made the pass due
+  before the provisioner ended. The row now runs a second provisioner (project atoll) whose take-on is withheld:
+  nothing serves the socket (its file is removed; where no socket can be made, there is none), so it ends with its
+  record `provisioning` and `not_taken_on:authority_unavailable`, and only its end on the output pipe can make the
+  pass that names that answer due. The row requires exactly one `ended` event for it with that refusal, on both
+  branches. The next instance's take-on and pass then activate it, as VELDO-0161 has it.
