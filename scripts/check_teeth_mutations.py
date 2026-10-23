@@ -11258,6 +11258,29 @@ def cases():
                 "    if data.get('choices') != choices(presented):\n",
                 "    if False:  # defect: the judge settles a request that offered other choices\n",
                 ['proposal/choices'])
+    # VELDO-0143 round 9 (R8-1): an adoption's pick ends in adopt, so it never folds like a creation's pick.
+    new_project('newproject143-adoption-pick-folds', 'control_project_proposal.py',
+                "                found['%s %s %s' % (PICK, entry.get('identity'), ADOPT_WORD)] = (entry.get('identity'), None)\n",
+                "                found['%s %s' % (PICK, entry.get('identity'))] = (entry.get('identity'), None)  # defect: "
+                "folds like a creation's pick\n",
+                ['proposal/adoption-pick-folds', 'proposal/adoption-visibility'])
+    # VELDO-0143 round 9 (R8-2): the decision is failed before its unpresentable request is canceled, and a request a
+    # crash left open is canceled by the next pass.
+    new_project('newproject143-not-presented-canceled-first', 'control_project_proposal.py',
+                "            self._fail(decision, 'presented', 'invalid_input:' + shown['reason'])\n"
+                "            self._cancel(alias)\n",
+                "            self._cancel(alias)  # defect: canceled before the decision is failed\n"
+                "            self._fail(decision, 'presented', 'invalid_input:' + shown['reason'])\n",
+                ['proposal/presentation-interrupted'])
+    new_project('newproject143-unpresented-left-open', 'control_project_proposal.py',
+                "                if self._cancel_unpresented(record):\n",
+                "                if False:  # defect: a request a crash left open stays open\n",
+                ['proposal/presentation-interrupted'])
+    # VELDO-0143 round 9 (R8-3): his own message settles unasked only when every word of it is one the rule read.
+    new_project('newproject143-own-message-unread-words', 'control_project_proposal.py',
+                "    if unread_words(text, ",
+                "    if False and unread_words(text, ",
+                ['proposal/own-message-doubt'])
     add(143, 'newproject143-pick-unmapped', '62_veldo_0065_presentations.py', 'control_channel_presentation.py',
         "    return 'approve' if pick_of(choice) else None\n",
         "    return None  # defect: a pick has no ruling\n",

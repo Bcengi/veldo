@@ -115,7 +115,8 @@ def _v143_suite():
                       'proposal/correction-phrasings', 'activation/factory-intake-current',
                       'activation/factory-paused-resumed', 'activation/new-projects-kept', 'activation/factory-canceled',
                       'proposal/correction-told', 'proposal/choices', 'proposal/own-message-doubt',
-                      'proposal/adoption-visibility', 'proposal/identities-fold-alike', 'proposal/not-presentable'):
+                      'proposal/adoption-visibility', 'proposal/identities-fold-alike', 'proposal/not-presentable',
+                      'proposal/adoption-pick-folds'):
             expect(PREFIX + label, False)
         return
 
@@ -901,7 +902,19 @@ def _v143_suite():
                         ('public default, hidden said', 'start shoreline under outward, hidden please', 'shoreline',
                          'outward', None, ('visibility_not_private', 'visibility_in_message')),
                         ('visibility word', 'start a new personal project called sound, make it public', 'sound',
-                         'personal', None, 'visibility_in_message')):
+                         'personal', None, 'visibility_in_message'),
+                        # VELDO-0143 round 9 (R8-3): words of visibility no list holds; any word the rule has not
+                        # read presents it.
+                        ('share with everyone', 'start a new bcengi project called shoalwater and share it with '
+                         'everyone', 'shoalwater', 'bcengi', None, 'words_not_read'),
+                        ('publish', 'start a new bcengi project called kettle, publish it', 'kettle', 'bcengi', None,
+                         'words_not_read'),
+                        ('opensource', 'start a new bcengi project called esker and make it opensource', 'esker',
+                         'bcengi', None, 'words_not_read'),
+                        ('publically', 'start a new bcengi project called drumlin, publically', 'drumlin', 'bcengi',
+                         None, 'words_not_read'),
+                        ('everyone can see', 'start a new personal project called tor everyone can see', 'tor',
+                         'personal', None, 'words_not_read')):
                     result = send('api_request', text)
                     pid, _ = routed(result)
                     made = decisions.propose(pid, document(pid, name, identity_name, visibility), dispatch=next_id('pm-np'))
@@ -1141,9 +1154,9 @@ def _v143_suite():
                 entry_q = PP.shown_entry(shown_q, 'personal') or {}
                 offered_q = (entity(held_q.get('request') or '') or {}).get('data', {}).get('choices') or []
                 typed_q = {t: answer(held_q.get('request'), t, 'keep it private')
-                           for t in ('accept personal private', 'accept personal public')}
+                           for t in ('accept personal private', 'accept personal public', 'accept personal')}
                 still_q = (PP.read(conn, d_q) or {}).get('state')
-                answer(held_q.get('request'), 'accept personal', 'adopt it')
+                answer(held_q.get('request'), 'accept personal adopt', 'adopt it')
                 decisions.apply_settled()
                 judged_q = PP.settled(S, CM, conn, d_q)
                 try:
@@ -1163,13 +1176,14 @@ def _v143_suite():
                 check('proposal/adoption-visibility', [
                     ('the adopted entry records its remote\'s visibility as it is, never private or public',
                      entry_q.get('mode') == 'adopt' and PP.visibility_of(entry_q) == PP.AS_ON_REMOTE),
-                    ('it is offered as its identity alone, with no visibility it cannot keep [%s]' % (offered_q,),
-                     'accept personal' in offered_q and 'accept personal private' not in offered_q
+                    ('it is offered as its identity and adopt, with no visibility it cannot keep [%s]' % (offered_q,),
+                     'accept personal adopt' in offered_q and 'accept personal private' not in offered_q
                      and 'accept personal public' not in offered_q and offered_q == PP.choices(shown_q)
                      and 'accept bcengi public' in offered_q),
                     ('the brief says the adopted repository stays as it is on GitHub',
-                     'visibility as it is on GitHub' in PP.brief(shown_q) and '"accept <identity>"' in PP.brief(shown_q)),
-                    ('a visibility typed for the adopted identity is refused unmatched_choice and it stays presented',
+                     'visibility as it is on GitHub' in PP.brief(shown_q) and '"accept <identity> adopt"' in PP.brief(shown_q)),
+                    ('a visibility typed for the adopted identity, or its identity alone, is refused unmatched_choice '
+                     'and it stays presented',
                      all(r.get('outcome') == 'refused' and r.get('reason') == 'unmatched_choice' for r in typed_q.values())
                      and still_q == 'presented'),
                     ('his pick adopts it as it is', judged_q['path'] == 'answer' and judged_q['proposal']['mode'] == 'adopt'
@@ -1188,6 +1202,74 @@ def _v143_suite():
                      (PP.read(conn, made_w.get('decision')) or {}).get('presented', {}).get('mode') == 'adopt'
                      and renamed_w.get('ok') is False and state_w == ('failed', 'invalid_input:correction:mode')
                      and len(hub['calls']) == calls_w and not (projects_root['personal'] / 'slipway-two').exists())])
+
+            with region('proposal/adoption-pick-folds'):
+                # VELDO-0143 round 9 (R8-1): a typed pick is folded ('-' and '_' are spaces), so an adoption's pick
+                # `accept <id>` folded like the creation pick `accept <other id> <visibility>` of an id it extends
+                # (bcengi-private beside bcengi). An adoption's pick ends in adopt, never a visibility, so no pick of
+                # one identity folds like another's, and a configuration of those two ids stays one.
+                projects_root['bcengi-private'] = base / 'projects-bcengi-private'
+                projects_root['bcengi-private'].mkdir()
+                for name in ('shoal', 'cobble'):
+                    path, bare = projects_root['bcengi-private'] / name, base / 'gh' / 'olga-p' / (name + '.git')
+                    GP.run(['git', 'init', '-q', '-b', 'main', str(path)], check=True, capture_output=True)
+                    GP.run(['git', 'init', '-q', '--bare', '-b', 'main', str(bare)], check=True, capture_output=True)
+                    (path / 'README').write_text(name + '\n')
+                    git(path, 'add', '-A')
+                    GP.run(['git', '-C', str(path), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', name], check=True,
+                           capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
+                    git(path, 'push', '-q', str(bare), 'main:main')
+                    git(path, 'remote', 'add', 'origin', wire.remote(name, bare, owner='olga-p'))
+                try:
+                    GI.configure_identities(conn, DOMAIN, [identity('bcengi-private', 'olga-p', 'Bcengi private',
+                                                                    'personal')], {})
+                    configured_f = None
+                except GI.Refused as error:
+                    configured_f = error.code
+                try:
+                    with fenced(wire):
+                        msg_f = send('api_request', 'start a new project called shoal')
+                        pid_f, _ = routed(msg_f)
+                        made_f = decisions.propose(pid_f, document(pid_f, 'shoal', 'bcengi'), dispatch=next_id('pm-np'))
+                        msg_g = send('api_request', 'start a new project called cobble')
+                        pid_g, _ = routed(msg_g)
+                        made_g = decisions.propose(pid_g, document(pid_g, 'cobble', None), dispatch=next_id('pm-np'))
+                finally:
+                    conn.execute('DELETE FROM git_identities WHERE domain=? AND identity=?', (DOMAIN, 'bcengi-private'))
+                held_f = PP.read(conn, made_f.get('decision')) or {}
+                held_g = PP.read(conn, made_g.get('decision')) or {}
+                offered_f = (entity(held_f.get('request') or '') or {}).get('data', {}).get('choices') or []
+                offered_g = (entity(held_g.get('request') or '') or {}).get('data', {}).get('choices') or []
+                typed_f = {t: answer(held_f.get('request'), t, 'bcengi, private')
+                           for t in ('accept bcengi private', 'accept bcengi-private', 'accept bcengi_private')}
+                still_f = (PP.read(conn, made_f.get('decision')) or {}).get('state')
+                answer(held_f.get('request'), 'accept', 'as shown')
+                decisions.apply_settled()
+                judged_f = PP.settled(S, CM, conn, made_f.get('decision'))
+                # Ended here, so no later pass creates what this row only answers.
+                for made in (made_f, made_g):
+                    if (PP.read(conn, made.get('decision')) or {}).get('state') in PP.LIVE:
+                        decisions._fail(made.get('decision'), 'answer', 'invalid_input:fixture')
+                fold = GI.presentation_fold()
+                folded_f, folded_g = [fold(c) for c in offered_f], [fold(c) for c in offered_g]
+                check('proposal/adoption-pick-folds', [
+                    ('bcengi beside bcengi-private is a configuration [%s]' % configured_f, configured_f is None),
+                    ('bcengi creating shoal is shown, bcengi-private adopting it is offered as its pick ending in adopt '
+                     '[%s]' % (offered_f,),
+                     made_f.get('outcome') == 'presented' and 'accept bcengi-private adopt' in offered_f
+                     and 'accept bcengi public' in offered_f and 'accept' in offered_f
+                     and len(set(folded_f)) == len(folded_f)),
+                    ('"accept bcengi private", the pair accept approves, and bcengi-private without adopt are refused '
+                     'unmatched_choice, it stays presented [%s]' % ({t: r.get('reason') for t, r in typed_f.items()},),
+                     all(r.get('outcome') == 'refused' and r.get('reason') == 'unmatched_choice'
+                         for r in typed_f.values()) and still_f == 'presented'),
+                    ('accept creates shoal under bcengi, private, as shown',
+                     judged_f['proposal']['identity'] == 'bcengi' and judged_f['proposal']['mode'] == 'create'
+                     and PP.visibility_of(judged_f['proposal']) == 'private'),
+                    ('with no identity shown the picks of both still fold apart, so it is presented, not refused '
+                     'ambiguous_choice [%s %s]' % (made_g.get('reason'), offered_g),
+                     made_g.get('outcome') == 'presented' and 'accept bcengi private' in offered_g
+                     and 'accept bcengi-private adopt' in offered_g and len(set(folded_g)) == len(folded_g))])
 
             with region('provision/step-failures'):
                 incomplete = base / 'incomplete-templates'
@@ -1702,7 +1784,43 @@ def _v143_suite():
                     presenter.present = real_present
                 interrupted_k = [(PP.read(conn, PP.decision_id(p)) or {}) for p in (pid_k1, pid_k2)]
                 wrack_unsent = bot_messages()[len(before_k) + len(kelp_sent):]
+                # VELDO-0143 round 9 (R8-2): a request the presenter refuses for good, the service killed just after
+                # its cancel (tombolo) or just before it (groyne). The decision is failed before the cancel, so no
+                # resume writes it presented over a canceled request, and the next pass cancels what was left open.
+                legacy_k = identity('Bcengi', 'bcengi', 'Bcengi', 'bcengi')
+                conn.execute('INSERT INTO git_identities VALUES (?,?,?)',
+                             (DOMAIN, 'Bcengi', json.dumps(legacy_k, sort_keys=True)))
+                real_apply, stops = inbox.apply, {}
+                try:
+                    for name, when in (('tombolo', 'after'), ('groyne', 'before')):
+                        pid_s, _ = routed(send('api_request', 'start a new project called %s' % name))
+
+                        def stopping_apply(packet, when=when):
+                            if (packet.get('command') or {}).get('operation') == 'cancel':
+                                if when == 'after':
+                                    real_apply(packet)
+                                raise RuntimeError('injected: the service is killed at the cancel')
+                            return real_apply(packet)
+                        inbox.apply = stopping_apply
+                        try:
+                            decisions.propose(pid_s, document(pid_s, name, None), dispatch='pm-np-' + name)
+                            stopped = None
+                        except RuntimeError as error:
+                            stopped = str(error)
+                        finally:
+                            inbox.apply = real_apply
+                        stops[name] = (pid_s, stopped)
+                finally:
+                    conn.execute('DELETE FROM git_identities WHERE domain=? AND identity=?', (DOMAIN, 'Bcengi'))
+
+                def stop_state(pid_s):
+                    held = PP.read(conn, PP.decision_id(pid_s)) or {}
+                    alias = (held.get('presentation') or {}).get('alias')
+                    request = (entity(I.assignment_id(ids['repository_uuid'], alias)) if alias else None) or {}
+                    return held.get('state'), held.get('reason'), request.get('data', {}).get('state')
+                stopped_k = {name: stop_state(pid_s) for name, (pid_s, _) in stops.items()}
                 resumed = service.new_project_pass()
+                stopped_after = {name: stop_state(pid_s) for name, (pid_s, _) in stops.items()}
                 after_k = [(PP.read(conn, PP.decision_id(p)) or {}) for p in (pid_k1, pid_k2)]
                 again_k = service.new_project_pass()
                 sent_k = bot_messages()[len(before_k):]
@@ -1726,7 +1844,20 @@ def _v143_suite():
                     ('his answer to it is read: the decision settles',
                      answer(after_k[0]['request'], 'accept', 'yes').get('outcome') in ('accepted', 'settled')
                      and decisions.apply_settled() != []
-                     and (PP.read(conn, PP.decision_id(pid_k1)) or {}).get('state') == 'settled')])
+                     and (PP.read(conn, PP.decision_id(pid_k1)) or {}).get('state') == 'settled'),
+                    ('a request the presenter refuses for good, the service killed after its cancel: the decision is '
+                     'already failed, and after the next pass it is still failed by name, never presented [%s %s]'
+                     % (stopped_k.get('tombolo'), stopped_after.get('tombolo')),
+                     all(stopped for _pid, stopped in stops.values())
+                     and stopped_k.get('tombolo') == ('failed', 'invalid_input:ambiguous_choice', 'CANCELED')
+                     and stopped_after.get('tombolo') == ('failed', 'invalid_input:ambiguous_choice', 'CANCELED')),
+                    ('killed before its cancel: the decision is failed, and the next pass cancels the request left '
+                     'open [%s %s]' % (stopped_k.get('groyne'), stopped_after.get('groyne')),
+                     stopped_k.get('groyne', ())[:2] == ('failed', 'invalid_input:ambiguous_choice')
+                     and stopped_k.get('groyne', ())[2] != 'CANCELED'
+                     and stopped_after.get('groyne') == ('failed', 'invalid_input:ambiguous_choice', 'CANCELED')
+                     and any(e.get('operation') == 'resume' and e.get('outcome') == 'canceled'
+                             and e.get('decision') == PP.decision_id(stops['groyne'][0]) for e in resumed))])
 
             with region('provision/handed-over'):
                 # VELDO-0161 TAKING IT ON, for a created repository: the provisioner hands its record to the running
