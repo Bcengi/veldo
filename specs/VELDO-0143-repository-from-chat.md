@@ -66,6 +66,7 @@ footprint:
   - "proof/VELDO-0143/round5/*"
   - "proof/VELDO-0143/round6/*"
   - "proof/VELDO-0143/round7/*"
+  - "proof/VELDO-0143/round8/*"
   - "engine/.veldo/control_channel_presentation.py"
   - ".veldo/control_channel_presentation.py"
   - "packs/*/.veldo/control_channel_presentation.py"
@@ -75,6 +76,9 @@ footprint:
   - "engine/.veldo/control_intake.py"
   - ".veldo/control_intake.py"
   - "packs/*/.veldo/control_intake.py"
+  - "engine/.veldo/control_git_identity.py"
+  - ".veldo/control_git_identity.py"
+  - "packs/*/.veldo/control_git_identity.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -103,12 +107,16 @@ acceptance_criteria:
       project, the directory and the remote name for each configured identity, the first objective, the
       default team's current revision (VELDO-0162 AC4) and the default pipeline, and the coordination
       budget, and offering the identity and the visibility as choices he picks in the same request: every
-      configured identity and both visibilities, with approve (what is shown, when an identity is shown)
-      and reject. Only the choice he picks binds the identity and the visibility; neither his typed words
-      nor the PM's document ever sets them. His one answer, a choice or a correction, settles the project
-      and the first objective, and no further question is sent; a correction changes only the project's
-      name and the first objective. The first message, which named both, is itself that answer and
-      nothing is presented. Falsifier: Present a proposal when his message already named the project and
+      configured identity and, for a repository it creates, both visibilities (a directory it adopts keeps
+      its remote as it is on GitHub, so its choice names the identity alone), with approve (what is shown,
+      when an identity is shown) and reject. On a presented proposal, only the choice he picks binds the
+      identity and the visibility; neither his typed words nor the PM's document ever sets them. His own
+      message settles unasked only as the nothing-asked rule allows: it is plain text naming the project
+      and one configured identity, with no negator and no word of visibility, and the repository is
+      created private, never public and never an adoption; anything else is presented. His one answer, a
+      choice or a correction, settles the project and the first objective, and no further question is
+      sent; a correction changes only the project's name and the first objective. The first message,
+      which named both within that rule, is itself that answer and nothing is presented. Falsifier: Present a proposal when his message already named the project and
       the identity; the nothing-asked row must fail.
     falsified_by: >
       Present a proposal when his message already named the project and the identity; the
@@ -396,3 +404,22 @@ proposal/own-message-doubt (new) and proposal/fields, one-answer, correction, co
 correction-phrasings, correction-told, provision/answered-and-corrected and service/provisions (changed); finding 143
 removes five mutations, re-targets two and registers eleven, fifty-one in all; proof/VELDO-0143/round7/README.md.
 Risk, readiness and approval requirements are unchanged.
+
+2026-10-23, round 8: the round 7 independent review's findings (proof/VELDO-0143/REVIEW-claude-r7-2026-10-23.md),
+each fix, its row and its mutation in proof/VELDO-0143/round8/README.md. R7-1: his own message settles unasked only
+at private (`visibility_not_private`, whatever the identity's default or the PM's document says) and is presented
+when it holds a word of visibility (`visibility_in_message`), so a public repository always comes from a pick. R7-2:
+an adopted directory keeps its remote as it is on GitHub, which nothing on the adoption path changes and nothing
+here knows: its entry records `as_on_remote`, is offered by its identity alone (`accept <identity>`), the brief says
+so, a resolved adoption recording any other visibility is not a proposal, and a correction cannot rename it into a
+creation whose visibility he never picked (`invalid_input:correction:mode`). R7-3: identity ids that fold alike under
+the presentation module's fold are refused (`invalid_input:ambiguous_git_identity`, in one call or added later), so
+control_git_identity.py is added to this footprint; a request the presenter refuses for good fails the decision
+`invalid_input:<refusal>`, its request canceled, and his report tells him. R7-4: proposal/choices settles a request
+whose choices differ from the proposal's and requires `no_settled_decision:choices`. R7-5: AC1's sentence is
+qualified (on a presented proposal only his pick binds them; his own message settles unasked only as the nothing-asked
+rule allows, at private); its claim and falsifier are unchanged. The report's advice for a refused mode no longer tells
+him to pick an identity and visibility. Rows proposal/adoption-visibility, identities-fold-alike and
+not-presentable (new) and proposal/own-message-doubt, choices and provision/adoption-path (changed); finding 143
+registers nine more mutations and re-targets two, sixty in all. DECISIONS 31 to 33. Risk, readiness and approval
+requirements are unchanged.

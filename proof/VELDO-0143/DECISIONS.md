@@ -452,3 +452,66 @@ textual binding of entries 17, 18, 24 and 26 for these two fields).**
   record `provisioning` and `not_taken_on:authority_unavailable`, and only its end on the output pipe can make the
   pass that names that answer due. The row requires exactly one `ended` event for it with that refusal, on both
   branches. The next instance's take-on and pass then activate it, as VELDO-0161 has it.
+
+## Round 8: the round 7 review (REVIEW-claude-r7-2026-10-23.md)
+
+The review found two paths to a visibility he never picked (R7-1, R7-2), a configuration that leaves every
+new-project decision presented to no one (R7-3), a judge check with no row (R7-4) and AC1's text stating an absolute
+its own-message path does not keep (R7-5). Entries 28 and 29 are changed by this section; their text above is kept as
+it was reviewed. R7-4 changes no code: proposal/choices now settles a request whose recorded choices are not
+`choices(proposal)` (only `accept` and `reject`), and the judge refuses it `no_settled_decision:choices`; mutation
+newproject143-judge-choices-unchecked.
+
+**31. Unasked, a repository is only ever private (changes entry 29; R7-1, R7-5).**
+- `nothing_asked` no longer compares the visibility with the identity's default. It presents whenever the
+  proposal's visibility is not private (`visibility_not_private`), whatever the identity's `default_visibility` or
+  the PM's document says, and whenever his message holds a word of visibility (`visibility_in_message`:
+  private, public, visible, hidden, secret, open, closed, internal and their forms, `says_visibility`), since no
+  text is read for the visibility. A public repository therefore always comes from a choice he picks: for an
+  identity whose default is public, the presented proposal shows public and offers `accept <identity> private`.
+- AC1's sentence now says it: on a presented proposal only the choice he picks binds the identity and the
+  visibility; his own message settles unasked only as the nothing-asked rule allows, at private.
+- Row proposal/own-message-doubt: a fixture identity (outward) whose default is public, its message saying nothing
+  of the visibility, saying "keep it private" and saying "hidden please", and a message under a private identity
+  saying "make it public"; each is presented with the reason named, and the first offers private as a pick.
+  Mutations newproject143-own-message-visibility (re-targeted to the new reason) and
+  -own-message-visibility-word.
+- Cost: an own message under an identity whose default is public, or with any word of visibility in it, costs him
+  one choice. A word joined to another still counts, so a project named "open-data" is presented too.
+
+**32. An adoption keeps its remote as it is on GitHub, and is offered no visibility (changes entry 28; R7-2).**
+- Nothing on the adoption path (VELDO-0161) applies a visibility, and the remote's visibility is not known when the
+  entry is laid: `prepare` reads the origin and checks its owner, never GitHub's visibility of it. So an adopt entry
+  records `as_on_remote` (`AS_ON_REMOTE`), the brief says "visibility as it is on GitHub", and its choice names the
+  identity alone, `accept <identity>` (the pick kind already allows one value; when it is the identity shown,
+  `accept` approves it and no pick is offered). `resolve` refuses a visibility for an adoption
+  (`invalid_input:visibility`), and `proposal_problems` refuses a resolved adoption whose visibility is anything but
+  `as_on_remote` and a creation whose visibility is not private or public, so the one judge refuses a decision
+  recording a visibility for an adoption (`no_settled_decision:proposal`) and nothing creates a repository from
+  `as_on_remote` (`offered_entry` refuses it too).
+- A correction cannot rename a shown adoption: the new name would be a creation whose visibility he never picked,
+  so it fails `invalid_input:correction:mode`, and his report now says what a refused mode means and to ask again
+  with the name he wants (the PICKED_NEXT advice no longer follows a refused mode).
+- Because an adoption is not private as far as anyone here knows, his own message naming a directory to adopt is
+  presented (entry 31). Row provision/adoption-path answers it; row proposal/adoption-visibility (quay: the adopted
+  entry, its choice, the brief, the two typed visibility picks refused `unmatched_choice`, the pick adopting it as
+  it is, `resolve` and the judge refusing a recorded visibility; slipway: the renamed adoption failed by name, GitHub
+  not asked). Mutations newproject143-adoption-visibility-offered, -adoption-visibility-recorded,
+  -adoption-visibility-shown and -adoption-renamed-created.
+- Not done: reading the remote's visibility from GitHub when the entry is laid, so the brief could name it. That is
+  a GitHub call before he is asked, with the identity's token, which this decision does not need: the adoption keeps
+  whatever the remote is, and the brief says so.
+
+**33. Ids that fold alike are not a configuration; a request that cannot be presented fails by name (R7-3).**
+- `control_git_identity.validate` refuses ids that differ only under the presentation module's fold (case, `-`
+  and `_`: work and Work, my-org and my_org), `invalid_input:ambiguous_git_identity`; `configure_identities`
+  refuses the same for an id added later beside a configured one. The fold is the presentation module's own
+  (`presentation_fold` loads `control_channel_presentation._fold`), so the two cannot drift. Row
+  proposal/identities-fold-alike; mutations newproject143-identities-fold-alike and -identity-added-folding.
+- For a configuration stored before this check, `NewProjects._present` now reads the presenter's outcome. A refusal
+  no retry changes (`NOT_PRESENTABLE`: ambiguous_choice, unmapped_choice, presentation_too_long) cancels the request
+  he could never answer and fails the decision `invalid_input:<refusal>` (a `presenting` decision may now go to
+  `failed`), from `propose` and from `resume`; his report says the question could not be asked and that each Git
+  identity needs an id that differs by more than case, `-` or `_`. Other refusals (a transient channel failure) are
+  left as before, for the presenter's own retry. Row proposal/not-presentable (a legacy `Bcengi` beside bcengi,
+  written as it was stored); mutation newproject143-not-presented-left-presented.
