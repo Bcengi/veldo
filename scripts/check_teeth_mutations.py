@@ -10915,6 +10915,21 @@ def cases():
              "    def _sign(self, message, request):\n",
              ['adoption/signer-no-agent'])
 
+    # Round 5, N1: the scaffold push follows the repository's push.followTags (neither the -c nor the flag).
+    adoption('adoption161-push-follows-tags', 'control_repository_provisioner.py',
+             "    pushed = run('-c', 'push.followTags=false', 'push', '--porcelain', '--no-follow-tags',\n",
+             "    pushed = run('push', '--porcelain',  # defect: the repository's push.followTags adds its tags\n",
+             ['adoption/repository-commands'])
+    # Round 5, N2: the identity transport's own judge not run before advance (the effect), or before laying (prepare).
+    adoption('adoption161-transport-config-after-advance', 'control_effect_executor_adoption.py',
+             "            P.refuse_transport_config(proposal['path'], proposal['remote'])\n",
+             "            pass  # defect: the push's configuration refusal is known only after the branch moved\n",
+             ['adoption/transport-config'])
+    adoption('adoption161-transport-config-prepare-unchecked', 'control_repository_provisioner.py',
+             "        refuse_transport_config(state['path'], remote)\n",
+             "        pass  # defect: prepare lays a scaffold the push will refuse\n",
+             ['adoption/transport-config'])
+
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
     add(142, 'identity142-clone-global-author', '103_veldo_0142_git_identities.py', 'control_clone.py', "for section in ('user', 'author', 'committer'):", 'for section in ():', ['clone/identity-authors'])

@@ -710,7 +710,8 @@ def _v161_suite():
                                         ('tk-signature', True), ('agent', True), ('commanded', False),
                                         ('borrowed', False), ('borrowing', False), ('starting', True),
                                         ('tk-fault', True), ('interrupted', False), ('orphan-path', False),
-                                        ('store-bound', False), ('behind', False)):
+                                        ('store-bound', False), ('behind', False), ('tagged', False),
+                                        ('routed', False)):
                     path, bare = make_repository(label, scaffold)
                     remote = wire.remote(label, bare, owner='stranger' if label == 'wrong' else W['OWNER'])
                     # The remote the repository itself is configured with (prepare checks it is the one named).
@@ -1368,6 +1369,18 @@ def _v161_suite():
                     borrowing_rid, _r, _ = settle('A-borrowing', hand_proposal(borrowing, borrowing['uuid'],
                                                                                 borrowing_commit))
                     borrowing_result = adopt(borrowing_rid)
+                    # N1 (round 5): the repository's own push.followTags with an annotated tag only it holds. The push
+                    # sends exactly the scaffold commit he answered, and no tag.
+                    tagged = repos['tagged']
+                    plumbing(tagged['path'], 'tag', '-a', 'private-161', '-m', 'a tag he never saw', tagged['base'])
+                    git(tagged['path'], 'config', 'push.followTags', 'true')
+                    tagged_set = (git(tagged['path'], 'config', '--get', 'push.followTags') == 'true'
+                                  and git(tagged['path'], 'cat-file', '-t', 'private-161') == 'tag')
+                    remote_tags = lambda repo: git(repo['bare'], 'for-each-ref', '--format=%(refname)', 'refs/tags/')
+                    tagged_tags_before = remote_tags(tagged)
+                    tagged_proposal = prepared('tagged', tagged['uuid'], tagged['remote'], tagged['path'])
+                    tagged_rid, _r, _ = settle('A-tagged', tagged_proposal)
+                    tagged_result = adopt(tagged_rid)
                     check('adoption/repository-commands', [
                         ('a local step runs no fsmonitor of the repository (git status with one configured)',
                          not status_ran),
@@ -1398,7 +1411,47 @@ def _v161_suite():
                          and (record(borrowing['uuid']) or {}).get('state') == 'failed'
                          and tip(borrowing['path']) == borrowing['base'] and tip(borrowing['bare']) == borrowing['base']
                          and nothing_adopted(borrowing) and refs(borrowing['path']) == []),
-                        ('no command of the repository ran', not marker.exists())])
+                        ('no command of the repository ran', not marker.exists()),
+                        ('N1: a repository with push.followTags set and an annotated tag only it holds is adopted',
+                         tagged_set and tagged_result.get('ok') is True
+                         and isinstance(tagged_proposal.get('scaffold_commit'), str)),
+                        ('N1: the remote holds exactly the scaffold commit and its tags are unchanged: no tag was pushed '
+                         '[%r]' % remote_tags(tagged), tip(tagged['bare']) == tagged_proposal.get('scaffold_commit')
+                         and tagged_tags_before == '' and remote_tags(tagged) == '')])
+
+                # N2 (round 5): a key the local steps' allowlist accepts but the identity transport refuses at the push,
+                # in the remote section named by the URL. One judge, the transport's own, refuses it before anything is
+                # laid or moved, by the code the push would give.
+                with region('adoption/transport-config'):
+                    routed = repos['routed']
+                    routing = ('remote.%s.push' % routed['remote'], 'refs/heads/main:refs/heads/other')
+                    # Laid when the owner was asked; the key is set in the repository afterwards.
+                    routed_commit = PR.lay_scaffold(routed['path'], routed['base'], record_identity,
+                                                    str(ROOT / 'engine'), 'refs/veldo/adoption/' + routed['uuid'])
+                    git(routed['path'], 'config', *routing)
+                    listing = GP.run(['git', '-C', routed['path'], 'config', '--includes', '--null', '--list'],
+                                     capture_output=True).stdout
+                    judges = (PR.repository_commands(routed['path']),
+                              GP.identity_transport().config_overrides(listing, routed['remote']))
+                    routed_prepare = prepare_code(routed, 'repository-161-routed2')
+                    routed_rid, _r, _ = settle('A-routed', hand_proposal(routed, routed['uuid'], routed_commit))
+                    routed_result = adopt(routed_rid)
+                    routed_code = 'binding_mismatch:identity_transport_config'
+                    check('adoption/transport-config', [
+                        ('the allowlist accepts the key and the identity transport refuses it for the URL [%r]' % (judges,),
+                         judges == ([], True)),
+                        ('prepare refuses it by the push\'s code, laying nothing [%s]' % routed_prepare,
+                         routed_prepare == routed_code
+                         and 'refs/veldo/adoption/repository-161-routed2' not in refs(routed['path'])),
+                        ('the settled adoption of a repository that came to carry it refuses it by that code, its '
+                         'record failed naming it [%s]' % routed_result.get('reason'),
+                         routed_result.get('reason') == routed_code
+                         and (record(routed['uuid']) or {}).get('state') == 'failed'
+                         and (record(routed['uuid']) or {}).get('reason') == routed_code),
+                        ('before the branch moved: the working branch and the remote are at the base, the ref removed',
+                         tip(routed['path']) == routed['base'] and tip(routed['bare']) == routed['base']
+                         and refs(routed['path']) == []),
+                        ('nothing is signed, enrolled or bound', nothing_adopted(routed))])
 
                 with region('adoption/scaffold-problems'):
                     crafted = repos['crafted']
