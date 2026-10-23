@@ -105,7 +105,9 @@ def _v143_suite():
                       'service/hand-off', 'pm/new-project-run', 'proposal/correction-bound', 'proposal/name-taken',
                       'activation/name-taken', 'proposal/no-provisioner', 'proposal/presentation-interrupted',
                       'service/pm-settled-due', 'activation/line-from-pass',
-                      'activation/factory-line-kept', 'activation/factory-line-restart', 'proposal/correction-negated'):
+                      'activation/factory-line-kept', 'activation/factory-line-restart', 'proposal/correction-negated',
+                      'proposal/correction-phrasings', 'activation/factory-intake-current',
+                      'activation/factory-paused-resumed', 'activation/new-projects-kept'):
             expect(PREFIX + label, False)
         return
 
@@ -560,10 +562,10 @@ def _v143_suite():
 
             with region('proposal/correction-bound'):
                 # A correction is bound to his words (VELDO-0143 F2): the PM reads them, it never chooses for him.
-                def asked_for(name, identity_name):
+                def asked_for(name, identity_name, visibility=None):
                     result = send('api_request', 'start a new project called %s' % name)
                     pid, _ = routed(result)
-                    made = decisions.propose(pid, document(pid, name, identity_name), dispatch=next_id('pm-np'))
+                    made = decisions.propose(pid, document(pid, name, identity_name, visibility), dispatch=next_id('pm-np'))
                     return made.get('decision'), pid, (PP.read(conn, made.get('decision')) or {}).get('request')
 
                 def returned(rid, words, ruling='return_for_elaboration'):
@@ -646,6 +648,8 @@ def _v143_suite():
                 # visibility he ruled out by name fails by name; the reading his words affirm settles.
                 before_negated = (len(hub['calls']), len(new_project_requests()))
                 negated_cases = {}
+                # The visibility shown, where it is not the identity's default (private).
+                shown_public = {'visibility-period', 'visibility-period-said'}
                 for case, name, asked_identity, words, reading in (
                         # the review's words: both identities offered, he rules one out and one visibility out
                         ('identity', 'saltmarsh', None, 'not under bcengi please, and keep it private, not public',
@@ -657,26 +661,93 @@ def _v143_suite():
                         ('visibility-said', 'kelpie', None, 'under personal please, keep it private, not public',
                          ('personal', 'private')),
                         ('identity-said', 'rockling', 'bcengi', 'not under bcengi, use personal',
-                         ('personal', None))):
-                    decision_n, pid_n, rid_n = asked_for(name, asked_identity)
+                         ('personal', None)),
+                        # R4-1: a final period; the kept identity and the kept visibility he negates do not stay
+                        ('identity-period', 'rockpipit', 'bcengi', 'Not under bcengi.', ('bcengi', None)),
+                        ('visibility-period', 'kelpfly', 'personal', 'Keep it private, not public.',
+                         ('personal', 'public')),
+                        # R4-2: he rules both identities out; the PM's reading takes one of them
+                        ('identity-neither', 'rockcress', 'bcengi', 'neither personal nor bcengi', ('personal', None)),
+                        ('identity-both', 'rockdove', 'bcengi', "don't use bcengi and personal", ('personal', None)),
+                        # R4-2: one negated, another affirmed through a bare "and": ambiguous, refused by that name
+                        ('identity-ambiguous', 'rockfoil', 'bcengi', "don't use bcengi and use personal",
+                         ('personal', None)),
+                        # R4-1: a changed value at the end of a sentence is named
+                        ('visibility-period-said', 'kelpwrack', 'personal', 'Keep it private.', ('personal', 'private')),
+                        ('identity-period-said', 'rockrose', 'bcengi', 'Use personal.', ('personal', None))):
+                    decision_n, pid_n, rid_n = asked_for(name, asked_identity,
+                                                         'public' if case in shown_public else None)
                     returned(rid_n, words)
                     outcome_n = decisions.correct(decision_n, document(pid_n, name, *reading), dispatch=next_id('pm-npn'))
                     negated_cases[case] = (state_of(decision_n), outcome_n, decision_n)
-                said_judged = {case: PP.settled(S, CM, conn, negated_cases[case][2])
-                               for case in ('visibility-said', 'identity-said')
+                said_cases = ('visibility-said', 'identity-said', 'visibility-period-said', 'identity-period-said')
+                said_judged = {case: PP.settled(S, CM, conn, negated_cases[case][2]) for case in said_cases
                                if negated_cases[case][1].get('ok') is True}
+                refused_as = {'identity-ambiguous': 'invalid_input:correction:identity:ambiguous'}
                 check('proposal/correction-negated', [
                     ('a corrected %s his words negate fails the decision by name %s' % (case, negated_cases[case][0]),
-                     negated_cases[case][0] == ('failed', 'invalid_input:correction:' + case.split('-')[0])
+                     negated_cases[case][0] == ('failed', refused_as.get(case, 'invalid_input:correction:'
+                                                                         + case.split('-')[0]))
                      and negated_cases[case][1].get('ok') is False)
-                    for case in ('identity', 'identity-shown', 'visibility')] + [
+                    for case in ('identity', 'identity-shown', 'visibility', 'identity-period', 'visibility-period',
+                                 'identity-neither', 'identity-both', 'identity-ambiguous')] + [
                     ('the reading his words affirm settles it, as he said it %s' % (negated_cases[case][0],),
                      negated_cases[case][1].get('ok') is True and case in said_judged
                      and said_judged[case]['proposal']['identity'] == 'personal'
                      and said_judged[case]['proposal']['remote']['visibility'] == 'private')
-                    for case in ('visibility-said', 'identity-said')] + [
+                    for case in said_cases] + [
                     ('none of it reaches GitHub or asks a second question',
-                     len(hub['calls']) == before_negated[0] and len(new_project_requests()) == before_negated[1] + 5)])
+                     len(hub['calls']) == before_negated[0]
+                     and len(new_project_requests()) == before_negated[1] + len(negated_cases))])
+
+            with region('proposal/correction-phrasings'):
+                # VELDO-0143 R4-4: the one judge's binding, over the phrasings the round-4 review measured (and the
+                # final-period and both-ruled-out ones), with the configured identities: each negated value is
+                # refused, each affirmed one settles.
+                records_p = GI.records(conn, DOMAIN)
+                shown_p = lambda identity, visibility: {'project': 'x', 'identity': identity, 'mode': 'create',
+                                                        'remote': {'visibility': visibility}}
+                terms_p = lambda identity, visibility: {'project': 'x', 'identity': identity, 'visibility': visibility,
+                                                        'mode': 'create'}
+                kept_public = ('it cannot be public', 'dont make it public', 'nothing public please', 'neither public',
+                               'except public', 'other than public', 'anything but public', 'public? no',
+                               'it wont be public', 'cant be public', 'didnt want it public', 'avoid public',
+                               'Keep it private, not public.', "don't host it publicly")
+                made_public = ('it cannot be public', 'dont make it public', 'it wont be public', 'public? no',
+                               'avoid public', 'anything but public')
+                refused_p = [(words, 'personal/public kept', PP.correction_problems(
+                    shown_p('personal', 'public'), terms_p('personal', 'public'), words, records_p))
+                    for words in kept_public]
+                refused_p += [(words, 'private to public', PP.correction_problems(
+                    shown_p('personal', 'private'), terms_p('personal', 'public'), words, records_p))
+                    for words in made_public]
+                refused_p += [(words, 'bcengi kept', PP.correction_problems(
+                    shown_p('bcengi', 'private'), terms_p('bcengi', 'private'), words, records_p))
+                    for words in ('avoid bcengi', 'cannot be bcengi', 'Not under bcengi.', 'bcengi? no',
+                                  'nothing bcengi-owned')]
+                refused_p += [(words, 'bcengi to personal', PP.correction_problems(
+                    shown_p('bcengi', 'private'), terms_p('personal', 'private'), words, records_p))
+                    for words in ('neither personal nor bcengi', "don't use bcengi and personal",
+                                  'dont use bcengi or personal', "don't use bcengi and use personal")]
+                settled_p = [(words, PP.correction_problems(shown_p(*shown), terms_p(*corrected), words, records_p))
+                             for words, shown, corrected in (
+                                 ('Keep it private, not public.', ('personal', 'public'), ('personal', 'private')),
+                                 ('Make it public.', ('personal', 'private'), ('personal', 'public')),
+                                 ('not under bcengi, use personal', ('bcengi', 'private'), ('personal', 'private')),
+                                 ('no, bcengi', ('personal', 'private'), ('bcengi', 'private')),
+                                 ('bcengi not personal', ('personal', 'private'), ('bcengi', 'private')),
+                                 ('public? yes', ('personal', 'private'), ('personal', 'public')),
+                                 ('nothing else; make it public', ('personal', 'private'), ('personal', 'public')))]
+                wrong_p = [(words, case) for words, case, problems in refused_p if not problems]
+                wrong_p += [(words, problems) for words, problems in settled_p if problems]
+                if wrong_p:
+                    print('  %sdetail: correction phrasings judged wrongly: %s' % (PREFIX, wrong_p))
+                check('proposal/correction-phrasings', [
+                    ('each value his words negate is refused by name (%d phrasings)' % len(refused_p),
+                     all(problems and all(x.startswith('invalid_input:correction:') for x in problems)
+                         for _, _, problems in refused_p)),
+                    ('each value his words affirm settles (%d phrasings)' % len(settled_p),
+                     all(not problems for _, problems in settled_p))])
 
             with region('proposal/name-taken'):
                 # A name is one project (VELDO-0143 F3): another live decision's name, compared as GitHub compares.
@@ -1753,7 +1824,8 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                      'the loop\'s first line',
                      tline is not None and tline.workspace == os.path.realpath(str(fjord_dir))
                      and tline.gate.repository_uuid == fjord_repo and tline.roles == work['repositories'][REPO])])
-            with region('activation/factory-line-kept', 'activation/factory-line-restart'):
+            with region('activation/factory-line-kept', 'activation/factory-intake-current',
+                        'activation/factory-line-restart'):
                 # VELDO-0143 R3-1: the line the pass adds for a new project leaves the factory's own line whole. Until
                 # VELDO-0188 runs several lines' project cycles on the service's one connection, the new line's cannot
                 # be built there; that build registers nothing, is not tried again on every pass, and never takes the
@@ -1844,6 +1916,33 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                      getattr(kline, 'pm_cycles', None) is None and getattr(kline, 'pm_refusal', None)
                      == 'invalid_registration' and len(kept_faults) == 1
                      and kept_faults[0]['reason'] == 'pm_cycles:invalid_registration')])
+                # VELDO-0143 R4-3: after those passes the factory line's intake knows the new project. A message naming
+                # it is recorded with it as a candidate, and the factory PM's route to it is accepted.
+                fintake = (getattr(factory, 'pm_cycles', None) and factory.pm_cycles.services.get('intake'))
+                current_body = dict(schema=IN.API_SCHEMA, domain=DOMAIN, request_id=next_id('message'), edge='api-edge',
+                                    principal=OWNER, text='add a tide table page to kestrel', project=None,
+                                    clarifies=None)
+                current = fintake.receive('api_request', dict(
+                    request=current_body, signature=sign_as('api-edge', S.canonical_bytes(current_body))))
+                current_held = fintake.proposal(current.get('proposal_id')) or {}
+                current_route = fintake.route(dict(schema=IN.RT.SCHEMA, proposal_id=current.get('proposal_id'),
+                                                   route='existing_project', project='kestrel',
+                                                   reason='The owner names kestrel.'),
+                                              dispatch=next_id('pm-route'), proposal_id=current.get('proposal_id'))
+                current_resolved = fintake.proposal(current_route.get('proposal_id')) or {}
+                if not current_route.get('ok'):
+                    print('  %sdetail: factory intake after the activation: %s; candidates %s; route %s' % (
+                        PREFIX, current.get('outcome'), (current_held.get('context') or {}).get('candidates'),
+                        current_route.get('reason') or current_route.get('refusal')))
+                check('activation/factory-intake-current', [
+                    ('the registry\'s intake record and route are the factory line\'s intake',
+                     fintake is not None and bound(IN.RECORD) is fintake and bound(IN.RT.ROUTE) is fintake),
+                    ('a message naming the new project is recorded with it as a candidate, and hinted',
+                     current.get('outcome') == 'inbox'
+                     and 'kestrel' in (current_held.get('context') or {}).get('candidates', [])
+                     and 'kestrel' in (current_held.get('hints') or [])),
+                    ('the factory PM\'s route to it is accepted, the request now the new project\'s',
+                     current_route.get('ok') is True and current_resolved.get('project') == 'kestrel')])
                 # A restart: a new service and loop on this store, where every repository it took on (the new one among
                 # them, its uuid sorting first) has its line from the loop's constructor.
                 conn.command_registry.clear()
@@ -1880,6 +1979,115 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                     ('no other line holds cycles, and each was refused at most once',
                      others and all(getattr(line, 'pm_cycles', None) is None for line in others)
                      and all(sum(1 for x in rfaults if x.get('repository') == line.repository) <= 1 for line in others))])
+
+            with region('activation/factory-paused-resumed'):
+                # VELDO-0143 R4-5: the factory project paused when the service starts, a taken-on repository's project
+                # active. No other line takes the connection's owners while the factory line has no cycles, so once the
+                # owner resumes the factory project its cycles run on the factory line.
+                conn.command_registry.clear()
+                conn.command_registry.update(cycles_free)
+                owner_projects = PJ.Projects(S, CM, conn, ids, 'authority', journal_sign, stop=lambda d, r: False)
+
+                def factory_change(op, **extra):
+                    version = conn.execute("SELECT version FROM entities WHERE id='project:factory'").fetchone()[0]
+                    body = dict(ids, operation=op, project='factory', principal=OWNER, command_id=next_id('r45-' + op),
+                                nonce=next_id('r45-n'), project_version=version, **extra)
+                    return owner_projects.apply({'command': body, 'signature': sign_as(OWNER, S.canonical_bytes(body))})
+                paused_f = factory_change('pause', reason='the owner pauses the factory')
+                # Every repository this store took on has its line from the loop's constructor, as at a restart.
+                paused_configs = dict(service.config['receiver']['configs'], **{REPO: str(pm_receiver)})
+                paused_service = SV.Service(dict(service.config, principal='team-service',
+                                                 repositories=dict(service.repositories, **{REPO: [str(source)]}),
+                                                 observations=str(base / 'paused-service.jsonl'),
+                                                 receiver={'configs': paused_configs}), conn)
+                paused_service.channel = service.channel
+                paused_loop = SV.FactoryLoop(paused_service, work)
+                paused_passes = []
+                for _ in range(2):
+                    paused_loop.wake('journal')
+                    paused_passes.append(paused_loop.run() or {})
+                held_while_paused = {repository: getattr(line, 'pm_cycles', None) is not None
+                                     for repository, line in paused_loop.lines.items()}
+                resumed_f = factory_change('resume')
+                resumed_passes = []
+                for _ in range(2):
+                    paused_loop.wake('journal')
+                    resumed_passes.append(paused_loop.run() or {})
+                pfactory = paused_loop.lines[REPO]
+                pcycles = getattr(pfactory, 'pm_cycles', None)
+                ptaken = take(pcycles, 'resumed') if pcycles is not None else {}
+                pothers = [line for repository, line in paused_loop.lines.items() if repository != REPO]
+                pfaults = [x for one in paused_passes + resumed_passes for x in one.get('faults') or []]
+                if pcycles is None or not ptaken.get('ok'):
+                    print('  %sdetail: factory paused then resumed: pause %s, resume %s; held while paused %s; take %s; '
+                          'faults %s' % (PREFIX, paused_f.get('reason'), resumed_f.get('reason'), held_while_paused,
+                                         ptaken.get('reason'), pfaults))
+                check('activation/factory-paused-resumed', [
+                    ('the factory project was paused when the service started, with an active project on a line visited '
+                     'before the factory line', paused_f.get('ok') is True and kestrel_repo in paused_loop.lines
+                     and sorted(paused_loop.lines).index(kestrel_repo) < sorted(paused_loop.lines).index(REPO)
+                     and (PJ.read(S, conn, 'kestrel') or {}).get('state') == 'ACTIVE'),
+                    ('while it was paused no line built project cycles', not any(held_while_paused.values())),
+                    ('once he resumed it, its cycles run on the factory line with its owners on the connection',
+                     resumed_f.get('ok') is True and pcycles is not None and all('pm_cycles' in one for one in resumed_passes)
+                     and not any(x.get('repository') == REPO for x in pfaults) and held_by(pcycles)),
+                    ('its backlog take on its own repository is accepted', ptaken.get('ok') is True
+                     and (ptaken.get('item') or {}).get('repository_uuid') == REPO),
+                    ('no other line holds cycles', pothers and all(getattr(line, 'pm_cycles', None) is None
+                                                                  for line in pothers))])
+
+            with region('activation/new-projects-kept'):
+                # VELDO-0143 R4-6: a factory line build that fails leaves the service's new-project decisions
+                # registered. A service whose new-project decisions are not yet built, on a connection that holds no
+                # registration of them; its factory line's first build fails at grooming (its presenter seen on
+                # another connection, once); the next pass builds it.
+                registry_free = {k: v for k, v in cycles_free.items() if k != PP.OPERATION}
+                conn.command_registry.clear()
+                conn.command_registry.update(registry_free)
+
+                class OnceElsewhere:
+                    """The channel's presenter, seen on another connection while `elsewhere` holds."""
+                    def __init__(self, real):
+                        self.real, self.elsewhere = real, True
+
+                    def __getattr__(self, name):
+                        if name == 'conn' and self.elsewhere:
+                            return None
+                        return getattr(self.real, name)
+
+                class Forward:
+                    def __init__(self, real, **over):
+                        self.real, self.over = real, over
+
+                    def __getattr__(self, name):
+                        return self.over[name] if name in self.over else getattr(self.real, name)
+                once = OnceElsewhere(service.channel.ingress.presenter)
+                np_service = SV.Service(dict(service.config, principal='team-service',
+                                             repositories={REPO: [str(source)]},
+                                             observations=str(base / 'np-service.jsonl'),
+                                             receiver={'configs': {REPO: str(pm_receiver)}}), conn)
+                np_service.channel = Forward(service.channel, ingress=Forward(service.channel.ingress, presenter=once))
+                np_loop = SV.FactoryLoop(np_service, work)
+                np_loop.wake('journal')
+                np_first = np_loop.run() or {}
+                np_built_first = getattr(np_loop.lines[REPO], 'pm_cycles', None)
+                once.elsewhere = False
+                np_loop.wake('journal')
+                np_second = np_loop.run() or {}
+                np_cycles = getattr(np_loop.lines[REPO], 'pm_cycles', None)
+                np_decisions = np_service.new_projects()
+                np_entry = conn.command_registry.get(PP.OPERATION) or {}
+                if not np_entry:
+                    print('  %sdetail: new-project decisions after a failed build: registered %s; first faults %s' % (
+                        PREFIX, PP.OPERATION in conn.command_registry, np_first.get('faults')))
+                check('activation/new-projects-kept', [
+                    ('the factory line\'s first build failed and the next pass built it',
+                     np_built_first is None and any(x.get('repository') == REPO for x in np_first.get('faults') or [])
+                     and np_cycles is not None),
+                    ('the service\'s new-project decisions, the ones the factory line\'s cycles hold, have their '
+                     'operation registered on the connection', np_decisions is not None
+                     and np_cycles.services.get('new_projects') is np_decisions
+                     and np_entry.get('writes') == PP.WRITES and callable(np_entry.get('transition')))])
 
         finally:
             for server in servers:
