@@ -131,6 +131,11 @@ CHOICES = ['accept', 'return_for_elaboration', 'reject']
 # The first word of a pick (control_channel_presentation.PICK_WORD): `accept <identity> <visibility>` approves with
 # that identity and visibility (choices).
 PICK = 'accept'
+# VELDO-0143 round 9 (R8-1): the last word of an adoption's pick, `accept <identity> adopt`. Every pick folds
+# (control_channel_presentation._fold) to its words, and a creation's last word is a visibility, so a pick ending in
+# this word never folds like a creation's whatever the ids are; two picks fold alike only when their ids do, which
+# control_git_identity.validate refuses.
+ADOPT_WORD = 'adopt'
 REQUEST_KIND, TERMS_KIND, SETTLEMENT_KIND, EFFECT_KIND = 'assignment', 'settlement_terms', 'request_settlement', 'settlement_effect'
 SETTLED_STATE = 'SATISFIED'
 EFFECTS = {'approve': 'decision_approved', 'return_for_elaboration': 'decision_returned'}
@@ -258,7 +263,9 @@ def negates(text):
 
 
 # VELDO-0143 round 8 (R7-1): a word that could say what he wants of the visibility. His own message that holds one is
-# presented, so the visibility is picked, never read from it; failing closed, a word joined to another still counts.
+# presented, so the visibility is picked, never read from it. Each is read as a whole word between non-letters, so
+# "opensource" or "publically" is not one; since round 9 (R8-3) a word the rule has not read (PLAIN_WORDS) presents
+# his message, so no list of visibility words has to be complete.
 _VISIBILITY_WORD = re.compile(r'(?<![^\W_])(?:private|privately|public|publicly|visib\w*|invisib\w*|hid\w*|secret\w*'
                               r'|open|opened|closed|internal)(?![^\W_])', re.IGNORECASE)
 
@@ -266,6 +273,24 @@ _VISIBILITY_WORD = re.compile(r'(?<![^\W_])(?:private|privately|public|publicly|
 def says_visibility(text):
     """Whether a word that could name a visibility stands anywhere in `text`."""
     return isinstance(text, str) and _VISIBILITY_WORD.search(text) is not None
+
+
+# VELDO-0143 round 9 (R8-3): the words his own message may hold and still settle unasked, besides the project's name
+# and the identity's id or label: words that ask for a project and say nothing of what it should be. Any other word
+# ("share it with everyone", "publish it", "make it opensource") might ask for something this rule cannot read, so
+# his message is presented and he picks: failing closed.
+PLAIN_WORDS = frozenset(('a', 'an', 'the', 'new', 'start', 'create', 'make', 'set', 'up', 'begin', 'please', 'project',
+                         'repo', 'repository', 'called', 'named', 'name', 'under', 'with', 'using', 'as', 'for', 'my',
+                         'me', 'it', 'identity', 'account'))
+
+
+def unread_words(text, words):
+    """The words of `text`, apart from each of `words` (as whole words, ignoring case), that are not PLAIN_WORDS."""
+    if not isinstance(text, str):
+        return []
+    for word in sorted((w for w in words if _is_str(w)), key=len, reverse=True):
+        text = re.sub(_LEFT_EDGE + re.escape(word) + _RIGHT_EDGE, ' ', text, flags=re.IGNORECASE)
+    return [w for w in re.findall(r'[^\W_]+', text.casefold()) if w not in PLAIN_WORDS]
 
 
 def identity_words(record):
@@ -298,15 +323,16 @@ def visibility_of(entry):
 def picks(proposal):
     """{choice: (identity, visibility)} of every pick `proposal` offers (control_channel_presentation's pick kind,
     `accept <identity> <visibility>`): each offered identity with each visibility, but the pair it shows, which
-    `accept` approves. An adoption keeps its remote's visibility (AS_ON_REMOTE), so its identity is offered alone,
-    `accept <identity>` (visibility None: the entry's), and never with a visibility it cannot keep."""
+    `accept` approves. An adoption keeps its remote's visibility (AS_ON_REMOTE), so it is offered as
+    `accept <identity> adopt` (visibility None: the entry's), never with a visibility it cannot keep, and never in a
+    shape a creation's pick folds into (R8-1)."""
     shown = proposal.get('identity') if isinstance(proposal, dict) else None
     shown_visibility = visibility_of(proposal) if shown else None
     found = {}
     for entry in (proposal.get('offered') if isinstance(proposal, dict) else None) or []:
         if entry.get('mode') == 'adopt':
             if entry.get('identity') != shown:
-                found['%s %s' % (PICK, entry.get('identity'))] = (entry.get('identity'), None)
+                found['%s %s %s' % (PICK, entry.get('identity'), ADOPT_WORD)] = (entry.get('identity'), None)
             continue
         for visibility in VISIBILITIES:
             if (entry.get('identity'), visibility) != (shown, shown_visibility):
@@ -614,9 +640,9 @@ def brief(proposal):
     if offered is not None:
         lines += ['To use another identity or visibility, answer with the choice that names both, '
                   '"%s <identity> <private or public>"; only a choice changes them, never your words. A directory '
-                  'that is adopted keeps its repository as it is on GitHub, so its choice names the identity alone, '
-                  '"%s <identity>". To change the name or the first objective, answer return_for_elaboration with '
-                  'the change.' % (PICK, PICK)]
+                  'that is adopted keeps its repository as it is on GitHub, so its choice names the identity and adopt, '
+                  '"%s <identity> %s". To change the name or the first objective, answer return_for_elaboration with '
+                  'the change.' % (PICK, PICK, ADOPT_WORD)]
     return '\n'.join(lines)
 
 
@@ -663,6 +689,7 @@ def nothing_asked(conn, intake, proposal, owner):
         reasons.append('not_plain_text')
     if negates(text):
         reasons.append('negated')
+    records = []
     if not isinstance(proposal, dict) or not proposal.get('identity'):
         reasons.append('identity_not_named')
     else:
@@ -679,6 +706,10 @@ def nothing_asked(conn, intake, proposal, owner):
         reasons.append('visibility_not_private')
     if says_visibility(text):
         reasons.append('visibility_in_message')
+    # VELDO-0143 round 9 (R8-3): and only when every other word of it is one the rule has read.
+    shown = next((r for r in records if r['id'] == proposal['identity']), {}) if records else {}
+    if unread_words(text, [proposal.get('project') if isinstance(proposal, dict) else None] + identity_words(shown)):
+        reasons.append('words_not_read')
     if not isinstance(proposal, dict) or not names(text, proposal.get('project')):
         reasons.append('project_not_in_message')
     return reasons
@@ -955,7 +986,6 @@ class NewProjects:
             try:
                 request = self._present(decision, proposal, owner, alias, deadline)
             except NotPresented as error:
-                self._fail(decision, 'presented', error.code)
                 return dict(self._observe('propose', 'failed', error.code, project=proposal['project'], **about),
                             ok=False, reason=error.code)
             self.write(decision, 'presented', step='presented', request=request)
@@ -972,7 +1002,8 @@ class NewProjects:
         """The one VELDO-0068 request that presents `proposal` to the owner: its terms, the inbox request,
         its framing and its presentation, under `alias` and `deadline` as the decision records them, so a retry
         carries the same commands (the store replays them; the presenter never sends a presentation twice).
-        Returns the request id; raises NotPresented when the presenter refuses it for good (NOT_PRESENTABLE)."""
+        Returns the request id; raises NotPresented when the presenter refuses it for good (NOT_PRESENTABLE), the
+        decision already failed by that name."""
         if None in (self.settlement, self.inbox, self.presenter, self.assignment, self.request_sign):
             raise Refused('unavailable_service:presentation')
         terms = self.settlement.terms(self._signed(operation='terms', terms=alias, command_id=alias + '-terms',
@@ -996,20 +1027,46 @@ class NewProjects:
                                           command_id=alias + '-frame', nonce=alias + '-frame'))
         shown = self.presenter.present(request) or {}
         if shown.get('outcome') == 'refused' and shown.get('reason') in NOT_PRESENTABLE:
-            # Nothing was presented, so the request he could never answer is canceled, not left open to him.
-            self.inbox.apply(self._signed(operation='cancel', alias=alias, request_version=1,
-                                          command_id=alias + '-cancel', nonce=alias + '-cancel'))
+            # Nothing was presented. The decision fails by name before its request is canceled (R8-2), so no crash
+            # leaves it presenting over a canceled request, which a resume would write presented to no one; a crash
+            # before the cancel leaves a failed decision whose request resume cancels (_cancel_unpresented).
+            self._fail(decision, 'presented', 'invalid_input:' + shown['reason'])
+            self._cancel(alias)
             raise NotPresented('invalid_input:' + shown['reason'], request)
         return request
+
+    def _cancel(self, alias):
+        """Cancel the request under `alias` that he could never answer (the same signed command each time)."""
+        self.inbox.apply(self._signed(operation='cancel', alias=alias, request_version=1, command_id=alias + '-cancel',
+                                      nonce=alias + '-cancel'))
+
+    def _cancel_unpresented(self, record):
+        """The request of a decision failed as not presentable, canceled if it is still open. Returns whether it
+        was canceled now."""
+        alias = (record.get('presentation') or {}).get('alias')
+        if record['state'] != 'failed' or not _is_str(alias) or record.get('reason') not in [
+                'invalid_input:' + r for r in NOT_PRESENTABLE] or None in (self.inbox, self.assignment):
+            return False
+        request = self.assignment.assignment_id(self.ids['repository_uuid'], alias)
+        state = ((self.inbox.read(request) or {}).get('data') or {}).get('state')
+        if state is None or self.assignment.CATEGORIES.get(state) != 'pending':
+            return False
+        self._cancel(alias)
+        return True
 
     def resume(self):
         """Each decision whose presentation did not finish (PRESENTED ONCE, EVEN ACROSS A CRASH): presented now
         from its record, then `presented`. Returns the observations made."""
         made = []
         for record in records(self.conn):
+            about = dict(decision=record['id'], proposal_id=record['proposal_id'])
+            try:
+                if self._cancel_unpresented(record):
+                    made.append(self._observe('resume', 'canceled', record.get('reason'), **about))
+            except (Refused, self.store.StoreRefused) as error:
+                made.append(self._observe('resume', 'refused', error.code, **about))
             if record['state'] != 'presenting':
                 continue
-            about = dict(decision=record['id'], proposal_id=record['proposal_id'])
             shown, presentation = record['presented'], record.get('presentation') or {}
             try:
                 request = self._present(record['id'], shown, shown['owner'], presentation['alias'],
@@ -1017,7 +1074,6 @@ class NewProjects:
                 self.write(record['id'], 'presented', step='presented', request=request)
                 made.append(self._observe('resume', 'presented', request=request, **about))
             except NotPresented as error:
-                self._fail(record['id'], 'presented', error.code)
                 made.append(self._observe('resume', 'failed', error.code, **about))
             except (Refused, self.store.StoreRefused) as error:
                 made.append(self._observe('resume', 'refused', error.code, **about))
