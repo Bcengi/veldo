@@ -38,6 +38,7 @@ footprint:
   - "proof/VELDO-0161/*"
   - "proof/VELDO-0161/round2/*"
   - "proof/VELDO-0161/round3/*"
+  - "proof/VELDO-0161/round4/*"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
 behavior_bearing: true
 observability:
@@ -203,3 +204,23 @@ ssh-keygen first on PATH; the row is judged at the suite's end, over every adopt
 any agent variable passed on or any connection. Every other process stays under the fence. Finding 161 adds
 three mutations of setup's enrollment signers (omitted, another key, an extra signer), targeting suite 73.
 Criteria, risk, readiness and approval requirements are unchanged.
+
+Round 4 (the independent review of rounds 2 and 3, proof/VELDO-0161/REVIEW-claude-2026-10-23.md, and the host
+run at 0511a31a). R1: a running service reads the repository records once more right after its socket is
+bound, so a record written while it started, whose hand-off found no socket, is taken on by that same
+instance; nothing polls. The effect's hand-off names every fault: a refusal keeps its own code, a service
+that did not answer in time is not_taken_on:timeout, anything else not_taken_on:unknown_outcome:<type>. R2: the
+repository's own configuration is judged against an allowlist of keys local steps read as data, so
+core.alternateRefsCommand and any other key not known to be data are refused by name, and a repository that
+borrows objects (objects/info/alternates) is refused invalid_input:repository_alternates, at prepare and in the
+effect's checks. R3: the identity binding (check only), the store's binding of the repository and the
+configured generation against the store's are judged before the branch moves. R4: each run holds a lock for its
+repository beside the store (flock, released by the kernel however the process ends); a run that finds its
+request's record provisioning without enrollment and no live run holding the lock writes it failed with
+unknown_outcome:interrupted at the step the record names (the scaffold step is now recorded before the branch
+moves) and removes the scaffold ref, and one that finds the lock held refuses stale_subject:adoption_in_progress.
+adoption/signer-no-agent counts the stand-in's adoption-key signatures against the journaled ones. Finding 161
+adds thirteen mutations. The three setup161 cases run suite 73, which the mutation stage's confined domain cannot
+run (no user manager); the gate runs them in its unconfined leg, as it runs finding 139's, and
+proof/VELDO-0161/round4/drive_setup.py runs them as ordinary processes. The footprint gains
+proof/VELDO-0161/round4/*. Criteria, risk, readiness and approval requirements are unchanged.
