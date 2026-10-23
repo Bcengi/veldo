@@ -10988,7 +10988,9 @@ def cases():
     new_project('newproject143-second-question', 'control_project_proposal.py',
                 "            correction['digest'] = digest(proposal)\n",
                 "            correction['digest'] = digest(proposal)\n"
-                "            self._present(decision + ':again', proposal, presented['owner'])  # defect: a second question\n",
+                "            self._present(decision + ':again', proposal, presented['owner'], 'new-project-again-'\n"
+                "                          + hashlib.sha256(decision.encode()).hexdigest()[:12], '2099-01-01T00:00:00Z')"
+                "  # defect: a second question\n",
                 ['proposal/correction'])
     new_project('newproject143-factory-repository-unbound', 'control_factory_setup.py',
                 "    S.bind_repositories(conn, ids['domain_uuid'], {repository: os.path.realpath(path)})\n",
@@ -11039,6 +11041,68 @@ def cases():
                 ['provision/signing-no-agent'])
     add(143, 'newproject143-scaffold-not-laid', '66_veldo_0047_authority.py', 'init_scaffold.py',
         '    ".veldo/init_scaffold.py",\n', '', ['authority/installed-assets'])
+
+    # Round 3: the first independent review's findings. F1, a decision the factory PM's run settled in a loop pass
+    # makes the new-project pass due; F2, a correction bound to his words (each term, the bare approval, the judge);
+    # F3, one project per name, before he is asked and at activation; F4, the presentation finished from its record;
+    # F5, the line the pass gives the loop; F6, nothing asked or left waiting without a provisioner configuration.
+    new_project('newproject143-pm-settled-not-due', 'control_service_projects.py',
+                "        if not self.passing:\n            self.service.projects_due = True\n",
+                "        pass  # defect: a decision the PM's run settled does not make the pass due\n",
+                ['service/pm-settled-due'])
+    new_project('newproject143-correction-identity-unbound', 'control_project_proposal.py',
+                "    if not (identity == presented.get('identity') or identities_named(rationale, records) == [identity]):\n",
+                "    if False:  # defect: the PM chooses the identity\n",
+                ['proposal/correction-bound'])
+    new_project('newproject143-correction-visibility-unbound', 'control_project_proposal.py',
+                "    if terms.get('visibility') != reference.get('visibility') and not names(rationale, terms.get('visibility')):\n",
+                "    if False:  # defect: the PM flips the visibility\n",
+                ['proposal/correction-bound'])
+    new_project('newproject143-correction-mode-unbound', 'control_project_proposal.py',
+                "    if terms.get('mode') != expected or (expected == 'adopt' and 'adoption' in terms\n"
+                "                                          and terms['adoption'] != shown.get('adoption')):\n",
+                "    if False:  # defect: a correction may turn into an adoption he was not shown\n",
+                ['proposal/correction-bound'])
+    new_project('newproject143-correction-name-unbound', 'control_project_proposal.py',
+                "    if not same_name and not names(rationale, terms.get('project')):\n",
+                "    if False:  # defect: the PM renames the project\n",
+                ['proposal/correction-bound'])
+    new_project('newproject143-bare-yes-corrected', 'control_project_proposal.py',
+                "                if ruling == 'approve':\n                    # The identity was asked",
+                "                if False:\n                    # The identity was asked",
+                ['proposal/correction-bound'])
+    new_project('newproject143-judge-correction-unbound', 'control_project_proposal.py',
+                "        if problems:\n            raise Refused('no_settled_decision:' + problems[0].split(':', 1)[1],",
+                "        if False:  # defect: the judge does not bind the correction to his words\n"
+                "            raise Refused('no_settled_decision:' + problems[0].split(':', 1)[1],",
+                ['proposal/correction-bound'])
+    new_project('newproject143-name-not-one-project', 'control_project_proposal.py',
+                "    if not isinstance(name, str):\n        return False\n    folded",
+                "    if True:  # defect: a name may be two projects\n        return False\n    folded",
+                ['proposal/name-taken', 'activation/name-taken'])
+    new_project('newproject143-taken-left-settled', 'control_project_proposal.py',
+                "        decisions.finish(decision, activated=False, reason='already_exists')\n"
+                "        return {'ok': False, 'step': 'activation', 'reason': 'already_exists', 'failed': True}\n"
+                "    team = first_team",
+                "        return {'ok': False, 'step': 'activation', 'reason': 'already_exists'}"
+                "  # defect: tried again on every pass\n    team = first_team",
+                ['activation/name-taken'])
+    new_project('newproject143-presentation-not-resumed', 'control_service_projects.py',
+                "        made = [self._log(e) for e in decisions.resume()]\n",
+                "        made = []  # defect: an interrupted presentation is never finished\n",
+                ['proposal/presentation-interrupted'])
+    new_project('newproject143-line-not-added', 'control_service_projects.py',
+                "        if result.get('ok') and s.loop is not None:\n",
+                "        if False:  # defect: the activated project's repository gets no line\n",
+                ['activation/line-from-pass'])
+    new_project('newproject143-proposed-without-provisioner', 'control_project_proposal.py',
+                "            if not self.provisioning():\n",
+                "            if False:  # defect: a proposal is made where it cannot be carried out\n",
+                ['proposal/no-provisioner'])
+    new_project('newproject143-settled-left-waiting', 'control_service_projects.py',
+                "            self.decisions.finish(decision, activated=False, reason='unavailable_service:provisioner')\n",
+                "            pass  # defect: the decision waits, and he is never told\n",
+                ['proposal/no-provisioner'])
 
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
