@@ -1,0 +1,78 @@
+{
+ "schema": "veldo.falsifier-run/v1",
+ "spec_id": "VELDO-0161",
+ "round": 7,
+ "case": "upgrade161-adoption-signer-not-laid",
+ "registered_rows": [
+  "upgrade/from-8bc34e94",
+  "upgrade/from-971186ac",
+  "switch/kill-points",
+  "upgrade/older-0186-equivalence"
+ ],
+ "registered_suite": "86_veldo_0189_engine_upgrade.py",
+ "replacement_count": 1,
+ "old_digest": "b4302ef3df563a9476c8617230b34737015052b5f03ded4e6400ec8a0896dcd3",
+ "new_digest": "5072adcce3ce049856435ac7e0d907cdb6f748169f3f650428c3e8d5e46b227a",
+ "revert_anchor_count": 1,
+ "runs": {
+  "baseline": {
+   "drive_points": {
+    "exit": 0,
+    "failed": [],
+    "passed": 8,
+    "error": null
+   },
+   "drive_signer": {
+    "exit": 0,
+    "failed": [],
+    "passed": 25,
+    "error": null
+   }
+  },
+  "fix_reverted": {
+   "drive_points": {
+    "exit": 1,
+    "failed": [
+     "suite 86's kill at 3 (after adoption_signers) finds 3 step-log lines, the last adoption_signers [{'count': 3, 'lines': 2, 'last': ['adoption_key']}]",
+     "suite 86's kill at 4 (after adoption_signers) finds 4 step-log lines, the last adoption_signers [{'count': 4, 'lines': 3, 'last': ['adoption_signers']}]",
+     "suite 86's kill at 5 (after restart) finds 5 step-log lines, the last restart [{'count': 5, 'lines': 3, 'last': ['adoption_signers']}]",
+     "one count per step-log line [9 counts, 5 lines]"
+    ],
+    "passed": 4,
+    "error": null
+   },
+   "drive_signer": {
+    "exit": 0,
+    "failed": [],
+    "passed": 25,
+    "error": null
+   }
+  },
+  "registered_mutant": {
+   "drive_points": {
+    "exit": 1,
+    "failed": [
+     "the step log names the exchange, the adoption signer's three points and the restart [['exchanged', 'restart']]",
+     "the prepare step lays the adoption signer [already_done]"
+    ],
+    "passed": 3,
+    "error": null
+   },
+   "drive_signer": {
+    "exit": 1,
+    "failed": [
+     "prepare: the engine upgrade's prepare step lays the adoption signer as a fresh setup does, each write a point of the upgrade's step log [already_done []]"
+    ],
+    "passed": 24,
+    "error": null
+   }
+  }
+ },
+ "verdicts": {
+  "baseline_green": true,
+  "fix_reverted_red_on_kill_points": true,
+  "registered_mutant_red_on_prepare": true
+ },
+ "killed_here": true,
+ "note": "suite 86 needs the host's user manager and local sockets; these drivers are the sandbox falsifiers of the kill-point count and of the prepare step"
+}

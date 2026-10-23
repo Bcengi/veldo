@@ -41,6 +41,7 @@ footprint:
   - "proof/VELDO-0161/round4/*"
   - "proof/VELDO-0161/round5/*"
   - "proof/VELDO-0161/round6/*"
+  - "proof/VELDO-0161/round7/*"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
   - "scripts/suites/86_veldo_0189_engine_upgrade.py"
   - "scripts/suites/85_veldo_0171_setup_api.py"
@@ -265,3 +266,15 @@ list of allowed differences. Finding 161 adds upgrade161-adoption-signer-not-lai
 replaced), targeting suite 86's four rows above, which the host's run at 8f749423 already shows red without the
 step. The footprint gains proof/VELDO-0161/round6/*. Criteria, risk, readiness and approval requirements are
 unchanged.
+
+Round 7 (the host run at 2dd36163: suite 86_veldo_0189_engine_upgrade 57 passed, 2 failed;
+ownership/commit-refused answered invalid_input:packet and ownership/start-drops kept the previous bindings).
+Neither is about the ownership commands. Both rows kill setup at a named point of the upgrade's step log, and
+suite 86's kill driver counts points by wrapping the upgrade module's point on each organ fetch of it. Round 6's
+lay_adoption_signer fetched the module a second time in the run, so from the adoption key on each point counted
+twice and the kills landed early: before the restart (the previous engine, which has no ownership_commit, still
+serving) and before the previous engine's removal. upgrade_engine now hands lay_adoption_signer the engine module
+it already holds; the writes, their points and their order are unchanged, and so are suite 86's expectations.
+Finding 161's upgrade161-adoption-signer-not-laid anchor follows the call, now two lines; the replacement is
+unchanged. The footprint gains proof/VELDO-0161/round7/*. Criteria, risk, readiness and approval requirements
+are unchanged.
