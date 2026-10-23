@@ -70,7 +70,7 @@ with tempfile.TemporaryDirectory(prefix='v143r2-') as directory:
         env['PATH'] = str(shim) + os.pathsep + env['PATH']
     done = subprocess.run([sys.executable, 'scripts/selftest.py', '--suite', suite], cwd=tree, env=env,
                           capture_output=True, text=True, timeout=3600)
-    text = (done.stdout + done.stderr).replace(directory, '<tmp>')
+    text = (done.stdout + done.stderr).replace(directory, '<tmp>').replace(tempfile.gettempdir(), '<tmp>')
 table = re.search(r'^\s+%s\s+(\d+) passed' % re.escape(suite), text, re.M)
 lines = [line.strip() for line in text.splitlines()]
 record = {'commit': subprocess.run(['git', '-C', str(ROOT), 'rev-parse', '--short', commit], capture_output=True,

@@ -7,6 +7,7 @@ specification's words this branch had to interpret, for the reviewer to judge: D
 rebased branch: rebase/. The round-1 evidence (falsifiers.json, observations.json, consumer-suites.json) is kept as
 it was, for the round-1 tree. Nothing here is a gate result, a review verdict or an approval.
 The full gate, the factory PM run row and the setup suites are the host's to run (Host runs, below).
+Round 2, the host's failures at a07ad991, each cause, fix, row and falsifier, and the host runs it needs: round2/README.md.
 
 ## What was built
 

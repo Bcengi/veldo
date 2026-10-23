@@ -1,0 +1,54 @@
+{
+ "base": "base_a07ad991",
+ "note": "The two suites that need a Git checkout, on local clones (in the temporary directory) checked out at a07ad991 and at 6d2880b2. Suite 16: the same. Suite 24: the same nine rows red on both (the nested gate cannot run in this sandbox); the one row whose text differs embeds the files laid per pack, each exactly one more on the branch (init_scaffold.py, round 2 fix 4). Not a gate result.",
+ "suites": [
+  {
+   "base_a07ad991": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 49
+   },
+   "branch": {
+    "exit": 2,
+    "failed_rows": [],
+    "passed": 49
+   },
+   "same": true,
+   "suite": "16_warp_1403_sizing_pass"
+  },
+  {
+   "base_a07ad991": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0007 AC2 NEGATIVE CONTROL for the guard: the DEFAULT composer (the real publisher) produces packs and the stage passes, so the refusal above is a measurement of what was composed rather than the guard firing always",
+     "VELDO-0007 AC3 A STAND-DOWN THE NESTED GATE RECORDED IS REPORTED BY THIS STAGE: every stand-down line the adopter's gate emitted appears on this stage's own output, named, with the catalog split and the scan reach beside it. A stand-down counted into a green and never printed reads exactly like a measurement, and an operator cannot tell them apart. Reported 0 stand-down line(s)",
+     "VELDO-0007 AC3 THE ADOPTER'S GREEN IS A MEASUREMENT AND NOT A SCAN OF NOTHING: every scaffolded tree was COMMITTED before its own gate ran, the index the gate reads is non-empty, and the one `required:` slot the shipped catalog carries reached MORE THAN ZERO files. No count is pinned - a growing template moves all of these numbers and reds nothing - because what is a defect by construction is a green whose required check inspected an empty corpus. Measured: [('aider', 0, 255, None), ('antigravity', 0, 256, None), ('claude', 0, 256, None), ('codex', 0, 255, None), ('copilot', 0, 255, None), ('cursor', 0, 255, None), ('opencode', 0, 255, None)]",
+     "VELDO-0007 AC3: every scaffolded repository's OWN gate exited zero, over all 7 packs. Laying files down is not installing: 1.0 laid nothing and said so, but a scaffolder that lays a repository whose gate is RED is worse, because the adopter's first act fails and the failure looks like their fault",
+     "VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows below being vacuous: the sandboxed stage composed with the real publisher, installed and ran a nested gate - exit zero, 'install-and-run: pass', more than ten files laid down - and the pack it installed FROM sits UNDER the TMPDIR it was given, so the bytes went where the criterion says they go. Said: 'rns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()\\n      candidate execution failed in store-denied domain (publication forbidden)\\ninstall-and-run: FAIL'",
+     "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, sha256 and mtime before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+     "VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstrably did the work. THE LIMIT IS NAMED RATHER THAN CLAIMED AWAY: the removal is in a `finally`, so a KILLED process leaves its tree behind and this row cannot see that - a review found 302MB of leftovers matching three interrupted runs. Asserted over the directory this row created, never over the machine's /tmp, which is live state nobody owns",
+     "VELDO-0007 AC5: the checker is EXECUTABLE as a stage runs it - invoked as a subprocess over one pack, exiting zero",
+     "VELDO-0007 VELDO-0099 special files and private reflogs: the block ran to completion rather than raising (PermissionError(1, 'Operation not permitted'))"
+    ],
+    "passed": 93
+   },
+   "branch": {
+    "exit": 1,
+    "failed_rows": [
+     "VELDO-0007 AC2 NEGATIVE CONTROL for the guard: the DEFAULT composer (the real publisher) produces packs and the stage passes, so the refusal above is a measurement of what was composed rather than the guard firing always",
+     "VELDO-0007 AC3 A STAND-DOWN THE NESTED GATE RECORDED IS REPORTED BY THIS STAGE: every stand-down line the adopter's gate emitted appears on this stage's own output, named, with the catalog split and the scan reach beside it. A stand-down counted into a green and never printed reads exactly like a measurement, and an operator cannot tell them apart. Reported 0 stand-down line(s)",
+     "VELDO-0007 AC3 THE ADOPTER'S GREEN IS A MEASUREMENT AND NOT A SCAN OF NOTHING: every scaffolded tree was COMMITTED before its own gate ran, the index the gate reads is non-empty, and the one `required:` slot the shipped catalog carries reached MORE THAN ZERO files. No count is pinned - a growing template moves all of these numbers and reds nothing - because what is a defect by construction is a green whose required check inspected an empty corpus. Measured: [('aider', 0, 256, None), ('antigravity', 0, 257, None), ('claude', 0, 257, None), ('codex', 0, 256, None), ('copilot', 0, 256, None), ('cursor', 0, 256, None), ('opencode', 0, 256, None)]",
+     "VELDO-0007 AC3: every scaffolded repository's OWN gate exited zero, over all 7 packs. Laying files down is not installing: 1.0 laid nothing and said so, but a scaffolder that lays a repository whose gate is RED is worse, because the adopter's first act fails and the failure looks like their fault",
+     "VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows below being vacuous: the sandboxed stage composed with the real publisher, installed and ran a nested gate - exit zero, 'install-and-run: pass', more than ten files laid down - and the pack it installed FROM sits UNDER the TMPDIR it was given, so the bytes went where the criterion says they go. Said: 'rns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()\\n      candidate execution failed in store-denied domain (publication forbidden)\\ninstall-and-run: FAIL'",
+     "VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, sha256 and mtime before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+     "VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstrably did the work. THE LIMIT IS NAMED RATHER THAN CLAIMED AWAY: the removal is in a `finally`, so a KILLED process leaves its tree behind and this row cannot see that - a review found 302MB of leftovers matching three interrupted runs. Asserted over the directory this row created, never over the machine's /tmp, which is live state nobody owns",
+     "VELDO-0007 AC5: the checker is EXECUTABLE as a stage runs it - invoked as a subprocess over one pack, exiting zero",
+     "VELDO-0007 VELDO-0099 special files and private reflogs: the block ran to completion rather than raising (PermissionError(1, 'Operation not permitted'))"
+    ],
+    "passed": 93
+   },
+   "same": false,
+   "suite": "24_veldo_0007_install_and_run"
+  }
+ ]
+}

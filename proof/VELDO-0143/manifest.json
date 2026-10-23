@@ -1,9 +1,9 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0143",
- "commit": "d859b3dbdac371c310e49d4b0ad3fa4745a46a25",
+ "commit": "c1bf6dec88828d9bd45b89fd508c66a6f4029f88",
  "producer": "Claude implementation agent (Claude Code)",
- "produced_at": "2026-10-23T02:45:17.417306+00:00",
+ "produced_at": "2026-10-23T05:29:28.352315+00:00",
  "plan": "PLAN-0019",
  "work": "W103",
  "plan_revision": 4,
@@ -26,6 +26,11 @@
      "type": "integration",
      "ref": "scripts/suites/110_veldo_0143_new_project.py",
      "detail": "Real store, intake by Telegram and API, VELDO-0068 settlement over a loopback Bot API; pm/new-project-run is the host's."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0143/round2/110-head-stage-agent.json",
+     "detail": "Round 2, c1bf6dec, this sandbox with the graph stage and the recording agent stood in (sandbox_run.py): pm/new-project-run green (the factory PM run through the installed LangGraph runtime); it was refused at a07ad991 because provision/handed-over created a project of the same name (round2/README.md, 3). Partial run, not a gate pass."
     }
    ]
   },
@@ -47,6 +52,11 @@
      "type": "integration",
      "ref": "scripts/suites/110_veldo_0143_new_project.py",
      "detail": "Real Git repositories, a loopback GitHub REST stand-in creating bare remotes, pushes through the VELDO-0153 identity profile inside the hermetic fence (without its recording agent here, printed), the provisioner as its own process started by the service."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0143/round2/README.md",
+     "detail": "Round 2: no signature on a new project's path reaches an SSH agent (provision/signing-no-agent; mutation newproject143-signer-reaches-agent killed); with the agent emulated, every provision row green on c1bf6dec and red at a07ad991 as on the host. The scaffold lays init_scaffold.py, which the installer's closure reaches through the provisioner (suite 66 authority/installed-assets, the host's; installed_assets.py here)."
     }
    ]
   },
@@ -68,6 +78,11 @@
      "type": "integration",
      "ref": "scripts/suites/110_veldo_0143_new_project.py",
      "detail": "The authority service's take-on and new-project pass in this process; the owner told by the VELDO-0128 report through the loopback Bot API. The first unit's dispatch through the new project's PM cycle needs the graph runtime: the host's (README, Host runs)."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0143/round2/110-a07-stage-agent.json",
+     "detail": "Round 2: activation/order and activation/failed-activates-nothing ended in KeyError('push') at a07ad991 with the agent emulated (the fence raised in provision/step-failures first); green on c1bf6dec (round2/110-head-stage-agent.json)."
     }
    ]
   }
