@@ -1,0 +1,26 @@
+newproject143-presented-when-named {"proposal/nothing-asked": [false]} killed
+newproject143-provisioner-unsettled {"provision/settlement-required": [false]} killed
+newproject143-activated-while-provisioning {"activation/order": [false]} killed
+newproject143-directory-overwritten {"provision/directory-not-empty": [false]} killed
+newproject143-step-failure-continues {"provision/step-failures": [false]} killed
+newproject143-remote-owner-unchecked {"provision/step-failures": [false]} killed
+newproject143-ambient-push {"provision/created": [false]} killed
+newproject143-second-question {"proposal/correction": [false]} killed
+newproject143-factory-repository-unbound {"factory/own-repository": [false]} killed
+newproject143-take-on-not-sent {"provision/handed-over": [false]} killed
+newproject143-checks-after-creation {"provision/checks-before-creation": [false]} killed
+newproject143-configuration-unchecked-before-remote {"provision/checks-before-creation": [false]} killed
+newproject143-interrupted-left-provisioning {"provision/interrupted": [false]} killed
+newproject143-live-run-unheld {"provision/interrupted": [false]} killed
+newproject143-take-on-not-due {"provision/handed-over": [false]} killed
+newproject143-provisioner-end-unseen {"service/provisions": [false]} killed
+newproject143-signer-reaches-agent {"provision/signing-no-agent": [false]} killed
+newproject143-scaffold-not-laid {"authority/installed-assets": []} NOT KILLED
+newproject143-pm-settled-not-due {"service/pm-settled-due": [false]} killed
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/agent/claude/veldo-0143/proof/VELDO-0143/run_falsifiers.py", line 42, in <module>
+    made = T.materialize(case, 'mutant', directory)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/veldo-agent-4wg85jrc/tmp/v143r4/tree2/scripts/check_teeth_mutations.py", line 11246, in materialize
+    raise RuntimeError((case['name'], 'mutation anchor moved', count))
+RuntimeError: ('newproject143-correction-identity-unbound', 'mutation anchor moved', 0)

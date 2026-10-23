@@ -1,0 +1,19 @@
+{
+ "commit": "c918f776",
+ "details": [
+  "VELDO-0143 detail: service/hand-off: AF_UNIX sockets are refused on this host, so no provisioner can reach a running service over its socket",
+  "VELDO-0143 detail: activation/first-unit: the new line's project cycles run beside another line's on the service's connection [invalid_registration: invalid_registration: connection already has an allocation authority]"
+ ],
+ "exit": 1,
+ "failed_rows": [
+  "VELDO-0143 service/hand-off",
+  "VELDO-0143 activation/first-unit"
+ ],
+ "passed": 69,
+ "replacements": [],
+ "stood_in": [
+  "--agent",
+  "--stage"
+ ],
+ "suite": "110_veldo_0143_new_project"
+}
