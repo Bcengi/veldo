@@ -1,15 +1,22 @@
 """The running authority service's part of a new project from chat (VELDO-0143).
 
-WHAT IT DOES. After every packet, pass or write that advanced the journal, once the service has taken on
-what was adopted (control_service.Service.take_on), the service's NewProjectPass:
+WHAT IT DOES. The service's NewProjectPass runs when something happened that it acts on, never on a timer
+or by reading the journal for a change (control_service A NEW PROJECT FROM CHAT): at the instance's start,
+after a packet or channel pass that advanced the journal (an owner's answer, a take-on the service answered),
+and when the output pipe of a provisioner it started reaches its end. Each pass:
 
   1. applies each settled answer to a presented new-project proposal (control_project_proposal
      NewProjects.apply_settled: settled, handed to the factory PM as a correction, or rejected; nothing is
      ever asked here);
   2. for each settled decision whose repository has no record yet, starts the repository provisioner, the
      registered protected effect control_effect_executor_creation (PROTECTED_EFFECTS), as its own process
-     with the provisioner configuration (provisioner_path), once per decision; an installation that has none
-     refuses unavailable_service:provisioner by name and the decision waits;
+     with the provisioner configuration (provisioner_path), once per decision, its output on a pipe the
+     service's poll set watches (pipes, readable); an installation that has none refuses
+     unavailable_service:provisioner by name and the decision waits. A record the decision left
+     `provisioning` with no enrollment and no provisioner of this instance running (a run that ended with
+     an earlier instance) has the provisioner started once more, which names it interrupted (or refuses,
+     touching nothing, while that run is still live). A record `provisioning` with its binding is the
+     running service's to take on (VELDO-0161), at the provisioner's hand-off or at an instance's start;
   3. for each settled decision whose repository ended `failed`, fails the decision with that reason (its
      VELDO-0128 report tells the owner; never ready);
   4. for each settled decision whose repository is `active`, the running service having taken it on in this
@@ -24,7 +31,6 @@ Every step is observed (kind `new_project`) with the decision, the repository an
 refusal, never a token or the owner's words. Organs are the service module's own instances (`modules`),
 so every registration is on the one store module the service runs.
 """
-import hashlib
 import importlib.util
 import json
 import os
@@ -102,6 +108,39 @@ def copy_configurations(conn, CFG, writer, domain, source, team, owner):
     return copied
 
 
+class Provisioner:
+    """A provisioner process this service started, and what it wrote on its output pipe. Its end is the pipe's
+    end, which the service's poll set sees; nothing waits on it or polls it."""
+
+    def __init__(self, process):
+        self.process, self.output, self.done = process, b'', False
+
+    def fileno(self):
+        return self.process.stdout.fileno()
+
+    def pump(self):
+        """Take what the pipe holds; at its end, reap the process. True once it ended."""
+        try:
+            chunk = os.read(self.fileno(), 65536)
+        except OSError:
+            chunk = b''
+        if chunk:
+            # Its answer is its last line; only the end of what it wrote is kept.
+            self.output = (self.output + chunk)[-65536:]
+            return False
+        self.process.stdout.close()
+        self.process.wait()
+        self.done = True
+        return True
+
+    def reason(self):
+        """The provisioner's answer's reason: its last output line (main), or unknown_outcome:provisioner."""
+        try:
+            return json.loads(self.output.decode().strip().splitlines()[-1]).get('reason')
+        except (ValueError, IndexError, AttributeError, UnicodeDecodeError):
+            return 'unknown_outcome:provisioner'
+
+
 class NewProjectPass:
     """One running service's new-project work (module docstring). `modules` are the service module's globals
     (its S, CM, AC, I and SIG)."""
@@ -109,7 +148,9 @@ class NewProjectPass:
     def __init__(self, service, modules):
         self.service, self.m = service, modules
         self.decisions = None
-        self.running, self.refused, self.mark = {}, set(), None
+        # {decision: Provisioner} started by this instance; the decisions refused for want of a configuration;
+        # the decisions whose interrupted record this instance has had judged.
+        self.running, self.refused, self.rejudged = {}, set(), set()
 
     def _ids(self):
         return dict(self.service.channel.ingress.settlement.ids)
@@ -152,65 +193,81 @@ class NewProjectPass:
         return event
 
     def run(self):
-        """One pass (module docstring), when the journal advanced or a provisioner ran. Returns the events."""
+        """One pass (module docstring). Returns the events."""
         decisions = self.new_projects()
         if decisions is None:
             return []
-        mark = self.service.watermark()
-        if mark == self.mark and not self.running:
-            return []
-        self.mark = mark
         made = [self._log(e) for e in decisions.apply_settled()]
-        for record in decisions.settled_decisions():
+        settled = decisions.settled_decisions()
+        # A provisioner that ended after its decision was finished (activated, or failed by its record) is gone.
+        for decision in [d for d, one in self.running.items() if one.done and d not in {r['id'] for r in settled}]:
+            del self.running[decision]
+        for record in settled:
             repository = (record.get('proposal') or {}).get('repository')
             held = self.m['REPO'].read(self.service.conn, repository)
-            if held is None:
-                event = self.provision(record)
-            elif held.get('state') == 'failed':
+            if held is not None and held.get('state') == 'failed':
                 decisions.finish(record['id'], activated=False, reason=held.get('reason'))
                 event = {'operation': 'failed', 'decision': record['id'], 'repository': repository,
                          'refusal': held.get('reason'), 'step': held.get('failed_step')}
-            elif held.get('state') == 'active':
+            elif held is not None and held.get('state') == 'active':
                 event = self.activate(record, held)
+            elif record['id'] in self.running:
+                event = self.ended(record, held)
+            elif held is None:
+                event = self.provision(record)
+            elif not held.get('enrollment') and record['id'] not in self.rejudged:
+                self.rejudged.add(record['id'])
+                event = self.provision(record)
             else:
                 event = None
             if event:
                 made.append(self._log(event))
-        self.mark = self.service.watermark()
         return made
 
+    def pipes(self):
+        """{fd: decision}: the output pipe of every provisioner this instance started that has not ended."""
+        return {one.fileno(): decision for decision, one in self.running.items() if not one.done}
+
+    def readable(self, fd):
+        """The poll set found a provisioner's pipe readable: what it wrote is taken. True once it ended."""
+        for one in self.running.values():
+            if not one.done and one.fileno() == fd:
+                return one.pump()
+        return False
+
+    def ended(self, record, held):
+        """A provisioner this instance started, once it ended: its answer read; a decision whose provisioner
+        ended with no record (it refused before writing one) failed with the provisioner's reason."""
+        decision = record['id']
+        one = self.running[decision]
+        if not one.done:
+            return None
+        del self.running[decision]
+        # Judged by this instance: a record it left provisioning with no binding is not started for again.
+        self.rejudged.add(decision)
+        reason = one.reason()
+        about = {'operation': 'provision', 'decision': decision, 'repository': record['proposal']['repository'],
+                 'effect': 'repository_provisioning', 'exit': one.process.returncode}
+        if held is None:
+            self.decisions.finish(decision, activated=False, reason=reason or 'unknown_outcome:provisioner')
+            return dict(about, outcome='refused', refusal=reason)
+        return dict(about, outcome='ended', state=held.get('state'), refusal=reason)
+
     def provision(self, record):
-        """Start the provisioner for `record` once; read its answer when it ended with nothing recorded."""
+        """Start the provisioner for `record`, its output on a pipe (Provisioner)."""
         decision = record['id']
         about = {'operation': 'provision', 'decision': decision, 'repository': record['proposal']['repository'],
                  'effect': 'repository_provisioning'}
-        running = self.running.get(decision)
-        if running is not None:
-            process, answer = running
-            if process.poll() is None:
-                return None
-            del self.running[decision]
-            try:
-                reason = json.loads(Path(answer).read_text().strip().splitlines()[-1]).get('reason')
-            except (OSError, ValueError, IndexError):
-                reason = 'unknown_outcome:provisioner'
-            if self.m['REPO'].read(self.service.conn, record['proposal']['repository']) is None:
-                self.decisions.finish(decision, activated=False, reason=reason or 'unknown_outcome:provisioner')
-                return dict(about, outcome='refused', refusal=reason)
-            return dict(about, outcome='ended')
         config = self.provisioner_path()
         if not config:
             if decision in self.refused:
                 return None
             self.refused.add(decision)
             return dict(about, outcome='refused', refusal='unavailable_service:provisioner')
-        answer = os.path.join(os.path.dirname(self.service.config['observations']),
-                              'provision-%s.json' % hashlib.sha256(decision.encode()).hexdigest()[:16])
-        with open(answer, 'w') as out:
-            process = subprocess.Popen([sys.executable, '-B', str(HERE / PROTECTED_EFFECTS['repository_provisioning']),
-                                        str(config), decision], stdin=subprocess.DEVNULL, stdout=out,
-                                       stderr=subprocess.DEVNULL, close_fds=True, start_new_session=True)
-        self.running[decision] = (process, answer)
+        process = subprocess.Popen([sys.executable, '-B', str(HERE / PROTECTED_EFFECTS['repository_provisioning']),
+                                    str(config), decision], stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                   stderr=subprocess.DEVNULL, close_fds=True, start_new_session=True)
+        self.running[decision] = Provisioner(process)
         return dict(about, outcome='started', pid=process.pid)
 
     def activate(self, record, held):
