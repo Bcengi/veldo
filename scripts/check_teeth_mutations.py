@@ -10678,8 +10678,8 @@ def cases():
              "            pass  # defect: the signature is not journaled\n",
              ['adoption/signer-scope', 'adoption/signatures-journaled'])
     adoption('adoption161-provisioner-hooks', 'control_repository_provisioner.py',
-             "    done = GP.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, '-c', 'core.fsmonitor=false', *args],\n",
-             "    done = GP.run(['git', '-C', str(path), '-c', 'core.fsmonitor=false', *args],  # defect: the repository's hooks run\n",
+             "    done = _git_process.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, '-c', 'core.fsmonitor=false', *args],\n",
+             "    done = _git_process.run(['git', '-C', str(path), '-c', 'core.fsmonitor=false', *args],  # defect: the repository's hooks run\n",
              ['adoption/scaffold-commit'])
     adoption('adoption161-receiver-configuration-absent', 'control_service.py',
              "        receiver, created = self._receiver_configuration(repository, workspace)\n",
