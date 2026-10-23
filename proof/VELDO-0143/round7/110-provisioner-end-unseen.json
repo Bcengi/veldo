@@ -1,0 +1,25 @@
+{
+ "commit": "8ff58403",
+ "details": [
+  "VELDO-0143 detail: service/provisions: its end is seen on its output pipe, and the pass it makes due names its answer; a provisioner whose take-on is withheld: its end alone makes the pass due, which names its answer [provisioning, []]; with no socket the record waits, named, until an instance takes it on at its start",
+  "VELDO-0143 detail: service/hand-off: AF_UNIX sockets are refused on this host, so no provisioner can reach a running service over its socket"
+ ],
+ "exit": 1,
+ "failed_rows": [
+  "VELDO-0143 service/provisions",
+  "VELDO-0143 service/hand-off"
+ ],
+ "passed": 83,
+ "replacements": [
+  [
+   ".veldo/control_service.py",
+   "        if self.projects_pass is not None and self.projects_pass.readable(fd):\n            self.projects_due = True\n",
+   "        if self.projects_pass is not None:  # defect: a provisioner's end does not make the pass due\n            self.projects_pass.readable(fd)\n"
+  ]
+ ],
+ "stood_in": [
+  "--agent",
+  "--stage"
+ ],
+ "suite": "110_veldo_0143_new_project"
+}
