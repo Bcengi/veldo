@@ -43,6 +43,7 @@ footprint:
   - "proof/VELDO-0161/round6/*"
   - "proof/VELDO-0161/round7/*"
   - "proof/VELDO-0161/round8/*"
+  - "proof/VELDO-0161/round9/*"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
   - "scripts/suites/86_veldo_0189_engine_upgrade.py"
   - "scripts/suites/85_veldo_0171_setup_api.py"
@@ -298,3 +299,12 @@ the upgrade module, so its count is one per step-log line by its own constructio
 the prepare step uses the module whose plan it carries out rather than asking organ again, which reads plainly and
 costs nothing, but it has no product effect. The footprint gains proof/VELDO-0161/round8/*. Criteria, risk,
 readiness and approval requirements are unchanged.
+
+Round 9 (suite 86 on the host at round 8: 57 passed, 3 failed). Round 8's restart/adoption-signer-kill row ran in
+the suite function's own scope and assigned `points` to its own run's step-log points, so switch/resumed-failure,
+ownership/start-drops and ownership/commit-refused, which run after it, took their kill points from that run
+instead of the kill host's whole upgrade: no unit, record or removed_previous point, and a restart point that
+killed the kill host before its restart. Neither the product nor the kill driver's count was the cause. The row's
+body now runs in a function of its own, unchanged, so its names cannot reach the rows after it; suite 86 is 60
+passed, 0 failed on the host and finding 161's gate mutations kill 57 of 57. No product file changed. The footprint
+gains proof/VELDO-0161/round9/*. Criteria, risk, readiness and approval requirements are unchanged.
