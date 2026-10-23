@@ -7,7 +7,9 @@ the remote's owner against the identity with VELDO-0153's one owner check (contr
 check_remote, operation `adoption`), refusing binding_mismatch:remote_owner before anything is written; reads
 the repository's default branch and its tip; checks that the remote it was given is the one the repository
 itself is configured with for that branch (invalid_input:remote_not_configured) and that the repository's own
-configuration names no command a local step could run (invalid_input:repository_command:<key>); and, when the tree at that
+configuration names no command a local step could run (invalid_input:repository_command:<key>) and nothing the
+identity transport would refuse for that URL at the push (binding_mismatch:identity_transport_config,
+refuse_transport_config: the transport's own judge, run before anything is laid); and, when the tree at that
 tip lacks any of the scaffold's required substrate (init_scaffold.REQUIRED_SUBSTRATE), lays the scaffold as
 ONE commit on top of the tip, authored by the identity, in a private clone, and records it in the
 repository under SCAFFOLD_REF (never on a branch, never pushed). The proposal it returns names that commit,
@@ -27,9 +29,10 @@ ON HIS SETTLED ANSWER (scaffold_problems, advance, push). The effect checks that
 names is the one recorded under SCAFFOLD_REF, that its one parent is the proposal's base, that it only adds
 files and that the substrate is complete at it; fast-forwards the default branch to it (refused by name
 when the branch moved or the working tree is in the way); and pushes it through git_process's `identity`
-profile (VELDO-0153) to the literal remote URL the owner check accepted, with a lease on the base, then
-reads the remote's branch back. A rejected push is push_refused:remote; a push Git accepted whose branch
-cannot be read back as the commit is push_unconfirmed:remote (it may have landed). The ref the scaffold was
+profile (VELDO-0153) to the literal remote URL the owner check accepted, with a lease on the base and no
+annotated tag the repository's push.followTags would add, then reads the remote's branch back. A rejected
+push is push_refused:remote; a push Git accepted whose branch cannot be read back as the commit is
+push_unconfirmed:remote (it may have landed). The ref the scaffold was
 recorded under is removed once the push is done or the adoption refused (remove_scaffold_ref).
 
 Standard library only; organs are loaded as siblings by path.
@@ -107,6 +110,8 @@ def repository_state(path):
 # THE ALLOWLIST: the keys of the repository's own configuration a local step (the prepare fetch and clone, the
 # fast-forward's checkout, the push) may find there, by section and name, each read as data and none naming a
 # command. A section listed with None allows every name in it. Anything else is refused by name.
+# push.followtags stays: the push sets it false on its own command line and passes --no-follow-tags, so the
+# repository's value never reaches it, and refusing a common key nothing reads would refuse for nothing.
 LOCAL_CONFIGURATION = {
     'core': ('repositoryformatversion', 'filemode', 'bare', 'logallrefupdates', 'ignorecase', 'precomposeunicode',
              'symlinks', 'autocrlf', 'eol', 'safecrlf', 'checkstat', 'trustctime'),
@@ -159,6 +164,19 @@ def refuse_commands(path, code='invalid_input:repository_command'):
         raise Refused('%s:%s' % (code, found[0]), ', '.join(found))
     if alternates(path):
         raise Refused('%s:repository_alternates' % code.split(':', 1)[0], 'objects/info/alternates')
+
+
+def refuse_transport_config(path, remote):
+    """Refuse, by the code the push would give (binding_mismatch:identity_transport_config), a repository
+    whose own configuration the identity transport would refuse for the literal URL `remote`: the
+    transport's own judge (control_git_identity_transport.config_overrides) over the same listing
+    git_process makes before the push, so the push's refusal is known before anything is moved. Run after
+    refuse_commands, which has already refused every include, so the listing is the push's."""
+    listed = GP.run(['git', '-C', str(path), 'config', '--includes', '--null', '--list'], capture_output=True,
+                    timeout=STEP_SECONDS)
+    if listed.returncode or GP.identity_transport().config_overrides(listed.stdout, remote):
+        raise Refused('binding_mismatch:identity_transport_config',
+                      'the identity transport refuses this repository\'s configuration for the remote')
 
 
 def configured_remote(path, branch):
@@ -237,6 +255,7 @@ def prepare(conn, domain, *, path, identity, remote, name, owner, repository, te
         event['path'] = state['path']
         check_configured_remote(state['path'], state['branch'], remote)
         refuse_commands(state['path'])
+        refuse_transport_config(state['path'], remote)
         if enrolled(state['path']):
             raise Refused('invalid_input:already_enrolled', state['path'])
         scaffold = None
@@ -315,7 +334,10 @@ def push(proposal, record, observe=None):
                           profile='identity', push_identity=record, remote_url=remote)
         except transport.Refused as error:
             raise Refused(error.code) from None
-    pushed = run('push', '--porcelain', '--force-with-lease=%s:%s' % (ref, proposal['base_commit']), remote,
+    # Exactly the one commit he answered: no annotated tag the repository's push.followTags would add
+    # (as the VELDO-0153 effect push, control_effect_executor).
+    pushed = run('-c', 'push.followTags=false', 'push', '--porcelain', '--no-follow-tags',
+                 '--force-with-lease=%s:%s' % (ref, proposal['base_commit']), remote,
                  '%s:%s' % (proposal['scaffold_commit'], ref))
     listed = run('ls-remote', remote, ref)
     tip = listed.stdout.split('\t', 1)[0].strip() if not listed.returncode and listed.stdout.strip() else None

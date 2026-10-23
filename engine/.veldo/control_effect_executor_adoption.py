@@ -24,7 +24,9 @@ THE ORDER, each step recorded on the repository record, stopping by name at the 
               substrate present at the branch tip; the remote the repository is configured with
               (invalid_input:remote_not_configured); no key of the repository's own configuration outside
               the local steps' allowlist (invalid_input:repository_command:<key>) and no borrowed objects
-              (invalid_input:repository_alternates); no binding the repository already carries
+              (invalid_input:repository_alternates); nothing in it the identity transport would refuse for
+              the proposal's remote at the push (binding_mismatch:identity_transport_config, the transport's
+              own judge); no binding the repository already carries
               (invalid_input:already_enrolled); this host's trust loads (signature_refused:host_trust) and
               names the adoption signer's key among its enrollment signers (signature_refused:not_enrolled;
               a missing key is not enrolled); and every refusal the later steps would make from the store
@@ -278,6 +280,7 @@ def adopt(config, request, *, clock=time.time, signer=None, send=None):
                 raise R.Refused(problems[0])
             P.check_configured_remote(proposal['path'], proposal['default_branch'], proposal['remote'])
             P.refuse_commands(proposal['path'])
+            P.refuse_transport_config(proposal['path'], proposal['remote'])
             if P.enrolled(proposal['path']):
                 raise R.Refused('invalid_input:already_enrolled', proposal['path'])
             step = 'signature'
