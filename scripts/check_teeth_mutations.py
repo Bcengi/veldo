@@ -11051,11 +11051,12 @@ def cases():
                 "        pass  # defect: a decision the PM's run settled does not make the pass due\n",
                 ['service/pm-settled-due'])
     new_project('newproject143-correction-identity-unbound', 'control_project_proposal.py',
-                "    if not (identity == presented.get('identity') or identities_named(rationale, records) == [identity]):\n",
+                "    if not (said == [identity] if identity != presented.get('identity') else not negated(rationale, words)):\n",
                 "    if False:  # defect: the PM chooses the identity\n",
                 ['proposal/correction-bound'])
     new_project('newproject143-correction-visibility-unbound', 'control_project_proposal.py',
-                "    if terms.get('visibility') != reference.get('visibility') and not names(rationale, terms.get('visibility')):\n",
+                "    if not (named == [visibility] if visibility != reference.get('visibility')\n"
+                "            else not negated(rationale, [visibility])):\n",
                 "    if False:  # defect: the PM flips the visibility\n",
                 ['proposal/correction-bound'])
     new_project('newproject143-correction-mode-unbound', 'control_project_proposal.py',

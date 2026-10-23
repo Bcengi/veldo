@@ -316,5 +316,5 @@ activation/factory-line-kept and activation/factory-line-restart. R3-2: a word h
 identity or visibility counts only where his words name exactly that value and no negator stands before it in
 its clause, and a shown value he negates does not stay. Row proposal/correction-negated. DECISIONS 23 and 24.
 activation/first-unit stays red and named, pending the owner's decision on moving AC3's first-unit observation to
-VELDO-0188. Finding 143 registers six more mutations, thirty-seven in all. Acceptance criteria, risk, readiness
+VELDO-0188. Finding 143 registers five more mutations, thirty-six in all. Acceptance criteria, risk, readiness
 and approval requirements are unchanged.
