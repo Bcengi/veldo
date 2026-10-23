@@ -61,6 +61,7 @@ footprint:
   - "proof/VELDO-0143/*"
   - "proof/VELDO-0143/rebase/*"
   - "proof/VELDO-0143/round2/*"
+  - "proof/VELDO-0143/round3/*"
   - "proof/VELDO-0152/fixture.py"
 behavior_bearing: true
 observability:
