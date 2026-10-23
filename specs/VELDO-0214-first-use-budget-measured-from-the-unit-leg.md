@@ -17,7 +17,7 @@ footprint:
   - scripts/verify.sh
   - engine/scripts/verify.sh
   - scripts/check_teeth_mutations.py
-  - scripts/suites/107_veldo_0214_first_use_budget.py
+  - scripts/suites/111_veldo_0214_first_use_budget.py
   - scripts/suites/manifest.json
   - scripts/suites/requires.json
   - specs/VELDO-0214-first-use-budget-measured-from-the-unit-leg.md
@@ -35,7 +35,7 @@ acceptance_criteria:
       Claim: the first-use check's budget per nested run is max(1800, 2.0 x the measured seconds
       of the unit stage's same leg), it is the timeout of every nested run, and it is printed with
       where the number came from. Set: an authority-recorded unit confined leg of 1138.4s handed
-      through gate_legs.py's own environment. Completeness: the suite 107 row
+      through gate_legs.py's own environment. Completeness: the suite 111 row
       first-use-budget/measured-budget-used requires a budget of 2276.8s, that exact timeout on
       the nested run, the timeout message naming it, and the printed line naming the formula,
       the leg and "this gate run".

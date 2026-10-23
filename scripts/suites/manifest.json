@@ -1471,10 +1471,10 @@
    "requires_note": "Only ROOT, expect and fast_temp from shared. Synthetic captured-layout stores, real signed SQLite authority, setup and Runner with foreground fake engines and local stand-ins."
   },
   {
-   "name": "107_veldo_0214_first_use_budget",
-   "file": "107_veldo_0214_first_use_budget.py",
+   "name": "111_veldo_0214_first_use_budget",
+   "file": "111_veldo_0214_first_use_budget.py",
    "requires": [
-    "107_veldo_0214_first_use_budget"
+    "111_veldo_0214_first_use_budget"
    ],
    "regions": "The first-use check budget per nested run, measured from the unit stage leg the authority timed.",
    "requires_note": "Only ROOT and expect. A fixture list and fake stage commands through the real gate_legs.py with its confined runner replaced by the plain one; scratch leg-time stores."

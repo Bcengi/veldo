@@ -2,11 +2,13 @@
 
 Implementation commit: 11fcdbde51cbd5b41cc165db07bc8d1bc3a48610.
 
-Local evidence (this sandbox): `python3 proof/VELDO-0214/local_check.py` ran suite 107 through
-`scripts/selftest.py --suite 107_veldo_0214_first_use_budget` (31 passed, 0 failed: the shared
+Local evidence (this sandbox): `python3 proof/VELDO-0214/local_check.py` ran suite 111 through
+`scripts/selftest.py --suite 111_veldo_0214_first_use_budget` (31 passed, 0 failed: the shared
 preamble's rows and the suite's five) and drove the four registered VELDO-0214 falsifiers through
 `check_teeth_mutations.materialize` and `worker`. Each baseline failed no row; each mutant failed
-exactly its target row and nothing else. See local_checks.json. `.veldo/validate.py all`,
+exactly its target row and nothing else. See local_checks.json. The suite was numbered 107 when that
+local run was recorded (renamed to 111 to clear the VELDO-0153 branches' 107); local_checks.json keeps
+that output as recorded. `.veldo/validate.py all`,
 `scripts/check_lint.sh`, `scripts/check_docs.sh`, `scripts/check_generated.sh`,
 `scripts/check_template_sync.sh` and `scripts/secret_inventory.py` exited 0.
 

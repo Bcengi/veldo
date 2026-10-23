@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run suite 107 and drive VELDO-0214's four registered falsifiers through the teeth driver's own
+"""Run suite 111 and drive VELDO-0214's four registered falsifiers through the teeth driver's own
 materialize and worker, without the mutation stage's coordinator or confinement."""
 import importlib.util
 import json
@@ -11,7 +11,7 @@ import tempfile
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
-SUITE = '107_veldo_0214_first_use_budget'
+SUITE = '111_veldo_0214_first_use_budget'
 
 
 def main():
@@ -45,7 +45,7 @@ def main():
                          'new_digest': made['new_digest'], 'rows_observed': result['count'],
                          'target_rows': case['rows'], 'targets': result['targets'],
                          'failed_rows': result['failed_rows']})
-    print(json.dumps({'scope': 'suite 107 through selftest.py --suite; the four registered VELDO-0214 '
+    print(json.dumps({'scope': 'suite 111 through selftest.py --suite; the four registered VELDO-0214 '
                                'falsifiers through check_teeth_mutations.materialize and worker. No '
                                'mutation coordinator, confinement or repository gate executed.',
                       'suite_line': line, 'suite_summary': summary[0], 'falsifier_runs': runs}, indent=1))

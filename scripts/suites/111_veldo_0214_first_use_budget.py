@@ -1,6 +1,6 @@
 """VELDO-0214: the first-use check's budget per nested run is measured from the unit stage's leg.
 
-Run: python3 scripts/selftest.py --suite 107_veldo_0214_first_use_budget
+Run: python3 scripts/selftest.py --suite 111_veldo_0214_first_use_budget
 
 Only shared ROOT and expect are consumed. The authority's scripts/gate_legs.py runs a fixture list's
 unit and integration stages over a scratch root with fake stage commands; its confined runner is

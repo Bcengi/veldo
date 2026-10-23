@@ -10614,7 +10614,7 @@ def cases():
     result[-1]['dir'] = 'scripts/suites'
 
     # VELDO-0214: the first-use check's budget per nested run is measured, never a fixed constant.
-    suite214 = '107_veldo_0214_first_use_budget.py'
+    suite214 = '111_veldo_0214_first_use_budget.py'
     add(214, 'budget214-fixed-1800-restored', suite214, 'check_first_use.py',
         '    budget = max(RUN_TIMEOUT_S, BUDGET_FACTOR * seconds)\n',
         '    budget = RUN_TIMEOUT_S\n', ['first-use-budget/measured-budget-used'])
