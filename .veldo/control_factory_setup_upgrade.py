@@ -211,7 +211,8 @@ def inspect(laid, record, record_path, api_unit=None):
     else:
         state = 'current'
         writes = []
-    # A restart is due after an exchange no restart has followed (an upgrade killed after its switch).
+    # A restart is due after an exchange, or adoption signers laid down, that no restart has followed (an upgrade
+    # killed after its switch, or a run killed after it laid the adoption signer on a current engine).
     due = state == 'resume' or switched_without_restart(log)
     return {'state': state, 'home': home, 'bin': bin_dir, 'stage': stage, 'stage_left': os.path.lexists(stage),
             'log': log, 'current': current, 'template': template, 'recorded': recorded,
@@ -236,6 +237,10 @@ def recovery(log):
             held.update(switched=True, due=True, back=False)
         elif name == 'switched_back':
             held.update(switched=False, due=True, back=True)
+        elif name == 'adoption_signers':
+            # VELDO-0161: the service reads its enrollment signers only at its start, so signers laid down owe a
+            # restart until a restart outcome or done clears it, whichever run makes it.
+            held['due'] = True
         elif name == 'ownership_restore' and entry.get('outcome') != 'restored':
             # A refused restore must recover forward on the next setup, keeping its all-or-nothing result.
             held['back'] = False
@@ -248,7 +253,7 @@ def recovery(log):
 
 
 def switched_without_restart(log):
-    """Whether any exchange or switch back still needs its successful restart."""
+    """Whether any exchange, switch back or laid adoption signer still needs its successful restart."""
     return recovery(log)['due']
 
 
