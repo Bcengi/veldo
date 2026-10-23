@@ -1,10 +1,10 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0214",
-  "commit": "11fcdbde51cbd5b41cc165db07bc8d1bc3a48610",
-  "tree": "5e29a20e7e5e223515a6ab0fc13a7ae9edaccd53",
+  "commit": "d051aa13627eca10ae85ce34979f462981eeb651",
+  "tree": "b24c7beaa453e177a1464ab3058d7ff1aafbfd81",
   "producer": "Claude implementation agent; not an independent reviewer",
-  "produced_at": "2026-10-23T10:47:25.647676+00:00",
+  "produced_at": "2026-10-23T11:17:28.207917+00:00",
   "criteria": [
     {
       "id": "AC1",
@@ -13,12 +13,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0214/local_checks.json",
-          "detail": "Row first-use-budget/measured-budget-used passes: budget 2276.8s from a recorded 1138.4s confined leg, used as the nested run timeout and printed with formula, leg and source. Mutation budget214-fixed-1800-restored fails exactly that row."
+          "detail": "Row first-use-budget/measured-budget-used passes: budget 2276.8s from a recorded 1138.4s confined leg, printed with formula, leg and source, and the timeout of both nested runs main() makes over a fixture tree (mutated and lazy baseline). Mutations budget214-fixed-1800-restored and budget214-main-drops-the-budget each fail it (with ceiling-caps-the-budget), locally and on the host (host-runs.json)."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0214/HOST_RUNS.md",
-          "detail": "NOT RUN: the repository gate needs the host; this sandbox refuses ptys and nested launchers."
+          "detail": "NOT RUN: ./scripts/verify.sh is pending; it runs separately on a quiet machine."
         }
       ]
     },
@@ -29,7 +29,7 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0214/local_checks.json",
-          "detail": "Row first-use-budget/candidate-set-value-ignored passes. Mutation budget214-caller-value-kept fails exactly that row."
+          "detail": "Row first-use-budget/candidate-set-value-ignored passes. Mutation budget214-caller-value-kept fails exactly that row, locally and on the host."
         }
       ]
     },
@@ -40,12 +40,12 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0214/local_checks.json",
-          "detail": "Rows first-use-budget/stage-runner-hands-the-matching-leg and first-use-budget/reused-stage-uses-last-fresh pass. Mutation budget214-failed-leg-recorded fails exactly the reused-stage row."
+          "detail": "Rows first-use-budget/stage-runner-hands-the-matching-leg and first-use-budget/reused-stage-uses-last-fresh pass. Mutation budget214-failed-leg-recorded fails exactly the reused-stage row, locally and on the host."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0214/HOST_RUNS.md",
-          "detail": "NOT RUN: the repository gate needs the host; this sandbox refuses ptys and nested launchers."
+          "detail": "NOT RUN: ./scripts/verify.sh is pending; it runs separately on a quiet machine."
         }
       ]
     },
@@ -56,7 +56,34 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0214/local_checks.json",
-          "detail": "Row first-use-budget/by-hand-uses-1800-and-says-so passes. Mutation budget214-stale-docstring fails exactly that row."
+          "detail": "Row first-use-budget/by-hand-uses-1800-and-says-so passes. Mutation budget214-stale-docstring fails exactly that row, locally and on the host."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0214/hand_falsifiers.json",
+          "detail": "Rows first-use-budget/ceiling-caps-the-budget and first-use-budget/non-finite-budget-refused pass (local_checks.json, host-runs.json). Hand falsifiers ceiling-removed, cap-not-printed and non-finite-accepted each fail their row."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0214/hand_falsifiers.json",
+          "detail": "Rows first-use-budget/leg-time-store-pruned and first-use-budget/suites-stay-out-of-the-owner-store pass. Hand falsifiers store-never-pruned, prune-ignores-gone-authority, owner-store-guard-removed and temporary-authority-allowed each fail their row."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0214/host-runs.json",
+          "detail": "Suite 101 on the host left ~/.cache/veldo/gate-leg-seconds unchanged (listed before and after); in round 1 each run of it added a file there."
         }
       ]
     }
@@ -68,28 +95,43 @@
       "command": "python3 proof/VELDO-0214/local_check.py"
     },
     {
-      "name": "integration",
-      "status": "not_run",
-      "reason": "The repository gate and suites 101 and 53 need the host; see HOST_RUNS.md."
+      "name": "hand-falsifiers",
+      "status": "passed",
+      "command": "python3 proof/VELDO-0214/hand_falsifiers.py"
+    },
+    {
+      "name": "host-suites",
+      "status": "passed",
+      "command": "suites 111 and 53 and check_teeth_mutations.py --finding 214 on the host; see host-runs.json. Suite 101 fails two sandbox rows that fail identically at main d49581b4."
     },
     {
       "name": "gate",
       "status": "not_run",
-      "reason": "Host run of ./scripts/verify.sh pending."
+      "reason": "Host run of ./scripts/verify.sh pending; it runs separately on a quiet machine."
     }
   ],
   "artifacts": [
     "proof/VELDO-0214/local_check.py",
     "proof/VELDO-0214/local_checks.json",
+    "proof/VELDO-0214/hand_falsifiers.py",
+    "proof/VELDO-0214/hand_falsifiers.json",
     "proof/VELDO-0214/HOST_RUNS.md",
-    "proof/VELDO-0214/host-runs.json"
+    "proof/VELDO-0214/host-runs.json",
+    "proof/VELDO-0214/suite101-main-d49581b4.log",
+    "proof/VELDO-0214/suite101-branch.log",
+    "proof/VELDO-0214/REVIEW-claude-2026-10-23.md"
   ],
   "artifact_digests": {
-    "proof/VELDO-0214/local_check.py": "sha256:f2067d8ab6198d425af7d41f9dbfa2295ba8ef7aa8cb265cf5216828986738de",
-    "proof/VELDO-0214/local_checks.json": "sha256:38a09c37258ed8aa8845440daafa32f903a014872319c7a91b467c5b5ec50a17",
-    "proof/VELDO-0214/HOST_RUNS.md": "sha256:eb7aa501eba61c0a2477d99dcf1011aee67d2cba1eb7dfdb2539a6369f427828",
-    "proof/VELDO-0214/host-runs.json": "sha256:2fdc879f75394dc846ffc1ee7465589bdfc180bc0702c2dc38d796ed166c8fe5"
+    "proof/VELDO-0214/local_check.py": "sha256:6604b015fa0d018849e34ba52a9d1a6600c008022c67e7028ea9e4b69f391557",
+    "proof/VELDO-0214/local_checks.json": "sha256:454b391b57d38ee7ad2faec9c5af1002eff9dfbe1a8c465f44cbe8ece0476e3b",
+    "proof/VELDO-0214/hand_falsifiers.py": "sha256:7a28b111ff4cbe8c983fc3662fafc106c1ae5a8202dc703146763743bd89b9b3",
+    "proof/VELDO-0214/hand_falsifiers.json": "sha256:ff597a4ed13c0bab3c52615c69701ab00402a5df2cb99ce6d927342fc5e169d1",
+    "proof/VELDO-0214/HOST_RUNS.md": "sha256:d0bcb6fec797504ba90a8622390c7296b9c8d90f262b2740d1016352a214962c",
+    "proof/VELDO-0214/host-runs.json": "sha256:3447e053de422973bd8379a02ee4b21dd968969703dbe7ac1bf771276496ec31",
+    "proof/VELDO-0214/suite101-main-d49581b4.log": "sha256:9fef46b8e078845c772f1253eb21675560078595c33db54ff7dbc0b6ca391024",
+    "proof/VELDO-0214/suite101-branch.log": "sha256:f720ef1413b3a9c3912a083366fee776aa922cc1253b32a7b6786c2cd55b521a",
+    "proof/VELDO-0214/REVIEW-claude-2026-10-23.md": "sha256:dabc040257a662f484c89c269895370b6f50ca4c2821a29dfd6b05e5b200f66c"
   },
-  "rollback": "Revert the five protected files, suite 111, its manifest entry and the four mutation cases.",
-  "review": "Independent review, host gate and the owner approval for the protected paths are pending; no gate stamp or approval claimed."
+  "rollback": "Revert the five protected files, suite 111, its manifest entry and the five mutation cases.",
+  "review": "Round 1 independent review (REVIEW-claude-2026-10-23.md) found F1 to F5; round 2 addresses each. A fresh review of round 2, the host gate and the owner approval for the protected paths are pending; no gate stamp or approval claimed."
 }

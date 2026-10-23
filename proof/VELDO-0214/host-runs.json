@@ -1,53 +1,76 @@
 {
  "schema": "veldo.host-runs/v1",
  "spec_id": "VELDO-0214",
- "commit": "d03c4fbaac878a06a0779f6953787467cca4a93e",
+ "round": 2,
+ "commit": "d051aa13627eca10ae85ce34979f462981eeb651",
+ "previous_round": "Round 1 host runs at d03c4fba are in this file at commit 3c742321 (suite 101 failed two sandbox rows and aborted on ValueError: incomplete file-read trace, twice, at load average 15 to 24).",
  "host": {
   "kernel": "7.0.0-38-generic",
   "python": "3.12.3",
-  "note": "Shared host under load (load average 15 to 24) from other Veldo gate and mutation runs during these runs."
+  "note": "Shared host, quieter than round 1: load average 3.4 to 11 (1, 5, 15 minute figures) across these runs."
  },
- "run_at": "2026-10-23T10:52Z to 2026-10-23T10:59Z",
- "logs": "/tmp/v214 (not committed)",
+ "run_at": "2026-10-23T11:04Z to 2026-10-23T11:16Z",
+ "logs": "/tmp/v214b (not committed); the two suite 101 outputs are committed as suite101-main-d49581b4.log and suite101-branch.log",
  "runs": [
   {
-   "command": "python3 scripts/selftest.py --suite 111_veldo_0214_first_use_budget",
-   "exit": 2,
-   "result": "passing partial run",
-   "summary": "selftest (PARTIAL, 1 of 163 suites): 31 passed, 0 failed in 0.91s",
-   "suite_line": "111_veldo_0214_first_use_budget 5 passed 0.91s"
-  },
-  {
    "command": "python3 scripts/selftest.py --suite 101_veldo_0208_landing_reuse",
+   "tree": "temporary detached worktree of /home/dmitry/projects/veldo at main d49581b4, removed afterwards",
    "exit": 1,
-   "result": "FAILED",
-   "summary": "No summary line: two rows failed and the suite then aborted with an exception. Run twice, the same both times (3m27s each).",
+   "result": "two rows failed, suite completed",
+   "summary": "selftest (PARTIAL, 1 of 162 suites): 210 passed, 2 failed in 226.47s",
+   "suite_line": "101_veldo_0208_landing_reuse 184 passed 226.47s",
    "failed_rows": [
     "VELDO-0208 sandbox/unavailable-refuses-before-exec",
     "VELDO-0208 sandbox/old-abi-refuses-before-exec"
    ],
-   "exception": "ValueError: incomplete file-read trace, raised by scripts/case_trace.py syscall_lines from _v208_case_input_proposal (the strace leg, via scripts/propose_case_inputs.py trace_case)",
-   "diagnosis": "Not caused by VELDO-0214: scripts/agent_sandbox.py, scripts/agent_sandbox.json, scripts/case_trace.py, scripts/propose_case_inputs.py and suite 101 are byte-identical to main d49581b4. A direct reproduction of the two sandbox rows outside the suite returned exit 0 with the must-not-start marker written, where the rows expect exit 2 and a Landlock refusal. The rows inject the kernel failure by replacing ctypes.CDLL in the launcher process, but with /usr/local/lib/veldo/veldo-userns present the launcher applies Landlock in the namespace-init process it execs through that helper, so the injected failure is never reached. The trace exception is a traced process left with an unfinished syscall at the end of the strace output. Both need their own investigation against main."
+   "exception": null,
+   "output": "proof/VELDO-0214/suite101-main-d49581b4.log"
+  },
+  {
+   "command": "python3 scripts/selftest.py --suite 111_veldo_0214_first_use_budget",
+   "tree": "this branch at d051aa13",
+   "exit": 2,
+   "result": "passing partial run",
+   "summary": "selftest (PARTIAL, 1 of 163 suites): 35 passed, 0 failed in 1.33s",
+   "suite_line": "111_veldo_0214_first_use_budget 9 passed 1.33s"
   },
   {
    "command": "python3 scripts/selftest.py --suite 53_veldo_0123_mutations",
+   "tree": "this branch at d051aa13",
    "exit": 2,
    "result": "passing partial run",
-   "summary": "selftest (PARTIAL, 1 of 163 suites): 40 passed, 0 failed in 29.87s",
-   "suite_line": "53_veldo_0123_mutations 14 passed 29.87s"
+   "summary": "selftest (PARTIAL, 1 of 163 suites): 40 passed, 0 failed in 28.63s",
+   "suite_line": "53_veldo_0123_mutations 14 passed 28.63s"
   },
   {
-   "command": "python3 scripts/check_teeth_mutations.py --finding 214 --worker-log-dir /tmp/v214/wl --diff-dir /tmp/v214/diff",
+   "command": "python3 scripts/selftest.py --suite 101_veldo_0208_landing_reuse",
+   "tree": "this branch at d051aa13",
+   "exit": 1,
+   "result": "two rows failed, suite completed",
+   "summary": "selftest (PARTIAL, 1 of 163 suites): 210 passed, 2 failed in 229.51s",
+   "suite_line": "101_veldo_0208_landing_reuse 184 passed 229.51s",
+   "failed_rows": [
+    "VELDO-0208 sandbox/unavailable-refuses-before-exec",
+    "VELDO-0208 sandbox/old-abi-refuses-before-exec"
+   ],
+   "exception": null,
+   "output": "proof/VELDO-0214/suite101-branch.log",
+   "leg_time_store": "~/.cache/veldo/gate-leg-seconds listed before and after: unchanged (round 1's runs of this suite had added a file to it on each run)"
+  },
+  {
+   "command": "python3 scripts/check_teeth_mutations.py --finding 214 --worker-log-dir /tmp/v214b/wl --diff-dir /tmp/v214b/diff",
+   "tree": "this branch at d051aa13",
    "exit": 0,
    "result": "passed",
-   "summary": "mutations: passed registered=4 executed=4 reused=0 rejected=4 workers=8 elapsed=4.401s",
+   "summary": "mutations: passed registered=5 executed=5 reused=0 rejected=5 workers=9 elapsed=5.258s",
    "cases": [
     {
      "case": "budget214-fixed-1800-restored",
      "baseline_failed": [],
      "noop_failed": [],
      "mutant_failed": [
-      "VELDO-0214 first-use-budget/measured-budget-used"
+      "VELDO-0214 first-use-budget/measured-budget-used",
+      "VELDO-0214 first-use-budget/ceiling-caps-the-budget"
      ]
     },
     {
@@ -73,11 +96,21 @@
      "mutant_failed": [
       "VELDO-0214 first-use-budget/by-hand-uses-1800-and-says-so"
      ]
+    },
+    {
+     "case": "budget214-main-drops-the-budget",
+     "baseline_failed": [],
+     "noop_failed": [],
+     "mutant_failed": [
+      "VELDO-0214 first-use-budget/measured-budget-used",
+      "VELDO-0214 first-use-budget/ceiling-caps-the-budget"
+     ],
+     "applied_diff": "both call sites: _run_suite(tree, \"mutated(%s)\" % mut[\"family\"]) and _run_suite(pristine, \"baseline\")"
     }
-   ],
-   "note": "Each mutant failed exactly its target row. A first attempt with the log directories pre-created exited 1 with driver_error (File exists) before any worker ran; the driver creates those directories itself."
+   ]
   }
  ],
- "not_run": "./scripts/verify.sh (the repository gate) runs separately.",
- "veldo_state": ".veldo/last_verify and .veldo/events.jsonl unchanged by these runs."
+ "suite_101_comparison": "Main d49581b4 and this branch fail the same two rows, VELDO-0208 sandbox/unavailable-refuses-before-exec and sandbox/old-abi-refuses-before-exec, with 184 rows passing in each; apart from the summary's suite count and the skipped list (which names suite 111 on the branch) the two outputs are identical. The two row failures are therefore pre-existing at main. The ValueError: incomplete file-read trace of round 1 did not recur in either run at this load, so this round shows it neither at main nor on the branch; both runs reached the end of the suite, _v208_case_input_proposal and _v208_mutation_leg included. It appeared twice in round 1 on the branch under load average 15 to 24, in files unchanged from main, and reads as load-dependent; it is not attributed either way by these runs.",
+ "not_run": "./scripts/verify.sh (the repository gate) is pending: it runs separately on a quiet machine.",
+ "veldo_state": ".veldo/last_verify and .veldo/events.jsonl unchanged by these runs (git status clean for .veldo)."
 }
