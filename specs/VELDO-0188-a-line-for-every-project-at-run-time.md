@@ -63,10 +63,11 @@ acceptance_criteria:
       Nothing else changes the set: no timer and no store read outside a woken pass (VELDO-0154 AC4). The
       suite runs the installed service with one project, then activates a second project created through
       VELDO-0143's provisioner and a third adopted through VELDO-0161, and requires each first unit
-      dispatched by the same process (identity and start time unchanged, nothing reinstalled), then
-      restarts the service and compares its Lines with the ones before. Falsifier: Build the Lines only in
-      FactoryLoop's constructor from the work configuration, and the new-project row must fail on the second
-      project's unit with no dispatch.
+      dispatched by the same process (identity and start time unchanged, nothing reinstalled), the second
+      project's first unit committed in its new repository and that commit authored and committed by the
+      project's identity alone, then restarts the service and compares its Lines with the ones before.
+      Falsifier: Build the Lines only in FactoryLoop's constructor from the work configuration, and the
+      new-project row must fail on the second project's unit with no dispatch.
     falsified_by: >
       Build the Lines only in FactoryLoop's constructor from the work configuration, and the new-project row
       must fail on the second project's unit with no dispatch.
@@ -165,3 +166,9 @@ pipes of VELDO-0154 AC1 cover every Line the loop holds, the new ones included.
 Line without a reinstall; the lead ruled it MVP function. Only the owner marks a specification ready.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+2026-10-23, owner decision (Telegram 36153, approved by 36156 "ok 0143"): VELDO-0143 AC3's observation of the
+first unit dispatched in the new repository with the identity as author moves here. AC1's new-project row
+already required that unit dispatched by the running service; it now also requires the commit in the new
+repository authored and committed by the project's identity alone. The seed for that row is
+proof/VELDO-0143/round4/first-unit-for-0188.py. Nothing else changes.

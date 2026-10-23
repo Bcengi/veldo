@@ -125,9 +125,10 @@ acceptance_criteria:
       revision (VELDO-0162 AC4) and the default pipeline (VELDO-0132), and its first objective is
       accepted by his answer, or by his first message when it named both (VELDO-0150), and admitted at
       the default priority with no further question; a repository that ended `failed` activates nothing.
-      Observe the owner told "tidepool is ready; the first objective is next", and the first unit
-      dispatched in the new repository with the identity as author. Falsifier: Activate the project
-      while its repository is still `provisioning`; the activation-order check must fail.
+      Observe the owner told "tidepool is ready; the first objective is next". The observation of the
+      first unit dispatched in the new repository with the identity as author belongs to VELDO-0188 AC1
+      (owner decision, Telegram 36156). Falsifier: Activate the project while its repository is still
+      `provisioning`; the activation-order check must fail.
     falsified_by: >
       Activate the project while its repository is still `provisioning`; the activation-order check
       must fail.
@@ -318,3 +319,11 @@ its clause, and a shown value he negates does not stay. Row proposal/correction-
 activation/first-unit stays red and named, pending the owner's decision on moving AC3's first-unit observation to
 VELDO-0188. Finding 143 registers five more mutations, thirty-six in all. Acceptance criteria, risk, readiness
 and approval requirements are unchanged.
+
+2026-10-23, owner decision (Telegram 36153, approved by 36156 "ok 0143"): AC3's observation of the first unit
+dispatched in the new repository with the identity as author moves to VELDO-0188 AC1, which already requires
+that a project created through this specification's provisioner has its first unit dispatched by the running
+service. A factory runs only its first line's cycles until VELDO-0188, and VELDO-0188 depends on this
+specification. AC3 keeps its claim, its set and completeness, the owner told, and its falsifier. Suite 110's row
+activation/first-unit is removed; its logic, unchanged, is kept in proof/VELDO-0143/round4/first-unit-for-0188.py
+to seed VELDO-0188's row, run by no suite. Risk, readiness and approval requirements are unchanged.
