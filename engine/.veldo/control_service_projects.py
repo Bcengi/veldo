@@ -3,16 +3,21 @@
 WHAT IT DOES. The service's NewProjectPass runs when something happened that it acts on, never on a timer
 or by reading the journal for a change (control_service A NEW PROJECT FROM CHAT): at the instance's start,
 after a packet or channel pass that advanced the journal (an owner's answer, a take-on the service answered),
-and when the output pipe of a provisioner it started reaches its end. Each pass:
+when the output pipe of a provisioner it started reaches its end, and when a new-project decision is written
+outside the pass (the factory PM's run settles one from his own message or his correction, or presents one,
+in a factory loop pass: NewProjects' notify, VELDO-0143 F1). Each pass:
 
+  0. finishes each presentation a crash or the store interrupted (control_project_proposal NewProjects.resume,
+     from the decision's record: the same proposal, the same commands, never a second message);
   1. applies each settled answer to a presented new-project proposal (control_project_proposal
      NewProjects.apply_settled: settled, handed to the factory PM as a correction, or rejected; nothing is
      ever asked here);
   2. for each settled decision whose repository has no record yet, starts the repository provisioner, the
      registered protected effect control_effect_executor_creation (PROTECTED_EFFECTS), as its own process
      with the provisioner configuration (provisioner_path), once per decision, its output on a pipe the
-     service's poll set watches (pipes, readable); an installation that has none refuses
-     unavailable_service:provisioner by name and the decision waits. A record the decision left
+     service's poll set watches (pipes, readable); an installation that has none fails the decision
+     unavailable_service:provisioner by name, and its report tells the owner (a proposal is not even made
+     there, NewProjects.propose, so this is a configuration removed after the answer). A record the decision left
      `provisioning` with no enrollment and no provisioner of this instance running (a run that ended with
      an earlier instance) has the provisioner started once more, which names it interrupted (or refuses,
      touching nothing, while that run is still live). A record `provisioning` with its binding is the
@@ -148,9 +153,9 @@ class NewProjectPass:
     def __init__(self, service, modules):
         self.service, self.m = service, modules
         self.decisions = None
-        # {decision: Provisioner} started by this instance; the decisions refused for want of a configuration;
-        # the decisions whose interrupted record this instance has had judged.
-        self.running, self.refused, self.rejudged = {}, set(), set()
+        # {decision: Provisioner} started by this instance; the decisions whose interrupted record this instance
+        # has had judged; whether a pass is running (its own writes make no pass due: it acts on them itself).
+        self.running, self.rejudged, self.passing = {}, set(), False
 
     def _ids(self):
         return dict(self.service.channel.ingress.settlement.ids)
@@ -165,8 +170,15 @@ class NewProjectPass:
             self.decisions = PP.NewProjects(
                 self.m['S'], self.m['CM'], s.conn, self._ids(), s.principal, s.sign, inbox=ingress.inbox,
                 settlement=ingress.settlement, presenter=ingress.presenter, assignment=self.m['I'], requester='pm',
-                request_sign=self.pm_sign, templates=(config or {}).get('templates'), generation=s.generation)
+                request_sign=self.pm_sign, templates=(config or {}).get('templates'), generation=s.generation,
+                provisioner=self.provisioner_path, notify=self.written)
         return self.decisions
+
+    def written(self, state):
+        """A new-project decision was written: outside a pass (the factory PM's run settled, presented or failed
+        it), the new-project pass is due, so a decision settled there reaches the provisioner with no other event."""
+        if not self.passing:
+            self.service.projects_due = True
 
     def provisioner_path(self):
         """The provisioner configuration: the installation's `provisioner`, else the one factory setup lays down in
@@ -197,7 +209,15 @@ class NewProjectPass:
         decisions = self.new_projects()
         if decisions is None:
             return []
-        made = [self._log(e) for e in decisions.apply_settled()]
+        self.passing = True
+        try:
+            return self._run(decisions)
+        finally:
+            self.passing = False
+
+    def _run(self, decisions):
+        made = [self._log(e) for e in decisions.resume()]
+        made += [self._log(e) for e in decisions.apply_settled()]
         settled = decisions.settled_decisions()
         # A provisioner that ended after its decision was finished (activated, or failed by its record) is gone.
         for decision in [d for d, one in self.running.items() if one.done and d not in {r['id'] for r in settled}]:
@@ -260,10 +280,8 @@ class NewProjectPass:
                  'effect': 'repository_provisioning'}
         config = self.provisioner_path()
         if not config:
-            if decision in self.refused:
-                return None
-            self.refused.add(decision)
-            return dict(about, outcome='refused', refusal='unavailable_service:provisioner')
+            self.decisions.finish(decision, activated=False, reason='unavailable_service:provisioner')
+            return dict(about, outcome='failed', refusal='unavailable_service:provisioner')
         process = subprocess.Popen([sys.executable, '-B', str(HERE / PROTECTED_EFFECTS['repository_provisioning']),
                                     str(config), decision], stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                    stderr=subprocess.DEVNULL, close_fds=True, start_new_session=True)
@@ -311,5 +329,6 @@ class NewProjectPass:
         if result.get('ok') and s.loop is not None:
             receiver = ((s.config.get('receiver') or {}).get('configs') or {}).get(repository)
             result['line'] = s.loop.add_line(repository, receiver)
-        return dict(about, outcome='activated' if result.get('ok') else 'refused', step=result.get('step'),
-                    refusal=result.get('reason'), project=result.get('project'))
+        return dict(about, outcome='activated' if result.get('ok') else 'failed' if result.get('failed') else 'refused',
+                    step=result.get('step'),
+                    refusal=result.get('reason'), project=result.get('project'), line=result.get('line'))

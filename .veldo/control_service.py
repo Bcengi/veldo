@@ -159,8 +159,10 @@ meanwhile. inspect reports the instance and the repositories it serves.
 A NEW PROJECT FROM CHAT (VELDO-0143). The instance's NewProjectPass (control_service_projects) runs when an
 event it acts on made it due, never on a timer and never by reading the journal for a change: at the start,
 after a packet or channel pass that advanced the journal (hint_after: an owner's answer, a take-on this
-instance answered), and when the output pipe of a provisioner it started, which the poll set watches beside
-the launch pipes, reaches its end. The owner's settled answers to the factory PM's new-project proposals are
+instance answered), when the output pipe of a provisioner it started, which the poll set watches beside
+the launch pipes, reaches its end, and when a new-project decision is written outside the pass (the factory
+PM's run, applied in a factory loop pass, settles one from his own message or his correction, or presents
+one: control_project_proposal NewProjects' notify, so the pass runs in the same loop iteration). The owner's settled answers to the factory PM's new-project proposals are
 applied, the repository provisioner (the registered protected effect control_effect_executor_creation, run
 as its own process with the provisioner configuration the installation names under `provisioner`) is
 started once for each settled decision, and hands the repository it created or adopted to this instance over

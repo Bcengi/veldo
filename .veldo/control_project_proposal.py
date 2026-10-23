@@ -22,12 +22,39 @@ ONE ANSWER. The proposal is settled by exactly one of three paths, and nothing i
                offers every configured identity in the same request and his approving answer names one of
                them, which resolves it (identity_named): an answer that answers a question offering exactly
                those identities.
-  correction   his answer returns the proposal with his words (return_for_elaboration), or approves it
-               without naming an offered identity: the factory PM's next run reads the proposal and his
-               words and returns the corrected document, which settles it with no second presentation.
-               A corrected document that still names no identity fails the decision by name.
+  correction   his answer returns the proposal with his words (return_for_elaboration): the factory PM's
+               next run reads the proposal and his words and returns the corrected document, which settles
+               it with no second presentation. A corrected document that still names no identity fails the
+               decision by name.
 
-A reject settles nothing and the decision is `rejected`.
+A reject settles nothing and the decision is `rejected`. An approval that names none of the identities the
+proposal offered settles nothing either: the identity was asked and his answer did not say it, so the decision
+is `failed` invalid_input:answer:identity and its report tells him why (VELDO-0143 F2).
+
+A CORRECTION IS BOUND TO HIS WORDS (correction_problems). The PM reads his correction; it never chooses for him.
+The corrected proposal settles only when each of its terms is the one he was shown or the one his correction
+says: the project's name is the presented one or named in his words; the identity is the presented one or the
+one configured identity his words name; the visibility is the one shown for that identity or named in his words;
+and the mode is the one shown for that identity and name (an adoption is only ever an adoption he was shown,
+its scaffold commit the one shown; a name or identity he was not shown is a creation). Anything else fails the
+decision by name, invalid_input:correction:<field>, before anything is built or laid, and the one judge refuses
+it again (no_settled_decision:correction:<field>).
+
+A NAME IS ONE PROJECT (VELDO-0143 F3). A project whose name is already a project's, or the name of another
+new-project decision still live (presenting, presented, correcting or settled), compared without case as
+GitHub compares names, is refused stale_subject:project_exists before he is asked and before anything is
+created; the decision is `failed` with that reason and its report tells him. An activation that finds the
+name taken meanwhile fails the decision `already_exists` rather than leaving it to be tried again.
+
+NOTHING IS ASKED THAT CANNOT BE CARRIED OUT (VELDO-0143 F6). An installation with no provisioner configuration
+(`provisioner`, the running service's provisioner_path) neither presents nor settles a proposal: the decision is
+`failed` unavailable_service:provisioner and its report tells him why.
+
+PRESENTED ONCE, EVEN ACROSS A CRASH (VELDO-0143 F4). The decision is written `presenting`, carrying the
+proposal, the request's alias and its deadline, before anything is presented; the presentation follows, then
+the decision is `presented`. A presentation interrupted by a crash or refused by the store is finished from the
+record (resume, at the running service's next new-project pass) with the same proposal and the same commands,
+which the store replays and the presenter does not send twice; nothing is built again.
 
 THE SAME SETTLEMENT ACTIVATES (activate, VELDO-0143 AC3). Once the repository the decision names is
 `active` (created and adopted, or adopted, and taken on by the running service), the decision is applied in
@@ -44,7 +71,7 @@ refuses no_settled_decision:<why> by name. The repository provisioner, the adopt
 service's take-on and the project's activation all call it (repository_decision adapts it to the shape
 control_repository.settled returns).
 
-THE RECORD. states: presented, correcting, settled, rejected, failed, activated. Every write appends one
+THE RECORD. states: presenting, presented, correcting, settled, rejected, failed, activated. Every write appends one
 history entry and never changes an earlier one. Observations name the intake proposal, the decision, the
 project, the identity and the request, never the message text, a token or a signature.
 
@@ -77,9 +104,12 @@ KIND = 'new_project'
 ID_PREFIX = 'new-project:'
 OPERATION = 'new_project_record'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
-STATES = ('presented', 'correcting', 'settled', 'rejected', 'failed', 'activated')
-TRANSITIONS = {None: ('presented', 'settled'), 'presented': ('settled', 'correcting', 'rejected'),
+STATES = ('presenting', 'presented', 'correcting', 'settled', 'rejected', 'failed', 'activated')
+TRANSITIONS = {None: ('presenting', 'settled', 'failed'), 'presenting': ('presented',),
+               'presented': ('settled', 'correcting', 'rejected', 'failed'),
                'correcting': ('settled', 'failed'), 'settled': ('settled', 'failed', 'activated')}
+# A new-project decision still live: its name is taken (A NAME IS ONE PROJECT).
+LIVE = ('presenting', 'presented', 'correcting', 'settled')
 PATHS = ('own_message', 'answer', 'correction')
 # The VELDO-0068 request the owner answers when his message did not settle it.
 TOUCHPOINT, TARGET = 'decision_disposition', 'new_project'
@@ -190,6 +220,62 @@ def identity_named(text, offered):
     return found[0] if len(set(found)) == 1 else None
 
 
+def identities_named(text, records):
+    """The ids of the configured identities (GI records) `text` names, by id or label, each as a whole word."""
+    return sorted({r['id'] for r in records if any(names(text, word) for word in identity_words(r))})
+
+
+def shown_entry(presented, identity):
+    """What `presented` showed him for `identity`: the proposal itself when it named that identity, else the
+    offered entry for it, else None (he was not shown it)."""
+    if not isinstance(presented, dict):
+        return None
+    if presented.get('identity') is not None:
+        return presented if presented['identity'] == identity else None
+    return next((e for e in presented.get('offered') or [] if e.get('identity') == identity), None)
+
+
+def correction_problems(presented, terms, rationale, records):
+    """Why the corrected `terms` ({project, identity, visibility, mode, adoption}) are not bound to his words
+    (A CORRECTION IS BOUND TO HIS WORDS), each invalid_input:correction:<field>. `records` are the configured
+    identities."""
+    problems = []
+    same_name = terms.get('project') == presented.get('project')
+    if not same_name and not names(rationale, terms.get('project')):
+        problems.append('invalid_input:correction:project')
+    identity = terms.get('identity')
+    if not (identity == presented.get('identity') or identities_named(rationale, records) == [identity]):
+        problems.append('invalid_input:correction:identity')
+    shown = shown_entry(presented, identity)
+    reference = (shown or presented).get('remote') or {}
+    if terms.get('visibility') != reference.get('visibility') and not names(rationale, terms.get('visibility')):
+        problems.append('invalid_input:correction:visibility')
+    expected = shown.get('mode') if shown is not None and same_name else 'create'
+    if terms.get('mode') != expected or (expected == 'adopt' and 'adoption' in terms
+                                          and terms['adoption'] != shown.get('adoption')):
+        problems.append('invalid_input:correction:mode')
+    return problems
+
+
+def proposal_terms(proposal):
+    """The terms correction_problems judges, of a resolved proposal."""
+    return {'project': proposal.get('project'), 'identity': proposal.get('identity'),
+            'visibility': (proposal.get('remote') or {}).get('visibility'), 'mode': proposal.get('mode'),
+            'adoption': proposal.get('adoption')}
+
+
+def name_taken(conn, name, decision=None):
+    """Whether `name` is already a project's or another live new-project decision's (A NAME IS ONE PROJECT)."""
+    if not isinstance(name, str):
+        return False
+    folded = name.casefold()
+    for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='project'"):
+        if str(json.loads(raw).get('name', '')).casefold() == folded:
+            return True
+    return any(r['id'] != decision and r.get('state') in LIVE and str(r.get('project', '')).casefold() == folded
+               for r in records(conn))
+
+
 # ---------------------------------------------------------------------------------------------
 # The proposal
 # ---------------------------------------------------------------------------------------------
@@ -282,12 +368,17 @@ def intake_source(conn, intake_proposal):
     return key, data, (written[1] if written else None)
 
 
-def build(conn, domain, intake, document, *, repository, owner, templates=None):
+def build(conn, domain, intake, document, *, repository, owner, templates=None, decision=None, shown=None):
     """The proposal for the inbox proposal `intake` (its record's data) from the PM's `document`. Raises
-    Refused by name when the document is not one or names something that does not exist."""
+    Refused by name when the document is not one, names something that does not exist, or names a project
+    that is taken (A NAME IS ONE PROJECT; `decision` is the one being built, never its own rival). `shown` is
+    the proposal he was shown, for a correction: an adoption shown for the same identity and name is kept as
+    shown, its scaffold commit not laid again."""
     problems = document_problems(document, intake.get('proposal_id'))
     if problems:
         raise Refused(problems[0], '; '.join(problems))
+    if name_taken(conn, document['project'], decision):
+        raise Refused('stale_subject:project_exists', document['project'])
     identities = {r['id']: r for r in GI.records(conn, domain)}
     if not identities:
         raise Refused('missing_authority:git_identities')
@@ -299,8 +390,13 @@ def build(conn, domain, intake, document, *, repository, owner, templates=None):
     key, source, command = found
     name = document['project']
     chosen = [identities[document['identity']]] if document['identity'] else [identities[i] for i in sorted(identities)]
-    entries = [offered_entry(conn, domain, record, name, repository, owner, document['visibility'], templates)
-               for record in chosen]
+    def entry(record):
+        kept = shown_entry(shown, record['id']) if shown and shown.get('project') == name else None
+        if kept is not None and kept.get('mode') == 'adopt':
+            visibility = document['visibility'] or record.get('default_visibility') or 'private'
+            return dict({k: kept[k] for k in IDENTITY_FIELDS}, remote=dict(kept['remote'], visibility=visibility))
+        return offered_entry(conn, domain, record, name, repository, owner, document['visibility'], templates)
+    entries = [entry(record) for record in chosen]
     proposal = {'project': name, 'repository': repository, 'owner': owner, 'identity': None, 'offered': None,
                 'directory': None, 'mode': None, 'remote': None, 'adoption': None, 'objective': document['objective'],
                 'charter': {'purpose': document['objective']}, 'authority_policy': json.loads(json.dumps(AUTHORITY_POLICY)),
@@ -482,8 +578,9 @@ def settled(store, membership, conn, decision, now=None):
     path, proposal = record.get('path'), record.get('proposal')
     if path not in PATHS:
         # Presented and not answered yet, answered with a correction the PM has not read yet, or rejected.
-        raise Refused('no_settled_decision:%s' % {'presented': 'not_answered', 'correcting': 'correcting',
-                                                  'rejected': 'rejected'}.get(record.get('state'), 'not_settled'),
+        raise Refused('no_settled_decision:%s' % {'presenting': 'not_answered', 'presented': 'not_answered',
+                                                  'correcting': 'correcting', 'rejected': 'rejected'}.get(
+                                                      record.get('state'), 'not_settled'),
                       str(decision))
     if proposal_problems(proposal):
         raise Refused('no_settled_decision:proposal', str(decision))
@@ -524,13 +621,17 @@ def settled(store, membership, conn, decision, now=None):
             raise Refused('no_settled_decision:proposal', 'the decision names other values than his answer')
     else:
         correction = record.get('correction') if isinstance(record.get('correction'), dict) else {}
-        if ruling == 'approve' and named is not None:
-            raise Refused('no_settled_decision:answer', 'his approval settled it, nothing was corrected')
+        if ruling != 'return_for_elaboration':
+            raise Refused('no_settled_decision:answer', 'only a returned proposal is corrected')
         if (not _is_str(correction.get('dispatch')) or correction.get('rationale') != s.get('rationale')
                 or correction.get('digest') != digest(proposal)
                 or document_problems(correction.get('document'), record['proposal_id'])
                 or proposal['repository'] != presented['repository'] or proposal['source'] != presented['source']):
             raise Refused('no_settled_decision:correction', 'the decision is not the PM\'s reading of his correction')
+        problems = correction_problems(presented, proposal_terms(proposal), s.get('rationale'),
+                                       GI.records(conn, idata.get('domain')))
+        if problems:
+            raise Refused('no_settled_decision:' + problems[0].split(':', 1)[1], 'the correction is not his words')
     versions.update(result['versions'])
     return dict(result, request=record['request'], settlement_id=s.get('settlement_id'),
                 effect_id=reference.get('effect_id'), presentation_id=s.get('presentation_id'), versions=versions)
@@ -588,15 +689,19 @@ class NewProjects:
     are the VELDO-0064/0068/0065 services of this connection, `assignment` the control_assignment module;
     `requester` and `request_sign` sign the presented request (the factory PM's principal). The owner is told
     what became of a decision by its record: VELDO-0128's report projects it entering activated or failed
-    (control_telegram_report project_ready) through the reporter's one rendered send."""
+    (control_telegram_report project_ready) through the reporter's one rendered send. `provisioner` is the
+    installation's provisioner configuration, or a callable answering it (None when there is none: NOTHING IS
+    ASKED THAT CANNOT BE CARRIED OUT). `notify(state)` is called after every decision written, so the running
+    service's new-project pass is made due by a decision the factory PM's run settled (VELDO-0143 F1)."""
 
     def __init__(self, store, membership, conn, ids, journal_signer, sign, *, inbox=None, settlement=None,
                  presenter=None, assignment=None, requester='pm', request_sign=None, templates=None,
-                 generation=1, clock=time.time):
+                 generation=1, clock=time.time, provisioner=None, notify=None):
         self.store, self.membership, self.conn, self.ids = store, membership, conn, dict(ids)
         self.journal_signer, self.sign, self.generation, self.clock = journal_signer, sign, generation, clock
         self.inbox, self.settlement, self.presenter, self.assignment = inbox, settlement, presenter, assignment
         self.requester, self.request_sign, self.templates = requester, request_sign, templates
+        self.provisioner, self.notify = provisioner, notify
         self.observations = []
         conn.command_registry[OPERATION] = {'transition': self._transition, 'writes': WRITES}
 
@@ -630,7 +735,18 @@ class NewProjects:
                    'expected_versions': {decision: 0 if prior is None else prior['version']}, 'artifact_digests': [],
                    'nonce': nonce}
         self.store.execute(self.conn, command, self.journal_signer, self.sign, self.generation)
+        if self.notify is not None:
+            self.notify(state)
         return read(self.conn, decision)
+
+    def provisioning(self):
+        """The installation's provisioner configuration, or None."""
+        return self.provisioner() if callable(self.provisioner) else self.provisioner
+
+    def _fail(self, decision, step, reason, **fields):
+        """The decision `failed` by name, its report telling him why; the message has its decision and is not
+        read again."""
+        self.write(decision, 'failed', step=step, reason=reason, **fields)
 
     def pending(self):
         return pending(self.conn)
@@ -650,8 +766,22 @@ class NewProjects:
             owner = factory_owner(self.conn)
             if owner is None:
                 raise Refused('unsupported_configuration:factory_project')
+            problems = document_problems(document, intake_proposal)
+            if problems:
+                raise Refused(problems[0], '; '.join(problems))
+            terminal = None
+            if not self.provisioning():
+                terminal = 'unavailable_service:provisioner'
+            elif name_taken(self.conn, document['project'], decision):
+                terminal = 'stale_subject:project_exists'
+            if terminal:
+                self._fail(decision, 'proposal', terminal, proposal_id=intake_proposal, path=None, document=document,
+                           dispatch=dispatch, presented=None, request=None, proposal=None, correction=None,
+                           project=document['project'], repository=None)
+                return dict(self._observe('propose', 'failed', terminal, project=document['project'], **about),
+                            ok=False, reason=terminal)
             proposal = build(self.conn, self.ids['domain_uuid'], data, document, repository=str(uuid.uuid4()),
-                             owner=owner, templates=self.templates)
+                             owner=owner, templates=self.templates, decision=decision)
             reasons = nothing_asked(self.conn, data, proposal, owner)
             if not reasons:
                 self.write(decision, 'settled', step='own_message', proposal_id=intake_proposal, path='own_message',
@@ -659,10 +789,16 @@ class NewProjects:
                            correction=None, project=proposal['project'], repository=proposal['repository'], reason=None)
                 return dict(self._observe('propose', 'settled', path='own_message', project=proposal['project'],
                                           identity=proposal['identity'], **about), ok=True)
-            request = self._present(decision, proposal, owner)
-            self.write(decision, 'presented', step='presented', proposal_id=intake_proposal, path=None,
-                       document=document, dispatch=dispatch, presented=proposal, request=request, proposal=None,
-                       correction=None, project=proposal['project'], repository=proposal['repository'], reason=None)
+            # Recorded before anything is presented, so a presentation a crash or the store interrupted is finished
+            # from the record (resume), never built again.
+            alias = 'new-project-' + hashlib.sha256(decision.encode()).hexdigest()[:24]
+            deadline = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(self.clock() + 7 * 86400))
+            self.write(decision, 'presenting', step='presenting', proposal_id=intake_proposal, path=None,
+                       document=document, dispatch=dispatch, presented=proposal, request=None, proposal=None,
+                       correction=None, project=proposal['project'], repository=proposal['repository'], reason=None,
+                       presentation={'alias': alias, 'deadline': deadline})
+            request = self._present(decision, proposal, owner, alias, deadline)
+            self.write(decision, 'presented', step='presented', request=request)
         except (Refused, self.store.StoreRefused) as error:
             return dict(self._observe('propose', 'refused', error.code, **about), ok=False, reason=error.code)
         return dict(self._observe('propose', 'presented', asked=reasons, request=request, project=proposal['project'],
@@ -672,19 +808,19 @@ class NewProjects:
         command = dict(self.ids, principal=self.requester, **fields)
         return dict(command=command, signature=self.request_sign(self.store.canonical_bytes(command)))
 
-    def _present(self, decision, proposal, owner):
+    def _present(self, decision, proposal, owner, alias, deadline):
         """The one VELDO-0068 request that presents `proposal` to the owner: its terms, the inbox request,
-        its framing and its presentation. Returns the request id."""
+        its framing and its presentation, under `alias` and `deadline` as the decision records them, so a retry
+        carries the same commands (the store replays them; the presenter never sends a presentation twice).
+        Returns the request id."""
         if None in (self.settlement, self.inbox, self.presenter, self.assignment, self.request_sign):
             raise Refused('unavailable_service:presentation')
-        alias = 'new-project-' + hashlib.sha256(decision.encode()).hexdigest()[:24]
         terms = self.settlement.terms(self._signed(operation='terms', terms=alias, command_id=alias + '-terms',
                                                    nonce=alias + '-terms', touchpoint=TOUCHPOINT,
                                                    target=target(proposal), proposal=proposal, required_roles=[],
                                                    quorum=None))
         if terms.get('outcome') != 'recorded':
             raise Refused('unavailable_service:terms', str(terms.get('reason')))
-        deadline = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(self.clock() + 7 * 86400))
         self.inbox.apply(self._signed(operation='open', alias=alias, command_id=alias + '-open', nonce=alias + '-open',
                                       assignment=dict(kind='decision', owner=owner, scope=[FACTORY_PROJECT],
                                                       deadline=deadline, budget={'owner_minutes': 10},
@@ -699,6 +835,24 @@ class NewProjects:
                                           command_id=alias + '-frame', nonce=alias + '-frame'))
         self.presenter.present(request)
         return request
+
+    def resume(self):
+        """Each decision whose presentation did not finish (PRESENTED ONCE, EVEN ACROSS A CRASH): presented now
+        from its record, then `presented`. Returns the observations made."""
+        made = []
+        for record in records(self.conn):
+            if record['state'] != 'presenting':
+                continue
+            about = dict(decision=record['id'], proposal_id=record['proposal_id'])
+            shown, presentation = record['presented'], record.get('presentation') or {}
+            try:
+                request = self._present(record['id'], shown, shown['owner'], presentation['alias'],
+                                        presentation['deadline'])
+                self.write(record['id'], 'presented', step='presented', request=request)
+                made.append(self._observe('resume', 'presented', request=request, **about))
+            except (Refused, self.store.StoreRefused) as error:
+                made.append(self._observe('resume', 'refused', error.code, **about))
+        return made
 
     def apply_settled(self):
         """Each presented decision whose request is settled: an approval naming the identity settles it, a
@@ -729,6 +883,11 @@ class NewProjects:
                     self.write(record['id'], 'settled', step='answer', path='answer', proposal=proposal)
                     made.append(self._observe('answer', 'settled', path='answer', identity=named, **about))
                     continue
+                if ruling == 'approve':
+                    # The identity was asked and his approval did not say it: nothing is chosen for him.
+                    self._fail(record['id'], 'answer', 'invalid_input:answer:identity')
+                    made.append(self._observe('answer', 'failed', 'invalid_input:answer:identity', **about))
+                    continue
                 self.write(record['id'], 'correcting', step='answer',
                            correction={'rationale': s.get('rationale'), 'ruling': ruling, 'dispatch': None,
                                        'document': None, 'digest': None})
@@ -747,14 +906,38 @@ class NewProjects:
                 raise Refused('stale_version:not_correcting', decision)
             presented = record['presented']
             intake = _row(self.conn, record['proposal_id'])['data']
-            proposal = build(self.conn, self.ids['domain_uuid'], intake, document, repository=presented['repository'],
-                             owner=presented['owner'], templates=self.templates)
+            problems = document_problems(document, record['proposal_id'])
+            if problems:
+                raise Refused(problems[0], '; '.join(problems))
             correction = dict(record['correction'], dispatch=dispatch, document=document)
-            if proposal['identity'] is None:
-                self.write(decision, 'failed', step='correction', reason='invalid_input:identity',
-                           correction=correction, project=proposal['project'])
-                return dict(self._observe('correct', 'failed', 'invalid_input:identity', **about), ok=False,
-                            reason='invalid_input:identity')
+            rationale = correction.get('rationale')
+            configured = {r['id']: r for r in GI.records(self.conn, self.ids['domain_uuid'])}
+            failure = None
+            if document['identity'] is None:
+                failure = 'invalid_input:identity'
+            elif document['identity'] not in configured:
+                raise Refused('invalid_input:document:identity', 'no configured identity is named so')
+            else:
+                # Judged before anything is built, so nothing is laid for terms he did not say or see.
+                chosen = configured[document['identity']]
+                directory = os.path.join(chosen['projects_root'], document['project'])
+                terms = {'project': document['project'], 'identity': document['identity'],
+                         'visibility': document['visibility'] or chosen.get('default_visibility') or 'private',
+                         'mode': 'adopt' if directory_state(directory) == 'repository' else 'create'}
+                problems = correction_problems(presented, terms, rationale, configured.values())
+                if not problems and name_taken(self.conn, document['project'], decision):
+                    problems = ['stale_subject:project_exists']
+                failure = problems[0] if problems else None
+            proposal = None
+            if failure is None:
+                proposal = build(self.conn, self.ids['domain_uuid'], intake, document,
+                                 repository=presented['repository'], owner=presented['owner'],
+                                 templates=self.templates, decision=decision, shown=presented)
+                problems = correction_problems(presented, proposal_terms(proposal), rationale, configured.values())
+                failure = problems[0] if problems else None
+            if failure is not None:
+                self._fail(decision, 'correction', failure, correction=correction, project=document['project'])
+                return dict(self._observe('correct', 'failed', failure, **about), ok=False, reason=failure)
             correction['digest'] = digest(proposal)
             self.write(decision, 'settled', step='correction', path='correction', proposal=proposal,
                        project=proposal['project'], correction=correction)
@@ -850,10 +1033,15 @@ def activate(decisions, decision, *, projects, teams, intake, objectives, pm, pm
     project = _row(conn, 'project:' + name)
     if project is None:
         done = projects.activate_decided(decision)
+        if done.get('reason') == 'already_exists':
+            decisions.finish(decision, activated=False, reason='already_exists')
+            return {'ok': False, 'step': 'activation', 'reason': 'already_exists', 'failed': True}
         if not done.get('ok'):
             return {'ok': False, 'step': 'activation', 'reason': done.get('reason')}
     elif (project['data'].get('provenance') or {}).get('decision') != decision:
-        return {'ok': False, 'step': 'activation', 'reason': 'already_exists'}
+        # The name was taken meanwhile: the decision fails by name, never tried again (A NAME IS ONE PROJECT).
+        decisions.finish(decision, activated=False, reason='already_exists')
+        return {'ok': False, 'step': 'activation', 'reason': 'already_exists', 'failed': True}
     team = first_team(teams, decision, judged)
     if not team.get('ok'):
         return {'ok': False, 'step': 'team', 'reason': team.get('reason'), 'owner_request': team.get('owner_request')}

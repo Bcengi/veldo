@@ -102,7 +102,9 @@ def _v143_suite():
                       'provision/interrupted', 'provision/observed', 'activation/order', 'activation/applied',
                       'activation/failed-activates-nothing', 'activation/admitted-without-question',
                       'activation/new-line', 'provision/handed-over', 'provision/signing-no-agent', 'service/provisions',
-                      'service/hand-off', 'pm/new-project-run'):
+                      'service/hand-off', 'pm/new-project-run', 'proposal/correction-bound', 'proposal/name-taken',
+                      'activation/name-taken', 'proposal/no-provisioner', 'proposal/presentation-interrupted',
+                      'service/pm-settled-due', 'activation/first-unit'):
             expect(PREFIX + label, False)
         return
 
@@ -337,6 +339,11 @@ def _v143_suite():
                              'journal': {'principal': 'authority', 'key': str(f['keyfile']['authority'])},
                              'adoption_signer': {'key': str(adoption_key)}, 'templates': str(ROOT / 'engine'),
                              'observations': str(observations), 'github_api': github_api}
+            # The provisioner configuration setup lays down in the state root: a proposal is made only where one is
+            # installed (VELDO-0143 F6).
+            provisioner_file = state_root / 'host' / 'provisioner.json'
+            provisioner_file.write_text(json.dumps(effect_config))
+            provisioner_file.chmod(0o600)
 
             # ---- intake: the owner's messages, by Telegram and by an API request --------------------------------
             acquirer = EV.Acquirer(S, CM, f['P'], f['V'], presenter, EV.TelegramAcquisitionEdge(f['P'], f['url'], 'bot89'),
@@ -372,7 +379,8 @@ def _v143_suite():
 
             decisions = PP.NewProjects(S, CM, conn, ids, 'authority', journal_sign, inbox=inbox, settlement=settlement,
                                        presenter=presenter, assignment=I, requester='pm',
-                                       request_sign=lambda b: sign_as('pm', b), templates=str(ROOT / 'engine'))
+                                       request_sign=lambda b: sign_as('pm', b), templates=str(ROOT / 'engine'),
+                                       provisioner=str(provisioner_file))
 
             def answer(rid, choice, rationale):
                 receipt = presenter.current(rid) or {}
@@ -548,6 +556,104 @@ def _v143_suite():
                      and reef_judged['proposal']['remote']['visibility'] == 'public'
                      and reef_judged['proposal']['repository'] == correcting['presented']['repository']
                      and bot_messages() == after_return and len([r for r in new_project_requests()]) == 2)])
+
+            with region('proposal/correction-bound'):
+                # A correction is bound to his words (VELDO-0143 F2): the PM reads them, it never chooses for him.
+                def asked_for(name, identity_name):
+                    result = send('api_request', 'start a new project called %s' % name)
+                    pid, _ = routed(result)
+                    made = decisions.propose(pid, document(pid, name, identity_name), dispatch=next_id('pm-np'))
+                    return made.get('decision'), pid, (PP.read(conn, made.get('decision')) or {}).get('request')
+
+                def returned(rid, words, ruling='return_for_elaboration'):
+                    answer(rid, ruling, words)
+                    return decisions.apply_settled()
+
+                def state_of(decision):
+                    held_ = PP.read(conn, decision) or {}
+                    return held_.get('state'), held_.get('reason')
+                cases_bound, before_bound = {}, (bot_messages(), len(hub['calls']), new_project_requests())
+                # (a) he was asked the identity and answered only "yes".
+                d_yes, _p, r_yes = asked_for('sandbar', None)
+                returned(r_yes, 'yes', 'accept')
+                cases_bound['yes'] = (state_of(d_yes), None)
+                # (b) to (e): the PM's corrected document changes what his words did not.
+                for case, name, words, corrected in (
+                        ('identity', 'shoal', 'call it shoal-two', ('shoal-two', 'bcengi', None)),
+                        ('visibility', 'spit', 'call it spit-two', ('spit-two', 'personal', 'public')),
+                        ('mode', 'jetty', 'call it anchorage', ('anchorage', 'personal', None)),
+                        ('project', 'pier', 'make it public', ('wharf', 'personal', 'public'))):
+                    if case == 'mode':
+                        anchorage = projects_root['personal'] / 'anchorage'
+                        GP.run(['git', 'init', '-q', '-b', 'main', str(anchorage)], check=True, capture_output=True)
+                        (anchorage / 'README').write_text('anchorage\n')
+                        git(anchorage, 'add', '-A')
+                        GP.run(['git', '-C', str(anchorage), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'mine'],
+                               check=True, capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
+                        refs_before = git(anchorage, 'for-each-ref')
+                    decision_b, pid_b, rid_b = asked_for(name, 'personal')
+                    returned(rid_b, words)
+                    outcome_b = decisions.correct(decision_b, document(pid_b, *corrected), dispatch=next_id('pm-npc'))
+                    cases_bound[case] = (state_of(decision_b), outcome_b)
+                anchorage_refs = git(projects_root['personal'] / 'anchorage', 'for-each-ref')
+                # (f) a correction that says each change settles them.
+                d_ok, pid_ok, r_ok = asked_for('buoy', 'personal')
+                returned(r_ok, 'put it under Bcengi, call it buoy-b, and make it public')
+                ok_outcome = decisions.correct(d_ok, document(pid_ok, 'buoy-b', 'bcengi', 'public'), dispatch='pm-npc-buoy')
+                ok_judged = PP.settled(S, CM, conn, d_ok)
+                # (g) the judge: a settled correction written without correct(), its identity not his.
+                d_g, pid_g, r_g = asked_for('mooring', 'personal')
+                returned(r_g, 'call it mooring-two')
+                shown_g = PP.read(conn, d_g)
+                doc_g = document(pid_g, 'mooring-two', 'bcengi')
+                forged_g = PP.build(conn, DOMAIN, intake.proposal(pid_g), doc_g, repository=shown_g['presented']['repository'],
+                                    owner=OWNER)
+                decisions.write(d_g, 'settled', step='correction', path='correction', proposal=forged_g,
+                                project='mooring-two', correction=dict(shown_g['correction'], dispatch='forged', document=doc_g,
+                                                                       digest=PP.digest(forged_g)))
+                try:
+                    PP.settled(S, CM, conn, d_g)
+                    judge_g = None
+                except PP.Refused as error:
+                    judge_g = error.code
+                journal_g, calls_g = journal(), len(hub['calls'])
+                provision_g = provision(d_g)
+                check('proposal/correction-bound', [
+                    ('an approval naming none of the identities he was asked fails by name, nothing chosen for him %s'
+                     % (cases_bound['yes'],), cases_bound['yes'][0] == ('failed', 'invalid_input:answer:identity'))] + [
+                    ('a corrected %s his words did not say fails the decision by name %s' % (case, cases_bound[case][0]),
+                     cases_bound[case][0] == ('failed', 'invalid_input:correction:' + case)
+                     and cases_bound[case][1].get('ok') is False)
+                    for case in ('identity', 'visibility', 'mode', 'project')] + [
+                    ('an adoption he was not shown lays nothing in that repository',
+                     anchorage_refs == refs_before and not (projects_root['personal'] / 'jetty').exists()),
+                    ('a correction that says each change settles it, as he said it',
+                     ok_outcome.get('ok') is True and ok_judged['proposal']['identity'] == 'bcengi'
+                     and ok_judged['proposal']['project'] == 'buoy-b'
+                     and ok_judged['proposal']['remote']['visibility'] == 'public'),
+                    ('the one judge refuses a settled correction whose identity is not his words, by name [%s]' % judge_g,
+                     judge_g == 'no_settled_decision:correction:identity'),
+                    ('so the provisioner refuses it at the settlement: nothing written, no directory, GitHub not asked',
+                     provision_g.get('reason') == 'no_settled_decision:correction:identity'
+                     and provision_g.get('step') == 'settlement' and journal() == journal_g
+                     and len(hub['calls']) == calls_g and not (projects_root['bcengi'] / 'mooring-two').exists()),
+                    ('none of it asks a second question or reaches GitHub',
+                     len(new_project_requests()) == len(before_bound[2]) + 7 and len(hub['calls']) == before_bound[1])])
+
+            with region('proposal/name-taken'):
+                # A name is one project (VELDO-0143 F3): another live decision's name, compared as GitHub compares.
+                calls_n, requests_n = len(hub['calls']), new_project_requests()
+                taken_msg = send('api_request', 'start a new bcengi project called Driftwood')
+                pid_n, _ = routed(taken_msg)
+                taken = decisions.propose(pid_n, document(pid_n, 'Driftwood', 'bcengi'), dispatch='pm-np-taken')
+                check('proposal/name-taken', [
+                    ('a project named like another live decision\'s is refused before he is asked [%s]' % taken.get('reason'),
+                     taken.get('ok') is False and taken.get('reason') == 'stale_subject:project_exists'),
+                    ('the decision is failed by that name, so the message is not read again and his report tells him',
+                     state_of(PP.decision_id(pid_n)) == ('failed', 'stale_subject:project_exists')
+                     and pid_n not in {p['proposal_id'] for p in PP.pending(conn)}),
+                    ('nothing is presented, built or created', new_project_requests() == requests_n
+                     and len(hub['calls']) == calls_n and not (projects_root['bcengi'] / 'Driftwood').exists())])
 
             with region('proposal/refusals'):
                 fourth = send('api_request', 'start a new project called unanswered')
@@ -1040,6 +1146,135 @@ def _v143_suite():
                     return authority.judge(SV.CC.build_request(workspace, binding, packet, sign), os.getuid())
                 return send_to
 
+            with region('activation/name-taken'):
+                # A name is one project (VELDO-0143 F3), after activation: an existing project's name is refused
+                # before he is asked, and an activation that finds the name taken meanwhile fails by name.
+                calls_t = len(hub['calls'])
+                again_msg = send('api_request', 'start a new personal project called tidepool')
+                pid_t, _ = routed(again_msg)
+                again_t = decisions.propose(pid_t, document(pid_t, 'tidepool', 'personal'), dispatch='pm-np-again')
+                calls_after_t = len(hub['calls'])
+                decision_m, _, _ = own_decision('mussel')
+                mussel_repo = PP.read(conn, decision_m)['proposal']['repository']
+                with fenced(wire):
+                    mussel = provision(decision_m, send=judged(service))
+                body_m = dict(ids, operation='activate', project='mussel', principal=OWNER, command_id=next_id('pm-m'),
+                              nonce=next_id('pm-mn'), owner=OWNER, charter={'purpose': 'Another way in.'},
+                              execution_repository=mussel_repo, authority_policy={'team_amendment': ['project_owner']},
+                              coordination_budget={'capacity': 4, 'invocations': 400, 'wall_seconds': 604800})
+                other = PJ.Projects(S, CM, conn, ids, 'authority', journal_sign, stop=lambda d, r: False).apply(
+                    {'command': body_m, 'signature': sign_as(OWNER, S.canonical_bytes(body_m))})
+                mussel_pass = service.new_project_pass()
+                mussel_again = service.new_project_pass()
+                told_m = reported()
+                check('activation/name-taken', [
+                    ('a new project named like an existing project is refused before he is asked [%s]' % again_t.get('reason'),
+                     again_t.get('reason') == 'stale_subject:project_exists'
+                     and (PP.read(conn, PP.decision_id(pid_t)) or {}).get('state') == 'failed'
+                     and calls_after_t == calls_t),
+                    ('a project of that name activated meanwhile fails the decision by name, once [%s, %s]'
+                     % (mussel.get('state'), other.get('ok')),
+                     mussel.get('state') == 'active' and other.get('ok') is True
+                     and (PP.read(conn, decision_m) or {}).get('state') == 'failed'
+                     and (PP.read(conn, decision_m) or {}).get('reason') == 'already_exists'
+                     and any(e.get('decision') == decision_m and e.get('outcome') == 'failed' for e in mussel_pass)
+                     and not any(e.get('decision') == decision_m for e in mussel_again)),
+                    ('its report tells him it could not be set up, and why',
+                     (decision_m, 'sent', 'mussel could not be set up.') in told_m
+                     and (PP.decision_id(pid_t), 'sent', 'tidepool could not be set up.') in told_m
+                     and any('already_exists' in t for _c, _m, _r, t in bot_messages()))])
+
+            with region('proposal/no-provisioner'):
+                # Nothing is asked that cannot be carried out (VELDO-0143 F6): an installation with no provisioner
+                # configuration neither presents nor settles a proposal, and he is told why.
+                bare = PP.NewProjects(S, CM, conn, ids, 'authority', journal_sign, inbox=inbox, settlement=settlement,
+                                      presenter=presenter, assignment=I, requester='pm',
+                                      request_sign=lambda b: sign_as('pm', b), templates=str(ROOT / 'engine'),
+                                      provisioner=lambda: None)
+                requests_p, calls_p = new_project_requests(), len(hub['calls'])
+                named_p = send('api_request', 'start a new personal project called eddy')
+                pid_p1, _ = routed(named_p)
+                unnamed_p = send('api_request', 'start a new project called riffle')
+                pid_p2, _ = routed(unnamed_p)
+                eddy = bare.propose(pid_p1, document(pid_p1, 'eddy', 'personal'), dispatch='pm-np-eddy')
+                riffle = bare.propose(pid_p2, document(pid_p2, 'riffle', None), dispatch='pm-np-riffle')
+                told_p = reported()
+                check('proposal/no-provisioner', [
+                    ('neither the message that named both nor the one that asked settles or presents [%s, %s]'
+                     % (eddy.get('reason'), riffle.get('reason')),
+                     all(o.get('ok') is False and o.get('reason') == 'unavailable_service:provisioner' for o in (eddy, riffle))
+                     and all((PP.read(conn, PP.decision_id(p)) or {}).get('state') == 'failed' for p in (pid_p1, pid_p2))
+                     and new_project_requests() == requests_p),
+                    ('nothing is built or created', len(hub['calls']) == calls_p
+                     and not (projects_root['personal'] / 'eddy').exists()),
+                    ('he is told each could not be set up, naming why',
+                     (PP.decision_id(pid_p1), 'sent', 'eddy could not be set up.') in told_p
+                     and (PP.decision_id(pid_p2), 'sent', 'riffle could not be set up.') in told_p
+                     and any('eddy could not be set up' in t and 'unavailable_service:provisioner' in t
+                             for _c, _m, _r, t in bot_messages())),
+                    ('a decision settled where the running service has no configuration is failed by name, not left waiting',
+                     (PP.read(conn, PP.decision_id(pid6)) or {}).get('state') == 'failed'
+                     and (PP.read(conn, PP.decision_id(pid6)) or {}).get('reason') == 'unavailable_service:provisioner')])
+
+            with region('proposal/presentation-interrupted'):
+                # Presented once, even across a crash (VELDO-0143 F4): the decision is recorded before anything is
+                # presented, and the running service's next pass finishes the presentation from the record.
+                refused_msg = send('api_request', 'start a new project called kelp')
+                pid_k1, _ = routed(refused_msg)
+                crashed_msg = send('api_request', 'start a new project called wrack')
+                pid_k2, _ = routed(crashed_msg)
+                real_write, real_present = decisions.write, presenter.present
+
+                def refusing_write(decision, state, **fields):
+                    if state == 'presented':
+                        raise S.StoreRefused('stale_version', 'injected: the store refuses the decision write')
+                    return real_write(decision, state, **fields)
+
+                def crashing_present(request):
+                    raise RuntimeError('injected: the service is killed while presenting')
+                before_k = bot_messages()
+                decisions.write = refusing_write
+                try:
+                    kelp = decisions.propose(pid_k1, document(pid_k1, 'kelp', 'personal'), dispatch='pm-np-kelp')
+                finally:
+                    decisions.write = real_write
+                kelp_sent = bot_messages()[len(before_k):]
+                presenter.present = crashing_present
+                try:
+                    decisions.propose(pid_k2, document(pid_k2, 'wrack', 'personal'), dispatch='pm-np-wrack')
+                    crashed = None
+                except RuntimeError as error:
+                    crashed = str(error)
+                finally:
+                    presenter.present = real_present
+                interrupted_k = [(PP.read(conn, PP.decision_id(p)) or {}) for p in (pid_k1, pid_k2)]
+                wrack_unsent = bot_messages()[len(before_k) + len(kelp_sent):]
+                resumed = service.new_project_pass()
+                after_k = [(PP.read(conn, PP.decision_id(p)) or {}) for p in (pid_k1, pid_k2)]
+                again_k = service.new_project_pass()
+                sent_k = bot_messages()[len(before_k):]
+                check('proposal/presentation-interrupted', [
+                    ('a store refusal or a crash after the decision is recorded leaves it presenting, with its proposal [%s]'
+                     % kelp.get('reason'),
+                     kelp.get('ok') is False and crashed is not None
+                     and [r.get('state') for r in interrupted_k] == ['presenting', 'presenting']
+                     and all(r.get('presented', {}).get('project') in ('kelp', 'wrack') for r in interrupted_k)
+                     and pid_k1 not in {p['proposal_id'] for p in PP.pending(conn)}),
+                    ('the next pass presents each from its record, the same request, and it is presented',
+                     [r.get('state') for r in after_k] == ['presented', 'presented']
+                     and after_k[0].get('presented') == interrupted_k[0].get('presented')
+                     and after_k[1].get('presented') == interrupted_k[1].get('presented')
+                     and all(r.get('request') for r in after_k)
+                     and sum(1 for e in resumed if e.get('operation') == 'resume' and e.get('outcome') == 'presented') == 2),
+                    ('each question reaches him once: never twice, and the crashed one once it is resumed [%d, %d, %d]'
+                     % (len(kelp_sent), len(wrack_unsent), len(sent_k)),
+                     len(kelp_sent) == 1 and wrack_unsent == [] and len(sent_k) == 2
+                     and not any(e.get('operation') == 'resume' for e in again_k)),
+                    ('his answer to it is read: the decision settles',
+                     answer(after_k[0]['request'], 'accept', 'yes').get('outcome') in ('accepted', 'settled')
+                     and decisions.apply_settled() != []
+                     and (PP.read(conn, PP.decision_id(pid_k1)) or {}).get('state') == 'settled')])
+
             with region('provision/handed-over'):
                 # VELDO-0161 TAKING IT ON, for a created repository: the provisioner hands its record to the running
                 # service, which judges it again and answers synchronously; the answer is the record active.
@@ -1270,6 +1505,75 @@ def _v143_suite():
                         ('the take-on it answered made the pass due: the project is active with no instance started',
                          active_before_start and takes == [])])
 
+            with region('service/pm-settled-due'):
+                # A decision the factory PM's run settles, applied in a factory loop pass, makes the new-project pass
+                # due with no other event (VELDO-0143 F1): his own message, and his correction.
+                PMd = load('v143_pm_due', mods / 'control_workflow_cycle_pm.py')
+                applier = SimpleNamespace(services={'new_projects': service.new_projects()}, save=lambda r: r)
+
+                def pm_applies(subject, value, dispatch):
+                    """The factory loop's apply of the factory PM's run (ProjectCycles.apply), as its pass runs it."""
+                    service.projects_due = False
+                    cycle_record = {'new_project_subject': subject, 'dispatch': dispatch, 'cycle': dispatch,
+                                    'project': 'factory'}
+                    try:
+                        PMd.ProjectCycles.apply(applier, cycle_record, value)
+                    except PMd.Refused as error:
+                        return error.code, service.projects_due
+                    return cycle_record.get('state'), service.projects_due
+
+                def serve_step():
+                    """The serve loop's own check after the factory loop's pass: a pass only when one is due."""
+                    return service.new_project_pass() if service.projects_due else []
+                # The provisioners run inside the identity wire's fence, as service/provisions runs them.
+                with fenced(wire):
+                    brook_msg = send('api_request', 'start a new personal project called brook')
+                    pid_b1, _ = routed(brook_msg)
+                    brook_applied = pm_applies({'proposal_id': pid_b1, 'decision': None, 'correction': None},
+                                               document(pid_b1, 'brook', 'personal'), 'pm-cycle-brook')
+                    brook_step = serve_step()
+                    rill_msg = send('api_request', 'start a new project called rill')
+                    pid_b2, _ = routed(rill_msg)
+                    rill_presented = pm_applies({'proposal_id': pid_b2, 'decision': None, 'correction': None},
+                                                document(pid_b2, 'rill', 'personal'), 'pm-cycle-rill')
+                    serve_step()
+                    rill_decision = PP.decision_id(pid_b2)
+                    answer((PP.read(conn, rill_decision) or {}).get('request'), 'return_for_elaboration', 'call it rill-two')
+                    service.new_project_pass()
+                    rill_applied = pm_applies({'proposal_id': pid_b2, 'decision': rill_decision, 'correction': None},
+                                              document(pid_b2, 'rill-two', 'personal'), 'pm-cycle-rill-two')
+                    rill_step = serve_step()
+                    started_due = {e.get('decision') for e in brook_step + rill_step
+                                   if e.get('operation') == 'provision' and e.get('outcome') == 'started'}
+                    # Each provisioner runs to its end; an instance then takes the repositories on and the pass activates.
+                    runs = [service.projects_pass.running.get(d) for d in (PP.decision_id(pid_b1), rill_decision)]
+                    deadline = time.monotonic() + 120
+                    while any(one is not None and not one.done for one in runs) and time.monotonic() < deadline:
+                        pipes = service.provisioner_pipes()
+                        for fd in select.select(sorted(pipes), [], [], 5)[0]:
+                            service.provisioner_readable(fd)
+                        serve_step()
+                takes_due = service.take_on()
+                activated_due = service.new_project_pass()
+                if (PJ.read(S, conn, 'brook') or {}).get('state') != 'ACTIVE':
+                    print('  %sdetail: pm-settled-due %s %s %s' % (PREFIX, [None if o is None else (o.done, o.reason())
+                                                                          for o in runs],
+                                                                 json.dumps(takes_due, default=str)[:600],
+                                                                 json.dumps(activated_due, default=str)[:900]))
+                check('service/pm-settled-due', [
+                    ('his own message, settled by the factory PM\'s run in a loop pass, makes the pass due [%s]'
+                     % (brook_applied,), brook_applied == ('proposed', True)
+                     and (PP.read(conn, PP.decision_id(pid_b1)) or {}).get('path') == 'own_message'),
+                    ('his correction, settled by the PM\'s run in a loop pass, makes the pass due [%s, %s]'
+                     % (rill_presented, rill_applied), rill_presented[0] == 'proposed' and rill_applied == ('proposed', True)
+                     and (PP.read(conn, rill_decision) or {}).get('path') == 'correction'),
+                    ('with no other event the serve loop\'s pass starts the provisioner for each [%s]' % sorted(started_due),
+                     started_due == {PP.decision_id(pid_b1), rill_decision}),
+                    ('each repository is created and its project activated',
+                     all(one is not None and one.done for one in runs)
+                     and (PJ.read(S, conn, 'brook') or {}).get('state') == 'ACTIVE'
+                     and (PJ.read(S, conn, 'rill-two') or {}).get('state') == 'ACTIVE')])
+
             with region('pm/new-project-run'):
                 # The factory PM's run through the factory loop's Runner, on the launch receiver and a fake engine
                 # printing the installed CLI's output shape (VELDO-0172's, as VELDO-0152 drives the route run). The
@@ -1330,7 +1634,8 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                                              authority_generation=1, repositories={REPO: [str(source)]},
                                              journal_key=str(f['keyfile']['authority']), host_identity=HOST,
                                              enrollment_signers=trust.enrollment_signers, store_path=str(f['db']),
-                                             observations=str(base / 'pm-service.jsonl')), conn)
+                                             observations=str(base / 'pm-service.jsonl'),
+                                             provisioner=str(provisioner_file)), conn)
                 pm_service.channel = service.channel
                 pm_loop = SV.FactoryLoop(pm_service, {'repositories': {}})
                 line = SV.Line(pm_loop, REPO, {'builder': {'identity': 'unassigned'}, 'reviewers': []}, str(pm_receiver))
