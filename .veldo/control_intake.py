@@ -164,6 +164,13 @@ def command_problem(command):
     return None
 
 
+def store_projects(conn):
+    """The projects an intake on `conn` serves when it serves every project: the names of the project rows there
+    now (VELDO-0143 R4-3: an Intake built with `projects=lambda: store_projects(conn)` knows a project activated
+    after it was built)."""
+    return sorted(json.loads(raw)['name'] for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='project'"))
+
+
 class Intake(RT.Routes):
     """The intake of one domain over a real control store connection.
 
@@ -171,17 +178,19 @@ class Intake(RT.Routes):
     authority_contract modules; `acquirer` is the VELDO-0066 Acquirer on the same connection (its
     evidence, attribution and person check are used as they are); `asker` is a VELDO-0065
     TelegramPresentationEdge for the bot the Acquirer serves, or None. `projects` are the projects
-    this intake serves. `api_edge` is the service principal the authenticated API signs as. `sign`
+    this intake serves, or a callable returning them, called each time they are judged, so a transition judges
+    against the projects current when it runs (store_projects, VELDO-0143 R4-3). `api_edge` is the service principal the authenticated API signs as. `sign`
     signs journal records as `journal_signer`."""
 
     def __init__(self, store, membership, contract, acquirer, conn, *, domain, projects, api_edge, journal_signer,
                  sign, asker=None, authority_generation=1, clock=time.time, observe=None):
         if not _identifier(domain) or not _identifier(api_edge) or not _identifier(journal_signer):
             raise Refused('invalid_input', 'domain, API edge and journal signer are named')
-        if not projects or not all(_identifier(p) for p in projects) or len(set(projects)) != len(projects):
+        if not callable(projects) and (not projects or not all(_identifier(p) for p in projects)
+                                       or len(set(projects)) != len(projects)):
             raise Refused('invalid_input', 'the served projects are named once each')
         self.store, self.CM, self.AC, self.acquirer, self.conn = store, membership, contract, acquirer, conn
-        self.domain, self.projects, self.api_edge = domain, tuple(projects), api_edge
+        self.domain, self.projects, self.api_edge = domain, projects, api_edge
         self.journal_signer, self.sign, self.generation = journal_signer, sign, authority_generation
         self.asker, self.clock = asker, clock
         self.observe = observe or (lambda event: None)
@@ -195,6 +204,15 @@ class Intake(RT.Routes):
 
         conn.command_registry[RT.ROUTE] = {'transaction_transition': self._route_transition, 'writes': WRITES}
         self.route_refused = Refused
+
+    @property
+    def projects(self):
+        """The projects this intake serves now."""
+        return tuple(self._projects()) if callable(self._projects) else self._projects
+
+    @projects.setter
+    def projects(self, projects):
+        self._projects = projects if callable(projects) else tuple(projects)
 
     def _route_transition(self, conn, params, before):
         return self._route_plan(params)[0]
@@ -502,8 +520,9 @@ class Intake(RT.Routes):
                 raise Refused('unauthorized:' + why, principal)
         member = read(principal)
         scope = member['data'].get('scope') if member is not None and member['kind'] == 'membership' else None
-        candidates = [p for p in self.projects if p != PJ.FACTORY_PROJECT and self.CM.scope_covers(scope, p)]
-        records = {p: read(PJ.project_id(p)) for p in self.projects
+        served = self.projects
+        candidates = [p for p in served if p != PJ.FACTORY_PROJECT and self.CM.scope_covers(scope, p)]
+        records = {p: read(PJ.project_id(p)) for p in served
                    if p in candidates or p == PJ.FACTORY_PROJECT}
         factory = records.get(PJ.FACTORY_PROJECT)
         owner = factory and factory['kind'] == PJ.KIND and factory['data'].get('owner') == principal

@@ -611,6 +611,11 @@ def from_line(line):
     # authority) are attached first; the backlog, team, intake and grooming owners, which replace a registration
     # silently, only once those hold; and a build that fails leaves the connection's registrations as it found them.
     registry = service.conn.command_registry
+    # VELDO-0143 R4-6: the factory's new-project decisions are the service's, built and cached once, so they are
+    # built before the registrations are taken: a build that fails here never removes theirs.
+    if (getattr(service, 'channel', None) is not None and row(service.conn, 'project:factory') is not None
+            and callable(getattr(service, 'new_projects', None))):
+        service.new_projects()
     before = dict(registry)
     try:
         allocations = organ('control_alias').attach(store, service.conn, service.domain,
@@ -643,12 +648,14 @@ def _cycles(line, store, membership, assignment, ids, signature, allocations, re
         ingress = channel.ingress
         if row(service.conn, 'project:factory') is not None:
             intake_module = organ('control_intake')
+            # VELDO-0143 R4-3: the projects are read when a transition judges them, so a project activated after
+            # this build is a candidate with no rebuild, whatever puts the connection's registrations back.
             services['intake'] = intake_module.Intake(store, membership, modules['AC'], ingress.acquirer, service.conn,
-                domain=service.domain, projects=[json.loads(r[0])['name'] for r in service.conn.execute(
-                    "SELECT data FROM entities WHERE kind='project'")], api_edge=ingress.settlement.api_edge,
-                journal_signer=service.principal, sign=service.sign, asker=ingress.presenter.edge,
-                authority_generation=service.generation)
-            # VELDO-0143: the factory's new-project decisions, the one owner of the PM's new-project document.
+                domain=service.domain, projects=lambda: intake_module.store_projects(service.conn),
+                api_edge=ingress.settlement.api_edge, journal_signer=service.principal, sign=service.sign,
+                asker=ingress.presenter.edge, authority_generation=service.generation)
+            # VELDO-0143: the factory's new-project decisions, the one owner of the PM's new-project document
+            # (built before from_line took the registrations, R4-6).
             if callable(getattr(service, 'new_projects', None)):
                 services['new_projects'] = service.new_projects()
         services['grooming'] = organ('control_grooming').Grooming(store, membership, service.conn, ids,

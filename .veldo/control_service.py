@@ -2016,8 +2016,10 @@ class Line:
     def build_cycles(self, report):
         """VELDO-0143 R3-1: this line's project cycles, built once; whether it has them. The service's one
         connection holds one set of the cycles' owners (VELDO-0188 makes several lines run on it), and the loop's
-        factory line keeps them, whatever order the loop visits the lines in (sorted repository uuids): another
-        line builds none while the factory line wants cycles it has not built, and another line whose build is
+        factory line keeps them, whatever order the loop visits the lines in (sorted repository uuids) and whenever
+        the factory project comes to want them: another line builds none while there is a factory project and the
+        factory line has not built its cycles, whether or not it wants them now (a paused factory project resumed
+        later, R4-5), and another line whose build is
         refused is not tried again in this process (the refusal is a fault of the pass it was refused in; the
         line's units are still offered). The factory line's own build is tried on every pass until it holds."""
         if getattr(self, 'pm_cycles', None) is not None:
@@ -2026,7 +2028,7 @@ class Line:
             return False
         factory = self.loop.lines.get(self.loop.factory_line)
         if factory is not None and factory is not self and getattr(factory, 'pm_cycles', None) is None \
-                and factory.wants_cycles():
+                and any(data.get('name') == 'factory' for data in self._rows('project')):
             return False
         try:
             self.pm_cycles = _organ('control_workflow_cycle_pm').from_line(self)

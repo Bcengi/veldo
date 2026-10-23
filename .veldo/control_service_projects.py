@@ -292,7 +292,9 @@ class NewProjectPass:
         """THE SAME SETTLEMENT ACTIVATES, in this process, once the repository is active. VELDO-0143 R3-1: the
         team, intake and project owners it builds register on the service's one connection, replacing the factory
         line's; once it is done the connection's registrations are as it found them, and only then does the loop
-        gain the repository's line."""
+        gain the repository's line. What it puts back is only what was there before (the factory line's and the
+        service's owners), and the intake among them reads the project rows when it judges (R4-3), so the new
+        project is a candidate of the factory line's intake with no rebuild."""
         s = self.service
         registry = s.conn.command_registry
         before = dict(registry)
@@ -332,12 +334,12 @@ class NewProjectPass:
                                                      authority_generation=s.generation)
         teams = CT.Teams(S, CM, s.conn, ids, s.principal, s.sign, inbox=ingress.inbox, assignment=m['I'],
                          requester='pm', request_sign=self.pm_sign, authority_generation=s.generation)
-        names = [json.loads(r[0])['name'] for r in s.conn.execute("SELECT data FROM entities WHERE kind='project'")]
-        intake = organ('control_intake').Intake(S, CM, m['AC'], ingress.acquirer, s.conn, domain=s.domain,
-                                                projects=sorted(set(names) | {proposal['project']}),
-                                                api_edge=ingress.settlement.api_edge, journal_signer=s.principal,
-                                                sign=s.sign, asker=ingress.presenter.edge,
-                                                authority_generation=s.generation)
+        # VELDO-0143 R4-3: the projects are read when a transition judges them, the new one included before its row.
+        IN = organ('control_intake')
+        intake = IN.Intake(S, CM, m['AC'], ingress.acquirer, s.conn, domain=s.domain,
+                           projects=lambda: sorted(set(IN.store_projects(s.conn)) | {proposal['project']}),
+                           api_edge=ingress.settlement.api_edge, journal_signer=s.principal, sign=s.sign,
+                           asker=ingress.presenter.edge, authority_generation=s.generation)
         coordinates = dict(ids, repository_uuid=repository)
         objectives = organ('control_objective').Objectives(S, CM, s.conn, coordinates, s.principal, s.sign,
                                                            authority_generation=s.generation)

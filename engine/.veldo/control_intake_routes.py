@@ -106,8 +106,9 @@ class Routes:
             raise fail('unauthorized:' + why)
         member = self._entity(principal)
         scope = member['data'].get('scope')
-        candidates = [p for p in self.projects if p != 'factory' and self.CM.scope_covers(scope, p)]
-        reads = [pid, principal] + ['project:' + p for p in self.projects]
+        served = self.projects
+        candidates = [p for p in served if p != 'factory' and self.CM.scope_covers(scope, p)]
+        reads = [pid, principal] + ['project:' + p for p in served]
         chosen = doc.get('project')
         if doc['route'] == 'existing_project':
             if chosen == 'factory':
