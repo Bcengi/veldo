@@ -42,6 +42,7 @@ footprint:
   - "proof/VELDO-0161/round5/*"
   - "proof/VELDO-0161/round6/*"
   - "proof/VELDO-0161/round7/*"
+  - "proof/VELDO-0161/round8/*"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
   - "scripts/suites/86_veldo_0189_engine_upgrade.py"
   - "scripts/suites/85_veldo_0171_setup_api.py"
@@ -277,4 +278,23 @@ serving) and before the previous engine's removal. upgrade_engine now hands lay_
 it already holds; the writes, their points and their order are unchanged, and so are suite 86's expectations.
 Finding 161's upgrade161-adoption-signer-not-laid anchor follows the call, now two lines; the replacement is
 unchanged. The footprint gains proof/VELDO-0161/round7/*. Criteria, risk, readiness and approval requirements
-are unchanged.
+are unchanged. (Corrected in round 8: setup loads each module once per run, so round 6's second fetch returned
+the module inspect_engine had loaded, and the product never loaded it twice. The double count was suite 86's kill
+driver wrapping point again on each fetch. Round 7 changed how that driver counts, and nothing in the product.)
+
+Round 8 (the independent check of rounds 6 and 7, proof/VELDO-0161/REVIEW-claude-r6r7-2026-10-23.md). R6R7-1: on a
+host whose engine is already current but lacks the adoption signer, setup makes the restart due because the
+service reads its enrollment signers only at its start, but a run killed after the signers were laid, or whose
+restart failed, left nothing owing that restart: the next run found the files laid and restarted nothing, so the
+running service kept the old signers and refused every adoption while setup reported the factory complete. The
+restart debt is now durable: the upgrade's recovery treats an adoption_signers point of the step log as a restart
+owed, cleared, as an exchange's is, by a restart outcome or done, so the next run restarts the service. Suite 86
+gains restart/adoption-signer-kill: a current-engine host with the signer removed, setup killed right after its
+last adoption_signers point, then the next run must restart the service once (a new process serving) and the
+adoption signer's enrollment binding must verify under the signers that restarted service read and not under
+those the killed run left it holding. Finding 161 adds upgrade161-adoption-restart-not-owed (the branch dropped),
+targeting that row. R6R7-2: suite 86's kill driver now wraps point once per module, however often setup fetches
+the upgrade module, so its count is one per step-log line by its own construction. Round 7's product change stays:
+the prepare step uses the module whose plan it carries out rather than asking organ again, which reads plainly and
+costs nothing, but it has no product effect. The footprint gains proof/VELDO-0161/round8/*. Criteria, risk,
+readiness and approval requirements are unchanged.
