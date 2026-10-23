@@ -251,14 +251,61 @@ Entries 1, 2 and 5 above are changed by round 3 as follows; the text above is ke
   private, not public", with no word between "not" and "public". But its first clause is "not under bcengi", and
   "don't make it public" puts words between the negator and the value. Strict adjacency would miss both, so the
   clause is the window. "nor" and the n't contractions (isn't, shouldn't, won't) are additions to the review's list.
-- Limits, recorded here and not solved by more rules. Words cannot be read the way he means them:
-  - A negator that follows the word is not seen ("public? no").
-  - "Anything but public" reads public as said, because "but" starts a clause.
+- Round 5 (R4-1, R4-2, R4-4; entry 25) widens this. The negators are now also neither, nothing, cannot, avoid,
+  except, other than, anything but (its "but" ends no clause), and dont, wont, cant, didnt and the other
+  apostrophe-less forms of the n't auxiliaries (isnt, doesnt, shouldnt and their kind). A "? no" (or "? not",
+  "? never", "? nope") right after the word negates it. An "and" whose next word is another value of the same
+  field ends no clause, and "or" and "nor" never end one. A word ends at a final period or hyphen. A value he was
+  shown stays only where no occurrence of its word, whatever follows it ("publicly", "bcengi-owned"), has a
+  negator before it in its clause. Words that negate one value of a field and affirm another through a bare "and"
+  ("don't use bcengi and use personal") are refused as `invalid_input:correction:<field>:ambiguous`.
+- Limits that remain, each measured on the round-5 module (`round5/phrasings.py`), not solved by more rules:
+  - A negator after the word other than "? no" is not seen: "public, no", "public - no", "public: no way" and
+    "public is wrong" keep a shown public.
+  - Negators outside the list are not known: "none of it public", "skip public", "nope, public is wrong" keep a
+    shown public. Nor are another language's ("nicht").
+  - A negator whose clause ends at punctuation before the other value: "don't use bcengi, and personal" settles
+    personal (the comma, not a bare "and", joins them).
+  - "Not only private but public" reads public as said, so it settles a change to public.
   - Double negation and irony read wrong.
-  - Another language's negators are not known.
   - A negator early in a clause with no punctuation refuses what he did say ("no rush make it public").
+  - The fail-closed reading of a shown value refuses where its word is only part of another word that a negator
+    precedes; an identity whose id or label is a short common word would be refused more often than he means.
   - A negated project name ("not called fjord") is not judged by this rule; the name rule is entry 17's.
-- Every misreading fails toward refusal where a negator is present. The decision then fails by name
-  (`invalid_input:correction:<field>`), he is told, and he can ask again. What reaches creation is still judged
+- The phrasings suite 110 refuses and settles are its rows proposal/correction-negated and
+  proposal/correction-phrasings; the limits above are measured, not rows, and some of them pass a value he
+  negated. Where the binding refuses, the decision fails by name (`invalid_input:correction:<field>`), he is told,
+  and he can ask again. What reaches creation is still judged
   by the one judge, `settled()`, and checked against the identity's owner at creation (VELDO-0153). The binding
   stops a PM from choosing for him. It is not a parser of his intent.
+
+**25. Round 5: what the round 4 review's fixes chose (R4-1 to R4-6).**
+- R4-1, the kept value fails closed. A value he was shown is negated when any occurrence of its word, matched
+  from a word's start with nothing required after it, has a negator before it in its clause, or "? no" after it.
+  The word edge is fixed too, for the values he changes and for names: a '.' or '-' continues a word only when a
+  letter, digit or underscore follows it, so "public." and "bcengi." are named, and "shoal-two" and "fjord.io"
+  stay one word. The two are separate mutations, each killed by its own rows: the edge by "Use personal." and
+  "Keep it private." (a changed value at a sentence end settles), the fail-closed reading by "don't host it
+  publicly" and "nothing bcengi-owned".
+- R4-2, the review's three options, all taken: "neither" is a negator; an "and" whose next word is another value
+  of the field does not end the clause; and a value affirmed in a clause that began at a bare "and", after a
+  clause that negates another value of the field, makes the field ambiguous, refused by that name. Only the
+  negated-then-affirmed order is ambiguous: "use personal and not bcengi" negates in its own clause and settles.
+  "or" and "nor" end no clause at all, so "not bcengi or personal" negates both.
+- R4-3, Intake reads its projects when they are judged. `Intake(projects=...)` takes a list, as every caller
+  before, or a callable called each time a transition (record, route) judges candidates. The factory line's
+  intake and the activation's are given `control_intake.store_projects` over the service's connection, the
+  project rows there when the transition runs. So no restore and no rebuild can leave it stale. The activation
+  still puts back only what was registered before it (the factory line's and the service's owners) and drops
+  what it added (its own Projects, Teams, Intake and Objectives, bound to its coordinates). The intake it puts back
+  is the factory line's, which now knows the new project. `control_intake.py` is outside this specification's
+  footprint as it was; it is added for this one change (a property and a module function; no caller with a list
+  behaves differently).
+- R4-5, the deferral is wider than the review's wording, by one condition. Another line builds no cycles while
+  the factory line has none and the store has a factory project, whatever its state. "Whenever the factory line
+  exists" alone would also hold back every line of a loop with no factory project at all (a factory set up
+  before VELDO-0143, or the consumer suites' loops), whose first line is the factory line by definition and never
+  wants cycles. With no factory project there is nothing to keep the owners for.
+- R4-6, `service.new_projects()` is built before from_line takes the registrations, under the same conditions
+  as before (a channel and a factory project). A failure in that build is the factory line's pass fault, as
+  any other, and nothing is cached by a build that raised.

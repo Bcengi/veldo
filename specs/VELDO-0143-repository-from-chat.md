@@ -63,7 +63,12 @@ footprint:
   - "proof/VELDO-0143/round2/*"
   - "proof/VELDO-0143/round3/*"
   - "proof/VELDO-0143/round4/*"
+  - "proof/VELDO-0143/round5/*"
   - "proof/VELDO-0152/fixture.py"
+  - "specs/VELDO-0188-a-line-for-every-project-at-run-time.md"
+  - "engine/.veldo/control_intake.py"
+  - ".veldo/control_intake.py"
+  - "packs/*/.veldo/control_intake.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -327,3 +332,20 @@ service. A factory runs only its first line's cycles until VELDO-0188, and VELDO
 specification. AC3 keeps its claim, its set and completeness, the owner told, and its falsifier. Suite 110's row
 activation/first-unit is removed; its logic, unchanged, is kept in proof/VELDO-0143/round4/first-unit-for-0188.py
 to seed VELDO-0188's row, run by no suite. Risk, readiness and approval requirements are unchanged.
+
+2026-10-23, round 5: the round 4 independent review's findings (proof/VELDO-0143/REVIEW-agy-r4-2026-10-23.md),
+each fix, its row and its falsifier in proof/VELDO-0143/round5/README.md. R4-1: a word ends at a final period,
+and a value he was shown stays only where no occurrence of its word, whatever follows it, has a negator before
+it in its clause. R4-2: "neither" is a negator, an "and" whose next word is another value of the same field does
+not end the negator's clause, and words that negate one value of a field and affirm another through a bare "and"
+are refused by name (invalid_input:correction:<field>:ambiguous). R4-4: the negators the review measured and
+"? no" are seen; DECISIONS 24 lists what remains. R4-3: the factory line's intake reads the project rows when its
+transition runs (control_intake.py, added to this footprint for it), so after an activation the new project is a
+candidate with no restart. R4-5: no other line builds project cycles while there is a factory project and the
+factory line has none, paused or not. R4-6: the service's new-project decisions are built before from_line takes
+the connection's registrations. Rows proposal/correction-negated (extended), proposal/correction-phrasings,
+activation/factory-intake-current, activation/factory-paused-resumed, activation/new-projects-kept. DECISIONS 25.
+specs/VELDO-0188-a-line-for-every-project-at-run-time.md is added to this footprint because the owner's decision
+above moved AC3's first-unit sentence into its AC1. Finding 143 registers nine more mutations, forty-five in all,
+and five round-3 and round-4 anchors follow the new code. Acceptance criteria, risk, readiness and approval
+requirements are unchanged.
