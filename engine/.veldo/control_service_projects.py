@@ -289,7 +289,24 @@ class NewProjectPass:
         return dict(about, outcome='started', pid=process.pid)
 
     def activate(self, record, held):
-        """THE SAME SETTLEMENT ACTIVATES, in this process, once the repository is active."""
+        """THE SAME SETTLEMENT ACTIVATES, in this process, once the repository is active. VELDO-0143 R3-1: the
+        team, intake and project owners it builds register on the service's one connection, replacing the factory
+        line's; once it is done the connection's registrations are as it found them, and only then does the loop
+        gain the repository's line."""
+        s = self.service
+        registry = s.conn.command_registry
+        before = dict(registry)
+        try:
+            result = self._activate(record, held)
+        finally:
+            registry.clear()
+            registry.update(before)
+        if result['outcome'] == 'activated' and s.loop is not None:
+            receiver = ((s.config.get('receiver') or {}).get('configs') or {}).get(result['repository'])
+            result['line'] = s.loop.add_line(result['repository'], receiver)
+        return result
+
+    def _activate(self, record, held):
         s, m = self.service, self.m
         S, CM = m['S'], m['CM']
         ingress = s.channel.ingress
@@ -326,9 +343,5 @@ class NewProjectPass:
                                                            authority_generation=s.generation)
         result = PP.activate(self.decisions, record['id'], projects=projects, teams=teams, intake=intake,
                              objectives=objectives, pm='pm', pm_sign=self.pm_sign, ids=coordinates)
-        if result.get('ok') and s.loop is not None:
-            receiver = ((s.config.get('receiver') or {}).get('configs') or {}).get(repository)
-            result['line'] = s.loop.add_line(repository, receiver)
         return dict(about, outcome='activated' if result.get('ok') else 'failed' if result.get('failed') else 'refused',
-                    step=result.get('step'),
-                    refusal=result.get('reason'), project=result.get('project'), line=result.get('line'))
+                    step=result.get('step'), refusal=result.get('reason'), project=result.get('project'), line=None)

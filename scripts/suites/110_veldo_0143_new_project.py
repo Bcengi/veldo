@@ -104,7 +104,8 @@ def _v143_suite():
                       'activation/new-line', 'provision/handed-over', 'provision/signing-no-agent', 'service/provisions',
                       'service/hand-off', 'pm/new-project-run', 'proposal/correction-bound', 'proposal/name-taken',
                       'activation/name-taken', 'proposal/no-provisioner', 'proposal/presentation-interrupted',
-                      'service/pm-settled-due', 'activation/line-from-pass', 'activation/first-unit'):
+                      'service/pm-settled-due', 'activation/line-from-pass', 'activation/first-unit',
+                      'activation/factory-line-kept', 'activation/factory-line-restart'):
             expect(PREFIX + label, False)
         return
 
@@ -1574,6 +1575,9 @@ def _v143_suite():
                      and (PJ.read(S, conn, 'brook') or {}).get('state') == 'ACTIVE'
                      and (PJ.read(S, conn, 'rill-two') or {}).get('state') == 'ACTIVE')])
 
+            # The service connection's registrations before any line's project cycles are built on it (the next row
+            # is the first to build them): a restarted service's connection, for the R3-1 rows.
+            cycles_free = dict(conn.command_registry)
             with region('pm/new-project-run'):
                 # The factory PM's run through the factory loop's Runner, on the launch receiver and a fake engine
                 # printing the installed CLI's output shape (VELDO-0172's, as VELDO-0152 drives the route run). The
@@ -1821,6 +1825,123 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                     ('its commit is authored and committed by the identity alone, an author planted in the environment '
                      'stripped [%s | %s]' % (out.get('author'), out.get('committer')),
                      out.get('author') == out.get('committer') == 'Olga Personal <personal@example.invalid>')])
+            with region('activation/factory-line-kept', 'activation/factory-line-restart'):
+                # VELDO-0143 R3-1: the line the pass adds for a new project leaves the factory's own line whole. Until
+                # VELDO-0188 runs several lines' project cycles on the service's one connection, the new line's cannot
+                # be built there; that build registers nothing, is not tried again on every pass, and never takes the
+                # connection's owners from the factory line, whatever the repository uuids' order (the loop visits
+                # lines sorted by uuid), before or after a restart. A service started on this store: its connection
+                # holds none of the cycles' owners.
+                AL = load('v143_alias', mods / 'control_alias.py')
+                CB = load('v143_backlog', mods / 'control_backlog.py')
+                conn.command_registry.clear()
+                conn.command_registry.update(cycles_free)
+                kept_service = SV.Service(dict(service.config, principal='team-service',
+                                               repositories={REPO: [str(base / 'workspace')]},
+                                               observations=str(base / 'kept-service.jsonl'),
+                                               receiver={'configs': {REPO: str(receiver_config)}}), conn)
+                kept_service.channel = service.channel
+                kept_loop = SV.FactoryLoop(kept_service, work)
+                kept_loop.wake('journal')
+                first_pass = kept_loop.run() or {}
+                factory = kept_loop.lines[REPO]
+                before_cycles = getattr(factory, 'pm_cycles', None)
+                decision_k, _, _ = own_decision('kestrel')
+                kestrel_repo = PP.read(conn, decision_k)['proposal']['repository']
+                saved_loop, service.loop = service.loop, kept_loop
+                try:
+                    with fenced(wire):
+                        kestrel = provision(decision_k, send=judged(service))
+                    kestrel_pass = service.new_project_pass()
+                finally:
+                    service.loop = saved_loop
+                passes = []
+                for _ in range(2):
+                    kept_loop.wake('journal')
+                    passes.append(kept_loop.run() or {})
+                kline = kept_loop.lines.get(kestrel_repo)
+                registry = conn.command_registry
+
+                def bound(operation):
+                    entry = registry.get(operation) or {}
+                    return getattr(entry.get('transaction_transition'), '__self__', None)
+
+                def held_by(cycles):
+                    return (cycles is not None and bound(CB.OPERATION) is cycles.services['backlog']
+                            and bound('team_operation') is cycles.services['teams']
+                            and bound('accept_snapshot') is cycles.readsets)
+
+                def take(cycles, repository, name):
+                    # A RAW feature of the factory project in `repository`, under an accepted objective; the PM takes it.
+                    objective, feature = 'objective:r31-' + name, 'objective-feature:r31-' + name
+                    f['fixture'](objective, 'objective', dict(state='ACCEPTED', project='factory', title=name))
+                    f['fixture'](feature, CB.KIND, dict(state='RAW', repository_uuid=repository, project='factory',
+                                                        objective_uuid=objective, title=name, scope=['design']))
+                    body = dict(ids, operation='take', principal='pm', command_id=next_id('r31-take'),
+                                nonce=next_id('r31-take-n'), feature=feature, work_class='PRODUCT_CHANGE')
+                    return cycles.services['backlog'].apply({'command': body,
+                                                             'signature': sign_as('pm', S.canonical_bytes(body))})
+                taken = take(factory.pm_cycles, REPO, 'kept') if getattr(factory, 'pm_cycles', None) else {}
+                kept_faults = [fault for one in passes for fault in one.get('faults') or []
+                               if fault.get('repository') == kestrel_repo]
+                if not taken.get('ok') or len(kept_faults) != 1:
+                    print('  %sdetail: factory line kept: take %s; new line faults %s; factory faults %s' % (
+                        PREFIX, taken.get('reason'), kept_faults,
+                        [x for one in [first_pass] + passes for x in one.get('faults') or [] if x.get('repository') == REPO]))
+                check('activation/factory-line-kept', [
+                    ('the factory line built its project cycles at the first pass, before any project was added',
+                     before_cycles is not None and not any(x in cycles_free for x in AL.OPERATIONS)),
+                    ('the pass activates the new project with the factory loop attached and the loop gains its line, '
+                     'whose repository uuid sorts before the factory\'s', kestrel.get('state') == 'active'
+                     and any(e.get('decision') == decision_k and e.get('outcome') == 'activated'
+                             and e.get('line') == kestrel_repo for e in kestrel_pass)
+                     and kline is not None and kestrel_repo < REPO),
+                    ('after two loop passes the factory line keeps the same cycles and the registry\'s backlog, team and '
+                     'snapshot transitions are its own', factory.pm_cycles is before_cycles and held_by(before_cycles)),
+                    ('the factory line\'s backlog take of a RAW feature of its own repository is accepted, the item in '
+                     'that repository', taken.get('ok') is True
+                     and (taken.get('item') or {}).get('repository_uuid') == REPO),
+                    ('the new line\'s cycles were refused once, by name, and not tried again on the second pass',
+                     getattr(kline, 'pm_cycles', None) is None and getattr(kline, 'pm_refusal', None)
+                     == 'invalid_registration' and len(kept_faults) == 1
+                     and kept_faults[0]['reason'] == 'pm_cycles:invalid_registration')])
+                # A restart: a new service and loop on this store, where every repository it took on (the new one among
+                # them, its uuid sorting first) has its line from the loop's constructor.
+                conn.command_registry.clear()
+                conn.command_registry.update(cycles_free)
+                configs = dict(service.config['receiver']['configs'], **{REPO: str(receiver_config)})
+                restarted_service = SV.Service(dict(service.config, principal='team-service',
+                                                    repositories=dict(service.repositories, **{
+                                                        REPO: [str(base / 'workspace')]}),
+                                                    observations=str(base / 'restarted-service.jsonl'),
+                                                    receiver={'configs': configs}), conn)
+                restarted_service.channel = service.channel
+                restarted = SV.FactoryLoop(restarted_service, work)
+                order = sorted(restarted.lines)
+                restart_passes = []
+                for _ in range(2):
+                    restarted.wake('journal')
+                    restart_passes.append(restarted.run() or {})
+                rfactory = restarted.lines[REPO]
+                rcycles = getattr(rfactory, 'pm_cycles', None)
+                rtaken = take(rcycles, REPO, 'restarted') if rcycles is not None else {}
+                others = [line for repository, line in restarted.lines.items() if repository != REPO]
+                rfaults = [x for one in restart_passes for x in one.get('faults') or []]
+                if rcycles is None or not rtaken.get('ok'):
+                    print('  %sdetail: factory line restart: order %s; take %s; faults %s' % (
+                        PREFIX, order, rtaken.get('reason'), rfaults))
+                check('activation/factory-line-restart', [
+                    ('the restarted loop has the new repository\'s line, visited before the factory line',
+                     kestrel_repo in restarted.lines and order.index(kestrel_repo) < order.index(REPO)
+                     and restarted.factory_line == REPO),
+                    ('the factory project\'s cycles run on the factory line at both passes, its owners on the connection',
+                     rcycles is not None and all('pm_cycles' in one for one in restart_passes)
+                     and not any(x.get('repository') == REPO for x in rfaults) and held_by(rcycles)),
+                    ('its backlog take on its own repository is accepted', rtaken.get('ok') is True
+                     and (rtaken.get('item') or {}).get('repository_uuid') == REPO),
+                    ('no other line holds cycles, and each was refused at most once',
+                     others and all(getattr(line, 'pm_cycles', None) is None for line in others)
+                     and all(sum(1 for x in rfaults if x.get('repository') == line.repository) <= 1 for line in others))])
 
         finally:
             for server in servers:

@@ -11092,7 +11092,7 @@ def cases():
                 "        made = []  # defect: an interrupted presentation is never finished\n",
                 ['proposal/presentation-interrupted'])
     new_project('newproject143-line-not-added', 'control_service_projects.py',
-                "        if result.get('ok') and s.loop is not None:\n",
+                "        if result['outcome'] == 'activated' and s.loop is not None:\n",
                 "        if False:  # defect: the activated project's repository gets no line\n",
                 ['activation/line-from-pass'])
     new_project('newproject143-proposed-without-provisioner', 'control_project_proposal.py',

@@ -201,7 +201,8 @@ class ProjectCycles:
     No scheduling thread, retry timer or persistent graph checkpoint is created.
     """
     def __init__(self, store, conn, *, domain, repository, workspace, principal, sign, command_sign,
-                 runner, adapters, services, generation=1, runtime=None, stage=None, observe=None, execution_records=None):
+                 runner, adapters, services, generation=1, runtime=None, stage=None, observe=None, execution_records=None,
+                 readsets=None):
         self.store, self.conn = store, conn
         self.domain, self.repository, self.workspace = domain, repository, str(workspace)
         self.principal, self.sign, self.command_sign = principal, sign, command_sign
@@ -214,7 +215,7 @@ class ProjectCycles:
         store.declare_owners(conn, 'VELDO-0088 project cycles', kinds={KIND: (RECORD,)}, module=__file__)
         conn.command_registry[RECORD] = {'transaction_transition': transition,
                                         'writes': ('entities', 'journal', 'commands', 'nonces')}
-        self.readsets = RS.attach(store, conn, workspace, domain, repository)
+        self.readsets = readsets if readsets is not None else RS.attach(store, conn, workspace, domain, repository)
         # Snapshot acceptance consumes all accepted project inputs. The consumer
         # registration exists only to define the read set, never to write a unit.
         store.COMMAND_REGISTRY.setdefault('pm_snapshot_inputs', {'transition': lambda p, b: {}, 'writes': ()})
@@ -606,6 +607,26 @@ def from_line(line):
     ids = dict(domain_uuid=service.domain, repository_uuid=line.repository, store_uuid=service.store)
     signature = lambda body: modules['SIG'].sign_bytes(service.config['journal_key'], body,
                                                        modules['AC'].SIGNATURE_NAMESPACE)
+    # VELDO-0143 R3-1: failure-atomic. The owners a connection holds once (the allocation authority, the snapshot
+    # authority) are attached first; the backlog, team, intake and grooming owners, which replace a registration
+    # silently, only once those hold; and a build that fails leaves the connection's registrations as it found them.
+    registry = service.conn.command_registry
+    before = dict(registry)
+    try:
+        allocations = organ('control_alias').attach(store, service.conn, service.domain,
+                                                    {line.repository: line.workspace})
+        readsets = RS.attach(store, service.conn, line.workspace, service.domain, line.repository)
+        return _cycles(line, store, membership, assignment, ids, signature, allocations, readsets)
+    except BaseException:
+        registry.clear()
+        registry.update(before)
+        raise
+
+
+def _cycles(line, store, membership, assignment, ids, signature, allocations, readsets):
+    """from_line's services and cycles, once the connection's allocation and snapshot authorities are the line's."""
+    service = line.service
+    modules = line.run.__func__.__globals__
     inbox = service.inbox(line.repository)
     backlog_module = organ('control_backlog')
     backlog = backlog_module.Backlog(store, membership, service.conn, ids, service.principal, service.sign,
@@ -614,7 +635,6 @@ def from_line(line):
                      inbox=inbox, assignment=assignment, requester=service.principal, request_sign=signature,
                      authority_generation=service.generation)
     services = {'inbox': inbox, 'backlog': backlog, 'teams': teams}
-    allocations = organ('control_alias').attach(store, service.conn, service.domain, {line.repository: line.workspace})
     publisher = organ('control_document').Publisher(allocations, line.workspace, service.verify,
                                                     service.config['host_identity'])
     services['decomposition'] = organ('control_decomposition').Decomposition(backlog, allocations, publisher)
@@ -639,7 +659,7 @@ def from_line(line):
     cycles = ProjectCycles(store, service.conn, domain=service.domain, repository=line.repository,
         workspace=line.workspace, principal=service.principal, sign=service.sign, command_sign=signature,
         runner=line.runner, adapters=line.engines, services=services, generation=service.generation,
-        execution_records=line.records, observe=service._log)
+        execution_records=line.records, observe=service._log, readsets=readsets)
     # VELDO-0143: the factory project's own repository holds only its team configuration and is no line, so
     # its cycles run on the loop's factory line (control_service FactoryLoop.factory_line).
     cycles.factory_line = lambda: getattr(getattr(line, 'loop', None), 'factory_line', None) == line.repository

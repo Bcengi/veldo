@@ -1993,12 +1993,7 @@ class Line:
         report['released'] += [{'repository': self.repository, 'dispatch_id': one} for one in released]
         # Coordination uses this same event-driven pass and this line's Runner; the factory project's cycles
         # run on the loop's factory line (VELDO-0143).
-        if any(data.get('state') == 'ACTIVE' and (data.get('execution_repository') == self.repository
-                                                  or data.get('name') == 'factory'
-                                                  and self.loop.factory_line == self.repository)
-               for data in self._rows('project')) and self._rows('team'):
-            if not hasattr(self, 'pm_cycles'):
-                self.pm_cycles = _organ('control_workflow_cycle_pm').from_line(self)
+        if self.wants_cycles() and self.build_cycles(report):
             report.setdefault('pm_cycles', []).extend(self.pm_cycles.pass_once(automatic_units=self.assigned()))
             for launch in list(self.runner.launches.values()):
                 if launch.contract['station'] == 'coordination' and launch.pump(read=False):
@@ -2009,6 +2004,39 @@ class Line:
         latest = self.latest()
         for unit in self.assigned():
             self.next(unit, latest, report)
+
+    def wants_cycles(self):
+        """Whether this line runs project cycles: an active project executes in its repository, or it is the
+        loop's factory line and the factory project is active; and a team is configured."""
+        return any(data.get('state') == 'ACTIVE' and (data.get('execution_repository') == self.repository
+                                                      or data.get('name') == 'factory'
+                                                      and self.loop.factory_line == self.repository)
+                   for data in self._rows('project')) and bool(self._rows('team'))
+
+    def build_cycles(self, report):
+        """VELDO-0143 R3-1: this line's project cycles, built once; whether it has them. The service's one
+        connection holds one set of the cycles' owners (VELDO-0188 makes several lines run on it), and the loop's
+        factory line keeps them, whatever order the loop visits the lines in (sorted repository uuids): another
+        line builds none while the factory line wants cycles it has not built, and another line whose build is
+        refused is not tried again in this process (the refusal is a fault of the pass it was refused in; the
+        line's units are still offered). The factory line's own build is tried on every pass until it holds."""
+        if getattr(self, 'pm_cycles', None) is not None:
+            return True
+        if getattr(self, 'pm_refusal', None) is not None:
+            return False
+        factory = self.loop.lines.get(self.loop.factory_line)
+        if factory is not None and factory is not self and getattr(factory, 'pm_cycles', None) is None \
+                and factory.wants_cycles():
+            return False
+        try:
+            self.pm_cycles = _organ('control_workflow_cycle_pm').from_line(self)
+        except Exception as error:  # noqa: BLE001 - named in the pass's faults, never the loop's end
+            if factory is self or factory is None:
+                raise
+            self.pm_refusal = getattr(error, 'code', None) or 'unknown_outcome:' + type(error).__name__
+            report['faults'].append({'repository': self.repository, 'reason': 'pm_cycles:' + self.pm_refusal})
+            return False
+        return True
 
     def next(self, unit, latest, report):
         """Offer `unit` its next station: build when it has none; review once its build ran to a completion
