@@ -60,6 +60,7 @@ def _v143_suite():
         'control_telegram_report.py': ROOT / ".veldo" / "control_telegram_report.py",
         'control_channel_presentation.py': ROOT / ".veldo" / "control_channel_presentation.py",
         'control_request_settlement.py': ROOT / ".veldo" / "control_request_settlement.py",
+        'control_git_identity.py': ROOT / ".veldo" / "control_git_identity.py",
     }
     PREFIX = 'VELDO-0143 '
     # VELDO-0143 R5-3: the fault a line names when it defers its cycles to the factory line.
@@ -113,7 +114,8 @@ def _v143_suite():
                       'activation/factory-line-kept', 'activation/factory-line-restart', 'proposal/correction-negated',
                       'proposal/correction-phrasings', 'activation/factory-intake-current',
                       'activation/factory-paused-resumed', 'activation/new-projects-kept', 'activation/factory-canceled',
-                      'proposal/correction-told', 'proposal/choices', 'proposal/own-message-doubt'):
+                      'proposal/correction-told', 'proposal/choices', 'proposal/own-message-doubt',
+                      'proposal/adoption-visibility', 'proposal/identities-fold-alike', 'proposal/not-presentable'):
             expect(PREFIX + label, False)
         return
 
@@ -224,19 +226,20 @@ def _v143_suite():
                         if (json.loads(data).get('target') or {}).get('kind') == PP.TARGET]
 
             # ---- the factory's identities, its default team and its adoption signer --------------------------------
-            projects_root = {name: base / ('projects-' + name) for name in ('personal', 'bcengi', 'nokey')}
+            projects_root = {name: base / ('projects-' + name) for name in ('personal', 'bcengi', 'nokey', 'outward')}
             for path in projects_root.values():
                 path.mkdir()
             TOKENS = {'personal': '-'.join(('personal', 'token', os.urandom(12).hex())),
                       'bcengi': '-'.join(('bcengi', 'token', os.urandom(12).hex()))}
             LOGIN = {TOKENS['personal']: 'olga-p', TOKENS['bcengi']: 'olga-b'}
 
-            def identity(name, owner, label, token_name):
+            def identity(name, owner, label, token_name, default_visibility='private'):
                 reference = 'keychain:%s/api' % token_name
                 return dict(id=name, label=label, author_name='Olga ' + label, author_email='%s@example.invalid' % name,
                             remote_host='github.com', remote_owner=owner, api_token=reference,
                             push_credential=dict(kind='token', reference=reference),
-                            projects_root=str(projects_root[name]), default_visibility='private')
+                            projects_root=str(projects_root.get(name) or base / ('projects-' + name)),
+                            default_visibility=default_visibility)
             identities = [identity('personal', 'olga-p', 'Personal', 'personal'),
                           identity('bcengi', 'bcengi', 'Bcengi', 'bcengi'),
                           identity('nokey', 'olga-p', 'Nokey', 'nokey')]
@@ -620,6 +623,25 @@ def _v143_suite():
                     judge_sh = None
                 except PP.Refused as error:
                     judge_sh = error.code
+                # VELDO-0143 round 8 (R7-4): a request that offered him other choices than the proposal's settles
+                # nothing, whatever he picked: its accept is answered and applied, and the one judge refuses it.
+                real_choices = PP.choices
+                PP.choices = lambda proposal: ['accept', 'reject']
+                try:
+                    d_ch, r_ch, _shown_ch = presented_for('chine', 'personal')
+                finally:
+                    PP.choices = real_choices
+                offered_ch = (entity(r_ch) or {}).get('data', {}).get('choices')
+                answer(r_ch, 'accept', 'fine')
+                decisions.apply_settled()
+                try:
+                    PP.settled(S, CM, conn, d_ch)
+                    judge_ch = None
+                except PP.Refused as error:
+                    judge_ch = error.code
+                state_ch = (PP.read(conn, d_ch) or {}).get('state')
+                # Ended here, so no later pass provisions what the judge refused.
+                decisions._fail(d_ch, 'answer', 'invalid_input:fixture')
                 check('proposal/choices', [
                     ('a proposal that shows an identity offers accept, every other identity and visibility as a pick, '
                      'return_for_elaboration and reject [%s]' % (offered_sk,),
@@ -645,7 +667,10 @@ def _v143_suite():
                      still == ['presented', 'presented'] and judged_sh['proposal']['identity'] == 'bcengi'
                      and judged_sh['proposal']['remote']['visibility'] == 'private'),
                     ('the one judge refuses a decision whose identity is not his pick, by name [%s]' % judge_sh,
-                     judge_sh == 'no_settled_decision:proposal')])
+                     judge_sh == 'no_settled_decision:proposal'),
+                    ('the one judge refuses a request that offered other choices than the proposal\'s, by name [%s %s]'
+                     % (offered_ch, judge_ch),
+                     offered_ch == ['accept', 'reject'] and state_ch == 'settled' and judge_ch == 'no_settled_decision:choices')])
 
             with region('proposal/correction-bound'):
                 # A correction is bound to his words (VELDO-0143 F2): the PM reads them, it never chooses for him.
@@ -853,6 +878,10 @@ def _v143_suite():
             with region('proposal/own-message-doubt'):
                 # VELDO-0143 round 7: his own message settles with nothing asked only where nothing in it could mean
                 # another identity and the PM set no visibility; any doubt presents it, so he picks.
+                # VELDO-0143 round 8 (R7-1): unasked, a repository is only ever private. An identity whose default is
+                # public, or a message with a word of visibility, is presented, so he picks.
+                GI.configure_identities(conn, DOMAIN, [identity('outward', 'olga-p', 'Outward', 'outward',
+                                                                default_visibility='public')], {})
                 doubts = {}
                 for case, text, name, identity_name, visibility, why in (
                         ('negated', "don't put it under bcengi; start a new project called tarn", 'tarn', 'bcengi',
@@ -862,18 +891,33 @@ def _v143_suite():
                         ('lookalike', 'n\u043et under bcengi: start a new project called moraine', 'moraine',
                          'bcengi', None, 'not_plain_text'),
                         ('visibility set', 'start a new personal project called cirque', 'cirque', 'personal', 'public',
-                         'visibility_not_default'),
+                         'visibility_not_private'),
                         ('hyphen-negated', 'start a new bcengi project called fell, not-public', 'fell', 'bcengi', None,
-                         'negated')):
+                         'negated'),
+                        ('public default', 'start a new outward project called lagune', 'lagune', 'outward', None,
+                         'visibility_not_private'),
+                        ('public default, private said', 'start a new outward project called saltpan, keep it private',
+                         'saltpan', 'outward', None, ('visibility_not_private', 'visibility_in_message')),
+                        ('public default, hidden said', 'start shoreline under outward, hidden please', 'shoreline',
+                         'outward', None, ('visibility_not_private', 'visibility_in_message')),
+                        ('visibility word', 'start a new personal project called sound, make it public', 'sound',
+                         'personal', None, 'visibility_in_message')):
                     result = send('api_request', text)
                     pid, _ = routed(result)
                     made = decisions.propose(pid, document(pid, name, identity_name, visibility), dispatch=next_id('pm-np'))
                     doubts[case] = (made, why, (PP.read(conn, made.get('decision')) or {}))
+                lagune = doubts['public default'][2]
+                lagune_choices = (entity(lagune.get('request') or '') or {}).get('data', {}).get('choices') or []
                 check('proposal/own-message-doubt', [
                     ('%s: presented for him to pick, not settled from his words %s' % (case, made.get('asked')),
-                     made.get('outcome') == 'presented' and why in (made.get('asked') or [])
+                     made.get('outcome') == 'presented'
+                     and all(w in (made.get('asked') or []) for w in (why if isinstance(why, tuple) else (why,)))
                      and held.get('state') == 'presented' and held.get('path') is None)
-                    for case, (made, why, held) in doubts.items()])
+                    for case, (made, why, held) in doubts.items()] + [
+                    ('an identity whose default is public is shown public and offered private as a pick, so a public '
+                     'repository comes only from his answer [%s]' % (lagune_choices,),
+                     PP.visibility_of(lagune.get('presented')) == 'public' and 'accept outward private' in lagune_choices
+                     and 'accept' in lagune_choices)])
 
             with region('proposal/name-taken'):
                 # A name is one project (VELDO-0143 F3): another live decision's name, compared as GitHub compares.
@@ -1031,12 +1075,21 @@ def _v143_suite():
                 git(harbor, 'remote', 'add', 'origin', harbor_url)
                 base_commit = tip(harbor)
                 with fenced(wire):
+                    # VELDO-0143 round 8 (R7-2, R7-1): an adoption keeps its remote as it is, a visibility no one here
+                    # knows, so even his own message naming it is presented and he answers it.
                     decision_h, _, proposed_h = own_decision('harbor')
+                    answer((PP.read(conn, decision_h) or {}).get('request'), 'accept', 'adopt it as it is')
+                    decisions.apply_settled()
                     harbor_judged = PP.settled(S, CM, conn, decision_h)
                     laid = harbor_judged['proposal']['adoption']['scaffold_commit']
                     harbor_result = provision(decision_h)
                 harbor_record = record(harbor_judged['proposal']['repository']) or {}
                 check('provision/adoption-path', [
+                    ('his own message naming a directory that is already a Git repository is presented, the remote\'s '
+                     'visibility kept as it is [%s]' % (proposed_h.get('asked'),),
+                     proposed_h.get('outcome') == 'presented' and 'visibility_not_private' in (proposed_h.get('asked') or [])
+                     and harbor_judged['path'] == 'answer'
+                     and harbor_judged['proposal']['remote']['visibility'] == PP.AS_ON_REMOTE),
                     ('a directory that is already a Git repository is proposed for adoption, its scaffold commit laid',
                      harbor_judged['proposal']['mode'] == 'adopt' and isinstance(laid, str)
                      and harbor_judged['proposal']['adoption']['base_commit'] == base_commit),
@@ -1047,6 +1100,89 @@ def _v143_suite():
                      tip(harbor_bare) == laid and harbor_result.get('ok') is True
                      and ('olga-p', 'harbor') not in hub['repos']
                      and (CE.read_binding(str(harbor)) or {}).get('enrolled_by') == R.SIGNER_PRINCIPAL)])
+
+            with region('proposal/adoption-visibility'):
+                # VELDO-0143 round 8 (R7-2): nothing on the adoption path applies a visibility, so an adopted entry is
+                # offered none it cannot keep: its pick names the identity alone, the brief says the remote stays as
+                # it is on GitHub, and a decision recording a visibility for an adoption is not one the judge settles.
+                def existing(name):
+                    """A directory under personal's projects root that is already a Git repository, its origin on
+                    GitHub."""
+                    path, bare = projects_root['personal'] / name, base / 'gh' / 'olga-p' / (name + '.git')
+                    GP.run(['git', 'init', '-q', '-b', 'main', str(path)], check=True, capture_output=True)
+                    GP.run(['git', 'init', '-q', '--bare', '-b', 'main', str(bare)], check=True, capture_output=True)
+                    (path / 'README').write_text(name + '\n')
+                    git(path, 'add', '-A')
+                    GP.run(['git', '-C', str(path), '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', name], check=True,
+                           capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
+                    git(path, 'push', '-q', str(bare), 'main:main')
+                    git(path, 'remote', 'add', 'origin', wire.remote(name, bare, owner='olga-p'))
+                existing('quay')
+                existing('slipway')
+                with fenced(wire):
+                    msg_q = send('api_request', 'start a new project called quay')
+                    pid_q, _ = routed(msg_q)
+                    made_q = decisions.propose(pid_q, document(pid_q, 'quay', 'bcengi'), dispatch=next_id('pm-np'))
+                    # A correction renaming an adoption he was shown would create a repository whose visibility he
+                    # never picked: it fails by name, and nothing is created.
+                    msg_w = send('api_request', 'start a new project called slipway')
+                    pid_w, _ = routed(msg_w)
+                    made_w = decisions.propose(pid_w, document(pid_w, 'slipway', 'personal'), dispatch=next_id('pm-np'))
+                    answer((PP.read(conn, made_w.get('decision')) or {}).get('request'), 'return_for_elaboration',
+                           'call it slipway-two')
+                    decisions.apply_settled()
+                    calls_w = len(hub['calls'])
+                    renamed_w = decisions.correct(made_w.get('decision'), document(pid_w, 'slipway-two', None),
+                                                  dispatch=next_id('pm-npc'))
+                    state_w = state_of(made_w.get('decision'))
+                d_q = made_q.get('decision')
+                held_q = PP.read(conn, d_q) or {}
+                shown_q = held_q.get('presented') or {}
+                entry_q = PP.shown_entry(shown_q, 'personal') or {}
+                offered_q = (entity(held_q.get('request') or '') or {}).get('data', {}).get('choices') or []
+                typed_q = {t: answer(held_q.get('request'), t, 'keep it private')
+                           for t in ('accept personal private', 'accept personal public')}
+                still_q = (PP.read(conn, d_q) or {}).get('state')
+                answer(held_q.get('request'), 'accept personal', 'adopt it')
+                decisions.apply_settled()
+                judged_q = PP.settled(S, CM, conn, d_q)
+                try:
+                    PP.resolve(shown_q, 'personal', 'private')
+                    resolve_q = None
+                except PP.Refused as error:
+                    resolve_q = error.code
+                forged_q = dict(judged_q['proposal'], remote=dict(judged_q['proposal']['remote'], visibility='private'))
+                decisions.write(d_q, 'settled', step='answer', path='answer', proposal=forged_q)
+                try:
+                    PP.settled(S, CM, conn, d_q)
+                    judge_q = None
+                except PP.Refused as error:
+                    judge_q = error.code
+                # Ended here, so no later pass adopts what this row forged.
+                decisions._fail(d_q, 'answer', 'invalid_input:fixture')
+                check('proposal/adoption-visibility', [
+                    ('the adopted entry records its remote\'s visibility as it is, never private or public',
+                     entry_q.get('mode') == 'adopt' and PP.visibility_of(entry_q) == PP.AS_ON_REMOTE),
+                    ('it is offered as its identity alone, with no visibility it cannot keep [%s]' % (offered_q,),
+                     'accept personal' in offered_q and 'accept personal private' not in offered_q
+                     and 'accept personal public' not in offered_q and offered_q == PP.choices(shown_q)
+                     and 'accept bcengi public' in offered_q),
+                    ('the brief says the adopted repository stays as it is on GitHub',
+                     'visibility as it is on GitHub' in PP.brief(shown_q) and '"accept <identity>"' in PP.brief(shown_q)),
+                    ('a visibility typed for the adopted identity is refused unmatched_choice and it stays presented',
+                     all(r.get('outcome') == 'refused' and r.get('reason') == 'unmatched_choice' for r in typed_q.values())
+                     and still_q == 'presented'),
+                    ('his pick adopts it as it is', judged_q['path'] == 'answer' and judged_q['proposal']['mode'] == 'adopt'
+                     and judged_q['proposal']['identity'] == 'personal'
+                     and PP.visibility_of(judged_q['proposal']) == PP.AS_ON_REMOTE),
+                    ('no visibility can be resolved onto an adoption, and the judge refuses a decision recording one '
+                     '[%s %s]' % (resolve_q, judge_q),
+                     resolve_q == 'invalid_input:visibility' and judge_q == 'no_settled_decision:proposal'),
+                    ('a correction renaming the adoption he was shown fails invalid_input:correction:mode, nothing '
+                     'created [%s %s]' % (renamed_w.get('reason'), state_w),
+                     (PP.read(conn, made_w.get('decision')) or {}).get('presented', {}).get('mode') == 'adopt'
+                     and renamed_w.get('ok') is False and state_w == ('failed', 'invalid_input:correction:mode')
+                     and len(hub['calls']) == calls_w and not (projects_root['personal'] / 'slipway-two').exists())])
 
             with region('provision/step-failures'):
                 incomplete = base / 'incomplete-templates'
@@ -1472,6 +1608,61 @@ def _v143_suite():
                      and 'change only by the choice you pick' in told_r[field][0]
                      and 'pick the choice that names the identity and visibility you want' in told_r[field][0])
                     for field in ('identity', 'visibility')])
+
+            with region('proposal/identities-fold-alike'):
+                # VELDO-0143 round 8 (R7-3): an identity is picked by typing its id, which the presentation module
+                # folds, so ids that fold alike are not a configuration, in one call or added later.
+                def configured_as(*names_):
+                    try:
+                        GI.validate([identity(n, 'olga-p', n, 'nokey') for n in names_])
+                        return None
+                    except GI.Refused as error:
+                        return error.code
+                folds = {pair: configured_as(*pair) for pair in (('work', 'Work'), ('my-org', 'my_org'), ('a.b', 'A.B'))}
+                distinct = configured_as('work', 'works', 'my-org', 'my.org')
+                try:
+                    GI.configure_identities(conn, DOMAIN, [identity('Bcengi', 'bcengi', 'Bcengi', 'bcengi')], {})
+                    added = None
+                except GI.Refused as error:
+                    added = error.code
+                check('proposal/identities-fold-alike', [
+                    ('%s and %s are refused invalid_input:ambiguous_git_identity [%s]' % (pair + (code,)),
+                     code == 'invalid_input:ambiguous_git_identity') for pair, code in folds.items()] + [
+                    ('ids that differ after the fold are a configuration [%s]' % distinct, distinct is None),
+                    ('an id added later that folds like a configured one is refused, and nothing is added [%s]' % added,
+                     added == 'invalid_input:ambiguous_git_identity'
+                     and 'Bcengi' not in {r['id'] for r in GI.records(conn, DOMAIN)})])
+
+            with region('proposal/not-presentable'):
+                # VELDO-0143 round 8 (R7-3): a configuration made before ids were refused so (written here as it was
+                # stored) makes two picks fold alike, so the presenter refuses ambiguous_choice. The decision fails by
+                # that name, its request is canceled, and his report tells him, never presented to no one.
+                legacy = identity('Bcengi', 'bcengi', 'Bcengi', 'bcengi')
+                conn.execute('INSERT INTO git_identities VALUES (?,?,?)', (DOMAIN, 'Bcengi', json.dumps(legacy, sort_keys=True)))
+                try:
+                    msg_r = send('api_request', 'start a new project called riptide')
+                    pid_r, _ = routed(msg_r)
+                    before_r = bot_messages()
+                    made_r = decisions.propose(pid_r, document(pid_r, 'riptide', None), dispatch=next_id('pm-np'))
+                    sent_r = bot_messages()[len(before_r):]
+                finally:
+                    conn.execute('DELETE FROM git_identities WHERE domain=? AND identity=?', (DOMAIN, 'Bcengi'))
+                held_r = PP.read(conn, made_r.get('decision')) or {}
+                alias_r = (held_r.get('presentation') or {}).get('alias')
+                request_r = ((entity(I.assignment_id(ids['repository_uuid'], alias_r)) if alias_r else None) or {}).get(
+                    'data', {})
+                reported()
+                told_q = [text for _c, _m, _r, text in bot_messages() if 'riptide could not be set up' in text]
+                check('proposal/not-presentable', [
+                    ('the decision fails invalid_input:ambiguous_choice, not presented [%s %s]'
+                     % (made_r.get('reason'), held_r.get('state')),
+                     made_r.get('ok') is False and made_r.get('reason') == 'invalid_input:ambiguous_choice'
+                     and held_r.get('state') == 'failed' and held_r.get('reason') == 'invalid_input:ambiguous_choice'),
+                    ('nothing was presented and its request is canceled [%s]' % request_r.get('state'),
+                     sent_r == [] and request_r.get('state') == 'CANCELED'),
+                    ('his report tells him why, and what to do', len(told_q) == 1
+                     and 'two of its choices would be typed alike' in told_q[0]
+                     and 'Give each Git identity an id that differs' in told_q[0])])
 
             with region('proposal/presentation-interrupted'):
                 # Presented once, even across a crash (VELDO-0143 F4): the decision is recorded before anything is

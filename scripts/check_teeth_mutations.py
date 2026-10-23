@@ -11051,8 +11051,8 @@ def cases():
                 "        pass  # defect: a decision the PM's run settled does not make the pass due\n",
                 ['service/pm-settled-due'])
     new_project('newproject143-correction-mode-unbound', 'control_project_proposal.py',
-                "    if terms.get('mode') != expected or (expected == 'adopt' and 'adoption' in terms\n"
-                "                                          and terms['adoption'] != shown.get('adoption')):\n",
+                "    if terms.get('mode') != expected or renamed_adoption or (expected == 'adopt' and 'adoption' in terms\n"
+                "                                                             and terms['adoption'] != shown.get('adoption')):\n",
                 "    if False:  # defect: a correction may turn into an adoption he was not shown\n",
                 ['proposal/correction-bound'])
     new_project('newproject143-correction-name-unbound', 'control_project_proposal.py',
@@ -11198,10 +11198,13 @@ def cases():
                 "                                                      brief=brief(proposal), choices=list(CHOICES),"
                 "  # defect: no identity or visibility is offered\n",
                 ['proposal/fields'])
+    # Round 8 (R7-1): unasked, a repository is only ever private; re-targeted from round 7's identity-default line.
     new_project('newproject143-own-message-visibility', 'control_project_proposal.py',
-                "        if visibility_of(proposal) != (identity.get('default_visibility') or 'private'):\n",
-                "        if False:  # defect: the PM's document sets the visibility unasked\n",
-                ['proposal/own-message-doubt'])
+                "    if not isinstance(proposal, dict) or visibility_of(proposal) != 'private':\n"
+                "        reasons.append('visibility_not_private')\n",
+                "    if False:  # defect: the identity's default or the PM's document makes it public unasked\n"
+                "        reasons.append('visibility_not_private')\n",
+                ['proposal/own-message-doubt', 'provision/adoption-path'])
     new_project('newproject143-own-message-negated', 'control_project_proposal.py',
                 "    if negates(text):\n        reasons.append('negated')\n",
                 "    if False:  # defect: his own message settles whatever negates in it\n        reasons.append('negated')\n",
@@ -11214,6 +11217,47 @@ def cases():
                 "        elif said != [proposal['identity']]:\n",
                 "        elif False:  # defect: a message naming two identities settles the PM's\n",
                 ['proposal/own-message-doubt'])
+    # Round 8: the round 7 review's findings. R7-1, his own message holding a word of visibility is presented; R7-2,
+    # an adopted entry keeps its remote's visibility, is offered no visibility pick and records none; R7-3, ids that
+    # fold alike are refused, and a request the presenter refuses for good fails the decision by name; R7-4, the
+    # judge's choices check.
+    new_project('newproject143-own-message-visibility-word', 'control_project_proposal.py',
+                "    if says_visibility(text):\n",
+                "    if False:  # defect: his words of visibility are left to the default\n",
+                ['proposal/own-message-doubt'])
+    new_project('newproject143-adoption-visibility-offered', 'control_project_proposal.py',
+                "        if entry.get('mode') == 'adopt':\n            if entry.get('identity') != shown:\n",
+                "        if False:  # defect: an adopted entry is offered both visibilities\n"
+                "            if entry.get('identity') != shown:\n",
+                ['proposal/adoption-visibility'])
+    new_project('newproject143-adoption-visibility-recorded', 'control_project_proposal.py',
+                "        allowed = (AS_ON_REMOTE,) if proposal['mode'] == 'adopt' else VISIBILITIES\n",
+                "        allowed = VISIBILITIES + (AS_ON_REMOTE,)  # defect: an adoption may record a visibility\n",
+                ['proposal/adoption-visibility'])
+    new_project('newproject143-adoption-visibility-shown', 'control_project_proposal.py',
+                "    remote = dict(remote, url=adoption['remote'], visibility=AS_ON_REMOTE)\n",
+                "    remote = dict(remote, url=adoption['remote'])  # defect: the adoption shows a visibility it never applies\n",
+                ['proposal/adoption-visibility', 'provision/adoption-path'])
+    new_project('newproject143-adoption-renamed-created', 'control_project_proposal.py',
+                "    renamed_adoption = shown is not None and not same_name and shown.get('mode') == 'adopt'\n",
+                "    renamed_adoption = False  # defect: a renamed adoption becomes a creation he picked no visibility for\n",
+                ['proposal/adoption-visibility'])
+    new_project('newproject143-identities-fold-alike', 'control_git_identity.py',
+                "    if len(folded) != len(found):\n",
+                "    if False:  # defect: ids that fold alike are configured\n",
+                ['proposal/identities-fold-alike'])
+    new_project('newproject143-identity-added-folding', 'control_git_identity.py',
+                "            if len({fold(identity) for identity in every}) != len(every):\n",
+                "            if False:  # defect: an id added later may fold like a configured one\n",
+                ['proposal/identities-fold-alike'])
+    new_project('newproject143-not-presented-left-presented', 'control_project_proposal.py',
+                "        if shown.get('outcome') == 'refused' and shown.get('reason') in NOT_PRESENTABLE:\n",
+                "        if False:  # defect: the presenter's refusal is ignored and the decision is presented to no one\n",
+                ['proposal/not-presentable'])
+    new_project('newproject143-judge-choices-unchecked', 'control_project_proposal.py',
+                "    if data.get('choices') != choices(presented):\n",
+                "    if False:  # defect: the judge settles a request that offered other choices\n",
+                ['proposal/choices'])
     add(143, 'newproject143-pick-unmapped', '62_veldo_0065_presentations.py', 'control_channel_presentation.py',
         "    return 'approve' if pick_of(choice) else None\n",
         "    return None  # defect: a pick has no ruling\n",
