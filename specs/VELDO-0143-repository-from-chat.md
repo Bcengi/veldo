@@ -64,6 +64,7 @@ footprint:
   - "proof/VELDO-0143/round3/*"
   - "proof/VELDO-0143/round4/*"
   - "proof/VELDO-0143/round5/*"
+  - "proof/VELDO-0143/round6/*"
   - "proof/VELDO-0152/fixture.py"
   - "specs/VELDO-0188-a-line-for-every-project-at-run-time.md"
   - "engine/.veldo/control_intake.py"
@@ -349,3 +350,19 @@ specs/VELDO-0188-a-line-for-every-project-at-run-time.md is added to this footpr
 above moved AC3's first-unit sentence into its AC1. Finding 143 registers nine more mutations, forty-five in all,
 and five round-3 and round-4 anchors follow the new code. Acceptance criteria, risk, readiness and approval
 requirements are unchanged.
+
+2026-10-23, round 6: the round 5 independent review's findings (proof/VELDO-0143/REVIEW-claude-r5-2026-10-23.md),
+each fix, its row and its falsifier in proof/VELDO-0143/round6/README.md. The clause reading of a correction
+(rounds 3 to 5) is replaced by a rule that does not read what a negator applies to (R5-1, R5-2): a value other
+than the one he was shown is bound only where his words name exactly that value of the field and hold no negator
+anywhere; the shown value stays only where his words name no value of the field; a changed name only where his
+words name it and hold no negator. An honest correction with a negator in it is refused rather than guessed, and
+his report says so in plain words (control_telegram_report). DECISIONS 26 lists what the rule guarantees, what it
+refuses and what it still lets through, each measured (R5-4); entries 24 and 25 point to it. R5-3: a line defers
+its cycles to the factory line only while the factory project can still run (not CANCELED or COMPLETED), and each
+deferral is named in the pass's faults (pm_cycles:deferred_to_factory_line); DECISIONS 27 records the
+paused-factory cost until VELDO-0188. Rows proposal/correction-negated and proposal/correction-phrasings
+(rewritten), proposal/correction-told and activation/factory-canceled (new), activation/factory-paused-resumed and
+activation/factory-line-restart (extended). Finding 143 drops the seven clause-reading mutations, registers seven
+new ones and re-anchors five, forty-five in all. Acceptance criteria, risk, readiness and approval requirements
+are unchanged.

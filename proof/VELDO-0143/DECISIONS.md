@@ -259,39 +259,16 @@ Entries 1, 2 and 5 above are changed by round 3 as follows; the text above is ke
   shown stays only where no occurrence of its word, whatever follows it ("publicly", "bcengi-owned"), has a
   negator before it in its clause. Words that negate one value of a field and affirm another through a bare "and"
   ("don't use bcengi and use personal") are refused as `invalid_input:correction:<field>:ambiguous`.
-- Limits that remain, each measured on the round-5 module (`round5/phrasings.py`), not solved by more rules:
-  - A negator after the word other than "? no" is not seen: "public, no", "public - no", "public: no way" and
-    "public is wrong" keep a shown public.
-  - Negators outside the list are not known: "none of it public", "skip public", "nope, public is wrong" keep a
-    shown public. Nor are another language's ("nicht").
-  - A negator whose clause ends at punctuation before the other value: "don't use bcengi, and personal" settles
-    personal (the comma, not a bare "and", joins them).
-  - "Not only private but public" reads public as said, so it settles a change to public.
-  - Double negation and irony read wrong.
-  - A negator early in a clause with no punctuation refuses what he did say ("no rush make it public").
-  - The fail-closed reading of a shown value refuses where its word is only part of another word that a negator
-    precedes; an identity whose id or label is a short common word would be refused more often than he means.
-  - A negated project name ("not called fjord") is not judged by this rule; the name rule is entry 17's.
-- The phrasings suite 110 refuses and settles are its rows proposal/correction-negated and
-  proposal/correction-phrasings; the limits above are measured, not rows, and some of them pass a value he
-  negated. Where the binding refuses, the decision fails by name (`invalid_input:correction:<field>`), he is told,
-  and he can ask again. What reaches creation is still judged
-  by the one judge, `settled()`, and checked against the identity's owner at creation (VELDO-0153). The binding
-  stops a PM from choosing for him. It is not a parser of his intent.
+- Round 6 replaces this reading (entry 26). The clause, the negator list above, "? no", the "and" rule and the
+  `:ambiguous` refusal are gone from the module; what the binding now guarantees, what it refuses and what it
+  still lets through are listed in entry 26, each measured. The round-5 limit list that stood here is withdrawn:
+  four of its items were not measured (R5-4), and it left out the fail-open cases of R5-1 and R5-2.
 
 **25. Round 5: what the round 4 review's fixes chose (R4-1 to R4-6).**
-- R4-1, the kept value fails closed. A value he was shown is negated when any occurrence of its word, matched
-  from a word's start with nothing required after it, has a negator before it in its clause, or "? no" after it.
-  The word edge is fixed too, for the values he changes and for names: a '.' or '-' continues a word only when a
-  letter, digit or underscore follows it, so "public." and "bcengi." are named, and "shoal-two" and "fjord.io"
-  stay one word. The two are separate mutations, each killed by its own rows: the edge by "Use personal." and
-  "Keep it private." (a changed value at a sentence end settles), the fail-closed reading by "don't host it
-  publicly" and "nothing bcengi-owned".
-- R4-2, the review's three options, all taken: "neither" is a negator; an "and" whose next word is another value
-  of the field does not end the clause; and a value affirmed in a clause that began at a bare "and", after a
-  clause that negates another value of the field, makes the field ambiguous, refused by that name. Only the
-  negated-then-affirmed order is ambiguous: "use personal and not bcengi" negates in its own clause and settles.
-  "or" and "nor" end no clause at all, so "not bcengi or personal" negates both.
+- R4-1 and R4-2 were fixed in round 5 by widening the clause reading (a word's edge at a final period, a kept
+  value failing closed, "neither", the "and" before another value, the `:ambiguous` refusal). Round 6 removes
+  that reading and replaces it with entry 26's rule. The word edge stays only for a project's name and an
+  identity his approval names (`names`), which entry 26 does not change.
 - R4-3, Intake reads its projects when they are judged. `Intake(projects=...)` takes a list, as every caller
   before, or a callable called each time a transition (record, route) judges candidates. The factory line's
   intake and the activation's are given `control_intake.store_projects` over the service's connection, the
@@ -302,10 +279,96 @@ Entries 1, 2 and 5 above are changed by round 3 as follows; the text above is ke
   footprint as it was; it is added for this one change (a property and a module function; no caller with a list
   behaves differently).
 - R4-5, the deferral is wider than the review's wording, by one condition. Another line builds no cycles while
-  the factory line has none and the store has a factory project, whatever its state. "Whenever the factory line
+  the factory line has none and the store has a factory project that can still run (round 6, entry 27: not
+  CANCELED or COMPLETED). "Whenever the factory line
   exists" alone would also hold back every line of a loop with no factory project at all (a factory set up
   before VELDO-0143, or the consumer suites' loops), whose first line is the factory line by definition and never
   wants cycles. With no factory project there is nothing to keep the owners for.
 - R4-6, `service.new_projects()` is built before from_line takes the registrations, under the same conditions
   as before (a channel and a factory project). A failure in that build is the factory line's pass fault, as
   any other, and nothing is cached by a build that raised.
+
+## Round 6: the round 5 review (REVIEW-claude-r5-2026-10-23.md)
+
+**26. A correction binds a value by a rule that does not read negation scope (R5-1, R5-2, R5-4; replaces the
+reading of entries 24 and 25).**
+- Why. Rounds 3, 4 and 5 each widened a reading of which value a negator applies to, and each review found
+  phrasings that pass a value he refused or replaced: "use personal and make it private" with bcengi/public kept
+  (R5-1), "not-public", a negator on the line above, "public!? no" (R5-2). Reading negation scope in free text
+  cannot be made complete. The owner chose (round 6 brief) a rule whose safety does not depend on it.
+- The rule (`control_project_proposal.correction_problems`, `named`, `negates`, `bound`). For the identity and
+  the visibility: his words NAME a value wherever its word (an identity's id or label) occurs in them, ignoring
+  case, even inside another word. They NEGATE where any negator of `_NEGATOR` stands anywhere in them: on any
+  line, at any distance, joined by a hyphen, underscore or period or not, "no" as a word, after a "?" or "!", the
+  prefix "non", any word ending n't with any apostrophe, the apostrophe-less forms (dont, wont, cant, didnt and
+  their kind), and a broad set of others (neither, nor, none, nothing, never, without, cannot, avoid, except,
+  instead of, rather than, other than, anything/everything/all but, skip, drop, remove, refuse, reject, decline,
+  against, wrong, stop, hate, dislike, mistake, forget, nope, nah, nicht, kein, nein, pas, and the Russian
+  ne, net and ni, written as escapes). A value other than the one he was shown settles only where his words name exactly that value of the
+  field and negate nothing. The shown value stays only where his words name no value of the field at all. A
+  changed project name settles only where his words name it and negate nothing; the mode is the one shown for
+  that identity and name, as before. Every other reading fails the decision `invalid_input:correction:<field>`
+  before anything is built, `settled()` refuses it again, and his report says, in plain words
+  (`control_telegram_report.CORRECTION_UNCLEAR`), that the project could not be set up, that the correction did
+  not make the identity (or the visibility, or the name) clear, the rule, and to ask again with one clear choice.
+- The trade-off, by choice. An honest correction with a negator in it is refused rather than guessed, and so is
+  one that names the value it keeps. He is told why and answers again. The cost is a second message from him;
+  the alternative was a repository under an owner or a visibility he ruled out.
+- What it guarantees, each measured by `round6/phrasings.py` (116 cases, 0 not as recorded on the round-6
+  module; 79 not as recorded on the round-5 module) and the rows named:
+  - Words with a negator: no reading that sets or keeps a value they name settles, over all 16 readings
+    (shown identity and visibility times the PM's), for 73 phrasings: every phrasing of the round 3, 4 and 5
+    reviews, "Keep it private, not public.", "not-public", "not_public", "non-public", "nonpublic", "not",
+    a line break, "public", "public!? no", "public?! no way", "public. No.", "neither personal nor bcengi",
+    "anything but public", "not-bcengi please, personal", the round-5 limits ("public, no", "public is wrong",
+    "skip public", "none of it public", "not only private but public", "don't use bcengi, and personal"), curly
+    and backquote apostrophes, "nicht", "kein" and the Russian "ne". Rows proposal/correction-phrasings (42 of
+    them, every review phrasing) and proposal/correction-negated (the decision failed by name end to end).
+  - A shown value kept while his words name another is refused (R5-1): "use personal" with bcengi kept, "make
+    it private" with public kept, "use personal and make it private" with bcengi/public kept. In phrasings.py,
+    16 cases: each of the four shown identity/visibility pairs kept under "use <the other identity>", "make it
+    <the other visibility>", "use <the shown identity>" and "make it <the shown visibility>", each refused on its
+    field. Rows proposal/correction-negated (identity-kept-named,
+    visibility-kept-named, both-kept-named) and proposal/correction-phrasings.
+  - Words with no negator settle exactly the readings they say and no other (9 phrasings, among them "use
+    personal", "make it private", "use personal and make it private", "Use personal. Keep it private." and the
+    same split over two lines). Rows proposal/correction-negated (settles-*) and proposal/correction-phrasings.
+  - A refused correction is told in plain words with how to answer: row proposal/correction-told.
+- What it refuses that he may mean, each measured as refused in `round6/phrasings.py` (kind `refusal`):
+  "Keep it private, not public." (shown public, read private); "not under bcengi, use personal"; "no, bcengi";
+  "use personal instead of bcengi"; "make it public, I don't mind"; "no rush, make it public"; "keep bcengi but
+  make it private" (bcengi kept but named); "keep it private" (private shown and kept, but named); a project
+  name that holds a value's word ("call it personal-site" with the identity kept, "call it public-api" with the
+  visibility kept); and an identity whose id or label is a short word found inside others ("me": "make it
+  public, meanwhile" is refused on the identity).
+- What it still lets through, each measured as settling in `round6/phrasings.py` (kind `limit`), not solved by
+  more words: a refusal said with no word of the negator set ("public would be awful", "steer clear of
+  public", "public is a terrible idea"); irony ("yeah right, public"); another language's negator outside the
+  set ("personal? nunca"); a negating prefix other than "non" ("impersonal" reads personal); and a project
+  name kept while his words name another ("call it reef-watch" with the presented name kept): names are not an
+  enumerable field, so "names no value of the field" cannot be judged for them.
+- Removed with the clause reading (mutations too, finding 143): `_CLAUSE`, `_ANSWERED_NO`, `_clauses`,
+  `_occurrences`, `mentions`, `affirmed`, `negated`, `ambiguous` and the `:ambiguous` code; the cases
+  newproject143-negation-ignored, -word-edge-period, -kept-value-whole-word, -and-ends-clause,
+  -ambiguity-ignored, -negators-round4 and -answered-no-ignored. Their places are taken by
+  newproject143-kept-while-named (R5-1), -hyphen-negator-ignored and -negation-affirms (R5-2), -negators-narrow
+  (the negator set) and -correction-told-code (the plain words).
+
+**27. A line defers to the factory line only while the factory project can still run, and says so (R5-3).**
+- `Line.build_cycles` defers another line's cycles only while a factory project is in a state other than
+  CANCELED or COMPLETED (`control_service.FACTORY_ENDED`; both are terminal in entity_contract's project
+  lifecycle) and the factory line has no cycles. Each pass that defers appends `{'repository': ...,
+  'reason': 'pm_cycles:deferred_to_factory_line'}` to its faults, so the pass report says why that line's
+  project runs no cycles. Rows activation/factory-canceled (a canceled factory project, and the first line that
+  wants cycles builds them at the first pass), activation/factory-paused-resumed (each paused pass names the
+  deferral) and activation/factory-line-restart (the first pass names it). Mutations
+  newproject143-ended-factory-deferred and -deferral-unreported.
+- The paused-factory cost, until VELDO-0188. While the factory project is PAUSED (or ACTIVE with its line's
+  build not yet held), every other repository's project cycles do not run: one connection holds one set of the
+  cycles' owners, and the factory line keeps them. The owner sees `pm_cycles:deferred_to_factory_line` for each
+  such line in every pass, and resuming the factory project ends it. A factory whose project is canceled or
+  completed no longer holds the other lines. VELDO-0188 gives every project's line its own cycles and removes
+  the deferral.
+- A deferral entry is a fault, so it is counted in the loop's status (`counts['faults']`) like the refusal entry
+  beside it. A loop that defers on its first pass, before the factory line builds later in the same pass,
+  reports one entry for that pass; the restart row measures it.
