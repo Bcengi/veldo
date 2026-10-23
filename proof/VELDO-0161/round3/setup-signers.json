@@ -1,0 +1,20 @@
+{
+ "baseline: setup as it is": {
+  "lines": 2,
+  "round0_row (the host failure)": false,
+  "round3_row": true
+ },
+ "setup161-adoption-signer-omitted (its host_files call)": {
+  "lines": 1,
+  "round3_row": false
+ },
+ "setup161-adoption-signer-wrong-key (its host_files call)": {
+  "lines": 2,
+  "round3_row": false
+ },
+ "setup161-extra-enrollment-signer (mutant module)": {
+  "lines": 3,
+  "mutant_digest": "79aca79d2bfedc054c8ce250fe49e8b7849711f6c4353c6b81864b2dd8d1030f",
+  "round3_row": false
+ }
+}
