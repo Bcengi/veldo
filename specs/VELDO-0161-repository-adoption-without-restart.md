@@ -220,7 +220,7 @@ request's record provisioning without enrollment and no live run holding the loc
 unknown_outcome:interrupted at the step the record names (the scaffold step is now recorded before the branch
 moves) and removes the scaffold ref, and one that finds the lock held refuses stale_subject:adoption_in_progress.
 adoption/signer-no-agent counts the stand-in's adoption-key signatures against the journaled ones. Finding 161
-adds thirteen mutations. The three setup161 cases run suite 73, which the mutation stage's confined domain cannot
+adds twelve mutations. The three setup161 cases run suite 73, which the mutation stage's confined domain cannot
 run (no user manager); the gate runs them in its unconfined leg, as it runs finding 139's, and
 proof/VELDO-0161/round4/drive_setup.py runs them as ordinary processes. The footprint gains
 proof/VELDO-0161/round4/*. Criteria, risk, readiness and approval requirements are unchanged.
