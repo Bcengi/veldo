@@ -1924,8 +1924,11 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                     body = dict(ids, operation='take', principal='pm', command_id=next_id('r31-take'),
                                 nonce=next_id('r31-take-n'), feature=proposed.get('feature_id'),
                                 work_class='PRODUCT_CHANGE')
-                    return cycles.services['backlog'].apply({'command': body,
-                                                             'signature': sign_as('pm', S.canonical_bytes(body))})
+                    try:
+                        return cycles.services['backlog'].apply({'command': body,
+                                                                 'signature': sign_as('pm', S.canonical_bytes(body))})
+                    except Exception as error:  # noqa: BLE001 - another line's transition raises its own Refused
+                        return {'ok': False, 'reason': getattr(error, 'code', type(error).__name__)}
                 taken = take(factory.pm_cycles, 'kept') if getattr(factory, 'pm_cycles', None) else {}
                 kept_faults = [fault for one in passes for fault in one.get('faults') or []
                                if fault.get('repository') == kestrel_repo]
