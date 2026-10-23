@@ -1178,6 +1178,11 @@ def _v143_suite():
                     ('no visibility can be resolved onto an adoption, and the judge refuses a decision recording one '
                      '[%s %s]' % (resolve_q, judge_q),
                      resolve_q == 'invalid_input:visibility' and judge_q == 'no_settled_decision:proposal'),
+                    ('a resolved adoption recording private or public is not a proposal, whatever else matches [%s]'
+                     % (PP.proposal_problems(forged_q),),
+                     PP.proposal_problems(forged_q) == ['invalid_input:proposal:remote']
+                     and PP.proposal_problems(dict(forged_q, remote=dict(forged_q['remote'], visibility='public')))
+                     == ['invalid_input:proposal:remote'] and PP.proposal_problems(judged_q['proposal']) == []),
                     ('a correction renaming the adoption he was shown fails invalid_input:correction:mode, nothing '
                      'created [%s %s]' % (renamed_w.get('reason'), state_w),
                      (PP.read(conn, made_w.get('decision')) or {}).get('presented', {}).get('mode') == 'adopt'
