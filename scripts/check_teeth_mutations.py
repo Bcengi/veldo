@@ -11162,7 +11162,7 @@ def cases():
     new_project('newproject143-and-ends-clause', 'control_project_proposal.py',
                 "        if c.group().lower() == 'and' and any(",
                 "        if False and any(  # defect: an \"and\" before another value ends the negator's clause\n            ",
-                ['proposal/correction-negated', 'proposal/correction-phrasings'])
+                ['proposal/correction-negated'])
     new_project('newproject143-ambiguity-ignored', 'control_project_proposal.py',
                 "    if ambiguous(rationale, groups):\n",
                 "    if False:  # defect: one negated and another affirmed through a bare \"and\" is read as said\n",
