@@ -751,7 +751,7 @@ def _v143_suite():
                     'not_public', 'non-public')
                 leaked_p = {}
                 for words in negated_p:
-                    said_p = {v for v in ('personal', 'bcengi') + VIS_P if PP.named(words, [v])}
+                    said_p = {v for v in ('personal', 'bcengi') + VIS_P if v in words.lower()}
                     bad = [c for c in settles_p(words) if c[2] in said_p or c[3] in said_p]
                     if not said_p or bad:
                         leaked_p[words] = bad or 'names nothing'
@@ -1360,9 +1360,12 @@ def _v143_suite():
                           for field, name in (('identity', 'rockbass'), ('visibility', 'kelpcrab'))}
                 if not all(len(v) == 1 for v in told_r.values()):
                     print('  %sdetail: correction told: %s' % (PREFIX, told_r))
+                plain_r = {'identity': 'Your correction did not make clear which identity to use',
+                           'visibility': 'Your correction did not make clear whether it is private or public'}
                 check('proposal/correction-told', [
                     ('the refused %s correction is told once, in plain words, with how to answer' % field,
-                     len(told_r[field]) == 1 and TRP.CORRECTION_UNCLEAR['invalid_input:correction:' + field] in told_r[field][0]
+                     len(told_r[field]) == 1 and plain_r[field] in told_r[field][0]
+                     and 'no "not", "no" or similar word anywhere' in told_r[field][0]
                      and 'Ask again with one clear choice' in told_r[field][0])
                     for field in ('identity', 'visibility')])
 
