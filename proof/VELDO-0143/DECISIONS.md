@@ -165,3 +165,52 @@ missing here, it is not deliberately left out.
   the provisioner's socket hand-off. That adds a second take-on path beside VELDO-0161's one and would hide a
   failing hand-off. Not taken: a record whose hand-off failed waits for an instance's start, exactly as an
   adopted one.
+
+## Round 3: the first independent review (REVIEW-claude-2026-10-23.md)
+
+Entries 1, 2 and 5 above are changed by round 3 as follows; the text above is kept as it was reviewed.
+
+**17. A correction is bound to his words (F2; changes entry 1).**
+- Spec: "His one answer, a yes or a correction, settles the project"; threat model: "a remote created under the
+  wrong owner". Entry 1's correction is still settled with no second presentation, but the PM's corrected
+  document settles it only when each term is the one he was shown or the one his words say
+  (`control_project_proposal.correction_problems`, applied in `correct()` before anything is built and again
+  in the one judge, `settled()`): the name (presented, or named in his words), the identity (presented, or the
+  one configured identity his words name), the visibility (shown for that identity, or named in his words) and
+  the mode (as shown for that identity and name; a name or identity he was not shown is a creation, so an
+  adoption is only ever one he was shown, with the scaffold commit shown, kept rather than laid again). Anything
+  else fails the decision by name, `invalid_input:correction:<field>`, and its report tells him.
+- Also bound here, beyond the review's three fields: the project's name, by the same sentence of the task ("No
+  repository is created or pushed on terms he did not say or see"). The first objective's text is not bound:
+  it is free text the PM states and he can read in the report; nothing textual can judge it.
+- Alternative: show the corrected proposal for a yes (a second question), or trust the PM (the review's F2).
+
+**18. An approval that names no offered identity fails by name (F2; changes entry 2).**
+- Spec: "the identity (asked in the same request when he did not say)". The identity was asked and his answer
+  did not say it. Of the review's two options this branch takes the first: the decision is `failed`
+  `invalid_input:answer:identity` in `apply_settled`, nothing is chosen and nothing reaches the PM. The judge's
+  correction path now requires a returned proposal (`return_for_elaboration`).
+- Alternative: hand it to the PM and refuse its document unless his words name one. That is the same outcome a
+  run later.
+
+**19. One project per name (F3).**
+- A name that is already a project's, or another live decision's (presenting, presented, correcting, settled),
+  compared without case as GitHub compares, is refused `stale_subject:project_exists` before he is asked; the
+  decision is `failed` so the message is not proposed again, and he is told. An activation that finds the name
+  taken meanwhile fails the decision `already_exists`.
+
+**20. Recorded before presented (F4).** The decision is written `presenting` with the proposal, the request's
+  alias and its deadline before the presentation; the next new-project pass finishes an interrupted one from the
+  record with the same commands (the store replays them, the presenter never sends twice).
+
+**21. No proposal without a provisioner configuration (F6; changes entry 5).** A factory with none (set up
+  before this change, or upgraded: VELDO-0161's upgrade lays the adoption signer but not `host/provisioner.json`)
+  fails a new-project decision `unavailable_service:provisioner` at the proposal, so nothing is asked, and its
+  report tells him why. A settled decision whose service has no configuration is failed the same way rather than
+  left waiting.
+
+**22. The pass is due when a decision is written outside it (F1).** `NewProjects` calls `notify` after every
+  decision it writes; the running service's pass sets `projects_due` unless the write is its own, so a decision
+  the factory PM's run settles in a factory loop pass reaches the provisioner in the same serve loop iteration.
+  The review's other option (reading the watermark around `service.loop.run()`) would also make the pass due
+  after every unrelated loop pass.

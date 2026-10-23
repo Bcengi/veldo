@@ -285,3 +285,21 @@ service starts lays Veldo with it), which the scaffold did not lay, so an adopte
 closure; the scaffold now lays init_scaffold.py (mutation newproject143-scaffold-not-laid), every composed pack
 lays one file more. Finding 143 registers eighteen mutations. Acceptance criteria, risk, readiness and approval
 requirements are unchanged.
+
+2026-10-23, round 3: rebased onto VELDO-0161 round 9 (928918a5) with no conflicts (proof/VELDO-0143/round3/
+REBASE.md), and the first independent review's findings (proof/VELDO-0143/REVIEW-claude-2026-10-23.md), each fix,
+its row and its falsifier in proof/VELDO-0143/round3/README.md. F1: a decision written outside the new-project pass
+(the factory PM's run settling his own message or his correction in a factory loop pass) makes the pass due. F2: a
+correction is bound to his words (name, identity, visibility, and an adoption only as shown), in correct() before
+anything is built and in the one judge; an approval naming none of the offered identities fails by name. F3: a
+name that is a project's or another live decision's is refused stale_subject:project_exists before he is asked,
+and an activation that finds it taken fails the decision already_exists. F4: the decision is recorded
+`presenting` before anything is presented, and the pass finishes an interrupted presentation from the record. F6:
+no proposal is presented or settled without a provisioner configuration, and a settled decision the service
+cannot provision fails by name; each failure is told to the owner by the decision's report. F5: row
+activation/line-from-pass (the pass gives the loop the new repository's line) and row activation/first-unit (the
+first unit dispatched in the new repository, authored by the identity), which is red: the new line's project
+cycles cannot be built beside another line's on the service's one connection (VELDO-0154/0088 register their
+owners once per connection), so that line's pass faults and offers nothing. That is an open defect against AC3's
+observation, outside this specification's footprint, and is the owner's decision. Finding 143 registers thirteen
+more mutations, thirty-one in all. Acceptance criteria, risk, readiness and approval requirements are unchanged.
