@@ -38,7 +38,9 @@ when the step log shows the exchange with no restart after it.
 
 THE STEP LOG. `<home>/state/engine-upgrade.jsonl`, 0600, one line per write after it is made (each is a
 write point): the begin with the installed and current engine digests and the files changed, added and
-removed, the staged engine, the prepared original record and units, the exchange, each unit and configuration write, the record, the restart and
+removed, the staged engine, the prepared original record and units, the exchange, the engine pin and record and
+the adoption signer's key and enrollment signers setup lays after it (VELDO-0161, laid before the restart so the
+service it starts reads them, kept by a switch back as setup's own data), each unit and configuration write, the record, the restart and
 its outcome, a switch back with its reason and its ownership restore, the removal of the previous engine and
 the commit (the running service asked to drop its record of the previous ownership bindings). Never a key,
 a token or a store row. Standard library only.

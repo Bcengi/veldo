@@ -24,8 +24,9 @@ already exist, in the order they depend on each other, checking each. It reimple
      identity, the owner and the adoption signer as enrollment signers and the settlement signer. The
      adoption signer (VELDO-0161) is a service key generated in the protected key directory with the others,
      whose only use is signing the VELDO-0029 binding of a repository a settled owner decision names
-     (control_repository.AdoptionSigner); a factory laid down before it existed keeps its signers file and has
-     no adoption signer, and a re-run neither adds nor requires one;
+     (control_repository.AdoptionSigner). A re-run over a factory laid down before it existed lays the key and
+     its enrollment-signers line down exactly as this step does, in the host trust and in the installation's
+     copy of it, as part of the engine upgrade (adoption_laying, lay_adoption_signer), before its restart;
   8. the VELDO-0029 enrollment of the named workspace clone, signed by the owner (control_enrollment.enroll);
   9. the 0600 VELDO-0073 ingress configuration (control_channel_ingress.load_config and open_ingress read
      it), naming the account's own 0600 bot token file, never a copy of the token;
@@ -54,6 +55,7 @@ state root's contents, the host trust file and the workspace binding at
 Observations and output carry paths, identities and digests, never a private key byte, a signature or the
 token. Standard library only; every organ is loaded as a sibling by path.
 """
+import contextlib
 import contextvars
 import functools
 import importlib.util
@@ -329,9 +331,74 @@ def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
 # What the file steps write, built once for the first run and for every re-run's comparison
 # ---------------------------------------------------------------------------------------------
 
-def adoption_signer(keys):
+def adoption_signer(keys, name=ADOPTION_KEY):
     """Generate the adoption signer's key in the protected key directory `keys` (VELDO-0161); its public key."""
-    return _keygen(os.path.join(keys, ADOPTION_KEY), 'veldo-adoption-signer')
+    return _keygen(os.path.join(keys, name), 'veldo-adoption-signer')
+
+
+def adoption_laying(plan, installed, home, settlement_public, differs):
+    """VELDO-0161 on a re-run, read only, before any write: what a factory needs to hold the adoption signer as
+    a fresh setup lays it down (its key in the key directory, its line after the owner's in the host's enrollment
+    signers, and the installation's copy of those signers, which the service reads at its start, equal to them).
+    Each signers file must be absent, what a setup before the adoption signer wrote (the owner's line alone), or
+    what a fresh setup writes for the key the directory holds; anything else is refused by name, never
+    overwritten."""
+    key = os.path.join(plan['keys'], ADOPTION_KEY)
+    public = organ('control_factory_setup_api').derived(key) if os.path.lexists(key) else None
+    if os.path.lexists(key) and public is None:
+        raise differs(key)
+    host_signers = os.path.join(plan['root'], HOST_DIR, 'enrollment_signers')
+    copy = os.path.join(home, 'config', 'enrollment_signers')
+    if installed.get('enrollment_signers') != copy:
+        raise differs(os.path.join(home, 'config', 'service.json'))
+    accepted = {host_files(plan, settlement_public)[host_signers]}
+    if public is not None:
+        accepted.add(host_files(plan, settlement_public, public)[host_signers])
+    held = {}
+    for path in (host_signers, copy):
+        try:
+            info = os.lstat(path)
+        except FileNotFoundError:
+            held[path] = None
+            continue
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) != 0o600
+                or Path(path).read_text() not in accepted):
+            raise differs(path)
+        held[path] = Path(path).read_text()
+    due = public is None or any(text != host_files(plan, settlement_public, public)[host_signers]
+                                for text in held.values())
+    return {'key': key, 'public': public, 'signers': [host_signers, copy], 'settlement': settlement_public, 'due': due}
+
+
+def lay_adoption_signer(plan, laying, observe):
+    """Lay down what adoption_laying found missing, each write one point `observe` records after it is made, so
+    a run killed at any of them is finished by the next: the key is generated beside its place and renamed into
+    it (its public half first), and each signers file is written whole to a new file renamed over it. A second
+    run finds everything laid and writes nothing."""
+    UP = organ('control_factory_setup_upgrade')
+    key, public, wrote = laying['key'], laying['public'], []
+    if public is None:
+        fresh = key + '.upgrade'
+        for leftover in (fresh, fresh + '.pub'):
+            with contextlib.suppress(FileNotFoundError):
+                os.unlink(leftover)
+        public = adoption_signer(plan['keys'], os.path.basename(fresh))
+        os.replace(fresh + '.pub', key + '.pub')
+        os.replace(fresh, key)
+        wrote.append(key)
+        observe({'point': 'adoption_key', 'path': key})
+    text = host_files(plan, laying['settlement'], public)[laying['signers'][0]]
+    for path in laying['signers']:
+        try:
+            now = Path(path).read_text()
+        except FileNotFoundError:
+            now = None
+        if now != text:
+            UP.replace(path, text, 0o600)
+            wrote.append(path)
+            observe({'point': 'adoption_signers', 'path': path})
+    return {'outcome': 'done' if wrote else 'already_done', 'principal': ADOPTION_PRINCIPAL, 'key': key,
+            'written': wrote}
 
 
 def host_files(plan, settlement_public, adoption_public=None):
@@ -1144,9 +1211,12 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         if not os.path.isfile(path):
             raise _differs(path)
     # The files the earlier steps wrote: equal ones are left alone, absent ones written, none overwritten.
-    adoption = os.path.join(keys, ADOPTION_KEY)
-    base = dict(host_files(plan, API.derived(os.path.join(keys, SETTLEMENT_KEY)),
-                           API.derived(adoption) if os.path.isfile(adoption) else None), **ingress_files(plan, ids))
+    settlement_public = API.derived(os.path.join(keys, SETTLEMENT_KEY))
+    # VELDO-0161: the adoption signer a factory laid down before it existed lacks is laid by the engine upgrade
+    # (lay_adoption_signer, below); the enrollment signers are that step's to write, not the host trust step's.
+    adoption = adoption_laying(plan, installed, home, settlement_public, _differs)
+    base = dict(host_files(plan, settlement_public, adoption['public']), **ingress_files(plan, ids))
+    base.pop(adoption['signers'][0])
     base_states = {path: API.file_state(path, data, 0o600, _differs) for path, data in base.items()}
     # The memory step's readers and searches, exercised as a fresh setup does, when the step will write.
     if memory_plan is not None and memory_plan['outcome'] == 'done':
@@ -1164,6 +1234,9 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     # here; the upgrade is the first step this run writes.
     engine = inspect_engine(plan, installed, home, unit_dir, (api['unit_path'], unit_body)
                             if os.path.lexists(api['unit_path']) else None)
+    if adoption['due'] and engine['state'] == 'current':
+        # The service reads its enrollment signers when it starts, so laying the adoption signer's restarts it once.
+        engine['restart_due'] = True
     receiver_trust.validate(trust_step, installed, engine['receivers'], _differs)
     records = organ('control_factory_setup_records')
     record_plan = records.prepare(root, installed, engine['receivers'], api, service_text, _differs, engine['writes'])
@@ -1216,7 +1289,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             for path, _expected, _own, state, text, _added in record_plan['files']:
                 if path in (api['service_config'], api['installed_service_config']) and state == 'upgrade':
                     engine['writes'].insert(0, ('configuration', path, text, 0o600))
-        upgraded = upgrade_engine(plan, engine, runner, running)
+        upgraded = upgrade_engine(plan, engine, runner, running, adoption)
         if released:
             lock = take_lock(root, create=False)
             running = (lock is None)
@@ -1442,13 +1515,17 @@ def service_answers(plan):
     return service_request(plan, {'operation': 'inspect', 'entity_ids': []})
 
 
-def upgrade_engine(plan, engine, runner, running):
+def upgrade_engine(plan, engine, runner, running, adoption):
     """Carry out the inspected upgrade; its step of setup's answer."""
     CS, API, UP = organ('control_service'), organ('control_factory_setup_api'), engine['module']
     def prepare():
         engines = organ('control_factory_setup_engines')
-        return engines.ensure(plan['root'], engine['bin'], plan['engines'], Refused,
-                       lambda point: UP.point(engine['log'], point))
+        report = dict(engines.ensure(plan['root'], engine['bin'], plan['engines'], Refused,
+                                     lambda point: UP.point(engine['log'], point)) or {})
+        # VELDO-0161: after the switch and before the restart, so the service the restart starts reads enrollment
+        # signers that name the adoption signer; each write is a point of the step log.
+        report['adoption_signer'] = lay_adoption_signer(plan, adoption, lambda point: UP.point(engine['log'], point))
+        return report
 
     return _api(lambda: UP.run(engine, runner=runner, running=running, answers=service_answers(plan),
                                modes=CS.fixed_mode, bin_mode=CS.BIN_MODE, prepare=prepare,
