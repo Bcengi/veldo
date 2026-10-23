@@ -121,6 +121,9 @@ acceptance_criteria:
       keep: mutation budget214-keep-not-spared must fail first-use-budget/leg-time-store-pruned.
       Remove the prune call, or the gone-checkout test, or the owner-store guard, or its own-list
       test; the matching row must fail (checked by hand, proof/VELDO-0214/hand_falsifiers.json).
+      Drop home=authority_home from suite 101's through_stage: suite 101 must fail
+      unconfined-leg/authority-copy-records-under-its-scratch-home (checked by hand on the host,
+      proof/VELDO-0214/host-runs.json; suite 101 cannot run in the mutation worker).
 required_evidence: [unit, integration]
 rollback: Revert the five protected files, the suite, its manifest entry, suite 101's scratch HOME for its authority copy and the seven mutation cases; the check returns to a fixed 1800s.
 ---
