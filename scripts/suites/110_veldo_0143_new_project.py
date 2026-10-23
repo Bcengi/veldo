@@ -37,6 +37,7 @@ def _v143_suite():
     import shutil
     import subprocess
     import sys
+    import tempfile
     import threading
     import time
     from types import SimpleNamespace
@@ -100,8 +101,8 @@ def _v143_suite():
                       'provision/adoption-path', 'provision/step-failures', 'provision/checks-before-creation',
                       'provision/interrupted', 'provision/observed', 'activation/order', 'activation/applied',
                       'activation/failed-activates-nothing', 'activation/admitted-without-question',
-                      'activation/new-line', 'provision/handed-over', 'service/provisions', 'service/hand-off',
-                      'pm/new-project-run'):
+                      'activation/new-line', 'provision/handed-over', 'provision/signing-no-agent', 'service/provisions',
+                      'service/hand-off', 'pm/new-project-run'):
             expect(PREFIX + label, False)
         return
 
@@ -237,7 +238,8 @@ def _v143_suite():
             adoption_public = FS.adoption_signer(str(keys))
             adoption_key = keys / 'adoption-signer'
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v143-settlement', '-f',
-                            str(keys / 'settlement')], check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                            str(keys / 'settlement')], check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL,
+                            env=R._quiet_env())
             settlement_public = ' '.join((keys / 'settlement.pub').read_text().split()[:2])
             state_root = base / 'state'
             (state_root / 'host').mkdir(parents=True, mode=0o700)
@@ -778,7 +780,8 @@ def _v143_suite():
                 # does not enroll is refused before any directory exists or GitHub is asked.
                 stranger_key = keys / 'stranger-signer'
                 subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v143-stranger', '-f',
-                                str(stranger_key)], check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                                str(stranger_key)], check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL,
+                                env=R._quiet_env())
                 decision_u, _, _ = own_decision('unsigned')
                 calls, pushes = len(hub['calls']), len(wire.invocations())
                 with fenced(wire):
@@ -1060,6 +1063,131 @@ def _v143_suite():
                      due is True and (PJ.read(S, conn, 'inlet') or {}).get('state') == 'ACTIVE'
                      and any(e.get('operation') == 'activate' and e.get('decision') == decision_e
                              and e.get('outcome') == 'activated' for e in inlet_pass))])
+
+            class AgentWatch:
+                """provision/signing-no-agent's own SSH agent, outside the fence's (as VELDO-0161's
+                adoption/signer-no-agent has one). While active, SSH_AUTH_SOCK and SSH_AGENT_PID name it and a
+                stand-in ssh-keygen first on PATH records each invocation's agent variables, then runs the real one.
+                Where local sockets may be made the agent is a recording socket (every connection is kept, with the
+                process that made it); where they may not, it is a path where nothing listens or can, and the
+                stand-in's record is the evidence. A signer that reaches for an agent fails the row by name."""
+
+                def __init__(self):
+                    import socket
+                    import struct
+                    self.socket, self.struct = socket, struct
+                    self.shim = base / 'agent-shim'
+                    self.shim.mkdir()
+                    self.log = self.shim / 'invocations.jsonl'
+                    self.log.write_text('')
+                    real = shutil.which('ssh-keygen')
+                    (self.shim / 'ssh-keygen').write_text(
+                        '#!%s\nimport json, os, sys\n'
+                        'def after(flag):\n'
+                        '    return sys.argv[sys.argv.index(flag) + 1] if flag in sys.argv[:-1] else None\n'
+                        'with open(%r, "a") as f:\n'
+                        '    f.write(json.dumps({"agent": [os.environ.get(k) for k in ("SSH_AUTH_SOCK", "SSH_AGENT_PID")'
+                        ' if os.environ.get(k)], "argv": sys.argv[1:3], "key": after("-f"), "namespace": after("-n")})'
+                        ' + "\\n")\n'
+                        'os.execv(%r, [%r] + sys.argv[1:])\n' % (sys.executable, str(self.log), real, real))
+                    (self.shim / 'ssh-keygen').chmod(0o700)
+                    self.connections, self.stop = [], threading.Event()
+                    self.directory = self.agent = self.thread = None
+                    if UNIX:
+                        # A short path (sun_path is bounded), as the fence's own agent has.
+                        self.directory = tempfile.mkdtemp(prefix='v143a-')
+                        self.path = os.path.join(self.directory, 'agent')
+                        self.agent = socket.socket(socket.AF_UNIX)
+                        self.agent.bind(self.path)
+                        self.agent.listen(8)
+                        self.thread = threading.Thread(target=self._serve, daemon=True)
+                        self.thread.start()
+                    else:
+                        self.path = str(self.shim / 'agent.sock')
+
+                def _serve(self):
+                    while not self.stop.is_set():
+                        try:
+                            peer, _ = self.agent.accept()
+                        except OSError:
+                            return
+                        if not self.stop.is_set():
+                            try:
+                                pid = self.struct.unpack('3i', peer.getsockopt(self.socket.SOL_SOCKET,
+                                                                               self.socket.SO_PEERCRED, 12))[0]
+                                asked = Path('/proc/%d/cmdline' % pid).read_bytes().replace(b'\0', b' ').decode(
+                                    errors='replace').strip()[:300]
+                            except OSError:
+                                asked = 'unknown process'
+                            self.connections.append(asked)
+                        peer.close()
+
+                @contextlib.contextmanager
+                def active(self):
+                    saved = {k: os.environ.get(k) for k in ('PATH', 'SSH_AUTH_SOCK', 'SSH_AGENT_PID')}
+                    os.environ.update(PATH=str(self.shim) + os.pathsep + (saved['PATH'] or os.defpath),
+                                      SSH_AUTH_SOCK=self.path, SSH_AGENT_PID='1')
+                    try:
+                        yield self
+                    finally:
+                        for k, v in saved.items():
+                            if v is None:
+                                os.environ.pop(k, None)
+                            else:
+                                os.environ[k] = v
+
+                def invocations(self):
+                    return [json.loads(line) for line in self.log.read_text().splitlines() if line.strip()]
+
+                def close(self):
+                    if self.agent is None:
+                        return
+                    self.stop.set()
+                    with contextlib.suppress(OSError):
+                        waker = self.socket.socket(self.socket.AF_UNIX)
+                        waker.connect(self.path)
+                        waker.close()
+                    self.agent.close()
+                    self.thread.join(timeout=5)
+                    with contextlib.suppress(OSError):
+                        os.unlink(self.path)
+                        os.rmdir(self.directory)
+                    self.agent = None
+
+            with region('provision/signing-no-agent'):
+                # Every signature a new project's whole path makes, with an SSH agent named in the environment: his
+                # message by the API edge, its intake, route and proposal journaled, the provisioner's journal and
+                # adoption signatures, the running service's take-on and its new-project pass (the activation, the
+                # first team and objective, journaled by the service and through the channel's inbox). None may
+                # reach an agent: every ssh-keygen runs with SSH_AUTH_SOCK and SSH_AGENT_PID removed.
+                watch = AgentWatch()
+                try:
+                    with watch.active():
+                        decision_c, _, _ = own_decision('cove')
+                    cove_repo = PP.read(conn, decision_c)['proposal']['repository']
+                    with fenced(wire):
+                        with watch.active():
+                            cove = provision(decision_c, send=judged(service))
+                            cove_pass = service.new_project_pass()
+                finally:
+                    watch.close()
+                asked = watch.invocations()
+                signing = [a for a in asked if a['argv'] == ['-Y', 'sign']]
+                signed = {(Path(a['key'] or '').name, a['namespace']) for a in signing}
+                check('provision/signing-no-agent', [
+                    ('the new project ran its whole path there: created, handed over, active and activated',
+                     cove.get('ok') is True and (record(cove_repo) or {}).get('state') == 'active'
+                     and (PJ.read(S, conn, 'cove') or {}).get('state') == 'ACTIVE'
+                     and any(e.get('decision') == decision_c and e.get('outcome') == 'activated' for e in cove_pass)),
+                    ('each signer ran ssh-keygen -Y sign there: the API edge, the authority\'s journal and the adoption '
+                     'signer %s' % sorted(signed),
+                     {('api-edge', 'veldo-command'), (Path(str(f['keyfile']['authority'])).name, 'veldo-journal'),
+                      (adoption_key.name, 'veldo-enrollment')} <= signed),
+                    # A signature is what reaches for an agent; `-Y verify` (authority_contract's verifier) never does.
+                    ('no ssh-keygen -Y sign was started with an SSH agent in its environment, though one was named %s'
+                     % sorted({(Path(a['key'] or '').name, a['namespace']) for a in signing if a['agent']}),
+                     bool(signing) and all(a['agent'] == [] for a in signing)),
+                    ('nothing connected to this row\'s agent %s' % watch.connections[:3], watch.connections == [])])
 
             with region('service/provisions', 'service/hand-off'):
                 provisioner = state_root / 'host' / 'provisioner.json'
