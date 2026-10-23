@@ -11267,6 +11267,11 @@ def cases():
         "        if len({_fold(choice) for choice in c['choices']}) != len(c['choices']):\n",
         "        if False:  # defect: choices typed alike are presented\n",
         ['answer/pick-choices'])
+    # These two are registered after the loop that gives renderer-loading cases their companions, and
+    # suite 62 loads control_channel_presentation by its path, which loads the renderer beside itself.
+    for case in result:
+        if case['name'] in ('newproject143-pick-unmapped', 'newproject143-ambiguous-choices-presented'):
+            case['companions'] = list(RENDERER_COMPANIONS)
 
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
