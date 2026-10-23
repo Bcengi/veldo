@@ -57,8 +57,11 @@ def _v143_suite():
         'control_service_projects.py': ROOT / ".veldo" / "control_service_projects.py",
         'control_workflow_cycle_pm.py': ROOT / ".veldo" / "control_workflow_cycle_pm.py",
         'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
+        'control_telegram_report.py': ROOT / ".veldo" / "control_telegram_report.py",
     }
     PREFIX = 'VELDO-0143 '
+    # VELDO-0143 R5-3: the fault a line names when it defers its cycles to the factory line.
+    DEFERRED = 'pm_cycles:deferred_to_factory_line'
     emitted, raised, regions = set(), [], []
 
     def check(label, parts):
@@ -107,7 +110,8 @@ def _v143_suite():
                       'service/pm-settled-due', 'activation/line-from-pass',
                       'activation/factory-line-kept', 'activation/factory-line-restart', 'proposal/correction-negated',
                       'proposal/correction-phrasings', 'activation/factory-intake-current',
-                      'activation/factory-paused-resumed', 'activation/new-projects-kept'):
+                      'activation/factory-paused-resumed', 'activation/new-projects-kept', 'activation/factory-canceled',
+                      'proposal/correction-told'):
             expect(PREFIX + label, False)
         return
 
@@ -644,110 +648,132 @@ def _v143_suite():
                      len(new_project_requests()) == len(before_bound[2]) + 7 and len(hub['calls']) == before_bound[1])])
 
             with region('proposal/correction-negated'):
-                # A word he negates is not said (VELDO-0143 R3-2): the PM's reading that takes the identity or the
-                # visibility he ruled out by name fails by name; the reading his words affirm settles.
+                # A correction is bound by a rule that does not read what a negator applies to (VELDO-0143 round 6):
+                # a value other than the one shown only where his words name exactly it and hold no negator anywhere;
+                # the shown value only where they name no value of the field. Every other reading fails by name.
                 before_negated = (len(hub['calls']), len(new_project_requests()))
                 negated_cases = {}
-                # The visibility shown, where it is not the identity's default (private).
-                shown_public = {'visibility-period', 'visibility-period-said'}
-                for case, name, asked_identity, words, reading in (
-                        # the review's words: both identities offered, he rules one out and one visibility out
-                        ('identity', 'saltmarsh', None, 'not under bcengi please, and keep it private, not public',
-                         ('bcengi', 'public')),
-                        ('identity-shown', 'rockpool', 'bcengi', 'not under bcengi, use personal',
-                         ('bcengi', None)),
-                        ('visibility', 'kelp', None, 'under personal please, keep it private, not public',
-                         ('personal', 'public')),
-                        ('visibility-said', 'kelpie', None, 'under personal please, keep it private, not public',
-                         ('personal', 'private')),
-                        ('identity-said', 'rockling', 'bcengi', 'not under bcengi, use personal',
-                         ('personal', None)),
-                        # R4-1: a final period; the kept identity and the kept visibility he negates do not stay
-                        ('identity-period', 'rockpipit', 'bcengi', 'Not under bcengi.', ('bcengi', None)),
-                        ('visibility-period', 'kelpfly', 'personal', 'Keep it private, not public.',
-                         ('personal', 'public')),
-                        # R4-2: he rules both identities out; the PM's reading takes one of them
-                        ('identity-neither', 'rockcress', 'bcengi', 'neither personal nor bcengi', ('personal', None)),
-                        ('identity-both', 'rockdove', 'bcengi', "don't use bcengi and personal", ('personal', None)),
-                        # R4-2: one negated, another affirmed through a bare "and": ambiguous, refused by that name
-                        ('identity-ambiguous', 'rockfoil', 'bcengi', "don't use bcengi and use personal",
-                         ('personal', None)),
-                        # R4-1: a changed value at the end of a sentence is named
-                        ('visibility-period-said', 'kelpwrack', 'personal', 'Keep it private.', ('personal', 'private')),
-                        ('identity-period-said', 'rockrose', 'bcengi', 'Use personal.', ('personal', None))):
-                    decision_n, pid_n, rid_n = asked_for(name, asked_identity,
-                                                         'public' if case in shown_public else None)
+                # (case, name, identity asked, visibility shown, his words, the PM's reading, the field refused or
+                # None where it settles)
+                for case, name, asked_identity, asked_visibility, words, reading, refused in (
+                        # round 3 and round 4 reviews: a value he negates, kept or taken
+                        ('identity', 'saltmarsh', None, None, 'not under bcengi please, and keep it private, not public',
+                         ('bcengi', 'public'), 'identity'),
+                        ('identity-shown', 'rockpool', 'bcengi', None, 'not under bcengi, use personal',
+                         ('bcengi', None), 'identity'),
+                        ('visibility', 'kelp', 'personal', None, 'keep it private, not public',
+                         ('personal', 'public'), 'visibility'),
+                        ('identity-period', 'rockpipit', 'bcengi', None, 'Not under bcengi.', ('bcengi', None), 'identity'),
+                        ('visibility-period', 'kelpfly', 'personal', 'public', 'Keep it private, not public.',
+                         ('personal', 'public'), 'visibility'),
+                        ('identity-neither', 'rockcress', 'bcengi', None, 'neither personal nor bcengi',
+                         ('personal', None), 'identity'),
+                        ('identity-both', 'rockdove', 'bcengi', None, "don't use bcengi and personal",
+                         ('personal', None), 'identity'),
+                        ('identity-and', 'rockfoil', 'bcengi', None, "don't use bcengi and use personal",
+                         ('personal', None), 'identity'),
+                        ('visibility-anything-but', 'kelpkin', 'personal', None, 'anything but public',
+                         ('personal', 'public'), 'visibility'),
+                        # R5-1: a shown value kept while his words name another, with no negator
+                        ('identity-kept-named', 'rockbass', 'bcengi', None, 'use personal', ('bcengi', None), 'identity'),
+                        ('visibility-kept-named', 'kelpbed', 'personal', 'public', 'make it private',
+                         ('personal', 'public'), 'visibility'),
+                        ('both-kept-named', 'rockling', 'bcengi', 'public', 'use personal and make it private',
+                         ('bcengi', 'public'), 'identity'),
+                        # R5-2: a negator joined by a hyphen, on the line above, or after the word
+                        ('visibility-hyphen-kept', 'kelpie', 'personal', 'public', 'not-public', ('personal', 'public'),
+                         'visibility'),
+                        ('visibility-hyphen', 'kelpcrab', 'personal', None, 'not-public', ('personal', 'public'),
+                         'visibility'),
+                        ('identity-hyphen-kept', 'rockcod', 'bcengi', None, 'not-bcengi please, personal',
+                         ('bcengi', None), 'identity'),
+                        ('identity-hyphen', 'rockeel', 'personal', None, 'not-bcengi', ('bcengi', None), 'identity'),
+                        ('visibility-line-above', 'kelpgull', 'personal', None, 'not\npublic', ('personal', 'public'),
+                         'visibility'),
+                        ('visibility-answered', 'kelpgoby', 'personal', None, 'public!? no', ('personal', 'public'),
+                         'visibility'),
+                        # plain corrections settle when the reading is what they say
+                        ('settles-identity', 'rockrose', 'bcengi', None, 'use personal', ('personal', None), None),
+                        ('settles-visibility', 'kelpwrack', 'personal', 'public', 'make it private',
+                         ('personal', 'private'), None),
+                        ('settles-both', 'rockweed', 'bcengi', 'public', 'use personal and make it private',
+                         ('personal', 'private'), None),
+                        ('settles-period', 'kelpfish', 'bcengi', 'public', 'Use personal. Keep it private.',
+                         ('personal', 'private'), None)):
+                    decision_n, pid_n, rid_n = asked_for(name, asked_identity, asked_visibility)
                     returned(rid_n, words)
                     outcome_n = decisions.correct(decision_n, document(pid_n, name, *reading), dispatch=next_id('pm-npn'))
-                    negated_cases[case] = (state_of(decision_n), outcome_n, decision_n)
-                said_cases = ('visibility-said', 'identity-said', 'visibility-period-said', 'identity-period-said')
-                said_judged = {case: PP.settled(S, CM, conn, negated_cases[case][2]) for case in said_cases
-                               if negated_cases[case][1].get('ok') is True}
-                refused_as = {'identity-ambiguous': 'invalid_input:correction:identity:ambiguous'}
+                    negated_cases[case] = (state_of(decision_n), outcome_n, decision_n, refused)
+                said_judged = {case: PP.settled(S, CM, conn, held[2]) for case, held in negated_cases.items()
+                               if held[3] is None and held[1].get('ok') is True}
                 check('proposal/correction-negated', [
-                    ('a corrected %s his words negate fails the decision by name %s' % (case, negated_cases[case][0]),
-                     negated_cases[case][0] == ('failed', refused_as.get(case, 'invalid_input:correction:'
-                                                                         + case.split('-')[0]))
-                     and negated_cases[case][1].get('ok') is False)
-                    for case in ('identity', 'identity-shown', 'visibility', 'identity-period', 'visibility-period',
-                                 'identity-neither', 'identity-both', 'identity-ambiguous')] + [
-                    ('the reading his words affirm settles it, as he said it %s' % (negated_cases[case][0],),
-                     negated_cases[case][1].get('ok') is True and case in said_judged
+                    ('%s: the reading fails the decision by name %s' % (case, held[0]),
+                     held[0] == ('failed', 'invalid_input:correction:' + held[3]) and held[1].get('ok') is False)
+                    for case, held in negated_cases.items() if held[3] is not None] + [
+                    ('%s: the reading his words say settles it, as he said it %s' % (case, held[0]),
+                     held[1].get('ok') is True and case in said_judged
                      and said_judged[case]['proposal']['identity'] == 'personal'
                      and said_judged[case]['proposal']['remote']['visibility'] == 'private')
-                    for case in said_cases] + [
+                    for case, held in negated_cases.items() if held[3] is None] + [
                     ('none of it reaches GitHub or asks a second question',
                      len(hub['calls']) == before_negated[0]
                      and len(new_project_requests()) == before_negated[1] + len(negated_cases))])
 
             with region('proposal/correction-phrasings'):
-                # VELDO-0143 R4-4: the one judge's binding, over the phrasings the round-4 review measured (and the
-                # final-period and both-ruled-out ones), with the configured identities: each negated value is
-                # refused, each affirmed one settles.
-                records_p = GI.records(conn, DOMAIN)
-                shown_p = lambda identity, visibility: {'project': 'x', 'identity': identity, 'mode': 'create',
-                                                        'remote': {'visibility': visibility}}
-                terms_p = lambda identity, visibility: {'project': 'x', 'identity': identity, 'visibility': visibility,
-                                                        'mode': 'create'}
-                kept_public = ('it cannot be public', 'dont make it public', 'nothing public please', 'neither public',
-                               'except public', 'other than public', 'anything but public', 'public? no',
-                               'it wont be public', 'cant be public', 'didnt want it public', 'avoid public',
-                               'Keep it private, not public.', "don't host it publicly")
-                made_public = ('it cannot be public', 'dont make it public', 'it wont be public', 'public? no',
-                               'avoid public', 'anything but public')
-                refused_p = [(words, 'personal/public kept', PP.correction_problems(
-                    shown_p('personal', 'public'), terms_p('personal', 'public'), words, records_p))
-                    for words in kept_public]
-                refused_p += [(words, 'private to public', PP.correction_problems(
-                    shown_p('personal', 'private'), terms_p('personal', 'public'), words, records_p))
-                    for words in made_public]
-                refused_p += [(words, 'bcengi kept', PP.correction_problems(
-                    shown_p('bcengi', 'private'), terms_p('bcengi', 'private'), words, records_p))
-                    for words in ('avoid bcengi', 'cannot be bcengi', 'Not under bcengi.', 'bcengi? no',
-                                  'nothing bcengi-owned')]
-                refused_p += [(words, 'bcengi to personal', PP.correction_problems(
-                    shown_p('bcengi', 'private'), terms_p('personal', 'private'), words, records_p))
-                    for words in ('neither personal nor bcengi', "don't use bcengi and personal",
-                                  'dont use bcengi or personal', "don't use bcengi and use personal")]
-                settled_p = [(words, PP.correction_problems(shown_p(*shown), terms_p(*corrected), words, records_p))
-                             for words, shown, corrected in (
-                                 ('Keep it private, not public.', ('personal', 'public'), ('personal', 'private')),
-                                 ('Make it public.', ('personal', 'private'), ('personal', 'public')),
-                                 ('not under bcengi, use personal', ('bcengi', 'private'), ('personal', 'private')),
-                                 ('no, bcengi', ('personal', 'private'), ('bcengi', 'private')),
-                                 ('bcengi not personal', ('personal', 'private'), ('bcengi', 'private')),
-                                 ('public? yes', ('personal', 'private'), ('personal', 'public')),
-                                 ('nothing else; make it public', ('personal', 'private'), ('personal', 'public')))]
-                wrong_p = [(words, case) for words, case, problems in refused_p if not problems]
-                wrong_p += [(words, problems) for words, problems in settled_p if problems]
-                if wrong_p:
-                    print('  %sdetail: correction phrasings judged wrongly: %s' % (PREFIX, wrong_p))
+                # VELDO-0143 round 6: the one judge's binding over every phrasing the round 3, 4 and 5 reviews named,
+                # with the configured identities, for every value he could have been shown and every reading of the
+                # PM's (16 each). Words with a negator anywhere bind no value they name, kept or taken; words with
+                # none settle exactly the readings that change a field to the one value they name and keep each
+                # field they name no value of.
+                records_p, VIS_P = GI.records(conn, DOMAIN), PP.VISIBILITIES
+                combos_p = [(si, sv, ri, rv) for si in ('personal', 'bcengi') for sv in VIS_P
+                            for ri in ('personal', 'bcengi') for rv in VIS_P]
+
+                def settles_p(words):
+                    return sorted((si, sv, ri, rv) for si, sv, ri, rv in combos_p if not PP.correction_problems(
+                        {'project': 'x', 'identity': si, 'mode': 'create', 'remote': {'visibility': sv}},
+                        {'project': 'x', 'identity': ri, 'visibility': rv, 'mode': 'create'}, words, records_p))
+                negated_p = (
+                    # round 3
+                    'not under bcengi please, and keep it private, not public', 'not under bcengi, use personal',
+                    'not bcengi',
+                    # round 4
+                    'Keep it private, not public.', 'Not under bcengi.', "don't host it publicly",
+                    'neither personal nor bcengi', "don't use bcengi and personal", "don't use bcengi and use personal",
+                    'dont use bcengi or personal', 'it cannot be public', 'dont make it public', 'nothing public please',
+                    'neither public', 'except public', 'other than public', 'anything but public', 'public? no',
+                    'it wont be public', 'cant be public', 'didnt want it public', 'avoid public', 'avoid bcengi',
+                    'cannot be bcengi', 'bcengi? no', 'nothing bcengi-owned', 'no, bcengi', 'bcengi not personal',
+                    # round 5
+                    'not public!', 'not public, thanks', 'no bcengi', 'use personal (not bcengi)',
+                    'not-public', 'not-bcengi please, personal', 'not\npublic', 'public!? no', 'public?! no way',
+                    'public. No.', "don't make it public and keep it private", "keep it private and don't make it public",
+                    'not_public', 'non-public')
+                leaked_p = {}
+                for words in negated_p:
+                    said_p = {v for v in ('personal', 'bcengi') + VIS_P if PP.named(words, [v])}
+                    bad = [c for c in settles_p(words) if c[2] in said_p or c[3] in said_p]
+                    if not said_p or bad:
+                        leaked_p[words] = bad or 'names nothing'
+                plain_p = {
+                    'use personal': [('bcengi', v, 'personal', v) for v in VIS_P],
+                    'make it private': [(i, 'public', i, 'private') for i in ('bcengi', 'personal')],
+                    'use personal and make it private': [('bcengi', 'public', 'personal', 'private')],
+                    'Make it public.': [(i, 'private', i, 'public') for i in ('bcengi', 'personal')],
+                    'put it under Bcengi, call it x, and make it public': [('personal', 'private', 'bcengi', 'public')]}
+                wrong_plain = {words: settles_p(words) for words, want in plain_p.items() if settles_p(words) != sorted(want)}
+                if leaked_p or wrong_plain:
+                    print('  %sdetail: correction phrasings judged wrongly: negated %s; plain %s' % (
+                        PREFIX, leaked_p, wrong_plain))
                 check('proposal/correction-phrasings', [
-                    ('each value his words negate is refused by name (%d phrasings)' % len(refused_p),
-                     all(problems and all(x.startswith('invalid_input:correction:') for x in problems)
-                         for _, _, problems in refused_p)),
-                    ('each value his words affirm settles (%d phrasings)' % len(settled_p),
-                     all(not problems for _, problems in settled_p))])
+                    ('no value named in words with a negator settles, kept or taken, over 16 readings each '
+                     '(%d phrasings, %d wrong)' % (len(negated_p), len(leaked_p)), not leaked_p),
+                    ('a shown value kept while his words name another is refused (R5-1)',
+                     ('bcengi', 'public', 'bcengi', 'public') not in settles_p('use personal and make it private')
+                     and ('bcengi', 'private', 'bcengi', 'private') not in settles_p('use personal')
+                     and ('personal', 'public', 'personal', 'public') not in settles_p('make it private')),
+                    ('words with no negator settle exactly the readings they say (%d phrasings)' % len(plain_p),
+                     not wrong_plain)])
 
             with region('proposal/name-taken'):
                 # A name is one project (VELDO-0143 F3): another live decision's name, compared as GitHub compares.
@@ -1324,6 +1350,21 @@ def _v143_suite():
                     ('a decision settled where the running service has no configuration is failed by name, not left waiting',
                      (PP.read(conn, PP.decision_id(pid6)) or {}).get('state') == 'failed'
                      and (PP.read(conn, PP.decision_id(pid6)) or {}).get('reason') == 'unavailable_service:provisioner')])
+
+            with region('proposal/correction-told'):
+                # VELDO-0143 round 6: a correction refused because his words did not make a choice certain tells him
+                # so in plain words, with what to answer instead.
+                reported()
+                texts_r = [text for _c, _m, _r, text in bot_messages()]
+                told_r = {field: [text for text in texts_r if '%s could not be set up' % name in text]
+                          for field, name in (('identity', 'rockbass'), ('visibility', 'kelpcrab'))}
+                if not all(len(v) == 1 for v in told_r.values()):
+                    print('  %sdetail: correction told: %s' % (PREFIX, told_r))
+                check('proposal/correction-told', [
+                    ('the refused %s correction is told once, in plain words, with how to answer' % field,
+                     len(told_r[field]) == 1 and TRP.CORRECTION_UNCLEAR['invalid_input:correction:' + field] in told_r[field][0]
+                     and 'Ask again with one clear choice' in told_r[field][0])
+                    for field in ('identity', 'visibility')])
 
             with region('proposal/presentation-interrupted'):
                 # Presented once, even across a crash (VELDO-0143 F4): the decision is recorded before anything is
@@ -1978,7 +2019,10 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                      and (rtaken.get('item') or {}).get('repository_uuid') == REPO),
                     ('no other line holds cycles, and each was refused at most once',
                      others and all(getattr(line, 'pm_cycles', None) is None for line in others)
-                     and all(sum(1 for x in rfaults if x.get('repository') == line.repository) <= 1 for line in others))])
+                     and all(sum(1 for x in rfaults if x.get('repository') == line.repository
+                                 and x.get('reason') != DEFERRED) <= 1 for line in others)),
+                    ('a line visited before the factory line built its cycles named its deferral in that pass (R5-3)',
+                     any(x == {'repository': kestrel_repo, 'reason': DEFERRED} for x in restart_passes[0].get('faults') or []))])
 
             with region('activation/factory-paused-resumed'):
                 # VELDO-0143 R4-5: the factory project paused when the service starts, a taken-on repository's project
@@ -2028,6 +2072,9 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                      and sorted(paused_loop.lines).index(kestrel_repo) < sorted(paused_loop.lines).index(REPO)
                      and (PJ.read(S, conn, 'kestrel') or {}).get('state') == 'ACTIVE'),
                     ('while it was paused no line built project cycles', not any(held_while_paused.values())),
+                    ('each pass while it was paused names the new line\'s deferral to the factory line (R5-3)',
+                     all({'repository': kestrel_repo, 'reason': DEFERRED} in (one.get('faults') or [])
+                         for one in paused_passes)),
                     ('once he resumed it, its cycles run on the factory line with its owners on the connection',
                      resumed_f.get('ok') is True and pcycles is not None and all('pm_cycles' in one for one in resumed_passes)
                      and not any(x.get('repository') == REPO for x in pfaults) and held_by(pcycles)),
@@ -2088,6 +2135,44 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                      'operation registered on the connection', np_decisions is not None
                      and np_cycles.services.get('new_projects') is np_decisions
                      and np_entry.get('writes') == PP.WRITES and callable(np_entry.get('transition')))])
+
+            with region('activation/factory-canceled'):
+                # VELDO-0143 R5-3: a canceled factory project runs no cycles again, so another line does not wait on
+                # the factory line for it: the active project's line builds its cycles, and nothing is deferred.
+                conn.command_registry.clear()
+                conn.command_registry.update(cycles_free)
+                canceled_f = factory_change('cancel', reason='the owner closes the factory project',
+                                            disposition='nothing left open')
+                canceled_service = SV.Service(dict(service.config, principal='team-service',
+                                                   repositories=dict(service.repositories, **{REPO: [str(source)]}),
+                                                   observations=str(base / 'canceled-service.jsonl'),
+                                                   receiver={'configs': paused_configs}), conn)
+                canceled_service.channel = service.channel
+                canceled_loop = SV.FactoryLoop(canceled_service, work)
+                canceled_passes = []
+                for _ in range(2):
+                    canceled_loop.wake('journal')
+                    canceled_passes.append(canceled_loop.run() or {})
+                # The store holds several active projects by now, each on its line; the first line the loop visits
+                # that wants cycles builds them (one set per connection until VELDO-0188), the others are refused.
+                built_c = [(repository, line) for repository, line in sorted(canceled_loop.lines.items())
+                           if getattr(line, 'pm_cycles', None) is not None]
+                first_c = next((repository for repository, line in sorted(canceled_loop.lines.items())
+                                if line.wants_cycles()), None)
+                cfaults = [x for one in canceled_passes for x in one.get('faults') or []]
+                if len(built_c) != 1:
+                    print('  %sdetail: factory canceled: cancel %s; built %s; faults %s' % (
+                        PREFIX, canceled_f.get('reason'), [r for r, _ in built_c], cfaults))
+                check('activation/factory-canceled', [
+                    ('the factory project is canceled and kestrel\'s project is active on its own line',
+                     canceled_f.get('ok') is True and (PJ.read(S, conn, 'factory') or {}).get('state') == 'CANCELED'
+                     and (PJ.read(S, conn, 'kestrel') or {}).get('state') == 'ACTIVE'
+                     and kestrel_repo in canceled_loop.lines),
+                    ('the factory line builds no cycles', getattr(canceled_loop.lines[REPO], 'pm_cycles', None) is None),
+                    ('the first line visited that wants cycles, another active project\'s, builds them at the first pass, '
+                     'its owners on the connection', first_c not in (None, REPO) and len(built_c) == 1
+                     and built_c[0][0] == first_c and 'pm_cycles' in canceled_passes[0] and held_by(built_c[0][1].pm_cycles)),
+                    ('no pass defers a line to the factory line', not any(x.get('reason') == DEFERRED for x in cfaults))])
 
         finally:
             for server in servers:

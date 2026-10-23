@@ -11051,14 +11051,12 @@ def cases():
                 "        pass  # defect: a decision the PM's run settled does not make the pass due\n",
                 ['service/pm-settled-due'])
     new_project('newproject143-correction-identity-unbound', 'control_project_proposal.py',
-                "    elif not (said == [identity] if identity != presented.get('identity')"
-                " else not negated(rationale, words, values)):\n",
-                "    elif False:  # defect: the PM chooses the identity\n",
+                "    if not bound(identity, presented.get('identity'), said, negated):\n",
+                "    if False:  # defect: the PM chooses the identity\n",
                 ['proposal/correction-bound'])
     new_project('newproject143-correction-visibility-unbound', 'control_project_proposal.py',
-                "    elif not (named == [visibility] if visibility != reference.get('visibility')\n"
-                "              else not negated(rationale, [visibility], VISIBILITIES)):\n",
-                "    elif False:  # defect: the PM flips the visibility\n",
+                "    if not bound(visibility, reference.get('visibility'), [v for v in VISIBILITIES if named(rationale, [v])], negated):\n",
+                "    if False:  # defect: the PM flips the visibility\n",
                 ['proposal/correction-bound'])
     new_project('newproject143-correction-mode-unbound', 'control_project_proposal.py',
                 "    if terms.get('mode') != expected or (expected == 'adopt' and 'adoption' in terms\n"
@@ -11066,7 +11064,7 @@ def cases():
                 "    if False:  # defect: a correction may turn into an adoption he was not shown\n",
                 ['proposal/correction-bound'])
     new_project('newproject143-correction-name-unbound', 'control_project_proposal.py',
-                "    if not same_name and not names(rationale, terms.get('project')):\n",
+                "    if not same_name and not (names(rationale, terms.get('project')) and not negated):\n",
                 "    if False:  # defect: the PM renames the project\n",
                 ['proposal/correction-bound'])
     new_project('newproject143-bare-yes-corrected', 'control_project_proposal.py',
@@ -11129,68 +11127,69 @@ def cases():
                 ['activation/factory-line-kept'])
     new_project('newproject143-factory-owners-taken', 'control_service.py',
                 "        if factory is not None and factory is not self and getattr(factory, 'pm_cycles', None) is None \\\n"
-                "                and any(data.get('name') == 'factory' for data in self._rows('project')):\n",
-                "        if False:  # defect: a line that sorts first takes the owners from the factory line\n",
+                "                and any(data.get('name') == 'factory' and data.get('state') not in FACTORY_ENDED\n"
+                "                        for data in self._rows('project')):\n"
+                "            report['faults'].append(",
+                "        if False:  # defect: a line that sorts first takes the owners from the factory line\n"
+                "            report['faults'].append(",
                 ['activation/factory-line-restart'])
     new_project('newproject143-activation-owners-left', 'control_service_projects.py',
                 "        finally:\n            registry.clear()\n            registry.update(before)\n",
                 "        finally:\n            pass  # defect: the activation's team and intake owners stay registered\n",
                 ['activation/factory-line-kept'])
 
-    # R3-2, a word he negates is not said.
-    new_project('newproject143-negation-ignored', 'control_project_proposal.py',
-                "        negated_here = (_NEGATOR.search(text, clause, match.start()) is not None\n",
-                "        negated_here = (False  # defect: a negated word counts as said\n",
-                ['proposal/correction-negated'])
-
-    # Round 5: the round 4 review's findings. R4-1, a word ends at a final period, and a value he was shown stays
-    # only where no occurrence of its word, whatever follows it, is negated; R4-2, an "and" before another value of
-    # the field does not end the negator's clause, and one value negated with another affirmed through a bare "and"
-    # is ambiguous; R4-4, the negators the review measured and "? no"; R4-3, the factory line's intake reads the
-    # project rows when its transition runs; R4-5, no other line builds cycles while there is a factory project and
-    # the factory line has none; R4-6, the service's new-project decisions are built before from_line takes the
-    # registrations.
-    new_project('newproject143-word-edge-period', 'control_project_proposal.py',
-                "_RIGHT_EDGE = r'(?![A-Za-z0-9_]|[.-][A-Za-z0-9_])'\n",
-                "_RIGHT_EDGE = r'(?![A-Za-z0-9_.-])'  # defect: the round-4 edge, a final period joins the word\n",
-                ['proposal/correction-negated', 'proposal/correction-phrasings'])
-    new_project('newproject143-kept-value-whole-word', 'control_project_proposal.py',
-                "    return any(negated_here for word in words for _, negated_here, _ in _occurrences(text, word, values, whole=False))\n",
-                "    return any(negated_here for word in words for _, negated_here, _ in _occurrences(text, word, values))"
-                "  # defect: only a whole word\n",
-                ['proposal/correction-phrasings'])
-    new_project('newproject143-and-ends-clause', 'control_project_proposal.py',
-                "        if c.group().lower() == 'and' and any(",
-                "        if False and any(  # defect: an \"and\" before another value ends the negator's clause\n            ",
-                ['proposal/correction-negated'])
-    new_project('newproject143-ambiguity-ignored', 'control_project_proposal.py',
-                "    if ambiguous(rationale, groups):\n",
-                "    if False:  # defect: one negated and another affirmed through a bare \"and\" is read as said\n",
-                ['proposal/correction-negated', 'proposal/correction-phrasings'])
-    new_project('newproject143-negators-round4', 'control_project_proposal.py',
-                "_NEGATOR = re.compile(r\"(?<![A-Za-z0-9_])(?:not|no|never|neither|nor|nothing|without|cannot|avoid|except\"\n"
-                "                      r\"|instead\\s+of|rather\\s+than|other\\s+than|anything\\s+but\"\n"
-                "                      r\"|(?:do|does|did|is|are|was|were|wo|ca|could|would|should|must|has|have|had|need)nt\"\n",
-                "_NEGATOR = re.compile(r\"(?<![A-Za-z0-9_])(?:not|no|never|nor|without|instead\\s+of|rather\\s+than\""
-                "  # defect: the round-4 list\n",
-                ['proposal/correction-negated', 'proposal/correction-phrasings'])
-    new_project('newproject143-answered-no-ignored', 'control_project_proposal.py',
-                "                        or _ANSWERED_NO.match(text, match.end()) is not None)\n",
-                "                        )  # defect: \"public? no\" is not seen\n",
-                ['proposal/correction-phrasings'])
+    # Round 5: the round 4 review's findings. R4-3, the factory line's intake reads the project rows when its
+    # transition runs; R4-5, no other line builds cycles while there is a factory project and the factory line has
+    # none; R4-6, the service's new-project decisions are built before from_line takes the registrations. (Round 5's
+    # clause-reading cases left with that code in round 6.)
     new_project('newproject143-intake-projects-built', 'control_workflow_cycle_pm.py',
                 "                domain=service.domain, projects=lambda: intake_module.store_projects(service.conn),\n",
                 "                domain=service.domain, projects=intake_module.store_projects(service.conn),"
                 "  # defect: read once, when built\n",
                 ['activation/factory-intake-current'])
     new_project('newproject143-paused-factory-owners-taken', 'control_service.py',
-                "                and any(data.get('name') == 'factory' for data in self._rows('project')):\n",
+                "                and any(data.get('name') == 'factory' and data.get('state') not in FACTORY_ENDED\n"
+                "                        for data in self._rows('project')):\n",
                 "                and factory.wants_cycles():  # defect: only while the factory project wants them now\n",
                 ['activation/factory-paused-resumed'])
     new_project('newproject143-new-projects-in-snapshot', 'control_workflow_cycle_pm.py',
                 "        service.new_projects()\n    before = dict(registry)\n",
                 "        pass  # defect: first built inside the snapshot a failed build puts back\n    before = dict(registry)\n",
                 ['activation/new-projects-kept'])
+
+    # Round 6: the round 5 review's findings. The clause reading is replaced by a rule that does not read what a
+    # negator applies to: another value only where his words name exactly it and hold no negator anywhere, the shown
+    # value only where they name none (R5-1, R5-2). R5-3: a line defers to the factory line only while the factory
+    # project can still run, and names each deferral in the pass's faults.
+    new_project('newproject143-kept-while-named', 'control_project_proposal.py',
+                "    return not said\n",
+                "    return not negated  # defect: the round-5 reading, a shown value stays whatever else he named\n",
+                ['proposal/correction-negated', 'proposal/correction-phrasings'])
+    new_project('newproject143-hyphen-negator-ignored', 'control_project_proposal.py',
+                "                      + _END + r\")\", re.IGNORECASE)\n",
+                "                      + r'(?![^\\W_]|-)' + r\")\", re.IGNORECASE)  # defect: a negator joined by a hyphen is not one\n",
+                ['proposal/correction-negated', 'proposal/correction-phrasings'])
+    new_project('newproject143-negation-affirms', 'control_project_proposal.py',
+                "        return said == [value] and not negated\n",
+                "        return said == [value]  # defect: words with a negator affirm the value they name\n",
+                ['proposal/correction-negated', 'proposal/correction-phrasings'])
+    new_project('newproject143-negators-narrow', 'control_project_proposal.py',
+                "_NEGATOR = re.compile(_START + r\"(?:non|(?:not|no|nope|nah|nay|none|nor|neither|never|nothing|nobody|nowhere\"\n",
+                "_NEGATOR = re.compile(_START + r\"(?:not|no|never|nor|without)\" + _END)  # defect: the round-3 words only\n"
+                "_UNUSED = (r\"(?:(?:\"\n",
+                ['proposal/correction-phrasings'])
+    new_project('newproject143-ended-factory-deferred', 'control_service.py',
+                "                and any(data.get('name') == 'factory' and data.get('state') not in FACTORY_ENDED\n",
+                "                and any(data.get('name') == 'factory'  # defect: a canceled factory project still holds every line\n",
+                ['activation/factory-canceled'])
+    new_project('newproject143-deferral-unreported', 'control_service.py',
+                "            report['faults'].append({'repository': self.repository, 'reason': 'pm_cycles:deferred_to_factory_line'})\n",
+                "",
+                ['activation/factory-paused-resumed', 'activation/factory-line-restart'])
+    new_project('newproject143-correction-told-code', 'control_telegram_report.py',
+                "        unclear = CORRECTION_UNCLEAR.get(str(data.get('reason')))\n",
+                "        unclear = None  # defect: a refused correction is told only its code\n",
+                ['proposal/correction-told'])
 
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
