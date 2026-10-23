@@ -1,0 +1,26 @@
+{
+ "archive_8f749423": {
+  "failed_rows": [
+   "VELDO-0161 adoption/not-taken-on-named",
+   "VELDO-0161 adoption/packet-accepted",
+   "VELDO-0161 adoption/same-process",
+   "VELDO-0161 adoption/taken-on-running"
+  ],
+  "summary": [
+   "109_veldo_0161_adoption                         49 passed   22.88s"
+  ]
+ },
+ "branch_d859b3db": {
+  "failed_rows": [
+   "VELDO-0161 adoption/not-taken-on-named",
+   "VELDO-0161 adoption/packet-accepted",
+   "VELDO-0161 adoption/same-process",
+   "VELDO-0161 adoption/taken-on-running"
+  ],
+  "summary": [
+   "109_veldo_0161_adoption                         49 passed   23.15s"
+  ]
+ },
+ "note": "python3 scripts/selftest.py --suite 109_veldo_0161_adoption on this branch and on an archive of 8f749423, same sandbox (AF_UNIX refused): the same four AC2 rows red on both. On the host 0161 round 5 reported 81/0.",
+ "same": true
+}
