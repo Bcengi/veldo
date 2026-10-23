@@ -1,0 +1,36 @@
+{
+ "fixed": {
+  "details": [],
+  "exit": 1,
+  "failed_rows": [
+   "VELDO-0161 adoption/taken-on-running",
+   "VELDO-0161 adoption/same-process",
+   "VELDO-0161 adoption/packet-accepted",
+   "VELDO-0161 adoption/not-taken-on-named"
+  ],
+  "modules_at": "f5d84aa4",
+  "summary": [
+   "selftest (PARTIAL, 1 of 165 suites): 75 passed, 4 failed in 23.14s"
+  ]
+ },
+ "suite_commit": "f5d84aa4",
+ "unfixed": {
+  "details": [
+   "VELDO-0161 detail: adoption/repository-commands: N1: the remote holds exactly the scaffold commit and its tags are unchanged: no tag was pushed ['refs/tags/private-161']",
+   "VELDO-0161 detail: adoption/transport-config: prepare refuses it by the push's code, laying nothing [None]; before the branch moved: the working branch and the remote are at the base, the ref removed"
+  ],
+  "exit": 1,
+  "failed_rows": [
+   "VELDO-0161 adoption/taken-on-running",
+   "VELDO-0161 adoption/same-process",
+   "VELDO-0161 adoption/packet-accepted",
+   "VELDO-0161 adoption/not-taken-on-named",
+   "VELDO-0161 adoption/repository-commands",
+   "VELDO-0161 adoption/transport-config"
+  ],
+  "modules_at": "d65e573e",
+  "summary": [
+   "selftest (PARTIAL, 1 of 165 suites): 73 passed, 6 failed in 24.05s"
+  ]
+ }
+}

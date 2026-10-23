@@ -39,6 +39,7 @@ footprint:
   - "proof/VELDO-0161/round2/*"
   - "proof/VELDO-0161/round3/*"
   - "proof/VELDO-0161/round4/*"
+  - "proof/VELDO-0161/round5/*"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
 behavior_bearing: true
 observability:
@@ -224,3 +225,13 @@ adds twelve mutations. The three setup161 cases run suite 73, which the mutation
 run (no user manager); the gate runs them in its unconfined leg, as it runs finding 139's, and
 proof/VELDO-0161/round4/drive_setup.py runs them as ordinary processes. The footprint gains
 proof/VELDO-0161/round4/*. Criteria, risk, readiness and approval requirements are unchanged.
+
+Round 5 (the independent review of round 4, proof/VELDO-0161/REVIEW-claude-r4-2026-10-23.md). N1: the scaffold
+push sets push.followTags=false on its command line and passes --no-follow-tags, as the VELDO-0153 effect push
+does, so it sends exactly the commit the owner answered and no annotated tag the repository's push.followTags
+would add; push.followtags stays in the allowlist because the push overrides it and nothing else reads it. N2:
+prepare and the effect's checks run the identity transport's own judge (config_overrides) over the
+repository's configuration for the proposal's remote and refuse by the code the push would give
+(binding_mismatch:identity_transport_config), before anything is laid or the branch moves; one judge, not a
+second list. Finding 161 adds three mutations. The footprint gains proof/VELDO-0161/round5/*. Criteria, risk,
+readiness and approval requirements are unchanged.
