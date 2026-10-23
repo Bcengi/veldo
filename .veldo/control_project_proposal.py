@@ -17,7 +17,8 @@ ONE ANSWER. The proposal is settled by exactly one of three paths, and nothing i
   own_message  the message that started it is the answer and nothing is presented: it is the factory
                owner's own authenticated message (his intake source), the PM named an identity, the message
                names the project and that identity, each as a whole word, and no other identity, and it is
-               plain ASCII with no negator and no word of visibility anywhere; the repository is created
+               plain ASCII with no negator, no word of visibility and no other word the rule has not read
+               (PLAIN_WORDS, R8-3) anywhere; the repository is created
                private, never public and never an adoption, whatever the identity's default or the PM's
                document says (nothing_asked, VELDO-0143 R7-1). Any doubt presents it, so it costs him one
                choice; a repository that is not private always comes from a pick.
@@ -37,7 +38,7 @@ the visibility only from the choice he picked (answered): the values shown stay 
 alternatives. His words, his reason and the PM's document never change either: no text is read for them. A
 directory that is already a Git repository is adopted with its remote as it is on GitHub (AS_ON_REMOTE, R7-2):
 nothing on the adoption path applies a visibility, so its entry is offered no visibility pick, only `accept
-<identity>`, and the brief says so. A reject settles nothing and the decision is `rejected`.
+<identity> adopt`, a shape no creation pick folds into (R8-1), and the brief says so. A reject settles nothing and the decision is `rejected`.
 
 A CORRECTION CHANGES ONLY THE NAME AND THE OBJECTIVE (correction_problems). The PM reads his correction; it never
 chooses for him. The corrected document's objective is the PM's reading of his words. Its project name other than
@@ -65,7 +66,8 @@ the decision is `presented`. A presentation interrupted by a crash or refused by
 record (resume, at the running service's next new-project pass) with the same proposal and the same commands,
 which the store replays and the presenter does not send twice; nothing is built again. A request the presenter
 refuses for a reason no retry changes (NOT_PRESENTABLE, e.g. two choices that fold alike) fails the decision
-invalid_input:<refusal>, so his report tells him, rather than leaving it presented to no one (R7-3).
+invalid_input:<refusal>, so his report tells him, rather than leaving it presented to no one (R7-3); the decision
+fails before the request is canceled, and a request a crash left open is canceled at the next pass (R8-2).
 
 THE SAME SETTLEMENT ACTIVATES (activate, VELDO-0143 AC3). Once the repository the decision names is
 `active` (created and adopted, or adopted, and taken on by the running service), the decision is applied in

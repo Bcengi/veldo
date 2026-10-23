@@ -515,3 +515,42 @@ newproject143-judge-choices-unchecked.
   identity needs an id that differs by more than case, `-` or `_`. Other refusals (a transient channel failure) are
   left as before, for the presenter's own retry. Row proposal/not-presentable (a legacy `Bcengi` beside bcengi,
   written as it was stored); mutation newproject143-not-presented-left-presented.
+
+**34. An adoption's pick ends in adopt, so no pick folds like another identity's (changes entry 32; R8-1).**
+- A typed pick is matched by the presentation module's fold, which makes `-` and `_` spaces. Round 8's adoption
+  pick `accept <identity>` therefore folded like the creation pick `accept <id> <visibility>` of an id it extends
+  (`accept bcengi-private` and `accept bcengi private`), so "accept bcengi private" could adopt under bcengi-private,
+  and with no identity shown the two folded alike and the request could not be presented.
+- Chosen: the shape, not a refusal. An adoption's pick is `accept <identity> adopt` (`ADOPT_WORD`). The fold keeps
+  words and their order, so the last word of a folded pick is the last word of the pick: a visibility for a
+  creation, adopt for an adoption. Two picks of different shapes never fold alike, and two of the same shape fold
+  alike only when their ids do, which `validate` and `configure_identities` already refuse (entry 33). So no check
+  is needed in `choices`, and bcengi beside bcengi-private stays a configuration: refusing an id because it ends in
+  a visibility word would refuse a configuration that is not ambiguous once the shapes differ. A check in `choices`
+  could never fire, so no row could guard it.
+- The brief says the adopted directory's choice names "the identity and adopt". Row proposal/adoption-pick-folds
+  (bcengi creating shoal, bcengi-private adopting it: "accept bcengi private", "accept bcengi-private" and
+  "accept bcengi_private" refused `unmatched_choice`, `accept` creating it under bcengi, private; with no identity
+  shown the request is presented); proposal/adoption-visibility answers `accept personal adopt` and refuses
+  `accept personal`. Mutation newproject143-adoption-pick-folds restores the two-word pick.
+
+**35. The decision fails before its unpresentable request is canceled (changes entry 33; R8-2).**
+- `_present` writes the decision `failed` (`invalid_input:<refusal>`) and only then cancels the request, so a crash
+  between them leaves a failed decision, never a presenting one over a canceled request that `resume` would write
+  presented to no one. `propose` and `resume` only observe the failure.
+- A crash after the failure and before the cancel leaves the request open but never presented. `resume` cancels the
+  request of a decision failed as not presentable whose request is still pending, with the same signed command.
+- Row proposal/presentation-interrupted: a legacy `Bcengi` beside bcengi, the service killed just after the cancel
+  (tombolo: failed and canceled before and after the next pass) and just before it (groyne: failed, its request
+  open, then canceled by the next pass). Mutations newproject143-not-presented-canceled-first (cancel, then fail)
+  and -unpresented-left-open.
+
+**36. His own message settles unasked only when the rule has read every word of it (changes entry 31; R8-3).**
+- No list of visibility words is complete ("share it with everyone", "publish it", "make it opensource"). So
+  `nothing_asked` also presents when a word of his message, apart from the project's name and the identity's id or
+  label, is not in `PLAIN_WORDS` (words that ask for a project and say nothing of what it should be: start, new,
+  project, called, named, a, under, repo, repository and the like), `words_not_read`. It fails closed: a message with
+  any other word costs him one choice. The comment at `_VISIBILITY_WORD` now says the visibility words are read as
+  whole words and that the allowlist, not that list, is what decides.
+- Row proposal/own-message-doubt with "share it with everyone", "publish it", "make it opensource", "publically"
+  and "everyone can see"; mutation newproject143-own-message-unread-words.

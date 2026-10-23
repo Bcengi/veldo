@@ -67,6 +67,7 @@ footprint:
   - "proof/VELDO-0143/round6/*"
   - "proof/VELDO-0143/round7/*"
   - "proof/VELDO-0143/round8/*"
+  - "proof/VELDO-0143/round9/*"
   - "engine/.veldo/control_channel_presentation.py"
   - ".veldo/control_channel_presentation.py"
   - "packs/*/.veldo/control_channel_presentation.py"
@@ -108,11 +109,12 @@ acceptance_criteria:
       default team's current revision (VELDO-0162 AC4) and the default pipeline, and the coordination
       budget, and offering the identity and the visibility as choices he picks in the same request: every
       configured identity and, for a repository it creates, both visibilities (a directory it adopts keeps
-      its remote as it is on GitHub, so its choice names the identity alone), with approve (what is shown,
+      its remote as it is on GitHub, so its choice names the identity and adopt), with approve (what is shown,
       when an identity is shown) and reject. On a presented proposal, only the choice he picks binds the
       identity and the visibility; neither his typed words nor the PM's document ever sets them. His own
       message settles unasked only as the nothing-asked rule allows: it is plain text naming the project
-      and one configured identity, with no negator and no word of visibility, and the repository is
+      and one configured identity, with no negator, no word of visibility and no other word the rule has
+      not read, and the repository is
       created private, never public and never an adoption; anything else is presented. His one answer, a
       choice or a correction, settles the project and the first objective, and no further question is
       sent; a correction changes only the project's name and the first objective. The first message,
@@ -423,3 +425,15 @@ him to pick an identity and visibility. Rows proposal/adoption-visibility, ident
 not-presentable (new) and proposal/own-message-doubt, choices and provision/adoption-path (changed); finding 143
 registers nine more mutations and re-targets two, sixty in all. DECISIONS 31 to 33. Risk, readiness and approval
 requirements are unchanged.
+
+2026-10-23, round 9: the round 8 independent review's findings (proof/VELDO-0143/REVIEW-claude-r8-2026-10-23.md),
+each fix, its row and its mutation in proof/VELDO-0143/round9/README.md. R8-1: an adoption's pick is
+`accept <identity> adopt`, whose last word is never a visibility, so it never folds like a creation's pick
+`accept <id> <visibility>` (bcengi-private beside bcengi); two picks fold alike only when their ids do, which is
+already refused. R8-2: a request the presenter refuses for good fails the decision before the request is canceled, and
+the next pass cancels a request a crash left open, so no decision is written presented over a canceled request. R8-3:
+his own message settles unasked only when every word of it, apart from the project's name and the identity's id or
+label, is one the rule has read (`PLAIN_WORDS`); any other word presents it (`words_not_read`). AC1's text says both;
+its claim and falsifier are unchanged. Row proposal/adoption-pick-folds (new); proposal/adoption-visibility,
+presentation-interrupted and own-message-doubt (changed); finding 143 registers four more mutations, sixty-four in
+all. DECISIONS 34 to 36. Risk, readiness and approval requirements are unchanged.
