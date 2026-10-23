@@ -18,6 +18,7 @@ footprint:
   - engine/scripts/verify.sh
   - scripts/check_teeth_mutations.py
   - scripts/suites/111_veldo_0214_first_use_budget.py
+  - scripts/suites/101_veldo_0208_landing_reuse.py
   - scripts/suites/manifest.json
   - scripts/suites/requires.json
   - specs/VELDO-0214-first-use-budget-measured-from-the-unit-leg.md
@@ -96,20 +97,31 @@ acceptance_criteria:
     text: >
       Claim: the leg-time store stays bounded and holds only gate measurements. After each
       recording, files whose recorded authority checkout no longer exists or that are older than
-      30 days are removed, never the file just written or a file that is not the store's own. The
-      owner's store records only the authority's own list from a checkout outside the system
-      temporary directory; a fixture list or a temporary authority copy is said and not recorded.
-      There is no environment override for the store's path. Set: a scratch store with a file of a
-      deleted checkout, a 31-day-old file, a live file, an abandoned pending file and a foreign
-      file; a unit stage over a fixture list with the module's owner store pointed at a scratch
-      directory. Completeness: the rows first-use-budget/leg-time-store-pruned and
-      first-use-budget/suites-stay-out-of-the-owner-store.
+      30 days are removed, never the file named as the one just written or a file that is not the
+      store's own. The owner's store records only the authority's own list; a fixture list is said
+      and not recorded. Where the authority checkout lives is no test: an authority under the
+      system temporary directory over its own list, as the lander's installation
+      (tempfile.mkdtemp(prefix="veldo-observation-") / "installed") is, records its unit legs and
+      hands them to its own integration stage. A suite that drives a temporary authority copy over
+      its own list keeps out of the owner's store from the suite side, with a scratch HOME in that
+      driver's environment (suite 101). There is no environment override for the store's path. Set:
+      a scratch store with a file of a deleted checkout, a 31-day-old file, a live file, an
+      abandoned pending file and a foreign file; a scratch store whose only file, 31 days old and of
+      a deleted checkout, is the one named to keep; a unit stage over a fixture list with the
+      module's owner store pointed at a scratch directory; a unit and an integration stage of a
+      copy of gate_legs.py and its own list laid down under the system temporary directory, with
+      that copy's owner store pointed at a scratch directory. Completeness: the rows
+      first-use-budget/leg-time-store-pruned, first-use-budget/suites-stay-out-of-the-owner-store
+      and first-use-budget/installed-authority-under-temp-is-measured.
     falsified_by: >
-      Remove the prune call, or the gone-checkout test, or the owner-store guard, or its
-      temporary-directory test; the matching row must fail (checked by hand in round 2,
-      proof/VELDO-0214/hand_falsifiers.json).
+      Refuse an authority under the system temporary directory again: mutation
+      budget214-temporary-authority-refused must fail
+      first-use-budget/installed-authority-under-temp-is-measured. Stop sparing the file named to
+      keep: mutation budget214-keep-not-spared must fail first-use-budget/leg-time-store-pruned.
+      Remove the prune call, or the gone-checkout test, or the owner-store guard, or its own-list
+      test; the matching row must fail (checked by hand, proof/VELDO-0214/hand_falsifiers.json).
 required_evidence: [unit, integration]
-rollback: Revert the five protected files, the suite, its manifest entry and the five mutation cases; the check returns to a fixed 1800s.
+rollback: Revert the five protected files, the suite, its manifest entry, suite 101's scratch HOME for its authority copy and the seven mutation cases; the check returns to a fixed 1800s.
 ---
 
 ## Intent
@@ -136,9 +148,13 @@ source.
   confined leg cannot write there. A failing unit leg may have stopped early, so it records
   nothing and the last passing measurement stands. After each recording the store drops the
   files of checkouts that no longer exist and every file older than 30 days. The owner's store
-  takes only the authority's own list from a checkout outside the system temporary directory, so
-  a suite that drives the runner over a fixture list or a temporary authority copy leaves it
-  alone, and says so on the leg line.
+  takes only the authority's own list, so a suite that drives the runner over a fixture list
+  leaves it alone, and says so on the leg line. Where the authority lives is no test: the lander
+  runs the gate from an installation it lays down under the system temporary directory, and that
+  gate must hand its unit leg to its own integration stage like any other. Its per-land file goes
+  with the gone-checkout prune once the observation directory is deleted, or at 30 days. Suite
+  101, which drives a temporary authority copy over that copy's own list, gives those drivers a
+  scratch HOME, so its measurements land in its own scratch store, not the owner's.
 - Each integration leg receives VELDO_GATE_UNIT_SECONDS beside VELDO_GATE_LEG and
   VELDO_GATE_DECLARATION: the matching unit leg's last fresh measurement, bound to the leg and the
   digest, marked "this gate run" when the record of this verify.sh run (its mktemp file) produced

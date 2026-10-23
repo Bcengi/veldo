@@ -1420,7 +1420,7 @@ def _v208_unconfined_leg():
         stamp_block = gate_text[gate_text.index('UNCONFINED_FIELD=""'):]
         stamp_block = stamp_block[:stamp_block.index('veldo_write_stamp() {')] + \
             stamp_block[stamp_block.index('veldo_write_stamp() {'):].split('\n}', 1)[0] + '\n}\n'
-        def written(legs_record, expected='unit', before='', authority=ROOT):
+        def written(legs_record, expected='unit', before='', authority=ROOT, home=None):
             program = ('VELDO_AUTHORITY=' + str(authority) + '\nVELDO_LEGS_RECORD=' + str(legs_record) + '\n'
                        'VELDO_LEGS_EXPECTED=' + expected + '\n'
                        'FAIL=0\nSTATUS=green\nEVENT=gate.passed\nCOMMIT=' + 'a' * 40 + '\nTS=fixture\nRAN=1\nNA=0\n'
@@ -1432,7 +1432,8 @@ def _v208_unconfined_leg():
             ran = subprocess.run(['bash', '-c', program, 'fixture', *map(str, outputs)],
                                  capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
                                  env=dict({k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')},
-                                          V208_PROBE_OUTSIDE=str(outside)), pass_fds=launcher_fds())
+                                          V208_PROBE_OUTSIDE=str(outside), **({'HOME': str(home)} if home else {})),
+                                 pass_fds=launcher_fds())
             return ran.returncode, [json.loads(o.read_text()) for o in outputs]
         empty = top / 'empty-record'; empty.write_text('')
         corrupt = top / 'corrupt-record'; corrupt.write_text('{"stage": "unit"\n')
@@ -1559,10 +1560,15 @@ def _v208_unconfined_leg():
         shutil.copyfile(ROOT / 'scripts/gate_legs.py', authority / 'scripts/gate_legs.py')
         shutil.copyfile(authority_list, authority / 'scripts/gate_unconfined.json')
         (authority / 'scripts/gate_candidate.py').symlink_to(ROOT / 'scripts/gate_candidate.py')
+        # This authority copy runs its own list, so its gate_legs.py records a passing unit leg's
+        # time in the leg-time store under HOME (VELDO-0214). Its drivers get a scratch HOME, set in
+        # their subprocess environment only, so a suite run never writes the owner's store.
+        authority_home = top / 'authority-home'
+        authority_home.mkdir()
         def through_stage(stage, command, delete):
             live = top / 'live-record'
             live.write_text('')
-            return written(live, expected='', authority=authority, before=functions
+            return written(live, expected='', authority=authority, home=authority_home, before=functions
                            + 'cd %s && veldo_stage %s "%s"\n' % (candidate, stage, command)
                            + ('rm -f "$VELDO_LEGS_RECORD"\n' if delete else ''))
         kept = through_stage('unit', 'python3 scripts/selftest.py', False)
@@ -1588,7 +1594,8 @@ def _v208_unconfined_leg():
                               % (authority, own_record, functions, candidate)],
                              capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
                              env=dict({k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')},
-                                      V208_PROBE_OUTSIDE=str(outside)), pass_fds=launcher_fds())
+                                      V208_PROBE_OUTSIDE=str(outside), HOME=str(authority_home)),
+                             pass_fds=launcher_fds())
         own_markers = dict(line.split()[1:3] for line in own.stdout.splitlines() if line.startswith('V208-PROBE '))
         expect('VELDO-0208 unconfined-leg/list-read-from-the-authority: ' + repr((own.returncode, own_markers)),
                L.DECLARATION == ROOT / 'scripts/gate_unconfined.json'

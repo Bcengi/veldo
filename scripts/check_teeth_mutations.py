@@ -10643,6 +10643,23 @@ def cases():
         also=[('                baseline = _run_suite(pristine, "baseline", budget)[2]\n',
                '                baseline = _run_suite(pristine, "baseline")[2]\n')])
     result[-1]['dir'] = 'scripts'
+    # Round 3 (review F6): the owner's store refuses an authority under the system temporary
+    # directory again, so the lander's installation, laid down there, never hands its unit leg on.
+    add(214, 'budget214-temporary-authority-refused', suite214, 'gate_legs.py',
+        "        return 'the list %s is not this authority\\'s own' % path\n    return None\n",
+        "        return 'the list %s is not this authority\\'s own' % path\n"
+        "    temporary = Path(tempfile.gettempdir()).resolve()\n"
+        "    if authority == temporary or temporary in authority.parents:\n"
+        "        return 'this authority %s is a temporary tree under %s' % (authority, temporary)\n"
+        "    return None\n",
+        ['first-use-budget/installed-authority-under-temp-is-measured'])
+    result[-1]['dir'] = 'scripts'
+    # Round 3 (review F7): prune_times no longer spares the file it is told to keep.
+    add(214, 'budget214-keep-not-spared', suite214, 'gate_legs.py',
+        "        if entry.name == Path(keep).name or not (TIMES_NAME.match(entry.name)\n",
+        "        if not (TIMES_NAME.match(entry.name)\n",
+        ['first-use-budget/leg-time-store-pruned'])
+    result[-1]['dir'] = 'scripts'
 
     return result
 

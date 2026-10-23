@@ -69,11 +69,16 @@ CANNOT ANSWER, which is red.
 
 THE STORE STAYS SMALL AND HOLDS ONLY GATE MEASUREMENTS. After each recording, the files of
 authority checkouts that no longer exist and every file untouched for STORE_MAX_AGE_DAYS are
-removed (a declaration revision or a deleted worktree leaves its file behind otherwise). The
-owner's store records only the authority's own list, run from a checkout outside the system
-temporary directory: a suite that drives this runner over a fixture list or a temporary authority
-copy is testing the runner, not timing the gate, and its leg is said and not recorded. There is no
-environment override for the store's path, because that would be one more input to forge.
+removed (a declaration revision, a deleted worktree or the lander's per-land installation leaves
+its file behind otherwise). The owner's store records only the authority's own list: a suite that
+drives this runner over a fixture list is testing the runner, not timing the gate, and its leg is
+said and not recorded. Where the authority lives is no test: the lander runs the gate from an
+installation it lays down under the system temporary directory
+(tempfile.mkdtemp(prefix="veldo-observation-") / "installed"), and that gate's measurement must
+reach its own integration stage. A suite that drives a temporary authority copy over that copy's
+own list keeps out of the owner's store from its own side, by giving that driver a scratch HOME.
+There is no environment override for the store's path, because that would be one more input to
+forge.
 """
 import argparse
 import hashlib
@@ -239,11 +244,8 @@ def owner_store_refusal(times, path, authority=None):
     if Path(times) != LEG_TIMES:
         return None
     authority = Path(HERE.parent if authority is None else authority).resolve()
-    temporary = Path(tempfile.gettempdir()).resolve()
     if Path(path).resolve() != (authority / 'scripts' / DECLARATION.name):
         return 'the list %s is not this authority\'s own' % path
-    if authority == temporary or temporary in authority.parents:
-        return 'this authority %s is a temporary tree under %s' % (authority, temporary)
     return None
 
 

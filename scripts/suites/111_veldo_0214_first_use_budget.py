@@ -210,32 +210,85 @@ def _v214_suite():
                 GL.record_time(pruned, digest, 'confined', 5.0, 'record-pruned')
             left = sorted(p.name for p in pruned.iterdir())
             written = GL._times_file(pruned, digest).name
-            expect('VELDO-0214 first-use-budget/leg-time-store-pruned: ' + repr((left, said.getvalue())),
+            # The file named as keep stays even when it is 31 days old and its authority is gone:
+            # prune_times is called directly, since the file record_time just wrote is always fresh
+            # and its checkout always exists, so the call above cannot tell the keep test apart.
+            kept_store = top / 'times-kept'
+            kept_store.mkdir()
+            kept_file = kept_store / ('3' * 32 + '.json')
+            kept_file.write_text(json.dumps({'authority': str(top / 'deleted-checkout'),
+                                             'declaration': digest, 'legs': {}}))
+            stamp = __import__('time').time() - 31 * 86400 - 60
+            os.utime(kept_file, (stamp, stamp))
+            with contextlib.redirect_stdout(io.StringIO()):
+                kept_removed = GL.prune_times(kept_store, keep=kept_file)
+            kept_left = sorted(p.name for p in kept_store.iterdir())
+            expect('VELDO-0214 first-use-budget/leg-time-store-pruned: '
+                   + repr((left, said.getvalue(), kept_removed, kept_left)),
                    left == sorted([written, planted['live'][0], planted['foreign'][0]])
-                   and 'removed 3 leg-time files' in said.getvalue())
+                   and 'removed 3 leg-time files' in said.getvalue()
+                   and kept_removed == [] and kept_left == [kept_file.name])
 
             # Suites stay out of the owner's store: the runner records there only the authority's
-            # own list from a checkout outside the temporary directory, and says when it does not.
+            # own list, and says when it does not.
             owner_store = top / 'owner-store'
             real_store = GL.LEG_TIMES
             GL.LEG_TIMES = owner_store
             try:
                 fixture_code, fixture_out = stage('unit', top / 'record-owner', owner_store)
-                copy = Path(tempfile.gettempdir()) / 'veldo-0214-authority-copy'
-                temporary = GL.owner_store_refusal(owner_store, copy / 'scripts' / 'gate_unconfined.json',
-                                                   authority=copy)
                 own = GL.owner_store_refusal(owner_store, Path('/veldo-0214-checkout/scripts/gate_unconfined.json'),
                                              authority=Path('/veldo-0214-checkout'))
                 scratch = GL.owner_store_refusal(top / 'times-run', listing)
             finally:
                 GL.LEG_TIMES = real_store
             expect('VELDO-0214 first-use-budget/suites-stay-out-of-the-owner-store: '
-                   + repr((fixture_code, fixture_out[-400:], temporary, own, scratch)),
+                   + repr((fixture_code, fixture_out[-400:], own, scratch)),
                    fixture_code == 0 and not owner_store.exists()
                    and fixture_out.count("leg time not recorded in the owner's store") == 2
                    and "is not this authority's own" in fixture_out
-                   and 'is a temporary tree under' in (temporary or '')
                    and own is None and scratch is None)
+
+            # The lander's installation is measured: it lays the watermark's scripts/ down under
+            # the system temporary directory (tempfile.mkdtemp(prefix="veldo-observation-") /
+            # "installed") and runs that copy's gate, so an authority there, over its own list,
+            # records its unit legs in the owner's store and hands them to its own integration
+            # stage in the same run. The copy is of the gate_legs.py under test (a mutant replaces it),
+            # with its owner store pointed at a scratch directory.
+            installed = top / 'veldo-observation-fixture' / 'installed'
+            (installed / 'scripts').mkdir(parents=True)
+            (installed / 'scripts' / 'gate_legs.py').write_bytes((ROOT / "scripts" / "gate_legs.py").read_bytes())
+            (installed / 'scripts' / 'gate_unconfined.json').write_bytes(listing.read_bytes())
+            IL = load('gate_legs_0214_installed', installed / 'scripts' / 'gate_legs.py')
+            installed_store = top / 'installed-owner-store'
+            IL.LEG_TIMES = installed_store
+            IL.confined = lambda r, command, env: IL.unconfined(r, command, env)
+            installed_out = top / 'installed-seen'
+            outputs = []
+            for name, command in (('unit', unit_command), ('integration', integration_command)):
+                os.environ['V214_OUT'] = str(installed_out)
+                os.environ['V214_FAIL'] = '0'
+                os.environ.pop(GL.UNIT_SECONDS, None)
+                printed = io.StringIO()
+                with contextlib.redirect_stdout(printed):
+                    outputs.append(IL.run_stage(root, name, command, str(top / 'record-installed'),
+                                                times=installed_store))
+                outputs.append(printed.getvalue())
+            installed_recorded = IL.read_times(installed_store, digest)
+            installed_seen = handed(installed_out)
+            temporary = Path(tempfile.gettempdir()).resolve()
+            expect('VELDO-0214 first-use-budget/installed-authority-under-temp-is-measured: '
+                   + repr((outputs, installed_recorded, installed_seen)),
+                   temporary in installed.resolve().parents and IL.HERE == (installed / 'scripts').resolve()
+                   and IL.DECLARATION.resolve() == (installed / 'scripts' / 'gate_unconfined.json').resolve()
+                   and outputs[0] == 0 and outputs[2] == 0
+                   and "not recorded in the owner's store" not in outputs[1]
+                   and set(installed_recorded) == {'confined', 'unconfined'}
+                   and all(isinstance(installed_seen[leg], dict) and installed_seen[leg]['leg'] == leg
+                           and installed_seen[leg]['declaration'] == digest
+                           and installed_seen[leg]['seconds'] == installed_recorded[leg]['seconds']
+                           and installed_seen[leg]['fresh'] == 'this gate run' for leg in installed_seen)
+                   and 'no unit' not in outputs[3]
+                   and 'integration: confined leg budget input: unit confined leg' in outputs[3])
 
             # The leg runner times each unit leg, records the passing ones and hands each
             # integration leg the matching unit leg's own time, bound to the leg and the digest.
