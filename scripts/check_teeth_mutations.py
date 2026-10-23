@@ -371,9 +371,11 @@ def cases():
                 'publication-confirms-one-change')
     # R4: an ordinary git push keeps what configured Git allows. Reintroducing send-pack loses
     # the clone's hooks, its URL rewrites and every HTTP(S) remote at once.
+    # VELDO-0161 round 11: url-rewrite is no longer a target. VELDO-0153 AC3 made it a refusal
+    # before any push (binding_mismatch:identity_transport_config), so it cannot see the push's form.
     send_pack = "        push = transport('send-pack',"
     add(28, 'effects-push-by-send-pack', '58_veldo_0028_effects.py', 'control_effect_executor.py', push, send_pack,
-        ['effects/publication-' + name for name in ('pre-push-hook', 'url-rewrite', 'smart-http')])
+        ['effects/publication-' + name for name in ('pre-push-hook', 'smart-http')])
     # AC3 hook removal is registered once as identity153-pre-push-hook.
     # AC3 supersedes clone routing. A checked GitHub URL need not name a local path.
     owner_check = "            target = transport_module.check_remote(push_identity, remote, operation='remote_check',\n"
@@ -400,9 +402,12 @@ def cases():
     # resolution from configuration, and completion is each destination's state after the push.
     # Each mutant loses one part of that account or reads it from text the push prints.
     routed = 'publication-records-resolved-destination'
+    # VELDO-0161 round 11: destination-without-credentials is no longer a target. Since VELDO-0153
+    # AC2 its credential-bearing URL is refused before anything is recorded, so a dropped record
+    # leaks nothing it could see.
     add(28, 'effects-destination-not-recorded', '58_veldo_0028_effects.py', 'control_effects.py',
         "        result['destination'] = destination", "        pass",
-        ['effects/' + routed, 'effects/publication-destination-without-credentials'])
+        ['effects/' + routed])
     parsed = "        pushed = [remote]\n"
     push_config = "            configured = git('config', '--get-all', 'remote.' + remote + '.pushurl')"
     fetch_config = "                configured = git('config', '--get-all', 'remote.' + remote + '.url')"
@@ -445,12 +450,17 @@ def cases():
                 "            listed.stdout.encode('utf-8')\n            if listed.returncode:\n                return None\n",
                 'publication-non-utf8-output')
     # Credentials: the authorized URL, or the resolved destinations, recorded as given.
+    # VELDO-0161 round 11: the record's scrubbing is defense in depth behind VELDO-0153's owner
+    # check, which refuses user information, a query, a fragment and a transport prefix before the
+    # record is built, and the scrub rows call scrubbed_url directly. Neither former target
+    # (destination-without-credentials, scrub-transport-prefix) can reach the record site, so both
+    # cases target the row that runs the receiver past a stand-in owner check that lets them through.
+    record_scrub = 'publication-record-scrubs-destination'
     publication('effects-destination-with-credentials', "        destination = {'authorized_url': scrubbed_url(remote),",
-                "        destination = {'authorized_url': remote,", 'publication-destination-without-credentials')
-    add(28, 'effects-destinations-not-scrubbed', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "                       'destinations': [{'url': scrubbed_url(url), 'outcome': outcome}",
-        "                       'destinations': [{'url': url, 'outcome': outcome}",
-        ['effects/publication-destination-without-credentials', 'effects/publication-scrub-transport-prefix'])
+                "        destination = {'authorized_url': remote,", record_scrub)
+    publication('effects-destinations-not-scrubbed',
+                "                       'destinations': [{'url': scrubbed_url(url), 'outcome': outcome}",
+                "                       'destinations': [{'url': url, 'outcome': outcome}", record_scrub)
     # Scrubbing by parsing: an scp-style address's user information ends at its LAST `@`, a
     # transport-prefixed URL is scrubbed in its address, and a query or fragment is dropped.
     scp = "    rest = url[url.rfind('@', 0, len(url) if slash < 0 else slash) + 1:]"
@@ -526,19 +536,23 @@ def cases():
     # AC1: factory transport uses the identity profile. Observe its selection in a socket-free
     # suite so an omitted profile cannot crash the hermetic integration fence. The following
     # network-profile cases retain the operator profile's configuration rules.
-    capability = ['effects/publication-' + name for name in
-                  ('global-insteadof', 'global-credential-helper', 'env-ssh-command', 'global-ssh-command',
-                   'config-selection-parity')]
     add(28, 'effects-transport-isolated-profile', '108_veldo_0153_executor_profile.py', 'control_effect_executor.py',
         "                return git(*args, profile='identity', env=env, steps=steps)",
         "                return git(*args, env=env, steps=steps)", ['executor-unit/identity-profile'])
+    # VELDO-0161 round 11: VELDO-0153 AC1 moved publication to the identity profile, so the rows
+    # that judged the network profile through a publication no longer reach it: global-insteadof,
+    # global-credential-helper, global-ssh-command, env-ssh-command and config-selection-parity.
+    # The network profile's own rules are judged by network-profile-strips-coordinates, which reads
+    # clean_env(profile='network') directly and requires every transport and configuration
+    # variable kept as given.
+    network_row = ['effects/publication-network-profile-strips-coordinates']
     add(28, 'effects-network-profile-without-global-config', '58_veldo_0028_effects.py', 'git_process.py',
         '        result.update(GIT_NO_REPLACE_OBJECTS="1")',
         '        result.update(GIT_NO_REPLACE_OBJECTS="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")',
-        [label for label in capability if 'global' in label or 'selection' in label])
+        network_row)
     add(28, 'effects-network-profile-drops-transport-variables', '58_veldo_0028_effects.py', 'git_process.py',
         '        result.update({k: v for k, v in source.items() if k in TRANSPORT_VARIABLES})',
-        '        pass', ['effects/publication-env-ssh-command'])
+        '        pass', network_row)
     add(28, 'effects-network-profile-keeps-coordinates', '58_veldo_0028_effects.py', 'git_process.py',
         '        result.update({k: v for k, v in source.items() if k in TRANSPORT_VARIABLES})',
         '        result.update({k: v for k, v in source.items() if k.startswith("GIT_")})',
@@ -549,11 +563,10 @@ def cases():
     # other keeps them but drops the numbered GIT_CONFIG_KEY_<n>/GIT_CONFIG_VALUE_<n> entries.
     configuration = ('        result.update({k: v for k, v in source.items()\n'
                      '                       if k in CONFIGURATION_VARIABLES or INJECTED_CONFIGURATION.fullmatch(k)})')
-    selection_rows = ['effects/publication-config-selection-parity', 'effects/publication-network-profile-strips-coordinates']
     add(28, 'effects-network-profile-drops-config-selection', '58_veldo_0028_effects.py', 'git_process.py', configuration,
-        '        result.update({k: v for k, v in source.items() if INJECTED_CONFIGURATION.fullmatch(k)})', selection_rows)
+        '        result.update({k: v for k, v in source.items() if INJECTED_CONFIGURATION.fullmatch(k)})', network_row)
     add(28, 'effects-network-profile-drops-config-injection', '58_veldo_0028_effects.py', 'git_process.py', configuration,
-        '        result.update({k: v for k, v in source.items() if k in CONFIGURATION_VARIABLES})', selection_rows)
+        '        result.update({k: v for k, v in source.items() if k in CONFIGURATION_VARIABLES})', network_row)
     # VELDO-0036: each reservation assertion has two independently driven defects.
     def reservation(name, module, old, new, row):
         add(36, name, '58_veldo_0036_reservations.py', module, old, new,
