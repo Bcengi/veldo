@@ -59,6 +59,7 @@ footprint:
   - "specs/VELDO-0143-repository-from-chat.md"
   - "specs/index.md"
   - "proof/VELDO-0143/*"
+  - "proof/VELDO-0143/rebase/*"
 behavior_bearing: true
 observability:
   logs: >
@@ -247,3 +248,19 @@ unchanged. Suite 110_veldo_0143_new_project carries the rows; finding 143 regist
 declared falsifiers first. A factory set up before this change keeps its factory project on the workspace; a
 re-run neither moves it nor requires the factory repository. Acceptance criteria, risk, readiness and approval
 requirements are unchanged.
+
+2026-10-22, rebased onto VELDO-0161 round 5 (8f749423, reviewed sound) from its round 1 (da39f3fb); each
+resolution is in proof/VELDO-0143/REBASE.md. The adoption effect is VELDO-0161's, byte for byte: 0143's
+refactoring of its tail into a shared enroll is dropped, and the provisioner's creation path ends in that design
+instead. It holds the adoption effect's lock and applies its INTERRUPTED rule to a created record; it makes,
+before any directory exists, every refusal the store and the host decide (the host trust and the adoption
+signer among its enrollment signers, the identity binding, the store's binding, the generation); it judges the
+created repository's own configuration (the allowlist and the identity transport's own judge) before GitHub is
+asked for the remote; its adoption signer pins the store, host and generation; and the record, once its binding
+is signed, is handed to the running service over its socket and answered synchronously (take_on), never waited
+for. The running service's new-project pass runs when an event it acts on made it due (the start, an advance of
+the journal by a packet or channel pass, a provisioner's end on its output pipe, which the poll set watches), no
+longer on every loop iteration behind a journal watermark. Suite 110 gains provision/checks-before-creation,
+provision/interrupted, provision/handed-over and service/hand-off (AF_UNIX), and service/provisions follows the
+new design; finding 143 registers seven more mutations, sixteen in all. Acceptance criteria, risk, readiness and
+approval requirements are unchanged.

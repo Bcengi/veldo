@@ -156,18 +156,23 @@ take-on that faults unexpectedly leaves its record as it was and is judged again
 waits on, ADOPTION_RETRY_SECONDS after that record's own fault, never sooner, whatever else is taken on
 meanwhile. inspect reports the instance and the repositories it serves.
 
-A NEW PROJECT FROM CHAT (VELDO-0143). After take_on, the instance runs its NewProjectPass
-(control_service_projects): the owner's settled answers to the factory PM's new-project proposals are
+A NEW PROJECT FROM CHAT (VELDO-0143). The instance's NewProjectPass (control_service_projects) runs when an
+event it acts on made it due, never on a timer and never by reading the journal for a change: at the start,
+after a packet or channel pass that advanced the journal (hint_after: an owner's answer, a take-on this
+instance answered), and when the output pipe of a provisioner it started, which the poll set watches beside
+the launch pipes, reaches its end. The owner's settled answers to the factory PM's new-project proposals are
 applied, the repository provisioner (the registered protected effect control_effect_executor_creation, run
 as its own process with the provisioner configuration the installation names under `provisioner`) is
-started once for each settled decision, a repository that ended `failed` fails its decision (VELDO-0128's
-report tells the owner), and once a created or adopted repository is `active` the same settlement activates the project with
-its first team and first objective in this process, and the factory loop gains the repository's line
-(FactoryLoop.add_line), with the roles of the loop's first line, so its first unit is dispatched in it. A
-repository this instance serves that the work configuration does not name gets that line at the loop's start
-too. The factory project, whose own repository holds only its team configuration and is no line, has its
-cycles run on the loop's factory line (FactoryLoop.factory_line): the line of its execution repository when
-there is one, otherwise the loop's first.
+started once for each settled decision, and hands the repository it created or adopted to this instance over
+its socket exactly as the adoption effect does (take_on_request, answered synchronously); a repository that
+ended `failed` fails its decision (VELDO-0128's report tells the owner), and once a created or adopted
+repository is `active` the same settlement activates the project with its first team and first objective in
+this process, the factory loop is woken, and it gains the repository's line (FactoryLoop.add_line), with the
+roles of the loop's first line, so its first unit is dispatched in it. A repository this instance serves that
+the work configuration does not name gets that line at the loop's start too. The factory project, whose own
+repository holds only its team configuration and is no line, has its cycles run on the loop's factory line
+(FactoryLoop.factory_line): the line of its execution repository when there is one, otherwise the loop's
+first.
 
 KEY DIRECTORY. The custody wrapper (VELDO-0067) denies a confined worker every file created directly
 in an ancestor of a protected directory after the worker starts, so the key directory belongs where
@@ -1233,8 +1238,9 @@ class Service:
                          'instance_id': os.urandom(16).hex()}
         self.installed_receivers = dict((config.get('receiver') or {}).get('configs') or {})
         self.adoption_faults, self.journal_public = {}, None
-        # VELDO-0143: this instance's new-project work, made when first asked for.
-        self.projects_pass = None
+        # VELDO-0143: this instance's new-project work, made when first asked for, and whether a pass of it is
+        # due (at the start, and after an event it acts on: A NEW PROJECT FROM CHAT).
+        self.projects_pass, self.projects_due = None, True
         # The counts are the observation log's, so they cover every instance that served this
         # installation, not only this process.
         with contextlib.suppress(OSError):
@@ -1458,7 +1464,10 @@ class Service:
     def hint_after(self, before):
         """After a packet or pass that advanced the journal, the head record's hint to every subscribed
         API; a failure is logged by name and never ends the service. The same advance wakes the factory loop
-        (VELDO-0154), whose pass runs once the packet is answered or the channel pass is done."""
+        (VELDO-0154), whose pass runs once the packet is answered or the channel pass is done, and makes the
+        new-project pass due (VELDO-0143)."""
+        if self.watermark() > before:
+            self.projects_due = True
         if self.loop is not None and self.watermark() > before:
             self.loop.wake('journal')
         if self.api is None or self.watermark() <= before:
@@ -1723,11 +1732,14 @@ class Service:
 
     def new_project_pass(self):
         """VELDO-0143: one pass of this instance's new-project work (A NEW PROJECT FROM CHAT). Returns the
-        events, each logged; a fault is logged by name and never ends the service."""
+        events, each logged; a fault is logged by name and never ends the service. What the pass wrote wakes the
+        factory loop, so the first unit of a project it activated is offered."""
+        self.projects_due = False
         if self.channel is None:
             return []
         if self.projects_pass is None:
             self.projects_pass = NP.NewProjectPass(self, globals())
+        before = self.watermark()
         try:
             return self.projects_pass.run()
         except Exception as error:  # noqa: BLE001 - never the end of the service; judged again on the next pass
@@ -1736,6 +1748,20 @@ class Service:
             with contextlib.suppress(OSError):
                 self._log(event)
             return [event]
+        finally:
+            if self.loop is not None and self.watermark() > before:
+                self.loop.wake('journal')
+
+    def provisioner_pipes(self):
+        """VELDO-0143: {fd: decision}, the output pipe of every provisioner this instance started and that has
+        not ended, for the service loop's poll set."""
+        return self.projects_pass.pipes() if self.projects_pass is not None else {}
+
+    def provisioner_readable(self, fd):
+        """VELDO-0143: the poll set found a provisioner's pipe readable; its end makes the new-project pass
+        due."""
+        if self.projects_pass is not None and self.projects_pass.readable(fd):
+            self.projects_due = True
 
     def _receiver_configuration(self, repository, workspace):
         """The repository's launch receiver configuration beside the installed ones: an installed receiver
@@ -2630,6 +2656,9 @@ def serve(config_path):
                     # THE POLL SET: the socket, and the launch pipe of every run the factory loop watches, waited on
                     # for the accept timeout at most, or until the account reset timer, when it is sooner.
                     pipes = service.loop.pipes() if service.loop is not None else {}
+                    # VELDO-0143: and the output pipe of every provisioner this instance started.
+                    provisioners = service.provisioner_pipes()
+                    pipes = {**pipes, **provisioners}
                     wait = ACCEPT_SECONDS
                     if service.loop is not None and service.loop.timer is not None:
                         wait = max(0.0, min(wait, service.loop.timer - time.time()))
@@ -2650,7 +2679,9 @@ def serve(config_path):
                     if response is not None:
                         service.observe_response(response)
                     for fd in ready:
-                        if fd in pipes:
+                        if fd in provisioners:
+                            service.provisioner_readable(fd)
+                        elif fd in pipes:
                             service.loop.readable(pipes[fd])
                     if service.loop is not None and service.loop.due(time.time()):
                         service.loop.wake('account_reset')
@@ -2662,8 +2693,8 @@ def serve(config_path):
                     # VELDO-0161: a faulted take-on, judged again when its time came (a timer, never a poll).
                     if not stopping and service.adoption_due() is not None and service.adoption_due() <= time.monotonic():
                         service.take_on()
-                    # VELDO-0143: a new project's decision provisioned, and activated once its repository is active.
-                    if not stopping:
+                    # VELDO-0143: the new-project pass, when an event it acts on made it due (never a poll).
+                    if not stopping and service.projects_due:
                         service.new_project_pass()
             finally:
                 notify('STOPPING=1')

@@ -10995,6 +10995,40 @@ def cases():
                 "    pass  # defect: the factory project's repository is not bound by the store\n",
                 ['factory/own-repository'])
 
+    # Rebased onto VELDO-0161 round 5: the created repository's hand-off, its checks before anything is made, the
+    # INTERRUPTED rule and the lock, and the new-project pass made due by events rather than by a poll.
+    new_project('newproject143-take-on-not-sent', 'control_effect_executor_creation.py',
+                "        refusal = AD.take_on(config, adoption, decision, trust, send)\n",
+                "        refusal = None  # defect: the created repository is not handed to the running service\n",
+                ['provision/handed-over'])
+    new_project('newproject143-checks-after-creation', 'control_effect_executor_creation.py',
+                "            trust, key = preflight(config, conn, proposal, identity, generation, step)\n",
+                "            trust, key = EL.load_host_trust(config['host_trust']), config['adoption_signer']['key']"
+                "  # defect: nothing checked before the directory\n",
+                ['provision/checks-before-creation'])
+    new_project('newproject143-configuration-unchecked-before-remote', 'control_effect_executor_creation.py',
+                "                    P.refuse_commands(proposal['directory'])\n",
+                "                    pass  # defect: the repository's own configuration is not judged before GitHub is asked\n",
+                ['provision/checks-before-creation'])
+    new_project('newproject143-interrupted-left-provisioning', 'control_effect_executor_creation.py',
+                "                and existing.get('request') == decision):\n",
+                "                and existing.get('request') == decision and False):  # defect: left provisioning\n",
+                ['provision/interrupted'])
+    new_project('newproject143-live-run-unheld', 'control_effect_executor_creation.py',
+                "        held = AD.hold(config, repository)\n",
+                "        held = os.open(os.devnull, os.O_RDONLY)  # defect: no lock is taken\n",
+                ['provision/interrupted'])
+    new_project('newproject143-take-on-not-due', 'control_service.py',
+                "        if self.watermark() > before:\n            self.projects_due = True\n",
+                "        pass  # defect: an advance of the journal does not make the new-project pass due\n",
+                ['provision/handed-over'])
+    new_project('newproject143-provisioner-end-unseen', 'control_service.py',
+                "        if self.projects_pass is not None and self.projects_pass.readable(fd):\n"
+                "            self.projects_due = True\n",
+                "        if self.projects_pass is not None:  # defect: a provisioner's end does not make the pass due\n"
+                "            self.projects_pass.readable(fd)\n",
+                ['service/provisions'])
+
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
     add(142, 'identity142-clone-global-author', '103_veldo_0142_git_identities.py', 'control_clone.py', "for section in ('user', 'author', 'committer'):", 'for section in ():', ['clone/identity-authors'])

@@ -15,8 +15,11 @@ repositories are real Git repositories; GitHub is a loopback REST stand-in that 
 the hermetic identity wire (scripts/suites/support/identity_wire.py) maps the GitHub URLs to, so every push goes
 through VELDO-0153's identity profile and nothing leaves this host. The adoption signer and the host's
 enrollment signers are made by control_factory_setup's own adoption_signer and host_files. The authority
-service's take-on and its new-project pass run in this process (control_service.Service over the same store),
-so no socket is needed. No private key byte, signature or token is printed or retained.
+service's take-on and its new-project pass run in this process (control_service.Service over the same store):
+the provisioner's hand-off (VELDO-0161 TAKING IT ON) reaches it through control_client's Authority judging the
+request as the socket's serving side does, and where local sockets may be made, the provisioner the service starts
+as its own process hands its repository over a real socket served by the suite's loop (service/hand-off). No
+private key byte, signature or token is printed or retained.
 """
 
 
@@ -30,6 +33,7 @@ def _v143_suite():
     import os
     from pathlib import Path
     import runpy
+    import select
     import shutil
     import subprocess
     import sys
@@ -93,9 +97,10 @@ def _v143_suite():
         for label in ('factory/own-repository', 'intake/new-project-routed', 'proposal/fields', 'proposal/nothing-asked',
                       'proposal/one-answer', 'proposal/correction', 'proposal/refusals', 'provision/settlement-required',
                       'provision/created', 'provision/answered-and-corrected', 'provision/directory-not-empty',
-                      'provision/adoption-path', 'provision/step-failures', 'provision/observed',
-                      'activation/order', 'activation/applied', 'activation/failed-activates-nothing',
-                      'activation/admitted-without-question', 'activation/new-line', 'service/provisions',
+                      'provision/adoption-path', 'provision/step-failures', 'provision/checks-before-creation',
+                      'provision/interrupted', 'provision/observed', 'activation/order', 'activation/applied',
+                      'activation/failed-activates-nothing', 'activation/admitted-without-question',
+                      'activation/new-line', 'provision/handed-over', 'service/provisions', 'service/hand-off',
                       'pm/new-project-run'):
             expect(PREFIX + label, False)
         return
@@ -121,7 +126,7 @@ def _v143_suite():
         names a path where nothing listens, so no agent is reachable at all (these fixtures push with a token,
         never over ssh). Every other wall is the wire's own."""
         if UNIX:
-            with fenced(wire):
+            with wire.active():
                 yield wire
             return
         state = W['_audit_state']()
@@ -627,9 +632,10 @@ def _v143_suite():
                      and (CE.read_binding(str(tide_dir)) or {}).get('enrolled_by') == R.SIGNER_PRINCIPAL),
                     ('the adoption signer signed it for this decision alone, journaled',
                      [s.get('request') for s in R.signatures(conn) if s.get('repository') == tide_repo] == [tide_decision]),
-                    ('the store binds it, and it waits for the running service',
+                    ('the store binds it; with no service running, the hand-off is named and it waits for an instance',
                      S.bound_repository(conn, DOMAIN, tide_repo) == os.path.realpath(str(tide_dir))
-                     and held.get('state') == 'provisioning')])
+                     and held.get('state') == 'provisioning' and tide_result.get('state') == 'provisioning'
+                     and tide_result.get('reason') == 'not_taken_on:authority_unavailable')])
 
             with region('provision/answered-and-corrected'):
                 with fenced(wire):
@@ -767,6 +773,91 @@ def _v143_suite():
                               owner_check == 'binding_mismatch:remote_owner' and len(hub['calls']) == calls))
                 check('provision/step-failures', parts)
 
+            with region('provision/checks-before-creation'):
+                # VELDO-0161's checks that change nothing, before anything is made: an adoption signer this host
+                # does not enroll is refused before any directory exists or GitHub is asked.
+                stranger_key = keys / 'stranger-signer'
+                subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v143-stranger', '-f',
+                                str(stranger_key)], check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                decision_u, _, _ = own_decision('unsigned')
+                calls, pushes = len(hub['calls']), len(wire.invocations())
+                with fenced(wire):
+                    unsigned = EC.provision(dict(effect_config, adoption_signer={'key': str(stranger_key)}), decision_u)
+                unsigned_record = record(PP.read(conn, decision_u)['proposal']['repository']) or {}
+                # The repository's own configuration, judged before GitHub is asked: a key naming a command that the
+                # author step leaves behind (injected) refuses the remote step before any network write.
+                decision_c, _, _ = own_decision('commanded')
+                saved = dict(EC.STEP_FUNCTIONS)
+
+                def commanded(run):
+                    done = saved['author'](run)
+                    EC.CR.git(run['proposal']['directory'], 'config', 'core.fsmonitor', 'true')
+                    return done
+                EC.STEP_FUNCTIONS['author'] = commanded
+                calls_c, pushes_c = len(hub['calls']), len(wire.invocations())
+                try:
+                    with fenced(wire):
+                        commanded_result = provision(decision_c)
+                finally:
+                    EC.STEP_FUNCTIONS.clear()
+                    EC.STEP_FUNCTIONS.update(saved)
+                commanded_record = record(PP.read(conn, decision_c)['proposal']['repository']) or {}
+                check('provision/checks-before-creation', [
+                    ('an adoption signer this host does not enroll is refused at the signature, before the directory',
+                     unsigned.get('reason') == 'signature_refused:not_enrolled' and unsigned_record.get('state') == 'failed'
+                     and unsigned_record.get('failed_step') == 'signature'
+                     and [h['step'] for h in unsigned_record.get('history') or []] == ['settled', 'signature']),
+                    ('nothing is made for it: no directory, no GitHub call, no push',
+                     not (projects_root['personal'] / 'unsigned').exists() and len(hub['calls']) == calls
+                     and len(wire.invocations()) == pushes),
+                    ('a repository configuration naming a command is refused at the remote step, by name',
+                     commanded_result.get('reason') == 'invalid_input:repository_command:core.fsmonitor'
+                     and commanded_record.get('state') == 'failed' and commanded_record.get('failed_step') == 'remote'
+                     and [h['step'] for h in commanded_record.get('history') or []]
+                     == ['settled', 'directory', 'init', 'scaffold', 'author', 'commit', 'remote']),
+                    ('GitHub is not asked to create a remote for it, and nothing is pushed or signed',
+                     len(hub['calls']) == calls_c and len(wire.invocations()) == pushes_c
+                     and commanded_record.get('enrollment') is None
+                     and binding_of(projects_root['personal'] / 'commanded') is None)])
+
+            with region('provision/interrupted'):
+                # VELDO-0161's INTERRUPTED rule, for a created repository: a run that ended (killed, the host
+                # restarted) left its record provisioning with no binding; a live run holds the lock.
+                decision_i, _, _ = own_decision('stranded')
+                stranded = PP.read(conn, decision_i)['proposal']
+                for step in ('settled', 'directory', 'init'):
+                    R.write(S, conn, ('authority', journal_sign), stranded['repository'], 'provisioning', step=step,
+                            origin='created', domain_uuid=DOMAIN, identity='personal', path=stranded['directory'],
+                            request=decision_i, project='stranded', enrollment=None, reason=None, failed_step=None)
+                calls = len(hub['calls'])
+                interrupted = provision(decision_i)
+                stranded_record = record(stranded['repository']) or {}
+                decision_l, _, _ = own_decision('locked')
+                locked = PP.read(conn, decision_l)['proposal']
+                lock = EC.AD.hold(effect_config, locked['repository'])
+                before = journal()
+                try:
+                    in_progress = provision(decision_l)
+                    unchanged = journal() == before and record(locked['repository']) is None
+                finally:
+                    os.close(lock)
+                # Once the live run is gone the decision is judged again: here its directory is taken meanwhile.
+                (projects_root['personal'] / 'locked').mkdir()
+                (projects_root['personal'] / 'locked' / 'notes.txt').write_text('mine\n')
+                after_lock = provision(decision_l)
+                check('provision/interrupted', [
+                    ('a record the decision left provisioning with no binding is failed unknown_outcome:interrupted',
+                     interrupted.get('reason') == 'unknown_outcome:interrupted' and stranded_record.get('state') == 'failed'
+                     and stranded_record.get('failed_step') == 'init' and stranded_record.get('reason') == 'unknown_outcome:interrupted'),
+                    ('at the step it names, running no step again', [h['step'] for h in stranded_record['history']]
+                     == ['settled', 'directory', 'init', 'init'] and len(hub['calls']) == calls
+                     and not (projects_root['personal'] / 'stranded').exists()),
+                    ('a live run of the same repository is refused, touching nothing',
+                     in_progress.get('reason') == 'stale_subject:provisioning_in_progress' and unchanged),
+                    ('once it is gone the decision runs, and stops by name',
+                     after_lock.get('reason') == 'directory_not_empty'
+                     and (record(locked['repository']) or {}).get('failed_step') == 'directory')])
+
             with region('provision/observed'):
                 events = [json.loads(line) for line in observations.read_text().splitlines()]
                 steps_seen = {e.get('step') for e in events if e.get('operation') == 'provision_step'}
@@ -849,7 +940,7 @@ def _v143_suite():
                 told = bot_messages()[len(before_messages):]
                 tide_message = first.get('message_id')
                 check('activation/applied', [
-                    ('the running service takes the created repository on, in this process',
+                    ('an instance takes on, at its start, the created repository no service was running to be handed',
                      (record(tide_repo) or {}).get('state') == 'active'
                      and any(e.get('repository_uuid') == tide_repo and e.get('outcome') == 'accepted' for e in taken)),
                     ('the settlement is applied as the project\'s activation on that repository',
@@ -934,35 +1025,122 @@ def _v143_suite():
                      and loop.factory_line == REPO),
                     ('its units are authored by the identity alone', author == ('Olga Personal', 'personal@example.invalid'))])
 
-            with region('service/provisions'):
+            def judged(svc):
+                """control_client.send's shape, judged by control_client's Authority over `svc` as the socket's
+                serving side judges it (VELDO-0161's suite does the same), with no socket."""
+                authority = SV.CC.Authority(ids['store_uuid'], DOMAIN, str(f['db']), SV.E, svc.verify, HOST, svc.apply,
+                                            watermark=svc.watermark, minimum_generation=1, context=True)
+
+                def send_to(workspace, packet, enrollment, verify, sign, host_identity, timeout=30.0):
+                    enrollment.resolve_store(workspace, verify, host_identity)
+                    binding = enrollment.read_binding(workspace)
+                    return authority.judge(SV.CC.build_request(workspace, binding, packet, sign), os.getuid())
+                return send_to
+
+            with region('provision/handed-over'):
+                # VELDO-0161 TAKING IT ON, for a created repository: the provisioner hands its record to the running
+                # service, which judges it again and answers synchronously; the answer is the record active.
+                decision_e, _, _ = own_decision('estuary')
+                estuary_repo = PP.read(conn, decision_e)['proposal']['repository']
+                service.projects_due = False
+                with fenced(wire):
+                    estuary = provision(decision_e, send=judged(service))
+                estuary_record = record(estuary_repo) or {}
+                due = service.projects_due
+                estuary_pass = service.new_project_pass()
+                check('provision/handed-over', [
+                    ('the provisioner\'s answer is the running service\'s: active, no refusal',
+                     estuary.get('state') == 'active' and estuary.get('reason') is None and estuary.get('ok') is True),
+                    ('the record was written active by that instance before the provisioner returned',
+                     estuary_record.get('state') == 'active'
+                     and (estuary_record.get('taken_on') or {}).get('instance_id') == service.instance['instance_id']
+                     and [h['step'] for h in estuary_record.get('history') or []][-2:] == ['enrolled', 'take_on']),
+                    ('the instance serves it from then on', estuary_repo in service.repositories),
+                    ('the take-on it answered makes the new-project pass due, which activates the project',
+                     due is True and (PJ.read(S, conn, 'estuary') or {}).get('state') == 'ACTIVE'
+                     and any(e.get('operation') == 'activate' and e.get('decision') == decision_e
+                             and e.get('outcome') == 'activated' for e in estuary_pass))])
+
+            with region('service/provisions', 'service/hand-off'):
                 provisioner = state_root / 'host' / 'provisioner.json'
                 provisioner.write_text(json.dumps(effect_config))
                 provisioner.chmod(0o600)
                 decision_s, pid_s, _ = own_decision('lagoon')
+                lagoon_repo = PP.read(conn, decision_s)['proposal']['repository']
                 service.config['provisioner'] = str(provisioner)
-                with fenced(wire):
-                    started = service.new_project_pass()
-                    process = (service.projects_pass.running.get(decision_s) or (None,))[0]
-                    # The serve loop's own iteration: take on what was adopted while the provisioner runs.
-                    deadline = time.monotonic() + 120
-                    while process is not None and process.poll() is None and time.monotonic() < deadline:
-                        service.take_on()
-                        time.sleep(0.05)
-                    service.take_on()
-                    service.new_project_pass()
+                listener = authority = None
+                if UNIX:
+                    # The service's socket, beside the store, served by this loop as serve() serves it.
+                    listener = SV.CC.bind(SV.CC.socket_path_for({'store_path': str(f['db'])}))
+                    authority = SV.CC.Authority(ids['store_uuid'], DOMAIN, str(f['db']), SV.E, service.verify, HOST,
+                                                service.apply, watermark=service.watermark, minimum_generation=1,
+                                                context=True)
+                passes, served, takes = [], 0, []
+                try:
+                    with fenced(wire):
+                        started = service.new_project_pass()
+                        one = service.projects_pass.running.get(decision_s)
+                        # The serve loop's own shape: the socket and the provisioner's pipe, waited on; a pass only
+                        # when an event made it due. Nothing is taken on by reading the records.
+                        deadline = time.monotonic() + 120
+                        while one is not None and not one.done and time.monotonic() < deadline:
+                            pipes = service.provisioner_pipes()
+                            ready = select.select(([listener] if listener is not None else []) + sorted(pipes), [], [],
+                                                  5)[0]
+                            if listener is not None and listener in ready:
+                                SV.CC.serve_one(listener, authority)
+                                served += 1
+                            for fd in ready:
+                                if fd in pipes:
+                                    service.provisioner_readable(fd)
+                            if service.projects_due:
+                                passes += service.new_project_pass()
+                        ended_state = (record(lagoon_repo) or {}).get('state')
+                        active_before_start = (PJ.read(S, conn, 'lagoon') or {}).get('state') == 'ACTIVE'
+                        if not UNIX:
+                            # No socket could be made, so no running service could be handed the record: an
+                            # instance takes it on at its start (VELDO-0161), and the pass that follows activates.
+                            takes = service.take_on()
+                            passes += service.new_project_pass()
+                finally:
+                    if listener is not None:
+                        listener.close()
                 lagoon = PJ.read(S, conn, 'lagoon') or {}
-                if lagoon.get('state') != 'ACTIVE' or process is None or process.returncode != 0:
-                    print('  %sdetail: service pass %s, provisioner exit %s' % (
-                        PREFIX, json.dumps(started, default=str)[:1500], None if process is None else process.returncode))
+                ended = [e for e in passes if e.get('operation') == 'provision' and e.get('decision') == decision_s
+                         and e.get('outcome') == 'ended']
+                if lagoon.get('state') != 'ACTIVE' or one is None or not one.done:
+                    print('  %sdetail: service pass %s, provisioner %s' % (
+                        PREFIX, json.dumps(started + passes, default=str)[:1500],
+                        None if one is None else (one.process.returncode, one.output[-300:])))
                 check('service/provisions', [
-                    ('the running service starts the registered provisioner for a settled decision',
+                    ('the running service starts the registered provisioner for a settled decision, as its own process',
                      any(e.get('operation') == 'provision' and e.get('outcome') == 'started' and e.get('decision') == decision_s
-                         for e in started) and process is not None and process.returncode == 0),
+                         for e in started) and one is not None and one.done),
+                    ('its end is seen on its output pipe, and the pass it makes due names its answer',
+                     ended != [] if not UNIX else (ended != [] or active_before_start)),
                     ('a service with no provisioner configuration named finds the one setup lays in the state root',
                      SP.NewProjectPass(SimpleNamespace(config={'store_path': str(state_root / 'authority' / 'control.sqlite3')}),
                                        {}).provisioner_path() == str(state_root / 'host' / 'provisioner.json')),
+                    ('with no socket the record waits, named, until an instance takes it on at its start'
+                     if not UNIX else 'the record is handed over its socket',
+                     (ended_state == 'provisioning' and ended != []
+                      and ended[0].get('refusal') == 'not_taken_on:authority_unavailable'
+                      and any(t.get('repository_uuid') == lagoon_repo and t.get('outcome') == 'accepted' for t in takes))
+                     if not UNIX else served >= 1),
                     ('the repository is created, taken on and the project activated',
                      lagoon.get('state') == 'ACTIVE' and (PP.read(conn, decision_s) or {}).get('state') == 'activated')])
+                if not UNIX:
+                    check('service/hand-off', [('AF_UNIX sockets are refused on this host, so no provisioner can reach '
+                                                'a running service over its socket', False)])
+                else:
+                    check('service/hand-off', [
+                        ('the provisioner\'s take-on request is answered over the socket, synchronously',
+                         served >= 1 and one.process.returncode == 0 and one.reason() is None),
+                        ('the record is active, naming this instance, before the provisioner ended',
+                         ended_state == 'active' and ((record(lagoon_repo) or {}).get('taken_on') or {}).get(
+                             'instance_id') == service.instance['instance_id']),
+                        ('the take-on it answered made the pass due: the project is active with no instance started',
+                         active_before_start and takes == [])])
 
             with region('pm/new-project-run'):
                 # The factory PM's run through the factory loop's Runner, on the launch receiver and a fake engine
