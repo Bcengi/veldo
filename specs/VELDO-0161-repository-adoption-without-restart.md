@@ -37,6 +37,8 @@ footprint:
   - "specs/index.md"
   - "proof/VELDO-0161/*"
   - "proof/VELDO-0161/round2/*"
+  - "proof/VELDO-0161/round3/*"
+  - "scripts/suites/73_veldo_0139_factory_setup.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -188,3 +190,16 @@ binding rather than on current membership, and writes again a receiver configura
 token is instance_id. Finding 161 now registers 37 mutations, one at least for each fix. The footprint gains
 proof/VELDO-0161/round2/*, the directory this round's evidence was asked for, which the one-segment glob
 proof/VELDO-0161/* does not cover. Criteria, risk, readiness and approval requirements are unchanged.
+
+Round 3 (the host run at 7b60b7c0): suite 73's setup/lays-down still expected the owner as the only enrollment
+signer. AC1 says the adoption signer is a service key setup enrolls among the host's enrollment signers, so the
+row now asserts exactly two lines, the owner with his key and adoption-signer with the public key of the key
+setup generated, both in the enrollment namespace, and setup's output is unchanged. The footprint gains that
+suite and proof/VELDO-0161/round3/*. The adoption161-signer-agent mutant ended in a driver error on the host:
+the other rows' adoption signatures reached the hermetic fence's recording agent, and the fence raised at the
+suite's end. adoption/signer-no-agent now owns an agent of its own, a recording socket where local sockets may
+be made, and every AdoptionSigner.sign in the suite runs with the agent variables naming it and a recording
+ssh-keygen first on PATH; the row is judged at the suite's end, over every adoption signature, and fails on
+any agent variable passed on or any connection. Every other process stays under the fence. Finding 161 adds
+three mutations of setup's enrollment signers (omitted, another key, an extra signer), targeting suite 73.
+Criteria, risk, readiness and approval requirements are unchanged.
