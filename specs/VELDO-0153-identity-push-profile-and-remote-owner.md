@@ -210,3 +210,29 @@ pushurl and AGit-style fan-out) is refused by name or ignored, so the push goes 
 GitHub URL. It supersedes the seven VELDO-0028 rows it names; the 0028 push safety rules that do not
 depend on hooks or on the clone's routing are kept against the checked URL. Risk, readiness and the
 approval requirement are unchanged.
+
+2026-10-23, on VELDO-0161 round 10 (branch agent/claude/agent/claude/veldo-0161, which carries this specification
+unlanded; evidence proof/VELDO-0161/round10/). The full gate at 928918a5 was red where the hermetic fence ran in a
+domain that refuses AF_UNIX sockets. A launcher started inside the gate's own domain installs the strict filter,
+and suite 104's VELDO-0210 row starts the mutation stage inside the unit stage's domain, so
+scripts/suites/support/identity_wire.py:168 raised PermissionError in every fenced suite there. The fence now tries
+its recording agent's socket once. A PermissionError (EPERM or EACCES) means no process under that confinement can
+open a socket to any SSH agent, so the confinement is the guard: the fence records that as an observation
+(agent_observation, fence-observations.jsonl and one stderr line), runs without the agent, and points SSH_AUTH_SOCK
+at a path in its own directory where nothing listens. That is never a pass of the agent wall. Any other socket
+failure is raised, every other wall is unchanged, and where local sockets are allowed the recording agent stands
+as before. scripts/gate_unconfined.json is unchanged. Suite 107's fence/keyring-socket-refused judges the wall that
+stands in each domain: the fence's audit hook and agent where local sockets are allowed; where they are refused,
+that neither the keyring nor the named agent can be reached, that the name is a path in the fence's directory where
+nothing exists, and that the fence recorded the observation. Suite 67's lander boundary holds the pushes of every
+land a row judges: any push in a land expected refused, and in an expected land any push not through the identity
+profile (AC1). It answers them as failed pushes without running them, and candidate/rejection-leaves-trunk and
+candidate/detached-held-trunk require none held. Finding 56's candidate-trunk-moved-before-policy pushed through
+the network profile before the policy answered, which tripped the fence and ended its worker with exit 1. It now
+turns its row red (VELDO-0161 round 3's shape). Finding 28's eight survivors (effects-push-by-send-pack,
+effects-destination-not-recorded, effects-destination-with-credentials, effects-destinations-not-scrubbed and the
+four effects-network-profile cases) are not the fence's: the mutation workers allow local sockets and suite 58 ran in
+each. They survive at head as at b44736c0 because this specification rewrote the rows they target to judge the
+identity profile, or a refusal made before anything is recorded. They are reported, with the row each should fail,
+in proof/VELDO-0161/round10/README.md; the registrations are unchanged. Acceptance criteria, risk, readiness and
+approval requirements are unchanged.

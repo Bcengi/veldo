@@ -44,6 +44,7 @@ footprint:
   - "proof/VELDO-0161/round7/*"
   - "proof/VELDO-0161/round8/*"
   - "proof/VELDO-0161/round9/*"
+  - "proof/VELDO-0161/round10/*"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
   - "scripts/suites/86_veldo_0189_engine_upgrade.py"
   - "scripts/suites/85_veldo_0171_setup_api.py"
@@ -308,3 +309,15 @@ killed the kill host before its restart. Neither the product nor the kill driver
 body now runs in a function of its own, unchanged, so its names cannot reach the rows after it; suite 86 is 60
 passed, 0 failed on the host and finding 161's gate mutations kill 57 of 57. No product file changed. The footprint
 gains proof/VELDO-0161/round9/*. Criteria, risk, readiness and approval requirements are unchanged.
+
+Round 10 (the full gate at 928918a5, red). Suite 50's git-boundary/no-private-git-invocations: the repository
+provisioner named its Git organ GP, and scripts/check_git_boundary.py accepts a Git argument vector only through a
+receiver named _git_process, so lines 70, 175 and 333 of control_repository_provisioner.py were refused in both
+copies. The alias is now _git_process, as control_effect_executor.py names it. This is naming only, because the calls
+already went through git_process. Finding 161's adoption161-provisioner-hooks anchor follows the rename. Suite 109's
+own copy of the hermetic fence for a domain without local sockets is gone: the identity wire's fence now handles
+that itself (VELDO-0153's history, same round), and fenced() only reports the fence's observation. The gate's other
+reds at 928918a5 belong to VELDO-0153 (the fence, finding 56's worker crash) or were there before (finding 28's eight
+survivors and the first-use budget). Host: suite 50 30/0 confined; finding 161 57 of 57 killed; suites 109, 86, 73
+and 85 as at round 9 (proof/VELDO-0161/round10/). The footprint gains proof/VELDO-0161/round10/*. Criteria, risk,
+readiness and approval requirements are unchanged.

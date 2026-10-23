@@ -1,0 +1,503 @@
+{
+ "branch": "agent/claude/agent/claude/veldo-0161",
+ "host": "the owner host (AF_UNIX allowed at the gate domain top level, refused in nested domains)",
+ "mutations": {
+  "--finding 161 --finding 28 --finding 56 @9cd90894": {
+   "executed": 152,
+   "killed": 144,
+   "killed_per_finding": {
+    "161": 57,
+    "28": 65,
+    "56": 22
+   },
+   "not_killed": {
+    "28": [
+     {
+      "case": "effects-push-by-send-pack",
+      "detail": "mutation_survived: effects/publication-url-rewrite",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-pre-push-hook",
+       "effects/publication-url-rewrite",
+       "effects/publication-smart-http"
+      ]
+     },
+     {
+      "case": "effects-destination-not-recorded",
+      "detail": "mutation_survived: effects/publication-destination-without-credentials",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-records-resolved-destination",
+       "effects/publication-destination-without-credentials"
+      ]
+     },
+     {
+      "case": "effects-destination-with-credentials",
+      "detail": "mutation_survived: effects/publication-destination-without-credentials",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-destination-without-credentials"
+      ]
+     },
+     {
+      "case": "effects-destinations-not-scrubbed",
+      "detail": "mutation_survived: effects/publication-destination-without-credentials",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-destination-without-credentials",
+       "effects/publication-scrub-transport-prefix"
+      ]
+     },
+     {
+      "case": "effects-network-profile-drops-transport-variables",
+      "detail": "mutation_survived: effects/publication-env-ssh-command",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-env-ssh-command"
+      ]
+     },
+     {
+      "case": "effects-network-profile-without-global-config",
+      "detail": "mutation_survived: effects/publication-global-insteadof",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-global-insteadof",
+       "effects/publication-global-credential-helper",
+       "effects/publication-global-ssh-command",
+       "effects/publication-config-selection-parity"
+      ]
+     },
+     {
+      "case": "effects-network-profile-drops-config-selection",
+      "detail": "mutation_survived: effects/publication-config-selection-parity",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-config-selection-parity",
+       "effects/publication-network-profile-strips-coordinates"
+      ]
+     },
+     {
+      "case": "effects-network-profile-drops-config-injection",
+      "detail": "mutation_survived: effects/publication-config-selection-parity",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-config-selection-parity",
+       "effects/publication-network-profile-strips-coordinates"
+      ]
+     }
+    ]
+   },
+   "registered": 152,
+   "status": "failed",
+   "unconfined_cases": 5,
+   "workers": {
+    "baseline exit 0": 14,
+    "mutant exit 0": 152,
+    "noop exit 0": 14
+   }
+  },
+  "eight finding-28 cases @9cd90894": {
+   "executed": 8,
+   "killed": 0,
+   "killed_per_finding": {},
+   "not_killed": {
+    "28": [
+     {
+      "case": "effects-push-by-send-pack",
+      "detail": "mutation_survived: effects/publication-url-rewrite",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-pre-push-hook",
+       "effects/publication-url-rewrite",
+       "effects/publication-smart-http"
+      ]
+     },
+     {
+      "case": "effects-network-profile-drops-config-injection",
+      "detail": "mutation_survived: effects/publication-config-selection-parity",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-config-selection-parity",
+       "effects/publication-network-profile-strips-coordinates"
+      ]
+     },
+     {
+      "case": "effects-destinations-not-scrubbed",
+      "detail": "mutation_survived: effects/publication-destination-without-credentials",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-destination-without-credentials",
+       "effects/publication-scrub-transport-prefix"
+      ]
+     },
+     {
+      "case": "effects-destination-with-credentials",
+      "detail": "mutation_survived: effects/publication-destination-without-credentials",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-destination-without-credentials"
+      ]
+     },
+     {
+      "case": "effects-network-profile-drops-transport-variables",
+      "detail": "mutation_survived: effects/publication-env-ssh-command",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-env-ssh-command"
+      ]
+     },
+     {
+      "case": "effects-destination-not-recorded",
+      "detail": "mutation_survived: effects/publication-destination-without-credentials",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-records-resolved-destination",
+       "effects/publication-destination-without-credentials"
+      ]
+     },
+     {
+      "case": "effects-network-profile-drops-config-selection",
+      "detail": "mutation_survived: effects/publication-config-selection-parity",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-config-selection-parity",
+       "effects/publication-network-profile-strips-coordinates"
+      ]
+     },
+     {
+      "case": "effects-network-profile-without-global-config",
+      "detail": "mutation_survived: effects/publication-global-insteadof",
+      "error": "mutation_survived",
+      "rows": [
+       "effects/publication-global-insteadof",
+       "effects/publication-global-credential-helper",
+       "effects/publication-global-ssh-command",
+       "effects/publication-config-selection-parity"
+      ]
+     }
+    ]
+   },
+   "registered": 8,
+   "status": "failed",
+   "unconfined_cases": 0,
+   "workers": {
+    "baseline exit 0": 3,
+    "mutant exit 0": 8,
+    "noop exit 0": 3
+   }
+  },
+  "eight finding-28 cases, per-row targets of each mutant": {
+   "effects-destination-not-recorded": {
+    "red_rows": [
+     "VELDO-0028 effects/publication-records-resolved-destination",
+     "VELDO-0028 effects/publication-destination-despite-hook-text",
+     "VELDO-0028 effects/publication-rejected-destination-recorded",
+     "VELDO-0028 effects/publication-completion-from-destination-state",
+     "VELDO-0028 effects/publication-hook-text-without-newline",
+     "VELDO-0028 effects/publication-non-utf8-output",
+     "VELDO-0028 effects/publication-ref-creation",
+     "VELDO-0028 effects/publication-call-covers-every-destination",
+     "VELDO-0028 effects/publication-requires-clean-push-exit",
+     "VELDO-0028 effects/publication-config-selection-parity"
+    ],
+    "targets": {
+     "effects/publication-destination-without-credentials": [
+      true
+     ],
+     "effects/publication-records-resolved-destination": [
+      false
+     ]
+    },
+    "worker_exit": 0
+   },
+   "effects-destination-with-credentials": {
+    "red_rows": [],
+    "targets": {
+     "effects/publication-destination-without-credentials": [
+      true
+     ]
+    },
+    "worker_exit": 0
+   },
+   "effects-destinations-not-scrubbed": {
+    "red_rows": [],
+    "targets": {
+     "effects/publication-destination-without-credentials": [
+      true
+     ],
+     "effects/publication-scrub-transport-prefix": [
+      true
+     ]
+    },
+    "worker_exit": 0
+   },
+   "effects-network-profile-drops-config-injection": {
+    "red_rows": [
+     "VELDO-0028 effects/publication-network-profile-strips-coordinates"
+    ],
+    "targets": {
+     "effects/publication-config-selection-parity": [
+      true
+     ],
+     "effects/publication-network-profile-strips-coordinates": [
+      false
+     ]
+    },
+    "worker_exit": 0
+   },
+   "effects-network-profile-drops-config-selection": {
+    "red_rows": [
+     "VELDO-0028 effects/publication-network-profile-strips-coordinates"
+    ],
+    "targets": {
+     "effects/publication-config-selection-parity": [
+      true
+     ],
+     "effects/publication-network-profile-strips-coordinates": [
+      false
+     ]
+    },
+    "worker_exit": 0
+   },
+   "effects-network-profile-drops-transport-variables": {
+    "red_rows": [
+     "VELDO-0028 effects/publication-network-profile-strips-coordinates"
+    ],
+    "targets": {
+     "effects/publication-env-ssh-command": [
+      true
+     ]
+    },
+    "worker_exit": 0
+   },
+   "effects-network-profile-without-global-config": {
+    "red_rows": [
+     "VELDO-0028 effects/publication-network-profile-strips-coordinates"
+    ],
+    "targets": {
+     "effects/publication-config-selection-parity": [
+      true
+     ],
+     "effects/publication-global-credential-helper": [
+      true
+     ],
+     "effects/publication-global-insteadof": [
+      true
+     ],
+     "effects/publication-global-ssh-command": [
+      true
+     ]
+    },
+    "worker_exit": 0
+   },
+   "effects-push-by-send-pack": {
+    "red_rows": [
+     "VELDO-0028 effects/publication-exact-ref",
+     "VELDO-0028 effects/publication-confirms-one-change",
+     "VELDO-0028 effects/publication-pre-push-hook",
+     "VELDO-0028 effects/publication-smart-http",
+     "VELDO-0028 effects/publication-head-change",
+     "VELDO-0028 effects/publication-push-options",
+     "VELDO-0028 effects/publication-records-resolved-destination",
+     "VELDO-0028 effects/publication-global-insteadof",
+     "VELDO-0028 effects/publication-env-ssh-command",
+     "VELDO-0028 effects/publication-global-ssh-command",
+     "VELDO-0028 effects/publication-destination-despite-hook-text",
+     "VELDO-0028 effects/publication-rejected-destination-recorded",
+     "VELDO-0028 effects/publication-completion-from-destination-state",
+     "VELDO-0028 effects/publication-hook-text-without-newline",
+     "VELDO-0028 effects/publication-non-utf8-output",
+     "VELDO-0028 effects/publication-ref-creation",
+     "VELDO-0028 effects/publication-call-covers-every-destination",
+     "VELDO-0028 effects/publication-requires-clean-push-exit",
+     "VELDO-0028 effects/publication-resolution-output-checked",
+     "VELDO-0028 effects/publication-resolution-with-locale-env",
+     "VELDO-0028 effects/publication-config-selection-parity",
+     "VELDO-0028 effects/publication-network-profile-strips-coordinates",
+     "VELDO-0028 effects/completion/publication"
+    ],
+    "targets": {
+     "effects/publication-pre-push-hook": [
+      false
+     ],
+     "effects/publication-smart-http": [
+      false
+     ],
+     "effects/publication-url-rewrite": [
+      true
+     ]
+    },
+    "worker_exit": 0
+   }
+  },
+  "finding 56 candidate-trunk-moved-before-policy @9cd90894": {
+   "executed": 1,
+   "killed": 1,
+   "killed_per_finding": {
+    "56": 1
+   },
+   "not_killed": {},
+   "registered": 1,
+   "status": "passed",
+   "unconfined_cases": 0,
+   "workers": {
+    "baseline exit 0": 1,
+    "mutant exit 0": 1,
+    "noop exit 0": 1
+   }
+  },
+  "finding 56 candidate-trunk-moved-before-policy @aff38e10 (before the suite 67 change)": {
+   "detail": "worker exit 1: HermeticViolation, push would contact https://github.com/fixture/remote.git (2 violations)",
+   "error": "driver_error",
+   "status": "failed"
+  }
+ },
+ "static @9cd90894": {
+  "check_docs.sh": "docs hygiene: pass",
+  "check_generated.sh": "generated: pass",
+  "check_git_boundary.py": "Git subprocess boundary: pass",
+  "check_lint.sh": "lint: pass",
+  "check_template_sync.sh": "template sync: pass",
+  "secret_inventory.py": "0 outstanding"
+ },
+ "suites": {
+  "confined (python3 -I -S scripts/gate_candidate.py --root $PWD -- bash -c \"python3 scripts/selftest.py --suite S\")": {
+   "104_veldo_0210_mutation_workers @928918a5 (same clone, before)": {
+    "failures": [
+     "VELDO-0210 workers/gate-starting-suites-pass-confined-fresh: {'status': 'failed', 'error': 'driver_error', 'detail': 'driver_error: 67_veldo_0056_candidates.py:lander.py:False:noop: worker exit 1', 'executed': 0, 'rejected': 0} 'case_reuse:strace, 101_veldo_0208_landing_reuse:strace\\n   mutation: un"
+    ],
+    "fence_observation": null,
+    "hermetic_violation": false,
+    "log_sha256": "9a14599275966fc1b72da047099d997b6f2e8810f36e6c51e809735380bb046d",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 32 passed, 1 failed in 3.50s"
+   },
+   "104_veldo_0210_mutation_workers @9cd90894 (standalone clone /tmp/v161f/c)": {
+    "failures": [],
+    "fence_observation": null,
+    "hermetic_violation": false,
+    "log_sha256": "cd7d5d0132213559b8fa46fdc309bca3c8e3dca2c099c7cd6add0a796011d3f8",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 33 passed, 0 failed in 122.06s"
+   },
+   "107_veldo_0153_identity_push @9cd90894": {
+    "failures": [],
+    "fence_observation": null,
+    "hermetic_violation": false,
+    "log_sha256": "e4c6f5b0aa74316afed14fe75abd0244151e50596fc40f3319bdf71d29789238",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 146 passed, 0 failed in 4.81s"
+   },
+   "50_git_environment @3cced949": {
+    "failures": [],
+    "fence_observation": null,
+    "hermetic_violation": false,
+    "log_sha256": "34e772b86756aafd875287ae7179577eff36a07c02bd26353a4f447915780c7b",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 30 passed, 0 failed in 2.61s"
+   },
+   "50_git_environment @9cd90894": {
+    "failures": [],
+    "fence_observation": null,
+    "hermetic_violation": false,
+    "log_sha256": "82649c7ad7ee35f17e90614d45ad080f91b0c1c9ff4a6933747fb1dcf2bfb6be",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 30 passed, 0 failed in 2.60s"
+   },
+   "58_veldo_0028_effects @9cd90894": {
+    "failures": [],
+    "fence_observation": null,
+    "hermetic_violation": false,
+    "log_sha256": "1ad4e4413b93271e8f0e319739ec611c1bd4a7ea9065a2b2705b91eb9c744449",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 77 passed, 0 failed in 36.69s"
+   },
+   "67_veldo_0056_candidates @9cd90894": {
+    "failures": [],
+    "fence_observation": null,
+    "hermetic_violation": false,
+    "log_sha256": "adf9a35f0f0e1094d741d1f8f6fa5f69502977d6a4ef4780605279e8539365a1",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 37 passed, 0 failed in 49.37s"
+   }
+  },
+  "nested confinement, strict filter, AF_UNIX refused (gate_candidate inside gate_candidate)": {
+   "107_veldo_0153_identity_push @aff38e10 tree": {
+    "failures": [],
+    "fence_observation": "VELDO HERMETIC FENCE: observation: agent contact impossible: this confinement refuses creating an AF_UNIX socket (EPERM), so no process under it can reach an SSH agent; the fence runs without its recording agent and SSH_AUTH_SOCK names a path where nothing listens",
+    "hermetic_violation": false,
+    "log_sha256": "3761a12567bfd78b6c171ca32099b938894378ebe89f6ce605f1e1ed109b1dc5",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 146 passed, 0 failed in 4.94s"
+   },
+   "109_veldo_0161_adoption @928918a5": {
+    "failures": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "fence_observation": null,
+    "hermetic_violation": false,
+    "log_sha256": "ee7c59297320865cff6b1e141ce96dbc35ed0c8a9d71f77d66135980ce736dfa",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 75 passed, 4 failed in 25.79s"
+   },
+   "109_veldo_0161_adoption @9cd90894": {
+    "failures": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "fence_observation": "VELDO HERMETIC FENCE: observation: agent contact impossible: this confinement refuses creating an AF_UNIX socket (EPERM), so no process under it can reach an SSH agent; the fence runs without its recording agent and SSH_AUTH_SOCK names a path where nothing listens",
+    "hermetic_violation": false,
+    "log_sha256": "4dac26487f44f3b306e399a107a97438c316e0d047985501232920d65774ca6f",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 75 passed, 4 failed in 25.97s"
+   },
+   "58_veldo_0028_effects @9cd90894": {
+    "failures": [],
+    "fence_observation": "VELDO HERMETIC FENCE: observation: agent contact impossible: this confinement refuses creating an AF_UNIX socket (EPERM), so no process under it can reach an SSH agent; the fence runs without its recording agent and SSH_AUTH_SOCK names a path where nothing listens",
+    "hermetic_violation": false,
+    "log_sha256": "f2eda895c94352257f105bb84309bc147be2c69a57827fd79f74ddeac6683b6a",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 77 passed, 0 failed in 40.40s"
+   },
+   "67_veldo_0056_candidates @3cced949 (before B)": {
+    "died": "exit 1 before the first row: PermissionError [Errno 1] Operation not permitted at scripts/suites/support/identity_wire.py:168 (agent = socket.socket(socket.AF_UNIX))",
+    "failures": [],
+    "fence_observation": null,
+    "hermetic_violation": false,
+    "log_sha256": "eef6e48a06ccc596e9bf0c5ac1c159dbfabb4c735f3fc2b67d03acbbb5e39ef4",
+    "summary": null
+   },
+   "67_veldo_0056_candidates @9cd90894": {
+    "failures": [],
+    "fence_observation": "VELDO HERMETIC FENCE: observation: agent contact impossible: this confinement refuses creating an AF_UNIX socket (EPERM), so no process under it can reach an SSH agent; the fence runs without its recording agent and SSH_AUTH_SOCK names a path where nothing listens",
+    "hermetic_violation": false,
+    "log_sha256": "b99d932704a5f8eb31b033fae20810fa039dc05465d4969b5e12614ad63fb881",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 37 passed, 0 failed in 48.63s"
+   }
+  },
+  "unconfined (python3 scripts/selftest.py --suite S) @9cd90894": {
+   "109_veldo_0161_adoption": {
+    "failures": [],
+    "fence_observation": null,
+    "hermetic_violation": false,
+    "log_sha256": "1f1f77bab83a256837400ad2e9fe162fccf28ff86c8699c5afe9fe941f0e9b5c",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 81 passed, 0 failed in 24.08s"
+   },
+   "73_veldo_0139_factory_setup": {
+    "failures": [],
+    "fence_observation": null,
+    "hermetic_violation": false,
+    "log_sha256": "c4a738b15abd86d2dee9df2bc787f06550c8cd805a6ad60d56462f94ce56a125",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 43 passed, 0 failed in 24.07s"
+   },
+   "85_veldo_0171_setup_api": {
+    "failures": [],
+    "fence_observation": null,
+    "hermetic_violation": false,
+    "log_sha256": "3c3e59e1889f233c3260ec3610e0a530a3e7bcfe69b33d7dc8671fdfd25bcc45",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 44 passed, 0 failed in 9.33s"
+   },
+   "86_veldo_0189_engine_upgrade": {
+    "failures": [],
+    "fence_observation": null,
+    "hermetic_violation": false,
+    "log_sha256": "17329e74f74681c0a72b8f3125a8a96ab3095dd5e7f6d1a16259b3e1b123e6fa",
+    "summary": "selftest (PARTIAL, 1 of 165 suites): 60 passed, 0 failed in 54.90s"
+   }
+  }
+ }
+}
