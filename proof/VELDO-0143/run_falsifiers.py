@@ -42,16 +42,18 @@ for case in cases:
         made = T.materialize(case, 'mutant', directory)
         mutant = run(case, made['mutant'])
     targets = mutant.get('targets') or {}
-    # The worker reports each target row as the list of its expect results: killed when every one is red.
-    killed = bool(targets) and all(row in targets and not any(targets[row] if isinstance(targets[row], list)
-                                                              else [targets[row]]) for row in case['rows'])
+    # The worker reports each target row as the list of its expect results: killed when every one ran and is red
+    # (a row that never ran here, an empty list, is not judged here).
+    killed = bool(targets) and all(row in targets and (targets[row] if isinstance(targets[row], list) else [targets[row]])
+                                   and not any(targets[row] if isinstance(targets[row], list) else [targets[row]])
+                                   for row in case['rows'])
     records.append({'case': case['name'], 'module': case['module'], 'rows': case['rows'],
                     'source_digest': made['old_digest'], 'mutant_digest': made['new_digest'],
                     'baseline_failed_rows': baseline.get('failed_rows'), 'mutant': mutant,
                     'new_failures_beyond_baseline': sorted(set(mutant.get('failed_rows') or [])
                                                            - set(baseline.get('failed_rows') or [])),
                     'result': 'killed: the target rows are red on the mutant' if killed
-                    else 'not killed: a target row stayed green or the worker did not report'})
+                    else 'not killed here: a target row stayed green, never ran here, or the worker did not report'})
     print(case['name'], json.dumps(targets), 'killed' if killed else 'NOT KILLED', flush=True)
 after = run(cases[0])
 out.write_text(json.dumps({'baseline_before': baseline, 'cases': records, 'baseline_after': after}, indent=1,

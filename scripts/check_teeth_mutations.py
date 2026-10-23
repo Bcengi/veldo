@@ -11029,6 +11029,17 @@ def cases():
                 "            self.projects_pass.readable(fd)\n",
                 ['service/provisions'])
 
+    # Round 2 (host): a signature on a new project's path made with the SSH agent named to its ssh-keygen (the
+    # adoption signer, the provisioner's journal and the take-on all run through control_repository's quiet
+    # environment); and the scaffold not laying itself, which the installer's closure reaches through the
+    # provisioner the service starts, so an adopter's tree cannot derive the closure.
+    new_project('newproject143-signer-reaches-agent', 'control_repository.py',
+                "    return {k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}\n",
+                "    return dict(os.environ)  # defect: the SSH agent stays named to every ssh-keygen\n",
+                ['provision/signing-no-agent'])
+    add(143, 'newproject143-scaffold-not-laid', '66_veldo_0047_authority.py', 'init_scaffold.py',
+        '    ".veldo/init_scaffold.py",\n', '', ['authority/installed-assets'])
+
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
     add(142, 'identity142-clone-global-author', '103_veldo_0142_git_identities.py', 'control_clone.py', "for section in ('user', 'author', 'committer'):", 'for section in ():', ['clone/identity-authors'])
