@@ -40,7 +40,11 @@ footprint:
   - "proof/VELDO-0161/round3/*"
   - "proof/VELDO-0161/round4/*"
   - "proof/VELDO-0161/round5/*"
+  - "proof/VELDO-0161/round6/*"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
+  - "scripts/suites/86_veldo_0189_engine_upgrade.py"
+  - "scripts/suites/85_veldo_0171_setup_api.py"
+  - "proof/VELDO-0189/fresh-equivalence.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -235,3 +239,29 @@ repository's configuration for the proposal's remote and refuse by the code the 
 (binding_mismatch:identity_transport_config), before anything is laid or the branch moves; one judge, not a
 second list. Finding 161 adds three mutations. The footprint gains proof/VELDO-0161/round5/*. Criteria, risk,
 readiness and approval requirements are unchanged.
+
+Round 6 (the host run at 8f749423: suite 86_veldo_0189_engine_upgrade 55 passed, 4 failed, where b44736c0 had 59
+passed; upgrade/from-8bc34e94, upgrade/from-971186ac, switch/kill-points and upgrade/older-0186-equivalence each
+found the upgraded host's config/enrollment_signers unlike the fresh host's). AC1 says setup enrolls the adoption
+signer among the host's enrollment signers, and the round-1 choice that a re-run over an earlier factory neither
+adds nor requires it left every upgraded host without it, so adoption there was refused
+signature_refused:not_enrolled. That choice is withdrawn. A re-run now judges, read only before its first write
+(adoption_laying), the adoption key and both enrollment-signers files, the host trust's and the installation's
+copy the service reads when it starts; each must be absent, the owner's line alone, or what a fresh setup writes
+for the key the directory holds, and anything else is refused by name. The engine upgrade's prepare step
+(lay_adoption_signer), after the exchange and before the restart, generates a missing key beside its place and
+renames it in, public half first, and writes each signers file whole and renames it over the old one, each write
+a point of the upgrade's step log, so suite 86's kill rows kill at each and the next run finishes it; a run that
+finds it laid writes nothing. On a host whose engine is already current but lacks the signer the service is
+restarted once so it reads the new signers. A switch back keeps the signer, as setup's own data. The upgrade
+module (control_factory_setup_upgrade.py, only its docstring changes) and control_factory_setup.py are inside the
+footprint's control_factory_setup* globs. The footprint gains three files of VELDO-0189's and VELDO-0171's,
+because laying the signer on an upgraded host changes what their rows compare: suite 86 substitutes each host's
+own adoption public key (@ADOPTION_SIGNER@, a key id, recorded with its reason in
+proof/VELDO-0189/fresh-equivalence.json) and its kept-data row requires both signers files to gain exactly the
+adoption line after every byte they held; suite 85's row over the 7fefdb9a host names the two signers files among
+the changed files and the key pair among the added ones, and requires the same one-line gain. No field joins the
+list of allowed differences. Finding 161 adds upgrade161-adoption-signer-not-laid (the prepare step's call
+replaced), targeting suite 86's four rows above, which the host's run at 8f749423 already shows red without the
+step. The footprint gains proof/VELDO-0161/round6/*. Criteria, risk, readiness and approval requirements are
+unchanged.

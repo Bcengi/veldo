@@ -1,0 +1,32 @@
+{
+ "schema": "veldo.falsifier-run/v1",
+ "spec_id": "VELDO-0161",
+ "round": 6,
+ "case": "upgrade161-adoption-signer-not-laid",
+ "registered_rows": [
+  "upgrade/from-8bc34e94",
+  "upgrade/from-971186ac",
+  "switch/kill-points",
+  "upgrade/older-0186-equivalence"
+ ],
+ "registered_suite": "86_veldo_0189_engine_upgrade.py",
+ "replacement_count": 1,
+ "old_digest": "ceafc351fa3f3b7c39b054833a1369b61a2e6c30f212c9eeb1803992e2f788e7",
+ "new_digest": "5f50eae6d535080e9ec82bcf16df1417c5cee71148a8c593ff59de9816244ecc",
+ "baseline": {
+  "exit": 0,
+  "failed": [],
+  "passed": 25,
+  "error": null
+ },
+ "mutant": {
+  "exit": 1,
+  "failed": [
+   "prepare: the engine upgrade's prepare step lays the adoption signer as a fresh setup does, each write a point of the upgrade's step log [already_done []]"
+  ],
+  "passed": 24,
+  "error": null
+ },
+ "killed_here": true,
+ "note": "the registered rows are suite 86's, which need the host's user manager; this run is the sandbox falsifier of the same replacement over the step it removes"
+}
