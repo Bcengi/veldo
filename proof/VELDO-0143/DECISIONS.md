@@ -214,3 +214,51 @@ Entries 1, 2 and 5 above are changed by round 3 as follows; the text above is ke
   the factory PM's run settles in a factory loop pass reaches the provisioner in the same serve loop iteration.
   The review's other option (reading the watermark around `service.loop.run()`) would also make the pass due
   after every unrelated loop pass.
+
+**23. The factory line keeps the connection's owners; a line whose cycles cannot be built damages nothing (R3-1).**
+- Until VELDO-0188 runs several lines' project cycles on the service's one connection, the line the pass adds for
+  a new project cannot build its cycles there (the allocation and snapshot authorities register once per
+  connection). Round 3 let that build register its backlog and team owners first and then fail, on every pass,
+  so the factory line's backlog commands ran with the new repository's id and workspace.
+- `control_workflow_cycle_pm.from_line` is failure-atomic. It attaches the once-only owners first
+  (`control_alias.attach`, then `control_readset.attach`, handed to `ProjectCycles`), and the inbox, backlog,
+  team, intake and grooming owners only after both hold. A build that raises puts the connection's registrations
+  back as it found them.
+- `Line.build_cycles`: while the loop's factory line wants cycles it has not built, no other line builds any.
+  This holds whatever order the loop visits lines in (sorted repository uuids), so it holds after a restart too.
+  The visit order is left as it was: the deferral alone holds the property, and a visit-order change would add
+  nothing a row can tell apart. Another line's refused build is a fault of the pass it was refused in
+  (`pm_cycles:<code>`) and is not tried again in this process. The factory line's own build is tried on every
+  pass until it holds, as before.
+- One change in behaviour: a refused build no longer ends the line's part of the pass. The line still offers its
+  assigned units through its own Runner, which needs no project cycles. So activation/first-unit is now red only
+  on its first part (the new line's cycles), and its dispatch, packet and author parts are green here.
+- Also beyond the review's two files: the activation step (`control_service_projects` NewProjectPass.activate)
+  builds its own Projects, Teams, Intake and Objectives on the same connection. Their constructors replace the
+  factory line's team and intake owners (Teams with requester `pm`). The activation now puts the connection's
+  registrations back when it is done, and only then gives the loop the new line.
+- Alternatives: keep `add_line` out of the pass and the constructor. That undoes F5's line, which AC3 needs for its
+  dispatch. Or mark added lines to build no cycles at all. That is the same outcome with the refusal hidden.
+
+**24. A word he negates is not said: the limit of a textual binding (R3-2; changes entry 17).**
+- A changed identity or visibility counts as said only where his words name exactly that one value of the field
+  and do not negate it. An identity or visibility he was shown, and whose word he negates, does not stay. That
+  second rule is beyond the review: a correction settles with no second presentation, so "not under bcengi"
+  with bcengi kept would otherwise create the repository he ruled out.
+- What counts as a negation (`control_project_proposal.mentions`): a negator before the word in its clause. The
+  negators are not, no, never, nor, without, instead of, rather than, and any word ending n't. The clause is the
+  words since the last `, . ; : ! ? ( )`, line break, or "but", "and", "so". The review's sentence reads "keep it
+  private, not public", with no word between "not" and "public". But its first clause is "not under bcengi", and
+  "don't make it public" puts words between the negator and the value. Strict adjacency would miss both, so the
+  clause is the window. "nor" and the n't contractions (isn't, shouldn't, won't) are additions to the review's list.
+- Limits, recorded here and not solved by more rules. Words cannot be read the way he means them:
+  - A negator that follows the word is not seen ("public? no").
+  - "Anything but public" reads public as said, because "but" starts a clause.
+  - Double negation and irony read wrong.
+  - Another language's negators are not known.
+  - A negator early in a clause with no punctuation refuses what he did say ("no rush make it public").
+  - A negated project name ("not called fjord") is not judged by this rule; the name rule is entry 17's.
+- Every misreading fails toward refusal where a negator is present. The decision then fails by name
+  (`invalid_input:correction:<field>`), he is told, and he can ask again. What reaches creation is still judged
+  by the one judge, `settled()`, and checked against the identity's owner at creation (VELDO-0153). The binding
+  stops a PM from choosing for him. It is not a parser of his intent.

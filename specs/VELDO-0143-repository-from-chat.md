@@ -62,6 +62,7 @@ footprint:
   - "proof/VELDO-0143/rebase/*"
   - "proof/VELDO-0143/round2/*"
   - "proof/VELDO-0143/round3/*"
+  - "proof/VELDO-0143/round4/*"
   - "proof/VELDO-0152/fixture.py"
 behavior_bearing: true
 observability:
@@ -303,3 +304,17 @@ cycles cannot be built beside another line's on the service's one connection (VE
 owners once per connection), so that line's pass faults and offers nothing. That is an open defect against AC3's
 observation, outside this specification's footprint, and is the owner's decision. Finding 143 registers thirteen
 more mutations, thirty-one in all. Acceptance criteria, risk, readiness and approval requirements are unchanged.
+
+2026-10-23, round 4: the round 3 independent review's findings (proof/VELDO-0143/REVIEW-claude-r3-2026-10-23.md),
+each fix, its row and its falsifier in proof/VELDO-0143/round4/README.md. R3-1: the line the pass adds for a new
+project no longer damages the factory's own line. from_line attaches the connection's once-only owners
+(allocation, snapshot) before the backlog, team, intake and grooming owners, and a refused build leaves the
+connection's registrations as it found them. No other line builds project cycles while the factory line has not
+built its own, whatever the repository uuids' order, before or after a restart. Another line's refused build is
+not tried again on every pass. The activation step puts back the owners it registered. Rows
+activation/factory-line-kept and activation/factory-line-restart. R3-2: a word he negates is not said. A changed
+identity or visibility counts only where his words name exactly that value and no negator stands before it in
+its clause, and a shown value he negates does not stay. Row proposal/correction-negated. DECISIONS 23 and 24.
+activation/first-unit stays red and named, pending the owner's decision on moving AC3's first-unit observation to
+VELDO-0188. Finding 143 registers six more mutations, thirty-seven in all. Acceptance criteria, risk, readiness
+and approval requirements are unchanged.
