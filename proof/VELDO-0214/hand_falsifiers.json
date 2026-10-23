@@ -1,0 +1,97 @@
+{
+ "scope": "unregistered hand falsifiers through check_teeth_mutations.materialize and worker",
+ "cases": [
+  {
+   "case": "main-drops-budget-mutated-site-only",
+   "module": "check_first_use.py",
+   "replacement_count": 1,
+   "target": "measured-budget-used",
+   "failed_rows": [
+    "VELDO-0214 first-use-budget/measured-budget-used",
+    "VELDO-0214 first-use-budget/ceiling-caps-the-budget"
+   ],
+   "killed": true
+  },
+  {
+   "case": "main-drops-budget-baseline-site-only",
+   "module": "check_first_use.py",
+   "replacement_count": 1,
+   "target": "measured-budget-used",
+   "failed_rows": [
+    "VELDO-0214 first-use-budget/measured-budget-used",
+    "VELDO-0214 first-use-budget/ceiling-caps-the-budget"
+   ],
+   "killed": true
+  },
+  {
+   "case": "ceiling-removed",
+   "module": "check_first_use.py",
+   "replacement_count": 1,
+   "target": "ceiling-caps-the-budget",
+   "failed_rows": [
+    "VELDO-0214 first-use-budget/ceiling-caps-the-budget"
+   ],
+   "killed": true
+  },
+  {
+   "case": "cap-not-printed",
+   "module": "check_first_use.py",
+   "replacement_count": 1,
+   "target": "ceiling-caps-the-budget",
+   "failed_rows": [
+    "VELDO-0214 first-use-budget/ceiling-caps-the-budget"
+   ],
+   "killed": true
+  },
+  {
+   "case": "non-finite-accepted",
+   "module": "check_first_use.py",
+   "replacement_count": 1,
+   "target": "non-finite-budget-refused",
+   "failed_rows": [
+    "VELDO-0214 first-use-budget/non-finite-budget-refused"
+   ],
+   "killed": true
+  },
+  {
+   "case": "store-never-pruned",
+   "module": "gate_legs.py",
+   "replacement_count": 1,
+   "target": "leg-time-store-pruned",
+   "failed_rows": [
+    "VELDO-0214 first-use-budget/leg-time-store-pruned"
+   ],
+   "killed": true
+  },
+  {
+   "case": "prune-ignores-gone-authority",
+   "module": "gate_legs.py",
+   "replacement_count": 1,
+   "target": "leg-time-store-pruned",
+   "failed_rows": [
+    "VELDO-0214 first-use-budget/leg-time-store-pruned"
+   ],
+   "killed": true
+  },
+  {
+   "case": "owner-store-guard-removed",
+   "module": "gate_legs.py",
+   "replacement_count": 1,
+   "target": "suites-stay-out-of-the-owner-store",
+   "failed_rows": [
+    "VELDO-0214 first-use-budget/suites-stay-out-of-the-owner-store"
+   ],
+   "killed": true
+  },
+  {
+   "case": "temporary-authority-allowed",
+   "module": "gate_legs.py",
+   "replacement_count": 1,
+   "target": "suites-stay-out-of-the-owner-store",
+   "failed_rows": [
+    "VELDO-0214 first-use-budget/suites-stay-out-of-the-owner-store"
+   ],
+   "killed": true
+  }
+ ]
+}

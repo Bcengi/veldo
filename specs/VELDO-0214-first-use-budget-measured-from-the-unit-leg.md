@@ -28,20 +28,25 @@ observability:
   logs: Each leg line carries its wall time; each integration leg prints its budget input; the check prints its budget and source.
   metrics: Seconds per unit leg in the authority's leg-time store.
   traces: The handed value names its leg, declaration digest, time of measurement and whether it is this gate run's.
-  error_taxonomy: No measurement, a value outside a gate leg, a value bound to another leg or declaration, and a malformed value all fall back to 1800s by name; a run over budget is CANNOT ANSWER, as before.
+  error_taxonomy: No measurement, a value outside a gate leg, a value bound to another leg or declaration, a malformed value and a value whose budget is not finite all fall back to 1800s by name; a budget over 6 hours is capped and says so; a run over budget is CANNOT ANSWER, as before.
 acceptance_criteria:
   - id: AC1
     text: >
       Claim: the first-use check's budget per nested run is max(1800, 2.0 x the measured seconds
-      of the unit stage's same leg), it is the timeout of every nested run, and it is printed with
-      where the number came from. Set: an authority-recorded unit confined leg of 1138.4s handed
-      through gate_legs.py's own environment. Completeness: the suite 111 row
+      of the unit stage's same leg) under the AC5 ceiling, it is the timeout of every nested run
+      main() makes, and it is printed with where the number came from. Set: an authority-recorded
+      unit confined leg of 1138.4s handed through gate_legs.py's own environment, and main()
+      driven over a fixture tree whose nested run reports one failure, so the mutated run and the
+      lazy baseline run both happen. Completeness: the suite 111 row
       first-use-budget/measured-budget-used requires a budget of 2276.8s, that exact timeout on
-      the nested run, the timeout message naming it, and the printed line naming the formula,
-      the leg and "this gate run".
+      both nested runs main() makes, the timeout message naming it, and the printed line naming
+      the formula, the leg and "this gate run".
     falsified_by: >
-      Restore the fixed 1800 (budget = RUN_TIMEOUT_S). Mutation budget214-fixed-1800-restored
-      must fail first-use-budget/measured-budget-used.
+      Restore the fixed 1800 (budget = RUN_TIMEOUT_S): mutation budget214-fixed-1800-restored.
+      Drop the budget at both of main()'s nested call sites, so they run on the 1800s default
+      while the line still prints the measured budget: mutation budget214-main-drops-the-budget.
+      Each must fail first-use-budget/measured-budget-used (and, since the capped budget is a
+      nested timeout too, first-use-budget/ceiling-caps-the-budget).
   - id: AC2
     text: >
       Claim: only the authority's leg runner sets VELDO_GATE_UNIT_SECONDS; a caller's or
@@ -74,8 +79,37 @@ acceptance_criteria:
       empty environment. Completeness: the row first-use-budget/by-hand-uses-1800-and-says-so.
     falsified_by: >
       Put "measured at about 90 seconds" back in the docstring; the row must fail.
+  - id: AC5
+    text: >
+      Claim: the budget has a ceiling: min(max(1800, 2.0 x s), 21600), so no stored value removes
+      the bound on a nested run; the cap is printed when it applies; a value whose budget is not a
+      finite number of seconds is ignored by name and the check answers without a traceback.
+      Set: bound values of 20000s, 10799s, 1e9s and 1e308s. Completeness: the rows
+      first-use-budget/ceiling-caps-the-budget (21600s and "CAPPED" for 20000s, 21598s uncapped
+      for 10799s, every nested timeout of main() 21600s for 1e9s) and
+      first-use-budget/non-finite-budget-refused (1800s, "not a finite number of seconds", every
+      nested timeout 1800s, no traceback for 1e308s).
+    falsified_by: >
+      Remove the ceiling (budget = max(RUN_TIMEOUT_S, derived)), or skip the finiteness check;
+      the matching row must fail (checked by hand in round 2, proof/VELDO-0214/hand_falsifiers.json).
+  - id: AC6
+    text: >
+      Claim: the leg-time store stays bounded and holds only gate measurements. After each
+      recording, files whose recorded authority checkout no longer exists or that are older than
+      30 days are removed, never the file just written or a file that is not the store's own. The
+      owner's store records only the authority's own list from a checkout outside the system
+      temporary directory; a fixture list or a temporary authority copy is said and not recorded.
+      There is no environment override for the store's path. Set: a scratch store with a file of a
+      deleted checkout, a 31-day-old file, a live file, an abandoned pending file and a foreign
+      file; a unit stage over a fixture list with the module's owner store pointed at a scratch
+      directory. Completeness: the rows first-use-budget/leg-time-store-pruned and
+      first-use-budget/suites-stay-out-of-the-owner-store.
+    falsified_by: >
+      Remove the prune call, or the gone-checkout test, or the owner-store guard, or its
+      temporary-directory test; the matching row must fail (checked by hand in round 2,
+      proof/VELDO-0214/hand_falsifiers.json).
 required_evidence: [unit, integration]
-rollback: Revert the five protected files, the suite, its manifest entry and the three mutation cases; the check returns to a fixed 1800s.
+rollback: Revert the five protected files, the suite, its manifest entry and the five mutation cases; the check returns to a fixed 1800s.
 ---
 
 ## Intent
@@ -100,7 +134,11 @@ source.
   leg line. A unit leg that passed is recorded in the authority's leg-time store,
   ~/.cache/veldo/gate-leg-seconds/, one file per authority checkout and declaration digest; the
   confined leg cannot write there. A failing unit leg may have stopped early, so it records
-  nothing and the last passing measurement stands.
+  nothing and the last passing measurement stands. After each recording the store drops the
+  files of checkouts that no longer exist and every file older than 30 days. The owner's store
+  takes only the authority's own list from a checkout outside the system temporary directory, so
+  a suite that drives the runner over a fixture list or a temporary authority copy leaves it
+  alone, and says so on the leg line.
 - Each integration leg receives VELDO_GATE_UNIT_SECONDS beside VELDO_GATE_LEG and
   VELDO_GATE_DECLARATION: the matching unit leg's last fresh measurement, bound to the leg and the
   digest, marked "this gate run" when the record of this verify.sh run (its mktemp file) produced
@@ -110,14 +148,18 @@ source.
 - The variable is protected as the declaration digest is: gate_legs.py drops a caller's value
   always and sets it only for an integration leg; verify.sh's veldo_candidate, in both copies,
   unsets it with the leg variables.
-- scripts/check_first_use.py computes max(1800, 2.0 x seconds) when the value is bound to the leg
-  and declaration it runs under, uses it as every nested run's timeout, and prints the budget and
-  its source before any run. Anything else is the 1800s floor, stated with the reason.
+- scripts/check_first_use.py computes min(max(1800, 2.0 x seconds), 21600) when the value is
+  bound to the leg and declaration it runs under, uses it as every nested run's timeout, and
+  prints the budget and its source before any run, with the cap named when it applies. A value
+  whose budget is not finite, and anything else, is the 1800s floor, stated with the reason.
 
 ## Limits
 
-- The unconfined leg runs with the owner's own authority (VELDO-0208), so its code can write the
-  owner's ~/.cache like anything else the owner can write. This adds no reach it lacked.
+- The candidate cannot set the variable, and the confined leg cannot reach the store. The
+  unconfined leg runs with the owner's own authority (VELDO-0208), so its code can rewrite the
+  store like anything else the owner can write, including the confined entry between the unit
+  and the integration stage. This adds no reach it lacked, and the budget it can choose is held
+  between the 1800s floor and the 6-hour ceiling; a run over it is red.
 - Candidate code can make its own unit leg slower and so raise its own budget; the budget only
   bounds how long the gate waits, and a slow unit leg is visible on the leg line.
 - The store holds the last passing measurement only; there is no history or percentile.
