@@ -10699,8 +10699,10 @@ def cases():
              "                P.push(proposal, record)\n"
              "            P.check_configured_remote(proposal['path'], proposal['default_branch'], proposal['remote'])\n",
              ['adoption/signer-enrolled'],
-             also=[("            if proposal['scaffold_commit'] is not None:\n                P.advance(proposal)\n"
-                    "                P.push(proposal, record)\n",
+             also=[("            if proposal['scaffold_commit'] is not None:\n"
+                    "                R.write(S, conn, journal, repository, 'provisioning', step='scaffold', at=clock(), "
+                    "generation=generation,\n                        remote=remote)\n"
+                    "                P.advance(proposal)\n                P.push(proposal, record)\n",
                     "            if proposal['scaffold_commit'] is not None:\n")])
     # B1: a missing adoption signer key raises instead of being not enrolled.
     adoption('adoption161-enrolled-missing-key-raises', 'control_repository.py',
@@ -10846,6 +10848,72 @@ def cases():
                   "plan['owner_public']) + adoption,\n",
                   "plan['owner_public']) + adoption + adoption.replace(ADOPTION_PRINCIPAL, 'extra-signer', 1),"
                   "  # defect: an extra signer\n")
+
+    # Round 4, R1: a record written while an instance starts, after its first read of the records and before its
+    # socket is bound, waits for a restart; a hand-off fault is unnamed or raised; a timeout is called no service.
+    adoption('adoption161-take-on-after-bind-missing', 'control_service.py',
+             "            service.take_on()\n            listener.settimeout(ACCEPT_SECONDS)\n",
+             "            listener.settimeout(ACCEPT_SECONDS)  # defect: the records are read only before the bind\n",
+             ['adoption/taken-on-while-starting'])
+    adoption('adoption161-take-on-timeout-unavailable', 'control_effect_executor_adoption.py',
+             "        if isinstance(error.__cause__ or error.__context__, TimeoutError):\n            return 'not_taken_on:timeout'\n",
+             "        pass  # defect: a service that did not answer in time is called unavailable\n",
+             ['adoption/take-on-faults-named'],
+             also=[("    except TimeoutError:\n        return 'not_taken_on:timeout'\n", "")])
+    adoption('adoption161-take-on-fault-raised', 'control_effect_executor_adoption.py',
+             "    except Exception as error:  # noqa: BLE001 - a hand-off fault is named, never raised\n"
+             "        return 'not_taken_on:unknown_outcome:' + type(error).__name__\n",
+             "    # defect: any other hand-off fault is raised\n",
+             ['adoption/take-on-faults-named'])
+    adoption('adoption161-take-on-refusal-unnamed', 'control_effect_executor_adoption.py',
+             "    except R.Refused as error:\n        return error.code\n    except CC.RoutingRefused as error:\n",
+             "    except CC.RoutingRefused as error:  # defect: a refusal of the hand-off loses its own code\n",
+             ['adoption/take-on-faults-named'])
+    # Round 4, R2: a list of known command keys instead of the allowlist; borrowed objects not looked for.
+    adoption('adoption161-configuration-denylist', 'control_repository_provisioner.py',
+             "        if '.' not in lowered or (allowed is not None and name not in allowed):\n",
+             "        if lowered == 'core.fsmonitor' or (section == 'filter' and name in ('clean', 'smudge', 'process')):"
+             "  # defect: known command keys only\n",
+             ['adoption/repository-commands'])
+    adoption('adoption161-alternates-unchecked', 'control_repository_provisioner.py',
+             "    if alternates(path):\n",
+             "    if False:  # defect: a repository that borrows objects is not refused\n",
+             ['adoption/repository-commands'])
+    # Round 4, R3: each refusal the store alone decides, moved back to its step after the push.
+    adoption('adoption161-identity-after-push', 'control_effect_executor_adoption.py',
+             "            step = 'identity'\n            try:\n                R.GI.configure_identities(conn, config['domain_uuid'], [record],\n"
+             "                                          {repository: {'path': proposal['path'], 'identity': proposal['identity']}},\n"
+             "                                          check_only=True)\n"
+             "            except R.GI.Refused as error:\n                raise R.Refused(error.code) from None\n            step = 'binding'\n",
+             "            step = 'binding'  # defect: the identity binding is judged only at its step, after the push\n",
+             ['adoption/store-checks-before-push'])
+    adoption('adoption161-store-binding-after-push', 'control_effect_executor_adoption.py',
+             "            if S.bound_repository(conn, config['domain_uuid'], repository) not in (None, os.path.realpath(proposal['path'])):\n",
+             "            if False:  # defect: the store's binding is judged only at its step, after the push\n",
+             ['adoption/store-checks-before-push'])
+    adoption('adoption161-generation-after-push', 'control_effect_executor_adoption.py',
+             "            if generation < R.store_generation(conn):\n",
+             "            if False:  # defect: the generation is judged only by the signer, after the push\n",
+             ['adoption/store-checks-before-push'])
+    # Round 4, R4: an interrupted run's record left provisioning; a live run not told from an ended one.
+    adoption('adoption161-interrupted-left-provisioning', 'control_effect_executor_adoption.py',
+             "                and existing.get('request') == request):\n",
+             "                and existing.get('request') == request and False):  # defect: left provisioning\n",
+             ['adoption/interrupted'])
+    adoption('adoption161-live-run-unheld', 'control_effect_executor_adoption.py',
+             "        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)\n",
+             "        pass  # defect: a live run holds nothing another run can see\n",
+             ['adoption/interrupted'])
+    # Round 4, review weakness: an adoption signature made outside AdoptionSigner.sign, which the row's watch
+    # wraps, so outside the row's agent; the row counts the stand-in's signatures of the adoption key.
+    adoption('adoption161-signature-unwatched', 'control_repository.py',
+             "        def sign(message):\n            return self.sign(message, request)\n        return sign\n\n"
+             "    def sign(self, message, request):\n",
+             "        def sign(message):\n            return AdoptionSigner._sign(self, message, request)  # defect: signed "
+             "outside the signer's own call\n        return sign\n\n"
+             "    def sign(self, message, request):\n        return AdoptionSigner._sign(self, message, request)\n\n"
+             "    def _sign(self, message, request):\n",
+             ['adoption/signer-no-agent'])
 
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])

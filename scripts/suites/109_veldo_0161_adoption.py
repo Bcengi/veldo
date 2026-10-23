@@ -595,9 +595,12 @@ def _v161_suite():
                     real = shutil.which('ssh-keygen')
                     (self.shim / 'ssh-keygen').write_text(
                         '#!%s\nimport json, os, sys\n'
+                        'def after(flag):\n'
+                        '    return sys.argv[sys.argv.index(flag) + 1] if flag in sys.argv[:-1] else None\n'
                         'with open(%r, "a") as f:\n'
                         '    f.write(json.dumps({"agent": [os.environ.get(k) for k in ("SSH_AUTH_SOCK", "SSH_AGENT_PID")'
-                        ' if os.environ.get(k)], "argv": sys.argv[1:3]}) + "\\n")\n'
+                        ' if os.environ.get(k)], "argv": sys.argv[1:3], "key": after("-f"), "namespace": after("-n")})'
+                        ' + "\\n")\n'
                         'os.execv(%r, [%r] + sys.argv[1:])\n' % (sys.executable, str(self.log), real, real))
                     (self.shim / 'ssh-keygen').chmod(0o700)
                     self.connections, self.signed, self.stop = [], 0, threading.Event()
@@ -704,7 +707,10 @@ def _v161_suite():
                                         ('crafted', False), ('unconfigured', True), ('fault', True),
                                         ('tk-answered', True), ('gamma', True), ('tk-store', True),
                                         ('tk-retry-x', True), ('tk-retry-y', True), ('tk-signer', True),
-                                        ('tk-signature', True), ('agent', True)):
+                                        ('tk-signature', True), ('agent', True), ('commanded', False),
+                                        ('borrowed', False), ('borrowing', False), ('starting', True),
+                                        ('tk-fault', True), ('interrupted', False), ('orphan-path', False),
+                                        ('store-bound', False), ('behind', False)):
                     path, bare = make_repository(label, scaffold)
                     remote = wire.remote(label, bare, owner='stranger' if label == 'wrong' else W['OWNER'])
                     # The remote the repository itself is configured with (prepare checks it is the one named).
@@ -1144,6 +1150,103 @@ def _v161_suite():
                              metrics.get('adopted') == 3 and metrics.get('taken_on') == 3)])
                         stop_service(restarted)
 
+                # R1 (round 4): a record written while an instance starts, after it read the records and before its
+                # socket is bound, is taken on by that same instance. The installed executable runs under a wrapper
+                # that holds the instance after its first read of the records on a FIFO the row opens: the row
+                # adopts in that window (the hand-off finds no socket), then lets it go on and reads, on a second
+                # FIFO, what the instance serves once it is ready. Where local sockets are refused the bind is a
+                # stand-in (a file at the socket's path and a pipe the serve loop selects on); everything else is
+                # the installed service's own serve().
+                with region('adoption/taken-on-while-starting'):
+                    starting = repos['starting']
+                    starting_rid, _r, _ = settle('A-starting', prepared('starting', starting['uuid'], starting['remote'],
+                                                                      starting['path']))
+                    gate, ready = base / 'starting-gate', base / 'starting-ready'
+                    os.mkfifo(gate)
+                    os.mkfifo(ready)
+                    wrapper = base / 'starting.py'
+                    wrapper.write_text(
+                        'import importlib.util, json, os, sys\n'
+                        'executable, config, gate, ready, stand_in = sys.argv[1:6]\n'
+                        'spec = importlib.util.spec_from_file_location("control_service", executable)\n'
+                        'CS = importlib.util.module_from_spec(spec)\n'
+                        'spec.loader.exec_module(CS)\n'
+                        'calls, made = [], []\n'
+                        'real_take_on, real_init, real_notify = CS.Service.take_on, CS.Service.__init__, CS.notify\n'
+                        'def take_on(self, now=None):\n'
+                        '    observed = real_take_on(self, now)\n'
+                        '    calls.append([o.get("repository_uuid") for o in observed])\n'
+                        '    if len(calls) == 1:\n'
+                        '        with open(gate) as held:\n'
+                        '            held.read()\n'
+                        '    return observed\n'
+                        'def init(self, *args, **kwargs):\n'
+                        '    real_init(self, *args, **kwargs)\n'
+                        '    made.append(self)\n'
+                        'def notify(message):\n'
+                        '    real_notify(message)\n'
+                        '    if message.startswith("READY=1"):\n'
+                        '        with open(ready, "w") as out:\n'
+                        '            json.dump({"repositories": sorted(made[0].repositories), "calls": calls,\n'
+                        '                       "instance": made[0].instance, "pid": os.getpid()}, out, default=str)\n'
+                        'class Listener:\n'
+                        '    def __init__(self, address):\n'
+                        '        self.read, self.write = os.pipe()\n'
+                        '        open(address, "w").close()\n'
+                        '    def fileno(self):\n'
+                        '        return self.read\n'
+                        '    def settimeout(self, seconds):\n'
+                        '        pass\n'
+                        '    def close(self):\n'
+                        '        os.close(self.read)\n'
+                        '        os.close(self.write)\n'
+                        'CS.Service.take_on, CS.Service.__init__, CS.notify = take_on, init, notify\n'
+                        'if stand_in == "1":\n'
+                        '    CS.CC.bind = Listener\n'
+                        'CS.serve(config)\n')
+                    env = {k: v for k, v in os.environ.items() if k not in ('NOTIFY_SOCKET',)}
+                    starter = subprocess.Popen([service_config['python'], '-B', str(wrapper), service_config['executable'],
+                                                config_path, str(gate), str(ready), '0' if UNIX else '1'],
+                                               stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                                               env=env)
+                    services.append(starter)
+
+                    def within(action, seconds=60):
+                        """`action` (a FIFO open or read, which blocks until the instance reaches it), or a raise
+                        naming why the instance did not reach it."""
+                        box = []
+                        worker = threading.Thread(target=lambda: box.append(action()), daemon=True)
+                        worker.start()
+                        worker.join(seconds)
+                        if not box:
+                            starter.kill()
+                            raise RuntimeError('the starting instance did not reach the row: %s'
+                                               % starter.stderr.read().decode()[-500:])
+                        return box[0]
+                    window = within(lambda: open(gate, 'w'))
+                    try:
+                        # The instance has read the records once and holds before its socket is bound.
+                        starting_result = adopt(starting_rid)
+                        starting_waiting = (record(starting['uuid']) or {}).get('state')
+                    finally:
+                        window.close()
+                    report = json.loads(within(lambda: Path(ready).read_text()))
+                    starting_record = record(starting['uuid']) or {}
+                    stop_service(starter)
+                    check('adoption/taken-on-while-starting', [
+                        ('the instance read the records before the adoption wrote its record',
+                         starting['uuid'] not in ((report.get('calls') or [[]])[0])),
+                        ('the adoption in that window found no socket: not_taken_on:authority_unavailable, the record '
+                         'provisioning with its binding', starting_result.get('reason') == 'not_taken_on:authority_unavailable'
+                         and starting_waiting == 'provisioning' and bool(starting_record.get('enrollment'))),
+                        ('that same instance serves it once it is ready, with no restart',
+                         starting['uuid'] in (report.get('repositories') or [])),
+                        ('its record is active, naming that instance and process',
+                         starting_record.get('state') == 'active'
+                         and (starting_record.get('taken_on') or {}).get('instance_id')
+                         == (report.get('instance') or {}).get('instance_id')
+                         and (starting_record.get('taken_on') or {}).get('pid') == starter.pid == report.get('pid'))])
+
                 # ---------------------------------------------------------------------------------------------
                 # The effect's own refusals, before anything is moved or pushed, and its named outcomes.
                 # ---------------------------------------------------------------------------------------------
@@ -1244,6 +1347,27 @@ def _v161_suite():
                     monitored_rid, _r, _ = settle('A-monitored', hand_proposal(monitored, monitored['uuid'],
                                                                                 monitored_commit))
                     monitored_result = adopt(monitored_rid)
+                    # R2 (round 4): a command the prepare fetch would run from the repository's own configuration,
+                    # core.alternateRefsCommand, which Git runs when the repository borrows objects from another.
+                    commanded, borrowed, borrowing = repos['commanded'], repos['borrowed'], repos['borrowing']
+                    git(commanded['path'], 'config', 'core.alternateRefsCommand', str(command))
+                    lender = os.path.join(repos['crafted']['path'], '.git', 'objects')
+                    for repo in (borrowed, borrowing):
+                        Path(repo['path'], '.git', 'objects', 'info', 'alternates').write_text(lender + '\n')
+                    # The reviewer's scenario: alternates and the command, both in the repository.
+                    git(borrowed['path'], 'config', 'core.alternateRefsCommand', str(command))
+                    commanded_prepare = prepare_code(commanded, commanded['uuid'])
+                    borrowed_prepare = prepare_code(borrowed, borrowed['uuid'])
+                    borrowing_prepare = prepare_code(borrowing, 'repository-161-borrowing2')
+                    # Laid when the owner was asked (before it borrowed anything); it borrows objects afterwards.
+                    alternates = Path(borrowing['path'], '.git', 'objects', 'info', 'alternates')
+                    alternates.rename(alternates.with_name('alternates.later'))
+                    borrowing_commit = PR.lay_scaffold(borrowing['path'], borrowing['base'], record_identity,
+                                                       str(ROOT / 'engine'), 'refs/veldo/adoption/' + borrowing['uuid'])
+                    alternates.with_name('alternates.later').rename(alternates)
+                    borrowing_rid, _r, _ = settle('A-borrowing', hand_proposal(borrowing, borrowing['uuid'],
+                                                                                borrowing_commit))
+                    borrowing_result = adopt(borrowing_rid)
                     check('adoption/repository-commands', [
                         ('a local step runs no fsmonitor of the repository (git status with one configured)',
                          not status_ran),
@@ -1258,6 +1382,22 @@ def _v161_suite():
                          and (record(monitored['uuid']) or {}).get('state') == 'failed'
                          and tip(monitored['path']) == monitored['base'] and tip(monitored['bare']) == monitored['base']
                          and nothing_adopted(monitored) and refs(monitored['path']) == []),
+                        ('prepare refuses a repository whose configuration names core.alternateRefsCommand, a key '
+                         'outside the local steps\' allowlist, laying nothing',
+                         commanded_prepare == 'invalid_input:repository_command:core.alternaterefscommand'
+                         and refs(commanded['path']) == []),
+                        ('the reviewer\'s scenario: a repository borrowing objects with that command configured is '
+                         'refused at prepare, laying nothing',
+                         borrowed_prepare == 'invalid_input:repository_command:core.alternaterefscommand'
+                         and refs(borrowed['path']) == []),
+                        ('prepare refuses a repository that borrows objects from another, laying nothing',
+                         borrowing_prepare == 'invalid_input:repository_alternates'
+                         and 'refs/veldo/adoption/repository-161-borrowing2' not in refs(borrowing['path'])),
+                        ('the settled adoption of a repository that came to borrow objects refuses it before the '
+                         'branch moves', borrowing_result.get('reason') == 'invalid_input:repository_alternates'
+                         and (record(borrowing['uuid']) or {}).get('state') == 'failed'
+                         and tip(borrowing['path']) == borrowing['base'] and tip(borrowing['bare']) == borrowing['base']
+                         and nothing_adopted(borrowing) and refs(borrowing['path']) == []),
                         ('no command of the repository ran', not marker.exists())])
 
                 with region('adoption/scaffold-problems'):
@@ -1537,6 +1677,104 @@ def _v161_suite():
                          (third.get(retry_x['uuid']) or {}).get('outcome') == 'accepted'
                          and (record(retry_x['uuid']) or {}).get('state') == 'active' and svc.adoption_due() is None)])
 
+                # R1 (round 4): every fault of the hand-off is named, never raised; a timeout is its own.
+                with region('adoption/take-on-faults-named'):
+                    hand = {'repository': answered['uuid'], 'path': answered['path']}
+
+                    def raising(error):
+                        def send_to(*args, **kwargs):
+                            raise error
+                        return send_to
+
+                    def wrapped(cause):
+                        """control_client's own shape: every socket fault re-raised as authority_unavailable."""
+                        def send_to(*args, **kwargs):
+                            try:
+                                raise cause
+                            except OSError as error:
+                                raise AD.CC.RoutingRefused('authority_unavailable', str(error)) from None
+                        return send_to
+
+                    def wrapped_context(cause):
+                        def send_to(*args, **kwargs):
+                            try:
+                                raise cause
+                            except OSError as error:
+                                raise AD.CC.RoutingRefused('authority_unavailable', str(error))
+                        return send_to
+                    no_journal_key = dict(effect_config, journal=dict(effect_config['journal'],
+                                                                      key=str(base / 'no-journal-key')))
+                    faults = {
+                        'the service did not answer in time (control_client\'s wrapping)':
+                            (AD.take_on(effect_config, hand, answered_rid, trust, wrapped_context(socket.timeout('timed out'))),
+                             'not_taken_on:timeout'),
+                        'a timeout raised as it is': (AD.take_on(effect_config, hand, answered_rid, trust,
+                                                                 raising(socket.timeout('timed out'))), 'not_taken_on:timeout'),
+                        'no service at the socket': (AD.take_on(effect_config, hand, answered_rid, trust,
+                                                                wrapped_context(ConnectionRefusedError(111, 'refused'))),
+                                                     'not_taken_on:authority_unavailable'),
+                        'the journal key did not sign the request': (AD.take_on(no_journal_key, hand, answered_rid, trust,
+                                                                                judged(in_process())),
+                                                                     'unavailable_service:journal_key'),
+                        'a malformed answer': (AD.take_on(effect_config, hand, answered_rid, trust,
+                                                          raising(ValueError('not JSON'))),
+                                               'not_taken_on:unknown_outcome:ValueError')}
+                    tk_fault = repos['tk-fault']
+                    tk_fault_rid, _r, _ = settle('A-tk-fault', prepared('tk-fault', tk_fault['uuid'], tk_fault['remote'],
+                                                                      tk_fault['path']))
+                    tk_fault_result = adopt(tk_fault_rid, send=raising(subprocess.TimeoutExpired(['ssh-keygen'], 30)))
+                    check('adoption/take-on-faults-named', [
+                        ('%s: %s' % (case, expected), code == expected) for case, (code, expected) in faults.items()] + [
+                        ('an adoption whose hand-off faults reports the hand-off\'s own named code and leaves the record '
+                         'provisioning for a service, never unknown_outcome of the whole adoption',
+                         tk_fault_result.get('reason') == 'not_taken_on:unknown_outcome:TimeoutExpired'
+                         and tk_fault_result.get('state') == 'provisioning' and tk_fault_result.get('ok') is True)])
+
+                # R4 (round 4): a run that ended without an exception (killed, the host restarted) left its record
+                # provisioning at the scaffold step with no enrollment, and its scaffold ref.
+                with region('adoption/interrupted'):
+                    cut = repos['interrupted']
+                    cut_proposal = prepared('interrupted', cut['uuid'], cut['remote'], cut['path'])
+                    cut_rid, _r, _ = settle('A-interrupted', cut_proposal)
+                    cut_settlement = R.settled(S, CM, conn, cut_rid)['settlement_id']
+                    cut_remote = {'url': cut['remote'], 'owner': W['OWNER'], 'default_branch': 'main'}
+                    R.write(S, conn, ('authority', journal_sign), cut['uuid'], 'provisioning', step='settled',
+                            domain_uuid=DOMAIN, name='interrupted', identity='fixture', path=cut['path'], remote=cut_remote,
+                            request=cut_rid, settlement=cut_settlement, scaffold_commit=cut_proposal['scaffold_commit'],
+                            base_commit=cut['base'], enrollment=None, reason=None)
+                    R.write(S, conn, ('authority', journal_sign), cut['uuid'], 'provisioning', step='scaffold',
+                            remote=cut_remote)
+                    laid_before = refs(cut['path'])
+                    # A live run holds its repository's lock: a second run touches nothing.
+                    live = os.open(AD.lock_path(effect_config, cut['uuid']), os.O_RDWR | os.O_CREAT, 0o600)
+                    try:
+                        import fcntl
+                        fcntl.flock(live, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                        while_live = adopt(cut_rid)
+                        live_record = record(cut['uuid']) or {}
+                        live_refs = refs(cut['path'])
+                    finally:
+                        os.close(live)
+                    after_end = adopt(cut_rid)
+                    cut_record = record(cut['uuid']) or {}
+                    once_more = adopt(cut_rid)
+                    check('adoption/interrupted', [
+                        ('the interrupted run left the record provisioning at the scaffold step, with its scaffold ref',
+                         laid_before == ['refs/veldo/adoption/' + cut['uuid']]),
+                        ('while a live run holds it, another run refuses stale_subject:adoption_in_progress and touches '
+                         'nothing', while_live.get('reason') == 'stale_subject:adoption_in_progress'
+                         and live_record.get('state') == 'provisioning' and live_refs == laid_before),
+                        ('once no live run holds it, the next run names it: failed, unknown_outcome:interrupted, at the '
+                         'step the record named', after_end.get('reason') == 'unknown_outcome:interrupted'
+                         and after_end.get('state') == 'failed' and cut_record.get('state') == 'failed'
+                         and cut_record.get('reason') == 'unknown_outcome:interrupted'
+                         and (cut_record.get('history') or [{}])[-1].get('step') == 'scaffold'),
+                        ('the scaffold ref is removed, nothing more is pushed, signed, enrolled or bound',
+                         refs(cut['path']) == [] and tip(cut['path']) == cut['base'] and tip(cut['bare']) == cut['base']
+                         and nothing_adopted(cut)),
+                        ('a failed record is final: a further run refuses stale_subject:already_adopted',
+                         once_more.get('reason') == 'stale_subject:already_adopted')])
+
                 with region('adoption/active-served-again'):
                     template_path = sorted(service_config['receiver']['configs'].values())[0]
                     template = json.loads(Path(template_path).read_text())
@@ -1567,14 +1805,69 @@ def _v161_suite():
                          and (os.stat(answered_receiver).st_mode & 0o777) == 0o600),
                         ('the installed receiver configuration is not written by it', Path(template_path).read_text() == rewritten)])
 
+                # R3 (round 4): every refusal the identity, binding and signature steps would make from the store
+                # alone comes before the branch moves or anything is pushed. Three repositories whose scaffold is
+                # missing (so a commit would be pushed), each refused by the store for one reason.
+                with region('adoption/store-checks-before-push'):
+                    orphan, bound, behind = repos['orphan-path'], repos['store-bound'], repos['behind']
+                    # The owner holds project_owner again (active-served-again took it away), so he can settle.
+                    admin('steward', 'change_roles', {'principal': 'owner', 'roles': ['project_owner']})
+                    # The owner removed an adopted repository's record and binding by hand; its immutable identity
+                    # row stays, and the same path is adopted under a new repository id.
+                    GI.configure_identities(conn, DOMAIN, [identity], {'repository-161-orphan-removed': {
+                        'path': orphan['path'], 'identity': 'fixture'}})
+                    # The store binds the repository id at another path.
+                    conn.execute(S._BINDINGS_DDL)
+                    conn.execute('INSERT INTO repository_bindings (domain_uuid, repository_uuid, path) VALUES (?,?,?)',
+                                 (DOMAIN, bound['uuid'], str(base / 'elsewhere-161')))
+                    if conn.in_transaction:
+                        conn.commit()
+                    store_cases = {}
+                    for label, repo, expected in (('the path is another repository\'s identity binding', orphan,
+                                                   'binding_mismatch:repository_identity_path'),
+                                                  ('the store binds it at another path', bound,
+                                                   'repository_binding_conflict'),
+                                                  ('the configured generation is below the store\'s', behind,
+                                                   'signature_refused:scope:generation')):
+                        repo_proposal = prepared(repo['uuid'].rsplit('-', 1)[-1], repo['uuid'], repo['remote'], repo['path'])
+                        repo_rid, _r, _ = settle('A-' + repo['uuid'], repo_proposal)
+                        if repo is behind:
+                            # The store's journal moved to generation 2 (the last write of this suite at another
+                            # generation; nothing after it signs or serves).
+                            S.execute(conn, dict(command_id=next_id('fixture'), principal='authority',
+                                                 operation='upsert_entity', parameters=dict(
+                                                     entity_id='note:generation-161', kind='note', data={}),
+                                                 expected_versions={'note:generation-161': 0}, artifact_digests=[],
+                                                 nonce=next_id('fixture-nonce')), 'authority', journal_sign, 2)
+                        store_cases[label] = (repo, repo_proposal, adopt(repo_rid), expected)
+                    check('adoption/store-checks-before-push', [
+                        ('%s: refused %s, its record failed naming it [%s]' % (label, expected, outcome.get('reason')),
+                         outcome.get('reason') == expected and (record(repo['uuid']) or {}).get('state') == 'failed'
+                         and (record(repo['uuid']) or {}).get('reason') == expected)
+                        for label, (repo, repo_proposal, outcome, expected) in store_cases.items()] + [
+                        ('%s: a scaffold commit was named, and the branch never moved, nothing was pushed and the ref '
+                         'is removed' % label, repo_proposal.get('scaffold_commit') is not None
+                         and tip(repo['path']) == repo['base'] and tip(repo['bare']) == repo['base'] and refs(repo['path']) == [])
+                        for label, (repo, repo_proposal, outcome, expected) in store_cases.items()] + [
+                        ('%s: nothing is signed, enrolled or bound' % label, nothing_adopted(repo))
+                        for label, (repo, repo_proposal, outcome, expected) in store_cases.items()
+                        if repo is not bound])
+
                 # Every adoption signature of every row above, judged once they are all made and before the fence's
                 # own end: its stand-in records each one, and nothing may have connected to its agent.
                 put_back()
                 watch.close()
                 every, signatures = watch.invocations(), signature_rows()
+                # The journaled signatures the adoption key made: every one but the row the take-on-refusals region
+                # planted as a fixture (an owner's binding no adoption key signed).
+                journaled = [s for s in signatures if s.get('repository') != repos['tk-signer']['uuid']]
+                adoption_signs = [a for a in every if a['argv'] == ['-Y', 'sign'] and a.get('key') == str(adoption_key)
+                                  and a.get('namespace') == 'veldo-enrollment']
                 check('adoption/signer-no-agent', agent_row + [
-                    ('every adoption signature the suite asked for ran with this row\'s agent named [%d asked, %d '
-                     'journaled]' % (watch.signed, len(signatures)), watch.signed >= max(2, len(signatures))),
+                    ('every adoption signature journaled was made by the stand-in, with this row\'s agent named: as '
+                     'many -Y sign of the adoption key in veldo-enrollment as signatures journaled [%d signed there, '
+                     '%d journaled]' % (len(adoption_signs), len(journaled)),
+                     len(journaled) >= 2 and len(adoption_signs) == len(journaled)),
                     ('no ssh-keygen any row started there had an SSH agent in its environment',
                      bool(every) and all(a['agent'] == [] for a in every)),
                     ('nothing connected to this row\'s agent %s' % watch.connections[:3], watch.connections == [])])
