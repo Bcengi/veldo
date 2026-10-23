@@ -257,6 +257,9 @@ LIM = _organ('control_account_limit', lazy=True)
 # VELDO-0148: the land station, each land its own land dispatch, and a land the trunk moved under re-landed.
 LS = _organ('control_landing_station', lazy=True)
 WORK = 'work.json'
+# VELDO-0143 R5-3: a factory project in these states runs no cycles again (entity_contract's project lifecycle: both are
+# terminal), so no other line waits on the factory line for it.
+FACTORY_ENDED = ('CANCELED', 'COMPLETED')
 
 # The store's own generic commands, taken before any service registers one of its own on this module
 # (control_claim.Receiver adds claim_operation), so a claim transition is never reachable as one.
@@ -2017,18 +2020,21 @@ class Line:
         """VELDO-0143 R3-1: this line's project cycles, built once; whether it has them. The service's one
         connection holds one set of the cycles' owners (VELDO-0188 makes several lines run on it), and the loop's
         factory line keeps them, whatever order the loop visits the lines in (sorted repository uuids) and whenever
-        the factory project comes to want them: another line builds none while there is a factory project and the
-        factory line has not built its cycles, whether or not it wants them now (a paused factory project resumed
-        later, R4-5), and another line whose build is
-        refused is not tried again in this process (the refusal is a fault of the pass it was refused in; the
-        line's units are still offered). The factory line's own build is tried on every pass until it holds."""
+        the factory project comes to want them: another line builds none while there is a factory project that can
+        still run (not CANCELED or COMPLETED, R5-3) and the factory line has not built its cycles, whether or not it
+        wants them now (a paused factory project resumed later, R4-5), and each pass it defers names that in its
+        faults (pm_cycles:deferred_to_factory_line). Another line whose build is refused is not tried again in this
+        process (the refusal is a fault of the pass it was refused in; the line's units are still offered). The
+        factory line's own build is tried on every pass until it holds."""
         if getattr(self, 'pm_cycles', None) is not None:
             return True
         if getattr(self, 'pm_refusal', None) is not None:
             return False
         factory = self.loop.lines.get(self.loop.factory_line)
         if factory is not None and factory is not self and getattr(factory, 'pm_cycles', None) is None \
-                and any(data.get('name') == 'factory' for data in self._rows('project')):
+                and any(data.get('name') == 'factory' and data.get('state') not in FACTORY_ENDED
+                        for data in self._rows('project')):
+            report['faults'].append({'repository': self.repository, 'reason': 'pm_cycles:deferred_to_factory_line'})
             return False
         try:
             self.pm_cycles = _organ('control_workflow_cycle_pm').from_line(self)

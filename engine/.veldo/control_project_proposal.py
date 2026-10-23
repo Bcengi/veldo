@@ -32,19 +32,19 @@ proposal offered settles nothing either: the identity was asked and his answer d
 is `failed` invalid_input:answer:identity and its report tells him why (VELDO-0143 F2).
 
 A CORRECTION IS BOUND TO HIS WORDS (correction_problems). The PM reads his correction; it never chooses for him.
-The corrected proposal settles only when each of its terms is the one he was shown or the one his correction
-says: the project's name is the presented one or named in his words; the identity is the presented one or the
-one configured identity his words name; the visibility is the one shown for that identity or the one visibility
-his words name; and the mode is the one shown for that identity and name (an adoption is only ever an adoption
-he was shown, its scaffold commit the one shown; a name or identity he was not shown is a creation). A word he
-negates is not said (VELDO-0143 R3-2, R4-1, R4-2, R4-4): an identity or visibility counts only where no negator
-(not, no, never, neither, nor, nothing, without, cannot, avoid, except, instead of, rather than, other than,
-anything but, a word ending n't, or dont, wont, cant, didnt and their kind) stands before it in its clause (the
-words since the last , . ; : ! ? ( ) or line break, or the last but, and, so, except an "and" whose next word is
-another value of the same field) and no "? no" answers it; an identity or visibility he was shown stays only
-where no occurrence of its word, whatever follows it, is negated; and one that negates one value of a field and
-affirms another through a bare "and" is ambiguous (invalid_input:correction:<field>:ambiguous). Anything else
-fails the decision by name, invalid_input:correction:<field>, before anything is built or laid, and the one
+The corrected proposal settles only when each of its terms is one his words bind, by a rule that does not read
+what a negator applies to (VELDO-0143 round 6, DECISIONS 26). His words NAME a value of a field wherever its word
+occurs in them, even inside another word ("publicly", "bcengi-owned", "nonpublic"), and they NEGATE where a
+negator stands anywhere in them, on any line, joined to anything or not (non, not, no, never, neither, nor, none,
+nothing, without, cannot, avoid, except, instead of, rather than, other than, anything but, any word ending n't,
+dont, wont, cant, didnt and their kind, and the others _NEGATOR lists). For the identity and the visibility: a
+value other than the one he was shown is bound only when his words name exactly that value of the field and
+negate nothing; the value he was shown stays only when his words name no value of the field at all. For the
+project's name: a name other than the presented one only when his words name it and negate nothing. The mode is
+the one shown for that identity and name (an adoption is only ever an adoption he was shown, its scaffold commit
+the one shown; a name or identity he was not shown is a creation). An honest correction with a negator in it is
+refused rather than guessed. Anything else fails the decision by name, invalid_input:correction:<field>, before
+anything is built or laid, his report tells him in plain words that it could not be set up and why, and the one
 judge refuses it again (no_settled_decision:correction:<field>).
 
 A NAME IS ONE PROJECT (VELDO-0143 F3). A project whose name is already a project's, or the name of another
@@ -139,8 +139,9 @@ AUTHORITY_POLICY = {'team_amendment': [OWNER_ROLE]}
 COORDINATION_BUDGET = {'capacity': 4, 'invocations': 400, 'wall_seconds': 7 * 86400}
 DEFAULT_BRANCH = 'main'
 _NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$')
-# A word's edges (VELDO-0143 R4-1): a letter, digit or underscore continues a word, and so does a '.' or '-' joined to
-# one ("shoal-two", "fjord.io"); a '.' or '-' with nothing after it ends the word ("Keep it private, not public.").
+# A whole word's edges, for a project's name and an identity his approval names (VELDO-0143 R4-1): a letter, digit or
+# underscore continues a word, and so does a '.' or '-' joined to one ("shoal-two", "fjord.io"); a '.' or '-' with
+# nothing after it ends the word.
 _LEFT_EDGE = r'(?<![A-Za-z0-9_])(?<![A-Za-z0-9_][.-])'
 _RIGHT_EDGE = r'(?![A-Za-z0-9_]|[.-][A-Za-z0-9_])'
 
@@ -218,82 +219,38 @@ def names(text, word):
     return re.search(_LEFT_EDGE + re.escape(word) + _RIGHT_EDGE, text, re.IGNORECASE) is not None
 
 
-# VELDO-0143 R3-2, R4-2 and R4-4: a negator, and where a clause begins, for what his words affirm.
-_NEGATOR = re.compile(r"(?<![A-Za-z0-9_])(?:not|no|never|neither|nor|nothing|without|cannot|avoid|except"
-                      r"|instead\s+of|rather\s+than|other\s+than|anything\s+but"
-                      r"|(?:do|does|did|is|are|was|were|wo|ca|could|would|should|must|has|have|had|need)nt"
-                      r"|[A-Za-z]+n['\u2019]t)(?![A-Za-z0-9_])", re.IGNORECASE)
-_CLAUSE = re.compile(r"[,.;:!?()\n]|(?<![A-Za-z0-9_])(?:(?<!anything\s)but|and|so)(?![A-Za-z0-9_])", re.IGNORECASE)
-# A negator after the word, as the answer to it: "public? no".
-_ANSWERED_NO = re.compile(r"""[\s"'\u2019)]*\?+\s*(?:no|not|never|nope)(?![A-Za-z0-9_])""", re.IGNORECASE)
+# VELDO-0143 round 6: where a value is named and whether a negator stands anywhere, failing closed. A value is named
+# wherever its word occurs, even inside another word ("publicly", "nonpublic"). A negator starts where no letter or
+# digit stands before it and, but for the prefix "non", ends where none follows it, so a hyphen, an underscore, a
+# period or a line break never joins it to another word.
+_START, _END = r'(?<![^\W_])', r'(?![^\W_])'
+_NEGATOR = re.compile(_START + r"(?:non|(?:not|no|nope|nah|nay|none|nor|neither|never|nothing|nobody|nowhere"
+                      r"|without|cannot|avoid|avoiding|except|excepting|exclude|excluding|instead\s+of|rather\s+than"
+                      r"|other\s+than|in\s+place\s+of|(?:anything|everything|all)\s+but|skip|drop|remove|refuse"
+                      r"|reject|decline|against|wrong|stop|hate|dislike|mistake|forget|nein|nicht|kein|keine|pas"
+                      r"|(?:do|does|did|is|are|was|were|wo|ca|could|would|should|must|might|has|have|had|need|sha|ai)nt"
+                      r"|\w*n['\u2018\u2019`\u00b4]t|\u043d\u0435|\u043d\u0435\u0442|\u043d\u0438)"
+                      + _END + r")", re.IGNORECASE)
 
 
-def _clauses(text, end, values):
-    """The boundaries before `end`, each (start, end, token): every , . ; : ! ? ( ) or line break, "but", "and"
-    and "so", except an "and" whose next word is one of `values`, the field's values ("don't use bcengi and
-    personal" negates both, R4-2). "or" and "nor" never end a clause ("nor" is a negator)."""
-    found = []
-    for c in _CLAUSE.finditer(text, 0, end):
-        if c.group().lower() == 'and' and any(re.match(r'\s+' + _LEFT_EDGE + re.escape(v) + _RIGHT_EDGE, text[c.end():],
-                                                        re.IGNORECASE) for v in values):
-            continue
-        found.append((c.start(), c.end(), c.group().lower()))
-    return found
+def negates(text):
+    """Whether a negator stands anywhere in `text`."""
+    return isinstance(text, str) and _NEGATOR.search(text) is not None
 
 
-def _occurrences(text, word, values, whole=True):
-    """For each occurrence of `word` in `text` (ignoring case), (start, negated, boundary): negated where a
-    negator stands before it in its clause or "? no" answers it; boundary the token its clause began at (None at
-    the start). `whole`: only whole words; otherwise every occurrence whatever follows it (the fail-closed reading
-    of a value he was shown, R4-1)."""
-    if not isinstance(text, str) or not _is_str(word):
-        return []
-    pattern = _LEFT_EDGE + re.escape(word) + (_RIGHT_EDGE if whole else '')
-    found = []
-    for match in re.finditer(pattern, text, re.IGNORECASE):
-        bounds = _clauses(text, match.start(), values)
-        clause = bounds[-1][1] if bounds else 0
-        negated_here = (_NEGATOR.search(text, clause, match.start()) is not None
-                        or _ANSWERED_NO.match(text, match.end()) is not None)
-        found.append((match.start(), negated_here, bounds[-1] if bounds else None))
-    return found
+def named(text, words):
+    """Whether `text` names one of `words`: any occurrence, ignoring case, even inside another word."""
+    return isinstance(text, str) and any(re.search(re.escape(w), text, re.IGNORECASE) is not None
+                                         for w in words if _is_str(w))
 
 
-def mentions(text, word, values=()):
-    """For each whole-word occurrence of `word` in `text` (ignoring case), whether his words affirm it: False where
-    a negator stands before it in its clause ("not under bcengi", "don't make it public") or "? no" answers it,
-    True otherwise. `values` are the field's values, for where a clause ends."""
-    return [not negated_here for _, negated_here, _ in _occurrences(text, word, values)]
-
-
-def affirmed(text, words, values=()):
-    """Whether `text` names one of `words` and negates none of them."""
-    seen = [flag for word in words for flag in mentions(text, word, values)]
-    return bool(seen) and all(seen)
-
-
-def negated(text, words, values=()):
-    """Whether `text` negates one of `words` anywhere, failing closed (R4-1): any occurrence of the word, whole or
-    not, whatever follows it, with a negator before it in its clause."""
-    return any(negated_here for word in words for _, negated_here, _ in _occurrences(text, word, values, whole=False))
-
-
-def ambiguous(text, groups):
-    """Whether `text` negates one value of a field and affirms another through a bare "and" (R4-2): "don't use
-    bcengi and use personal" may negate both. `groups` are the field's values, each the words of one value."""
-    values = [w for group in groups for w in group]
-    for group in groups:
-        for word in group:
-            for start, negated_here, boundary in _occurrences(text, word, values):
-                if negated_here or boundary is None or boundary[2] != 'and':
-                    continue
-                before = _clauses(text, boundary[0], values)
-                opened = before[-1][1] if before else 0
-                if any(negated_there and opened <= at < boundary[0]
-                       for other in groups if other is not group for w in other
-                       for at, negated_there, _ in _occurrences(text, w, values)):
-                    return True
-    return False
+def bound(value, shown, said, negated):
+    """Whether his words bind `value` of a field he was shown `shown`, given `said`, the values of the field they
+    name, and `negated`, whether they negate anywhere: another value only when they name exactly it and negate
+    nothing; the shown value only when they name none."""
+    if value != shown:
+        return said == [value] and not negated
+    return not said
 
 
 def identity_words(record):
@@ -328,29 +285,18 @@ def correction_problems(presented, terms, rationale, records):
     (A CORRECTION IS BOUND TO HIS WORDS), each invalid_input:correction:<field>. `records` are the configured
     identities."""
     problems = []
+    negated = negates(rationale)
     same_name = terms.get('project') == presented.get('project')
-    if not same_name and not names(rationale, terms.get('project')):
+    if not same_name and not (names(rationale, terms.get('project')) and not negated):
         problems.append('invalid_input:correction:project')
     identity = terms.get('identity')
-    # A changed identity or visibility is said only where his words name exactly that one, never negated; one he
-    # was shown and negates anywhere does not stay (R3-2, R4-1); words that negate one value of the field and
-    # affirm another through a bare "and" are ambiguous (R4-2).
-    groups = [identity_words(r) for r in records]
-    values = [w for group in groups for w in group]
-    said = sorted({r['id'] for r in records if affirmed(rationale, identity_words(r), values)})
-    words = next((identity_words(r) for r in records if r.get('id') == identity), [identity])
-    if ambiguous(rationale, groups):
-        problems.append('invalid_input:correction:identity:ambiguous')
-    elif not (said == [identity] if identity != presented.get('identity') else not negated(rationale, words, values)):
+    said = sorted({r['id'] for r in records if named(rationale, identity_words(r))})
+    if not bound(identity, presented.get('identity'), said, negated):
         problems.append('invalid_input:correction:identity')
     shown = shown_entry(presented, identity)
     reference = (shown or presented).get('remote') or {}
     visibility = terms.get('visibility')
-    named = [v for v in VISIBILITIES if affirmed(rationale, [v], VISIBILITIES)]
-    if ambiguous(rationale, [[v] for v in VISIBILITIES]):
-        problems.append('invalid_input:correction:visibility:ambiguous')
-    elif not (named == [visibility] if visibility != reference.get('visibility')
-              else not negated(rationale, [visibility], VISIBILITIES)):
+    if not bound(visibility, reference.get('visibility'), [v for v in VISIBILITIES if named(rationale, [v])], negated):
         problems.append('invalid_input:correction:visibility')
     expected = shown.get('mode') if shown is not None and same_name else 'create'
     if terms.get('mode') != expected or (expected == 'adopt' and 'adoption' in terms

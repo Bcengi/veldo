@@ -148,6 +148,19 @@ REGISTRY = (
     ('completion', None, '_completions'),
 )
 
+# VELDO-0143 round 6: a correction refused because his words did not make a choice certain, in plain words. A
+# correction changes a value only when his words name exactly that one and hold no negator anywhere, and keeps the
+# value shown only when they name none (control_project_proposal.correction_problems).
+_RULE = ('I change something only when your words name exactly one choice for it and hold no "not", "no" or '
+         'similar word anywhere, and I keep what you were shown only when your words name none')
+CORRECTION_UNCLEAR = {
+    'invalid_input:correction:identity': 'Your correction did not make clear which identity to use: ' + _RULE,
+    'invalid_input:correction:visibility': 'Your correction did not make clear whether it is private or public: '
+                                           + _RULE,
+    'invalid_input:correction:project': 'Your correction did not make the new name clear: ' + _RULE,
+    'invalid_input:correction:mode': 'Your correction would use a repository you were not shown',
+}
+
 TAXONOMY = {'invalid_input': 'invalid_input', 'no_enrolled_chat': 'missing_authority',
             'invalid_enrollment': 'missing_authority', 'chat_not_enrolled': 'missing_authority',
             'not_activated': 'missing_authority', 'edge_stopped': 'missing_authority',
@@ -427,10 +440,18 @@ class Reporter:
                             % (name, _shown(data.get('repository')), eid),
                     'next': 'The project manager elaborates the first objective as the project\'s first unit.',
                     'evidence': 'decision %s, settled by %s' % (eid, _shown(data.get('path')))}
+        fact = 'decision %s failed: %s; nothing was activated' % (eid, _shown(data.get('reason')))
+        unclear = CORRECTION_UNCLEAR.get(str(data.get('reason')))
+        if unclear is None:
+            return {'unit': None, 'run': data.get('dispatch'), 'project': data.get('project'),
+                    'headline': '%s could not be set up.' % name, 'fact': fact,
+                    'next': 'Whatever was made stays as it is, for you to remove by hand; ask again to retry.',
+                    'evidence': 'decision %s' % eid}
         return {'unit': None, 'run': data.get('dispatch'), 'project': data.get('project'),
                 'headline': '%s could not be set up.' % name,
-                'fact': 'decision %s failed: %s; nothing was activated' % (eid, _shown(data.get('reason'))),
-                'next': 'Whatever was made stays as it is, for you to remove by hand; ask again to retry.',
+                'fact': '%s. %s' % (fact, unclear),
+                'next': 'Ask again with one clear choice for each thing you change and no "not" or "no" in it, '
+                        'for example "use <identity> and make it private".',
                 'evidence': 'decision %s' % eid}
 
     def _stop_request(self, request, state):
