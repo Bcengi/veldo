@@ -236,3 +236,21 @@ each. They survive at head as at b44736c0 because this specification rewrote the
 identity profile, or a refusal made before anything is recorded. They are reported, with the row each should fail,
 in proof/VELDO-0161/round10/README.md; the registrations are unchanged. Acceptance criteria, risk, readiness and
 approval requirements are unchanged.
+
+2026-10-23, on VELDO-0161 round 11 (same branch; evidence proof/VELDO-0161/round11/). This specification's
+rewrite of suite 58 left eight finding-28 registrations in scripts/check_teeth_mutations.py pointing at rows the
+mutated code can no longer reach, and the mutation stage counts a case killed only when every row it targets turns
+red. AC3 made publication-url-rewrite a refusal before any push, so effects-push-by-send-pack now targets
+publication-pre-push-hook and publication-smart-http. AC2 refuses publication-destination-without-credentials
+before anything is recorded, so effects-destination-not-recorded now targets publication-records-resolved-destination
+alone. AC1 moved publication to the identity profile, so the four effects-network-profile cases now target
+publication-network-profile-strips-coordinates, which reads clean_env(profile='network') directly. The record
+site's scrubbing in control_effect_executor.receive is defense in depth behind check_remote, which refuses user
+information other than ssh `git`, a query, a fragment and a transport prefix before the record is built; it is not
+dead code (an ssh destination's `git@` is scrubbed from every record). New suite 58 row
+effects/publication-record-scrubs-destination runs the receiver in process past a stand-in owner check that lets
+four such destinations through, requires the push completes and the record names each URL scrubbed, and requires
+the real check refuses each; effects-destination-with-credentials and effects-destinations-not-scrubbed target it.
+No mutation was removed and no row was weakened. Host: suite 58 78 passed, 0 failed; finding 28 73 of 73 killed
+(65 of 73 before); findings 161 and 56 57 of 57 and 22 of 22 as before. Acceptance criteria, risk, readiness and
+approval requirements are unchanged.

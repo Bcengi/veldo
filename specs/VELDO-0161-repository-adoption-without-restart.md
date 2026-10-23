@@ -45,6 +45,7 @@ footprint:
   - "proof/VELDO-0161/round8/*"
   - "proof/VELDO-0161/round9/*"
   - "proof/VELDO-0161/round10/*"
+  - "proof/VELDO-0161/round11/*"
   - "scripts/suites/73_veldo_0139_factory_setup.py"
   - "scripts/suites/86_veldo_0189_engine_upgrade.py"
   - "scripts/suites/85_veldo_0171_setup_api.py"
@@ -321,3 +322,11 @@ reds at 928918a5 belong to VELDO-0153 (the fence, finding 56's worker crash) or 
 survivors and the first-use budget). Host: suite 50 30/0 confined; finding 161 57 of 57 killed; suites 109, 86, 73
 and 85 as at round 9 (proof/VELDO-0161/round10/). The footprint gains proof/VELDO-0161/round10/*. Criteria, risk,
 readiness and approval requirements are unchanged.
+
+Round 11 (finding 28's eight survivors, reported at round 10). VELDO-0153's rewrite of suite 58 left eight
+finding-28 registrations targeting rows the mutated code cannot reach. The registrations now target rows that turn
+red on each mutant, and a new suite 58 row, effects/publication-record-scrubs-destination, judges the publication
+record's scrubbing behind a stand-in owner check; the full account is in VELDO-0153's history, same round. No product
+file changed. Host: suite 58 78/0; finding 28 73 of 73 killed; findings 161 57 of 57 and 56 22 of 22
+(proof/VELDO-0161/round11/). The footprint gains proof/VELDO-0161/round11/*. Criteria, risk, readiness and approval
+requirements are unchanged.
