@@ -58,6 +58,8 @@ def _v143_suite():
         'control_workflow_cycle_pm.py': ROOT / ".veldo" / "control_workflow_cycle_pm.py",
         'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
         'control_telegram_report.py': ROOT / ".veldo" / "control_telegram_report.py",
+        'control_channel_presentation.py': ROOT / ".veldo" / "control_channel_presentation.py",
+        'control_request_settlement.py': ROOT / ".veldo" / "control_request_settlement.py",
     }
     PREFIX = 'VELDO-0143 '
     # VELDO-0143 R5-3: the fault a line names when it defers its cycles to the factory line.
@@ -111,7 +113,7 @@ def _v143_suite():
                       'activation/factory-line-kept', 'activation/factory-line-restart', 'proposal/correction-negated',
                       'proposal/correction-phrasings', 'activation/factory-intake-current',
                       'activation/factory-paused-resumed', 'activation/new-projects-kept', 'activation/factory-canceled',
-                      'proposal/correction-told'):
+                      'proposal/correction-told', 'proposal/choices', 'proposal/own-message-doubt'):
             expect(PREFIX + label, False)
         return
 
@@ -513,6 +515,14 @@ def _v143_suite():
                      and all(e['directory'] == str(projects_root[e['identity']] / 'driftwood')
                              and e['remote']['owner'] == by_id[e['identity']]['remote_owner']
                              and e['remote']['visibility'] == 'private' for e in shown.get('offered') or [])),
+                    ('it offers each configured identity with each visibility as a choice, and no plain accept '
+                     '(no identity is shown) [%s]' % (request.get('data', {}).get('choices'),),
+                     request.get('data', {}).get('choices') == ['accept %s %s' % (i, v) for i in ('bcengi', 'nokey', 'personal')
+                                                                for v in ('private', 'public')]
+                     + ['return_for_elaboration', 'reject']
+                     and request.get('data', {}).get('choices') == PP.choices(shown)
+                     and (presenter.current(drift_record.get('request')) or {}).get('rulings')
+                     == ['approve'] * 6 + ['return_for_elaboration', 'reject']),
                     ('what he is shown is exactly the brief of that proposal, naming every value',
                      request.get('data', {}).get('brief') == PP.brief(shown)
                      and all(word in PP.brief(shown) for word in ('driftwood', 'bcengi', 'personal', 'https://github.com/',
@@ -520,7 +530,8 @@ def _v143_suite():
                                                                    'The harbor site\'s first page')))])
 
             with region('proposal/one-answer'):
-                answered = answer(drift_record['request'], 'accept', 'yes, under bcengi')
+                answered = answer(drift_record['request'], 'accept bcengi private',
+                                  "Personally I'd make it public, not bcengi")
                 after_answer = bot_messages()
                 applied = decisions.apply_settled()
                 drift_after = PP.read(conn, drift_decision) or {}
@@ -529,9 +540,11 @@ def _v143_suite():
                 check('proposal/one-answer', [
                     ('his one answer settles it', answered.get('outcome') in ('accepted', 'settled')
                      and drift_after.get('state') == 'settled' and drift_after.get('path') == 'answer'),
-                    ('the identity he named in it resolves the proposal to what was offered for it',
+                    ('the choice he picked binds exactly its identity and visibility, whatever his reason says',
                      drift_judged['proposal']['identity'] == 'bcengi'
                      and drift_judged['proposal']['remote']['url'] == 'https://github.com/bcengi/driftwood.git'
+                     and drift_judged['proposal']['remote']['visibility'] == 'private'
+                     and drift_judged['proposal'] == PP.answered(drift_record['presented'], 'accept bcengi private')
                      and drift_judged['request'] == drift_record['request']),
                     ('no further question is sent', bot_messages() == after_answer and again == []
                      and any(e.get('outcome') == 'settled' for e in applied))])
@@ -547,7 +560,7 @@ def _v143_suite():
                 decisions.apply_settled()
                 correcting = PP.read(conn, reef_decision) or {}
                 waiting = [p for p in PP.pending(conn) if p.get('decision') == reef_decision]
-                corrected = decisions.correct(reef_decision, document(pid3, 'reef-watch', 'personal', 'public'),
+                corrected = decisions.correct(reef_decision, document(pid3, 'reef-watch', None, None),
                                               dispatch='pm-np-reef-correction')
                 reef_judged = PP.settled(S, CM, conn, reef_decision)
                 check('proposal/correction', [
@@ -557,12 +570,82 @@ def _v143_suite():
                      correcting.get('state') == 'correcting'
                      and (correcting.get('correction') or {}).get('rationale') == 'call it reef-watch and make it public'
                      and len(waiting) == 1 and waiting[0]['correction']['presented'] == correcting.get('presented')),
-                    ('the PM\'s corrected proposal settles it with no second presentation',
+                    ('the PM\'s corrected proposal settles it with no second presentation: the new name, and the '
+                     'identity and visibility he was shown, whatever his words said of them',
                      corrected.get('ok') and reef_judged['path'] == 'correction'
                      and reef_judged['proposal']['project'] == 'reef-watch'
-                     and reef_judged['proposal']['remote']['visibility'] == 'public'
+                     and reef_judged['proposal']['identity'] == 'personal'
+                     and reef_judged['proposal']['remote']['visibility'] == 'private'
                      and reef_judged['proposal']['repository'] == correcting['presented']['repository']
                      and bot_messages() == after_return and len([r for r in new_project_requests()]) == 2)])
+
+            with region('proposal/choices'):
+                # VELDO-0143 round 7 (owner decision, Telegram 36174 and 36175): the identity and the visibility are
+                # offered choices he picks. accept approves what is shown; a pick binds exactly the identity and the
+                # visibility it names; a choice not offered is refused by name, and nothing is recorded.
+                def presented_for(name, identity_name, visibility=None):
+                    result = send('api_request', 'start a new project called %s' % name)
+                    pid, _ = routed(result)
+                    made = decisions.propose(pid, document(pid, name, identity_name, visibility), dispatch=next_id('pm-np'))
+                    held_ = PP.read(conn, made.get('decision')) or {}
+                    return made.get('decision'), held_.get('request'), held_.get('presented') or {}
+                d_sk, r_sk, shown_sk = presented_for('skerry', 'personal')
+                offered_sk = (entity(r_sk) or {}).get('data', {}).get('choices')
+                picked_sk = answer(r_sk, 'accept personal public', 'keep it private under bcengi')
+                decisions.apply_settled()
+                judged_sk = PP.settled(S, CM, conn, d_sk)
+                d_gu, r_gu, shown_gu = presented_for('gully', 'bcengi', 'public')
+                answer(r_gu, 'accept', 'not this account, make it private')
+                decisions.apply_settled()
+                judged_gu = PP.settled(S, CM, conn, d_gu)
+                # Choices that are not offered, typed as he might: refused by name, nothing recorded, still presented.
+                d_sh, r_sh, shown_sh = presented_for('shingle', 'personal')
+                d_sb, r_sb, _shown_sb = presented_for('sandspit', None)
+                unmatched = {}
+                for rid_u, typed in ((r_sh, 'accept bc\u0435ngi private'), (r_sh, 'accept \uff42cengi private'),
+                                     (r_sh, 'accept stranger private'), (r_sh, 'accept personal private'),
+                                     (r_sh, 'use bcengi'), (r_sh, 'Personally'), (r_sb, 'accept')):
+                    journal_u = journal()
+                    unmatched[(rid_u == r_sb, typed)] = (answer(rid_u, typed, 'my reason'), journal() == journal_u)
+                still = [(PP.read(conn, d) or {}).get('state') for d in (d_sh, d_sb)]
+                answer(r_sh, 'accept bcengi private', 'fine')
+                decisions.apply_settled()
+                judged_sh = PP.settled(S, CM, conn, d_sh)
+                # The one judge: a decision that binds another identity than his pick (the PM's document's) is refused.
+                held_sh = PP.read(conn, d_sh)
+                forged_sh = PP.resolve(held_sh['presented'], 'personal')
+                decisions.write(d_sh, 'settled', step='answer', path='answer', proposal=forged_sh)
+                try:
+                    PP.settled(S, CM, conn, d_sh)
+                    judge_sh = None
+                except PP.Refused as error:
+                    judge_sh = error.code
+                check('proposal/choices', [
+                    ('a proposal that shows an identity offers accept, every other identity and visibility as a pick, '
+                     'return_for_elaboration and reject [%s]' % (offered_sk,),
+                     offered_sk == ['accept', 'accept bcengi private', 'accept bcengi public', 'accept nokey private',
+                                    'accept nokey public', 'accept personal public', 'return_for_elaboration', 'reject']
+                     and all(word in PP.brief(shown_sk) for word in ('accept <identity> <private or public>',
+                                                                      'bcengi: directory', 'nokey: directory',
+                                                                      'personal: directory'))),
+                    ('his pick binds exactly the identity and visibility it names, whatever his reason says',
+                     picked_sk.get('outcome') in ('accepted', 'settled') and judged_sk['path'] == 'answer'
+                     and judged_sk['proposal']['identity'] == 'personal'
+                     and judged_sk['proposal']['remote']['visibility'] == 'public'
+                     and judged_sk['proposal']['directory'] == str(projects_root['personal'] / 'skerry')),
+                    ('accept keeps the values shown, whatever his reason says',
+                     judged_gu['proposal']['identity'] == 'bcengi'
+                     and judged_gu['proposal']['remote']['visibility'] == 'public'
+                     and judged_gu['proposal']['remote']['owner'] == 'bcengi')] + [
+                    ('%r%s is refused unmatched_choice by name and nothing is recorded [%s]'
+                     % (typed, ' (no identity shown)' if no_identity else '', outcome.get('reason')),
+                     outcome.get('outcome') == 'refused' and outcome.get('reason') == 'unmatched_choice' and unchanged)
+                    for (no_identity, typed), (outcome, unchanged) in unmatched.items()] + [
+                    ('each stays presented, and a choice offered still settles it',
+                     still == ['presented', 'presented'] and judged_sh['proposal']['identity'] == 'bcengi'
+                     and judged_sh['proposal']['remote']['visibility'] == 'private'),
+                    ('the one judge refuses a decision whose identity is not his pick, by name [%s]' % judge_sh,
+                     judge_sh == 'no_settled_decision:proposal')])
 
             with region('proposal/correction-bound'):
                 # A correction is bound to his words (VELDO-0143 F2): the PM reads them, it never chooses for him.
@@ -580,10 +663,11 @@ def _v143_suite():
                     held_ = PP.read(conn, decision) or {}
                     return held_.get('state'), held_.get('reason')
                 cases_bound, before_bound = {}, (bot_messages(), len(hub['calls']), new_project_requests())
-                # (a) he was asked the identity and answered only "yes".
-                d_yes, _p, r_yes = asked_for('sandbar', None)
-                returned(r_yes, 'yes', 'accept')
-                cases_bound['yes'] = (state_of(d_yes), None)
+                # (a) he was asked the identity and returned it with words that name one: a correction never picks it.
+                d_yes, p_yes, r_yes = asked_for('sandbar', None)
+                returned(r_yes, 'call it sandbar-two, under bcengi')
+                outcome_yes = decisions.correct(d_yes, document(p_yes, 'sandbar-two', 'bcengi', None), dispatch=next_id('pm-npc'))
+                cases_bound['unpicked'] = (state_of(d_yes), outcome_yes)
                 # (b) to (e): the PM's corrected document changes what his words did not.
                 for case, name, words, corrected in (
                         ('identity', 'shoal', 'call it shoal-two', ('shoal-two', 'bcengi', None)),
@@ -603,10 +687,12 @@ def _v143_suite():
                     outcome_b = decisions.correct(decision_b, document(pid_b, *corrected), dispatch=next_id('pm-npc'))
                     cases_bound[case] = (state_of(decision_b), outcome_b)
                 anchorage_refs = git(projects_root['personal'] / 'anchorage', 'for-each-ref')
-                # (f) a correction that says each change settles them.
+                # (f) a correction that changes the name and the objective settles them; the identity and the
+                # visibility stay as shown (the document may repeat them).
                 d_ok, pid_ok, r_ok = asked_for('buoy', 'personal')
-                returned(r_ok, 'put it under Bcengi, call it buoy-b, and make it public')
-                ok_outcome = decisions.correct(d_ok, document(pid_ok, 'buoy-b', 'bcengi', 'public'), dispatch='pm-npc-buoy')
+                returned(r_ok, 'call it buoy-b, and make the first objective a buoy map')
+                ok_outcome = decisions.correct(d_ok, document(pid_ok, 'buoy-b', 'personal', None, objective='A buoy map'),
+                                               dispatch='pm-npc-buoy')
                 ok_judged = PP.settled(S, CM, conn, d_ok)
                 # (g) the judge: a settled correction written without correct(), its identity not his.
                 d_g, pid_g, r_g = asked_for('mooring', 'personal')
@@ -614,7 +700,7 @@ def _v143_suite():
                 shown_g = PP.read(conn, d_g)
                 doc_g = document(pid_g, 'mooring-two', 'bcengi')
                 forged_g = PP.build(conn, DOMAIN, intake.proposal(pid_g), doc_g, repository=shown_g['presented']['repository'],
-                                    owner=OWNER)
+                                    owner=OWNER, chosen=('bcengi', 'private'))
                 decisions.write(d_g, 'settled', step='correction', path='correction', proposal=forged_g,
                                 project='mooring-two', correction=dict(shown_g['correction'], dispatch='forged', document=doc_g,
                                                                        digest=PP.digest(forged_g)))
@@ -626,18 +712,20 @@ def _v143_suite():
                 journal_g, calls_g = journal(), len(hub['calls'])
                 provision_g = provision(d_g)
                 check('proposal/correction-bound', [
-                    ('an approval naming none of the identities he was asked fails by name, nothing chosen for him %s'
-                     % (cases_bound['yes'],), cases_bound['yes'][0] == ('failed', 'invalid_input:answer:identity'))] + [
+                    ('a correction of a proposal that showed no identity cannot pick one: it fails by name %s'
+                     % (cases_bound['unpicked'][0],),
+                     cases_bound['unpicked'][0] == ('failed', 'invalid_input:correction:identity')
+                     and cases_bound['unpicked'][1].get('ok') is False)] + [
                     ('a corrected %s his words did not say fails the decision by name %s' % (case, cases_bound[case][0]),
                      cases_bound[case][0] == ('failed', 'invalid_input:correction:' + case)
                      and cases_bound[case][1].get('ok') is False)
                     for case in ('identity', 'visibility', 'mode', 'project')] + [
                     ('an adoption he was not shown lays nothing in that repository',
                      anchorage_refs == refs_before and not (projects_root['personal'] / 'jetty').exists()),
-                    ('a correction that says each change settles it, as he said it',
-                     ok_outcome.get('ok') is True and ok_judged['proposal']['identity'] == 'bcengi'
-                     and ok_judged['proposal']['project'] == 'buoy-b'
-                     and ok_judged['proposal']['remote']['visibility'] == 'public'),
+                    ('a correction of the name and the objective settles them, the identity and visibility as shown',
+                     ok_outcome.get('ok') is True and ok_judged['proposal']['identity'] == 'personal'
+                     and ok_judged['proposal']['project'] == 'buoy-b' and ok_judged['proposal']['objective'] == 'A buoy map'
+                     and ok_judged['proposal']['remote']['visibility'] == 'private'),
                     ('the one judge refuses a settled correction whose identity is not his words, by name [%s]' % judge_g,
                      judge_g == 'no_settled_decision:correction:identity'),
                     ('so the provisioner refuses it at the settlement: nothing written, no directory, GitHub not asked',
@@ -648,92 +736,78 @@ def _v143_suite():
                      len(new_project_requests()) == len(before_bound[2]) + 7 and len(hub['calls']) == before_bound[1])])
 
             with region('proposal/correction-negated'):
-                # A correction is bound by a rule that does not read what a negator applies to (VELDO-0143 round 6):
-                # a value other than the one shown only where his words name exactly it and hold no negator anywhere;
-                # the shown value only where they name no value of the field. Every other reading fails by name.
+                # VELDO-0143 round 7: a correction never changes the identity or the visibility, whatever his words
+                # say of them; only a pick does. A PM reading that changes either fails by name; a reading that keeps
+                # them settles exactly what he was shown. The phrasings are the round 3 to 6 reviews' own.
                 before_negated = (len(hub['calls']), len(new_project_requests()))
                 negated_cases = {}
-                # (case, name, identity asked, visibility shown, his words, the PM's reading, the field refused or
-                # None where it settles)
+                # (case, name, identity shown, visibility shown, his words, the PM's reading (name, identity,
+                # visibility), the field refused or None where it settles as shown)
                 for case, name, asked_identity, asked_visibility, words, reading, refused in (
-                        # round 3 and round 4 reviews: a value he negates, kept or taken
-                        ('identity', 'saltmarsh', None, None, 'not under bcengi please, and keep it private, not public',
-                         ('bcengi', 'public'), 'identity'),
-                        ('identity-shown', 'rockpool', 'bcengi', None, 'not under bcengi, use personal',
-                         ('bcengi', None), 'identity'),
-                        ('visibility', 'kelp', 'personal', None, 'keep it private, not public',
-                         ('personal', 'public'), 'visibility'),
-                        ('identity-period', 'rockpipit', 'bcengi', None, 'Not under bcengi.', ('bcengi', None), 'identity'),
-                        ('visibility-period', 'kelpfly', 'personal', 'public', 'Keep it private, not public.',
-                         ('personal', 'public'), 'visibility'),
-                        ('identity-neither', 'rockcress', 'bcengi', None, 'neither personal nor bcengi',
-                         ('personal', None), 'identity'),
-                        ('identity-both', 'rockdove', 'bcengi', None, "don't use bcengi and personal",
-                         ('personal', None), 'identity'),
-                        ('identity-and', 'rockfoil', 'bcengi', None, "don't use bcengi and use personal",
-                         ('personal', None), 'identity'),
-                        ('visibility-anything-but', 'kelpkin', 'personal', None, 'anything but public',
-                         ('personal', 'public'), 'visibility'),
-                        # R5-1: a shown value kept while his words name another, with no negator
-                        ('identity-kept-named', 'rockbass', 'bcengi', None, 'use personal', ('bcengi', None), 'identity'),
-                        ('visibility-kept-named', 'kelpbed', 'personal', 'public', 'make it private',
-                         ('personal', 'public'), 'visibility'),
-                        ('both-kept-named', 'rockling', 'bcengi', 'public', 'use personal and make it private',
-                         ('bcengi', 'public'), 'identity'),
-                        # R5-2: a negator joined by a hyphen, on the line above, or after the word
-                        ('visibility-hyphen-kept', 'kelpie', 'personal', 'public', 'not-public', ('personal', 'public'),
+                        ('personally', 'rockbass', 'bcengi', 'public', "Personally I'd make it private",
+                         (None, 'personal', 'private'), 'identity'),
+                        ('personally-kept', 'rockcod', 'bcengi', 'public', "Personally I'd make it private",
+                         (None, None, None), None),
+                        ('publicly', 'kelpbed', 'bcengi', 'private', "Let's publicly launch later; for now use personal",
+                         (None, 'personal', 'public'), 'identity'),
+                        ('this-account', 'rockeel', 'bcengi', None, 'not this account', (None, 'personal', None),
+                         'identity'),
+                        ('this-account-kept', 'rockling', 'bcengi', None, 'not this account', (None, None, None), None),
+                        ('lookalike', 'rockdove', 'personal', None, 'use bc\u0435ngi', (None, 'bcengi', None), 'identity'),
+                        ('lookalike-kept', 'rockfoil', 'personal', None, 'use bc\u0435ngi', (None, 'personal', None), None),
+                        ('make-private', 'kelpcrab', 'personal', 'public', 'make it private', (None, 'personal', 'private'),
                          'visibility'),
-                        ('visibility-hyphen', 'kelpcrab', 'personal', None, 'not-public', ('personal', 'public'),
+                        ('hidden', 'kelpie', 'personal', 'public', 'keep it hidden', (None, None, 'private'), 'visibility'),
+                        ('hidden-kept', 'kelpgull', 'personal', 'public', 'keep it hidden', (None, None, None), None),
+                        ('round3', 'saltmarsh', None, None, 'not under bcengi please, and keep it private, not public',
+                         (None, 'bcengi', 'public'), 'identity'),
+                        ('round4', 'rockrose', 'bcengi', None, "don't use bcengi and use personal",
+                         (None, 'personal', None), 'identity'),
+                        ('round5', 'kelpwrack', 'personal', 'public', 'not-public', (None, 'personal', 'private'),
                          'visibility'),
-                        ('identity-hyphen-kept', 'rockcod', 'bcengi', None, 'not-bcengi please, personal',
-                         ('bcengi', None), 'identity'),
-                        ('identity-hyphen', 'rockeel', 'personal', None, 'not-bcengi', ('bcengi', None), 'identity'),
-                        ('visibility-line-above', 'kelpgull', 'personal', None, 'not\npublic', ('personal', 'public'),
-                         'visibility'),
-                        ('visibility-answered', 'kelpgoby', 'personal', None, 'public!? no', ('personal', 'public'),
-                         'visibility'),
-                        # plain corrections settle when the reading is what they say
-                        ('settles-identity', 'rockrose', 'bcengi', None, 'use personal', ('personal', None), None),
-                        ('settles-visibility', 'kelpwrack', 'personal', 'public', 'make it private',
-                         ('personal', 'private'), None),
-                        ('settles-both', 'rockweed', 'bcengi', 'public', 'use personal and make it private',
-                         ('personal', 'private'), None),
-                        ('settles-period', 'kelpfish', 'bcengi', 'public', 'Use personal. Keep it private.',
-                         ('personal', 'private'), None)):
+                        ('plain', 'rockweed', 'bcengi', None, 'use personal', (None, 'personal', None), 'identity'),
+                        ('name-only', 'kelpfish', 'bcengi', 'public', 'call it kelpfish-two',
+                         ('kelpfish-two', None, None), None)):
                     decision_n, pid_n, rid_n = asked_for(name, asked_identity, asked_visibility)
                     returned(rid_n, words)
-                    outcome_n = decisions.correct(decision_n, document(pid_n, name, *reading), dispatch=next_id('pm-npn'))
-                    negated_cases[case] = (state_of(decision_n), outcome_n, decision_n, refused)
+                    outcome_n = decisions.correct(decision_n, document(pid_n, reading[0] or name, *reading[1:]),
+                                                  dispatch=next_id('pm-npn'))
+                    negated_cases[case] = (state_of(decision_n), outcome_n, decision_n, refused,
+                                           (asked_identity, asked_visibility or 'private'))
                 said_judged = {case: PP.settled(S, CM, conn, held[2]) for case, held in negated_cases.items()
                                if held[3] is None and held[1].get('ok') is True}
                 check('proposal/correction-negated', [
-                    ('%s: the reading fails the decision by name %s' % (case, held[0]),
+                    ('%s: the reading that changes the %s fails the decision by name %s' % (case, held[3], held[0]),
                      held[0] == ('failed', 'invalid_input:correction:' + held[3]) and held[1].get('ok') is False)
                     for case, held in negated_cases.items() if held[3] is not None] + [
-                    ('%s: the reading his words say settles it, as he said it %s' % (case, held[0]),
+                    ('%s: the reading that keeps them settles exactly what he was shown %s' % (case, held[0]),
                      held[1].get('ok') is True and case in said_judged
-                     and said_judged[case]['proposal']['identity'] == 'personal'
-                     and said_judged[case]['proposal']['remote']['visibility'] == 'private')
+                     and (said_judged[case]['proposal']['identity'],
+                          said_judged[case]['proposal']['remote']['visibility']) == held[4])
                     for case, held in negated_cases.items() if held[3] is None] + [
                     ('none of it reaches GitHub or asks a second question',
                      len(hub['calls']) == before_negated[0]
                      and len(new_project_requests()) == before_negated[1] + len(negated_cases))])
 
             with region('proposal/correction-phrasings'):
-                # VELDO-0143 round 6: the one judge's binding over every phrasing the round 3, 4 and 5 reviews named,
-                # with the configured identities, for every value he could have been shown and every reading of the
-                # PM's (16 each). Words with a negator anywhere bind no value they name, kept or taken; words with
-                # none settle exactly the readings that change a field to the one value they name and keep each
-                # field they name no value of.
-                records_p, VIS_P = GI.records(conn, DOMAIN), PP.VISIBILITIES
+                # VELDO-0143 round 7: the one judge over every phrasing the round 3 to 6 reviews named, for every
+                # identity and visibility he could have been shown and every reading of the PM's (16 each): each
+                # settles exactly the four readings that keep what he was shown, and no other.
+                VIS_P = PP.VISIBILITIES
                 combos_p = [(si, sv, ri, rv) for si in ('personal', 'bcengi') for sv in VIS_P
                             for ri in ('personal', 'bcengi') for rv in VIS_P]
 
+                def shown_p(si, sv):
+                    entries = [{'identity': i, 'mode': 'create', 'adoption': None, 'directory': '/p/' + i,
+                                'remote': {'name': 'x', 'owner': i, 'url': 'u', 'visibility': sv}}
+                               for i in ('bcengi', 'personal')]
+                    return dict(next(e for e in entries if e['identity'] == si), project='x', offered=entries)
+
                 def settles_p(words):
                     return sorted((si, sv, ri, rv) for si, sv, ri, rv in combos_p if not PP.correction_problems(
-                        {'project': 'x', 'identity': si, 'mode': 'create', 'remote': {'visibility': sv}},
-                        {'project': 'x', 'identity': ri, 'visibility': rv, 'mode': 'create'}, words, records_p))
-                negated_p = (
+                        shown_p(si, sv), {'project': 'x', 'identity': ri, 'visibility': rv, 'mode': 'create'}, words))
+                kept_p = sorted(c for c in combos_p if c[:2] == c[2:])
+                phrasings_p = (
                     # round 3
                     'not under bcengi please, and keep it private, not public', 'not under bcengi, use personal',
                     'not bcengi',
@@ -748,32 +822,58 @@ def _v143_suite():
                     'not public!', 'not public, thanks', 'no bcengi', 'use personal (not bcengi)',
                     'not-public', 'not-bcengi please, personal', 'not\npublic', 'public!? no', 'public?! no way',
                     'public. No.', "don't make it public and keep it private", "keep it private and don't make it public",
-                    'not_public', 'non-public')
-                leaked_p = {}
-                for words in negated_p:
-                    said_p = {v for v in ('personal', 'bcengi') + VIS_P if v in words.lower()}
-                    bad = [c for c in settles_p(words) if c[2] in said_p or c[3] in said_p]
-                    if not said_p or bad:
-                        leaked_p[words] = bad or 'names nothing'
-                plain_p = {
-                    'use personal': [('bcengi', v, 'personal', v) for v in VIS_P],
-                    'make it private': [(i, 'public', i, 'private') for i in ('bcengi', 'personal')],
-                    'use personal and make it private': [('bcengi', 'public', 'personal', 'private')],
-                    'Make it public.': [(i, 'private', i, 'public') for i in ('bcengi', 'personal')],
-                    'put it under Bcengi, call it x, and make it public': [('personal', 'private', 'bcengi', 'public')]}
-                wrong_plain = {words: settles_p(words) for words, want in plain_p.items() if settles_p(words) != sorted(want)}
-                if leaked_p or wrong_plain:
-                    print('  %sdetail: correction phrasings judged wrongly: negated %s; plain %s' % (
-                        PREFIX, leaked_p, wrong_plain))
+                    'not_public', 'non-public', 'use personal', 'make it private', 'use personal and make it private',
+                    'Make it public.', 'put it under Bcengi, call it x, and make it public', 'Use personal. Keep it private.',
+                    # round 6 (R6-1 to R6-3 and section 2)
+                    "Personally I'd make it private", "Let's publicly launch later; for now use personal",
+                    "I'd discuss it privately, but go with bcengi", 'make it private, my email is someone@bcengi.com',
+                    'like https://github.com/bcengi/shoal but make it private', 'my private account please',
+                    'not this account', "that's the wrong owner", 'wrong account, use the other one', 'keep it hidden',
+                    'under my own account', 'the other identity please', 'flip the visibility', 'use BCENGI',
+                    'use bc\u0435ngi', 'use bc\u0441engi', 'use \uff42cengi', 'n\u043et public', 'no\u200bt public',
+                    '\uff4e\uff4f\uff54 public', 'don\u02bct make it public', 'don\u2032t make it public',
+                    'use bc\u00a0engi', 'make it public \u274c', 'make it public \U0001f6ab', 'public lol jk',
+                    'make it public (kidding)', 'NOT PUBLIC', 'DO NOT make it public', 'never ever public', 'public, not!',
+                    'public: nah-uh', 'pas de public', 'use personal' + ' filler' * 20000,
+                    'make it public, no worries', "use personal, I'll remove the old one later",
+                    "use personal, it's a nonprofit thing", 'use personal, the bcengi one is for work',
+                    'use personal, please stop asking', 'I know, use personal', 'Personal, private.',
+                    "use personal and make it private, that's all")
+                wrong_p = {words[:60]: settles_p(words) for words in phrasings_p if settles_p(words) != kept_p}
+                if wrong_p:
+                    print('  %sdetail: correction phrasings judged wrongly: %s' % (PREFIX, wrong_p))
                 check('proposal/correction-phrasings', [
-                    ('no value named in words with a negator settles, kept or taken, over 16 readings each '
-                     '(%d phrasings, %d wrong)' % (len(negated_p), len(leaked_p)), not leaked_p),
-                    ('a shown value kept while his words name another is refused (R5-1)',
-                     ('bcengi', 'public', 'bcengi', 'public') not in settles_p('use personal and make it private')
-                     and ('bcengi', 'private', 'bcengi', 'private') not in settles_p('use personal')
-                     and ('personal', 'public', 'personal', 'public') not in settles_p('make it private')),
-                    ('words with no negator settle exactly the readings they say (%d phrasings)' % len(plain_p),
-                     not wrong_plain)])
+                    ('every phrasing settles exactly the readings that keep what he was shown, over 16 readings each '
+                     '(%d phrasings, %d wrong)' % (len(phrasings_p), len(wrong_p)), not wrong_p),
+                    ('a correction that names another identity or visibility never binds it',
+                     ('bcengi', 'public', 'personal', 'private') not in settles_p('use personal and make it private')
+                     and ('bcengi', 'private', 'personal', 'private') not in settles_p("Personally I'd make it private")
+                     and ('personal', 'private', 'bcengi', 'private') not in settles_p('use bc\u0435ngi'))])
+
+            with region('proposal/own-message-doubt'):
+                # VELDO-0143 round 7: his own message settles with nothing asked only where nothing in it could mean
+                # another identity and the PM set no visibility; any doubt presents it, so he picks.
+                doubts = {}
+                for case, text, name, identity_name, visibility, why in (
+                        ('negated', "don't put it under bcengi; start a new project called tarn", 'tarn', 'bcengi',
+                         None, 'negated'),
+                        ('two identities', 'start a new personal project called scree for bcengi', 'scree', 'personal',
+                         None, 'identity_not_alone'),
+                        ('lookalike', 'n\u043et under bcengi: start a new project called moraine', 'moraine',
+                         'bcengi', None, 'not_plain_text'),
+                        ('visibility set', 'start a new personal project called cirque', 'cirque', 'personal', 'public',
+                         'visibility_not_default'),
+                        ('hyphen-negated', 'start a new bcengi project called fell, not-public', 'fell', 'bcengi', None,
+                         'negated')):
+                    result = send('api_request', text)
+                    pid, _ = routed(result)
+                    made = decisions.propose(pid, document(pid, name, identity_name, visibility), dispatch=next_id('pm-np'))
+                    doubts[case] = (made, why, (PP.read(conn, made.get('decision')) or {}))
+                check('proposal/own-message-doubt', [
+                    ('%s: presented for him to pick, not settled from his words %s' % (case, made.get('asked')),
+                     made.get('outcome') == 'presented' and why in (made.get('asked') or [])
+                     and held.get('state') == 'presented' and held.get('path') is None)
+                    for case, (made, why, held) in doubts.items()])
 
             with region('proposal/name-taken'):
                 # A name is one project (VELDO-0143 F3): another live decision's name, compared as GitHub compares.
@@ -884,6 +984,7 @@ def _v143_suite():
                 with fenced(wire):
                     drift_result = provision(drift_decision)
                     reef_result = provision(reef_decision)
+                    skerry_result = provision(d_sk)
                 drift_repo, reef_repo = drift_judged['proposal']['repository'], reef_judged['proposal']['repository']
                 check('provision/answered-and-corrected', [
                     ('his answered identity: the remote is created in that organization, under its owner',
@@ -892,9 +993,12 @@ def _v143_suite():
                                                   'has_wiki': False}) in hub['calls']
                      and (record(drift_repo) or {}).get('identity') == 'bcengi'
                      and (projects_root['bcengi'] / 'driftwood').is_dir()),
-                    ('his corrected visibility: public',
-                     reef_result.get('ok') and hub['repos'][('olga-p', 'reef-watch')]['body']['private'] is False
-                     and (record(reef_repo) or {}).get('origin') == 'created')])
+                    ('his corrected name, at the visibility he was shown: private',
+                     reef_result.get('ok') and hub['repos'][('olga-p', 'reef-watch')]['body']['private'] is True
+                     and (record(reef_repo) or {}).get('origin') == 'created'),
+                    ('his picked visibility: public',
+                     skerry_result.get('ok') and hub['repos'][('olga-p', 'skerry')]['body']['private'] is False
+                     and (record(judged_sk['proposal']['repository']) or {}).get('identity') == 'personal')])
 
             with region('provision/directory-not-empty'):
                 occupied = projects_root['personal'] / 'occupied'
@@ -1352,21 +1456,21 @@ def _v143_suite():
                      and (PP.read(conn, PP.decision_id(pid6)) or {}).get('reason') == 'unavailable_service:provisioner')])
 
             with region('proposal/correction-told'):
-                # VELDO-0143 round 6: a correction refused because his words did not make a choice certain tells him
-                # so in plain words, with what to answer instead.
+                # VELDO-0143 rounds 6 and 7: a correction refused because it would have set the identity or the
+                # visibility tells him so in plain words: only a choice he picks sets them.
                 reported()
                 texts_r = [text for _c, _m, _r, text in bot_messages()]
                 told_r = {field: [text for text in texts_r if '%s could not be set up' % name in text]
                           for field, name in (('identity', 'rockbass'), ('visibility', 'kelpcrab'))}
                 if not all(len(v) == 1 for v in told_r.values()):
                     print('  %sdetail: correction told: %s' % (PREFIX, told_r))
-                plain_r = {'identity': 'Your correction did not make clear which identity to use',
-                           'visibility': 'Your correction did not make clear whether it is private or public'}
+                plain_r = {'identity': 'Your correction would have set the identity',
+                           'visibility': 'Your correction would have set the visibility'}
                 check('proposal/correction-told', [
                     ('the refused %s correction is told once, in plain words, with how to answer' % field,
                      len(told_r[field]) == 1 and plain_r[field] in told_r[field][0]
-                     and 'no "not", "no" or similar word anywhere' in told_r[field][0]
-                     and 'Ask again with one clear choice' in told_r[field][0])
+                     and 'change only by the choice you pick' in told_r[field][0]
+                     and 'pick the choice that names the identity and visibility you want' in told_r[field][0])
                     for field in ('identity', 'visibility')])
 
             with region('proposal/presentation-interrupted'):
@@ -1621,6 +1725,31 @@ def _v143_suite():
                 finally:
                     if listener is not None:
                         listener.close()
+                # VELDO-0143 round 7 (the host's surviving newproject143-provisioner-end-unseen): on the socket branch
+                # the take-on answered there made the pass due before the provisioner ended, so lagoon cannot show
+                # that its end alone does. A second provisioner whose take-on is withheld (nothing serves the socket;
+                # here, and where no socket can be made at all) ends with its record waiting, and only its end on the
+                # output pipe can make the pass that names its answer due.
+                with contextlib.suppress(OSError):
+                    os.unlink(SV.CC.socket_path_for({'store_path': str(f['db'])}))
+                decision_w, _pid_w, _ = own_decision('atoll')
+                withheld = []
+                with fenced(wire):
+                    withheld_started = service.new_project_pass()
+                    two = service.projects_pass.running.get(decision_w)
+                    deadline = time.monotonic() + 120
+                    while two is not None and not two.done and time.monotonic() < deadline:
+                        pipes = service.provisioner_pipes()
+                        for fd in select.select(sorted(pipes), [], [], 5)[0]:
+                            service.provisioner_readable(fd)
+                        if service.projects_due:
+                            withheld += service.new_project_pass()
+                ended_withheld = [e for e in withheld if e.get('operation') == 'provision'
+                                  and e.get('decision') == decision_w and e.get('outcome') == 'ended']
+                atoll_waiting = (record(PP.read(conn, decision_w)['proposal']['repository']) or {}).get('state')
+                # The next instance takes it on at its start, as VELDO-0161 has it, and the pass activates it.
+                service.take_on()
+                service.new_project_pass()
                 lagoon = PJ.read(S, conn, 'lagoon') or {}
                 ended = [e for e in passes if e.get('operation') == 'provision' and e.get('decision') == decision_s
                          and e.get('outcome') == 'ended']
@@ -1634,6 +1763,13 @@ def _v143_suite():
                          for e in started) and one is not None and one.done),
                     ('its end is seen on its output pipe, and the pass it makes due names its answer',
                      ended != [] if not UNIX else (ended != [] or active_before_start)),
+                    ('a provisioner whose take-on is withheld: its end alone makes the pass due, which names its answer '
+                     '[%s, %s]' % (atoll_waiting, [e.get('refusal') for e in ended_withheld]),
+                     any(e.get('operation') == 'provision' and e.get('outcome') == 'started'
+                         and e.get('decision') == decision_w for e in withheld_started)
+                     and two is not None and two.done and atoll_waiting == 'provisioning'
+                     and len(ended_withheld) == 1
+                     and ended_withheld[0].get('refusal') == 'not_taken_on:authority_unavailable'),
                     ('a service with no provisioner configuration named finds the one setup lays in the state root',
                      SP.NewProjectPass(SimpleNamespace(config={'store_path': str(state_root / 'authority' / 'control.sqlite3')}),
                                        {}).provisioner_path() == str(state_root / 'host' / 'provisioner.json')),

@@ -11050,14 +11050,6 @@ def cases():
                 "        if not self.passing:\n            self.service.projects_due = True\n",
                 "        pass  # defect: a decision the PM's run settled does not make the pass due\n",
                 ['service/pm-settled-due'])
-    new_project('newproject143-correction-identity-unbound', 'control_project_proposal.py',
-                "    if not bound(identity, presented.get('identity'), said, negated):\n",
-                "    if False:  # defect: the PM chooses the identity\n",
-                ['proposal/correction-bound'])
-    new_project('newproject143-correction-visibility-unbound', 'control_project_proposal.py',
-                "    if not bound(visibility, reference.get('visibility'), [v for v in VISIBILITIES if named(rationale, [v])], negated):\n",
-                "    if False:  # defect: the PM flips the visibility\n",
-                ['proposal/correction-bound'])
     new_project('newproject143-correction-mode-unbound', 'control_project_proposal.py',
                 "    if terms.get('mode') != expected or (expected == 'adopt' and 'adoption' in terms\n"
                 "                                          and terms['adoption'] != shown.get('adoption')):\n",
@@ -11066,10 +11058,6 @@ def cases():
     new_project('newproject143-correction-name-unbound', 'control_project_proposal.py',
                 "    if not same_name and not (names(rationale, terms.get('project')) and not negated):\n",
                 "    if False:  # defect: the PM renames the project\n",
-                ['proposal/correction-bound'])
-    new_project('newproject143-bare-yes-corrected', 'control_project_proposal.py',
-                "                if ruling == 'approve':\n                    # The identity was asked",
-                "                if False:\n                    # The identity was asked",
                 ['proposal/correction-bound'])
     new_project('newproject143-judge-correction-unbound', 'control_project_proposal.py',
                 "        if problems:\n            raise Refused('no_settled_decision:' + problems[0].split(':', 1)[1],",
@@ -11161,23 +11149,15 @@ def cases():
     # negator applies to: another value only where his words name exactly it and hold no negator anywhere, the shown
     # value only where they name none (R5-1, R5-2). R5-3: a line defers to the factory line only while the factory
     # project can still run, and names each deferral in the pass's faults.
-    new_project('newproject143-kept-while-named', 'control_project_proposal.py',
-                "    return not said\n",
-                "    return not negated  # defect: the round-5 reading, a shown value stays whatever else he named\n",
-                ['proposal/correction-negated', 'proposal/correction-phrasings'])
     new_project('newproject143-hyphen-negator-ignored', 'control_project_proposal.py',
                 "                      + _END + r\")\", re.IGNORECASE)\n",
                 "                      + r'(?![^\\W_]|-)' + r\")\", re.IGNORECASE)  # defect: a negator joined by a hyphen is not one\n",
-                ['proposal/correction-negated', 'proposal/correction-phrasings'])
-    new_project('newproject143-negation-affirms', 'control_project_proposal.py',
-                "        return said == [value] and not negated\n",
-                "        return said == [value]  # defect: words with a negator affirm the value they name\n",
-                ['proposal/correction-negated', 'proposal/correction-phrasings'])
+                ['proposal/own-message-doubt'])
     new_project('newproject143-negators-narrow', 'control_project_proposal.py',
                 "_NEGATOR = re.compile(_START + r\"(?:non|(?:not|no|nope|nah|nay|none|nor|neither|never|nothing|nobody|nowhere\"\n",
                 "_NEGATOR = re.compile(_START + r\"(?:not|no|never|nor|without)\" + _END)  # defect: the round-3 words only\n"
                 "_UNUSED = (r\"(?:(?:\"\n",
-                ['proposal/correction-phrasings'])
+                ['proposal/own-message-doubt'])
     new_project('newproject143-ended-factory-deferred', 'control_service.py',
                 "                and any(data.get('name') == 'factory' and data.get('state') not in FACTORY_ENDED\n",
                 "                and any(data.get('name') == 'factory'  # defect: a canceled factory project still holds every line\n",
@@ -11190,6 +11170,59 @@ def cases():
                 "        unclear = CORRECTION_UNCLEAR.get(str(data.get('reason')))\n",
                 "        unclear = None  # defect: a refused correction is told only its code\n",
                 ['proposal/correction-told'])
+    # Round 7 (owner decision, Telegram 36174 and 36175): the identity and the visibility are offered choices he
+    # picks. The settlement binds them only from his pick, a correction changes only the name and the objective, a
+    # choice not offered is refused, and his own message settles unasked only where nothing in it could mean
+    # another identity and the PM set no visibility.
+    new_project('newproject143-identity-from-document', 'control_project_proposal.py',
+                "    if shown is None or terms.get('identity') != presented.get('identity'):\n",
+                "    if False:  # defect: the PM's document chooses the identity\n",
+                ['proposal/correction-bound', 'proposal/correction-negated', 'proposal/correction-phrasings'])
+    new_project('newproject143-visibility-from-text', 'control_project_proposal.py',
+                "    if shown is None or terms.get('visibility') != visibility_of(shown):\n",
+                "    if shown is None or (terms.get('visibility') != visibility_of(shown)\n"
+                "                         and str(terms.get('visibility')) not in str(rationale).lower()):"
+                "  # defect: a visibility his words name is bound\n",
+                ['proposal/correction-negated', 'proposal/correction-phrasings'])
+    new_project('newproject143-unmatched-choice-accepted', 'control_request_settlement.py',
+                "            if a['choice'] not in receipt['choices'] or self.V.ruling_of(a['choice']) is None:\n",
+                "            if self.V.ruling_of(a['choice']) is None:  # defect: a choice not offered is accepted\n",
+                ['proposal/choices'])
+    new_project('newproject143-pick-ignored', 'control_project_proposal.py',
+                "    return None if pick is None else resolve(presented, *pick)\n",
+                "    return None if pick is None else resolve(presented, presented.get('identity') or pick[0])"
+                "  # defect: the identity shown wins over his pick, and the visibility shown stays\n",
+                ['proposal/choices'])
+    new_project('newproject143-choices-not-offered', 'control_project_proposal.py',
+                "                                                      brief=brief(proposal), choices=choices(proposal),\n",
+                "                                                      brief=brief(proposal), choices=list(CHOICES),"
+                "  # defect: no identity or visibility is offered\n",
+                ['proposal/fields'])
+    new_project('newproject143-own-message-visibility', 'control_project_proposal.py',
+                "        if visibility_of(proposal) != (identity.get('default_visibility') or 'private'):\n",
+                "        if False:  # defect: the PM's document sets the visibility unasked\n",
+                ['proposal/own-message-doubt'])
+    new_project('newproject143-own-message-negated', 'control_project_proposal.py',
+                "    if negates(text):\n        reasons.append('negated')\n",
+                "    if False:  # defect: his own message settles whatever negates in it\n        reasons.append('negated')\n",
+                ['proposal/own-message-doubt'])
+    new_project('newproject143-own-message-lookalike', 'control_project_proposal.py',
+                "    if not isinstance(text, str) or not text.isascii():\n",
+                "    if not isinstance(text, str):  # defect: lookalike letters are read as plain ones\n",
+                ['proposal/own-message-doubt'])
+    new_project('newproject143-own-message-two-identities', 'control_project_proposal.py',
+                "        elif said != [proposal['identity']]:\n",
+                "        elif False:  # defect: a message naming two identities settles the PM's\n",
+                ['proposal/own-message-doubt'])
+    add(143, 'newproject143-pick-unmapped', '62_veldo_0065_presentations.py', 'control_channel_presentation.py',
+        "    return 'approve' if pick_of(choice) else None\n",
+        "    return None  # defect: a pick has no ruling\n",
+        ['answer/pick-choices'])
+    add(143, 'newproject143-ambiguous-choices-presented', '62_veldo_0065_presentations.py',
+        'control_channel_presentation.py',
+        "        if len({_fold(choice) for choice in c['choices']}) != len(c['choices']):\n",
+        "        if False:  # defect: choices typed alike are presented\n",
+        ['answer/pick-choices'])
 
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
