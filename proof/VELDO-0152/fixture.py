@@ -119,9 +119,14 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
             agents = ('w-elab', 'w-build', 'w-build2', 'w-rev1', 'w-rev2', 'w-rev3', 'w-late', 'outsider')
             keyfile = {who: keys / who for who in ('authority',) + people + services + agents}
             public = {}
+
+            def quiet():
+                """The environment every ssh-keygen of this fixture runs in: never through an agent (an identity
+                wire's fence records any process that reaches one)."""
+                return {k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}
             for who, path in keyfile.items():
                 subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v89-' + who, '-f', str(path)],
-                               check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                               check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL, env=quiet())
                 public[who] = ' '.join(path.with_name(path.name + '.pub').read_text().split()[:2])
 
             setup_report = None
@@ -142,7 +147,7 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
 
             def sign_as(who, data, namespace='veldo-command'):
                 return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keyfile[who]), '-n', namespace], input=data,
-                                      capture_output=True, check=True, timeout=20).stdout.decode()
+                                      capture_output=True, check=True, timeout=20, env=quiet()).stdout.decode()
 
             def journal_sign(data):
                 return sign_as('authority', data, 'veldo-journal')
