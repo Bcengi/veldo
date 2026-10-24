@@ -1656,7 +1656,8 @@ if __name__ == '__main__':
 # ---------------------------------------------------------------------------------------------
 
 def _git(path, *args, identity=None):
-    done = organ('git_process').run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, *args],
+    _git_process = organ('git_process')
+    done = _git_process.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, *args],
                                     capture_output=True, text=True, timeout=60, identity=identity)
     if done.returncode:
         raise Refused('invalid_input:factory_repository:git', '%s: %s' % (args[0], done.stderr.strip()[:200]))

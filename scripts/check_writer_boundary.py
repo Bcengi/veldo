@@ -59,10 +59,13 @@ def check(root):
                 continue
             source = path.read_text()
             ignored = set()
-            # Commit trailers are a separate external protocol, not a YAML document.
-            if path.name == 'commit_attribution.py':
+            # These named renderers produce external text, not YAML documents. Keep the
+            # exclusion at the function boundary: another serializer in either file is checked.
+            text_renderers = {'commit_attribution.py': 'format_trailers',
+                              'control_project_proposal.py': 'brief'}
+            if path.name in text_renderers:
                 for node in ast.parse(source).body:
-                    if isinstance(node, ast.FunctionDef) and node.name == 'format_trailers':
+                    if isinstance(node, ast.FunctionDef) and node.name == text_renderers[path.name]:
                         ignored.update(range(node.lineno, node.end_lineno + 1))
             errors.extend(f'{path.relative_to(root)}:{line}: document syntax must use yamlish writer'
                           for line in problems(source) if line not in ignored)

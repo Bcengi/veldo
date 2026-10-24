@@ -37,7 +37,7 @@ def organ(name):
     return module
 
 
-GP = organ('git_process')
+_git_process = organ('git_process')
 R = organ('control_repository')
 GI = R.GI
 Refused = R.Refused
@@ -50,7 +50,7 @@ BRANCH = 'main'
 
 
 def git(path, *args, check=True, **kwargs):
-    done = GP.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, *args], capture_output=True,
+    done = _git_process.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, *args], capture_output=True,
                   text=True, timeout=STEP_SECONDS, **kwargs)
     if check and done.returncode:
         raise Refused('invalid_input:git', '%s: %s' % (args[0], done.stderr.strip()[:200]))
@@ -92,7 +92,7 @@ def directory(proposal, identity):
 
 
 def init(proposal, identity):
-    done = GP.run(['git', '-c', 'core.hooksPath=' + os.devnull, 'init', '-q', '-b', BRANCH, proposal['directory']],
+    done = _git_process.run(['git', '-c', 'core.hooksPath=' + os.devnull, 'init', '-q', '-b', BRANCH, proposal['directory']],
                   capture_output=True, text=True, timeout=STEP_SECONDS)
     if done.returncode:
         raise Refused('invalid_input:init', done.stderr.strip()[:200])
@@ -193,7 +193,7 @@ def remote(proposal, identity, *, origin=None, observe=None, repository=None, re
     """Create the remote under the identity's owner (module docstring). Returns {url, owner, visibility,
     id} as GitHub answered them."""
     wanted = proposal['remote']
-    transport = GP.identity_transport()
+    transport = _git_process.identity_transport()
     try:
         checked = transport.check_remote(identity, wanted['url'], operation='creation', repository=repository,
                                          request=request, observe=observe)
@@ -232,12 +232,12 @@ def push(proposal, identity, base_commit):
     """Push the initial commit to the default branch of the checked remote URL through the identity profile,
     leased on the branch being absent there; read back. Returns the remote tip."""
     path, url = proposal['directory'], proposal['remote']['url']
-    transport = GP.identity_transport()
+    transport = _git_process.identity_transport()
     ref = 'refs/heads/' + BRANCH
 
     def run(*args):
         try:
-            return GP.run(['git', '-C', path, *args], capture_output=True, text=True, timeout=STEP_SECONDS,
+            return _git_process.run(['git', '-C', path, *args], capture_output=True, text=True, timeout=STEP_SECONDS,
                           profile='identity', push_identity=identity, remote_url=url)
         except transport.Refused as error:
             raise Refused(error.code) from None

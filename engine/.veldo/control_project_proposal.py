@@ -428,7 +428,8 @@ def directory_state(path):
 
 
 def _origin(path):
-    done = organ('git_process').run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, 'config', '--get',
+    _git_process = organ('git_process')
+    done = _git_process.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, 'config', '--get',
                                      'remote.origin.url'], capture_output=True, text=True, timeout=30)
     return done.stdout.strip() if done.returncode == 0 and done.stdout.strip() else None
 
