@@ -392,7 +392,8 @@ def _v153_suite(fence_dir, installed):
             for operation in ('push', 'remote_creation', 'adoption'):
                 accepted = T.check_remote(record, own, operation=operation, repository='repo', request='dispatch', observe=events.append)
                 row('owner/' + owner + '/' + operation + '/own', accepted['owner'] == owner)
-                for other in ({'alpha', 'beta', 'third'} - {owner}):
+                # Fresh mutation controls must emit the same ordered row inventory.
+                for other in sorted({'alpha', 'beta', 'third'} - {owner}):
                     row('owner/' + owner + '/' + operation + '/' + other,
                         refusal(lambda: T.check_remote(record, 'https://github.com/' + other + '/repo.git',
                             operation=operation, repository='repo', request='dispatch', observe=events.append)) == 'binding_mismatch:remote_owner')
