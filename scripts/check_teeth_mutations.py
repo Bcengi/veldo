@@ -11435,7 +11435,9 @@ def cases():
         ['first-use-budget/leg-time-store-pruned'])
     result[-1]['dir'] = 'scripts'
 
-    return result
+    # Admit the two-slot new-project fixture first so its long controls and mutants
+    # overlap other suites throughout the existing combined budget.
+    return sorted(result, key=lambda case: case['suite'] != '110_veldo_0143_new_project.py')
 
 
 def edits(case):
