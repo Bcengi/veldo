@@ -28,8 +28,11 @@ repository, uses the sanctioned writer the way the layer exists to be used, runs
 over the result, and requires that NO assertion that passed before now fails. That is the property
 in one sentence and there is no spelling of the defect that survives it.
 
-WHAT IT COSTS AND WHY IT STILL BELONGS IN THE GATE. One nested full selftest, measured at about
-90 seconds, plus two tree copies of about a second. The BASELINE run is LAZY: it happens only when
+WHAT IT COSTS AND WHY IT STILL BELONGS IN THE GATE. One nested full selftest of the leg it runs in,
+plus two tree copies of about a second. That nested run is the unit stage's leg over again: on
+2026-10-23 the confined leg's 7849 rows took 2276.8s on a loaded host and the unconfined leg's 873
+rows 870 to 885s. The "about 90 seconds" this paragraph once said was a suite a fraction of that
+size. The BASELINE run is LAZY: it happens only when
 the mutated run reports a failure, because with zero failures there is nothing to attribute. So
 the green path pays ONE nested run and the second run is paid only when the gate is about to be red
 anyway. That is why this sits in the `integration` slot of scripts/verify.sh, which was
@@ -72,6 +75,19 @@ it is fixing:
      Every failing row of every run is printed by name, so a pre-existing set that the `unit` slot
      does NOT show (a failure only the nested copy has) is on the page rather than a bare count.
 
+THE BUDGET OF ONE NESTED RUN IS MEASURED, NOT FIXED (VELDO-0214). A fixed 1800s could not hold
+the confined leg: it ended "did not finish inside 1800s" on two gate runs while the suite was
+healthy. The budget per nested run is min(max(1800, 2.0 x the unit stage's measured seconds for
+the same leg), 21600): never under the old fixed 1800s, and never over 6 hours, because a value that
+removed the bound would let a hung nested run hold the gate open for good. The cap is printed
+when it applies, and a measurement whose budget is not a finite number of seconds is ignored by
+name. Only the authority's scripts/gate_legs.py measures that, and hands it in
+VELDO_GATE_UNIT_SECONDS bound to the leg and the declaration digest it runs this leg under: this
+gate run's unit leg when it ran fresh, else the last fresh measurement it recorded. A value that is
+not bound to the leg this run is in, or appears outside a gate leg, is ignored by name. With no
+measurement at all (this check run by hand) the budget is 1800s and the check says so. The budget
+and where its number came from are printed before any run, and a run that exceeds it names it.
+
 FAILING LOUD IS NOT OPTIONAL. Every way this check can fail to answer exits NONZERO with the reason
 named: no interpreter, a missing writer or dispatcher, a copy that did not complete, a writer that
 exited nonzero, a mutation that did not observably land, a run that produced no summary line, or a
@@ -91,6 +107,7 @@ sys.path[:] = [p for p in sys.path if os.path.realpath(p or os.curdir) != _SCRIP
 
 import importlib.util  # noqa: E402 - only after the script directory is gone
 import json  # noqa: E402
+import math  # noqa: E402
 import shutil  # noqa: E402
 import stat  # noqa: E402
 import subprocess  # noqa: E402
@@ -115,7 +132,10 @@ EVENT_LOG = Path(".veldo") / "events.jsonl"
 SPEND_FIELDS = ("tokens", "cost_usd", "human_minutes")
 SUMMARY_PREFIX = "selftest:"
 FAIL_MARK = "SELFTEST FAIL:"
-RUN_TIMEOUT_S = 1800
+RUN_TIMEOUT_S = 1800  # the floor of the measured budget, and the whole budget with no measurement
+BUDGET_FACTOR = 2.0
+BUDGET_CEILING_S = 21600  # 6 hours: no measurement may remove the bound on a nested run
+UNIT_SECONDS = "VELDO_GATE_UNIT_SECONDS"
 WRITE_TIMEOUT_S = 120
 TMP_PREFIX = "veldo-first-use-"
 
@@ -263,13 +283,52 @@ def _copy(src, dest, what):
 
 def _child_env():
     """The environment a nested run gets. VELDO_SUITE_ORDER is dropped because an inherited
-    diagnostic ordering would silently change what this measurement ran."""
+    diagnostic ordering would silently change what this measurement ran, and the unit-leg
+    measurement because it is this check's input, not the nested suite's."""
     env = dict(os.environ)
     env.pop("VELDO_SUITE_ORDER", None)
+    env.pop(UNIT_SECONDS, None)
     return env
 
 
-def _run_suite(tree, label):
+def run_budget(environ):
+    """(seconds per nested run, where that number came from). See the docstring."""
+    floor = "the fixed floor of %ds" % RUN_TIMEOUT_S
+    raw = environ.get(UNIT_SECONDS)
+    leg, digest = environ.get("VELDO_GATE_LEG"), environ.get("VELDO_GATE_DECLARATION")
+    if raw is None:
+        return RUN_TIMEOUT_S, ("%s: no unit-leg measurement was handed to this run (run by hand, or "
+                               "the authority has recorded none for this leg)" % floor)
+    if leg not in ("confined", "unconfined") or not digest:
+        return RUN_TIMEOUT_S, ("%s: %s is set outside a gate leg, and only the authority's "
+                               "gate_legs.py sets it for a leg, so it is ignored" % (floor, UNIT_SECONDS))
+    try:
+        handed = json.loads(raw)
+        seconds = float(handed["seconds"])
+        bound = handed["leg"] == leg and handed["declaration"] == digest
+        fresh, at = str(handed["fresh"]), str(handed["at"])
+    except (ValueError, TypeError, KeyError):
+        return RUN_TIMEOUT_S, "%s: %s is not the authority's form, so it is ignored" % (floor, UNIT_SECONDS)
+    if not bound:
+        return RUN_TIMEOUT_S, ("%s: %s names another leg or declaration than this %s leg's, so it "
+                               "is ignored" % (floor, UNIT_SECONDS, leg))
+    if not 0 < seconds < float("inf"):
+        return RUN_TIMEOUT_S, "%s: %s carries no usable seconds, so it is ignored" % (floor, UNIT_SECONDS)
+    derived = BUDGET_FACTOR * seconds
+    if not math.isfinite(derived):
+        return RUN_TIMEOUT_S, ("%s: %s carries %gs, and %.1f x that is not a finite number of "
+                               "seconds, so it is ignored" % (floor, UNIT_SECONDS, seconds, BUDGET_FACTOR))
+    budget = min(max(RUN_TIMEOUT_S, derived), BUDGET_CEILING_S)
+    source = ("min(max(%d, %.1f x %.1fs), %d): the unit stage's %s leg as the authority's gate_legs.py "
+              "measured it in %s (%s)" % (RUN_TIMEOUT_S, BUDGET_FACTOR, seconds, BUDGET_CEILING_S, leg,
+                                          fresh, at))
+    if derived > BUDGET_CEILING_S:
+        source += ("; CAPPED at the ceiling of %ds (6 hours), where %.1f x the measurement is %.0fs"
+                   % (BUDGET_CEILING_S, BUDGET_FACTOR, derived))
+    return budget, source
+
+
+def _run_suite(tree, label, budget=RUN_TIMEOUT_S):
     """(passed, failed, [failure names]) from one full nested run, or CannotAnswer.
 
     THE FAILURE NAMES AND THE FAILURE COUNT COME FROM DIFFERENT LINES OF THE SAME OUTPUT, so they
@@ -280,9 +339,9 @@ def _run_suite(tree, label):
     try:
         proc = subprocess.run([sys.executable, "scripts/selftest.py"], cwd=str(tree),
                               capture_output=True, text=True, env=_child_env(),
-                              timeout=RUN_TIMEOUT_S, pass_fds=launcher_fds())
+                              timeout=budget, pass_fds=launcher_fds())
     except subprocess.TimeoutExpired:
-        raise CannotAnswer("the %s run did not finish inside %ds" % (label, RUN_TIMEOUT_S))
+        raise CannotAnswer("the %s run did not finish inside its budget of %.0fs" % (label, budget))
     except OSError as e:
         raise CannotAnswer("could not run the %s suite: %s" % (label, e))
     out = proc.stdout + proc.stderr
@@ -391,6 +450,8 @@ def main(argv):
         return 2
 
     print("== first use: no suite may require this repository's current emptiness", flush=True)
+    budget, source = run_budget(os.environ)
+    print("   budget per nested run: %.0fs, %s" % (budget, source), flush=True)
     t0 = time.monotonic()
     tmproot = None
     verdict_red = []
@@ -410,7 +471,7 @@ def main(argv):
             print("   family %s: %s" % (mut["family"], mut["why"]), flush=True)
             tree = _copy(pristine, tmproot / ("mutated-" + mut["family"]), "mutated")
             _apply(tree, mut)
-            _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"])
+            _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"], budget)
             if not failed:
                 print("   %s: PASS. The suite is green with the layer in use." % mut["family"],
                       flush=True)
@@ -418,7 +479,7 @@ def main(argv):
             if baseline is None:
                 print("   %d failure(s): running the untouched tree to separate a regression from "
                       "a failure that was already there" % failed, flush=True)
-                baseline = _run_suite(pristine, "baseline")[2]
+                baseline = _run_suite(pristine, "baseline", budget)[2]
             regressions = [n for n in names if n not in baseline]
             preexisting = len(names) - len(regressions)
             if preexisting:

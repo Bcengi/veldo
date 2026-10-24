@@ -16,9 +16,10 @@ git() {
   python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --root "$(pwd -P)" -- "$@"
 }
 # A caller's gate leg variables (VELDO-0208) never reach a candidate command: this gate runs no
-# unconfined leg, so a candidate's dispatcher must never read one from the caller.
+# unconfined leg, so a candidate's dispatcher must never read one from the caller, nor the unit leg
+# time (VELDO-0214) a leg runner hands an integration leg.
 veldo_candidate() {
-  env -u VELDO_GATE_LEG -u VELDO_GATE_UNCONFINED -u VELDO_GATE_DECLARATION \
+  env -u VELDO_GATE_LEG -u VELDO_GATE_UNCONFINED -u VELDO_GATE_DECLARATION -u VELDO_GATE_UNIT_SECONDS \
     python3 -I -S "$VELDO_AUTHORITY/scripts/gate_candidate.py" --root "$(pwd -P)" -- "$@"
 }
 

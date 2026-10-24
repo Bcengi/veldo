@@ -11375,6 +11375,54 @@ def cases():
         "{'text': 'Plan the socket phase.'}", ['service/socket-path'])
     result[-1]['dir'] = 'scripts/suites'
 
+    # VELDO-0214: the first-use check's budget per nested run is measured, never a fixed constant.
+    suite214 = '111_veldo_0214_first_use_budget.py'
+    add(214, 'budget214-fixed-1800-restored', suite214, 'check_first_use.py',
+        '    budget = min(max(RUN_TIMEOUT_S, derived), BUDGET_CEILING_S)\n',
+        '    budget = RUN_TIMEOUT_S\n',
+        ['first-use-budget/measured-budget-used', 'first-use-budget/ceiling-caps-the-budget'])
+    result[-1]['dir'] = 'scripts'
+    add(214, 'budget214-caller-value-kept', suite214, 'gate_legs.py',
+        '    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST, UNIT_SECONDS)}\n',
+        '    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST)}\n',
+        ['first-use-budget/candidate-set-value-ignored'])
+    result[-1]['dir'] = 'scripts'
+    add(214, 'budget214-failed-leg-recorded', suite214, 'gate_legs.py',
+        '        if stage == MEASURED_STAGE and code == 0:\n',
+        '        if stage == MEASURED_STAGE:\n', ['first-use-budget/reused-stage-uses-last-fresh'])
+    result[-1]['dir'] = 'scripts'
+    add(214, 'budget214-stale-docstring', suite214, 'check_first_use.py',
+        'One nested full selftest of the leg it runs in,\n',
+        'One nested full selftest, measured at about\n90 seconds, of the leg it runs in,\n',
+        ['first-use-budget/by-hand-uses-1800-and-says-so'])
+    result[-1]['dir'] = 'scripts'
+    # Round 2 (review F1): main() drops the budget at both nested call sites, so every nested run
+    # is back on the 1800s default while the budget line still prints the measured number.
+    add(214, 'budget214-main-drops-the-budget', suite214, 'check_first_use.py',
+        '            _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"], budget)\n',
+        '            _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"])\n',
+        ['first-use-budget/measured-budget-used', 'first-use-budget/ceiling-caps-the-budget'],
+        also=[('                baseline = _run_suite(pristine, "baseline", budget)[2]\n',
+               '                baseline = _run_suite(pristine, "baseline")[2]\n')])
+    result[-1]['dir'] = 'scripts'
+    # Round 3 (review F6): the owner's store refuses an authority under the system temporary
+    # directory again, so the lander's installation, laid down there, never hands its unit leg on.
+    add(214, 'budget214-temporary-authority-refused', suite214, 'gate_legs.py',
+        "        return 'the list %s is not this authority\\'s own' % path\n    return None\n",
+        "        return 'the list %s is not this authority\\'s own' % path\n"
+        "    temporary = Path(tempfile.gettempdir()).resolve()\n"
+        "    if authority == temporary or temporary in authority.parents:\n"
+        "        return 'this authority %s is a temporary tree under %s' % (authority, temporary)\n"
+        "    return None\n",
+        ['first-use-budget/installed-authority-under-temp-is-measured'])
+    result[-1]['dir'] = 'scripts'
+    # Round 3 (review F7): prune_times no longer spares the file it is told to keep.
+    add(214, 'budget214-keep-not-spared', suite214, 'gate_legs.py',
+        "        if entry.name == Path(keep).name or not (TIMES_NAME.match(entry.name)\n",
+        "        if not (TIMES_NAME.match(entry.name)\n",
+        ['first-use-budget/leg-time-store-pruned'])
+    result[-1]['dir'] = 'scripts'
+
     return result
 
 

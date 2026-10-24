@@ -1,0 +1,144 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0214",
+  "commit": "844b10ccae60840143dea5dd4cc4fc9eaa90afad",
+  "tree": "f364bf93f1054da753a129f4058173e58640b8a9",
+  "producer": "Claude implementation agent; not an independent reviewer",
+  "produced_at": "2026-10-23T11:33:47.946262+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0214/local_checks.json",
+          "detail": "Row first-use-budget/measured-budget-used passes: budget 2276.8s from a recorded 1138.4s confined leg, printed with formula, leg and source, and the timeout of both nested runs main() makes over a fixture tree (mutated and lazy baseline). Mutations budget214-fixed-1800-restored and budget214-main-drops-the-budget each fail it (with ceiling-caps-the-budget), locally and on the host (host-runs.json, round 3)."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0214/HOST_RUNS.md",
+          "detail": "NOT RUN: ./scripts/verify.sh is pending; it runs separately on a quiet machine."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0214/local_checks.json",
+          "detail": "Row first-use-budget/candidate-set-value-ignored passes. Mutation budget214-caller-value-kept fails exactly that row, locally and on the host."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0214/local_checks.json",
+          "detail": "Rows first-use-budget/stage-runner-hands-the-matching-leg and first-use-budget/reused-stage-uses-last-fresh pass. Mutation budget214-failed-leg-recorded fails exactly the reused-stage row, locally and on the host."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0214/HOST_RUNS.md",
+          "detail": "NOT RUN: ./scripts/verify.sh is pending; it runs separately on a quiet machine."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0214/local_checks.json",
+          "detail": "Row first-use-budget/by-hand-uses-1800-and-says-so passes. Mutation budget214-stale-docstring fails exactly that row, locally and on the host."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0214/hand_falsifiers.json",
+          "detail": "Rows first-use-budget/ceiling-caps-the-budget and first-use-budget/non-finite-budget-refused pass (local_checks.json, host-runs.json). Hand falsifiers ceiling-removed, cap-not-printed and non-finite-accepted each fail their row."
+        }
+      ]
+    },
+    {
+      "id": "AC6",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0214/local_checks.json",
+          "detail": "Rows first-use-budget/leg-time-store-pruned, first-use-budget/suites-stay-out-of-the-owner-store and first-use-budget/installed-authority-under-temp-is-measured pass. Mutation budget214-temporary-authority-refused fails exactly the installed-authority row and budget214-keep-not-spared exactly the pruned row, locally and on the host (host-runs.json, round 3)."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0214/hand_falsifiers.json",
+          "detail": "Hand falsifiers store-never-pruned, prune-ignores-gone-authority, owner-store-guard-removed and own-list-test-removed each fail their row."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0214/host-runs.json",
+          "detail": "Suite 101 on the host left ~/.cache/veldo/gate-leg-seconds empty (listed before and after); its drivers of the temporary authority copy run with a scratch HOME."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "command": "python3 proof/VELDO-0214/local_check.py"
+    },
+    {
+      "name": "hand-falsifiers",
+      "status": "passed",
+      "command": "python3 proof/VELDO-0214/hand_falsifiers.py"
+    },
+    {
+      "name": "host-suites",
+      "status": "passed",
+      "command": "suites 111, 53 and 101 and check_teeth_mutations.py --finding 214 on the host at 844b10cc; see host-runs.json. Suite 101 fails two sandbox rows that fail identically at main d49581b4; no new failure."
+    },
+    {
+      "name": "gate",
+      "status": "not_run",
+      "reason": "Host run of ./scripts/verify.sh pending; it runs separately on a quiet machine."
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0214/local_check.py",
+    "proof/VELDO-0214/local_checks.json",
+    "proof/VELDO-0214/hand_falsifiers.py",
+    "proof/VELDO-0214/hand_falsifiers.json",
+    "proof/VELDO-0214/HOST_RUNS.md",
+    "proof/VELDO-0214/host-runs.json",
+    "proof/VELDO-0214/suite101-main-d49581b4.log",
+    "proof/VELDO-0214/suite101-branch.log",
+    "proof/VELDO-0214/REVIEW-claude-2026-10-23.md",
+    "proof/VELDO-0214/REVIEW-claude-r2-2026-10-23.md"
+  ],
+  "artifact_digests": {
+    "proof/VELDO-0214/local_check.py": "sha256:23cdc454e020e5875006b701f43eb5fb71b913e4a70aa0943c5aea813d833a14",
+    "proof/VELDO-0214/local_checks.json": "sha256:bff620739ffb902f6868f9ee02a7c48f3c38db8c582cd14cab784d84c25838a3",
+    "proof/VELDO-0214/hand_falsifiers.py": "sha256:1ecb76c82d2e95b338da3fed79f796a4e9d73f40f32b5a9567aeb6e7afb8cacd",
+    "proof/VELDO-0214/hand_falsifiers.json": "sha256:ca713c5f2b6d81cb8218d481014e418a216f3a7d915cf0afbb99dfcc837caf60",
+    "proof/VELDO-0214/HOST_RUNS.md": "sha256:43c3fd52d26d183b9a1d2f229594608ab7dbcf00060d8a1163c97c1fd3e8d5b7",
+    "proof/VELDO-0214/host-runs.json": "sha256:9c667a72fbb520fab3680a6df9ef608e78abd18bc29629102161d9aef129dbe4",
+    "proof/VELDO-0214/suite101-main-d49581b4.log": "sha256:9fef46b8e078845c772f1253eb21675560078595c33db54ff7dbc0b6ca391024",
+    "proof/VELDO-0214/suite101-branch.log": "sha256:36a009ba189b79a95b96b32606c338a2a50f0ac282d62d32831c4905ff027c3e",
+    "proof/VELDO-0214/REVIEW-claude-2026-10-23.md": "sha256:dabc040257a662f484c89c269895370b6f50ca4c2821a29dfd6b05e5b200f66c",
+    "proof/VELDO-0214/REVIEW-claude-r2-2026-10-23.md": "sha256:a2f885e4c5c66ad5763e6c624e8d6090a15594c25eb62464ef3ce9ff30a16312"
+  },
+  "rollback": "Revert the five protected files, suite 111, its manifest entry, suite 101's scratch HOME for its authority copy and the seven mutation cases.",
+  "review": "Round 1 independent review (REVIEW-claude-2026-10-23.md) found F1 to F5, fixed in round 2. The round 2 fix check (REVIEW-claude-r2-2026-10-23.md) found F6 and F7, fixed in round 3. A fresh check of round 3, the host gate and the owner approval for the protected paths are pending; no gate stamp or approval claimed."
+}
