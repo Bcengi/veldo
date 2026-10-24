@@ -1,0 +1,499 @@
+{
+  "base_commit": "fbd62ba1aefafb92d59b47d8415bb31b982d32b5",
+  "branch": "agent/codex/veldo-mutation-case-deadlines",
+  "full_gate": "Not run, by user instruction; historical round 1 proof is unchanged.",
+  "source_sha256": {
+    "engine/scripts/check_gate_mutations.py": "17b19c46d38b4be409ef1d996dc7e6bd4fdaaee09c4effc8f0e44f1477c14315",
+    "scripts/check_gate_mutations.py": "17b19c46d38b4be409ef1d996dc7e6bd4fdaaee09c4effc8f0e44f1477c14315",
+    "scripts/check_teeth_mutations.py": "9cd4d079c3f6883f9c4b986447b4c038f8d003f3e4f616c7b7782548f8903c5f",
+    "scripts/suites/112_veldo_0215_case_deadlines.py": "3019fd8c89b230cc67f1e398cef35d878075396761eb81c1d6e7efdbd8819461",
+    "scripts/suites/99_veldo_0205_reuse.py": "f16a0ff93a4e436dccf2007b915cca1a7da08b4a9d1ff0f372a19266a6cf98a8",
+    "specs/VELDO-0215-measured-mutation-case-deadlines.md": "7f181137cd26dd09c60a4df9e47cd10cc52443c43f67659d730ee2102597f4a4"
+  },
+  "checks": {
+    "finding215": {
+      "status": "passed",
+      "registered": 18,
+      "executed": 18,
+      "rejected": 18,
+      "reused": 0,
+      "elapsed": 23.97166236198973,
+      "budget_seconds": 5142.0,
+      "parallel_workers": 16,
+      "worker_invocations": 20,
+      "invalid_results": [],
+      "surviving_workers": 0,
+      "error": null,
+      "detail": null,
+      "mutants": [
+        {
+          "name": "deadline215-serial-stage-cap",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/combined-budget"
+          ]
+        },
+        {
+          "name": "deadline215-latest-sample",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/rolling-maximum"
+          ]
+        },
+        {
+          "name": "deadline215-first-control",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/shared-controls"
+          ]
+        },
+        {
+          "name": "deadline215-record-invalid",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/authority-recording"
+          ]
+        },
+        {
+          "name": "deadline215-no-authority-guard",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/authority-recording"
+          ]
+        },
+        {
+          "name": "deadline215-old-stage-cap",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/combined-budget",
+            "VELDO-0215 case-deadlines/measured-worker",
+            "VELDO-0215 case-deadlines/slow-pass",
+            "VELDO-0215 case-deadlines/hang-timeout",
+            "VELDO-0215 case-deadlines/baseline-details",
+            "VELDO-0215 case-deadlines/authority-recording"
+          ]
+        },
+        {
+          "name": "deadline215-no-prune",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/store-pruned"
+          ]
+        },
+        {
+          "name": "deadline215-no-ceiling",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/bounds"
+          ]
+        },
+        {
+          "name": "deadline215-lost-baseline-details",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/baseline-details"
+          ]
+        },
+        {
+          "name": "deadline215-setup-timeout-is-driver-error",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/setup-timeout"
+          ]
+        },
+        {
+          "name": "deadline215-timeout-is-baseline",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/hang-timeout",
+            "VELDO-0215 case-deadlines/real-hang-reaped"
+          ]
+        },
+        {
+          "name": "deadline215-key-omits-sources",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/key-binding"
+          ]
+        },
+        {
+          "name": "deadline215-key-omits-definition",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/key-binding"
+          ]
+        },
+        {
+          "name": "deadline215-candidate-authority-not-recorded",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/candidate-authority"
+          ]
+        },
+        {
+          "name": "deadline215-stage-drops-authority",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/authority-recording"
+          ]
+        },
+        {
+          "name": "deadline215-fixed-worker",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/measured-worker",
+            "VELDO-0215 case-deadlines/slow-pass",
+            "VELDO-0215 case-deadlines/hang-timeout",
+            "VELDO-0215 case-deadlines/baseline-details",
+            "VELDO-0215 case-deadlines/authority-recording"
+          ]
+        },
+        {
+          "name": "deadline215-drop-measurement",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/measured-worker",
+            "VELDO-0215 case-deadlines/slow-pass",
+            "VELDO-0215 case-deadlines/hang-timeout",
+            "VELDO-0215 case-deadlines/baseline-details",
+            "VELDO-0215 case-deadlines/authority-recording",
+            "VELDO-0215 case-deadlines/real-hang-reaped"
+          ]
+        },
+        {
+          "name": "deadline215-no-expiry",
+          "failed_rows": [
+            "VELDO-0215 case-deadlines/hang-timeout"
+          ]
+        }
+      ]
+    },
+    "affected": {
+      "status": "passed",
+      "registered": 108,
+      "executed": 108,
+      "rejected": 108,
+      "reused": 0,
+      "elapsed": 379.71424865396693,
+      "budget_seconds": 5142.0,
+      "parallel_workers": 16,
+      "worker_invocations": 146,
+      "invalid_results": [],
+      "surviving_workers": 0,
+      "error": null,
+      "detail": null
+    },
+    "finding205": {
+      "status": "failed",
+      "registered": 0,
+      "executed": 0,
+      "rejected": 0,
+      "reused": 0,
+      "elapsed": 0.3486220390186645,
+      "budget_seconds": null,
+      "parallel_workers": 16,
+      "worker_invocations": 0,
+      "invalid_results": [],
+      "surviving_workers": 0,
+      "error": "incomplete_inventory",
+      "detail": "incomplete_inventory: empty or unknown subset"
+    }
+  },
+  "suites": {
+    "112": {
+      "passed": 40,
+      "failed": 0,
+      "own_rows": 14,
+      "exit": 2
+    },
+    "existing_initial": {
+      "passed": 211,
+      "failed": 8,
+      "exit": 1,
+      "explanation": "Suite 99 resource stub lacked demand/capacity; replaced with an empty real SuiteResources pool. Other five suites passed."
+    },
+    "99_final": {
+      "passed": 55,
+      "failed": 0,
+      "own_rows": 29,
+      "exit": 2
+    }
+  },
+  "anchors": {
+    "applied": 2571,
+    "errors": 0
+  },
+  "full_inventory": {
+    "calculated_at": "2026-10-24T14:07:49.919528+00:00",
+    "inventory": 2571,
+    "workers": 16,
+    "mode": "all fresh, read-only planning; no workers launched",
+    "store": "/home/dmitry/.cache/veldo/mutation-case-seconds",
+    "measured_above_floor": 46,
+    "existing_key_files": 112,
+    "capacities": {
+      "systemd_user_manager": 16
+    },
+    "old_count_cap": 5142.0,
+    "serial_cap": 403020.9012210875,
+    "bound": 53800.03908249566,
+    "implementation_sha256": "17b19c46d38b4be409ef1d996dc7e6bd4fdaaee09c4effc8f0e44f1477c14315",
+    "measured_cases": [
+      {
+        "identity": "check_teeth_mutations.py:candidate-checks-out-trunk",
+        "key": "2fcaab410e70e5be66a153cfc6e79637",
+        "deadline": 164.59202645695768
+      },
+      {
+        "identity": "check_teeth_mutations.py:gate-output-reconcile-writes-candidate",
+        "key": "257e67523ad09df66063e67cdb135a60",
+        "deadline": 120.24704412912251
+      },
+      {
+        "identity": "check_teeth_mutations.py:claude-nonzero-ignored",
+        "key": "2ae85255b451dded96663a58d58def7f",
+        "deadline": 121.2482364270254
+      },
+      {
+        "identity": "check_teeth_mutations.py:claude-error-result-complete",
+        "key": "4026b3d74387abca399233eef3f62c21",
+        "deadline": 120.84573399910005
+      },
+      {
+        "identity": "check_teeth_mutations.py:claude-malformed-ignored",
+        "key": "2994f0088bc038713b681e8ca9089e5c",
+        "deadline": 120.92329065303784
+      },
+      {
+        "identity": "check_teeth_mutations.py:claude-stop-leaves-descendant",
+        "key": "9975e006ed82a9635ceee7771d8db87c",
+        "deadline": 151.51379432401154
+      },
+      {
+        "identity": "check_teeth_mutations.py:claude-stop-recorded-ended",
+        "key": "a49f3a8e63cd37524f796fafe770812a",
+        "deadline": 124.73662392888218
+      },
+      {
+        "identity": "check_teeth_mutations.py:claude-stopped-invocation-released",
+        "key": "d42163b9ba53b67003e00bf3c293779a",
+        "deadline": 122.84040665708017
+      },
+      {
+        "identity": "check_teeth_mutations.py:claude-argv-position-unchecked",
+        "key": "7e5c4b5273d2ce63dd153b9f03f0fd06",
+        "deadline": 128.20898730604677
+      },
+      {
+        "identity": "check_teeth_mutations.py:claude-wrapper-rehash-skipped",
+        "key": "d7d008ca859ac588cfdb1127cabd4957",
+        "deadline": 122.24358012311859
+      },
+      {
+        "identity": "check_teeth_mutations.py:claude-entrance-rehash-skipped",
+        "key": "38e4a9d7507909d05567914f114af7e2",
+        "deadline": 122.50381855806336
+      },
+      {
+        "identity": "check_teeth_mutations.py:claude-engines-unprotected",
+        "key": "672f1633e3a77ee626169ce82170321b",
+        "deadline": 122.86386429303093
+      },
+      {
+        "identity": "check_teeth_mutations.py:claude-mode-unchecked",
+        "key": "e87e37a1dc496741e34b74b97e90d9ae",
+        "deadline": 123.72605263197329
+      },
+      {
+        "identity": "check_teeth_mutations.py:claude-parent-link-followed",
+        "key": "ad3e4f381a8743a19a5354c7f5995370",
+        "deadline": 123.39800859609386
+      },
+      {
+        "identity": "check_teeth_mutations.py:claude-terminal-main-loop-usage",
+        "key": "f9d8a0a943bde9b2ef75aa07dd12980f",
+        "deadline": 122.63268646207871
+      },
+      {
+        "identity": "check_teeth_mutations.py:claude-usage-cap-stop-ignored",
+        "key": "891cc97f5bb1c4f1b9be71e789147274",
+        "deadline": 213.15661230002297
+      },
+      {
+        "identity": "check_teeth_mutations.py:receiver148-setup-clock-before-release",
+        "key": "4f7acfd12676709a8365f477d0e72dd2",
+        "deadline": 212.82722317805747
+      },
+      {
+        "identity": "check_teeth_mutations.py:receiver148-release-deadline-restarted",
+        "key": "2c55a5ad23d5c1ccb2683f4081aab928",
+        "deadline": 213.92841824702919
+      },
+      {
+        "identity": "check_teeth_mutations.py:receiver148-release-deadline-not-finite",
+        "key": "4999168ec3befc567a4af14c1fdd275d",
+        "deadline": 213.20647579198703
+      },
+      {
+        "identity": "check_teeth_mutations.py:receiver148-report-wait-unbounded",
+        "key": "052df8071e8bf310792132ec98bb9b1b",
+        "deadline": 251.20622032490792
+      },
+      {
+        "identity": "check_teeth_mutations.py:receiver148-late-wrapper-execs",
+        "key": "d5d5e8032e196bcec7f024ebacac21b5",
+        "deadline": 213.4677454921184
+      },
+      {
+        "identity": "check_teeth_mutations.py:receiver148-wrapper-eof-is-timeout",
+        "key": "ff5f4b9adf6523d203dc8cf81895a470",
+        "deadline": 214.55134865397122
+      },
+      {
+        "identity": "check_teeth_mutations.py:receiver148-placement-wait-unbounded",
+        "key": "7a61fb97b6fa896e7c2e4ef689c38abc",
+        "deadline": 218.07964514399646
+      },
+      {
+        "identity": "check_teeth_mutations.py:receiver148-placement-report-ignored",
+        "key": "0c70946655740ba383aee980b62bf302",
+        "deadline": 228.09055420506047
+      },
+      {
+        "identity": "check_teeth_mutations.py:receiver148-heartbeat-moves-after-exec",
+        "key": "958a54229fa67c2b5c1a0cc1378ad6c9",
+        "deadline": 202.86045625508996
+      },
+      {
+        "identity": "check_teeth_mutations.py:receiver148-clean-exit-invents-stop",
+        "key": "ab99218e32ba9b395954139eef5e64ba",
+        "deadline": 214.16442057606764
+      },
+      {
+        "identity": "check_teeth_mutations.py:receiver148-success-collected-before-read",
+        "key": "1022d569cbe7b2cc54b62e640c25005e",
+        "deadline": 204.46775942388922
+      },
+      {
+        "identity": "check_teeth_mutations.py:reland148-stale-left-failed",
+        "key": "cc1f13ba934460f2ada6c7efee66ae90",
+        "deadline": 203.5617073889589
+      },
+      {
+        "identity": "check_teeth_mutations.py:lease148-loss-unknown",
+        "key": "3bb314a14f6babc4fc40e3075d818291",
+        "deadline": 203.01075088209473
+      },
+      {
+        "identity": "check_teeth_mutations.py:grant148-old-tree-accepted",
+        "key": "c2e6fdd286778535a4a318a8c8c9a2b0",
+        "deadline": 203.6225094779511
+      },
+      {
+        "identity": "check_teeth_mutations.py:reland148-loop-offers-nothing",
+        "key": "1bfa12e1777907f17d1e89f12c5031a2",
+        "deadline": 203.28391953615937
+      },
+      {
+        "identity": "check_teeth_mutations.py:reland148-conflict-relanded",
+        "key": "2ed5e880d63cf223c8c4cb68a89af957",
+        "deadline": 203.46255850506714
+      },
+      {
+        "identity": "check_teeth_mutations.py:reland148-rebuild-not-reviewed",
+        "key": "ea1c006dd26aff6432c7744e91cc9e60",
+        "deadline": 224.68416732590413
+      },
+      {
+        "identity": "check_teeth_mutations.py:reland148-landed-rebuilt",
+        "key": "d2bc53458f09deb4960f30643ff0f608",
+        "deadline": 261.11125186487334
+      },
+      {
+        "identity": "check_teeth_mutations.py:reland148-end-wakes-nothing",
+        "key": "468d7f6624c01756e76d193f723a7e2f",
+        "deadline": 226.16407119302312
+      },
+      {
+        "identity": "check_teeth_mutations.py:lease148-contained-refused",
+        "key": "ae1afae34ff7d93bc4da79d93ffe60c6",
+        "deadline": 232.43525443790713
+      },
+      {
+        "identity": "check_teeth_mutations.py:lease148-tip-not-fetched",
+        "key": "73f0eaf8a935b29f52c41f95bb2d8556",
+        "deadline": 216.6305299619562
+      },
+      {
+        "identity": "check_teeth_mutations.py:never148-forced-push",
+        "key": "80d69e713045875ce5fbb96cb2812ad4",
+        "deadline": 206.61714188405313
+      },
+      {
+        "identity": "check_teeth_mutations.py:grant148-asked-every-pass",
+        "key": "483adf3d20e0dc1e814cad81c5655831",
+        "deadline": 221.8303342408617
+      },
+      {
+        "identity": "check_teeth_mutations.py:grant148-missing-treated-as-replacement",
+        "key": "4e25aee1d57de8b789bf0b0f50114910",
+        "deadline": 231.1406184390653
+      },
+      {
+        "identity": "check_teeth_mutations.py:grant148-replacement-includes-missing",
+        "key": "a2039698630f680976d9f4aa30df0a42",
+        "deadline": 228.83003262901912
+      },
+      {
+        "identity": "check_teeth_mutations.py:grant148-mixed-question-restored",
+        "key": "664c66accbdcd7e1f0ecbd67862a1d9a",
+        "deadline": 228.3943759468384
+      },
+      {
+        "identity": "check_teeth_mutations.py:grant148-proof-mismatch-replaceable",
+        "key": "1314cd18b99b2ec9d7436d9757268084",
+        "deadline": 232.55725210206583
+      },
+      {
+        "identity": "check_teeth_mutations.py:grant148-applied-again",
+        "key": "a74d11333b3862d53e8482cf4c5602c0",
+        "deadline": 228.509616777068
+      },
+      {
+        "identity": "check_teeth_mutations.py:grant148-failed-dispatch-accepted",
+        "key": "847f5316135767ec6c4860140ce762c0",
+        "deadline": 231.4688804789912
+      },
+      {
+        "identity": "check_teeth_mutations.py:grant148-revoked-overwritten",
+        "key": "0c51637316524260d35a5eea036572f4",
+        "deadline": 231.56393830804154
+      }
+    ],
+    "phases": [
+      {
+        "name": "controls",
+        "jobs": 744,
+        "resource_chains": {
+          "systemd_user_manager": {
+            "normalized_slot_time": 3022.488320899851,
+            "drain_tails": 1560
+          }
+        },
+        "work": 91169.49127556977,
+        "tail": 261.11125186487334,
+        "bound": 10541.692777487835
+      },
+      {
+        "name": "mutants",
+        "jobs": 2571,
+        "resource_chains": {
+          "systemd_user_manager": {
+            "normalized_slot_time": 13652.910679683227,
+            "drain_tails": 9741.111251864873
+          }
+        },
+        "work": 311731.4099455177,
+        "tail": 261.11125186487334,
+        "bound": 43138.34630500783
+      }
+    ]
+  },
+  "artifact_sha256": {
+    "affected.json.gz": "2d9653cda55bbd64b1d80f7a3f6ddf62c85e89fbe61f0adf95d8fca9849cc016",
+    "affected.log.gz": "46f46124d625acc95db6a7dea0c023233620661268562e3b454e522b9ed0d0af",
+    "calculate_cap.py": "452ed7b3976eca2a7786d1c14732559809aea88f2cd117372a739f29762b122b",
+    "existing.log.gz": "cc71d9e00ac945fef6cd09ee43ef2f1bbd2d00725cd9ccda75f59621ff651d0a",
+    "finding205.json.gz": "8d8c844b6f1f7ab672c3eed71602549269bf54deefe582a39a1765724def1a80",
+    "finding205.log.gz": "0f16228f1c6e71b9d600de7696d021ca16131747d0bc275665b0d8657e816259",
+    "finding215.json.gz": "94983de713dc3bc690b027546c7a10fdfbf19206bcdc011f86d3c5faed037332",
+    "finding215.log.gz": "77083983bef9adf3fba69e053e8279c166c441001c776e7a67be9812d39504f8",
+    "full-inventory-cap.json": "2710972f1bb4872fe4a4a70588aa2647cee7d24feb05bcf207c61e7d670731eb",
+    "reuse.log.gz": "45a11c6f18f3296c0f30b7e667cd830930a2442ea3d1e8ff63c934bb143086f6",
+    "suite.log.gz": "335628f8e0fdb233dd1db349dbd481ef067cec7140e4538a832aa7750a35517e",
+    "VALIDATION.md": "46a763bb7351c18c4f3ab1baf2712628a8b8a1b0aa4450c05086457387d6c510"
+  }
+}

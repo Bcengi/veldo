@@ -65,8 +65,65 @@ def _v215_case_deadlines():
                                      {case['identity']: 120, 'second': 480})
         row('shared-controls', len(controls) == 2
             and all(j['budget_seconds'] == 480 for j in controls.values()))
-        row('combined-budget', gate.budget_for(2, 16, [480, 480, 120, 480]) >= 1680
-            and gate.budget_for(2, 1, [480, 480, 120, 480]) >= 1680)
+        jobs = [dict(case=case, budget_seconds=120) for _ in range(32)]
+        plain = gate.SuiteResources({'suites': [{'file': 'sample.py'}]})
+        budgets = [gate.budget_for(32, 16, [jobs], plain) == 480,
+                   gate.budget_for(32, 1, [jobs], plain) == 3960,
+                   gate.budget_for(32, 16, [jobs[:16], jobs[16:]], plain) == 600,
+                   gate.budget_for(10000, 16, [jobs], plain) == 20000,
+                   gate.budget_for(0, 16, [], plain) == 120]
+        # Drive the real selector/reservations with completion events. Include exclusive,
+        # multi-slot, multi-resource, shortened jobs and capacity overrides.
+        for capacity in (1, 2, 4, 16):
+            manifest = dict(resource_capacities={'r': 16, 's': 2}, suites=[
+                dict(file='unit', resources={'r': 1}),
+                dict(file='wide', resources={'r': min(2, capacity), 's': 1}),
+                dict(file='exclusive', resources={'r': 'exclusive'}),
+                dict(file='plain')])
+            sequence = ['unit'] * 20 + ['exclusive', 'plain', 'wide'] * 3 + ['unit'] * 12
+            batch = [dict(case=dict(case, suite=suite), budget_seconds=120 + i % 3 * 60)
+                     for i, suite in enumerate(sequence)]
+            for parallel in (1, 4, 16):
+                for shortened in (False, True):
+                    pool = gate.SuiteResources(manifest, {'r': capacity})
+                    cap = gate.budget_for(2, parallel, [batch], pool)
+                    pending, active, clock = list(enumerate(batch)), {}, 0
+                    while pending or active:
+                        while pending and len(active) < parallel:
+                            index = pool.select(pending)
+                            if index is None:
+                                break
+                            name, job = pending.pop(index)
+                            pool.acquire(name, job)
+                            active[name] = clock + job['budget_seconds'] / (3 if shortened and name % 2 else 1)
+                        clock = min(active.values())
+                        for name in [n for n, done in active.items() if done == clock]:
+                            del active[name]
+                            pool.release(name)
+                    budgets.append(clock + gate.BUDGET <= cap <= gate.BUDGET + sum(
+                        j['budget_seconds'] for j in batch))
+        row('combined-budget', all(budgets))
+
+        peaks = scratch / 'peaks'
+        now = time.time()
+        def record_at(day, seconds):
+            with patch.object(gate.time, 'time', lambda: now + day * 86400):
+                gate.record_case_times(ROOT, {key: seconds}, peaks)
+                return gate.case_deadline(key, peaks)
+        maximums = [record_at(0, 160) == 480, record_at(1, 80) == 480,
+                    record_at(2, 200) == 600, record_at(3, 90) == 600,
+                    record_at(31, 100) == 600, record_at(33, 80) == 300]
+        with patch.object(gate.time, 'time', lambda: now + 64 * 86400):
+            maximums.append(gate.case_deadline(key, peaks) == 120)
+        maximums.append(record_at(64, 70) == 210)
+        kept = json.loads((peaks / (key + '.json')).read_text())
+        maximums.append(kept['seconds'] == 70 and len(kept['samples']) == 1)
+        # Legacy data also expires, even when a new write would refresh its file mtime.
+        legacy = peaks / (key + '.json')
+        legacy.write_text(json.dumps(dict(authority=str(ROOT), key=key, seconds=300)))
+        os.utime(legacy, (now, now))
+        maximums.extend([record_at(1, 80) == 900, record_at(31, 90) == 270])
+        row('rolling-maximum', all(maximums))
 
         def exercise(duration=150, fault=None, reuse_hit=False, measure=True):
             runroot = scratch / ('run-' + str(len(list(scratch.glob('run-*')))))

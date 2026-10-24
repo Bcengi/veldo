@@ -88,15 +88,32 @@ PARALLEL = 1 if '--worker' in sys.argv else worker_count()
 OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl'}
 
 
-def budget_for(count, workers=REFERENCE_WORKERS, deadlines=()):
-    """The combined cap for a registered inventory of `count` cases run by `workers` workers at
-    once, never below BUDGET. The per-case figure was measured at REFERENCE_WORKERS. Fewer workers
-    get proportionally more time; MORE workers get no less than the reference figure, because the
-    measured speedup past REFERENCE_WORKERS is well below linear (8 -> 16 was about 1.5x), so the
-    extra workers buy margin instead of a tighter cap."""
-    # Resource admission can serialize all jobs, even with many workers. Never let the
-    # combined alarm contradict the individual allowances. BUDGET reserves setup time.
-    return max(BUDGET + sum(deadlines), PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, min(workers, REFERENCE_WORKERS)))
+def budget_for(count, workers=REFERENCE_WORKERS, phases=(), resources=None):
+    """Bound sequential scheduling phases, including resource admission barriers.
+
+    Full workers charge W/m; full resources charge slot-time/capacity. A blocked
+    multi-slot request can also wait for earlier users to drain, at most their
+    largest deadline. The last active jobs need one final tail. See VELDO-0215.
+    """
+    scheduled = 0
+    for jobs in phases:
+        jobs = list(jobs)
+        deadlines = [job.get('budget_seconds', WORKER_BUDGET) for job in jobs]
+        work, tail = sum(deadlines), max(deadlines, default=0)
+        chains = 0
+        if resources is not None:
+            demands = [resources.demand(job) for job in jobs]
+            for resource, capacity in resources.capacity.items():
+                prefix = 0
+                for seconds, demand in zip(deadlines, demands):
+                    slots = demand.get(resource, 0)
+                    if slots:
+                        chains += slots * seconds / capacity
+                        if slots > 1:
+                            chains += prefix
+                        prefix = max(prefix, seconds)
+        scheduled += min(work, work / max(1, workers) + tail + chains)
+    return max(BUDGET + scheduled, PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, min(workers, REFERENCE_WORKERS)))
 
 
 class Refused(Exception):
@@ -132,20 +149,30 @@ def case_time_key(case, files, leg):
                    'declaration': leg})[:32]
 
 
-def case_deadline(key, times=CASE_TIMES):
-    """A missing or malformed sample is the floor, never an unbounded wait."""
+def case_samples(key, times, now):
+    """Live candidate peaks; legacy single samples retain their original file age."""
     try:
-        item = json.loads((Path(times) / (key + '.json')).read_text())
-        seconds = item['seconds']
-        if (item['authority'] != str(ROOT) or item['key'] != key
-                or isinstance(seconds, bool) or not isinstance(seconds, (int, float))
-                or not math.isfinite(seconds) or seconds <= 0):
-            return WORKER_BUDGET
-        # Clamp before multiplying, including finite floats near overflow.
-        return min(WORKER_CEILING, max(WORKER_BUDGET,
-                   WORKER_MULTIPLIER * min(seconds, WORKER_CEILING)))
+        path = Path(times) / (key + '.json')
+        item = json.loads(path.read_text())
+        if item['authority'] != str(ROOT) or item['key'] != key:
+            return []
+        samples = item.get('samples', [[path.stat().st_mtime, item['seconds']]])
+        return [(at, seconds) for at, seconds in samples
+                if type(at) in (int, float) and math.isfinite(at)
+                and now - 30 * 86400 <= at <= now
+                and type(seconds) in (int, float) and math.isfinite(seconds) and seconds > 0]
     except (OSError, ValueError, KeyError, TypeError, OverflowError):
+        return []
+
+
+def case_deadline(key, times=CASE_TIMES):
+    """A missing, expired or malformed sample is the floor, never an unbounded wait."""
+    seconds = max((seconds for _, seconds in case_samples(key, times, time.time())), default=0)
+    if not seconds:
         return WORKER_BUDGET
+    # Clamp before multiplying, including finite floats near overflow.
+    return min(WORKER_CEILING, max(WORKER_BUDGET,
+               WORKER_MULTIPLIER * min(seconds, WORKER_CEILING)))
 
 
 def record_case_times(root, samples, times=CASE_TIMES, *, authority=False):
@@ -163,9 +190,13 @@ def record_case_times(root, samples, times=CASE_TIMES, *, authority=False):
         try:
             Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)
             target = Path(times) / (key + '.json')
+            now = time.time()
+            samples = [(at, value) for at, value in case_samples(key, times, now) if value > seconds]
+            samples.append((now, seconds))
+            peak = max(value for _, value in samples)
             fd, pending = tempfile.mkstemp(prefix='.pending-', dir=str(times))
             with os.fdopen(fd, 'w') as handle:
-                json.dump({'authority': str(ROOT), 'key': key, 'seconds': seconds,
+                json.dump({'authority': str(ROOT), 'key': key, 'seconds': peak, 'samples': samples,
                            'at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}, handle,
                           sort_keys=True)
             os.replace(pending, target)
@@ -908,12 +939,12 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             mutant_jobs = {c['identity']: {'case': c, 'mode': 'mutant',
                            'budget_seconds': deadlines[c['identity']],
                            **prepared_cases.get(c['identity'], {})} for c in fresh}
+            workers.resources = SuiteResources.from_root(frozen, capacities)
             budget = budget_for(len(full_inventory), workers.parallel,
-                                [j['budget_seconds'] for j in [*controls.values(), *mutant_jobs.values()]])
+                                [controls.values(), mutant_jobs.values()], workers.resources)
             receipt['budget_seconds'] = budget
             workers.deadline = started + budget
             signal.setitimer(signal.ITIMER_REAL, max(workers.deadline - time.monotonic(), 0.001))
-            workers.resources = SuiteResources.from_root(frozen, capacities)
             if log_dir is not None:
                 log_dir = Path(log_dir).resolve()
                 log_dir.mkdir(parents=True, exist_ok=False)

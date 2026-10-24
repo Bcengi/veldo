@@ -10703,9 +10703,19 @@ def cases():
         ['case-deadlines/store-pruned'])
     result[-1]['dir'] = 'scripts'
     add(215, 'deadline215-old-stage-cap', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
-        '    return max(BUDGET + sum(deadlines), PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, min(workers, REFERENCE_WORKERS)))\n',
+        '    return max(BUDGET + scheduled, PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, min(workers, REFERENCE_WORKERS)))\n',
         '    return max(BUDGET, PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, min(workers, REFERENCE_WORKERS)))\n',
         ['case-deadlines/combined-budget'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-serial-stage-cap', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '        scheduled += min(work, work / max(1, workers) + tail + chains)\n',
+        '        scheduled += work\n',
+        ['case-deadlines/combined-budget'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-latest-sample', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '            samples = [(at, value) for at, value in case_samples(key, times, now) if value > seconds]\n',
+        '            samples = []\n',
+        ['case-deadlines/rolling-maximum'])
     result[-1]['dir'] = 'scripts'
     add(215, 'deadline215-first-control', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
         "            job['budget_seconds'] = max(job.get('budget_seconds', 0), deadlines[case['identity']])\n",
@@ -10713,8 +10723,8 @@ def cases():
         ['case-deadlines/shared-controls'])
     result[-1]['dir'] = 'scripts'
     add(215, 'deadline215-no-ceiling', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
-        '        return min(WORKER_CEILING, max(WORKER_BUDGET,\n                   WORKER_MULTIPLIER * min(seconds, WORKER_CEILING)))\n',
-        '        return max(WORKER_BUDGET, WORKER_MULTIPLIER * seconds)\n',
+        '    return min(WORKER_CEILING, max(WORKER_BUDGET,\n               WORKER_MULTIPLIER * min(seconds, WORKER_CEILING)))\n',
+        '    return max(WORKER_BUDGET, WORKER_MULTIPLIER * seconds)\n',
         ['case-deadlines/bounds'])
     result[-1]['dir'] = 'scripts'
     add(215, 'deadline215-lost-baseline-details', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
