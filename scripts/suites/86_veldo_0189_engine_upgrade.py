@@ -1718,9 +1718,39 @@ def _v189_suite():
         with section(BS):
             fresh_start()
             fail_next(keep=True)
-            code, report = kill.setup()
+            # Observe the stop at the real restore entry. Successful restoration and later
+            # channel availability do not establish that the failed service was stopped first.
+            calls_before = len(kill.manager.calls)
+            stopped_at_restore, observed_upgrades = [], []
+            setup_organ = F.organ
+
+            def observe_restore_stop(name):
+                module = setup_organ(name)
+                if name == 'control_factory_setup_upgrade' and not any(
+                        module is seen for seen, _restore in observed_upgrades):
+                    restore_ownership = module.restore_ownership
+
+                    def observed_restore(plan):
+                        stopped_at_restore.append(
+                            ['stop', kill.unit] in kill.manager.calls[calls_before:]
+                            and not kill.manager.alive(kill.unit))
+                        return restore_ownership(plan)
+
+                    observed_upgrades.append((module, restore_ownership))
+                    module.restore_ownership = observed_restore
+                return module
+
+            F.organ = observe_restore_stop
+            try:
+                code, report = kill.setup()
+            finally:
+                F.organ = setup_organ
+                for module, restore_ownership in observed_upgrades:
+                    module.restore_ownership = restore_ownership
             clear_failure()
             previous_answers(BS, 'failed restart leaves current service alive')
+            check(BS, 'the stop was requested and the service was no longer alive when restore began [%s]'
+                  % stopped_at_restore, bool(stopped_at_restore) and all(stopped_at_restore))
             check(BS, 'restore ran after a successful stop',
                   any(json.loads(line).get('outcome') == 'restored' for line in log.read_text().splitlines()))
 
