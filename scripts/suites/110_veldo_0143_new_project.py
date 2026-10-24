@@ -166,6 +166,8 @@ def _v143_suite():
     if not UNIX:
         print('  %sthe fence runs without its recording agent: AF_UNIX sockets are refused on this host' % PREFIX)
     servers = []
+    conform_formats = load('v143_conform_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    formats = json.loads((ROOT / 'proof/VELDO-0062/cli-formats.json').read_text())
     with helper.fixture(ROOT, PRODUCTION, cycle_budget=100) as f:
         S, CM, AC, conn, base, mods = (f[k] for k in ('S', 'CM', 'AC', 'conn', 'base', 'mods'))
         DOMAIN, REPO, ids = f['DOMAIN'], f['REPO'], f['ids']
@@ -232,7 +234,7 @@ def _v143_suite():
                 path.mkdir()
             TOKENS = {'personal': '-'.join(('personal', 'token', os.urandom(12).hex())),
                       'bcengi': '-'.join(('bcengi', 'token', os.urandom(12).hex()))}
-            LOGIN = {TOKENS['personal']: 'olga-p', TOKENS['bcengi']: 'olga-b'}
+            LOGIN_OWNERS = {TOKENS['personal']: 'olga-p', TOKENS['bcengi']: 'olga-b'}
 
             def identity(name, owner, label, token_name, default_visibility='private'):
                 reference = 'keychain:%s/api' % token_name
@@ -286,7 +288,7 @@ def _v143_suite():
 
                 def _who(self):
                     header = self.headers.get('Authorization') or ''
-                    return LOGIN.get(header[len('Bearer '):]) if header.startswith('Bearer ') else None
+                    return LOGIN_OWNERS.get(header[len('Bearer '):]) if header.startswith('Bearer ') else None
 
                 def do_GET(self):
                     who = self._who()
@@ -2220,9 +2222,13 @@ def _v143_suite():
                 fake.write_text(fake_formats.embed('''import json,sys
 from pathlib import Path
 def emit(event):
-    print(json.dumps(complete_event(event)), flush=True)
+    event = complete_event(event)
+    with Path(sys.argv[2]).with_suffix('.events.jsonl').open('a') as stream:
+        stream.write(json.dumps(event) + '\\n')
+    print(json.dumps(event), flush=True)
 if '--input-format' in sys.argv:
     opening = json.loads(sys.stdin.readline())
+    assert opening['type'] == 'control_request'
     emit({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': opening['request_id'],
           'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})
     packet = json.loads(json.loads(sys.stdin.readline())['message']['content'])
@@ -2641,6 +2647,34 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                     ('no pass defers a line to the factory line', not any(x.get('reason') == DEFERRED for x in cfaults))])
 
         finally:
+            # Compare the events the PM fixture actually emitted, then drive that same generated
+            # executable through the shared capture observer before its directory is removed.
+            problems, printed = [], set()
+            event_file = base / 'pm-packet.events.jsonl'
+            if event_file.is_file():
+                for raw in event_file.read_text().splitlines():
+                    event = json.loads(raw)
+                    name = conform_formats.event_name(event)
+                    schema = formats['claude_code']['events'].get(name)
+                    problems += conform_formats.conform(event, schema, name) if schema else [name + ':table:no-event']
+                    printed.add(name)
+            check('format/fake-lines', [('the PM run emitted conforming assistant and result events [%s; %s]'
+                  % (sorted(printed), problems[:4]),
+                  not problems and {'assistant', 'result/success'} <= printed)])
+
+            def fake_engine(engine):
+                return fake.read_text() if engine == 'claude' else ''
+
+            def readback_args(engine, directory):
+                result = directory / 'result.json'
+                result.write_text(result_file.read_text())
+                return [str(result), str(directory / 'packet.json')]
+
+            L = load('v143_format_launch', mods / 'control_launch.py')
+            fake_capture = conform_formats.conform_fake(locals(), '0143_new_project')
+            for description in conform_formats.describe('0143_new_project', *fake_capture):
+                print(description)
+            expect('VELDO-0172 fake/capture:0143_new_project', bool(fake_capture[1]) and not fake_capture[0])
             for server in servers:
                 with contextlib.suppress(Exception):
                     server.shutdown()
