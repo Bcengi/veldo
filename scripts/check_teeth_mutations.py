@@ -10683,7 +10683,7 @@ def cases():
         ['case-deadlines/hang-timeout'])
     result[-1]['dir'] = 'scripts'
     add(215, 'deadline215-no-authority-guard', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
-        '    if Path(times) == CASE_TIMES and Path(root).resolve() != ROOT.resolve():\n',
+        '    if Path(times) == CASE_TIMES and not authority:\n',
         '    if False:\n',
         ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
@@ -10724,7 +10724,7 @@ def cases():
     result[-1]['dir'] = 'scripts'
     add(215, 'deadline215-record-invalid', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
         "            if receipt['invalid_results']:\n",
-        "            record_case_times(root, {time_keys[c['identity']]: 1 for c in fresh})\n            if receipt['invalid_results']:\n",
+        "            record_case_times(root, {time_keys[c['identity']]: 1 for c in fresh}, authority=True)\n            if receipt['invalid_results']:\n",
         ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
 
@@ -10732,6 +10732,17 @@ def cases():
         "                                   'mutation_budget_exceeded' if isinstance(error, subprocess.TimeoutExpired)\n",
         "                                   'driver_error' if isinstance(error, subprocess.TimeoutExpired)\n",
         ['case-deadlines/setup-timeout'])
+    result[-1]['dir'] = 'scripts'
+
+    add(215, 'deadline215-candidate-authority-not-recorded', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        'log_dir=args.worker_log_dir, leg=leg, measure=True)\n',
+        'log_dir=args.worker_log_dir, leg=leg, measure=False)\n',
+        ['case-deadlines/candidate-authority'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-stage-drops-authority', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '        record_case_times(root, samples, authority=measure)\n',
+        '        record_case_times(root, samples, authority=False)\n',
+        ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
 
     return result

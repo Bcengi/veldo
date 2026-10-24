@@ -53,12 +53,13 @@ acceptance_criteria:
     text: >
       Claim: only authority coordination records fresh validated passing cases, using the maximum
       elapsed time of baseline, no-op and mutant, after input stability checks. Failed and reused
-      cases record nothing. Fixtures and candidate roots cannot write the owner's store. Changed
+      cases record nothing. Library/fixture calls cannot write the owner's store. The authority CLI
+      records even when verifying a candidate in another root (case-deadlines/candidate-authority). Changed
       case definitions, suite, target, shared harness, runner or leg do not inherit the old time.
       Completeness: case-deadlines/authority-recording and case-deadlines/key-binding drive these
       boundaries; case-deadlines/bounds covers missing, malformed and extreme measurements.
     falsified_by: >
-      Remove the authority-root guard, record failed cases or omit a key input. The corresponding
+      Remove the authority-entry guard, drop the CLI recording flag, record failed cases or omit a key input. The corresponding
       registered deadline215 mutants must fail the matching rows.
   - id: AC4
     text: >
@@ -100,8 +101,8 @@ A genuinely slow first run can still exceed the floor; there is no retry or inve
 The store is ~/.cache/veldo/mutation-case-seconds, with no environment override. Each atomic file
 binds the authority checkout, full case definition, suite, target module, shared harness, authority
 execution sources and confined/unconfined declaration. It stores the last passing duration and
-measurement timestamp. The authority's own root alone may record to its owner store; tests use
-scratch stores. Workers never record and receive only a deadline, not a writable store path.
+measurement timestamp. Only the authority CLI opts into the owner store, including when checking
+a landing candidate in another root; library calls stand down and tests use scratch stores. Workers never record and receive only a deadline, not a writable store path.
 Pruning reuses VELDO-0214's store pruning policy: 30 days or a gone checkout, sparing the file
 just written and foreign names.
 

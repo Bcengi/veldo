@@ -148,13 +148,14 @@ def case_deadline(key, times=CASE_TIMES):
         return WORKER_BUDGET
 
 
-def record_case_times(root, samples, times=CASE_TIMES):
+def record_case_times(root, samples, times=CASE_TIMES, *, authority=False):
     """Only authority coordination after a passing fresh stage calls this writer.
 
-    A fixture/candidate root cannot contaminate the owner's store. An explicitly supplied
+    Only the authority CLI opts in to the owner store, including when checking a landing
+    candidate in another root. Library/fixture calls stand down. An explicitly supplied
     scratch store is for tests; no command line or environment variable selects it.
     """
-    if Path(times) == CASE_TIMES and Path(root).resolve() != ROOT.resolve():
+    if Path(times) == CASE_TIMES and not authority:
         return False
     for key, seconds in samples.items():
         if not math.isfinite(seconds) or seconds <= 0:
@@ -799,10 +800,11 @@ def snapshot(root, expected_common, destination, files, head):
 
 
 def run_stage(root, expected_common, capacities=None, findings=None, names=None, log_dir=None,
-              drivers=None, parallel=None, diff_dir=None, force_fresh=False, leg=None):
+              drivers=None, parallel=None, diff_dir=None, force_fresh=False, leg=None, measure=False):
     """expected_common is the trusted Git common directory of root, named by the caller that owns
     root: the authority's own for the gate, a fixture's own for the fixture's creator. leg is the
-    authority's unconfined leg (gate_legs.mutation_leg), None for every case confined."""
+    authority's unconfined leg (gate_legs.mutation_leg), None for every case confined. Only
+    the authority CLI sets measure=True; library/fixture drives do not write owner timings."""
     started = time.monotonic()
     deadline = started + BUDGET
     workers = Workers(deadline, parallel=parallel)
@@ -970,7 +972,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
         samples = {time_keys[c['identity']]: max(elapsed[c['identity']],
                    elapsed[group_for(c) + ':baseline'], elapsed[group_for(c) + ':noop'])
                    for c in fresh}
-        record_case_times(root, samples)
+        record_case_times(root, samples, authority=measure)
         receipt['status'] = 'passed'
     except Exception as error:  # All incomplete drives are named errors, never detections.
         receipt['status'] = 'failed'
@@ -1078,7 +1080,7 @@ def main():
     # The gate names the authority checkout's own common directory; a candidate root is a linked
     # worktree of it, and its marker is checked against that directory before any Git runs.
     receipt = run_stage(args.root, common_directory(ROOT), capacities=resource_capacities(args.resource_capacity),
-                        findings=args.finding, names=args.names, log_dir=args.worker_log_dir, leg=leg)
+                        findings=args.finding, names=args.names, log_dir=args.worker_log_dir, leg=leg, measure=True)
     if args.receipt:
         args.receipt.write_bytes(canonical(receipt))
     print(json.dumps(receipt, sort_keys=True), flush=True)

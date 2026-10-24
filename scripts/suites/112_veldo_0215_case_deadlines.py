@@ -68,7 +68,7 @@ def _v215_case_deadlines():
         row('combined-budget', gate.budget_for(2, 16, [480, 480, 120, 480]) >= 1680
             and gate.budget_for(2, 1, [480, 480, 120, 480]) >= 1680)
 
-        def exercise(duration=150, fault=None, reuse_hit=False):
+        def exercise(duration=150, fault=None, reuse_hit=False, measure=True):
             runroot = scratch / ('run-' + str(len(list(scratch.glob('run-*')))))
             runroot.mkdir()
             times = runroot / 'times'
@@ -123,7 +123,8 @@ def _v215_case_deadlines():
                 overrides = dict(inventory=lambda *a: [case], read_inputs=lambda *a: files,
                     git=lambda *a: 'head', snapshot=lambda *a: None, inputs_unchanged=lambda *a: True,
                     load=loader, case_deadline=lambda k: real_deadline(k, store),
-                    record_case_times=lambda root, samples: real_record(root, samples, times))
+                    record_case_times=lambda root, samples, authority=False: real_record(
+                        root, samples, times, authority=authority), CASE_TIMES=times)
                 for name, value in overrides.items():
                     stack.enter_context(patch.object(gate, name, value))
                 stack.enter_context(patch.object(gate.Workers, 'launcher_fds', lambda self: ()))
@@ -133,7 +134,7 @@ def _v215_case_deadlines():
                 stack.enter_context(patch.object(gate.time, 'monotonic', lambda: clock[0]))
                 stack.enter_context(patch.object(gate.time, 'sleep', lambda _: None))
                 stack.enter_context(patch.object(gate.signal, 'setitimer', lambda *a: alarms.append(a)))
-                receipt = gate.run_stage(runroot, runroot / '.git', parallel=1)
+                receipt = gate.run_stage(runroot, runroot / '.git', parallel=1, measure=measure)
             return receipt, children, kills, cleaned, times, alarms
 
         with patch.object(gate, 'inventory', side_effect=subprocess.TimeoutExpired('inventory', 120)):
@@ -164,15 +165,32 @@ def _v215_case_deadlines():
             and 'inner operation expired' in bad['detail'] and 'TEST target' in bad['detail'])
         raced = exercise(fault='race')
         reused = exercise(reuse_hit=True)
+        library = exercise(measure=False)
         record = json.loads((times / (key + '.json')).read_text()) if (times / (key + '.json')).exists() else {}
         owner = scratch / 'owner'
         with patch.object(gate, 'CASE_TIMES', owner):
             refused = gate.record_case_times(scratch / 'candidate', {key: 80}, owner)
-            wrote = gate.record_case_times(ROOT, {key: 80}, owner)
+            wrote = gate.record_case_times(scratch / 'candidate', {key: 80}, owner, authority=True)
         row('authority-recording', record.get('seconds') == 150 and refused is False and wrote is True
             and not list(bad_times.glob('*.json')) and not list(raced[4].glob('*.json'))
             and reused[0]['status'] == 'passed' and reused[0]['reused'] == 1
-            and not list(reused[4].glob('*.json')))
+            and not list(reused[4].glob('*.json')) and not list(library[4].glob('*.json')))
+
+        # An installed authority verifies another root. Only its CLI opts into recording;
+        # neither a caller environment variable nor --root grants a fixture library call this.
+        calls = []
+        def cli_stage(root, common, **kwargs):
+            calls.append((root, kwargs))
+            return dict(status='passed', registered=0, executed=0, reused=0, rejected=0,
+                        worker_invocations=0, elapsed=0)
+        with patch.object(gate.sys, 'argv', ['check_gate_mutations.py', '--root', str(scratch / 'candidate')]), \
+                patch.object(gate, 'run_stage', cli_stage), \
+                patch.object(gate, 'common_directory', lambda root: root / '.git'), \
+                patch.object(gate, 'load', lambda path: types.SimpleNamespace(mutation_leg=lambda: None)), \
+                contextlib.redirect_stdout(__import__('io').StringIO()):
+            code = gate.main()
+        row('candidate-authority', code == 0 and calls[0][0] == scratch / 'candidate'
+            and calls[0][1].get('measure') is True and wrote is True)
 
         prune = scratch / 'prune'
         prune.mkdir()
