@@ -98,16 +98,17 @@ def _v28_run():
         root = _v28_Path(directory)
         modules = root / 'installed'
         modules.mkdir()
-        for name in ('control_signer', 'control_keys', 'control_membership', 'authority_contract',
-                     'control_store', 'credential_issue', 'control_revocation'):
-            _v28_shutil.copyfile(ROOT / '.veldo' / (name + '.py'), modules / (name + '.py'))
+        # Use the production installer's derived module closure, so the installed fixture carries
+        # every transitive dependency. Keep the explicit mutation targets below: the observer
+        # substitutes those source paths, after the unchanged closure has been installed.
+        service_spec = _v28_import.spec_from_file_location('v28_install', ROOT / '.veldo/control_service.py')
+        service = _v28_import.module_from_spec(service_spec)
+        service_spec.loader.exec_module(service)
+        for name in service.closure():
+            _v28_shutil.copyfile(ROOT / '.veldo' / name, modules / name)
         _v28_shutil.copyfile(ROOT / ".veldo" / "git_process.py", modules / 'git_process.py')
         _v28_shutil.copyfile(ROOT / ".veldo" / "control_effects.py", modules / 'control_effects.py')
         _v28_shutil.copyfile(ROOT / ".veldo" / "control_effect_executor.py", modules / 'control_effect_executor.py')
-        # VELDO-0153: a publication resolves the repository's Git identity and pushes through the
-        # identity transport, which resolves that identity's credential.
-        for name in ('control_git_identity', 'control_credential_keystore', 'secretref'):
-            _v28_shutil.copyfile(ROOT / '.veldo' / (name + '.py'), modules / (name + '.py'))
         _v28_shutil.copyfile(ROOT / ".veldo" / "control_git_identity_transport.py",
                              modules / 'control_git_identity_transport.py')
         _v28_executor_spec = _v28_import.spec_from_file_location('v28_executor', modules / 'control_effect_executor.py')
