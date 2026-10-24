@@ -40,7 +40,7 @@ once. The answer record carries the signed assertion for the one settlement VELD
 its ruling is in the contract's RULINGS vocabulary, mapped from the offered choice in
 CHOICE_RULINGS and nowhere else, beside the choice the owner picked, the rationale and the edge's
 signature. One kind of choice is not a fixed word: a pick (VELDO-0143 round 7), `accept` followed by the
-values it picks, each one word (`accept bcengi private`). Its ruling is approve; what each value binds is
+values it picks, each one word (`accept example private`). Its ruling is approve; what each value binds is
 the requester's to read from the choice the settlement records, never from the owner's reason. Offered
 choices must stay distinct as the owner may type them (case, width, spaces and hyphens folded), or the
 request is not presented (ambiguous_choice). `authority_contract.settle` currently consumes decision answers only. A
