@@ -278,7 +278,8 @@ def _v153_fence_rows(W, base):
                 outcome['keyring_wall'] = 'confinement'
             asked = subprocess.run(['git', 'ls-remote', 'http://127.0.0.1:%d/fixture.git' % server.server_port],
                                    capture_output=True, text=True, timeout=30,
-                                   env=dict(os.environ, HOME=str(home), XDG_CONFIG_HOME=str(home)))
+                                   env=dict(os.environ, HOME=str(home), XDG_CONFIG_HOME=str(home),
+                                            GIT_CONFIG_GLOBAL=str(home / '.gitconfig')))
             outcome['credential'] = asked.returncode != 0 and not marker.exists()
         outcome['raised'] = False
     except W['HermeticViolation'] as error:
