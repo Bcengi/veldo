@@ -11437,7 +11437,9 @@ def cases():
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
-    return sorted(result, key=lambda case: case['suite'] != '110_veldo_0143_new_project.py')
+    result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
+                 + [case for case in result if case['suite'] != '110_veldo_0143_new_project.py'])
+    return result
 
 
 def edits(case):
