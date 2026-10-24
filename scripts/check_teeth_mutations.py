@@ -5890,8 +5890,10 @@ def cases():
                 "        if acceptor != owner:  # defect: whose message it was is not compared\n",
                 ['own-message/non-owner-presented'])
     own_message('own-message-operation-missing',
-                "OPERATIONS = ('propose', 'amend', 'accept', 'accept_message', 'propose_feature', 'assess', 'cancel', 'reopen')\n",
-                "OPERATIONS = ('propose', 'amend', 'accept', 'propose_feature', 'assess', 'cancel', 'reopen')  # defect\n",
+                "OPERATIONS = ('propose', 'amend', 'accept', 'accept_message', 'accept_decided', 'propose_feature', 'assess', 'cancel',\n"
+                "              'reopen')\n",
+                "OPERATIONS = ('propose', 'amend', 'accept', 'accept_decided', 'propose_feature', 'assess', 'cancel',\n"
+                "              'reopen')\n",
                 ['own-message/telegram', 'own-message/api'])
     own_message('own-message-path-unobserved',
                 "            observation['acceptance'] = self._acceptance_trace(after['acceptance'])\n",
@@ -5933,9 +5935,14 @@ def cases():
                 ['evidence/repeat'])
     # Review fix (declared falsifier): whoever wrote the bound fields is not checked, so a member's own
     # outcome, scope and assessor are accepted by the owner's message.
+    # VELDO-0143's decided path has the same guards; keep these defects on the message path.
     own_message('own-message-author-unchecked',
-                "        if not authors or any(a != owner and a not in managers for a in authors):\n",
-                "        if False:  # defect: whoever wrote the bound fields is not checked\n",
+                "            raise Refused('not_owner:source', 'the message is not the project owner\\'s own')\n"
+                "        authors, managers = bound_authors(data), project_managers(self.store, conn, params['project'])\n"
+                '        if not authors or any(a != owner and a not in managers for a in authors):\n',
+                "            raise Refused('not_owner:source', 'the message is not the project owner\\'s own')\n"
+                "        authors, managers = bound_authors(data), project_managers(self.store, conn, params['project'])\n"
+                '        if False:  # defect: whoever wrote the bound fields is not checked\n',
                 ['authorship/member-authored-presented'])
     # The project manager of the current team is not read, so the PM's proposal is not his.
     own_message('own-message-pm-role-unread',
@@ -5959,8 +5966,12 @@ def cases():
                 "            observation['acceptance'] = self._acceptance_trace(accepted)  # defect: any project state\n",
                 ['evidence/paused-project'])
     own_message('own-message-stale-revision-accepted',
-                "        if command.get('revision') != data['revision'] or command.get('bound_digest') != data['bound_digest']:\n",
-                "        if False:  # defect: an acceptance naming any revision counts\n",
+                "        if command.get('revision') != data['revision'] or command.get('bound_digest') != data['bound_digest']:\n"
+                "            raise Refused('stale_subject:revision', 'the acceptance names another revision of the objective')\n"
+                '        attributed = attribution(conn, source)\n',
+                '        if False:  # defect: an acceptance naming any revision counts\n'
+                "            raise Refused('stale_subject:revision', 'the acceptance names another revision of the objective')\n"
+                '        attributed = attribution(conn, source)\n',
                 ['evidence/stale-revision'])
 
     # VELDO-0075: each criterion's declared falsifier first, then the threat model's other shapes.
@@ -7002,7 +7013,7 @@ def cases():
              "    if fields.get('priority') != DEFAULT_PRIORITY:\n",
              "    if False:  # defect: another priority is applied without his answer\n", ['route/ask-when-needed'])
     grooming('grooming-route-ignores-answered-objective', 'control_grooming_request.py',
-             "    if acceptance.get('path') != OWN_MESSAGE or objective.get('accepted_revision') is None:\n",
+             "    if acceptance.get('path') not in ADMITTING or objective.get('accepted_revision') is None:\n",
              "    if objective.get('accepted_revision') is None:  # defect: any accepted objective\n",
              ['route/ask-when-needed'])
     grooming('grooming-route-ignores-author', 'control_grooming_request.py',
@@ -10284,7 +10295,7 @@ def cases():
     add(152, 'v152-route-stale', '93_veldo_0152_intake_routes.py', 'control_intake_routes.py', "        if (data.get('state') != 'AWAITING_ROUTE' or data.get('project') != 'factory'\n", "        if (data.get('project') != 'factory'\n", ['route/stale'], (("or params.get('version') not in (None, held['version'])", "or False"),))
     add(152, 'v152-ticket-disabled', '93_veldo_0152_intake_routes.py', 'control_intake.py', '        keyed, shared = keyed_projects(text, candidates, prefixes)\n', '        keyed, shared = [], []\n', ['intake/ticket-key'], ())
     add(152, 'v152-prefix-not-bound', '93_veldo_0152_intake_routes.py', 'control_project.py', '                data[TICKET_PREFIXES] = list(params[TICKET_PREFIXES])\n', '                data[TICKET_PREFIXES] = []\n', ['project/prefixes'], ())
-    add(152, 'v152-hint-dropped', '93_veldo_0152_intake_routes.py', 'control_workflow_cycle_pm.py', "clarifications=proposal['clarifications'], hints=proposal['hints'],", "clarifications=proposal['clarifications'], hints=[],", ['route/runner-input'], ())
+    add(152, 'v152-hint-dropped', '93_veldo_0152_intake_routes.py', 'control_workflow_cycle_pm.py', "clarifications=proposal['clarifications'], hints=proposal['hints'],\n", "clarifications=proposal['clarifications'], hints=[],\n", ['route/runner-input'], ())
     add(152, 'v152-route-report-omitted', '93_veldo_0152_intake_routes.py', 'control_telegram_report.py', "    ('intake_routed', ('intake_proposal',), '_intake_route'),\n", '', ['route/read-and-report'], ())
 
     add(152, 'v152-codex-nonmessage-final', '93_veldo_0152_intake_routes.py', 'control_workflow_cycle_pm.py',
@@ -10292,8 +10303,9 @@ def cases():
         "                    final = value.get('type') == 'result' or value.get('type') == 'item.completed'\n",
         ['route/codex-result'])
     add(152, 'v152-context-all-projects', '93_veldo_0152_intake_routes.py', 'control_intake.py',
-        "        records = {p: read(PJ.project_id(p)) for p in self.projects\n                   if p in candidates or p == PJ.FACTORY_PROJECT}\n",
-        "        records = {p: read(PJ.project_id(p)) for p in self.projects}\n",
+        '        records = {p: read(PJ.project_id(p)) for p in served\n'
+        '                   if p in candidates or p == PJ.FACTORY_PROJECT}\n',
+        '        records = {p: read(PJ.project_id(p)) for p in served}\n',
         ['intake/scoped-context'])
     add(152, 'v152-intake-companions-missing', '93_veldo_0152_intake_routes.py', 'check_teeth_mutations.py',
         "        if case['module'] == 'control_intake.py':\n",
