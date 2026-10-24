@@ -15,7 +15,6 @@ footprint:
   - engine/scripts/check_gate_mutations.py
   - scripts/check_teeth_mutations.py
   - scripts/suites/112_veldo_0215_case_deadlines.py
-  - scripts/suites/53_veldo_0123_mutations.py
   - scripts/suites/manifest.json
   - scripts/suites/requires.json
   - specs/VELDO-0215-measured-mutation-case-deadlines.md
@@ -43,11 +42,13 @@ acceptance_criteria:
       Claim: a hanging worker is killed and reaped at its own deadline, reports
       mutation_budget_exceeded and never invalid_baseline; no retry happens. Set: hanging
       baseline, no-op and mutant children. Completeness: case-deadlines/hang-timeout requires
-      the timeout, cleanup and one invocation; case-deadlines/baseline-details distinguishes
+      the timeout, cleanup and one invocation; case-deadlines/setup-timeout proves inventory
+      subprocess expiry has the same taxonomy. case-deadlines/baseline-details distinguishes
       a completed false row from a timeout and retains its explanation.
     falsified_by: >
       Disable the worker check or classify its expiry as invalid_baseline. Registered mutants
       deadline215-no-expiry and deadline215-timeout-is-baseline must fail hang-timeout.
+      deadline215-setup-timeout-is-driver-error must fail setup-timeout.
   - id: AC3
     text: >
       Claim: only authority coordination records fresh validated passing cases, using the maximum

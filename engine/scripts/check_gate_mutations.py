@@ -12,6 +12,7 @@ import difflib
 import hashlib
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import shutil
@@ -32,7 +33,10 @@ FIXTURE_VERSION = 1
 BUDGET = 120
 PER_CASE_SECONDS = 2.0        # measured at REFERENCE_WORKERS workers
 REFERENCE_WORKERS = 8
-WORKER_BUDGET = 120
+WORKER_BUDGET = 120          # floor for an unmeasured case; also bounds setup commands
+WORKER_CEILING = 1800
+WORKER_MULTIPLIER = 3.0
+CASE_TIMES = Path.home() / '.cache' / 'veldo' / 'mutation-case-seconds'
 
 def _quota_cpus(root='/sys/fs/cgroup', membership='/proc/self/cgroup'):
     """The CPUs a cgroup v2 quota allows this process: the smallest cpu.max quota on the process's
@@ -84,13 +88,15 @@ PARALLEL = 1 if '--worker' in sys.argv else worker_count()
 OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl'}
 
 
-def budget_for(count, workers=REFERENCE_WORKERS):
+def budget_for(count, workers=REFERENCE_WORKERS, deadlines=()):
     """The combined cap for a registered inventory of `count` cases run by `workers` workers at
     once, never below BUDGET. The per-case figure was measured at REFERENCE_WORKERS. Fewer workers
     get proportionally more time; MORE workers get no less than the reference figure, because the
     measured speedup past REFERENCE_WORKERS is well below linear (8 -> 16 was about 1.5x), so the
     extra workers buy margin instead of a tighter cap."""
-    return max(BUDGET, PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, min(workers, REFERENCE_WORKERS)))
+    # Resource admission can serialize all jobs, even with many workers. Never let the
+    # combined alarm contradict the individual allowances. BUDGET reserves setup time.
+    return max(BUDGET + sum(deadlines), PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, min(workers, REFERENCE_WORKERS)))
 
 
 class Refused(Exception):
@@ -105,6 +111,81 @@ def canonical(value):
 
 def digest(value):
     return hashlib.sha256(canonical(value)).hexdigest()
+
+
+def case_time_key(case, files, leg):
+    """Duration identity, independent of HEAD, proofs and unrelated registry cases.
+
+    This is not an input-closure proof for result reuse. Bind the case's own executable
+    definition and its direct sources, plus the authority execution machinery and leg.
+    """
+    target = str(Path('scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo'))
+                 / case['module'])
+    paths = {target, 'scripts/suites/' + case['suite'], 'scripts/suites/shared.py',
+             'scripts/check_gate_mutations.py', 'scripts/mutation_observer.py',
+             'scripts/reuse_worker.py', 'scripts/mutation_sandbox.py', 'scripts/agent_sandbox.py',
+             'scripts/mutation_ownership.py'}
+    sources = {path: file_identity({path: files[path]})[path] if path in files else None
+               for path in sorted(paths)}
+    return digest({'authority': str(ROOT), 'case': case, 'sources': sources,
+                   'leg': 'unconfined' if in_leg(leg, case) else 'confined',
+                   'declaration': leg})[:32]
+
+
+def case_deadline(key, times=CASE_TIMES):
+    """A missing or malformed sample is the floor, never an unbounded wait."""
+    try:
+        item = json.loads((Path(times) / (key + '.json')).read_text())
+        seconds = item['seconds']
+        if (item['authority'] != str(ROOT) or item['key'] != key
+                or isinstance(seconds, bool) or not isinstance(seconds, (int, float))
+                or not math.isfinite(seconds) or seconds <= 0):
+            return WORKER_BUDGET
+        # Clamp before multiplying, including finite floats near overflow.
+        return min(WORKER_CEILING, max(WORKER_BUDGET,
+                   WORKER_MULTIPLIER * min(seconds, WORKER_CEILING)))
+    except (OSError, ValueError, KeyError, TypeError, OverflowError):
+        return WORKER_BUDGET
+
+
+def record_case_times(root, samples, times=CASE_TIMES):
+    """Only authority coordination after a passing fresh stage calls this writer.
+
+    A fixture/candidate root cannot contaminate the owner's store. An explicitly supplied
+    scratch store is for tests; no command line or environment variable selects it.
+    """
+    if Path(times) == CASE_TIMES and Path(root).resolve() != ROOT.resolve():
+        return False
+    for key, seconds in samples.items():
+        if not math.isfinite(seconds) or seconds <= 0:
+            continue
+        try:
+            Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)
+            target = Path(times) / (key + '.json')
+            fd, pending = tempfile.mkstemp(prefix='.pending-', dir=str(times))
+            with os.fdopen(fd, 'w') as handle:
+                json.dump({'authority': str(ROOT), 'key': key, 'seconds': seconds,
+                           'at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}, handle,
+                          sort_keys=True)
+            os.replace(pending, target)
+            # Same file naming and ownership metadata as VELDO-0214's store.
+            load(ROOT / 'scripts/gate_legs.py').prune_times(times, keep=target)
+        except OSError as error:
+            print('   mutation: could not record case time in %s (%s)' % (times, error),
+                  file=sys.stderr, flush=True)
+    return True
+
+
+def control_jobs(cases, group_for, prepared, deadlines):
+    """Shared controls must accommodate every case whose observations they supply."""
+    controls = {}
+    for case in cases:
+        for mode in ('baseline', 'noop'):
+            name = group_for(case) + ':' + mode
+            job = controls.setdefault(name, {'case': case, 'mode': mode,
+                                             **prepared.get(case['identity'], {})})
+            job['budget_seconds'] = max(job.get('budget_seconds', 0), deadlines[case['identity']])
+    return controls
 
 
 def load(path):
@@ -280,7 +361,11 @@ def validate_result(record, case):
             raise ValueError('identity mismatch')
         honest, noop, broken = (observations(record[k]) for k in ('baseline', 'noop', 'mutant'))
         if not all(ok for _, ok in honest) or noop != honest:
-            raise Refused('invalid_baseline', case['identity'])
+            failures = {mode: {'failed_rows': record[mode].get('failed_rows', []),
+                               'failed_details': record[mode].get('failed_details', [])}
+                        for mode in ('baseline', 'noop')}
+            raise Refused('invalid_baseline', case['identity'] + ': completed controls: '
+                          + json.dumps(failures, sort_keys=True))
         if not (collections.Counter(n for n, _ in honest) <=
                 collections.Counter(n for n, _ in broken)):
             raise Refused('missing_target', case['identity'] + ': baseline rows removed')
@@ -440,6 +525,7 @@ class Workers:
         # The authority's unconfined leg (gate_legs.mutation_leg) or None: every worker confined.
         self.leg = None
         self.legs = {}
+        self.budgets = {}
 
     boundary = None
 
@@ -453,8 +539,8 @@ class Workers:
             raise Refused('mutation_budget_exceeded', 'combined deadline')
 
     def check_worker(self, name, started):
-        if time.monotonic() - started >= WORKER_BUDGET:
-            raise Refused('mutation_budget_exceeded', name + ': worker deadline')
+        if time.monotonic() - started >= self.budgets.get(name, WORKER_BUDGET):
+            raise Refused('mutation_budget_exceeded', name + ': worker deadline (%gs)' % self.budgets.get(name, WORKER_BUDGET))
 
     def release_snapshot(self, name):
         path = self.owned_snapshots.pop(name, None)
@@ -477,7 +563,7 @@ class Workers:
         job = self.jobs[name]
         home = self.homes[name]
         record = dict(name=name, driver=job['case']['driver'], mode=job['mode'],
-                      leg=self.legs.get(name, 'confined'),
+                      leg=self.legs.get(name, 'confined'), budget_seconds=self.budgets[name],
                       elapsed=elapsed, returncode=proc.returncode, pid=proc.pid,
                       output_directory=str(home),
                       stdout_bytes=len(stdout), stderr_bytes=len(stderr))
@@ -559,6 +645,7 @@ class Workers:
                     if index is None:
                         break
                     name, job = pending.pop(index)
+                    self.budgets[name] = job.get('budget_seconds', WORKER_BUDGET)
                     home = directory / str(self.invocations)
                     home.mkdir()
                     self.homes[name] = home
@@ -750,6 +837,9 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             receipt['drivers'][driver] = {'inventory_digest': digest(own), 'registered': len(own),
                                            'worker_seconds': 0.0, 'executed': 0, 'reused': 0}
         files = read_inputs(root, expected_common)
+        time_keys = {c['identity']: case_time_key(c, files, leg) for c in cases}
+        deadlines = {identity: case_deadline(key) for identity, key in time_keys.items()}
+        receipt['case_deadlines'] = deadlines
         head = git(root, expected_common, 'rev-parse', 'HEAD')
         receipt['input_digest'] = digest({'files': file_identity(files), 'head': head})
         receipt['implementation_digest'] = hashlib.sha256(
@@ -812,12 +902,15 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                               if c['identity'] in getattr(reuse, 'snapshots', {})}
             def group_for(case):
                 return case['identity'] if prepared_cases.get(case['identity']) else control_group(case)
-            controls = {}
-            for case in fresh:
-                group = group_for(case)
-                for mode in ('baseline', 'noop'):
-                    controls.setdefault(group + ':' + mode, {'case': case, 'mode': mode,
-                                     **prepared_cases.get(case['identity'], {})})
+            controls = control_jobs(fresh, group_for, prepared_cases, deadlines)
+            mutant_jobs = {c['identity']: {'case': c, 'mode': 'mutant',
+                           'budget_seconds': deadlines[c['identity']],
+                           **prepared_cases.get(c['identity'], {})} for c in fresh}
+            budget = budget_for(len(full_inventory), workers.parallel,
+                                [j['budget_seconds'] for j in [*controls.values(), *mutant_jobs.values()]])
+            receipt['budget_seconds'] = budget
+            workers.deadline = started + budget
+            signal.setitimer(signal.ITIMER_REAL, max(workers.deadline - time.monotonic(), 0.001))
             workers.resources = SuiteResources.from_root(frozen, capacities)
             if log_dir is not None:
                 log_dir = Path(log_dir).resolve()
@@ -850,9 +943,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 receipt['results'].append(dict(reuse.evidence(case, record, False),
                                                elapsed=completed['elapsed']))
 
-            workers.run({c['identity']: {'case': c, 'mode': 'mutant',
-                                         **prepared_cases.get(c['identity'], {})}
-                         for c in fresh}, directory, frozen, on_result=collect)
+            workers.run(mutant_jobs, directory, frozen, on_result=collect)
             if receipt['invalid_results']:
                 first = receipt['invalid_results'][0]
                 raise Refused(first['error'], first['detail'])
@@ -873,10 +964,19 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             raise Refused('reuse_integrity_conflict', 'conflicting cache record: ' +
                           ', '.join(reuse.store.integrity_errors))
         workers.check()
+        # Timed by the coordinator, never taken from worker JSON. No failed stage or reused
+        # case refreshes a sample; controls shared by several cases contribute to each one.
+        elapsed = {o['name']: o['elapsed'] for o in workers.outcomes}
+        samples = {time_keys[c['identity']]: max(elapsed[c['identity']],
+                   elapsed[group_for(c) + ':baseline'], elapsed[group_for(c) + ':noop'])
+                   for c in fresh}
+        record_case_times(root, samples)
         receipt['status'] = 'passed'
     except Exception as error:  # All incomplete drives are named errors, never detections.
         receipt['status'] = 'failed'
-        receipt['error'] = getattr(error, 'code', 'driver_error')
+        receipt['error'] = getattr(error, 'code',
+                                   'mutation_budget_exceeded' if isinstance(error, subprocess.TimeoutExpired)
+                                   else 'driver_error')
         receipt['detail'] = str(error)
     finally:
         signal.setitimer(signal.ITIMER_REAL, 0)

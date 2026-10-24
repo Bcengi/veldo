@@ -1478,6 +1478,15 @@
    ],
    "regions": "The first-use check budget per nested run, measured from the unit stage leg the authority timed.",
    "requires_note": "Only ROOT and expect. A fixture list and fake stage commands through the real gate_legs.py with its confined runner replaced by the plain one; scratch leg-time stores."
+  },
+  {
+   "name": "112_veldo_0215_case_deadlines",
+   "file": "112_veldo_0215_case_deadlines.py",
+   "requires": [
+    "112_veldo_0215_case_deadlines"
+   ],
+   "regions": "Authority-measured mutation worker deadlines and bounded store.",
+   "requires_note": "Only ROOT and expect; controlled coordinator children and scratch stores, plus a real hanging child."
   }
  ],
  "resource_capacities": {

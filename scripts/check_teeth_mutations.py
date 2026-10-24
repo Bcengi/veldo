@@ -10661,6 +10661,79 @@ def cases():
         ['first-use-budget/leg-time-store-pruned'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0215: measured per-case deadlines, authoritative timing and honest expiry.
+    add(215, 'deadline215-fixed-worker', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '        if time.monotonic() - started >= self.budgets.get(name, WORKER_BUDGET):\n',
+        '        if time.monotonic() - started >= WORKER_BUDGET:\n',
+        ['case-deadlines/measured-worker', 'case-deadlines/slow-pass'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-drop-measurement', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        "                    self.budgets[name] = job.get('budget_seconds', WORKER_BUDGET)\n",
+        '                    self.budgets[name] = WORKER_BUDGET\n',
+        ['case-deadlines/measured-worker', 'case-deadlines/slow-pass'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-no-expiry', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '        if time.monotonic() - started >= self.budgets.get(name, WORKER_BUDGET):\n',
+        '        if False:\n',
+        ['case-deadlines/hang-timeout'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-timeout-is-baseline', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        "            raise Refused('mutation_budget_exceeded', name + ': worker deadline (%gs)' % self.budgets.get(name, WORKER_BUDGET))\n",
+        "            raise Refused('invalid_baseline', name + ': worker deadline (%gs)' % self.budgets.get(name, WORKER_BUDGET))\n",
+        ['case-deadlines/hang-timeout'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-no-authority-guard', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '    if Path(times) == CASE_TIMES and Path(root).resolve() != ROOT.resolve():\n',
+        '    if False:\n',
+        ['case-deadlines/authority-recording'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-key-omits-sources', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        "'case': case, 'sources': sources,\n",
+        "'case': case, 'sources': {},\n",
+        ['case-deadlines/key-binding'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-key-omits-definition', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        "'case': case, 'sources': sources,\n",
+        "'case': {}, 'sources': sources,\n",
+        ['case-deadlines/key-binding'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-no-prune', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        "            load(ROOT / 'scripts/gate_legs.py').prune_times(times, keep=target)\n",
+        '            pass  # defect: never prune\n',
+        ['case-deadlines/store-pruned'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-old-stage-cap', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '    return max(BUDGET + sum(deadlines), PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, min(workers, REFERENCE_WORKERS)))\n',
+        '    return max(BUDGET, PER_CASE_SECONDS * count * REFERENCE_WORKERS / max(1, min(workers, REFERENCE_WORKERS)))\n',
+        ['case-deadlines/combined-budget'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-first-control', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        "            job['budget_seconds'] = max(job.get('budget_seconds', 0), deadlines[case['identity']])\n",
+        "            job.setdefault('budget_seconds', deadlines[case['identity']])\n",
+        ['case-deadlines/shared-controls'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-no-ceiling', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '        return min(WORKER_CEILING, max(WORKER_BUDGET,\n                   WORKER_MULTIPLIER * min(seconds, WORKER_CEILING)))\n',
+        '        return max(WORKER_BUDGET, WORKER_MULTIPLIER * seconds)\n',
+        ['case-deadlines/bounds'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-lost-baseline-details', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '                          + json.dumps(failures, sort_keys=True))\n',
+        "                          + 'failed')\n",
+        ['case-deadlines/baseline-details'])
+    result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-record-invalid', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        "            if receipt['invalid_results']:\n",
+        "            record_case_times(root, {time_keys[c['identity']]: 1 for c in fresh})\n            if receipt['invalid_results']:\n",
+        ['case-deadlines/authority-recording'])
+    result[-1]['dir'] = 'scripts'
+
+    add(215, 'deadline215-setup-timeout-is-driver-error', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        "                                   'mutation_budget_exceeded' if isinstance(error, subprocess.TimeoutExpired)\n",
+        "                                   'driver_error' if isinstance(error, subprocess.TimeoutExpired)\n",
+        ['case-deadlines/setup-timeout'])
+    result[-1]['dir'] = 'scripts'
+
     return result
 
 
