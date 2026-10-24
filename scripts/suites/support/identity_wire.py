@@ -29,7 +29,14 @@ THE FENCE (`Fence`, which a Wire is). While `active()`:
   http on a loopback host, ssh through a test adapter rather than the real ssh client, or ext::.
 - A credential helper from the real user's global or system configuration is replaced by the
   fence's guard, which records a violation if Git ever asks it for a credential.
-- SSH_AUTH_SOCK names the fence's own agent socket, which records every connection.
+- SSH_AUTH_SOCK names the fence's own agent socket, which records every connection. Where this
+  process's confinement refuses creating a local (AF_UNIX) socket (the gate's nested domains do,
+  with EPERM), no process under it can open one to reach any SSH agent, so the confinement is
+  the guard: the fence is raised without its recording agent, SSH_AUTH_SOCK names a path in the
+  fence's directory where nothing listens, and `agent_observation` (also written to
+  fence-observations.jsonl and stderr) records that agent contact is impossible here. That is an
+  observation of the confinement, never a pass of the agent wall, which only a domain allowing
+  local sockets exercises. Every other wall is raised as everywhere else.
 - An audit hook in this process refuses and records a socket connection or name lookup for a
   non-loopback host, and a connection to the real SSH agent or keyring sockets.
 When `active()` ends, any recorded violation raises HermeticViolation naming each one, so a fixture
@@ -131,6 +138,10 @@ class Fence:
         runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
         self.protected = [p for p in (os.environ.get('SSH_AUTH_SOCK'), os.path.join(runtime, 'keyring'),
                                       os.path.join(home, '.local/share/keyrings')) if p]
+        self.observations_log = self.directory / 'fence-observations.jsonl'
+        # None while a recording agent stands (or before active()); a sentence when this process's
+        # confinement refused the agent's socket, so no agent can be contacted from under it.
+        self.agent_observation = None
 
     def _write_conf(self):
         (self.directory / 'fence.json').write_text(json.dumps(self.conf))
@@ -162,12 +173,31 @@ class Fence:
     def active(self):
         state = _audit_state()
         saved = {k: os.environ.get(k) for k in ('PATH', 'SSH_AUTH_SOCK')}
+        self.agent_observation = None
         # The fence's own agent: a short path (sun_path is bounded) that records every connection.
-        agent_dir = tempfile.mkdtemp(prefix='vfa-')
-        agent_path = os.path.join(agent_dir, 'agent')
-        agent = socket.socket(socket.AF_UNIX)
-        agent.bind(agent_path)
-        agent.listen(8)
+        # Its socket is tried once: a confinement that refuses it (PermissionError: EPERM or EACCES)
+        # refuses every process under it a socket to any agent, and the fence records exactly that.
+        # Any other failure is the fixture's own fault and is raised.
+        try:
+            agent = socket.socket(socket.AF_UNIX)
+        except PermissionError as refused:
+            agent = None
+            self.agent_observation = (
+                'agent contact impossible: this confinement refuses creating an AF_UNIX socket (%s), '
+                'so no process under it can reach an SSH agent; the fence runs without its recording '
+                'agent and SSH_AUTH_SOCK names a path where nothing listens' % (
+                    __import__('errno').errorcode.get(refused.errno, refused.errno),))
+            with self.observations_log.open('a') as log:
+                log.write(json.dumps({'kind': 'ssh-agent', 'observation': self.agent_observation}) + '\n')
+            sys.stderr.write('VELDO HERMETIC FENCE: observation: %s\n' % self.agent_observation)
+        if agent is None:
+            agent_dir = None
+            agent_path = str(self.directory / 'no-agent' / 'agent')
+        else:
+            agent_dir = tempfile.mkdtemp(prefix='vfa-')
+            agent_path = os.path.join(agent_dir, 'agent')
+            agent.bind(agent_path)
+            agent.listen(8)
         stop = threading.Event()
 
         def serve():
@@ -186,8 +216,10 @@ class Fence:
                         asked = 'unknown process'
                     self._record('keyring', 'the SSH agent was contacted by: ' + asked.strip()[:300])
                 peer.close()
-        thread = threading.Thread(target=serve, daemon=True)
-        thread.start()
+        thread = None
+        if agent is not None:
+            thread = threading.Thread(target=serve, daemon=True)
+            thread.start()
         os.environ['PATH'] = str(self.directory) + os.pathsep + (saved['PATH'] or os.defpath)
         os.environ['SSH_AUTH_SOCK'] = agent_path
         state.stack.append(self)
@@ -203,15 +235,16 @@ class Fence:
                 else:
                     os.environ[key] = value
             stop.set()
-            with contextlib.suppress(OSError):
-                waker = socket.socket(socket.AF_UNIX)
-                waker.connect(agent_path)
-                waker.close()
-            agent.close()
-            thread.join(timeout=5)
-            with contextlib.suppress(OSError):
-                os.unlink(agent_path)
-                os.rmdir(agent_dir)
+            if agent is not None:
+                with contextlib.suppress(OSError):
+                    waker = socket.socket(socket.AF_UNIX)
+                    waker.connect(agent_path)
+                    waker.close()
+                agent.close()
+                thread.join(timeout=5)
+                with contextlib.suppress(OSError):
+                    os.unlink(agent_path)
+                    os.rmdir(agent_dir)
             found = self.violations()
             if found:
                 message = 'VELDO HERMETIC FENCE: %d violation(s): %s' % (len(found), json.dumps(found)[:2000])

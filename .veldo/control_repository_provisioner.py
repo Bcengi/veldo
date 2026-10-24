@@ -51,7 +51,7 @@ def organ(name):
     return module
 
 
-GP = organ('git_process')
+_git_process = organ('git_process')
 R = organ('control_repository')
 CE = R.CE
 GI = R.GI
@@ -67,8 +67,8 @@ def _scaffold_module():
 def git(path, *args, check=True, **kwargs):
     """One local Git step in `path` under the isolated profile, running no hook of the repository (as no
     identity push does, VELDO-0153)."""
-    done = GP.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, '-c', 'core.fsmonitor=false', *args],
-                  capture_output=True, text=True, timeout=STEP_SECONDS, **kwargs)
+    done = _git_process.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, '-c', 'core.fsmonitor=false', *args],
+                            capture_output=True, text=True, timeout=STEP_SECONDS, **kwargs)
     if check and done.returncode:
         raise Refused('invalid_input:git', '%s: %s' % (args[0], done.stderr.strip()[:200]))
     return done
@@ -84,7 +84,7 @@ def identity_record(conn, domain, identity):
 
 def check_remote(record, remote, repository=None, request=None, observe=None):
     """VELDO-0153's one owner check, operation `adoption`; its refusal code is kept (binding_mismatch:...)."""
-    transport = GP.identity_transport()
+    transport = _git_process.identity_transport()
     try:
         return transport.check_remote(record, remote, operation='adoption', repository=repository,
                                       request=request, observe=observe)
@@ -172,9 +172,9 @@ def refuse_transport_config(path, remote):
     transport's own judge (control_git_identity_transport.config_overrides) over the same listing
     git_process makes before the push, so the push's refusal is known before anything is moved. Run after
     refuse_commands, which has already refused every include, so the listing is the push's."""
-    listed = GP.run(['git', '-C', str(path), 'config', '--includes', '--null', '--list'], capture_output=True,
-                    timeout=STEP_SECONDS)
-    if listed.returncode or GP.identity_transport().config_overrides(listed.stdout, remote):
+    listed = _git_process.run(['git', '-C', str(path), 'config', '--includes', '--null', '--list'], capture_output=True,
+                              timeout=STEP_SECONDS)
+    if listed.returncode or _git_process.identity_transport().config_overrides(listed.stdout, remote):
         raise Refused('binding_mismatch:identity_transport_config',
                       'the identity transport refuses this repository\'s configuration for the remote')
 
@@ -325,13 +325,13 @@ def push(proposal, record, observe=None):
     """Push the named scaffold commit to the default branch of the checked remote URL through the identity
     profile, leased on the base; the remote's branch is read back. Returns the remote tip."""
     path, branch, remote = proposal['path'], proposal['default_branch'], proposal['remote']
-    transport = GP.identity_transport()
+    transport = _git_process.identity_transport()
     ref = 'refs/heads/' + branch
 
     def run(*args):
         try:
-            return GP.run(['git', '-C', path, *args], capture_output=True, text=True, timeout=STEP_SECONDS,
-                          profile='identity', push_identity=record, remote_url=remote)
+            return _git_process.run(['git', '-C', path, *args], capture_output=True, text=True, timeout=STEP_SECONDS,
+                                    profile='identity', push_identity=record, remote_url=remote)
         except transport.Refused as error:
             raise Refused(error.code) from None
     # Exactly the one commit he answered: no annotated tag the repository's push.followTags would add

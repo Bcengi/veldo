@@ -415,13 +415,28 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
             return made
 
         # The Git invocations the lander makes, observed at its own boundary; `fail_at` makes one fail.
+        # A land whose row judges its pushes sets `hold`: 'refused' (the row expects the land refused, so any
+        # push is a trunk moved without acceptance) or 'landed' (the one push the row expects goes through
+        # the identity profile, VELDO-0153 AC1, so a push through any other profile is one the lander may
+        # never make, and outside the wire it would reach the network). Such a push is the row's to judge:
+        # it is kept in `held` and answered as a failed push without running, so it fails that row by name
+        # and never reaches the hermetic fence, which would fail the whole suite (VELDO-0161 round 3's shape:
+        # what the row watches for, the row owns). A land no row judges this way keeps the fence alone.
         class Boundary:
             def __init__(self, real):
-                self.real, self.calls, self.fail_at = real, [], None
+                self.real, self.calls, self.fail_at, self.hold, self.held = real, [], None, None, []
 
             def run(self, args, **kwargs):
                 index = len(self.calls)
                 self.calls.append(list(args))
+                if (len(args) > 3 and args[1] == '-C' and args[3] in ('push', 'send-pack')
+                        and (self.hold == 'refused' or (self.hold == 'landed' and kwargs.get('profile') != 'identity'))):
+                    self.held.append(list(args[3:]))
+                    empty = '' if kwargs.get('text') else b''
+                    held = 'fatal: held, a push in a land the row expects refused'
+                    if kwargs.get('check'):
+                        raise subprocess.CalledProcessError(1, list(args), empty, held if kwargs.get('text') else held.encode())
+                    return subprocess.CompletedProcess(list(args), 1, empty, held if kwargs.get('text') else held.encode())
                 if index == self.fail_at:
                     empty = '' if kwargs.get('text') else b''
                     fault = subprocess.CompletedProcess(list(args), 128, empty,
@@ -502,9 +517,12 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
             accepted = inspect.signature(cls.__init__).parameters
             return cls(*args, **{k: v for k, v in kwargs.items() if k in accepted})
 
-        def land(sid, *, ref=None, trunk=TRUNK, remote_name='origin', authority=True, stop_at_gate=False, fault=None):
+        def land(sid, *, ref=None, trunk=TRUNK, remote_name='origin', authority=True, stop_at_gate=False, fault=None,
+                 expect=None):
             """One real land through the Lander, observed: the Git invocations, what the candidate was when
-            the gate was reached (before verification), and everything a land could move, before and after."""
+            the gate was reached (before verification), and everything a land could move, before and after.
+            `expect` ('refused' or 'landed') is what the row judges the land by; the pushes the boundary held
+            for it are `pushes`, which that row must find empty."""
             seen = {'gate': False, 'finalize': False}
 
             class Observed(LD.GitLandOps):
@@ -527,7 +545,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                     return seen['finalized']
 
             before = snapshot()
-            boundary.calls, boundary.fail_at = [], fault
+            boundary.calls, boundary.fail_at, boundary.hold, boundary.held = [], fault, expect, []
             unit = {'spec': sid, 'holder': BUILDER, 'generation': generations.get(sid)}
             ops = outcome_of(lambda: make(Observed, str(caller), ref or 'build/' + sid, trunk=trunk, remote=remote_name,
                                           push=True, policy=policy if authority else None,
@@ -538,12 +556,13 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                                                       lock_timeout=30).land(unit))
             else:
                 result = ops
-            boundary.fail_at = None
+            boundary.fail_at, boundary.hold = None, None
             after = snapshot()
             got = result[1] if result[0] == 'ok' and isinstance(result[1], dict) else {'raised': result[1]}
             detail = got.get('detail') if isinstance(got.get('detail'), dict) else {}
             return dict(seen, result=got, detail=detail, stage=got.get('stage'), before=before, after=after,
-                        moved=moved(before, after), calls=list(boundary.calls), leftover=sorted(os.listdir(spaces)),
+                        moved=moved(before, after), calls=list(boundary.calls), pushes=list(boundary.held),
+                        leftover=sorted(os.listdir(spaces)),
                         ops=ops[1] if ops[0] == 'ok' else None, writes=writes_to_caller(boundary.calls))
 
         def inspect_candidate(record):
@@ -616,28 +635,32 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                         'VELDO-9566': factory('VELDO-9566', 'good'),
                         'VELDO-9567': factory('VELDO-9567', 'good')}
                 build('VELDO-9571', 'objection')
-                cases = {'red_gate': land('VELDO-9563'), 'invalid_proof': land('VELDO-9564'),
-                         'unresolved_finding': land('VELDO-9565'), 'rejected_approval': land('VELDO-9566'),
-                         'repository_policy': land('VELDO-9571', authority=False)}
-                valid = land('VELDO-9567')
+                cases = {'red_gate': land('VELDO-9563', expect='refused'),
+                         'invalid_proof': land('VELDO-9564', expect='refused'),
+                         'unresolved_finding': land('VELDO-9565', expect='refused'),
+                         'rejected_approval': land('VELDO-9566', expect='refused'),
+                         'repository_policy': land('VELDO-9571', authority=False, expect='refused')}
+                valid = land('VELDO-9567', expect='landed')
                 finding = sorted((floor.record('VELDO-9565') or {}).get('findings') or {})
                 observed['rejections'] = {name: {'stage': c['stage'], 'refusal': c['detail'].get('refusal'),
                                                  'refusals': c['detail'].get('refusals'), 'moved': c['moved'],
                                                  'gate': c['gate'], 'finalize': c['finalize'], 'leftover': c['leftover'],
-                                                 'raised': c['result'].get('raised')} for name, c in cases.items()}
-                observed['valid_land'] = {'result': valid['result'], 'moved': valid['moved'],
+                                                 'raised': c['result'].get('raised'), 'pushes': c['pushes']}
+                                           for name, c in cases.items()}
+                observed['valid_land'] = {'result': valid['result'], 'moved': valid['moved'], 'pushes': valid['pushes'],
                                           'remote_trunk': valid['after']['remote_trunk']}
                 observed['factory'] = {sid: {'proof': m.get('proof', ('', ''))[0], 'floor': m.get('floor')}
                                        for sid, m in made.items()}
                 untouched = ('caller_git', 'caller_work', 'holder_work', 'remote', 'remote_trunk', 'local_trunk', 'heads')
                 check('candidate/rejection-leaves-trunk',
                       all(c['result'].get('ok') is False and c['moved'] == [] and c['leftover'] == [] and c['writes'] == []
+                          and c['pushes'] == []
                           and c['before']['remote_trunk'] == c['after']['remote_trunk']
                           and c['before']['local_trunk'] == c['after']['local_trunk'] for c in cases.values())
                       and cases['red_gate']['stage'] == 'gate' and cases['red_gate']['finalize'] is False
                       and all(cases[n]['stage'] == 'finalize' and cases[n]['gate'] is True
                               for n in ('invalid_proof', 'unresolved_finding', 'rejected_approval', 'repository_policy'))
-                      and valid['result'] == {'ok': True, 'stage': 'landed'}
+                      and valid['result'] == {'ok': True, 'stage': 'landed'} and valid['pushes'] == []
                       and valid['moved'] == ['identity_log', 'remote', 'remote_trunk'] and valid['leftover'] == []
                       and [json.loads(line)['operation'] for line in valid['after']['identity_log'][
                           len(valid['before']['identity_log']):]] == ['remote_check', 'push']
@@ -671,12 +694,13 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                 factory('VELDO-9561', 'good')
                 tip_before = git(remote, 'rev-parse', 'refs/heads/' + TRUNK)
                 held = git(caller, 'worktree', 'list', '--porcelain')
-                one = land('VELDO-9561')
+                one = land('VELDO-9561', expect='landed')
                 record = one.get('candidate') or {}
                 seen = one.get('inspection') or {}
                 impl, evidence = builds['VELDO-9561']['implementation'], builds['VELDO-9561']['commit']
                 chain, parents = seen.get('chain') or [], seen.get('parents') or {}
                 observed['detached'] = {'result': one['result'], 'writes': one['writes'], 'moved': one['moved'],
+                                        'pushes': one['pushes'],
                                         'moved_at_gate': moved(one['before'], one.get('at_gate') or {}),
                                         'calls': sorted({tuple(a[3:5]) for a in one['calls'] if aimed_at(a, caller)}),
                                         'workspace': {k: seen.get(k) for k in ('detached', 'own_git_directory', 'alternates',
@@ -690,7 +714,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                       and seen.get('detached') is True and seen.get('own_git_directory') is True
                       and seen.get('outside_caller') is True
                       and seen.get('alternates') == [os.path.realpath(caller / '.git' / 'objects')]
-                      and one['result'] == {'ok': True, 'stage': 'landed'}
+                      and one['result'] == {'ok': True, 'stage': 'landed'} and one['pushes'] == []
                       and one['moved'] == ['identity_log', 'remote', 'remote_trunk'] and one['leftover'] == []
                       and one['after']['local_trunk'] == one['before']['local_trunk'] == BASE)
                 projection = seen.get('index') or b''

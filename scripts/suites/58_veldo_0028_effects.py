@@ -1009,6 +1009,63 @@ print(json.dumps(result))
         seen_result('scrub-table', {}, mismatches={url: got for (url, want), got in zip(scrub_table, scrub_seen.values()) if got != want})
         row('publication-scrub-malformed-address', ext_ok
             and all(scrub_seen[url] == want for url, want in scrub_table))
+        # VELDO-0161 round 11 (finding 28): the record's scrubbing is defense in depth behind the owner
+        # check. VELDO-0153's check_remote refuses user information (other than ssh `git`), a query, a
+        # fragment and a transport prefix before the record is built, so no row that publishes through
+        # the executor can hand the record a credential, and the rows above call scrubbed_url itself,
+        # never the record site. This row runs the receiver in this process with the owner check
+        # standing in as one that let such a destination through: it judges each destination with its
+        # user information, query, fragment and transport prefix removed. The wire carries each
+        # destination's literal text to its bare repository, so the push and both listings are real.
+        # Required: the push completes, and the record names every URL scrubbed, with no credential in
+        # the answer or the identity events. The control: the real check refuses each destination.
+        T = G.identity_transport()
+        real_check = T.check_remote
+        identity_record = E.organ('control_git_identity').resolve(conn, 'domain', 'repo')
+        record_cases = {}
+        # Each case: the destination, the address the stand-in check judges, and the URL recorded.
+        for name, raw, judged, clean in (
+                ('userinfo', 'https://' + _V28_U + ':' + _V28_P + '@github.com/fixture/record-userinfo.git',
+                 'https://github.com/fixture/record-userinfo.git', 'https://github.com/fixture/record-userinfo.git'),
+                ('query', 'https://github.com/fixture/record-query.git?private_token=' + _V28_T,
+                 'https://github.com/fixture/record-query.git', 'https://github.com/fixture/record-query.git'),
+                ('fragment', 'https://github.com/fixture/record-fragment.git#' + _V28_T,
+                 'https://github.com/fixture/record-fragment.git', 'https://github.com/fixture/record-fragment.git'),
+                ('transport', 'veldotest::https://' + _V28_U + ':' + _V28_P + '@github.com/fixture/record-transport.git',
+                 'https://github.com/fixture/record-transport.git',
+                 'veldotest::https://github.com/fixture/record-transport.git')):
+            clone, bare = fresh('record-scrub-' + name)
+            # Registered by its literal text: the wire replaces an exact argument by its repository.
+            remotes = _v28_json.loads(wire.map.read_text())
+            remotes[raw] = str(bare)
+            wire.map.write_text(_v28_json.dumps(remotes))
+            try:
+                real_check(identity_record, raw)
+                refused = None
+            except T.Refused as error:
+                refused = error.code
+            target = 'git-record-scrub-' + name
+            local = {'store': str(db), '_identity_events': [], 'receivers': {target: {
+                'kind': 'publication', 'repository': str(clone), 'remote': raw, 'ref': 'refs/heads/main'}}}
+            contract = {'kind': 'publication', 'target': target, 'domain_uuid': 'domain', 'repository_uuid': 'repo',
+                        'payload': {'commit': tip, 'tree': tree, 'old_tip': old}}
+            accepted = {'dispatch_id': 'dispatch-record-scrub-' + name, 'target': target, 'request_digest': 'record-scrub'}
+            T.check_remote = lambda record, remote, _raw=raw, _judged=judged, **kw: real_check(
+                record, _judged if remote == _raw else remote, **kw)
+            try:
+                result = _v28_executor.receive(local, contract, accepted)
+            except Exception as error:
+                result = {'error': type(error).__name__ + ': ' + str(getattr(error, 'code', ''))}
+            finally:
+                T.check_remote = real_check
+            record_cases[name] = (refused, result, local['_identity_events'], remote_main(bare) == tip, clean)
+            seen_result('record-scrub-' + name, result, real_check_refused=refused,
+                        destination=result.get('destination'), error=result.get('error'))
+        row('publication-record-scrubs-destination', all(
+            refused is not None and result.get('status') == 'completed' and moved
+            and result.get('destination') == {'authorized_url': clean, 'destinations': reached((clean, 'at-tip'))}
+            and _V28_S not in _v28_json.dumps(result) and _V28_S not in _v28_json.dumps(events)
+            for refused, result, events, moved, clean in record_cases.values()))
         # Completion requires a clean transport exit even when the checked destination
         # already holds exactly the authorized tip. Inject that exit at the process boundary.
         clone, bare = fresh('hook-then-fail')
@@ -1177,7 +1234,7 @@ exec "$real" "$@"
                      'scrub-scp-user-information', 'scrub-transport-prefix', 'scrub-query-fragment',
                      'refused-when-not-at-old-tip', 'refusal-reaches-caller', 'ref-creation',
                      'destination-listed-as-resolved', 'call-covers-every-destination',
-                     'scrub-malformed-address',
+                     'scrub-malformed-address', 'record-scrubs-destination',
                      'requires-clean-push-exit', 'line-break-refused', 'resolution-output-checked',
                      'resolution-with-locale-env',
                      'config-selection-parity', 'network-profile-strips-coordinates'):

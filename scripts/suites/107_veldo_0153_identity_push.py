@@ -254,9 +254,28 @@ def _v153_fence_rows(W, base):
             outcome['socket'] = denied(lambda: socket.create_connection(('192.0.2.1', 9), timeout=1))
             outcome['lookup'] = denied(lambda: socket.getaddrinfo('github.com', 443))
             keyring = os.path.join(os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid(), 'keyring', 'control')
-            outcome['keyring'] = denied(lambda: socket.socket(socket.AF_UNIX).connect(keyring))
-            with socket.socket(socket.AF_UNIX) as agent:
-                agent.connect(os.environ['SSH_AUTH_SOCK'])
+            if fence.agent_observation is None:
+                outcome['keyring'] = denied(lambda: socket.socket(socket.AF_UNIX).connect(keyring))
+                with socket.socket(socket.AF_UNIX) as agent:
+                    agent.connect(os.environ['SSH_AUTH_SOCK'])
+                outcome['keyring_wall'] = 'fence'
+            else:
+                # This confinement refuses every AF_UNIX socket, so the fence ran without its
+                # recording agent. What is judged is what stands here: neither the keyring nor
+                # the agent SSH_AUTH_SOCK names can be reached (no socket can be made), and that
+                # name is a path in the fence's own directory where nothing listens. The fence's
+                # own keyring and agent walls are exercised only where local sockets are allowed.
+                def unreachable(path):
+                    try:
+                        socket.socket(socket.AF_UNIX).connect(path)
+                    except PermissionError:
+                        return True
+                    return False
+                named = os.environ['SSH_AUTH_SOCK']
+                outcome['keyring'] = (unreachable(keyring) and unreachable(named)
+                                      and named.startswith(str(fence.directory) + os.sep)
+                                      and not os.path.exists(named))
+                outcome['keyring_wall'] = 'confinement'
             asked = subprocess.run(['git', 'ls-remote', 'http://127.0.0.1:%d/fixture.git' % server.server_port],
                                    capture_output=True, text=True, timeout=30,
                                    env=dict(os.environ, HOME=str(home), XDG_CONFIG_HOME=str(home)))
@@ -270,10 +289,13 @@ def _v153_fence_rows(W, base):
     kinds = [v['kind'] for v in fence.violations()]
     expect('VELDO-0153 fence/network-git-refused', outcome.get('git') and 'network' in kinds)
     expect('VELDO-0153 fence/network-socket-refused', outcome.get('socket') and outcome.get('lookup'))
-    expect('VELDO-0153 fence/keyring-socket-refused', outcome.get('keyring') and kinds.count('keyring') >= 2)
+    expect('VELDO-0153 fence/keyring-socket-refused', outcome.get('keyring') is True
+           and (kinds.count('keyring') >= 2 if outcome.get('keyring_wall') == 'fence'
+                else fence.agent_observation is not None))
     expect('VELDO-0153 fence/real-credential-store-refused', outcome.get('credential') and 'credential-store' in kinds)
     expect('VELDO-0153 fence/fails-loudly', outcome.get('raised') is True)
-    print('VELDO-0153 fence observations: ' + json.dumps({'outcome': outcome, 'kinds': kinds}, sort_keys=True))
+    print('VELDO-0153 fence observations: ' + json.dumps({'outcome': outcome, 'kinds': kinds,
+                                                          'agent': fence.agent_observation}, sort_keys=True))
 
 
 def _v153_suite(fence_dir, installed):

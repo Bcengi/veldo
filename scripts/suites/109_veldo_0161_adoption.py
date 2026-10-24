@@ -149,34 +149,13 @@ def _v161_suite():
 
     @contextlib.contextmanager
     def fenced(wire):
-        """The identity wire's hermetic fence. Where local sockets are refused, the fence's recording SSH agent
-        cannot be created; the fence is then raised without it and SSH_AUTH_SOCK names a path where nothing
-        listens or can, so no agent is reachable at all (these fixtures push with a token, never over ssh).
-        Every other wall (the transport guard, the credential guard, the audit hook) is the wire's own."""
-        if UNIX:
-            with wire.active():
-                yield wire
-            return
-        print('  %sthe fence runs without its recording agent: %s' % (PREFIX, NO_SERVICE))
-        state = W['_audit_state']()
-        saved = {k: os.environ.get(k) for k in ('PATH', 'SSH_AUTH_SOCK')}
-        os.environ['PATH'] = str(wire.directory) + os.pathsep + (saved['PATH'] or os.defpath)
-        os.environ['SSH_AUTH_SOCK'] = str(wire.directory / 'no-agent' / 'agent')
-        state.stack.append(wire)
-        clean = False
-        try:
+        """The identity wire's hermetic fence. Where local sockets are refused, the fence itself runs without its
+        recording SSH agent, names a path where nothing listens or can, and records that no agent is reachable
+        (support/identity_wire.py, VELDO-0153); these fixtures push with a token, never over ssh."""
+        with wire.active():
+            if wire.agent_observation:
+                print('  %sthe fence runs without its recording agent: %s' % (PREFIX, wire.agent_observation))
             yield wire
-            clean = True
-        finally:
-            state.stack.remove(wire)
-            for key, value in saved.items():
-                if value is None:
-                    os.environ.pop(key, None)
-                else:
-                    os.environ[key] = value
-            found = wire.violations()
-            if found and clean:
-                raise W['HermeticViolation']('VELDO HERMETIC FENCE: %d violation(s): %s' % (len(found), json.dumps(found)[:2000]))
     watch = put_back = None
     connections, servers, services = [], [], []
     with tempfile.TemporaryDirectory(prefix='v161-', dir=fast_temp()) as directory:
