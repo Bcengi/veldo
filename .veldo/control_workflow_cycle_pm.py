@@ -664,13 +664,10 @@ def _cycles(line, store, membership, assignment, ids, signature, allocations, re
             inbox=ingress.inbox, presenter=ingress.presenter, settlement=ingress.settlement,
             requester=(service.principal, signature), workspace=line.workspace,
             authority_generation=service.generation)
-    # The graph stage is the account's (control_graph.STAGE_RELATIVE) unless the service configuration names
-    # its own graph_stage, as a suite's service does to keep the runner's scratch inside its own root.
     cycles = ProjectCycles(store, service.conn, domain=service.domain, repository=line.repository,
         workspace=line.workspace, principal=service.principal, sign=service.sign, command_sign=signature,
         runner=line.runner, adapters=line.engines, services=services, generation=service.generation,
-        execution_records=line.records, observe=service._log, readsets=readsets,
-        stage=service.config.get('graph_stage'))
+        execution_records=line.records, observe=service._log, readsets=readsets)
     # VELDO-0143: the factory project's own repository holds only its team configuration and is no line, so
     # its cycles run on the loop's factory line (control_service FactoryLoop.factory_line).
     cycles.factory_line = lambda: getattr(getattr(line, 'loop', None), 'factory_line', None) == line.repository

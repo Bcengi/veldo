@@ -286,8 +286,8 @@ else:
                 str(result_file), str(packet_file)]}
             config.write_text(json.dumps(receiver))
             # No row changes the installed runtime. Validate it once, then pass
-            # the same real runtime through ProjectCycles' explicit runtime seam.
-            runtime = PM.CY.installed_runtime()
+            # the same real runtime through ProjectCycles' explicit runtime seam, its stage the fixture's.
+            runtime = PM.CY.installed_runtime(stage=f['graph_stage'])
             factory = SV.FactoryLoop(service, {'repositories': {}})
             line = SV.Line(factory, repository, {'builder': {'identity': 'unassigned'}, 'reviewers': []}, config)
             line.runner.account = 'fixture-account'

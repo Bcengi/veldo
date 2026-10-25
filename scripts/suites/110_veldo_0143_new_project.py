@@ -1467,7 +1467,7 @@ def _v143_suite():
                                       authority_generation=1, repositories={REPO: [str(base / 'workspace')]},
                                       journal_key=str(f['keyfile']['authority']), host_identity=HOST,
                                       enrollment_signers=trust.enrollment_signers, store_path=str(f['db']),
-                                      observations=str(base / 'service.jsonl'), graph_stage=str(f['graph_stage']),
+                                      observations=str(base / 'service.jsonl'),
                                       receiver={'configs': {REPO: str(receiver_config)}}), conn)
             service.channel = SimpleNamespace(ingress=SimpleNamespace(inbox=inbox, presenter=presenter,
                                                                       settlement=settlement, acquirer=acquirer))
@@ -2260,7 +2260,7 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                                              journal_key=str(f['keyfile']['authority']), host_identity=HOST,
                                              enrollment_signers=trust.enrollment_signers, store_path=str(f['db']),
                                              observations=str(base / 'pm-service.jsonl'),
-                                             provisioner=str(provisioner_file), graph_stage=str(f['graph_stage'])), conn)
+                                             provisioner=str(provisioner_file)), conn)
                 pm_service.channel = service.channel
                 pm_loop = SV.FactoryLoop(pm_service, {'repositories': {}})
                 line = SV.Line(pm_loop, REPO, {'builder': {'identity': 'unassigned'}, 'reviewers': []}, str(pm_receiver))
@@ -2269,6 +2269,7 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                 pm_loop.lines[REPO] = line
                 pm_loop.configured = [REPO]
                 line.pm_cycles = PM.from_line(line)
+                line.pm_cycles.runtime = PM.CY.installed_runtime(stage=f['graph_stage'])
                 for scope, subject in (('account', 'fixture-account'), ('project', 'factory')):
                     line.reservations.configure('policy/' + subject, scope, subject,
                                                 dict(capacity=5, invocations=100, wall_seconds=5000), now=time.time())

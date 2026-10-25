@@ -147,13 +147,14 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
             service = SV.Service(dict(domain_uuid=domain, store_uuid=ids['store_uuid'],
                 principal='team-service', authority_generation=1, repositories={repository: [str(source)]},
                 journal_key=str(f['keyfile']['authority']), host_identity='fixture-host',
-                enrollment_signers=str(enrollment_signers), observations=str(base / 'service-events.jsonl'),
-                graph_stage=str(f['graph_stage'])), conn)
+                enrollment_signers=str(enrollment_signers), observations=str(base / 'service-events.jsonl')), conn)
             service.channel = SimpleNamespace(ingress=SimpleNamespace(inbox=f['inbox'],
                 presenter=f['presenter'], settlement=f['settlement']))
             factory = SV.FactoryLoop(service, {'repositories': {}})
             line = SV.Line(factory, repository, {'builder': {'identity': 'unassigned'}, 'reviewers': []}, config)
-            # Only the account selection is fixed; Line.run constructs the production PM services.
+            # Only the account selection and the graph runtime's stage are fixed: from_line builds the production PM
+            # services, and the runtime is the installed one with the fixture's stage, so the runner's scratch stays
+            # in this run's directory (ProjectCycles' explicit runtime seam, as suite 93 passes it).
             def receiver_observation(contract):
                 launch = line.invoke(contract)
                 if launch.result != 'accepted':
@@ -163,6 +164,8 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
             line.runner.account = 'fixture-account'
             line.engines, line.hosts = {'protocol': 'claude_code'}, {'protocol': 'fixture-host'}
             factory.lines[repository] = line
+            line.pm_cycles = PM.from_line(line)
+            line.pm_cycles.runtime = PM.CY.installed_runtime(stage=f['graph_stage'])
             runner, gate, dispatches, reservations = line.runner, line.gate, line.dispatches, line.reservations
             factory.wake('accepted_project')
             initial = factory.run()
