@@ -102,7 +102,7 @@ def _v62_suite():
     live_step = fake_formats.live_step
 
     started = time.monotonic()
-    fast = fast_temp()
+    fast = None if os.environ.get('TMPDIR') else fast_temp()
     base = Path(tempfile.mkdtemp(prefix='v62-', dir=fast))
     connections = []
     compiled = contextlib.ExitStack()

@@ -3300,8 +3300,8 @@ def _v130_service_checks(base):
 
 _v130_started = _v130_time.monotonic()
 # The store and keys live in memory-backed /dev/shm when it exists and is writable (Linux), as the other
-# store suites do; elsewhere the platform's temporary directory is used.
-_v130_fast = fast_temp()
+# store suites do; workers always use their owned TMPDIR.
+_v130_fast = None if __import__('os').environ.get('TMPDIR') else fast_temp()
 def _v130_report(observed_rows):
     for name, observed in observed_rows.items():
         passed = bool(observed) and all(ok for _, ok in observed)

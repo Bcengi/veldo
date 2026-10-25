@@ -108,7 +108,8 @@ def _v156_suite():
     compiled = contextlib.ExitStack()
     try:
         compiler = load('v156_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
-        code_cache = base / 'compiled'
+        # Runtime fixtures stay beside their sockets; compilation belongs to the worker root.
+        code_cache = Path(compiled.enter_context(tempfile.TemporaryDirectory(prefix='compiled-')))
         compiled.enter_context(compiler.compiled_sources(base, code_cache))
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
