@@ -192,6 +192,15 @@ The integration legs receive the unit leg's last recorded measurement (VELDO-021
 earlier-run path) because the unit legs now run beside them; with no measurement the floor of
 1800 seconds applies, as today. The unit leg's time is still recorded when it passes.
 
+Combined effect of the set VELDO-0216 to VELDO-0222, as estimates from the same receipts. A full
+fresh gate (force fresh, nothing reused) becomes CPU bound: the measured 61,247 CPU seconds plus
+about 5,000 for the ordered legs VELDO-0221 keeps in force-fresh gates, over about 18 usable cores,
+is about 3,700 seconds (62 minutes); perfect packing on 20 cores would be about 3,300 (55 minutes).
+A landing that changes a few suites re-runs every suite shard and about 3 to 7 percent of the
+mutation cases plus the audit sample: about 15,000 to 20,000 CPU seconds, about 15 to 20 minutes.
+A landing that changes a shared engine module under .veldo/ re-runs about 73 percent of the cases
+(VELDO-0217 explains why) and takes about 40 to 45 minutes.
+
 This spec is written to apply after the pending stack (agent/claude/cand-veldo-stack, tip
 3ab6e90d) lands: its manifest adds the new_project_fixture resource, which stays a mutation-stage
 resource and is not a gate node resource.
