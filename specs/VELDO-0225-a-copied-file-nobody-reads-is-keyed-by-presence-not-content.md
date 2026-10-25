@@ -49,10 +49,13 @@ acceptance_criteria:
       presence225-reopen-ignored must fail presence-inputs/provenance.
   - id: AC2
     text: >
-      Claim: a presence input is keyed by its name, mode and size and is still present in the
-      snapshot with its current bytes; a content input is keyed by its bytes as today. So an edit to
-      a module a case only copies changes no key of that case unless the edit changes the module's
-      size or mode, and an edit to a module it reads by content misses it. Set: the fixture case of
+      Claim: a presence input is keyed by its name, mode, size and modification time and is still
+      present in the snapshot with its current bytes; a content input is keyed by its bytes as today.
+      The snapshot writer (case_inputs.freeze) sets every file's modification time to one fixed
+      value, so the time a stat of a copy shows is the same in every run and carries nothing of the
+      source's content (shutil.copy2 copies that time to the copy). So an edit to a module a case
+      only copies changes no key of that case unless the edit changes the module's size or mode,
+      and an edit to a module it reads by content misses it. Set: the fixture case of
       AC1, an edit to a copied-only module that keeps its size, one that changes its size, and an
       edit to the imported module. Completeness: row presence-inputs/keys requires the first edit to
       hit and the other two to miss.
@@ -60,6 +63,18 @@ acceptance_criteria:
       Key presence inputs by name only. Registered mutant presence225-size-unkeyed must fail
       presence-inputs/keys.
   - id: AC3
+    text: >
+      Claim: a presence classification is rechecked on every run that would publish, never trusted
+      from the proposal alone: the provenance pass runs again on that run's baseline, no-op and
+      mutant traces, and if any copy of a presence input is opened, renamed, linked, mapped or
+      listed there, the case is declaration_stale (VELDO-0224): it runs fresh and nothing is
+      published. Set: a fixture case whose declaration was proposed when it imported nothing from
+      its copy, run after an edit makes it import one copied module. Completeness: row
+      presence-inputs/rechecked-each-run requires the edited case stale, fresh and unpublished.
+    falsified_by: >
+      Run the provenance pass at proposal time only. Registered mutant presence225-proposal-only
+      must fail presence-inputs/rechecked-each-run.
+  - id: AC4
     text: >
       Claim: the effect is measured, not assumed. After the proposal pass of VELDO-0217 the proof
       records, for each engine module under .veldo/, the share of declared cases that read it by
@@ -95,7 +110,9 @@ shutil.copy2, which copytree uses, copies through os.sendfile on Linux, and the 
 already records system calls with resolved descriptor paths, so the source and destination of each
 copy are in the trace. case_trace.py adds the provenance pass; case_inputs.py splits a declaration's
 files into content and presence inputs; case_reuse.py keys each class as AC2 says. The snapshot is
-unchanged: every declared file is present with its real bytes, so the case runs exactly as before.
+unchanged except that its files carry one fixed modification time: every declared file is present
+with its real bytes, so the case runs as before. Because a later edit can make a case read a copy it
+used to ignore, the classification is rechecked on every publishing run (AC3).
 
 What remains a content input: anything the case opens to read other than as a copy source, every
 source of a copy whose destination is opened, renamed, linked or mapped afterwards, every copy the

@@ -67,11 +67,13 @@ acceptance_criteria:
       Claim: a failure whose span was contended is not reported yet: the gate waits until the host
       is quiet (or the configured wait expires) and reruns exactly the failing units of work within
       the same gate (a failing shard, leg or stage, or a failing mutation case with its controls);
-      a repeated failure is RED, a failure that does not repeat makes the gate INVALID (exit 3,
-      status invalid, event gate.invalid, terminal GATE: INVALID), never GREEN; a failure on a quiet
-      host is RED at once; a pass is a pass. Set: a fixture failure under synthetic load that
-      repeats quietly, one that does not repeat, and one on a quiet host. Completeness: row
-      contention/quiet-rerun drives the three through verify.sh and requires RED, INVALID and RED.
+      a failure that repeats on a quiet host is RED; a failure that does not repeat, or whose rerun
+      itself ran contended because the wait for a quiet host expired, makes the gate INVALID (exit
+      3, status invalid, event gate.invalid, terminal GATE: INVALID), never GREEN; a failure on a
+      quiet host is RED at once; a pass is a pass. Set: a fixture failure under synthetic load that
+      repeats quietly, one that does not repeat, one whose rerun stays under load past the wait, and
+      one on a quiet host. Completeness: row contention/quiet-rerun drives the four through
+      verify.sh and requires RED, INVALID, INVALID and RED.
     falsified_by: >
       Report an unconfirmed contended failure as RED without rerunning. Registered mutant
       contention223-no-rerun must fail contention/quiet-rerun.

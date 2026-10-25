@@ -59,14 +59,17 @@ acceptance_criteria:
       only when every mechanical condition holds: baseline, no-op and mutant traced to exit 0; two
       independent baseline traces with the same read set; the traced baseline observation equal to
       the last fresh gate observation; no non-file input class of AC4 in any trace; no gate entry
-      among its inputs; and a reviewed toolchain. Set: one declaration failing each condition, one
+      among its inputs; a reviewed toolchain; and a VELDO-0226 sensitivity proof recorded for its
+      current key (otherwise sensitivity_unproved), so neither this spec nor VELDO-0222 can qualify
+      a case before that proof exists. Set: one declaration failing each condition, one
       passing all, and a review record whose declaration digest does not match. Completeness: row
       declarations/review-conditions drives each through case_reuse; the reviewed flag lands only
       in scripts/mutation_case_inputs.json, a protected path, so each batch also carries the
       owner's commit-bound approval.
     falsified_by: >
-      Accept a declaration whose two baseline traces read different files. Registered mutant
-      declarations217-one-trace-enough must fail declarations/review-conditions.
+      Accept a declaration whose two baseline traces read different files, or one with no
+      sensitivity proof for its key. Registered mutants declarations217-one-trace-enough and
+      declarations217-proof-skipped must each fail declarations/review-conditions.
   - id: AC3
     text: >
       Claim: a qualified case's key covers every file input it reads, because the worker runs in a
@@ -85,13 +88,17 @@ acceptance_criteria:
     text: >
       Claim: a non-file input that could carry a change into an unchanged case is refused
       mechanically from the trace, never by a reviewer's judgment: a connection or datagram to any
-      address but loopback, a Unix socket connection outside the case's own private roots, any
-      message to a session or user bus, and any process the case causes to run outside its traced
-      tree. A case whose trace shows one stays fresh with that class as its reason. Set: fixture
-      cases that connect to a non-loopback address, to the user bus, to a Unix socket under the
-      owner's runtime directory, and one that serves and connects on loopback only. Completeness:
-      row declarations/non-file-refused requires the first three fresh with their class and the
-      fourth eligible.
+      address that no process of the traced tree bound (loopback and abstract Unix addresses
+      included: they are allowed only when the traced tree itself bound them), a Unix socket
+      connection outside the case's own private roots, any message to a session or user bus, and any
+      process the case causes to run outside its traced tree. The check runs on the proposal's traces
+      and again on the baseline, no-op and mutant traces of every run that would publish; a case
+      whose trace shows one stays fresh with that class as its reason and publishes nothing. Set:
+      fixture cases that connect to a non-loopback address, to the user bus, to a Unix socket under
+      the owner's runtime directory, to a loopback port another host process bound, and one that
+      serves and connects on loopback only. Completeness: row declarations/non-file-refused requires
+      the first four fresh with their class, including when the connection appears only in a
+      publishing run's mutant trace, and the fifth eligible.
     falsified_by: >
       Classify a user-bus connection as loopback traffic. Registered mutant
       declarations217-bus-allowed must fail declarations/non-file-refused.

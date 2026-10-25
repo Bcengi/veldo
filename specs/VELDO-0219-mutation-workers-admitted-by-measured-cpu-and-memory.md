@@ -61,11 +61,12 @@ acceptance_criteria:
       when the store is empty. Set: ledger capacities of 4, 20
       and 40 cores and of 4, 16 and 31 GiB over a fixture inventory with known measurements, and
       the real 2,689-case inventory with every current key unmeasured and the previous keys'
-      records present. Completeness: row
+      records present, and the same inventory with an empty store. Completeness: row
       admission/fits-ledger requires the summed granted claims within capacity at every instant and
       the stage at capacity while work is pending; row admission/unmeasured-inventory requires the
-      all-unmeasured inventory to admit at least 16 workers on the qualification host's
-      capacities.
+      inventory with previous records to admit at least 16 workers on the qualification host's
+      capacities, and the empty store to claim one core and 1 GiB per worker and admit what that
+      default fits.
     falsified_by: >
       Restore the clamp to 16 workers. Registered mutant admission219-fixed-sixteen must fail
       admission/fits-ledger at the 40-core capacity.
@@ -75,10 +76,12 @@ acceptance_criteria:
       deadline, min(1800, max(120, 3 x its case's largest passing fresh seconds)). The combined cap
       stays max(VELDO-0123's 2 seconds per registered case at 8 reference workers, VELDO-0215's 120
       seconds plus the two phase bounds); in VELDO-0215's phase bound min(W, W/m + L + sum(R_r)),
-      m is the smallest number of workers the ledger is guaranteed to admit at once (the CPU
-      capacity divided by the largest CPU claim, and the memory capacity divided by the largest
-      memory claim, whichever is smaller, never below 2), and cpu and memory join the resources r,
-      each charged sum(claim_j x deadline_j) / capacity like any other resource. Set: one fixture
+      m is the smallest number of workers the ledger is guaranteed to admit at once while other
+      nodes hold claims: VELDO-0216's graph reserves for the mutation stage a floor of CPU and memory
+      that no other claimant may take, and m is that floor's CPU divided by the largest CPU claim
+      or its memory divided by the largest memory claim, whichever is smaller, never below 2; cpu
+      and memory join the resources r with the floor as their capacity, each charged
+      sum(claim_j x deadline_j) / floor like any other resource. Set: one fixture
       inventory run at 2, 8, 16 and measured admission. Completeness: row admission/same-verdicts
       requires identical verdict fields in all four receipts, every enforced deadline equal to its
       measured deadline, and the recorded cap equal to the formula with the stated m and charges.

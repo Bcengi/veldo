@@ -39,10 +39,12 @@ acceptance_criteria:
     text: >
       Claim: the first time a reviewed key is fresh in a gate, the coordinator runs its baseline,
       no-op and mutant twice more beside the original: once with the wall and monotonic clocks
-      offset by a large amount and running at a changed rate (libfaketime preloaded into every
-      process of the traced tree, the private user manager of VELDO-0222 and its units included),
-      and once with different randomness (a different PYTHONHASHSEED and a different seed for every
-      seed source the case's code takes from its environment; getrandom itself unchanged). The key
+      moved exactly 400 days forward and running at 1.5 times real speed (libfaketime preloaded
+      into every process of the traced tree, the private user manager of VELDO-0222 and its units
+      included), and once with different randomness (PYTHONHASHSEED 1 instead of the fixed worker
+      environment's 0; getrandom itself unchanged). A reused record is never older than 30 days
+      (an older one is not reused: the case runs fresh and publishes again), so the offset is
+      larger than the age of any record the proof vouches for. The key
       may be reused only when the verdict, the named target rows and the full baseline, no-op and
       mutant observation arrays are identical across all three runs. Set: a fixture case that
       branches on the current time, one that prints a random value into an observation, one whose
@@ -55,8 +57,9 @@ acceptance_criteria:
   - id: AC2
     text: >
       Claim: the perturbation must reach every process of the case or the case stays fresh: from the
-      trace, every executed program must be dynamically linked and must map the preloaded library
-      before its first clock read, and the private manager must pass the preload and the offset to
+      trace, every executed program must be dynamically linked and must have the preloaded library
+      mapped at load (the dynamic loader maps it before the program's own code runs), and the
+      private manager must pass the preload and the offset to
       every unit it starts; a statically linked program, a set-id program or a unit without the
       preload makes the case unperturbable. The same holds when libfaketime is not installed on the
       host. Set: a fixture case that runs a statically linked helper, one whose unit drops the
@@ -69,10 +72,12 @@ acceptance_criteria:
     text: >
       Claim: the proof belongs to the key: it is recorded in the authority store (never in the
       candidate tree) with the key, lookup reuses a record only when an insensitive proof for that
-      exact key is present, and any key change requires a new proof before reuse. The sample audit
-      of VELDO-0218 still runs on top. Set: a proved key, the same case after an input edit, and a
-      record whose proof entry was removed. Completeness: row sensitivity/bound-to-key requires the
-      first reusable, the second fresh with a new proof attempt, and the third fresh.
+      exact key is present and the record is at most 30 days old, and any key change requires a new
+      proof before reuse. The sample audit
+      of VELDO-0218 still runs on top. Set: a proved key, the same case after an input edit, a
+      record whose proof entry was removed, and a proved record 31 days old. Completeness: row
+      sensitivity/bound-to-key requires the first reusable, the second fresh with a new proof
+      attempt, and the third and fourth fresh.
     falsified_by: >
       Reuse a record whose key has no proof entry. Registered mutant sensitivity226-proof-optional
       must fail sensitivity/bound-to-key.
@@ -90,11 +95,11 @@ has produced identical results with the clock moved and with randomness changed.
 ## Design
 
 The proof runs as two extra fresh jobs per mode for a key that has none, scheduled through the
-ledger like any worker. The clock run preloads libfaketime with an absolute offset of years and a
-rate change, set by the authority's bootstrap for the worker tree and by the private manager's own
+ledger like any worker. The clock run preloads libfaketime with the setting +400d x1.5, which moves
+the wall and monotonic clocks 400 days forward and runs them at 1.5 times real speed, set by the authority's bootstrap for the worker tree and by the private manager's own
 configuration for its units (VELDO-0222), so a confined and an unconfined case are perturbed alike.
 libfaketime replaces the C library's time functions, which Python's clock calls go through. The
-randomness run changes PYTHONHASHSEED and every seed variable the case's code reads; getrandom
+randomness run changes PYTHONHASHSEED from 0 to 1; getrandom
 stays as it is, so a case whose observations show raw random bytes still differs between the
 original and either run by chance and is refused.
 

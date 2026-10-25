@@ -65,14 +65,19 @@ acceptance_criteria:
       Claim: the key of a qualified unconfined case is VELDO-0217's key with the runtime set
       defined as every file outside the snapshot that the trace shows the worker, the private
       manager or any unit opening (the interpreter, libraries, shell, Git, locale files, and the
-      systemd binaries, generators and library files the manager loads), each bound by content.
-      Because the manager is private there is no shared systemd configuration directory to read
-      and no live manager state from outside the case, so the declaration's non_file_inputs is
-      none and VELDO-0217's AC4 holds. Set: an edit to a systemd library file in a scratch runtime
-      root, an edit to the owner's real systemd configuration directory, and a unit started on the
-      real manager by another process during the case. Completeness: row
-      unconfined-reuse/key-complete requires the first to miss every unconfined case and the other
-      two to change no key and no result.
+      systemd binaries, generators and library files the manager loads), each bound by content,
+      plus every directory outside the snapshot whose listing the trace shows (for example
+      /etc/systemd/user, /usr/lib/systemd/user and the user generator directories), each bound by
+      its sorted entry names and every entry's content. The private manager starts with its own
+      configuration home and a minimal default target that pulls in no installed unit, so units
+      installed on the host are not started. Because the manager is private there is no shared
+      user configuration directory to read and no live manager state from outside the case, so the
+      declaration's non_file_inputs is none and VELDO-0217's AC4 holds. Set: an edit to a systemd
+      library file in a scratch runtime root, a new unit file added to a scratch copy of a listed
+      system unit directory, an edit to the owner's real ~/.config/systemd/user, and a unit started on
+      the real manager by another process during the case. Completeness: row
+      unconfined-reuse/key-complete requires the first two to miss every unconfined case and the
+      other two to change no key and no result.
     falsified_by: >
       Leave the manager's binaries out of the runtime set. Registered mutant
       unconfined222-manager-unkeyed must fail unconfined-reuse/key-complete.

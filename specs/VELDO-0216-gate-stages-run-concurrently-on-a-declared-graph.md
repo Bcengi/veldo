@@ -155,7 +155,8 @@ dispatcher of a leg and the mutation coordinator each hold a channel to the ledg
 shard or per worker, so a sharded leg's memory is the sum of what its running shards hold, never a
 figure measured when the leg ran serially. Admission rules inside the mutation stage (slots,
 exclusive holds, new_project_fixture) stay where they are and add to, never replace, the ledger's
-rule.
+rule. The graph also states a floor of CPU and memory reserved for the mutation stage, which no
+other claimant may take; VELDO-0219 computes its guaranteed worker count against that floor.
 
 The two unconfined legs each run suites that need the manager undisturbed
 (63_veldo_0040_containment and 66_veldo_0047_authority declare it exclusive), so those shards hold

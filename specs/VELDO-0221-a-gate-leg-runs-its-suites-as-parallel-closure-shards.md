@@ -19,6 +19,20 @@ footprint:
   - engine/scripts/gate_legs.py
   - scripts/agent_sandbox.py
   - engine/scripts/agent_sandbox.py
+  - .veldo/control_client.py
+  - engine/.veldo/control_client.py
+  - .veldo/control_service.py
+  - engine/.veldo/control_service.py
+  - .veldo/control_factory_setup.py
+  - engine/.veldo/control_factory_setup.py
+  - .veldo/control_factory_setup_api.py
+  - engine/.veldo/control_factory_setup_api.py
+  - .veldo/control_containment.py
+  - engine/.veldo/control_containment.py
+  - .veldo/services/*
+  - engine/.veldo/services/*
+  - scripts/mutation_ownership.py
+  - engine/scripts/mutation_ownership.py
   - scripts/check_teeth_mutations.py
   - scripts/suites/*_veldo_0221_*.py
   - scripts/suites/manifest.json
@@ -53,13 +67,24 @@ acceptance_criteria:
       Claim: shards are isolated by construction. Each shard has its own HOME, TMPDIR, XDG config,
       data, cache and state directories and result channel; it reports to the dispatcher over a pipe
       it inherits, never through a shared file; in a confined leg each shard adds its own Landlock
-      layer (stacked on the leg's domain) that grants writes only beneath its own roots; in an
-      unconfined leg every unit, slice and service a shard starts carries the shard's name prefix,
-      supplied by suites/shared.py. Set: two fixture shards that each write the same relative path
-      under their home and temporary directory, one that tries to write another shard's root, and an
-      unconfined fixture shard that starts a unit. Completeness: row suite-shards/isolated-by-
-      construction requires distinct roots and results, the cross-shard write refused, and the
-      unit's name to carry the prefix.
+      layer (stacked on the leg's domain) that grants writes only beneath its own roots; each shard
+      has a private runtime directory in place of /run/user/<uid>, holding only links to the user
+      manager's own sockets (its bus and systemd/private) so units still reach the one manager; and
+      the engine names every unit, slice, service and runtime directory it creates with a
+      per-instance prefix read from the installation's configuration, which each shard's fixtures
+      set to the shard's name. Today those names are fixed (veldo-workers.slice in
+      control_containment.py:76, the veldo-authority- prefix in control_client.py:90 that
+      control_service.py and control_factory_setup_api.py build the authority and veldo-api- units
+      from, and the two templates in .veldo/services/), and suites 66, 71, 73, 74, 85 and 86 install
+      them, so parallel shards would collide. With no prefix configured, which is every production
+      installation, every name is exactly today's. Set: two fixture shards that each write the same
+      relative path under their home, temporary and runtime directories, one that tries to write
+      another shard's root, and two unconfined fixture shards that each install the authority
+      service, its API unit and the workers slice at once. Completeness: row
+      suite-shards/isolated-by-construction requires distinct roots and results, the cross-shard
+      write refused, every unit, slice and runtime directory name carrying its shard's prefix, and
+      row suite-shards/production-names requires an unprefixed installation to produce today's names
+      byte for byte.
     falsified_by: >
       Give every shard the leg's TMPDIR. Registered mutant shards221-shared-tmpdir must fail
       suite-shards/isolated-by-construction.
@@ -70,8 +95,9 @@ acceptance_criteria:
       before its suite ran (the restriction's success is reported over the shard's pipe) and that
       nothing exists after the shard outside its roots that it created. In an unconfined leg the
       dispatcher records the shared locations before the leg and after it (the user manager's units
-      and slices, the user's systemd configuration directory, /dev/shm, the top of the system
-      temporary directory, and the owner's ~/.cache/veldo and ~/.local/state/veldo), and requires
+      and slices, the user's systemd configuration directory, the real runtime directory
+      /run/user/<uid>, /dev/shm, the top of the system temporary directory, and the owner's
+      ~/.cache/veldo and ~/.local/state/veldo), and requires
       every unit started during the leg to carry some shard's prefix and nothing to be left behind.
       Any breach is isolation_breach, RED, naming the suite. Set: a confined shard whose Landlock
       layer is skipped, an unconfined shard that leaves a file in /dev/shm, and one that starts a unit
@@ -122,7 +148,9 @@ counts. Green for a leg now means every shard passed and the isolation check hel
 Isolation, under the owner's decision D1, is built in rather than inferred: separate interpreters
 share no Python state; separate roots share no files; the stacked Landlock layer (the same unprivileged
 mechanism agent_sandbox.py uses for the leg) makes a write to another shard's roots impossible in a
-confined leg; and the unconfined leg, which cannot be confined, is checked before and after against
+confined leg; prefixed instance names keep two shards' units, slices and runtime directories apart
+on the one user manager (scripts/mutation_ownership.py's patterns accept the prefixed names, so
+mutation workers clean them up as today); and the unconfined leg, which cannot be confined, is checked before and after against
 the shared places a suite can reach. The cross-suite pollution the ordered run used to reveal can
 then arise only through those shared places, and they are checked in every gate. A suite that
 silently depended on an undeclared earlier suite now fails its shard, where the ordered run hid it.
