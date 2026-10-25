@@ -147,7 +147,8 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
             service = SV.Service(dict(domain_uuid=domain, store_uuid=ids['store_uuid'],
                 principal='team-service', authority_generation=1, repositories={repository: [str(source)]},
                 journal_key=str(f['keyfile']['authority']), host_identity='fixture-host',
-                enrollment_signers=str(enrollment_signers), observations=str(base / 'service-events.jsonl')), conn)
+                enrollment_signers=str(enrollment_signers), observations=str(base / 'service-events.jsonl'),
+                graph_stage=str(f['graph_stage'])), conn)
             service.channel = SimpleNamespace(ingress=SimpleNamespace(inbox=f['inbox'],
                 presenter=f['presenter'], settlement=f['settlement']))
             factory = SV.FactoryLoop(service, {'repositories': {}})

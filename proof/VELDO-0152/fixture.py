@@ -92,6 +92,9 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
     connections, servers = [], []
     with tempfile.TemporaryDirectory(prefix='v89-', dir=fast) as directory, contextlib.ExitStack() as resources:
         base = Path(directory)
+        # The graph runtime's stage for the services a suite builds here (their graph_stage): inside this run's
+        # directory, never the account's ~/.local/state/veldo/graph-stage.
+        graph_stage = base / 'graph-stage'
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
         for source in sorted((ROOT / '.veldo').glob('*.py')):

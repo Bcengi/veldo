@@ -329,7 +329,7 @@ class Host:
         self.config = dict(installed, principal='authority', repositories={self.REPO: [str(self.workspace)]},
                            host_identity='fixture-host', enrollment_signers=str(self.enrollment_signers),
                            observations=str(self.base / 'v204-observations.jsonl'), work=str(work),
-                           receiver={'configs': {self.REPO: str(receiver)}})
+                           receiver={'configs': {self.REPO: str(receiver)}}, graph_stage=str(self.f['graph_stage']))
         service = self.SV.Service(self.config, self.conn)
         channel, service.channel_refusal = self.SV.CH.open_channel(self.config.get('channel_ingress'))
         service.api, service.api_refusal = self.SV.SA.open_api(self.config.get('api_service'), channel,
