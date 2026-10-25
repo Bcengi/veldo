@@ -81,13 +81,19 @@ def install_main_cache(path, directory, cache_directory):
     worker. No module objects, keys, repositories or service state are persisted.
     """
     import ast
+    import re
 
     path, directory = Path(path), Path(directory)
     if not path.resolve().is_relative_to(directory.resolve()):
         raise ValueError('entry point must be inside the private fixture')
-    source = path.read_text()
+    source = path.read_bytes()
+    lines = source.splitlines(keepends=True)
+    # The interpreter recognizes a shebang and an encoding cookie only at the top.
+    insertion = int(bool(lines and lines[0].startswith(b'#!')))
+    for index, line in enumerate(lines[:2]):
+        if re.match(br'^[ \t\f]*#.*?coding[:=][ \t]*[-\w.]+', line):
+            insertion = index + 1
     # Keep the module docstring and future imports in their required positions.
-    insertion = 0
     for node in ast.parse(source, str(path)).body:
         if ((isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)
              and isinstance(node.value.value, str))
@@ -98,14 +104,13 @@ def install_main_cache(path, directory, cache_directory):
     bootstrap = (
         "\nif __name__ == '__main__':\n"
         "    import atexit as _fixture_atexit\n"
-        "    _fixture_compiler_namespace = {'__file__': %r}\n"
+        "    _fixture_compiler_namespace = {'__file__': %s}\n"
         "    with open(_fixture_compiler_namespace['__file__'], 'rb') as _fixture_compiler_source:\n"
         "        exec(compile(_fixture_compiler_source.read(), _fixture_compiler_namespace['__file__'], 'exec'),\n"
         "             _fixture_compiler_namespace)\n"
-        "    _fixture_compiler = _fixture_compiler_namespace['compiled_sources'](%r, %r)\n"
+        "    _fixture_compiler = _fixture_compiler_namespace['compiled_sources'](%s, %s)\n"
         "    _fixture_compiler.__enter__()\n"
         "    _fixture_atexit.register(_fixture_compiler.__exit__, None, None, None)\n\n"
-        % (str(Path(__file__).resolve()), str(directory), str(cache_directory)))
-    lines = source.splitlines(keepends=True)
-    lines.insert(insertion, bootstrap)
-    path.write_text(''.join(lines))
+        % (ascii(str(Path(__file__).resolve())), ascii(str(directory)), ascii(str(cache_directory))))
+    lines.insert(insertion, bootstrap.encode('ascii'))
+    path.write_bytes(b''.join(lines))

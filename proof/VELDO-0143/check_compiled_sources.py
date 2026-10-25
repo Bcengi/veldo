@@ -29,6 +29,28 @@ def load(path):
 
 
 class CompilationControls(unittest.TestCase):
+    def check_entry_header(self, header, body=b'print(42)\n', expected='42'):
+        with tempfile.TemporaryDirectory(prefix='compiled-\u00e9-') as temporary:
+            root = Path(temporary)
+            entry, cache = root / 'main.py', root / 'code'
+            entry.write_bytes(header + body)
+            entry.chmod(0o700)
+            SUPPORT.install_main_cache(entry, root, cache)
+            self.assertTrue(entry.read_bytes().startswith(header))
+            self.assertTrue(entry.read_bytes().endswith(body))
+            self.assertEqual(subprocess.check_output(
+                [str(entry)] if header.startswith(b'#!') else [sys.executable, '-B', str(entry)],
+                text=True).strip(), expected)
+
+    def test_shebang_only(self):
+        self.check_entry_header(b'#!/usr/bin/env python3\n')
+
+    def test_shebang_and_encoding(self):
+        self.check_entry_header(b'#!/usr/bin/env python3\n# coding: utf-8\n')
+
+    def test_latin1_encoding_declaration(self):
+        self.check_entry_header(b'# coding: latin-1\n', b"print('caf\xe9')\n", 'caf\u00e9')
+
     def test_read_only_cache_still_imports(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
