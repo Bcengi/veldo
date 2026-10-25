@@ -76,7 +76,8 @@ def install_main_cache(path, directory, cache_directory):
     """Enable the same cache in a private fixture executable's child interpreters.
 
     Only the fixture's copy is edited. Imports of that copy keep their ordinary
-    namespace; its main process installs the loader before loading siblings. The
+    namespace; its main process installs the loader before loading siblings, except
+    an exec wrapper, which must run unchanged inside the containment group. The
     cache directory belongs to this fixture and dies with it, never to another
     worker. No module objects, keys, repositories or service state are persisted.
     """
@@ -102,7 +103,7 @@ def install_main_cache(path, directory, cache_directory):
         else:
             break
     bootstrap = (
-        "\nif __name__ == '__main__':\n"
+        "\nif __name__ == '__main__' and __import__('sys').argv[1:2] != ['exec']:\n"
         "    import atexit as _fixture_atexit\n"
         "    _fixture_compiler_namespace = {'__file__': %s}\n"
         "    with open(_fixture_compiler_namespace['__file__'], 'rb') as _fixture_compiler_source:\n"

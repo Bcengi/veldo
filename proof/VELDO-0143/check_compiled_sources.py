@@ -29,6 +29,25 @@ def load(path):
 
 
 class CompilationControls(unittest.TestCase):
+    def test_exec_wrapper_never_loads_compiler(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entry, cache = root / 'main.py', root / 'code'
+            missing = root / 'compiled_sources.py'
+            entry.write_text("print('wrapper ran')\n")
+            with patch.object(SUPPORT, '__file__', str(missing)):
+                SUPPORT.install_main_cache(entry, root, cache)
+            # An absent support file makes any attempt to read the compiler fail.
+            wrapper = subprocess.run([sys.executable, '-B', str(entry), 'exec', '--contained'],
+                                     capture_output=True, text=True)
+            self.assertEqual(wrapper.returncode, 0, wrapper.stderr)
+            self.assertEqual(wrapper.stdout.strip(), 'wrapper ran')
+            self.assertFalse(cache.exists())
+            receiver = subprocess.run([sys.executable, '-B', str(entry), 'receive'],
+                                      capture_output=True, text=True)
+            self.assertNotEqual(receiver.returncode, 0)
+            self.assertIn(str(missing), receiver.stderr)
+
     def check_entry_header(self, header, body=b'print(42)\n', expected='42'):
         with tempfile.TemporaryDirectory(prefix='compiled-\u00e9-') as temporary:
             root = Path(temporary)
