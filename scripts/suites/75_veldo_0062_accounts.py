@@ -105,7 +105,11 @@ def _v62_suite():
     fast = fast_temp()
     base = Path(tempfile.mkdtemp(prefix='v62-', dir=fast))
     connections = []
+    compiled = contextlib.ExitStack()
     try:
+        compiler = load('v62_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
+        code_cache = base / 'compiled'
+        compiled.enter_context(compiler.compiled_sources(base, code_cache))
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
         for source in sorted((ROOT / '.veldo').glob('*.py')):
@@ -113,6 +117,7 @@ def _v62_suite():
         for name, source in PRODUCTION.items():
             if Path(source).is_file():
                 shutil.copyfile(source, mods / name)
+        compiler.install_main_cache(mods / 'control_launch.py', base, code_cache)
         S = load('v62_store', mods / 'control_store.py')
         L = load('v62_launch', mods / 'control_launch.py')
         D = L.D
@@ -1660,6 +1665,7 @@ sys.exit(payload.get('code', 0))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        compiled.close()
         fake_capture = conform_formats.conform_fake(locals(), '0062_accounts')
         for conn in connections:
             with contextlib.suppress(Exception):

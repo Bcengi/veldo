@@ -113,7 +113,8 @@ def _v160_suite():
     compiled = contextlib.ExitStack()
     try:
         compiler = load('v160_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
-        compiled.enter_context(compiler.compiled_sources(base))
+        code_cache = base / 'compiled'
+        compiled.enter_context(compiler.compiled_sources(base, code_cache))
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
         for source in sorted((ROOT / '.veldo').glob('*.py')):
@@ -121,6 +122,7 @@ def _v160_suite():
         for name, source in PRODUCTION.items():
             if Path(source).is_file():
                 shutil.copyfile(source, mods / name)
+        compiler.install_main_cache(mods / 'control_launch.py', base, code_cache)
         S = load('v160_store', mods / 'control_store.py')
         L = load('v160_launch', mods / 'control_launch.py')
         D = L.D
