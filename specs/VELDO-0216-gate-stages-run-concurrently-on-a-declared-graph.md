@@ -154,8 +154,8 @@ nodes finish. The coordinator never admits a new worker beyond the latest allowa
 Ordering that matters is kept. The unconfined legs of unit and integration each run suites that
 need the manager undisturbed (63_veldo_0040_containment and 66_veldo_0047_authority declare it
 exclusive in the manifest), so while either leg runs, no other manager user runs; they serialize
-with each other and with the mutation stage's manager slots. VELDO-0221 narrows that hold to the
-two suites' own shards.
+with each other and with the mutation stage's manager slots. VELDO-0221 shortens that window by
+running each leg's suites in parallel.
 
 Output stays readable and deterministic. Each node writes to its own log in the gate's private
 directory; when a node ends, its block is printed whole with its stage header, and the summary
