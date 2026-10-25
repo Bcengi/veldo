@@ -194,7 +194,7 @@ seconds applies, as today.
 Expected times of the whole set, with the owner's decisions D1 (an isolation check in every gate,
 VELDO-0221) and D2 (reuse only when every input is traced or mechanically refused, VELDO-0217 and
 VELDO-0222) applied. The 30-minute target holds for a typical landing only when VELDO-0222's private
-managers qualify most unconfined cases and the owner rules on clock and random reads. Estimates from the 2026-10-25 receipts; each is to be replaced by the
+managers qualify most unconfined cases and most cases pass VELDO-0226's sensitivity proof. Estimates from the 2026-10-25 receipts; each is to be replaced by the
 measured figure in its spec's proof.
 
 | Run | Estimate | Basis |
@@ -202,7 +202,8 @@ measured figure in its spec's proof.
 | Full fresh gate (force fresh) | about 58 min; floor 52 | CPU bound: 61,247 CPU s measured plus about 1,500 for shard closures and interpreter starts (VELDO-0221), over about 18 of 20 cores; 52 min at full packing on 20 |
 | Typical landing, a few suites changed, private managers qualify the unconfined cases (VELDO-0222) | about 15 to 20 min | every suite shard (about 5,500 CPU s) plus 3 to 7 percent of 2,689 cases and the audit sample (about 10,000 to 15,000 CPU s) at measured admission |
 | Typical landing, unconfined cases stay fresh | about 38 to 45 min | the above plus all 982 unconfined cases and their controls (38,472 worker s measured), bounded by the manager's 16 slots |
-| Any landing while the owner's ruling on clock and random reads is pending (VELDO-0217) | about 55 min | nothing qualifies for reuse, so the mutation stage runs fresh at measured admission (VELDO-0219) beside the shards |
+| Any landing before VELDO-0226's sensitivity proofs exist (libfaketime is not yet installed) | about 55 min | nothing qualifies for reuse, so the mutation stage runs fresh at measured admission beside the shards |
+| Share of cases passing the sensitivity proof | unmeasured | two fresh runs on 2026-10-25 differed in non-target observations for 4 of 2,566 cases, which would fail; clock-offset and hash-order sensitivity is unknown until the first proof pass. Each typical-landing figure above scales with this share |
 | Landing that changes a shared engine module (14 of 37 recent landings) | about 40 to 45 min | about 73 percent of cases re-run because their fixtures copy all 233 engine modules |
 | The same, if VELDO-0225's replay shows copies are mostly unread | about 15 to 25 min | re-runs fall toward the 3 to 20 percent of suite-only landings; unmeasured until that replay |
 

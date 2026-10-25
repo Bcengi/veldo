@@ -128,13 +128,11 @@ or mechanically refused; the sample audit of VELDO-0218 is never the only detect
 can carry a change from outside the case's files (network peers, host services, processes outside
 the traced tree) are refused mechanically by AC4. Two classes remain that no unprivileged tracer
 on this kernel can key: reads of the clock (Python reads it through the vDSO, which strace never
-sees) and the values of random bytes (getrandom is visible, but its bytes are not an input the key
-can bind unless the gate supplies them, for example through the seccomp notification broker
-VELDO-0208 already runs). These two cannot carry a change into a case whose files are unchanged;
-they are sources of run-to-run variance, which the two-trace condition of AC2 and VELDO-0223's
-contention rules address. Treating them so is an owner ruling D2 does not yet cover. Until the
-owner rules, case_reuse refuses to qualify any declaration (reason non_file_ruling_pending), so
-nothing is reused; the proposal and review work proceeds.
+sees) and the values of random bytes. The owner's ruling (2026-10-25) settles both by a mechanical
+sensitivity proof, VELDO-0226: a reviewed key is reused only after its case gave identical results
+with the clocks offset and with randomness changed, recorded in the authority store for that key.
+case_reuse therefore qualifies a declaration only when VELDO-0226's proof for its current key is
+present (reason sensitivity_unproved otherwise).
 
 ## How many cases a landing re-runs
 
@@ -150,14 +148,15 @@ cases a landing invalidates is bimodal:
 
 So a landing that changes a few suites re-runs about 50 to 120 of the 1,707 confined cases, plus
 every unconfined case that VELDO-0222 cannot qualify, plus VELDO-0218's audit sample; a landing that
-changes a shared engine module re-runs about 1,250 confined cases. With the non-file ruling pending,
-it re-runs all of them. Saving on a typical landing once qualified: about 1,600 confined cases not
+changes a shared engine module re-runs about 1,250 confined cases. A case whose current key
+VELDO-0226 has not proved runs fresh every time. Saving on a typical landing once qualified: about 1,600 confined cases not
 re-run, some 40,000 worker seconds, about 25 minutes at the admission VELDO-0219 expects (about 26
 workers).
 
 ## Out of scope
 
-Unconfined cases (VELDO-0222); a stale declaration's handling at gate time (VELDO-0224); the audit
+Unconfined cases (VELDO-0222); a stale declaration's handling at gate time (VELDO-0224); the
+clock and randomness proof (VELDO-0226); the audit
 (VELDO-0218); suite result reuse (VELDO-0206); any change to a case, an assertion, the worker
 confinement or the tracer's rules.
 
