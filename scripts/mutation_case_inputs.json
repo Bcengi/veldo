@@ -460,7 +460,8 @@
         "scripts/mutation_reuse.py",
         "scripts/mutation_sandbox.py",
         "scripts/suites/58_veldo_0028_effects.py",
-        "scripts/suites/shared.py"
+        "scripts/suites/shared.py",
+        "scripts/suites/support/compiled_sources.py"
       ],
       "absent": [],
       "reviewed": false,
@@ -2349,6 +2350,7 @@
         "scripts/mutation_sandbox.py",
         "scripts/suites/71_veldo_0130_api.py",
         "scripts/suites/shared.py",
+        "scripts/suites/support/compiled_sources.py",
         "scripts/suites/support/v73_authority.py",
         "specs/VELDO-0130-authenticated-factory-api.md"
       ],
@@ -3132,7 +3134,8 @@
         "scripts/mutation_reuse.py",
         "scripts/mutation_sandbox.py",
         "scripts/suites/75_veldo_0062_accounts.py",
-        "scripts/suites/shared.py"
+        "scripts/suites/shared.py",
+        "scripts/suites/support/compiled_sources.py"
       ],
       "absent": [],
       "reviewed": false,
@@ -3401,7 +3404,8 @@
         "scripts/mutation_reuse.py",
         "scripts/mutation_sandbox.py",
         "scripts/suites/78_veldo_0160_account_pool.py",
-        "scripts/suites/shared.py"
+        "scripts/suites/shared.py",
+        "scripts/suites/support/compiled_sources.py"
       ],
       "absent": [],
       "reviewed": false,
@@ -3444,7 +3448,8 @@
         "scripts/mutation_reuse.py",
         "scripts/mutation_sandbox.py",
         "scripts/suites/81_veldo_0156_codex_baseline.py",
-        "scripts/suites/shared.py"
+        "scripts/suites/shared.py",
+        "scripts/suites/support/compiled_sources.py"
       ],
       "absent": [],
       "reviewed": false,
@@ -3527,7 +3532,8 @@
         "scripts/mutation_reuse.py",
         "scripts/mutation_sandbox.py",
         "scripts/suites/82_veldo_0129_worker_wiring.py",
-        "scripts/suites/shared.py"
+        "scripts/suites/shared.py",
+        "scripts/suites/support/compiled_sources.py"
       ],
       "absent": [],
       "reviewed": false,
@@ -4474,7 +4480,8 @@
         "scripts/mutation_reuse.py",
         "scripts/mutation_sandbox.py",
         "scripts/suites/86_veldo_0148_re_land.py",
-        "scripts/suites/shared.py"
+        "scripts/suites/shared.py",
+        "scripts/suites/support/compiled_sources.py"
       ],
       "absent": [],
       "reviewed": false,
@@ -5791,6 +5798,7 @@
         "scripts/mutation_sandbox.py",
         "scripts/suites/96_veldo_0204_reservation_policies.py",
         "scripts/suites/shared.py",
+        "scripts/suites/support/compiled_sources.py",
         "scripts/suites/support/v171_tailscale.py"
       ],
       "absent": [],
