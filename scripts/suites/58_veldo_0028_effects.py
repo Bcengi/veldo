@@ -98,6 +98,11 @@ def _v28_run():
         root = _v28_Path(directory)
         modules = root / 'installed'
         modules.mkdir()
+        compiler_spec = _v28_import.spec_from_file_location('v28_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
+        compiler = _v28_import.module_from_spec(compiler_spec)
+        compiler_spec.loader.exec_module(compiler)
+        code_cache = root / 'compiled'
+        wired.enter_context(compiler.compiled_sources(root, code_cache))
         # Use the production installer's derived module closure, so the installed fixture carries
         # every transitive dependency. Keep the explicit mutation targets below: the observer
         # substitutes those source paths, after the unchanged closure has been installed.
@@ -111,6 +116,7 @@ def _v28_run():
         _v28_shutil.copyfile(ROOT / ".veldo" / "control_effect_executor.py", modules / 'control_effect_executor.py')
         _v28_shutil.copyfile(ROOT / ".veldo" / "control_git_identity_transport.py",
                              modules / 'control_git_identity_transport.py')
+        compiler.install_main_cache(modules / 'control_effect_executor.py', root, code_cache)
         _v28_executor_spec = _v28_import.spec_from_file_location('v28_executor', modules / 'control_effect_executor.py')
         _v28_executor = _v28_import.module_from_spec(_v28_executor_spec)
         _v28_executor_spec.loader.exec_module(_v28_executor)

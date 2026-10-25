@@ -2,12 +2,17 @@
 
 Run: python3 proof/VELDO-0143/check_compiled_sources.py
 """
+import concurrent.futures
 import importlib.machinery
 import importlib.util
+import json
 import os
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location('compiled_sources',
@@ -64,6 +69,75 @@ class CompilationControls(unittest.TestCase):
                 with SUPPORT.compiled_sources(temporary):
                     raise RuntimeError('fixture failed')
         self.assertIs(loader.get_code, original)
+
+    def test_private_disk_cache_revalidates_bytes_and_executes_fresh_globals(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            path, cache = root / 'organ.py', root / 'code'
+            source = 'state = []\ndef value(): return 1\n'
+            path.write_text(source)
+            timestamp = path.stat().st_mtime_ns
+            loader = importlib.machinery.SourceFileLoader
+            original, calls = loader.source_to_code, []
+
+            def compile_source(self, *args, **kwargs):
+                calls.append(self.path)
+                return original(self, *args, **kwargs)
+
+            with patch.object(loader, 'source_to_code', compile_source):
+                with SUPPORT.compiled_sources(root, cache):
+                    first = load(path)
+                    first.state.append('private')
+                with SUPPORT.compiled_sources(root, cache):
+                    second = load(path)
+                    self.assertEqual(second.state, [])
+                    self.assertEqual(second.value(), 1)
+                    self.assertEqual(second.value.__code__.co_filename, str(path))
+                    self.assertEqual(calls, [str(path)])
+                    path.write_text(source.replace('return 1', 'return 2'))
+                    os.utime(path, ns=(timestamp, timestamp))
+                    self.assertEqual(load(path).value(), 2)
+                    self.assertEqual(calls, [str(path), str(path)])
+            self.assertFalse((root / '__pycache__').exists())
+
+    def test_child_entry_keeps_docstring_future_imports_and_private_state(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            organ, entry, cache = root / 'organ.py', root / 'main.py', root / 'code'
+            source = 'state = []\ndef value(): return 1\n'
+            organ.write_text(source)
+            entry.write_text('''"""fixture entry"""
+from __future__ import annotations
+import importlib.util
+import json
+from pathlib import Path
+def annotated(value: int): return value
+def fresh():
+    spec = importlib.util.spec_from_file_location('organ', Path(__file__).with_name('organ.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+if __name__ == '__main__':
+    first, second = fresh(), fresh()
+    first.state.append('private')
+    print(json.dumps([__doc__, annotated.__annotations__['value'], first.value(), second.state]))
+''')
+            SUPPORT.install_main_cache(entry, root, cache)
+            original = importlib.machinery.SourceFileLoader.get_code
+            self.assertEqual(load(entry).__doc__, 'fixture entry')
+            self.assertIs(importlib.machinery.SourceFileLoader.get_code, original)
+
+            def run():
+                return json.loads(subprocess.check_output([sys.executable, '-B', str(entry)], text=True))
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as children:
+                results = [future.result() for future in (children.submit(run), children.submit(run))]
+            self.assertEqual(results, [['fixture entry', 'int', 1, []]] * 2)
+            timestamp = organ.stat().st_mtime_ns
+            organ.write_text(source.replace('return 1', 'return 2'))
+            os.utime(organ, ns=(timestamp, timestamp))
+            self.assertEqual(run(), ['fixture entry', 'int', 2, []])
+            self.assertFalse((root / '__pycache__').exists())
 
 
 if __name__ == '__main__':

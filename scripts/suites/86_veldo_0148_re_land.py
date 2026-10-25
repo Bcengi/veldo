@@ -111,6 +111,8 @@ def _v148_suite():
     fake_capture = (['the suite did not reach its teardown'], [])
     wired = contextlib.ExitStack()
     try:
+        compiler = load('v148_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
+        wired.enter_context(compiler.compiled_sources(base))
         mods = base / 'src' / '.veldo'
         (mods / 'services').mkdir(parents=True)
         shutil.copytree(ROOT / '.veldo' / 'runtime', mods / 'runtime')

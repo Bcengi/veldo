@@ -80,8 +80,10 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
     except OSError:
         pass
     connections, servers = [], []
-    with tempfile.TemporaryDirectory(prefix='v89-', dir=fast) as directory:
+    with tempfile.TemporaryDirectory(prefix='v89-', dir=fast) as directory, contextlib.ExitStack() as resources:
         base = Path(directory)
+        compiler = load('v88_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
+        resources.enter_context(compiler.compiled_sources(base))
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
         for source in sorted((ROOT / '.veldo').glob('*.py')):
