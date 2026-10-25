@@ -217,5 +217,15 @@ if __name__ == '__main__':
             self.assertFalse((root / '__pycache__').exists())
 
 
+def suite_rows(expect):
+    """Run each cache control as an ordinary, independently reported suite row."""
+    for name in unittest.defaultTestLoader.getTestCaseNames(CompilationControls):
+        result = unittest.TestResult()
+        CompilationControls(name).run(result)
+        for _, detail in result.errors + result.failures:
+            print(detail)
+        expect('VELDO-0143 compiled-sources/' + name.removeprefix('test_'), result.wasSuccessful())
+
+
 if __name__ == '__main__':
     unittest.main()

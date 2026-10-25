@@ -2684,5 +2684,6 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
 
 
 _v143_started = __import__('time').monotonic()
+__import__('runpy').run_path(str(ROOT / 'proof/VELDO-0143/check_compiled_sources.py'))['suite_rows'](expect)
 _v143_suite()
 print('VELDO-0143 suite seconds: %.3f' % (__import__('time').monotonic() - _v143_started))
