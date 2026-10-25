@@ -7,7 +7,7 @@ risk: high
 owner: Dmitry Grinberg
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0205, VELDO-0208, VELDO-0217]
+depends_on: [VELDO-0205, VELDO-0208, VELDO-0217, VELDO-0224]
 placement: [enforcement]
 protected_paths: ["scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/mutation_reuse.py", "engine/scripts/mutation_reuse.py", "scripts/gate_reuse.py", "engine/scripts/gate_reuse.py", "scripts/reuse_stamp.py", "engine/scripts/reuse_stamp.py", ".veldo/reuse_evidence.py", "engine/.veldo/reuse_evidence.py"]
 footprint:
@@ -53,8 +53,9 @@ acceptance_criteria:
       Claim: an audited case's fresh result must equal the reused record in every field a verdict
       reads: the baseline and no-op observation arrays, the named target rows of the mutant, the
       replacement count and both mutation digests. A difference in any of them makes the stage RED
-      with reuse_audit_mismatch, removes the reused record from the authenticated store and marks
-      the case's declaration stale (VELDO-0217). A difference only in mutant observations no
+      with reuse_audit_mismatch, removes the reused record from the authenticated store and writes
+      a stale mark for the case to the authority's store (VELDO-0224), never to the declarations
+      file in the candidate tree. A difference only in mutant observations no
       verdict reads (four timing-sensitive cases showed this on 2026-10-25) is recorded in the
       receipt and is not red. Set: a planted record differing in each verdict-bearing field, one
       differing only in a non-target mutant row, and one identical. Completeness: row
@@ -80,11 +81,13 @@ rollback: Revert the audit; reuse then rests on the VELDO-0207 keys alone, as be
 
 ## Intent
 
-A reused result is only as good as its key. VELDO-0217 makes keys complete for file inputs by
-construction, but a reviewer can still miss a case that depends on the clock, randomness, a host
-service or, under VELDO-0222, a read the tracer cannot see. The owner's rule is that nothing that
-changed may skip its checks; the audit is how the gate keeps checking that a reused result is
-still the result a fresh run would give, on every run, without paying for a full fresh run.
+A reused result is only as good as its key. Under the owner's decision D2 every input a reused
+case reads is traced or mechanically refused (VELDO-0217, VELDO-0222), so the audit is never the only
+detector of anything: it is a second, independent check that the first one holds, for example
+against a tracer defect or a run-to-run variance the two-trace condition did not show. The owner's
+rule is that nothing that changed may skip its checks; the audit keeps checking, on every gate,
+that a reused result is still the result a fresh run would give, without paying for a full fresh
+run.
 
 ## Design
 
