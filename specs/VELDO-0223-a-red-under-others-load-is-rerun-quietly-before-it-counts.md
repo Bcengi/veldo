@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0223
 title: A result under someone else's load is rerun quietly before it counts, and an unconfirmed red is invalid
-status: draft
+status: ready
 risk: high
 owner: Dmitry Grinberg
 human_approval: required

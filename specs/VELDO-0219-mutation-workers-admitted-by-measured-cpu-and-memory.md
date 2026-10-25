@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0219
 title: Mutation workers are admitted by measured CPU and memory from the gate-wide ledger, not a fixed count of 16
-status: draft
+status: ready
 risk: high
 owner: Dmitry Grinberg
 human_approval: required

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0222
 title: Unconfined mutation cases may reuse results only when a private user manager keeps every read traced
-status: draft
+status: ready
 risk: high
 owner: Dmitry Grinberg
 human_approval: required

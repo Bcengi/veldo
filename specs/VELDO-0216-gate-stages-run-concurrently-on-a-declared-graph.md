@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0216
 title: Gate stages run concurrently on a declared graph under one gate-wide resource ledger
-status: draft
+status: ready
 risk: high
 owner: Dmitry Grinberg
 human_approval: required

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0225
 title: A file a case copies but never reads again is keyed by its presence, not its content
-status: draft
+status: ready
 risk: high
 owner: Dmitry Grinberg
 human_approval: required

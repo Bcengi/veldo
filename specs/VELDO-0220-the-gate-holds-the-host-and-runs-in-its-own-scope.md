@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0220
 title: The gate takes the owner's host lock and runs in a delegated scope of its own
-status: draft
+status: ready
 risk: high
 owner: Dmitry Grinberg
 human_approval: required

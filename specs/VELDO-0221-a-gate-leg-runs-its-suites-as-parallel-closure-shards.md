@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0221
 title: A gate leg runs its suites as isolated parallel closure shards, with an isolation check in every gate
-status: draft
+status: ready
 risk: high
 owner: Dmitry Grinberg
 human_approval: required

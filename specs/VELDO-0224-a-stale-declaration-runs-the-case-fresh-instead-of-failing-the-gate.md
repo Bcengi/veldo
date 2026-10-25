@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0224
 title: A stale input declaration runs its case fresh instead of failing the gate
-status: draft
+status: ready
 risk: high
 owner: Dmitry Grinberg
 human_approval: required

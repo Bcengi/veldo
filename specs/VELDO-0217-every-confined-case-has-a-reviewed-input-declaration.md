@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0217
 title: Every confined mutation case gets a current, reviewed input declaration with complete keys
-status: draft
+status: ready
 risk: high
 owner: Dmitry Grinberg
 human_approval: required

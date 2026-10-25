@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0218
 title: Every gate reruns a random sample of its reused mutation results and compares them
-status: draft
+status: ready
 risk: high
 owner: Dmitry Grinberg
 human_approval: required
