@@ -21,7 +21,10 @@ def compiled_sources(directory, cache_directory=None):
     directory = Path(directory)
     cache = Path(cache_directory) if cache_directory is not None else None
     if cache is not None:
-        cache.mkdir(mode=0o700, parents=True, exist_ok=True)
+        try:
+            cache.mkdir(mode=0o700, parents=True, exist_ok=True)
+        except OSError:
+            cache = None
     loader = importlib.machinery.SourceFileLoader
     original = loader.get_code
     codes = {}
@@ -53,9 +56,12 @@ def compiled_sources(directory, cache_directory=None):
                             name = temporary.name
                             temporary.write(marshal.dumps(codes[key]))
                         os.replace(name, stored)
+                    except OSError:
+                        pass
                     finally:
-                        if name is not None and os.path.exists(name):
-                            os.unlink(name)
+                        if name is not None:
+                            with contextlib.suppress(OSError):
+                                os.unlink(name)
         return codes[key]
 
     loader.get_code = get_code

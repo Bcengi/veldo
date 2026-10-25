@@ -29,6 +29,42 @@ def load(path):
 
 
 class CompilationControls(unittest.TestCase):
+    def test_read_only_cache_still_imports(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            organ, entry, cache = root / 'organ.py', root / 'main.py', root / 'code'
+            organ.write_text('def value(): return 42\n')
+            entry.write_text('import organ\nprint(organ.value())\n')
+            cache.mkdir(mode=0o500)
+            try:
+                with self.assertRaises(PermissionError):
+                    (cache / 'probe').write_bytes(b'')
+                SUPPORT.install_main_cache(entry, root, cache)
+                self.assertEqual(subprocess.check_output(
+                    [sys.executable, '-B', str(entry)], text=True).strip(), '42')
+                self.assertEqual(list(cache.iterdir()), [])
+            finally:
+                cache.chmod(0o700)
+
+    def test_failed_cache_publish_cleans_temporary_file(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            path, cache = root / 'organ.py', root / 'code'
+            path.write_text('def value(): return 42\n')
+            with patch.object(SUPPORT.os, 'replace', side_effect=OSError('cache full')):
+                with SUPPORT.compiled_sources(root, cache):
+                    self.assertEqual(load(path).value(), 42)
+            self.assertEqual(list(cache.iterdir()), [])
+
+    def test_unavailable_cache_directory_still_imports(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            path, blocked = root / 'organ.py', root / 'blocked'
+            path.write_text('def value(): return 42\n')
+            blocked.write_bytes(b'not a directory')
+            with SUPPORT.compiled_sources(root, blocked / 'code'):
+                self.assertEqual(load(path).value(), 42)
+
     def test_fresh_globals_and_content_identity(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
