@@ -108,12 +108,14 @@ def _v171_suite():
     # /dev/shm only when this process can really write there: os.access answers for permission bits,
     # not for the gate's confinement (VELDO-0208), which grants nothing beneath /dev. Inline, because
     # this source is also executed on its own by a proof fixture that supplies only ROOT.
+    # A worker TMPDIR is its registered ownership root, including in unconfined runs.
     fast = None
-    try:
-        os.rmdir(tempfile.mkdtemp(prefix='fast-probe-', dir='/dev/shm'))
-        fast = '/dev/shm'
-    except OSError:
-        pass
+    if not os.environ.get('TMPDIR'):
+        try:
+            os.rmdir(tempfile.mkdtemp(prefix='fast-probe-', dir='/dev/shm'))
+            fast = '/dev/shm'
+        except OSError:
+            pass
     base = Path(tempfile.mkdtemp(prefix='b171-', dir=fast))
     support_path = Path(globals().get('__setup_support__', ROOT / 'scripts/suites/support/setup_runtime.py'))
     runtime = load('v171_runtime', support_path)
