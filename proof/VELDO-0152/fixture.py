@@ -19,7 +19,8 @@ import threading
 import time
 
 @contextlib.contextmanager
-def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_project=True):
+def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_project=True,
+            compiled_sources=False):
     CHOICES = ['accept', 'return_for_elaboration', 'reject']
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -87,7 +88,7 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
     except OSError:
         pass
     connections, servers = [], []
-    with tempfile.TemporaryDirectory(prefix='v89-', dir=fast) as directory:
+    with tempfile.TemporaryDirectory(prefix='v89-', dir=fast) as directory, contextlib.ExitStack() as resources:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
@@ -97,6 +98,9 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
         for name, source in PRODUCTION.items():
             if Path(source).is_file():
                 shutil.copyfile(source, mods / name)
+        if compiled_sources:
+            compiler = load('v89_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
+            resources.enter_context(compiler.compiled_sources(mods))
         try:
             claims = load('v89_claims', mods / 'control_claim.py')
             S, CM, AC = claims.S, claims.CM, claims.AC

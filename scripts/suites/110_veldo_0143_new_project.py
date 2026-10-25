@@ -168,7 +168,7 @@ def _v143_suite():
     servers = []
     conform_formats = load('v143_conform_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
     formats = json.loads((ROOT / 'proof/VELDO-0062/cli-formats.json').read_text())
-    with helper.fixture(ROOT, PRODUCTION, cycle_budget=100) as f:
+    with helper.fixture(ROOT, PRODUCTION, cycle_budget=100, compiled_sources=True) as f:
         S, CM, AC, conn, base, mods = (f[k] for k in ('S', 'CM', 'AC', 'conn', 'base', 'mods'))
         DOMAIN, REPO, ids = f['DOMAIN'], f['REPO'], f['ids']
         sign_as, journal_sign, next_id = f['sign_as'], f['journal_sign'], f['next_id']
