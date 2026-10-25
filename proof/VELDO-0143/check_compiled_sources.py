@@ -70,6 +70,10 @@ class CompilationControls(unittest.TestCase):
     def test_latin1_encoding_declaration(self):
         self.check_entry_header(b'# coding: latin-1\n', b"print('caf\xe9')\n", 'caf\u00e9')
 
+    def test_shebang_and_latin1_encoding_declaration(self):
+        self.check_entry_header(b'#!/usr/bin/env python3\n# -*- coding: latin-1 -*-\n',
+                                b"print('caf\xe9')\n", 'caf\u00e9')
+
     def test_read_only_cache_still_imports(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
