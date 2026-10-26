@@ -1,0 +1,17 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-FOLLOWUPS-2026-10-26-LANDING",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0204",
+    "commit": "c9402dacf662e7a6cbbc81f3f584b2801b982db0",
+    "paths": [
+      "scripts/mutation_case_inputs.json"
+    ]
+  },
+  "basis": "Dmitry approved landing of the Veldo follow-up branch agent/claude/veldo-followup (graph-stage seam for suites 92, 93, 96 and 110, the VELDO-0204 serve row claims, the VELDO-0143 bytecode entry check and the adapter and baseline suite minors) at b130271b over Telegram on 2026-10-26T10:51:49Z (message 36500, 'approve landing b130271b'), asked in 36493 (copy line 36494). The ask disclosed the one protected path changed against main, scripts/mutation_case_inputs.json, and the rule that because VELDO-0215 shared the same main base, whichever landed second would be merged onto the first and re-gated, landing only if scripts/mutation_case_inputs.json was unchanged by the merge. VELDO-0215 landed first (main d5cc0b99). Main was merged into the branch as c9402dac; scripts/mutation_case_inputs.json is byte-identical to b130271b. The canonical gate was GREEN at c9402dac (mutation 2,707 executed fresh, 0 reused, 2,707 rejected, 5,217 s; every stage pass). WHAT IT DOES NOT COVER: any other protected path, and any change made after c9402dac other than this record and the gate stamp.",
+  "recorded_at": "2026-10-26T14:58:00Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-11-26T00:00:00Z"
+}
