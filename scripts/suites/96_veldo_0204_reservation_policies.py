@@ -517,14 +517,19 @@ def _v204_suite():
                       and answers[0].get('outcome') == 'done' and answers[0].get('refusal') is None
                       and answers[0].get('subjects') and not served.records[0].get('faults'))
                 # serve's process has no input for a graph stage (proof/VELDO-0204/host.py serve), so it must run no
-                # PM exchange: no pass of its ran a line's project cycles, nor raised in a line where they could run.
+                # PM exchange. Its loop runs a pass only in serve's loop after READY=1, when something woke it (a packet
+                # or a channel pass that advanced the journal), and Host.serve sends SIGTERM on READY=1, so it records
+                # no pass here as a rule: this row claims only what serve recorded up to then, and names the count. A
+                # pass it did record must not have run a line's project cycles, nor raised in a line.
                 cycled = [(p.get('pass'), sorted(set(p) & {'pm_cycles'}), [x for x in p.get('faults') or []
                           if 'repository' in x and str(x.get('reason')).startswith('unknown_outcome')])
                           for p in served.passes]
-                check('service/serve', 'serve ran no PM exchange, so the account graph stage it would use is never '
-                      'staged in: none of its %d factory passes ran a line\'s project cycles [%s]' % (
-                          len(served.passes), [c for c in cycled if c[1] or c[2]][:3]),
-                      not any(c[1] or c[2] for c in cycled))
+                print('  VELDO-0204 service/serve detail: serve recorded %d factory pass(es) before it stopped'
+                      % len(served.passes))
+                check('service/serve', 'serve\'s startup up to READY=1 recorded no PM exchange: its start record ran no '
+                      'project cycles, and of the %d factory pass(es) it recorded before the SIGTERM none ran them '
+                      '[%s]' % (len(served.passes), [c for c in cycled if c[1] or c[2]][:3]),
+                      not any('pm_cycles' in r for r in served.records) and not any(c[1] or c[2] for c in cycled))
     except Exception as error:  # noqa: BLE001 - a fixture that did not run reds every row by assertion
         for name in names:
             check(name, 'the fixture ran to its end (it raised %s: %s)' % (type(error).__name__, str(error)[:300]), False)

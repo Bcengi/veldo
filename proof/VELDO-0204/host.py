@@ -389,7 +389,9 @@ class Host:
         The process is given no graph stage, because serve takes none: its configuration names no stage, and the
         account stage comes from the password database (control_graph_lock.account_home), not from HOME. It needs
         none while it runs no PM exchange, and a PM exchange runs only in a factory pass's Line.run (pass_once,
-        whose answers that pass's record carries under pm_cycles); service/serve checks its pass records for that."""
+        whose answers that pass's record carries under pm_cycles); service/serve checks its pass records for that.
+        Those passes run only in serve's loop after READY=1, on a wake, and this stops it on READY=1, so as a rule
+        there are none: service/serve claims only serve's startup and names the count."""
         if self.lock not in (None, -1):
             os.close(self.lock)
             self.lock = None
