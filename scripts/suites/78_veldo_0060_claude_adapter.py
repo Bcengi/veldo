@@ -1641,37 +1641,40 @@ sys.exit(payload.get('code', 0))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
-        compiled.close()
-        fake_capture = conform_formats.conform_fake(locals(), '0060_claude_adapter')
-        # The contained rows' scopes: the run's slice stopped, its failed units cleared, nothing installed.
-        with contextlib.suppress(Exception):
-            subprocess.run(['systemctl', '--user', 'stop', slice_name], capture_output=True, timeout=20, env=tools,
-                           stdin=subprocess.DEVNULL)
-        with contextlib.suppress(Exception):
-            mine = sorted({CT.unit_name(launch.dispatch_id) for launch in contained_launches})
-            listed = subprocess.run(['systemctl', '--user', 'list-units', '--all', '--plain', '--no-legend', *mine],
-                                    capture_output=True, text=True, timeout=20, env=tools, stdin=subprocess.DEVNULL)
-            loaded = [line.split()[0] for line in listed.stdout.splitlines() if line.split()]
-            if mine and loaded:
-                subprocess.run(['systemctl', '--user', 'reset-failed', *loaded], capture_output=True, timeout=20,
-                               env=tools, stdin=subprocess.DEVNULL)
-        for launch in contained_launches:
+        # The suite's launches and processes stop first; the compiled cache closes last, even if a step fails.
+        try:
+            fake_capture = conform_formats.conform_fake(locals(), '0060_claude_adapter')
+            # The contained rows' scopes: the run's slice stopped, its failed units cleared, nothing installed.
             with contextlib.suppress(Exception):
-                if launch.child is not None and launch.child.poll() is None:
-                    launch.child.kill()
-                    launch.child.wait(timeout=10)
-        for kid in escaped:
-            with contextlib.suppress(OSError):
-                stat = Path('/proc/%d/stat' % kid['pid']).read_text()
-                if stat[stat.rindex(')') + 2:].split()[19] == kid['start']:
-                    os.kill(kid['pid'], signal.SIGKILL)
-        for conn in connections:
+                subprocess.run(['systemctl', '--user', 'stop', slice_name], capture_output=True, timeout=20, env=tools,
+                               stdin=subprocess.DEVNULL)
             with contextlib.suppress(Exception):
-                conn.close()
-        for directory, _dirs, _files in os.walk(str(base)):
-            with contextlib.suppress(OSError):
-                os.chmod(directory, 0o700)
-        shutil.rmtree(str(base), ignore_errors=True)
+                mine = sorted({CT.unit_name(launch.dispatch_id) for launch in contained_launches})
+                listed = subprocess.run(['systemctl', '--user', 'list-units', '--all', '--plain', '--no-legend', *mine],
+                                        capture_output=True, text=True, timeout=20, env=tools, stdin=subprocess.DEVNULL)
+                loaded = [line.split()[0] for line in listed.stdout.splitlines() if line.split()]
+                if mine and loaded:
+                    subprocess.run(['systemctl', '--user', 'reset-failed', *loaded], capture_output=True, timeout=20,
+                                   env=tools, stdin=subprocess.DEVNULL)
+            for launch in contained_launches:
+                with contextlib.suppress(Exception):
+                    if launch.child is not None and launch.child.poll() is None:
+                        launch.child.kill()
+                        launch.child.wait(timeout=10)
+            for kid in escaped:
+                with contextlib.suppress(OSError):
+                    stat = Path('/proc/%d/stat' % kid['pid']).read_text()
+                    if stat[stat.rindex(')') + 2:].split()[19] == kid['start']:
+                        os.kill(kid['pid'], signal.SIGKILL)
+            for conn in connections:
+                with contextlib.suppress(Exception):
+                    conn.close()
+            for directory, _dirs, _files in os.walk(str(base)):
+                with contextlib.suppress(OSError):
+                    os.chmod(directory, 0o700)
+            shutil.rmtree(str(base), ignore_errors=True)
+        finally:
+            compiled.close()
 
     for name, observed in rows.items():
         ok = bool(observed) and all(one for _, one in observed)
