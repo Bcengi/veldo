@@ -205,7 +205,10 @@ if __name__ == '__main__':
 ''')
             SUPPORT.install_main_cache(entry, root, cache)
             original = importlib.machinery.SourceFileLoader.get_code
-            self.assertEqual(load(entry).__doc__, 'fixture entry')
+            # The parent's own import must not write bytecode, so the final
+            # __pycache__ check sees only what the cache and children produce.
+            with patch.object(sys, 'dont_write_bytecode', True):
+                self.assertEqual(load(entry).__doc__, 'fixture entry')
             self.assertIs(importlib.machinery.SourceFileLoader.get_code, original)
 
             def run():
