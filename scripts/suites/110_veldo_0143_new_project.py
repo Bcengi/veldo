@@ -94,6 +94,18 @@ def _v143_suite():
                 if label not in emitted:
                     check(label, [('region raised', False)])
 
+    @contextlib.contextmanager
+    def stage_kept():
+        """The fixture's graph stage guard (scripts/suites/support/graph_stage.py) raises at the fixture's end when an
+        exchange resolved the account's graph stage: every region then counts as raised, so each ran/ row is red."""
+        try:
+            yield
+        except AssertionError as error:
+            if not getattr(error, 'graph_stage_escaped', False):
+                raise
+            print('  %sdetail: %s' % (PREFIX, error))
+            raised.extend((first, repr(error)) for first in regions)
+
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
         module = importlib.util.module_from_spec(spec)
@@ -168,7 +180,7 @@ def _v143_suite():
     servers = []
     conform_formats = load('v143_conform_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
     formats = json.loads((ROOT / 'proof/VELDO-0062/cli-formats.json').read_text())
-    with helper.fixture(ROOT, PRODUCTION, cycle_budget=100, compiled_sources=True) as f:
+    with stage_kept(), helper.fixture(ROOT, PRODUCTION, cycle_budget=100, compiled_sources=True) as f:
         S, CM, AC, conn, base, mods = (f[k] for k in ('S', 'CM', 'AC', 'conn', 'base', 'mods'))
         DOMAIN, REPO, ids = f['DOMAIN'], f['REPO'], f['ids']
         sign_as, journal_sign, next_id = f['sign_as'], f['journal_sign'], f['next_id']
@@ -2269,7 +2281,6 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                 pm_loop.lines[REPO] = line
                 pm_loop.configured = [REPO]
                 line.pm_cycles = PM.from_line(line)
-                line.pm_cycles.runtime = PM.CY.installed_runtime(stage=f['graph_stage'])
                 for scope, subject in (('account', 'fixture-account'), ('project', 'factory')):
                     line.reservations.configure('policy/' + subject, scope, subject,
                                                 dict(capacity=5, invocations=100, wall_seconds=5000), now=time.time())
