@@ -1,0 +1,31 @@
+{
+ "commit": "c8f7d14b",
+ "details": [
+  "VELDO-0143 detail: proposal/correction-negated: identity-and: the reading fails the decision by name ('failed', 'invalid_input:correction:identity:ambiguous'); identity-kept-named: the reading fails the decision by name ('settled', None); visibility-kept-named: the reading fails the decision by name ('settled', None); both-kept-named: the reading fails the decision by name ('settled', None); visibility-hyphen-kept: the reading fails the decision by name ('settled', None); identity-hyphen-kept: the reading fails the decision by name ('settled', None); visibility-line-above: the reading fails th",
+  "VELDO-0143 detail: correction phrasings judged wrongly: negated {'not under bcengi please, and keep it private, not public': [('personal', 'private', 'personal', 'private'), ('personal', 'public', 'personal', 'private')], 'not under bcengi, use personal': [('bcengi', 'private', 'personal', 'private'), ('bcengi', 'public', 'personal', 'public'), ('personal', 'private', 'personal', 'private'), ('personal', 'public', 'personal', 'public')], 'Keep it private, not public.': [('bcengi', 'private', 'bcengi', 'private'), ('bcengi', 'public', 'bcengi', 'private'), ('personal', 'private', 'personal', 'p",
+  "VELDO-0143 detail: proposal/correction-phrasings: no value named in words with a negator settles, kept or taken, over 16 readings each (42 phrasings, 15 wrong); a shown value kept while his words name another is refused (R5-1); words with no negator settle exactly the readings they say (5 phrasings)",
+  "VELDO-0143 detail: proposal/correction-told: the refused identity correction is told once, in plain words, with how to answer; the refused visibility correction is told once, in plain words, with how to answer",
+  "VELDO-0143 detail: service/hand-off: AF_UNIX sockets are refused on this host, so no provisioner can reach a running service over its socket",
+  "VELDO-0143 detail: activation/factory-line-restart: a line visited before the factory line built its cycles named its deferral in that pass (R5-3)",
+  "VELDO-0143 detail: activation/factory-paused-resumed: each pass while it was paused names the new line's deferral to the factory line (R5-3)",
+  "VELDO-0143 detail: factory canceled: cancel cancel; built []; faults []",
+  "VELDO-0143 detail: activation/factory-canceled: the first line visited that wants cycles, another active project's, builds them at the first pass, its owners on the connection"
+ ],
+ "exit": 1,
+ "failed_rows": [
+  "VELDO-0143 proposal/correction-negated",
+  "VELDO-0143 proposal/correction-phrasings",
+  "VELDO-0143 proposal/correction-told",
+  "VELDO-0143 service/hand-off",
+  "VELDO-0143 activation/factory-line-restart",
+  "VELDO-0143 activation/factory-paused-resumed",
+  "VELDO-0143 activation/factory-canceled"
+ ],
+ "passed": 74,
+ "replacements": [],
+ "stood_in": [
+  "--agent",
+  "--stage"
+ ],
+ "suite": "110_veldo_0143_new_project"
+}

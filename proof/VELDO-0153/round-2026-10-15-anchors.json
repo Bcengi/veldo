@@ -1,0 +1,288 @@
+{
+  "prior_review_49ed8bfd": {
+    "registrations": 2456,
+    "unresolved": [],
+    "missing": [
+      {
+        "name": "effects-remote-must-exist-verbatim",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-destinations-from-fetch-url",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-destinations-from-dry-run-output",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-resolution-isolated-profile",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-newline-config-accepted",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-destination-listing-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-destination-listing-first-only",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-remote-line-break-accepted",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-show-exit-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-header-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-fetch-line-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-empty-resolution-accepted",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-head-line-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-config-exit-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-resolution-locale-not-forced",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-resolution-messages-locale-only",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-transport-isolated-profile",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "candidate-watermark-from-caller-trunk",
+        "finding": 56,
+        "module": "lander.py",
+        "count": 0
+      },
+      {
+        "name": "candidate-fetch-failure-ignored",
+        "finding": 56,
+        "module": "lander.py",
+        "count": 0
+      },
+      {
+        "name": "landing-confirmation-read-from-local-clone",
+        "finding": 57,
+        "module": "control_landing.py",
+        "count": 0
+      },
+      {
+        "name": "setup-starts-service",
+        "finding": 139,
+        "module": "control_factory_setup.py",
+        "count": 0
+      },
+      {
+        "name": "pool-highest-utilization-first",
+        "finding": 160,
+        "module": "control_account_pool.py",
+        "count": 0
+      },
+      {
+        "name": "pool-most-recently-used-first",
+        "finding": 160,
+        "module": "control_account_pool.py",
+        "count": 0
+      },
+      {
+        "name": "hygiene-own-values-lost",
+        "finding": 165,
+        "module": "control_launch.py",
+        "count": 0
+      }
+    ]
+  },
+  "base_9763249e": {
+    "registrations": 2437,
+    "unresolved": [],
+    "missing": []
+  },
+  "seed_bb1538f2": {
+    "registrations": 2457,
+    "unresolved": [],
+    "missing": [
+      {
+        "name": "effects-remote-must-exist-verbatim",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-destinations-from-fetch-url",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-destinations-from-dry-run-output",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-resolution-isolated-profile",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-newline-config-accepted",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-destination-listing-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-destination-listing-first-only",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-remote-line-break-accepted",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-show-exit-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-header-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-fetch-line-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-empty-resolution-accepted",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-head-line-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-config-exit-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-resolution-locale-not-forced",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-resolution-messages-locale-only",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "effects-transport-isolated-profile",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0
+      },
+      {
+        "name": "candidate-watermark-from-caller-trunk",
+        "finding": 56,
+        "module": "lander.py",
+        "count": 0
+      },
+      {
+        "name": "candidate-fetch-failure-ignored",
+        "finding": 56,
+        "module": "lander.py",
+        "count": 0
+      },
+      {
+        "name": "landing-confirmation-read-from-local-clone",
+        "finding": 57,
+        "module": "control_landing.py",
+        "count": 0
+      }
+    ]
+  },
+  "current": {
+    "registrations": 2459,
+    "unresolved": [],
+    "missing": []
+  }
+}

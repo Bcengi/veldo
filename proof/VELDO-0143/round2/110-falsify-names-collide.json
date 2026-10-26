@@ -1,0 +1,27 @@
+{
+ "commit": "c1bf6dec",
+ "details": [
+  "VELDO-0143 detail: provision/handed-over: the take-on it answered makes the new-project pass due, which activates the project",
+  "VELDO-0143 detail: service/hand-off: AF_UNIX sockets are refused on this host, so no provisioner can reach a running service over its socket",
+  "VELDO-0143 detail: pm cycle refused proposal_refused:intake_proposal:ae9fdb17030d6c506fb9093f2721571b",
+  "VELDO-0143 detail: pm/new-project-run: the run's final document becomes the one proposal, presented once"
+ ],
+ "exit": 1,
+ "failed_rows": [
+  "VELDO-0143 provision/handed-over",
+  "VELDO-0143 service/hand-off",
+  "VELDO-0143 pm/new-project-run"
+ ],
+ "passed": 48,
+ "replacements": [
+  [
+   "scripts/suites/110_veldo_0143_new_project.py",
+   "decision_e, _, _ = own_decision('inlet')",
+   "decision_e, _, _ = own_decision('estuary')"
+  ]
+ ],
+ "stood_in": [
+  "--stage"
+ ],
+ "suite": "110_veldo_0143_new_project"
+}

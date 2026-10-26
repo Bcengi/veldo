@@ -1,0 +1,82 @@
+{
+ "schema": "veldo.drive/v1",
+ "spec_id": "VELDO-0161",
+ "round": 8,
+ "modules": "engine/.veldo",
+ "checks": [
+  [
+   "a whole run over a current engine lacking the signer lays it and restarts the service once [['begin', 'adoption_key', 'adoption_signers', 'adoption_signers', 'restart', 'done'] 1]",
+   true
+  ],
+  [
+   "the whole run leaves no restart owed [{'switched': False, 'due': False, 'back': False, 'backups': [], 'active': False}]",
+   true
+  ],
+  [
+   "a further run writes nothing and restarts nothing [already_done [] 0]",
+   true
+  ],
+  [
+   "killed at 1 (begin): the run died there, before any restart [killed ['begin']]",
+   true
+  ],
+  [
+   "killed at 1 (begin): the next run restarts the service once and finishes [restarted ['begin', 'adoption_key', 'adoption_signers', 'adoption_signers', 'restart', 'done']; 1 restart(s)]",
+   true
+  ],
+  [
+   "killed at 1 (begin): nothing is owed after the next run",
+   true
+  ],
+  [
+   "killed at 2 (adoption_key): the run died there, before any restart [killed ['begin', 'adoption_key']]",
+   true
+  ],
+  [
+   "killed at 2 (adoption_key): the next run restarts the service once and finishes [restarted ['begin', 'adoption_signers', 'adoption_signers', 'restart', 'done']; 1 restart(s)]",
+   true
+  ],
+  [
+   "killed at 2 (adoption_key): nothing is owed after the next run",
+   true
+  ],
+  [
+   "killed at 3 (adoption_signers): the run died there, before any restart [killed ['begin', 'adoption_key', 'adoption_signers']]",
+   true
+  ],
+  [
+   "killed at 3 (adoption_signers): the next run restarts the service once and finishes [restarted ['begin', 'adoption_signers', 'restart', 'done']; 1 restart(s)]",
+   true
+  ],
+  [
+   "killed at 3 (adoption_signers): nothing is owed after the next run",
+   true
+  ],
+  [
+   "killed at 4 (adoption_signers): the run died there, before any restart [killed ['begin', 'adoption_key', 'adoption_signers', 'adoption_signers']]",
+   true
+  ],
+  [
+   "killed at 4, after the last adoption_signers: both signers files are laid and the step log owes the restart [{'switched': False, 'due': True, 'back': False, 'backups': [], 'active': False}]",
+   true
+  ],
+  [
+   "killed at 4 (adoption_signers): the next run restarts the service once and finishes [restarted ['begin', 'restart', 'done']; 1 restart(s)]",
+   true
+  ],
+  [
+   "killed at 4 (adoption_signers): nothing is owed after the next run",
+   true
+  ],
+  [
+   "a run whose restart fails is refused by name, the signers laid, the restart owed [refused:unavailable_service:authority:upgrade_start ['begin', 'adoption_key', 'adoption_signers', 'adoption_signers'] {'switched': False, 'due': True, 'back': False, 'backups': [], 'active': False}]",
+   true
+  ],
+  [
+   "after the failed restart the next run restarts the service and finishes [restarted ['begin', 'restart', 'done']; 2 restart call(s)]",
+   true
+  ]
+ ],
+ "passed": 18,
+ "failed": 0
+}

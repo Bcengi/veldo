@@ -43,6 +43,18 @@ with tempfile.TemporaryDirectory() as _w_tmp:
     expect('writer/planted-second-writer-fails-tree-check', bool(_w_boundary.check(_w_root)))
     _w_path.write_text('def render(value):\n    return writer.dump(value)\n')
     expect('writer/delegation-is-allowed-control', not _w_boundary.check(_w_root))
+# The project brief is plain text for an owner, not a document serializer. Its named
+# exclusion must not exempt another function in the same production module.
+with tempfile.TemporaryDirectory() as _w_tmp:
+    _w_root = Path(_w_tmp)
+    (_w_root / '.veldo').mkdir()
+    _w_path = _w_root / '.veldo/control_project_proposal.py'
+    _w_brief = "def brief(p):\n    return '\\n'.join(['  %s: %s' % (k, v) for k, v in p.items()])\n"
+    _w_path.write_text(_w_brief)
+    expect('writer/plain-text-project-brief-is-not-a-document', not _w_boundary.check(_w_root))
+    _w_path.write_text(_w_brief + _w_copies[1])
+    expect('writer/project-brief-exclusion-does-not-exempt-other-functions', bool(_w_boundary.check(_w_root)))
+
 # Both intake entry points are the very same adapter, and the guard's code is frozen.
 # Baseline is e559f39, the last read-side commit, whose tracker_intake.py is the one the writer work started from.
 _w_git = _w_tests.load('writer_git', ROOT / '.veldo/git_process.py')

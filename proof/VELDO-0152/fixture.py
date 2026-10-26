@@ -19,7 +19,8 @@ import threading
 import time
 
 @contextlib.contextmanager
-def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_project=True):
+def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_project=True,
+            compiled_sources=False):
     CHOICES = ['accept', 'return_for_elaboration', 'reject']
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -80,14 +81,16 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
 
     # /dev/shm only when this process can really write there: os.access answers for permission
     # bits, not for the gate's confinement (VELDO-0208), which grants nothing beneath /dev.
+    # A worker TMPDIR is its registered ownership root, including in unconfined runs.
     fast = None
-    try:
-        os.rmdir(tempfile.mkdtemp(prefix='fast-probe-', dir='/dev/shm'))
-        fast = '/dev/shm'
-    except OSError:
-        pass
+    if not os.environ.get('TMPDIR'):
+        try:
+            os.rmdir(tempfile.mkdtemp(prefix='fast-probe-', dir='/dev/shm'))
+            fast = '/dev/shm'
+        except OSError:
+            pass
     connections, servers = [], []
-    with tempfile.TemporaryDirectory(prefix='v89-', dir=fast) as directory:
+    with tempfile.TemporaryDirectory(prefix='v89-', dir=fast) as directory, contextlib.ExitStack() as resources:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
@@ -97,6 +100,9 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
         for name, source in PRODUCTION.items():
             if Path(source).is_file():
                 shutil.copyfile(source, mods / name)
+        if compiled_sources:
+            compiler = load('v89_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
+            resources.enter_context(compiler.compiled_sources(mods))
         try:
             claims = load('v89_claims', mods / 'control_claim.py')
             S, CM, AC = claims.S, claims.CM, claims.AC
@@ -119,9 +125,14 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
             agents = ('w-elab', 'w-build', 'w-build2', 'w-rev1', 'w-rev2', 'w-rev3', 'w-late', 'outsider')
             keyfile = {who: keys / who for who in ('authority',) + people + services + agents}
             public = {}
+
+            def quiet():
+                """The environment every ssh-keygen of this fixture runs in: never through an agent (an identity
+                wire's fence records any process that reaches one)."""
+                return {k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}
             for who, path in keyfile.items():
                 subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v89-' + who, '-f', str(path)],
-                               check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                               check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL, env=quiet())
                 public[who] = ' '.join(path.with_name(path.name + '.pub').read_text().split()[:2])
 
             setup_report = None
@@ -142,7 +153,7 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
 
             def sign_as(who, data, namespace='veldo-command'):
                 return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keyfile[who]), '-n', namespace], input=data,
-                                      capture_output=True, check=True, timeout=20).stdout.decode()
+                                      capture_output=True, check=True, timeout=20, env=quiet()).stdout.decode()
 
             def journal_sign(data):
                 return sign_as('authority', data, 'veldo-journal')

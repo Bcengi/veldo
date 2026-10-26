@@ -1,0 +1,15 @@
+{
+ "commit": "a506b4d15bba35e7776f7a5eac2043104f341626",
+ "suites": {
+  "103_veldo_0142_git_identities": "stops at socket(AF_UNIX) before its rows (the fence agent), host",
+  "107_veldo_0153_identity_push": "stops at socket(AF_UNIX) before its rows, host",
+  "108_veldo_0153_executor_profile": "green",
+  "26_veldo_0009_install_stamp": "green",
+  "46_veldo_0029_enrollment": "green",
+  "66_veldo_0047_authority": "stands down here (gate unconfined list): 1 row, host",
+  "69_veldo_0068_settlement": "green",
+  "69_veldo_0133_dispositions": "green",
+  "77_veldo_0149_adopted_activation": "green",
+  "86_veldo_0189_engine_upgrade": "stands down here (gate unconfined list): 0 rows, host"
+ }
+}

@@ -36,6 +36,20 @@ footprint:
   - "specs/VELDO-0161-repository-adoption-without-restart.md"
   - "specs/index.md"
   - "proof/VELDO-0161/*"
+  - "proof/VELDO-0161/round2/*"
+  - "proof/VELDO-0161/round3/*"
+  - "proof/VELDO-0161/round4/*"
+  - "proof/VELDO-0161/round5/*"
+  - "proof/VELDO-0161/round6/*"
+  - "proof/VELDO-0161/round7/*"
+  - "proof/VELDO-0161/round8/*"
+  - "proof/VELDO-0161/round9/*"
+  - "proof/VELDO-0161/round10/*"
+  - "proof/VELDO-0161/round11/*"
+  - "scripts/suites/73_veldo_0139_factory_setup.py"
+  - "scripts/suites/86_veldo_0189_engine_upgrade.py"
+  - "scripts/suites/85_veldo_0171_setup_api.py"
+  - "proof/VELDO-0189/fresh-equivalence.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -140,3 +154,179 @@ marks a specification ready.
 2026-09-25, PLAN-0019 revision 4, fourth review: AC1's scaffold half, one recorded commit named by the
 proposal he answered, gets a falsifier of its own beside the signer-scope one. Criterion meaning
 unchanged. A draft.
+
+2026-10-22 implementation on agent/claude/veldo-0161, built on VELDO-0153 (b44736c0, not yet landed).
+control_repository holds the repository record, the adoption proposal and its brief, the settled-decision
+check and the adoption signer, which judges the settled decision itself, signs one binding per decision and
+journals every signature before handing it back. control_repository_provisioner checks the remote owner with
+VELDO-0153's one check, lays a missing scaffold as one commit recorded under refs/veldo/adoption/ before the
+owner is asked (no branch moves, nothing is pushed), so the proposal names it, and pushes exactly that commit
+through the identity profile on his answer. control_effect_executor_adoption checks the settlement before
+anything else. The authority service takes an adopted repository on in its running process: it judges the
+decision, the signature, the binding and the store binding again, writes the repository's receiver
+configuration beside the installed ones and writes the record active naming its own process and instance;
+a new instance serves adopted repositories again at its start. Factory setup generates the adoption signer
+and enrolls it among the host's enrollment signers; a factory set up before this change keeps its signers
+file, a re-run neither adds nor requires the signer, and adoption there refuses signature_refused:not_enrolled.
+Suite 109_veldo_0161_adoption carries the rows; finding 161 registers seven mutations, the three declared
+falsifiers first. The AC1 rows ran green in the sandbox and both declared AC1 falsifiers turned their rows
+red; the AC2 rows need a local socket the sandbox refuses, are red there by name, and with the AC2 falsifier
+are the host's to run (proof/VELDO-0161/README.md). Acceptance criteria, risk, readiness and approval
+requirements are unchanged.
+
+2026-10-22, same branch: the provisioner's local Git steps in the adopted repository (the scaffold's fetch,
+the fast-forward) run no hook of the repository, as no identity push does (VELDO-0153); the scaffold-commit
+row plants four hooks and a registered mutation proves the part. Finding 161 now registers eight mutations.
+Criteria unchanged.
+
+2026-10-22, round 2 on the same branch, on the host run and the independent review of b44736c0..da39f3fb.
+The host's fence counted 137 SSH agent contacts: they were the suite's own ssh-keygen calls (sign_as and key
+generation), which now run without SSH_AUTH_SOCK and SSH_AGENT_PID; every ssh-keygen of control_repository
+goes through one _quiet_env, and a row proves with a recording stand-in ssh-keygen that no signer call is
+started with an agent named. The adoption effect runs every check that changes nothing (the named scaffold
+commit, the configured remote, the repository's own commands, an existing binding, the host trust, the signer
+enrolled, a missing key not enrolled) before it fast-forwards or pushes; any other fault ends the record
+failed with unknown_outcome:<type>; a push Git accepted whose branch does not read back is
+push_unconfirmed:remote. Every local Git step runs with core.fsmonitor off and a repository whose
+configuration names a filter command or an fsmonitor is refused by name. prepare checks the remote is the one
+the repository is configured with and that the repository id is one ref component, and the scaffold ref is
+removed after the push or a refusal. The adoption signer pins host_identity and authority_generation and
+refuses a generation below the store's. The serve-loop poll of the journal and the effect's 50 ms wait are
+gone: the effect hands the record to the running service over its authenticated socket (a take_on packet from
+the adopted repository's workspace, signed with the journal key in its own namespace, which only that packet
+is verified under) and reports the service's synchronous answer; the reconcile at start stays, and a faulted
+take-on is judged again by a timer ADOPTION_RETRY_SECONDS after its own fault. The service writes a record
+active before it serves the repository, serves an active record again on its signature, binding and store
+binding rather than on current membership, and writes again a receiver configuration it wrote. The instance's
+token is instance_id. Finding 161 now registers 37 mutations, one at least for each fix. The footprint gains
+proof/VELDO-0161/round2/*, the directory this round's evidence was asked for, which the one-segment glob
+proof/VELDO-0161/* does not cover. Criteria, risk, readiness and approval requirements are unchanged.
+
+Round 3 (the host run at 7b60b7c0): suite 73's setup/lays-down still expected the owner as the only enrollment
+signer. AC1 says the adoption signer is a service key setup enrolls among the host's enrollment signers, so the
+row now asserts exactly two lines, the owner with his key and adoption-signer with the public key of the key
+setup generated, both in the enrollment namespace, and setup's output is unchanged. The footprint gains that
+suite and proof/VELDO-0161/round3/*. The adoption161-signer-agent mutant ended in a driver error on the host:
+the other rows' adoption signatures reached the hermetic fence's recording agent, and the fence raised at the
+suite's end. adoption/signer-no-agent now owns an agent of its own, a recording socket where local sockets may
+be made, and every AdoptionSigner.sign in the suite runs with the agent variables naming it and a recording
+ssh-keygen first on PATH; the row is judged at the suite's end, over every adoption signature, and fails on
+any agent variable passed on or any connection. Every other process stays under the fence. Finding 161 adds
+three mutations of setup's enrollment signers (omitted, another key, an extra signer), targeting suite 73.
+Criteria, risk, readiness and approval requirements are unchanged.
+
+Round 4 (the independent review of rounds 2 and 3, proof/VELDO-0161/REVIEW-claude-2026-10-23.md, and the host
+run at 0511a31a). R1: a running service reads the repository records once more right after its socket is
+bound, so a record written while it started, whose hand-off found no socket, is taken on by that same
+instance; nothing polls. The effect's hand-off names every fault: a refusal keeps its own code, a service
+that did not answer in time is not_taken_on:timeout, anything else not_taken_on:unknown_outcome:<type>. R2: the
+repository's own configuration is judged against an allowlist of keys local steps read as data, so
+core.alternateRefsCommand and any other key not known to be data are refused by name, and a repository that
+borrows objects (objects/info/alternates) is refused invalid_input:repository_alternates, at prepare and in the
+effect's checks. R3: the identity binding (check only), the store's binding of the repository and the
+configured generation against the store's are judged before the branch moves. R4: each run holds a lock for its
+repository beside the store (flock, released by the kernel however the process ends); a run that finds its
+request's record provisioning without enrollment and no live run holding the lock writes it failed with
+unknown_outcome:interrupted at the step the record names (the scaffold step is now recorded before the branch
+moves) and removes the scaffold ref, and one that finds the lock held refuses stale_subject:adoption_in_progress.
+adoption/signer-no-agent counts the stand-in's adoption-key signatures against the journaled ones. Finding 161
+adds twelve mutations. The three setup161 cases run suite 73, which the mutation stage's confined domain cannot
+run (no user manager); the gate runs them in its unconfined leg, as it runs finding 139's, and
+proof/VELDO-0161/round4/drive_setup.py runs them as ordinary processes. The footprint gains
+proof/VELDO-0161/round4/*. Criteria, risk, readiness and approval requirements are unchanged.
+
+Round 5 (the independent review of round 4, proof/VELDO-0161/REVIEW-claude-r4-2026-10-23.md). N1: the scaffold
+push sets push.followTags=false on its command line and passes --no-follow-tags, as the VELDO-0153 effect push
+does, so it sends exactly the commit the owner answered and no annotated tag the repository's push.followTags
+would add; push.followtags stays in the allowlist because the push overrides it and nothing else reads it. N2:
+prepare and the effect's checks run the identity transport's own judge (config_overrides) over the
+repository's configuration for the proposal's remote and refuse by the code the push would give
+(binding_mismatch:identity_transport_config), before anything is laid or the branch moves; one judge, not a
+second list. Finding 161 adds three mutations. The footprint gains proof/VELDO-0161/round5/*. Criteria, risk,
+readiness and approval requirements are unchanged.
+
+Round 6 (the host run at 8f749423: suite 86_veldo_0189_engine_upgrade 55 passed, 4 failed, where b44736c0 had 59
+passed; upgrade/from-8bc34e94, upgrade/from-971186ac, switch/kill-points and upgrade/older-0186-equivalence each
+found the upgraded host's config/enrollment_signers unlike the fresh host's). AC1 says setup enrolls the adoption
+signer among the host's enrollment signers, and the round-1 choice that a re-run over an earlier factory neither
+adds nor requires it left every upgraded host without it, so adoption there was refused
+signature_refused:not_enrolled. That choice is withdrawn. A re-run now judges, read only before its first write
+(adoption_laying), the adoption key and both enrollment-signers files, the host trust's and the installation's
+copy the service reads when it starts; each must be absent, the owner's line alone, or what a fresh setup writes
+for the key the directory holds, and anything else is refused by name. The engine upgrade's prepare step
+(lay_adoption_signer), after the exchange and before the restart, generates a missing key beside its place and
+renames it in, public half first, and writes each signers file whole and renames it over the old one, each write
+a point of the upgrade's step log, so suite 86's kill rows kill at each and the next run finishes it; a run that
+finds it laid writes nothing. On a host whose engine is already current but lacks the signer the service is
+restarted once so it reads the new signers. A switch back keeps the signer, as setup's own data. The upgrade
+module (control_factory_setup_upgrade.py, only its docstring changes) and control_factory_setup.py are inside the
+footprint's control_factory_setup* globs. The footprint gains three files of VELDO-0189's and VELDO-0171's,
+because laying the signer on an upgraded host changes what their rows compare: suite 86 substitutes each host's
+own adoption public key (@ADOPTION_SIGNER@, a key id, recorded with its reason in
+proof/VELDO-0189/fresh-equivalence.json) and its kept-data row requires both signers files to gain exactly the
+adoption line after every byte they held; suite 85's row over the 7fefdb9a host names the two signers files among
+the changed files and the key pair among the added ones, and requires the same one-line gain. No field joins the
+list of allowed differences. Finding 161 adds upgrade161-adoption-signer-not-laid (the prepare step's call
+replaced), targeting suite 86's four rows above, which the host's run at 8f749423 already shows red without the
+step. The footprint gains proof/VELDO-0161/round6/*. Criteria, risk, readiness and approval requirements are
+unchanged.
+
+Round 7 (the host run at 2dd36163: suite 86_veldo_0189_engine_upgrade 57 passed, 2 failed;
+ownership/commit-refused answered invalid_input:packet and ownership/start-drops kept the previous bindings).
+Neither is about the ownership commands. Both rows kill setup at a named point of the upgrade's step log, and
+suite 86's kill driver counts points by wrapping the upgrade module's point on each organ fetch of it. Round 6's
+lay_adoption_signer fetched the module a second time in the run, so from the adoption key on each point counted
+twice and the kills landed early: before the restart (the previous engine, which has no ownership_commit, still
+serving) and before the previous engine's removal. upgrade_engine now hands lay_adoption_signer the engine module
+it already holds; the writes, their points and their order are unchanged, and so are suite 86's expectations.
+Finding 161's upgrade161-adoption-signer-not-laid anchor follows the call, now two lines; the replacement is
+unchanged. The footprint gains proof/VELDO-0161/round7/*. Criteria, risk, readiness and approval requirements
+are unchanged. (Corrected in round 8: setup loads each module once per run, so round 6's second fetch returned
+the module inspect_engine had loaded, and the product never loaded it twice. The double count was suite 86's kill
+driver wrapping point again on each fetch. Round 7 changed how that driver counts, and nothing in the product.)
+
+Round 8 (the independent check of rounds 6 and 7, proof/VELDO-0161/REVIEW-claude-r6r7-2026-10-23.md). R6R7-1: on a
+host whose engine is already current but lacks the adoption signer, setup makes the restart due because the
+service reads its enrollment signers only at its start, but a run killed after the signers were laid, or whose
+restart failed, left nothing owing that restart: the next run found the files laid and restarted nothing, so the
+running service kept the old signers and refused every adoption while setup reported the factory complete. The
+restart debt is now durable: the upgrade's recovery treats an adoption_signers point of the step log as a restart
+owed, cleared, as an exchange's is, by a restart outcome or done, so the next run restarts the service. Suite 86
+gains restart/adoption-signer-kill: a current-engine host with the signer removed, setup killed right after its
+last adoption_signers point, then the next run must restart the service once (a new process serving) and the
+adoption signer's enrollment binding must verify under the signers that restarted service read and not under
+those the killed run left it holding. Finding 161 adds upgrade161-adoption-restart-not-owed (the branch dropped),
+targeting that row. R6R7-2: suite 86's kill driver now wraps point once per module, however often setup fetches
+the upgrade module, so its count is one per step-log line by its own construction. Round 7's product change stays:
+the prepare step uses the module whose plan it carries out rather than asking organ again, which reads plainly and
+costs nothing, but it has no product effect. The footprint gains proof/VELDO-0161/round8/*. Criteria, risk,
+readiness and approval requirements are unchanged.
+
+Round 9 (suite 86 on the host at round 8: 57 passed, 3 failed). Round 8's restart/adoption-signer-kill row ran in
+the suite function's own scope and assigned `points` to its own run's step-log points, so switch/resumed-failure,
+ownership/start-drops and ownership/commit-refused, which run after it, took their kill points from that run
+instead of the kill host's whole upgrade: no unit, record or removed_previous point, and a restart point that
+killed the kill host before its restart. Neither the product nor the kill driver's count was the cause. The row's
+body now runs in a function of its own, unchanged, so its names cannot reach the rows after it; suite 86 is 60
+passed, 0 failed on the host and finding 161's gate mutations kill 57 of 57. No product file changed. The footprint
+gains proof/VELDO-0161/round9/*. Criteria, risk, readiness and approval requirements are unchanged.
+
+Round 10 (the full gate at 928918a5, red). Suite 50's git-boundary/no-private-git-invocations: the repository
+provisioner named its Git organ GP, and scripts/check_git_boundary.py accepts a Git argument vector only through a
+receiver named _git_process, so lines 70, 175 and 333 of control_repository_provisioner.py were refused in both
+copies. The alias is now _git_process, as control_effect_executor.py names it. This is naming only, because the calls
+already went through git_process. Finding 161's adoption161-provisioner-hooks anchor follows the rename. Suite 109's
+own copy of the hermetic fence for a domain without local sockets is gone: the identity wire's fence now handles
+that itself (VELDO-0153's history, same round), and fenced() only reports the fence's observation. The gate's other
+reds at 928918a5 belong to VELDO-0153 (the fence, finding 56's worker crash) or were there before (finding 28's eight
+survivors and the first-use budget). Host: suite 50 30/0 confined; finding 161 57 of 57 killed; suites 109, 86, 73
+and 85 as at round 9 (proof/VELDO-0161/round10/). The footprint gains proof/VELDO-0161/round10/*. Criteria, risk,
+readiness and approval requirements are unchanged.
+
+Round 11 (finding 28's eight survivors, reported at round 10). VELDO-0153's rewrite of suite 58 left eight
+finding-28 registrations targeting rows the mutated code cannot reach. The registrations now target rows that turn
+red on each mutant, and a new suite 58 row, effects/publication-record-scrubs-destination, judges the publication
+record's scrubbing behind a stand-in owner check; the full account is in VELDO-0153's history, same round. No product
+file changed. Host: suite 58 78/0; finding 28 73 of 73 killed; findings 161 57 of 57 and 56 22 of 22
+(proof/VELDO-0161/round11/). The footprint gains proof/VELDO-0161/round11/*. Criteria, risk, readiness and approval
+requirements are unchanged.

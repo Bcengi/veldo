@@ -344,7 +344,10 @@ def observe_fake(local, suite_name, table, capture):
         # A fake that reads more of its packet than the script is given the suite's own normal packet.
         packet = local['readback_packet'](engine, script) if callable(local.get('readback_packet')) else None
         packet = json.dumps(packet or {'payload': {'script': script}})
-        args = [sys.executable, str(executable)]
+        # Some generated engines take fixture result/packet paths before the CLI flags. The
+        # suite supplies those arguments; the same executable and production protocol guard run.
+        fixture_args = local['readback_args'](engine, base) if callable(local.get('readback_args')) else []
+        args = [sys.executable, str(executable), *fixture_args]
         if engine == 'claude':
             args += ['--input-format', 'stream-json', '--setting-sources', '', '--strict-mcp-config', '--disable-slash-commands']
         else:

@@ -121,6 +121,61 @@ project's owner once, and his grant records the approval bound to exactly that t
 A land that landed, failed or ended unknown is followed by nothing. Each land dispatch runs to its end inside the
 pass, and one whose end owes a next station wakes the next pass as a run's end.
 
+ADOPTED REPOSITORIES (VELDO-0161). A repository the owner names is adopted on his settled answer by the
+adoption effect (control_effect_executor_adoption), which leaves its record (control_repository) `provisioning`
+with its VELDO-0029 binding signed by the adoption signer and bound by the store, and then hands the record to
+this running instance over its authenticated socket: a take_on packet (control_repository.TAKE_ON_OPERATION)
+from the adopted repository's own workspace, whose request signature verifies under this instance's own
+journal key in control_repository.TAKE_ON_NAMESPACE (verify; nothing else is accepted under that key, and
+that namespace signs nothing else). The instance takes it on WITHOUT A RESTART OR A REINSTALLATION and
+answers synchronously (take_on_request); nothing polls. It judges all of it again itself: the settled owner
+decision the record names must still name exactly this repository (control_repository.settled), the adoption
+signer's journaled signature must name that decision, the request and the binding's digest, the binding the
+repository carries must verify under the enrollment signers installed with this instance as the adoption
+signer's, for this host, domain, store and generation, and the store must bind the repository for this domain
+at the record's path. Then it writes the repository's receiver configuration beside the installed ones
+(receiver-<repository>.json, 0600, the installed receiver configuration's fields with this repository and
+workspace), writes the record `active`, naming this process (pid, its kernel start time, when it began serving
+and the instance's own instance_id, which a restart, even one that keeps the pid, changes) and the receiver
+configuration, and only once that write committed serves the repository (a packet whose workspace resolves to
+it is applied, where before it was refused missing_authority:repository_not_served); a write that fails
+serves nothing and removes the receiver configuration it had just made. The installed executable, unit and
+service.json are not touched. A record the instance cannot take on is written `failed` with
+not_taken_on:<why>.
+
+At its start a new instance serves again every repository already `active` (take_on), judged on what was
+judged when it was taken on: the journaled signature, the binding and the store binding, never the owner's
+current membership, so a later change of membership or roles does not silently stop serving a repository he
+adopted; and it takes on a `provisioning` record whose effect could not reach a running service. It reads
+the records once before it opens its parts and once more right after its socket is bound (serve), so a record
+written while it started, whose hand-off found no socket yet, is taken on by this same instance: a hand-off
+made after the bind waits in the backlog and is answered. A receiver
+configuration this service wrote for an adopted repository is written again from the installed one when it
+differs (a setup re-run rewrites the installed receiver configuration); an installed one is never written. A
+take-on that faults unexpectedly leaves its record as it was and is judged again, by a timer the serve loop
+waits on, ADOPTION_RETRY_SECONDS after that record's own fault, never sooner, whatever else is taken on
+meanwhile. inspect reports the instance and the repositories it serves.
+
+A NEW PROJECT FROM CHAT (VELDO-0143). The instance's NewProjectPass (control_service_projects) runs when an
+event it acts on made it due, never on a timer and never by reading the journal for a change: at the start,
+after a packet or channel pass that advanced the journal (hint_after: an owner's answer, a take-on this
+instance answered), when the output pipe of a provisioner it started, which the poll set watches beside
+the launch pipes, reaches its end, and when a new-project decision is written outside the pass (the factory
+PM's run, applied in a factory loop pass, settles one from his own message or his correction, or presents
+one: control_project_proposal NewProjects' notify, so the pass runs in the same loop iteration). The owner's settled answers to the factory PM's new-project proposals are
+applied, the repository provisioner (the registered protected effect control_effect_executor_creation, run
+as its own process with the provisioner configuration the installation names under `provisioner`) is
+started once for each settled decision, and hands the repository it created or adopted to this instance over
+its socket exactly as the adoption effect does (take_on_request, answered synchronously); a repository that
+ended `failed` fails its decision (VELDO-0128's report tells the owner), and once a created or adopted
+repository is `active` the same settlement activates the project with its first team and first objective in
+this process, the factory loop is woken, and it gains the repository's line (FactoryLoop.add_line), with the
+roles of the loop's first line, so its first unit is dispatched in it. A repository this instance serves that
+the work configuration does not name gets that line at the loop's start too. The factory project, whose own
+repository holds only its team configuration and is no line, has its cycles run on the loop's factory line
+(FactoryLoop.factory_line): the line of its execution repository when there is one, otherwise the loop's
+first.
+
 KEY DIRECTORY. The custody wrapper (VELDO-0067) denies a confined worker every file created directly
 in an ancestor of a protected directory after the worker starts, so the key directory belongs where
 workers never write directly: outside the home and temporary directories. It is judged as named: a
@@ -187,6 +242,11 @@ OR = _organ('control_owner_revisions', lazy=True)
 RP = _organ('control_reservation_policies', lazy=True)
 # VELDO-0171: the owner's enrollment of the API's own edge, sent by veldo factory setup while this service runs.
 EDGE = _organ('control_channel_enrollment')
+# VELDO-0161: the repository records and settled adoption decisions the running instance takes repositories on by.
+REPO = _organ('control_repository')
+# VELDO-0143: the running service's part of a new project from chat, and the provisioner it starts.
+NP = _organ('control_service_projects', lazy=True)
+PROVISIONER = _organ('control_effect_executor_creation', lazy=True)
 API_SERVICE = 'api-service.json'
 # VELDO-0154: the factory loop's organs: the person inbox its questions go to (VELDO-0064), the entity contract
 # the inbox reads its lifecycle from, and the re-run-or-ask decision over a limited run's record (VELDO-0160).
@@ -197,6 +257,9 @@ LIM = _organ('control_account_limit', lazy=True)
 # VELDO-0148: the land station, each land its own land dispatch, and a land the trunk moved under re-landed.
 LS = _organ('control_landing_station', lazy=True)
 WORK = 'work.json'
+# VELDO-0143 R5-3: a factory project in these states runs no cycles again (entity_contract's project lifecycle: both are
+# terminal), so no other line waits on the factory line for it.
+FACTORY_ENDED = ('CANCELED', 'COMPLETED')
 
 # The store's own generic commands, taken before any service registers one of its own on this module
 # (control_claim.Receiver adds claim_operation), so a claim transition is never reachable as one.
@@ -225,6 +288,8 @@ ASK_SECONDS = 7 * 86400
 GRANT_KIND = 'land_approval'
 GRANT_CHOICES = ('grant', 'stop')
 ACCEPT_SECONDS = 0.25
+# VELDO-0161: how long a repository record whose taking on faulted unexpectedly waits before it is judged again.
+ADOPTION_RETRY_SECONDS = 5.0
 TEMPLATE = HERE / 'services' / 'veldo-authority.service'
 LOCK_NAME = 'authority.lock'
 # VELDO-0189: the previous engine an upgrade keeps beside `bin` until its restart succeeded
@@ -511,8 +576,7 @@ def closure():
     a control_eligibility.Gate, whose ValidatorSnapshot loads the validator from ITS OWN directory by
     module name rather than through a load any source spells, so the validator's files are taken from
     the declaration of the module that loads them, control_eligibility.VALIDATOR_ROLES. (The
-    scaffold's REQUIRED_SUBSTRATE declares a repository's gate, not what the snapshot loads, and
-    init_scaffold.py is not laid down in an adopter's tree, where this installer runs too.) Then every
+    scaffold's REQUIRED_SUBSTRATE declares a repository's gate, not what the snapshot loads.) Then every
     module a member loads (_Loads), followed to a fixed point. A load naming a module this directory
     lacks, or a load site whose module no literal names, refuses installation by name, so an
     installed program is never short of a module it loads and never finds that out when it runs.
@@ -1170,6 +1234,17 @@ class Service:
         self.api, self.api_refusal = None, None
         # The factory loop (VELDO-0154): set by serve() when the installation names a work configuration.
         self.loop, self.loop_refusal = None, None
+        # VELDO-0161: this serving process, as a record of taking a repository on names it; the receiver
+        # configurations installed with it (an adopted repository's is written beside them, never over one);
+        # each repository whose taking on faulted, with the monotonic time it may be judged again; and the
+        # journal key's public half, derived when a take-on request is first verified.
+        self.instance = {'pid': os.getpid(), 'process_start': process_start(os.getpid()), 'serving_since': time.time(),
+                         'instance_id': os.urandom(16).hex()}
+        self.installed_receivers = dict((config.get('receiver') or {}).get('configs') or {})
+        self.adoption_faults, self.journal_public = {}, None
+        # VELDO-0143: this instance's new-project work, made when first asked for, and whether a pass of it is
+        # due (at the start, and after an event it acts on: A NEW PROJECT FROM CHAT).
+        self.projects_pass, self.projects_due = None, True
         # The counts are the observation log's, so they cover every instance that served this
         # installation, not only this process.
         with contextlib.suppress(OSError):
@@ -1205,8 +1280,20 @@ class Service:
             # An API call speaks only for the API: its request is the api edge's, in its own namespace.
             if SA.AS.is_call(signed.get('command')):
                 return self.api is not None and self.api.verifies(message, signature)
+            # VELDO-0161: the adoption effect's take-on request speaks with this instance's own journal key.
+            if is_take_on(signed.get('command')):
+                return self._journal_key_verifies(message, signature)
             return self._keyring_verifies(message, signature)
         return False
+
+    def _journal_key_verifies(self, message, signature):
+        if self.journal_public is None:
+            try:
+                self.journal_public = REPO.public_key(self.config['journal_key'])
+            except REPO.Refused:
+                return False
+        signers = AC.allowed_signers_line(self.principal, self.journal_public, REPO.TAKE_ON_NAMESPACE) + '\n'
+        return AC.ssh_keygen_verify(message, signature, signers, self.principal, REPO.TAKE_ON_NAMESPACE)[0]
 
     def _keyring_verifies(self, message, signature):
         state, now = CM.authority_state(S, self.conn), time.time()
@@ -1238,9 +1325,11 @@ class Service:
             observation.update(operation=SA.AS.CALL, call=packet.get('call'))
         before = self.watermark()
         try:
-            if repository not in self.repositories:
+            if repository not in self.repositories and not is_take_on(packet):
                 raise Refused('missing_authority:repository_not_served', 'this instance does not serve it')
-            if isinstance(packet, dict) and packet.get('operation') == 'inspect' and 'command' not in packet:
+            if is_take_on(packet):
+                result = self.take_on_request(packet, repository)
+            elif isinstance(packet, dict) and packet.get('operation') == 'inspect' and 'command' not in packet:
                 result = self.inspect(packet)
             elif isinstance(packet, dict) and packet.get('operation') == OWNERSHIP_COMMIT and 'command' not in packet:
                 result = self.commit_ownership()
@@ -1379,7 +1468,10 @@ class Service:
     def hint_after(self, before):
         """After a packet or pass that advanced the journal, the head record's hint to every subscribed
         API; a failure is logged by name and never ends the service. The same advance wakes the factory loop
-        (VELDO-0154), whose pass runs once the packet is answered or the channel pass is done."""
+        (VELDO-0154), whose pass runs once the packet is answered or the channel pass is done, and makes the
+        new-project pass due (VELDO-0143)."""
+        if self.watermark() > before:
+            self.projects_due = True
         if self.loop is not None and self.watermark() > before:
             self.loop.wake('journal')
         if self.api is None or self.watermark() <= before:
@@ -1507,7 +1599,199 @@ class Service:
                 'service': self.config['service'], 'unit': self.config['unit'],
                 'counts': dict(self.counts, refusals=dict(self.refusals)), 'pending': self.pending(),
                 'channel': self.channel_status(), 'api': self.api_status(), 'loop': self.loop_status(),
-                'receivers': receiver_status(self.config)}
+                'receivers': receiver_status(self.config), 'instance': dict(self.instance),
+                'repositories': sorted(self.repositories)}
+
+    # -- adopted repositories (VELDO-0161) ----------------------------------------------------
+
+    def take_on_request(self, packet, repository):
+        """The adoption effect's take-on request, from the adopted repository's own workspace (`repository`
+        is the coordinate its request was judged for): that repository's record taken on now (ADOPTED
+        REPOSITORIES), and the answer."""
+        if packet.get('repository_uuid') != repository:
+            raise Refused('invalid_input:coordinates', 'the take-on names another repository than its workspace')
+        record = REPO.read(self.conn, repository)
+        if record is None or record.get('domain_uuid') != self.domain:
+            return {'ok': False, 'reason': 'not_taken_on:no_record'}
+        if packet.get('request') != record.get('request'):
+            return {'ok': False, 'reason': 'not_taken_on:another_request'}
+        if repository in self.repositories:
+            return {'ok': True, 'reason': REPO.TAKE_ON_OPERATION, 'state': record.get('state'),
+                    'instance_id': self.instance['instance_id']}
+        if record.get('state') != 'provisioning' or not record.get('enrollment'):
+            return {'ok': False, 'reason': 'not_taken_on:state:%s' % record.get('state')}
+        observation = self.take_on_record(record)
+        ok = observation.get('outcome') == 'accepted'
+        return {'ok': ok, 'reason': REPO.TAKE_ON_OPERATION if ok else observation.get('refusal'),
+                'state': (REPO.read(self.conn, repository) or {}).get('state'),
+                'instance_id': self.instance['instance_id']}
+
+    def take_on(self, now=None):
+        """Serve again every adopted repository of this domain this instance does not serve yet: at its start,
+        and when a faulted record's retry time came (ADOPTED REPOSITORIES). Returns the observations made."""
+        now = time.monotonic() if now is None else now
+        made = []
+        for record in REPO.records(self.conn, self.domain):
+            repository = record.get('repository')
+            if repository in self.repositories or record.get('state') not in ('provisioning', 'active'):
+                continue
+            if record.get('state') == 'provisioning' and not record.get('enrollment'):
+                continue
+            if self.adoption_faults.get(repository, now) > now:
+                continue
+            made.append(self.take_on_record(record))
+        return made
+
+    def adoption_due(self):
+        """The monotonic time the earliest faulted take-on may be judged again, or None."""
+        return min(self.adoption_faults.values()) if self.adoption_faults else None
+
+    def take_on_record(self, record):
+        """One repository record judged and taken on, or refused by name; its observation."""
+        repository = record.get('repository')
+        observation = {'kind': 'adoption', 'operation': 'take_on', 'at': time.time(), 'domain_uuid': self.domain,
+                       'repository_uuid': repository, 'request': record.get('request'),
+                       'settlement': record.get('settlement'), 'binding_digest': record.get('enrollment'),
+                       'instance_id': self.instance['instance_id'], 'pid': self.instance['pid']}
+        retry = self.adoption_faults.get(repository)
+        if retry is not None and time.monotonic() < retry:
+            code = 'not_taken_on:retry_pending'
+            observation.update(outcome='refused', refusal=code, reason=REPO.reason(code))
+            self._log(observation)
+            return observation
+        try:
+            receiver = self._take_on(record)
+            observation.update(outcome='accepted', receiver_config=receiver, resumed=record.get('state') == 'active')
+            self.adoption_faults.pop(repository, None)
+        except (Refused, REPO.Refused, S.StoreRefused) as error:
+            code = 'not_taken_on:' + getattr(error, 'code', 'refused')
+            observation.update(outcome='refused', refusal=code, reason=REPO.reason(code))
+            self.adoption_faults.pop(repository, None)
+            if record.get('state') == 'provisioning':
+                with contextlib.suppress(REPO.Refused, S.StoreRefused, sqlite3.Error):
+                    REPO.write(S, self.conn, (self.principal, self.sign), repository, 'failed', step='take_on',
+                               generation=self.generation, reason=code)
+        except Exception as error:  # noqa: BLE001 - never the end of the service; this record is judged again
+            code = 'not_taken_on:unknown_outcome:' + type(error).__name__
+            observation.update(outcome='refused', refusal=code, reason=REPO.reason(code))
+            self.adoption_faults[repository] = time.monotonic() + ADOPTION_RETRY_SECONDS
+        self._log(observation)
+        return observation
+
+    def _take_on(self, record):
+        repository, path = record['repository'], record.get('path')
+        if record.get('state') == 'provisioning':
+            # Taken on now: the settled owner decision must still name exactly this repository.
+            try:
+                decision = REPO.settled(S, CM, self.conn, record.get('request'))
+            except REPO.Refused as error:
+                raise Refused(error.code) from None
+            if decision['proposal']['repository'] != repository or decision['proposal']['path'] != path:
+                raise Refused('decision_names_another_repository')
+            settlement = decision['settlement_id']
+        else:
+            # Served again: on what was judged when it was taken on, never on today's membership.
+            settlement = record.get('settlement')
+        signature = next((s for s in REPO.signatures(self.conn) if settlement and s.get('settlement') == settlement), None)
+        if (signature is None or signature.get('repository') != repository or signature.get('request') != record.get('request')
+                or signature.get('binding_digest') != record.get('enrollment')):
+            raise Refused('no_adoption_signature')
+        try:
+            binding = E.read_binding(path)
+        except E.EnrollmentRefused as error:
+            raise Refused('binding:' + error.reason) from None
+        if (not isinstance(binding, dict) or E.binding_digest(binding) != record.get('enrollment')
+                or binding.get('enrolled_by') != REPO.SIGNER_PRINCIPAL or binding.get('repository_uuid') != repository
+                or binding.get('store_path') != self.config['store_path']):
+            raise Refused('binding:not_the_adopted_binding')
+        problems = E.verify_binding(path, binding, self.verify, self.config['host_identity'], self.domain, self.store,
+                                    self.generation)
+        if problems:
+            raise Refused('binding:' + problems[0][0])
+        workspace = os.path.realpath(path)
+        if S.bound_repository(self.conn, self.domain, repository) != workspace:
+            raise Refused('store_binding')
+        receiver, created = self._receiver_configuration(repository, workspace)
+        if record.get('state') == 'provisioning':
+            try:
+                REPO.write(S, self.conn, (self.principal, self.sign), repository, 'active', step='take_on',
+                           generation=self.generation,
+                           taken_on=dict(self.instance, receiver_config=receiver, at=time.time()))
+            except BaseException:
+                if created:
+                    with contextlib.suppress(OSError):
+                        os.unlink(receiver)
+                raise
+        # Served only once its record says it is.
+        self.repositories[repository] = [workspace]
+        self.config.setdefault('receiver', {}).setdefault('configs', {})[repository] = receiver
+        return receiver
+
+    def new_projects(self):
+        """VELDO-0143: the factory's new-project decisions on this instance's connection, or None while the
+        installation has no channel."""
+        if self.projects_pass is None:
+            self.projects_pass = NP.NewProjectPass(self, globals())
+        return self.projects_pass.new_projects()
+
+    def new_project_pass(self):
+        """VELDO-0143: one pass of this instance's new-project work (A NEW PROJECT FROM CHAT). Returns the
+        events, each logged; a fault is logged by name and never ends the service. What the pass wrote wakes the
+        factory loop, so the first unit of a project it activated is offered."""
+        self.projects_due = False
+        if self.channel is None:
+            return []
+        if self.projects_pass is None:
+            self.projects_pass = NP.NewProjectPass(self, globals())
+        before = self.watermark()
+        try:
+            return self.projects_pass.run()
+        except Exception as error:  # noqa: BLE001 - never the end of the service; judged again on the next pass
+            event = {'kind': 'new_project', 'operation': 'pass', 'at': time.time(), 'domain_uuid': self.domain,
+                     'outcome': 'refused', 'refusal': 'unknown_outcome:' + type(error).__name__}
+            with contextlib.suppress(OSError):
+                self._log(event)
+            return [event]
+        finally:
+            if self.loop is not None and self.watermark() > before:
+                self.loop.wake('journal')
+
+    def provisioner_pipes(self):
+        """VELDO-0143: {fd: decision}, the output pipe of every provisioner this instance started and that has
+        not ended, for the service loop's poll set."""
+        return self.projects_pass.pipes() if self.projects_pass is not None else {}
+
+    def provisioner_readable(self, fd):
+        """VELDO-0143: the poll set found a provisioner's pipe readable; its end makes the new-project pass
+        due."""
+        if self.projects_pass is not None and self.projects_pass.readable(fd):
+            self.projects_due = True
+
+    def _receiver_configuration(self, repository, workspace):
+        """The repository's launch receiver configuration beside the installed ones: an installed receiver
+        configuration's fields with this repository and workspace, 0600. Returns (path, created). One this
+        service wrote before is written again when it differs; an installed one is never written."""
+        installed = sorted(self.installed_receivers.values())
+        if not installed:
+            raise Refused('receiver_configuration:none_installed')
+        template = json.loads(Path(installed[0]).read_text())
+        text = _json(dict(template, repository=repository, workspace=workspace))
+        path = os.path.join(os.path.dirname(installed[0]),
+                            'receiver-%s.json' % hashlib.sha256(repository.encode()).hexdigest()[:16])
+        if path in installed:
+            raise Refused('receiver_configuration:installed')
+        if not os.path.lexists(path):
+            _write(path, text, 0o600)
+            return path, True
+        if os.path.islink(path) or not os.path.isfile(path):
+            raise Refused('receiver_configuration:not_a_file')
+        if Path(path).read_text() != text:
+            fresh = path + '.new'
+            with contextlib.suppress(FileNotFoundError):
+                os.unlink(fresh)
+            _write(fresh, text, 0o600)
+            os.replace(fresh, path)
+        return path, False
 
     def commit_ownership(self):
         """VELDO-0189: the upgrade committed (setup removed the previous engine after this service answered),
@@ -1538,7 +1822,7 @@ class Service:
                          'watermark': self.watermark()})
 
     def _tally(self, observation):
-        if observation.get('kind') in ('channel', 'api', 'loop', 'land', 'ownership'):
+        if observation.get('kind') in ('channel', 'api', 'loop', 'land', 'ownership', 'adoption'):
             return
         self.counts[observation['outcome']] += 1
         if observation['outcome'] == 'refused':
@@ -1550,6 +1834,21 @@ class Service:
 
     def _log(self, observation):
         append_observation(self.config, observation)
+
+
+def is_take_on(packet):
+    """Whether `packet` is the adoption effect's take-on request (VELDO-0161)."""
+    return isinstance(packet, dict) and packet.get('operation') == REPO.TAKE_ON_OPERATION and 'command' not in packet
+
+
+def process_start(pid):
+    """The kernel's start time of process `pid`, in clock ticks since boot (/proc/<pid>/stat field 22), or
+    None where it cannot be read: with the pid it names one process, which a restart does not keep."""
+    try:
+        text = Path('/proc/%d/stat' % pid).read_text()
+        return int(text[text.rindex(')') + 2:].split()[19])
+    except (OSError, ValueError, IndexError):
+        return None
 
 
 def append_observation(config, observation):
@@ -1695,11 +1994,9 @@ class Line:
         if not lost and self.runner.orphans:
             released += self.runner.release_orphans()
         report['released'] += [{'repository': self.repository, 'dispatch_id': one} for one in released]
-        # Coordination uses this same event-driven pass and this line's Runner.
-        if any(data.get('execution_repository') == self.repository and data.get('state') == 'ACTIVE'
-               for data in self._rows('project')) and self._rows('team'):
-            if not hasattr(self, 'pm_cycles'):
-                self.pm_cycles = _organ('control_workflow_cycle_pm').from_line(self)
+        # Coordination uses this same event-driven pass and this line's Runner; the factory project's cycles
+        # run on the loop's factory line (VELDO-0143).
+        if self.wants_cycles() and self.build_cycles(report):
             report.setdefault('pm_cycles', []).extend(self.pm_cycles.pass_once(automatic_units=self.assigned()))
             for launch in list(self.runner.launches.values()):
                 if launch.contract['station'] == 'coordination' and launch.pump(read=False):
@@ -1710,6 +2007,44 @@ class Line:
         latest = self.latest()
         for unit in self.assigned():
             self.next(unit, latest, report)
+
+    def wants_cycles(self):
+        """Whether this line runs project cycles: an active project executes in its repository, or it is the
+        loop's factory line and the factory project is active; and a team is configured."""
+        return any(data.get('state') == 'ACTIVE' and (data.get('execution_repository') == self.repository
+                                                      or data.get('name') == 'factory'
+                                                      and self.loop.factory_line == self.repository)
+                   for data in self._rows('project')) and bool(self._rows('team'))
+
+    def build_cycles(self, report):
+        """VELDO-0143 R3-1: this line's project cycles, built once; whether it has them. The service's one
+        connection holds one set of the cycles' owners (VELDO-0188 makes several lines run on it), and the loop's
+        factory line keeps them, whatever order the loop visits the lines in (sorted repository uuids) and whenever
+        the factory project comes to want them: another line builds none while there is a factory project that can
+        still run (not CANCELED or COMPLETED, R5-3) and the factory line has not built its cycles, whether or not it
+        wants them now (a paused factory project resumed later, R4-5), and each pass it defers names that in its
+        faults (pm_cycles:deferred_to_factory_line). Another line whose build is refused is not tried again in this
+        process (the refusal is a fault of the pass it was refused in; the line's units are still offered). The
+        factory line's own build is tried on every pass until it holds."""
+        if getattr(self, 'pm_cycles', None) is not None:
+            return True
+        if getattr(self, 'pm_refusal', None) is not None:
+            return False
+        factory = self.loop.lines.get(self.loop.factory_line)
+        if factory is not None and factory is not self and getattr(factory, 'pm_cycles', None) is None \
+                and any(data.get('name') == 'factory' and data.get('state') not in FACTORY_ENDED
+                        for data in self._rows('project')):
+            report['faults'].append({'repository': self.repository, 'reason': 'pm_cycles:deferred_to_factory_line'})
+            return False
+        try:
+            self.pm_cycles = _organ('control_workflow_cycle_pm').from_line(self)
+        except Exception as error:  # noqa: BLE001 - named in the pass's faults, never the loop's end
+            if factory is self or factory is None:
+                raise
+            self.pm_refusal = getattr(error, 'code', None) or 'unknown_outcome:' + type(error).__name__
+            report['faults'].append({'repository': self.repository, 'reason': 'pm_cycles:' + self.pm_refusal})
+            return False
+        return True
 
     def next(self, unit, latest, report):
         """Offer `unit` its next station: build when it has none; review once its build ran to a completion
@@ -2105,9 +2440,41 @@ class FactoryLoop:
         receivers = (service.config.get('receiver') or {}).get('configs') or {}
         self.lines = {repository: Line(self, repository, roles, receivers[repository])
                       for repository, roles in sorted(work['repositories'].items())}
+        self.configured = sorted(self.lines)
+        # VELDO-0143: a repository this instance took on (VELDO-0161) that the work configuration does not name
+        # is served by a line of its own, with the roles of the first one.
+        for repository in sorted(set(service.repositories) - set(self.lines)):
+            if receivers.get(repository) and self.lines:
+                self.add_line(repository, receivers[repository])
         self.wakes, self.ended, self.timer = [], [], None
         self.passes, self.last = 0, None
         self.counts = {'offered': 0, 'refused': 0, 'waiting': 0, 'asked': 0, 'released': 0, 'faults': 0, 'lands': 0}
+
+    @property
+    def factory_line(self):
+        """VELDO-0143: the line the factory project's cycles run on: the line of its execution repository, else
+        the first line the work configuration names (its own repository holds only its team configuration and is
+        no line), never one added later."""
+        row = self.service.conn.execute("SELECT kind, data FROM entities WHERE id='project:factory'").fetchone()
+        repository = json.loads(row[1]).get('execution_repository') if row is not None and row[0] == 'project' else None
+        if repository in self.lines:
+            return repository
+        return self.configured[0] if self.configured else None
+
+    def add_line(self, repository, receiver_path):
+        """VELDO-0143: a line for `repository`, taken on by this instance, with the roles of the loop's first
+        line (the factory's default team's builder and reviewers), through the repository's own receiver
+        configuration. Returns the repository, or None when there is no receiver configuration or no line to take
+        the roles of; a repository that has a line keeps it."""
+        if repository in self.lines:
+            return repository
+        if not receiver_path or not self.lines:
+            return None
+        template = self.lines[self.configured[0]] if self.configured else self.lines[min(self.lines)]
+        roles = json.loads(json.dumps(template.roles))
+        roles.pop('land', None)
+        self.lines[repository] = Line(self, repository, roles, receiver_path)
+        return repository
 
     def start(self):
         """The service's start (VELDO-0158): each line's Runner sweeps the run directories left from before, removing
@@ -2292,6 +2659,9 @@ def serve(config_path):
             if previous is not None and not keep:
                 S.drop_previous_owners(conn, observe=lambda rows: observe_ownership(config, 'ownership_commit', rows))
             service = Service(config, conn)
+            # VELDO-0161: the repositories adopted before this instance started are served again, and one whose
+            # adoption could not reach a running service is taken on.
+            service.take_on()
             service.channel, service.channel_refusal = CH.open_channel(config.get('channel_ingress'))
             service.api, service.api_refusal = SA.open_api(config.get('api_service'), service.channel, lock,
                                                            os.path.dirname(config['observations']))
@@ -2310,6 +2680,10 @@ def serve(config_path):
                               'refusal': service.loop_refusal})
             listener = CC.bind(config['socket'])
             inode = os.stat(config['socket']).st_ino
+            # VELDO-0161: read once more now the socket is bound. An adoption that wrote its record after the
+            # read above handed it over before there was a socket (refused, authority_unavailable); from here
+            # on a hand-off waits in the backlog and is answered, so no record falls between the two.
+            service.take_on()
             listener.settimeout(ACCEPT_SECONDS)
             notify('READY=1\nSTATUS=serving %s' % config['unit'])
             service.announce_api()
@@ -2319,9 +2693,15 @@ def serve(config_path):
                     # THE POLL SET: the socket, and the launch pipe of every run the factory loop watches, waited on
                     # for the accept timeout at most, or until the account reset timer, when it is sooner.
                     pipes = service.loop.pipes() if service.loop is not None else {}
+                    # VELDO-0143: and the output pipe of every provisioner this instance started.
+                    provisioners = service.provisioner_pipes()
+                    pipes = {**pipes, **provisioners}
                     wait = ACCEPT_SECONDS
                     if service.loop is not None and service.loop.timer is not None:
                         wait = max(0.0, min(wait, service.loop.timer - time.time()))
+                    # VELDO-0161: or until a faulted take-on may be judged again.
+                    if service.adoption_due() is not None:
+                        wait = max(0.0, min(wait, service.adoption_due() - time.monotonic()))
                     ready = select.select([listener] + sorted(pipes), [], [], wait)[0]
                     response = None
                     if listener in ready:
@@ -2336,7 +2716,9 @@ def serve(config_path):
                     if response is not None:
                         service.observe_response(response)
                     for fd in ready:
-                        if fd in pipes:
+                        if fd in provisioners:
+                            service.provisioner_readable(fd)
+                        elif fd in pipes:
                             service.loop.readable(pipes[fd])
                     if service.loop is not None and service.loop.due(time.time()):
                         service.loop.wake('account_reset')
@@ -2345,6 +2727,12 @@ def serve(config_path):
                         next_pass = time.monotonic() + CH.POLL_SECONDS
                     if service.loop is not None and not stopping:
                         service.loop.run()
+                    # VELDO-0161: a faulted take-on, judged again when its time came (a timer, never a poll).
+                    if not stopping and service.adoption_due() is not None and service.adoption_due() <= time.monotonic():
+                        service.take_on()
+                    # VELDO-0143: the new-project pass, when an event it acts on made it due (never a poll).
+                    if not stopping and service.projects_due:
+                        service.new_project_pass()
             finally:
                 notify('STOPPING=1')
                 listener.close()

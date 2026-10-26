@@ -1,0 +1,17 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-STACK-0143-0153-0161-LANDING",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0143",
+    "commit": "3ab6e90de9d1d0621a82e68bfee3fa9705924666",
+    "paths": [
+      "scripts/gate_unconfined.json"
+    ]
+  },
+  "basis": "Dmitry approved landing of the Veldo stack (VELDO-0143, VELDO-0153, VELDO-0161 on top of main 40800904) at 3ab6e90d over Telegram on 2026-10-25T22:19Z (message 36473, 'approve landing 3ab6e90d'), asked in 36470 (copy line 36471). The ask disclosed the one protected path the stack changes against main: scripts/gate_unconfined.json, adding suite 110_veldo_0143_new_project to the unconfined leg (graph runtime reason), which he had approved earlier (Telegram 36172). The canonical gate was GREEN at 3ab6e90d (mutation 2,689 executed fresh inside the 5,378 s cap, unconfined 982/982). WHAT IT DOES NOT COVER: any other protected path, any other suite's unconfined entry, and the follow-up that adds compiled_sources.py to seven mutation_case_inputs declarations (separate approval).",
+  "recorded_at": "2026-10-25T22:19:33Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-11-25T00:00:00Z"
+}

@@ -386,11 +386,15 @@ class GitLandOps(LandOps):
         self.landing = landing
         self.counts = {"accepted": 0, "refused": 0}
         self.identity_counts = {}
+        # The caller's Git common directory, where direct-land identity operations are kept durably
+        # (VELDO-0153). sync_main resolves it with its own checked step, so neither an observation
+        # nor a status read adds a Git invocation to the candidate path.
+        self.common_dir = None
         self.candidate = None
 
     # The one checked Git step.
 
-    def _git(self, repo, *args, operation=None, profile="isolated", ok=(0,), text=True, identity=None):
+    def _git(self, repo, *args, operation=None, profile="isolated", ok=(0,), text=True, identity=None, remote_url=None):
         """Run one Git operation in `repo` through the boundary. A return code outside `ok` refuses
         the candidate naming the operation; the completed process is returned otherwise."""
         name = operation or args[0]
@@ -400,7 +404,11 @@ class GitLandOps(LandOps):
                 before_commit = self._git(repo, 'rev-parse', 'HEAD').stdout.strip()
             result = _git_process.run(["git", "-C", str(repo), *args], capture_output=True, text=text,
                                       timeout=GIT_SECONDS, stdin=subprocess.DEVNULL, profile=profile,
-                                      identity=identity)
+                                      identity=identity, push_identity=self.identity_record,
+                                      remote_url=remote_url)
+        except ValueError as error:
+            raise CandidateRefused(getattr(error, 'code', 'invalid_input:git_profile'),
+                                   'identity transport refused', operation=name) from None
         except (OSError, subprocess.SubprocessError) as error:
             raise CandidateRefused("unavailable_service:git/" + name, type(error).__name__, operation=name)
         if ok is not None and result.returncode not in ok:
@@ -461,12 +469,21 @@ class GitLandOps(LandOps):
         event['identity'] = (self.identity_record or {}).get('id')
         if refusal is not None:
             event.update(refusal=refusal, taxonomy=taxonomy(refusal))
-        counts = self.identity_counts.setdefault(event['identity'], {'commits': 0, 'refusals': {}})
+        counts = self.identity_counts.setdefault(event['identity'], {'commits': 0, 'pushes': 0, 'refusals': {}})
         if operation in ('lander_merge', 'projection_commit') and outcome == 'accepted':
             counts['commits'] += 1
+        if operation == 'push' and outcome == 'accepted':
+            counts['pushes'] += 1
         if refusal is not None:
             counts['refusals'][refusal] = counts['refusals'].get(refusal, 0) + 1
         event.update(extra)
+        if operation == 'remote_check':
+            c['checked_remote_owner'] = event.get('remote_owner')
+        if operation in ('push', 'remote_check'):
+            if self.common_dir is None:
+                self.common_dir = self._git(self.repo_root, 'rev-parse', '--path-format=absolute',
+                                            '--git-common-dir').stdout.strip()
+            _git_process.identity_transport().local_operations(self.common_dir, event)
         self.counts["refused" if outcome == "refused" else "accepted"] += 1
         self.observe(event)
         return event
@@ -484,7 +501,16 @@ class GitLandOps(LandOps):
         decided), if any."""
         c = self.candidate or {}
         pending = [c["id"]] if c.get("state") in ("synced", "built", "verified") else []
-        return dict(self.counts, pending=pending, identities=self.identity_counts)
+        identities = {key: dict(value) for key, value in self.identity_counts.items()}
+        common = self.common_dir
+        if common is None and Path(self.repo_root).is_dir():
+            # A fresh instance (a restart) that has not synced reads the durable counts all the same.
+            found = self._git(self.repo_root, 'rev-parse', '--path-format=absolute', '--git-common-dir', ok=None)
+            common = found.stdout.strip() if found.returncode == 0 else None
+        if common:
+            for key, value in _git_process.identity_transport().local_operations(common).items():
+                identities.setdefault(key, {}).update(value)
+        return dict(self.counts, pending=pending, identities=identities)
 
     def record(self):
         """The current candidate's record: its identity, fixed inputs, merges, projections and state."""
@@ -512,6 +538,7 @@ class GitLandOps(LandOps):
             workspace = Path(tempfile.mkdtemp(prefix="veldo-candidate-", dir=self.workspace_root))
             self.candidate["workspace"] = str(workspace)
             common = self._git(self.repo_root, "rev-parse", "--path-format=absolute", "--git-common-dir").stdout.strip()
+            self.common_dir = common or None
             objects = Path(common) / "objects"
             if not common or not objects.is_dir():
                 raise CandidateRefused("unavailable_service:git/rev-parse", "the caller has no object store",
@@ -521,11 +548,11 @@ class GitLandOps(LandOps):
             info.mkdir(parents=True, exist_ok=True)
             (info / "alternates").write_text(str(objects) + "\n")
             if self.push:
-                url = self._git(self.repo_root, "remote", "get-url", self.remote, profile="network").stdout.strip()
+                url = self._git(self.repo_root, "config", "--get", "remote." + self.remote + ".url").stdout.strip()
                 if not url:
                     raise CandidateRefused("unavailable_service:git/remote", "the remote has no url", operation="remote")
                 self._git(workspace, "fetch", "-q", "--no-tags", "--no-write-fetch-head", self._absolute(url),
-                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="network")
+                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="identity", remote_url=url)
                 self.candidate["remote_url"] = self._absolute(url)
             else:
                 local = self._commit_of(self.repo_root, "refs/heads/" + self.trunk, "missing_evidence:trunk")
@@ -827,17 +854,39 @@ class GitLandOps(LandOps):
         # updates the trunk only while it still holds the watermark, so a trunk that advanced under
         # us is refused rather than clobbered, and the land is retried from sync_main.
         try:
-            url = self._git(self.repo_root, "remote", "get-url", "--push", self.remote, profile="network").stdout.strip()
+            self._identity()
+            # Read the raw local destination, never a global rewrite. Each actual push goes
+            # through the same owner check as creation/adoption and the protected executor.
+            urls = self._git(self.repo_root, 'config', '--get-all', 'remote.' + self.remote + '.pushurl', ok=(0, 1))
+            if urls.returncode == 1:
+                urls = self._git(self.repo_root, 'config', '--get-all', 'remote.' + self.remote + '.url')
+            targets = urls.stdout.splitlines()
+            if len(targets) != 1:
+                raise CandidateRefused('invalid_input:push_destinations', 'one remote required')
+            url = targets[0]
+            transport = _git_process.identity_transport()
+            try:
+                target = transport.check_remote(self.identity_record, url, repository=self.repository,
+                    request=c.get('id'), observe=lambda event: self._event(
+                        'remote_check', event['outcome'], event.get('refusal'), remote_owner=event['remote_owner']))
+            except transport.Refused as error:
+                raise CandidateRefused(error.code, 'remote identity refused') from None
             push = self._git(c["workspace"], "push", "-q", "--force-with-lease=refs/heads/%s:%s" % (self.trunk, c["watermark"]),
-                             self._absolute(url), "%s:refs/heads/%s" % (c["commit"], self.trunk),
-                             profile="network", ok=None)
+                             url, "%s:refs/heads/%s" % (c["commit"], self.trunk),
+                             profile="identity", remote_url=url, ok=None)
         except CandidateRefused as error:
+            self._event('push', 'refused', error.code,
+                        remote_owner=c.get('checked_remote_owner'))
             return self._refuse("finalize", error, pushed=False)
         pushed = push.returncode == 0
         c["state"] = "published" if pushed else "rejected"
-        self._event("finalize", "accepted" if pushed else "refused",
-                    None if pushed else "unavailable_service:git/push", pushed=pushed)
-        return dict(detail, ok=pushed, pushed=pushed, candidate=c["commit"], detail=push.stderr.strip())
+        refusal = None if pushed else "push_refused:remote"
+        self._event("push", "accepted" if pushed else "refused", refusal, pushed=pushed,
+                    remote_owner=target['owner'])
+        # The stage's own observation (VELDO-0056) beside the identity push it ran.
+        self._event("finalize", "accepted" if pushed else "refused", refusal, pushed=pushed)
+        return dict(detail, ok=pushed, pushed=pushed, candidate=c["commit"], refusal=refusal,
+                    detail=push.stderr.strip())
 
     def _publish(self, unit, detail):
         """VELDO-0057: the factory land's exact-tip publication and confirmed completion, through the

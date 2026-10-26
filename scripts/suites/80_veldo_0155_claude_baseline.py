@@ -183,7 +183,12 @@ def _v155_suite():
     tools = dict(os.environ)
     contained = []
     connections = []
+    compiled = contextlib.ExitStack()
     try:
+        compiler = load('v155_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
+        # Runtime fixtures stay beside their sockets; compilation belongs to the worker root.
+        code_cache = Path(compiled.enter_context(tempfile.TemporaryDirectory(prefix='compiled-')))
+        compiled.enter_context(compiler.compiled_sources(base, code_cache))
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
         for source in sorted((ROOT / '.veldo').glob('*.py')):
@@ -191,6 +196,7 @@ def _v155_suite():
         for name, source in PRODUCTION.items():
             if Path(source).is_file():
                 shutil.copyfile(source, mods / name)
+        compiler.install_main_cache(mods / 'control_launch.py', base, code_cache)
         S = load('v155_store', mods / 'control_store.py')
         L = load('v155_launch', mods / 'control_launch.py')
         with region('paid-api/prompt-write'):
@@ -1087,6 +1093,7 @@ out.close()
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        compiled.close()
         fake_capture = conform_formats.conform_fake(locals(), '0155_claude_baseline')
         with contextlib.suppress(Exception):
             subprocess.run(['systemctl', '--user', 'stop', slice_name], capture_output=True, timeout=20, env=tools,

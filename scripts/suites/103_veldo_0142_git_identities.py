@@ -69,8 +69,16 @@ def _v142_suite():
     # its own temporary directories (`world_temporary`) stand for the system's while the provisioner
     # runs, and the clone/layout-refused row proves the rule refuses a protected target beneath them
     # and beneath the real system's.
-    with tempfile.TemporaryDirectory(prefix='identity142-') as temporary:
+    with tempfile.TemporaryDirectory(prefix='identity142-') as temporary, contextlib.ExitStack() as wired:
         base = Path(temporary)
+        # VELDO-0153: lander fetches and pushes go through the identity transport, which reaches only a
+        # remote under the identity's owner with that identity's credential. The test wire maps each
+        # identity's URL to its bare remote and answers the fixture credential references.
+        ssh_key = base / 'personal-ssh-key'
+        ssh_key.write_text('fixture key\n')
+        wire = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/identity_wire.py'))['Wire'](
+            base / 'wire', {'fixture/bcengi/token': 'fixture-bcengi-token', 'fixture/personal/ssh': str(ssh_key)})
+        wired.enter_context(wire.active())
         world_temporary = tuple(base / name for name in ('tmp', 'var-tmp', 'shm'))
         for made in world_temporary:
             made.mkdir()
@@ -431,8 +439,10 @@ def _v142_suite():
                 repo = repos[record['id']]
                 remote = base / (record['id'] + '.git')
                 git(base, 'init', '-q', '--bare', str(remote))
-                git(repo, 'remote', 'add', 'origin', str(remote))
-                git(repo, 'push', '-q', 'origin', 'main')
+                git(repo, 'push', '-q', str(remote), 'main')
+                git(repo, 'remote', 'add', 'origin', wire.remote(
+                    'repo', remote, owner=record['remote_owner'],
+                    scheme='ssh' if record['push_credential']['kind'] == 'ssh' else 'https'))
                 for index in (1, 2):
                     sid = 'VELDO-%04d' % (9000 + index)
                     git(repo, 'checkout', '-q', '-B', 'build' + str(index), 'main')
@@ -460,12 +470,12 @@ def _v142_suite():
                         if index == 2:
                             # Another push moves trunk after construction; refuse the old lease,
                             # then construct the re-land on its new watermark with the same evidence.
-                            git(repo, 'fetch', '-q', 'origin', 'main')
+                            git(repo, 'fetch', '-q', str(remote), 'main')
                             git(repo, 'checkout', '-q', '-B', 'colleague', 'FETCH_HEAD')
                             (repo / 'colleague').write_text('moved\n')
                             git(repo, 'add', '.')
                             git(repo, 'commit', '-qm', 'colleague push')
-                            git(repo, 'push', '-q', 'origin', 'HEAD:main')
+                            git(repo, 'push', '-q', str(remote), 'HEAD:main')
                             old_watermark = ops.record()['watermark']
                             ops.candidate['state'] = 'verified'
                             with patch.object(LD, 'verification_organ', return_value=SimpleNamespace(accept=lambda *a, **k: [])):
@@ -497,7 +507,7 @@ def _v142_suite():
             # Both roles and both author fields, including a hidden implementation ancestor.
             for bad_role, bad_field in (('implementation', 'author'), ('implementation', 'committer'),
                                        ('evidence', 'author'), ('evidence', 'committer'), ('ancestor', 'author')):
-                git(repo, 'fetch', '-q', 'origin', 'main')
+                git(repo, 'fetch', '-q', str(base / 'bcengi.git'), 'main')
                 git(repo, 'checkout', '-q', '-B', 'bad-worker', 'FETCH_HEAD')
                 sid = 'VELDO-9999'
                 def commit(message, bad=False):

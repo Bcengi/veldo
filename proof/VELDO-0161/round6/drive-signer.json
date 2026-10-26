@@ -1,0 +1,110 @@
+{
+ "schema": "veldo.drive/v1",
+ "spec_id": "VELDO-0161",
+ "round": 6,
+ "modules": "engine/.veldo",
+ "checks": [
+  [
+   "whole: the owner-only file this host starts with is what host_files renders with no adoption key",
+   true
+  ],
+  [
+   "whole: the read-only judgment finds the signer due on an earlier host [True]",
+   true
+  ],
+  [
+   "whole: one run writes the key, then the host trust's signers, then the installation's copy, each one write point [['adoption_key', 'adoption_signers', 'adoption_signers']]",
+   true
+  ],
+  [
+   "whole: the host holds the adoption signer exactly as a fresh setup lays it down [['adoption-signer namespaces=\"veldo-enrollment\" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJrGcD12xANyw0JRIvs3O/RdJt4DbE2q1bQuIMePBMXM']]",
+   true
+  ],
+  [
+   "whole: a second run finds it laid and writes nothing [False already_done]",
+   true
+  ],
+  [
+   "kill-1: the owner-only file this host starts with is what host_files renders with no adoption key",
+   true
+  ],
+  [
+   "killed at 1 (adoption_key): the run died by SIGKILL [-9]",
+   true
+  ],
+  [
+   "killed at 1 (adoption_key): the next run finishes it to a fresh setup's bytes, writing only what was left [['adoption_signers', 'adoption_signers']]",
+   true
+  ],
+  [
+   "killed at 1 (adoption_key): a run after that writes nothing",
+   true
+  ],
+  [
+   "kill-2: the owner-only file this host starts with is what host_files renders with no adoption key",
+   true
+  ],
+  [
+   "killed at 2 (adoption_signers): the run died by SIGKILL [-9]",
+   true
+  ],
+  [
+   "killed at 2 (adoption_signers): the next run finishes it to a fresh setup's bytes, writing only what was left [['adoption_signers']]",
+   true
+  ],
+  [
+   "killed at 2 (adoption_signers): a run after that writes nothing",
+   true
+  ],
+  [
+   "kill-3: the owner-only file this host starts with is what host_files renders with no adoption key",
+   true
+  ],
+  [
+   "killed at 3 (adoption_signers): the run died by SIGKILL [-9]",
+   true
+  ],
+  [
+   "killed at 3 (adoption_signers): the next run finishes it to a fresh setup's bytes, writing only what was left [[]]",
+   true
+  ],
+  [
+   "killed at 3 (adoption_signers): a run after that writes nothing",
+   true
+  ],
+  [
+   "prepare: the owner-only file this host starts with is what host_files renders with no adoption key",
+   true
+  ],
+  [
+   "prepare: the engine upgrade's prepare step lays the adoption signer as a fresh setup does, each write a point of the upgrade's step log [done ['adoption_key', 'adoption_signers', 'adoption_signers']]",
+   true
+  ],
+  [
+   "refuse-foreign-line: the owner-only file this host starts with is what host_files renders with no adoption key",
+   true
+  ],
+  [
+   "foreign-line: refused naming enrollment_signers, writing nothing [te_root:differs:/tmp/veldo-agent-odv8jenb/tmp/r6-signer-xblzonjb/refuse-foreign-line/host/enrollment_signers: an existing file this run would write differently\n]",
+   true
+  ],
+  [
+   "refuse-copy-mode: the owner-only file this host starts with is what host_files renders with no adoption key",
+   true
+  ],
+  [
+   "copy-mode: refused naming config/enrollment_signers, writing nothing [fers:/tmp/veldo-agent-odv8jenb/tmp/r6-signer-xblzonjb/install-refuse-copy-mode/svc/config/enrollment_signers: an existing file this run would write differently\n]",
+   true
+  ],
+  [
+   "refuse-bad-key: the owner-only file this host starts with is what host_files renders with no adoption key",
+   true
+  ],
+  [
+   "bad-key: refused naming adoption-signer, writing nothing [nput:state_root:differs:/tmp/veldo-agent-odv8jenb/tmp/r6-signer-xblzonjb/refuse-bad-key/keys/adoption-signer: an existing file this run would write differently\n]",
+   true
+  ]
+ ],
+ "passed": 25,
+ "failed": 0
+}

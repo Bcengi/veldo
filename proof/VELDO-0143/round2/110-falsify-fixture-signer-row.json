@@ -1,0 +1,24 @@
+{
+ "commit": "c1bf6dec",
+ "details": [
+  "VELDO-0143 detail: provision/signing-no-agent: no ssh-keygen -Y sign was started with an SSH agent in its environment, though one was named [('api-edge', 'veldo-command'), ('authority', 'veldo-journal')]",
+  "VELDO-0143 detail: service/hand-off: AF_UNIX sockets are refused on this host, so no provisioner can reach a running service over its socket"
+ ],
+ "exit": 1,
+ "failed_rows": [
+  "VELDO-0143 provision/signing-no-agent",
+  "VELDO-0143 service/hand-off"
+ ],
+ "passed": 49,
+ "replacements": [
+  [
+   "proof/VELDO-0152/fixture.py",
+   "capture_output=True, check=True, timeout=20, env=quiet()).stdout.decode()",
+   "capture_output=True, check=True, timeout=20).stdout.decode()"
+  ]
+ ],
+ "stood_in": [
+  "--stage"
+ ],
+ "suite": "110_veldo_0143_new_project"
+}

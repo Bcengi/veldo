@@ -105,7 +105,12 @@ def _v61_suite():
     base = Path(tempfile.mkdtemp(prefix='v61-', dir=runtime if os.path.isdir(runtime) else None))
     connections, launches, observed, stopped = [], [], {}, {}
     globals()['_V61_OBSERVED'] = observed
+    compiled = contextlib.ExitStack()
     try:
+        compiler = load('v61_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
+        # Runtime fixtures stay beside their sockets; compilation belongs to the worker root.
+        code_cache = Path(compiled.enter_context(tempfile.TemporaryDirectory(prefix='compiled-')))
+        compiled.enter_context(compiler.compiled_sources(base, code_cache))
         mods = base / 'installed' / '.veldo'
         (mods / 'runtime').mkdir(parents=True)
         for source in sorted((ROOT / '.veldo').glob('*.py')):
@@ -115,6 +120,7 @@ def _v61_suite():
         INSTALLED_QUALIFICATION = ROOT / '.veldo' / 'runtime' / 'codex-qualification.json'
         if INSTALLED_QUALIFICATION.is_file():
             shutil.copyfile(INSTALLED_QUALIFICATION, mods / 'runtime' / 'codex-qualification.json')
+        compiler.install_main_cache(mods / 'control_launch.py', base, code_cache)
         S = load('v61_store', mods / 'control_store.py')
         L = load('v61_launch', mods / 'control_launch.py')
         D = L.D
@@ -1111,6 +1117,7 @@ sys.exit(payload.get('code', 0))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        compiled.close()
         fake_capture = conform_formats.conform_fake(locals(), '0061_codex_adapter')
         for launch in launches:
             with contextlib.suppress(Exception):

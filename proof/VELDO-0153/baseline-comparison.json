@@ -1,0 +1,183 @@
+{
+  "method": "Named suites run sequentially in a plain git archive of aaef5980 under TMPDIR, with no alternate branch or worktree.",
+  "suites": [
+    {
+      "suite": "103_veldo_0142_git_identities",
+      "baseline_commit": "aaef5980",
+      "baseline_summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 48 passed, 1 failed in 13.79s"
+      ],
+      "current_summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 47 passed, 2 failed in 13.98s"
+      ],
+      "same_failure_labels": false,
+      "baseline_failures": [
+        "SELFTEST FAIL: VELDO-0142 lander/identity-and-reland-authors"
+      ],
+      "additional_failures": [
+        "SELFTEST FAIL: VELDO-0142 lander/worker-commit-mismatch"
+      ],
+      "removed_failures": []
+    },
+    {
+      "suite": "58_veldo_0028_effects",
+      "baseline_commit": "aaef5980",
+      "baseline_summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 34 passed, 43 failed in 17.99s"
+      ],
+      "current_summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 34 passed, 43 failed in 18.27s"
+      ],
+      "same_failure_labels": true,
+      "baseline_failures": [
+        "SELFTEST FAIL: VELDO-0028 effects/completion/provider",
+        "SELFTEST FAIL: VELDO-0028 effects/completion/publication",
+        "SELFTEST FAIL: VELDO-0028 effects/nonce/provider",
+        "SELFTEST FAIL: VELDO-0028 effects/nonce/publication",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-call-covers-every-destination",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-completion-from-destination-state",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-config-selection-parity",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-confirms-one-change",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-destination-despite-hook-text",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-destination-listed-as-resolved",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-destination-without-credentials",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-env-ssh-command",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-exact-ref",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-fan-out-agit-report",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-global-credential-helper",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-global-insteadof",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-global-ssh-command",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-head-change",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-hook-text-without-newline",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-line-break-refused",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-network-profile-strips-coordinates",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-non-utf8-output",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-pre-push-hook",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-push-options",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-records-resolved-destination",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-ref-creation",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-refusal-reaches-caller",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-refused-when-not-at-old-tip",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-rejected-destination-recorded",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-requires-clean-push-exit",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-resolution-in-c-locale",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-resolution-output-checked",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-revoked-reviewer",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-scrub-malformed-address",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-scrub-query-fragment",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-scrub-scp-user-information",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-scrub-transport-prefix",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-smart-http",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-url-rewrite",
+        "SELFTEST FAIL: VELDO-0028 effects/receiver-refused-is-unknown/provider",
+        "SELFTEST FAIL: VELDO-0028 effects/receiver-refused-is-unknown/publication",
+        "SELFTEST FAIL: VELDO-0028 effects/revocation-in-flight/provider",
+        "SELFTEST FAIL: VELDO-0028 effects/revocation-in-flight/publication"
+      ],
+      "additional_failures": [],
+      "removed_failures": []
+    },
+    {
+      "suite": "67_veldo_0056_candidates",
+      "baseline_commit": "aaef5980",
+      "baseline_summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 30 passed, 7 failed in 16.32s"
+      ],
+      "current_summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 28 passed, 9 failed in 3.81s"
+      ],
+      "same_failure_labels": false,
+      "baseline_failures": [
+        "SELFTEST FAIL: VELDO-0056 candidate/detached-held-trunk",
+        "SELFTEST FAIL: VELDO-0056 candidate/named-policy-refusals",
+        "SELFTEST FAIL: VELDO-0056 candidate/observations",
+        "SELFTEST FAIL: VELDO-0056 candidate/rejection-leaves-trunk",
+        "SELFTEST FAIL: VELDO-0056 candidate/whole-candidate",
+        "SELFTEST FAIL: VELDO-0056 ran/candidate/detached-held-trunk",
+        "SELFTEST FAIL: VELDO-0056 ran/candidate/rejection-leaves-trunk"
+      ],
+      "additional_failures": [
+        "SELFTEST FAIL: VELDO-0056 candidate/every-git-operation-checked",
+        "SELFTEST FAIL: VELDO-0056 candidate/git-failures-refuse"
+      ],
+      "removed_failures": []
+    },
+    {
+      "suite": "70_veldo_0057_landing",
+      "baseline_commit": "aaef5980",
+      "baseline_summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 35 passed, 22 failed in 7.10s"
+      ],
+      "current_summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 35 passed, 22 failed in 2.67s"
+      ],
+      "same_failure_labels": true,
+      "baseline_failures": [
+        "SELFTEST FAIL: VELDO-0057 completion/corrupt-each",
+        "SELFTEST FAIL: VELDO-0057 completion/evidence-chain",
+        "SELFTEST FAIL: VELDO-0057 completion/foreign-dispatch",
+        "SELFTEST FAIL: VELDO-0057 completion/projection",
+        "SELFTEST FAIL: VELDO-0057 completion/projection-refused",
+        "SELFTEST FAIL: VELDO-0057 completion/push-disabled",
+        "SELFTEST FAIL: VELDO-0057 completion/readers",
+        "SELFTEST FAIL: VELDO-0057 completion/revision-moved",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/approval",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/authority",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/dependency-unlanded",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/dependency-version",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/proof",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/source",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/tree",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/valid-publishes",
+        "SELFTEST FAIL: VELDO-0057 exact-tip/compare-and-swap",
+        "SELFTEST FAIL: VELDO-0057 exact-tip/moved-tip-refused",
+        "SELFTEST FAIL: VELDO-0057 unconfirmed/confirmed-remote-evidence",
+        "SELFTEST FAIL: VELDO-0057 unconfirmed/failed-no-attempt",
+        "SELFTEST FAIL: VELDO-0057 unconfirmed/moved-after-ack",
+        "SELFTEST FAIL: VELDO-0057 unconfirmed/unknown-stops"
+      ],
+      "additional_failures": [],
+      "removed_failures": []
+    },
+    {
+      "suite": "86_veldo_0148_re_land",
+      "baseline_commit": "aaef5980",
+      "baseline_summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 26 passed, 25 failed in 1.97s"
+      ],
+      "current_summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 26 passed, 25 failed in 2.14s"
+      ],
+      "same_failure_labels": true,
+      "baseline_failures": [
+        "SELFTEST FAIL: VELDO-0148 format/fake-lines",
+        "SELFTEST FAIL: VELDO-0148 grant/fresh-request",
+        "SELFTEST FAIL: VELDO-0148 grant/mixed-approvals",
+        "SELFTEST FAIL: VELDO-0148 grant/mixed-proof",
+        "SELFTEST FAIL: VELDO-0148 grant/never-granted",
+        "SELFTEST FAIL: VELDO-0148 grant/once-per-dispatch",
+        "SELFTEST FAIL: VELDO-0148 grant/revoked-before-answer",
+        "SELFTEST FAIL: VELDO-0148 install/land-station",
+        "SELFTEST FAIL: VELDO-0148 lease/contains-unknown",
+        "SELFTEST FAIL: VELDO-0148 lease/trunk-moved",
+        "SELFTEST FAIL: VELDO-0148 receiver/fast-exit",
+        "SELFTEST FAIL: VELDO-0148 receiver/late-wrapper",
+        "SELFTEST FAIL: VELDO-0148 receiver/normal-exit",
+        "SELFTEST FAIL: VELDO-0148 receiver/placement-error",
+        "SELFTEST FAIL: VELDO-0148 receiver/placement-timeout",
+        "SELFTEST FAIL: VELDO-0148 receiver/pre-release-budget",
+        "SELFTEST FAIL: VELDO-0148 receiver/report-timeout",
+        "SELFTEST FAIL: VELDO-0148 receiver/settled-scope",
+        "SELFTEST FAIL: VELDO-0148 receiver/wrapper-exited",
+        "SELFTEST FAIL: VELDO-0148 reland/conflict-rebuild",
+        "SELFTEST FAIL: VELDO-0148 reland/end-wakes-pass",
+        "SELFTEST FAIL: VELDO-0148 reland/never-forced",
+        "SELFTEST FAIL: VELDO-0148 reland/review-kept",
+        "SELFTEST FAIL: VELDO-0148 reland/stale-subject",
+        "SELFTEST FAIL: VELDO-0172 fake/capture:0148_re_land"
+      ],
+      "additional_failures": [],
+      "removed_failures": []
+    }
+  ]
+}

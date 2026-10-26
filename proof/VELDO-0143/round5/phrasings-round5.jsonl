@@ -1,0 +1,43 @@
+{"shown": "personal/public", "reading": "personal/public", "words": "Keep it private, not public.", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "bcengi/private", "reading": "bcengi/private", "words": "Not under bcengi.", "expected": "refused", "problems": ["invalid_input:correction:identity"], "as_expected": true}
+{"shown": "personal/private", "reading": "personal/public", "words": "Make it public.", "expected": "settles", "problems": [], "as_expected": true}
+{"shown": "bcengi/private", "reading": "personal/private", "words": "Use personal.", "expected": "settles", "problems": [], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/public", "words": "don't host it publicly", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "bcengi/private", "reading": "personal/private", "words": "neither personal nor bcengi", "expected": "refused", "problems": ["invalid_input:correction:identity"], "as_expected": true}
+{"shown": "bcengi/private", "reading": "personal/private", "words": "don't use bcengi and personal", "expected": "refused", "problems": ["invalid_input:correction:identity"], "as_expected": true}
+{"shown": "bcengi/private", "reading": "personal/private", "words": "don't use bcengi and use personal", "expected": "refused", "problems": ["invalid_input:correction:identity:ambiguous"], "as_expected": true}
+{"shown": "bcengi/private", "reading": "personal/private", "words": "don't use bcengi and the personal one", "expected": "refused", "problems": ["invalid_input:correction:identity:ambiguous"], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/public", "words": "it cannot be public", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/public", "words": "dont make it public", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/public", "words": "nothing public please", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/public", "words": "neither public", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/public", "words": "except public", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/public", "words": "other than public", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/public", "words": "anything but public", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/public", "words": "public? no", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/public", "words": "it wont be public", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/public", "words": "cant be public", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/public", "words": "didnt want public", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "bcengi/private", "reading": "bcengi/private", "words": "avoid bcengi", "expected": "refused", "problems": ["invalid_input:correction:identity"], "as_expected": true}
+{"shown": "personal/private", "reading": "personal/public", "words": "it cannot be public", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "personal/private", "reading": "personal/public", "words": "dont make it public", "expected": "refused", "problems": ["invalid_input:correction:visibility"], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/private", "words": "Keep it private, not public.", "expected": "settles", "problems": [], "as_expected": true}
+{"shown": "bcengi/private", "reading": "personal/private", "words": "not under bcengi, use personal", "expected": "settles", "problems": [], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/private", "words": "under personal please, keep it private, not public", "expected": "settles", "problems": [], "as_expected": true}
+{"shown": "personal/private", "reading": "bcengi/public", "words": "put it under Bcengi, call it x, and make it public", "expected": "settles", "problems": [], "as_expected": true}
+{"shown": "bcengi/private", "reading": "personal/private", "words": "use personal and not bcengi", "expected": "settles", "problems": [], "as_expected": true}
+{"shown": "personal/private", "reading": "bcengi/private", "words": "bcengi not personal", "expected": "settles", "problems": [], "as_expected": true}
+{"shown": "bcengi/private", "reading": "personal/private", "words": "bcengi not personal", "expected": "refused", "problems": ["invalid_input:correction:identity"], "as_expected": true}
+{"shown": "personal/private", "reading": "bcengi/private", "words": "no, bcengi", "expected": "settles", "problems": [], "as_expected": true}
+{"shown": "bcengi/private", "reading": "personal/private", "words": "not bcengi or personal", "expected": "refused", "problems": ["invalid_input:correction:identity"], "as_expected": true}
+{"shown": "personal/public", "reading": "personal/public", "words": "public, no", "expected": "limit", "problems": [], "as_expected": null}
+{"shown": "personal/public", "reading": "personal/public", "words": "public - no", "expected": "limit", "problems": [], "as_expected": null}
+{"shown": "personal/public", "reading": "personal/public", "words": "public: no way", "expected": "limit", "problems": [], "as_expected": null}
+{"shown": "personal/public", "reading": "personal/public", "words": "public is wrong", "expected": "limit", "problems": [], "as_expected": null}
+{"shown": "personal/public", "reading": "personal/public", "words": "none of it public", "expected": "limit", "problems": [], "as_expected": null}
+{"shown": "personal/public", "reading": "personal/public", "words": "skip public", "expected": "limit", "problems": [], "as_expected": null}
+{"shown": "personal/public", "reading": "personal/public", "words": "nope, public is wrong", "expected": "limit", "problems": [], "as_expected": null}
+{"shown": "bcengi/private", "reading": "personal/private", "words": "don't use bcengi, and personal", "expected": "limit", "problems": [], "as_expected": null}
+{"shown": "personal/private", "reading": "personal/public", "words": "not only private but public", "expected": "limit", "problems": [], "as_expected": null}
+{"shown": "personal/private", "reading": "personal/public", "words": "no rush make it public", "expected": "limit", "problems": ["invalid_input:correction:visibility"], "as_expected": null}
+{"cases": 42, "not_as_expected": 0}

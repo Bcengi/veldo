@@ -1,0 +1,136 @@
+{
+ "all_killed": false,
+ "baseline": {
+  "error": null,
+  "exit": 0,
+  "failed_rows": [
+   "VELDO-0139 install/assets",
+   "VELDO-0139 setup/lays-down",
+   "VELDO-0139 refuse/writes-nothing",
+   "VELDO-0139 refuse/existing-store",
+   "VELDO-0139 edge/enrolled-with-possession",
+   "VELDO-0139 chat/enrolled",
+   "VELDO-0139 ingress/configuration",
+   "VELDO-0139 token/never-copied",
+   "VELDO-0139 service/starts-inert",
+   "VELDO-0139 journey/qualified-and-active",
+   "VELDO-0139 genesis/owner-signed",
+   "VELDO-0139 qualification/one-request-across-restart",
+   "VELDO-0139 rollback/rerun",
+   "VELDO-0139 store/private-and-closed",
+   "VELDO-0139 host-trust/directory-checked",
+   "VELDO-0139 qualification/opening-retried"
+  ],
+  "rows": 43,
+  "seconds": 1.264,
+  "target": false
+ },
+ "cases": [
+  {
+   "case": "setup161-adoption-signer-omitted",
+   "count": 43,
+   "error": null,
+   "exit": 0,
+   "failed_rows": [
+    "VELDO-0139 install/assets",
+    "VELDO-0139 setup/lays-down",
+    "VELDO-0139 refuse/writes-nothing",
+    "VELDO-0139 refuse/existing-store",
+    "VELDO-0139 edge/enrolled-with-possession",
+    "VELDO-0139 chat/enrolled",
+    "VELDO-0139 ingress/configuration",
+    "VELDO-0139 token/never-copied",
+    "VELDO-0139 service/starts-inert",
+    "VELDO-0139 journey/qualified-and-active",
+    "VELDO-0139 genesis/owner-signed",
+    "VELDO-0139 qualification/one-request-across-restart",
+    "VELDO-0139 rollback/rerun",
+    "VELDO-0139 store/private-and-closed",
+    "VELDO-0139 host-trust/directory-checked",
+    "VELDO-0139 qualification/opening-retried"
+   ],
+   "killed": false,
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_digest": "6ecf012d8c08ecc60d28d2d80d7a5bd1c81e972023aa59b56574ed2bbc6a5ee9",
+   "old_digest": "6434e6b672a30244758d35afc075cfc443eb6e1d4ff01b9ea0e69a5ee059d84e",
+   "rows": [
+    "setup/lays-down"
+   ],
+   "rows_lost": [],
+   "seconds": 1.25,
+   "target": false
+  },
+  {
+   "case": "setup161-adoption-signer-wrong-key",
+   "count": 43,
+   "error": null,
+   "exit": 0,
+   "failed_rows": [
+    "VELDO-0139 install/assets",
+    "VELDO-0139 setup/lays-down",
+    "VELDO-0139 refuse/writes-nothing",
+    "VELDO-0139 refuse/existing-store",
+    "VELDO-0139 edge/enrolled-with-possession",
+    "VELDO-0139 chat/enrolled",
+    "VELDO-0139 ingress/configuration",
+    "VELDO-0139 token/never-copied",
+    "VELDO-0139 service/starts-inert",
+    "VELDO-0139 journey/qualified-and-active",
+    "VELDO-0139 genesis/owner-signed",
+    "VELDO-0139 qualification/one-request-across-restart",
+    "VELDO-0139 rollback/rerun",
+    "VELDO-0139 store/private-and-closed",
+    "VELDO-0139 host-trust/directory-checked",
+    "VELDO-0139 qualification/opening-retried"
+   ],
+   "killed": false,
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_digest": "4587b3a1489386df57524f2f5ba3338d3ada47c8934338d18085651ccf179e75",
+   "old_digest": "6434e6b672a30244758d35afc075cfc443eb6e1d4ff01b9ea0e69a5ee059d84e",
+   "rows": [
+    "setup/lays-down"
+   ],
+   "rows_lost": [],
+   "seconds": 1.229,
+   "target": false
+  },
+  {
+   "case": "setup161-extra-enrollment-signer",
+   "count": 43,
+   "error": null,
+   "exit": 0,
+   "failed_rows": [
+    "VELDO-0139 install/assets",
+    "VELDO-0139 setup/lays-down",
+    "VELDO-0139 refuse/writes-nothing",
+    "VELDO-0139 refuse/existing-store",
+    "VELDO-0139 edge/enrolled-with-possession",
+    "VELDO-0139 chat/enrolled",
+    "VELDO-0139 ingress/configuration",
+    "VELDO-0139 token/never-copied",
+    "VELDO-0139 service/starts-inert",
+    "VELDO-0139 journey/qualified-and-active",
+    "VELDO-0139 genesis/owner-signed",
+    "VELDO-0139 qualification/one-request-across-restart",
+    "VELDO-0139 rollback/rerun",
+    "VELDO-0139 store/private-and-closed",
+    "VELDO-0139 host-trust/directory-checked",
+    "VELDO-0139 qualification/opening-retried"
+   ],
+   "killed": false,
+   "module": ".veldo/control_factory_setup.py",
+   "mutant_digest": "79aca79d2bfedc054c8ce250fe49e8b7849711f6c4353c6b81864b2dd8d1030f",
+   "old_digest": "6434e6b672a30244758d35afc075cfc443eb6e1d4ff01b9ea0e69a5ee059d84e",
+   "rows": [
+    "setup/lays-down"
+   ],
+   "rows_lost": [],
+   "seconds": 1.252,
+   "target": false
+  }
+ ],
+ "schema": "veldo.mutation-registration/v1",
+ "spec_id": "VELDO-0161",
+ "status": "executed by proof/VELDO-0161/round4/drive_setup.py outside the confined stage",
+ "suite": "73_veldo_0139_factory_setup.py"
+}

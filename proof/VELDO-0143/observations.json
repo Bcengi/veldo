@@ -1,0 +1,34 @@
+{
+ "command": "python3 scripts/selftest.py --suite 110_veldo_0143_new_project",
+ "commit": "bf6c3911",
+ "environment": "this sandbox: AF_UNIX refused (the identity wire fence runs without its recording SSH agent, printed), no installed graph runtime",
+ "expects_passed": 41,
+ "failed_rows": [
+  "pm/new-project-run"
+ ],
+ "falsifier_baseline_count": 68,
+ "rows": {
+  "activation/admitted-without-question": "green",
+  "activation/applied": "green",
+  "activation/failed-activates-nothing": "green",
+  "activation/new-line": "green",
+  "activation/order": "green",
+  "factory/own-repository": "green",
+  "intake/new-project-routed": "green",
+  "pm/new-project-run": "red here: the installed graph runtime is unavailable (runtime_unavailable); host",
+  "proposal/correction": "green",
+  "proposal/fields": "green",
+  "proposal/nothing-asked": "green",
+  "proposal/one-answer": "green",
+  "proposal/refusals": "green",
+  "provision/adoption-path": "green",
+  "provision/answered-and-corrected": "green",
+  "provision/created": "green",
+  "provision/directory-not-empty": "green",
+  "provision/observed": "green",
+  "provision/settlement-required": "green",
+  "provision/step-failures": "green",
+  "service/provisions": "green"
+ },
+ "suite": "110_veldo_0143_new_project"
+}

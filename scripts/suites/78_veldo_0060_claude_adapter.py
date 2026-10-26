@@ -131,7 +131,12 @@ def _v60_suite():
     contained_launches = []
     connections = []
     escaped = []  # descendants a stop left alive on purpose, ended at the suite's end
+    compiled = contextlib.ExitStack()
     try:
+        compiler = load('v60_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
+        # Runtime fixtures stay beside their sockets; compilation belongs to the worker root.
+        code_cache = Path(compiled.enter_context(tempfile.TemporaryDirectory(prefix='compiled-')))
+        compiled.enter_context(compiler.compiled_sources(base, code_cache))
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
         for source in sorted((ROOT / '.veldo').glob('*.py')):
@@ -139,6 +144,7 @@ def _v60_suite():
         for name, source in PRODUCTION.items():
             if Path(source).is_file():
                 shutil.copyfile(source, mods / name)
+        compiler.install_main_cache(mods / 'control_launch.py', base, code_cache)
         S = load('v60_store', mods / 'control_store.py')
         L = load('v60_launch', mods / 'control_launch.py')
         D = L.D
@@ -1635,6 +1641,7 @@ sys.exit(payload.get('code', 0))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        compiled.close()
         fake_capture = conform_formats.conform_fake(locals(), '0060_claude_adapter')
         # The contained rows' scopes: the run's slice stopped, its failed units cleared, nothing installed.
         with contextlib.suppress(Exception):

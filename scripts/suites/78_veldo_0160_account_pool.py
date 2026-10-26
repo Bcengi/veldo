@@ -106,11 +106,15 @@ def _v160_suite():
     live_step = fake_formats.live_step
 
     started = time.monotonic()
-    fast = fast_temp()
+    fast = None if os.environ.get('TMPDIR') else fast_temp()
     base = Path(tempfile.mkdtemp(prefix='v160-', dir=fast))
     connections = []
     released = []
+    compiled = contextlib.ExitStack()
     try:
+        compiler = load('v160_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
+        code_cache = base / 'compiled'
+        compiled.enter_context(compiler.compiled_sources(base, code_cache))
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
         for source in sorted((ROOT / '.veldo').glob('*.py')):
@@ -118,6 +122,7 @@ def _v160_suite():
         for name, source in PRODUCTION.items():
             if Path(source).is_file():
                 shutil.copyfile(source, mods / name)
+        compiler.install_main_cache(mods / 'control_launch.py', base, code_cache)
         S = load('v160_store', mods / 'control_store.py')
         L = load('v160_launch', mods / 'control_launch.py')
         D = L.D
@@ -2347,6 +2352,7 @@ sys.exit(payload.get('code', 0))
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
     finally:
+        compiled.close()
         fake_capture = conform_formats.conform_fake(locals(), '0160_account_pool')
         with contextlib.suppress(Exception):
             for name in ('ac1', 'moved', 'reset', 'observe', 'added', 'usage', 'order'):

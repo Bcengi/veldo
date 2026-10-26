@@ -371,14 +371,17 @@ def cases():
                 'publication-confirms-one-change')
     # R4: an ordinary git push keeps what configured Git allows. Reintroducing send-pack loses
     # the clone's hooks, its URL rewrites and every HTTP(S) remote at once.
+    # VELDO-0161 round 11: url-rewrite is no longer a target. VELDO-0153 AC3 made it a refusal
+    # before any push (binding_mismatch:identity_transport_config), so it cannot see the push's form.
     send_pack = "        push = transport('send-pack',"
     add(28, 'effects-push-by-send-pack', '58_veldo_0028_effects.py', 'control_effect_executor.py', push, send_pack,
-        ['effects/publication-' + name for name in ('pre-push-hook', 'url-rewrite', 'smart-http')])
-    publication('effects-push-skips-hooks', push, push.replace("'push',", "'push', '--no-verify',"),
-                'publication-pre-push-hook')
-    newline_remote = "        if '\\n' in remote:\n"
-    publication('effects-remote-must-exist-verbatim', newline_remote,
-                "        if '\\n' in remote or not (Path(remote).exists() or '://' in remote):\n", 'publication-url-rewrite')
+        ['effects/publication-' + name for name in ('pre-push-hook', 'smart-http')])
+    # AC3 hook removal is registered once as identity153-pre-push-hook.
+    # AC3 supersedes clone routing. A checked GitHub URL need not name a local path.
+    owner_check = "            target = transport_module.check_remote(push_identity, remote, operation='remote_check',\n"
+    publication('effects-remote-must-exist-verbatim', owner_check,
+                "            if not Path(remote).exists():\n                raise E.Refused('invalid_input:remote')\n" + owner_check,
+                'publication-url-rewrite')
     publication('effects-push-transports-restricted', push,
                 push.replace("transport('-c', 'push.followTags=false',", "transport('-c', 'protocol.http.allow=never', '-c', 'push.followTags=false',"),
                 'publication-smart-http')
@@ -399,64 +402,65 @@ def cases():
     # resolution from configuration, and completion is each destination's state after the push.
     # Each mutant loses one part of that account or reads it from text the push prints.
     routed = 'publication-records-resolved-destination'
+    # VELDO-0161 round 11: destination-without-credentials is no longer a target. Since VELDO-0153
+    # AC2 its credential-bearing URL is refused before anything is recorded, so a dropped record
+    # leaks nothing it could see.
     add(28, 'effects-destination-not-recorded', '58_veldo_0028_effects.py', 'control_effects.py',
         "        result['destination'] = destination", "        pass",
-        ['effects/' + routed, 'effects/publication-destination-without-credentials'])
-    parsed = ("        pushed = []\n        for line in lines[1:]:\n            if not line.startswith('  Push  URL: '):\n"
-              "                break\n            pushed.append(line[len('  Push  URL: '):])\n")
-    shape = "                or lines[1 + len(pushed):2 + len(pushed)] != ['  HEAD branch: (not queried)']):"
+        ['effects/' + routed])
+    parsed = "        pushed = [remote]\n"
+    push_config = "            configured = git('config', '--get-all', 'remote.' + remote + '.pushurl')"
+    fetch_config = "                configured = git('config', '--get-all', 'remote.' + remote + '.url')"
     # The fetch-side resolution (`ls-remote --get-url`) in place of git's push resolution: it
     # misses pushInsteadOf and pushurl routing, so the record names the authorized repository.
-    add(28, 'effects-destinations-from-fetch-url', '58_veldo_0028_effects.py', 'control_effect_executor.py', parsed,
-        "        pushed = [transport('ls-remote', '--get-url', remote).stdout.strip()]\n",
-        ['effects/' + routed, 'effects/publication-destination-despite-hook-text',
-         'effects/publication-rejected-destination-recorded'], also=[(shape, "                or False):")])
+    add(28, 'effects-destinations-from-fetch-url', '58_veldo_0028_effects.py', 'control_effect_executor.py', push_config,
+        push_config.replace("'.pushurl'", "'.url'"), ['effects/' + routed])
     # The destinations read from the To lines a dry-run push prints: hook text reaches them.
-    add(28, 'effects-destinations-from-dry-run-output', '58_veldo_0028_effects.py', 'control_effect_executor.py', parsed,
-        "        pushed = [line[len('To '):] for line in transport('push', '--dry-run', '--porcelain', remote,\n"
-        "                  payload['commit'] + ':' + ref).stdout.splitlines() if line.startswith('To ')]\n",
+    # AC3: a dry-run is no longer used. Reintroduce trusting To lines in the actual push output.
+    destination_record = "        destination = {'authorized_url': scrubbed_url(remote),"
+    add(28, 'effects-destinations-from-push-output', '58_veldo_0028_effects.py', 'control_effect_executor.py', destination_record,
+        "        pushed = [line[3:] for line in push.stdout.splitlines() if line.startswith('To ')]\n" + destination_record,
         ['effects/publication-destination-despite-hook-text', 'effects/publication-rejected-destination-recorded',
-         'effects/publication-hook-text-without-newline'], also=[(shape, "                or False):")])
-    # Git's resolution read in the isolated profile, so global routing is missed.
-    add(28, 'effects-resolution-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "        shown = transport('remote', 'show', '-n', '--', remote, env=dict(",
-        "        shown = git('remote', 'show', '-n', '--', remote, env=dict(",
-        ['effects/' + routed, 'effects/publication-config-selection-parity'])
+         'effects/publication-hook-text-without-newline'])
+    # Named-remote config reads use the operator's network profile, admitting global routing.
+    add(28, 'effects-resolution-network-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        push_config, push_config[:-1] + ", profile='network')",
+        ['effects/' + routed], also=[(fetch_config, fetch_config[:-1] + ", profile='network')")])
     # The guard against a configured URL holding a line break removed.
     add(28, 'effects-newline-config-accepted', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "        if urls.returncode not in (0, 1) or any(", "        if False and any(",
-        ['effects/' + routed, 'effects/publication-line-break-refused'])
+        "            targets = configured.stdout.splitlines()", "            targets = configured.stdout.splitlines()[:1]",
+        ['effects/publication-resolution-output-checked'])
     complete = "        complete = push.returncode == 0 and all(outcome == 'at-tip' for outcome in outcomes)"
-    # Completion from the push's exit status alone, from the first destination only, or from the
-    # To lines the push prints.
+    # Completion from the push's exit status alone, or from the To lines the push prints.
     add(28, 'effects-completion-from-exit-status', '58_veldo_0028_effects.py', 'control_effect_executor.py', complete,
         "        complete = push.returncode == 0",
-        ['effects/publication-completion-from-destination-state', 'effects/publication-fan-out-agit-report'])
-    add(28, 'effects-completion-first-destination', '58_veldo_0028_effects.py', 'control_effect_executor.py', complete,
-        "        complete = push.returncode == 0 and outcomes[:1] == ['at-tip']",
-        ['effects/publication-fan-out-agit-report'])
+        ['effects/publication-completion-from-destination-state'])
     publication('effects-completion-from-push-output', complete,
                 complete + "\n        complete = complete and all('To ' + url in push.stdout.splitlines() for url in pushed)",
                 'publication-hook-text-without-newline')
-    # Each destination's state read at the authorized URL instead of at the destination.
-    add(28, 'effects-state-read-at-authorized-url', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "            after = remote_refs(url)\n", "            after = remote_refs(remote)\n",
-        ['effects/publication-completion-from-destination-state', 'effects/publication-fan-out-agit-report'],
-        also=[("        before = [remote_refs(url) for url in pushed]", "        before = [remote_refs(remote) for url in pushed]")])
+    # AC3 makes authorized and actual URLs identical. Local state is not remote evidence.
+    add(28, 'effects-state-read-locally', '58_veldo_0028_effects.py', 'control_effect_executor.py', listing,
+        "            listed = git('ls-remote', '--symref', '.')",
+        ['effects/publication-destination-despite-hook-text', 'effects/publication-rejected-destination-recorded'])
     # Output read strictly as UTF-8: the push's (a hook's Latin-1 byte) or a listing's (a ref name).
     publication('effects-push-output-read-strictly', "                         remote, payload['commit'] + ':' + ref, steps=len(pushed))\n",
-                "                         remote, payload['commit'] + ':' + ref, steps=len(pushed))\n        push.stdout.encode('utf-8')\n",
+                "                         remote, payload['commit'] + ':' + ref, steps=len(pushed))\n        push.stdout.encode('utf-8')\n        push.stderr.encode('utf-8')\n",
                 'publication-non-utf8-output')
     publication('effects-listing-read-strictly', "            if listed.returncode:\n                return None\n",
                 "            listed.stdout.encode('utf-8')\n            if listed.returncode:\n                return None\n",
                 'publication-non-utf8-output')
     # Credentials: the authorized URL, or the resolved destinations, recorded as given.
+    # VELDO-0161 round 11: the record's scrubbing is defense in depth behind VELDO-0153's owner
+    # check, which refuses user information, a query, a fragment and a transport prefix before the
+    # record is built, and the scrub rows call scrubbed_url directly. Neither former target
+    # (destination-without-credentials, scrub-transport-prefix) can reach the record site, so both
+    # cases target the row that runs the receiver past a stand-in owner check that lets them through.
+    record_scrub = 'publication-record-scrubs-destination'
     publication('effects-destination-with-credentials', "        destination = {'authorized_url': scrubbed_url(remote),",
-                "        destination = {'authorized_url': remote,", 'publication-destination-without-credentials')
-    add(28, 'effects-destinations-not-scrubbed', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "                       'destinations': [{'url': scrubbed_url(url), 'outcome': outcome}",
-        "                       'destinations': [{'url': url, 'outcome': outcome}",
-        ['effects/publication-destination-without-credentials', 'effects/publication-scrub-transport-prefix'])
+                "        destination = {'authorized_url': remote,", record_scrub)
+    publication('effects-destinations-not-scrubbed',
+                "                       'destinations': [{'url': scrubbed_url(url), 'outcome': outcome}",
+                "                       'destinations': [{'url': url, 'outcome': outcome}", record_scrub)
     # Scrubbing by parsing: an scp-style address's user information ends at its LAST `@`, a
     # transport-prefixed URL is scrubbed in its address, and a query or fragment is dropped.
     scp = "    rest = url[url.rfind('@', 0, len(url) if slash < 0 else slash) + 1:]"
@@ -470,15 +474,12 @@ def cases():
     # R8 B1: nothing is pushed unless every destination was listed first and holds the expected
     # old state (the old tip, or absent for a creation); the refusal is named, recorded as
     # conclusive, reconciled as stopped and returned again on a replay.
-    stale_rows = ['effects/publication-refused-when-not-at-old-tip', 'effects/' + routed]
     precheck = ("        if any(state is None or (ref in state if absent else state.get(ref) != payload['old_tip'])\n"
                 "               for state in before):")
     publication('effects-push-without-old-tip-check', precheck, "        if False:", 'publication-refused-when-not-at-old-tip')
-    add(28, 'effects-old-tip-checked-at-first-destination', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        precheck, precheck.replace('for state in before):', 'for state in before[:1]):'), stale_rows)
     add(28, 'effects-unlisted-destination-pushed', '58_veldo_0028_effects.py', 'control_effect_executor.py',
         precheck, precheck.replace('state is None or (', 'state is not None and ('),
-        stale_rows + ['effects/publication-config-selection-parity'])
+        ['effects/publication-refused-when-not-at-old-tip'])
     add(28, 'effects-receiver-refusal-as-unknown', '58_veldo_0028_effects.py', 'control_effect_executor.py',
         "            observation = dict(accepted, status='refused', refusal=error.code, evidence=None)",
         "            observation = dict(accepted, status='unknown', evidence=None)",
@@ -496,18 +497,13 @@ def cases():
     publication('effects-creation-over-existing-ref', precheck, precheck.replace('(ref in state if absent', '(False if absent'),
                 'publication-ref-creation')
     # R8 B2: every destination must resolve to itself for its listing, or it is refused.
-    itself = ("        for url in pushed:\n            itself = transport('ls-remote', '--get-url', '--', url)\n"
-              "            if itself.returncode or itself.stdout != url + '\\n':")
-    publication('effects-destination-listing-unchecked', itself, itself.replace(
-        "            if itself.returncode or itself.stdout != url + '\\n':", "            if False:"),
-        'publication-destination-listed-as-resolved')
-    publication('effects-destination-listing-first-only', itself,
-                itself.replace('        for url in pushed:\n', '        for url in pushed[:1]:\n'),
-                'publication-destination-listed-as-resolved')
-    # R8 time limits: the push is bounded per destination, and the supervisor's limit follows
-    # the windows the executor announces.
-    publication('effects-push-timeout-not-scaled', "remote, payload['commit'] + ':' + ref, steps=len(pushed))",
-                "remote, payload['commit'] + ':' + ref)", 'publication-call-covers-every-destination')
+    # AC3 replaces a second resolution with a guard over the literal URL's whole section.
+    itself = "or (section.lower() == 'remote' and subsection == remote"
+    add(28, 'effects-url-section-pushurl-unchecked', '58_veldo_0028_effects.py', 'control_git_identity_transport.py',
+        itself, itself + " and name.lower() != 'pushurl'", ['effects/publication-destination-listed-as-resolved'])
+    # AC3 has one destination: retain its configured step budget and supervisor window.
+    publication('effects-push-step-timeout-shortened', "remote, payload['commit'] + ':' + ref, steps=len(pushed))",
+                "remote, payload['commit'] + ':' + ref, steps=1 / step)", 'publication-call-covers-every-destination')
     publication('effects-call-window-not-extended', "                deadline = time.monotonic() + answer['window_seconds']",
                 "                pass", 'publication-call-covers-every-destination')
     # R8 scrub: anything that does not parse into a well-formed host is over-scrubbed.
@@ -518,42 +514,45 @@ def cases():
     publication('effects-scrub-malformed-host-kept', "        if not _AUTHORITY.fullmatch(host):", "        if False:", malformed)
     publication('effects-scrub-at-in-path-kept', "            if '@' in tail:", "            if False:", malformed)
     # R8 rules pinned by rows of their own: a clean push exit, the receiver-URL line-break guard,
-    # the shape of git's report and the configuration read's exit status, and the C locale.
+    # the configuration values and the configuration read's exit status.
     exit_rule = 'publication-requires-clean-push-exit'
     publication('effects-completion-ignores-exit-status', complete,
                 "        complete = all(outcome == 'at-tip' for outcome in outcomes)", exit_rule)
     publication('effects-completion-ignores-hook-failure', complete,
                 complete.replace('push.returncode == 0', 'push.returncode != 128'), exit_rule)
-    publication('effects-remote-line-break-accepted', "        if '\\n' in remote:\n", "        if False:\n",
+    publication('effects-remote-line-break-accepted', owner_check,
+                "            remote = remote.partition('\\n')[0]\n" + owner_check,
                 'publication-line-break-refused')
     report = 'publication-resolution-output-checked'
-    publication('effects-show-exit-unchecked', "        if (shown.returncode or not lines", "        if (not lines", report)
-    publication('effects-header-unchecked',
-                "        lines = shown.stdout[len(head):].split('\\n') if shown.stdout.startswith(head) else []",
-                "        lines = shown.stdout.split('\\n')[1:]", report)
-    publication('effects-fetch-line-unchecked', "not lines[0].startswith('  Fetch URL: ') or ", "", report)
-    publication('effects-empty-resolution-accepted', " or not pushed\n", "\n", report)
-    publication('effects-head-line-unchecked', shape, "                or False):", report)
-    publication('effects-config-exit-unchecked', "        if urls.returncode not in (0, 1) or any(", "        if any(", report)
-    publication('effects-resolution-locale-not-forced', "env=dict(os.environ, LC_ALL='C'))", "env=None)",
-                'publication-resolution-in-c-locale')
-    publication('effects-resolution-messages-locale-only', "env=dict(os.environ, LC_ALL='C'))",
-                "env=dict(os.environ, LC_MESSAGES='C'))", 'publication-resolution-in-c-locale')
-    # R5 3: transport operations run in git_process's network profile. Reintroducing the isolated
-    # profile loses global config and transport variables at once; each git_process mutant loses
-    # one of them, or stops stripping the coordinates the profile must still strip.
-    capability = ['effects/publication-' + name for name in
-                  ('global-insteadof', 'global-credential-helper', 'env-ssh-command', 'global-ssh-command',
-                   'config-selection-parity')]
-    add(28, 'effects-transport-isolated-profile', '58_veldo_0028_effects.py', 'control_effect_executor.py',
-        "            return git(*args, profile='network', env=env, steps=steps)", "            return git(*args, env=env, steps=steps)", capability)
+    # AC3 uses machine config values, not the former remote-show header/fetch/footer grammar.
+    resolution_guard = "            if configured.returncode or len(targets) != 1:"
+    publication('effects-resolution-config-exit-unchecked', resolution_guard, "            if len(targets) != 1:", report)
+    publication('effects-empty-resolution-accepted', parsed, "        pushed = []\n", routed)
+    config_guard = "        if local.returncode or transport.config_overrides(local.stdout, remote):"
+    add(28, 'effects-local-config-guard-omitted', '58_veldo_0028_effects.py', 'git_process.py',
+        config_guard, "        if False:", ['effects/' + report])
+    add(28, 'effects-config-exit-unchecked', '58_veldo_0028_effects.py', 'git_process.py',
+        config_guard, "        if transport.config_overrides(local.stdout, remote):", ['effects/' + report])
+    # AC1: factory transport uses the identity profile. Observe its selection in a socket-free
+    # suite so an omitted profile cannot crash the hermetic integration fence. The following
+    # network-profile cases retain the operator profile's configuration rules.
+    add(28, 'effects-transport-isolated-profile', '108_veldo_0153_executor_profile.py', 'control_effect_executor.py',
+        "                return git(*args, profile='identity', env=env, steps=steps)",
+        "                return git(*args, env=env, steps=steps)", ['executor-unit/identity-profile'])
+    # VELDO-0161 round 11: VELDO-0153 AC1 moved publication to the identity profile, so the rows
+    # that judged the network profile through a publication no longer reach it: global-insteadof,
+    # global-credential-helper, global-ssh-command, env-ssh-command and config-selection-parity.
+    # The network profile's own rules are judged by network-profile-strips-coordinates, which reads
+    # clean_env(profile='network') directly and requires every transport and configuration
+    # variable kept as given.
+    network_row = ['effects/publication-network-profile-strips-coordinates']
     add(28, 'effects-network-profile-without-global-config', '58_veldo_0028_effects.py', 'git_process.py',
         '        result.update(GIT_NO_REPLACE_OBJECTS="1")',
         '        result.update(GIT_NO_REPLACE_OBJECTS="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")',
-        [label for label in capability if 'global' in label or 'selection' in label])
+        network_row)
     add(28, 'effects-network-profile-drops-transport-variables', '58_veldo_0028_effects.py', 'git_process.py',
         '        result.update({k: v for k, v in source.items() if k in TRANSPORT_VARIABLES})',
-        '        pass', ['effects/publication-env-ssh-command'])
+        '        pass', network_row)
     add(28, 'effects-network-profile-keeps-coordinates', '58_veldo_0028_effects.py', 'git_process.py',
         '        result.update({k: v for k, v in source.items() if k in TRANSPORT_VARIABLES})',
         '        result.update({k: v for k, v in source.items() if k.startswith("GIT_")})',
@@ -564,11 +563,10 @@ def cases():
     # other keeps them but drops the numbered GIT_CONFIG_KEY_<n>/GIT_CONFIG_VALUE_<n> entries.
     configuration = ('        result.update({k: v for k, v in source.items()\n'
                      '                       if k in CONFIGURATION_VARIABLES or INJECTED_CONFIGURATION.fullmatch(k)})')
-    selection_rows = ['effects/publication-config-selection-parity', 'effects/publication-network-profile-strips-coordinates']
     add(28, 'effects-network-profile-drops-config-selection', '58_veldo_0028_effects.py', 'git_process.py', configuration,
-        '        result.update({k: v for k, v in source.items() if INJECTED_CONFIGURATION.fullmatch(k)})', selection_rows)
+        '        result.update({k: v for k, v in source.items() if INJECTED_CONFIGURATION.fullmatch(k)})', network_row)
     add(28, 'effects-network-profile-drops-config-injection', '58_veldo_0028_effects.py', 'git_process.py', configuration,
-        '        result.update({k: v for k, v in source.items() if k in CONFIGURATION_VARIABLES})', selection_rows)
+        '        result.update({k: v for k, v in source.items() if k in CONFIGURATION_VARIABLES})', network_row)
     # VELDO-0036: each reservation assertion has two independently driven defects.
     def reservation(name, module, old, new, row):
         add(36, name, '58_veldo_0036_reservations.py', module, old, new,
@@ -3762,9 +3760,9 @@ def cases():
     candidate('candidate-projection-skipped', '            self._project(workspace, sid, identity)\n',
               '            pass  # defect: the projections are not derived\n', 'whole-candidate')
     candidate('candidate-watermark-from-caller-trunk',
-              '            if self.push:\n                url = self._git(self.repo_root, "remote", "get-url", self.remote, profile="network")',
+              '            if self.push:\n                url = self._git(self.repo_root, "config", "--get", "remote." + self.remote + ".url").stdout.strip()',
               '            if False:  # defect: the watermark is the caller\'s local trunk, never the published one\n'
-              '                url = self._git(self.repo_root, "remote", "get-url", self.remote, profile="network")',
+              '                url = self._git(self.repo_root, "config", "--get", "remote." + self.remote + ".url").stdout.strip()',
               'whole-candidate')
     # AC2, declared: a merge failure is ignored and the land continues to the gate. The fixed code refuses a
     # real conflict AND verifies the candidate's ancestry, so the defect needs both guards gone.
@@ -3774,8 +3772,8 @@ def cases():
               '        if real:\n            self._git(workspace, "merge", "--abort")  # defect: the failed merge is ignored\n'
               '            return\n', 'git-failures-refuse', also=[(ancestry, unverified)])
     candidate('candidate-fetch-failure-ignored',
-              '                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="network")\n',
-              '                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="network", ok=None)'
+              '                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="identity", remote_url=url)\n',
+              '                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="identity", remote_url=url, ok=None)'
               '  # defect: a failed fetch is ignored\n', 'git-failures-refuse')
     candidate('candidate-missing-evidence-accepted',
               '            if not listed.stdout.strip():\n'
@@ -4579,8 +4577,9 @@ def cases():
             "            if recorded is not None and recorded['data'].get('status') != 'refused':  # defect: a failed one is tried again\n"
             '                return self._recorded(unit, candidate, dispatch, recorded)\n', ['unconfirmed/failed-no-attempt'])
     landing('landing-confirmation-read-from-local-clone',
-            "        found = self._git(self.clone, 'ls-remote', '--', self.remote, self.ref, profile='network')\n",
-            "        found = self._git(self.clone, 'ls-remote', '--', '.', self.ref, profile='network')"
+            "        found = self._git(self.clone, 'ls-remote', '--', remote, self.ref, profile='identity',\n"
+            "                          push_identity=identity, remote_url=remote)\n",
+            "        found = self._git(self.clone, 'ls-remote', '--', '.', self.ref)"
             "  # defect: the publication clone is read for the remote\n", ['unconfirmed/confirmed-remote-evidence'])
     landing('landing-confirmation-from-executor-answer', "        if tip != fields['commit']:\n",
             "        if False:  # defect: the executor's answer is taken for the remote's\n", ['unconfirmed/moved-after-ack'])
@@ -5891,8 +5890,10 @@ def cases():
                 "        if acceptor != owner:  # defect: whose message it was is not compared\n",
                 ['own-message/non-owner-presented'])
     own_message('own-message-operation-missing',
-                "OPERATIONS = ('propose', 'amend', 'accept', 'accept_message', 'propose_feature', 'assess', 'cancel', 'reopen')\n",
-                "OPERATIONS = ('propose', 'amend', 'accept', 'propose_feature', 'assess', 'cancel', 'reopen')  # defect\n",
+                "OPERATIONS = ('propose', 'amend', 'accept', 'accept_message', 'accept_decided', 'propose_feature', 'assess', 'cancel',\n"
+                "              'reopen')\n",
+                "OPERATIONS = ('propose', 'amend', 'accept', 'accept_decided', 'propose_feature', 'assess', 'cancel',\n"
+                "              'reopen')\n",
                 ['own-message/telegram', 'own-message/api'])
     own_message('own-message-path-unobserved',
                 "            observation['acceptance'] = self._acceptance_trace(after['acceptance'])\n",
@@ -5934,9 +5935,14 @@ def cases():
                 ['evidence/repeat'])
     # Review fix (declared falsifier): whoever wrote the bound fields is not checked, so a member's own
     # outcome, scope and assessor are accepted by the owner's message.
+    # VELDO-0143's decided path has the same guards; keep these defects on the message path.
     own_message('own-message-author-unchecked',
-                "        if not authors or any(a != owner and a not in managers for a in authors):\n",
-                "        if False:  # defect: whoever wrote the bound fields is not checked\n",
+                "            raise Refused('not_owner:source', 'the message is not the project owner\\'s own')\n"
+                "        authors, managers = bound_authors(data), project_managers(self.store, conn, params['project'])\n"
+                '        if not authors or any(a != owner and a not in managers for a in authors):\n',
+                "            raise Refused('not_owner:source', 'the message is not the project owner\\'s own')\n"
+                "        authors, managers = bound_authors(data), project_managers(self.store, conn, params['project'])\n"
+                '        if False:  # defect: whoever wrote the bound fields is not checked\n',
                 ['authorship/member-authored-presented'])
     # The project manager of the current team is not read, so the PM's proposal is not his.
     own_message('own-message-pm-role-unread',
@@ -5960,8 +5966,12 @@ def cases():
                 "            observation['acceptance'] = self._acceptance_trace(accepted)  # defect: any project state\n",
                 ['evidence/paused-project'])
     own_message('own-message-stale-revision-accepted',
-                "        if command.get('revision') != data['revision'] or command.get('bound_digest') != data['bound_digest']:\n",
-                "        if False:  # defect: an acceptance naming any revision counts\n",
+                "        if command.get('revision') != data['revision'] or command.get('bound_digest') != data['bound_digest']:\n"
+                "            raise Refused('stale_subject:revision', 'the acceptance names another revision of the objective')\n"
+                '        attributed = attribution(conn, source)\n',
+                '        if False:  # defect: an acceptance naming any revision counts\n'
+                "            raise Refused('stale_subject:revision', 'the acceptance names another revision of the objective')\n"
+                '        attributed = attribution(conn, source)\n',
                 ['evidence/stale-revision'])
 
     # VELDO-0075: each criterion's declared falsifier first, then the threat model's other shapes.
@@ -7003,7 +7013,7 @@ def cases():
              "    if fields.get('priority') != DEFAULT_PRIORITY:\n",
              "    if False:  # defect: another priority is applied without his answer\n", ['route/ask-when-needed'])
     grooming('grooming-route-ignores-answered-objective', 'control_grooming_request.py',
-             "    if acceptance.get('path') != OWN_MESSAGE or objective.get('accepted_revision') is None:\n",
+             "    if acceptance.get('path') not in ADMITTING or objective.get('accepted_revision') is None:\n",
              "    if objective.get('accepted_revision') is None:  # defect: any accepted objective\n",
              ['route/ask-when-needed'])
     grooming('grooming-route-ignores-author', 'control_grooming_request.py',
@@ -10285,7 +10295,7 @@ def cases():
     add(152, 'v152-route-stale', '93_veldo_0152_intake_routes.py', 'control_intake_routes.py', "        if (data.get('state') != 'AWAITING_ROUTE' or data.get('project') != 'factory'\n", "        if (data.get('project') != 'factory'\n", ['route/stale'], (("or params.get('version') not in (None, held['version'])", "or False"),))
     add(152, 'v152-ticket-disabled', '93_veldo_0152_intake_routes.py', 'control_intake.py', '        keyed, shared = keyed_projects(text, candidates, prefixes)\n', '        keyed, shared = [], []\n', ['intake/ticket-key'], ())
     add(152, 'v152-prefix-not-bound', '93_veldo_0152_intake_routes.py', 'control_project.py', '                data[TICKET_PREFIXES] = list(params[TICKET_PREFIXES])\n', '                data[TICKET_PREFIXES] = []\n', ['project/prefixes'], ())
-    add(152, 'v152-hint-dropped', '93_veldo_0152_intake_routes.py', 'control_workflow_cycle_pm.py', "clarifications=proposal['clarifications'], hints=proposal['hints'],", "clarifications=proposal['clarifications'], hints=[],", ['route/runner-input'], ())
+    add(152, 'v152-hint-dropped', '93_veldo_0152_intake_routes.py', 'control_workflow_cycle_pm.py', "clarifications=proposal['clarifications'], hints=proposal['hints'],\n", "clarifications=proposal['clarifications'], hints=[],\n", ['route/runner-input'], ())
     add(152, 'v152-route-report-omitted', '93_veldo_0152_intake_routes.py', 'control_telegram_report.py', "    ('intake_routed', ('intake_proposal',), '_intake_route'),\n", '', ['route/read-and-report'], ())
 
     add(152, 'v152-codex-nonmessage-final', '93_veldo_0152_intake_routes.py', 'control_workflow_cycle_pm.py',
@@ -10293,8 +10303,9 @@ def cases():
         "                    final = value.get('type') == 'result' or value.get('type') == 'item.completed'\n",
         ['route/codex-result'])
     add(152, 'v152-context-all-projects', '93_veldo_0152_intake_routes.py', 'control_intake.py',
-        "        records = {p: read(PJ.project_id(p)) for p in self.projects\n                   if p in candidates or p == PJ.FACTORY_PROJECT}\n",
-        "        records = {p: read(PJ.project_id(p)) for p in self.projects}\n",
+        '        records = {p: read(PJ.project_id(p)) for p in served\n'
+        '                   if p in candidates or p == PJ.FACTORY_PROJECT}\n',
+        '        records = {p: read(PJ.project_id(p)) for p in served}\n',
         ['intake/scoped-context'])
     add(152, 'v152-intake-companions-missing', '93_veldo_0152_intake_routes.py', 'check_teeth_mutations.py',
         "        if case['module'] == 'control_intake.py':\n",
@@ -10547,6 +10558,769 @@ def cases():
         "    return max(models, key=lambda m: (m.get('priority', 1 << 30), str(m.get('slug'))))['slug']\n",
         ['team/newest-model'], ())
 
+    add(28, 'effects-remote-host-unchecked', '108_veldo_0153_executor_profile.py', 'control_git_identity_transport.py',
+        "        if (url.scheme not in ('https', 'ssh') or url.hostname != 'github.com'\n                or url.hostname != record.get('remote_host') or url.password is not None\n                or url.query or url.fragment or port not in (None, 443 if url.scheme == 'https' else 22)\n                or url.username != (None if url.scheme == 'https' else 'git')):\n", '        if False:\n', ['owner-unit/host'])
+
+    # VELDO-0153: transport bypasses and durable, signed observations.
+    add(153, 'identity153-refusal-module-identity', '107_veldo_0153_identity_push.py', 'git_process.py',
+        '        return _IDENTITY_TRANSPORT\n', '        return _load_identity_transport()\n',
+        ['refusal-unit/route-insteadof', 'refusal-unit/route-push-instead-of', 'refusal-unit/shape-config-exit'])
+    add(153, 'identity153-eager-transport', '107_veldo_0153_identity_push.py', 'git_process.py',
+        '_IDENTITY_TRANSPORT = None\n', '_IDENTITY_TRANSPORT = _load_identity_transport()\n',
+        ['profile/isolated-without-identity-asset'])
+    add(153, 'identity153-netrc', '107_veldo_0153_identity_push.py', 'git_process.py',
+        "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)\n", '',
+        ['profile/netrc'])
+    add(153, 'identity153-includes', '107_veldo_0153_identity_push.py', 'git_process.py',
+        "'config', '--includes', '--null', '--list'", "'config', '--no-includes', '--null', '--list'",
+        ['profile/include', 'profile/include-if'])
+    add(153, 'identity153-worktree', '107_veldo_0153_identity_push.py', 'git_process.py',
+        "'config', '--includes', '--null', '--list'", "'config', '--local', '--includes', '--null', '--list'",
+        ['profile/worktree-config'])
+    # The URL-named section's clause as c489e202 left it (the earlier anchor no longer exists).
+    add(153, 'identity153-url-section', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
+        "or (section.lower() == 'remote' and subsection == remote", 'or (False',
+        ['profile/url-section-url', 'profile/url-section-pushurl', 'profile/url-section-other'])
+    add(153, 'identity153-literal-destination', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
+        "if not tail or tail[0] != remote or any(value.startswith('-') for value in tail[1:]):", 'if False:',
+        ['profile/literal-destination'])
+    add(153, 'identity153-pre-push-hook', '107_veldo_0153_identity_push.py', 'git_process.py',
+        "        args[1:1] = [*options, '-c', 'core.hooksPath=' + private_home]\n        if command == 'push':\n            args.insert(len(prefix) + len(options) + 3, '--no-verify')", '        args[1:1] = options',
+        ['profile/pre-push-hook/alpha'])
+    # The local-resolution fixture records refusals at the isolation assertion and
+    # completes without relying on subsequent credential/integration setup.
+    add(153, 'identity153-global-config', '108_veldo_0153_executor_profile.py', 'git_process.py',
+        "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)", "        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)\n        kwargs['env']['GIT_CONFIG_GLOBAL'] = os.environ.get('GIT_CONFIG_GLOBAL', os.devnull)",
+        ['profile/global-config'])
+    add(153, 'identity153-watermark-network', '107_veldo_0153_identity_push.py', 'lander.py',
+        'profile="identity", remote_url=url)', 'profile="network", remote_url=url)',
+        ['lander/watermark-identity'])
+    add(153, 'identity153-listing-network', '107_veldo_0153_identity_push.py', 'control_landing.py',
+        "self.ref, profile='identity',", "self.ref, profile='network',",
+        ['landing/list-identity'])
+    add(153, 'identity153-unsigned-observations', '107_veldo_0153_identity_push.py', 'control_effect_executor.py',
+        "            _git_process.identity_transport().record_operations(conn, config['_identity_events'], journal)", '            pass',
+        ['executor/execute-signed'])
+    add(153, 'identity153-volatile-counts', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
+        '        if event is not None:\n', '        if False:\n',
+        ['lander/alpha/durable'])
+    add(153, 'identity153-configured-owner-log', '107_veldo_0153_identity_push.py', 'lander.py',
+        "remote_owner=target['owner'])", "remote_owner=self.identity_record['remote_owner'])",
+        ['lander/owner-spelling'])
+    add(153, 'identity153-global-helper', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
+        "config = ['credential.helper=',", "config = ['include.path=' + os.environ['GIT_CONFIG_GLOBAL'],",
+        ['profile/planted-helper'])
+    add(153, 'identity153-host-only', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
+        "if owner.casefold() != record['remote_owner'].casefold():", 'if False:',
+        ['owner/alpha/push/beta', 'lander/alpha/beta', 'executor/beta'])
+    # c489e202: a remote of another name is no override; refusing every remote's url or pushurl that
+    # differs from the push URL (the defect it fixed) must fail the kept-upstream row.
+    add(153, 'identity153-any-remote-section', '107_veldo_0153_identity_push.py', 'control_git_identity_transport.py',
+        "(section.lower() == 'remote' and subsection == remote\n"
+        "                    and not (name.lower() in ('url', 'pushurl') and value == remote))",
+        "(section.lower() == 'remote' and name.lower() in ('url', 'pushurl') and value != remote)",
+        ['profile/other-remote-kept'])
+    # 8c66a38e: a push the remote rejected leaves the effect unknown (VELDO-0028), never refused.
+    add(153, 'identity153-rejected-refused', '107_veldo_0153_identity_push.py', 'control_effect_executor.py',
+        "        # A push the remote rejected is named in the identity observation above (VELDO-0153); the\n",
+        "        if rejected:\n            raise E.Refused('push_refused:remote')\n"
+        "        # A push the remote rejected is named in the identity observation above (VELDO-0153); the\n",
+        ['executor/remote-refused'])
+    # A lander push the remote refused is an unknown outcome in the refusal classes, never settled.
+    add(153, 'identity153-push-refused-class', '107_veldo_0153_identity_push.py', 'lander.py',
+        '    "unresolved_dependency": "missing_evidence", "clock_uncertain": "unknown_outcome",\n',
+        '    "unresolved_dependency": "missing_evidence", "clock_uncertain": "unknown_outcome",\n'
+        '    "push_refused": "stale_subject",\n',
+        ['lander/push-refused-unknown'])
+    # eecfa244: the finalize stage's own observation beside the identity push, its push detail, and
+    # the common directory sync_main resolved, reused rather than read again.
+    add(153, 'identity153-finalize-event', '67_veldo_0056_candidates.py', 'lander.py',
+        '        self._event("finalize", "accepted" if pushed else "refused", refusal, pushed=pushed)\n', '',
+        ['candidate/observations'])
+    add(153, 'identity153-push-detail', '107_veldo_0153_identity_push.py', 'lander.py',
+        'refusal=refusal,\n                    detail=push.stderr.strip())', 'refusal=refusal)',
+        ['lander/push-detail'])
+    add(153, 'identity153-common-dir-reread', '67_veldo_0056_candidates.py', 'lander.py',
+        '            self.common_dir = common or None\n', '',
+        ['candidate/every-git-operation-checked'])
+
+    # VELDO-0161: each criterion's declared falsifiers first, then the threat model's other shapes, then one
+    # case per round-2 fix. The rows of the running service (AC2) need local sockets, so their cases run where
+    # the suite's service runs; every other row runs anywhere.
+    def adoption(name, module, old, new, rows, also=()):
+        add(161, name, '109_veldo_0161_adoption.py', module, old, new, rows, also)
+
+    # AC1 (declared): the adoption signer signs a binding for a repository no settled decision names.
+    adoption('adoption161-signer-unscoped', 'control_repository.py',
+             "            if problems:\n                raise Refused(problems[0], '; '.join(problems))\n"
+             "            event.update(",
+             "            event.update(  # defect: the signer does not judge the settled decision\n                ",
+             ['adoption/signer-scope'])
+    # AC1 (declared): the missing scaffold laid in a commit the answered proposal does not name.
+    adoption('adoption161-scaffold-relaid', 'control_effect_executor_adoption.py',
+             "                P.advance(proposal)\n",
+             "                __import__('time').sleep(1.1)\n"
+             "                proposal = dict(proposal, scaffold_commit=P.lay_scaffold(  # defect: a fresh scaffold commit\n"
+             "                    proposal['path'], proposal['base_commit'], record, config['templates'],\n"
+             "                    'refs/veldo/relaid/' + repository))\n"
+             "                P.advance(proposal)\n",
+             ['adoption/scaffold-commit'])
+    # AC2 (declared): the adopted repository taken on only by restarting the authority service. The take-on
+    # request is answered with a refusal and the serving process execs itself (keeping its pid and kernel
+    # start time), so the new instance takes the record on at its start; only the instance can tell.
+    adoption('adoption161-restart-take-on', 'control_service.py',
+             "        observation = self.take_on_record(record)\n        ok = observation.get('outcome') == 'accepted'\n",
+             "        import threading  # defect: the repository is taken on only by restarting the authority service\n"
+             "        home = os.path.dirname(os.path.dirname(self.config['executable']))\n"
+             "\n"
+             "        def restart():\n"
+             "            time.sleep(0.5)\n"
+             "            with contextlib.suppress(OSError):\n"
+             "                os.unlink(self.config['socket'])\n"
+             "            os.execv(self.config['python'], [self.config['python'], '-B', self.config['executable'], 'serve',\n"
+             "                                             os.path.join(home, 'config', 'service.json')])\n"
+             "        # Only the installed serving process restarts (never a process that judges in its own thread).\n"
+             "        if os.path.realpath(sys.argv[0]) == os.path.realpath(self.config['executable']):\n"
+             "            threading.Thread(target=restart, daemon=True).start()\n"
+             "        observation = {'outcome': 'refused', 'refusal': 'not_taken_on:restarting'}\n"
+             "        ok = observation.get('outcome') == 'accepted'\n",
+             ['adoption/same-process'])
+    adoption('adoption161-settlement-unchecked', 'control_effect_executor_adoption.py',
+             "            decision = R.settled(S, CM, conn, request)\n",
+             "            subject = json.loads(conn.execute('SELECT data FROM entities WHERE id=?', (request,)).fetchone()[0])\n"
+             "            terms = json.loads(conn.execute('SELECT data FROM entities WHERE id=?',  # defect: unsettled\n"
+             "                                            (subject['subject']['ref'],)).fetchone()[0])\n"
+             "            decision = {'proposal': terms['proposal'], 'settlement_id': None, 'request': request}\n",
+             ['adoption/settlement-before-signature'])
+    adoption('adoption161-remote-owner-unchecked', 'control_effect_executor_adoption.py',
+             "            checked = P.check_remote(record, proposal['remote'], repository=repository, request=request,\n"
+             "                                     observe=lambda event: _observe(config, events, dict(event, at=clock())))\n",
+             "            checked = {'owner': None}  # defect: the remote owner is not checked\n",
+             ['adoption/remote-owner-refused'])
+    adoption('adoption161-signature-unjournaled', 'control_repository.py',
+             "            _journal_command(self.conn, self.store, self.journal, SIGN_OPERATION, transition, {'signature': record},\n"
+             "                             {eid: 0}, 'adoption-signature:' + str(decision['settlement_id']))\n",
+             "            pass  # defect: the signature is not journaled\n",
+             ['adoption/signer-scope', 'adoption/signatures-journaled'])
+    adoption('adoption161-provisioner-hooks', 'control_repository_provisioner.py',
+             "    done = _git_process.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, '-c', 'core.fsmonitor=false', *args],\n",
+             "    done = _git_process.run(['git', '-C', str(path), '-c', 'core.fsmonitor=false', *args],  # defect: the repository's hooks run\n",
+             ['adoption/scaffold-commit'])
+    adoption('adoption161-receiver-configuration-absent', 'control_service.py',
+             "        receiver, created = self._receiver_configuration(repository, workspace)\n",
+             "        receiver, created = None, False  # defect: no receiver configuration is written\n",
+             ['adoption/receiver-configuration-used', 'adoption/taken-on-running'])
+
+    # Round 2, A: the signer's ssh-keygen reaches an SSH agent named in its environment.
+    adoption('adoption161-signer-agent', 'control_repository.py',
+             "                                  capture_output=True, timeout=30, stdin=None, env=_quiet_env())",
+             "                                  capture_output=True, timeout=30, stdin=None, env=dict(os.environ))  # defect: an agent",
+             ['adoption/signer-no-agent'])
+    # B1: the fast-forward and push happen before the checks that change nothing.
+    adoption('adoption161-push-before-checks', 'control_effect_executor_adoption.py',
+             "            P.check_configured_remote(proposal['path'], proposal['default_branch'], proposal['remote'])\n",
+             "            if proposal['scaffold_commit'] is not None:  # defect: pushed before the checks that change nothing\n"
+             "                P.advance(proposal)\n"
+             "                P.push(proposal, record)\n"
+             "            P.check_configured_remote(proposal['path'], proposal['default_branch'], proposal['remote'])\n",
+             ['adoption/signer-enrolled'],
+             also=[("            if proposal['scaffold_commit'] is not None:\n"
+                    "                R.write(S, conn, journal, repository, 'provisioning', step='scaffold', at=clock(), "
+                    "generation=generation,\n                        remote=remote)\n"
+                    "                P.advance(proposal)\n                P.push(proposal, record)\n",
+                    "            if proposal['scaffold_commit'] is not None:\n")])
+    # B1: a missing adoption signer key raises instead of being not enrolled.
+    adoption('adoption161-enrolled-missing-key-raises', 'control_repository.py',
+             "    try:\n        want = public_key(key)\n    except Refused:\n        return False\n",
+             "    want = public_key(key)  # defect: a missing key raises\n",
+             ['adoption/signer-enrolled'])
+    # B3: an unexpected fault in a step leaves the record provisioning.
+    adoption('adoption161-fault-stuck', 'control_effect_executor_adoption.py',
+             "        except Exception as error:  # noqa: BLE001 - every fault ends the record failed, by name\n",
+             "        except (R.Refused, CE.EnrollmentRefused) as error:  # defect: any other fault leaves it provisioning\n",
+             ['adoption/unknown-outcome'])
+    # B3: a push that landed and could not be confirmed is reported as a refused push.
+    adoption('adoption161-push-unconfirmed-as-refused', 'control_repository_provisioner.py',
+             "        raise Refused('push_unconfirmed:remote',",
+             "        raise Refused('push_refused:remote',  # defect: a push that may have landed, called refused\n                     ",
+             ['adoption/push-unconfirmed'])
+    # B4: a local step runs the repository's fsmonitor; the repository's own commands are not looked for.
+    adoption('adoption161-fsmonitor-on', 'control_repository_provisioner.py',
+             "'-c', 'core.hooksPath=' + os.devnull, '-c', 'core.fsmonitor=false', *args],",
+             "'-c', 'core.hooksPath=' + os.devnull, *args],  # defect: the repository's fsmonitor runs\n                 ",
+             ['adoption/repository-commands'])
+    adoption('adoption161-repository-commands-unchecked', 'control_repository_provisioner.py',
+             "    return sorted(set(found))\n",
+             "    return []  # defect: the repository's own commands are not looked for\n",
+             ['adoption/repository-commands'])
+    # B5: each check of the named scaffold commit.
+    adoption('adoption161-scaffold-unrecorded', 'control_repository_provisioner.py',
+             "    if recorded.returncode or recorded.stdout.strip() != commit:\n",
+             "    if False:  # defect: a commit not recorded for the repository is pushed\n",
+             ['adoption/scaffold-problems'])
+    adoption('adoption161-scaffold-parent', 'control_repository_provisioner.py',
+             "    if parents[1:] != [base]:\n",
+             "    if False:  # defect: a commit on another parent is pushed\n",
+             ['adoption/scaffold-problems'])
+    adoption('adoption161-scaffold-modifies', 'control_repository_provisioner.py',
+             "    if any(status not in ('A', '') for status in changes[0::2]):\n",
+             "    if False:  # defect: a commit that modifies files is pushed\n",
+             ['adoption/scaffold-problems'])
+    # B5: each refusal of the running service's take-on.
+    adoption('adoption161-take-on-decision-unchecked', 'control_service.py',
+             "                decision = REPO.settled(S, CM, self.conn, record.get('request'))\n",
+             "                decision = {'proposal': {'repository': repository, 'path': path},  # defect: no decision judged\n"
+             "                            'settlement_id': record.get('settlement')}\n",
+             ['adoption/take-on-refusals'])
+    adoption('adoption161-take-on-signature-unchecked', 'control_service.py',
+             "            raise Refused('no_adoption_signature')\n",
+             "            pass  # defect: no journaled adoption signature is required\n",
+             ['adoption/take-on-refusals'])
+    adoption('adoption161-take-on-binding-signer-unchecked', 'control_service.py',
+             "                or binding.get('enrolled_by') != REPO.SIGNER_PRINCIPAL or binding.get('repository_uuid') != repository\n",
+             "                or binding.get('repository_uuid') != repository  # defect: any enrollment signer's binding\n",
+             ['adoption/take-on-refusals'])
+    adoption('adoption161-take-on-store-binding-unchecked', 'control_service.py',
+             "            raise Refused('store_binding')\n",
+             "            pass  # defect: the store binding is not required\n",
+             ['adoption/take-on-refusals'])
+    # B5 and B8: each coordinate the adoption signer pins.
+    adoption('adoption161-signer-store-unchecked', 'control_repository.py',
+             "            problems.append('signature_refused:scope:store')\n",
+             "            pass  # defect: another store's binding is signed\n",
+             ['adoption/signer-scope'])
+    adoption('adoption161-signer-identity-unchecked', 'control_repository.py',
+             "            problems.append('signature_refused:scope:repository_identity')\n",
+             "            pass  # defect: a binding naming other root commits is signed\n",
+             ['adoption/signer-scope'])
+    adoption('adoption161-signer-host-unchecked', 'control_repository.py',
+             "            problems.append('signature_refused:scope:host')\n",
+             "            pass  # defect: another host's binding is signed\n",
+             ['adoption/signer-scope'])
+    adoption('adoption161-signer-generation-unpinned', 'control_repository.py',
+             "        if (type(generation) is not int or generation != self.ids.get('authority_generation')\n",
+             "        if (type(generation) is not int  # defect: another generation is signed\n",
+             ['adoption/signer-scope'])
+    adoption('adoption161-signer-generation-below-store', 'control_repository.py',
+             "                or generation < store_generation(self.conn)):\n",
+             "                ):  # defect: a generation below the store's is signed\n",
+             ['adoption/signer-scope'])
+    # B6: the record is not handed to the running service; a take-on request needs no journal-key signature.
+    adoption('adoption161-take-on-not-sent', 'control_effect_executor_adoption.py',
+             "        refusal = take_on(config, proposal, request, trust, send)\n",
+             "        refusal = None  # defect: the record is not handed to the running service\n",
+             ['adoption/take-on-answered', 'adoption/taken-on-running'])
+    adoption('adoption161-take-on-unauthenticated', 'control_service.py',
+             "                return self._journal_key_verifies(message, signature)\n",
+             "                return True  # defect: a take-on request needs no signature of the journal key\n",
+             ['adoption/take-on-answered'])
+    # B2: the repository is served before its record says active.
+    adoption('adoption161-served-before-write', 'control_service.py',
+             "        receiver, created = self._receiver_configuration(repository, workspace)\n",
+             "        receiver, created = self._receiver_configuration(repository, workspace)\n"
+             "        self.repositories[repository] = [workspace]  # defect: served before the record says active\n"
+             "        self.config.setdefault('receiver', {}).setdefault('configs', {})[repository] = receiver\n",
+             ['adoption/take-on-write-first'])
+    # B7: an active record judged on today's membership; a receiver configuration it wrote not written again.
+    adoption('adoption161-active-rejudged-membership', 'control_service.py',
+             "        if record.get('state') == 'provisioning':\n            # Taken on now:",
+             "        if True:  # defect: an active record is judged on today's membership\n            # Taken on now:",
+             ['adoption/active-served-again'])
+    adoption('adoption161-receiver-not-regenerated', 'control_service.py',
+             "        if Path(path).read_text() != text:\n            fresh = path + '.new'\n",
+             "        if Path(path).read_text() != text:\n"
+             "            raise Refused('receiver_configuration:differs')  # defect: not written again\n"
+             "            fresh = path + '.new'\n",
+             ['adoption/active-served-again'])
+    # B6 and the receiver configuration: the written configuration names the installed repository.
+    adoption('adoption161-receiver-configuration-wrong', 'control_service.py',
+             "        text = _json(dict(template, repository=repository, workspace=workspace))\n",
+             "        text = _json(dict(template, workspace=workspace))  # defect: the installed repository's receiver\n",
+             ['adoption/receiver-configuration-used'])
+    # B9: a later success forgets another record's fault.
+    adoption('adoption161-retry-reset', 'control_service.py',
+             "            observation.update(outcome='accepted', receiver_config=receiver, resumed=record.get('state') == 'active')\n"
+             "            self.adoption_faults.pop(repository, None)\n",
+             "            observation.update(outcome='accepted', receiver_config=receiver, resumed=record.get('state') == 'active')\n"
+             "            self.adoption_faults.clear()  # defect: a success forgets every other record's fault\n",
+             ['adoption/take-on-retry'])
+    # B10: the remote not checked against the repository's own; a repository id that is not one ref component;
+    # the scaffold ref kept.
+    adoption('adoption161-remote-configuration-unchecked', 'control_repository_provisioner.py',
+             "    if configured_remote(path, branch) != remote:\n",
+             "    if False:  # defect: any remote is accepted\n",
+             ['adoption/prepare-checks'])
+    adoption('adoption161-repository-id-unchecked', 'control_repository.py',
+             "        return ['invalid_input:proposal:repository']\n    return []\n",
+             "        return []  # defect: any repository id is a ref component\n    return []\n",
+             ['adoption/prepare-checks'])
+    adoption('adoption161-scaffold-ref-kept', 'control_repository_provisioner.py',
+             "    if R.repository_id_problems(repository):\n        return False\n    try:\n",
+             "    if True:  # defect: the scaffold ref is kept\n        return False\n    try:\n",
+             ['adoption/scaffold-commit', 'adoption/signer-enrolled', 'adoption/push-refused'])
+    # Round 3, A: setup's enrollment signers are exactly the owner and the adoption signer (VELDO-0161 AC1: "a
+    # service key setup enrolls among the host's enrollment signers"), each with its own key; suite 73 reads them.
+    def setup_signers(name, old, new):
+        add(161, name, '73_veldo_0139_factory_setup.py', 'control_factory_setup.py', old, new, ['setup/lays-down'])
+
+    setup_signers('setup161-adoption-signer-omitted',
+                  "            texts = host_files(plan, public['settlement'], public['adoption'])\n",
+                  "            texts = host_files(plan, public['settlement'])  # defect: the adoption signer is not enrolled\n")
+    setup_signers('setup161-adoption-signer-wrong-key',
+                  "            texts = host_files(plan, public['settlement'], public['adoption'])\n",
+                  "            texts = host_files(plan, public['settlement'], public['settlement'])  # defect: another key\n")
+    setup_signers('setup161-extra-enrollment-signer',
+                  "plan['owner_public']) + adoption,\n",
+                  "plan['owner_public']) + adoption + adoption.replace(ADOPTION_PRINCIPAL, 'extra-signer', 1),"
+                  "  # defect: an extra signer\n")
+
+    # Round 4, R1: a record written while an instance starts, after its first read of the records and before its
+    # socket is bound, waits for a restart; a hand-off fault is unnamed or raised; a timeout is called no service.
+    adoption('adoption161-take-on-after-bind-missing', 'control_service.py',
+             "            service.take_on()\n            listener.settimeout(ACCEPT_SECONDS)\n",
+             "            listener.settimeout(ACCEPT_SECONDS)  # defect: the records are read only before the bind\n",
+             ['adoption/taken-on-while-starting'])
+    adoption('adoption161-take-on-timeout-unavailable', 'control_effect_executor_adoption.py',
+             "        if isinstance(error.__cause__ or error.__context__, TimeoutError):\n            return 'not_taken_on:timeout'\n",
+             "        pass  # defect: a service that did not answer in time is called unavailable\n",
+             ['adoption/take-on-faults-named'],
+             also=[("    except TimeoutError:\n        return 'not_taken_on:timeout'\n", "")])
+    adoption('adoption161-take-on-fault-raised', 'control_effect_executor_adoption.py',
+             "    except Exception as error:  # noqa: BLE001 - a hand-off fault is named, never raised\n"
+             "        return 'not_taken_on:unknown_outcome:' + type(error).__name__\n",
+             "    # defect: any other hand-off fault is raised\n",
+             ['adoption/take-on-faults-named'])
+    adoption('adoption161-take-on-refusal-unnamed', 'control_effect_executor_adoption.py',
+             "    except R.Refused as error:\n        return error.code\n    except CC.RoutingRefused as error:\n",
+             "    except CC.RoutingRefused as error:  # defect: a refusal of the hand-off loses its own code\n",
+             ['adoption/take-on-faults-named'])
+    # Round 4, R2: a list of known command keys instead of the allowlist; borrowed objects not looked for.
+    adoption('adoption161-configuration-denylist', 'control_repository_provisioner.py',
+             "        if '.' not in lowered or (allowed is not None and name not in allowed):\n",
+             "        if lowered == 'core.fsmonitor' or (section == 'filter' and name in ('clean', 'smudge', 'process')):"
+             "  # defect: known command keys only\n",
+             ['adoption/repository-commands'])
+    adoption('adoption161-alternates-unchecked', 'control_repository_provisioner.py',
+             "    if alternates(path):\n",
+             "    if False:  # defect: a repository that borrows objects is not refused\n",
+             ['adoption/repository-commands'])
+    # Round 4, R3: each refusal the store alone decides, moved back to its step after the push.
+    adoption('adoption161-identity-after-push', 'control_effect_executor_adoption.py',
+             "            step = 'identity'\n            try:\n                R.GI.configure_identities(conn, config['domain_uuid'], [record],\n"
+             "                                          {repository: {'path': proposal['path'], 'identity': proposal['identity']}},\n"
+             "                                          check_only=True)\n"
+             "            except R.GI.Refused as error:\n                raise R.Refused(error.code) from None\n            step = 'binding'\n",
+             "            step = 'binding'  # defect: the identity binding is judged only at its step, after the push\n",
+             ['adoption/store-checks-before-push'])
+    adoption('adoption161-store-binding-after-push', 'control_effect_executor_adoption.py',
+             "            if S.bound_repository(conn, config['domain_uuid'], repository) not in (None, os.path.realpath(proposal['path'])):\n",
+             "            if False:  # defect: the store's binding is judged only at its step, after the push\n",
+             ['adoption/store-checks-before-push'])
+    adoption('adoption161-generation-after-push', 'control_effect_executor_adoption.py',
+             "            if generation < R.store_generation(conn):\n",
+             "            if False:  # defect: the generation is judged only by the signer, after the push\n",
+             ['adoption/store-checks-before-push'])
+    # Round 4, R4: an interrupted run's record left provisioning; a live run not told from an ended one.
+    adoption('adoption161-interrupted-left-provisioning', 'control_effect_executor_adoption.py',
+             "                and existing.get('request') == request):\n",
+             "                and existing.get('request') == request and False):  # defect: left provisioning\n",
+             ['adoption/interrupted'])
+    adoption('adoption161-live-run-unheld', 'control_effect_executor_adoption.py',
+             "        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)\n",
+             "        pass  # defect: a live run holds nothing another run can see\n",
+             ['adoption/interrupted'])
+    # Round 4, review weakness: an adoption signature made outside AdoptionSigner.sign, which the row's watch
+    # wraps, so outside the row's agent; the row counts the stand-in's signatures of the adoption key.
+    adoption('adoption161-signature-unwatched', 'control_repository.py',
+             "        def sign(message):\n            return self.sign(message, request)\n        return sign\n\n"
+             "    def sign(self, message, request):\n",
+             "        def sign(message):\n            return AdoptionSigner._sign(self, message, request)  # defect: signed "
+             "outside the signer's own call\n        return sign\n\n"
+             "    def sign(self, message, request):\n        return AdoptionSigner._sign(self, message, request)\n\n"
+             "    def _sign(self, message, request):\n",
+             ['adoption/signer-no-agent'])
+
+    # Round 5, N1: the scaffold push follows the repository's push.followTags (neither the -c nor the flag).
+    adoption('adoption161-push-follows-tags', 'control_repository_provisioner.py',
+             "    pushed = run('-c', 'push.followTags=false', 'push', '--porcelain', '--no-follow-tags',\n",
+             "    pushed = run('push', '--porcelain',  # defect: the repository's push.followTags adds its tags\n",
+             ['adoption/repository-commands'])
+    # Round 5, N2: the identity transport's own judge not run before advance (the effect), or before laying (prepare).
+    adoption('adoption161-transport-config-after-advance', 'control_effect_executor_adoption.py',
+             "            P.refuse_transport_config(proposal['path'], proposal['remote'])\n",
+             "            pass  # defect: the push's configuration refusal is known only after the branch moved\n",
+             ['adoption/transport-config'])
+    adoption('adoption161-transport-config-prepare-unchecked', 'control_repository_provisioner.py',
+             "        refuse_transport_config(state['path'], remote)\n",
+             "        pass  # defect: prepare lays a scaffold the push will refuse\n",
+             ['adoption/transport-config'])
+    # Round 6: the engine upgrade (VELDO-0189) lays the adoption signer down as a fresh setup does (its key, its
+    # line in the host's enrollment signers and in the installation's copy); without that step an upgraded host
+    # has none, so it differs from a fresh one and every adoption there is refused signature_refused:not_enrolled.
+    add(161, 'upgrade161-adoption-signer-not-laid', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup.py',
+        "        report['adoption_signer'] = lay_adoption_signer(plan, adoption, lambda point: UP.point(engine['log'], point),\n"
+        "                                                        UP)\n",
+        "        report['adoption_signer'] = {'outcome': 'already_done'}  # defect: the upgrade lays no adoption signer\n",
+        ['upgrade/from-8bc34e94', 'upgrade/from-971186ac', 'switch/kill-points', 'upgrade/older-0186-equivalence'])
+    # Round 8: laying the adoption signer owes the service a restart until one is made, across runs; without that
+    # debt in the step log, a run killed after the signers were laid on a current engine never restarts the service,
+    # which keeps the old enrollment signers and refuses every adoption.
+    add(161, 'upgrade161-adoption-restart-not-owed', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
+        "        elif name == 'adoption_signers':\n",
+        "        elif False:  # defect: laid adoption signers owe no restart\n",
+        ['restart/adoption-signer-kill'])
+
+    # VELDO-0143: each criterion's declared falsifier first, then the threat model's other shapes. The factory PM's
+    # run through the graph runtime (pm/new-project-run) is the host's, so no case targets it.
+    def new_project(name, module, old, new, rows):
+        add(143, name, '110_veldo_0143_new_project.py', module, old, new, rows)
+
+    # AC1 (declared): a proposal presented when his message already named the project and the identity.
+    new_project('newproject143-presented-when-named', 'control_project_proposal.py',
+                "            reasons = nothing_asked(self.conn, data, proposal, owner)\n",
+                "            reasons = nothing_asked(self.conn, data, proposal, owner) or ['presented']  # defect: always asked\n",
+                ['proposal/nothing-asked'])
+    # AC2 (declared): the provisioner run without a settled answer.
+    new_project('newproject143-provisioner-unsettled', 'control_effect_executor_creation.py',
+                "            judged = PP.settled(S, CM, conn, decision)\n",
+                "            held_ = PP.read(conn, decision) or {}  # defect: the provisioner does not judge the settlement\n"
+                "            judged = {'proposal': held_.get('proposal') or held_.get('presented') or {}, 'settlement_id': decision}\n",
+                ['provision/settlement-required'])
+    # AC3 (declared): the project activated while its repository is still provisioning.
+    new_project('newproject143-activated-while-provisioning', 'control_project.py',
+                "    return data.get('state') if data.get('request') == decision and data.get('state') else 'absent'\n",
+                "    return 'active'  # defect: the repository's state is not read before activating\n",
+                ['activation/order'])
+    new_project('newproject143-directory-overwritten', 'control_repository_creation.py',
+                "    if entries:\n        raise Refused('directory_not_empty', path)\n",
+                "    if False:  # defect: a directory that holds anything is used\n        raise Refused('directory_not_empty', path)\n",
+                ['provision/directory-not-empty'])
+    new_project('newproject143-step-failure-continues', 'control_effect_executor_creation.py',
+                "                done = STEP_FUNCTIONS[name](run) or {}\n",
+                "                try:\n"
+                "                    done = STEP_FUNCTIONS[name](run) or {}\n"
+                "                except REFUSALS:  # defect: a failed step does not stop the provisioner\n"
+                "                    done = {'base_commit': None} if name == 'commit' else {'owner': None} if name == 'remote' else {}\n",
+                ['provision/step-failures'])
+    new_project('newproject143-remote-owner-unchecked', 'control_repository_creation.py',
+                "    if not isinstance(made_owner, str) or made_owner.casefold() != owner.casefold():\n",
+                "    if False:  # defect: GitHub's answer is not checked against the identity's owner\n",
+                ['provision/step-failures'])
+    new_project('newproject143-ambient-push', 'control_repository_creation.py',
+                "                          profile='identity', push_identity=identity, remote_url=url)\n",
+                "                          profile='network')  # defect: the push takes the host's ambient credential\n",
+                ['provision/created'])
+    new_project('newproject143-second-question', 'control_project_proposal.py',
+                "            correction['digest'] = digest(proposal)\n",
+                "            correction['digest'] = digest(proposal)\n"
+                "            self._present(decision + ':again', proposal, presented['owner'], 'new-project-again-'\n"
+                "                          + hashlib.sha256(decision.encode()).hexdigest()[:12], '2099-01-01T00:00:00Z')"
+                "  # defect: a second question\n",
+                ['proposal/correction'])
+    new_project('newproject143-factory-repository-unbound', 'control_factory_setup.py',
+                "    S.bind_repositories(conn, ids['domain_uuid'], {repository: os.path.realpath(path)})\n",
+                "    pass  # defect: the factory project's repository is not bound by the store\n",
+                ['factory/own-repository'])
+
+    # Rebased onto VELDO-0161 round 5: the created repository's hand-off, its checks before anything is made, the
+    # INTERRUPTED rule and the lock, and the new-project pass made due by events rather than by a poll.
+    new_project('newproject143-take-on-not-sent', 'control_effect_executor_creation.py',
+                "        refusal = AD.take_on(config, adoption, decision, trust, send)\n",
+                "        refusal = None  # defect: the created repository is not handed to the running service\n",
+                ['provision/handed-over'])
+    new_project('newproject143-checks-after-creation', 'control_effect_executor_creation.py',
+                "            trust, key = preflight(config, conn, proposal, identity, generation, step)\n",
+                "            trust, key = EL.load_host_trust(config['host_trust']), config['adoption_signer']['key']"
+                "  # defect: nothing checked before the directory\n",
+                ['provision/checks-before-creation'])
+    new_project('newproject143-configuration-unchecked-before-remote', 'control_effect_executor_creation.py',
+                "                    P.refuse_commands(proposal['directory'])\n",
+                "                    pass  # defect: the repository's own configuration is not judged before GitHub is asked\n",
+                ['provision/checks-before-creation'])
+    new_project('newproject143-interrupted-left-provisioning', 'control_effect_executor_creation.py',
+                "                and existing.get('request') == decision):\n",
+                "                and existing.get('request') == decision and False):  # defect: left provisioning\n",
+                ['provision/interrupted'])
+    new_project('newproject143-live-run-unheld', 'control_effect_executor_creation.py',
+                "        held = AD.hold(config, repository)\n",
+                "        held = os.open(os.devnull, os.O_RDONLY)  # defect: no lock is taken\n",
+                ['provision/interrupted'])
+    new_project('newproject143-take-on-not-due', 'control_service.py',
+                "        if self.watermark() > before:\n            self.projects_due = True\n",
+                "        pass  # defect: an advance of the journal does not make the new-project pass due\n",
+                ['provision/handed-over'])
+    new_project('newproject143-provisioner-end-unseen', 'control_service.py',
+                "        if self.projects_pass is not None and self.projects_pass.readable(fd):\n"
+                "            self.projects_due = True\n",
+                "        if self.projects_pass is not None:  # defect: a provisioner's end does not make the pass due\n"
+                "            self.projects_pass.readable(fd)\n",
+                ['service/provisions'])
+
+    # Round 2 (host): a signature on a new project's path made with the SSH agent named to its ssh-keygen (the
+    # adoption signer, the provisioner's journal and the take-on all run through control_repository's quiet
+    # environment); and the scaffold not laying itself, which the installer's closure reaches through the
+    # provisioner the service starts, so an adopter's tree cannot derive the closure.
+    new_project('newproject143-signer-reaches-agent', 'control_repository.py',
+                "    return {k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}\n",
+                "    return dict(os.environ)  # defect: the SSH agent stays named to every ssh-keygen\n",
+                ['provision/signing-no-agent'])
+    add(143, 'newproject143-scaffold-not-laid', '66_veldo_0047_authority.py', 'init_scaffold.py',
+        '    ".veldo/init_scaffold.py",\n', '', ['authority/installed-assets'])
+
+    # Round 3: the first independent review's findings. F1, a decision the factory PM's run settled in a loop pass
+    # makes the new-project pass due; F2, a correction bound to his words (each term, the bare approval, the judge);
+    # F3, one project per name, before he is asked and at activation; F4, the presentation finished from its record;
+    # F5, the line the pass gives the loop; F6, nothing asked or left waiting without a provisioner configuration.
+    new_project('newproject143-pm-settled-not-due', 'control_service_projects.py',
+                "        if not self.passing:\n            self.service.projects_due = True\n",
+                "        pass  # defect: a decision the PM's run settled does not make the pass due\n",
+                ['service/pm-settled-due'])
+    new_project('newproject143-correction-mode-unbound', 'control_project_proposal.py',
+                "    if terms.get('mode') != expected or renamed_adoption or (expected == 'adopt' and 'adoption' in terms\n"
+                "                                                             and terms['adoption'] != shown.get('adoption')):\n",
+                "    if False:  # defect: a correction may turn into an adoption he was not shown\n",
+                ['proposal/correction-bound'])
+    new_project('newproject143-correction-name-unbound', 'control_project_proposal.py',
+                "    if not same_name and not (names(rationale, terms.get('project')) and not negated):\n",
+                "    if False:  # defect: the PM renames the project\n",
+                ['proposal/correction-bound'])
+    new_project('newproject143-judge-correction-unbound', 'control_project_proposal.py',
+                "        if problems:\n            raise Refused('no_settled_decision:' + problems[0].split(':', 1)[1],",
+                "        if False:  # defect: the judge does not bind the correction to his words\n"
+                "            raise Refused('no_settled_decision:' + problems[0].split(':', 1)[1],",
+                ['proposal/correction-bound'])
+    new_project('newproject143-name-not-one-project', 'control_project_proposal.py',
+                "    if not isinstance(name, str):\n        return False\n    folded",
+                "    if True:  # defect: a name may be two projects\n        return False\n    folded",
+                ['proposal/name-taken', 'activation/name-taken'])
+    new_project('newproject143-taken-left-settled', 'control_project_proposal.py',
+                "        decisions.finish(decision, activated=False, reason='already_exists')\n"
+                "        return {'ok': False, 'step': 'activation', 'reason': 'already_exists', 'failed': True}\n"
+                "    team = first_team",
+                "        return {'ok': False, 'step': 'activation', 'reason': 'already_exists'}"
+                "  # defect: tried again on every pass\n    team = first_team",
+                ['activation/name-taken'])
+    new_project('newproject143-presentation-not-resumed', 'control_service_projects.py',
+                "        made = [self._log(e) for e in decisions.resume()]\n",
+                "        made = []  # defect: an interrupted presentation is never finished\n",
+                ['proposal/presentation-interrupted'])
+    new_project('newproject143-line-not-added', 'control_service_projects.py',
+                "        if result['outcome'] == 'activated' and s.loop is not None:\n",
+                "        if False:  # defect: the activated project's repository gets no line\n",
+                ['activation/line-from-pass'])
+    new_project('newproject143-proposed-without-provisioner', 'control_project_proposal.py',
+                "            if not self.provisioning():\n",
+                "            if False:  # defect: a proposal is made where it cannot be carried out\n",
+                ['proposal/no-provisioner'])
+    new_project('newproject143-settled-left-waiting', 'control_service_projects.py',
+                "            self.decisions.finish(decision, activated=False, reason='unavailable_service:provisioner')\n",
+                "            pass  # defect: the decision waits, and he is never told\n",
+                ['proposal/no-provisioner'])
+
+    # Round 4: the round 3 review's findings. R3-1, the line the pass adds for a new project leaves the factory's own
+    # line whole: from_line attaches the connection's once-only owners before the backlog and team owners, and a
+    # refused build registers nothing; another line's refused build is not tried again; another line builds nothing
+    # while the factory line has not built its cycles; the activation leaves the connection's registrations as it
+    # found them.
+    new_project('newproject143-cycles-owners-after', 'control_workflow_cycle_pm.py',
+                "    before = dict(registry)\n    try:\n"
+                "        allocations = organ('control_alias').attach(",
+                "    # defect: the round-3 order, the backlog and team owners registered before the allocation authority\n"
+                "    organ('control_backlog').Backlog(store, membership, service.conn, ids, service.principal,\n"
+                "        service.sign, workspace=line.workspace, authority_generation=service.generation)\n"
+                "    CT.Teams(store, membership, service.conn, ids, service.principal, service.sign,\n"
+                "        inbox=service.inbox(line.repository), assignment=assignment, requester=service.principal,\n"
+                "        request_sign=signature, authority_generation=service.generation)\n"
+                "    before = dict(registry)\n    try:\n"
+                "        allocations = organ('control_alias').attach(",
+                ['activation/factory-line-kept', 'activation/factory-line-restart'])
+    new_project('newproject143-refused-cycles-retried', 'control_service.py',
+                "        if getattr(self, 'pm_refusal', None) is not None:\n            return False\n",
+                "",
+                ['activation/factory-line-kept'])
+    new_project('newproject143-factory-owners-taken', 'control_service.py',
+                "        if factory is not None and factory is not self and getattr(factory, 'pm_cycles', None) is None \\\n"
+                "                and any(data.get('name') == 'factory' and data.get('state') not in FACTORY_ENDED\n"
+                "                        for data in self._rows('project')):\n"
+                "            report['faults'].append(",
+                "        if False:  # defect: a line that sorts first takes the owners from the factory line\n"
+                "            report['faults'].append(",
+                ['activation/factory-line-restart'])
+    new_project('newproject143-activation-owners-left', 'control_service_projects.py',
+                "        finally:\n            registry.clear()\n            registry.update(before)\n",
+                "        finally:\n            pass  # defect: the activation's team and intake owners stay registered\n",
+                ['activation/factory-line-kept'])
+
+    # Round 5: the round 4 review's findings. R4-3, the factory line's intake reads the project rows when its
+    # transition runs; R4-5, no other line builds cycles while there is a factory project and the factory line has
+    # none; R4-6, the service's new-project decisions are built before from_line takes the registrations. (Round 5's
+    # clause-reading cases left with that code in round 6.)
+    new_project('newproject143-intake-projects-built', 'control_workflow_cycle_pm.py',
+                "                domain=service.domain, projects=lambda: intake_module.store_projects(service.conn),\n",
+                "                domain=service.domain, projects=intake_module.store_projects(service.conn),"
+                "  # defect: read once, when built\n",
+                ['activation/factory-intake-current'])
+    new_project('newproject143-paused-factory-owners-taken', 'control_service.py',
+                "                and any(data.get('name') == 'factory' and data.get('state') not in FACTORY_ENDED\n"
+                "                        for data in self._rows('project')):\n",
+                "                and factory.wants_cycles():  # defect: only while the factory project wants them now\n",
+                ['activation/factory-paused-resumed'])
+    new_project('newproject143-new-projects-in-snapshot', 'control_workflow_cycle_pm.py',
+                "        service.new_projects()\n    before = dict(registry)\n",
+                "        pass  # defect: first built inside the snapshot a failed build puts back\n    before = dict(registry)\n",
+                ['activation/new-projects-kept'])
+
+    # Round 6: the round 5 review's findings. The clause reading is replaced by a rule that does not read what a
+    # negator applies to: another value only where his words name exactly it and hold no negator anywhere, the shown
+    # value only where they name none (R5-1, R5-2). R5-3: a line defers to the factory line only while the factory
+    # project can still run, and names each deferral in the pass's faults.
+    new_project('newproject143-hyphen-negator-ignored', 'control_project_proposal.py',
+                "                      + _END + r\")\", re.IGNORECASE)\n",
+                "                      + r'(?![^\\W_]|-)' + r\")\", re.IGNORECASE)  # defect: a negator joined by a hyphen is not one\n",
+                ['proposal/own-message-doubt'])
+    new_project('newproject143-negators-narrow', 'control_project_proposal.py',
+                "_NEGATOR = re.compile(_START + r\"(?:non|(?:not|no|nope|nah|nay|none|nor|neither|never|nothing|nobody|nowhere\"\n",
+                "_NEGATOR = re.compile(_START + r\"(?:not|no|never|nor|without)\" + _END)  # defect: the round-3 words only\n"
+                "_UNUSED = (r\"(?:(?:\"\n",
+                ['proposal/own-message-doubt'])
+    new_project('newproject143-ended-factory-deferred', 'control_service.py',
+                "                and any(data.get('name') == 'factory' and data.get('state') not in FACTORY_ENDED\n",
+                "                and any(data.get('name') == 'factory'  # defect: a canceled factory project still holds every line\n",
+                ['activation/factory-canceled'])
+    new_project('newproject143-deferral-unreported', 'control_service.py',
+                "            report['faults'].append({'repository': self.repository, 'reason': 'pm_cycles:deferred_to_factory_line'})\n",
+                "",
+                ['activation/factory-paused-resumed', 'activation/factory-line-restart'])
+    new_project('newproject143-correction-told-code', 'control_telegram_report.py',
+                "        unclear = CORRECTION_UNCLEAR.get(str(data.get('reason')))\n",
+                "        unclear = None  # defect: a refused correction is told only its code\n",
+                ['proposal/correction-told'])
+    # Round 7 (owner decision, Telegram 36174 and 36175): the identity and the visibility are offered choices he
+    # picks. The settlement binds them only from his pick, a correction changes only the name and the objective, a
+    # choice not offered is refused, and his own message settles unasked only where nothing in it could mean
+    # another identity and the PM set no visibility.
+    new_project('newproject143-identity-from-document', 'control_project_proposal.py',
+                "    if shown is None or terms.get('identity') != presented.get('identity'):\n",
+                "    if False:  # defect: the PM's document chooses the identity\n",
+                ['proposal/correction-bound', 'proposal/correction-negated', 'proposal/correction-phrasings'])
+    new_project('newproject143-visibility-from-text', 'control_project_proposal.py',
+                "    if shown is None or terms.get('visibility') != visibility_of(shown):\n",
+                "    if shown is None or (terms.get('visibility') != visibility_of(shown)\n"
+                "                         and str(terms.get('visibility')) not in str(rationale).lower()):"
+                "  # defect: a visibility his words name is bound\n",
+                ['proposal/correction-negated', 'proposal/correction-phrasings'])
+    new_project('newproject143-unmatched-choice-accepted', 'control_request_settlement.py',
+                "            if a['choice'] not in receipt['choices'] or self.V.ruling_of(a['choice']) is None:\n",
+                "            if self.V.ruling_of(a['choice']) is None:  # defect: a choice not offered is accepted\n",
+                ['proposal/choices'])
+    new_project('newproject143-pick-ignored', 'control_project_proposal.py',
+                "    return None if pick is None else resolve(presented, *pick)\n",
+                "    return None if pick is None else resolve(presented, presented.get('identity') or pick[0])"
+                "  # defect: the identity shown wins over his pick, and the visibility shown stays\n",
+                ['proposal/choices'])
+    new_project('newproject143-choices-not-offered', 'control_project_proposal.py',
+                "                                                      brief=brief(proposal), choices=choices(proposal),\n",
+                "                                                      brief=brief(proposal), choices=list(CHOICES),"
+                "  # defect: no identity or visibility is offered\n",
+                ['proposal/fields'])
+    # Round 8 (R7-1): unasked, a repository is only ever private; re-targeted from round 7's identity-default line.
+    new_project('newproject143-own-message-visibility', 'control_project_proposal.py',
+                "    if not isinstance(proposal, dict) or visibility_of(proposal) != 'private':\n"
+                "        reasons.append('visibility_not_private')\n",
+                "    if False:  # defect: the identity's default or the PM's document makes it public unasked\n"
+                "        reasons.append('visibility_not_private')\n",
+                ['proposal/own-message-doubt', 'provision/adoption-path'])
+    new_project('newproject143-own-message-negated', 'control_project_proposal.py',
+                "    if negates(text):\n        reasons.append('negated')\n",
+                "    if False:  # defect: his own message settles whatever negates in it\n        reasons.append('negated')\n",
+                ['proposal/own-message-doubt'])
+    new_project('newproject143-own-message-lookalike', 'control_project_proposal.py',
+                "    if not isinstance(text, str) or not text.isascii():\n",
+                "    if not isinstance(text, str):  # defect: lookalike letters are read as plain ones\n",
+                ['proposal/own-message-doubt'])
+    new_project('newproject143-own-message-two-identities', 'control_project_proposal.py',
+                "        elif said != [proposal['identity']]:\n",
+                "        elif False:  # defect: a message naming two identities settles the PM's\n",
+                ['proposal/own-message-doubt'])
+    # Round 8: the round 7 review's findings. R7-1, his own message holding a word of visibility is presented; R7-2,
+    # an adopted entry keeps its remote's visibility, is offered no visibility pick and records none; R7-3, ids that
+    # fold alike are refused, and a request the presenter refuses for good fails the decision by name; R7-4, the
+    # judge's choices check.
+    new_project('newproject143-own-message-visibility-word', 'control_project_proposal.py',
+                "    if says_visibility(text):\n",
+                "    if False:  # defect: his words of visibility are left to the default\n",
+                ['proposal/own-message-doubt'])
+    new_project('newproject143-adoption-visibility-offered', 'control_project_proposal.py',
+                "        if entry.get('mode') == 'adopt':\n            if entry.get('identity') != shown:\n",
+                "        if False:  # defect: an adopted entry is offered both visibilities\n"
+                "            if entry.get('identity') != shown:\n",
+                ['proposal/adoption-visibility'])
+    new_project('newproject143-adoption-visibility-recorded', 'control_project_proposal.py',
+                "        allowed = (AS_ON_REMOTE,) if proposal['mode'] == 'adopt' else VISIBILITIES\n",
+                "        allowed = VISIBILITIES + (AS_ON_REMOTE,)  # defect: an adoption may record a visibility\n",
+                ['proposal/adoption-visibility'])
+    new_project('newproject143-adoption-visibility-shown', 'control_project_proposal.py',
+                "    remote = dict(remote, url=adoption['remote'], visibility=AS_ON_REMOTE)\n",
+                "    remote = dict(remote, url=adoption['remote'])  # defect: the adoption shows a visibility it never applies\n",
+                ['proposal/adoption-visibility', 'provision/adoption-path'])
+    new_project('newproject143-adoption-renamed-created', 'control_project_proposal.py',
+                "    renamed_adoption = shown is not None and not same_name and shown.get('mode') == 'adopt'\n",
+                "    renamed_adoption = False  # defect: a renamed adoption becomes a creation he picked no visibility for\n",
+                ['proposal/adoption-visibility'])
+    new_project('newproject143-identities-fold-alike', 'control_git_identity.py',
+                "    if len(folded) != len(found):\n",
+                "    if False:  # defect: ids that fold alike are configured\n",
+                ['proposal/identities-fold-alike'])
+    new_project('newproject143-identity-added-folding', 'control_git_identity.py',
+                "            if len({fold(identity) for identity in every}) != len(every):\n",
+                "            if False:  # defect: an id added later may fold like a configured one\n",
+                ['proposal/identities-fold-alike'])
+    new_project('newproject143-not-presented-left-presented', 'control_project_proposal.py',
+                "        if shown.get('outcome') == 'refused' and shown.get('reason') in NOT_PRESENTABLE:\n",
+                "        if False:  # defect: the presenter's refusal is ignored and the decision is presented to no one\n",
+                ['proposal/not-presentable'])
+    new_project('newproject143-judge-choices-unchecked', 'control_project_proposal.py',
+                "    if data.get('choices') != choices(presented):\n",
+                "    if False:  # defect: the judge settles a request that offered other choices\n",
+                ['proposal/choices'])
+    # VELDO-0143 round 9 (R8-1): an adoption's pick ends in adopt, so it never folds like a creation's pick.
+    new_project('newproject143-adoption-pick-folds', 'control_project_proposal.py',
+                "                found['%s %s %s' % (PICK, entry.get('identity'), ADOPT_WORD)] = (entry.get('identity'), None)\n",
+                "                found['%s %s' % (PICK, entry.get('identity'))] = (entry.get('identity'), None)  # defect: "
+                "folds like a creation's pick\n",
+                ['proposal/adoption-pick-folds', 'proposal/adoption-visibility'])
+    # VELDO-0143 round 9 (R8-2): the decision is failed before its unpresentable request is canceled, and a request a
+    # crash left open is canceled by the next pass.
+    new_project('newproject143-not-presented-canceled-first', 'control_project_proposal.py',
+                "            self._fail(decision, 'presented', 'invalid_input:' + shown['reason'])\n"
+                "            self._cancel(alias)\n",
+                "            self._cancel(alias)  # defect: canceled before the decision is failed\n"
+                "            self._fail(decision, 'presented', 'invalid_input:' + shown['reason'])\n",
+                ['proposal/presentation-interrupted'])
+    new_project('newproject143-unpresented-left-open', 'control_project_proposal.py',
+                "                if self._cancel_unpresented(record):\n",
+                "                if False:  # defect: a request a crash left open stays open\n",
+                ['proposal/presentation-interrupted'])
+    # VELDO-0143 round 9 (R8-3): his own message settles unasked only when every word of it is one the rule read.
+    new_project('newproject143-own-message-unread-words', 'control_project_proposal.py',
+                "    if unread_words(text, ",
+                "    if False and unread_words(text, ",
+                ['proposal/own-message-doubt'])
+    add(143, 'newproject143-pick-unmapped', '62_veldo_0065_presentations.py', 'control_channel_presentation.py',
+        "    return 'approve' if pick_of(choice) else None\n",
+        "    return None  # defect: a pick has no ruling\n",
+        ['answer/pick-choices'])
+    add(143, 'newproject143-ambiguous-choices-presented', '62_veldo_0065_presentations.py',
+        'control_channel_presentation.py',
+        "        if len({_fold(choice) for choice in c['choices']}) != len(c['choices']):\n",
+        "        if False:  # defect: choices typed alike are presented\n",
+        ['answer/pick-choices'])
+    # These two are registered after the loop that gives renderer-loading cases their companions, and
+    # suite 62 loads control_channel_presentation by its path, which loads the renderer beside itself.
+    for case in result:
+        if case['name'] in ('newproject143-pick-unmapped', 'newproject143-ambiguous-choices-presented'):
+            case['companions'] = list(RENDERER_COMPANIONS)
+
     # VELDO-0142: immutable identity, clone author, receiver environment and lander author.
     add(142, 'identity142-binding-replaced', '103_veldo_0142_git_identities.py', 'control_git_identity.py', "if old['identity'] != target['identity']:", 'if False:', ['binding/immutable'])
     add(142, 'identity142-clone-global-author', '103_veldo_0142_git_identities.py', 'control_clone.py', "for section in ('user', 'author', 'committer'):", 'for section in ():', ['clone/identity-authors'])
@@ -10755,6 +11529,10 @@ def cases():
         ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
 
+    # Admit the two-slot new-project fixture first so its long controls and mutants
+    # overlap other suites throughout the existing combined budget.
+    result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
+                 + [case for case in result if case['suite'] != '110_veldo_0143_new_project.py'])
     return result
 
 

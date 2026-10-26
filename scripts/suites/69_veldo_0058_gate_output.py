@@ -72,7 +72,7 @@ def _v58_suite():
     # Not /dev/shm: this fixture's work tree is a candidate the gate runs through the VELDO-0208
     # launcher, and its confinement grants nothing beneath /dev, so a candidate there could read
     # none of its own files.
-    with tempfile.TemporaryDirectory(prefix='v58-') as directory:
+    with tempfile.TemporaryDirectory(prefix='v58-') as directory, contextlib.ExitStack() as wired:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
@@ -267,6 +267,11 @@ def _v58_suite():
         GP.run(['git', 'clone', '-q', str(remote), str(caller)], check=True, capture_output=True)
         for repo in (caller, remote):
             git(repo, 'config', 'gc.auto', '0')
+        # VELDO-0153: the lander fetches and pushes through the identity transport, which reaches only
+        # a remote under the identity's owner; the test wire maps that URL to the bare remote.
+        wire = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/identity_wire.py'))['Wire'](base / 'wire')
+        git(caller, 'remote', 'set-url', 'origin', wire.remote('remote', remote))
+        wired.enter_context(wire.active())
         gate_blob = blob(caller, WATERMARK, 'scripts/verify.sh')
 
         def build(unit, files, verdict=False, repo=caller):

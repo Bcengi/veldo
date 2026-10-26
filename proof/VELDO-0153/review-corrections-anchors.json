@@ -1,0 +1,542 @@
+{
+  "prior_review_49ed8bfd": {
+    "cases": 2456,
+    "unresolved": [],
+    "missing": [
+      {
+        "name": "effects-remote-must-exist-verbatim",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        if '\\n' in remote:\n"
+      },
+      {
+        "name": "effects-destinations-from-fetch-url",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        pushed = []\n        for line in lines[1:]:\n            if not line.startswith('  Push  URL: '):\n                break\n            pushed.append(line[len('  Push  URL: '):])\n"
+      },
+      {
+        "name": "effects-destinations-from-dry-run-output",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        pushed = []\n        for line in lines[1:]:\n            if not line.startswith('  Push  URL: '):\n                break\n            pushed.append(line[len('  Push  URL: '):])\n"
+      },
+      {
+        "name": "effects-resolution-isolated-profile",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        shown = transport('remote', 'show', '-n', '--', remote, env=dict("
+      },
+      {
+        "name": "effects-newline-config-accepted",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        if urls.returncode not in (0, 1) or any("
+      },
+      {
+        "name": "effects-destination-listing-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        for url in pushed:\n            itself = transport('ls-remote', '--get-url', '--', url)\n            if itself.returncode or itself.stdout != url + '\\n':"
+      },
+      {
+        "name": "effects-destination-listing-first-only",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        for url in pushed:\n            itself = transport('ls-remote', '--get-url', '--', url)\n            if itself.returncode or itself.stdout != url + '\\n':"
+      },
+      {
+        "name": "effects-remote-line-break-accepted",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        if '\\n' in remote:\n"
+      },
+      {
+        "name": "effects-show-exit-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        if (shown.returncode or not lines"
+      },
+      {
+        "name": "effects-header-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        lines = shown.stdout[len(head):].split('\\n') if shown.stdout.startswith(head) else []"
+      },
+      {
+        "name": "effects-fetch-line-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "not lines[0].startswith('  Fetch URL: ') or "
+      },
+      {
+        "name": "effects-empty-resolution-accepted",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": " or not pushed\n"
+      },
+      {
+        "name": "effects-head-line-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "                or lines[1 + len(pushed):2 + len(pushed)] != ['  HEAD branch: (not queried)']):"
+      },
+      {
+        "name": "effects-config-exit-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        if urls.returncode not in (0, 1) or any("
+      },
+      {
+        "name": "effects-resolution-locale-not-forced",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "env=dict(os.environ, LC_ALL='C'))"
+      },
+      {
+        "name": "effects-resolution-messages-locale-only",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "env=dict(os.environ, LC_ALL='C'))"
+      },
+      {
+        "name": "effects-transport-isolated-profile",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "            return git(*args, profile='network', env=env, steps=steps)"
+      },
+      {
+        "name": "candidate-watermark-from-caller-trunk",
+        "finding": 56,
+        "module": "lander.py",
+        "count": 0,
+        "anchor": "            if self.push:\n                url = self._git(self.repo_root, \"remote\", \"get-url\", self.remote, profile=\"network\")"
+      },
+      {
+        "name": "candidate-fetch-failure-ignored",
+        "finding": 56,
+        "module": "lander.py",
+        "count": 0,
+        "anchor": "                          \"+refs/heads/%s:%s\" % (self.trunk, WATERMARK_REF), profile=\"network\")\n"
+      },
+      {
+        "name": "landing-confirmation-read-from-local-clone",
+        "finding": 57,
+        "module": "control_landing.py",
+        "count": 0,
+        "anchor": "        found = self._git(self.clone, 'ls-remote', '--', self.remote, self.ref, profile='network')\n"
+      },
+      {
+        "name": "setup-starts-service",
+        "finding": 139,
+        "module": "control_factory_setup.py",
+        "count": 0,
+        "anchor": "                                   api_service=api_service)\n"
+      },
+      {
+        "name": "pool-highest-utilization-first",
+        "finding": 160,
+        "module": "control_account_pool.py",
+        "count": 0,
+        "anchor": "        ranked.append(((0, used) if used is not None else (1, 0), active, last, name))\n"
+      },
+      {
+        "name": "pool-most-recently-used-first",
+        "finding": 160,
+        "module": "control_account_pool.py",
+        "count": 0,
+        "anchor": "        ranked.append(((0, used) if used is not None else (1, 0), active, last, name))\n"
+      },
+      {
+        "name": "hygiene-own-values-lost",
+        "finding": 165,
+        "module": "control_launch.py",
+        "count": 0,
+        "anchor": "    environment.update(json.loads(environment.pop(ENGINE_OVERRIDES, '{}')))"
+      }
+    ],
+    "suite_anchor_findings": [
+      28,
+      56,
+      57,
+      153
+    ],
+    "suite_missing": [
+      {
+        "name": "identity153-netrc",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"git_process.py\""
+      },
+      {
+        "name": "identity153-includes",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"git_process.py\""
+      },
+      {
+        "name": "identity153-worktree",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"git_process.py\""
+      },
+      {
+        "name": "identity153-url-section",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_git_identity_transport.py\""
+      },
+      {
+        "name": "identity153-literal-destination",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_git_identity_transport.py\""
+      },
+      {
+        "name": "identity153-pre-push-hook",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"git_process.py\""
+      },
+      {
+        "name": "identity153-global-config",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"git_process.py\""
+      },
+      {
+        "name": "identity153-watermark-network",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"lander.py\""
+      },
+      {
+        "name": "identity153-listing-network",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_landing.py\""
+      },
+      {
+        "name": "identity153-unsigned-observations",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_effect_executor.py\""
+      },
+      {
+        "name": "identity153-volatile-counts",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_git_identity_transport.py\""
+      },
+      {
+        "name": "identity153-configured-owner-log",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"lander.py\""
+      },
+      {
+        "name": "identity153-global-helper",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_git_identity_transport.py\""
+      },
+      {
+        "name": "identity153-host-only",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_git_identity_transport.py\""
+      },
+      {
+        "name": "identity153-any-remote-section",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_git_identity_transport.py\""
+      },
+      {
+        "name": "identity153-rejected-refused",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_effect_executor.py\""
+      },
+      {
+        "name": "identity153-push-refused-class",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"lander.py\""
+      },
+      {
+        "name": "identity153-push-detail",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"lander.py\""
+      }
+    ]
+  },
+  "base_9763249e": {
+    "cases": 2437,
+    "unresolved": [],
+    "missing": [],
+    "suite_anchor_findings": [
+      28,
+      56,
+      57,
+      153
+    ],
+    "suite_missing": []
+  },
+  "seed_bb1538f2": {
+    "cases": 2457,
+    "unresolved": [],
+    "missing": [
+      {
+        "name": "effects-remote-must-exist-verbatim",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        if '\\n' in remote:\n"
+      },
+      {
+        "name": "effects-destinations-from-fetch-url",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        pushed = []\n        for line in lines[1:]:\n            if not line.startswith('  Push  URL: '):\n                break\n            pushed.append(line[len('  Push  URL: '):])\n"
+      },
+      {
+        "name": "effects-destinations-from-dry-run-output",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        pushed = []\n        for line in lines[1:]:\n            if not line.startswith('  Push  URL: '):\n                break\n            pushed.append(line[len('  Push  URL: '):])\n"
+      },
+      {
+        "name": "effects-resolution-isolated-profile",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        shown = transport('remote', 'show', '-n', '--', remote, env=dict("
+      },
+      {
+        "name": "effects-newline-config-accepted",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        if urls.returncode not in (0, 1) or any("
+      },
+      {
+        "name": "effects-destination-listing-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        for url in pushed:\n            itself = transport('ls-remote', '--get-url', '--', url)\n            if itself.returncode or itself.stdout != url + '\\n':"
+      },
+      {
+        "name": "effects-destination-listing-first-only",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        for url in pushed:\n            itself = transport('ls-remote', '--get-url', '--', url)\n            if itself.returncode or itself.stdout != url + '\\n':"
+      },
+      {
+        "name": "effects-remote-line-break-accepted",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        if '\\n' in remote:\n"
+      },
+      {
+        "name": "effects-show-exit-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        if (shown.returncode or not lines"
+      },
+      {
+        "name": "effects-header-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        lines = shown.stdout[len(head):].split('\\n') if shown.stdout.startswith(head) else []"
+      },
+      {
+        "name": "effects-fetch-line-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "not lines[0].startswith('  Fetch URL: ') or "
+      },
+      {
+        "name": "effects-empty-resolution-accepted",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": " or not pushed\n"
+      },
+      {
+        "name": "effects-head-line-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "                or lines[1 + len(pushed):2 + len(pushed)] != ['  HEAD branch: (not queried)']):"
+      },
+      {
+        "name": "effects-config-exit-unchecked",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "        if urls.returncode not in (0, 1) or any("
+      },
+      {
+        "name": "effects-resolution-locale-not-forced",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "env=dict(os.environ, LC_ALL='C'))"
+      },
+      {
+        "name": "effects-resolution-messages-locale-only",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "env=dict(os.environ, LC_ALL='C'))"
+      },
+      {
+        "name": "effects-transport-isolated-profile",
+        "finding": 28,
+        "module": "control_effect_executor.py",
+        "count": 0,
+        "anchor": "            return git(*args, profile='network', env=env, steps=steps)"
+      },
+      {
+        "name": "candidate-watermark-from-caller-trunk",
+        "finding": 56,
+        "module": "lander.py",
+        "count": 0,
+        "anchor": "            if self.push:\n                url = self._git(self.repo_root, \"remote\", \"get-url\", self.remote, profile=\"network\")"
+      },
+      {
+        "name": "candidate-fetch-failure-ignored",
+        "finding": 56,
+        "module": "lander.py",
+        "count": 0,
+        "anchor": "                          \"+refs/heads/%s:%s\" % (self.trunk, WATERMARK_REF), profile=\"network\")\n"
+      },
+      {
+        "name": "landing-confirmation-read-from-local-clone",
+        "finding": 57,
+        "module": "control_landing.py",
+        "count": 0,
+        "anchor": "        found = self._git(self.clone, 'ls-remote', '--', self.remote, self.ref, profile='network')\n"
+      }
+    ],
+    "suite_anchor_findings": [
+      28,
+      56,
+      57,
+      153
+    ],
+    "suite_missing": [
+      {
+        "name": "identity153-netrc",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"git_process.py\""
+      },
+      {
+        "name": "identity153-includes",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"git_process.py\""
+      },
+      {
+        "name": "identity153-worktree",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"git_process.py\""
+      },
+      {
+        "name": "identity153-url-section",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_git_identity_transport.py\""
+      },
+      {
+        "name": "identity153-literal-destination",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_git_identity_transport.py\""
+      },
+      {
+        "name": "identity153-pre-push-hook",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"git_process.py\""
+      },
+      {
+        "name": "identity153-global-config",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"git_process.py\""
+      },
+      {
+        "name": "identity153-watermark-network",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"lander.py\""
+      },
+      {
+        "name": "identity153-listing-network",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_landing.py\""
+      },
+      {
+        "name": "identity153-unsigned-observations",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_effect_executor.py\""
+      },
+      {
+        "name": "identity153-volatile-counts",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_git_identity_transport.py\""
+      },
+      {
+        "name": "identity153-configured-owner-log",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"lander.py\""
+      },
+      {
+        "name": "identity153-global-helper",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_git_identity_transport.py\""
+      },
+      {
+        "name": "identity153-host-only",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_git_identity_transport.py\""
+      },
+      {
+        "name": "identity153-any-remote-section",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_git_identity_transport.py\""
+      },
+      {
+        "name": "identity153-rejected-refused",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"control_effect_executor.py\""
+      },
+      {
+        "name": "identity153-push-refused-class",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"lander.py\""
+      },
+      {
+        "name": "identity153-push-detail",
+        "suite": "107_veldo_0153_identity_push.py",
+        "anchor": "ROOT / \".veldo\" / \"lander.py\""
+      }
+    ]
+  },
+  "current": {
+    "cases": 2452,
+    "unresolved": [],
+    "missing": [],
+    "suite_anchor_findings": [
+      28,
+      56,
+      57,
+      153
+    ],
+    "suite_missing": []
+  }
+}

@@ -194,6 +194,7 @@ _FILES = [
     # (env_provision). Runtime assets, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_clone.py",
     ".veldo/control_git_identity.py",
+    ".veldo/control_git_identity_transport.py",
     ".veldo/env_provision.py",
     # VELDO-0047: the authority service (install, explicit start and stop, one instance under the
     # store's stable lock, signed commands applied to the configured store) and the systemd user unit
@@ -333,6 +334,22 @@ _FILES = [
     ".veldo/credential_issue.py",
     ".veldo/control_effects.py",
     ".veldo/control_effect_executor.py",
+    # VELDO-0161: repository adoption on the owner's settled answer: the repository record, the settled
+    # decision and the adoption signer (loaded by the authority service, which takes an adopted repository
+    # on without a restart), the provisioner's adoption steps and the adoption effect. Not substrate.
+    ".veldo/control_repository.py",
+    ".veldo/control_repository_provisioner.py",
+    ".veldo/control_effect_executor_adoption.py",
+    # VELDO-0143: a new project from chat: the factory PM's one proposal and the owner's one answer, the
+    # provisioner's creation steps, its registered effect, and the running service's part of it. Not substrate.
+    ".veldo/control_project_proposal.py",
+    ".veldo/control_repository_creation.py",
+    ".veldo/control_effect_executor_creation.py",
+    ".veldo/control_service_projects.py",
+    # The scaffold itself: the provisioner the authority service starts lays Veldo into the repository it
+    # creates with it, so it is in the installer's closure, and an adopter's tree, where the installer runs
+    # too, must hold it.
+    ".veldo/init_scaffold.py",
     # VELDO-0104 (PLAN-0020 W4): the fix-validation record and the rule the proof check applies.
     # validate_checks registers its loader, so a scaffolded repository without it has no proof stage;
     # and it loads the runner by path, which loads the capsule module, so all three travel together.
@@ -578,11 +595,12 @@ def _version_reader():
     its substrate lists alone, and an import that can fail must not fail then."""
     global _VERSION_READER
     if _VERSION_READER is None:
-        p = Path(__file__).resolve().parent / "version.py"
+        # One binding, so the installer's closure (control_service._Loads) names the file this loads.
+        version_path = Path(__file__).resolve().parent / "version.py"
         _VERSION_READER = False
-        if p.is_file():
+        if version_path.is_file():
             try:
-                spec = importlib.util.spec_from_file_location("veldo_version_for_stamp", p)
+                spec = importlib.util.spec_from_file_location("veldo_version_for_stamp", version_path)
                 mod = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(mod)
                 _VERSION_READER = mod

@@ -1,0 +1,136 @@
+{
+  "implementation_commit": "eb39d109239b90f42a134e6d4ee482a90e78bfbc",
+  "scope": "Selected suites only, no aggregate gate or live-host qualification",
+  "runs": [
+    {
+      "suite": "58",
+      "exit": 1,
+      "failures": [],
+      "infrastructure": [
+        "PermissionError: [Errno 1] Operation not permitted"
+      ],
+      "summary": []
+    },
+    {
+      "suite": "107",
+      "exit": 1,
+      "failures": [],
+      "infrastructure": [
+        "PermissionError: [Errno 1] Operation not permitted"
+      ],
+      "summary": []
+    },
+    {
+      "suite": "108",
+      "exit": 2,
+      "failures": [],
+      "infrastructure": [],
+      "summary": [
+        "selftest (PARTIAL, 1 of 164 suites): 28 passed, 0 failed in 0.05s"
+      ]
+    }
+  ],
+  "suite58": {
+    "assertions_executed": 0,
+    "blocker": "Wire.active() at suite line 179 calls socket(AF_UNIX), which raises PermissionError [Errno 1] Operation not permitted before row() is defined or called.",
+    "unexecuted_rows": [
+      "VELDO-0028 effects/authenticated-ipc",
+      "VELDO-0028 effects/completion/provider",
+      "VELDO-0028 effects/completion/publication",
+      "VELDO-0028 effects/current-authority/provider",
+      "VELDO-0028 effects/current-authority/publication",
+      "VELDO-0028 effects/nonce/provider",
+      "VELDO-0028 effects/nonce/publication",
+      "VELDO-0028 effects/publication-call-covers-every-destination",
+      "VELDO-0028 effects/publication-completion-from-destination-state",
+      "VELDO-0028 effects/publication-config-selection-parity",
+      "VELDO-0028 effects/publication-confirms-one-change",
+      "VELDO-0028 effects/publication-destination-despite-hook-text",
+      "VELDO-0028 effects/publication-destination-listed-as-resolved",
+      "VELDO-0028 effects/publication-destination-without-credentials",
+      "VELDO-0028 effects/publication-env-ssh-command",
+      "VELDO-0028 effects/publication-exact-ref",
+      "VELDO-0028 effects/publication-fan-out-agit-report",
+      "VELDO-0028 effects/publication-global-credential-helper",
+      "VELDO-0028 effects/publication-global-insteadof",
+      "VELDO-0028 effects/publication-global-ssh-command",
+      "VELDO-0028 effects/publication-head-change",
+      "VELDO-0028 effects/publication-hook-text-without-newline",
+      "VELDO-0028 effects/publication-line-break-refused",
+      "VELDO-0028 effects/publication-network-profile-strips-coordinates",
+      "VELDO-0028 effects/publication-non-utf8-output",
+      "VELDO-0028 effects/publication-pre-push-hook",
+      "VELDO-0028 effects/publication-push-options",
+      "VELDO-0028 effects/publication-records-resolved-destination",
+      "VELDO-0028 effects/publication-ref-creation",
+      "VELDO-0028 effects/publication-refusal-reaches-caller",
+      "VELDO-0028 effects/publication-refused-when-not-at-old-tip",
+      "VELDO-0028 effects/publication-rejected-destination-recorded",
+      "VELDO-0028 effects/publication-requires-clean-push-exit",
+      "VELDO-0028 effects/publication-resolution-output-checked",
+      "VELDO-0028 effects/publication-resolution-with-locale-env",
+      "VELDO-0028 effects/publication-revoked-reviewer",
+      "VELDO-0028 effects/publication-scrub-malformed-address",
+      "VELDO-0028 effects/publication-scrub-query-fragment",
+      "VELDO-0028 effects/publication-scrub-scp-user-information",
+      "VELDO-0028 effects/publication-scrub-transport-prefix",
+      "VELDO-0028 effects/publication-smart-http",
+      "VELDO-0028 effects/publication-url-rewrite",
+      "VELDO-0028 effects/real-publication",
+      "VELDO-0028 effects/receiver-refused-is-unknown/provider",
+      "VELDO-0028 effects/receiver-refused-is-unknown/publication",
+      "VELDO-0028 effects/revocation-before-transaction/provider",
+      "VELDO-0028 effects/revocation-before-transaction/publication",
+      "VELDO-0028 effects/revocation-committed/provider",
+      "VELDO-0028 effects/revocation-committed/publication",
+      "VELDO-0028 effects/revocation-future-dated/provider",
+      "VELDO-0028 effects/revocation-future-dated/publication",
+      "VELDO-0028 effects/revocation-in-flight/provider",
+      "VELDO-0028 effects/revocation-in-flight/publication",
+      "VELDO-0028 effects/scope/provider",
+      "VELDO-0028 effects/scope/publication",
+      "VELDO-0028 effects/signed-store",
+      "VELDO-0028 effects/worker-credential-read"
+    ],
+    "unexecuted_count": 57
+  },
+  "suite107": {
+    "completed": "All evidence rows, isolated-profile import and three refusal-unit rows; no named failures",
+    "unexecuted": "All _v153_fence_rows assertions and all _v153_suite integration/profile/owner/installer rows: first Wire.active() in _v153_fence_rows raises AF_UNIX PermissionError before its first expect."
+  },
+  "prohibited": [
+    "full selftest",
+    "mutation drivers",
+    "scripts/verify.sh"
+  ],
+  "static_checks": [
+    {
+      "name": "compile",
+      "exit": 0
+    },
+    {
+      "name": "generated",
+      "exit": 0
+    },
+    {
+      "name": "template-sync",
+      "exit": 0
+    },
+    {
+      "name": "audit-final",
+      "exit": 0
+    },
+    {
+      "name": "proof_manifest_validation",
+      "command": "python3 .veldo/validate.py proof proof/VELDO-0153/manifest.json",
+      "exit": 0
+    }
+  ],
+  "invocation_corrections": [
+    {
+      "command": "python3 .veldo/validate.py proof",
+      "exit": 1,
+      "reason": "Missing required manifest path argument; rerun with the path passed, exit 0."
+    }
+  ]
+}

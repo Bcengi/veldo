@@ -6,6 +6,7 @@ def _v215_case_deadlines():
     import importlib.util
     import json
     import os
+    import runpy
     from pathlib import Path
     import subprocess
     import sys
@@ -14,26 +15,32 @@ def _v215_case_deadlines():
     import types
     from unittest.mock import patch
 
-    path = ROOT / "scripts" / "check_gate_mutations.py"
-    spec = importlib.util.spec_from_file_location('gate215', path)
-    gate = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(gate)
-    # A mutant is loaded from a scratch path; its authority still has the real helpers.
-    gate.ROOT = ROOT
-    case = dict(identity='check_teeth_mutations.py:sample', name='sample', finding=215,
-                driver=gate.DRIVERS[0], suite='sample.py', module='sample.py',
-                rows=['target'], old='before', new='after')
-    files = {name: (0o644, b'before') for name in (
-        '.veldo/sample.py', 'scripts/suites/sample.py', 'scripts/suites/shared.py',
-        'scripts/check_gate_mutations.py', 'scripts/mutation_observer.py',
-        'scripts/reuse_worker.py', 'scripts/mutation_sandbox.py', 'scripts/agent_sandbox.py',
-        'scripts/mutation_ownership.py')}
-
-    def row(name, condition):
-        expect('VELDO-0215 case-deadlines/' + name, condition)
-
-    with tempfile.TemporaryDirectory(prefix='v215-') as temporary:
+    compiler = runpy.run_path(str(ROOT / 'scripts/suites/support/compiled_sources.py'))
+    with tempfile.TemporaryDirectory(prefix='v215-') as temporary, contextlib.ExitStack() as fixture:
         scratch = Path(temporary)
+        # Nested coordinator fixtures stay beneath this worker's private scratch root.
+        fixture.enter_context(patch.object(tempfile, 'tempdir', str(scratch)))
+        fixture.enter_context(compiler['compiled_sources'](ROOT / 'scripts'))
+        path = ROOT / "scripts" / "check_gate_mutations.py"
+        if path.parent != ROOT / 'scripts':
+            fixture.enter_context(compiler['compiled_sources'](path.parent))
+        spec = importlib.util.spec_from_file_location('gate215', path)
+        gate = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(gate)
+        # A mutant is loaded from a scratch path; its authority still has the real helpers.
+        gate.ROOT = ROOT
+        case = dict(identity='check_teeth_mutations.py:sample', name='sample', finding=215,
+                    driver=gate.DRIVERS[0], suite='sample.py', module='sample.py',
+                    rows=['target'], old='before', new='after')
+        files = {name: (0o644, b'before') for name in (
+            '.veldo/sample.py', 'scripts/suites/sample.py', 'scripts/suites/shared.py',
+            'scripts/check_gate_mutations.py', 'scripts/mutation_observer.py',
+            'scripts/reuse_worker.py', 'scripts/mutation_sandbox.py', 'scripts/agent_sandbox.py',
+            'scripts/mutation_ownership.py')}
+
+        def row(name, condition):
+            expect('VELDO-0215 case-deadlines/' + name, condition)
+
         key = gate.case_time_key(case, files, None)
         store = scratch / 'times'
         store.mkdir()

@@ -1,0 +1,20 @@
+{
+  "scope": "Evidence regression controls only; no mutation driver or integration run",
+  "exit": 1,
+  "expected_failures": [
+    "SELFTEST FAIL: VELDO-0153 evidence/refusal-copy-inside-checkout",
+    "SELFTEST FAIL: VELDO-0153 evidence/audit-reports-every-prefix",
+    "SELFTEST FAIL: VELDO-0153 evidence/publication-loop-has-rows",
+    "SELFTEST FAIL: VELDO-0153 evidence/audit-matches-data-factory"
+  ],
+  "failures": [
+    "SELFTEST FAIL: VELDO-0153 evidence/refusal-copy-inside-checkout",
+    "SELFTEST FAIL: VELDO-0153 evidence/audit-reports-every-prefix",
+    "SELFTEST FAIL: VELDO-0153 evidence/publication-loop-has-rows",
+    "SELFTEST FAIL: VELDO-0153 evidence/audit-matches-data-factory"
+  ],
+  "matched": true,
+  "infrastructure": [
+    "PermissionError: [Errno 1] Operation not permitted"
+  ]
+}
