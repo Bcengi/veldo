@@ -505,6 +505,15 @@ def _v204_suite():
                       len(served.records) == 1 and len(answers) == 1 and answers[0].get('caller') == 'start'
                       and answers[0].get('outcome') == 'done' and answers[0].get('refusal') is None
                       and answers[0].get('subjects') and not served.records[0].get('faults'))
+                # serve's process has no input for a graph stage (proof/VELDO-0204/host.py serve), so it must run no
+                # PM exchange: no pass of its ran a line's project cycles, nor raised in a line where they could run.
+                cycled = [(p.get('pass'), sorted(set(p) & {'pm_cycles'}), [x for x in p.get('faults') or []
+                          if 'repository' in x and str(x.get('reason')).startswith('unknown_outcome')])
+                          for p in served.passes]
+                check('service/serve', 'serve ran no PM exchange, so the account graph stage it would use is never '
+                      'staged in: none of its %d factory passes ran a line\'s project cycles [%s]' % (
+                          len(served.passes), [c for c in cycled if c[1] or c[2]][:3]),
+                      not any(c[1] or c[2] for c in cycled))
     except Exception as error:  # noqa: BLE001 - a fixture that did not run reds every row by assertion
         for name in names:
             check(name, 'the fixture ran to its end (it raised %s: %s)' % (type(error).__name__, str(error)[:300]), False)

@@ -5799,6 +5799,7 @@
         "scripts/suites/96_veldo_0204_reservation_policies.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/compiled_sources.py",
+        "scripts/suites/support/graph_stage.py",
         "scripts/suites/support/v171_tailscale.py"
       ],
       "absent": [],

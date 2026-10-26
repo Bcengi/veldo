@@ -384,7 +384,12 @@ class Host:
         """control_service serve as its own process, as the unit runs it: this host's configuration with its own
         socket and observations, the store's lock released to it first, as setup releases it before the unit
         starts. Waits for READY=1 (sd_notify), then stops it with SIGTERM. The answer: whether it came up, its
-        start records, its exit code and its stderr tail."""
+        start records, its factory pass records, its exit code and its stderr tail.
+
+        The process is given no graph stage, because serve takes none: its configuration names no stage, and the
+        account stage comes from the password database (control_graph_lock.account_home), not from HOME. It needs
+        none while it runs no PM exchange, and a PM exchange runs only in a factory pass's Line.run (pass_once,
+        whose answers that pass's record carries under pm_cycles); service/serve checks its pass records for that."""
         if self.lock not in (None, -1):
             os.close(self.lock)
             self.lock = None
@@ -420,10 +425,11 @@ class Host:
                 os.killpg(process.pid, signal.SIGKILL)
             process.wait(5)
             shutil.rmtree(str(run), ignore_errors=True)
-        return SimpleNamespace(ready=ready, records=self.start_records(observations), code=process.returncode,
+        return SimpleNamespace(ready=ready, records=self.start_records(observations),
+                               passes=self.start_records(observations, 'loop_pass'), code=process.returncode,
                                errors=errors.read_text()[-600:])
 
-    def start_records(self, path=None):
+    def start_records(self, path=None, operation='runs_swept'):
         path = Path(path or self.config['observations'])
         lines = path.read_text().splitlines() if path.is_file() else []
         found = []
@@ -432,6 +438,6 @@ class Host:
                 seen = json.loads(text)
             except ValueError:
                 continue
-            if seen.get('kind') == 'loop' and seen.get('operation') == 'runs_swept':
+            if seen.get('kind') == 'loop' and seen.get('operation') == operation:
                 found.append(seen)
         return found
