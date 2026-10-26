@@ -1,0 +1,457 @@
+{
+  "base": "2eb9c2be38421ecf3fde4c56212df23ae323b39b",
+  "implementation_commit": "45c714d2db159f139482da3f12aed02da334f3af",
+  "branch": "agent/codex/veldo-mutation-case-deadlines",
+  "limits": {
+    "MemoryHigh": "14G",
+    "MemoryMax": "16G",
+    "OOMScoreAdjust": 900
+  },
+  "checks": [
+    {
+      "name": "suite-authority",
+      "log": "/tmp/veldo215-suite-authority.log",
+      "sha256": "1777b6f00ffa78ca2b3a3657da37aef43eedf93e50b0358e2995111d97fdbdcb",
+      "verdict_lines": [
+        "selftest (PARTIAL, 1 of 164 suites): 39 passed, 0 failed in 0.24s"
+      ]
+    },
+    {
+      "name": "existing-3",
+      "log": "/tmp/veldo215-existing-3.log",
+      "sha256": "ac5a173fe90c701946988c44f07d841c29b669e075e592fbbbe7526f8fad9398",
+      "verdict_lines": [
+        "selftest (PARTIAL, 7 of 164 suites): 230 passed, 0 failed in 139.25s",
+        "Finished with result: exit-code"
+      ]
+    },
+    {
+      "name": "affected-authority",
+      "log": "/tmp/veldo215-affected-authority.log",
+      "sha256": "38ed0e46ea30babc869695972dfea9df7d95a45d67dcc9d67ad81902049d1fb1",
+      "verdict_lines": [
+        "mutations: passed registered=106 executed=106 reused=0 rejected=106 workers=144 elapsed=353.365s",
+        "Finished with result: success"
+      ]
+    },
+    {
+      "name": "full-gate",
+      "log": "/tmp/veldo215-full-gate.log",
+      "sha256": "67e81eab01c29c9535d5971a8ae31927045dfe2a41aabe7fb19e1f1fd25c6f54",
+      "verdict_lines": [
+        "mutations: passed registered=2569 executed=2569 reused=0 rejected=2569 workers=3313 elapsed=4893.541s",
+        "GATE: GREEN (45c714d2db159f139482da3f12aed02da334f3af)",
+        "Finished with result: success"
+      ]
+    }
+  ],
+  "affected_findings": {
+    "status": "passed",
+    "registered": 106,
+    "executed": 106,
+    "rejected": 106,
+    "reused": 0,
+    "elapsed": 353.3654202200123,
+    "budget_seconds": 17400,
+    "parallel_workers": 16,
+    "error": null,
+    "detail": null
+  },
+  "mutants215": [
+    {
+      "identity": "check_teeth_mutations.py:deadline215-timeout-is-baseline",
+      "rows": [
+        "case-deadlines/hang-timeout"
+      ],
+      "elapsed": 0.865519298997242
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-no-authority-guard",
+      "rows": [
+        "case-deadlines/authority-recording"
+      ],
+      "elapsed": 0.8252051220042631
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-key-omits-sources",
+      "rows": [
+        "case-deadlines/key-binding"
+      ],
+      "elapsed": 0.8509647049941123
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-key-omits-definition",
+      "rows": [
+        "case-deadlines/key-binding"
+      ],
+      "elapsed": 0.8289311630069278
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-no-prune",
+      "rows": [
+        "case-deadlines/store-pruned"
+      ],
+      "elapsed": 0.8288578759529628
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-old-stage-cap",
+      "rows": [
+        "case-deadlines/combined-budget"
+      ],
+      "elapsed": 0.8091186649980955
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-first-control",
+      "rows": [
+        "case-deadlines/shared-controls"
+      ],
+      "elapsed": 0.8538593349512666
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-no-ceiling",
+      "rows": [
+        "case-deadlines/bounds"
+      ],
+      "elapsed": 0.8543427669792436
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-lost-baseline-details",
+      "rows": [
+        "case-deadlines/baseline-details"
+      ],
+      "elapsed": 0.8114925340050831
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-record-invalid",
+      "rows": [
+        "case-deadlines/authority-recording"
+      ],
+      "elapsed": 0.8713941359892488
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-setup-timeout-is-driver-error",
+      "rows": [
+        "case-deadlines/setup-timeout"
+      ],
+      "elapsed": 0.8506190190091729
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-candidate-authority-not-recorded",
+      "rows": [
+        "case-deadlines/candidate-authority"
+      ],
+      "elapsed": 0.7889740790124051
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-stage-drops-authority",
+      "rows": [
+        "case-deadlines/authority-recording"
+      ],
+      "elapsed": 0.8137218590127304
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-fixed-worker",
+      "rows": [
+        "case-deadlines/measured-worker",
+        "case-deadlines/slow-pass"
+      ],
+      "elapsed": 20.63950627698796
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-drop-measurement",
+      "rows": [
+        "case-deadlines/measured-worker",
+        "case-deadlines/slow-pass"
+      ],
+      "elapsed": 20.638574114011135
+    },
+    {
+      "identity": "check_teeth_mutations.py:deadline215-no-expiry",
+      "rows": [
+        "case-deadlines/hang-timeout"
+      ],
+      "elapsed": 20.683279462042265
+    }
+  ],
+  "reported_cases": [
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 2,
+        "units": [
+          "v60e05a6988.slice"
+        ]
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 36.444267446000595,
+      "leg": "unconfined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:claude-completion-gate-exit-only",
+      "output_directory": "/tmp/veldo-mutations-kn4jyko9/51",
+      "pid": 615500,
+      "returncode": 0,
+      "stderr_bytes": 576,
+      "stdout_bytes": 5128
+    },
+    {
+      "budget_seconds": 120,
+      "cleanup": {
+        "directories": 85,
+        "units": [
+          "v148a30a3043.slice"
+        ]
+      },
+      "driver": "check_teeth_mutations.py",
+      "elapsed": 67.82365998503519,
+      "leg": "unconfined",
+      "mode": "mutant",
+      "name": "check_teeth_mutations.py:receiver148-setup-clock-before-release",
+      "output_directory": "/tmp/veldo-mutations-kn4jyko9/73",
+      "pid": 658620,
+      "returncode": 0,
+      "stderr_bytes": 430,
+      "stdout_bytes": 4295
+    }
+  ],
+  "invalid_results": [],
+  "full_gate": {
+    "exit_code": 0,
+    "stamp": {
+      "commit": "45c714d2db159f139482da3f12aed02da334f3af",
+      "status": "green",
+      "at": "2026-10-24T13:53:16Z",
+      "checks_run": 9,
+      "checks_na": 15,
+      "veldo_version": "3.10.1",
+      "tree": "clean",
+      "force_fresh": false,
+      "reused": {
+        "unit": 0,
+        "mutation": 0
+      },
+      "unconfined": {
+        "declaration": "sha256:6469145c8d042f1a72c16ddf6e0306ea8d3c96f9d885603246178db965a02a63",
+        "legs": {
+          "integration": [
+            "62_veldo_0039_dispatch",
+            "63_veldo_0040_containment",
+            "63_veldo_0049_floor",
+            "64_veldo_0050_proof",
+            "66_veldo_0042_clones",
+            "66_veldo_0047_authority",
+            "67_veldo_0041_heartbeat",
+            "67_veldo_0135_offers",
+            "71_veldo_0076_projects",
+            "71_veldo_0130_api",
+            "71_veldo_0138_channel_service",
+            "73_veldo_0139_factory_setup",
+            "78_veldo_0060_claude_adapter",
+            "79_veldo_0061_codex_adapter",
+            "80_veldo_0155_claude_baseline",
+            "81_veldo_0156_codex_baseline",
+            "82_veldo_0129_worker_wiring",
+            "82_veldo_0141_execution_record",
+            "83_veldo_0154_factory_loop",
+            "85_veldo_0158_credential_delivery",
+            "85_veldo_0171_setup_api",
+            "86_veldo_0127_agent_configuration",
+            "86_veldo_0148_re_land",
+            "86_veldo_0189_engine_upgrade",
+            "87_veldo_0170_receiver_trust",
+            "91_veldo_0167_setup_records",
+            "92_veldo_0088_pm_cycles",
+            "93_veldo_0152_intake_routes",
+            "94_veldo_0162_configuration_routes",
+            "95_veldo_0203_owner_revisions",
+            "96_veldo_0204_reservation_policies",
+            "106_veldo_0185_dispatch_setup",
+            "65_veldo_0067_edges",
+            "100_veldo_0207_case_reuse:strace",
+            "101_veldo_0208_landing_reuse:strace"
+          ],
+          "mutation": [
+            "62_veldo_0039_dispatch",
+            "63_veldo_0040_containment",
+            "63_veldo_0049_floor",
+            "64_veldo_0050_proof",
+            "66_veldo_0042_clones",
+            "66_veldo_0047_authority",
+            "67_veldo_0041_heartbeat",
+            "67_veldo_0135_offers",
+            "71_veldo_0076_projects",
+            "71_veldo_0130_api",
+            "71_veldo_0138_channel_service",
+            "73_veldo_0139_factory_setup",
+            "78_veldo_0060_claude_adapter",
+            "79_veldo_0061_codex_adapter",
+            "80_veldo_0155_claude_baseline",
+            "81_veldo_0156_codex_baseline",
+            "82_veldo_0129_worker_wiring",
+            "82_veldo_0141_execution_record",
+            "83_veldo_0154_factory_loop",
+            "85_veldo_0158_credential_delivery",
+            "85_veldo_0171_setup_api",
+            "86_veldo_0127_agent_configuration",
+            "86_veldo_0148_re_land",
+            "86_veldo_0189_engine_upgrade",
+            "87_veldo_0170_receiver_trust",
+            "91_veldo_0167_setup_records",
+            "92_veldo_0088_pm_cycles",
+            "93_veldo_0152_intake_routes",
+            "94_veldo_0162_configuration_routes",
+            "95_veldo_0203_owner_revisions",
+            "96_veldo_0204_reservation_policies",
+            "106_veldo_0185_dispatch_setup",
+            "65_veldo_0067_edges",
+            "100_veldo_0207_case_reuse:strace",
+            "101_veldo_0208_landing_reuse:strace"
+          ],
+          "unit": [
+            "62_veldo_0039_dispatch",
+            "63_veldo_0040_containment",
+            "63_veldo_0049_floor",
+            "64_veldo_0050_proof",
+            "66_veldo_0042_clones",
+            "66_veldo_0047_authority",
+            "67_veldo_0041_heartbeat",
+            "67_veldo_0135_offers",
+            "71_veldo_0076_projects",
+            "71_veldo_0130_api",
+            "71_veldo_0138_channel_service",
+            "73_veldo_0139_factory_setup",
+            "78_veldo_0060_claude_adapter",
+            "79_veldo_0061_codex_adapter",
+            "80_veldo_0155_claude_baseline",
+            "81_veldo_0156_codex_baseline",
+            "82_veldo_0129_worker_wiring",
+            "82_veldo_0141_execution_record",
+            "83_veldo_0154_factory_loop",
+            "85_veldo_0158_credential_delivery",
+            "85_veldo_0171_setup_api",
+            "86_veldo_0127_agent_configuration",
+            "86_veldo_0148_re_land",
+            "86_veldo_0189_engine_upgrade",
+            "87_veldo_0170_receiver_trust",
+            "91_veldo_0167_setup_records",
+            "92_veldo_0088_pm_cycles",
+            "93_veldo_0152_intake_routes",
+            "94_veldo_0162_configuration_routes",
+            "95_veldo_0203_owner_revisions",
+            "96_veldo_0204_reservation_policies",
+            "106_veldo_0185_dispatch_setup",
+            "65_veldo_0067_edges",
+            "100_veldo_0207_case_reuse:strace",
+            "101_veldo_0208_landing_reuse:strace"
+          ]
+        }
+      }
+    },
+    "verdict_lines": [
+      "== lint",
+      "== unit",
+      "   unit: confined leg - every suite except the 33 listed whole, and of the 2 listed for some rows, every row but those",
+      "   unit: removed 3 leg-time files from /tmp/veldo-agent-3me2ajlu/tmp/v215-uhfoq2l9/prune (authority checkout gone or older than 30 days)",
+      "selftest: 7747 passed, 0 failed",
+      "   unit: confined leg: pass (1889.9s)",
+      "   unit: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, gate_unconfined.json), 35 entries: 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0049_floor, 64_veldo_0050_proof, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 67_veldo_0135_offers, 71_veldo_0076_projects, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0129_worker_wiring, 82_veldo_0141_execution_record, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 85_veldo_0171_setup_api, 86_veldo_0127_agent_configuration, 86_veldo_0148_re_land, 86_veldo_0189_engine_upgrade, 87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 106_veldo_0185_dispatch_setup, 65_veldo_0067_edges, 100_veldo_0207_case_reuse:strace, 101_veldo_0208_landing_reuse:strace",
+      "selftest: 871 passed, 0 failed",
+      "   unit: unconfined leg: pass (803.3s)",
+      "   unit: pass",
+      "== integration",
+      "   integration: confined leg - every suite except the 33 listed whole, and of the 2 listed for some rows, every row but those",
+      "   integration: confined leg budget input: unit confined leg 1889.9s, this gate run (2026-10-24T11:34:18Z)",
+      "== first use: no suite may require this repository's current emptiness",
+      "FIRST USE: pass. Every family's sanctioned first use leaves the suite exactly as green as it was, so no assertion in scripts/suites/ requires this repository's current emptiness. What that does and does not cover is in this file's docstring.",
+      "   integration: confined leg: pass (1761.7s)",
+      "   integration: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, gate_unconfined.json), 35 entries: 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0049_floor, 64_veldo_0050_proof, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 67_veldo_0135_offers, 71_veldo_0076_projects, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0129_worker_wiring, 82_veldo_0141_execution_record, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 85_veldo_0171_setup_api, 86_veldo_0127_agent_configuration, 86_veldo_0148_re_land, 86_veldo_0189_engine_upgrade, 87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 106_veldo_0185_dispatch_setup, 65_veldo_0067_edges, 100_veldo_0207_case_reuse:strace, 101_veldo_0208_landing_reuse:strace",
+      "   integration: unconfined leg budget input: unit unconfined leg 803.3s, this gate run (2026-10-24T11:47:41Z)",
+      "== first use: no suite may require this repository's current emptiness",
+      "FIRST USE: pass. Every family's sanctioned first use leaves the suite exactly as green as it was, so no assertion in scripts/suites/ requires this repository's current emptiness. What that does and does not cover is in this file's docstring.",
+      "   integration: unconfined leg: pass (808.5s)",
+      "   integration: pass",
+      "== security",
+      "== generated",
+      "== docs",
+      "== packaging",
+      "== extra",
+      "== mutation",
+      "   mutation: confined leg - every case except those of the 35 suites the list names (a case runs its whole suite, so a case of a suite listed only for some rows is refused)",
+      "   mutation: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, gate_unconfined.json sha256:6469145c8d042f1a72c16ddf6e0306ea8d3c96f9d885603246178db965a02a63), 35 entries: 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0049_floor, 64_veldo_0050_proof, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 67_veldo_0135_offers, 71_veldo_0076_projects, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0129_worker_wiring, 82_veldo_0141_execution_record, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 85_veldo_0171_setup_api, 86_veldo_0127_agent_configuration, 86_veldo_0148_re_land, 86_veldo_0189_engine_upgrade, 87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 106_veldo_0185_dispatch_setup, 65_veldo_0067_edges, 100_veldo_0207_case_reuse:strace, 101_veldo_0208_landing_reuse:strace",
+      "   mutation: unconfined leg ran 915 cases, 915 rejected: 106_veldo_0185_dispatch_setup (20), 62_veldo_0039_dispatch (30), 63_veldo_0040_containment (41), 63_veldo_0049_floor (36), 64_veldo_0050_proof (24), 65_veldo_0067_edges (18), 66_veldo_0042_clones (21), 66_veldo_0047_authority (40), 67_veldo_0041_heartbeat (35), 67_veldo_0135_offers (16), 71_veldo_0076_projects (26), 71_veldo_0130_api (102), 71_veldo_0138_channel_service (14), 73_veldo_0139_factory_setup (21), 78_veldo_0060_claude_adapter (35), 79_veldo_0061_codex_adapter (31), 80_veldo_0155_claude_baseline (26), 81_veldo_0156_codex_baseline (25), 82_veldo_0129_worker_wiring (14), 82_veldo_0141_execution_record (50), 83_veldo_0154_factory_loop (10), 85_veldo_0158_credential_delivery (12), 85_veldo_0171_setup_api (17), 86_veldo_0127_agent_configuration (53), 86_veldo_0148_re_land (30), 86_veldo_0189_engine_upgrade (48), 87_veldo_0170_receiver_trust (14), 91_veldo_0167_setup_records (15), 92_veldo_0088_pm_cycles (19), 93_veldo_0152_intake_routes (14), 94_veldo_0162_configuration_routes (25), 95_veldo_0203_owner_revisions (15), 96_veldo_0204_reservation_policies (18)",
+      "mutations: passed registered=2569 executed=2569 reused=0 rejected=2569 workers=3313 elapsed=4893.541s",
+      "   mutation: pass",
+      "== secret scan (built-in)",
+      "== veldo contracts (built-in: fails closed if unavailable)",
+      "== shape gate (built-in: mechanizable architecture-contract rules; adoption safe, fails closed)",
+      "== review events (built-in: derived from the verdict artifacts; appends and reports, never judges)",
+      "GATE: GREEN (45c714d2db159f139482da3f12aed02da334f3af)"
+    ]
+  },
+  "full_mutation_stage": {
+    "status": "passed",
+    "registered": 2569,
+    "executed": 2569,
+    "reused": 0,
+    "rejected": 2569,
+    "elapsed": 4893.540833709994,
+    "budget_seconds": 401704.6287287721,
+    "parallel_workers": 16,
+    "worker_invocations": 3313,
+    "surviving_workers": 0,
+    "error": null,
+    "detail": null,
+    "invalid_results": [],
+    "resources": {
+      "capacities": {
+        "systemd_user_manager": 16
+      },
+      "peak_slots": {
+        "systemd_user_manager": 16
+      },
+      "remaining_slots": {
+        "systemd_user_manager": 0
+      }
+    },
+    "measured_above_floor": 32,
+    "reported_cases": [
+      {
+        "budget_seconds": 120,
+        "cleanup": {
+          "directories": 2,
+          "units": [
+            "v60520aca79.slice"
+          ]
+        },
+        "driver": "check_teeth_mutations.py",
+        "elapsed": 35.336770466994494,
+        "leg": "unconfined",
+        "mode": "mutant",
+        "name": "check_teeth_mutations.py:claude-completion-gate-exit-only",
+        "output_directory": "/tmp/veldo-mutations-e9le7qw4/2546",
+        "pid": 2494694,
+        "returncode": 0,
+        "stderr_bytes": 576,
+        "stdout_bytes": 5128
+      },
+      {
+        "budget_seconds": 203.47097995510558,
+        "cleanup": {
+          "directories": 85,
+          "units": [
+            "v148ae7dff7a.slice"
+          ]
+        },
+        "driver": "check_teeth_mutations.py",
+        "elapsed": 68.59639873600099,
+        "leg": "unconfined",
+        "mode": "mutant",
+        "name": "check_teeth_mutations.py:receiver148-setup-clock-before-release",
+        "output_directory": "/tmp/veldo-mutations-e9le7qw4/2946",
+        "pid": 3271118,
+        "returncode": 0,
+        "stderr_bytes": 434,
+        "stdout_bytes": 4295
+      }
+    ]
+  }
+}

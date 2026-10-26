@@ -327,9 +327,7 @@ def _v205_reuse():
         expect('VELDO-0205 reuse/setup-error-receipt: incomplete setup returns a failed receipt',
                setup_failed['status'] == 'failed' and setup_failed['executed'] == setup_failed['reused'] == 0)
 
-        class Resources:
-            def summary(self):
-                return {}
+        resources = gate.SuiteResources({'suites': [{'file': 'controlled.py'}]})
 
         def run(force=False):
             with patch.object(gate, 'Workers', ControlledWorkers), \
@@ -339,7 +337,7 @@ def _v205_reuse():
                  patch.object(gate, 'snapshot'), \
                  patch.object(gate, 'inputs_unchanged', side_effect=lambda *args: not race[0]), \
                  patch.object(gate, 'load', return_value=reuse), \
-                 patch.object(gate.SuiteResources, 'from_root', return_value=Resources()), \
+                 patch.object(gate.SuiteResources, 'from_root', return_value=resources), \
                  patch.object(reuse, 'Session', side_effect=stage_session):
                 return gate.run_stage(root, root / '.git', force_fresh=force)
 

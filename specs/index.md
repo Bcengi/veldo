@@ -158,6 +158,7 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0211 | Borrowed engine logins retain rotated credentials | ready | high | dmitry | required | VELDO-0211-borrowed-login-writeback.md |
 | VELDO-0213 | A fast engine's result is never filed as a probe | ready | standard | Dmitry Grinberg | not_required | VELDO-0213-a-fast-engines-result-is-never-filed-as-a-probe.md |
 | VELDO-0214 | The first-use check's budget is measured from the unit leg | ready | high | Dmitry Grinberg | required | VELDO-0214-first-use-budget-measured-from-the-unit-leg.md |
+| VELDO-0215 | Mutation workers use their own passing case measurements | ready | high | Dmitry Grinberg | required | VELDO-0215-measured-mutation-case-deadlines.md |
 | VELDO-0216 | Gate stages run concurrently on a declared graph under one gate-wide resource ledger | ready | high | Dmitry Grinberg | required | VELDO-0216-gate-stages-run-concurrently-on-a-declared-graph.md |
 | VELDO-0217 | Every confined mutation case gets a current, reviewed input declaration with complete keys | ready | high | Dmitry Grinberg | required | VELDO-0217-every-confined-case-has-a-reviewed-input-declaration.md |
 | VELDO-0218 | Every gate reruns a random sample of its reused mutation results and compares them | ready | high | Dmitry Grinberg | required | VELDO-0218-a-sample-of-reused-mutation-results-is-rerun-fresh.md |
