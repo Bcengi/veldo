@@ -526,10 +526,11 @@ def _v204_suite():
                           for p in served.passes]
                 print('  VELDO-0204 service/serve detail: serve recorded %d factory pass(es) before it stopped'
                       % len(served.passes))
-                check('service/serve', 'serve\'s startup up to READY=1 recorded no PM exchange: its start record ran no '
-                      'project cycles, and of the %d factory pass(es) it recorded before the SIGTERM none ran them '
-                      '[%s]' % (len(served.passes), [c for c in cycled if c[1] or c[2]][:3]),
-                      not any('pm_cycles' in r for r in served.records) and not any(c[1] or c[2] for c in cycled))
+                # serve's start records (runs_swept) carry no pm_cycles field, so they cannot show a startup exchange;
+                # the row claims only the passes.
+                check('service/serve', 'of the %d factory pass(es) serve recorded before the SIGTERM, none ran a line\'s '
+                      'project cycles [%s]' % (len(served.passes), [c for c in cycled if c[1] or c[2]][:3]),
+                      not any(c[1] or c[2] for c in cycled))
     except Exception as error:  # noqa: BLE001 - a fixture that did not run reds every row by assertion
         for name in names:
             check(name, 'the fixture ran to its end (it raised %s: %s)' % (type(error).__name__, str(error)[:300]), False)
