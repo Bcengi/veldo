@@ -84,9 +84,11 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
     connections, servers = [], []
     with tempfile.TemporaryDirectory(prefix='v89-', dir=fast) as directory, contextlib.ExitStack() as resources:
         base = Path(directory)
-        # The graph runtime's stage for the PM cycles a suite builds here (installed_runtime(stage=...) on their
-        # runtime): inside this run's directory, never the account's ~/.local/state/veldo/graph-stage.
-        graph_stage = base / 'graph-stage'
+        # Every graph exchange in this process while the fixture lasts stages in this run's directory, never in the
+        # account's ~/.local/state/veldo/graph-stage, on lines a suite builds and lines the product builds itself;
+        # an escape reds the suite (scripts/suites/support/graph_stage.py).
+        stage_seam = load('v88_graph_stage', ROOT / 'scripts/suites/support/graph_stage.py')
+        graph_stage = resources.enter_context(stage_seam.own(base))
         compiler = load('v88_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
         resources.enter_context(compiler.compiled_sources(base))
         mods = base / 'installed' / '.veldo'
