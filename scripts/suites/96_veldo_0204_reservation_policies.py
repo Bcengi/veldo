@@ -34,7 +34,7 @@ def _v204_suite():
     names = ('derive/values', 'fresh/dispatch', 'rerun/unchanged', 'source/project', 'source/team', 'source/account',
              'source/unit', 'source/windows', 'source/absent', 'lock/second-connection', 'service/start',
              'service/added', 'service/team', 'service/pm-assigned', 'service/rerun', 'refuse/missing-source',
-             'refuse/principal', 'census/writer', 'service/serve')
+             'refuse/principal', 'census/writer', 'service/serve', 'service/graph-stage')
     rows = {name: [] for name in names}
 
     def check(row, label, condition):
@@ -452,6 +452,17 @@ def _v204_suite():
                       got and committed_before(h, lines, 'unit', U['a4'], got[0]['dispatch_id'])
                       and not [w for w in (assigning or {}).get('waiting') or [] if w['unit'] == U['a4']])
                 h.drain(loop)
+
+            # The seam's outcome, not its frame match: the in-process loop's line built its project cycles itself
+            # (Line.build_cycles) and their exchanges resolved the account stage, so the fixture's own stage holds
+            # the PM runner they staged.
+            with region('service/graph-stage'):
+                check('service/graph-stage', 'the in-process factory passes ran the line\'s project cycles [%s]' % [
+                    (c.get('state'), c.get('refusal')) for c in (coordinating or {}).get('pm_cycles') or []],
+                      (coordinating or {}).get('pm_cycles'))
+                staged_pm = f['stage_seam'].pm_runners(f['graph_stage'], h.mods)
+                check('service/graph-stage', 'their PM exchanges staged their runner in the fixture\'s own graph stage '
+                      '[%d PM runner(s) in %s]' % (staged_pm, f['graph_stage']), staged_pm >= 1)
 
             # AC2 source/absent: no policy without a source record, and the PM cycle's own unit policy left alone.
             with region('source/absent'):

@@ -14,6 +14,10 @@ The guard: while a fixture is active, a resolution of the real account stage is 
 and the fixture's end raises Escaped naming each one, so the suite's rows go red rather than pass. With the seam
 in place none can happen. VELDO_SUITE_GRAPH_STAGE_SEAM=off stands the seam aside (the falsifier): the real
 resolution then runs unchanged and the guard reports it.
+
+The guard shares the seam's one frame match (_stage_read), so a rename of account_home or resolve_runtime, or the
+read inlined, would stand both aside together. pm_runners checks the outcome instead: the suites assert that the
+fixture's own stage (the path own yields) received a PM exchange's staged runner.
 """
 import contextlib
 import os
@@ -47,6 +51,18 @@ def _chain(frame, depth=10):
         found.append('%s:%s:%d' % (Path(frame.f_code.co_filename).name, frame.f_code.co_name, frame.f_lineno))
         frame = frame.f_back
     return ' < '.join(found)
+
+
+def pm_runners(stage, mods):
+    """How many runners staged under `stage` are a PM exchange's. control_graph.stage copies each runner it launches,
+    content-addressed, to <stage>/runners/<sha256>.py and never removes it (only the exchange's working directory
+    under <stage>/work goes), so every one lasts as long as the stage; a PM exchange's runner is
+    control_graph_langgraph.py with mods/control_graph_pm.py inside it (control_workflow_cycle_pm exchange). This
+    is the seam's outcome, judged apart from its frame match: an exchange that resolved the real account stage left
+    nothing here."""
+    runners = Path(stage) / 'runners'
+    extension = (Path(mods) / 'control_graph_pm.py').read_text()
+    return sum(1 for path in sorted(runners.glob('*.py')) if extension in path.read_text()) if runners.is_dir() else 0
 
 
 @contextlib.contextmanager

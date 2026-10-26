@@ -37,6 +37,8 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
         names = ('followup/setup-pm', 'followup/setup-pm-authority')
     if fault_only:
         names = ('followup/initial-fault', 'followup/pending-fault')
+    # In every variant: the PM cycles' exchanges staged in the fixture's own graph stage.
+    names = names + ('graph/own-stage',)
     rows = {name: [] for name in names}
 
     def check(name, label, condition):
@@ -184,6 +186,12 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
             check('cycle/no-action', 'empty result produces bound receipt and actual graph trace',
                   first['state'] == 'no_action' and first['trace'] == list(PM.PIPELINE)
                   and PM.row(conn, 'pm-cycle:' + first['cycle'])['data'] == first)
+            # The seam's outcome, not its frame match: the line's cycles, built by Line.run, resolved the account
+            # stage, and the fixture's own stage holds the runner their exchanges staged.
+            staged_pm = f['stage_seam'].pm_runners(f['graph_stage'], mods)
+            check('graph/own-stage', 'the PM exchanges of the cycles Line.run built staged their runner in the '
+                  'fixture\'s own graph stage [%d PM runner(s) in %s]' % (staged_pm, f['graph_stage']),
+                  staged_pm >= 1)
             if fault_only:
                 faults = load('v88_faults', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0088/fault_observations.py')
                 faults.observe(locals())

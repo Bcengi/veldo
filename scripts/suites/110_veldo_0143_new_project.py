@@ -128,7 +128,7 @@ def _v143_suite():
                       'activation/factory-paused-resumed', 'activation/new-projects-kept', 'activation/factory-canceled',
                       'proposal/correction-told', 'proposal/choices', 'proposal/own-message-doubt',
                       'proposal/adoption-visibility', 'proposal/identities-fold-alike', 'proposal/not-presentable',
-                      'proposal/adoption-pick-folds'):
+                      'proposal/adoption-pick-folds', 'pm/graph-stage-own'):
             expect(PREFIX + label, False)
         return
 
@@ -2657,6 +2657,15 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                      'its owners on the connection', first_c not in (None, REPO) and len(built_c) == 1
                      and built_c[0][0] == first_c and 'pm_cycles' in canceled_passes[0] and held_by(built_c[0][1].pm_cycles)),
                     ('no pass defers a line to the factory line', not any(x.get('reason') == DEFERRED for x in cfaults))])
+
+            with region('pm/graph-stage-own'):
+                # The seam's outcome, not its frame match: the PM exchanges above (pm/new-project-run's, and those of
+                # the cycles the factory passes built in Line.build_cycles) resolved the account stage, and the
+                # fixture's own stage holds the PM runner staged there (content-addressed: one file for them all).
+                staged_pm = f['stage_seam'].pm_runners(f['graph_stage'], mods)
+                check('pm/graph-stage-own', [
+                    ('the PM exchanges staged their runner in the fixture\'s own graph stage [%d PM runner(s) in %s]'
+                     % (staged_pm, f['graph_stage']), staged_pm >= 1)])
 
         finally:
             # Compare the events the PM fixture actually emitted, then drive that same generated
