@@ -349,17 +349,20 @@ class Host:
 
     def fit(self, loop):
         """The Line's account pool over its protocol adapter, as Line builds one from an engine adapter: the
-        claude_code engine on this host. The Line's own Runner and Reservations are used unchanged. Its project
-        cycles are built here, before any pass, with the installed graph runtime on the fixture's stage, so the
-        runner's scratch stays in this run's directory (ProjectCycles' explicit runtime seam, as suite 93 uses it)."""
-        PM = load('v204_pm', self.mods / 'control_workflow_cycle_pm.py')
+        claude_code engine on this host. The Line's own Runner and Reservations are used unchanged. On the loop
+        the service serves (open_loop), whose passes build the lines' project cycles, they are built here before
+        any pass, with the installed graph runtime on the fixture's stage, so the runner's scratch stays in this
+        run's directory (ProjectCycles' explicit runtime seam, as suite 93 uses it). Another loop on this
+        connection runs no pass, and building its cycles would take the connection's owners from the served one."""
+        PM = load('v204_pm', self.mods / 'control_workflow_cycle_pm.py') if loop is self.svc.loop else None
         for line in loop.lines.values():
             line.engines, line.hosts = {'protocol': 'claude_code'}, {'protocol': self.hostname}
             line.runner.account = self.RES.POOL.Pool({'protocol': {'engine': 'claude_code', 'host': self.hostname}})
             line.reservations.observe = self.observed.append
-            if getattr(line, 'pm_cycles', None) is None:
-                line.pm_cycles = PM.from_line(line)
-            line.pm_cycles.runtime = PM.CY.installed_runtime(stage=self.f['graph_stage'])
+            if PM is not None:
+                if getattr(line, 'pm_cycles', None) is None:
+                    line.pm_cycles = PM.from_line(line)
+                line.pm_cycles.runtime = PM.CY.installed_runtime(stage=self.f['graph_stage'])
         return loop
 
     def open_loop(self):
