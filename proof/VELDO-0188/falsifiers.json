@@ -1,0 +1,59 @@
+{
+ "command": "flock <host gate lock> python3 scripts/check_teeth_mutations.py --finding 188",
+ "status": "passed",
+ "executed": 3,
+ "rejected": 3,
+ "baseline_failed_rows": [],
+ "cases": [
+  {
+   "name": "close188-line-kept",
+   "declared_rows": [
+    "close/removed"
+   ],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "VELDO-0188 close/completed",
+    "VELDO-0188 close/removed",
+    "VELDO-0188 lines/restart",
+    "VELDO-0188 observe/lines"
+   ]
+  },
+  {
+   "name": "lines188-constructor-only",
+   "declared_rows": [
+    "lines/new-project"
+   ],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "VELDO-0188 lines/at-start",
+    "VELDO-0188 lines/new-project",
+    "VELDO-0188 lines/adopted-project",
+    "VELDO-0188 staff/project-team",
+    "VELDO-0188 staff/default-team",
+    "VELDO-0188 staff/new-revision",
+    "VELDO-0188 staff/refused-role",
+    "VELDO-0188 close/canceled",
+    "VELDO-0188 close/completed",
+    "VELDO-0188 close/removed",
+    "VELDO-0188 close/paused-kept",
+    "VELDO-0188 lines/restart",
+    "VELDO-0188 observe/lines"
+   ]
+  },
+  {
+   "name": "staff188-default-team-only",
+   "declared_rows": [
+    "staff/project-team"
+   ],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "VELDO-0188 staff/project-team",
+    "VELDO-0188 staff/new-revision",
+    "VELDO-0188 staff/refused-role",
+    "VELDO-0188 close/removed",
+    "VELDO-0188 lines/restart",
+    "VELDO-0188 observe/lines"
+   ]
+  }
+ ]
+}

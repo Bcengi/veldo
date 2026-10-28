@@ -1,0 +1,2203 @@
+{
+ "budget_seconds": 5420.0,
+ "case_deadlines": {
+  "check_teeth_mutations.py:close188-line-kept": 120,
+  "check_teeth_mutations.py:lines188-constructor-only": 120,
+  "check_teeth_mutations.py:staff188-default-team-only": 120
+ },
+ "case_receipts": [
+  {
+   "identity": "check_teeth_mutations.py:lines188-constructor-only",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:staff188-default-team-only",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  },
+  {
+   "identity": "check_teeth_mutations.py:close188-line-kept",
+   "key": null,
+   "reason": "unknown_closure",
+   "source": "fresh",
+   "validated": true
+  }
+ ],
+ "drivers": {
+  "check_review_mutations.py": {
+   "executed": 0,
+   "inventory_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "registered": 0,
+   "reused": 0,
+   "wall_seconds": 0,
+   "worker_seconds": 0
+  },
+  "check_teeth_mutations.py": {
+   "executed": 3,
+   "inventory_digest": "32d910517809ec13947e501ab25de44bef0afea11a7f9a6bf3a8c3f9090d1964",
+   "registered": 3,
+   "reused": 0,
+   "wall_seconds": 68.21905896998942,
+   "worker_seconds": 148.1883031858597
+  }
+ },
+ "elapsed": 70.4308889049571,
+ "executed": 3,
+ "force_fresh": false,
+ "implementation_digest": "17b19c46d38b4be409ef1d996dc7e6bd4fdaaee09c4effc8f0e44f1477c14315",
+ "input_digest": "9e30125b04c3041289d0fa7d44ed96f2f34de74f70c90b2464a10e02cc91df84",
+ "invalid_results": [],
+ "parallel_workers": 8,
+ "peak_workers": 3,
+ "registered": 3,
+ "rejected": 3,
+ "resources": {
+  "capacities": {
+   "new_project_fixture": 2,
+   "systemd_user_manager": 16
+  },
+  "peak_slots": {
+   "new_project_fixture": 0,
+   "systemd_user_manager": 0
+  },
+  "remaining_slots": {
+   "new_project_fixture": 0,
+   "systemd_user_manager": 0
+  }
+ },
+ "results": [
+  {
+   "baseline": {
+    "count": 40,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0188 lines/at-start",
+      true
+     ],
+     [
+      "VELDO-0188 lines/new-project",
+      true
+     ],
+     [
+      "VELDO-0188 lines/adopted-project",
+      true
+     ],
+     [
+      "VELDO-0188 staff/project-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/default-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/new-revision",
+      true
+     ],
+     [
+      "VELDO-0188 staff/refused-role",
+      true
+     ],
+     [
+      "VELDO-0188 staff/one-mapping",
+      true
+     ],
+     [
+      "VELDO-0188 close/canceled",
+      true
+     ],
+     [
+      "VELDO-0188 close/completed",
+      true
+     ],
+     [
+      "VELDO-0188 close/removed",
+      true
+     ],
+     [
+      "VELDO-0188 close/paused-kept",
+      true
+     ],
+     [
+      "VELDO-0188 lines/restart",
+      true
+     ],
+     [
+      "VELDO-0188 observe/lines",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0188 lines/at-start",
+     "VELDO-0188 lines/new-project",
+     "VELDO-0188 lines/adopted-project",
+     "VELDO-0188 staff/project-team",
+     "VELDO-0188 staff/default-team",
+     "VELDO-0188 staff/new-revision",
+     "VELDO-0188 staff/refused-role",
+     "VELDO-0188 staff/one-mapping",
+     "VELDO-0188 close/canceled",
+     "VELDO-0188 close/completed",
+     "VELDO-0188 close/removed",
+     "VELDO-0188 close/paused-kept",
+     "VELDO-0188 lines/restart",
+     "VELDO-0188 observe/lines"
+    ],
+    "targets": {
+     "lines/new-project": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 188,
+    "identity": "check_teeth_mutations.py:close188-line-kept",
+    "module": "control_service.py",
+    "name": "close188-line-kept",
+    "new": "            if (False and repository not in self.work_roles and not line.runner.launches  # defect: kept\n",
+    "old": "            if (getattr(line, 'closing', False) and repository not in self.work_roles and not line.runner.launches\n",
+    "rows": [
+     "close/removed"
+    ],
+    "suite": "113_veldo_0188_project_lines.py"
+   },
+   "elapsed": 22.609681429923512,
+   "fixture_version": 1,
+   "input_digest": "9cdfbcca3c8e0626fbcecea5fdf30524b7135676076fd5446234bf3e92c69ebe",
+   "mutant": {
+    "count": 40,
+    "failed_details": [],
+    "failed_rows": [
+     "VELDO-0188 close/completed",
+     "VELDO-0188 close/removed",
+     "VELDO-0188 lines/restart",
+     "VELDO-0188 observe/lines"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0188 lines/at-start",
+      true
+     ],
+     [
+      "VELDO-0188 lines/new-project",
+      true
+     ],
+     [
+      "VELDO-0188 lines/adopted-project",
+      true
+     ],
+     [
+      "VELDO-0188 staff/project-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/default-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/new-revision",
+      true
+     ],
+     [
+      "VELDO-0188 staff/refused-role",
+      true
+     ],
+     [
+      "VELDO-0188 staff/one-mapping",
+      true
+     ],
+     [
+      "VELDO-0188 close/canceled",
+      true
+     ],
+     [
+      "VELDO-0188 close/completed",
+      false
+     ],
+     [
+      "VELDO-0188 close/removed",
+      false
+     ],
+     [
+      "VELDO-0188 close/paused-kept",
+      true
+     ],
+     [
+      "VELDO-0188 lines/restart",
+      false
+     ],
+     [
+      "VELDO-0188 observe/lines",
+      false
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0188 lines/at-start",
+     "VELDO-0188 lines/new-project",
+     "VELDO-0188 lines/adopted-project",
+     "VELDO-0188 staff/project-team",
+     "VELDO-0188 staff/default-team",
+     "VELDO-0188 staff/new-revision",
+     "VELDO-0188 staff/refused-role",
+     "VELDO-0188 staff/one-mapping",
+     "VELDO-0188 close/canceled",
+     "VELDO-0188 close/completed",
+     "VELDO-0188 close/removed",
+     "VELDO-0188 close/paused-kept",
+     "VELDO-0188 lines/restart",
+     "VELDO-0188 observe/lines"
+    ],
+    "targets": {
+     "close/removed": [
+      false
+     ]
+    }
+   },
+   "new_digest": "aeaf7cd21e3f742c555b561b1f842ad3571852685021330aabe24a920cd5b8a2",
+   "noop": {
+    "count": 40,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0188 lines/at-start",
+      true
+     ],
+     [
+      "VELDO-0188 lines/new-project",
+      true
+     ],
+     [
+      "VELDO-0188 lines/adopted-project",
+      true
+     ],
+     [
+      "VELDO-0188 staff/project-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/default-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/new-revision",
+      true
+     ],
+     [
+      "VELDO-0188 staff/refused-role",
+      true
+     ],
+     [
+      "VELDO-0188 staff/one-mapping",
+      true
+     ],
+     [
+      "VELDO-0188 close/canceled",
+      true
+     ],
+     [
+      "VELDO-0188 close/completed",
+      true
+     ],
+     [
+      "VELDO-0188 close/removed",
+      true
+     ],
+     [
+      "VELDO-0188 close/paused-kept",
+      true
+     ],
+     [
+      "VELDO-0188 lines/restart",
+      true
+     ],
+     [
+      "VELDO-0188 observe/lines",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0188 lines/at-start",
+     "VELDO-0188 lines/new-project",
+     "VELDO-0188 lines/adopted-project",
+     "VELDO-0188 staff/project-team",
+     "VELDO-0188 staff/default-team",
+     "VELDO-0188 staff/new-revision",
+     "VELDO-0188 staff/refused-role",
+     "VELDO-0188 staff/one-mapping",
+     "VELDO-0188 close/canceled",
+     "VELDO-0188 close/completed",
+     "VELDO-0188 close/removed",
+     "VELDO-0188 close/paused-kept",
+     "VELDO-0188 lines/restart",
+     "VELDO-0188 observe/lines"
+    ],
+    "targets": {
+     "lines/new-project": [
+      true
+     ]
+    }
+   },
+   "old_digest": "9de4dc7dbd868eb7df2fae96c2e0a94c1c0be1b21042e9bd27f4dbac632593a8",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 40,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0188 lines/at-start",
+      true
+     ],
+     [
+      "VELDO-0188 lines/new-project",
+      true
+     ],
+     [
+      "VELDO-0188 lines/adopted-project",
+      true
+     ],
+     [
+      "VELDO-0188 staff/project-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/default-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/new-revision",
+      true
+     ],
+     [
+      "VELDO-0188 staff/refused-role",
+      true
+     ],
+     [
+      "VELDO-0188 staff/one-mapping",
+      true
+     ],
+     [
+      "VELDO-0188 close/canceled",
+      true
+     ],
+     [
+      "VELDO-0188 close/completed",
+      true
+     ],
+     [
+      "VELDO-0188 close/removed",
+      true
+     ],
+     [
+      "VELDO-0188 close/paused-kept",
+      true
+     ],
+     [
+      "VELDO-0188 lines/restart",
+      true
+     ],
+     [
+      "VELDO-0188 observe/lines",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0188 lines/at-start",
+     "VELDO-0188 lines/new-project",
+     "VELDO-0188 lines/adopted-project",
+     "VELDO-0188 staff/project-team",
+     "VELDO-0188 staff/default-team",
+     "VELDO-0188 staff/new-revision",
+     "VELDO-0188 staff/refused-role",
+     "VELDO-0188 staff/one-mapping",
+     "VELDO-0188 close/canceled",
+     "VELDO-0188 close/completed",
+     "VELDO-0188 close/removed",
+     "VELDO-0188 close/paused-kept",
+     "VELDO-0188 lines/restart",
+     "VELDO-0188 observe/lines"
+    ],
+    "targets": {
+     "lines/new-project": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "also": [
+     [
+      "        if 'journal' in report['sources']:\n            try:\n                report['lines'] = ",
+      "        if False:  # defect: no pass follows the store\n            try:\n                report['lines'] = "
+     ]
+    ],
+    "driver": "check_teeth_mutations.py",
+    "finding": 188,
+    "identity": "check_teeth_mutations.py:lines188-constructor-only",
+    "module": "control_service.py",
+    "name": "lines188-constructor-only",
+    "new": "        self.started_lines = {}  # defect: the store's projects give the loop no line\n",
+    "old": "        self.started_lines = self.follow_store(0)\n",
+    "rows": [
+     "lines/new-project"
+    ],
+    "suite": "113_veldo_0188_project_lines.py"
+   },
+   "elapsed": 35.80160657898523,
+   "fixture_version": 1,
+   "input_digest": "9cdfbcca3c8e0626fbcecea5fdf30524b7135676076fd5446234bf3e92c69ebe",
+   "mutant": {
+    "count": 40,
+    "failed_details": [],
+    "failed_rows": [
+     "VELDO-0188 lines/at-start",
+     "VELDO-0188 lines/new-project",
+     "VELDO-0188 lines/adopted-project",
+     "VELDO-0188 staff/project-team",
+     "VELDO-0188 staff/default-team",
+     "VELDO-0188 staff/new-revision",
+     "VELDO-0188 staff/refused-role",
+     "VELDO-0188 close/canceled",
+     "VELDO-0188 close/completed",
+     "VELDO-0188 close/removed",
+     "VELDO-0188 close/paused-kept",
+     "VELDO-0188 lines/restart",
+     "VELDO-0188 observe/lines"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0188 lines/at-start",
+      false
+     ],
+     [
+      "VELDO-0188 lines/new-project",
+      false
+     ],
+     [
+      "VELDO-0188 lines/adopted-project",
+      false
+     ],
+     [
+      "VELDO-0188 staff/project-team",
+      false
+     ],
+     [
+      "VELDO-0188 staff/default-team",
+      false
+     ],
+     [
+      "VELDO-0188 staff/new-revision",
+      false
+     ],
+     [
+      "VELDO-0188 staff/refused-role",
+      false
+     ],
+     [
+      "VELDO-0188 staff/one-mapping",
+      true
+     ],
+     [
+      "VELDO-0188 close/canceled",
+      false
+     ],
+     [
+      "VELDO-0188 close/completed",
+      false
+     ],
+     [
+      "VELDO-0188 close/removed",
+      false
+     ],
+     [
+      "VELDO-0188 close/paused-kept",
+      false
+     ],
+     [
+      "VELDO-0188 lines/restart",
+      false
+     ],
+     [
+      "VELDO-0188 observe/lines",
+      false
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0188 lines/at-start",
+     "VELDO-0188 lines/new-project",
+     "VELDO-0188 lines/adopted-project",
+     "VELDO-0188 staff/project-team",
+     "VELDO-0188 staff/default-team",
+     "VELDO-0188 staff/new-revision",
+     "VELDO-0188 staff/refused-role",
+     "VELDO-0188 staff/one-mapping",
+     "VELDO-0188 close/canceled",
+     "VELDO-0188 close/completed",
+     "VELDO-0188 close/removed",
+     "VELDO-0188 close/paused-kept",
+     "VELDO-0188 lines/restart",
+     "VELDO-0188 observe/lines"
+    ],
+    "targets": {
+     "lines/new-project": [
+      false
+     ]
+    }
+   },
+   "new_digest": "168b6bea5fafd20ce0e6ea98b326ea54ad0a9cffccebb35ffddb0b2ad7b3a1e0",
+   "noop": {
+    "count": 40,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0188 lines/at-start",
+      true
+     ],
+     [
+      "VELDO-0188 lines/new-project",
+      true
+     ],
+     [
+      "VELDO-0188 lines/adopted-project",
+      true
+     ],
+     [
+      "VELDO-0188 staff/project-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/default-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/new-revision",
+      true
+     ],
+     [
+      "VELDO-0188 staff/refused-role",
+      true
+     ],
+     [
+      "VELDO-0188 staff/one-mapping",
+      true
+     ],
+     [
+      "VELDO-0188 close/canceled",
+      true
+     ],
+     [
+      "VELDO-0188 close/completed",
+      true
+     ],
+     [
+      "VELDO-0188 close/removed",
+      true
+     ],
+     [
+      "VELDO-0188 close/paused-kept",
+      true
+     ],
+     [
+      "VELDO-0188 lines/restart",
+      true
+     ],
+     [
+      "VELDO-0188 observe/lines",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0188 lines/at-start",
+     "VELDO-0188 lines/new-project",
+     "VELDO-0188 lines/adopted-project",
+     "VELDO-0188 staff/project-team",
+     "VELDO-0188 staff/default-team",
+     "VELDO-0188 staff/new-revision",
+     "VELDO-0188 staff/refused-role",
+     "VELDO-0188 staff/one-mapping",
+     "VELDO-0188 close/canceled",
+     "VELDO-0188 close/completed",
+     "VELDO-0188 close/removed",
+     "VELDO-0188 close/paused-kept",
+     "VELDO-0188 lines/restart",
+     "VELDO-0188 observe/lines"
+    ],
+    "targets": {
+     "lines/new-project": [
+      true
+     ]
+    }
+   },
+   "old_digest": "9de4dc7dbd868eb7df2fae96c2e0a94c1c0be1b21042e9bd27f4dbac632593a8",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  },
+  {
+   "baseline": {
+    "count": 40,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0188 lines/at-start",
+      true
+     ],
+     [
+      "VELDO-0188 lines/new-project",
+      true
+     ],
+     [
+      "VELDO-0188 lines/adopted-project",
+      true
+     ],
+     [
+      "VELDO-0188 staff/project-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/default-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/new-revision",
+      true
+     ],
+     [
+      "VELDO-0188 staff/refused-role",
+      true
+     ],
+     [
+      "VELDO-0188 staff/one-mapping",
+      true
+     ],
+     [
+      "VELDO-0188 close/canceled",
+      true
+     ],
+     [
+      "VELDO-0188 close/completed",
+      true
+     ],
+     [
+      "VELDO-0188 close/removed",
+      true
+     ],
+     [
+      "VELDO-0188 close/paused-kept",
+      true
+     ],
+     [
+      "VELDO-0188 lines/restart",
+      true
+     ],
+     [
+      "VELDO-0188 observe/lines",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0188 lines/at-start",
+     "VELDO-0188 lines/new-project",
+     "VELDO-0188 lines/adopted-project",
+     "VELDO-0188 staff/project-team",
+     "VELDO-0188 staff/default-team",
+     "VELDO-0188 staff/new-revision",
+     "VELDO-0188 staff/refused-role",
+     "VELDO-0188 staff/one-mapping",
+     "VELDO-0188 close/canceled",
+     "VELDO-0188 close/completed",
+     "VELDO-0188 close/removed",
+     "VELDO-0188 close/paused-kept",
+     "VELDO-0188 lines/restart",
+     "VELDO-0188 observe/lines"
+    ],
+    "targets": {
+     "lines/new-project": [
+      true
+     ]
+    }
+   },
+   "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 188,
+    "identity": "check_teeth_mutations.py:staff188-default-team-only",
+    "module": "control_service.py",
+    "name": "staff188-default-team-only",
+    "new": "    if False:  # defect: a project's own team never staffs its line\n",
+    "old": "    if isinstance(data, dict) and data.get('revision') and isinstance(data.get('team'), dict):\n",
+    "rows": [
+     "staff/project-team"
+    ],
+    "suite": "113_veldo_0188_project_lines.py"
+   },
+   "elapsed": 46.65766764606815,
+   "fixture_version": 1,
+   "input_digest": "9cdfbcca3c8e0626fbcecea5fdf30524b7135676076fd5446234bf3e92c69ebe",
+   "mutant": {
+    "count": 40,
+    "failed_details": [],
+    "failed_rows": [
+     "VELDO-0188 staff/project-team",
+     "VELDO-0188 staff/new-revision",
+     "VELDO-0188 staff/refused-role",
+     "VELDO-0188 close/removed",
+     "VELDO-0188 lines/restart",
+     "VELDO-0188 observe/lines"
+    ],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0188 lines/at-start",
+      true
+     ],
+     [
+      "VELDO-0188 lines/new-project",
+      true
+     ],
+     [
+      "VELDO-0188 lines/adopted-project",
+      true
+     ],
+     [
+      "VELDO-0188 staff/project-team",
+      false
+     ],
+     [
+      "VELDO-0188 staff/default-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/new-revision",
+      false
+     ],
+     [
+      "VELDO-0188 staff/refused-role",
+      false
+     ],
+     [
+      "VELDO-0188 staff/one-mapping",
+      true
+     ],
+     [
+      "VELDO-0188 close/canceled",
+      true
+     ],
+     [
+      "VELDO-0188 close/completed",
+      true
+     ],
+     [
+      "VELDO-0188 close/removed",
+      false
+     ],
+     [
+      "VELDO-0188 close/paused-kept",
+      true
+     ],
+     [
+      "VELDO-0188 lines/restart",
+      false
+     ],
+     [
+      "VELDO-0188 observe/lines",
+      false
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0188 lines/at-start",
+     "VELDO-0188 lines/new-project",
+     "VELDO-0188 lines/adopted-project",
+     "VELDO-0188 staff/project-team",
+     "VELDO-0188 staff/default-team",
+     "VELDO-0188 staff/new-revision",
+     "VELDO-0188 staff/refused-role",
+     "VELDO-0188 staff/one-mapping",
+     "VELDO-0188 close/canceled",
+     "VELDO-0188 close/completed",
+     "VELDO-0188 close/removed",
+     "VELDO-0188 close/paused-kept",
+     "VELDO-0188 lines/restart",
+     "VELDO-0188 observe/lines"
+    ],
+    "targets": {
+     "staff/project-team": [
+      false
+     ]
+    }
+   },
+   "new_digest": "14d347a8861bc6cf663a92a962c8231f18aed10333ebddb3b882cff1de7c15ac",
+   "noop": {
+    "count": 40,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+     [
+      "good spec accepted",
+      true
+     ],
+     [
+      "spec without criteria rejected",
+      true
+     ],
+     [
+      "unknown evidence kind rejected",
+      true
+     ],
+     [
+      "bad status rejected",
+      true
+     ],
+     [
+      "invented proof criterion rejected",
+      true
+     ],
+     [
+      "missing proof criterion rejected",
+      true
+     ],
+     [
+      "absent required evidence rejected",
+      true
+     ],
+     [
+      "passed-without-evidence rejected",
+      true
+     ],
+     [
+      "bad verdict value rejected",
+      true
+     ],
+     [
+      "good plan accepted",
+      true
+     ],
+     [
+      "plan dependency cycle rejected",
+      true
+     ],
+     [
+      "dangling dependency rejected",
+      true
+     ],
+     [
+      "unknown outcome ref rejected",
+      true
+     ],
+     [
+      "unknown feature ref rejected",
+      true
+     ],
+     [
+      "undeclared depends_on rejected",
+      true
+     ],
+     [
+      "ready without approval rejected",
+      true
+     ],
+     [
+      "decision without blocks rejected",
+      true
+     ],
+     [
+      "decision blocking unknown spec rejected",
+      true
+     ],
+     [
+      "duplicate work spec rejected",
+      true
+     ],
+     [
+      "bad release mode rejected",
+      true
+     ],
+     [
+      "mirror mismatch rejected",
+      true
+     ],
+     [
+      "correct mirror accepted",
+      true
+     ],
+     [
+      "spec binding to wrong plan rejected",
+      true
+     ],
+     [
+      "spec claiming missing work item rejected",
+      true
+     ],
+     [
+      "spec plan without work rejected",
+      true
+     ],
+     [
+      "correct spec binding accepted",
+      true
+     ],
+     [
+      "VELDO-0188 lines/at-start",
+      true
+     ],
+     [
+      "VELDO-0188 lines/new-project",
+      true
+     ],
+     [
+      "VELDO-0188 lines/adopted-project",
+      true
+     ],
+     [
+      "VELDO-0188 staff/project-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/default-team",
+      true
+     ],
+     [
+      "VELDO-0188 staff/new-revision",
+      true
+     ],
+     [
+      "VELDO-0188 staff/refused-role",
+      true
+     ],
+     [
+      "VELDO-0188 staff/one-mapping",
+      true
+     ],
+     [
+      "VELDO-0188 close/canceled",
+      true
+     ],
+     [
+      "VELDO-0188 close/completed",
+      true
+     ],
+     [
+      "VELDO-0188 close/removed",
+      true
+     ],
+     [
+      "VELDO-0188 close/paused-kept",
+      true
+     ],
+     [
+      "VELDO-0188 lines/restart",
+      true
+     ],
+     [
+      "VELDO-0188 observe/lines",
+      true
+     ]
+    ],
+    "row_names": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0188 lines/at-start",
+     "VELDO-0188 lines/new-project",
+     "VELDO-0188 lines/adopted-project",
+     "VELDO-0188 staff/project-team",
+     "VELDO-0188 staff/default-team",
+     "VELDO-0188 staff/new-revision",
+     "VELDO-0188 staff/refused-role",
+     "VELDO-0188 staff/one-mapping",
+     "VELDO-0188 close/canceled",
+     "VELDO-0188 close/completed",
+     "VELDO-0188 close/removed",
+     "VELDO-0188 close/paused-kept",
+     "VELDO-0188 lines/restart",
+     "VELDO-0188 observe/lines"
+    ],
+    "targets": {
+     "lines/new-project": [
+      true
+     ]
+    }
+   },
+   "old_digest": "9de4dc7dbd868eb7df2fae96c2e0a94c1c0be1b21042e9bd27f4dbac632593a8",
+   "replacement_count": 1,
+   "reuse_key": null,
+   "reuse_reason": "unknown_closure",
+   "schema": "veldo.mutation-result/v1",
+   "source": "fresh"
+  }
+ ],
+ "reuse_integrity_errors": [],
+ "reuse_qualified": 0,
+ "reused": 0,
+ "schema": "veldo.mutation-stage/v1",
+ "scope": "selected",
+ "status": "passed",
+ "surviving_workers": 0,
+ "worker_invocations": 5,
+ "worker_outcomes": [
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 86,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 21.55204190290533,
+   "leg": "confined",
+   "mode": "baseline",
+   "name": "113_veldo_0188_project_lines.py:control_service.py:False:baseline",
+   "output_directory": "/tmp/v188/m2/logs/0",
+   "pid": 1828363,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3239
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 86,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 21.555463930009864,
+   "leg": "confined",
+   "mode": "noop",
+   "name": "113_veldo_0188_project_lines.py:control_service.py:False:noop",
+   "output_directory": "/tmp/v188/m2/logs/1",
+   "pid": 1828364,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3239
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 86,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 22.613754780963063,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:close188-line-kept",
+   "output_directory": "/tmp/v188/m2/logs/4",
+   "pid": 1832069,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3352
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 73,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 35.80528679199051,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:lines188-constructor-only",
+   "output_directory": "/tmp/v188/m2/logs/2",
+   "pid": 1832067,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3655
+  },
+  {
+   "budget_seconds": 120,
+   "cleanup": {
+    "directories": 86,
+    "units": []
+   },
+   "driver": "check_teeth_mutations.py",
+   "elapsed": 46.661755779990926,
+   "leg": "confined",
+   "mode": "mutant",
+   "name": "check_teeth_mutations.py:staff188-default-team-only",
+   "output_directory": "/tmp/v188/m2/logs/3",
+   "pid": 1832068,
+   "returncode": 0,
+   "stderr_bytes": 0,
+   "stdout_bytes": 3428
+  }
+ ]
+}
