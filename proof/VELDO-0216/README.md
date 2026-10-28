@@ -99,3 +99,10 @@ stable inputs, ledger peaks within capacities and full elapsed time at most 6000
 Earlier red-green files are retained as history. Only red-green.json is the final
 source-bound run; red-green-source-changed.json explicitly failed its stability
 check during a later correction and is not final evidence.
+
+Final local results at implementation d046b6aa55675422a4a4f18283cf5c1462b84b0c: all four registered
+falsifiers turned their named rows red, then all nineteen rows passed in each
+restored baseline. The confined suite passed nineteen ticket rows and twenty-six
+shared preamble rows. The live cgroup probe passed. Every recorded source digest
+matches the final implementation. RESULT.json records the remaining qualification
+and integration work. No full gate or full-gate proof is claimed.

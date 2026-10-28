@@ -1,0 +1,33 @@
+{
+  "spec": "VELDO-0216",
+  "implementation_commit": "d046b6aa55675422a4a4f18283cf5c1462b84b0c",
+  "status": "REMAINING",
+  "local_checks": {
+    "ticket_rows": 19,
+    "failed": 0,
+    "falsifiers_red_then_green": 4,
+    "live_node_cgroup": "passed"
+  },
+  "protected_paths_touched": [
+    ".veldo/policy.yaml",
+    ".veldo/reuse_evidence.py",
+    "engine/.veldo/reuse_evidence.py",
+    "engine/scripts/check_gate_mutations.py",
+    "engine/scripts/gate_legs.py",
+    "engine/scripts/gate_schedule.py",
+    "engine/scripts/verify.sh",
+    "scripts/check_gate_mutations.py",
+    "scripts/gate_graph.json",
+    "scripts/gate_legs.py",
+    "scripts/gate_schedule.py",
+    "scripts/verify.sh"
+  ],
+  "remaining": [
+    "AC4 canonical force-fresh run and serialized canonical falsifier deferred by owner rule 37191",
+    "Owner decision on cold measurements and the aggregate manager claim versus the 6000 second bound",
+    "Measured per-worker and per-shard dispatcher integration belongs to dependent VELDO-0219 and VELDO-0221",
+    "Inherited VELDO-0220 unconfined-list entry is outside this ticket protected paths"
+  ],
+  "canonical_gate_executed": false,
+  "evidence_sources_match": true
+}

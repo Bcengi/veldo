@@ -2,16 +2,16 @@
   "spec": "VELDO-0216",
   "check": "live-node-cgroup",
   "passed": true,
-  "head": "db5861ad54544340e0def6318b9c4c890b8d5c05",
-  "scheduler_sha256": "9ebddd7be4e169bab789b76d2be53b8e7bd9672298b5a85d31790b27fd778479",
-  "scope": "veldo-gate-3232477-dde728ff.scope",
+  "head": "d046b6aa55675422a4a4f18283cf5c1462b84b0c",
+  "scheduler_sha256": "c502c467ddccf2f4f1d72400b49366e32327a4a5850820415912081c709f9cca",
+  "scope": "veldo-gate-3498842-c2e7ae2b.scope",
   "capacity": {
     "cpu": 20.0,
     "memory": 503316480,
     "manager": 16
   },
   "metrics": {
-    "cpu_seconds": 0.320047,
+    "cpu_seconds": 0.32079,
     "peak_anon_bytes": 36564992,
     "metrics_source": "cgroup-v2-anon-sampled-50ms",
     "live_descendants": false
