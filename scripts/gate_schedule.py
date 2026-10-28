@@ -356,7 +356,12 @@ class NodeInputs:
             raise
 
     def unchanged(self):
-        return self.mutation.inputs_unchanged(self.root, self.common, self.files, self.head)
+        try:
+            return self.mutation.inputs_unchanged(self.root, self.common, self.files, self.head)
+        except (OSError, ValueError, self.mutation.Refused):
+            # Deleting Git metadata or replacing an input with a symlink is a
+            # named input mutation, not an exception that loses attribution.
+            return False
 
     def close(self):
         if self.root.exists():
@@ -409,13 +414,14 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
             if value:
                 prior[leg] = dict(value, fresh='an earlier gate run')
     prior_times.write_text(json.dumps(prior))
-    claims = {}
+    claims, claim_sources = {}, {}
     for name, node in graph['nodes'].items():
         measured = legs.read_resources(store, key, name)
         claim, source = node_claim(node, measured, capacity)
         ledger.demand(claim)  # Refuse impossible requests before any launch.
         print('node %s: %s' % (name, source), flush=True)
         claims[name] = claim
+        claim_sources[name] = source
     if 'mutation' not in required:
         ledger.mutation_pending = False
     unchanged = guard_factory(root)
@@ -578,7 +584,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                     error=None if original_unchanged else 'candidate_tree_changed_outside_node_inputs',
                     wall_seconds=time.monotonic() - started, critical_path_seconds=chain(critical) if critical else 0,
                     critical_path_end=critical, capacities=capacity, peak_granted=ledger.peak,
-                    ledger=ledger.events, claims=claims)
+                    ledger=ledger.events, claims=claims, claim_sources=claim_sources)
     finally:
         # On exceptional exit, own only these nodes. Never signal another gate or touch its lock.
         cleanup_errors = []

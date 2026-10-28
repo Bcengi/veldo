@@ -117,7 +117,7 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
             return module
         stack.enter_context(patch.object(scheduler, 'load_module', fixture_load))
         counter = 0
-        def run(document=graph, fail='', serial=False, commands=None):
+        def run(document=graph, fail='', serial=False, commands=None, capacity=None):
             nonlocal counter
             counter += 1
             out = top / ('run-' + str(counter))
@@ -125,7 +125,7 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
             log = io.StringIO()
             with patch.dict(os.environ, V216_FAIL=fail), contextlib.redirect_stdout(log):
                 receipt = scheduler.run(commands or catalog, candidate, out, out / 'legs', out / 'mutation',
-                    graph_path=graph_path, capacity={'cpu': 32, 'memory': 1048576, 'manager': 16},
+                    graph_path=graph_path, capacity=capacity or {'cpu': 32, 'memory': 1048576, 'manager': 16},
                     measurement_store=top / 'store', meter_factory=Meter, guard_factory=guard, serial=serial,
                     node_inputs_factory=lambda root,dest: scheduler.NodeInputs(root,dest,mutation))
             return receipt, out, log.getvalue()
@@ -177,8 +177,14 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
             stages = {}
             with patch.dict(os.environ, V216_FAIL=fail):
                 for stage, cmd in catalog.items():
-                    argv = scheduler.command_for(candidate, stage, None, cmd,
-                        output/'legs', output/'mutation', declaration)
+                    if stage == 'mutation':
+                        argv = [sys.executable, '-I', '-S', str(scripts/'check_gate_mutations.py'),
+                            '--root', str(candidate), '--receipt', str(output/'mutation'),
+                            '--legs-record', str(output/'legs')]
+                    else:
+                        argv = [sys.executable, '-I', '-S', str(scripts/'gate_legs.py'),
+                            '--root', str(candidate), '--stage', stage,
+                            '--record', str(output/'legs'), '--', cmd]
                     completed = subprocess.run(argv, cwd=candidate, capture_output=True,
                         text=True, pass_fds=legs._launcher_fds())
                     (output/(stage+'.log')).write_text(completed.stdout+completed.stderr)
@@ -345,11 +351,30 @@ c=m.Client(); assert c.acquire('shard',2,3000,'shared',[22345]); assert not c.ac
         (base/'memory.stat').write_text('anon 100\nfile 999999\n')
         row('anonymous-metrics', measured['cpu_seconds']==2.5 and measured['peak_anon_bytes']==1234
             and meter.sample()['peak_anon_bytes']==1234)
-        # No borrowed or invented measurements: a cold authority serializes whole claims.
+        # Unknown nodes remain conservative; recorded authority seeds permit a cold overlap.
         with patch.object(scheduler,'load_module',loads), patch.object(scheduler,'command_for',direct):
             cold, _, _ = run(timed_graph,commands=timed_catalog)
         cold_nodes = list(cold['nodes'].values())
         row('cold-measurements', all(cold_nodes[i]['start'] >= cold_nodes[i-1]['end'] for i in range(1,len(cold_nodes))))
+        seeded_graph = copy.deepcopy(timed_graph)
+        for node in seeded_graph['nodes'].values():
+            node.update(host_lock='shared', estimate=dict(source='controlled recorded fixture',
+                wall_seconds=1, cpu_seconds=1, peak_cgroup_memory_bytes=1024))
+        with patch.object(scheduler,'load_module',loads), patch.object(scheduler,'command_for',direct):
+            seeded, _, _ = run(seeded_graph,commands=timed_catalog,
+                               capacity=dict(cpu=4,memory=4*2**30,manager=16))
+        row('seeded-first-run', max(n['start'] for n in seeded['nodes'].values()) <
+            min(n['end'] for n in seeded['nodes'].values()) and
+            all('recorded startup estimate' in source for source in seeded['claim_sources'].values()))
+        lock_ledger = scheduler.Ledger(dict(cpu=4,memory=100,manager=16))
+        with contextlib.redirect_stdout(io.StringIO()):
+            shared = dict(claim(1,10),host_lock='shared')
+            exclusive = dict(claim(1,10),host_lock='exclusive')
+            lock_checks = [lock_ledger.acquire('a',shared), lock_ledger.acquire('b',shared),
+                           not lock_ledger.acquire('c',exclusive)]
+            lock_ledger.release('a'); lock_ledger.release('b')
+            lock_checks += [lock_ledger.acquire('c',exclusive), not lock_ledger.acquire('a',shared)]
+        row('host-lock-ledger', all(lock_checks) and any(e['resource']=='host_lock' for e in lock_ledger.events))
         # The batch checker rejects absent evidence and a 10719s serialized canonical
         # capture. The passing document here is synthetic and proves the checker only.
         qualification = load(ROOT/'proof/VELDO-0216/qualification.py')
