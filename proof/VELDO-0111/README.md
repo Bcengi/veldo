@@ -69,6 +69,13 @@ row green using a fresh original copy. A crash, omitted row or exception fails
 the drive. results.json records the outcomes and source/suite digests; compressed
 JSON logs retain the complete receipts and acknowledgements for each run.
 
+Recorded result: all four declared mutations produced a false named row in a
+completed run. Each following green control passed all five ticket checks.
+The retained receipt digests match the actual source bytes used by the driver;
+the source and suite digests in results.json match the committed implementation.
+baseline.json.gz retains the earlier passing baseline, and qualification.json
+summarizes the observed host capabilities and exact consumer stand-downs.
+
 All mutation execution uses the owner's blocking flock on the host gate lock.
 The tests never acquire or release that lock and never use it as a fixture lock.
 Only this ticket's processes, files and scratch directories are manipulated.
