@@ -306,6 +306,49 @@ def validate(profile):
     return profile
 
 
+def verify_evidence(profile, evidence):
+    """Resolve operator evidence in protected storage and verify its exact bytes.
+
+    Digests bind references and observations, not an operator's honesty. Publication
+    of native observations in protected storage remains an operator responsibility.
+    Read once so the checked digest and parsed observations describe the same bytes.
+    """
+    try:
+        rows = evidence['rows']
+        if not isinstance(rows, dict):
+            raise ValueError('rows')
+        documents = {}
+        for engine in ENGINES:
+            for row in NATIVE_ROWS:
+                key = engine + '/' + row
+                reference = rows[key]
+                if not isinstance(reference, dict) or set(reference) != {'path', 'digest'}:
+                    raise ValueError('reference')
+                path = Path(reference['path'])
+                if not path.is_absolute():
+                    raise ValueError('absolute evidence path required')
+                path = path.resolve(strict=True)
+                if not any(path.is_relative_to(Path(root).resolve(strict=True))
+                           for root in profile['protected']):
+                    raise ValueError('evidence must be protected')
+                cache_key = (str(path), reference['digest'])
+                if cache_key not in documents:
+                    raw = path.read_bytes()
+                    if 'sha256:' + hashlib.sha256(raw).hexdigest() != reference['digest']:
+                        raise ValueError('evidence digest')
+                    document = json.loads(raw)
+                    if (document.get('schema') != 'veldo.macos_worker_evidence/v1'
+                            or document.get('kind') != 'native'
+                            or any(document.get(field) != evidence[field]
+                                   for field in ('host', 'os_version', 'profile_digest'))):
+                        raise ValueError('evidence binding')
+                    documents[cache_key] = document
+                if documents[cache_key]['rows'][key] != 'passed':
+                    raise ValueError('evidence row')
+    except (OSError, ValueError, TypeError, KeyError, AttributeError, RecursionError) as error:
+        raise Refused('missing_evidence:macos_qualification') from error
+
+
 def qualify(profile, evidence, facts, engine, configuration):
     validate(profile)
     if (facts.get('platform') != 'darwin' or not facts.get('host') or not facts.get('os_version')
@@ -317,8 +360,10 @@ def qualify(profile, evidence, facts, engine, configuration):
             or evidence.get('profile_digest') != digest(profile)
             or evidence.get('host') != facts['host'] or evidence.get('os_version') != facts['os_version']
             or evidence.get('kind') != 'native'
+            or not isinstance(evidence.get('rows'), dict)
             or any(not evidence.get('rows', {}).get(e + '/' + row) for e in ENGINES for row in NATIVE_ROWS)):
         raise Refused('missing_evidence:macos_qualification')
+    verify_evidence(profile, evidence)
     if file_digest(profile['engines'][engine]['argv'][0]) != profile['engines'][engine]['binary_digest']:
         raise Refused('stale_version:engine_binary')
     return {'profile_digest': digest(profile), 'revision': profile['revision'], 'host': facts['host'],

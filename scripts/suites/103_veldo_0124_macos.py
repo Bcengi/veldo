@@ -50,7 +50,7 @@ def _v124_suite():
         T.refused(lambda: host.start(request), 'binding_mismatch:clone_dirty')
         (paths['clone'] / 'source.txt').write_text('accepted source\n')
         host.profile['engines']['codex']['binary_digest'] = 'changed'
-        host.qualification['profile_digest'] = P.digest(host.profile)
+        T.evidence_fixture(host.profile, host.qualification)
         T.refused(lambda: host.start(request), 'stale_version:engine_binary')
         assert osx.bootstraps == 0
 
@@ -118,13 +118,13 @@ def _v124_suite():
         old.chmod(0o755)
         for path in (str(base / 'missing-python'), str(old)):
             host.profile['interpreter'] = path
-            host.qualification['profile_digest'] = P.digest(host.profile)
+            T.evidence_fixture(host.profile, host.qualification)
             T.refused(lambda: host.start(request), 'unsupported_configuration:interpreter')
         host.profile['interpreter'] = 'python3'
         T.refused(lambda: host.start(request), 'unsupported_configuration:interpreter')
         assert osx.bootstraps == 0
         host.profile['interpreter'] = T.sys.executable
-        host.qualification['profile_digest'] = P.digest(host.profile)
+        T.evidence_fixture(host.profile, host.qualification)
         host.start(request)
         assert osx.calls[0][2] == T.sys.executable
 
@@ -142,7 +142,7 @@ def _v124_suite():
         request['contract_digest'] = P.digest(request['contract'])
         request['environment']['CLAUDE_CONFIG_DIR'] = str(paths['login'])
         host.profile['engines']['claude_code']['argv'] += list(flags)
-        host.qualification['profile_digest'] = P.digest(host.profile)
+        T.evidence_fixture(host.profile, host.qualification)
         return host, osx, request, paths
 
     def claude_refusal(base):
@@ -156,7 +156,7 @@ def _v124_suite():
         assert observations[-1]['refusal'] == 'unsupported_configuration:claude_bash_sandbox'
         assert json.loads(settings.read_text())['sandbox']['enabled'] is True
         host.profile['engines']['claude_code']['argv'].append('--setting-sources=')
-        host.qualification['profile_digest'] = P.digest(host.profile)
+        T.evidence_fixture(host.profile, host.qualification)
         T.refused(lambda: host.start(request), 'unsupported_configuration:claude_bash_sandbox')
         assert osx.bootstraps == 0
 
@@ -201,7 +201,7 @@ def _v124_suite():
                 path.unlink()
             # Explicit source selection disables only those project reads, not managed policy.
             host.profile['engines']['claude_code']['argv'].append('--setting-sources=user')
-            host.qualification['profile_digest'] = P.digest(host.profile)
+            T.evidence_fixture(host.profile, host.qualification)
             files[0].write_text('{"sandbox":{"enabled":true}}')
             host.preflight(request)
             files[2].write_text('{"sandbox":{"enabled":true}}')
@@ -233,7 +233,7 @@ def _v124_suite():
         extra.write_text('{"sandbox":{"enabled":false}}')
         host.preflight(request)
         host.profile['engines']['claude_code']['argv'][-1] = '--settings=' + str(extra)
-        host.qualification['profile_digest'] = P.digest(host.profile)
+        T.evidence_fixture(host.profile, host.qualification)
         extra.write_text(bad)
         T.refused(lambda: host.start(request), 'unsupported_configuration:claude_bash_sandbox')
         assert osx.bootstraps == 0
@@ -463,7 +463,7 @@ def _v124_suite():
         # Coalition membership, not process group: zombies have exited and are left out.
         assert M.OS.live_members([(12, 7, 2), (13, 7, M.OS.SZOMB), (14, 9, 2), (15, 7, 3)], 7) == [12, 15]
 
-    tests = {'AC1/qualification': qualification, 'AC1/profile': profile, 'AC1/bindings': bindings,
+    tests = {'AC1/forged-qualification': T.forged_qualification, 'AC1/qualification': qualification, 'AC1/profile': profile, 'AC1/bindings': bindings,
              'AC1/apfs-policy': paths, 'AC1/apple-interfaces': os_contract, 'AC1/run-environment': run_environment,
              'AC1/interpreter': interpreter, 'AC1/nested-sandbox': nested, 'AC3/hard-kill-unknown': killed,
              'AC1/claude-sandbox-refused': claude_refusal, 'AC1/claude-sandbox-disabled': claude_disabled,

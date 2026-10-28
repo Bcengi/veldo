@@ -31,6 +31,59 @@ def git(*args):
     return result.stdout.strip()
 
 
+def evidence_fixture(profile, qualification):
+    """Synthetic evidence files for logic tests, never host qualification."""
+    qualification['profile_digest'] = P.digest(profile)
+    path = Path(profile['protected'][0]) / 'fixture-evidence.json'
+    keys = [e + '/' + r for e in P.ENGINES for r in P.NATIVE_ROWS]
+    document = dict(schema='veldo.macos_worker_evidence/v1', kind='native',
+                    host=qualification['host'], os_version=qualification['os_version'],
+                    profile_digest=P.digest(profile), rows={k: 'passed' for k in keys},
+                    warning='SYNTHETIC LOGIC FIXTURE ONLY')
+    path.write_text(json.dumps(document))
+    qualification['rows'] = {k: dict(path=str(path), digest=P.file_digest(path)) for k in keys}
+
+
+def forged_qualification(base):
+    host, backend, request, paths = start(base)
+    original = copy.deepcopy(host.qualification)
+    key = 'codex/natural'
+    ref = original['rows'][key]
+    path = Path(ref['path'])
+    raw = path.read_bytes()
+    cases = {}
+    forged = copy.deepcopy(original)
+    forged['rows'] = {k: 'handwritten-pass' for k in forged['rows']}
+    cases['handwritten'] = forged
+    for name, change in [('missing', {'path': str(path.parent / 'absent.json')}),
+                         ('digest', {'digest': 'sha256:' + '0' * 64})]:
+        bad = copy.deepcopy(original)
+        bad['rows'][key].update(change)
+        cases[name] = bad
+    bad = copy.deepcopy(original)
+    bad['rows'] = ['malformed']
+    cases['rows-type'] = bad
+    for name, bad in cases.items():
+        host.qualification = bad
+        refused(lambda: host.start(request), 'missing_evidence:macos_qualification')
+    host.qualification = copy.deepcopy(original)
+    path.write_bytes(raw + b' ')
+    refused(lambda: host.start(request), 'missing_evidence:macos_qualification')
+    for field, value in [('host', 'other-host'), ('profile_digest', 'sha256:edited'),
+                         ('rows', {key: 'blocked'})]:
+        document = json.loads(raw)
+        document[field] = value
+        path.write_text(json.dumps(document))
+        host.qualification = copy.deepcopy(original)
+        for reference in host.qualification['rows'].values():
+            reference['digest'] = P.file_digest(path)
+        refused(lambda: host.start(request), 'missing_evidence:macos_qualification')
+    path.write_bytes(raw)
+    host.qualification = original
+    host.preflight(request)
+    assert backend.bootstraps == 0
+
+
 def fixture(base):
     paths = {name: base / name for name in ('host', 'authority', 'scratch', 'owner', 'accounts', 'projects',
                                            'usertemp')}
@@ -61,6 +114,7 @@ def fixture(base):
     qualification = dict(schema=P.QUALIFICATION, kind='native', host=facts['host'], os_version=facts['os_version'],
                          profile_digest=P.digest(profile), rows={e + '/' + r: 'FIXTURE-NOT-EVIDENCE'
                                                                for e in P.ENGINES for r in P.NATIVE_ROWS})
+    evidence_fixture(profile, qualification)
     contract = dict(schema='veldo.dispatch/v1', dispatch_id='dispatch/test', domain='domain', repository='repo',
                     source=source, deadline=1001, capability=dict(adapter='codex', configuration=configuration,
                         configuration_digest=P.digest(configuration)))

@@ -14,6 +14,8 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 MUTANTS = (
+    ('AC1-forged-qualification', 'project_runner_macos_profile.py',
+     '    verify_evidence(profile, evidence)\n', '', '103_veldo_0124_macos', 'AC1/forged-qualification'),
     ('AC1-qualification', 'project_runner_macos_profile.py',
      "or evidence.get('kind') != 'native'", 'or False', '103_veldo_0124_macos', 'AC1/qualification'),
     ('AC1-session-type', 'project_runner_macos_os.py',
