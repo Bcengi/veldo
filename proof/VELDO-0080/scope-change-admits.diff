@@ -1,0 +1,11 @@
+--- .veldo/control_grooming_request.py
++++ mutant/control_grooming_request.py
+@@ -415,7 +415,7 @@
+     requests grooming ever opened to the owner for this item; `used` is message_history's: those opened
+     for any other item from the same message."""
+     reasons = []
+-    if ((fields.get('evidence') or {}).get('defect') or {}).get('scope_changes'):
++    if False:
+         reasons.append('scope_changing_restoration')
+     acceptance = objective.get('acceptance') if isinstance(objective.get('acceptance'), dict) else {}
+     if acceptance.get('path') not in ADMITTING or objective.get('accepted_revision') is None:

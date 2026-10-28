@@ -18,7 +18,7 @@ claims supply no authority and the deferred standing/emergency handlers stay off
 `run.py` runs exactly these three checks, without the selftest prelude or any
 dependency suite. Suite 113 registers the same checks for the later batch gate.
 `falsify.py` runs each mutant in a private source copy, requires the corresponding
-named check to fail by assertion, then reruns the unmodified checks. It also
+named check to fail, then reruns the unmodified checks. It also
 mutates severity preservation, report binding and the scope-change routing guard.
 The diffs, individual red logs, `mutations.json`, `green.log` and
 `observations.json` record the driven results. Source hashes bind each mutation
@@ -72,3 +72,8 @@ byte equality are checked in AC1. There are no tracked pack copies of these file
 Protected paths touched: none. See [OPEN.md](OPEN.md) for the inherited release
 wording and architecture mapping. Specification status remains ready; this branch
 does not claim a trunk landing.
+
+Validation: all six private mutants were detected, followed by all three checks
+passing at implementation commit `6a4beb3b`. The three declared falsifiers failed
+by assertion. The full gate and independent implementation review are deferred
+to the batch; no landing or deployment was performed.

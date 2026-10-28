@@ -1,0 +1,4 @@
+PASS VELDO-0080 defects/ordinary-admission
+VELDO-0080 detail: defects/no-automatic-admission: AssertionError('model assertion admitted automatically')
+FAIL VELDO-0080 defects/no-automatic-admission
+PASS VELDO-0080 defects/ordinary-completion

@@ -1,0 +1,11 @@
+--- .veldo/control_defect.py
++++ mutant/control_defect.py
+@@ -71,7 +71,7 @@
+     if source is None or attribution is None:
+         raise ValueError('missing_evidence:defect_source')
+     identity, data = source
+-    return {'severity': severity, 'reproduction': reproduction, 'scope_changes': list(changes),
++    return {'severity': 'low', 'reproduction': reproduction, 'scope_changes': list(changes),
+             'source': {'id': identity, 'kind': data['source_kind'], 'ref': data['source_ref'],
+                        'principal': data['principal'], 'text': data['text'],
+                        'content_digest': data['content_digest'], 'attribution': copy.deepcopy(attribution)}}

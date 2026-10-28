@@ -1,0 +1,103 @@
+{
+  "artifact_digests": {
+    "proof/VELDO-0080/OPEN.md": "sha256:0d180cc0df4933701650273756deb2fff1aaacd73e9e07e70b7a05bfbe9a610e",
+    "proof/VELDO-0080/README.md": "sha256:335496b5c97505be49745f49a3c442075766ad52adee3e5a9a8a67f9d0e668e8",
+    "proof/VELDO-0080/green.log": "sha256:a1cd3a7c3779b5caa5e0f4493148718babdbcec521c20fb5b58c38124d9302d4",
+    "proof/VELDO-0080/label-admits.diff": "sha256:c9e40e9dc4206f7e00db44c878eca674fef27b4364fdf95f9fe73226b410834f",
+    "proof/VELDO-0080/label-admits.red.log": "sha256:e7d451c18dc347459bb158ec98a50111e5fc67d0a038b139fdf11445aafdbe0b",
+    "proof/VELDO-0080/missing-review-completes.diff": "sha256:42d221270fd7693e124853490411948f36ce8262be6990f3c7599e46b2ea47ba",
+    "proof/VELDO-0080/missing-review-completes.red.log": "sha256:bc0286d855b816f8a931ac83c0610a16d9de7657f1b380bc663403814a5130af",
+    "proof/VELDO-0080/model-claim-admits.diff": "sha256:7f0fef05a844b9f0f25077518e712dbbd2c6a8371206225fccbdbe3beb5ddbcf",
+    "proof/VELDO-0080/model-claim-admits.red.log": "sha256:1025c35307ead3dbfaca91d4d281ca5852b017983084471db1e8c334ac4693e8",
+    "proof/VELDO-0080/mutations.json": "sha256:87be8f7eb1c7adce80e83cdce70dfcc12e2a5423baba7797c9692161945029f6",
+    "proof/VELDO-0080/observations.json": "sha256:0a944014a67da65fa808a40c9f7261ef650b74e9ba20b8e3a4fcad11db4112a6",
+    "proof/VELDO-0080/report-unbound.diff": "sha256:4db95598e19f19e7f0e9e20885ef7da49d3b08fdbb8e2c8452c428e01f1652f0",
+    "proof/VELDO-0080/report-unbound.red.log": "sha256:a19bd8491098e25a71bd403f14d693c29ecdd31711a9c920d9b49e87b9e14f68",
+    "proof/VELDO-0080/scope-change-admits.diff": "sha256:1922e3dc5e7f85d033c273600a56f458413377dc41ca9ed821ebfa27ee167082",
+    "proof/VELDO-0080/scope-change-admits.red.log": "sha256:13f8d3650ae7d9099f84d63e82c312a60717ef86533d2d3a39b62c84dd85054d",
+    "proof/VELDO-0080/severity-lost.diff": "sha256:39966bbae18bc9cf201c6467b119af2fe85458dcdba3a0128801840468885e25",
+    "proof/VELDO-0080/severity-lost.red.log": "sha256:82257c13ecab7d88a13ac88128d9e072e9a87879e0fe6733cd344532bc34f5a8"
+  },
+  "checks": [
+    {
+      "command": "python3 proof/VELDO-0080/run.py",
+      "name": "defects/ordinary-admission",
+      "status": "passed"
+    },
+    {
+      "command": "python3 proof/VELDO-0080/run.py",
+      "name": "defects/ordinary-completion",
+      "status": "passed"
+    },
+    {
+      "command": "python3 proof/VELDO-0080/run.py",
+      "name": "defects/no-automatic-admission",
+      "status": "passed"
+    }
+  ],
+  "commit": "6a4beb3bc1ad24c4ba6f06b688be2695877b5c53",
+  "criteria": [
+    {
+      "evidence": [
+        {
+          "detail": "Named falsifier red; unmodified check green.",
+          "digest": "sha256:87be8f7eb1c7adce80e83cdce70dfcc12e2a5423baba7797c9692161945029f6",
+          "path": "proof/VELDO-0080/mutations.json",
+          "type": "unit"
+        },
+        {
+          "detail": "Production signed services with local channel and worker fixtures: defects/ordinary-admission",
+          "digest": "sha256:0a944014a67da65fa808a40c9f7261ef650b74e9ba20b8e3a4fcad11db4112a6",
+          "path": "proof/VELDO-0080/observations.json",
+          "type": "integration"
+        }
+      ],
+      "id": "AC1",
+      "status": "passed"
+    },
+    {
+      "evidence": [
+        {
+          "detail": "Named falsifier red; unmodified check green.",
+          "digest": "sha256:87be8f7eb1c7adce80e83cdce70dfcc12e2a5423baba7797c9692161945029f6",
+          "path": "proof/VELDO-0080/mutations.json",
+          "type": "unit"
+        },
+        {
+          "detail": "Production signed services with local channel and worker fixtures: defects/ordinary-completion",
+          "digest": "sha256:0a944014a67da65fa808a40c9f7261ef650b74e9ba20b8e3a4fcad11db4112a6",
+          "path": "proof/VELDO-0080/observations.json",
+          "type": "integration"
+        }
+      ],
+      "id": "AC2",
+      "status": "passed"
+    },
+    {
+      "evidence": [
+        {
+          "detail": "Named falsifier red; unmodified check green.",
+          "digest": "sha256:87be8f7eb1c7adce80e83cdce70dfcc12e2a5423baba7797c9692161945029f6",
+          "path": "proof/VELDO-0080/mutations.json",
+          "type": "unit"
+        },
+        {
+          "detail": "Production signed services with local channel and worker fixtures: defects/no-automatic-admission",
+          "digest": "sha256:0a944014a67da65fa808a40c9f7261ef650b74e9ba20b8e3a4fcad11db4112a6",
+          "path": "proof/VELDO-0080/observations.json",
+          "type": "integration"
+        }
+      ],
+      "id": "AC3",
+      "status": "passed"
+    }
+  ],
+  "produced_at": "2026-10-28T13:34:19.205895+00:00",
+  "producer": "Codex implementation agent; not an independent reviewer",
+  "review": "Independent implementation review remains pending; fixture reviewer only qualifies AC2 consumption.",
+  "rollback": "Revert the defect report module, backlog and grooming integration, installer and suite registration together.",
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0080",
+  "tree": "5e9fa98c155beba55dc81ed78f3674b408680ad6",
+  "validation_scope": "Ticket-only checks and falsifiers under owner rule 37191. Full gate deferred to batch."
+}
