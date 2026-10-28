@@ -283,6 +283,20 @@ def qualify(root):
             problems.append('registry_not_installed')
     except Exception as error:
         problems.append('installation:' + repr(error))
+    # Concurrent file-location imports share a fully initialized registry and
+    # exception type, before any one of those aliases loads its clients.
+    with tempfile.TemporaryDirectory(prefix='v112-aliases-') as temporary:
+        from concurrent.futures import ThreadPoolExecutor
+        copied = Path(temporary) / 'control_client_registry.py'
+        copied.write_bytes((root / '.veldo/control_client_registry.py').read_bytes())
+        barrier = threading.Barrier(8)
+        def alias(number):
+            barrier.wait()
+            return load(copied, 'clients_alias_' + str(number))
+        with ThreadPoolExecutor(max_workers=8) as workers:
+            aliases = list(workers.map(alias, range(8)))
+        if len({id(a._state) for a in aliases}) != 1 or len({a.RegistryError for a in aliases}) != 1:
+            problems.append('split_registry_aliases')
     # Both direct and identity dispatch reject a handle after removal. A new
     # registration with the same callable identity but another client is rejected.
     record = runtime._state.entries.pop('claim:claim', None)

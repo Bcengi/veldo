@@ -15,16 +15,19 @@ import types
 
 ROOT = Path(__file__).resolve().parent
 _KEY = '_veldo_clients_' + hashlib.sha256(str(ROOT).encode()).hexdigest()
-_state = sys.modules.setdefault(_KEY, types.ModuleType(_KEY))
-if not hasattr(_state, 'entries'):
-    _state.entries = {}
-    _state.lock = threading.RLock()
-    _state.modules = {}
-    class RegistryError(RuntimeError):
-        def __init__(self, code, detail=''):
-            self.code, self.detail = code, detail
-            super().__init__(code + (': ' + detail if detail else ''))
-    _state.error = RegistryError
+class RegistryError(RuntimeError):
+    def __init__(self, code, detail=''):
+        self.code, self.detail = code, detail
+        super().__init__(code + (': ' + detail if detail else ''))
+
+
+# Publish a fully initialized state: aliases may be imported by several threads.
+_candidate = types.ModuleType(_KEY)
+_candidate.entries = {}
+_candidate.lock = threading.RLock()
+_candidate.modules = {}
+_candidate.error = RegistryError
+_state = sys.modules.setdefault(_KEY, _candidate)
 RegistryError = _state.error
 
 # The normal client modules, not a list of fixture cases. Plugins register through
