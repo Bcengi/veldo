@@ -8,13 +8,13 @@ import { LIVE_STATES } from '@/features/run/runs'
 import { useRunsStore } from '@/stores/runs'
 
 const runs = useRunsStore()
-/** Runs that are still going come first, then the ones that are done. */
+/** Runs that are still going come first, then the ones that are not (done, failed or blocked). */
 const groups = computed(() => {
   const live = runs.rows.filter((r) => LIVE_STATES.has(r.state))
   const done = runs.rows.filter((r) => !LIVE_STATES.has(r.state))
   return [
     { id: 'live', title: 'Running now', rows: live },
-    { id: 'done', title: 'Done', rows: done },
+    { id: 'done', title: 'Not running', rows: done },
   ].filter((g) => g.rows.length > 0)
 })
 onMounted(() => void runs.refresh())

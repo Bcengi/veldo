@@ -8,7 +8,8 @@ authority stand-in that records every call it receives: the page rows and the un
 reach it zero times. The UI directory is a fixture build (index.html, a hashed script, a font, a file
 outside it to escape to). The route-trace row reads the UI's own engine/ui/src/api/routes.json; the
 dependency row reads engine/ui/package.json, package-lock.json and dependency-policy.json, and judges a
-lockfile with a tiered package added, which must be refused. Browser checks of the same criteria live in
+lockfile with a tiered package added, which must be refused. The installed row lays a fixture build through
+init_scaffold.lay_ui into a scratch factory root and serves it from the API installed there. Browser checks of the same criteria live in
 engine/ui/e2e (Playwright, a real factory harness); their red and green records are in proof/VELDO-0145.
 Mutation workers replace the production copies named in PRODUCTION below, never assertions or fixtures.
 Where the UI module is absent (the pre-change tree), the API serves no page, and each row fails by its
@@ -212,6 +213,57 @@ def _v145_suite():
         check('ui/route-trace', 'the session answer names the domain the UI addresses its routes to',
               "'domain': self.domain" in (organs / 'control_api.py').read_text())
 
+        # AC1 ui/installed: the repository's own install path (init_scaffold) lays the built UI beside the installed
+        # API module, and the API installed there serves it with no `ui` in its configuration. A rebuild replaces it
+        # whole; an unchanged build is left as it is; no build lays nothing and says so.
+        scaffold = load('v145_scaffold', ROOT / '.veldo' / 'init_scaffold.py')
+        lay = getattr(scaffold, 'lay_ui', None)
+        templates, root = base / 'templates', base / 'factory-root'
+        build = templates / 'ui' / 'dist'
+        (build / 'assets').mkdir(parents=True)
+        first_index = '<!doctype html><title>Veldo</title><script type="module" src="/assets/app-1.js"></script>'
+        (build / 'index.html').write_text(first_index)
+        (build / 'assets' / 'app-1.js').write_text('console.log("first build")')
+        (root / '.veldo').mkdir(parents=True)
+        for module in organs.glob('*.py'):
+            (root / '.veldo' / module.name).write_bytes(module.read_bytes())
+        laid = lay(templates, root) if lay else {}
+        check('ui/installed', 'the built UI is laid at .veldo/ui [%s]' % laid,
+              laid.get('laid') is True and (root / '.veldo' / 'ui' / 'index.html').read_text() == first_index)
+        installed_api = load('v145_api_installed', root / '.veldo' / 'control_api.py')
+        installed_ui = load('v145_ui_installed', root / '.veldo' / 'control_api_ui.py')
+        check('ui/installed', 'the installed API module finds the laid UI beside it',
+              installed_ui.directory({}) == (root / '.veldo' / 'ui').resolve())
+        installed = installed_api.ControlApi(dict(config, ui=None, state_dir=str(base / 'state-installed')), authority,
+                                             lambda assertion: (None, None))
+        listener = installed_api.listen(installed, '127.0.0.1', 0)
+        threading.Thread(target=listener.serve_forever, daemon=True).start()
+
+        def fetch(path):
+            conn = http.client.HTTPConnection('127.0.0.1', listener.server_address[1], timeout=10)
+            conn.request('GET', path, headers={'Host': host})
+            got = conn.getresponse()
+            return got.status, got.read().decode('utf-8', 'replace')
+        try:
+            check('ui/installed', 'the installed API serves the laid page and its assets',
+                  fetch('/') == (200, first_index) and fetch('/assets/app-1.js') == (200, 'console.log("first build")'))
+            (build / 'assets' / 'app-1.js').unlink()
+            second_index = first_index.replace('app-1.js', 'app-2.js')
+            (build / 'index.html').write_text(second_index)
+            (build / 'assets' / 'app-2.js').write_text('console.log("second build")')
+            again = lay(templates, root) if lay else {}
+            check('ui/installed', 'a rebuilt UI replaces the laid one whole, leaving no stale file [%s]' % again,
+                  again.get('laid') is True and fetch('/') == (200, second_index)
+                  and fetch('/assets/app-1.js')[0] == 404 and not (root / '.veldo' / 'ui.replaced').exists())
+            check('ui/installed', 'an unchanged build is left as it is',
+                  lay is not None and lay(templates, root).get('reason') == 'current')
+        finally:
+            listener.shutdown()
+            listener.server_close()
+        bare = lay(base / 'no-templates', base / 'bare-root') if lay else {}
+        check('ui/installed', 'with no build nothing is laid, and the report names it [%s]' % bare,
+              bare.get('reason') == 'not_built' and not (base / 'bare-root' / '.veldo' / 'ui').exists())
+
         # AC4 ui/dependency-policy: the lockfile and served packages against the owner's provenance rules.
         ui = ROOT / 'engine' / 'ui'
         lock = read_json(ui / 'package-lock.json', {'packages': {}})
@@ -241,7 +293,7 @@ def _v145_suite():
               bool(policy.get('direct')) and all(all(e.get(f) for f in ('version', 'license', 'origin', 'tier', 'why'))
                                                  for e in policy['direct'].values()))
 
-    for name in ('ui/page-served', 'ui/unauthenticated-access', 'ui/route-trace', 'ui/dependency-policy'):
+    for name in ('ui/page-served', 'ui/unauthenticated-access', 'ui/route-trace', 'ui/dependency-policy', 'ui/installed'):
         observed = rows.get(name, [])
         ok = bool(observed) and all(o for _, o in observed)
         for label, one in observed:

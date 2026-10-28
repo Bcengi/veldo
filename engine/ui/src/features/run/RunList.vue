@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Lamp from '@/components/Lamp.vue'
-import { runLamp } from './lamps'
+import { runSignal } from './lamps'
 import LineLamps from './LineLamps.vue'
 import type { RunRow } from './runs'
 
@@ -13,7 +13,7 @@ const props = defineProps<{ runs: RunRow[] }>()
   <ul class="runs">
     <li v-for="run in props.runs" :key="run.dispatch">
       <RouterLink :to="{ name: 'run', params: { dispatch: run.dispatch.split('/') } }" class="run-row" :data-dispatch="run.dispatch">
-        <Lamp :state="runLamp(run.state).lamp" :label="runLamp(run.state).word" />
+        <Lamp :state="runSignal(run.state, run.unitState).lamp" :label="runSignal(run.state, run.unitState).word" />
         <span class="run-main">
           <span class="run-unit">{{ run.unit }}</span>
           <span class="run-facts">
@@ -23,7 +23,7 @@ const props = defineProps<{ runs: RunRow[] }>()
           </span>
         </span>
         <LineLamps class="run-line" :unit-state="run.unitState" :live="run.state === 'running'" />
-        <span class="run-state" :class="`is-${runLamp(run.state).lamp}`">{{ runLamp(run.state).word }}</span>
+        <span class="run-state" :class="`is-${runSignal(run.state, run.unitState).lamp}`">{{ runSignal(run.state, run.unitState).word }}</span>
       </RouterLink>
     </li>
   </ul>

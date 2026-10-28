@@ -22,8 +22,11 @@ export interface Factory {
 /** Start the real factory harness; it serves until its stdin closes. */
 async function startFactory(): Promise<{ factory: Factory; child: ChildProcessWithoutNullStreams }> {
   const dist = process.env.VELDO_UI_DIST ?? path.join(UI, 'dist')
-  if (!existsSync(path.join(dist, 'index.html'))) throw new Error(`build the UI first: no ${dist}/index.html`)
-  const args = ['-B', path.join(here, 'harness.py'), '--dist', dist]
+  // VELDO_UI_INSTALLED: serve the UI the install laid beside the organs (VELDO_ORGANS/ui), not a build directory.
+  const installed = !!process.env.VELDO_UI_INSTALLED
+  const page = installed ? path.join(process.env.VELDO_ORGANS ?? '', 'ui') : dist
+  if (!existsSync(path.join(page, 'index.html'))) throw new Error(`build the UI first: no ${page}/index.html`)
+  const args = ['-B', path.join(here, 'harness.py')].concat(installed ? ['--installed-ui'] : ['--dist', dist])
   if (process.env.VELDO_ORGANS) args.push('--organs', process.env.VELDO_ORGANS)
   const child = spawn('python3', args, { stdio: ['pipe', 'pipe', 'pipe'] })
   let errors = ''

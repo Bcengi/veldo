@@ -27,7 +27,11 @@ interface Render {
   who?: string | null
   /** Open the screen in this state; return the primary action's selector, if the state has one. */
   open(page: Page, factory: Factory, ids: Ids): Promise<string | null>
+  /** Undo what the render changed in the factory, so later screenshots show the curated data only. */
+  cleanup?(page: Page, factory: Factory): Promise<void>
 }
+
+const isPhone = (page: Page) => (page.viewportSize()?.width ?? 1280) < 768
 type Ids = Awaited<ReturnType<Factory['state']>>
 
 /** Hold every factory data request until released, so the loading state can be seen; nothing is mocked. */
@@ -68,6 +72,45 @@ const RENDERS: Render[] = [
       await page.goto(factory.origin + '/sign-in')
       await page.getByTestId('enroll-start').click()
       return '[data-testid="enroll-create"]'
+    },
+  },
+  {
+    name: 'overview-loading',
+    async open(page, factory) {
+      const release = await holdData(page)
+      await page.goto(factory.origin + '/')
+      await expect(page.locator('[data-state="loading"]').first()).toBeVisible()
+      ;(page as unknown as { release: () => Promise<void> }).release = release
+      return null
+    },
+  },
+  {
+    name: 'overview-populated',
+    async open(page, factory) {
+      await page.goto(factory.origin + '/')
+      await expect(page.getByTestId('andon')).toBeVisible()
+      await expect(page.getByTestId('oldest')).toBeVisible()
+      await expect(page.getByTestId('inbox')).toBeVisible()
+      return '.oldest-open'
+    },
+  },
+  {
+    name: 'overview-empty',
+    who: 'cmember',
+    async open(page, factory) {
+      await page.goto(factory.origin + '/')
+      await expect(page.getByTestId('andon')).toBeVisible()
+      await expect(page.locator('[data-state="empty"]').first()).toBeVisible()
+      return null
+    },
+  },
+  {
+    name: 'overview-error',
+    who: 'outsider',
+    async open(page, factory) {
+      await page.goto(factory.origin + '/')
+      await expect(page.locator('[data-state="error"]')).toBeVisible()
+      return null
     },
   },
   {
@@ -121,7 +164,7 @@ const RENDERS: Render[] = [
     async open(page, factory, ids) {
       await page.goto(factory.origin + '/runs/' + ids.dispatches.live)
       await expect(page.getByTestId('terminal')).toHaveAttribute('data-state', 'live')
-      return '[data-testid="search"]'
+      return isPhone(page) ? '[data-testid="search-open"]' : '[data-testid="search"]'
     },
   },
   {
@@ -131,7 +174,7 @@ const RENDERS: Render[] = [
       await expect(page.getByTestId('terminal')).toHaveAttribute('data-state', 'ended')
       await page.locator('[data-seq="7"]').scrollIntoViewIfNeeded()
       await expect(page.locator('[data-seq="7"] .monaco-diff-editor')).toBeVisible()
-      return '[data-testid="search"]'
+      return isPhone(page) ? '[data-testid="search-open"]' : '[data-testid="search"]'
     },
   },
   {
@@ -148,6 +191,8 @@ const RENDERS: Render[] = [
     async open(page, factory, ids) {
       await page.goto(factory.origin + '/runs/' + ids.dispatches.done)
       await expect(page.getByTestId('refusal')).toHaveAttribute('data-refusal', 'unauthorized:out_of_scope')
+      // Nothing is shown, so no record control is either, and a named refusal offers no Try again.
+      await expect(page.locator('#follow, [data-testid="search"], [data-testid="try-again"]')).toHaveCount(0)
       return null
     },
   },
@@ -178,10 +223,25 @@ const RENDERS: Render[] = [
     },
   },
   {
+    name: 'decision-picked',
+    async open(page, factory, ids) {
+      await page.goto(factory.origin + '/decisions/' + ids.requests.de5)
+      await expect(page.getByTestId('decision')).toBeVisible()
+      await page.locator('[data-choice="return_for_elaboration"]').click()
+      await page.getByTestId('rationale').fill('Split the gate change from the policy change first.')
+      return '[data-testid="send-answer"]'
+    },
+  },
+  {
     name: 'decision-refused',
     async open(page, factory) {
       const alias = `dl${Date.now() % 100000}`
-      const { request } = await factory.control<{ request: string }>('/request/open', { alias })
+      const { request } = await factory.control<{ request: string }>('/request/open', {
+        alias,
+        brief: 'Admit VELDO-9156, the stale lock sweeper, into the backlog?',
+        deadline_hours: 40,
+        risk: 'Medium',
+      })
       await page.goto(factory.origin + '/decisions/' + request)
       await expect(page.getByTestId('decision')).toBeVisible()
       await factory.control('/request/revise', { alias })
@@ -189,7 +249,16 @@ const RENDERS: Render[] = [
       await page.getByTestId('rationale').fill('Answering what the screen showed.')
       await page.getByTestId('send-answer').click()
       await expect(page.getByTestId('answer-bar').getByTestId('refusal')).toBeVisible()
-      return '[data-testid="send-answer"]'
+      return '[data-testid="load-current"]'
+    },
+    async cleanup(page) {
+      // Answer the current version here, so the inbox of later screenshots holds the curated decisions only.
+      await page.getByTestId('load-current').click()
+      await expect(page.getByTestId('decision')).toHaveAttribute('data-presentation-version', '2')
+      await page.locator('[data-choice="reject"]').click()
+      await page.getByTestId('rationale').fill('Cleaning up after the screenshot.')
+      await page.getByTestId('send-answer').click()
+      await expect(page.getByTestId('answer-result')).toBeVisible()
     },
   },
   {
@@ -332,12 +401,15 @@ for (const viewport of [...PHONES, ...DESKTOPS]) {
         if (found.overlaps.length) failures.push(`${where}: overlapping ${found.overlaps.join('; ')}`)
         if (found.primary) failures.push(`${where}: primary action ${found.primary}`)
         if (found.smallTargets.length) failures.push(`${where}: small targets ${found.smallTargets.join('; ')}`)
-        if (theme === 'light' || viewport.width === 390 || viewport.width === 1280)
+        // The proof's screenshots come from a fresh harness running this file alone (VELDO_SCREENS=1), so they
+        // show the curated factory, not what other tests left behind.
+        if (process.env.VELDO_SCREENS)
           await page.screenshot({ path: path.join(SCREENS, `${render.name}-${viewport.width}-${theme}.jpg`), type: 'jpeg', quality: 70, fullPage: false })
         const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).exclude('.monaco-editor').analyze()
         for (const v of axe.violations) failures.push(`${where}: axe ${v.id} ${v.nodes.map((n) => n.target.join(' ')).join(', ').slice(0, 200)}`)
         const violations = await watch.violations()
         if (violations.length) failures.push(`${where}: policy violations ${violations.join('; ')}`)
+        await render.cleanup?.(page, factory)
         const release = (page as unknown as { release?: () => Promise<void> }).release
         if (release) {
           await release()
@@ -357,7 +429,12 @@ test('phone decisions: the inline answer action is visible, unclipped and works 
   await signIn(page, factory)
   await page.goto(factory.origin + '/decisions/' + ids.requests.de4)
   await expect(page.getByTestId('decision')).toBeVisible()
-  // Without scrolling: the answer action floats above the bottom bar while the question is read.
+  // On arrival, without scrolling: the question and every choice are above the fold, none under a pinned bar.
+  for (const choice of await page.locator('[data-choice]').all()) await expect(choice).toBeInViewport({ ratio: 1 })
+  const bottombar = (await page.locator('.bottombar').boundingBox())!
+  for (const choice of await page.locator('[data-choice]').all()) expect((await choice.boundingBox())!.y + 48).toBeLessThanOrEqual(bottombar.y)
+  // Once a choice is picked, the answer action is pinned above the bottom bar.
+  await page.locator('[data-choice="accept"]').tap()
   const found = await measure(page, null, true)
   expect(found.overflow).toBe(0)
   const send = page.getByTestId('send-answer')
@@ -371,9 +448,9 @@ test('phone decisions: the inline answer action is visible, unclipped and works 
     y: box.y + box.height / 2,
   })
   expect(hit).toBe(true)
-  // And a touch on it acts: with nothing picked it names what is missing, beside it.
+  // And a touch on it acts: with no rationale yet it names what is missing, beside it.
   await send.tap()
-  await expect(page.locator('.answer-problem')).toHaveText('Pick one of the choices first.')
+  await expect(page.locator('.answer-problem')).toHaveText('Add a rationale: say briefly why.')
   await context.close()
 })
 
@@ -448,5 +525,50 @@ test('served assets: every response is this origin and every asset is a file of 
   const assets = responses.map((r) => new URL(r.url).pathname).filter((p) => p.startsWith('/assets/'))
   expect(assets.filter((p) => !built.has(p))).toEqual([])
   const fonts = assets.filter((p) => p.endsWith('.woff2') || p.endsWith('.ttf'))
-  for (const font of fonts) expect(font).toMatch(/^\/assets\/(big-shoulders|atkinson-hyperlegible-(next|mono)|codicon)-/)
+  for (const font of fonts) expect(font).toMatch(/^\/assets\/(ibm-plex-(sans|mono)|codicon)-/)
+})
+
+test('phone terminal: the record gets the screen, with the strip on one line and the controls in one bar', async ({ browser, factory }) => {
+  const ids = await factory.state()
+  for (const viewport of PHONES) {
+    const context = await browser.newContext({ viewport, hasTouch: true, isMobile: true })
+    const page = await context.newPage()
+    await signIn(page, factory)
+    await page.goto(factory.origin + '/runs/' + ids.dispatches.done)
+    await expect(page.getByTestId('terminal')).toHaveAttribute('data-state', 'ended')
+    const log = (await page.locator('.terminal-body').boundingBox())!
+    expect(log.height / viewport.height, `log height at ${viewport.width}`).toBeGreaterThan(0.55)
+    const strip = (await page.getByTestId('station-strip').boundingBox())!
+    expect(strip.height).toBeLessThanOrEqual(44)
+    const bar = (await page.locator('.terminal-bar').boundingBox())!
+    expect(bar.height).toBeLessThanOrEqual(52)
+    for (const control of ['#follow', '#raw', '[data-testid="search-open"]']) {
+      const box = (await page.locator(control).boundingBox())!
+      expect(box.y).toBeGreaterThanOrEqual(bar.y - 1)
+      expect(box.y + box.height).toBeLessThanOrEqual(bar.y + bar.height + 1)
+    }
+    // Search opens in the same bar and finds lines.
+    await page.getByTestId('search-open').tap()
+    await page.getByTestId('search').fill('pytest')
+    await expect(page.getByTestId('search-hits')).toHaveText(/^1 of \d+$/)
+    await context.close()
+  }
+})
+
+test('desktop decisions: the most urgent decision is open, and the list scrolls on its own', async ({ browser, factory }) => {
+  const ids = await factory.state()
+  for (let n = 0; n < 12; n += 1) await factory.control('/request/open', { alias: `dq${Date.now() % 100000}${n}`, deadline_hours: 200 + n })
+  const context = await browser.newContext({ viewport: { width: 1280, height: 860 } })
+  const page = await context.newPage()
+  await signIn(page, factory)
+  await page.goto(factory.origin + '/decisions')
+  await expect(page.getByTestId('decision')).toHaveAttribute('data-request', ids.requests.de3!)
+  await expect(page.locator(`.inbox-row[data-request="${ids.requests.de3}"]`)).toHaveAttribute('aria-current', 'true')
+  // The page itself does not scroll; the list does, and its header stays in view.
+  expect(await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeLessThanOrEqual(1)
+  const list = page.locator('.decisions-list')
+  expect(await list.evaluate((e) => e.scrollHeight > e.clientHeight)).toBe(true)
+  await list.evaluate((e) => e.scrollTo({ top: e.scrollHeight }))
+  await expect(page.getByRole('heading', { level: 1, name: 'Decisions' })).toBeInViewport()
+  await context.close()
 })

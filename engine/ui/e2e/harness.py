@@ -3,8 +3,8 @@
 
 WHAT IT BUILDS, in a fresh temporary directory: a real SQLite authority store with real OpenSSH-signed
 membership (a steward; the owner with every scope; owner2 scoped to project-a; bmember scoped to
-project-b; cmember scoped to project-c, which has nothing yet; an outsider scoped to project-z; and the
-pm service), the Telegram and API edges enrolled as VELDO-0067 lays them down, the real VELDO-0064
+project-b; cmember scoped to project-c, which has nothing yet; an outsider scoped to project-z; mover, a
+project owner scoped to project-a whose scope a steward can narrow mid-test; and the pm service), the Telegram and API edges enrolled as VELDO-0067 lays them down, the real VELDO-0064
 inbox, VELDO-0065 presenter (against a loopback Bot API stand-in), VELDO-0068 settlement and VELDO-0126
 intake, the real control_api_authority over that store, the real protected signer process for the API
 edge, real execution records written through control_execution_record.Recorder, and the real
@@ -159,6 +159,29 @@ def record_lines():
     ]
 
 
+RISKS = {
+    'Low': 'Low: a wrong choice costs one review cycle, and the unit can be returned later.',
+    'Medium': 'Medium: admitting it now delays two queued units by about a day.',
+    'High': 'High: it changes what every project gates on; a wrong answer reaches every open run.',
+}
+
+
+class PacedClock:
+    """A receiver clock for seeded lines: it starts at `start` and steps by a varied interval per reading, as a
+    worker that thinks, runs a command and prints would. Once `done`, it is the real clock."""
+    STEPS = (0.4, 2.1, 0.3, 6.8, 0.9, 1.6, 14.2, 0.5, 3.3, 0.7, 9.4, 0.2)
+
+    def __init__(self, start):
+        self.at, self.n, self.done = start, 0, False
+
+    def __call__(self):
+        if self.done:
+            return time.time()
+        self.at += self.STEPS[self.n % len(self.STEPS)]
+        self.n += 1
+        return self.at
+
+
 def live_lines(start, count):
     """Lines a running worker prints while a test watches: alternating commands and their output."""
     out = []
@@ -207,6 +230,10 @@ class Factory:
         organs.mkdir()
         for source in sorted(Path(self.organs_from).glob('*.py')):
             shutil.copyfile(source, organs / source.name)
+        if self.dist is None:
+            # Installed layout: the UI the repository's install path laid beside the modules (init_scaffold's
+            # .veldo/ui) travels with them, and the API finds it there with no `ui` in its configuration.
+            shutil.copytree(Path(self.organs_from) / 'ui', organs / 'ui')
         self.organs = organs
         claims = load('e2e_claims', organs / 'control_claim.py')
         S, CM, AC = claims.S, claims.CM, claims.AC
@@ -231,7 +258,8 @@ class Factory:
         keys, protected, edge_dir = base / 'keys', base / 'protected', base / 'edge'
         for directory in (keys, protected, edge_dir):
             directory.mkdir()
-        keyfile = {who: keys / who for who in ('authority', 'steward', 'owner', 'owner2', 'outsider', 'bmember', 'cmember', 'pm')}
+        keyfile = {who: keys / who for who in ('authority', 'steward', 'owner', 'owner2', 'outsider', 'bmember', 'cmember', 'mover',
+                                                'pm')}
         keyfile['edge'] = protected / 'edge-telegram'
         keyfile['api-edge'] = protected / 'edge-api'
         keyfile['edge-auth'] = edge_dir / 'edge-auth'
@@ -292,6 +320,7 @@ class Factory:
                               journal_signer=('authority', journal_sign))
             K.publish(S, conn, projection)
             return result
+        self.admin = admin
 
         def enroll_member(who, principal_type, roles, scope):
             admin('steward', 'enroll_principal', {'principal': who, 'principal_type': principal_type, 'roles': roles,
@@ -308,6 +337,7 @@ class Factory:
         enroll_member('outsider', 'person', [], ['project-z'])
         enroll_member('bmember', 'person', [], ['project-b'])
         enroll_member('cmember', 'person', [], ['project-c'])
+        enroll_member('mover', 'person', ['project_owner'], ['project-a'])
         enroll_member('pm', 'service', [], ['project-a'])
 
         def fixture(eid, kind, data):
@@ -318,7 +348,7 @@ class Factory:
                                         artifact_digests=[], nonce=next_id('fixture-nonce')), 'authority', journal_sign, 1)
         self.fixture = fixture
 
-        chats = {'owner': 5590001, 'owner2': 5590002}
+        chats = {'owner': 5590001, 'owner2': 5590002, 'mover': 5590003}
         for who, chat in chats.items():
             fixture('channel-enrollment:telegram_chat:' + who, 'channel_enrollment',
                     dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal=who, chat_id=chat,
@@ -340,7 +370,7 @@ class Factory:
                      'public_key': public['api-edge'], 'connection_public_key': public['api-auth'],
                      'scope': ['project-a', 'project-b']}, 'api-edge')
         now = time.time()
-        for who in ('owner', 'owner2'):
+        for who in ('owner', 'owner2', 'mover'):
             admin(who, 'grant_delegation', {'id': 'delegation-' + who, 'principal': who, 'channel': 'telegram_chat',
                                             'assertion_kinds': ['decision_answer', 'review_disposition'],
                                             'authority_scope': ['project-a'], 'request_version': 1,
@@ -388,25 +418,39 @@ class Factory:
         self.authority = authority
         signer = SG.ApiSigner(config_path, 'edge-api', keyfile['api-auth'])
         config = {'origin': self.origin, 'rp_id': 'localhost', 'host': self.host, 'domain': DOMAIN, 'ids': ids,
-                  'edge': 'api-edge', 'state_dir': str(base / 'api-state'), 'ui': str(self.dist)}
+                  'edge': 'api-edge', 'state_dir': str(base / 'api-state'),
+                  'ui': str(self.dist) if self.dist is not None else None}
         self.api = API.ControlApi(config, OnThread(authority, self.pool, self.ident), signer, clock=self.clock)
         self.api_box.append(self.api)
         self._seed()
 
     def _seed(self):
-        """The runs and requests the screens show."""
-        self.dispatch('done', 'VELDO-9145', 'project-a', 'build', 'COMPLETED', record_lines(), end=True)
-        self.dispatch('live', 'VELDO-9146', 'project-a', 'build', 'RUNNING', record_lines()[:4])
+        """The runs and requests the screens show: curated, so a screenshot shows the product and not test
+        residue. Two hosts; a unit waiting on authority (blocked) and one failed; five decisions whose deadlines
+        and risks differ, so the inbox's ranking and urgency colors are visible. Seeded lines are paced as a
+        worker prints them (PacedClock), so the gutter's times since the first line are real spans."""
+        self.dispatch('done', 'VELDO-9145', 'project-a', 'build', 'COMPLETED', record_lines(), end=True,
+                      paced=time.time() - 9 * 60)
+        self.dispatch('live', 'VELDO-9146', 'project-a', 'build', 'RUNNING', record_lines()[:4], paced=time.time() - 140)
         self.dispatch('quiet', 'VELDO-9147', 'project-a', 'review', 'REVIEWING', [])
-        self.dispatch('other', 'VELDO-9148', 'project-b', 'build', 'RUNNING', record_lines()[:3])
-        for alias in ('de1', 'de2', 'de3', 'de4', 'de5'):
-            self.open_request(alias)
+        self.dispatch('other', 'VELDO-9148', 'project-b', 'build', 'RUNNING', record_lines()[:3], host='veldo-linux-2',
+                      paced=time.time() - 75)
+        self.dispatch('blocked', 'VELDO-9149', 'project-a', 'review', 'AWAITING_AUTHORITY', record_lines()[:2], end=True,
+                      host='veldo-linux-2', paced=time.time() - 50 * 60)
+        self.dispatch('failed', 'VELDO-9144', 'project-a', 'build', 'FAILED', record_lines()[:5], end=True,
+                      paced=time.time() - 3 * 3600)
+        # Each presented some hours ago (the Bot stand-in's message date), oldest first, so "waited longest" is real.
+        for alias, hours, risk, ago in (('de1', 30, 'Medium', 50), ('de2', 70, 'Low', 30), ('de3', 5, 'High', 20),
+                                        ('de4', 140, 'Low', 8), ('de5', 52, 'High', 2)):
+            self.bots['back'] = ago * 3600
+            self.open_request(alias, deadline_hours=hours, risk=risk)
+        self.bots['back'] = 0
 
-    def dispatch(self, key, unit, project, station, unit_state, lines, end=False):
+    def dispatch(self, key, unit, project, station, unit_state, lines, end=False, host='veldo-linux-1', paced=None):
         dispatch_id = 'dispatch/%s/%s' % (unit, secrets.token_hex(16))
         digest = 'sha256:' + hashlib.sha256(dispatch_id.encode()).hexdigest()
         data = dict(schema='veldo.dispatch/v1', dispatch_id=dispatch_id, state='running', contract_digest=digest,
-                    process={'platform': 'linux', 'host': 'veldo-linux-1', 'boot_id': 'boot-e2e', 'pid': 4000 + len(self.recorders),
+                    process={'platform': 'linux', 'host': host, 'boot_id': 'boot-e2e', 'pid': 4000 + len(self.recorders),
                              'start': 17},
                     contract={'unit': unit, 'station': station, 'attempt': 1,
                               'reservation': {'project': project, 'account': 'owner-plan'}})
@@ -414,12 +458,15 @@ class Factory:
         self.fixture(unit, 'execution_unit', dict(state=unit_state, repository_uuid=self.ids['repository_uuid'],
                                                   revision=1, project=project))
         header = {'dispatch_id': dispatch_id, 'contract_digest': digest, 'unit': unit, 'station': station,
-                  'project': project, 'account': 'owner-plan', 'host': 'veldo-linux-1'}
-        recorder = self.ER.Recorder(self.records, header, self.ER.Resolved(), clock=time.time)
+                  'project': project, 'account': 'owner-plan', 'host': host}
+        clock = PacedClock(paced) if paced else time.time
+        recorder = self.ER.Recorder(self.records, header, self.ER.Resolved(), clock=clock)
         self.recorders[key] = {'id': dispatch_id, 'recorder': recorder, 'data': data, 'unit': unit}
         self._append(key, lines)
         if end:
             self._end(key)
+        if paced:
+            clock.done = True
         return dispatch_id
 
     def _append(self, key, lines):
@@ -445,13 +492,15 @@ class Factory:
     def signed_command(self, who, body):
         return {'command': body, 'signature': self.sign_as(who, self.S.canonical_bytes(body))}
 
-    def open_request(self, alias, owner='owner', requester='pm'):
+    def open_request(self, alias, owner='owner', requester='pm', deadline_hours=None, risk=None, brief=None):
         target = {'kind': 'backlog_item', 'ref': 'backlog:%s' % alias,
                   'digest': 'sha256:' + hashlib.sha256(json.dumps(alias).encode()).hexdigest()}
         body = dict(self.ids, operation='terms', terms=alias, principal=requester, command_id=self.next_id('terms'),
                     nonce=self.next_id('terms-nonce'), touchpoint='admission', target=target, proposal=None,
                     required_roles=[], quorum=None)
         subject = self.settlement.terms(self.signed_command(requester, body)).get('subject')
+        due = time.time() + 3600 * (deadline_hours if deadline_hours is not None else 6 * 24)
+        deadline = time.strftime('%Y-%m-%dT%H:%M:00Z', time.gmtime(due))
         briefs = {'de1': 'Admit VELDO-9150, the record search index, into the backlog?',
                   'de2': 'Admit VELDO-9151, retries for the Telegram edge, into the backlog?',
                   'de3': 'Admit VELDO-9152, the nightly proof digest, into the backlog?',
@@ -460,19 +509,19 @@ class Factory:
         self.inbox.apply(self.signed_command(requester, dict(
             self.ids, operation='open', alias=alias, principal=requester, command_id=self.next_id('c'),
             nonce=self.next_id('n'), assignment=dict(kind='decision', owner=owner, scope=['project-a'],
-                                                      deadline='2026-11-03T17:00:00Z', budget={'owner_minutes': 15},
-                                                      brief=briefs.get(alias, 'Decide %s.' % alias), choices=list(CHOICES),
+                                                      deadline=deadline, budget={'owner_minutes': 15},
+                                                      brief=brief or briefs.get(alias, 'Decide %s.' % alias), choices=list(CHOICES),
                                                       subject=subject))))
         rid = self.I.assignment_id(self.ids['repository_uuid'], alias)
-        self.frame(alias, requester, 1)
+        self.frame(alias, requester, 1, risk)
         self.presenter.present(rid)
         self.requests[alias] = rid
         return rid
 
-    def frame(self, alias, requester, version):
+    def frame(self, alias, requester, version, risk=None):
         self.presenter.frame(self.signed_command(requester, dict(
             self.ids, operation='frame', alias=alias, principal=requester, request_version=version,
-            risk_statement='Low: a wrong choice costs one review cycle, and the unit can be returned later.',
+            risk_statement=RISKS.get(risk, RISKS['Low']),
             command_id=self.next_id('f'), nonce=self.next_id('fn'))))
 
     def revise(self, alias, requester='pm'):
@@ -561,7 +610,7 @@ def message(st, bot, sender, chat, text, reply_to=None):
     with st['lock']:
         bot['next'] += 1
         st['tick'] += 1
-        sent = {'message_id': bot['next'], 'from': dict(sender), 'chat': dict(chat), 'date': 1791000000 + st['tick'],
+        sent = {'message_id': bot['next'], 'from': dict(sender), 'chat': dict(chat), 'date': int(time.time()) - st.get('back', 0) + st['tick'],
                 'text': text}
         if reply_to is not None and (chat['id'], reply_to) in bot['messages']:
             held = bot['messages'][(chat['id'], reply_to)]
@@ -661,7 +710,13 @@ def control_server(factory, stop):
                             body.get('station', 'build'), body.get('unit_state', 'RUNNING'), lines[:body.get('count', len(lines))])
                 return {'key': key, 'dispatch': f.recorders[key]['id']}
             if path == '/request/open':
-                return {'request': f.on_thread(f.open_request, body['alias'], body.get('owner', 'owner'))}
+                return {'request': f.on_thread(f.open_request, body['alias'], body.get('owner', 'owner'), 'pm',
+                                               body.get('deadline_hours'), body.get('risk'), body.get('brief'))}
+            if path == '/member/scope':
+                f.on_thread(f.admin, 'steward', 'change_roles', {'principal': body['principal'],
+                                                                  'roles': body.get('roles', ['project_owner']),
+                                                                  'scope': body['scope']})
+                return {'scope': body['scope']}
             if path == '/request/revise':
                 receipt = f.on_thread(f.revise, body['alias'])
                 return {'presentation_version': receipt.get('presentation_version')}
@@ -692,11 +747,13 @@ def control_server(factory, stop):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dist', default=str(HERE.parents[1] / 'dist'))
+    parser.add_argument('--installed-ui', action='store_true',
+                        help='serve the UI laid beside the organs (<organs>/ui), as an installed factory does')
     parser.add_argument('--organs', default=os.environ.get('VELDO_ORGANS') or str(ROOT / '.veldo'))
     args = parser.parse_args()
     stop = threading.Event()
     with tempfile.TemporaryDirectory(prefix='veldo-ui-e2e-') as directory:
-        factory = Factory(Path(directory), Path(args.dist).resolve(), args.organs)
+        factory = Factory(Path(directory), None if args.installed_ui else Path(args.dist).resolve(), args.organs)
         API = factory.API
         original = API.serve_stream
 

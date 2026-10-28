@@ -436,6 +436,26 @@
     height: 72px;
     border-radius: var(--radius-panel);
   }
+  .skeleton-board {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    padding: 0;
+    border-radius: var(--radius-panel);
+    overflow: hidden;
+  }
+  .skeleton-board .skeleton {
+    height: 112px;
+    border-radius: 0;
+  }
+  @media (min-width: 768px) {
+    .skeleton-board {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .skeleton-board .skeleton {
+      height: 128px;
+    }
+  }
   @keyframes skeleton-pulse {
     50% {
       opacity: 0.55;
@@ -486,6 +506,11 @@
     font-weight: 600;
     font-size: var(--text-sm);
     text-decoration: none;
+  }
+  @media (max-width: 767.98px) {
+    .screen-back {
+      min-height: 44px;
+    }
   }
   .screen-title {
     grid-area: title;
@@ -1169,17 +1194,16 @@
     color: var(--ink-muted);
     font-size: var(--text-sm);
   }
-  .strip-stop + .strip-stop::before {
+  .strip-stop:not(:last-child)::after {
     content: '';
     flex: 1;
-    min-width: 6px;
+    min-width: 8px;
     height: 2px;
-    margin-right: 4px;
+    margin: 0 6px 0 4px;
     border-radius: 1px;
     background: var(--rule);
   }
-  .strip-stop.is-past + .strip-stop::before,
-  .strip-stop.is-past + .strip-stop.is-current::before {
+  .strip-stop.is-past::after {
     background: var(--rule-strong);
   }
   .strip-stop.is-past .lamp {
@@ -1191,7 +1215,7 @@
     font-weight: 650;
   }
   .strip-stop:last-child {
-    flex: 1;
+    flex: none;
   }
   .strip-name {
     white-space: nowrap;
@@ -1210,6 +1234,9 @@
     font-weight: 600;
   }
   @media (max-width: 1100px) {
+    .strip-stop.is-current {
+      flex: 1 0 auto;
+    }
     .strip-stop:not(.is-current) .strip-name {
       position: absolute;
       width: 1px;
@@ -1235,8 +1262,10 @@
     background: var(--paper-raised);
     overflow: hidden;
   }
-  .terminal > .refusal {
-    margin: var(--space-4);
+  .terminal[data-state='error'] {
+    flex: none;
+    border: 0;
+    background: transparent;
   }
   .terminal-bar {
     display: flex;
@@ -1389,6 +1418,20 @@
   }
   .terminal-digest {
     min-width: 0;
+  }
+  @media (max-width: 767.98px) {
+    .terminal-committed {
+      flex-wrap: nowrap;
+      white-space: nowrap;
+    }
+    .terminal-digest {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .terminal-digest code {
+      overflow-wrap: normal;
+      word-break: normal;
+    }
   }
   .terminal-digest code {
     font-family: var(--font-mono);

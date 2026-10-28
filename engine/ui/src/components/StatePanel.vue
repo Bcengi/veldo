@@ -15,7 +15,7 @@ const props = withDefaults(
     emptyBody?: string
     loadingLabel?: string
     rows?: number
-    shape?: 'rows' | 'lines' | 'block'
+    shape?: 'rows' | 'lines' | 'block' | 'board'
   }>(),
   { refusal: null, emptyTitle: 'Nothing here yet', emptyBody: '', loadingLabel: 'Loading', rows: 4, shape: 'rows' },
 )
@@ -40,6 +40,9 @@ const retry = computed(() => !!props.refusal && isRetryable(props.refusal))
         <span class="skeleton skeleton-gutter" />
         <span class="skeleton" :style="{ width: `${82 - ((n * 13) % 45)}%` }" />
       </span>
+    </template>
+    <template v-else-if="props.shape === 'board'">
+      <span v-for="n in 4" :key="`c${n}`" class="skeleton" />
     </template>
     <span v-for="n in props.shape === 'block' ? props.rows : 0" v-else :key="`b${n}`" class="skeleton" :style="{ width: `${92 - ((n * 17) % 40)}%` }" />
   </div>

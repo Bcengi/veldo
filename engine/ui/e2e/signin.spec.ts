@@ -6,6 +6,7 @@ import { ROUTE_TABLE, authenticator, expect, guard, routeOf, signIn, test } from
  */
 
 const DATA_SCREENS = (state: { dispatches: Record<string, string>; requests: Record<string, string> }) => [
+  '/',
   '/runs',
   `/runs/${state.dispatches.done}`,
   '/decisions',
@@ -16,7 +17,7 @@ const DATA_SCREENS = (state: { dispatches: Record<string, string>; requests: Rec
 test('enroll-then-sign-in: a fresh passkey signs in only after the host approves it', async ({ page, factory }) => {
   const watch = await guard(page)
   await authenticator(page.context(), page)
-  await page.goto(factory.origin + '/runs')
+  await page.goto(factory.origin + '/')
   // Before sign-in: only the enrollment and sign-in controls, and the named refusal.
   await expect(page).toHaveURL(/\/sign-in/)
   await expect(page.getByTestId('refusal')).toHaveAttribute('data-refusal', 'unauthenticated:no_session')
@@ -55,9 +56,11 @@ test('enroll-then-sign-in: a fresh passkey signs in only after the host approves
   expect(approved.refusal).toBeFalsy()
   await page.getByTestId('pending-sign-in').click()
   await expect(page.getByRole('navigation', { name: 'Main' }).first()).toBeVisible()
-  await expect(page).toHaveURL(/\/runs$/)
+  await expect(page).toHaveURL(new RegExp(`^${factory.origin}/$`))
 
-  // The shell's navigation reaches the run screens and the decisions screen.
+  // The overview opens first; the shell's navigation reaches the run screens and the decisions screen.
+  await expect(page.getByTestId('andon')).toBeVisible()
+  await page.locator('.rail [data-nav="runs"]').click()
   await expect(page.getByTestId('runs')).toBeVisible()
   await page.locator('.run-row').first().click()
   await expect(page.getByTestId('terminal')).toBeVisible()
@@ -80,7 +83,7 @@ test('unauthenticated access: no screen shows factory data before a passkey sess
     await page.goto(factory.origin + screen)
     await expect(page).toHaveURL(/\/sign-in\?next=/)
     await expect(page.getByTestId('refusal')).toHaveAttribute('data-refusal', 'unauthenticated:no_session')
-    await expect(page.locator('[data-testid="runs"], [data-testid="lines"], [data-testid="inbox"], [data-testid="decision"]')).toHaveCount(0)
+    await expect(page.locator('[data-testid="andon"], [data-testid="runs"], [data-testid="lines"], [data-testid="inbox"], [data-testid="decision"]')).toHaveCount(0)
   }
   // Every factory data route refuses without a session, whatever the screen would have asked.
   for (const [name, spec] of Object.entries(ROUTE_TABLE.routes)) {

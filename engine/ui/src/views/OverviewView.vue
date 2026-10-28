@@ -50,7 +50,7 @@ onMounted(refresh)
 
     <StatePanel v-if="refused" state="error" :refusal="runs.refusal" @retry="refresh" />
     <template v-else>
-    <StatePanel :state="runs.state === 'empty' || runs.state === 'error' ? 'ready' : runs.state" shape="block" :rows="2" loading-label="Loading the factory">
+    <StatePanel :state="runs.state === 'empty' || runs.state === 'error' ? 'ready' : runs.state" shape="board" loading-label="Loading the factory">
       <AndonBoard :counts="counts" />
     </StatePanel>
 
@@ -62,7 +62,7 @@ onMounted(refresh)
           <span v-if="waited">{{ waited }}</span>
           <span v-if="dueText(oldest.deadline, decisions.now)">{{ dueText(oldest.deadline, decisions.now) }}</span>
         </p>
-        <RouterLink :to="{ name: 'decision', params: { request: oldest.requestId.split('/') } }" class="vbtn vbtn-primary vbtn-small oldest-open">
+        <RouterLink :to="{ name: 'decision', params: { request: oldest.requestId.split('/') } }" class="vbtn vbtn-primary oldest-open">
           Answer it
         </RouterLink>
       </section>

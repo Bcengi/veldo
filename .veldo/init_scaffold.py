@@ -23,6 +23,7 @@ Usage:
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -478,6 +479,15 @@ _RUNTIME_ASSETS += [("runtime/claude-qualification.json", ".veldo/runtime/claude
 # reads beside itself before a Codex engine is accepted or spawned.
 _RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-qualification.json")]
 
+# VELDO-0145: the factory UI. The API serves its page from a `ui` directory beside its own installed module
+# (control_api_ui.directory), so the built UI (the templates' ui/dist, built by `npm ci && npm run build` in
+# engine/ui) is laid down as .veldo/ui. It is a build product, not authored work: when the build differs from
+# what is laid, the directory is replaced whole (as the derived index is regenerated), so a rebuilt UI never
+# leaves a stale index.html beside new assets. With no build, nothing is laid and the report says so; the API
+# then answers missing_evidence:ui_not_built until one is.
+_UI_BUILD = "ui/dist"
+_UI_TARGET = ".veldo/ui"
+
 # The canonical gate is laid down transformed (see _starter_gate).
 _GATE = "scripts/verify.sh"
 
@@ -763,6 +773,48 @@ def _lay(src, dst, rel, created, skipped, transform=None):
     created.append(rel)
 
 
+def _tree(root):
+    """Every regular file under root by its relative path, with its bytes; a symlink is refused, so a laid UI
+    holds only files of the build."""
+    found = {}
+    for p in sorted(Path(root).rglob("*")):
+        if p.is_symlink():
+            raise ScaffoldError(f"the UI build holds a symlink: {p}")
+        if p.is_file():
+            found[str(p.relative_to(root)).replace(os.sep, "/")] = p.read_bytes()
+    return found
+
+
+def lay_ui(templates, target):
+    """Lay the built factory UI (templates/ui/dist) at target/.veldo/ui, replacing what is there when the build
+    differs. Returns {"laid": bool, "reason": "laid" | "current" | "not_built", "files": n, "path": ...}."""
+    src, dst = Path(templates) / _UI_BUILD, Path(target) / _UI_TARGET
+    if not (src / "index.html").is_file():
+        return {"laid": False, "reason": "not_built", "files": 0, "path": str(dst)}
+    want = _tree(src)
+    if dst.is_dir() and not dst.is_symlink() and _tree(dst) == want:
+        return {"laid": False, "reason": "current", "files": len(want), "path": str(dst)}
+    staging, retired = dst.with_name("ui.laying"), dst.with_name("ui.replaced")
+    for leftover in (staging, retired):
+        if leftover.is_symlink() or leftover.is_file():
+            leftover.unlink()
+        elif leftover.exists():
+            shutil.rmtree(leftover)
+    for rel, data in want.items():
+        path = staging / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+    if dst.is_symlink() or dst.is_file():
+        dst.unlink()
+    if dst.exists():
+        dst.rename(retired)
+        staging.rename(dst)
+        shutil.rmtree(retired)
+    else:
+        staging.rename(dst)
+    return {"laid": True, "reason": "laid", "files": len(want), "path": str(dst)}
+
+
 def _regenerate_index(target):
     """Regenerate the derived spec index by invoking the target's OWN
     generator, so index derivation is never reimplemented here. The index is
@@ -816,6 +868,9 @@ def scaffold(target, templates=None):
             raise ScaffoldError(f"template missing: {src_rel}")
         _lay(src, target / dst_rel, dst_rel, created, skipped)
 
+    # the factory UI, when it is built (VELDO-0145)
+    ui = lay_ui(templates, target)
+
     # the derived index reflects the scaffolded specs and starter plan
     _regenerate_index(target)
 
@@ -823,7 +878,7 @@ def scaffold(target, templates=None):
     stamp, stand_down = _write_stamp(templates, target, created, skipped)
 
     return {"target": str(target), "created": created, "skipped": skipped, "stamp": stamp,
-            "stamp_stand_down": stand_down}
+            "stamp_stand_down": stand_down, "ui": ui}
 
 
 def main(argv=None):
@@ -843,6 +898,11 @@ def main(argv=None):
     # whose own drift detector then blamed an install nobody made.
     if report.get("stamp_stand_down"):
         print(f"  {report['stamp_stand_down']}")
+    ui = report.get("ui") or {}
+    if ui.get("reason") == "not_built":
+        print("  factory UI not built: run npm ci && npm run build in engine/ui, then run this again")
+    elif ui:
+        print(f"  factory UI {'laid' if ui.get('laid') else 'current'} at {ui.get('path')} ({ui.get('files')} files)")
     missing = missing_substrate(report["target"])
     if missing:
         print(f"  WARNING substrate incomplete: {', '.join(missing)}")

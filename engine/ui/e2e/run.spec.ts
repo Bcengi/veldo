@@ -70,7 +70,7 @@ test('full detail: an ended run shows every kept line, tool calls, output, edits
         await expect(row.locator('.tb-output')).toHaveText(part.content)
         // Command output is monospace.
         const family = await row.locator('.tb-output').evaluate((e) => getComputedStyle(e).fontFamily)
-        expect(family).toContain('Atkinson Hyperlegible Mono')
+        expect(family).toContain('IBM Plex Mono')
         if (part.is_error) await expect(row).toHaveAttribute('data-error', 'true')
         else await expect(row).not.toHaveAttribute('data-error', 'true')
       }
@@ -147,4 +147,47 @@ test('station strip: the unit is lit at its station beside the record', async ({
   await page.goto(factory.origin + '/runs/' + state.dispatches.quiet)
   await expect(strip.locator('[aria-current="step"]')).toContainText('Review')
   await expect(page.getByTestId('terminal-empty')).toBeVisible()
+})
+
+test('run header: the run\'s state, elapsed time, engine and model, host and station, with the dispatch id as a copyable detail', async ({ page, factory }) => {
+  const state = await factory.state()
+  await signIn(page, factory)
+  await page.goto(factory.origin + '/runs/' + state.dispatches.done)
+  await expect(page.getByTestId('terminal')).toHaveAttribute('data-state', 'ended')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('VELDO-9145')
+  await expect(page.getByTestId('run-status')).toContainText('Done')
+  await expect(page.getByTestId('elapsed')).toHaveText(/^\d+ (s|min \d\d s)$/)
+  const headline = page.getByTestId('run-headline')
+  await expect(headline).toContainText('Claude Code')
+  await expect(page.getByTestId('run-model')).toContainText('claude-opus-5-5')
+  await expect(headline).toContainText('veldo-linux-1')
+  await expect(page.getByTestId('run-station')).toContainText('build')
+  // The dispatch id is not the headline: it waits behind a disclosure, in full, with a copy action.
+  await expect(page.getByTestId('dispatch-id')).toBeHidden()
+  await page.getByText('Dispatch id', { exact: true }).click()
+  await expect(page.getByTestId('dispatch-id')).toHaveText(state.dispatches.done!)
+  await expect(page.getByRole('button', { name: 'Copy dispatch id' })).toBeVisible()
+  // A running run's elapsed time keeps counting.
+  await page.goto(factory.origin + '/runs/' + state.dispatches.live)
+  await expect(page.getByTestId('run-status')).toContainText('Running')
+  const first = await page.getByTestId('elapsed').textContent()
+  await expect.poll(() => page.getByTestId('elapsed').textContent(), { timeout: 5000 }).not.toBe(first)
+})
+
+test('compact gutter: each line\'s sequence, its time since the first line and an inline kind tag on the content\'s row', async ({ page, factory }) => {
+  const state = await factory.state()
+  await signIn(page, factory)
+  await page.goto(factory.origin + '/runs/' + state.dispatches.done)
+  await expect(page.getByTestId('terminal')).toHaveAttribute('data-state', 'ended')
+  const times = await page.locator('.tline-time').allTextContents()
+  expect(times[0]).toBe('+0.0 s')
+  expect(new Set(times).size).toBeGreaterThan(5)
+  for (const t of times) expect(t).toMatch(/^\+(\d+\.\d s|\d+ s|\d+:\d\d)$/)
+  // The tag and the content share a row: the tag's top is level with the content's first line.
+  const row = page.locator('[data-testid="lines"] > li[data-seq="4"]')
+  await expect(row.locator('.tline-kind')).toHaveText('tool')
+  const tag = (await row.locator('.tline-kind').boundingBox())!
+  const content = (await row.locator('.tb-call-head').boundingBox())!
+  expect(Math.abs(tag.y - content.y)).toBeLessThan(8)
+  await expect(page.locator('[data-testid="lines"] > li[data-seq="5"] .tline-kind')).toHaveText('error')
 })

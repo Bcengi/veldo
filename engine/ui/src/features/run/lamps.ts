@@ -36,6 +36,15 @@ export const OFF_LINE: Record<string, { lamp: LampState; word: string }> = {
   AWAITING_AUTHORITY: { lamp: 'waiting', word: 'Waiting on authority' },
 }
 
+/** A run's lamp and word in a list: the unit's own stop (failed, blocked) when it is off the line, else the
+ * dispatch's state. The same words as the overview's andon board. */
+export function runSignal(state: string, unitState: string | null): { lamp: LampState; word: string } {
+  if (unitState === 'FAILED') return { lamp: 'stop', word: 'Failed' }
+  if (unitState === 'CANCELED') return { lamp: 'stop', word: 'Canceled' }
+  if (unitState === 'AWAITING_AUTHORITY') return { lamp: 'waiting', word: 'Blocked' }
+  return runLamp(state)
+}
+
 /** Which station of the line is lit for a unit state, or -1 when it is off the line or unknown. */
 export function stationIndex(unitState: string | null): number {
   if (!unitState) return -1
