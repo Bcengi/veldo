@@ -61,20 +61,28 @@
       "log_offset": 266725
     },
     "generated": {
-      "wall_seconds": 0.0,
+      "wall_seconds": null,
       "wall_source": "5 second cgroup samples, may coalesce short stages",
       "cpu_seconds_sampled": 0.0,
       "peak_cgroup_memory_bytes_sampled": 448303104,
       "peak_anon_bytes": null,
-      "log_offset": 266917
+      "log_offset": 266917,
+      "wall_interval_seconds": [
+        0,
+        5.1
+      ]
     },
     "docs": {
-      "wall_seconds": 0.0,
+      "wall_seconds": null,
       "wall_source": "5 second cgroup samples, may coalesce short stages",
       "cpu_seconds_sampled": 0.0,
       "peak_cgroup_memory_bytes_sampled": 448303104,
       "peak_anon_bytes": null,
-      "log_offset": 267199
+      "log_offset": 267199,
+      "wall_interval_seconds": [
+        0,
+        5.1
+      ]
     },
     "packaging": {
       "wall_seconds": 10.005,
@@ -85,12 +93,16 @@
       "log_offset": 267534
     },
     "extra": {
-      "wall_seconds": 0.0,
+      "wall_seconds": null,
       "wall_source": "5 second cgroup samples, may coalesce short stages",
       "cpu_seconds_sampled": 0.0,
       "peak_cgroup_memory_bytes_sampled": 290365440,
       "peak_anon_bytes": null,
-      "log_offset": 276935
+      "log_offset": 276935,
+      "wall_interval_seconds": [
+        0,
+        5.1
+      ]
     },
     "mutation": {
       "wall_seconds": 5207.101,

@@ -237,6 +237,7 @@ class Meter:
         self.path = Path('/sys/fs/cgroup') / scope.lstrip('/') / ('node-' + str(os.getpid()) + '-' + name)
         self.path.mkdir()
         self.peak = 0
+        self.finished = None
 
     def command(self, argv):
         return [sys.executable, '-I', '-S', str(HERE / 'gate_schedule.py'), '--enter-node', str(self.path), '--', *argv]
@@ -249,6 +250,8 @@ class Meter:
                     metrics_source='cgroup-v2-anon-sampled-50ms')
 
     def finish(self):
+        if self.finished is not None:
+            return self.finished
         result = self.sample()
         populated = 'populated 1' in (self.path / 'cgroup.events').read_text()
         if populated:
@@ -260,6 +263,7 @@ class Meter:
                 path.rmdir()
         self.path.rmdir()
         result['live_descendants'] = populated
+        self.finished = result
         return result
 
 
@@ -326,6 +330,8 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                      memory=measured['peak_anon_bytes'] if measured else capacity['memory'],
                      manager=node['manager'], ports=node['ports'])
         ledger.demand(claim)  # Impossible requests refuse the whole run before any launch.
+        if measured is None:
+            print('node %s: no authority resource measurement; reserving full gate capacity' % name, flush=True)
         claims[name] = claim
     if 'mutation' not in required:
         ledger.mutation_pending = False
@@ -334,6 +340,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
     # Start mutation first so its floor cannot deadlock an unmeasured first run.
     pending.sort(key=lambda n: n != 'mutation')
     active, results = {}, {}
+    waited_for = {name: set() for name in required}
     selector = selectors.DefaultSelector()
     started = time.monotonic()
     next_print = 0
@@ -343,9 +350,13 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
         while pending or active:
             for name in list(pending):
                 node = graph['nodes'][name]
-                if not set(node['depends_on']) <= results.keys() or (serial and active):
+                if not set(node['depends_on']) <= results.keys():
+                    continue
+                if serial and active:
+                    waited_for[name].update(active)
                     continue
                 if not ledger.acquire(name, claims[name], mutation=name == 'mutation'):
+                    waited_for[name].update(active)
                     continue
                 stage, leg = required[name]
                 log = open(directory / (name + '.log'), 'w')
@@ -360,6 +371,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                     env[CHANNEL] = str(child.fileno())
                     env['PYTHONDONTWRITEBYTECODE'] = '1'
                     env['VELDO_GATE_GRAPH_DIGEST'] = digest
+                    node_started = time.monotonic()
                     proc = subprocess.Popen(meter.command(argv), cwd=root, env=env,
                                             stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT,
                                             pass_fds=(child.fileno(), *legs._launcher_fds()))
@@ -373,7 +385,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 finally:
                     child.close()
                 active[name] = dict(proc=proc, log=log, meter=meter, socket=parent,
-                                    buffer=b'', started=time.monotonic(), children=set(), error=None)
+                                    buffer=b'', started=node_started, children=set(), error=None)
                 selector.register(parent, selectors.EVENT_READ, name)
                 pending.remove(name)
                 print('node %s start %.6f' % (name, active[name]['started'] - started), flush=True)
@@ -439,7 +451,10 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                               returncode=code, error=error, **metrics)
                 results[name] = result
                 if result['verdict'] == 'pass' and measurement_store is None:
-                    legs.record_resources(store, key, name, elapsed, metrics)
+                    try:
+                        legs.record_resources(store, key, name, elapsed, metrics)
+                    except OSError as error:
+                        print('node %s: resource measurement not stored: %s' % (name, error), flush=True)
                 item['log'].close()
                 if item['socket'] in selector.get_map():
                     selector.unregister(item['socket'])
@@ -460,26 +475,36 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 result.update(verdict='FAIL', error=result['error'] or 'candidate_tree_changed_during_graph')
         stages = {stage: 'pass' if all(results[n]['verdict'] == 'pass' for n, pair in required.items()
                                      if pair[0] == stage) else 'FAIL' for stage in catalog}
+        for name, result in results.items():
+            result['admission_dependencies'] = sorted(other for other in waited_for[name]
+                if results[other]['end'] <= result['start'])
         chains = {}
         def chain(n):
             if n not in chains:
-                chains[n] = results[n]['wall_seconds'] + max((chain(d) for d in graph['nodes'][n]['depends_on']), default=0)
+                chains[n] = results[n]['wall_seconds'] + max((chain(d) for d in set(graph['nodes'][n]['depends_on']) | set(results[n]['admission_dependencies'])), default=0)
             return chains[n]
         critical = max(required, key=chain) if required else None
         return dict(schema='veldo.gate-schedule/v1', graph=digest, stages=stages, nodes=results,
                     checks_run=len(stages), inputs_unchanged=not failed_tree,
                     wall_seconds=time.monotonic() - started, critical_path_seconds=chain(critical) if critical else 0,
                     critical_path_end=critical, capacities=capacity, peak_granted=ledger.peak,
-                    ledger=ledger.events)
+                    ledger=ledger.events, claims=claims)
     finally:
         # On exceptional exit, own only these nodes. Never signal another gate or touch its lock.
+        cleanup_errors = []
         for name, item in active.items():
-            item['proc'].terminate()
-            item['meter'].finish()
-            item['proc'].wait()
-            item['log'].close()
-            item['socket'].close()
+            try:
+                item['proc'].kill()
+                item['meter'].finish()
+            except Exception as error:
+                cleanup_errors.append('%s: %s' % (name, error))
+            finally:
+                item['proc'].wait()
+                item['log'].close()
+                item['socket'].close()
         selector.close()
+        if cleanup_errors:
+            raise Refused('node cleanup failed: ' + '; '.join(cleanup_errors))
 
 
 def main(argv=None):

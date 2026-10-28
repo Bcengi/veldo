@@ -1,0 +1,23 @@
+{
+  "spec": "VELDO-0216",
+  "scope": "single ticket suite under the real gate confinement; canonical gate not run",
+  "command": "python3 -I -S scripts/gate_candidate.py --root \"$PWD\" -- python3 scripts/selftest.py --suite 114_veldo_0216_concurrent_stages",
+  "exit": 2,
+  "exit_contract": "selftest partial runs exit 2 even on success; gate_candidate relays that status",
+  "ticket_rows": 19,
+  "shared_preamble_rows": 26,
+  "failed": 0,
+  "summary": [
+    "114_veldo_0216_concurrent_stages                19 passed   23.08s",
+    "selftest (PARTIAL, 1 of 170 suites): 45 passed, 0 failed in 23.08s"
+  ],
+  "source_sha256": {
+    "scripts/gate_schedule.py": "9ebddd7be4e169bab789b76d2be53b8e7bd9672298b5a85d31790b27fd778479",
+    "scripts/gate_legs.py": "bdf9ca3c649111162f163da3332e5d579c649f486daf294b1ee0440805e0076e",
+    "scripts/check_gate_mutations.py": "38d697817f85a31cedcb85dc4afec66b08ba72284003870590dff20796c34901",
+    "scripts/verify.sh": "d373bba743efd14a667572b4b29f4304a26f0dafe69efdae341d576085c91669",
+    "engine/scripts/verify.sh": "06695fa8248582f2b0babfeb8233431d7c4eaa3620b185f303380bf27864f904",
+    "scripts/gate_graph.json": "4ba30fad7be3e0efa2a35c613815037ff1bb162efb554e35344e880b59297d23",
+    "scripts/suites/114_veldo_0216_concurrent_stages.py": "9eb86d333046ad725e6bc800537feddde7b2151e8899d8017367bd02becf9115"
+  }
+}

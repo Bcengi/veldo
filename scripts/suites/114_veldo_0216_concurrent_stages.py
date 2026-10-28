@@ -67,6 +67,8 @@ def _v216_checks():
         # Use actual scratch Git inputs, including untracked files and file modes.
         candidate = top / 'candidate'
         candidate.mkdir()
+        (candidate/'scripts').mkdir()
+        (candidate/'scripts/gate_graph.json').write_text('{"schema":"candidate must not choose the graph"}')
         subprocess.run(['git', 'init', '-q', str(candidate)], check=True)
         (candidate / 'input').write_text('original\n')
         subprocess.run(['git', '-C', str(candidate), 'add', 'input'], check=True)
@@ -165,6 +167,7 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
             and all('CHANNEL=absent' in (out / (n + '.log')).read_text() for n in nodes if n != 'mutation'))
 
         pairs = []
+        exact_fields = []
         for failure in ('', 'confined', 'unconfined', 'mutation'):
             receipts = []
             for serial in (True, False):
@@ -192,10 +195,13 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
                 receipts.append(dict(stages=r['stages'], checks=r['checks_run'], mutation=m,
                                      unconfined=unconfined, stamp=json.loads((output/'stamp').read_text()),
                                      event=json.loads(emitted.stdout)))
+                expected = dict(fields, checks_run=9, unconfined=unconfined, graph=r['graph'])
+                exact_fields.append(all(receipts[-1][kind].get(k) == v for kind in ('stamp','event')
+                                        for k,v in expected.items()) and receipts[-1]['stamp']['checks_na']==15)
             expected_failures = {'unit', 'integration'} if failure in ('confined', 'unconfined') else ({'mutation'} if failure else set())
             pairs.append(receipts[0] == receipts[1] and receipts[1]['unconfined'] is not None
                          and {s for s,v in receipts[1]['stages'].items() if v == 'FAIL'} == expected_failures)
-        row('same-verdicts', all(pairs))
+        row('same-verdicts', all(pairs) and all(exact_fields))
 
         # A real unconfined candidate writer is RED by its node name and whole-tree comparison.
         write_command = "printf changed > input"
@@ -275,6 +281,13 @@ c=m.Client(); assert c.acquire('shard',2,3000,'shared',[22345]); assert not c.ac
         measured = legs.read_resources(store,'digest','unit.confined')
         row('measured-claims', measured['cpu_rate'] == 2 and measured['peak_anon_bytes'] == 4567
             and legs.read_resources(store,'other','unit.confined') is None)
+        race_store = top/'race-store'
+        record_code = "import importlib.util,sys; from pathlib import Path; s=importlib.util.spec_from_file_location('legs',sys.argv[1]); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); m.record_time(Path(sys.argv[2]),'race',sys.argv[3],123,'run')"
+        writers = [subprocess.Popen([sys.executable,'-c',record_code,str(scripts/'gate_legs.py'),str(race_store),leg])
+                   for leg in ('confined','unconfined')]
+        codes = [p.wait() for p in writers]
+        row('measurement-record-race', codes==[0,0] and set(legs.read_times(race_store,'race'))=={'confined','unconfined'}
+            and len(list(race_store.iterdir()))==1)
         # Capacity uses exact fractional ancestor quota, scope memory and manifest slots.
         cgroup = top/'cgroups'
         own = Path('/proc/self/cgroup').read_text().split('::',1)[1].strip()
@@ -320,6 +333,66 @@ c=m.Client(); assert c.acquire('shard',2,3000,'shared',[22345]); assert not c.ac
         serialized['schedule']['critical_path_seconds'] = baseline['elapsed']-6
         row('canonical-receipt-check', qualification.check(synthetic,baseline)['passed']
             and not qualification.check(serialized,baseline)['passed'] and not qualification.check({},baseline)['passed'])
+
+        with patch.object(legs,'_record_time_locked',side_effect=OSError('fixture refusal')), contextlib.redirect_stdout(io.StringIO()):
+            row('timing-store-refusal', legs.record_time(top/'unwritable-store','digest','confined',1,'run') is False)
+        # Execute the actual catalog shell fragment through the scheduler CLI. Never
+        # execute verify.sh. Only kernel metering/capacities are fixture substitutes.
+        shutil.copyfile(scripts/'gate_schedule.py', scripts/'gate_schedule_impl.py')
+        wrapper = """import importlib.util,json,os
+from pathlib import Path
+def load(path):
+ s=importlib.util.spec_from_file_location('fixture_'+path.stem,path); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); return m
+m=load(Path(__file__).with_name('gate_schedule_impl.py'))
+m.capacities=lambda *a: dict(cpu=32,memory=1048576,manager=16)
+class Meter:
+ def __init__(self,*a): pass
+ def command(self,argv): return argv
+ def sample(self): return dict(cpu_seconds=.01,peak_anon_bytes=1024,metrics_source='fixture')
+ def finish(self): return dict(self.sample(),live_descendants=False)
+m.Meter=Meter
+original=m.load_module
+mutation=load(Path(os.environ['V216_SOURCE_ROOT'])/'scripts/check_gate_mutations.py')
+def modules(name):
+ if name=='check_gate_mutations': return mutation
+ result=original(name)
+ if name=='gate_legs': result.read_resources=lambda *a: dict(cpu_rate=1,peak_anon_bytes=1024)
+ return result
+m.load_module=modules
+raise SystemExit(m.main())
+"""
+        (scripts/'gate_schedule.py').write_text(wrapper)
+        graph_path.write_text(json.dumps(graph))
+        verify = (ROOT/'scripts/verify.sh').read_text()
+        functions = verify[verify.index('veldo_candidate() {'):verify.index('# CANDIDATE MODE')]
+        order = __import__('re').search(r'ORDER="([^"]+)"',verify).group(1).replace('\\\n',' ')
+        definitions = '\n'.join('CHECK_'+n+'='+shlex.quote('required:'+catalog[n] if n in catalog else 'na:fixture') for n in order.split())
+        begin = verify.index('FAIL=0; RAN=0;')
+        finish = verify.index('echo "== secret scan',begin)
+        fragment = 'set -u\n'+functions+'\nORDER='+shlex.quote(order)+'\n'+definitions+'\n'+verify[begin:finish]
+        fragment += '\nprintf "COUNTS %s %s %s\\n" "$RAN" "$NA" "$FAIL"\n'
+        shell_counts = []
+        for graph_enabled in (True,False,'invalid'):
+            shell_out = top/('shell-'+str(graph_enabled))
+            shell_out.mkdir()
+            if not graph_enabled:
+                graph_path.unlink()
+            elif graph_enabled=='invalid':
+                graph_path.write_text('{bad graph')
+            env = dict(os.environ, VELDO_AUTHORITY=str(authority), VELDO_OUT=str(shell_out),
+                       VELDO_LEGS_RECORD=str(shell_out/'legs'), VELDO_REUSE_RECEIPT=str(shell_out/'mutation'),
+                       VELDO_LEGS_EXPECTED='', V216_SOURCE_ROOT=str(ROOT), V216_FAIL='')
+            result = subprocess.run(['bash','-c',fragment],cwd=candidate,env=env,capture_output=True,text=True,
+                                    pass_fds=legs._launcher_fds())
+            if graph_enabled=='invalid':
+                shell_counts.append(result.returncode==1 and 'GATE: RED' in result.stdout
+                    and not (shell_out/'mutation').exists() and ' start ' not in result.stdout)
+            else:
+                shell_counts.append(result.returncode==0 and 'COUNTS 9 15 0' in result.stdout)
+            if not shell_counts[-1]:
+                print('catalog fixture diagnostics',graph_enabled,result.returncode,result.stdout[-3000:],result.stderr[-2000:])
+        row('shell-catalog', all(shell_counts))
+        shutil.copyfile(scripts/'gate_schedule_impl.py',scripts/'gate_schedule.py')
 
         # Production graph and catalog are independently enumerated every run.
         verify = (ROOT/'scripts/verify.sh').read_text()

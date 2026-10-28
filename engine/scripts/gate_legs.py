@@ -207,10 +207,18 @@ def _record_time_locked(times, digest, leg, seconds, run):
 def record_time(times, digest, leg, seconds, run):
     # Confined and unconfined unit nodes may finish together. Serialize the existing
     # read/replace transaction so neither fresh measurement overwrites its sibling.
-    Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)
-    with open(Path(times) / '.unit-times.lock', 'a') as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
-        return _record_time_locked(times, digest, leg, seconds, run)
+    try:
+        Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)
+        descriptor = os.open(times, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX)
+            return _record_time_locked(times, digest, leg, seconds, run)
+        finally:
+            os.close(descriptor)
+    except OSError as error:
+        print('   unit: could not lock the leg-time store %s (%s); using the last measurement' %
+              (times, error), flush=True)
+        return False
 
 
 def _resources_file(times, digest, node):
