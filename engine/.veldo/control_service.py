@@ -2096,7 +2096,8 @@ class Line:
         try:
             self.pm_cycles = _organ('control_workflow_cycle_pm').from_line(self)
         except Exception as error:  # noqa: BLE001 - named in the pass's faults, never the loop's end
-            if factory is self or factory is None:
+            # A missing factory Line must not turn another project's cycle refusal into an engineering stop.
+            if factory is self or self.repository == self.loop.factory_line:
                 raise
             self.pm_refusal = getattr(error, 'code', None) or 'unknown_outcome:' + type(error).__name__
             report['faults'].append({'repository': self.repository, 'reason': 'pm_cycles:' + self.pm_refusal})

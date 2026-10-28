@@ -692,16 +692,20 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
 
             with region('staff/missing-team'):
                 # Delete fixture team records only for this negative authority test; restore them afterwards.
+                reef_available = unit_for('reef', 3, holder='w-build2')
                 saved_teams = list(conn.execute('SELECT * FROM entities WHERE id=?', (CT.team_id('factory'),)))
                 saved_default = conn.execute('SELECT * FROM entities WHERE id=?', (TR.HEAD,)).fetchone()
                 conn.execute('DELETE FROM entities WHERE id IN (?, ?)', (CT.team_id('factory'), TR.HEAD))
-                journal_pass(loop)
-                check('staff/missing-team', [('missing teams refuse configured and ordinary repositories by name',
+                missing_team_pass = journal_pass(loop)
+                check('staff/missing-team', [('missing teams refuse configured and ordinary repositories by name [%s]' %
+                    {key: missing_team_pass.get(key) for key in ('offered', 'refused', 'faults')},
                     REPO not in loop.lines and loop.refused_lines.get('factory') == 'missing_authority:team:factory'
                     and loop.refused_lines.get('tide') == 'missing_authority:team:tide'
-                    and repos['reef'] in loop.lines and not getattr(loop.lines[repos['reef']], 'closing', False))])
+                    and repos['reef'] in loop.lines and not getattr(loop.lines[repos['reef']], 'closing', False)
+                    and offer_of(missing_team_pass, reef_available).get('result') == 'accepted')])
                 for row in saved_teams + ([saved_default] if saved_default else []):
                     conn.execute('INSERT INTO entities VALUES (' + ','.join('?' for _ in row) + ')', tuple(row))
+                finish(loop, missing_team_pass, reef_available)
                 journal_pass(loop)
 
             with region('close/configured'):
