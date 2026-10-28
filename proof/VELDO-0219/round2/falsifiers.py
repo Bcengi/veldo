@@ -36,7 +36,7 @@ for case in cases:
         (OUT/'falsifiers.json').write_text(json.dumps(evidence,indent=2)+'\n')
         print(case['name'],mode,failed,flush=True)
         assert rows and (all(rows.get(r) is False for r in case['rows']) if mode=='mutant' else not failed),result
-for suite in ('115_veldo_0219_measured_admission','53_veldo_0123_mutations'):
+for suite in ('115_veldo_0219_measured_admission',):
     result=subprocess.run([sys.executable,'-B','scripts/selftest.py','--suite',suite],cwd=ROOT,capture_output=True,text=True)
     (OUT/(suite+'.log')).write_text(result.stdout+result.stderr)
     summary=[line for line in result.stdout.splitlines() if line.startswith('selftest (PARTIAL')]

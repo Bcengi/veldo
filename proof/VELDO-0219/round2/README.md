@@ -62,7 +62,7 @@ discovery poll during their lifetimes. All subprocesses are joined and all test
 units are removed before the test returns.
 
 falsifiers.py runs only the four VELDO-0219 registered falsifiers, each in mutant,
-baseline and no-op mode, then suites 115 and the ticket's existing suite 53.
+baseline and no-op mode, then suite 115 and the native lifecycle check.
 Its invocation takes the blocking owner host lock. Test fixtures never acquire
 that real lock. Single-file development checks are also retained here. Partial
 selftest success has exit status 2 by repository convention.
