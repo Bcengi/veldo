@@ -342,6 +342,7 @@ class WorkerMeter:
         self.peak, self.last_discovery = 0, float('-inf')
         self.lifecycle = self.peer = None
         self.retained, self.dropins = {}, []
+        self.covered_units = set()
         self.accounting_slice = 'veldometer%s.slice' % self.path.name.replace('-', '')
 
 
@@ -372,6 +373,7 @@ class WorkerMeter:
             with target.open('x') as handle:
                 handle.write('[Service]\nSlice=' + self.accounting_slice + '\n')
             self.dropins.append(target)
+            self.covered_units.add(Path(value).name)
         else:
             raise ValueError('invalid lifecycle unit ownership')
 
@@ -409,7 +411,7 @@ class WorkerMeter:
         if rejected:
             raise ValueError('ownership ledger contains invalid resource entries')
         units = {v if k == 'slice' else Path(v).name for k, v in entries if k in ('slice', 'service')}
-        for unit in sorted(units - self.paths.keys()):
+        for unit in sorted(units - self.paths.keys() - self.retained.keys() - self.covered_units):
             answer = subprocess.run(['systemctl', '--user', 'show', '-p', 'ControlGroup', '--value', unit],
                                     capture_output=True, text=True, timeout=5,
                                     env=dict(os.environ, XDG_RUNTIME_DIR='/run/user/%d' % os.getuid()))
