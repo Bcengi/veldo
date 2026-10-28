@@ -1,0 +1,11 @@
+--- a/.veldo/control_store.py
++++ b/.veldo/control_store.py
+@@ -675,7 +675,7 @@
+         _kill_point("before_commit")
+         if os.environ.get("VELDO_CONTROL_TEST_HARNESS") == "1" and os.environ.get("VELDO_CONTROL_KILL_AT") == "in_commit":
+             conn.set_progress_handler(lambda: os.kill(os.getpid(), signal.SIGKILL), 1)
+-        conn.execute("COMMIT")
++        conn.execute("ROLLBACK")
+         conn.set_progress_handler(None, 0)
+         _kill_point("after_commit")
+         return dict(result, replayed=False)

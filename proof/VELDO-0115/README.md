@@ -75,6 +75,15 @@ cases, with zero failures. The harness also reports its 26 shared setup checks,
 for 30 total, and exits 2 to mark a deliberately partial run. This is ticket
 evidence under owner rule 37191, not a full-gate or landing claim.
 
+Recorded falsifier result in `results.json`: all three declared mutants completed
+their 16 accepted cases and turned their required check red, exit 1. Each restored
+run completed 16 cases with all four rows green, exit 0. The unit controls stayed
+green throughout. Each mutant also reds the other two integration checks because
+they independently require the expected committed target transaction. All six
+runs completed, for 96 accepted requests in total. The driver itself exited 0.
+The retained reports and applied diffs are bound to the unchanged implementation
+by SHA-256 digests; the tested commit is `999448eb`, with the full ID in the result.
+
 Only this ticket's checks and falsifiers are authorized here. The full gate and
 batch independent review remain the later landing process. No protected paths are
 named by this specification, and none are changed by this implementation.

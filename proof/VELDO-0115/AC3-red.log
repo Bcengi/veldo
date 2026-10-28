@@ -1,0 +1,4 @@
+FAIL ipc/configured-store-really-changes
+FAIL ipc/only-the-bound-store-changes
+FAIL ipc/accepted-state-survives-reopen
+PASS ipc/fixture-unit-controls
