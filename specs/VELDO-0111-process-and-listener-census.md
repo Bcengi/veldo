@@ -40,7 +40,7 @@ acceptance_criteria:
   - id: AC2
     text: >
       Claim: The same census records every successful transition to listening and every new service receive binding during the interval, even if closed immediately.
-      Set: All address families and socket types exposed by the qualification kernel, including pathname and abstract Unix, IPv4 and IPv6; addresses are unrestricted. Datagram/raw receive bindings are included as service exposure even where listen is inapplicable.
+      Set: The qualification universe is the socket families Veldo uses: Unix (pathname and abstract), IPv4, IPv6 and netlink, each fully qualified for its exposed socket types, protocols and operation paths; addresses are unrestricted. Every other family is recorded with a named, tested not-qualified reason; observing a socket from such a family makes the capture INCOMPLETE rather than silently passing. Datagram/raw receive bindings are included as service exposure even where listen is inapplicable.
       Completeness: Use ptrace PTRACE_SYSCALL entry/exit stops with PTRACE_O_TRACESYSGOOD as the kernel observation mechanism, decoding socket operations and successful return values for every traced task and qualified syscall ABI, without family or path filters. Track socket identities and descriptor inheritance/duplication/transfer, bind/listen/close and implicit service receive bindings; record successful exposure before the task resumes and closes the socket. Qualify against a runtime family/type and operation inventory with generated acknowledged probes for every available combination, including socketcall where supported. /proc and sock_diag may enrich identity/address data but snapshots cannot supply transient-event evidence. An available path whose effects cannot be decoded, including asynchronous io_uring socket operations, prevents a complete result; do not treat a successful submission as a successful socket operation. Record unsupported combinations with the kernel error and do not claim unqualified families.
       Refutation: census/listener-lifetimes is false if the expected service event is missing, including a transient abstract Unix listener or a listener outside the fixture directory.
     falsified_by: >
@@ -57,7 +57,7 @@ acceptance_criteria:
     text: >
       Claim: An absence result is valid only after successful arming, loss-free collection and complete drain; unavailable observation is explicitly incomplete.
       Set: Normal runs, ptrace denied by Yama/LSM/seccomp policy, missing Linux facilities, unsupported syscall ABI/observation paths, event-stream loss or corruption, collector death and drain deadline expiry.
-      Completeness: Generate fault cases from the collector's lifecycle states and terminal statuses; require every status to have a result. Unavailable or partial observation must return INCOMPLETE with the failed capability and reason. Every dependent row must be emitted by its exact name as STANDS DOWN with census_incomplete, never green, omitted or counted as a pass. Drive this propagation through VELDO-0113, VELDO-0114 and VELDO-0122, whose named row lists are part of their consumer contracts; no incomplete receipt satisfies qualification.
+      Completeness: Generate fault cases from the collector's lifecycle states and terminal statuses; require every status to have a result. Unavailable or partial observation must return INCOMPLETE with the failed capability and reason. Every dependent row must be emitted by its exact name as STANDS DOWN with census_incomplete, never green, omitted or counted as a pass. VELDO-0111 verifies the receipt validator and exact named stand-down contract for VELDO-0113, VELDO-0114 and VELDO-0122. End-to-end propagation through those consumers is verified by their own acceptance suites when they land. Each consumer must drive the VELDO-0111 fault matrix and prove that every required row emits STANDS DOWN with census_incomplete for every incomplete receipt.
       Refutation: census/incomplete-is-not-empty is false if any injected observation failure yields a complete empty trace.
     falsified_by: >
       Return a complete empty trace after collector death; census/incomplete-is-not-empty must turn red.
@@ -87,3 +87,28 @@ The collector and its probe programs are repository-only test apparatus, not shi
 This is an in-session fixture with bounded teardown, never a detached monitor. Establish tracing options before releasing the root and use PTRACE_O_EXITKILL plus supervised cleanup and terminal waits so collector death cannot leave traced workers running or certify a completed interval. Fixture processes and pre-existing authority/SSH endpoints are established outside the measured scope before the barrier; the call and all its descendants stay inside. A consumer may exclude only explicit launch identities declared before observation, never matching names or paths. No ptrace stop, unsupported capability or permission error is silently replaced with polling.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
+
+## Amendment, 2026-10-28
+
+Owner approval: Telegram 37442, "all 3", answering Telegram 37440 item 1:
+"limit the network census to the socket types we use, and move its last check
+to the tickets built on it".
+
+AC2 now limits the qualification universe to Unix, IPv4, IPv6 and netlink,
+each fully qualified. Every other family has a named, tested not-qualified
+reason and observing it makes the capture INCOMPLETE. Only the obligation to
+fully qualify other families is removed. Protocols, addresses, configuration,
+asynchronous effects, lifetime and race obligations within the four families
+remain unchanged; a family name alone does not establish qualification.
+
+AC4 replaces its consumer-integration sentence with:
+
+"VELDO-0111 verifies the receipt validator and exact named stand-down contract
+for VELDO-0113, VELDO-0114 and VELDO-0122. End-to-end propagation through those
+consumers is verified by their own acceptance suites when they land. Each
+consumer must drive the VELDO-0111 fault matrix and prove that every required
+row emits STANDS DOWN with census_incomplete for every incomplete receipt."
+
+All other acceptance text is unchanged. No incomplete receipt satisfies
+qualification. Loss-free capture, matching failures, drain, fault generation
+and the complete-empty-trace falsifier remain required.
