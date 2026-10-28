@@ -1,6 +1,11 @@
 # VELDO-0174 implementation and review record
 
-Latest round: [merged-main-2026-10-22/README.md](merged-main-2026-10-22/README.md). Main d49581b4
+Latest round: [merged-main-2026-10-28/README.md](merged-main-2026-10-28/README.md). Main 59b119a1
+merged in; a journey stand-in missing `repositories` was fixed (b1f2d1d2). On a host with AF_UNIX,
+suite 107 is 64 of 64 including both restart rows, suite 105 passes, and all ten falsifiers go red
+and restore green. Suite 86 still needs a fresh Codex live capture for this ticket's launch change.
+
+Previous round: [merged-main-2026-10-22/README.md](merged-main-2026-10-22/README.md). Main d49581b4
 merged into the candidate on agent/claude/fix-VELDO-0174. Suite 107 keeps its 36 passing ticket rows
 with only the two AF_UNIX restart rows red; suites 105 and 103 now pass; six other affected suites
 fail identically on main's own commit in the same sandbox. run_falsifier.py, broken by 2cd6c93b, is

@@ -1,0 +1,408 @@
+{
+ "spec": "VELDO-0174",
+ "date": "2026-10-28",
+ "main": "59b119a1",
+ "merge_commit": "4ab7fb43",
+ "fix_commit": "b1f2d1d2",
+ "lock": "flock /home/dmitry/.local/state/core-gates/.gate.lock",
+ "round_command": "flock /home/dmitry/.local/state/core-gates/.gate.lock sh proof/VELDO-0174/merged-main-2026-10-28/run_round.sh LOGDIR",
+ "before_fix": {
+  "tree": "4ab7fb43",
+  "s107": {
+   "log": "logs/before-fix/s107.log",
+   "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+   "summary": "selftest (PARTIAL, 1 of 169 suites): 41 passed, 23 failed in 4.52s",
+   "failures": [
+    "SELFTEST FAIL: VELDO-0174 AC1/not-project",
+    "SELFTEST FAIL: VELDO-0174 AC1/restart-open",
+    "SELFTEST FAIL: VELDO-0174 AC1/version-owner",
+    "SELFTEST FAIL: VELDO-0174 AC2/active-refusal-once",
+    "SELFTEST FAIL: VELDO-0174 AC2/charged-windows",
+    "SELFTEST FAIL: VELDO-0174 AC2/current-role-revision",
+    "SELFTEST FAIL: VELDO-0174 AC2/durable-recovery",
+    "SELFTEST FAIL: VELDO-0174 AC2/one-active-ordered",
+    "SELFTEST FAIL: VELDO-0174 AC2/one-offer-per-pass",
+    "SELFTEST FAIL: VELDO-0174 AC2/own-directory",
+    "SELFTEST FAIL: VELDO-0174 AC2/real-ordered-turns",
+    "SELFTEST FAIL: VELDO-0174 AC2/receiver-loss",
+    "SELFTEST FAIL: VELDO-0174 AC2/restart-turns",
+    "SELFTEST FAIL: VELDO-0174 AC2/role-skills",
+    "SELFTEST FAIL: VELDO-0174 AC2/role-tools",
+    "SELFTEST FAIL: VELDO-0174 AC3/parallel-conversations",
+    "SELFTEST FAIL: VELDO-0174 AC3/three-running",
+    "SELFTEST FAIL: VELDO-0174 AC3/turn-before-project",
+    "SELFTEST FAIL: VELDO-0174 AC3/turn-first-slot",
+    "SELFTEST FAIL: VELDO-0174 AC4/install-conversation-receiver",
+    "SELFTEST FAIL: VELDO-0174 AC4/no-work-line",
+    "SELFTEST FAIL: VELDO-0174 AC4/receiver-kind-refusal",
+    "SELFTEST FAIL: VELDO-0174 AC4/unit-to-conversation"
+   ],
+   "log_sha256": "c3ab3801d3f7de0a02bcd6a42053b99386f55d044280239cad0fe3477b3b4e6d",
+   "exit_code": 1
+  }
+ },
+ "after_fix": {
+  "tree": "b1f2d1d2",
+  "s107": {
+   "log": "logs/after-fix/s107.log",
+   "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+   "summary": "selftest (PARTIAL, 1 of 169 suites): 64 passed, 0 failed in 9.59s",
+   "failures": [],
+   "log_sha256": "a8b0d39c70f77c29e8c908fdbb62d582f3ac1ece7c8d5e13f15c1c5468823b43",
+   "exit_code": 2
+  },
+  "s105": {
+   "log": "logs/after-fix/s105.log",
+   "command": "python3 scripts/selftest.py --suite 105_veldo_0182_memory",
+   "summary": "selftest (PARTIAL, 1 of 169 suites): 153 passed, 0 failed in 74.83s",
+   "failures": [],
+   "log_sha256": "47659e51c620e06689568cbb3d6b69fb634313737fac475e4dacfea64e811d7c",
+   "exit_code": 2
+  },
+  "s86": {
+   "log": "logs/after-fix/s86.log",
+   "command": "python3 scripts/selftest.py --suite 86_veldo_0127_agent_configuration",
+   "summary": "selftest (PARTIAL, 1 of 169 suites): 52 passed, 1 failed in 37.64s",
+   "failures": [
+    "SELFTEST FAIL: VELDO-0127 live/codex"
+   ],
+   "log_sha256": "fd3e55a258b4df71318b57544f02e8673ff568a4ebf9ad82fe967b4d0c6c040b",
+   "exit_code": 1
+  },
+  "falsifiers": {
+   "v174-attach-another-owners-project": {
+    "driver_command": "python3 proof/VELDO-0174/run_falsifier.py v174-attach-another-owners-project --log-dir LOGDIR/falsifiers",
+    "driver_exit": 0,
+    "mutated_suite_exit": 1,
+    "target_rows": [
+     "AC1/project-owner"
+    ],
+    "targets_red": true,
+    "source_restored": true,
+    "failed_rows": [
+     "AC1/project-owner"
+    ],
+    "mutated_log_sha256": "e75012e1b7bae7b9a22a10a513667656edf118409ba7192c80fc5016d3d9eba7",
+    "restored": {
+     "log": "logs/after-fix/restored-v174-attach-another-owners-project.log",
+     "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+     "summary": "selftest (PARTIAL, 1 of 169 suites): 64 passed, 0 failed in 9.40s",
+     "failures": [],
+     "log_sha256": "3bdccb1f7059167aa07d7bf38191a011302eeec3ef7d11778bea3fbae11b83fb",
+     "exit_code": 2
+    }
+   },
+   "v174-attach-outside-current-scope": {
+    "driver_command": "python3 proof/VELDO-0174/run_falsifier.py v174-attach-outside-current-scope --log-dir LOGDIR/falsifiers",
+    "driver_exit": 0,
+    "mutated_suite_exit": 1,
+    "target_rows": [
+     "AC1/project-scope"
+    ],
+    "targets_red": true,
+    "source_restored": true,
+    "failed_rows": [
+     "AC1/project-scope",
+     "proof/mutation-dependencies"
+    ],
+    "mutated_log_sha256": "7d4e23caf9d8c56323526f73a17b6a13257cd9433c3998970aa0dc545a67e9ba",
+    "restored": {
+     "log": "logs/after-fix/restored-v174-attach-outside-current-scope.log",
+     "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+     "summary": "selftest (PARTIAL, 1 of 169 suites): 64 passed, 0 failed in 9.41s",
+     "failures": [],
+     "log_sha256": "349c0b992af331c239be8b6dcd64be8debbe5409d028723d4656a1ecfe746e71",
+     "exit_code": 2
+    }
+   },
+   "v174-drop-skills": {
+    "driver_command": "python3 proof/VELDO-0174/run_falsifier.py v174-drop-skills --log-dir LOGDIR/falsifiers",
+    "driver_exit": 0,
+    "mutated_suite_exit": 1,
+    "target_rows": [
+     "AC2/role-skills"
+    ],
+    "targets_red": true,
+    "source_restored": true,
+    "failed_rows": [
+     "AC2/role-skills"
+    ],
+    "mutated_log_sha256": "910540fdfda3bb203bd4e8fe795a882b3794242ec0e19403feaeaf13b2be7d0a",
+    "restored": {
+     "log": "logs/after-fix/restored-v174-drop-skills.log",
+     "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+     "summary": "selftest (PARTIAL, 1 of 169 suites): 64 passed, 0 failed in 9.42s",
+     "failures": [],
+     "log_sha256": "96e029f4ed01bbda0a84202540bf13e04552baaf71dc6138ec828fbcc7e52286",
+     "exit_code": 2
+    }
+   },
+   "v174-ignore-record-version": {
+    "driver_command": "python3 proof/VELDO-0174/run_falsifier.py v174-ignore-record-version --log-dir LOGDIR/falsifiers",
+    "driver_exit": 0,
+    "mutated_suite_exit": 1,
+    "target_rows": [
+     "AC1/versioned-mutations"
+    ],
+    "targets_red": true,
+    "source_restored": true,
+    "failed_rows": [
+     "AC1/mutation-targets",
+     "AC1/not-project",
+     "AC1/project-commands",
+     "AC1/project-owner",
+     "AC1/project-scope",
+     "AC1/restart-open",
+     "AC1/unknown-conversation",
+     "AC1/version-owner",
+     "AC1/versioned-mutations",
+     "AC2/account-retry",
+     "AC2/active-refusal-once",
+     "AC2/charged-windows",
+     "AC2/closed-dispatch",
+     "AC2/current-role-revision",
+     "AC2/domain-cap",
+     "AC2/durable-recovery",
+     "AC2/one-active-ordered",
+     "AC2/one-offer-per-pass",
+     "AC2/own-directory",
+     "AC2/real-ordered-turns",
+     "AC2/receiver-loss",
+     "AC2/redelivery",
+     "AC2/restart-turns",
+     "AC2/role-skills",
+     "AC2/role-tools",
+     "AC3/parallel-conversations",
+     "AC3/three-running",
+     "AC3/turn-before-project",
+     "AC3/turn-first-slot",
+     "AC4/install-conversation-receiver",
+     "AC4/no-work-line",
+     "AC4/real-kind-refusal",
+     "AC4/receiver-kind-refusal",
+     "AC4/turn-kind",
+     "AC4/unit-to-conversation",
+     "proof/signed-command-module"
+    ],
+    "mutated_log_sha256": "ccb9d1814b92733015b5d9878111ed58595e6430000b1a6c841ddac9cbbab19e",
+    "restored": {
+     "log": "logs/after-fix/restored-v174-ignore-record-version.log",
+     "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+     "summary": "selftest (PARTIAL, 1 of 169 suites): 64 passed, 0 failed in 9.41s",
+     "failures": [],
+     "log_sha256": "8f1f2fce55f3811b5deb3a52d2baa7d8b81d877ad355512282d22e09066bd75c",
+     "exit_code": 2
+    }
+   },
+   "v174-mutation-siblings-missing": {
+    "driver_command": "python3 proof/VELDO-0174/run_falsifier.py v174-mutation-siblings-missing --log-dir LOGDIR/falsifiers",
+    "driver_exit": 0,
+    "mutated_suite_exit": 1,
+    "target_rows": [
+     "proof/mutation-dependencies"
+    ],
+    "targets_red": true,
+    "source_restored": true,
+    "failed_rows": [
+     "proof/mutation-dependencies"
+    ],
+    "mutated_log_sha256": "cbb11aeca287e0550e1623f8c156a5c2bf150b9b2122950314258ce2a15946d3",
+    "restored": {
+     "log": "logs/after-fix/restored-v174-mutation-siblings-missing.log",
+     "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+     "summary": "selftest (PARTIAL, 1 of 169 suites): 64 passed, 0 failed in 9.42s",
+     "failures": [],
+     "log_sha256": "7c6b9eeb228134287cbf0249649de07155fb040ed61b4ee16998b1c6adc4e0b7",
+     "exit_code": 2
+    }
+   },
+   "v174-no-work-conversation-line-dropped": {
+    "driver_command": "python3 proof/VELDO-0174/run_falsifier.py v174-no-work-conversation-line-dropped --log-dir LOGDIR/falsifiers",
+    "driver_exit": 0,
+    "mutated_suite_exit": 1,
+    "target_rows": [
+     "AC4/no-work-line"
+    ],
+    "targets_red": true,
+    "source_restored": true,
+    "failed_rows": [
+     "AC1/not-project",
+     "AC1/restart-open",
+     "AC1/version-owner",
+     "AC2/active-refusal-once",
+     "AC2/charged-windows",
+     "AC2/current-role-revision",
+     "AC2/durable-recovery",
+     "AC2/one-active-ordered",
+     "AC2/one-offer-per-pass",
+     "AC2/own-directory",
+     "AC2/real-ordered-turns",
+     "AC2/receiver-loss",
+     "AC2/restart-turns",
+     "AC2/role-skills",
+     "AC2/role-tools",
+     "AC3/parallel-conversations",
+     "AC3/three-running",
+     "AC3/turn-before-project",
+     "AC3/turn-first-slot",
+     "AC4/install-conversation-receiver",
+     "AC4/no-work-line",
+     "AC4/receiver-kind-refusal",
+     "AC4/unit-to-conversation"
+    ],
+    "mutated_log_sha256": "99e09d4832b1ec4bc988ad2e325893870a946db06a2d7c7f7412745463ebb2b8",
+    "restored": {
+     "log": "logs/after-fix/restored-v174-no-work-conversation-line-dropped.log",
+     "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+     "summary": "selftest (PARTIAL, 1 of 169 suites): 64 passed, 0 failed in 9.48s",
+     "failures": [],
+     "log_sha256": "7e2ca66e0c396f7b405adc78e3c7a16fa2d3e43076436c60f52a17284f764b11",
+     "exit_code": 2
+    }
+   },
+   "v174-offer-every-waiting-turn": {
+    "driver_command": "python3 proof/VELDO-0174/run_falsifier.py v174-offer-every-waiting-turn --log-dir LOGDIR/falsifiers",
+    "driver_exit": 0,
+    "mutated_suite_exit": 1,
+    "target_rows": [
+     "AC2/one-offer-per-pass"
+    ],
+    "targets_red": true,
+    "source_restored": true,
+    "failed_rows": [
+     "AC2/active-refusal-once",
+     "AC2/one-offer-per-pass",
+     "proof/mutation-dependencies"
+    ],
+    "mutated_log_sha256": "56908765f6b655b475011f84ef9aed30b8d8550b0cc20e791048a823efddcc7a",
+    "restored": {
+     "log": "logs/after-fix/restored-v174-offer-every-waiting-turn.log",
+     "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+     "summary": "selftest (PARTIAL, 1 of 169 suites): 64 passed, 0 failed in 9.44s",
+     "failures": [],
+     "log_sha256": "62ce5a9af4e864d44f8fff7381fb890562f010435af11742bc504f9e32bb4c84",
+     "exit_code": 2
+    }
+   },
+   "v174-project-lines-first": {
+    "driver_command": "python3 proof/VELDO-0174/run_falsifier.py v174-project-lines-first --log-dir LOGDIR/falsifiers",
+    "driver_exit": 0,
+    "mutated_suite_exit": 1,
+    "target_rows": [
+     "AC3/turn-before-project"
+    ],
+    "targets_red": true,
+    "source_restored": true,
+    "failed_rows": [
+     "AC1/not-project",
+     "AC1/restart-open",
+     "AC1/version-owner",
+     "AC2/current-role-revision",
+     "AC2/durable-recovery",
+     "AC2/one-active-ordered",
+     "AC2/one-offer-per-pass",
+     "AC2/receiver-loss",
+     "AC2/restart-turns",
+     "AC3/parallel-conversations",
+     "AC3/three-running",
+     "AC3/turn-before-project",
+     "AC3/turn-first-slot",
+     "AC4/install-conversation-receiver",
+     "AC4/no-work-line",
+     "AC4/receiver-kind-refusal",
+     "AC4/unit-to-conversation"
+    ],
+    "mutated_log_sha256": "792915f7ca88b560c244e76d472caa0bba8aad84d8ae0f94e793ec2c60bb1991",
+    "restored": {
+     "log": "logs/after-fix/restored-v174-project-lines-first.log",
+     "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+     "summary": "selftest (PARTIAL, 1 of 169 suites): 64 passed, 0 failed in 9.40s",
+     "failures": [],
+     "log_sha256": "9660ebd7fa0f56eac4f6c1f502f19f4fc00204ce2d6ee068bb177eaa089b5ecf",
+     "exit_code": 2
+    }
+   },
+   "v174-record-memory-only": {
+    "driver_command": "python3 proof/VELDO-0174/run_falsifier.py v174-record-memory-only --log-dir LOGDIR/falsifiers",
+    "driver_exit": 0,
+    "mutated_suite_exit": 1,
+    "target_rows": [
+     "AC1/restart-open",
+     "AC1/durable-store"
+    ],
+    "targets_red": true,
+    "source_restored": true,
+    "failed_rows": [
+     "AC1/durable-store",
+     "AC1/mutation-targets",
+     "AC1/not-project",
+     "AC1/project-commands",
+     "AC1/project-owner",
+     "AC1/project-scope",
+     "AC1/restart-open",
+     "AC1/unknown-conversation",
+     "AC1/version-owner",
+     "AC1/versioned-mutations",
+     "AC2/account-retry",
+     "AC2/active-refusal-once",
+     "AC2/charged-windows",
+     "AC2/closed-dispatch",
+     "AC2/current-role-revision",
+     "AC2/domain-cap",
+     "AC2/durable-recovery",
+     "AC2/one-active-ordered",
+     "AC2/one-offer-per-pass",
+     "AC2/own-directory",
+     "AC2/real-ordered-turns",
+     "AC2/receiver-loss",
+     "AC2/redelivery",
+     "AC2/restart-turns",
+     "AC2/role-skills",
+     "AC2/role-tools",
+     "AC3/parallel-conversations",
+     "AC3/three-running",
+     "AC3/turn-before-project",
+     "AC3/turn-first-slot",
+     "AC4/install-conversation-receiver",
+     "AC4/no-work-line",
+     "AC4/real-kind-refusal",
+     "AC4/receiver-kind-refusal",
+     "AC4/turn-kind",
+     "AC4/unit-to-conversation",
+     "proof/signed-command-module"
+    ],
+    "mutated_log_sha256": "d062ac98d868bd31cb44e87fe92590a31ef173116b13f3115934a462ea259bd6",
+    "restored": {
+     "log": "logs/after-fix/restored-v174-record-memory-only.log",
+     "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+     "summary": "selftest (PARTIAL, 1 of 169 suites): 64 passed, 0 failed in 9.43s",
+     "failures": [],
+     "log_sha256": "6ae6e9c4f342e31511b0fdb5b17390132df97815997c043a5083d53a2e9cdac5",
+     "exit_code": 2
+    }
+   },
+   "v174-signed-commands-bypass-mutant": {
+    "driver_command": "python3 proof/VELDO-0174/run_falsifier.py v174-signed-commands-bypass-mutant --log-dir LOGDIR/falsifiers",
+    "driver_exit": 0,
+    "mutated_suite_exit": 1,
+    "target_rows": [
+     "proof/signed-command-module"
+    ],
+    "targets_red": true,
+    "source_restored": true,
+    "failed_rows": [
+     "proof/signed-command-module"
+    ],
+    "mutated_log_sha256": "cb5c90dd646c5004f3a81350e4cc132e5dc96206d8653a4cd0641e4de5733e41",
+    "restored": {
+     "log": "logs/after-fix/restored-v174-signed-commands-bypass-mutant.log",
+     "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+     "summary": "selftest (PARTIAL, 1 of 169 suites): 64 passed, 0 failed in 9.28s",
+     "failures": [],
+     "log_sha256": "64d79d7f5f519e57651c8188f1bf1594d82cd049a1edaeaef872db1389f4af5c",
+     "exit_code": 2
+    }
+   }
+  }
+ }
+}
