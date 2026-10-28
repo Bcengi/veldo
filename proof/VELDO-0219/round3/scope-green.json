@@ -1,0 +1,12 @@
+{
+  "checks": {
+    "protected_paths": true,
+    "footprint": true,
+    "dated_pending_amendment": true,
+    "protected_line_inventory": true,
+    "no_unsupported_authorization": true,
+    "memory_difference_explained": true
+  },
+  "passed": true,
+  "owner_approval": false
+}

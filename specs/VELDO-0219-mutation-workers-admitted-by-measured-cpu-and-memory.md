@@ -9,12 +9,15 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0123, VELDO-0215, VELDO-0216, VELDO-0220]
 placement: [enforcement]
-protected_paths: ["scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/reuse_worker.py", "engine/scripts/reuse_worker.py"]
+protected_paths: ["scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/reuse_worker.py", "engine/scripts/reuse_worker.py", "scripts/gate_schedule.py", "engine/scripts/gate_schedule.py", "scripts/gate_graph.json"]
 footprint:
   - scripts/check_gate_mutations.py
   - engine/scripts/check_gate_mutations.py
   - scripts/reuse_worker.py
   - engine/scripts/reuse_worker.py
+  - scripts/gate_schedule.py
+  - engine/scripts/gate_schedule.py
+  - scripts/gate_graph.json
   - scripts/mutation_ownership.py
   - engine/scripts/mutation_ownership.py
   - scripts/check_teeth_mutations.py
@@ -27,6 +30,7 @@ footprint:
   - specs/VELDO-0219-mutation-workers-admitted-by-measured-cpu-and-memory.md
   - specs/index.md
   - proof/VELDO-0219/*
+  - proof/VELDO-0216/OPEN.md
 behavior_bearing: true
 observability:
   logs: Each admission names the job, its CPU and memory claim and where the claim came from (this key, the previous key, the suite median or the default), the ledger state it fit under, and how long it waited and for which resource.
@@ -177,8 +181,9 @@ checks and the three named registered falsifiers; suite 53's host ceiling row is
 amended. The copies in engine/scripts remain byte identical.
 
 Round two merges VELDO-0216's reviewed fixes and approved AC4 amendment, then
-adds its authorized scheduler and graph handoff. Per-case admission takes over
-manager exclusion; repositories without a graph retain the fixed cap of 16.
+adds a scheduler and graph handoff pending owner approval under the amendment
+below. Per-case admission takes over manager exclusion; calls without a gate
+ledger channel retain the fixed cap of 16, even when the graph exists.
 CPU rates are calculated within each recorded run before selecting the largest.
 Authority-held unit accounting parents preserve final CPU counters across short
 units and restarts. Sampled anonymous memory stays distinct from the separately
@@ -191,3 +196,22 @@ including this ticket's three mutants. AC4's canonical timing and fixed-sixteen
 canonical falsifier remain deferred to the batch gate under owner rule 37191.
 The capture checker and its synthetic red and green controls do not establish
 that timing result. This record does not mark the specification complete.
+
+## Scope amendment, 2026-10-28, pending owner approval
+
+The footprint and protected_paths declarations above now include
+`scripts/gate_schedule.py`, `engine/scripts/gate_schedule.py` and
+`scripts/gate_graph.json`. These are VELDO-0216 protected paths. The mutation
+claim handoff changes their graph schema, ledger protocol and coordinator
+reservation so workers can claim resources without retaining the aggregate
+manager exclusion. Both scheduler copies carry identical changes. This is a
+proposed scope expansion, not a record of owner approval; no approval message
+has been supplied for it. Human approval remains required.
+
+The footprint also includes the earlier edit to `proof/VELDO-0216/OPEN.md`,
+which points both tickets to the same deferred batch qualification contract.
+The exact protected file line ranges, originating commits, reasons, and this
+proof cross-reference edit are recorded in `proof/VELDO-0219/OPEN.md` under
+the dated pending amendment. Acceptance criteria are unchanged. That record
+also explains the conservative memory bound's difference from AC1, pending
+owner acceptance or revision.
