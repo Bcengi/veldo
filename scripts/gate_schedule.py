@@ -2,8 +2,8 @@
 """Authority DAG execution and one resource ledger (VELDO-0216).
 
 The graph and capacities never come from the candidate. No graph means the shell
-keeps its serial loop. Missing measurements reserve the entire gate, visibly; only
-passing authority observations replace that cold reservation. The inherited socket
+keeps its serial loop. Recorded authority estimates seed the first run; fresh
+anonymous-memory observations replace those cache-inclusive starting estimates. The inherited socket
 is for trusted coordinators, never for their candidate children. Future shard and
 case dispatchers claim measured needs on that socket in addition to local admission.
 """
@@ -71,13 +71,18 @@ def read_graph(catalog, declaration=None, path=GRAPH):
             raise Refused('graph node set differs from required catalog: missing=%s unknown=%s' %
                           (sorted(set(required) - set(nodes)), sorted(set(nodes) - set(required))))
         for name, node in nodes.items():
-            if not isinstance(node, dict) or set(node) != {'depends_on', 'writes_candidate', 'manager', 'ports'}:
+            fields = {'depends_on', 'writes_candidate', 'manager', 'ports'}
+            if not isinstance(node, dict) or not fields <= set(node) \
+                    or set(node) - fields - {'host_lock', 'estimate'}:
                 raise Refused('invalid node ' + name)
             deps = node['depends_on']
             if not isinstance(deps, list) or any(not isinstance(d, str) or d not in nodes for d in deps) \
                     or len(set(deps)) != len(deps) or node['writes_candidate'] is not False:
                 raise Refused('invalid dependencies or candidate writer: ' + name)
-            validate_claim(dict(cpu=0, memory=0, manager=node['manager'], ports=node['ports']))
+            validate_claim(dict(cpu=0, memory=0, manager=node['manager'], ports=node['ports'],
+                                host_lock=node.get('host_lock', 'none')))
+            if 'estimate' in node:
+                startup_estimate(node['estimate'])
         done = set()
         while len(done) < len(nodes):
             ready = {n for n, v in nodes.items() if n not in done and set(v['depends_on']) <= done}
@@ -94,9 +99,11 @@ def read_graph(catalog, declaration=None, path=GRAPH):
 
 
 def validate_claim(claim):
-    if not isinstance(claim, dict) or set(claim) != {'cpu', 'memory', 'manager', 'ports'} \
+    fields = {'cpu', 'memory', 'manager', 'ports'}
+    if not isinstance(claim, dict) or not fields <= set(claim) or set(claim) - fields - {'host_lock'} \
             or not number(claim['cpu']) or not number(claim['memory']) \
             or claim['manager'] not in ('none', 'shared', 'exclusive') \
+            or claim.get('host_lock', 'none') not in ('none', 'shared', 'exclusive') \
             or not isinstance(claim['ports'], list) \
             or any(type(p) is not int or not 1 <= p <= 65535 for p in claim['ports']) \
             or len(set(claim['ports'])) != len(claim['ports']):
@@ -159,6 +166,11 @@ class Ledger:
             if totals[r] + c[r] > limit:
                 self.event('refuse', name, r, claim)
                 return False
+        lock = c.get('host_lock', 'none')
+        if lock != 'none' and any(h.get('host_lock', 'none') != 'none' and
+                'exclusive' in (lock, h.get('host_lock')) for h in self.held.values()):
+            self.event('refuse', name, 'host_lock', claim)
+            return False
         occupied = set(p for held in self.held.values() for p in held['ports'])
         if occupied.intersection(c['ports']):
             self.event('refuse', name, 'ports', claim)
@@ -168,7 +180,7 @@ class Ledger:
             self.mutation_claimants.add(name)
             if self.mutation_root is None:
                 self.mutation_root = name
-        self.event('grant', name, 'cpu,memory,manager,ports', claim)
+        self.event('grant', name, 'cpu,memory,manager,host_lock,ports', claim)
         return True
 
     def release(self, name):
@@ -178,7 +190,7 @@ class Ledger:
         self.mutation_claimants.discard(name)
         if name == self.mutation_root:
             self.mutation_pending = False
-        self.event('release', name, 'cpu,memory,manager,ports')
+        self.event('release', name, 'cpu,memory,manager,host_lock,ports')
 
 
 class Client:
@@ -202,8 +214,9 @@ class Client:
             raise Refused(answer['error'])
         return answer['granted']
 
-    def acquire(self, name, cpu, memory, manager='none', ports=()):
-        return self.request('acquire', name, dict(cpu=cpu, memory=memory, manager=manager, ports=list(ports)))
+    def acquire(self, name, cpu, memory, manager='none', ports=(), host_lock='none'):
+        return self.request('acquire', name, dict(cpu=cpu, memory=memory, manager=manager,
+                                                 ports=list(ports), host_lock=host_lock))
 
     def release(self, name):
         return self.request('release', name)
@@ -211,6 +224,36 @@ class Client:
     def close(self):
         self.file.close()
         self.socket.close()
+
+
+def startup_estimate(estimate):
+    """Historical total cgroup memory is an estimate above the observed anon use.
+
+    It is never labelled an anonymous-memory measurement. Round CPU upward to a
+    tenth of a core and memory upward to a GiB; fresh observations take precedence.
+    """
+    if not isinstance(estimate, dict) or set(estimate) != {
+            'source', 'wall_seconds', 'cpu_seconds', 'peak_cgroup_memory_bytes'} \
+            or not isinstance(estimate['source'], str) or not estimate['source'].strip() \
+            or not all(number(estimate[k], True) for k in
+                       ('wall_seconds', 'cpu_seconds', 'peak_cgroup_memory_bytes')):
+        raise Refused('invalid authority startup estimate')
+    return dict(cpu=max(1, math.ceil(estimate['cpu_seconds'] / estimate['wall_seconds'] * 10) / 10),
+                memory=math.ceil(estimate['peak_cgroup_memory_bytes'] / 2**30) * 2**30)
+
+
+def node_claim(node, measured, capacity):
+    if measured:
+        demand = dict(cpu=measured['cpu_rate'], memory=measured['peak_anon_bytes'])
+        source = 'authority anonymous-memory measurement'
+    elif 'estimate' in node:
+        demand = startup_estimate(node['estimate'])
+        source = 'recorded startup estimate: ' + node['estimate']['source']
+    else:
+        demand = dict(cpu=capacity['cpu'], memory=capacity['memory'])
+        source = 'no authority estimate; reserving full gate capacity'
+    return dict(demand, manager=node['manager'], ports=node['ports'],
+                host_lock=node.get('host_lock', 'none')), source
 
 
 def capacities(graph, scope, manifest, cgroup_root=Path('/sys/fs/cgroup')):
@@ -335,12 +378,9 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
     claims = {}
     for name, node in graph['nodes'].items():
         measured = legs.read_resources(store, key, name)
-        claim = dict(cpu=measured['cpu_rate'] if measured else capacity['cpu'],
-                     memory=measured['peak_anon_bytes'] if measured else capacity['memory'],
-                     manager=node['manager'], ports=node['ports'])
-        ledger.demand(claim)  # Impossible requests refuse the whole run before any launch.
-        if measured is None:
-            print('node %s: no authority resource measurement; reserving full gate capacity' % name, flush=True)
+        claim, source = node_claim(node, measured, capacity)
+        ledger.demand(claim)  # Refuse impossible requests before any launch.
+        print('node %s: %s' % (name, source), flush=True)
         claims[name] = claim
     if 'mutation' not in required:
         ledger.mutation_pending = False
