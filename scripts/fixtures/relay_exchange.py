@@ -300,7 +300,9 @@ def execute(source, case):
                      exit=code, stdout=encoded(out.getvalue()), stderr=err.getvalue(),
                      endpoint_named=exchange.address in err.getvalue(),
                      connection_attempts=exchange.attempts, accepted_connections=len(exchange.connections),
-                     complete_requests=exchange.complete, transport_seconds=exchange.now,
+                     complete_requests=exchange.complete,
+                     peer_requests=[encoded(bytes(c.request)) for c in exchange.connections],
+                     transport_seconds=exchange.now,
                      elapsed_seconds=time.monotonic() - started, closed_by_relay=closed_by_relay,
                      unexpected=unexpected)
         # Retain the precise kernel error observed, not an assumed close result.
@@ -330,7 +332,10 @@ def refused(record):
 def no_replay(record):
     return (record['connection_attempts'] <= 1 and record['accepted_connections'] <= 1
             and len(record['complete_requests']) <= 1
-            and all(identity == record['input_sha256'] for identity in record['complete_requests']))
+            and all(identity == record['input_sha256'] for identity in record['complete_requests'])
+            and all(part['length'] <= record['case']['request']
+                    and part == encoded(wire(record['case']['request'])[:part['length']])
+                    for part in record['peer_requests']))
 
 
 def native_schedules():

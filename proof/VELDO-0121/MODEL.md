@@ -89,7 +89,9 @@ falsifier. No process detaches. The fixture never opens any host lock.
 Connection attempts come from the socket wrapper, accepted connections from the
 listener, and complete identities from bytes read or peeked at the peer as soon as
 the complete fixture request has arrived, even if write-half shutdown later fails.
-Empty requests are counted on write-half shutdown. They do not depend on relay stdout. Every generated error cell
+Empty requests are counted on write-half shutdown. The raw bytes observed at each peer must also be a single prefix of the input,
+so replay on an existing connection cannot hide behind a connection count of one.
+These observations do not depend on relay stdout. Every generated error cell
 feeds both the refusal row and the no-replay row. A failure after a complete request
 leaves its application result uncertain; it never means the command was unapplied.
 
