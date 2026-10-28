@@ -74,7 +74,10 @@ finally:
                 return dict(cpu_seconds=.01, peak_anon_bytes=1024)
             def finish(self):
                 return self.sample()
-        with patch.object(schedule, 'command_for', lambda *a: [sys.executable, '-B', str(child), str(schedule.__file__)]), \
+        # Mutants are single-file copies; keep their unchanged sibling modules
+        # at the authority path while exercising the copied scheduler itself.
+        with patch.object(schedule, 'HERE', ROOT / 'scripts'), \
+                patch.object(schedule, 'command_for', lambda *a: [sys.executable, '-B', str(child), str(schedule.__file__)]), \
                 contextlib.redirect_stdout(io.StringIO()):
             result = schedule.run({'mutation': 'fixture'}, top, top / 'logs', top / 'legs', top / 'receipt',
                 graph_path=top / 'graph.json', declaration_path=top / 'absent',
