@@ -1,0 +1,1020 @@
+{
+  "rows": {
+    "clients/registry-is-the-boundary": true,
+    "clients/every-registration-is-drivable": true,
+    "clients/registry-growth-expands-cases": true
+  },
+  "detail": {
+    "boundary": {
+      "problems": [],
+      "controls": [
+        true,
+        true,
+        true
+      ],
+      "registrations": [
+        {
+          "identity": "claim:claim",
+          "client": "claim",
+          "transports": [
+            "local_ipc"
+          ],
+          "implementation_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263"
+        },
+        {
+          "identity": "claim:heartbeat",
+          "client": "claim",
+          "transports": [
+            "local_ipc"
+          ],
+          "implementation_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263"
+        },
+        {
+          "identity": "claim:release",
+          "client": "claim",
+          "transports": [
+            "local_ipc"
+          ],
+          "implementation_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263"
+        },
+        {
+          "identity": "control_claim_client:Client.claim",
+          "client": "claim",
+          "transports": [
+            "local_ipc"
+          ],
+          "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+        },
+        {
+          "identity": "control_claim_client:Client.heartbeat",
+          "client": "claim",
+          "transports": [
+            "local_ipc"
+          ],
+          "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+        },
+        {
+          "identity": "control_claim_client:Client.release",
+          "client": "claim",
+          "transports": [
+            "local_ipc"
+          ],
+          "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+        },
+        {
+          "identity": "control_claim_client:Client.request",
+          "client": "claim",
+          "transports": [
+            "local_ipc"
+          ],
+          "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+        },
+        {
+          "identity": "control_claim_client:Client.use",
+          "client": "claim",
+          "transports": [
+            "local_ipc"
+          ],
+          "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+        },
+        {
+          "identity": "control_client:send",
+          "client": "command",
+          "transports": [
+            "local_ipc"
+          ],
+          "implementation_digest": "d5c1f7e8d44d2505cec33f2783ef483a67261081e459af2b69124692969201c7"
+        },
+        {
+          "identity": "control_dispatch:Dispatches.accept",
+          "client": "dispatch-admission",
+          "transports": [
+            "in_process"
+          ],
+          "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+        },
+        {
+          "identity": "control_dispatch:Dispatches.exit",
+          "client": "dispatch-admission",
+          "transports": [
+            "in_process"
+          ],
+          "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+        },
+        {
+          "identity": "control_dispatch:Dispatches.prepare",
+          "client": "dispatch-admission",
+          "transports": [
+            "in_process"
+          ],
+          "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+        },
+        {
+          "identity": "control_dispatch:Dispatches.refuse",
+          "client": "dispatch-admission",
+          "transports": [
+            "in_process"
+          ],
+          "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+        },
+        {
+          "identity": "control_dispatch:Dispatches.run",
+          "client": "dispatch-admission",
+          "transports": [
+            "in_process"
+          ],
+          "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+        },
+        {
+          "identity": "control_dispatch:Dispatches.unknown",
+          "client": "dispatch-admission",
+          "transports": [
+            "in_process"
+          ],
+          "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+        },
+        {
+          "identity": "control_relay:forward",
+          "client": "command",
+          "transports": [
+            "relay"
+          ],
+          "implementation_digest": "0585ccd3e42128ee14168420f485f84edfba3d30cb8c8c3d154448f704603a27"
+        },
+        {
+          "identity": "control_relay:main",
+          "client": "command",
+          "transports": [
+            "relay"
+          ],
+          "implementation_digest": "0585ccd3e42128ee14168420f485f84edfba3d30cb8c8c3d154448f704603a27"
+        },
+        {
+          "identity": "dispatch:Dispatcher.dispatch",
+          "client": "dispatch-admission",
+          "transports": [
+            "in_process"
+          ],
+          "implementation_digest": "1a5060f158d7942aeeeb0f42a4842056a695a7044dcfc1b2393ed9bf2a45babb"
+        },
+        {
+          "identity": "dispatch:veldo_dispatch",
+          "client": "dispatch-admission",
+          "transports": [
+            "in_process"
+          ],
+          "implementation_digest": "1a5060f158d7942aeeeb0f42a4842056a695a7044dcfc1b2393ed9bf2a45babb"
+        }
+      ]
+    },
+    "live": {
+      "schema": "veldo.registered_clients/v1",
+      "consumer": "live-positive-control",
+      "registration_digest": "f619fd9d3dce588310805cc1593de795df7f040838b76d46e7517b43034d3d78",
+      "fixture_digest": "5fd56fb6f4739c9112b936dc18d274f5c9de052e780e161044b8b38b4c2d4f72",
+      "registered": [
+        "claim:claim/local_ipc",
+        "claim:heartbeat/local_ipc",
+        "claim:release/local_ipc",
+        "control_claim_client:Client.claim/local_ipc",
+        "control_claim_client:Client.heartbeat/local_ipc",
+        "control_claim_client:Client.release/local_ipc",
+        "control_claim_client:Client.request/local_ipc",
+        "control_claim_client:Client.use/local_ipc",
+        "control_client:send/local_ipc",
+        "control_dispatch:Dispatches.accept/in_process",
+        "control_dispatch:Dispatches.exit/in_process",
+        "control_dispatch:Dispatches.prepare/in_process",
+        "control_dispatch:Dispatches.refuse/in_process",
+        "control_dispatch:Dispatches.run/in_process",
+        "control_dispatch:Dispatches.unknown/in_process",
+        "control_relay:forward/relay",
+        "control_relay:main/relay",
+        "dispatch:Dispatcher.dispatch/in_process",
+        "dispatch:veldo_dispatch/in_process"
+      ],
+      "exercised": [
+        "claim:claim/local_ipc",
+        "claim:heartbeat/local_ipc",
+        "claim:release/local_ipc",
+        "control_claim_client:Client.claim/local_ipc",
+        "control_claim_client:Client.heartbeat/local_ipc",
+        "control_claim_client:Client.release/local_ipc",
+        "control_claim_client:Client.request/local_ipc",
+        "control_claim_client:Client.use/local_ipc",
+        "control_client:send/local_ipc",
+        "control_dispatch:Dispatches.accept/in_process",
+        "control_dispatch:Dispatches.exit/in_process",
+        "control_dispatch:Dispatches.prepare/in_process",
+        "control_dispatch:Dispatches.refuse/in_process",
+        "control_dispatch:Dispatches.run/in_process",
+        "control_dispatch:Dispatches.unknown/in_process",
+        "control_relay:forward/relay",
+        "control_relay:main/relay",
+        "dispatch:Dispatcher.dispatch/in_process",
+        "dispatch:veldo_dispatch/in_process"
+      ],
+      "missing": [],
+      "cases": [
+        {
+          "identity": "claim:claim/local_ipc",
+          "entrypoint": "claim:claim",
+          "adapter": "claim:claim-v1",
+          "transport": "local_ipc",
+          "implementation_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263"
+        },
+        {
+          "identity": "claim:heartbeat/local_ipc",
+          "entrypoint": "claim:heartbeat",
+          "adapter": "claim:heartbeat-v1",
+          "transport": "local_ipc",
+          "implementation_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263"
+        },
+        {
+          "identity": "claim:release/local_ipc",
+          "entrypoint": "claim:release",
+          "adapter": "claim:release-v1",
+          "transport": "local_ipc",
+          "implementation_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263"
+        },
+        {
+          "identity": "control_claim_client:Client.claim/local_ipc",
+          "entrypoint": "control_claim_client:Client.claim",
+          "adapter": "control_claim_client:Client.claim-v1",
+          "transport": "local_ipc",
+          "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+        },
+        {
+          "identity": "control_claim_client:Client.heartbeat/local_ipc",
+          "entrypoint": "control_claim_client:Client.heartbeat",
+          "adapter": "control_claim_client:Client.heartbeat-v1",
+          "transport": "local_ipc",
+          "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+        },
+        {
+          "identity": "control_claim_client:Client.release/local_ipc",
+          "entrypoint": "control_claim_client:Client.release",
+          "adapter": "control_claim_client:Client.release-v1",
+          "transport": "local_ipc",
+          "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+        },
+        {
+          "identity": "control_claim_client:Client.request/local_ipc",
+          "entrypoint": "control_claim_client:Client.request",
+          "adapter": "control_claim_client:Client.request-v1",
+          "transport": "local_ipc",
+          "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+        },
+        {
+          "identity": "control_claim_client:Client.use/local_ipc",
+          "entrypoint": "control_claim_client:Client.use",
+          "adapter": "control_claim_client:Client.use-v1",
+          "transport": "local_ipc",
+          "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+        },
+        {
+          "identity": "control_client:send/local_ipc",
+          "entrypoint": "control_client:send",
+          "adapter": "control_client:send-v1",
+          "transport": "local_ipc",
+          "implementation_digest": "d5c1f7e8d44d2505cec33f2783ef483a67261081e459af2b69124692969201c7"
+        },
+        {
+          "identity": "control_dispatch:Dispatches.accept/in_process",
+          "entrypoint": "control_dispatch:Dispatches.accept",
+          "adapter": "control_dispatch:Dispatches.accept-v1",
+          "transport": "in_process",
+          "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+        },
+        {
+          "identity": "control_dispatch:Dispatches.exit/in_process",
+          "entrypoint": "control_dispatch:Dispatches.exit",
+          "adapter": "control_dispatch:Dispatches.exit-v1",
+          "transport": "in_process",
+          "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+        },
+        {
+          "identity": "control_dispatch:Dispatches.prepare/in_process",
+          "entrypoint": "control_dispatch:Dispatches.prepare",
+          "adapter": "control_dispatch:Dispatches.prepare-v1",
+          "transport": "in_process",
+          "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+        },
+        {
+          "identity": "control_dispatch:Dispatches.refuse/in_process",
+          "entrypoint": "control_dispatch:Dispatches.refuse",
+          "adapter": "control_dispatch:Dispatches.refuse-v1",
+          "transport": "in_process",
+          "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+        },
+        {
+          "identity": "control_dispatch:Dispatches.run/in_process",
+          "entrypoint": "control_dispatch:Dispatches.run",
+          "adapter": "control_dispatch:Dispatches.run-v1",
+          "transport": "in_process",
+          "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+        },
+        {
+          "identity": "control_dispatch:Dispatches.unknown/in_process",
+          "entrypoint": "control_dispatch:Dispatches.unknown",
+          "adapter": "control_dispatch:Dispatches.unknown-v1",
+          "transport": "in_process",
+          "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+        },
+        {
+          "identity": "control_relay:forward/relay",
+          "entrypoint": "control_relay:forward",
+          "adapter": "control_relay:forward-v1",
+          "transport": "relay",
+          "implementation_digest": "0585ccd3e42128ee14168420f485f84edfba3d30cb8c8c3d154448f704603a27"
+        },
+        {
+          "identity": "control_relay:main/relay",
+          "entrypoint": "control_relay:main",
+          "adapter": "control_relay:main-v1",
+          "transport": "relay",
+          "implementation_digest": "0585ccd3e42128ee14168420f485f84edfba3d30cb8c8c3d154448f704603a27"
+        },
+        {
+          "identity": "dispatch:Dispatcher.dispatch/in_process",
+          "entrypoint": "dispatch:Dispatcher.dispatch",
+          "adapter": "dispatch:Dispatcher.dispatch-v1",
+          "transport": "in_process",
+          "implementation_digest": "1a5060f158d7942aeeeb0f42a4842056a695a7044dcfc1b2393ed9bf2a45babb"
+        },
+        {
+          "identity": "dispatch:veldo_dispatch/in_process",
+          "entrypoint": "dispatch:veldo_dispatch",
+          "adapter": "dispatch:veldo_dispatch-v1",
+          "transport": "in_process",
+          "implementation_digest": "1a5060f158d7942aeeeb0f42a4842056a695a7044dcfc1b2393ed9bf2a45babb"
+        }
+      ],
+      "input_identity": {
+        "domain_uuid": "clients-domain",
+        "store_uuid": "clients-store",
+        "repository_uuid": "clients-repository",
+        "clone_uuid": "94e86dee-948f-4f3e-b221-84204fec8d36",
+        "binding_digest": "sha256:0f145bebba2d46f0794117ca7cd072f05a7e067dfb689b19bb18883fa8e8b529"
+      },
+      "results": {
+        "claim:claim/local_ipc": {
+          "accepted": true,
+          "digest": "e60f34b4af4f17ce34efa8cbb04d8c4ff15dcbba61531c1cc7663c473350b4d2"
+        },
+        "claim:heartbeat/local_ipc": {
+          "accepted": true,
+          "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+        },
+        "claim:release/local_ipc": {
+          "accepted": true,
+          "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+        },
+        "control_claim_client:Client.claim/local_ipc": {
+          "accepted": true,
+          "digest": "e60f34b4af4f17ce34efa8cbb04d8c4ff15dcbba61531c1cc7663c473350b4d2"
+        },
+        "control_claim_client:Client.heartbeat/local_ipc": {
+          "accepted": true,
+          "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+        },
+        "control_claim_client:Client.release/local_ipc": {
+          "accepted": true,
+          "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+        },
+        "control_claim_client:Client.request/local_ipc": {
+          "accepted": true,
+          "digest": "b223175326215d1917f7cdefe7705530ea4963ed4754dbeb45773615e90f4e31"
+        },
+        "control_claim_client:Client.use/local_ipc": {
+          "accepted": true,
+          "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+        },
+        "control_client:send/local_ipc": {
+          "accepted": true,
+          "digest": "fd21180c8f3908359dd52cfceb35bf05b5c432177200b6d35d2977c9c22ef231"
+        },
+        "control_dispatch:Dispatches.accept/in_process": {
+          "accepted": true,
+          "digest": "2e6efbfb4fd1160b5f10dec8c3d3aa5ef28baaaad2997f28e28d3296aeddbe3f"
+        },
+        "control_dispatch:Dispatches.exit/in_process": {
+          "accepted": true,
+          "digest": "f87e78223a711394fdca3d1edf577d73fd2cf8c09114faeb6e2de293b818c98e"
+        },
+        "control_dispatch:Dispatches.prepare/in_process": {
+          "accepted": true,
+          "digest": "ec4ed730ccfab1658abda06f429a234b4b66c9a2057be556a2526d2cd8da9455"
+        },
+        "control_dispatch:Dispatches.refuse/in_process": {
+          "accepted": true,
+          "digest": "6714a64c19775db569a9d74da0a8335e7f3113da3b1a27bb523c72435cf0fadc"
+        },
+        "control_dispatch:Dispatches.run/in_process": {
+          "accepted": true,
+          "digest": "59993de9c7b0d7c7cd4f59f2a5ebe67b31acaf0e1ce8b046e1b9ae6673b09518"
+        },
+        "control_dispatch:Dispatches.unknown/in_process": {
+          "accepted": true,
+          "digest": "ad9964681130d6de170fecdd607ac1aa8438e09af90a00ca19b40358c176d584"
+        },
+        "control_relay:forward/relay": {
+          "accepted": true,
+          "digest": "49efd66259ea758479b96643fb3eabf0de5038f154c0c18b94787bb39cf5d0dc"
+        },
+        "control_relay:main/relay": {
+          "accepted": true,
+          "digest": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+        },
+        "dispatch:Dispatcher.dispatch/in_process": {
+          "accepted": true,
+          "digest": "94453a210c19c4564b1f66602dbf97f3e126eeb5c25d5d13ed9891b6b765e844"
+        },
+        "dispatch:veldo_dispatch/in_process": {
+          "accepted": true,
+          "digest": "64d7b4822c7e49dd653e17dc9e083e3341e5686967c86e5bc6ac5cd95afac053"
+        }
+      }
+    },
+    "growth": {
+      "controls": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "receipts": [
+        {
+          "schema": "veldo.registered_clients/v1",
+          "consumer": "lifecycle-consumer",
+          "registration_digest": "0bcab0305343ff0601825034f7c4f289bc99f53a3f4bb9a7f96823d529b97be0",
+          "fixture_digest": "5fd56fb6f4739c9112b936dc18d274f5c9de052e780e161044b8b38b4c2d4f72",
+          "registered": [
+            "113_veldo_0112_registered_clients:qualify.<locals>.extension/local_ipc",
+            "claim:claim/local_ipc",
+            "claim:heartbeat/local_ipc",
+            "claim:release/local_ipc",
+            "control_claim_client:Client.claim/local_ipc",
+            "control_claim_client:Client.heartbeat/local_ipc",
+            "control_claim_client:Client.release/local_ipc",
+            "control_claim_client:Client.request/local_ipc",
+            "control_claim_client:Client.use/local_ipc",
+            "control_client:send/local_ipc",
+            "control_dispatch:Dispatches.accept/in_process",
+            "control_dispatch:Dispatches.exit/in_process",
+            "control_dispatch:Dispatches.prepare/in_process",
+            "control_dispatch:Dispatches.refuse/in_process",
+            "control_dispatch:Dispatches.run/in_process",
+            "control_dispatch:Dispatches.unknown/in_process",
+            "control_relay:forward/relay",
+            "control_relay:main/relay",
+            "dispatch:Dispatcher.dispatch/in_process",
+            "dispatch:veldo_dispatch/in_process"
+          ],
+          "exercised": [
+            "113_veldo_0112_registered_clients:qualify.<locals>.extension/local_ipc",
+            "claim:claim/local_ipc",
+            "claim:heartbeat/local_ipc",
+            "claim:release/local_ipc",
+            "control_claim_client:Client.claim/local_ipc",
+            "control_claim_client:Client.heartbeat/local_ipc",
+            "control_claim_client:Client.release/local_ipc",
+            "control_claim_client:Client.request/local_ipc",
+            "control_claim_client:Client.use/local_ipc",
+            "control_client:send/local_ipc",
+            "control_dispatch:Dispatches.accept/in_process",
+            "control_dispatch:Dispatches.exit/in_process",
+            "control_dispatch:Dispatches.prepare/in_process",
+            "control_dispatch:Dispatches.refuse/in_process",
+            "control_dispatch:Dispatches.run/in_process",
+            "control_dispatch:Dispatches.unknown/in_process",
+            "control_relay:forward/relay",
+            "control_relay:main/relay",
+            "dispatch:Dispatcher.dispatch/in_process",
+            "dispatch:veldo_dispatch/in_process"
+          ],
+          "missing": [],
+          "cases": [
+            {
+              "identity": "113_veldo_0112_registered_clients:qualify.<locals>.extension/local_ipc",
+              "entrypoint": "113_veldo_0112_registered_clients:qualify.<locals>.extension",
+              "adapter": "extension-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "defa4fe53aa24b347fb9e3fcfd5718b0978c62d0704135402f9eb81ff12b15fa"
+            },
+            {
+              "identity": "claim:claim/local_ipc",
+              "entrypoint": "claim:claim",
+              "adapter": "claim:claim-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263"
+            },
+            {
+              "identity": "claim:heartbeat/local_ipc",
+              "entrypoint": "claim:heartbeat",
+              "adapter": "claim:heartbeat-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263"
+            },
+            {
+              "identity": "claim:release/local_ipc",
+              "entrypoint": "claim:release",
+              "adapter": "claim:release-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263"
+            },
+            {
+              "identity": "control_claim_client:Client.claim/local_ipc",
+              "entrypoint": "control_claim_client:Client.claim",
+              "adapter": "control_claim_client:Client.claim-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+            },
+            {
+              "identity": "control_claim_client:Client.heartbeat/local_ipc",
+              "entrypoint": "control_claim_client:Client.heartbeat",
+              "adapter": "control_claim_client:Client.heartbeat-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+            },
+            {
+              "identity": "control_claim_client:Client.release/local_ipc",
+              "entrypoint": "control_claim_client:Client.release",
+              "adapter": "control_claim_client:Client.release-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+            },
+            {
+              "identity": "control_claim_client:Client.request/local_ipc",
+              "entrypoint": "control_claim_client:Client.request",
+              "adapter": "control_claim_client:Client.request-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+            },
+            {
+              "identity": "control_claim_client:Client.use/local_ipc",
+              "entrypoint": "control_claim_client:Client.use",
+              "adapter": "control_claim_client:Client.use-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+            },
+            {
+              "identity": "control_client:send/local_ipc",
+              "entrypoint": "control_client:send",
+              "adapter": "control_client:send-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "d5c1f7e8d44d2505cec33f2783ef483a67261081e459af2b69124692969201c7"
+            },
+            {
+              "identity": "control_dispatch:Dispatches.accept/in_process",
+              "entrypoint": "control_dispatch:Dispatches.accept",
+              "adapter": "control_dispatch:Dispatches.accept-v1",
+              "transport": "in_process",
+              "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+            },
+            {
+              "identity": "control_dispatch:Dispatches.exit/in_process",
+              "entrypoint": "control_dispatch:Dispatches.exit",
+              "adapter": "control_dispatch:Dispatches.exit-v1",
+              "transport": "in_process",
+              "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+            },
+            {
+              "identity": "control_dispatch:Dispatches.prepare/in_process",
+              "entrypoint": "control_dispatch:Dispatches.prepare",
+              "adapter": "control_dispatch:Dispatches.prepare-v1",
+              "transport": "in_process",
+              "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+            },
+            {
+              "identity": "control_dispatch:Dispatches.refuse/in_process",
+              "entrypoint": "control_dispatch:Dispatches.refuse",
+              "adapter": "control_dispatch:Dispatches.refuse-v1",
+              "transport": "in_process",
+              "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+            },
+            {
+              "identity": "control_dispatch:Dispatches.run/in_process",
+              "entrypoint": "control_dispatch:Dispatches.run",
+              "adapter": "control_dispatch:Dispatches.run-v1",
+              "transport": "in_process",
+              "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+            },
+            {
+              "identity": "control_dispatch:Dispatches.unknown/in_process",
+              "entrypoint": "control_dispatch:Dispatches.unknown",
+              "adapter": "control_dispatch:Dispatches.unknown-v1",
+              "transport": "in_process",
+              "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+            },
+            {
+              "identity": "control_relay:forward/relay",
+              "entrypoint": "control_relay:forward",
+              "adapter": "control_relay:forward-v1",
+              "transport": "relay",
+              "implementation_digest": "0585ccd3e42128ee14168420f485f84edfba3d30cb8c8c3d154448f704603a27"
+            },
+            {
+              "identity": "control_relay:main/relay",
+              "entrypoint": "control_relay:main",
+              "adapter": "control_relay:main-v1",
+              "transport": "relay",
+              "implementation_digest": "0585ccd3e42128ee14168420f485f84edfba3d30cb8c8c3d154448f704603a27"
+            },
+            {
+              "identity": "dispatch:Dispatcher.dispatch/in_process",
+              "entrypoint": "dispatch:Dispatcher.dispatch",
+              "adapter": "dispatch:Dispatcher.dispatch-v1",
+              "transport": "in_process",
+              "implementation_digest": "1a5060f158d7942aeeeb0f42a4842056a695a7044dcfc1b2393ed9bf2a45babb"
+            },
+            {
+              "identity": "dispatch:veldo_dispatch/in_process",
+              "entrypoint": "dispatch:veldo_dispatch",
+              "adapter": "dispatch:veldo_dispatch-v1",
+              "transport": "in_process",
+              "implementation_digest": "1a5060f158d7942aeeeb0f42a4842056a695a7044dcfc1b2393ed9bf2a45babb"
+            }
+          ],
+          "input_identity": {
+            "domain_uuid": "clients-domain",
+            "store_uuid": "clients-store",
+            "repository_uuid": "clients-repository",
+            "clone_uuid": "7a6d2d7c-e627-4b98-820f-2ac84b6f2e93",
+            "binding_digest": "sha256:ecb80a4fb130e74845daf91df93a6e09b0ce487af36fdbc2959d383ccc4bd017"
+          },
+          "results": {
+            "113_veldo_0112_registered_clients:qualify.<locals>.extension/local_ipc": {
+              "accepted": true,
+              "digest": "7eb46e98c5685ccc87e433d717509bd375a90881d365b36ae36e9436008dcb42"
+            },
+            "claim:claim/local_ipc": {
+              "accepted": true,
+              "digest": "e60f34b4af4f17ce34efa8cbb04d8c4ff15dcbba61531c1cc7663c473350b4d2"
+            },
+            "claim:heartbeat/local_ipc": {
+              "accepted": true,
+              "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+            },
+            "claim:release/local_ipc": {
+              "accepted": true,
+              "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+            },
+            "control_claim_client:Client.claim/local_ipc": {
+              "accepted": true,
+              "digest": "e60f34b4af4f17ce34efa8cbb04d8c4ff15dcbba61531c1cc7663c473350b4d2"
+            },
+            "control_claim_client:Client.heartbeat/local_ipc": {
+              "accepted": true,
+              "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+            },
+            "control_claim_client:Client.release/local_ipc": {
+              "accepted": true,
+              "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+            },
+            "control_claim_client:Client.request/local_ipc": {
+              "accepted": true,
+              "digest": "692f3385c1d8a68b54544260e470dbb0161825a4cd0220072f6d651e18c31a94"
+            },
+            "control_claim_client:Client.use/local_ipc": {
+              "accepted": true,
+              "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+            },
+            "control_client:send/local_ipc": {
+              "accepted": true,
+              "digest": "e66fb8b040cd1658ca6ca13908f69457d82a5a12bc383b99f7b577deec28f477"
+            },
+            "control_dispatch:Dispatches.accept/in_process": {
+              "accepted": true,
+              "digest": "88b6f35a6dd7f89074d01623c8d339eff0ee06c8d642bba3501fb48c70809c4f"
+            },
+            "control_dispatch:Dispatches.exit/in_process": {
+              "accepted": true,
+              "digest": "03781294753d7b7f17204eda08321a44dbcd911f68fea9527ebaee9be50fcaef"
+            },
+            "control_dispatch:Dispatches.prepare/in_process": {
+              "accepted": true,
+              "digest": "b4ff3756a02be1bc69d348c4537bcb62743551bff3feaab39377988e2ef10ef2"
+            },
+            "control_dispatch:Dispatches.refuse/in_process": {
+              "accepted": true,
+              "digest": "a59b50b8387c4ff2790eba8da1fb04bf4e16b9d4b180539cce5f0f8de3f5379c"
+            },
+            "control_dispatch:Dispatches.run/in_process": {
+              "accepted": true,
+              "digest": "1f76f6a618c864a0e54affb24e9bb8a14e5d29889f87fa7b1c66f101537d2755"
+            },
+            "control_dispatch:Dispatches.unknown/in_process": {
+              "accepted": true,
+              "digest": "215ed1f993791c8173abd4dc18d7a29beefef19313a8d8c4bfbbe6a3b1d48791"
+            },
+            "control_relay:forward/relay": {
+              "accepted": true,
+              "digest": "a5f1e4d47a103fdd9e247afee5fb265247bd433038ddc02b476b124078cc2306"
+            },
+            "control_relay:main/relay": {
+              "accepted": true,
+              "digest": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+            },
+            "dispatch:Dispatcher.dispatch/in_process": {
+              "accepted": true,
+              "digest": "dc1492b639d5629603b8e37b45591b43db6ec6eba3ab3b785a08f7225fda31ca"
+            },
+            "dispatch:veldo_dispatch/in_process": {
+              "accepted": true,
+              "digest": "ca6121d44e9c101756d1922d6ed59c189443f62fb40203b8dd748b6d6ff4eebc"
+            }
+          }
+        },
+        {
+          "schema": "veldo.registered_clients/v1",
+          "consumer": "refusal-consumer",
+          "registration_digest": "0bcab0305343ff0601825034f7c4f289bc99f53a3f4bb9a7f96823d529b97be0",
+          "fixture_digest": "5fd56fb6f4739c9112b936dc18d274f5c9de052e780e161044b8b38b4c2d4f72",
+          "registered": [
+            "113_veldo_0112_registered_clients:qualify.<locals>.extension/local_ipc",
+            "claim:claim/local_ipc",
+            "claim:heartbeat/local_ipc",
+            "claim:release/local_ipc",
+            "control_claim_client:Client.claim/local_ipc",
+            "control_claim_client:Client.heartbeat/local_ipc",
+            "control_claim_client:Client.release/local_ipc",
+            "control_claim_client:Client.request/local_ipc",
+            "control_claim_client:Client.use/local_ipc",
+            "control_client:send/local_ipc",
+            "control_dispatch:Dispatches.accept/in_process",
+            "control_dispatch:Dispatches.exit/in_process",
+            "control_dispatch:Dispatches.prepare/in_process",
+            "control_dispatch:Dispatches.refuse/in_process",
+            "control_dispatch:Dispatches.run/in_process",
+            "control_dispatch:Dispatches.unknown/in_process",
+            "control_relay:forward/relay",
+            "control_relay:main/relay",
+            "dispatch:Dispatcher.dispatch/in_process",
+            "dispatch:veldo_dispatch/in_process"
+          ],
+          "exercised": [
+            "113_veldo_0112_registered_clients:qualify.<locals>.extension/local_ipc",
+            "claim:claim/local_ipc",
+            "claim:heartbeat/local_ipc",
+            "claim:release/local_ipc",
+            "control_claim_client:Client.claim/local_ipc",
+            "control_claim_client:Client.heartbeat/local_ipc",
+            "control_claim_client:Client.release/local_ipc",
+            "control_claim_client:Client.request/local_ipc",
+            "control_claim_client:Client.use/local_ipc",
+            "control_client:send/local_ipc",
+            "control_dispatch:Dispatches.accept/in_process",
+            "control_dispatch:Dispatches.exit/in_process",
+            "control_dispatch:Dispatches.prepare/in_process",
+            "control_dispatch:Dispatches.refuse/in_process",
+            "control_dispatch:Dispatches.run/in_process",
+            "control_dispatch:Dispatches.unknown/in_process",
+            "control_relay:forward/relay",
+            "control_relay:main/relay",
+            "dispatch:Dispatcher.dispatch/in_process",
+            "dispatch:veldo_dispatch/in_process"
+          ],
+          "missing": [],
+          "cases": [
+            {
+              "identity": "113_veldo_0112_registered_clients:qualify.<locals>.extension/local_ipc",
+              "entrypoint": "113_veldo_0112_registered_clients:qualify.<locals>.extension",
+              "adapter": "extension-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "defa4fe53aa24b347fb9e3fcfd5718b0978c62d0704135402f9eb81ff12b15fa"
+            },
+            {
+              "identity": "claim:claim/local_ipc",
+              "entrypoint": "claim:claim",
+              "adapter": "claim:claim-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263"
+            },
+            {
+              "identity": "claim:heartbeat/local_ipc",
+              "entrypoint": "claim:heartbeat",
+              "adapter": "claim:heartbeat-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263"
+            },
+            {
+              "identity": "claim:release/local_ipc",
+              "entrypoint": "claim:release",
+              "adapter": "claim:release-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263"
+            },
+            {
+              "identity": "control_claim_client:Client.claim/local_ipc",
+              "entrypoint": "control_claim_client:Client.claim",
+              "adapter": "control_claim_client:Client.claim-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+            },
+            {
+              "identity": "control_claim_client:Client.heartbeat/local_ipc",
+              "entrypoint": "control_claim_client:Client.heartbeat",
+              "adapter": "control_claim_client:Client.heartbeat-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+            },
+            {
+              "identity": "control_claim_client:Client.release/local_ipc",
+              "entrypoint": "control_claim_client:Client.release",
+              "adapter": "control_claim_client:Client.release-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+            },
+            {
+              "identity": "control_claim_client:Client.request/local_ipc",
+              "entrypoint": "control_claim_client:Client.request",
+              "adapter": "control_claim_client:Client.request-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+            },
+            {
+              "identity": "control_claim_client:Client.use/local_ipc",
+              "entrypoint": "control_claim_client:Client.use",
+              "adapter": "control_claim_client:Client.use-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "14e2837a83be22fed07ea2ea3265e289ac64a6820848cc32b3a4857925365069"
+            },
+            {
+              "identity": "control_client:send/local_ipc",
+              "entrypoint": "control_client:send",
+              "adapter": "control_client:send-v1",
+              "transport": "local_ipc",
+              "implementation_digest": "d5c1f7e8d44d2505cec33f2783ef483a67261081e459af2b69124692969201c7"
+            },
+            {
+              "identity": "control_dispatch:Dispatches.accept/in_process",
+              "entrypoint": "control_dispatch:Dispatches.accept",
+              "adapter": "control_dispatch:Dispatches.accept-v1",
+              "transport": "in_process",
+              "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+            },
+            {
+              "identity": "control_dispatch:Dispatches.exit/in_process",
+              "entrypoint": "control_dispatch:Dispatches.exit",
+              "adapter": "control_dispatch:Dispatches.exit-v1",
+              "transport": "in_process",
+              "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+            },
+            {
+              "identity": "control_dispatch:Dispatches.prepare/in_process",
+              "entrypoint": "control_dispatch:Dispatches.prepare",
+              "adapter": "control_dispatch:Dispatches.prepare-v1",
+              "transport": "in_process",
+              "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+            },
+            {
+              "identity": "control_dispatch:Dispatches.refuse/in_process",
+              "entrypoint": "control_dispatch:Dispatches.refuse",
+              "adapter": "control_dispatch:Dispatches.refuse-v1",
+              "transport": "in_process",
+              "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+            },
+            {
+              "identity": "control_dispatch:Dispatches.run/in_process",
+              "entrypoint": "control_dispatch:Dispatches.run",
+              "adapter": "control_dispatch:Dispatches.run-v1",
+              "transport": "in_process",
+              "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+            },
+            {
+              "identity": "control_dispatch:Dispatches.unknown/in_process",
+              "entrypoint": "control_dispatch:Dispatches.unknown",
+              "adapter": "control_dispatch:Dispatches.unknown-v1",
+              "transport": "in_process",
+              "implementation_digest": "40c4fdec24b2c8568fe286cf32e6631f40d5fc5d5209a553283aa5e8f4656f29"
+            },
+            {
+              "identity": "control_relay:forward/relay",
+              "entrypoint": "control_relay:forward",
+              "adapter": "control_relay:forward-v1",
+              "transport": "relay",
+              "implementation_digest": "0585ccd3e42128ee14168420f485f84edfba3d30cb8c8c3d154448f704603a27"
+            },
+            {
+              "identity": "control_relay:main/relay",
+              "entrypoint": "control_relay:main",
+              "adapter": "control_relay:main-v1",
+              "transport": "relay",
+              "implementation_digest": "0585ccd3e42128ee14168420f485f84edfba3d30cb8c8c3d154448f704603a27"
+            },
+            {
+              "identity": "dispatch:Dispatcher.dispatch/in_process",
+              "entrypoint": "dispatch:Dispatcher.dispatch",
+              "adapter": "dispatch:Dispatcher.dispatch-v1",
+              "transport": "in_process",
+              "implementation_digest": "1a5060f158d7942aeeeb0f42a4842056a695a7044dcfc1b2393ed9bf2a45babb"
+            },
+            {
+              "identity": "dispatch:veldo_dispatch/in_process",
+              "entrypoint": "dispatch:veldo_dispatch",
+              "adapter": "dispatch:veldo_dispatch-v1",
+              "transport": "in_process",
+              "implementation_digest": "1a5060f158d7942aeeeb0f42a4842056a695a7044dcfc1b2393ed9bf2a45babb"
+            }
+          ],
+          "input_identity": {
+            "domain_uuid": "clients-domain",
+            "store_uuid": "clients-store",
+            "repository_uuid": "clients-repository",
+            "clone_uuid": "b2a52c3e-048c-47c2-8c45-17a00a77df2d",
+            "binding_digest": "sha256:d72b7de18fd8c287e5a929ad348ceefbfb8f9e02f396abad3078e1f5ff85df7f"
+          },
+          "results": {
+            "113_veldo_0112_registered_clients:qualify.<locals>.extension/local_ipc": {
+              "accepted": true,
+              "digest": "2d68ca7001995e1bdc88c1a2a0d69362f769eefd6d27b1446a58395359f2a55d"
+            },
+            "claim:claim/local_ipc": {
+              "accepted": true,
+              "digest": "e60f34b4af4f17ce34efa8cbb04d8c4ff15dcbba61531c1cc7663c473350b4d2"
+            },
+            "claim:heartbeat/local_ipc": {
+              "accepted": true,
+              "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+            },
+            "claim:release/local_ipc": {
+              "accepted": true,
+              "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+            },
+            "control_claim_client:Client.claim/local_ipc": {
+              "accepted": true,
+              "digest": "e60f34b4af4f17ce34efa8cbb04d8c4ff15dcbba61531c1cc7663c473350b4d2"
+            },
+            "control_claim_client:Client.heartbeat/local_ipc": {
+              "accepted": true,
+              "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+            },
+            "control_claim_client:Client.release/local_ipc": {
+              "accepted": true,
+              "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+            },
+            "control_claim_client:Client.request/local_ipc": {
+              "accepted": true,
+              "digest": "59574aea4541283453e3a56c1dece295b4ff541f0660ac743c3c97603eb0379b"
+            },
+            "control_claim_client:Client.use/local_ipc": {
+              "accepted": true,
+              "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+            },
+            "control_client:send/local_ipc": {
+              "accepted": true,
+              "digest": "ebae8035c2a3fecd7dd007516258bab15248612cabe7851c795d46ebc01cc5fe"
+            },
+            "control_dispatch:Dispatches.accept/in_process": {
+              "accepted": true,
+              "digest": "997516b70efc1e40353d6b47e7859b50fdca37ae254c32bd1e92ae53c7c68607"
+            },
+            "control_dispatch:Dispatches.exit/in_process": {
+              "accepted": true,
+              "digest": "678c8dccb4b44fefb50ae4ea69b3df4b6139f5d5b75a9dd60a21cb62733ff4e5"
+            },
+            "control_dispatch:Dispatches.prepare/in_process": {
+              "accepted": true,
+              "digest": "2357fe2ed6d3fd58f906ec06a8f31df7c1667ba3b1a79f70da8f6fe18eb5a17b"
+            },
+            "control_dispatch:Dispatches.refuse/in_process": {
+              "accepted": true,
+              "digest": "85c49e25e7ee03275d73328237e0452c57b5728c7f000162fc0cdf4e0039f9d3"
+            },
+            "control_dispatch:Dispatches.run/in_process": {
+              "accepted": true,
+              "digest": "04d012223c4ed4743b0cdbefc3105ea9b9fafe328095ca01022b10432c887001"
+            },
+            "control_dispatch:Dispatches.unknown/in_process": {
+              "accepted": true,
+              "digest": "84a99cc1aec5d3bfb999e28ca48465964520deaf3c882f52649a676ce05f72eb"
+            },
+            "control_relay:forward/relay": {
+              "accepted": true,
+              "digest": "465948edcce2791e0539447a2a0435d9837f1fc4c4924a5e0f5d6b1f50f46a6d"
+            },
+            "control_relay:main/relay": {
+              "accepted": true,
+              "digest": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+            },
+            "dispatch:Dispatcher.dispatch/in_process": {
+              "accepted": true,
+              "digest": "dc1492b639d5629603b8e37b45591b43db6ec6eba3ab3b785a08f7225fda31ca"
+            },
+            "dispatch:veldo_dispatch/in_process": {
+              "accepted": true,
+              "digest": "ca6121d44e9c101756d1922d6ed59c189443f62fb40203b8dd748b6d6ff4eebc"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "exit_code": 0,
+  "stderr": ""
+}

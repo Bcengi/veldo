@@ -1,0 +1,20 @@
+--- .veldo/claim.py
++++ .veldo/claim.py
+@@ -306,7 +306,6 @@
+                 pass
+ 
+ 
+-@_CLIENTS.entrypoint('claim', ('local_ipc',))
+ def claim(unit_id, worker_id, worker_caps=None, requirements=None, root=None):
+     """Try to claim unit_id for worker_id. Returns (ok, reason).
+ 
+--- engine/.veldo/claim.py
++++ engine/.veldo/claim.py
+@@ -306,7 +306,6 @@
+                 pass
+ 
+ 
+-@_CLIENTS.entrypoint('claim', ('local_ipc',))
+ def claim(unit_id, worker_id, worker_caps=None, requirements=None, root=None):
+     """Try to claim unit_id for worker_id. Returns (ok, reason).
+ 
