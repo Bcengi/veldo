@@ -12,6 +12,13 @@ The specification footprint is unchanged. Files outside it required by that requ
 Owner approval of this footprint extension remains a landing requirement. The requested local repairs proceed.
 
 Round 2 progress and evidence are recorded under round2. AC1 now runs the installed service as its own process,
-with real provisioning and adoption. Suite 113 passes all 25 rows. Changed suites pass: 83 has 13 rows, 92 has 33, 93 has 24 and 110 has 109. Falsifier
-runs are in progress under the blocking host gate lock. No waiver is claimed. The pinned capability reference and factory-only project cycles retain the
+with real provisioning and adoption. Suite 113 passes all 25 rows. Changed suites pass: 83 has 13 rows, 92 has 33, 93 has 24 and 110 has 109. Consumer falsifier
+runs are queued under the blocking host gate lock. Suite 113 mutation verification awaits the protected
+declaration approval described below. No waiver is claimed. The pinned capability reference and factory-only project cycles retain the
 review's accepted interpretation. Testing follows owner rule 37191: ticket suite, changed suites and falsifiers.
+
+The installed-process mutation controls require the host user manager. Suite 113 is absent from the protected
+`scripts/gate_unconfined.json` declaration, while suites 92, 93 and 110 already have entries. The exact proposed
+addition is in round2/proposed-gate-entry.patch. This is a sixth file outside the footprint, pending explicit
+owner approval before changing its confinement declaration. The failed confined controls are retained; they
+are not accepted mutation evidence.

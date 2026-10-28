@@ -1,0 +1,5 @@
+--- a/scripts/suites/92_veldo_0088_pm_cycles.py
++++ b/scripts/suites/92_veldo_0088_pm_cycles.py
+@@ -161 +161 @@
+-            service.config['receiver'] = {'configs': {repository: str(installed_receiver)}}
++            service.config['receiver'] = {'configs': {}}  # defect: no receiver authority

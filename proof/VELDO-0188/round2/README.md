@@ -1,6 +1,6 @@
 # VELDO-0188 round 2
 
-Implementation commits so far: 6153071f, 8278880b and 91518969. The specification and its footprint list are unchanged.
+Implementation commits so far: 6153071f, 8278880b, 91518969 and 10541861. The specification and its footprint list are unchanged.
 OPEN.md lists the five additional fixture files required by the owner's request. No branch push, merge or full gate
 was run. Verification is limited to suite 113, the changed suites and the relevant registered falsifiers.
 All runs selecting multiple suites, and all mutation runs, use the blocking host gate lock.
@@ -26,3 +26,11 @@ patched. The network and vendor CLI stand-ins are explicit fixture seams: a loop
 identity wire, and a qualified fake Codex implementing login, catalog, capability observation and build output.
 The initial repository and the pre-existing adoption seed have ordinary local Git author configuration; fjord's
 author configuration is written exclusively by the real provisioner.
+
+The first mutation invocation used check_teeth_mutations.py's confined coordinator. Its baseline and no-op
+controls failed because the installed service and graph runtime require the host user manager. This is not
+mutant rejection evidence: confined-falsifiers.log and confined-controls preserve the failure. The follow-up
+activation run also rejected generated worker symlinks inside its input tree (activation-input-red.log).
+Worker temporary directories now live outside the repository. The three consumer mutations are rerun through
+check_gate_mutations.py, which reads the existing authority declaration for suites 92, 93 and 110. Suite 113
+needs the protected declaration addition shown in proposed-gate-entry.patch; explicit owner approval is pending.

@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "/tmp/veldo-mutations-funvlly_/input/scripts/suites/113_veldo_0188_project_lines.py", line 62, in region
+    yield
+  File "/tmp/veldo-mutations-funvlly_/input/scripts/suites/113_veldo_0188_project_lines.py", line 729, in _v188_suite
+    load('v188_served', ROOT / 'proof/VELDO-0188/round2/served_scenario.py').run(ROOT, PRODUCTION, check)
+  File "/tmp/veldo-mutations-funvlly_/input/proof/VELDO-0188/round2/served_scenario.py", line 145, in run
+    with fixture.fixture(ROOT, PRODUCTION, install_modules) as c:
+  File "/usr/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/tmp/veldo-mutations-funvlly_/input/proof/VELDO-0188/round2/served_fixture.py", line 80, in fixture
+    with helper.fixture(ROOT, PRODUCTION, cycle_budget=100, compiled_sources=True, install_modules=install_modules) as f:
+  File "/usr/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/tmp/veldo-mutations-funvlly_/input/proof/VELDO-0152/fixture.py", line 146, in fixture
+    mods = install_modules(base, mods, DOMAIN, REPO, ids, keyfile, public)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/veldo-mutations-funvlly_/input/proof/VELDO-0188/round2/served_scenario.py", line 137, in install_modules
+    installed = SV.install([str(workspace)], host_trust=str(trust_file), key_directory=str(keys),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/veldo-0188/proof/VELDO-0188/round2/mutation-workers/0/v89-rp6z46nw/installed/.veldo/control_service.py", line 949, in install
+  File "/home/dmitry/projects/veldo-worktrees/veldo-0188/proof/VELDO-0188/round2/mutation-workers/0/v89-rp6z46nw/installed/.veldo/control_service.py", line 1081, in layout
+bootstrap188_service.Refused: unavailable_service:profile:user_manager: the worker profile is not qualified on this host
