@@ -62,6 +62,9 @@ def main():
                 (root / 'engine' / path).write_text(changed)
             diff = ''.join(difflib.unified_diff(source.splitlines(True), changed.splitlines(True),
                                                fromfile=path, tofile=path))
+            if path.startswith('.veldo/'):
+                diff += ''.join(difflib.unified_diff(source.splitlines(True), changed.splitlines(True),
+                                                    fromfile='engine/' + path, tofile='engine/' + path))
             (OUT / (ac + '.diff')).write_text(diff)
             red = run(root)
             (OUT / (ac + '-red.json')).write_text(json.dumps(red, indent=2) + '\n')
