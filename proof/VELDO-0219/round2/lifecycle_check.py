@@ -47,7 +47,8 @@ def check(owner):
                 # No discovery or sample happened while this short unit lived.
                 value=meter.sample()
                 assert value['peak_memory_bytes'] >= 32*1024*1024,value
-                assert .9*known<=value['cpu_seconds']<sum(r['known'] for r in measured)+known+.15,(known,value)
+                expected=sum(r['known'] for r in measured)+known
+                assert abs(value['cpu_seconds']/expected-1)<=.1,(expected,value)
                 owner.RetainedSlice.ctl('stop',unit)
                 final=meter.retained[unit].sample(final=True)
                 measured.append(dict(known=known,measurement=value,final=final))
@@ -102,7 +103,7 @@ finally:
             assert p.returncode==0,err
             value=meter.sample(home,ledger)
             known=float((home/'known').read_text())
-            assert value['cpu_seconds']>=.9*known,(known,value)
+            assert abs(value['cpu_seconds']/known-1)<=.1,(known,value)
             assert value['peak_memory_bytes']>=32*1024*1024,value
             return dict(passed=True,known=known,measurement=value)
         finally:
