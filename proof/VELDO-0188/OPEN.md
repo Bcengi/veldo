@@ -13,7 +13,8 @@ Owner approval of this footprint extension remains a landing requirement. The re
 
 Round 2 progress and evidence are recorded under round2. AC1 now runs the installed service as its own process,
 with real provisioning and adoption. Suite 113 passes all 25 rows. Changed suites pass: 83 has 13 rows, 92 has 33, 93 has 24 and 110 has 109. Consumer falsifier
-runs are queued under the blocking host gate lock. Suite 113 mutation verification awaits the protected
+runs remain unexecuted: their blocking flock waited behind another host gate and was terminated before
+spawning any test when handing back the approval blocker (round2/pending-verification.json). Suite 113 mutation verification awaits the protected
 declaration approval described below. No waiver is claimed. The pinned capability reference and factory-only project cycles retain the
 review's accepted interpretation. Testing follows owner rule 37191: ticket suite, changed suites and falsifiers.
 

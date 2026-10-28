@@ -31,6 +31,12 @@ The first mutation invocation used check_teeth_mutations.py's confined coordinat
 controls failed because the installed service and graph runtime require the host user manager. This is not
 mutant rejection evidence: confined-falsifiers.log and confined-controls preserve the failure. The follow-up
 activation run also rejected generated worker symlinks inside its input tree (activation-input-red.log).
-Worker temporary directories now live outside the repository. The three consumer mutations are rerun through
+Worker temporary directories now live outside the repository. The three consumer mutations must be rerun through
 check_gate_mutations.py, which reads the existing authority declaration for suites 92, 93 and 110. Suite 113
 needs the protected declaration addition shown in proposed-gate-entry.patch; explicit owner approval is pending.
+
+Status at handoff: REMAINING. All requested implementation changes are committed and suites 83, 92, 93,
+110 and 113 pass. Accepted mutation evidence remains outstanding. The consumer rerun waited behind another
+host gate; its flock was terminated before it spawned a test, so no process was detached. The exact command
+and outstanding suite 113 approval are recorded in pending-verification.json. No protected declaration was
+changed, and the specification footprint remains unchanged.
