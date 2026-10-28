@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+@import './tokens.css';
+@import './base.css';
+@import './components.css';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-paper-sunken: var(--paper-sunken);
+  --color-rule: var(--rule);
+  --color-enamel: var(--enamel);
+  --color-amber: var(--amber);
+  --color-live: var(--live);
+  --color-stop: var(--stop);
+  --font-display: var(--font-display);
+  --font-text: var(--font-text);
+  --font-mono: var(--font-mono);
+  --breakpoint-desk: 768px;
+  --breakpoint-wide: 1024px;
+}

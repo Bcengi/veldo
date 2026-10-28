@@ -282,6 +282,9 @@ _FILES = [
     ".veldo/control_api_models_scope.py",
     ".veldo/control_api_signer.py",
     ".veldo/control_api_webauthn.py",
+    # VELDO-0145: the UI's page and built assets, served by the API from its own origin. A runtime asset
+    # the API loads; not validator substrate.
+    ".veldo/control_api_ui.py",
     # VELDO-0130 phase 3: the API process's client of the authority service socket and its hint socket.
     ".veldo/control_client_api.py",
     # VELDO-0073: the Telegram edge's activation gate, qualification record and activated ingress (the

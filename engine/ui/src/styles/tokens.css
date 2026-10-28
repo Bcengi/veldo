@@ -1,0 +1,91 @@
+/* Veldo's design tokens. Semantic names only; see docs/design/colors.md, typography.md, layout.md. */
+:root {
+  color-scheme: light;
+  --ink: #16242c;
+  --ink-muted: #4a5a61;
+  --paper: #edf0ea;
+  --paper-raised: #f8f9f6;
+  --paper-sunken: #e2e6df;
+  --rule: #c9d0c8;
+  --rule-strong: #9eaaa3;
+  --enamel: #2e5e4e;
+  --enamel-hover: #244c3f;
+  --enamel-ink: #f8f9f6;
+  --enamel-wash: #dbe7e0;
+  --amber: #f2a900;
+  --amber-ink: #16242c;
+  --amber-text: #7a5200;
+  --amber-wash: #f8ead0;
+  --live: #3fae6a;
+  --live-text: #1f6b3e;
+  --stop: #d2412c;
+  --stop-text: #a3301f;
+  --stop-wash: #f7e2dd;
+  --focus: #1f6fd1;
+  --lamp-off: #c3cbc4;
+  --lamp-glow: 0 0 0 3px color-mix(in srgb, var(--lamp) 28%, transparent), 0 0 14px 2px color-mix(in srgb, var(--lamp) 55%, transparent);
+  --diff-insert: #cfe8d7;
+  --diff-remove: #f5d5cf;
+
+  --font-display: 'Big Shoulders Variable', 'Arial Narrow', sans-serif;
+  --font-text: 'Atkinson Hyperlegible Next Variable', system-ui, sans-serif;
+  --font-mono: 'Atkinson Hyperlegible Mono Variable', ui-monospace, monospace;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5625rem;
+  --text-2xl: 1.9375rem;
+  --text-3xl: 2.4375rem;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius-control: 8px;
+  --radius-panel: 12px;
+  --rail: 232px;
+  --gutter: 16px;
+  --topbar: 56px;
+  --bottombar: 64px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ink: #e3e8e2;
+  --ink-muted: #a3b1b4;
+  --paper: #16242c;
+  --paper-raised: #1d2e37;
+  --paper-sunken: #111c22;
+  --rule: #2c414c;
+  --rule-strong: #46606c;
+  --enamel: #86c2aa;
+  --enamel-hover: #a1d3bf;
+  --enamel-ink: #10201a;
+  --enamel-wash: #1f3a33;
+  --amber: #f2b52e;
+  --amber-ink: #16242c;
+  --amber-text: #f2c35c;
+  --amber-wash: #3a3220;
+  --live: #56c783;
+  --live-text: #7ad89f;
+  --stop: #f0705c;
+  --stop-text: #ff9583;
+  --stop-wash: #3a2420;
+  --focus: #7fb3ff;
+  --lamp-off: #34505c;
+  --diff-insert: #1e4a33;
+  --diff-remove: #5a2a24;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 32px;
+  }
+}

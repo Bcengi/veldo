@@ -1,0 +1,20 @@
+{
+  "schema": "veldo.ui_routes/v1",
+  "about": "Every API route the UI calls, by the name control_api.ROUTES publishes. The VELDO-0145 suite compares this table with the API's.",
+  "routes": {
+    "auth.challenge": {"method": "POST", "path": "/api/v1/auth/challenge", "required": [], "optional": []},
+    "auth.sign_in": {"method": "POST", "path": "/api/v1/auth/sign-in", "required": ["credential_id", "client_data_json", "authenticator_data", "signature", "user_handle"], "optional": []},
+    "auth.registration_begin": {"method": "POST", "path": "/api/v1/auth/registration/begin", "required": ["label"], "optional": []},
+    "auth.registration_credential": {"method": "POST", "path": "/api/v1/auth/registration/credential", "required": ["registration_id", "credential_id", "public_key", "algorithm", "client_data_json"], "optional": []},
+    "auth.registration_possession": {"method": "POST", "path": "/api/v1/auth/registration/possession", "required": ["registration_id", "client_data_json", "authenticator_data", "signature", "user_handle"], "optional": []},
+    "auth.session": {"method": "GET", "path": "/api/v1/auth/session", "required": [], "optional": []},
+    "auth.sign_out": {"method": "POST", "path": "/api/v1/auth/sign-out", "required": [], "optional": []},
+    "auth.sign_out_everywhere": {"method": "POST", "path": "/api/v1/auth/sign-out-everywhere", "required": [], "optional": []},
+    "decisions.answer": {"method": "POST", "path": "/api/v1/domains/{domain}/decisions/answer", "required": ["request_id", "request_version", "presentation_id", "presentation_digest", "presentation_version", "choice", "rationale"], "optional": []},
+    "reads.decisions": {"method": "GET", "path": "/api/v1/domains/{domain}/decisions", "required": [], "optional": []},
+    "reads.workers": {"method": "GET", "path": "/api/v1/domains/{domain}/workers", "required": [], "optional": []},
+    "reads.work": {"method": "GET", "path": "/api/v1/domains/{domain}/work", "required": [], "optional": []},
+    "runs.record": {"method": "GET", "path": "/api/v1/domains/{domain}/runs/record", "required": ["dispatch"], "optional": ["after"]},
+    "runs.record_stream": {"method": "GET", "path": "/api/v1/domains/{domain}/runs/record/stream", "required": ["dispatch"], "optional": ["after"]}
+  }
+}
