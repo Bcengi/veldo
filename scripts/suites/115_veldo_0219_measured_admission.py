@@ -110,12 +110,16 @@ def _v219_checks():
             closed = True
         row('bootstrap-joins-before-import', joined and closed and marker.read_text() == str(os.getpid()))
 
+        record('3' * 32, dict(case, identity='memory1', suite='memory.py'), 10, 20, 2**29)
+        record('4' * 32, dict(case, identity='memory2', suite='memory.py'), 10, 40, 2**31)
         prior = gate.CaseClaims(store).claim(case, 'changed-key')
         suite = gate.CaseClaims(store).claim(dict(case, identity='unseen'), 'new')
         glob = gate.CaseClaims(store).claim(dict(case, identity='unseen', suite='unseen.py'), 'new')
         empty = gate.CaseClaims(top / 'empty').claim(case, 'new')
         row('fallback-order', prior['source'] == 'previous_key' and prior['keys'] == [key]
-            and suite['source'] == 'suite_median' and glob['source'] == 'all_median'
+            and suite['source'] == 'suite_median' and suite['cpu'] == .8
+            and glob['source'] == 'all_median' and glob['cpu'] == 1.4
+            and glob['memory'] == (96*2**20+2**29)/2
             and empty == dict(cpu=1., memory=2**30, source='default', keys=[]))
 
         class Client:

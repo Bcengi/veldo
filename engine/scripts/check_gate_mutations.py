@@ -205,6 +205,8 @@ def record_case_times(root, samples, times=CASE_TIMES, *, authority=False):
                 previous = json.loads(target.read_text())
             except (OSError, ValueError):
                 previous = {}
+            if not isinstance(previous, dict):
+                previous = {}
             resources = {k: previous[k] for k in ('identity', 'suite') if k in previous}
             resources['resource_runs'] = resource_samples(previous, now)
             fd, pending = tempfile.mkstemp(prefix='.pending-', dir=str(times))
@@ -223,7 +225,7 @@ def record_case_times(root, samples, times=CASE_TIMES, *, authority=False):
 
 def record_case_resources(cases, keys, outcomes, group_for, times=CASE_TIMES, *, authority=False):
     """Called only after the complete fresh stage validates and inputs stay stable."""
-    if Path(times) == CASE_TIMES and not authority:
+    if not authority and Path(times) == CASE_TIMES:
         return False
     by_name = {o['name']: o for o in outcomes}
     for case in cases:
@@ -250,7 +252,8 @@ def record_case_resources(cases, keys, outcomes, group_for, times=CASE_TIMES, *,
             with os.fdopen(fd, 'w') as handle:
                 json.dump(item, handle, sort_keys=True)
             os.replace(pending, target)
-            load(ROOT / 'scripts/gate_legs.py').prune_times(times, keep=target)
+            timing = load(ROOT / 'scripts/gate_legs.py')
+            timing.prune_times(times, keep=target)
         except (OSError, ValueError, TypeError) as error:
             print('   mutation: could not record case resources (%s)' % error, file=sys.stderr, flush=True)
     return True
@@ -833,11 +836,17 @@ class Workers:
         try:
             ownership = load(ROOT / 'scripts/mutation_ownership.py')
             record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name])
-            if name in self.meters:
-                self.meters.pop(name).close()
         except Exception as cleanup_error:
             error = Refused('worker_cleanup_error', name + ': ' + str(cleanup_error))
             record.update(error=error.code, detail=error.detail)
+        finally:
+            if name in self.meters:
+                try:
+                    self.meters[name].close()
+                    del self.meters[name]
+                except Exception as cleanup_error:
+                    error = Refused('worker_cleanup_error', name + ': ' + str(cleanup_error))
+                    record.update(error=error.code, detail=error.detail)
         record['elapsed'] = time.monotonic() - started
         self.outcomes.append(record)
         self.driver_spans[job['case']['driver']][1] = time.monotonic()

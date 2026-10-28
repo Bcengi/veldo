@@ -1,0 +1,65 @@
+{
+  "spec": "VELDO-0219",
+  "check": "native-cgroup-children",
+  "passed": true,
+  "runs": [
+    {
+      "metrics": {
+        "cpu_seconds": 1.137224,
+        "peak_anon_bytes": 272580608,
+        "metrics_source": "cgroup-v2-anon-sampled-20ms",
+        "cgroups": [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1477741-d37f2f92.scope/worker-1477741-0"
+        ]
+      },
+      "elapsed": 1.272117055952549,
+      "known": {
+        "cpu_seconds": 1.119840269,
+        "memory": 268435456
+      },
+      "cpu_relative_error": 0.015523402293367683,
+      "memory_relative_error": 0.01544189453125
+    },
+    {
+      "metrics": {
+        "cpu_seconds": 1.131601,
+        "peak_anon_bytes": 272584704,
+        "metrics_source": "cgroup-v2-anon-sampled-20ms",
+        "cgroups": [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1477741-d37f2f92.scope/worker-1477741-1"
+        ]
+      },
+      "elapsed": 1.7590131720062345,
+      "known": {
+        "cpu_seconds": 1.113828863,
+        "memory": 268435456
+      },
+      "cpu_relative_error": 0.015955895551254207,
+      "memory_relative_error": 0.0154571533203125
+    },
+    {
+      "unit": "veldo-authority-8f935fe6b0dfb049abefe3ad.service",
+      "metrics": {
+        "cpu_seconds": 1.123182,
+        "peak_anon_bytes": 272531456,
+        "metrics_source": "cgroup-v2-anon-sampled-20ms",
+        "cgroups": [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-authority-8f935fe6b0dfb049abefe3ad.service",
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1477741-d37f2f92.scope/worker-1477741-unit"
+        ]
+      },
+      "known": {
+        "cpu_seconds": 1.114613603,
+        "memory": 268435456
+      },
+      "cpu_relative_error": 0.007687324985930388,
+      "memory_relative_error": 0.0152587890625
+    }
+  ],
+  "head": "d5b6244e74436cbc644e464b8c4955f8e962f7e7",
+  "sources": {
+    "scripts/mutation_ownership.py": "910c5228b298abb9595c9a6a604e9869ea5791979aa8b3ef208f68348ab8eccc",
+    "scripts/reuse_worker.py": "4974909169efc09c2c37e6e71a3a1e016290c55fa8f8f59ad26163b5fd9ba8ab"
+  },
+  "scope": "veldo-gate-1477741-d37f2f92.scope"
+}
