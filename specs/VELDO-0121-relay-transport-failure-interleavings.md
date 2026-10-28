@@ -86,3 +86,14 @@ Changing the opaque byte protocol to framed messages, recognizing application-le
 The exchange fixture owns phase barriers and fault scheduling only. Native endpoint close/reset effects can vary by scheduling: assert the observed OS outcome's specified behavior instead of assuming a send must fail when buffered bytes could still be accepted. Exhaustiveness means all reachable transitions and declared byte-offset classes in the published model, not every possible network schedule. The total deadline is an intended new requirement, not a claim about today's per-operation timeout.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
+
+## Implementation record
+
+2026-10-28, owner go Telegram 37209 and 37212: the relay now uses one monotonic
+30-second transport budget, including partial sends and receives. Suite
+`113_veldo_0121_relay_exchange` owns the four named acceptance rows. The finite
+exchange domain, production-call reconciliation and native kernel controls are
+published in `proof/VELDO-0121/MODEL.md`; `proof/VELDO-0121/drive.py` runs each
+specified falsifier and its restored control. Receipts and limits are recorded in
+`proof/VELDO-0121/README.md`. This does not change the journal-derived landing state
+or certify the later batch gate.
