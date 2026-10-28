@@ -377,6 +377,8 @@ def _v219_checks():
         row('cpu-per-run', regressions.per_run(gate))
         row('blocking-resource', regressions.blocking_resource(gate))
         row('unit-lifecycle', regressions.unit_lifecycle(ownership))
+        row('final-memory-bound', gate.resource_claim([dict(cpu_seconds=1, elapsed=2,
+            peak_anon_bytes=1024, peak_memory_bytes=32*2**20)])['memory'] == 32*2**20)
 
         qualification = load(ROOT / 'proof/VELDO-0219/qualification.py')
         capture = qualification.fixture()
