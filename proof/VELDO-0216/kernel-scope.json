@@ -1,0 +1,19 @@
+{
+  "spec": "VELDO-0216",
+  "check": "live-node-cgroup",
+  "passed": true,
+  "head": "db5861ad54544340e0def6318b9c4c890b8d5c05",
+  "scheduler_sha256": "9ebddd7be4e169bab789b76d2be53b8e7bd9672298b5a85d31790b27fd778479",
+  "scope": "veldo-gate-3232477-dde728ff.scope",
+  "capacity": {
+    "cpu": 20.0,
+    "memory": 503316480,
+    "manager": 16
+  },
+  "metrics": {
+    "cpu_seconds": 0.320047,
+    "peak_anon_bytes": 36564992,
+    "metrics_source": "cgroup-v2-anon-sampled-50ms",
+    "live_descendants": false
+  }
+}

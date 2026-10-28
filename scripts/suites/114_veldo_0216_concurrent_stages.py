@@ -243,7 +243,17 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
         with contextlib.redirect_stdout(io.StringIO()):
             reserved = not reserve.acquire('other', claim(5, 500)) and reserve.acquire('other',claim(4,400)) \
                 and reserve.acquire('mutation',claim(6,600),mutation=True)
-        row('mutation-floor', reserved)
+        reserve = scheduler.Ledger({'cpu':10,'memory':1000,'manager':3},{'cpu':6,'memory':600})
+        with contextlib.redirect_stdout(io.StringIO()):
+            held = [reserve.acquire('mutation',claim(2,200),mutation=True),
+                    not reserve.acquire('borrow-floor',claim(5,500)),
+                    reserve.acquire('other',claim(4,400)),
+                    reserve.acquire('mutation/worker',claim(4,400),mutation=True)]
+            for claimant in ('borrow-floor','mutation/worker','mutation'):
+                if claimant in reserve.held:
+                    reserve.release(claimant)
+            held.append(reserve.acquire('after-mutation',claim(6,600)))
+        row('mutation-floor', reserved and all(held))
 
         # Real inherited channel: a trusted coordinator claims two worker/shard needs.
         channel_code = '''import importlib.util,os

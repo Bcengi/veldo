@@ -37,8 +37,12 @@ limit, minus the graph reserve, and the authority manifest's manager slots. Each
 node has its own delegated cgroup. Anonymous peaks are sampled at the scheduler's
 nominal 50 ms polling interval; process startup and input comparisons add overhead
 between polls. CPU seconds are the kernel cumulative counter. A remaining descendant
-reddens its node and is killed in that node's cgroup before release. Scratch tests
-substitute a meter, so they do not qualify real delegated node cgroups.
+reddens its node and is killed in that node's cgroup before release. Scratch suite checks
+substitute a meter. The separate kernel_scope_check.py probe uses the unchanged
+VELDO-0220 scope creator, a real delegated node cgroup and a 32 MiB allocating CPU
+child. kernel-scope.json records its passing capacity, CPU, anonymous-memory and
+empty-cgroup cleanup checks. Its outer command holds the real host lock; the probe
+itself never operates on that lock.
 
 A cold node reserves full CPU and memory capacity. Only passing authority cgroup
 measurements enter its per-node store. Files bind authority location, graph, catalog,
@@ -51,7 +55,8 @@ for those three intervals alone is 6932.501 seconds. The spec's 6000 second prom
 therefore needs the decision recorded in OPEN.md.
 
 The inherited Client API is for authority coordinators. It returns refusal until a
-claim fits, retains the coordinator's claim, namespaces claims per node, rejects
+claim fits, retains the coordinator's claim and unused mutation floor until the
+mutation node finishes, namespaces claims per node, rejects
 foreign releases and marks leaked child claims red. Candidate children receive
 neither its descriptor nor its environment variable through either leg runner.
 The 0219 and 0221 dispatchers must supply measured worker/shard claims and use

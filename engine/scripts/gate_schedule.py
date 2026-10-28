@@ -115,6 +115,8 @@ class Ledger:
         self.refusals = set()
         self.peak = dict.fromkeys(capacity, 0)
         self.mutation_pending = bool(any(self.floor.values()))
+        self.mutation_claimants = set()
+        self.mutation_root = None
 
     def totals(self):
         return {r: sum(c[r] for c in self.held.values()) for r in self.capacity}
@@ -151,7 +153,8 @@ class Ledger:
             limit = self.capacity[r]
             # Cold nodes use all capacity, but cannot steal a pending mutation floor.
             if r in self.floor and self.mutation_pending and not mutation:
-                limit -= self.floor[r]
+                held_for_mutation = sum(self.held[n][r] for n in self.mutation_claimants)
+                limit -= max(0, self.floor[r] - held_for_mutation)
             if totals[r] + c[r] > limit:
                 self.event('refuse', name, r, claim)
                 return False
@@ -161,7 +164,9 @@ class Ledger:
             return False
         self.held[name] = c
         if mutation:
-            self.mutation_pending = False
+            self.mutation_claimants.add(name)
+            if self.mutation_root is None:
+                self.mutation_root = name
         self.event('grant', name, 'cpu,memory,manager,ports', claim)
         return True
 
@@ -169,6 +174,9 @@ class Ledger:
         if name not in self.held:
             raise Refused('unknown claimant ' + name)
         del self.held[name]
+        self.mutation_claimants.discard(name)
+        if name == self.mutation_root:
+            self.mutation_pending = False
         self.event('release', name, 'cpu,memory,manager,ports')
 
 
@@ -410,7 +418,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                             raise Refused('invalid ledger claimant')
                         claimant = name + '/' + child_name
                         if request['operation'] == 'acquire':
-                            granted = ledger.acquire(claimant, request['claim'])
+                            granted = ledger.acquire(claimant, request['claim'], mutation=name == 'mutation')
                             if granted:
                                 item['children'].add(claimant)
                         elif request['operation'] == 'release' and claimant in item['children']:
