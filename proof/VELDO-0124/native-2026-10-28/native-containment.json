@@ -1,0 +1,206 @@
+{
+  "schema": "veldo.macos_native_observations/v1",
+  "kind": "native",
+  "facts": {
+    "platform": "darwin",
+    "host": "dmitrys-mini.lan",
+    "os_version": "26.5.1",
+    "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+    "tools": true
+  },
+  "modules": "/Users/dmitry/veldo-0124-check/native-2026-10-28/.veldo",
+  "rows": [
+    {
+      "row": "native/claude_code/write",
+      "status": "passed",
+      "observed": {
+        "owner": "denied",
+        "authority": "denied",
+        "code": "denied",
+        "slot": "denied",
+        "result": "denied",
+        "scratch": "allowed",
+        "clone": "allowed",
+        "login": "allowed",
+        "null": "allowed",
+        "tty": "error:6",
+        "home": "allowed",
+        "temp": "allowed",
+        "derived": "allowed",
+        "simulator": "allowed",
+        "alias_child": "denied"
+      }
+    },
+    {
+      "row": "native/claude_code/read",
+      "status": "passed",
+      "observed": {
+        "ssh": "denied",
+        "claude": "denied",
+        "claude_json": "denied",
+        "claude_accounts": "denied",
+        "codex": "denied",
+        "accounts": "denied",
+        "projects": "denied",
+        "dispatches": "denied",
+        "claude_case": "denied",
+        "allowed_own_login": "allowed",
+        "allowed_clone": "allowed",
+        "allowed_owner_other": "allowed"
+      }
+    },
+    {
+      "row": "native/claude_code/launchd",
+      "status": "passed",
+      "observed": {
+        "copy": "allowed",
+        "submit": {
+          "executed": false,
+          "refused": "exec"
+        },
+        "bootstrap": {
+          "executed": false,
+          "refused": "exec"
+        },
+        "copy_submit": {
+          "executed": true,
+          "rc": -9,
+          "err": ""
+        },
+        "copy_bootstrap": {
+          "executed": true,
+          "rc": -9,
+          "err": ""
+        },
+        "jobs_created": {
+          "submit": false,
+          "bootstrap": false,
+          "copy_submit": false,
+          "copy_bootstrap": false
+        }
+      }
+    },
+    {
+      "row": "native/claude_code/keychain",
+      "status": "passed",
+      "observed": {
+        "sandboxed": {
+          "com.apple.SecurityServer": 1100,
+          "com.apple.securityd": 1100,
+          "com.apple.securityd.xpc": 1100
+        },
+        "unsandboxed": {
+          "com.apple.SecurityServer": 0,
+          "com.apple.securityd": 1102,
+          "com.apple.securityd.xpc": 0
+        }
+      }
+    },
+    {
+      "row": "native/claude_code/signal",
+      "status": "passed",
+      "observed": {
+        "supervisor": "denied",
+        "wrapper": "denied",
+        "own_child": "allowed"
+      }
+    },
+    {
+      "row": "native/codex/write",
+      "status": "passed",
+      "observed": {
+        "owner": "denied",
+        "authority": "denied",
+        "code": "denied",
+        "slot": "denied",
+        "result": "denied",
+        "scratch": "allowed",
+        "clone": "allowed",
+        "login": "allowed",
+        "null": "allowed",
+        "tty": "error:6",
+        "home": "allowed",
+        "temp": "allowed",
+        "derived": "allowed",
+        "simulator": "allowed",
+        "alias_child": "denied"
+      }
+    },
+    {
+      "row": "native/codex/read",
+      "status": "passed",
+      "observed": {
+        "ssh": "denied",
+        "claude": "denied",
+        "claude_json": "denied",
+        "claude_accounts": "denied",
+        "codex": "denied",
+        "accounts": "denied",
+        "projects": "denied",
+        "dispatches": "denied",
+        "claude_case": "denied",
+        "allowed_own_login": "allowed",
+        "allowed_clone": "allowed",
+        "allowed_owner_other": "allowed"
+      }
+    },
+    {
+      "row": "native/codex/launchd",
+      "status": "passed",
+      "observed": {
+        "copy": "allowed",
+        "submit": {
+          "executed": false,
+          "refused": "exec"
+        },
+        "bootstrap": {
+          "executed": false,
+          "refused": "exec"
+        },
+        "copy_submit": {
+          "executed": true,
+          "rc": -9,
+          "err": ""
+        },
+        "copy_bootstrap": {
+          "executed": true,
+          "rc": -9,
+          "err": ""
+        },
+        "jobs_created": {
+          "submit": false,
+          "bootstrap": false,
+          "copy_submit": false,
+          "copy_bootstrap": false
+        }
+      }
+    },
+    {
+      "row": "native/codex/keychain",
+      "status": "passed",
+      "observed": {
+        "sandboxed": {
+          "com.apple.SecurityServer": 1100,
+          "com.apple.securityd": 1100,
+          "com.apple.securityd.xpc": 1100
+        },
+        "unsandboxed": {
+          "com.apple.SecurityServer": 0,
+          "com.apple.securityd": 1102,
+          "com.apple.securityd.xpc": 0
+        }
+      }
+    },
+    {
+      "row": "native/codex/signal",
+      "status": "passed",
+      "observed": {
+        "supervisor": "denied",
+        "wrapper": "denied",
+        "own_child": "allowed"
+      }
+    }
+  ],
+  "status": "passed",
+  "qualification_created": false
+}

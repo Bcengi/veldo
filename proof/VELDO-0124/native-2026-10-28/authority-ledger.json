@@ -1,0 +1,182 @@
+{
+  "account_balances": {
+    "claude-1": {
+      "capacity": 3,
+      "invocations": 1,
+      "messages": 0,
+      "tokens": 0,
+      "wall_seconds": 0.5
+    },
+    "codex-1": {
+      "capacity": 3,
+      "invocations": 3,
+      "messages": 1,
+      "tokens": 35568,
+      "wall_seconds": 81.329
+    }
+  },
+  "engine_identities": {
+    "claude_code": {
+      "argv": [
+        "/Users/dmitry/.local/share/claude/versions/2.1.303",
+        "--print",
+        "--output-format",
+        "stream-json",
+        "--verbose",
+        "--setting-sources=",
+        "--strict-mcp-config",
+        "--disable-slash-commands",
+        "--mcp-config",
+        "{\"mcpServers\":{}}",
+        "--settings",
+        "{\"sandbox\":{\"enabled\":false},\"disableAllHooks\":true}",
+        "--permission-mode",
+        "bypassPermissions",
+        "Read task.txt in the current directory and execute its exact instruction immediately."
+      ],
+      "binary_digest": "sha256:d2da3b003dc08b88b7230469014fe3e1dc6fe94bc8f648e89b34175d30269370",
+      "configuration_digest": "sha256:349a7facaae7016ba5eb80495a6cc53c1a96608bb45725d3d99cfb33dafc0b59",
+      "version": "2.1.303"
+    },
+    "codex": {
+      "argv": [
+        "/Users/dmitry/.local/share/veldo-engines/codex-0.154.0/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+        "exec",
+        "--json",
+        "-c",
+        "check_for_update_on_startup=false",
+        "--ignore-user-config",
+        "--ignore-rules",
+        "--disable",
+        "apps",
+        "--ephemeral",
+        "-c",
+        "project_doc_max_bytes=0",
+        "-c",
+        "forced_login_method=\"chatgpt\"",
+        "-c",
+        "cli_auth_credentials_store=\"file\"",
+        "-c",
+        "skills.bundled.enabled=false",
+        "-c",
+        "skills.include_instructions=false",
+        "-c",
+        "approval_policy=\"never\"",
+        "--sandbox",
+        "danger-full-access",
+        "Read task.txt in the current directory and execute its exact instruction immediately."
+      ],
+      "binary_digest": "sha256:4f85982624b3898c8991cb80c0981b2aa71070e3537046c9a95950318a95afcc",
+      "configuration_digest": "sha256:8e8e406ef44ae0e02371a0427b4fe3159a1c97b753f5a0bad29f6cae30771d75",
+      "version": "0.154.0"
+    }
+  },
+  "host": "dmitrys-mini.lan",
+  "live_model_calls": 3,
+  "os_version": "26.5.1",
+  "probes": {
+    "claude_code/cooperative": {
+      "charge": {
+        "invocations": 0,
+        "messages": 0,
+        "tokens": 0,
+        "wall_seconds": 0
+      },
+      "dispatch_id": "dispatch/veldo-0124-qual/claude_code-cooperative",
+      "dispatch_state": "accepted",
+      "invocation": "invocation/dispatch/veldo-0124-qual/claude_code-cooperative",
+      "invocation_state": "settled",
+      "observed": {},
+      "outcome": "not_executed",
+      "stop_required": false
+    },
+    "claude_code/deadline": {
+      "charge": {
+        "invocations": 0,
+        "messages": 0,
+        "tokens": 0,
+        "wall_seconds": 0
+      },
+      "dispatch_id": "dispatch/veldo-0124-qual/claude_code-deadline",
+      "dispatch_state": "accepted",
+      "invocation": "invocation/dispatch/veldo-0124-qual/claude_code-deadline",
+      "invocation_state": "settled",
+      "observed": {},
+      "outcome": "not_executed",
+      "stop_required": false
+    },
+    "claude_code/natural": {
+      "charge": {
+        "invocations": 1,
+        "wall_seconds": 0.5
+      },
+      "dispatch_id": "dispatch/veldo-0124-qual/claude_code-natural",
+      "dispatch_state": "accepted",
+      "invocation": "invocation/dispatch/veldo-0124-qual/claude_code-natural",
+      "invocation_state": "unknown",
+      "observed": {
+        "invocations": 1,
+        "wall_seconds": 0.5
+      },
+      "outcome": "failed",
+      "stop_required": true
+    },
+    "codex/cooperative": {
+      "charge": {
+        "invocations": 1,
+        "wall_seconds": 0.438
+      },
+      "dispatch_id": "dispatch/veldo-0124-qual/codex-cooperative",
+      "dispatch_state": "exited",
+      "invocation": "invocation/dispatch/veldo-0124-qual/codex-cooperative",
+      "invocation_state": "unknown",
+      "observed": {
+        "invocations": 1,
+        "wall_seconds": 0.438
+      },
+      "outcome": "cancelled",
+      "stop_required": false
+    },
+    "codex/deadline": {
+      "charge": {
+        "invocations": 1,
+        "wall_seconds": 65.562
+      },
+      "dispatch_id": "dispatch/veldo-0124-qual/codex-deadline",
+      "dispatch_state": "exited",
+      "invocation": "invocation/dispatch/veldo-0124-qual/codex-deadline",
+      "invocation_state": "unknown",
+      "observed": {
+        "invocations": 1,
+        "wall_seconds": 65.562
+      },
+      "outcome": "timeout",
+      "stop_required": true
+    },
+    "codex/natural": {
+      "charge": {
+        "invocations": 1,
+        "messages": 1,
+        "tokens": 35568,
+        "wall_seconds": 15.329
+      },
+      "dispatch_id": "dispatch/veldo-0124-qual/codex-natural",
+      "dispatch_state": "exited",
+      "invocation": "invocation/dispatch/veldo-0124-qual/codex-natural",
+      "invocation_state": "settled",
+      "observed": {
+        "invocations": 1,
+        "messages": 1,
+        "tokens": 35568,
+        "wall_seconds": 15.329
+      },
+      "outcome": "completed",
+      "stop_required": false
+    }
+  },
+  "profile_digest": "sha256:0f5567e14e8e78b89035eb3a632d2e0f086092e3c8fde85aaa979d313cea56d2",
+  "qualified_engines_exit": 2,
+  "schema": "veldo.macos_qualification_authority_ledger/v1",
+  "stray_launchd_jobs_after_cleanup": "",
+  "unmodified_engines_exit": 1
+}

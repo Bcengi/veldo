@@ -1,0 +1,386 @@
+{
+  "schema": "veldo.macos_native_observations/v1",
+  "kind": "native",
+  "facts": {
+    "platform": "darwin",
+    "host": "dmitrys-mini.lan",
+    "os_version": "26.5.1",
+    "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+    "tools": true
+  },
+  "modules": "/Users/dmitry/veldo-0124-check/native-2026-10-28/.veldo",
+  "rows": [
+    {
+      "row": "native/claude_code/natural",
+      "status": "passed",
+      "elapsed": 0.232,
+      "process": {
+        "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 80686,
+        "platform": "darwin",
+        "start": "Wed Oct 28 13:27:18 2026"
+      },
+      "worker": {
+        "pgid": 80691,
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 80691,
+          "platform": "darwin",
+          "start": "Wed Oct 28 13:27:19 2026"
+        }
+      },
+      "coalition": 19293,
+      "steps": [],
+      "returncode": 0,
+      "outcome": "exited",
+      "released": true
+    },
+    {
+      "row": "native/claude_code/cooperative",
+      "status": "passed",
+      "elapsed": 0.243,
+      "process": {
+        "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 80713,
+        "platform": "darwin",
+        "start": "Wed Oct 28 13:27:19 2026"
+      },
+      "worker": {
+        "pgid": 80719,
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 80719,
+          "platform": "darwin",
+          "start": "Wed Oct 28 13:27:19 2026"
+        }
+      },
+      "coalition": 19297,
+      "steps": [
+        {
+          "stage": "cooperative",
+          "monotonic": 1327686.136619791
+        }
+      ],
+      "returncode": -15,
+      "outcome": "exited",
+      "released": true
+    },
+    {
+      "row": "native/claude_code/deadline",
+      "status": "passed",
+      "elapsed": 1.159,
+      "process": {
+        "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 80740,
+        "platform": "darwin",
+        "start": "Wed Oct 28 13:27:20 2026"
+      },
+      "worker": {
+        "pgid": 80749,
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 80749,
+          "platform": "darwin",
+          "start": "Wed Oct 28 13:27:20 2026"
+        }
+      },
+      "coalition": 19301,
+      "steps": [
+        {
+          "stage": "terminate",
+          "monotonic": 1327687.638719583
+        }
+      ],
+      "returncode": -15,
+      "outcome": "exited",
+      "released": true,
+      "excess": "refused unavailable_service:concurrency"
+    },
+    {
+      "row": "native/claude_code/descendant",
+      "status": "passed",
+      "elapsed": 0.839,
+      "process": {
+        "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 80771,
+        "platform": "darwin",
+        "start": "Wed Oct 28 13:27:21 2026"
+      },
+      "worker": {
+        "pgid": 80776,
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 80776,
+          "platform": "darwin",
+          "start": "Wed Oct 28 13:27:21 2026"
+        }
+      },
+      "coalition": 19305,
+      "steps": [
+        {
+          "stage": "cooperative",
+          "monotonic": 1327688.361498083
+        },
+        {
+          "stage": "terminate",
+          "monotonic": 1327688.572145291
+        },
+        {
+          "stage": "kill",
+          "monotonic": 1327688.776582666
+        }
+      ],
+      "returncode": -9,
+      "outcome": "exited",
+      "released": true,
+      "descendant": 80779,
+      "descendant_pgid": 80779,
+      "engine_pgid": 80776
+    },
+    {
+      "row": "native/claude_code/hard-kill",
+      "status": "passed",
+      "elapsed": 0.348,
+      "process": {
+        "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 80804,
+        "platform": "darwin",
+        "start": "Wed Oct 28 13:27:22 2026"
+      },
+      "worker": {
+        "pgid": 80809,
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 80809,
+          "platform": "darwin",
+          "start": "Wed Oct 28 13:27:22 2026"
+        }
+      },
+      "coalition": 19307,
+      "steps": [],
+      "returncode": -9,
+      "outcome": "exited",
+      "released": true,
+      "engine_pgid": 80809,
+      "wrapper_pgid": 80804
+    },
+    {
+      "row": "native/claude_code/supervisor-loss",
+      "status": "passed",
+      "supervisor_killed_before_deadline": 2.698,
+      "engine_stopped_after_deadline": 0.121,
+      "wrapper_result": {
+        "deadline_stop": true,
+        "dispatch_id": "dispatch/native/claude_code/blocked",
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 80831,
+          "platform": "darwin",
+          "start": "Wed Oct 28 13:27:23 2026"
+        },
+        "remaining": [],
+        "returncode": -15
+      },
+      "recovered": true,
+      "released": true
+    },
+    {
+      "row": "native/codex/natural",
+      "status": "passed",
+      "elapsed": 0.309,
+      "process": {
+        "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 80985,
+        "platform": "darwin",
+        "start": "Wed Oct 28 13:27:26 2026"
+      },
+      "worker": {
+        "pgid": 80990,
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 80990,
+          "platform": "darwin",
+          "start": "Wed Oct 28 13:27:27 2026"
+        }
+      },
+      "coalition": 19329,
+      "steps": [],
+      "returncode": 0,
+      "outcome": "exited",
+      "released": true
+    },
+    {
+      "row": "native/codex/cooperative",
+      "status": "passed",
+      "elapsed": 0.488,
+      "process": {
+        "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 81011,
+        "platform": "darwin",
+        "start": "Wed Oct 28 13:27:27 2026"
+      },
+      "worker": {
+        "pgid": 81018,
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 81018,
+          "platform": "darwin",
+          "start": "Wed Oct 28 13:27:27 2026"
+        }
+      },
+      "coalition": 19331,
+      "steps": [
+        {
+          "stage": "cooperative",
+          "monotonic": 1327694.181170625
+        }
+      ],
+      "returncode": -15,
+      "outcome": "exited",
+      "released": true
+    },
+    {
+      "row": "native/codex/deadline",
+      "status": "passed",
+      "elapsed": 1.26,
+      "process": {
+        "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 81040,
+        "platform": "darwin",
+        "start": "Wed Oct 28 13:27:28 2026"
+      },
+      "worker": {
+        "pgid": 81049,
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 81049,
+          "platform": "darwin",
+          "start": "Wed Oct 28 13:27:28 2026"
+        }
+      },
+      "coalition": 19339,
+      "steps": [
+        {
+          "stage": "terminate",
+          "monotonic": 1327695.804489208
+        }
+      ],
+      "returncode": -15,
+      "outcome": "exited",
+      "released": true,
+      "excess": "refused unavailable_service:concurrency"
+    },
+    {
+      "row": "native/codex/descendant",
+      "status": "passed",
+      "elapsed": 0.985,
+      "process": {
+        "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 81071,
+        "platform": "darwin",
+        "start": "Wed Oct 28 13:27:29 2026"
+      },
+      "worker": {
+        "pgid": 81076,
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 81076,
+          "platform": "darwin",
+          "start": "Wed Oct 28 13:27:30 2026"
+        }
+      },
+      "coalition": 19343,
+      "steps": [
+        {
+          "stage": "cooperative",
+          "monotonic": 1327696.710800625
+        },
+        {
+          "stage": "terminate",
+          "monotonic": 1327696.942304416
+        },
+        {
+          "stage": "kill",
+          "monotonic": 1327697.171192083
+        }
+      ],
+      "returncode": -9,
+      "outcome": "exited",
+      "released": true,
+      "descendant": 81079,
+      "descendant_pgid": 81079,
+      "engine_pgid": 81076
+    },
+    {
+      "row": "native/codex/hard-kill",
+      "status": "passed",
+      "elapsed": 0.148,
+      "process": {
+        "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 81098,
+        "platform": "darwin",
+        "start": "Wed Oct 28 13:27:31 2026"
+      },
+      "worker": {
+        "pgid": 81103,
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 81103,
+          "platform": "darwin",
+          "start": "Wed Oct 28 13:27:31 2026"
+        }
+      },
+      "coalition": 19345,
+      "steps": [],
+      "returncode": -9,
+      "outcome": "exited",
+      "released": true,
+      "engine_pgid": 81103,
+      "wrapper_pgid": 81098
+    },
+    {
+      "row": "native/codex/supervisor-loss",
+      "status": "passed",
+      "supervisor_killed_before_deadline": 2.79,
+      "engine_stopped_after_deadline": 0.13,
+      "wrapper_result": {
+        "deadline_stop": true,
+        "dispatch_id": "dispatch/native/codex/blocked",
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 81125,
+          "platform": "darwin",
+          "start": "Wed Oct 28 13:27:31 2026"
+        },
+        "remaining": [],
+        "returncode": -15
+      },
+      "recovered": true,
+      "released": true
+    }
+  ],
+  "status": "passed",
+  "qualification_created": false
+}

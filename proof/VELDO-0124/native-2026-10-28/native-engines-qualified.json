@@ -1,0 +1,255 @@
+{
+  "schema": "veldo.macos_native_observations/v1",
+  "kind": "native",
+  "facts": {
+    "platform": "darwin",
+    "host": "dmitrys-mini.lan",
+    "os_version": "26.5.1",
+    "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+    "tools": true
+  },
+  "modules": "/Users/dmitry/veldo-0124-check/native-2026-10-28/.veldo",
+  "rows": [
+    {
+      "row": "native/qualified-claude_code/natural",
+      "status": "blocked",
+      "admitted_by_supervisor": true,
+      "auth_status": {
+        "rc": 1,
+        "logged_in": false,
+        "auth_method": "none",
+        "api_provider": "firstParty"
+      },
+      "reason": "Mac claude-1 account is not logged in under Keychain-denied Seatbelt (claude auth status exited 1 with loggedIn=false, authMethod=none); Mac Claude setup token requires CLAUDE_CODE_OAUTH_TOKEN, which project_runner_macos_control.CREDENTIALS strips and project_runner_macos_profile.claude_settings refuses as unsupported_configuration:claude_settings_source (VELDO-0147 territory).",
+      "reservation": "invocation/dispatch/veldo-0124-qual/claude_code-natural"
+    },
+    {
+      "row": "native/qualified-claude_code/cooperative",
+      "status": "blocked",
+      "admitted_by_supervisor": true,
+      "auth_status": {
+        "rc": 1,
+        "logged_in": false,
+        "auth_method": "none",
+        "api_provider": "firstParty"
+      },
+      "reason": "Mac claude-1 account is not logged in under Keychain-denied Seatbelt (claude auth status exited 1 with loggedIn=false, authMethod=none); Mac Claude setup token requires CLAUDE_CODE_OAUTH_TOKEN, which project_runner_macos_control.CREDENTIALS strips and project_runner_macos_profile.claude_settings refuses as unsupported_configuration:claude_settings_source (VELDO-0147 territory).",
+      "reservation": "invocation/dispatch/veldo-0124-qual/claude_code-cooperative"
+    },
+    {
+      "row": "native/qualified-claude_code/deadline",
+      "status": "blocked",
+      "admitted_by_supervisor": true,
+      "auth_status": {
+        "rc": 1,
+        "logged_in": false,
+        "auth_method": "none",
+        "api_provider": "firstParty"
+      },
+      "reason": "Mac claude-1 account is not logged in under Keychain-denied Seatbelt (claude auth status exited 1 with loggedIn=false, authMethod=none); Mac Claude setup token requires CLAUDE_CODE_OAUTH_TOKEN, which project_runner_macos_control.CREDENTIALS strips and project_runner_macos_profile.claude_settings refuses as unsupported_configuration:claude_settings_source (VELDO-0147 territory).",
+      "reservation": "invocation/dispatch/veldo-0124-qual/claude_code-deadline"
+    },
+    {
+      "row": "native/qualified-codex/natural",
+      "status": "passed",
+      "elapsed": 15.329,
+      "process": {
+        "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 89261,
+        "platform": "darwin",
+        "start": "Wed Oct 28 14:00:26 2026"
+      },
+      "worker": {
+        "pgid": 89266,
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 89266,
+          "platform": "darwin",
+          "start": "Wed Oct 28 14:00:26 2026"
+        }
+      },
+      "coalition": 20110,
+      "steps": [],
+      "cause": null,
+      "termination": {
+        "returncode": 0,
+        "signal": null,
+        "output_digest": "sha256:519d9ae63886ec91d1e639e8489f88f18d48acd41f5766d1330fef9c8e1cd391",
+        "output_bytes": 1396,
+        "deadline_stop": false
+      },
+      "outcome": "exited",
+      "reservation": "invocation/dispatch/veldo-0124-qual/codex-natural",
+      "accounting": {
+        "turns": 1,
+        "tokens": 35568,
+        "final": {
+          "tokens": 35568,
+          "messages": 1
+        },
+        "limit": null,
+        "receipt_digests": [
+          "sha256:c9c4a42093adae5658a13613a2a2ebebfac1de0309c7251de631329edbb61efd"
+        ],
+        "wall_seconds": 15.329,
+        "output_bytes": 1396
+      },
+      "real_isolation": {
+        "descendant": {
+          "pid": 89304,
+          "ppid": 89266,
+          "pgid": 89304,
+          "sid": 89304,
+          "coalition": 20110
+        },
+        "setsid_grandchild": {
+          "pid": 89305,
+          "pgid": 89305,
+          "sid": 89305,
+          "coalition": 20110
+        },
+        "wrapper_pid": 89261,
+        "write": {
+          "authority": "denied",
+          "slots": "denied",
+          "veldo_code": "denied",
+          "owner_home": "denied",
+          "scratch": "allowed",
+          "authority_symlink_alias": "denied"
+        },
+        "read": {
+          "other_account_claude": "denied",
+          "decoy_account": "denied",
+          "decoy_project": "denied",
+          "other_dispatch": "denied",
+          "own_clone": "allowed"
+        },
+        "launchctl": {
+          "executed": false,
+          "refused": "exec"
+        },
+        "keychain": {
+          "com.apple.SecurityServer": 1100,
+          "com.apple.securityd": 1100,
+          "com.apple.securityd.xpc": 1100
+        },
+        "signal": {
+          "supervisor": "denied",
+          "wrapper": "denied",
+          "own_child": "allowed"
+        },
+        "env_subset": {
+          "HOME": "/Users/dmitry/veldo-0124-check/native-2026-10-28/qual-pool/probes/codex-natural/scratch/home",
+          "TMPDIR": "/private/var/folders/8q/dvp3rnk5715g69vnrf40zykw0000gn/T/veldo-8c56be42de3aaf837c7b900a"
+        }
+      }
+    },
+    {
+      "row": "native/qualified-codex/cooperative",
+      "status": "passed",
+      "elapsed": 0.438,
+      "process": {
+        "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 89319,
+        "platform": "darwin",
+        "start": "Wed Oct 28 14:00:41 2026"
+      },
+      "worker": {
+        "pgid": 89324,
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 89324,
+          "platform": "darwin",
+          "start": "Wed Oct 28 14:00:42 2026"
+        }
+      },
+      "coalition": 20112,
+      "steps": [
+        {
+          "stage": "cooperative",
+          "monotonic": 1329688.665038458
+        }
+      ],
+      "cause": "requested",
+      "termination": {
+        "returncode": -15,
+        "signal": 15,
+        "output_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "output_bytes": 0,
+        "deadline_stop": false
+      },
+      "outcome": "exited",
+      "reservation": "invocation/dispatch/veldo-0124-qual/codex-cooperative",
+      "accounting": {
+        "turns": 0,
+        "tokens": 0,
+        "final": {},
+        "limit": null,
+        "receipt_digests": [],
+        "wall_seconds": 0.438,
+        "output_bytes": 0
+      }
+    },
+    {
+      "row": "native/qualified-codex/deadline",
+      "status": "passed",
+      "elapsed": 65.562,
+      "process": {
+        "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 89338,
+        "platform": "darwin",
+        "start": "Wed Oct 28 14:00:42 2026"
+      },
+      "worker": {
+        "pgid": 89343,
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 89343,
+          "platform": "darwin",
+          "start": "Wed Oct 28 14:00:42 2026"
+        }
+      },
+      "coalition": 20114,
+      "steps": [
+        {
+          "stage": "terminate",
+          "monotonic": 1329754.389074
+        }
+      ],
+      "cause": "runtime_cap",
+      "termination": {
+        "returncode": -15,
+        "signal": 15,
+        "output_digest": "sha256:392a3b68c94855eead09ae3321ad8842fe992bdd93992ca0c786496e826e0475",
+        "output_bytes": 976,
+        "deadline_stop": true
+      },
+      "outcome": "exited",
+      "reservation": "invocation/dispatch/veldo-0124-qual/codex-deadline",
+      "accounting": {
+        "turns": 0,
+        "tokens": 0,
+        "final": {},
+        "limit": null,
+        "receipt_digests": [],
+        "wall_seconds": 65.562,
+        "output_bytes": 976
+      }
+    }
+  ],
+  "qualification_created": false,
+  "live_model_calls": 3,
+  "pool_status": {
+    "accepted": 3,
+    "refused": 0,
+    "pending": 4,
+    "stopped": 0
+  },
+  "status": "blocked"
+}

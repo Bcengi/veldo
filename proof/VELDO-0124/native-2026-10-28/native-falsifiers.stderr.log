@@ -1,0 +1,14 @@
+write REJECTED native/claude_code/write
+read-ssh REJECTED native/claude_code/read
+read-claude REJECTED native/claude_code/read
+read-codex REJECTED native/claude_code/read
+read-accounts REJECTED native/claude_code/read
+read-projects REJECTED native/claude_code/read
+read-dispatches REJECTED native/claude_code/read
+launchctl-exec REJECTED native/claude_code/launchd
+job-creation REJECTED native/claude_code/launchd
+keychain REJECTED native/claude_code/keychain
+signal REJECTED native/claude_code/signal
+wrapper-backstop REJECTED native/claude_code/supervisor-loss
+coalition-kill REJECTED native/claude_code/descendant
+engine-group REJECTED native/claude_code/hard-kill

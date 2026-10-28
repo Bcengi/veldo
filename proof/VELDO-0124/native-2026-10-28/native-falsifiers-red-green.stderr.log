@@ -1,0 +1,16 @@
+write RED_THEN_GREEN native/claude_code/write
+read-ssh RED_THEN_GREEN native/claude_code/read
+read-claude RED_THEN_GREEN native/claude_code/read
+read-codex RED_THEN_GREEN native/claude_code/read
+read-accounts RED_THEN_GREEN native/claude_code/read
+read-projects RED_THEN_GREEN native/claude_code/read
+read-dispatches RED_THEN_GREEN native/claude_code/read
+launchctl-exec RED_THEN_GREEN native/claude_code/launchd
+job-creation RED_THEN_GREEN native/claude_code/launchd
+keychain RED_THEN_GREEN native/claude_code/keychain
+signal RED_THEN_GREEN native/claude_code/signal
+wrapper-backstop RED_THEN_GREEN native/claude_code/supervisor-loss
+coalition-kill RED_THEN_GREEN native/claude_code/descendant
+engine-group RED_THEN_GREEN native/claude_code/hard-kill
+session-type RED_THEN_GREEN native/claude_code/natural
+supervisor-deadline RED_THEN_GREEN native/claude_code/deadline

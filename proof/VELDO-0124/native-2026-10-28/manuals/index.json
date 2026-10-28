@@ -1,0 +1,27 @@
+{
+  "kqueue.2": {
+    "archived": "manuals/kqueue.2.txt",
+    "raw_bytes": 28759,
+    "raw_sha256": "a12aedd1606e4eb5dcb21c735021f460eba6415aa4a126de9cd8564d3f822b13"
+  },
+  "launchctl.1": {
+    "archived": "manuals/launchctl.1.txt",
+    "raw_bytes": 36326,
+    "raw_sha256": "8ec4ca7660d6867ae655cb43ea78590a1f403cdf6daad5f3b32b7df4370b3f80"
+  },
+  "launchd.plist.5": {
+    "archived": "manuals/launchd.plist.5.txt",
+    "raw_bytes": 42347,
+    "raw_sha256": "51072992b0da840a4257acb21c31a55318bb01b1e7ab68ff68485c731635ac11"
+  },
+  "ps.1": {
+    "archived": "manuals/ps.1.txt",
+    "raw_bytes": 21438,
+    "raw_sha256": "987c047d1d3e79717ec827ccffd472d2caddeea8569969ee3c23dd77daee0f28"
+  },
+  "sandbox-exec.1": {
+    "archived": "manuals/sandbox-exec.1.txt",
+    "raw_bytes": 1669,
+    "raw_sha256": "387e9a1086ab772e9ffa5cb1cd6e9ddf6d57c9b49df2d255868c71e4b5c057fe"
+  }
+}
