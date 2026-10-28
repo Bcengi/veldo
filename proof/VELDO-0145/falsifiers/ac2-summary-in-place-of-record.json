@@ -1,0 +1,75 @@
+{
+  "schema": "veldo.ui_falsifier_record/v1",
+  "case": "ac2-summary-in-place-of-record",
+  "criterion": "AC2",
+  "falsifier": "Show a summarized step list in place of the record; the full-detail check must fail.",
+  "commit": "59c235f321e16319e2df99328f7d96b15596278d",
+  "edits": [
+    {
+      "file": "src/features/run/RunTerminal.vue",
+      "source_sha256": "817793a6371b1e3bbb5d576645563763d7e82e72b83c75784303dda3dfc5382e",
+      "mutant_sha256": "1125d3187236ecb5399176edc23b3885c5fa24fa3bb26a977ec1918833f6e863",
+      "old": "          v-for=\"line in record.lines\"\n",
+      "new": "          v-for=\"line in record.lines.filter((l) => l.kind === 'tool call' || l.kind === 'run result')\"\n"
+    }
+  ],
+  "red": [
+    {
+      "kind": "e2e",
+      "file": "e2e/run.spec.ts",
+      "grep": "full detail",
+      "exit": 1,
+      "seconds": 3.942,
+      "summary": [
+        "    Error: expect(received).toEqual(expected) // deep equality",
+        "    - Expected  - 7",
+        "    + Received  + 0",
+        "  1 failed"
+      ]
+    },
+    {
+      "kind": "unit",
+      "file": "src/features/run/RunTerminal.spec.ts",
+      "exit": 1,
+      "seconds": 0.919,
+      "summary": [
+        "      Tests  3 failed | 2 passed (5)",
+        "⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯",
+        "AssertionError: expected [ 3 ] to deeply equal [ 1, 2, 3, 4, 5 ]",
+        "- Expected",
+        "+ Received",
+        "AssertionError: expected [ Array(1) ] to deeply equal [ 'veldo-wrapper: start', …(4) ]",
+        "- Expected",
+        "+ Received",
+        "-   \"{\\\"type\\\":\\\"user\\\",\\\"message\\\":{\\\"content\\\":[{\\\"type\\\":\\\"tool_result\\\",\\\"tool_use_id\\\":\\\"t\\\",\\\"content\\\":\\\"1 failed\\\",\\\"is_error\\\":true}]}}\",",
+        "AssertionError: expected [ 3 ] to deeply equal [ 1, 2, 3, 4, 5 ]",
+        "- Expected",
+        "+ Received"
+      ]
+    }
+  ],
+  "green": [
+    {
+      "kind": "e2e",
+      "file": "e2e/run.spec.ts",
+      "grep": "full detail",
+      "exit": 0,
+      "seconds": 4.082,
+      "summary": [
+        "  1 passed (3.6s)"
+      ]
+    },
+    {
+      "kind": "unit",
+      "file": "src/features/run/RunTerminal.spec.ts",
+      "exit": 0,
+      "seconds": 0.863,
+      "summary": [
+        " Test Files  1 passed (1)",
+        "      Tests  5 passed (5)"
+      ]
+    }
+  ],
+  "red_as_required": true,
+  "green_as_required": true
+}

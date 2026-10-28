@@ -11529,6 +11529,36 @@ def cases():
         ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0145: the UI's page served by the API from its own origin, factory data only in a passkey
+    # session, the UI's route table traced to the API's, and the UI's dependency policy.
+    def ui145(name, module, old, new, row):
+        add(145, name, '113_veldo_0145_ui.py', module, old, new, [row])
+
+    # AC1 (declared falsifier): serve a screen's factory data before the passkey session is established.
+    ui145('ui145-data-before-session', 'control_api.py',
+          "          for m in MO.READ_MODELS) + (\n",
+          "          for m in MO.READ_MODELS if False) + tuple(Route(m.route, 'GET', '/api/v1/domains/{domain}/' + m.name,"
+          " 'reads', False, (), (), None) for m in MO.READ_MODELS) + (  # defect: reads without a session\n",
+          'ui/unauthenticated-access')
+    result[-1]['also'] = [["        return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])\n", "        return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], (session or {'principal': 'owner'})['principal'])  # defect\n"]]
+    ui145('ui145-page-escapes-directory', 'control_api_ui.py',
+          "    if root not in resolved.parents or not resolved.is_file():\n",
+          "    if not resolved.is_file():  # defect: a link out of the UI directory is served\n",
+          'ui/page-served')
+    ui145('ui145-page-any-host', 'control_api_ui.py',
+          "    if (headers.get('Host') or '') != host:\n        return _refusal(400, 'invalid_input:host')\n",
+          "    if False:  # defect: the page answers any Host\n        return _refusal(400, 'invalid_input:host')\n",
+          'ui/page-served')
+    ui145('ui145-route-moved', 'control_api.py',
+          "    Route('runs.record', 'GET', '/api/v1/domains/{domain}/runs/record', 'events', True, ('dispatch',), ('after',),\n",
+          "    Route('runs.record', 'GET', '/api/v1/domains/{domain}/runs/lines', 'events', True, ('dispatch',), ('after',),\n",
+          'ui/route-trace')
+    # VELDO-0131 AC4's falsifier as this slice applies it: a dependency with free and paid tiers is admitted.
+    ui145('ui145-tiers-admitted', 'control_api_ui.py',
+          "            if not fnmatch.fnmatchcase(name, rule['name']):\n",
+          "            if True:  # defect: no denied name is ever matched\n",
+          'ui/dependency-policy')
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

@@ -18,14 +18,16 @@ code. Nothing is copied or adapted from another company's product.
 
 ## The policy check
 
-The VELDO-0145 Python suite reads `package-lock.json` and `dependency-policy.json` and fails when:
+The VELDO-0145 Python suite (`scripts/suites/113_veldo_0145_ui.py`, row `ui/dependency-policy`) applies
+`control_api_ui.dependency_problems` to `package-lock.json`, `package.json` and `dependency-policy.json`,
+and fails when:
 
 - a package in the lockfile has a license outside the allow list,
 - a package matches the deny list (Chinese-origin UI libraries, packages with free and paid tiers),
   unless an owner decision names it,
 - a direct dependency is missing from the policy or its version differs,
-- a served asset in `dist/` was not produced by the build (for example a font or script from
-  elsewhere).
+- (in the browser test `served assets`) a response comes from another origin or an asset is not a file
+  of the build.
 
 ## Notes on choices
 
@@ -38,4 +40,9 @@ The VELDO-0145 Python suite reads `package-lock.json` and `dependency-policy.jso
   security policy forbids. Unstyled mode plus Veldo's pass-through preset avoids that and keeps the
   identity Veldo's own.
 - **monaco-editor** is loaded only on the run screen, only when an edit is on screen, and with only
-  its base editor worker.
+  its base editor worker. Its pinned `dompurify` is overridden to the fixed 3.4.17.
+- **TypeScript 6.0.3, not 7.0.2.** The registry's latest is 7.0.2, the native port, which vue-tsc
+  3.3.13 cannot load (it has no `lib/tsc` export); 6.0.3 is the latest release vue-tsc runs on.
+- **Two internal modules replaced at build time** (`vite.config.ts`): PrimeVue's `useStyle` and Monaco's
+  `domStylesheets`, by Veldo's own modules with the same call shapes that write CSS through the CSS
+  object model. They are Veldo's code, not copies of the originals.

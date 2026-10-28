@@ -1,0 +1,52 @@
+{
+  "schema": "veldo.ui_falsifier_record/v1",
+  "case": "ac1-data-before-session",
+  "criterion": "AC1",
+  "falsifier": "Serve a screen's factory data before the passkey session is established; the unauthenticated-access check must fail.",
+  "commit": "59c235f321e16319e2df99328f7d96b15596278d",
+  "edits": [
+    {
+      "file": ".veldo/control_api.py",
+      "source_sha256": "9eae3f70aca17e23281760fdbdba83b829dbbbb1d8514661e473e670a19b0875",
+      "mutant_sha256": "feb7a9ad7add56345acf5788fd031be7de40d2f16d662fc88336e315520294e0",
+      "old": "          for m in MO.READ_MODELS) + (\n",
+      "new": "          for m in MO.READ_MODELS if False) + tuple(Route(m.route, 'GET', '/api/v1/domains/{domain}/' + m.name, 'reads', False, (), (), None) for m in MO.READ_MODELS) + (  # defect: reads without a session\n"
+    },
+    {
+      "file": ".veldo/control_api.py",
+      "source_sha256": "feb7a9ad7add56345acf5788fd031be7de40d2f16d662fc88336e315520294e0",
+      "mutant_sha256": "6acafceb933ff1a28fe5915333152c97d7b65306b8228748a8566a5ca650e12f",
+      "old": "        return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])\n",
+      "new": "        return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], (session or {'principal': 'owner'})['principal'])  # defect\n"
+    }
+  ],
+  "red": [
+    {
+      "kind": "e2e",
+      "file": "e2e/signin.spec.ts",
+      "grep": "unauthenticated access",
+      "exit": 1,
+      "seconds": 3.905,
+      "summary": [
+        "    Error: reads.decisions without a session",
+        "    Expected: 401",
+        "    Received: 200",
+        "  1 failed"
+      ]
+    }
+  ],
+  "green": [
+    {
+      "kind": "e2e",
+      "file": "e2e/signin.spec.ts",
+      "grep": "unauthenticated access",
+      "exit": 0,
+      "seconds": 3.845,
+      "summary": [
+        "  1 passed (3.4s)"
+      ]
+    }
+  ],
+  "red_as_required": true,
+  "green_as_required": true
+}

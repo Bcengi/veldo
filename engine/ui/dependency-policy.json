@@ -1,0 +1,303 @@
+{
+  "schema": "veldo.ui_dependency_policy/v1",
+  "about": "Every package the UI may install (VELDO-0145, applying VELDO-0131 AC4). Direct packages are listed with their exact registry version (taken on 2026-10-28 with npm view), license, origin and tier; every package of package-lock.json must carry an allowed license and match no denied name. The VELDO-0145 suite applies this file with control_api_ui.dependency_problems.",
+  "licenses": {
+    "allowed": [
+      "(MPL-2.0 OR Apache-2.0)",
+      "Apache-2.0",
+      "BSD-2-Clause",
+      "BSD-3-Clause",
+      "BlueOak-1.0.0",
+      "CC0-1.0",
+      "ISC",
+      "MIT",
+      "MIT-0",
+      "MPL-2.0",
+      "OFL-1.1"
+    ]
+  },
+  "deny": [
+    {
+      "name": "primevue",
+      "from_major": 5,
+      "reason": "free and paid tiers: version 5 is under the commercial PrimeUI License with a free community tier"
+    },
+    {
+      "name": "@primevue/*",
+      "from_major": 5,
+      "reason": "free and paid tiers: part of PrimeVue 5"
+    },
+    {
+      "name": "@primeui/license-manager",
+      "reason": "free and paid tiers: the license manager of the commercial PrimeUI License"
+    },
+    {
+      "name": "@primeuix/themes",
+      "from_major": 2,
+      "reason": "free and paid tiers: themes of the commercial PrimeUI line"
+    },
+    {
+      "name": "ag-grid-enterprise",
+      "reason": "free and paid tiers"
+    },
+    {
+      "name": "@mui/x-*-pro",
+      "reason": "free and paid tiers"
+    },
+    {
+      "name": "@mui/x-*-premium",
+      "reason": "free and paid tiers"
+    },
+    {
+      "name": "handsontable",
+      "reason": "free and paid tiers"
+    },
+    {
+      "name": "element-plus",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "element-ui",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "ant-design-vue",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "antd",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "@ant-design/*",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "naive-ui",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "vant",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "@arco-design/*",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "tdesign-*",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "view-ui-plus",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "view-design",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "iview",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "vxe-table",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "layui",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "echarts",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "vue-echarts",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "@varlet/*",
+      "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "@nutui/*",
+      "reason": "Chinese-origin UI library"
+    }
+  ],
+  "owner_decisions": [
+    {
+      "name": "primevue",
+      "decision": "Telegram 37228: the owner named PrimeVue 4 for the UI stack. Version 4.5.5 is MIT; the vendor's paid add-ons and the commercial version 5 are recorded as an open question in proof/VELDO-0145/OPEN.md."
+    }
+  ],
+  "overrides": {
+    "dompurify": {
+      "version": "3.4.17",
+      "license": "(MPL-2.0 OR Apache-2.0)",
+      "why": "monaco-editor 0.57.0 pins dompurify 3.4.15, which has published advisories; 3.4.17 fixes them"
+    }
+  },
+  "direct": {
+    "@fontsource-variable/atkinson-hyperlegible-mono": {
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "origin": "Fontsource packaging of Atkinson Hyperlegible Mono (Braille Institute of America)",
+      "tier": "free, no paid tier",
+      "why": "Machine text face",
+      "kind": "runtime"
+    },
+    "@fontsource-variable/atkinson-hyperlegible-next": {
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "origin": "Fontsource packaging of Atkinson Hyperlegible Next (Braille Institute of America)",
+      "tier": "free, no paid tier",
+      "why": "Text face",
+      "kind": "runtime"
+    },
+    "@fontsource-variable/big-shoulders": {
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "origin": "Fontsource packaging of Big Shoulders (Patric King, Chicago type foundry XXIX)",
+      "tier": "free, no paid tier",
+      "why": "Display face",
+      "kind": "runtime"
+    },
+    "monaco-editor": {
+      "version": "0.57.0",
+      "license": "MIT",
+      "origin": "Microsoft, United States",
+      "tier": "free, no paid tier",
+      "why": "Read-only diffs of edits in the run terminal",
+      "kind": "runtime"
+    },
+    "pinia": {
+      "version": "4.1.0",
+      "license": "MIT",
+      "origin": "Vue core team (vuejs organization)",
+      "tier": "free, no paid tier",
+      "why": "State stores",
+      "kind": "runtime"
+    },
+    "primevue": {
+      "version": "4.5.5",
+      "license": "MIT",
+      "origin": "PrimeTek Informatics, Turkey",
+      "tier": "version 4 is MIT; the vendor sells paid templates, blocks and a designer, and version 5 moved to a commercial license with a free community tier",
+      "why": "Component library the owner named (PrimeVue 4), used unstyled",
+      "kind": "runtime"
+    },
+    "vue": {
+      "version": "3.5.44",
+      "license": "MIT",
+      "origin": "Vue core team (vuejs organization), open source; the owner chose Vue (Telegram 37228)",
+      "tier": "free, no paid tier",
+      "why": "The UI framework the owner named",
+      "kind": "runtime"
+    },
+    "vue-router": {
+      "version": "5.4.0",
+      "license": "MIT",
+      "origin": "Vue core team (vuejs organization)",
+      "tier": "free, no paid tier",
+      "why": "Screen routing",
+      "kind": "runtime"
+    },
+    "@axe-core/playwright": {
+      "version": "4.14.0",
+      "license": "MPL-2.0",
+      "origin": "Deque Systems, United States",
+      "tier": "axe-core is free; Deque sells separate products, not a paid tier of axe-core",
+      "why": "Accessibility checks from the real accessibility tree",
+      "kind": "build and test"
+    },
+    "@playwright/test": {
+      "version": "1.64.1",
+      "license": "Apache-2.0",
+      "origin": "Microsoft, United States",
+      "tier": "free, no paid tier",
+      "why": "Browser tests",
+      "kind": "build and test"
+    },
+    "@tailwindcss/vite": {
+      "version": "4.3.3",
+      "license": "MIT",
+      "origin": "Tailwind Labs, United States",
+      "tier": "free, no paid tier",
+      "why": "Tailwind in Vite",
+      "kind": "build and test"
+    },
+    "@types/node": {
+      "version": "26.6.5",
+      "license": "MIT",
+      "origin": "DefinitelyTyped community",
+      "tier": "free, no paid tier",
+      "why": "Node types for the build config and browser tests",
+      "kind": "build and test"
+    },
+    "@vitejs/plugin-vue": {
+      "version": "6.0.10",
+      "license": "MIT",
+      "origin": "Vite team",
+      "tier": "free, no paid tier",
+      "why": "Vue single-file components in Vite",
+      "kind": "build and test"
+    },
+    "@vue/test-utils": {
+      "version": "2.5.1",
+      "license": "MIT",
+      "origin": "Vue core team",
+      "tier": "free, no paid tier",
+      "why": "Component tests",
+      "kind": "build and test"
+    },
+    "jsdom": {
+      "version": "30.1.3",
+      "license": "MIT",
+      "origin": "jsdom project",
+      "tier": "free, no paid tier",
+      "why": "DOM for component tests",
+      "kind": "build and test"
+    },
+    "tailwindcss": {
+      "version": "4.3.3",
+      "license": "MIT",
+      "origin": "Tailwind Labs, United States",
+      "tier": "the framework is free; the vendor sells separate UI kits, which Veldo does not use",
+      "why": "Layout utilities",
+      "kind": "build and test"
+    },
+    "typescript": {
+      "version": "6.0.3",
+      "license": "Apache-2.0",
+      "origin": "Microsoft, United States",
+      "tier": "free, no paid tier",
+      "why": "Type checking (6.0.3: vue-tsc does not run on TypeScript 7)",
+      "kind": "build and test"
+    },
+    "vite": {
+      "version": "8.3.5",
+      "license": "MIT",
+      "origin": "Vite team (VoidZero and community)",
+      "tier": "free, no paid tier",
+      "why": "Build and dev server",
+      "kind": "build and test"
+    },
+    "vitest": {
+      "version": "5.0.5",
+      "license": "MIT",
+      "origin": "Vitest team (VoidZero and community)",
+      "tier": "free, no paid tier",
+      "why": "Unit and component tests",
+      "kind": "build and test"
+    },
+    "vue-tsc": {
+      "version": "3.3.13",
+      "license": "MIT",
+      "origin": "Vue language tools team",
+      "tier": "free, no paid tier",
+      "why": "Type checking of .vue files",
+      "kind": "build and test"
+    }
+  }
+}

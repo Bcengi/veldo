@@ -20,9 +20,9 @@ call `fetch` or construct an `EventSource`; a unit test scans the source tree fo
 both tables and fails when the UI names a route, method or path the API does not publish, which is
 how "every request a screen makes is traced to an API route" stays true.
 
-Routes are domain scoped: `/api/v1/domains/{domain}/...`. The domain comes from the session store,
-which reads it from the page's own location (`<meta name="veldo-domain">` is not used, since the API
-serves one domain); see `api/domain.ts`.
+Routes are domain scoped: `/api/v1/domains/{domain}/...`. The API serves one domain and names it in
+its session answer (`auth.session` and `auth.sign_in` return `domain`); the session store puts it in
+`api/context.ts` beside the token, and `routePath` fills it in.
 
 ## The client
 
@@ -40,7 +40,7 @@ serves one domain); see `api/domain.ts`.
 
 ## Refusals are data
 
-`api/refusals.ts` maps every refusal the screens can meet to a sentence for a person and a fix:
+`api/refusal.ts` maps every refusal the screens can meet to a sentence for a person and a fix:
 
 | Class | Example names | Shown as |
 |---|---|---|

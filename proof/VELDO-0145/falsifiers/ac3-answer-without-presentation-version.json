@@ -1,0 +1,76 @@
+{
+  "schema": "veldo.ui_falsifier_record/v1",
+  "case": "ac3-answer-without-presentation-version",
+  "criterion": "AC3",
+  "falsifier": "Send an answer without the presentation version it answers; the stale-answer refusal row must fail.",
+  "commit": "59c235f321e16319e2df99328f7d96b15596278d",
+  "edits": [
+    {
+      "file": "src/features/decisions/inbox.ts",
+      "source_sha256": "b182d5585f23bd274146d6192db7f6648e2caf95e424b448f16b19e0a8b40add",
+      "mutant_sha256": "18061340bf889c75df3ae153d96f5f52b0cb93d8caf37ccc032e660e9b09dad6",
+      "old": "    presentation_version: shown.version,\n",
+      "new": ""
+    },
+    {
+      "file": "src/api/routes.json",
+      "source_sha256": "e5da3dba3bdb87bf390c075b12718256af2afe5d86a596cac0c3843790365138",
+      "mutant_sha256": "9ddf846d46e27cdd41a3d731aa31b71c835bd64d74ec4a94160b47dfed2e9823",
+      "old": "\"required\": [\"request_id\", \"request_version\", \"presentation_id\", \"presentation_digest\", \"presentation_version\", \"choice\", \"rationale\"]",
+      "new": "\"required\": [\"request_id\", \"request_version\", \"presentation_id\", \"presentation_digest\", \"choice\", \"rationale\"]"
+    }
+  ],
+  "red": [
+    {
+      "kind": "e2e",
+      "file": "e2e/decisions.spec.ts",
+      "grep": "stale answer",
+      "exit": 1,
+      "seconds": 13.642,
+      "summary": [
+        "    Error: expect(locator).toHaveAttribute(expected) failed",
+        "    Expected: \"stale_version:stale_presentation\"",
+        "    Received: \"invalid_input:fields\"",
+        "  1 failed"
+      ]
+    },
+    {
+      "kind": "unit",
+      "file": "src/features/decisions/DecisionDetail.spec.ts",
+      "exit": 1,
+      "seconds": 0.882,
+      "summary": [
+        " ❯ src/features/decisions/DecisionDetail.spec.ts (6 tests | 1 failed) 97ms",
+        " Test Files  1 failed (1)",
+        "      Tests  1 failed | 5 passed (6)",
+        "⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯",
+        "AssertionError: expected \"sendAnswer\" to be called with arguments: [ { …(7) } ]",
+        "Received:"
+      ]
+    }
+  ],
+  "green": [
+    {
+      "kind": "e2e",
+      "file": "e2e/decisions.spec.ts",
+      "grep": "stale answer",
+      "exit": 0,
+      "seconds": 4.425,
+      "summary": [
+        "  1 passed (4.0s)"
+      ]
+    },
+    {
+      "kind": "unit",
+      "file": "src/features/decisions/DecisionDetail.spec.ts",
+      "exit": 0,
+      "seconds": 0.857,
+      "summary": [
+        " Test Files  1 passed (1)",
+        "      Tests  6 passed (6)"
+      ]
+    }
+  ],
+  "red_as_required": true,
+  "green_as_required": true
+}

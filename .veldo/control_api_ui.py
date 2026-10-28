@@ -20,8 +20,15 @@ REFUSALS, named as the API names them: another Host (invalid_input:host), a path
 (invalid_input:path), no such file or a type outside the table (missing_evidence:asset) and no built UI
 on this host (missing_evidence:ui_not_built).
 
+THE DEPENDENCY POLICY (`dependency_problems`, VELDO-0131 AC4 as VELDO-0145 applies it). The UI's
+package-lock.json is judged against its dependency-policy.json: every installed package carries a license
+on the allowed list and matches no denied name (a Chinese-origin UI library, or a library with free and paid
+tiers, from the major version the rule names) unless an owner decision names it; every direct dependency is
+listed with its exact version, license, origin, tier and reason, and package.json pins it exactly.
+
 WHAT IT IS NOT. Not a general file server, not a cache, not a writer. Standard library only.
 """
+import fnmatch
 import json
 from pathlib import Path
 import urllib.parse
@@ -115,3 +122,59 @@ def serve(ui_dir, method, path, headers, host):
            ('X-Content-Type-Options', 'nosniff'), ('Referrer-Policy', 'no-referrer'),
            ('Cross-Origin-Opener-Policy', 'same-origin'), ('Content-Length', str(length))]
     return 200, out, b'' if method == 'HEAD' else body
+
+
+def _major(version):
+    head = str(version or '').split('.', 1)[0]
+    return int(head) if head.isdigit() else None
+
+
+def dependency_problems(lock, policy, package):
+    """Why the UI's installed packages (package-lock.json `lock`) and its manifest (package.json `package`) are
+    not what the dependency policy admits, by name; [] when they are."""
+    problems = []
+    allowed = set((policy.get('licenses') or {}).get('allowed') or ())
+    decided = {d.get('name') for d in policy.get('owner_decisions') or () if isinstance(d, dict)}
+    deny = [d for d in policy.get('deny') or () if isinstance(d, dict) and isinstance(d.get('name'), str)]
+    packages = (lock or {}).get('packages') if isinstance(lock, dict) else None
+    if not isinstance(packages, dict) or not packages:
+        return ['the lockfile lists no packages']
+    for path, meta in sorted(packages.items()):
+        if not path:
+            continue
+        name = path.rsplit('node_modules/', 1)[-1]
+        meta = meta if isinstance(meta, dict) else {}
+        version, license_ = meta.get('version'), meta.get('license')
+        if license_ not in allowed:
+            problems.append('%s@%s: license %s is not allowed' % (name, version, license_))
+        for rule in deny:
+            if not fnmatch.fnmatchcase(name, rule['name']):
+                continue
+            floor = rule.get('from_major')
+            major = _major(version)
+            if floor is not None and (major is None or major < floor):
+                continue
+            if name in decided and floor is None:
+                continue
+            problems.append('%s@%s: denied (%s)' % (name, version, rule.get('reason')))
+    direct = policy.get('direct') or {}
+    wanted = dict((package or {}).get('dependencies') or {}, **((package or {}).get('devDependencies') or {}))
+    for name, spec in sorted(wanted.items()):
+        entry = direct.get(name)
+        if not isinstance(entry, dict):
+            problems.append('%s: a direct dependency the policy does not list' % name)
+            continue
+        if not isinstance(spec, str) or not spec[:1].isdigit() or any(c in spec for c in '^~*<>| '):
+            problems.append('%s: package.json does not pin an exact version (%s)' % (name, spec))
+        installed = (packages.get('node_modules/' + name) or {}).get('version')
+        if entry.get('version') != spec or installed != spec:
+            problems.append('%s: policy %s, package.json %s, installed %s' % (name, entry.get('version'), spec, installed))
+        for field in ('license', 'origin', 'tier', 'why'):
+            if not entry.get(field):
+                problems.append('%s: the policy records no %s' % (name, field))
+        if entry.get('license') != (packages.get('node_modules/' + name) or {}).get('license'):
+            problems.append('%s: the policy records license %s, the package declares %s' % (
+                name, entry.get('license'), (packages.get('node_modules/' + name) or {}).get('license')))
+    for name in sorted(set(direct) - set(wanted)):
+        problems.append('%s: listed in the policy but not a direct dependency' % name)
+    return problems

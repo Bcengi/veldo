@@ -35,7 +35,7 @@ license and tier in `dependency-policy.json`. Adding one means adding it there f
 dependency-policy suite fails on anything unlisted. See [docs/patterns/dependencies.md](docs/patterns/dependencies.md).
 
 - Vue 3 with `<script setup lang="ts">` and the Composition API only
-- TypeScript, strict
+- TypeScript 6, strict (vue-tsc does not run on TypeScript 7 yet)
 - Vite
 - PrimeVue 4 in **unstyled** mode, styled by Veldo's own pass-through preset (`src/ui/preset.ts`)
 - Tailwind CSS 4 for layout utilities; design tokens are CSS custom properties (`src/styles/tokens.css`)
@@ -48,10 +48,11 @@ dependency-policy suite fails on anything unlisted. See [docs/patterns/dependenc
 1. **The API is the only source of state and the only way to act.** No store, file or provider is
    reached any other way. Every request goes through `src/api/client.ts` and names a route of
    `src/api/routes.ts`, which mirrors the API's published `ROUTES` table; a test compares the two.
-2. **No inline script and no injected style elements.** The API serves a same-origin content
-   security policy (`default-src 'self'`, no `style-src`). Nothing may need `unsafe-inline`: no
-   PrimeVue styled mode, no `v-html`, no `<style>` created at run time. Vue `:style` bindings are
-   allowed (they use the CSSOM).
+2. **No inline script and no inline style.** The API serves a same-origin content security policy
+   (`default-src 'self'`, no `style-src`). Nothing may need `unsafe-inline`: no PrimeVue styled mode,
+   no `v-html`, no `<style>` element or `style="..."` markup created at run time. Vue `:style` bindings
+   are allowed (they use the CSS object model). Libraries that write styles are routed through
+   `src/ui/sheets.ts` and `src/ui/style-attributes.ts`; the browser tests fail on any policy violation.
 3. **Text from the factory is text.** Record lines, questions and rationales render through text
    interpolation, never `v-html` or markdown rendering.
 4. **Never show optimism.** A decision is answered only when the API says so; a refusal is shown beside

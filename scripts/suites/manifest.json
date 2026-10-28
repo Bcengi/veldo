@@ -1524,6 +1524,15 @@
    ],
    "regions": "Authority-measured mutation worker deadlines and bounded store.",
    "requires_note": "Only ROOT and expect; controlled coordinator children and scratch stores, plus a real hanging child."
+  },
+  {
+   "name": "113_veldo_0145_ui",
+   "file": "113_veldo_0145_ui.py",
+   "requires": [
+    "113_veldo_0145_ui"
+   ],
+   "regions": "The UI's page and built assets served by the VELDO-0130 API from its own origin under its policy, every factory data route refused before a passkey session, the UI's route table traced to the API's published routes, and the UI's dependency policy over its lockfile (VELDO-0145).",
+   "requires_note": "Only ROOT and expect; a real ControlApi on the real loopback listener with a recording authority stand-in, a fixture UI build, and the UI's own routes.json, package.json, package-lock.json and dependency-policy.json."
   }
  ],
  "resource_capacities": {

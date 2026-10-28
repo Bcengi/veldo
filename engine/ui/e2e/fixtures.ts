@@ -23,7 +23,9 @@ export interface Factory {
 async function startFactory(): Promise<{ factory: Factory; child: ChildProcessWithoutNullStreams }> {
   const dist = process.env.VELDO_UI_DIST ?? path.join(UI, 'dist')
   if (!existsSync(path.join(dist, 'index.html'))) throw new Error(`build the UI first: no ${dist}/index.html`)
-  const child = spawn('python3', ['-B', path.join(here, 'harness.py'), '--dist', dist], { stdio: ['pipe', 'pipe', 'pipe'] })
+  const args = ['-B', path.join(here, 'harness.py'), '--dist', dist]
+  if (process.env.VELDO_ORGANS) args.push('--organs', process.env.VELDO_ORGANS)
+  const child = spawn('python3', args, { stdio: ['pipe', 'pipe', 'pipe'] })
   let errors = ''
   child.stderr.on('data', (chunk) => (errors += String(chunk)))
   const ready = await new Promise<{ origin: string; control: string; domain: string }>((resolve, reject) => {
