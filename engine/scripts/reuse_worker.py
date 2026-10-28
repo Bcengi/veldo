@@ -23,7 +23,22 @@ def load(path):
     return module
 
 
+def join_worker_cgroup():
+    # Authority opens this descriptor before spawn. Close it before any candidate
+    # import, and remove it from the environment before a confined tree re-exec.
+    descriptor = os.environ.pop('VELDO_MUTATION_CGROUP_FD', None)
+    if descriptor is not None:
+        fd = int(descriptor)
+        try:
+            os.write(fd, str(os.getpid()).encode())
+        except OSError as error:
+            raise RuntimeError('worker_launch_error: cannot enter worker cgroup') from error
+        finally:
+            os.close(fd)
+
+
 def main():
+    join_worker_cgroup()
     authority = Path(__file__).resolve().parents[1]
     mode, root = sys.argv[1], Path(sys.argv[2])
     if mode == 'inventory':  # Already confined by gate_candidate before this import.

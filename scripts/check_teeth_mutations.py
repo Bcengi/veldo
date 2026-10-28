@@ -11529,6 +11529,24 @@ def cases():
         ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0219: measured admission and conservative guaranteed parallelism.
+    suite219 = '115_veldo_0219_measured_admission.py'
+    add(219, 'admission219-slowest-rate', suite219, 'check_gate_mutations.py',
+        "    fastest = min(r['elapsed'] for r in runs)\n",
+        "    fastest = max(r['elapsed'] for r in runs)\n",
+        ['admission/measured-per-case'])
+    result[-1]['dir'] = 'scripts'
+    add(219, 'admission219-fixed-sixteen', suite219, 'check_gate_mutations.py',
+        '    return max(2, int(2 * cpus))\n',
+        '    return max(2, min(16, int(2 * cpus)))\n',
+        ['admission/fits-ledger'])
+    result[-1]['dir'] = 'scripts'
+    add(219, 'admission219-optimistic-m', suite219, 'check_gate_mutations.py',
+        '    return min(ceiling, max(2, math.floor(guaranteed)))\n',
+        '    return ceiling\n',
+        ['admission/same-verdicts'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0216: graph completeness, concurrent records, summed claims and serial control.
     suite216 = '114_veldo_0216_concurrent_stages.py'
     add(216, 'concurrent216-missing-stage-runs-nothing', suite216, 'gate_schedule.py',
