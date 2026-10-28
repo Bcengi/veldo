@@ -11529,6 +11529,28 @@ def cases():
         ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0188: each criterion's declared falsifier.
+    def project_lines(name, module, old, new, rows, also=()):
+        add(188, name, '113_veldo_0188_project_lines.py', module, old, new, rows, also)
+
+    # AC1 (declared): the lines built only in FactoryLoop's constructor from the work configuration.
+    project_lines('lines188-constructor-only', 'control_service.py',
+                  "        self.started_lines = self.follow_store(0)\n",
+                  "        self.started_lines = {}  # defect: the store's projects give the loop no line\n",
+                  ['lines/new-project'],
+                  also=[("        if 'journal' in report['sources']:\n            try:\n                report['lines'] = ",
+                         "        if False:  # defect: no pass follows the store\n            try:\n                report['lines'] = ")])
+    # AC2 (declared): every line staffed from the default team.
+    project_lines('staff188-default-team-only', 'control_service.py',
+                  "    if isinstance(data, dict) and data.get('revision') and isinstance(data.get('team'), dict):\n",
+                  "    if False:  # defect: a project's own team never staffs its line\n",
+                  ['staff/project-team'])
+    # AC3 (declared): a closed project's line kept in the loop.
+    project_lines('close188-line-kept', 'control_service.py',
+                  "            if (getattr(line, 'closing', False) and repository not in self.work_roles and not line.runner.launches\n",
+                  "            if (False and repository not in self.work_roles and not line.runner.launches  # defect: kept\n",
+                  ['close/removed'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

@@ -2555,7 +2555,8 @@ class FactoryLoop:
                    'stopping': [], 'stopped': [], 'refused': []}
         projects, closed = {}, {}
         for version, data in conn.execute("SELECT version, data FROM entities WHERE kind='project' ORDER BY id"):
-            project = dict(json.loads(data), version=version) if isinstance(json.loads(data), dict) else None
+            project = json.loads(data)
+            project = dict(project, version=version) if isinstance(project, dict) else None
             repository = project.get('execution_repository') if isinstance(project, dict) else None
             if not isinstance(repository, str) or not isinstance(project.get('name'), str):
                 continue
