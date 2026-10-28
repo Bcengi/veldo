@@ -42,6 +42,15 @@ out,_=p.communicate(timeout=10)
 assert p.returncode==0 and 'worker ran' in out
 assert a.acquire('two',job,pool)
 a.release('one');a.release('two')
+for resource,cpu,memory,manager in [('cpu',19.75,0,'none'),('memory',0,15*2**30-268435456,'none'),('manager',0,0,'exclusive')]:
+    assert a.client.acquire('blocker',cpu,memory,manager)
+    assert not a.acquire('wait-'+resource,job,pool)
+    assert a.client.last_reply['resource']==resource
+    a.client.release('blocker')
+    assert a.acquire('wait-'+resource,job,pool)
+    assert a.events[-1]['resource']==[resource]
+    assert a.events[-1]['granted']['cpu']==1.25
+    a.release('wait-'+resource)
 Path(sys.argv[3]).write_text(json.dumps(a.events))
 a.close()
 ''')
@@ -58,7 +67,7 @@ a.close()
         ok = result['stages']['mutation']=='pass'
         events=json.loads((top/'events.json').read_text()) if ok else []
         transfers=[e for e in result['ledger'] if e['action']=='handoff']
-        return ok and len(transfers)==1 and transfers[0]['granted']['manager']==0 and len(events)==2
+        return ok and len(transfers)==1 and transfers[0]['granted']['manager']==0 and len(events)==5
 
 def fixed_cap(gate):
     with patch.object(gate,'worker_count',lambda *a:40), patch.object(gate,'PARALLEL',40):
@@ -80,6 +89,54 @@ def blocking_resource(gate):
         if a.acquire('waiter',job,pool): return False
     client.last_reply=dict(granted=True,resource=None,totals=dict(cpu=10,memory=5120,manager=1))
     return a.acquire('waiter',job,pool) and a.events[-1]['resource']==['cpu','manager','memory'] and a.events[-1]['granted']==client.last_reply['totals']
+
+def unit_lifecycle(owner):
+    import threading
+    with tempfile.TemporaryDirectory() as tmp:
+        top=Path(tmp);(top/'scope').mkdir();home=top/'home';home.mkdir()
+        ledger=top/'ownership';ledger.write_text('')
+        meter=owner.WorkerMeter('/scope','short',top)
+        def counters(path,cpu,anon):
+            path.mkdir(exist_ok=True,parents=True)
+            (path/'cpu.stat').write_text('usage_usec %d\n' % (cpu*1e6))
+            (path/'memory.stat').write_text('anon %d\n' % anon)
+        counters(meter.path,1,1024)
+        class Retained:
+            def __init__(self,unit,root):
+                self.path=root/unit;self.memory_peak=0
+                counters(self.path,0,0)
+            def sample(self,final=False):
+                return (float((self.path/'cpu.stat').read_text().split()[1])/1e6,0)
+            def close(self): pass
+        joined=[];errors=[]
+        if not hasattr(meter,'open_lifecycle'): return False
+        fd=meter.open_lifecycle()
+        # A real worker-side ownership notification blocks until the authority
+        # has retained the parent, before the short child can exist.
+        def worker():
+            tracker=owner.Tracker(home,os.open(ledger,os.O_WRONLY|os.O_APPEND),os.dup(fd))
+            try:
+                tracker.record('slice','veldo219fixture.slice')
+                parent=top/'veldo219fixture.slice'
+                if not parent.exists(): raise RuntimeError('parent not retained before launch')
+                child=parent/'short.service';counters(child,4,32*2**20)
+                # Kernel final accounting rolls child CPU into its live parent.
+                counters(parent,4,0)
+                import shutil
+                shutil.rmtree(child)
+                joined.append(True)
+            except Exception as e: errors.append(repr(e))
+            finally: tracker.close()
+        with patch.object(owner,'RetainedSlice',Retained):
+            thread=threading.Thread(target=worker);thread.start()
+            end=time.monotonic()+5
+            while thread.is_alive() and time.monotonic()<end:
+                meter.lifecycle_events(home,ledger)
+                time.sleep(.001)
+            thread.join(timeout=1)
+            measured=meter.sample(home,ledger)
+            for sock in (meter.lifecycle,meter.peer): sock.close()
+        return bool(joined) and not errors and not thread.is_alive() and measured['cpu_seconds']==5
 
 def main():
     gate=load(ROOT/'scripts/check_gate_mutations.py')

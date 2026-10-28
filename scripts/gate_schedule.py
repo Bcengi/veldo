@@ -100,6 +100,9 @@ def read_graph(catalog, declaration=None, path=GRAPH):
             if not isinstance(graph[key], dict) or set(graph[key]) != {'cpu', 'memory'} \
                     or not all(number(v) for v in graph[key].values()):
                 raise Refused('invalid ' + key)
+        coordinator = nodes.get('mutation', {}).get('coordinator')
+        if coordinator and any(coordinator[r] >= graph['mutation_floor'][r] for r in ('cpu', 'memory')):
+            raise Refused('coordinator consumes the entire mutation floor')
         return graph, 'sha256:' + hashlib.sha256(raw).hexdigest(), required
     except (OSError, ValueError, TypeError, KeyError) as error:
         raise Refused('invalid graph: ' + str(error)) from error
@@ -282,6 +285,8 @@ def node_claim(node, measured, capacity):
     else:
         demand = dict(cpu=capacity['cpu'], memory=capacity['memory'])
         source = 'no authority estimate; reserving full gate capacity'
+    if 'coordinator' in node:
+        demand = {r: max(demand[r], node['coordinator'][r]) for r in ('cpu', 'memory')}
     return dict(demand, manager=node['manager'], ports=node['ports'],
                 host_lock=node.get('host_lock', 'none')), source
 

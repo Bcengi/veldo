@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import socket
 import subprocess
 import sys
 
@@ -26,7 +27,7 @@ def unit_directory():
 
 
 class Tracker:
-    def __init__(self, home, fd):
+    def __init__(self, home, fd, lifecycle_fd=None):
         # fd appends to the coordinator's ledger; the worker cannot open or name that file.
         self.home = Path(home).resolve()
         self.directories = {str(self.home)}
@@ -34,6 +35,8 @@ class Tracker:
         self.enabled = True
         self.encode = json.JSONEncoder.iterencode
         self.fd = fd
+        self.lifecycle = socket.socket(fileno=lifecycle_fd) if lifecycle_fd is not None else None
+        self.Popen = subprocess.Popen
 
     def record(self, kind, value):
         pair = (kind, str(value))
@@ -43,6 +46,17 @@ class Tracker:
             body = json.JSONEncoder()
             data = ''.join(self.encode(body, list(pair))) + '\n'
             os.write(self.fd, data.encode())
+            if kind in ('slice', 'service'):
+                self.notify('register', kind, str(value))
+
+    def notify(self, operation, kind='', value=''):
+        if self.lifecycle is None:
+            return
+        # This channel supplies names only. The authority reads every counter.
+        self.lifecycle.sendall(json.dumps([operation, kind, value]).encode())
+        answer = json.loads(self.lifecycle.recv(65536))
+        if answer != {'ok': True}:
+            raise RuntimeError('worker_measurement_error: ' + str(answer))
 
     def owned(self, path):
         try:
@@ -93,11 +107,29 @@ class Tracker:
                 self.observe(value)
             return self.encode(encoder, value, *args, **kwargs)
         json.JSONEncoder.iterencode = encode
+        tracker = self
+        class Popen(self.Popen):
+            def __init__(self, args, *positional, **kwargs):
+                self.accounting = tracker.lifecycle is not None and isinstance(args, (list, tuple)) and bool(args) and Path(args[0]).name in ('systemctl', 'systemd-run')
+                self.accounted = False
+                if self.accounting:
+                    tracker.notify('before')
+                super().__init__(args, *positional, **kwargs)
+            def wait(self, *args, **kwargs):
+                result = super().wait(*args, **kwargs)
+                if self.accounting and not self.accounted:
+                    tracker.notify('after')
+                    self.accounted = True
+                return result
+        subprocess.Popen = Popen
         return self
 
     def close(self):
         self.enabled = False
         json.JSONEncoder.iterencode = self.encode
+        subprocess.Popen = self.Popen
+        if self.lifecycle is not None:
+            self.lifecycle.close()
         os.close(self.fd)
 
 
@@ -189,6 +221,101 @@ def cleanup(home, ledger, run=subprocess.run, runtime=None):
     return {'units': units, 'directories': len(directories)}
 
 
+class RetainedSlice:
+    """Keep an accounting parent loaded until the authority reads final counters.
+
+    Descendant CPU is retained by the kernel even when a short unit's cgroup
+    disappears. A manager reference also preserves CPUUsageNSec after an explicit
+    stop. Each restart is a new counter generation, never maxed against a prior run.
+    """
+    def __init__(self, unit, root):
+        import ctypes as ct
+        self.unit, self.root = unit, root
+        self.total, self.current, self.peak, self.invocation = 0., 0., 0, None
+        self.memory_peak = 0
+        self.lib = ct.CDLL('libsystemd.so.0')
+        pointer = ct.c_void_p
+        self.bus = pointer()
+        for name, args, result in (
+            ('sd_bus_open_user', [ct.POINTER(pointer)], ct.c_int),
+            ('sd_bus_call_method', [pointer, ct.c_char_p, ct.c_char_p, ct.c_char_p,
+                                   ct.c_char_p, pointer, pointer, ct.c_char_p], ct.c_int),
+            ('sd_bus_flush_close_unref', [pointer], pointer)):
+            function = getattr(self.lib, name)
+            function.argtypes, function.restype = args, result
+        try:
+            if self.lib.sd_bus_open_user(ct.byref(self.bus)) < 0:
+                raise OSError('cannot open accounting manager connection')
+            # Starting an empty slice creates a durable kernel accounting parent.
+            self.ctl('start', unit)
+            rc = self.lib.sd_bus_call_method(self.bus, b'org.freedesktop.systemd1',
+                b'/org/freedesktop/systemd1', b'org.freedesktop.systemd1.Manager',
+                b'RefUnit', None, None, b's', ct.c_char_p(unit.encode()))
+            if rc < 0:
+                raise OSError(-rc, 'cannot retain accounting slice')
+            self.path = None
+            self.inode = None
+            self.sample()
+        except BaseException:
+            try:
+                self.ctl('stop', unit)
+            finally:
+                self.close()
+            raise
+
+    @staticmethod
+    def ctl(*args):
+        result = subprocess.run(['systemctl', '--user', *args], capture_output=True, text=True,
+                                timeout=10, env=dict(os.environ, XDG_RUNTIME_DIR='/run/user/%d' % os.getuid()))
+        if result.returncode:
+            raise OSError('accounting manager command failed: ' + result.stderr)
+        return result.stdout
+
+    def sample(self, final=False):
+        if not final and self.path is not None:
+            return self.kernel_sample()
+        shown = dict(line.split('=', 1) for line in self.ctl('show', self.unit,
+                     '-p', 'ControlGroup', '-p', 'CPUUsageNSec', '-p', 'InvocationID', '-p', 'MemoryPeak').splitlines() if '=' in line)
+        invocation = shown.get('InvocationID')
+        if invocation and invocation != self.invocation:
+            self.total += self.current
+            self.current = 0.
+            self.invocation = invocation
+        cpu = shown.get('CPUUsageNSec', '')
+        if cpu.isdigit() and int(cpu) < 2**64-1:
+            self.current = max(self.current, int(cpu)/1e9)
+        peak = shown.get('MemoryPeak', '')
+        if peak.isdigit() and int(peak) < 2**64-1:
+            self.memory_peak = max(self.memory_peak, int(peak))
+        value = shown.get('ControlGroup')
+        if value:
+            if not value.startswith('/') or '..' in Path(value).parts or Path(value).name != self.unit:
+                raise ValueError('invalid accounting cgroup')
+            self.path = self.root / value.lstrip('/')
+            self.inode = self.path.stat().st_ino if self.path.exists() else None
+        return self.kernel_sample()
+
+    def kernel_sample(self):
+        if self.path is not None:
+            try:
+                if self.path.stat().st_ino != self.inode:
+                    return self.sample(final=True)
+                cpu = dict(line.split() for line in (self.path/'cpu.stat').read_text().splitlines())
+                memory = dict(line.split() for line in (self.path/'memory.stat').read_text().splitlines())
+                self.current = max(self.current, int(cpu['usage_usec'])/1e6)
+                self.peak = max(self.peak, int(memory['anon']))
+                self.memory_peak = max(self.memory_peak, int((self.path/'memory.peak').read_text()))
+            except FileNotFoundError:
+                pass
+        return self.total + self.current, self.peak
+
+    def close(self):
+        if self.bus:
+            self.lib.sd_bus_flush_close_unref(self.bus)
+            self.bus = None
+
+
+
 class WorkerMeter:
     """Coordinator-owned cgroup counters, read before ownership cleanup.
 
@@ -213,6 +340,66 @@ class WorkerMeter:
         self.path.mkdir()
         self.paths, self.counters = {}, {}
         self.peak, self.last_discovery = 0, float('-inf')
+        self.lifecycle = self.peer = None
+        self.retained, self.dropins = {}, []
+        self.accounting_slice = 'veldometer%s.slice' % self.path.name.replace('-', '')
+
+
+    def open_lifecycle(self):
+        self.lifecycle, self.peer = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
+        self.lifecycle.setblocking(False)
+        return self.peer.fileno()
+
+    def launched(self):
+        if self.peer is not None:
+            self.peer.close()
+            self.peer = None
+
+    def retain(self, unit):
+        if unit not in self.retained:
+            self.retained[unit] = RetainedSlice(unit, self.root)
+        return self.retained[unit]
+
+    def prepare_unit(self, kind, value):
+        if kind == 'slice' and SLICE.fullmatch(value):
+            self.retain(value)
+        elif kind == 'service' and Path(value).parent == unit_directory() and SERVICE.fullmatch(Path(value).name):
+            self.retain(self.accounting_slice)
+            directory = unit_directory() / (Path(value).name + '.d')
+            directory.mkdir(exist_ok=True)
+            target = directory / '90-veldo-meter.conf'
+            # Never overwrite a preexisting owner's drop-in.
+            with target.open('x') as handle:
+                handle.write('[Service]\nSlice=' + self.accounting_slice + '\n')
+            self.dropins.append(target)
+        else:
+            raise ValueError('invalid lifecycle unit ownership')
+
+    def lifecycle_events(self, home, ledger):
+        if self.lifecycle is None:
+            return
+        while True:
+            try:
+                data = self.lifecycle.recv(65536)
+            except BlockingIOError:
+                return
+            if not data:
+                return
+            try:
+                operation, kind, value = json.loads(data)
+                if operation == 'register':
+                    entries, rejected = admitted(home, ledger)
+                    if rejected or (kind, value) not in entries:
+                        raise ValueError('lifecycle unit is not in the ownership ledger')
+                    self.prepare_unit(kind, value)
+                elif operation not in ('before', 'after'):
+                    raise ValueError('invalid lifecycle operation')
+                for retained in self.retained.values():
+                    retained.sample(final=True)
+                self.lifecycle.send(json.dumps({'ok': True}).encode())
+            except Exception as error:
+                self.lifecycle.send(json.dumps({'error': str(error)}).encode())
+                raise
 
     def open_join(self):
         return os.open(self.path / 'cgroup.procs', os.O_WRONLY | os.O_CLOEXEC)
@@ -237,10 +424,14 @@ class WorkerMeter:
             self.paths[unit] = path
 
     def sample(self, home=None, ledger=None):
+        if ledger is not None:
+            self.lifecycle_events(home, ledger)
         if ledger is not None and self.clock() - self.last_discovery >= .1:
             self.unit_paths(home, ledger)
             self.last_discovery = self.clock()
-        paths = {self.path, *self.paths.values()}
+        retained_values = {r.path: r.sample() for r in self.retained.values() if r.path is not None}
+        paths = {self.path, *self.paths.values(), *retained_values}
+
         roots = [p for p in paths if not any(other != p and other in p.parents for other in paths)]
         for path in roots:
             try:
@@ -252,17 +443,41 @@ class WorkerMeter:
             except FileNotFoundError:
                 if path == self.path:
                     raise
+        self.counters.update(retained_values)
         # Sum per-root peaks conservatively. Removed units retain their counters.
         # Remove nested entries if a parent became visible in a later poll.
         self.counters = {p: v for p, v in self.counters.items()
                          if not any(other != p and other in p.parents for other in self.counters)}
         self.peak = max(self.peak, sum(v[1] for v in self.counters.values()))
+        # Anonymous memory remains sampled. The kernel's durable total-memory
+        # peak is a separate conservative bound for units missed between polls;
+        # never relabel file cache as measured anonymous memory.
+        memory_bound = sum(v[1] for p, v in self.counters.items() if p not in retained_values)
+        memory_bound += sum(r.memory_peak for r in self.retained.values())
+
         return dict(cpu_seconds=sum(v[0] for v in self.counters.values()), peak_anon_bytes=self.peak,
-                    metrics_source='cgroup-v2-anon-sampled-20ms',
+                    peak_memory_bytes=max(self.peak, memory_bound),
+                    metrics_source='cgroup-v2-anon-sampled-20ms-with-final-unit-accounting',
                     cgroups=sorted(str(p) for p in self.counters))
 
     def close(self):
         import time
+        for target in self.dropins:
+            target.unlink(missing_ok=True)
+            try:
+                target.parent.rmdir()
+            except OSError:
+                pass
+        self.dropins.clear()
+        if self.accounting_slice in self.retained:
+            RetainedSlice.ctl('stop', self.accounting_slice)
+        for retained in self.retained.values():
+            retained.close()
+        self.retained.clear()
+        for sock in (self.peer, self.lifecycle):
+            if sock is not None:
+                sock.close()
+        self.peer = self.lifecycle = None
         if not self.path.exists():
             return
         events = self.path / 'cgroup.events'

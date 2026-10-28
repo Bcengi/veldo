@@ -269,12 +269,14 @@ def resource_samples(item, now):
     return [r for r in runs if isinstance(r, dict)
             and all(type(r.get(k)) in (int, float) and math.isfinite(r[k]) and r[k] > 0
                     for k in ('at', 'cpu_seconds', 'elapsed', 'peak_anon_bytes'))
+            and ('peak_memory_bytes' not in r or (type(r['peak_memory_bytes']) in (int, float)
+                 and math.isfinite(r['peak_memory_bytes']) and r['peak_memory_bytes'] >= 0))
             and now - 30 * 86400 <= r['at'] <= now]
 
 
 def resource_claim(runs):
     return dict(cpu=max(r['cpu_seconds'] / r['elapsed'] for r in runs),
-                memory=max(r['peak_anon_bytes'] for r in runs))
+                memory=max(max(r['peak_anon_bytes'], r.get('peak_memory_bytes', 0)) for r in runs))
 
 
 class CaseClaims:
@@ -922,12 +924,14 @@ class Workers:
                     # every worker grant; the worker only inherits an append descriptor to it.
                     self.ledgers[name] = directory / ('ownership-' + str(self.invocations) + '.jsonl')
                     ledger = None
-                    meter_fd = None
+                    meter_fd = lifecycle_fd = None
                     try:
                         if self.admission and self.admission.meter_factory:
                             meter = self.admission.meter_factory(str(self.invocations))
                             self.meters[name] = meter
                             meter_fd = meter.open_join()
+                            if hasattr(meter, 'open_lifecycle'):
+                                lifecycle_fd = meter.open_lifecycle()
                         ledger = os.open(self.ledgers[name], os.O_WRONLY | os.O_CREAT | os.O_EXCL
                                          | os.O_APPEND | os.O_CLOEXEC, 0o600)
                         worker_root = Path(job.get('snapshot_root', root))
@@ -957,11 +961,16 @@ class Workers:
                         environment = fixed_env(home, str(bindir) + ':/usr/bin:/bin')
                         if meter_fd is not None:
                             environment['VELDO_MUTATION_CGROUP_FD'] = str(meter_fd)
+                        if lifecycle_fd is not None:
+                            environment['VELDO_MUTATION_LIFECYCLE_FD'] = str(lifecycle_fd)
                         proc = subprocess.Popen(argv, cwd=worker_root,
                                                 env=environment,
                                                 stdin=subprocess.DEVNULL, stdout=out, stderr=err,
-                                                pass_fds=(ledger, *((meter_fd,) if meter_fd is not None else ()), *self.launcher_fds()),
+                                                pass_fds=(ledger, *((meter_fd,) if meter_fd is not None else ()),
+                                                          *((lifecycle_fd,) if lifecycle_fd is not None else ()), *self.launcher_fds()),
                                                 start_new_session=True)
+                        if lifecycle_fd is not None:
+                            meter.launched()
                     except BaseException as error:
                         out.close()
                         err.close()

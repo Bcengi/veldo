@@ -11547,6 +11547,12 @@ def cases():
         ['admission/same-verdicts'])
     result[-1]['dir'] = 'scripts'
 
+    add(219, 'admission219-short-unit-unaccounted', suite219, 'mutation_ownership.py',
+        '            self.retain(value)\n',
+        '            pass  # dropped lifecycle retention\n',
+        ['admission/unit-lifecycle'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0216: graph completeness, concurrent records, summed claims and serial control.
     suite216 = '114_veldo_0216_concurrent_stages.py'
     add(216, 'concurrent216-missing-stage-runs-nothing', suite216, 'gate_schedule.py',

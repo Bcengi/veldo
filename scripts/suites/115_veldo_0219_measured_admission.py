@@ -29,7 +29,7 @@ def _v219_checks():
     gate = load(source)
     gate.ROOT = ROOT
     scheduler = load(ROOT / 'scripts/gate_schedule.py')
-    ownership = load(ROOT / 'scripts/mutation_ownership.py')
+    ownership = load(ROOT / "scripts" / "mutation_ownership.py")
     bootstrap = load(ROOT / 'scripts/reuse_worker.py')
 
     def row(name, condition):
@@ -376,6 +376,7 @@ def _v219_checks():
         row('unmetered-fixed-cap', regressions.fixed_cap(gate))
         row('cpu-per-run', regressions.per_run(gate))
         row('blocking-resource', regressions.blocking_resource(gate))
+        row('unit-lifecycle', regressions.unit_lifecycle(ownership))
 
         qualification = load(ROOT / 'proof/VELDO-0219/qualification.py')
         capture = qualification.fixture()
