@@ -5,6 +5,13 @@ falsifiers deferred under owner rule 37191, plus the inherited batch dependency
 noted in OPEN.md. This directory contains targeted implementation evidence,
 not a canonical green gate or a landing approval.
 
+The final locked run at 4b1a0199 passed all 48 suite assertions. All four
+registered mutants failed their target rows; all four baselines and all four
+no-op controls passed. The native short-unit, restart and installed-service
+checks passed, with CPU measurements within 10 percent. RESULT.json records
+the tested source digests, engine parity and the remaining canonical work.
+The read-only anchor audit also passed all 25 affected registered anchor sets.
+
 ## Dependency and changes
 
 The first commit of this round is the ordinary merge e4b71c37 of

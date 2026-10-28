@@ -1,0 +1,52 @@
+{
+  "spec": "VELDO-0219",
+  "status": "REMAINING",
+  "tested_head": "4b1a01996b78cea89324239b5289de888735e935",
+  "dependency_merge": "e4b71c37",
+  "merged_dependency": "18e375b0",
+  "local_checks_passed": true,
+  "registered_falsifiers": 4,
+  "mutant_runs": 4,
+  "baseline_runs": 4,
+  "noop_runs": 4,
+  "suite": [
+    {
+      "suite": "115_veldo_0219_measured_admission",
+      "exit": 2,
+      "summary": [
+        "selftest (PARTIAL, 1 of 171 suites): 48 passed, 0 failed in 3.72s"
+      ]
+    }
+  ],
+  "native_lifecycle": true,
+  "source_sha256": {
+    "scripts/gate_schedule.py": "a1495fcd8f0b5f8fdb437bfb6cfefab04a5ec1f283860a353ac0e96174506787",
+    "scripts/gate_graph.json": "37de7747778fab2c8b02b51e6c3c8b9b3a61089a4094943ed3a3b192f281507f",
+    "scripts/check_gate_mutations.py": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a",
+    "scripts/mutation_ownership.py": "f99f24e6820595766cb7a86c7172c55142f31b8fd51a260596fcf593e07031d6",
+    "scripts/reuse_worker.py": "314c2925e431dcab0e6b02cd3d1d5cc6d28b993e0bec23a90e16c658fdc16d74",
+    "scripts/check_teeth_mutations.py": "17fa3ab9050f18fa814d6690c16c15e87c16fe278e9a889309f9e2af65c7ca5e",
+    "scripts/suites/115_veldo_0219_measured_admission.py": "d43cf2bd2e9300dc4a19995d4d1a62dfe817387782837daeec6451bc3d99b7bf",
+    "engine/scripts/gate_schedule.py": "a1495fcd8f0b5f8fdb437bfb6cfefab04a5ec1f283860a353ac0e96174506787",
+    "engine/scripts/check_gate_mutations.py": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a",
+    "engine/scripts/mutation_ownership.py": "f99f24e6820595766cb7a86c7172c55142f31b8fd51a260596fcf593e07031d6",
+    "engine/scripts/reuse_worker.py": "314c2925e431dcab0e6b02cd3d1d5cc6d28b993e0bec23a90e16c658fdc16d74",
+    "proof/VELDO-0219/round2/check.py": "cc7262b0349ed7a9d25691ad5ae3f1d2a08b6cef544855aae18191bad7734fe2",
+    "proof/VELDO-0219/round2/lifecycle_check.py": "f76e934232e0531c12de0672961f0df44d6d046fbd700cf46ca077c274b0be03",
+    "proof/VELDO-0219/round2/falsifiers.py": "734ce3f4d17f405c0d85e82dadaa81f7d2d4756207e0f66800f342a069bf4e96"
+  },
+  "engine_parity": true,
+  "canonical": {
+    "run": false,
+    "rule": 37191,
+    "full_gate_target_seconds": 6000,
+    "mutation_target_seconds": 4000,
+    "pending": [
+      "joint force-fresh canonical gate",
+      "fixed-sixteen canonical falsifier",
+      "serialized canonical falsifier"
+    ]
+  },
+  "evidence": "README.md",
+  "batch_contract": "../OPEN.md"
+}
