@@ -14,6 +14,9 @@ import time
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
+# The teeth worker runs as scripts/check_teeth_mutations.py, with scripts/ first on the path (shared.py
+# imports run_scope from there); this driver gives it the same path.
+sys.path.insert(0, str(ROOT / 'scripts'))
 SUITE = '113_veldo_0220_gate_host'
 ROWS = ['host-lock/held-not-started', 'host-lock/released-on-exit', 'host-scope/own-scope',
         'host-lock/not-started-not-red']
