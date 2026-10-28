@@ -181,7 +181,7 @@ checks and the three named registered falsifiers; suite 53's host ceiling row is
 amended. The copies in engine/scripts remain byte identical.
 
 Round two merges VELDO-0216's reviewed fixes and approved AC4 amendment, then
-adds a scheduler and graph handoff pending owner approval under the amendment
+adds a scheduler and graph handoff approved by the owner (Telegram 37454 and 37455) under the amendment
 below. Per-case admission takes over manager exclusion; calls without a gate
 ledger channel retain the fixed cap of 16, even when the graph exists.
 CPU rates are calculated within each recorded run before selecting the largest.
@@ -197,7 +197,7 @@ canonical falsifier remain deferred to the batch gate under owner rule 37191.
 The capture checker and its synthetic red and green controls do not establish
 that timing result. This record does not mark the specification complete.
 
-## Scope amendment, 2026-10-28, pending owner approval
+## Scope amendment, 2026-10-28, approved by the owner (Telegram 37454 and 37455)
 
 The footprint and protected_paths declarations above now include
 `scripts/gate_schedule.py`, `engine/scripts/gate_schedule.py` and
