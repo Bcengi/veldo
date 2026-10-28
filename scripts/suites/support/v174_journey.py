@@ -175,7 +175,9 @@ def loop(f, CS, receiver):
     authority=f['authority']; events=[]
     service=SimpleNamespace(config={'receiver':{'conversations':str(receiver)}},conn=authority.conn,
           domain=authority.ids['domain_uuid'],principal='authority',generation=1,sign=authority.journal_sign,
-          conversations=lambda:f['conversations'],_log=events.append)
+          conversations=lambda:f['conversations'],_log=events.append,
+          # Like Service.repositories (VELDO-0161): an installation without work that took on no repository.
+          repositories={})
     wrapper=f['root']/'receiver-driver.py'
     wrapper.write_text('import runpy,sys\nsys.stderr=open('+repr(str(f['root']/'receiver-errors.log'))+", 'a')\nrunpy.run_path("+repr(str(f['root']/'modules/control_launch.py'))+",run_name='__main__')\n")
     CS.L.RECEIVER = str(wrapper)
