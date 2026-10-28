@@ -42,6 +42,7 @@ _registry_spec.loader.exec_module(_CLIENTS)
 import os
 import socket
 import sys
+import time
 
 MAX_BYTES = 1 << 20
 EXIT_OK = 0
@@ -67,23 +68,46 @@ def read_all(stream, limit=MAX_BYTES):
 
 @_CLIENTS.entrypoint('command', ('relay',))
 def forward(address, payload, timeout=30.0):
-    """The request's bytes to the endpoint, and the endpoint's bytes back. Nothing is parsed."""
+    """Carry opaque bytes within one monotonic connect-to-completion budget.
+
+    Progress never renews the budget. Keep the answer private until clean EOF and
+    all size/deadline checks succeed: a transport refusal must emit no answer.
+    """
+    deadline = time.monotonic() + timeout
+
+    def remaining():
+        budget = deadline - time.monotonic()
+        if budget <= 0:
+            raise TimeoutError("the transport deadline expired")
+        return budget
+
     conn = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    conn.settimeout(timeout)
     try:
+        conn.settimeout(remaining())
         conn.connect(address)
-        conn.sendall(payload)
+        sent = 0
+        while sent < len(payload):
+            conn.settimeout(remaining())
+            count = conn.send(memoryview(payload)[sent:sent + 65536])
+            if count == 0:
+                raise OSError("the endpoint stopped accepting request bytes")
+            sent += count
+        conn.settimeout(remaining())
         conn.shutdown(socket.SHUT_WR)
         chunks, total = [], 0
         while True:
+            conn.settimeout(remaining())
             chunk = conn.recv(65536)
+            remaining()
             if not chunk:
                 break
             total += len(chunk)
             if total > MAX_BYTES:
                 raise ValueError("the response exceeded %d bytes" % MAX_BYTES)
             chunks.append(chunk)
-        return b"".join(chunks)
+        answer = b"".join(chunks)
+        remaining()
+        return answer
     finally:
         conn.close()
 

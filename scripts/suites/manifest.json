@@ -1551,6 +1551,15 @@
    ],
    "regions": "VELDO-0115 real SQLite mutation, bound-store isolation and durable reopen through authenticated IPC.",
    "requires_note": "Only ROOT and expect. Uses scripts/fixtures/authority_store.py with real git clones, Ed25519 signatures, child authorities and local SQLite stores. No service installation or host lock manipulation."
+  },
+  {
+   "name": "113_veldo_0121_relay_exchange",
+   "file": "113_veldo_0121_relay_exchange.py",
+   "requires": [
+    "113_veldo_0121_relay_exchange"
+   ],
+   "regions": "Generated transport failures, EOF and size boundaries, total deadline, no replay.",
+   "requires_note": "Only ROOT and expect. Loads scripts/fixtures/relay_exchange.py; scratch AF_UNIX sockets and joined CLI children, real 30-second stalled and trickle exchanges. No host lock access inside fixtures."
   }
  ],
  "resource_capacities": {

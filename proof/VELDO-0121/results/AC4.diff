@@ -1,0 +1,22 @@
+--- a/.veldo/control_relay.py
++++ b/.veldo/control_relay.py
+@@ -87,7 +87,18 @@
+         chunks, total = [], 0
+         while True:
+             conn.settimeout(remaining())
+-            chunk = conn.recv(65536)
++            try:
++                chunk = conn.recv(65536)
++            except OSError:
++                conn.close()
++                conn = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
++                conn.settimeout(remaining())
++                conn.connect(address)
++                replayed = 0
++                while replayed < len(payload):
++                    replayed += conn.send(memoryview(payload)[replayed:])
++                conn.shutdown(socket.SHUT_WR)
++                chunk = conn.recv(65536)
+             remaining()
+             if not chunk:
+                 break
