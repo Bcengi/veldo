@@ -1396,7 +1396,8 @@ def main():
     # worktree of it, and its marker is checked against that directory before any Git runs.
     receipt = run_stage(args.root, common_directory(ROOT), capacities=resource_capacities(args.resource_capacity),
                         findings=args.finding, names=args.names,
-                        admit=(ROOT / 'scripts/gate_graph.json').is_file(), log_dir=args.worker_log_dir, leg=leg, measure=True)
+                        admit=load(ROOT / 'scripts/gate_schedule.py').CHANNEL in os.environ,
+                        log_dir=args.worker_log_dir, leg=leg, measure=True)
     if os.environ.get('VELDO_GATE_GRAPH_DIGEST'):
         receipt['graph'] = os.environ['VELDO_GATE_GRAPH_DIGEST']
     if args.receipt:

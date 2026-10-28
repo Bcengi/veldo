@@ -11553,6 +11553,27 @@ def cases():
         ['admission/unit-lifecycle'])
     result[-1]['dir'] = 'scripts'
 
+    admission219_channel = "                        admit=load(ROOT / 'scripts/gate_schedule.py').CHANNEL in os.environ,\n"
+    add(219, 'admission219-graph-without-channel', suite219, 'check_gate_mutations.py',
+        admission219_channel,
+        "                        admit=(ROOT / 'scripts/gate_graph.json').is_file(),\n",
+        ['admission/cli-graph-without-channel'])
+    result[-1]['dir'] = 'scripts'
+    add(219, 'admission219-channel-ignored', suite219, 'check_gate_mutations.py',
+        admission219_channel, "                        admit=False,\n",
+        ['admission/cli-graph-with-channel'])
+    result[-1]['dir'] = 'scripts'
+    add(219, 'admission219-worker-before-handoff', suite219, 'gate_schedule.py',
+        "                            if 'coordinator' in graph['nodes'][name] and not item['handed_off']:\n",
+        "                            if False:  # worker acquired before coordinator handoff\n",
+        ['admission/worker-before-handoff-refused'])
+    result[-1]['dir'] = 'scripts'
+    add(219, 'admission219-unowned-lifecycle-register', suite219, 'mutation_ownership.py',
+        "                    if rejected or (kind, value) not in entries:\n",
+        "                    if False:  # lifecycle registration ignores ownership\n",
+        ['admission/lifecycle-registration-owned'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0216: graph completeness, concurrent records, summed claims and serial control.
     suite216 = '114_veldo_0216_concurrent_stages.py'
     add(216, 'concurrent216-missing-stage-runs-nothing', suite216, 'gate_schedule.py',
