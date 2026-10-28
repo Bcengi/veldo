@@ -200,6 +200,41 @@ generated docs performance coverage packaging deploy_dry_run extra mutation"
 
 FAIL=0; RAN=0; NA=0; WAIVED=0; UNDECLARED=0; MUTATION_RAN=0
 TODAY=$(date -u +%Y-%m-%d)
+# VELDO-0216: the authority graph replaces only required catalog execution.
+# No graph retains the original serial path. An invalid present graph never falls back.
+VELDO_GRAPH_FIELD=""; VELDO_SCHEDULE=""
+if [ -e "$VELDO_AUTHORITY/scripts/gate_graph.json" ] || [ -L "$VELDO_AUTHORITY/scripts/gate_graph.json" ]; then
+  VELDO_SCHEDULE=$(mktemp -d)
+  trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"; rm -rf "$VELDO_SCHEDULE"' EXIT
+  _veldo_stages=()
+  for _veldo_name in $ORDER; do
+    _veldo_var="CHECK_${_veldo_name}"; _veldo_decl="${!_veldo_var}"
+    case "$_veldo_decl" in
+      required:*) _veldo_cmd="${_veldo_decl#required:}" ;;
+      ""|na:*|waived:*) continue ;;
+      *) _veldo_cmd="$_veldo_decl" ;;
+    esac
+    _veldo_stages+=(--stage "$_veldo_name" "$_veldo_cmd")
+    veldo_expect_leg "$_veldo_name" "$_veldo_cmd"
+  done
+  if ! python3 -I -S "$VELDO_AUTHORITY/scripts/gate_schedule.py" --root "$(pwd -P)" \
+      --directory "$VELDO_SCHEDULE" --record "$VELDO_LEGS_RECORD" --receipt "$VELDO_REUSE_RECEIPT" \
+      "${_veldo_stages[@]}"; then FAIL=1; fi
+  if [ -f "$VELDO_SCHEDULE/graph-field" ]; then
+    VELDO_GRAPH_FIELD=$(cat "$VELDO_SCHEDULE/graph-field")
+    if ! cp "$VELDO_SCHEDULE/receipt.json" "$VELDO_OUT/gate-schedule.json"; then FAIL=1; fi
+  else
+    echo 'GATE: RED (graph refused; no catalog stage completed)'
+    exit 1
+  fi
+fi
+veldo_scheduled_result() {
+  if [ -f "$VELDO_SCHEDULE/$1.status" ]; then
+    RAN=$((RAN+1))
+    if [ "$(cat "$VELDO_SCHEDULE/$1.status")" = pass ]; then echo "   $1: pass"
+    else echo "   $1: FAIL"; FAIL=1; fi
+  else echo "   $1: FAIL (graph refused before completion)"; FAIL=1; fi
+}
 for name in $ORDER; do
   var="CHECK_${name}"
   decl="${!var}"
@@ -210,6 +245,11 @@ for name in $ORDER; do
       ;;
     required:*)
       cmd="${decl#required:}"
+      if [ -n "$VELDO_SCHEDULE" ]; then
+        veldo_scheduled_result "$name"
+        if [ "$name" = mutation ] && [ -f "$VELDO_SCHEDULE/mutation.status" ]; then MUTATION_RAN=1; fi
+        continue
+      fi
       echo "== ${name}"
       if [ "$name" = mutation ]; then MUTATION_RAN=1; veldo_expect_leg "$name" "$cmd"; fi
       if { if [ "$name" = mutation ]; then
@@ -233,6 +273,11 @@ for name in $ORDER; do
       ;;
     *)
       # legacy plain command = treat as required
+      if [ -n "$VELDO_SCHEDULE" ]; then
+        veldo_scheduled_result "$name"
+        if [ "$name" = mutation ] && [ -f "$VELDO_SCHEDULE/mutation.status" ]; then MUTATION_RAN=1; fi
+        continue
+      fi
       echo "== ${name}"
       if veldo_candidate bash -c "$decl"; then
         echo "   ${name}: pass"; RAN=$((RAN+1))
@@ -367,6 +412,7 @@ if [ -n "$VELDO_LEGS_EXPECTED" ]; then
     FAIL=1; STATUS=red; EVENT=gate.failed; UNCONFINED_FIELD=',"unconfined":null'
   fi
 fi
+VELDO_HOST_FIELD="$VELDO_HOST_FIELD$VELDO_GRAPH_FIELD"
 EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d,%s%s%s}' \
   "$EVENT" "$COMMIT" "$TS" "$RAN" "$REUSE_JSON" "$UNCONFINED_FIELD" "$VELDO_HOST_FIELD")
 veldo_write_stamp() {

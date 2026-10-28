@@ -82,6 +82,8 @@ forge.
 """
 import argparse
 import hashlib
+import fcntl
+import math
 import importlib.util
 import json
 import os
@@ -154,7 +156,7 @@ def entries(document):
 
 
 def _env(leg=None, listed=(), digest=None, measured=None):
-    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST, UNIT_SECONDS)}
+    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST, UNIT_SECONDS, 'VELDO_GATE_LEDGER_FD', 'VELDO_GATE_GRAPH_DIGEST')}
     if leg:
         env[LEG], env[ENTRIES], env[DIGEST] = leg, ','.join(listed), digest
         if measured is not None:
@@ -181,7 +183,7 @@ def read_times(times, digest):
     return {leg: item for leg, item in document['legs'].items() if isinstance(item, dict)}
 
 
-def record_time(times, digest, leg, seconds, run):
+def _record_time_locked(times, digest, leg, seconds, run):
     """Record one passing unit leg's wall time; a store that cannot be written is said, not fatal."""
     try:
         Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -200,6 +202,56 @@ def record_time(times, digest, leg, seconds, run):
         return False
     prune_times(times, keep=target)
     return True
+
+
+def record_time(times, digest, leg, seconds, run):
+    # Confined and unconfined unit nodes may finish together. Serialize the existing
+    # read/replace transaction so neither fresh measurement overwrites its sibling.
+    Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)
+    with open(Path(times) / '.unit-times.lock', 'a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        return _record_time_locked(times, digest, leg, seconds, run)
+
+
+def _resources_file(times, digest, node):
+    identity = '%s\n%s\n%s' % (HERE.parent, digest, node)
+    return Path(times) / (hashlib.sha256(identity.encode()).hexdigest()[:32] + '.json')
+
+
+def read_resources(times, digest, node):
+    try:
+        path = _resources_file(times, digest, node)
+        item = json.loads(path.read_text())
+        if item.get('authority') != str(HERE.parent) or item.get('digest') != digest \
+                or item.get('node') != node or time.time() - path.stat().st_mtime > STORE_MAX_AGE_DAYS * 86400:
+            return None
+        for key in ('cpu_rate', 'peak_anon_bytes'):
+            value = item[key]
+            if type(value) not in (float, int) or not math.isfinite(value) or value <= 0:
+                return None
+        return item
+    except (OSError, ValueError, TypeError, KeyError):
+        return None
+
+
+def record_resources(times, digest, node, seconds, metrics):
+    # Called only by the authority scheduler after a passing, input-stable node.
+    # One file per node avoids read/modify/write races between independent legs.
+    if seconds <= 0 or metrics.get('metrics_source') != 'cgroup-v2-anon-sampled-50ms':
+        return
+    Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)
+    target = _resources_file(times, digest, node)
+    previous = read_resources(times, digest, node) or {}
+    item = dict(authority=str(HERE.parent), digest=digest, node=node, wall_seconds=seconds,
+                cpu_seconds=metrics['cpu_seconds'],
+                cpu_rate=max(previous.get('cpu_rate', 0), metrics['cpu_seconds'] / seconds),
+                peak_anon_bytes=max(previous.get('peak_anon_bytes', 0), metrics['peak_anon_bytes']),
+                at=time.time())
+    fd, pending = tempfile.mkstemp(prefix='.pending-', dir=str(target.parent))
+    with os.fdopen(fd, 'w') as handle:
+        json.dump(item, handle, sort_keys=True)
+    os.replace(pending, target)
+    prune_times(times, keep=target)
 
 
 def prune_times(times, keep, now=None):
@@ -284,7 +336,7 @@ def _launcher_fds():
 # reads VELDO_EXPECTED_GIT_COMMON and then drops it (agent_sandbox.py); handed on here, it made every
 # gate a listed suite runs for a fixture repository check that repository against the authority's
 # common directory and refuse it, so 0050 and 0148 failed only inside the real gate.
-AUTHORITY_ONLY = ('VELDO_EXPECTED_GIT_COMMON',)
+AUTHORITY_ONLY = ('VELDO_EXPECTED_GIT_COMMON', 'VELDO_GATE_LEDGER_FD', 'VELDO_GATE_GRAPH_DIGEST')
 
 
 def unconfined(root, command, env):
@@ -294,7 +346,7 @@ def unconfined(root, command, env):
                           stdin=subprocess.DEVNULL).returncode
 
 
-def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES):
+def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, leg=None, prior=None):
     try:
         document, digest = load(path)
     except Invalid as error:
@@ -307,14 +359,15 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES):
         return confined(root, command, _env())
     listed = entries(document)
     whole = [e for e in document['suites'] if 'rows' not in e]
-    print('   %s: confined leg - every suite except the %d listed whole, and of the %d listed for some '
-          'rows, every row but those' % (stage, len(whole), len(listed) - len(whole)), flush=True)
+    if leg != 'unconfined':
+        print('   %s: confined leg - every suite except the %d listed whole, and of the %d listed for some '
+              'rows, every row but those' % (stage, len(whole), len(listed) - len(whole)), flush=True)
     # The record file is this gate run's own (verify.sh makes it with mktemp), so its path names
     # the run a measurement came from.
     run = str(record)
 
     def leg_run(leg, runner):
-        handed = measurement(times, digest, leg, run) if stage == BUDGETED_STAGE else None
+        handed = (prior.get(leg) if prior is not None else measurement(times, digest, leg, run)) if stage == BUDGETED_STAGE else None
         if stage == BUDGETED_STAGE:
             print('   %s: %s leg budget input: %s' % (stage, leg, 'unit %s leg %.1fs, %s (%s)'
                   % (leg, handed['seconds'], handed['fresh'], handed['at']) if handed
@@ -333,7 +386,9 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES):
                       flush=True)
         return code
 
-    inside = leg_run('confined', confined)
+    if leg == 'confined':
+        return leg_run('confined', confined)
+    inside = leg_run('confined', confined) if leg is None else 0
     print('   %s: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, %s), '
           '%d entr%s: %s' % (stage, os.path.basename(str(path)), len(listed),
                               'y' if len(listed) == 1 else 'ies', ', '.join(listed)), flush=True)
@@ -343,9 +398,15 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES):
 
 
 def write_record(record, stage, digest, listed):
-    with open(record, 'a') as handle:
-        handle.write(json.dumps({'stage': stage, 'declaration': digest, 'entries': listed},
-                                sort_keys=True) + '\n')
+    data = (json.dumps({'stage': stage, 'declaration': digest, 'entries': listed},
+                       sort_keys=True) + '\n').encode()
+    fd = os.open(record, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        if os.write(fd, data) != len(data):
+            raise OSError('short leg record append')
+    finally:
+        os.close(fd)
 
 
 def mutation_leg(path=DECLARATION):
@@ -399,6 +460,8 @@ def main(argv=None):
     parser.add_argument('--root')
     parser.add_argument('--stage')
     parser.add_argument('--record')
+    parser.add_argument('--leg', choices=('confined', 'unconfined'))
+    parser.add_argument('--prior-times', type=Path)
     parser.add_argument('--stamp')
     parser.add_argument('--expect')
     parser.add_argument('--declared', action='store_true')
@@ -420,7 +483,8 @@ def main(argv=None):
         return declared(args.stage, command[0])
     if not (args.root and args.stage and args.record) or len(command) != 1:
         parser.error('--root, --stage, --record and exactly one command string are required')
-    return run_stage(args.root, args.stage, command[0], args.record)
+    prior = json.loads(args.prior_times.read_text()) if args.prior_times else None
+    return run_stage(args.root, args.stage, command[0], args.record, leg=args.leg, prior=prior)
 
 
 if __name__ == '__main__':

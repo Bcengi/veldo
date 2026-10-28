@@ -1,0 +1,79 @@
+{
+  "schema": "veldo.gate-graph/v1",
+  "nodes": {
+    "lint": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": []
+    },
+    "unit.confined": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": []
+    },
+    "unit.unconfined": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "exclusive",
+      "ports": []
+    },
+    "integration.confined": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": []
+    },
+    "integration.unconfined": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "exclusive",
+      "ports": []
+    },
+    "security": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": []
+    },
+    "generated": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": []
+    },
+    "docs": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": []
+    },
+    "packaging": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": []
+    },
+    "extra": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": []
+    },
+    "mutation": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "exclusive",
+      "ports": []
+    }
+  },
+  "reserve": {
+    "cpu": 0,
+    "memory": 1073741824
+  },
+  "mutation_floor": {
+    "cpu": 11,
+    "memory": 9663676416
+  }
+}
