@@ -42,8 +42,10 @@ Evidence in [round2](round2/):
 
 Each falsifier JSON records the exact source digests, base commit, observed rows
 and failure details. check.py runs only this ticket's registered falsifiers,
-mutant before restored baseline. Its runs use the owner's blocking host flock;
-every fixture gate uses its own temporary lock path. Single-file suite runs
+mutant before restored baseline. The initial descriptor falsifier ran under
+the owner's blocking host flock. Later checks execute only the single ticket
+suite, within the owner's single-file allowance; every fixture gate uses its
+own temporary lock path. Single-file suite runs
 select only suite 113. Partial suite exit 2 means the targeted rows passed and
 is deliberately not a canonical gate success.
 

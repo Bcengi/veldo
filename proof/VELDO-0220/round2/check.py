@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run only VELDO-0220 falsifiers, under the owner's blocking host flock.
+"""Run only VELDO-0220 falsifiers, each executing the single ticket suite.
 
 Every fixture uses a scratch lock. This driver never invokes the canonical gate.
 """

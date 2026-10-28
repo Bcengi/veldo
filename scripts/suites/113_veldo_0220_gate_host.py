@@ -70,6 +70,8 @@ out = {'pid': os.getpid(), 'holder': holder, 'chain': chain, 'scope': os.environ
        'oom': int(Path('/proc/self/oom_score_adj').read_text())}
 if out['scope']:
     base = Path('/sys/fs/cgroup') / out['scope'].lstrip('/')
+    children = Path('/proc/%d/task/%d/children' % (holder, holder)).read_text().split()
+    out['keepers'] = [int(pid) for pid in children if cgroup(int(pid)) != out['scope'] + '/gate']
     out['memory_max'] = (base / 'memory.max').read_text().strip()
     out['subtree'] = (base / 'cgroup.subtree_control').read_text().split()
     procs = {}
@@ -87,10 +89,15 @@ if out['scope']:
         out['child'] = str(error)
 lock = json.loads(os.environ['VELDO_GATE_HOST'])['lock']
 info = os.stat(lock)
-out['lock_inherited'] = any(
-    (os.fstat(int(fd)).st_dev, os.fstat(int(fd)).st_ino) == (info.st_dev, info.st_ino)
-    for fd in os.listdir('/proc/self/fd') if fd.isdigit() and os.path.exists('/proc/self/fd/' + fd))
-if os.environ.get('V220_LINGER'):
+out['lock_inherited'] = False
+for ancestor, _ in chain[:-1]:
+    for fd in Path('/proc/%d/fd' % ancestor).iterdir():
+        try:
+            descriptor = fd.stat()
+            out['lock_inherited'] |= (descriptor.st_dev, descriptor.st_ino) == (info.st_dev, info.st_ino)
+        except FileNotFoundError:
+            pass
+if os.environ.get('V220_LINGER') and out['scope']:
     child = subprocess.Popen([sys.executable, '-c',
         'import signal,time; signal.signal(signal.SIGTERM, signal.SIG_IGN); time.sleep(90)'],
         start_new_session=True)
@@ -269,7 +276,25 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
                 code, out = finish(start(second, top / 'probe-caller', prefix=(flock, '-x', str(lock))))
                 cases['caller-holds'] = (code == 0 and 'is held for this gate by its caller pid' in out
                                          and records(second)[0]['host']['held'] == 'caller')
-            row('host-lock/held-not-started', all(cases.values()) and len(cases) == 6, json.dumps(cases))
+            if flock:
+                # /proc/locks names flock above this wrapper. The wrapper is a live ancestor
+                # but not a gate holder, so its environment claim cannot count as inside.
+                wrapper = r'''
+import os, subprocess, sys
+for claimed in (str(os.getpid()), str(os.getppid()), '99999999'):
+    env = dict(os.environ, VELDO_GATE_HOST_HOLDER=claimed,
+               VELDO_GATE_HOST='{"lock":"forged","held":"taken"}')
+    check = subprocess.run([sys.executable, sys.argv[1], '--inside'], env=env,
+                           capture_output=True, text=True)
+    if check.returncode != 1 or check.stdout or check.stderr:
+        print(claimed, check.returncode, check.stdout, check.stderr)
+        sys.exit(1)
+'''
+                nested = subprocess.run([flock, '-x', str(lock), sys.executable, '-c', wrapper,
+                                         str(second / 'scripts/gate_host.py')],
+                                        env=env, capture_output=True, text=True, timeout=30)
+                cases['nested-holder-guard'] = nested.returncode == 0
+            row('host-lock/held-not-started', all(cases.values()) and len(cases) == 7, json.dumps(cases))
 
             # host-lock/released-on-exit. A gate killed midway (SIGKILL to the holder, and SIGTERM) leaves
             # no running stage behind when the lock becomes free; a red gate releases it too.
@@ -339,11 +364,23 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
                               or gate.poll() is not None) and probe_path.exists()
                 if ready:
                     got = json.loads(probe_path.read_text())
+                    custody = True
                     if number:
-                        gate.send_signal(number)
+                        keepers = got.get('keepers', [])
+                        if len(keepers) == 1:
+                            os.kill(keepers[0], signal.SIGSTOP)
+                            until(lambda: Path('/proc/%d/stat' % keepers[0]).read_text()
+                                  .rsplit(')', 1)[1].split()[0] == 'T', 5)
+                        try:
+                            gate.send_signal(number)
+                            finish(gate, 10)
+                            custody = len(keepers) == 1 and held(top / 'locks' / '.scope.lock')
+                        finally:
+                            for keeper in keepers:
+                                os.kill(keeper, signal.SIGCONT)
                     released = until(lambda: not held(top / 'locks' / '.scope.lock'), 10)
-                    dead = not alive(got['escaped']) and not alive(got['pid'])
-                    cases['cleanup-' + name] = released and dead
+                    dead = bool(got.get('escaped')) and not alive(got['escaped']) and not alive(got['pid'])
+                    cases['cleanup-' + name] = custody and released and dead
                 else:
                     cases['cleanup-' + name] = False
                 code, out = finish(gate, 10)

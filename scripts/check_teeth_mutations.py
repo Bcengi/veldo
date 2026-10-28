@@ -11551,6 +11551,16 @@ def cases():
         "            pass  # scope kill removed\n",
         ['host-scope/own-scope'])
     result[-1]['dir'] = 'scripts'
+    add(220, 'host220-lock-not-retained', suite220, 'gate_host.py',
+        '            keep_lock(keeper_channel, parent, config)\n',
+        '            if fd is not None:\n                os.close(fd)\n            keep_lock(keeper_channel, parent, config)\n',
+        ['host-scope/own-scope'])
+    result[-1]['dir'] = 'scripts'
+    add(220, 'host220-forged-holder', suite220, 'gate_host.py',
+        '    if holder.isdigit() and int(holder) in mine and is_holder(int(holder)):\n',
+        '    if holder.isdigit():\n',
+        ['host-lock/held-not-started'])
+    result[-1]['dir'] = 'scripts'
     add(220, 'host220-not-started-is-red', suite220, 'lander.py',
         '        if exit_code == NOT_STARTED_EXIT:\n',
         '        if False:\n',

@@ -27,7 +27,7 @@ configured lock. An environment variable alone never answers yes. Otherwise veri
      `gate/`, enables the cpu, memory and pids controllers for the scope's children (so per-worker
      and per-node cgroups can be made beside the leaf), and sets its oom_score_adj to the stated
      score, which every gate process inherits. A scope that cannot be made is RED by name;
-  5. runs verify.sh again as its only child, with the scope and the host record in the environment,
+  5. runs verify.sh again as a child, with the scope and the host record in the environment,
      exits on SIGTERM, SIGINT and SIGHUP or with the child status. A keeper outside the scope
      detects holder death, kills the scope and waits for it to empty before releasing the lock.
 
@@ -392,7 +392,7 @@ def keep_lock(channel, parent, config):
         forget_holder(config['lock'], parent)
 
 
-def start_keeper(config):
+def start_keeper(config, fd):
     parent = os.getpid()
     channel, keeper_channel = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
     pid = os.fork()
@@ -470,7 +470,7 @@ def enter(argv, root):
         record = {'lock': lock, 'held': 'taken' if fd is not None else 'caller',
                   'waited_seconds': round(waited, 1), 'scope': None}
         try:
-            channel, ready = start_keeper(config)
+            channel, ready = start_keeper(config, fd)
         except Refused as error:
             print('GATE: RED (gate scope could not be created: %s)' % error, flush=True)
             return 1
