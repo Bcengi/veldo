@@ -19,8 +19,10 @@ function run(command, args, env = {}) {
   const started = Date.now()
   const done = spawnSync(command, args, { cwd: UI, env: { ...process.env, ...env }, encoding: 'utf8', maxBuffer: 64 << 20 })
   const output = `${done.stdout ?? ''}${done.stderr ?? ''}`
-  const summary = output.split('\n').filter((l) => /(passed|failed|Tests|✘|Error:|Expected|Received)/.test(l)).slice(-12)
-  return { exit: done.status, seconds: (Date.now() - started) / 1000, summary }
+  const summary = output.split('\n').filter((l) => /(passed|failed|Tests|\u2718|Error:|Expected|Received)/.test(l)).slice(-12)
+  // Tool output carries box-drawing and ellipsis characters; the record keeps ASCII only.
+  const ascii = summary.map((l) => l.replace(/[^\x20-\x7e]+/g, ' ').trim())
+  return { exit: done.status, seconds: (Date.now() - started) / 1000, summary: ascii }
 }
 
 function checks(spec, env) {

@@ -21,8 +21,8 @@ Run from `engine/ui/`.
 | `npm run build` | Type-check, then build to `dist/` (what the API serves) |
 | `npm test` | Unit and component tests once (Vitest, jsdom) |
 | `npm run e2e` | Browser tests against a real factory harness (Playwright, system Chrome) |
-| `npm run e2e -- e2e/decisions.spec.ts` | One browser test file |
-| `npm run falsify -- <case>` | Apply one registered falsifier, run its check, expect red, restore |
+| `npm run e2e e2e/decisions.spec.ts` | One browser test file |
+| `npm run falsify <case>` | Apply one registered falsifier, run its check, expect red, restore |
 
 On the shared host, any run beyond a single test file goes inside
 `flock /home/dmitry/.local/state/core-gates/.gate.lock <command>`. Never leave a dev server running:

@@ -2,13 +2,14 @@
 """A real Veldo factory for the UI's browser tests (VELDO-0145).
 
 WHAT IT BUILDS, in a fresh temporary directory: a real SQLite authority store with real OpenSSH-signed
-membership (a steward, the owner with every scope, owner2 scoped to project-a, bmember scoped to project-b,
-cmember scoped to project-c (which has nothing yet), an outsider scoped to project-z, and the pm service), the Telegram and API edges enrolled as VELDO-0067 lays them down, the
-real VELDO-0064 inbox, VELDO-0065 presenter (against a loopback Bot API stand-in), VELDO-0068 settlement
-and VELDO-0126 intake, the real control_api_authority over that store, the real protected signer process
-for the API edge, real execution records written through control_execution_record.Recorder, and the
-real control_api.ControlApi served by the real control_api.listen, which serves the built UI (dist/) from
-the same origin under the API's own content security policy. Every module comes from the repository's
+membership (a steward; the owner with every scope; owner2 scoped to project-a; bmember scoped to
+project-b; cmember scoped to project-c, which has nothing yet; an outsider scoped to project-z; and the
+pm service), the Telegram and API edges enrolled as VELDO-0067 lays them down, the real VELDO-0064
+inbox, VELDO-0065 presenter (against a loopback Bot API stand-in), VELDO-0068 settlement and VELDO-0126
+intake, the real control_api_authority over that store, the real protected signer process for the API
+edge, real execution records written through control_execution_record.Recorder, and the real
+control_api.ControlApi served by the real control_api.listen, which serves the built UI (dist/) from the
+same origin under the API's own content security policy. Every module comes from the repository's
 .veldo directory (or VELDO_ORGANS), copied once, never edited.
 
 THE ORIGIN is http://localhost:<port> with relying-party id localhost: a browser treats localhost as a

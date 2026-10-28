@@ -61,7 +61,7 @@ presentation, drop record connections). The browser never sees that port.
 
 Every acceptance criterion's check names a falsifier: a small change to production code that must
 turn the check red. They are registered in `e2e/falsifiers.json` (UI side) and in
-`scripts/check_teeth_mutations.py` (API side). `npm run falsify -- <case>` applies one to a copy,
+`scripts/check_teeth_mutations.py` (API side). `npm run falsify <case>` applies one to a copy,
 runs its check, requires red, and restores. The red and green records go under `proof/<spec>/`.
 
 ## Running

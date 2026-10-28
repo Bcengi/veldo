@@ -21,10 +21,10 @@
       "exit": 1,
       "seconds": 13.375,
       "summary": [
-        "    Error: expect(locator).toBeVisible() failed",
-        "    Expected: visible",
-        "    Error: element(s) not found",
-        "  1 failed"
+        "Error: expect(locator).toBeVisible() failed",
+        "Expected: visible",
+        "Error: element(s) not found",
+        "1 failed"
       ]
     }
   ],
@@ -36,7 +36,7 @@
       "exit": 0,
       "seconds": 4.507,
       "summary": [
-        "  1 passed (4.1s)"
+        "1 passed (4.1s)"
       ]
     }
   ],

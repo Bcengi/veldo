@@ -21,10 +21,10 @@
       "exit": 1,
       "seconds": 13.936,
       "summary": [
-        "    Error: expect(locator).toBeInViewport() failed",
-        "    Expected: in viewport",
-        "    Received: viewport ratio 0",
-        "  1 failed"
+        "Error: expect(locator).toBeInViewport() failed",
+        "Expected: in viewport",
+        "Received: viewport ratio 0",
+        "1 failed"
       ]
     }
   ],
@@ -36,7 +36,7 @@
       "exit": 0,
       "seconds": 3.936,
       "summary": [
-        "  1 passed (3.5s)"
+        "1 passed (3.5s)"
       ]
     }
   ],

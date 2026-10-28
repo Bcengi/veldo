@@ -28,10 +28,10 @@
       "exit": 1,
       "seconds": 13.642,
       "summary": [
-        "    Error: expect(locator).toHaveAttribute(expected) failed",
-        "    Expected: \"stale_version:stale_presentation\"",
-        "    Received: \"invalid_input:fields\"",
-        "  1 failed"
+        "Error: expect(locator).toHaveAttribute(expected) failed",
+        "Expected: \"stale_version:stale_presentation\"",
+        "Received: \"invalid_input:fields\"",
+        "1 failed"
       ]
     },
     {
@@ -40,11 +40,11 @@
       "exit": 1,
       "seconds": 0.882,
       "summary": [
-        " ❯ src/features/decisions/DecisionDetail.spec.ts (6 tests | 1 failed) 97ms",
-        " Test Files  1 failed (1)",
-        "      Tests  1 failed | 5 passed (6)",
-        "⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯",
-        "AssertionError: expected \"sendAnswer\" to be called with arguments: [ { …(7) } ]",
+        "src/features/decisions/DecisionDetail.spec.ts (6 tests | 1 failed) 97ms",
+        "Test Files  1 failed (1)",
+        "Tests  1 failed | 5 passed (6)",
+        "Failed Tests 1",
+        "AssertionError: expected \"sendAnswer\" to be called with arguments: [ {  (7) } ]",
         "Received:"
       ]
     }
@@ -57,7 +57,7 @@
       "exit": 0,
       "seconds": 4.425,
       "summary": [
-        "  1 passed (4.0s)"
+        "1 passed (4.0s)"
       ]
     },
     {
@@ -66,8 +66,8 @@
       "exit": 0,
       "seconds": 0.857,
       "summary": [
-        " Test Files  1 passed (1)",
-        "      Tests  6 passed (6)"
+        "Test Files  1 passed (1)",
+        "Tests  6 passed (6)"
       ]
     }
   ],

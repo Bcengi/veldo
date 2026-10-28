@@ -13,7 +13,7 @@ monaco-editor 0.57 (spec amendment of 2026-10-28, owner Telegram 37226 and 37228
 | Browser | `npx playwright test` | system Chrome against `e2e/harness.py`: a real SQLite authority with OpenSSH-signed membership, the real VELDO-0068 settlement and VELDO-0065 presenter (loopback Bot API), real execution records written by `control_execution_record.Recorder`, and the real `control_api.ControlApi` on the real `control_api.listen` serving `dist/` under the real policy. Passkeys are real WebAuthn ceremonies from a Chrome virtual authenticator, verified by OpenSSL; the host's approval is the steward's signed `enroll_api_credential`. |
 | API suite | `python3 scripts/selftest.py --suite 113_veldo_0145_ui` | the real ControlApi and listener with a recording authority stand-in |
 | API mutations | `python3 scripts/check_teeth_mutations.py --finding 145` | 5 registered mutants of `control_api.py` and `control_api_ui.py` |
-| UI falsifiers | `npm run falsify -- --all` | each AC's declared falsifier as an edit (`e2e/falsifiers.json`), built, checked red, restored, checked green |
+| UI falsifiers | `node scripts/falsify.mjs --all` | each AC's declared falsifier as an edit (`e2e/falsifiers.json`), built, checked red, restored, checked green |
 
 ## Criteria and their checks
 

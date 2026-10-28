@@ -1,6 +1,6 @@
 {
   "schema": "veldo.ui_falsifiers/v1",
-  "about": "Each acceptance criterion's declared falsifier as an exact edit of production code, and the checks that must turn red under it (VELDO-0145). Run one with npm run falsify -- <case>; the red and green records go to proof/VELDO-0145/falsifiers/.",
+  "about": "Each acceptance criterion's declared falsifier as an exact edit of production code, and the checks that must turn red under it (VELDO-0145). Run one with npm run falsify <case>; the red and green records go to proof/VELDO-0145/falsifiers/.",
   "cases": {
     "ac1-sign-in-before-approval": {
       "criterion": "AC1",
