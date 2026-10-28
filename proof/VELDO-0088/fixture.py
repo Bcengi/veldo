@@ -73,15 +73,24 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
 
     # /dev/shm only when this process can really write there: os.access answers for permission
     # bits, not for the gate's confinement (VELDO-0208), which grants nothing beneath /dev.
+    # A worker TMPDIR is its registered ownership root, including in unconfined runs.
     fast = None
-    try:
-        os.rmdir(tempfile.mkdtemp(prefix='fast-probe-', dir='/dev/shm'))
-        fast = '/dev/shm'
-    except OSError:
-        pass
+    if not os.environ.get('TMPDIR'):
+        try:
+            os.rmdir(tempfile.mkdtemp(prefix='fast-probe-', dir='/dev/shm'))
+            fast = '/dev/shm'
+        except OSError:
+            pass
     connections, servers = [], []
-    with tempfile.TemporaryDirectory(prefix='v89-', dir=fast) as directory:
+    with tempfile.TemporaryDirectory(prefix='v89-', dir=fast) as directory, contextlib.ExitStack() as resources:
         base = Path(directory)
+        # Every graph exchange in this process while the fixture lasts stages in this run's directory, never in the
+        # account's ~/.local/state/veldo/graph-stage, on lines a suite builds and lines the product builds itself;
+        # an escape reds the suite (scripts/suites/support/graph_stage.py).
+        stage_seam = load('v88_graph_stage', ROOT / 'scripts/suites/support/graph_stage.py')
+        graph_stage = resources.enter_context(stage_seam.own(base))
+        compiler = load('v88_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
+        resources.enter_context(compiler.compiled_sources(base))
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
         for source in sorted((ROOT / '.veldo').glob('*.py')):

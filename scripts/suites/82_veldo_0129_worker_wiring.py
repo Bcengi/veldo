@@ -57,6 +57,7 @@ def _v129_suite():
     slice_name = 'v129%s.slice' % os.urandom(4).hex()
     sessions = []
     writer = None
+    compiled = contextlib.ExitStack()
     unavailable = {}
     def empty_acceptance(EX, src, base_commit):
         # Exercise the executor's real proof boundary with a deliberately empty hook acceptance.
@@ -78,6 +79,8 @@ def _v129_suite():
         check('proof/empty-acceptance', 'empty acceptance halts at proof: ' + str(error),
               outcome and outcome.get('halted_at') == 'proof' and 'proof_acceptance' in outcome.get('reason', ''))
     try:
+        compiler = load('v129_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
+        compiled.enter_context(compiler.compiled_sources(base))
         mods = base / 'installed' / '.veldo'
         scaffolder = load('v129_installer', PRODUCTION['init_scaffold.py'])
         scaffolder.scaffold(base / 'installed', templates=ROOT / 'engine')
@@ -715,6 +718,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
         for row in names:
             check(row, 'fixture setup did not complete: %s: %s' % (type(error).__name__, str(error)[:500]), False)
     finally:
+        compiled.close()
         fake_capture = conform_formats.conform_fake(locals(), '0129_worker_wiring')
         subprocess.run(['systemctl', opt + 'user', 'stop', slice_name], capture_output=True, timeout=20)
         for run in sessions:

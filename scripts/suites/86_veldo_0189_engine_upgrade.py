@@ -61,6 +61,7 @@ def _v189_suite():
             'switch/resumed-failure', 'switch/rollback-kills', 'switch/stop-refused',
             'ownership/restore-reported', 'ownership/start-drops', 'ownership/commit-refused',
             'switch/stop-before-restore')
+    AK = 'restart/adoption-signer-kill'
     IA, U8, U9, UR, CN, RF, KP, FR, KD, AN, RS, SR, FA, OD, OC, RE, BK, ST, RP, SD, CR, BS = ROWS
     EQ, RN, PF = 'upgrade/older-0186-equivalence', 'kept/runs', 'upgrade/fresh-0186'
     AT, ER, EM = 'engines/atomic-record', 'engines/repair-record', 'engines/refuse-record'
@@ -68,7 +69,7 @@ def _v189_suite():
     RT, RC = 'upgrade/corrupt-runtime-record', 'upgrade/receiver-without-store'
     ROWS += (EQ, RN, PF, AT, ER, EM, CD, WR, RT, RC)
     COMMANDS = 'ownership/restore-commands'
-    ROWS += (COMMANDS,)
+    ROWS += (COMMANDS, AK)
     rows = {name: [] for name in ROWS}
     # The older engines, each the whole .veldo of its commit.
     OLDER = ('8bc34e94', '971186ac')
@@ -394,6 +395,8 @@ def _v189_suite():
                 self.server.close()
 
     # The setup run in a process of its own, SIGKILLed right after its upgrade's Nth step-log line (0: never).
+    # `point` is wrapped once per module, so the count is one per step-log line however often setup fetches the
+    # upgrade module through organ.
     driver = base / 'kill_driver.py'
     driver.write_text(
         'import importlib.util, json, os, signal, socket, sys\n'
@@ -405,13 +408,14 @@ def _v189_suite():
         'organ = F.organ\n'
         'def patched(name):\n'
         '    module = organ(name)\n'
-        '    if name == "control_factory_setup_upgrade":\n'
+        '    if name == "control_factory_setup_upgrade" and not getattr(module.point, "counted", False):\n'
         '        original = module.point\n'
         '        def point(log, entry):\n'
         '            original(log, entry)\n'
         '            count[0] += 1\n'
         '            if count[0] == kill_at:\n'
         '                os.kill(os.getpid(), signal.SIGKILL)\n'
+        '        point.counted = True\n'
         '        module.point = point\n'
         '    return module\n'
         'F.organ = patched\n'
@@ -703,13 +707,29 @@ def _v189_suite():
     # substituted and apart from the listed fields.
     equivalence = json.loads(EQUIVALENCE.read_text()) if EQUIVALENCE.is_file() else {}
 
+    def adoption_public(host):
+        """VELDO-0161: the public half of the adoption signer key the host's own setup generated, derived from the
+        private key; None when the host holds none."""
+        key = host.root / 'keys' / F.ADOPTION_KEY
+        if not key.is_file():
+            return None
+        env = {k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}
+        done = subprocess.run(['ssh-keygen', '-y', '-f', str(key)], capture_output=True, text=True, timeout=10,
+                              stdin=subprocess.DEVNULL, env=env)
+        return ' '.join(done.stdout.split()[:2]) if done.returncode == 0 and done.stdout.strip() else None
+
+    def adoption_line(host):
+        """The enrollment-signers line a fresh setup writes for the host's adoption signer (VELDO-0161 AC1)."""
+        public = adoption_public(host)
+        return ('%s namespaces="%s" %s\n' % (F.ADOPTION_PRINCIPAL, EL.ENROLLMENT_NAMESPACE, public)) if public else None
+
     def substitutions(host):
         record = host.record()
         repository = sorted(record.get('repositories') or {})
         found = {str(host.root): '@STATE_ROOT@', str(host.install): '@INSTALL_ROOT@', str(host.units): '@UNIT_DIR@',
                  str(host.trust.parent): '@HOST_TRUST_DIR@', str(host.clone): '@CLONE@',
                  record.get('service'): '@SERVICE@', record.get('domain_uuid'): '@DOMAIN@',
-                 record.get('store_uuid'): '@STORE@'}
+                 record.get('store_uuid'): '@STORE@', adoption_public(host): '@ADOPTION_SIGNER@'}
         for uuid in repository:
             found[uuid] = '@REPOSITORY@'
             found[hashlib.sha256(uuid.encode()).hexdigest()[:16]] = '@RECEIVER@'
@@ -857,6 +877,21 @@ def _v189_suite():
     def kept_after(row, host, before, owner_set, label):
         after = kept(host)
         check(row, label + ': existing runs tree unchanged', after['runs'] == before['runs'])
+        # VELDO-0161 AC1: the host's enrollment signers, and the installation's copy of them, gain the adoption
+        # signer's line after every byte they held, exactly as a fresh setup writes it; nothing else of them changes.
+        trust = json.loads(host.trust.read_text())
+        line = adoption_line(host)
+        host_signers, copy = str(Path(trust['enrollment_signers'])), str(host.home / 'config' / 'enrollment_signers')
+        held_signers = before['files'].get(host_signers, b'').decode()
+        check(row, '%s: the enrollment signers kept every line they held and gained the adoption signer\'s, with the key '
+              'its setup generated, as their last; the installation\'s copy equals them [%s]'
+              % (label, (after['files'].get(host_signers) or b'').decode().splitlines()[len(held_signers.splitlines()):]),
+              line is not None and line.encode() not in held_signers.encode()
+              and after['files'].get(host_signers) == (held_signers + line).encode()
+              and before['configs'].get('enrollment_signers') == held_signers
+              and after['configs'].get('enrollment_signers') == held_signers + line)
+        after['files'][host_signers] = before['files'].get(host_signers)
+        after['configs']['enrollment_signers'] = before['configs'].get('enrollment_signers')
         changed = sorted(p for p, data in before['files'].items() if after['files'].get(p) != data)
         check(row, '%s: every file under the key directory, the host trust and the files it names, the workspace '
               'binding, the token file and every registered account\'s profile directory (%d) is unchanged byte for '
@@ -1430,6 +1465,120 @@ def _v189_suite():
             check(KP, 'a declaration is not rebound to a digest its file\'s bytes do not have [%s]' % again,
                   again == [] and after == owners)
 
+        # VELDO-0161 (R6R7-1): a host whose engine is already current but which lacks the adoption signer (one a setup
+        # from before the signer upgraded) has it laid by setup, which then restarts the service, since the service
+        # reads its enrollment signers only at its start. A run killed after it laid the signers and before that
+        # restart leaves the restart owed in the step log; the next run must pay it, or the running service keeps the
+        # old signers and refuses every adoption while setup reports the factory complete.
+        # The row runs in a function of its own: its names (points, at, whole, restarted...) are its own, so the rows
+        # after it still read the kill host's whole-run points the kill-point section computed.
+        def adoption_signer_kill():
+            serving = fresh.manager.alive(fresh.unit)
+            ak_bridge = Bridge(fresh.manager, base / 'bridge-ak.sock')
+            bridges.append(ak_bridge)
+            ak_log = fresh.home / 'state' / UP.LOG
+            ak_key = fresh.root / 'keys' / F.ADOPTION_KEY
+            ak_signers = (fresh.root / 'host' / 'enrollment_signers', fresh.home / 'config' / 'enrollment_signers')
+            ak_owner_only = base / 'ak-owner-only-signers'
+
+            def killed_fresh(at):
+                """One setup of the fresh host in a process of its own, SIGKILLed right after its `at`th write point."""
+                done = subprocess.run([sys.executable, '-B', str(driver), str(mods), str(at), ak_bridge.path,
+                                       json.dumps(fresh.overrides()), json.dumps(fresh.argv())], env=child_env(),
+                                      capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL)
+                return done.returncode
+
+            def without_signer():
+                """The fresh host as a setup from before the adoption signer left it after upgrading it to the current
+                engine: no adoption key, the owner's line alone in both signers files, its service running on that.
+                Returns the number of step-log lines it holds."""
+                fresh.manager.stop_all()
+                restore(saved_fresh)
+                for path in (ak_key, Path(str(ak_key) + '.pub')):
+                    with contextlib.suppress(FileNotFoundError):
+                        path.unlink()
+                for path in ak_signers:
+                    path.write_text(''.join(line for line in path.read_text().splitlines(keepends=True)
+                                            if not line.startswith(F.ADOPTION_PRINCIPAL + ' ')))
+                ts.set('ready')
+                fresh.manager.start(fresh.unit)
+                return len(ak_log.read_text().splitlines()) if ak_log.is_file() else 0
+
+            def engine_step(report):
+                return next((s for s in report.get('steps') or [] if s.get('step') == 'engine_upgrade'), {})
+
+            trust = json.loads(fresh.trust.read_text())
+            check(AK, 'the host trust names the state root\'s enrollment signers [%s]' % trust.get('enrollment_signers'),
+                  os.path.realpath(str(trust.get('enrollment_signers'))) == os.path.realpath(str(ak_signers[0])))
+            held = without_signer()
+            ak_owner_only.write_text(ak_signers[0].read_text())
+            check(AK, 'the stripped host holds no adoption key and only the owner\'s line, the same in both signers files',
+                  not ak_key.exists() and len(ak_owner_only.read_text().splitlines()) == 1
+                  and ak_signers[1].read_text() == ak_owner_only.read_text())
+            whole = killed_fresh(0)
+            points = [json.loads(line).get('point') for line in ak_log.read_text().splitlines()[held:]] \
+                if ak_log.is_file() else []
+            check(AK, 'a whole run over the current engine lays the key and both signers files and restarts, with no '
+                  'exchange [%s %s]' % (whole, points),
+                  whole == 0 and points.count('adoption_signers') == 2 and 'adoption_key' in points
+                  and 'exchanged' not in points and 'restart' in points and points[-1:] == ['done']
+                  and points.index('restart') > max(i for i, p in enumerate(points) if p == 'adoption_signers'))
+            at = max((i + 1 for i, p in enumerate(points) if p == 'adoption_signers'), default=0)
+            if at:
+                held = without_signer()
+                pid, calls = fresh.manager.pid(fresh.unit), len(fresh.manager.calls)
+                code = killed_fresh(at)
+                after = [json.loads(line).get('point') for line in ak_log.read_text().splitlines()[held:]] \
+                    if ak_log.is_file() else []
+                line = adoption_line(fresh)
+                check(AK, 'killed at %d, after the last adoption_signers: the setup died by SIGKILL with both signers files '
+                      'laid as a fresh setup lays them and no restart point [%s %s]' % (at, code, after),
+                      code == -signal.SIGKILL and line is not None and after[-1:] == ['adoption_signers']
+                      and 'restart' not in after
+                      and all(p.read_text() == ak_owner_only.read_text() + line for p in ak_signers))
+                check(AK, 'killed at %d: the service still runs the process that read the owner-only signers [%s %s]'
+                      % (at, pid, fresh.manager.pid(fresh.unit)),
+                      pid is not None and fresh.manager.pid(fresh.unit) == pid
+                      and not any(c[0] == 'restart' for c in fresh.manager.calls[calls:]))
+                check(AK, 'killed at %d: the step log owes the restart [%s]' % (at, UP.recovery(str(ak_log))),
+                      UP.switched_without_restart(str(ak_log)))
+                code, report = fresh.setup()
+                step = engine_step(report)
+                restarts = [c for c in fresh.manager.calls[calls:] if c == ['restart', fresh.unit]]
+                now = fresh.manager.pid(fresh.unit)
+                check(AK, 'the next run is accepted and restarts the service once, a new process now serving [%s %s; %s; '
+                      '%d restart(s); pid %s then %s]' % (code, report.get('reason'), {k: step.get(k) for k in
+                                                                                       ('outcome', 'restart')},
+                                                          len(restarts), pid, now),
+                      code == 0 and step.get('restart') == 'restarted' and len(restarts) == 1
+                      and now is not None and now != pid)
+                check(AK, 'the next run leaves no restart owed and both signers files as they were laid [%s]'
+                      % UP.recovery(str(ak_log)),
+                      not UP.switched_without_restart(str(ak_log))
+                      and all(p.read_text() == ak_owner_only.read_text() + line for p in ak_signers))
+                # The adoption's take-on is judged by the running service: the enrollment binding the adoption signer
+                # signs must verify under the signers that service read at its start. The process serving now started
+                # at the next run's restart, after both files were laid, so it read the installation's copy as it is;
+                # the process the kill left read the owner-only signers.
+                config = fresh.record()
+                binding = json.dumps({'schema': CEN.BINDING_SCHEMA, 'enrolled_by': F.ADOPTION_PRINCIPAL,
+                                      'workspace': str(fresh.clone), 'store_path': config.get('store_path')},
+                                     sort_keys=True).encode()
+                signature = sign_with(ak_key, binding, EL.ENROLLMENT_NAMESPACE)
+                restarted = CS.Service(config, None).verify(binding, signature)
+                stale = CS.Service(dict(config, enrollment_signers=str(ak_owner_only)), None).verify(binding, signature)
+                check(AK, 'an adoption is accepted after the next run: the adoption signer\'s binding verifies under the '
+                      'signers the restarted service read, and not under those the killed run left it holding [%s %s]'
+                      % (restarted, stale), restarted is True and stale is False)
+            fresh.manager.stop_all()
+            restore(saved_fresh)
+            if serving:
+                ts.set('ready')
+                fresh.manager.start(fresh.unit)
+
+        with section(AK):
+            adoption_signer_kill()
+
         # AC2 (the review of 2026-09-28): the restart brings the unit up on the current engine, which rebinds the
         # store's ownership declarations to its bytes, and then fails; the switch back runs the current engine's
         # own restore before the previous engine starts, so its channel and every owned command are available.
@@ -1569,9 +1718,39 @@ def _v189_suite():
         with section(BS):
             fresh_start()
             fail_next(keep=True)
-            code, report = kill.setup()
+            # Observe the stop at the real restore entry. Successful restoration and later
+            # channel availability do not establish that the failed service was stopped first.
+            calls_before = len(kill.manager.calls)
+            stopped_at_restore, observed_upgrades = [], []
+            setup_organ = F.organ
+
+            def observe_restore_stop(name):
+                module = setup_organ(name)
+                if name == 'control_factory_setup_upgrade' and not any(
+                        module is seen for seen, _restore in observed_upgrades):
+                    restore_ownership = module.restore_ownership
+
+                    def observed_restore(plan):
+                        stopped_at_restore.append(
+                            ['stop', kill.unit] in kill.manager.calls[calls_before:]
+                            and not kill.manager.alive(kill.unit))
+                        return restore_ownership(plan)
+
+                    observed_upgrades.append((module, restore_ownership))
+                    module.restore_ownership = observed_restore
+                return module
+
+            F.organ = observe_restore_stop
+            try:
+                code, report = kill.setup()
+            finally:
+                F.organ = setup_organ
+                for module, restore_ownership in observed_upgrades:
+                    module.restore_ownership = restore_ownership
             clear_failure()
             previous_answers(BS, 'failed restart leaves current service alive')
+            check(BS, 'the stop was requested and the service was no longer alive when restore began [%s]'
+                  % stopped_at_restore, bool(stopped_at_restore) and all(stopped_at_restore))
             check(BS, 'restore ran after a successful stop',
                   any(json.loads(line).get('outcome') == 'restored' for line in log.read_text().splitlines()))
 

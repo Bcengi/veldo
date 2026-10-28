@@ -1,0 +1,94 @@
+{
+  "scope": "suite 108 only; no gate or integration claim",
+  "verified": true,
+  "runs": {
+    "effects-transport-isolated-profile": {
+      "command": [
+        "/usr/bin/python3",
+        "scripts/selftest.py",
+        "--suite",
+        "108_veldo_0153_executor_profile"
+      ],
+      "exit": 1,
+      "failures": [
+        "SELFTEST FAIL: VELDO-0153 executor-unit/identity-profile"
+      ],
+      "summary": [
+        "selftest (PARTIAL, 1 of 164 suites): 31 passed, 1 failed in 0.07s"
+      ],
+      "global_config_observations": {
+        "selected": "isolated",
+        "unset": "isolated"
+      },
+      "expected_failures": [
+        "SELFTEST FAIL: VELDO-0153 executor-unit/identity-profile"
+      ],
+      "matched": true
+    },
+    "effects-remote-host-unchecked": {
+      "command": [
+        "/usr/bin/python3",
+        "scripts/selftest.py",
+        "--suite",
+        "108_veldo_0153_executor_profile"
+      ],
+      "exit": 1,
+      "failures": [
+        "SELFTEST FAIL: VELDO-0153 owner-unit/host"
+      ],
+      "summary": [
+        "selftest (PARTIAL, 1 of 164 suites): 31 passed, 1 failed in 0.07s"
+      ],
+      "global_config_observations": {
+        "selected": "isolated",
+        "unset": "isolated"
+      },
+      "expected_failures": [
+        "SELFTEST FAIL: VELDO-0153 owner-unit/host"
+      ],
+      "matched": true
+    },
+    "identity153-global-config": {
+      "command": [
+        "/usr/bin/python3",
+        "scripts/selftest.py",
+        "--suite",
+        "108_veldo_0153_executor_profile"
+      ],
+      "exit": 1,
+      "failures": [
+        "SELFTEST FAIL: VELDO-0153 profile/global-config"
+      ],
+      "summary": [
+        "selftest (PARTIAL, 1 of 164 suites): 31 passed, 1 failed in 0.07s"
+      ],
+      "global_config_observations": {
+        "selected": "binding_mismatch:identity_transport_config",
+        "unset": "isolated"
+      },
+      "expected_failures": [
+        "SELFTEST FAIL: VELDO-0153 profile/global-config"
+      ],
+      "matched": true
+    },
+    "restored": {
+      "command": [
+        "/usr/bin/python3",
+        "scripts/selftest.py",
+        "--suite",
+        "108_veldo_0153_executor_profile"
+      ],
+      "exit": 2,
+      "failures": [],
+      "summary": [
+        "selftest (PARTIAL, 1 of 164 suites): 32 passed, 0 failed in 0.07s"
+      ],
+      "global_config_observations": {
+        "selected": "isolated",
+        "unset": "isolated"
+      },
+      "expected_failures": [],
+      "matched": true
+    }
+  }
+}

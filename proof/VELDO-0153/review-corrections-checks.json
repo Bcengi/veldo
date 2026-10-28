@@ -1,0 +1,76 @@
+{
+  "implementation_commit": "193c72e7acfc666c1ec9dd38446cd595577b32e3",
+  "scope": "Unit observations and static checks only; no integration or gate pass",
+  "checks": [
+    {
+      "command": "python3 scripts/selftest.py --suite 108_veldo_0153_executor_profile",
+      "exit": 2,
+      "result": "Two suite assertions pass; partial summary 28 passed, zero failed including shared preamble. Partial execution only."
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 107_veldo_0153_identity_push",
+      "exit": 1,
+      "result": "No named failures before AF_UNIX socket PermissionError; no integration completion."
+    },
+    {
+      "command": "python3 proof/VELDO-0153/reproduce_executor.py <output>",
+      "exit": 0,
+      "result": "Both mutants fail their required row, restored suite clean."
+    },
+    {
+      "command": "python3 proof/VELDO-0153/reproduce_refusal.py <output>",
+      "exit": 0,
+      "result": "Required red and eager kills observed; restored unit rows clean. All suite invocations stop at socket denial."
+    },
+    {
+      "command": "python3 proof/VELDO-0153/audit_anchors.py <output> all",
+      "exit": 0,
+      "result": "2452 registrations audited for production edit anchors and mutant syntax. No missing anchors or unresolved expressions. Suite-copy anchors also checked for findings 28, 56, 57 and 153: zero missing. Static evidence does not establish consumer kills."
+    },
+    {
+      "command": "bash scripts/check_lint.sh",
+      "exit": 0,
+      "result": "bash scripts/check_lint.sh exited 0: Python compilation and shell syntax checks passed for 994 Python and 34 shell files."
+    },
+    {
+      "command": "bash scripts/check_generated.sh",
+      "exit": 0,
+      "result": "bash scripts/check_generated.sh exited 0: declared generated artifacts match their generators, including the regenerated suite prerequisite closure with suite 108."
+    },
+    {
+      "command": "bash scripts/check_docs.sh",
+      "exit": 0,
+      "result": "bash scripts/check_docs.sh exited 0: documentation hygiene and genericity sweeps passed."
+    },
+    {
+      "command": "bash scripts/check_template_sync.sh",
+      "exit": 0,
+      "result": "bash scripts/check_template_sync.sh exited 0: 285 declared pairs identical, six declared per-repo exceptions and 131 engine-only files. No production copy changed in this correction."
+    },
+    {
+      "command": "python3 .veldo/shape_gate.py",
+      "exit": 0,
+      "result": "python3 .veldo/shape_gate.py exited 0: mechanizable architecture rules passed; review-lane rules remain reviewer guidance."
+    },
+    {
+      "command": "python3 scripts/secret_inventory.py",
+      "exit": 0,
+      "result": "python3 scripts/secret_inventory.py exited 0 with zero outstanding findings. The built-in gate secret regex was not rerun; its earlier result is historical."
+    },
+    {
+      "command": "python3 .veldo/validate.py proof proof/VELDO-0153/manifest.json",
+      "exit": 0,
+      "result": "Current proof contract and digest validate."
+    },
+    {
+      "command": "python3 .veldo/validate.py all",
+      "exit": 0,
+      "result": "All repository contracts validate; existing documented stand-downs remain explicit."
+    }
+  ],
+  "deferred": [
+    "Consumer suites and consumer mutant kills",
+    "Both mutation drivers and the full gate",
+    "Fenced integration and real-host qualification"
+  ]
+}

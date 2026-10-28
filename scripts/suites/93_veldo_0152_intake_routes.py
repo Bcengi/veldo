@@ -27,7 +27,7 @@ def _v152_suite():
              'route/new-project', 'route/existing-project', 'route/asked-only-when-unclear',
              'route/answers', 'route/read-and-report', 'route/runner-input',
              'route/scope-refusal', 'route/malformed', 'route/stale', 'route/factory-refusal',
-             'format/fake-lines', 'route/legacy-owner')
+             'format/fake-lines', 'route/legacy-owner', 'graph/own-stage')
     rows = {n: [] for n in names}
     def check(name, label, condition):
         rows[name].append((label, bool(condition)))
@@ -454,6 +454,11 @@ else:
                 api_edge='api-edge', journal_signer='authority', sign=f['journal_sign'], asker=f['presenter'].edge)
             check('route/legacy-owner', 'switch back attaches the actual pre-route engine with its old commands',
                   [row for row in S.entity_owners(conn) if row[2] == IN.OWNER] == legacy_owners)
+            # The seam's outcome, not its frame match: installed_runtime() resolved the account stage for the cycles'
+            # runtime, and the fixture's own stage holds the runner the factory passes' PM exchanges staged.
+            staged_pm = f['stage_seam'].pm_runners(f['graph_stage'], mods)
+            check('graph/own-stage', 'the PM exchanges of the factory passes staged their runner in the fixture\'s '
+                  'own graph stage [%d PM runner(s) in %s]' % (staged_pm, f['graph_stage']), staged_pm >= 1)
         # This store truly has no factory project record, rather than merely excluding it from configuration.
         with helper.fixture(ROOT, PRODUCTION, factory_project=False) as f:
             S, conn, mods = f['S'], f['conn'], f['mods']

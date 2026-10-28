@@ -1,11 +1,13 @@
 """One subprocess boundary for Git. Caller environment cannot select a repository.
 
-Repository-local configuration remains authoritative. In the default profile, system/global config
+Repository-local configuration remains authoritative for isolated and network operations.
+Identity transport refuses local routing and authentication overrides. In the default profile, system/global config
 (including HOME and XDG_CONFIG_HOME discovery), replacement objects, and all inherited GIT_* knobs
 are disabled. Writers needing a synthetic identity pass it explicitly; ambient identity is never
 trusted.
 
-Two profiles. The default, "isolated", is everything above and serves every local operation.
+Three profiles. Identity strips ambient transport credentials and configuration, checks the
+remote owner and supplies only the recorded keystore credential. The default, "isolated", is everything above and serves every local operation.
 "network" is for transport operations only (push, fetch, ls-remote to a remote) and for the
 read-only queries that decide where such an operation goes. It exists because a transport
 operation run in the isolated profile loses what a plain `git push` from the same clone and the
@@ -24,14 +26,43 @@ command does, as its one file, so passing it would make a configuration query di
 push it describes.
 """
 import os
+import importlib.util
+from pathlib import Path
 import re
 import subprocess
+import tempfile
+import threading
+from contextlib import nullcontext
 
-PROFILES = ("isolated", "network")
+PROFILES = ("isolated", "network", "identity")
+
+
+def _load_identity_transport():
+    spec = importlib.util.spec_from_file_location('git_identity_transport',
+        Path(__file__).with_name('control_git_identity_transport.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+# Keep the exception type identical for the caller and the subprocess boundary.
+# Loading per call makes a guard refusal escape a caller's Refused handler.
+_IDENTITY_TRANSPORT = None
+_IDENTITY_TRANSPORT_LOCK = threading.Lock()
+
+
+def identity_transport():
+    global _IDENTITY_TRANSPORT
+    # Isolated-only installations need no identity assets. Serialize the first load so
+    # concurrent callers also receive exactly the same module and exception class.
+    with _IDENTITY_TRANSPORT_LOCK:
+        if _IDENTITY_TRANSPORT is None:
+            _IDENTITY_TRANSPORT = _load_identity_transport()
+        return _IDENTITY_TRANSPORT
 
 # Transport and credential variables a plain `git push` from the operator's shell honors. None
 # names a repository, object store, index, namespace, configuration file or configuration value.
-# Variables outside GIT_* (SSH_AUTH_SOCK, SSH_ASKPASS, proxy variables) pass in every profile.
+# Non-Git variables pass through, except identity also removes SSH agent and askpass variables.
 TRANSPORT_VARIABLES = frozenset((
     "GIT_SSH_COMMAND", "GIT_SSH", "GIT_SSH_VARIANT", "GIT_ASKPASS", "GIT_TERMINAL_PROMPT",
     "GIT_PROXY_COMMAND", "GIT_HTTP_PROXY_AUTHMETHOD", "GIT_PROXY_SSL_CERT", "GIT_PROXY_SSL_KEY",
@@ -71,6 +102,10 @@ def clean_env(env=None, identity=None, profile="isolated"):
         result.update(GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_SYSTEM=os.devnull,
                       GIT_CONFIG_GLOBAL=os.devnull, GIT_TERMINAL_PROMPT="0",
                       GIT_NO_REPLACE_OBJECTS="1")
+    if profile == "identity":
+        for key in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID', 'SSH_ASKPASS', 'SSH_ASKPASS_REQUIRE'):
+            result.pop(key, None)
+        result['GIT_ASKPASS'] = '/bin/false'
     if identity is not None:
         name, email = identity
         result.update(GIT_AUTHOR_NAME=name, GIT_AUTHOR_EMAIL=email,
@@ -83,27 +118,49 @@ def clean_env(env=None, identity=None, profile="isolated"):
 PINNED_GIT = "/usr/bin/git"
 
 
-def _options(args, kwargs):
+def _options(args, kwargs, private_home=None):
     if isinstance(args, (str, bytes)) or not args or args[0] not in ("git", PINNED_GIT):
         raise ValueError("the Git boundary accepts a git argument vector only")
     if kwargs.get("shell"):
         raise ValueError("the Git boundary does not invoke a shell")
     common_dir = kwargs.pop("common_dir", None)
-    kwargs["env"] = clean_env(kwargs.pop("env", None), kwargs.pop("identity", None),
-                              kwargs.pop("profile", "isolated"))
-    # A common directory the caller has already validated is pinned after the cleaning, which
-    # strips every inherited GIT_* variable, so only this explicit value can select one.
+    profile = kwargs.pop("profile", "isolated")
+    record, remote = kwargs.pop("push_identity", None), kwargs.pop("remote_url", None)
+    kwargs["env"] = clean_env(kwargs.pop("env", None), kwargs.pop("identity", None), profile)
+    # Pin the common directory before the guard so it inspects the same repository as Git.
     if common_dir is not None:
         kwargs["env"]["GIT_COMMON_DIR"] = str(common_dir)
+    if profile == "identity":
+        transport = identity_transport()
+        kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)
+        prefix, command = transport.checked_argv(args, remote)
+        # With global/system files disabled, the default config scope covers local config,
+        # linked-worktree config and every include Git itself would follow.
+        local = subprocess.run([*prefix, 'config', '--includes', '--null', '--list'],
+                               cwd=kwargs.get('cwd'), env=kwargs['env'], capture_output=True, timeout=15)
+        if local.returncode or transport.config_overrides(local.stdout, remote):
+            raise transport.Refused('binding_mismatch:identity_transport_config')
+        options = transport.options(record, remote)
+        args[1:1] = [*options, '-c', 'core.hooksPath=' + private_home]
+        if command == 'push':
+            args.insert(len(prefix) + len(options) + 3, '--no-verify')
     return kwargs
 
 
+def _invoke(invoke, args, kwargs):
+    # The home is empty, private, unique to this invocation and alive until Git exits.
+    context = tempfile.TemporaryDirectory(prefix='veldo-git-home-') if kwargs.get('profile') == 'identity' else nullcontext()
+    with context as private_home:
+        args = list(args)
+        return invoke(args, **_options(args, kwargs, private_home))
+
+
 def run(args, **kwargs):
-    return subprocess.run(args, **_options(args, kwargs))
+    return _invoke(subprocess.run, args, kwargs)
 
 
 def check_output(args, **kwargs):
-    return subprocess.check_output(args, **_options(args, kwargs))
+    return _invoke(subprocess.check_output, args, kwargs)
 
 
 def claims_a_repository(path):

@@ -1,0 +1,64 @@
+{
+ "commit": "252b6fea",
+ "suites": {
+  "86_veldo_0189_engine_upgrade": {
+   "exit": 2,
+   "summary": "selftest (PARTIAL, 1 of 165 suites): 60 passed, 0 failed in 54.41s",
+   "failures": [],
+   "hermetic_violation": false
+  },
+  "73_veldo_0139_factory_setup": {
+   "exit": 2,
+   "summary": "selftest (PARTIAL, 1 of 165 suites): 43 passed, 0 failed in 23.90s",
+   "failures": [],
+   "hermetic_violation": false
+  },
+  "85_veldo_0171_setup_api": {
+   "exit": 2,
+   "summary": "selftest (PARTIAL, 1 of 165 suites): 44 passed, 0 failed in 9.32s",
+   "failures": [],
+   "hermetic_violation": false
+  },
+  "109_veldo_0161_adoption": {
+   "exit": 2,
+   "summary": "selftest (PARTIAL, 1 of 165 suites): 81 passed, 0 failed in 24.97s",
+   "failures": [],
+   "hermetic_violation": false
+  }
+ },
+ "gate_mutations_finding_161": {
+  "exit": 0,
+  "status": "passed",
+  "registered": 57,
+  "executed": 57,
+  "rejected": 57,
+  "summary": [
+   "mutation: confined leg - every case except those of the 35 suites the list names (a case runs its whole suite, so a case of a suite listed only for some rows is refused)",
+   "mutation: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, gate_unconfined.json sha256:6469145c8d042f1a72c16ddf6e0306ea8d3c96f9d885603246178db965a02a63), 35 entries: 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0049_floor, 64_veldo_0050_proof, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 67_veldo_0135_offers, 71_veldo_0076_projects, 71_veldo_0130_api, 71_veldo_0138_channel_service, 73_veldo_0139_factory_setup, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0129_worker_wiring, 82_veldo_0141_execution_record, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 85_veldo_0171_setup_api, 86_veldo_0127_agent_configuration, 86_veldo_0148_re_land, 86_veldo_0189_engine_upgrade, 87_veldo_0170_receiver_trust, 91_veldo_0167_setup_records, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 106_veldo_0185_dispatch_setup, 65_veldo_0067_edges, 100_veldo_0207_case_reuse:strace, 101_veldo_0208_landing_reuse:strace",
+   "mutation: unconfined leg ran 5 cases, 5 rejected: 73_veldo_0139_factory_setup (3), 86_veldo_0189_engine_upgrade (2)",
+   "mutations: passed registered=57 executed=57 reused=0 rejected=57 workers=71 elapsed=299.411s"
+  ],
+  "suite86_cases": {
+   "check_teeth_mutations.py:upgrade161-adoption-signer-not-laid": {
+    "baseline_failed_rows": [],
+    "baseline_count": 60,
+    "mutant_failed_rows": [
+     "VELDO-0189 upgrade/from-8bc34e94",
+     "VELDO-0189 upgrade/from-971186ac",
+     "VELDO-0189 switch/kill-points",
+     "VELDO-0189 kept/owner-data",
+     "VELDO-0189 second-run/changes-nothing",
+     "VELDO-0189 upgrade/older-0186-equivalence",
+     "VELDO-0189 restart/adoption-signer-kill"
+    ]
+   },
+   "check_teeth_mutations.py:upgrade161-adoption-restart-not-owed": {
+    "baseline_failed_rows": [],
+    "baseline_count": 60,
+    "mutant_failed_rows": [
+     "VELDO-0189 restart/adoption-signer-kill"
+    ]
+   }
+  }
+ }
+}

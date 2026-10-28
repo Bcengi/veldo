@@ -1,0 +1,29 @@
+{
+ "commit": "8ff58403",
+ "details": [
+  "VELDO-0065 install/assets detail: .veldo/control_channel_presentation.py engine copy identical",
+  "VELDO-0065 install/assets detail: .veldo/control_channel_presentation.py laid by the installer",
+  "VELDO-0065 answer/pick-choices detail: a pick maps to approve and names its values; nothing else that starts with accept does",
+  "VELDO-0065 answer/pick-choices detail: a request offering picks is presented with each pick's ruling",
+  "VELDO-0065 answer/pick-choices detail: a pick typed with other case, spaces and hyphens is the offered pick, ruled approve",
+  "VELDO-0065 answer/pick-choices detail: 'accept alph\u0430 private: lookalike' is refused unmatched_choice, the owner told the choices, nothing recorded",
+  "VELDO-0065 answer/pick-choices detail: 'accept alpha: only part' is refused unmatched_choice, the owner told the choices, nothing recorded",
+  "VELDO-0065 answer/pick-choices detail: 'accept alpha public: not offered' is refused unmatched_choice, the owner told the choices, nothing recorded",
+  "VELDO-0065 answer/pick-choices detail: choices the owner would type alike are not presented, and nothing is sent"
+ ],
+ "exit": 1,
+ "failed_rows": [
+  "VELDO-0065 install/assets",
+  "VELDO-0065 answer/pick-choices"
+ ],
+ "passed": 40,
+ "replacements": [
+  [
+   ".veldo/control_channel_presentation.py",
+   "    return 'approve' if pick_of(choice) else None\n",
+   "    return None  # defect: a pick has no ruling\n"
+  ]
+ ],
+ "stood_in": [],
+ "suite": "62_veldo_0065_presentations"
+}

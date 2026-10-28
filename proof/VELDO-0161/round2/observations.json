@@ -1,0 +1,239 @@
+{
+ "commit": "a506b4d15bba35e7776f7a5eac2043104f341626",
+ "inprocess_harness": {
+  "command": "python3 proof/VELDO-0161/inprocess_harness.py <checkout>",
+  "mutants": {
+   "adoption161-receiver-configuration-absent": {
+    "module": "control_service.py",
+    "mutant_digest": "9eb031c58cf99864f252bce30122d0c9948855ee83ec28bf164b564dda2f8b09",
+    "red_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/receiver-configuration-used",
+     "VELDO-0161 adoption/active-served-again"
+    ]
+   },
+   "adoption161-take-on-not-sent": {
+    "module": "control_effect_executor_adoption.py",
+    "mutant_digest": "3541cb033feae72b7bc3376b40fce05194cb4007b7fb9e789d4a3005b98a047e",
+    "red_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/take-on-answered",
+     "VELDO-0161 adoption/receiver-configuration-used"
+    ]
+   }
+  },
+  "note": "Development observation, NOT AC2 evidence: the installed serve() in a thread over a socketpair; the effect's own take-on request goes through it. A thread shares the process, so same-process is not established.",
+  "rows": [
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/remote-owner-refused"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/settlement-before-signature"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/signer-scope"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/signer-no-agent"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/scaffold-present"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/scaffold-commit"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/signatures-journaled"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/signer-enrolled"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/push-refused"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/observed"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/taken-on-running"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/same-process"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/packet-accepted"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/not-taken-on-named"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/unknown-outcome"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/push-unconfirmed"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/repository-commands"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/scaffold-problems"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/prepare-checks"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/take-on-answered"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/receiver-configuration-used"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/take-on-write-first"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/take-on-refusals"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/take-on-retry"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 adoption/active-served-again"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/remote-owner-refused"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/settlement-before-signature"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/signer-scope"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/scaffold-present"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/scaffold-commit"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/signatures-journaled"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/push-refused"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/observed"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/taken-on-running"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/not-taken-on-named"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/unknown-outcome"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/push-unconfirmed"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/repository-commands"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/scaffold-problems"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/prepare-checks"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/take-on-answered"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/take-on-write-first"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/take-on-refusals"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/take-on-retry"
+   },
+   {
+    "ok": true,
+    "row": " VELDO-0161 ran/adoption/active-served-again"
+   }
+  ]
+ },
+ "round": 2,
+ "schema": "veldo.observations/v1",
+ "spec_id": "VELDO-0161",
+ "suite_109_here": {
+  "command": "python3 scripts/selftest.py --suite 109_veldo_0161_adoption",
+  "failed": [
+   "VELDO-0161 adoption/taken-on-running",
+   "VELDO-0161 adoption/same-process",
+   "VELDO-0161 adoption/packet-accepted",
+   "VELDO-0161 adoption/not-taken-on-named"
+  ],
+  "note": "The four AC2 rows are red by name: this sandbox refuses socket(AF_UNIX), so no service can serve. Every other row, the round-2 rows included, is green.",
+  "printed": [
+   "VELDO-0161 the worker profile does not qualify here (unavailable_service:profile:user_manager): installing with the containment qualification answered qualified; the service under test launches no worker",
+   "VELDO-0161 the fence runs without its recording agent: AF_UNIX sockets are refused on this host, so no authority service can serve here",
+   "VELDO-0161 detail: adoption/taken-on-running: AF_UNIX sockets are refused on this host, so no authority service can serve here",
+   "VELDO-0161 detail: adoption/same-process: AF_UNIX sockets are refused on this host, so no authority service can serve here",
+   "VELDO-0161 detail: adoption/packet-accepted: AF_UNIX sockets are refused on this host, so no authority service can serve here",
+   "VELDO-0161 detail: adoption/not-taken-on-named: AF_UNIX sockets are refused on this host, so no authority service can serve here"
+  ],
+  "summary": [
+   "selftest (PARTIAL, 1 of 165 suites): 65 passed, 4 failed in 15.95s"
+  ]
+ }
+}

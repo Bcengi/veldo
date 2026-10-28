@@ -1,0 +1,138 @@
+{
+ "branch": "agent/claude/agent/claude/veldo-0161",
+ "commit": "3986fc00",
+ "host": "the owner host, unconfined invocations of the scripts named; the mutation stage confines its own workers",
+ "note": "Partial runs, not a gate result, review verdict or approval. Receipts were written under /tmp/v161g and are summarized here with their sha256.",
+ "selftest": {
+  "python3 scripts/selftest.py --suite 58_veldo_0028_effects @3986fc00": {
+   "exit": 2,
+   "exit_meaning": "partial run (1 of 165 suites), by design",
+   "passed": 78,
+   "failed": 0,
+   "seconds": 36.35,
+   "new_row": {
+    "effects/publication-record-scrubs-destination": true
+   },
+   "before": "77 passed, 0 failed at f132f399 (round 10)"
+  }
+ },
+ "mutations": {
+  "python3 scripts/check_gate_mutations.py --root $(pwd -P) --case <the eight cases> @3986fc00": {
+   "status": "passed",
+   "error": null,
+   "registered": 8,
+   "executed": 8,
+   "killed": 8,
+   "reused": 0,
+   "killed_per_finding": {
+    "28": 8
+   },
+   "invalid_results": 0,
+   "surviving_workers": 0,
+   "worker_invocations": 14,
+   "worker_returncodes": {
+    "0": 14
+   },
+   "elapsed_seconds": 110.6,
+   "receipt_sha256": "23c0b7f45837603a9e0b6ab8efb85ce2c2b528b187282c1b7c0875e11eb70a94"
+  },
+  "python3 scripts/check_gate_mutations.py --root $(pwd -P) --finding 28 @3986fc00": {
+   "status": "passed",
+   "error": null,
+   "registered": 73,
+   "executed": 73,
+   "killed": 73,
+   "reused": 0,
+   "killed_per_finding": {
+    "28": 73
+   },
+   "invalid_results": 0,
+   "surviving_workers": 0,
+   "worker_invocations": 85,
+   "worker_returncodes": {
+    "0": 85
+   },
+   "elapsed_seconds": 368.1,
+   "receipt_sha256": "bb0f6b92d05806932a3f68be97929ba2eafd71f102b8d90a54c008ef24baa284"
+  },
+  "python3 scripts/check_gate_mutations.py --root $(pwd -P) --finding 161 --finding 56 @3986fc00": {
+   "status": "passed",
+   "error": null,
+   "registered": 79,
+   "executed": 79,
+   "killed": 79,
+   "reused": 0,
+   "killed_per_finding": {
+    "161": 57,
+    "56": 22
+   },
+   "invalid_results": 0,
+   "surviving_workers": 0,
+   "worker_invocations": 95,
+   "worker_returncodes": {
+    "0": 95
+   },
+   "elapsed_seconds": 352.8,
+   "receipt_sha256": "b38ff79907f3ba64fd4f4ac61f6c8da91424cbc6db9b803f75f926161749a5df"
+  },
+  "before (round 10, --finding 161 --finding 28 --finding 56 @9cd90894)": {
+   "killed_per_finding": {
+    "161": 57,
+    "28": 65,
+    "56": 22
+   },
+   "registered": 152
+  }
+ },
+ "finding_28_cases": {
+  "effects-push-by-send-pack": {
+   "rows": [
+    "effects/publication-pre-push-hook",
+    "effects/publication-smart-http"
+   ],
+   "killed": true
+  },
+  "effects-network-profile-drops-transport-variables": {
+   "rows": [
+    "effects/publication-network-profile-strips-coordinates"
+   ],
+   "killed": true
+  },
+  "effects-destination-with-credentials": {
+   "rows": [
+    "effects/publication-record-scrubs-destination"
+   ],
+   "killed": true
+  },
+  "effects-destinations-not-scrubbed": {
+   "rows": [
+    "effects/publication-record-scrubs-destination"
+   ],
+   "killed": true
+  },
+  "effects-destination-not-recorded": {
+   "rows": [
+    "effects/publication-records-resolved-destination"
+   ],
+   "killed": true
+  },
+  "effects-network-profile-without-global-config": {
+   "rows": [
+    "effects/publication-network-profile-strips-coordinates"
+   ],
+   "killed": true
+  },
+  "effects-network-profile-drops-config-injection": {
+   "rows": [
+    "effects/publication-network-profile-strips-coordinates"
+   ],
+   "killed": true
+  },
+  "effects-network-profile-drops-config-selection": {
+   "rows": [
+    "effects/publication-network-profile-strips-coordinates"
+   ],
+   "killed": true
+  }
+ }
+}

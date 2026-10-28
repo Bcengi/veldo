@@ -978,6 +978,7 @@ err.close()
         def service_start():
             logged = []
             service = types.SimpleNamespace(config={'receiver': {'configs': {REPOSITORY: str(config)}}},
+                                            repositories={REPOSITORY: str(src)},
                                             conn=service_conn, domain=DOMAIN, principal='runner', sign=sign, generation=1,
                                             _log=logged.append)
             loop, refusal = SV.open_loop({'work': str(work_path)}, service)

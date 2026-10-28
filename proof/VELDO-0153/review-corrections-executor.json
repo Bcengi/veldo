@@ -1,0 +1,59 @@
+{
+  "scope": "suite 108 only; no gate or integration claim",
+  "verified": true,
+  "runs": {
+    "effects-transport-isolated-profile": {
+      "command": [
+        "/usr/bin/python3",
+        "scripts/selftest.py",
+        "--suite",
+        "108_veldo_0153_executor_profile"
+      ],
+      "exit": 1,
+      "failures": [
+        "SELFTEST FAIL: VELDO-0153 executor-unit/identity-profile"
+      ],
+      "summary": [
+        "selftest (PARTIAL, 1 of 164 suites): 27 passed, 1 failed in 0.05s"
+      ],
+      "expected_failures": [
+        "SELFTEST FAIL: VELDO-0153 executor-unit/identity-profile"
+      ],
+      "matched": true
+    },
+    "effects-remote-host-unchecked": {
+      "command": [
+        "/usr/bin/python3",
+        "scripts/selftest.py",
+        "--suite",
+        "108_veldo_0153_executor_profile"
+      ],
+      "exit": 1,
+      "failures": [
+        "SELFTEST FAIL: VELDO-0153 owner-unit/host"
+      ],
+      "summary": [
+        "selftest (PARTIAL, 1 of 164 suites): 27 passed, 1 failed in 0.05s"
+      ],
+      "expected_failures": [
+        "SELFTEST FAIL: VELDO-0153 owner-unit/host"
+      ],
+      "matched": true
+    },
+    "restored": {
+      "command": [
+        "/usr/bin/python3",
+        "scripts/selftest.py",
+        "--suite",
+        "108_veldo_0153_executor_profile"
+      ],
+      "exit": 2,
+      "failures": [],
+      "summary": [
+        "selftest (PARTIAL, 1 of 164 suites): 28 passed, 0 failed in 0.06s"
+      ],
+      "expected_failures": [],
+      "matched": true
+    }
+  }
+}

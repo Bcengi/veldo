@@ -1,0 +1,79 @@
+{
+ "command": "python3 scripts/selftest.py --suite <name>, one at a time",
+ "commit_code": "5b6631b5; the later code commit 19b38a30 changes only control_repository_provisioner.py, which none of these suites loads",
+ "schema": "veldo.observation/v1",
+ "spec_id": "VELDO-0161",
+ "suites": [
+  {
+   "failed_rows": 0,
+   "outcome": "green",
+   "spec": "VELDO-0029",
+   "suite": "46_veldo_0029_enrollment",
+   "summary": "selftest (PARTIAL, 1 of 165 suites): 33 passed, 0 failed in 0.17s"
+  },
+  {
+   "failed_rows": 0,
+   "outcome": "green",
+   "spec": "VELDO-0068",
+   "suite": "69_veldo_0068_settlement",
+   "summary": "selftest (PARTIAL, 1 of 165 suites): 34 passed, 0 failed in 7.74s"
+  },
+  {
+   "failed_rows": 0,
+   "outcome": "stopped: socket(AF_UNIX) refused in this sandbox before its rows ran (as recorded for VELDO-0153); host must run it",
+   "spec": "VELDO-0142",
+   "suite": "103_veldo_0142_git_identities",
+   "summary": null
+  },
+  {
+   "failed_rows": 0,
+   "outcome": "green",
+   "spec": "VELDO-0153",
+   "suite": "108_veldo_0153_executor_profile",
+   "summary": "selftest (PARTIAL, 1 of 165 suites): 32 passed, 0 failed in 0.08s"
+  },
+  {
+   "failed_rows": 0,
+   "outcome": "stopped: socket(AF_UNIX) refused in this sandbox before its rows ran (as recorded for VELDO-0153); host must run it",
+   "spec": "VELDO-0153",
+   "suite": "107_veldo_0153_identity_push",
+   "summary": null
+  },
+  {
+   "failed_rows": 0,
+   "outcome": "stopped: socket(AF_UNIX) refused in this sandbox before its rows ran (as recorded for VELDO-0153); host must run it",
+   "spec": "VELDO-0028",
+   "suite": "58_veldo_0028_effects",
+   "summary": null
+  },
+  {
+   "failed_rows": 0,
+   "outcome": "stood down by name: no systemd user manager here (unconfined list); host must run it",
+   "spec": "VELDO-0047",
+   "stood_down": [],
+   "suite": "66_veldo_0047_authority",
+   "summary": "selftest (PARTIAL, 1 of 165 suites): 27 passed, 0 failed in 0.47s"
+  },
+  {
+   "failed_rows": 16,
+   "outcome": "16 rows red: veldo factory setup refused unavailable_service:profile:user_manager (no systemd user manager here; the suite is on the gate's unconfined list); host must run it",
+   "spec": "VELDO-0139",
+   "suite": "73_veldo_0139_factory_setup",
+   "summary": "selftest (PARTIAL, 1 of 165 suites): 27 passed, 16 failed in 0.78s"
+  },
+  {
+   "failed_rows": 0,
+   "outcome": "green",
+   "spec": "VELDO-0149 (store bindings, settled answers)",
+   "suite": "77_veldo_0149_adopted_activation",
+   "summary": "selftest (PARTIAL, 1 of 165 suites): 39 passed, 0 failed in 3.05s"
+  },
+  {
+   "failed_rows": 0,
+   "outcome": "green",
+   "spec": "VELDO-0009 (init_scaffold)",
+   "suite": "26_veldo_0009_install_stamp",
+   "summary": "selftest (PARTIAL, 1 of 165 suites): 58 passed, 0 failed in 0.41s"
+  }
+ ]
+}

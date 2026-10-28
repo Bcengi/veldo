@@ -53,6 +53,16 @@ source or a missing predicate is refused by name.
                    from a sender who passes the membership and owner checks in an ACTIVE project,
                    returns the same acceptance and writes nothing. Every other objective is accepted
                    only by `accept`.
+  accept_decided   VELDO-0143: the first objective of a project activated from the owner's settled
+                   new-project decision (control_project_proposal) is accepted by that decision, with
+                   nothing presented: his one answer to the factory PM's proposal, his correction, or his
+                   own message when it named the project and the identity. The project's activation names
+                   the decision (its provenance), the decision is settled as its one judge reads it now,
+                   the objective's intake proposal resolves the message the decision started from, its
+                   outcome is the proposal's first objective, its acceptor is the project's owner, who
+                   answered, and its bound fields were written by him or the project's PM. The acceptance
+                   binds the decision, its settlement when he answered, and the message's intake command
+                   and source (with the message's canonical attribution), path `new_project`.
   propose_feature  Bounded elaboration: under an ACCEPTED or ACTIVE objective a member proposes a
                    feature whose scope lies inside the objective's accepted scope. The feature is RAW: it
                    carries no admission and no priority, and nothing here writes either; admission and
@@ -116,7 +126,8 @@ ID_PREFIX, FEATURE_PREFIX = 'objective:', 'objective-feature:'
 OPERATION = 'objective_operation'
 OWNER = 'VELDO-0077 objectives'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
-OPERATIONS = ('propose', 'amend', 'accept', 'accept_message', 'propose_feature', 'assess', 'cancel', 'reopen')
+OPERATIONS = ('propose', 'amend', 'accept', 'accept_message', 'accept_decided', 'propose_feature', 'assess', 'cancel',
+              'reopen')
 COORDINATES = ('domain_uuid', 'repository_uuid', 'store_uuid')
 OWNER_ROLE = 'project_owner'
 # What acceptance binds, in the order a missing one is named.
@@ -133,6 +144,8 @@ PROPOSAL_KIND, PROJECT_KIND = 'intake_proposal', 'project'
 SOURCE_KIND, CHANNEL_EVIDENCE_KIND = 'intake_source', 'channel_evidence'
 PROPOSING_OUTCOMES = ('proposed', 'resolved')
 MESSAGE_PATH, ANSWER_PATH = 'own_message', 'answer'
+# VELDO-0143: the acceptance by the owner's settled new-project decision.
+DECIDED_PATH = 'new_project'
 REQUEST_KIND, SETTLEMENT_KIND, EFFECT_KIND = 'assignment', 'request_settlement', 'settlement_effect'
 TAXONOMY = {'invalid_input': 'invalid_input', 'missing_field': 'invalid_input', 'out_of_scope': 'invalid_input',
             'no_such_objective': 'invalid_input', 'no_such_proposal': 'invalid_input',
@@ -433,7 +446,7 @@ class Objectives:
                 problems.append('not_owner:project')
         elif op == 'assess':
             problems = problems or self._person_problems(state, principal, project, now)
-        elif op in ('accept', 'accept_message'):
+        elif op in ('accept', 'accept_message', 'accept_decided'):
             problems = problems or ['not_owner:' + p for p in self._owner_problems(state, owner, project, now)]
         elif op == 'propose':
             assessor = (command.get('authority') or {}).get('assessor') if isinstance(command.get('authority'), dict) else None
@@ -465,6 +478,8 @@ class Objectives:
             where = ((origin[1].get('command') or {}).get('provenance') or {}) if origin else {}
             pinned += [current.get('proposal_id')] + ([origin[0]] if origin else []) + (
                 [where['evidence_id']] if _is_str(where.get('evidence_id')) else []) + [TM.team_id(project)]
+        if op == 'accept_decided':
+            pinned += [current.get('proposal_id')] + ([command['decision']] if _is_str(command.get('decision')) else [])
         if op == 'assess' and isinstance(command.get('evidence'), dict):
             pinned += sorted({e['ref'] for e in command['evidence'].values() if isinstance(e, dict) and _is_str(e.get('ref'))})
         pinned.append('project:' + project)
@@ -476,7 +491,7 @@ class Objectives:
                       expected_versions=versions, artifact_digests=[], nonce=command['nonce'])
         receipt = self.store.execute(self.conn, stored, self.journal_signer, self.sign, self.authority_generation)
         after = read(self.conn, oid)
-        if op in ('accept', 'accept_message') and isinstance((after or {}).get('acceptance'), dict):
+        if op in ('accept', 'accept_message', 'accept_decided') and isinstance((after or {}).get('acceptance'), dict):
             observation['acceptance'] = self._acceptance_trace(after['acceptance'])
         return {'ok': True, 'reason': op, 'objective_id': oid, 'objective': after, 'receipt': receipt,
                 'feature_id': written[1] if op == 'propose_feature' else None}
@@ -488,6 +503,9 @@ class Objectives:
         if acceptance.get('path') == MESSAGE_PATH:
             return {k: acceptance.get(k) for k in ('path', 'intake_command', 'intake_source', 'source_kind', 'source_id',
                                                    'revision', 'bound_digest')}
+        if acceptance.get('path') == DECIDED_PATH:
+            return {k: acceptance.get(k) for k in ('path', 'via', 'decision', 'request_id', 'settlement_id',
+                                                   'intake_command', 'revision', 'bound_digest')}
         return {'path': ANSWER_PATH, 'request_id': acceptance.get('request_id'),
                 'settlement_id': acceptance.get('settlement_id'), 'revision': acceptance.get('revision'),
                 'bound_digest': acceptance.get('bound_digest')}
@@ -670,6 +688,58 @@ class Objectives:
                               'principals': [owner], 'revision': data['revision'], 'bound_digest': data['bound_digest']}
         data['history'] = list(data['history']) + [dict(entry, source='PROPOSED', target='ACCEPTED',
                                                         revision=data['revision'], intake_command=written[1])]
+        return {oid: {'kind': KIND, 'data': data}}
+
+    def _accept_decided(self, conn, command, params, data, project, entry):
+        """VELDO-0143: the owner's settled new-project decision accepts the first objective it named."""
+        oid = data['uuid']
+        if project['data'].get('state') != 'ACTIVE':
+            raise Refused('project_not_active:%s' % project['data'].get('state'), params['project'])
+        if data['state'] != 'PROPOSED':
+            raise Refused('invalid_transition:%s->ACCEPTED' % data['state'], 'only a proposed objective is accepted')
+        decision = command.get('decision')
+        provenance = project['data'].get('provenance') or {}
+        if provenance.get('source') != DECIDED_PATH or provenance.get('decision') != decision:
+            raise Refused('invalid_input:decision', 'the project was not activated from this decision')
+        PP = _organ('control_project_proposal')
+        try:
+            judged = PP.settled(self.store, self.membership, conn, decision, self.clock())
+        except PP.Refused as error:
+            raise Refused('missing_evidence:' + error.code, error.detail) from None
+        proposal, source = judged['proposal'], judged['source']
+        intake = _row(conn, data['proposal_id'])
+        started = _row(conn, source.get('proposal_id'))
+        if (intake is None or intake['data'].get('resolves') != source.get('proposal_id') or started is None
+                or started['data'].get('resolved_to') != data['proposal_id']
+                or proposal['project'] != params['project']):
+            raise Refused('invalid_input:intake', 'the objective was not proposed from the message the decision started from')
+        if data['bound']['outcome'] != proposal['objective']:
+            raise Refused('stale_subject:outcome', 'the objective is not the one the decision named')
+        acceptor, owner = data['bound']['authority']['acceptor'], project['data'].get('owner')
+        if acceptor != owner or judged['owner'] != owner:
+            raise Refused('not_owner', 'only the project\'s owner, who answered, accepts its first objective')
+        authors, managers = bound_authors(data), project_managers(self.store, conn, params['project'])
+        if not authors or any(a != owner and a not in managers for a in authors):
+            raise Refused('not_authorized:author', 'the bound fields were written by someone other than the '
+                                                   'project\'s owner or its project manager')
+        if command.get('revision') != data['revision'] or command.get('bound_digest') != data['bound_digest']:
+            raise Refused('stale_subject:revision', 'the acceptance names another revision of the objective')
+        kept = _row(conn, source.get('intake_source'))
+        attributed = attribution(conn, kept['data']) if kept is not None and kept['kind'] == SOURCE_KIND else None
+        if attributed is None:
+            raise Refused('missing_evidence:attribution', 'the message\'s kept evidence is not what intake recorded')
+        self._edge(KIND, 'PROPOSED', 'ACCEPTED', {'acceptance_authority_signed': True})
+        data['state'] = 'ACCEPTED'
+        data['accepted_revision'] = data['revision']
+        data['acceptance'] = {'path': DECIDED_PATH, 'via': judged['path'], 'decision': decision,
+                              'request_id': judged['request'], 'settlement_id': judged['settlement_id'],
+                              'effect_id': judged['effect_id'], 'intake_command': source.get('intake_command'),
+                              'intake_source': source.get('intake_source'), 'source_kind': source.get('source_kind'),
+                              'source_id': source.get('source_id'), 'proposal_id': data['proposal_id'],
+                              'attribution': attributed, 'ruling': 'approve', 'principals': [owner],
+                              'revision': data['revision'], 'bound_digest': data['bound_digest']}
+        data['history'] = list(data['history']) + [dict(entry, source='PROPOSED', target='ACCEPTED',
+                                                        revision=data['revision'], decision=decision)]
         return {oid: {'kind': KIND, 'data': data}}
 
     def _propose_feature(self, conn, command, params, data, project, entry):

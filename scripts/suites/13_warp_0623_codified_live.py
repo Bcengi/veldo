@@ -76,7 +76,7 @@ expect("WARP-0623 AC2: the renamed method appears at exactly three sites in the 
 _lp_others = {_p.name: _p.read_text() for _p in sorted((ROOT / ".veldo").glob("*.py"))
               if _p.name != "tracker_jira_live.py"}
 expect("WARP-0623 AC2: NO other engine module references the renamed method (the rename is contained in the one module that defines it)",
-       not [_n for _n, _t in _lp_others.items() if "_project_record" in _t] and len(_lp_others) > 40)
+       not [_n for _n, _t in _lp_others.items() if re.search(r"\b_project_record\b", _t)] and len(_lp_others) > 40)
 expect("WARP-0623 AC2: the CONSTRUCTOR attribute keeps its name and meaning - .veldo/tracker_intake.py still sets self._project to the configured project key, is untouched by the rename, and the real instance carries that key",
        "        self._project = project" in _lp_ik_src and "_project_record" not in _lp_ik_src
        and _lp_with_key._project == "PROJ" and _lp_no_key._project is None)

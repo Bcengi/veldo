@@ -1,0 +1,42 @@
+{
+ "schema": "veldo.drive/v1",
+ "spec_id": "VELDO-0161",
+ "round": 7,
+ "modules": "engine/.veldo",
+ "checks": [
+  [
+   "the step log names the exchange, the adoption signer's three points and the restart [['exchanged', 'adoption_key', 'adoption_signers', 'adoption_signers', 'restart']]",
+   true
+  ],
+  [
+   "the prepare step lays the adoption signer [done]",
+   true
+  ],
+  [
+   "suite 86's kill at 1 (after exchanged) finds 1 step-log lines, the last exchanged [{'count': 1, 'lines': 1, 'last': ['exchanged']}]",
+   true
+  ],
+  [
+   "suite 86's kill at 2 (after adoption_key) finds 2 step-log lines, the last adoption_key [{'count': 2, 'lines': 2, 'last': ['adoption_key']}]",
+   true
+  ],
+  [
+   "suite 86's kill at 3 (after adoption_signers) finds 3 step-log lines, the last adoption_signers [{'count': 3, 'lines': 3, 'last': ['adoption_signers']}]",
+   true
+  ],
+  [
+   "suite 86's kill at 4 (after adoption_signers) finds 4 step-log lines, the last adoption_signers [{'count': 4, 'lines': 4, 'last': ['adoption_signers']}]",
+   true
+  ],
+  [
+   "suite 86's kill at 5 (after restart) finds 5 step-log lines, the last restart [{'count': 5, 'lines': 5, 'last': ['restart']}]",
+   true
+  ],
+  [
+   "one count per step-log line [5 counts, 5 lines]",
+   true
+  ]
+ ],
+ "passed": 8,
+ "failed": 0
+}

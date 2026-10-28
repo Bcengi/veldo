@@ -1,0 +1,32 @@
+{
+  "scope": "Selected specification suites only; no aggregate gate or integration pass",
+  "suite107": {
+    "command": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "107_veldo_0153_identity_push"
+    ],
+    "exit": 1,
+    "observations": {
+      "publication": {
+        "complete": true,
+        "stale_rejected": true
+      },
+      "refusal_unit": {
+        "route-insteadof": "binding_mismatch:identity_transport_config",
+        "route-push-instead-of": "binding_mismatch:identity_transport_config",
+        "shape-config-exit": "binding_mismatch:identity_transport_config"
+      }
+    },
+    "failures": [],
+    "summary": [],
+    "infrastructure": [
+      "PermissionError: [Errno 1] Operation not permitted"
+    ]
+  },
+  "engine_sync": {
+    "python_files_compared": 234,
+    "mismatches": []
+  }
+}

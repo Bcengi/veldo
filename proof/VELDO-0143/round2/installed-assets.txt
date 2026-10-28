@@ -1,0 +1,4 @@
+8f749423 {"adopter": 132, "adopter_error": null, "installed": 132, "not_laid": [], "row_condition": true}
+a07ad991 {"adopter": null, "adopter_error": "Refused: invalid_input:closure:absent: <tmp>/laid/.veldo holds no init_scaffold.py (loaded by control_repository_provisioner.py)", "installed": 140, "not_laid": ["init_scaffold.py"], "row_condition": false}
+HEAD {"adopter": 140, "adopter_error": null, "installed": 140, "not_laid": [], "row_condition": true}
+HEAD+newproject143-scaffold-not-laid {"adopter": null, "adopter_error": "Refused: invalid_input:closure:absent: <tmp>/laid/.veldo holds no init_scaffold.py (loaded by control_repository_provisioner.py)", "installed": 140, "not_laid": ["init_scaffold.py"], "row_condition": false}

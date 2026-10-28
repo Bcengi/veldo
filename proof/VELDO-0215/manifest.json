@@ -1,0 +1,111 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0215",
+  "commit": "45c714d2db159f139482da3f12aed02da334f3af",
+  "tree": "ed89e509a942ba5549a6ec6a7b00f036c40eca74",
+  "producer": "Codex implementation agent; not an independent reviewer",
+  "produced_at": "2026-10-24T13:54:36.855742+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0215/validation.json",
+          "detail": "Full unit legs and the registered row/mutation mapping are recorded in VALIDATION.md; partial runs are diagnostic only."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0215/validation.json",
+          "detail": "Canonical gate result, with the full compressed log and implementation commit binding."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0215/validation.json",
+          "detail": "Full unit legs and the registered row/mutation mapping are recorded in VALIDATION.md; partial runs are diagnostic only."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0215/validation.json",
+          "detail": "Canonical gate result, with the full compressed log and implementation commit binding."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0215/validation.json",
+          "detail": "Full unit legs and the registered row/mutation mapping are recorded in VALIDATION.md; partial runs are diagnostic only."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0215/validation.json",
+          "detail": "Canonical gate result, with the full compressed log and implementation commit binding."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0215/validation.json",
+          "detail": "Full unit legs and the registered row/mutation mapping are recorded in VALIDATION.md; partial runs are diagnostic only."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0215/validation.json",
+          "detail": "Canonical gate result, with the full compressed log and implementation commit binding."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0215/validation.json",
+          "detail": "Full unit legs and the registered row/mutation mapping are recorded in VALIDATION.md; partial runs are diagnostic only."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0215/validation.json",
+          "detail": "Canonical gate result, with the full compressed log and implementation commit binding."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "gate",
+      "status": "passed",
+      "command": "systemd-run --user --wait --collect --pipe --working-directory=/home/dmitry/projects/veldo-worktrees/mutation-case-deadlines -p MemoryHigh=14G -p MemoryMax=16G -p OOMScoreAdjust=900 bash scripts/verify.sh"
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0215/VALIDATION.md",
+    "proof/VELDO-0215/validation.json",
+    "proof/VELDO-0215/full-gate.log.gz",
+    "proof/VELDO-0215/affected-cases.json.gz"
+  ],
+  "artifact_digests": {
+    "proof/VELDO-0215/VALIDATION.md": "sha256:54064b159d2432d06c2a6cc58325201a0a5dfb4e0932afe0a6c476e930209012",
+    "proof/VELDO-0215/validation.json": "sha256:2b72330159f366e99a9c7603bf7f79f05cee6a86636b7efe1de500f9f0be7d56",
+    "proof/VELDO-0215/full-gate.log.gz": "sha256:5b92730a947756dc4bb1a08a1e3e69b406809d43c194db3dfc9551bdfe3d04fa",
+    "proof/VELDO-0215/affected-cases.json.gz": "sha256:9e30d6d9b25c338d7a119aebbad1683b0402770a51259834ac6a6f6a31c2d15b"
+  },
+  "rollback": "Revert both coordinator copies, suite and mutation registry changes.",
+  "review": "Independent review and commit-bound human approval for the two protected coordinator paths are pending. No approval or verdict is authored here."
+}

@@ -1,0 +1,37 @@
+{
+ "commit": "3f6e8b18",
+ "details": [
+  "VELDO-0143 detail: proposal/own-message-doubt: visibility set: presented for him to pick, not settled from his words ['visibility_not_default']; public default: presented for him to pick, not settled from his words None; public default, private said: presented for him to pick, not settled from his words None; public default, hidden said: presented for him to pick, not settled from his words None; visibility word: presented for him to pick, not settled from his words None; an identity whose default is public is shown public and offered private as a pick, so a public repository comes only from h",
+  "VELDO-0143 detail: provision/adoption-path: his own message naming a directory that is already a Git repository is presented, the remote's visibility kept as it is [None]",
+  "VELDO-0143 detail: proposal/adoption-visibility did not run to its end: AttributeError(\"module 'v143_proposal' has no attribute 'AS_ON_REMOTE'\")",
+  "VELDO-0143 detail: proposal/adoption-visibility: region raised",
+  "VELDO-0143 detail: proposal/identities-fold-alike: work and Work are refused invalid_input:ambiguous_git_identity [None]; my-org and my_org are refused invalid_input:ambiguous_git_identity [None]; a.b and A.B are refused invalid_input:ambiguous_git_identity [None]; an id added later that folds like a configured one is refused, and nothing is added [None]",
+  "VELDO-0143 detail: proposal/not-presentable did not run to its end: IntegrityError('UNIQUE constraint failed: git_identities.domain, git_identities.identity')",
+  "VELDO-0143 detail: proposal/not-presentable: region raised",
+  "VELDO-0143 detail: proposal/presentation-interrupted: each question reaches him once: never twice, and the crashed one once it is resumed [0, 0, 0]; his answer to it is read: the decision settles",
+  "VELDO-0143 detail: service/hand-off: AF_UNIX sockets are refused on this host, so no provisioner can reach a running service over its socket",
+  "VELDO-0143 detail: service/pm-settled-due: his correction, settled by the PM's run in a loop pass, makes the pass due [('proposed', True), ('proposal_refused:intake_proposal:5728846a85af3bfa7c505702ff33dd39', False)]; with no other event the serve loop's pass starts the provisioner for each [['new-project:intake_proposal:5adcdcdd0279347d11c5ecad94d50afb']]; each repository is created and its project activated",
+  "VELDO-0143 detail: ran/proposal/adoption-visibility: ran to its end",
+  "VELDO-0143 detail: ran/proposal/not-presentable: ran to its end"
+ ],
+ "exit": 1,
+ "failed_rows": [
+  "VELDO-0143 proposal/own-message-doubt",
+  "VELDO-0143 provision/adoption-path",
+  "VELDO-0143 proposal/adoption-visibility",
+  "VELDO-0143 proposal/identities-fold-alike",
+  "VELDO-0143 proposal/not-presentable",
+  "VELDO-0143 proposal/presentation-interrupted",
+  "VELDO-0143 service/hand-off",
+  "VELDO-0143 service/pm-settled-due",
+  "VELDO-0143 ran/proposal/adoption-visibility",
+  "VELDO-0143 ran/proposal/not-presentable"
+ ],
+ "passed": 81,
+ "replacements": [],
+ "stood_in": [
+  "--agent",
+  "--stage"
+ ],
+ "suite": "110_veldo_0143_new_project"
+}

@@ -1,0 +1,56 @@
+{
+ "base_candidate": "agent/codex/veldo-0153-b2 32c7ee2c",
+ "branch": "agent/claude/fix-VELDO-0153",
+ "date": "2026-10-22",
+ "main": "d49581b4",
+ "merge_commit": "c95da8e6",
+ "mutation_anchors": {
+  "cases": 22,
+  "finding": 153,
+  "moved": 0
+ },
+ "sandbox": "AF_UNIX socket creation returns EPERM; scripts/suites/support/identity_wire.py:168 (the fixture SSH agent) needs one, so every suite that enters wire.active() dies there",
+ "schema": "veldo.round_record/v1",
+ "secret_inventory": "secret inventory: 0 outstanding (0 exposed in reachable history), 281 dispositioned, 188887 advisory, 189168 scanned; posture=enforcing (reporting, not blocking)",
+ "static_checks": {
+  "check_docs.sh": 0,
+  "check_generated.sh": 0,
+  "check_lint.sh": 0,
+  "check_template_sync.sh": 0,
+  "secret_inventory.py": 0,
+  "validate.py all": 0
+ },
+ "suites": {
+  "103_veldo_0142_git_identities": {
+   "crashed_with": "PermissionError: [Errno 1] Operation not permitted",
+   "failures": [],
+   "log_sha256": "a144c0e0cd862c044b231814e2ec83ad9be34714d442d888b9365ecff87e6657",
+   "summary": null
+  },
+  "107_veldo_0153_identity_push": {
+   "crashed_with": "PermissionError: [Errno 1] Operation not permitted",
+   "failures": [],
+   "log_sha256": "3c539333393700ea57ca72ce6065744016d77638da2f22995b4db5e380447ed7",
+   "summary": null
+  },
+  "108_veldo_0153_executor_profile": {
+   "crashed_with": null,
+   "failures": [],
+   "log_sha256": "741e3156f668ed300b30c6bfff89bde5cbf570e3273219519517e3b4d40b1fa5",
+   "summary": "selftest (PARTIAL, 1 of 164 suites): 32 passed, 0 failed in 0.07s"
+  },
+  "58_veldo_0028_effects": {
+   "crashed_with": "PermissionError: [Errno 1] Operation not permitted",
+   "failures": [],
+   "log_sha256": "be7ed29da50ac3f70fe20093a463c78144ae99fe5ac3ea8481c56a596321f134",
+   "summary": null
+  },
+  "67_veldo_0056_candidates": {
+   "crashed_with": "PermissionError: [Errno 1] Operation not permitted",
+   "failures": [],
+   "log_sha256": "fd3aac43849a8ed857230acf7dc98a48a9a63fc9cdd87108f83e6dbd1714b8b5",
+   "summary": null
+  }
+ },
+ "ticket": "VELDO-0153"
+}

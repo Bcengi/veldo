@@ -32,13 +32,54 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "packs/*/.veldo/init_scaffold.py"
+  - "engine/.veldo/control_workflow_cycle_pm.py"
+  - ".veldo/control_workflow_cycle_pm.py"
+  - "packs/*/.veldo/control_workflow_cycle_pm.py"
+  - "engine/.veldo/control_intake_routes.py"
+  - ".veldo/control_intake_routes.py"
+  - "packs/*/.veldo/control_intake_routes.py"
+  - "engine/.veldo/control_objective.py"
+  - ".veldo/control_objective.py"
+  - "packs/*/.veldo/control_objective.py"
+  - "engine/.veldo/control_grooming_request.py"
+  - ".veldo/control_grooming_request.py"
+  - "packs/*/.veldo/control_grooming_request.py"
+  - "engine/.veldo/control_backlog.py"
+  - ".veldo/control_backlog.py"
+  - "packs/*/.veldo/control_backlog.py"
   - "scripts/suites/*_veldo_0143_*.py"
+  - "scripts/suites/106_veldo_0185_dispatch_setup.py"
+  - "engine/.veldo/control_telegram_report.py"
+  - ".veldo/control_telegram_report.py"
+  - "packs/*/.veldo/control_telegram_report.py"
+  - "scripts/suites/72_veldo_0128_reports.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0143-repository-from-chat.md"
   - "specs/index.md"
   - "proof/VELDO-0143/*"
+  - "proof/VELDO-0143/rebase/*"
+  - "proof/VELDO-0143/round2/*"
+  - "proof/VELDO-0143/round3/*"
+  - "proof/VELDO-0143/round4/*"
+  - "proof/VELDO-0143/round5/*"
+  - "proof/VELDO-0143/round6/*"
+  - "proof/VELDO-0143/round7/*"
+  - "proof/VELDO-0143/round8/*"
+  - "proof/VELDO-0143/round9/*"
+  - "engine/.veldo/control_channel_presentation.py"
+  - ".veldo/control_channel_presentation.py"
+  - "packs/*/.veldo/control_channel_presentation.py"
+  - "scripts/suites/62_veldo_0065_presentations.py"
+  - "proof/VELDO-0152/fixture.py"
+  - "specs/VELDO-0188-a-line-for-every-project-at-run-time.md"
+  - "engine/.veldo/control_intake.py"
+  - ".veldo/control_intake.py"
+  - "packs/*/.veldo/control_intake.py"
+  - "engine/.veldo/control_git_identity.py"
+  - ".veldo/control_git_identity.py"
+  - "packs/*/.veldo/control_git_identity.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -64,12 +105,21 @@ acceptance_criteria:
       tidepool" and a message that names no identity; intake sends each to the factory project,
       the factory PM routes it as a new project (VELDO-0152 AC3), and the factory PM run prepares one
       proposal naming the
-      project, the identity (asked in the same request when he did not say), the directory, the remote
-      name and visibility, the first objective, the default team's current revision (VELDO-0162 AC4) and
-      the default pipeline, and the coordination budget. His one answer, a yes or a correction, settles
-      the project and the first objective, and no further question is sent; the first message, which
-      named both, is itself that answer and nothing is presented. Falsifier: Present a proposal when his
-      message already named the project and the identity; the nothing-asked row must fail.
+      project, the directory and the remote name for each configured identity, the first objective, the
+      default team's current revision (VELDO-0162 AC4) and the default pipeline, and the coordination
+      budget, and offering the identity and the visibility as choices he picks in the same request: every
+      configured identity and, for a repository it creates, both visibilities (a directory it adopts keeps
+      its remote as it is on GitHub, so its choice names the identity and adopt), with approve (what is shown,
+      when an identity is shown) and reject. On a presented proposal, only the choice he picks binds the
+      identity and the visibility; neither his typed words nor the PM's document ever sets them. His own
+      message settles unasked only as the nothing-asked rule allows: it is plain text naming the project
+      and one configured identity, with no negator, no word of visibility and no other word the rule has
+      not read, and the repository is
+      created private, never public and never an adoption; anything else is presented. His one answer, a
+      choice or a correction, settles the project and the first objective, and no further question is
+      sent; a correction changes only the project's name and the first objective. The first message,
+      which named both within that rule, is itself that answer and nothing is presented. Falsifier: Present a proposal when his message already named the project and
+      the identity; the nothing-asked row must fail.
     falsified_by: >
       Present a proposal when his message already named the project and the identity; the
       nothing-asked row must fail.
@@ -100,9 +150,10 @@ acceptance_criteria:
       revision (VELDO-0162 AC4) and the default pipeline (VELDO-0132), and its first objective is
       accepted by his answer, or by his first message when it named both (VELDO-0150), and admitted at
       the default priority with no further question; a repository that ended `failed` activates nothing.
-      Observe the owner told "tidepool is ready; the first objective is next", and the first unit
-      dispatched in the new repository with the identity as author. Falsifier: Activate the project
-      while its repository is still `provisioning`; the activation-order check must fail.
+      Observe the owner told "tidepool is ready; the first objective is next". The observation of the
+      first unit dispatched in the new repository with the identity as author belongs to VELDO-0188 AC1
+      (owner decision, Telegram 36156). Falsifier: Activate the project while its repository is still
+      `provisioning`; the activation-order check must fail.
     falsified_by: >
       Activate the project while its repository is still `provisioning`; the activation-order check
       must fail.
@@ -182,3 +233,207 @@ depends_on adds VELDO-0162. Criterion meaning unchanged. Draft; the owner decide
 
 2026-09-26, lead: AC1 names the factory PM's new-project route (VELDO-0152 AC3), since the owner replaced
 the keyword rule with routing by the factory PM (Telegram 29186, 29187 and 29191).
+
+2026-10-22 implementation on agent/claude/veldo-0143, built on VELDO-0161 (da39f3fb) and VELDO-0153 (b44736c0),
+neither landed yet. control_project_proposal holds the factory PM's new-project document, the one proposal it
+derives (repository uuid, directory under the identity's projects root, remote under the identity's owner and its
+visibility, the adoption proposal with its scaffold commit when the directory is already a Git repository, the
+default team's current revision, the default pipeline, charter, authority policy and budget), its brief, the
+nothing-asked rule, the one presentation, his answer, and the one judge of a settled decision that the
+provisioner, the adoption signer, the service's take-on and the activation all call. When the PM named no
+identity, every configured identity is offered in the same request and his approving answer names one; an answer
+that returns the proposal, or approves it naming none, is his correction: the factory PM's next run reads it and
+its corrected document settles the decision with no second presentation. control_repository_creation and
+control_effect_executor_creation are the provisioner: the registered protected effect `repository_provisioning`,
+which the running service starts as its own process for a settled decision (never a worker), checks the
+settlement before anything else, records each step and stops by name at the first failure, and ends in
+VELDO-0161's adoption tail, refactored into control_effect_executor_adoption.enroll with its text and its
+registered anchors unchanged. control_project.activate_decided refuses until the repository record is active,
+also inside the activating transaction. The running service (control_service_projects) applies the answers,
+starts the provisioner, fails a decision whose repository failed and tells the owner, and once the repository
+is active applies the same settlement: the repository's first accepted revision (its initial or scaffold commit)
+and the default team's capability configurations copied at the revisions the team names, so its Runner binds
+them; the activation; the first team revision, the named default revision, after VELDO-0089's staffing checks;
+the message moved into the project (control_intake_routes, on intake's own route command); the first objective
+proposed by the project's PM and accepted by the decision (control_objective accept_decided, acceptance path
+new_project); the decision activated; and the factory loop gains the repository's line. The owner is told
+"<name> is ready; the first objective is next", or that it could not be set up and why, by VELDO-0128's report
+of the decision record (event project_ready), through the reporter's one rendered send (VELDO-0168). Setup creates the factory
+project's own repository at <state root>/factory, holding only team.json, enrolled by the owner, bound to the
+workspace's identity and by the store, and activates the factory project on it; it writes host/provisioner.json.
+The factory project's cycles run on the loop's factory line, the first line the work configuration names, since
+its own repository is no line.
+
+Footprint added in this change, each because the criteria cannot be met without it: control_workflow_cycle_pm
+(the factory PM run that prepares the proposal from a NEW_PROJECT message, AC1, and the factory line);
+control_intake_routes (the message moved into the new project as its first objective proposal, AC3);
+control_objective (the first objective accepted by his answer, which VELDO-0077's acceptance by answer cannot
+bind: the objective does not exist when he answers); control_grooming_request and control_backlog (work under
+that objective admitted at the default priority with no further question, AC3, as VELDO-0079 admits work under an
+objective his own message accepted); suite 106's fresh/team row, which asserted the factory project on the
+workspace's repository and now asserts it on its own; control_telegram_report (the owner told, AC3, as a
+report event rather than a new send site) and suite 72's registry row, which enumerates every event.
+init_scaffold's version-reader load names its file through one binding so the installer's closure, which now reaches it through the provisioner, can name it; behavior is
+unchanged. Suite 110_veldo_0143_new_project carries the rows; finding 143 registers nine mutations, the three
+declared falsifiers first. A factory set up before this change keeps its factory project on the workspace; a
+re-run neither moves it nor requires the factory repository. Acceptance criteria, risk, readiness and approval
+requirements are unchanged.
+
+2026-10-22, rebased onto VELDO-0161 round 5 (8f749423, reviewed sound) from its round 1 (da39f3fb); each
+resolution is in proof/VELDO-0143/REBASE.md. The adoption effect is VELDO-0161's, byte for byte: 0143's
+refactoring of its tail into a shared enroll is dropped, and the provisioner's creation path ends in that design
+instead. It holds the adoption effect's lock and applies its INTERRUPTED rule to a created record; it makes,
+before any directory exists, every refusal the store and the host decide (the host trust and the adoption
+signer among its enrollment signers, the identity binding, the store's binding, the generation); it judges the
+created repository's own configuration (the allowlist and the identity transport's own judge) before GitHub is
+asked for the remote; its adoption signer pins the store, host and generation; and the record, once its binding
+is signed, is handed to the running service over its socket and answered synchronously (take_on), never waited
+for. The running service's new-project pass runs when an event it acts on made it due (the start, an advance of
+the journal by a packet or channel pass, a provisioner's end on its output pipe, which the poll set watches), no
+longer on every loop iteration behind a journal watermark. Suite 110 gains provision/checks-before-creation,
+provision/interrupted, provision/handed-over and service/hand-off (AF_UNIX), and service/provisions follows the
+new design; finding 143 registers seven more mutations, sixteen in all. Acceptance criteria, risk, readiness and
+approval requirements are unchanged.
+
+2026-10-23, round 2, the host's failures at a07ad991; each fix, its row and its falsifier are in
+proof/VELDO-0143/round2/README.md. (1) Suite 110's fenced rows found the SSH agent contacted: the signer of
+VELDO-0152's shared fixture (proof/VELDO-0152/fixture.py, added to the footprint for this), which suite 110's
+rows reach inside the identity wire's fence, ran ssh-keygen with SSH_AUTH_SOCK and SSH_AGENT_PID; it and suite
+110's own key generation now run without them, and row provision/signing-no-agent (with mutation
+newproject143-signer-reaches-agent) proves no signature on a new project's path reaches an agent. 0143's
+production code runs no ssh-keygen of its own; its signers already ran without an agent. (2) activation/order and
+activation/failed-activates-nothing ended in KeyError('push') because the fence's violation log accumulates: the
+first violation raised at provision/step-failures' first case, so no later case ran; fixed by (1). (3)
+pm/new-project-run was refused invalid_input:directory:no_remote because provision/handed-over, added by the
+rebase, created a project of the same name, estuary, under the same identity; that row's project is now inlet,
+and the PM row expects every configured identity offered, the factory source's fixture identity included. (4)
+Suite 66 authority/installed-assets: the installer's closure now reaches init_scaffold.py (the provisioner the
+service starts lays Veldo with it), which the scaffold did not lay, so an adopter's tree could not derive the
+closure; the scaffold now lays init_scaffold.py (mutation newproject143-scaffold-not-laid), every composed pack
+lays one file more. Finding 143 registers eighteen mutations. Acceptance criteria, risk, readiness and approval
+requirements are unchanged.
+
+2026-10-23, round 3: rebased onto VELDO-0161 round 9 (928918a5) with no conflicts (proof/VELDO-0143/round3/
+REBASE.md), and the first independent review's findings (proof/VELDO-0143/REVIEW-claude-2026-10-23.md), each fix,
+its row and its falsifier in proof/VELDO-0143/round3/README.md. F1: a decision written outside the new-project pass
+(the factory PM's run settling his own message or his correction in a factory loop pass) makes the pass due. F2: a
+correction is bound to his words (name, identity, visibility, and an adoption only as shown), in correct() before
+anything is built and in the one judge; an approval naming none of the offered identities fails by name. F3: a
+name that is a project's or another live decision's is refused stale_subject:project_exists before he is asked,
+and an activation that finds it taken fails the decision already_exists. F4: the decision is recorded
+`presenting` before anything is presented, and the pass finishes an interrupted presentation from the record. F6:
+no proposal is presented or settled without a provisioner configuration, and a settled decision the service
+cannot provision fails by name; each failure is told to the owner by the decision's report. F5: row
+activation/line-from-pass (the pass gives the loop the new repository's line) and row activation/first-unit (the
+first unit dispatched in the new repository, authored by the identity), which is red: the new line's project
+cycles cannot be built beside another line's on the service's one connection (VELDO-0154/0088 register their
+owners once per connection), so that line's pass faults and offers nothing. That is an open defect against AC3's
+observation, outside this specification's footprint, and is the owner's decision. Finding 143 registers thirteen
+more mutations, thirty-one in all. Acceptance criteria, risk, readiness and approval requirements are unchanged.
+
+2026-10-23, round 4: the round 3 independent review's findings (proof/VELDO-0143/REVIEW-claude-r3-2026-10-23.md),
+each fix, its row and its falsifier in proof/VELDO-0143/round4/README.md. R3-1: the line the pass adds for a new
+project no longer damages the factory's own line. from_line attaches the connection's once-only owners
+(allocation, snapshot) before the backlog, team, intake and grooming owners, and a refused build leaves the
+connection's registrations as it found them. No other line builds project cycles while the factory line has not
+built its own, whatever the repository uuids' order, before or after a restart. Another line's refused build is
+not tried again on every pass. The activation step puts back the owners it registered. Rows
+activation/factory-line-kept and activation/factory-line-restart. R3-2: a word he negates is not said. A changed
+identity or visibility counts only where his words name exactly that value and no negator stands before it in
+its clause, and a shown value he negates does not stay. Row proposal/correction-negated. DECISIONS 23 and 24.
+activation/first-unit stays red and named, pending the owner's decision on moving AC3's first-unit observation to
+VELDO-0188. Finding 143 registers five more mutations, thirty-six in all. Acceptance criteria, risk, readiness
+and approval requirements are unchanged.
+
+2026-10-23, owner decision (Telegram 36153, approved by 36156 "ok 0143"): AC3's observation of the first unit
+dispatched in the new repository with the identity as author moves to VELDO-0188 AC1, which already requires
+that a project created through this specification's provisioner has its first unit dispatched by the running
+service. A factory runs only its first line's cycles until VELDO-0188, and VELDO-0188 depends on this
+specification. AC3 keeps its claim, its set and completeness, the owner told, and its falsifier. Suite 110's row
+activation/first-unit is removed; its logic, unchanged, is kept in proof/VELDO-0143/round4/first-unit-for-0188.py
+to seed VELDO-0188's row, run by no suite. Risk, readiness and approval requirements are unchanged.
+
+2026-10-23, round 5: the round 4 independent review's findings (proof/VELDO-0143/REVIEW-agy-r4-2026-10-23.md),
+each fix, its row and its falsifier in proof/VELDO-0143/round5/README.md. R4-1: a word ends at a final period,
+and a value he was shown stays only where no occurrence of its word, whatever follows it, has a negator before
+it in its clause. R4-2: "neither" is a negator, an "and" whose next word is another value of the same field does
+not end the negator's clause, and words that negate one value of a field and affirm another through a bare "and"
+are refused by name (invalid_input:correction:<field>:ambiguous). R4-4: the negators the review measured and
+"? no" are seen; DECISIONS 24 lists what remains. R4-3: the factory line's intake reads the project rows when its
+transition runs (control_intake.py, added to this footprint for it), so after an activation the new project is a
+candidate with no restart. R4-5: no other line builds project cycles while there is a factory project and the
+factory line has none, paused or not. R4-6: the service's new-project decisions are built before from_line takes
+the connection's registrations. Rows proposal/correction-negated (extended), proposal/correction-phrasings,
+activation/factory-intake-current, activation/factory-paused-resumed, activation/new-projects-kept. DECISIONS 25.
+specs/VELDO-0188-a-line-for-every-project-at-run-time.md is added to this footprint because the owner's decision
+above moved AC3's first-unit sentence into its AC1. Finding 143 registers nine more mutations, forty-five in all,
+and five round-3 and round-4 anchors follow the new code. Acceptance criteria, risk, readiness and approval
+requirements are unchanged.
+
+2026-10-23, round 6: the round 5 independent review's findings (proof/VELDO-0143/REVIEW-claude-r5-2026-10-23.md),
+each fix, its row and its falsifier in proof/VELDO-0143/round6/README.md. The clause reading of a correction
+(rounds 3 to 5) is replaced by a rule that does not read what a negator applies to (R5-1, R5-2): a value other
+than the one he was shown is bound only where his words name exactly that value of the field and hold no negator
+anywhere; the shown value stays only where his words name no value of the field; a changed name only where his
+words name it and hold no negator. An honest correction with a negator in it is refused rather than guessed, and
+his report says so in plain words (control_telegram_report). DECISIONS 26 lists what the rule guarantees, what it
+refuses and what it still lets through, each measured (R5-4); entries 24 and 25 point to it. R5-3: a line defers
+its cycles to the factory line only while the factory project can still run (not CANCELED or COMPLETED), and each
+deferral is named in the pass's faults (pm_cycles:deferred_to_factory_line); DECISIONS 27 records the
+paused-factory cost until VELDO-0188. Rows proposal/correction-negated and proposal/correction-phrasings
+(rewritten), proposal/correction-told and activation/factory-canceled (new), activation/factory-paused-resumed and
+activation/factory-line-restart (extended). Finding 143 drops the seven clause-reading mutations, registers seven
+new ones and re-anchors five, forty-five in all. Acceptance criteria, risk, readiness and approval requirements
+are unchanged.
+
+2026-10-23, owner decision (Telegram 36174 asked, 36175 "Ok buttons"), approved as a change to this
+specification by 36175, and round 7: the round 6 independent review (proof/VELDO-0143/REVIEW-claude-r6-2026-10-23.md)
+found again typed wording that binds an identity or a visibility he never chose (R6-1 "Personally" binds personal,
+R6-2 "not this account" keeps the refused one, R6-3 lookalike characters), as rounds 3 to 5 had. Reading free text
+for these two settings cannot be made safe, so they become offered choices he picks. AC1's text now says so: the
+proposal offers every configured identity and both visibilities as choices in the same request, only the choice he
+picks binds them, and a correction changes only the project's name and the first objective. AC1's claim that
+nothing is asked when his message already names the project and the identity, and every falsifier, are unchanged.
+The choices are VELDO-0065's mechanism with one new choice kind, a pick (`accept <identity> <visibility>`, ruled
+approve), and one new refusal, `ambiguous_choice`, so control_channel_presentation.py and suite 62 (row
+answer/pick-choices) are added to this footprint. The free-text identity and visibility binding is removed from
+control_project_proposal (`named`, `bound`, `identity_named`); his own message settles unasked only where nothing in
+it could mean another identity and the PM set no visibility. Service/provisions now requires, on the socket branch
+too, that a provisioner's end alone makes the pass due (a second provisioner whose take-on is withheld), so
+newproject143-provisioner-end-unseen is killed on the host. DECISIONS 28 to 30; entries 24 and 26's limit lists for
+the identity and the visibility are replaced by what the choices guarantee. Rows proposal/choices and
+proposal/own-message-doubt (new) and proposal/fields, one-answer, correction, correction-bound, correction-negated,
+correction-phrasings, correction-told, provision/answered-and-corrected and service/provisions (changed); finding 143
+removes five mutations, re-targets two and registers eleven, fifty-one in all; proof/VELDO-0143/round7/README.md.
+Risk, readiness and approval requirements are unchanged.
+
+2026-10-23, round 8: the round 7 independent review's findings (proof/VELDO-0143/REVIEW-claude-r7-2026-10-23.md),
+each fix, its row and its mutation in proof/VELDO-0143/round8/README.md. R7-1: his own message settles unasked only
+at private (`visibility_not_private`, whatever the identity's default or the PM's document says) and is presented
+when it holds a word of visibility (`visibility_in_message`), so a public repository always comes from a pick. R7-2:
+an adopted directory keeps its remote as it is on GitHub, which nothing on the adoption path changes and nothing
+here knows: its entry records `as_on_remote`, is offered by its identity alone (`accept <identity>`), the brief says
+so, a resolved adoption recording any other visibility is not a proposal, and a correction cannot rename it into a
+creation whose visibility he never picked (`invalid_input:correction:mode`). R7-3: identity ids that fold alike under
+the presentation module's fold are refused (`invalid_input:ambiguous_git_identity`, in one call or added later), so
+control_git_identity.py is added to this footprint; a request the presenter refuses for good fails the decision
+`invalid_input:<refusal>`, its request canceled, and his report tells him. R7-4: proposal/choices settles a request
+whose choices differ from the proposal's and requires `no_settled_decision:choices`. R7-5: AC1's sentence is
+qualified (on a presented proposal only his pick binds them; his own message settles unasked only as the nothing-asked
+rule allows, at private); its claim and falsifier are unchanged. The report's advice for a refused mode no longer tells
+him to pick an identity and visibility. Rows proposal/adoption-visibility, identities-fold-alike and
+not-presentable (new) and proposal/own-message-doubt, choices and provision/adoption-path (changed); finding 143
+registers nine more mutations and re-targets two, sixty in all. DECISIONS 31 to 33. Risk, readiness and approval
+requirements are unchanged.
+
+2026-10-23, round 9: the round 8 independent review's findings (proof/VELDO-0143/REVIEW-claude-r8-2026-10-23.md),
+each fix, its row and its mutation in proof/VELDO-0143/round9/README.md. R8-1: an adoption's pick is
+`accept <identity> adopt`, whose last word is never a visibility, so it never folds like a creation's pick
+`accept <id> <visibility>` (bcengi-private beside bcengi); two picks fold alike only when their ids do, which is
+already refused. R8-2: a request the presenter refuses for good fails the decision before the request is canceled, and
+the next pass cancels a request a crash left open, so no decision is written presented over a canceled request. R8-3:
+his own message settles unasked only when every word of it, apart from the project's name and the identity's id or
+label, is one the rule has read (`PLAIN_WORDS`); any other word presents it (`words_not_read`). AC1's text says both;
+its claim and falsifier are unchanged. Row proposal/adoption-pick-folds (new); proposal/adoption-visibility,
+presentation-interrupted and own-message-doubt (changed); finding 143 registers four more mutations, sixty-four in
+all. DECISIONS 34 to 36. Risk, readiness and approval requirements are unchanged.

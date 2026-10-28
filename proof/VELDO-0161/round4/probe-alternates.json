@@ -1,0 +1,14 @@
+{
+ "0511a31a": {
+  "command_ran": true,
+  "refused": null,
+  "repository_commands": []
+ },
+ "39772b77": {
+  "command_ran": false,
+  "refused": "invalid_input:repository_command:core.alternaterefscommand",
+  "repository_commands": [
+   "core.alternaterefscommand"
+  ]
+ }
+}

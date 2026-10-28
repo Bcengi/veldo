@@ -34,7 +34,7 @@ def _v204_suite():
     names = ('derive/values', 'fresh/dispatch', 'rerun/unchanged', 'source/project', 'source/team', 'source/account',
              'source/unit', 'source/windows', 'source/absent', 'lock/second-connection', 'service/start',
              'service/added', 'service/team', 'service/pm-assigned', 'service/rerun', 'refuse/missing-source',
-             'refuse/principal', 'census/writer', 'service/serve')
+             'refuse/principal', 'census/writer', 'service/serve', 'service/graph-stage')
     rows = {name: [] for name in names}
 
     def check(row, label, condition):
@@ -453,6 +453,17 @@ def _v204_suite():
                       and not [w for w in (assigning or {}).get('waiting') or [] if w['unit'] == U['a4']])
                 h.drain(loop)
 
+            # The seam's outcome, not its frame match: the in-process loop's line built its project cycles itself
+            # (Line.build_cycles) and their exchanges resolved the account stage, so the fixture's own stage holds
+            # the PM runner they staged.
+            with region('service/graph-stage'):
+                check('service/graph-stage', 'the in-process factory passes ran the line\'s project cycles [%s]' % [
+                    (c.get('state'), c.get('refusal')) for c in (coordinating or {}).get('pm_cycles') or []],
+                      (coordinating or {}).get('pm_cycles'))
+                staged_pm = f['stage_seam'].pm_runners(f['graph_stage'], h.mods)
+                check('service/graph-stage', 'their PM exchanges staged their runner in the fixture\'s own graph stage '
+                      '[%d PM runner(s) in %s]' % (staged_pm, f['graph_stage']), staged_pm >= 1)
+
             # AC2 source/absent: no policy without a source record, and the PM cycle's own unit policy left alone.
             with region('source/absent'):
                 prior = h.policies()
@@ -505,6 +516,21 @@ def _v204_suite():
                       len(served.records) == 1 and len(answers) == 1 and answers[0].get('caller') == 'start'
                       and answers[0].get('outcome') == 'done' and answers[0].get('refusal') is None
                       and answers[0].get('subjects') and not served.records[0].get('faults'))
+                # serve's process has no input for a graph stage (proof/VELDO-0204/host.py serve), so it must run no
+                # PM exchange. Its loop runs a pass only in serve's loop after READY=1, when something woke it (a packet
+                # or a channel pass that advanced the journal), and Host.serve sends SIGTERM on READY=1, so it records
+                # no pass here as a rule: this row claims only what serve recorded up to then, and names the count. A
+                # pass it did record must not have run a line's project cycles, nor raised in a line.
+                cycled = [(p.get('pass'), sorted(set(p) & {'pm_cycles'}), [x for x in p.get('faults') or []
+                          if 'repository' in x and str(x.get('reason')).startswith('unknown_outcome')])
+                          for p in served.passes]
+                print('  VELDO-0204 service/serve detail: serve recorded %d factory pass(es) before it stopped'
+                      % len(served.passes))
+                # serve's start records (runs_swept) carry no pm_cycles field, so they cannot show a startup exchange;
+                # the row claims only the passes.
+                check('service/serve', 'of the %d factory pass(es) serve recorded before the SIGTERM, none ran a line\'s '
+                      'project cycles [%s]' % (len(served.passes), [c for c in cycled if c[1] or c[2]][:3]),
+                      not any(c[1] or c[2] for c in cycled))
     except Exception as error:  # noqa: BLE001 - a fixture that did not run reds every row by assertion
         for name in names:
             check(name, 'the fixture ran to its end (it raised %s: %s)' % (type(error).__name__, str(error)[:300]), False)

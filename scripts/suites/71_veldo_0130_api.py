@@ -373,6 +373,7 @@ def _v130_checks(base):
         if _v130_Path(source).is_file():
             _v130_shutil.copyfile(source, target)
     here = all((organs / m).is_file() for m in API_MODULES)
+    _v130_compiler.install_main_cache(organs / 'control_signer.py', base, base / 'compiled')
 
     with section(IA):
         scaffold = _v130_load('v130_scaffold', scaffold_path)
@@ -2737,6 +2738,7 @@ def _v130_service_checks(base):
         if _v130_Path(source).is_file():
             _v130_shutil.copyfile(source, target)
     here = all((mods / n).is_file() for n in ('control_service_api.py', 'control_client_api.py'))
+    _v130_compiler.install_main_cache(mods / 'control_signer.py', base, base / 'compiled')
     CS = _v130_load('v130s_service', mods / 'control_service.py')
     CC = _v130_load('v130s_client', mods / 'control_client.py')
     CE = _v130_load('v130s_enrollment', mods / 'control_enrollment.py')
@@ -3298,8 +3300,8 @@ def _v130_service_checks(base):
 
 _v130_started = _v130_time.monotonic()
 # The store and keys live in memory-backed /dev/shm when it exists and is writable (Linux), as the other
-# store suites do; elsewhere the platform's temporary directory is used.
-_v130_fast = fast_temp()
+# store suites do; workers always use their owned TMPDIR.
+_v130_fast = None if __import__('os').environ.get('TMPDIR') else fast_temp()
 def _v130_report(observed_rows):
     for name, observed in observed_rows.items():
         passed = bool(observed) and all(ok for _, ok in observed)
@@ -3311,11 +3313,14 @@ def _v130_report(observed_rows):
         print('VELDO-0130 row:', name, 'passed' if passed else 'failed')
 
 
-with _v130_temp.TemporaryDirectory(prefix='v130-', dir=_v130_fast) as _v130_dir:
+_v130_compiler = _v130_load('v130_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
+with _v130_temp.TemporaryDirectory(prefix='v130-', dir=_v130_fast) as _v130_dir, \
+        _v130_compiler.compiled_sources(_v130_dir, _v130_Path(_v130_dir) / 'compiled'):
     _v130_rows = _v130_checks(_v130_Path(_v130_dir))
 _v130_report(_v130_rows)
 # Report completed API assertions before a service setup exception can hide them.
-with _v130_temp.TemporaryDirectory(prefix='v130s-', dir=_v130_fast) as _v130_dir:
+with _v130_temp.TemporaryDirectory(prefix='v130s-', dir=_v130_fast) as _v130_dir, \
+        _v130_compiler.compiled_sources(_v130_dir, _v130_Path(_v130_dir) / 'compiled'):
     _v130_service_rows = _v130_service_checks(_v130_Path(_v130_dir))
 _v130_report(_v130_service_rows)
 _v130_rows.update(_v130_service_rows)

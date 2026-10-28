@@ -1,0 +1,69 @@
+{
+ "schema": "veldo.falsifier-run/v1",
+ "spec_id": "VELDO-0161",
+ "round": 8,
+ "case": "upgrade161-adoption-restart-not-owed",
+ "registered_rows": [
+  "restart/adoption-signer-kill"
+ ],
+ "registered_suite": "86_veldo_0189_engine_upgrade.py",
+ "replacement_count": 1,
+ "old_digest": "017a3c8c37538654cf3b12bff9000f5a93df80dd87919882dca975ce697c3cec",
+ "new_digest": "8607c701aa973672340fcc7e32df723349170fba7dd7c550c610af9b2c022f25",
+ "fix_anchor_count": 1,
+ "runs": {
+  "debt_baseline": {
+   "exit": 0,
+   "failed": [],
+   "passed": 18,
+   "error": null
+  },
+  "debt_fix_reverted": {
+   "exit": 1,
+   "failed": [
+    "killed at 4, after the last adoption_signers: both signers files are laid and the step log owes the restart [{'switched': False, 'due': False, 'back': False, 'backups': [], 'active': False}]",
+    "killed at 4 (adoption_signers): the next run restarts the service once and finishes [None []; 0 restart(s)]",
+    "a run whose restart fails is refused by name, the signers laid, the restart owed [refused:unavailable_service:authority:upgrade_start ['begin', 'adoption_key', 'adoption_signers', 'adoption_signers'] {'switched': False, 'due': False, 'back': False, 'backups': [], 'active': False}]",
+    "after the failed restart the next run restarts the service and finishes [None []; 1 restart call(s)]"
+   ],
+   "passed": 14,
+   "error": null
+  },
+  "debt_registered_mutant": {
+   "exit": 1,
+   "failed": [
+    "killed at 4, after the last adoption_signers: both signers files are laid and the step log owes the restart [{'switched': False, 'due': False, 'back': False, 'backups': [], 'active': False}]",
+    "killed at 4 (adoption_signers): the next run restarts the service once and finishes [None []; 0 restart(s)]",
+    "a run whose restart fails is refused by name, the signers laid, the restart owed [refused:unavailable_service:authority:upgrade_start ['begin', 'adoption_key', 'adoption_signers', 'adoption_signers'] {'switched': False, 'due': False, 'back': False, 'backups': [], 'active': False}]",
+    "after the failed restart the next run restarts the service and finishes [None []; 1 restart call(s)]"
+   ],
+   "passed": 14,
+   "error": null
+  },
+  "driver_now": {
+   "exit": 0,
+   "failed": [],
+   "passed": 5,
+   "error": null
+  },
+  "driver_at_6b2805e6": {
+   "exit": 1,
+   "failed": [
+    "the kill at 1 finds 1 step-log lines [{'count': 2, 'lines': 1, 'last': ['adoption_key']}]",
+    "the kill at 2 finds 2 step-log lines [{'count': 4, 'lines': 2, 'last': ['adoption_signers']}]",
+    "the kill at 3 finds 3 step-log lines [{'count': 6, 'lines': 3, 'last': ['restart']}]",
+    "one count per step-log line [6 counts, 3 lines]"
+   ],
+   "passed": 1,
+   "error": null
+  }
+ },
+ "verdicts": {
+  "baseline_green": true,
+  "fix_reverted_red_on_the_kill_after_the_signers": true,
+  "registered_mutant_red_on_the_kill_after_the_signers": true,
+  "driver_at_6b2805e6_red_on_the_count": true
+ },
+ "killed_here": true,
+ "note": "suite 86 needs the host's user manager and local sockets; these drivers are the sandbox falsifiers of the restart debt and of the kill driver's count"
+}
