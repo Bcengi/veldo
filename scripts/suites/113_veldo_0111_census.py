@@ -23,6 +23,7 @@ def ack(kind):
     os.write(1, (json.dumps(dict(kind=kind, pid=os.getpid(), tid=threading.get_native_id(),
                                parent=os.getppid())) + '\n').encode())
 ack('root')
+root_pid = os.getpid()
 child = os.fork()
 if child == 0:
     ack('immediate')
@@ -56,7 +57,11 @@ if child == 0:
     child = os.fork()
     if child == 0:
         ack('reparented')
-        time.sleep(.04)
+        # This probe waits for the collector to reap the root, so host load
+        # cannot turn an arbitrary sleep into an exit-before-return case.
+        # The observer itself never derives births or exits from this query.
+        while libc.kill(root_pid, 0) == 0:
+            time.sleep(.001)
         os._exit(0)
     os._exit(0)
 os.waitpid(child, 0)
