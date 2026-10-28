@@ -1150,12 +1150,12 @@
     .run-head {
       flex-wrap: wrap;
     }
+    /* The headline wraps on a phone rather than clipping: the host is a fact the owner reads, not decoration. */
     .run-headline {
-      flex-wrap: nowrap;
-      overflow: hidden;
-      white-space: nowrap;
-      flex: 1;
-      mask-image: linear-gradient(to right, #000 85%, transparent);
+      flex: 1 1 0;
+    }
+    .run-headline li {
+      overflow-wrap: anywhere;
     }
     .run-head-project {
       display: none;

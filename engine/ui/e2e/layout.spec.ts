@@ -528,7 +528,7 @@ test('served assets: every response is this origin and every asset is a file of 
   for (const font of fonts) expect(font).toMatch(/^\/assets\/(ibm-plex-(sans|mono)|codicon)-/)
 })
 
-test('phone terminal: the record gets the screen, with the strip on one line and the controls in one bar', async ({ browser, factory }) => {
+test('phone terminal: the record gets the screen, the headline unclipped, the strip on one line and the controls in one bar', async ({ browser, factory }) => {
   const ids = await factory.state()
   for (const viewport of PHONES) {
     const context = await browser.newContext({ viewport, hasTouch: true, isMobile: true })
@@ -536,6 +536,14 @@ test('phone terminal: the record gets the screen, with the strip on one line and
     await signIn(page, factory)
     await page.goto(factory.origin + '/runs/' + ids.dispatches.done)
     await expect(page.getByTestId('terminal')).toHaveAttribute('data-state', 'ended')
+    // The headline wraps rather than clipping: the host is whole and inside the screen.
+    const headline = page.getByTestId('run-headline')
+    const host = headline.locator('li', { hasText: 'veldo-linux-1' })
+    await expect(host).toHaveText('on veldo-linux-1')
+    expect(await headline.evaluate((el) => el.scrollWidth <= el.clientWidth + 1), `headline clipped at ${viewport.width}`).toBe(true)
+    const hostBox = (await host.boundingBox())!
+    const lineBox = (await headline.boundingBox())!
+    expect(hostBox.x + hostBox.width, `host inside the headline at ${viewport.width}`).toBeLessThanOrEqual(Math.min(viewport.width, lineBox.x + lineBox.width) + 1)
     const log = (await page.locator('.terminal-body').boundingBox())!
     expect(log.height / viewport.height, `log height at ${viewport.width}`).toBeGreaterThan(0.55)
     const strip = (await page.getByTestId('station-strip').boundingBox())!

@@ -40,5 +40,5 @@
       }
     ]
   },
-  "not_covered": "The tailnet leg: the phone enrollment and sign-in on the host's Tailscale Serve name with the owner (OPEN.md item 4), and veldo factory setup naming this directory for the installed API service (OPEN.md item 3)."
+  "not_covered": "The tailnet leg: the phone enrollment and sign-in on the host's Tailscale Serve name with the owner (OPEN.md item 1), and veldo factory setup naming this directory for the installed API service (OPEN.md item 2, drafted as VELDO-0227)."
 }

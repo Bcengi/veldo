@@ -21,7 +21,9 @@ move with the code: `engine/ui/CLAUDE.md` and `engine/ui/docs/`.
 
 Screens were taken from a fresh harness running `e2e/layout.spec.ts` alone with curated data (two
 hosts, a blocked and a failed unit, five decisions with different deadlines and risks, paced record
-times); a render that changes the factory cleans up after itself, so counts do not drift between shots.
+times); a render that changes the factory cleans up after itself, so counts do not drift between shots. The one
+exception is by necessity: `decision-refused` shows the decision it opened to be refused, so its badge
+reads one more (6) until its cleanup answers it.
 
 ## How the checks run
 

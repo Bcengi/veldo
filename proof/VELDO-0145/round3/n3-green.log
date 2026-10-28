@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 e2e/layout.spec.ts:531:1 › phone terminal: the record gets the screen, the headline unclipped, the strip on one line and the controls in one bar (1.6s)
+
+  1 passed (4.4s)
