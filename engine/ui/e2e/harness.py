@@ -210,6 +210,7 @@ class Factory:
         self.recorders = {}
         self.drops = set()
         self.requests = {}
+        self.browsers = {}
         self.dist = dist
         self.organs_from = organs_from
         self.on_thread(self._build)
@@ -602,8 +603,22 @@ class Factory:
         pending = json.loads((self.base / 'api-state' / 'pending' / (begun['registration_id'] + '.json')).read_text())
         got = self.on_thread(self.steward_enroll, pending, principal)
         assert got.get('outcome') not in ('refused',), got
+        self.browsers[principal] = browser
         return {'credential_id': browser.credential_id, 'private_key': base64.b64encode(browser.pkcs8).decode(),
                 'user_handle': browser.user_handle, 'rp_id': 'localhost'}
+
+    def session(self, principal):
+        """A signed-in API session for `principal` without a browser (the gate's rows): its passkey registered and
+        approved as `passkey` does, then the sign-in ceremony over the API. Returns (cookie, anti-forgery token)."""
+        self.passkey(principal)
+        browser = self.browsers[principal]
+        status, _h, challenge = self.call('POST', '/api/v1/auth/challenge', {})
+        assert status == 200, challenge
+        status, headers, view = self.call('POST', '/api/v1/auth/sign-in',
+                                          browser.get(challenge['challenge'], self.origin, 'localhost'))
+        assert status == 200, view
+        cookie = [v for k, v in headers if k == 'Set-Cookie'][0].split(';', 1)[0].split('=', 1)[1]
+        return cookie, view['csrf_token']
 
 
 def message(st, bot, sender, chat, text, reply_to=None):

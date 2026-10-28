@@ -9,7 +9,9 @@ reach it zero times. The UI directory is a fixture build (index.html, a hashed s
 outside it to escape to). The route-trace row reads the UI's own engine/ui/src/api/routes.json; the
 dependency row reads engine/ui/package.json, package-lock.json and dependency-policy.json, and judges a
 lockfile with a tiered package added, which must be refused. The installed row lays a fixture build through
-init_scaffold.lay_ui into a scratch factory root and serves it from the API installed there. Browser checks of the same criteria live in
+init_scaffold.lay_ui into a scratch factory root and serves it from the API installed there. The out-of-scope row
+builds the browser tests' own real factory (engine/ui/e2e/harness.py) from this suite's installed copies and answers
+a decision over the API as a member whose scope a steward narrowed. Browser checks of the same criteria live in
 engine/ui/e2e (Playwright, a real factory harness); their red and green records are in proof/VELDO-0145.
 Mutation workers replace the production copies named in PRODUCTION below, never assertions or fixtures.
 Where the UI module is absent (the pre-change tree), the API serves no page, and each row fails by its
@@ -31,6 +33,7 @@ def _v145_suite():
     PRODUCTION = {
         'control_api.py': ROOT / ".veldo" / "control_api.py",
         'control_api_ui.py': ROOT / ".veldo" / "control_api_ui.py",
+        'control_api_authority.py': ROOT / ".veldo" / "control_api_authority.py",
     }
     rows = {}
 
@@ -264,6 +267,56 @@ def _v145_suite():
         check('ui/installed', 'with no build nothing is laid, and the report names it [%s]' % bare,
               bare.get('reason') == 'not_built' and not (base / 'bare-root' / '.veldo' / 'ui').exists())
 
+        # AC3 ui/out-of-scope: an answer from a member whose scope no longer covers the request's project is refused
+        # by that name (control_api_authority, answer_decision) and settles nothing. The factory is the browser
+        # tests' own (engine/ui/e2e/harness.py): a real signed store, presenter, settlement, API authority, protected
+        # signer and ControlApi, built from this suite's installed copies; the member signs in with a passkey over the
+        # API. Controls: the same member's answer settles while in scope, and an answer naming a record that is not an
+        # assignment (the only kind settlement answers) is refused and settles nothing.
+        harness = load('v145_harness', ROOT / 'engine' / 'ui' / 'e2e' / 'harness.py')
+        (base / 'factory').mkdir()
+        factory = harness.Factory(base / 'factory', ui_dir, organs)
+        try:
+            answer = '/api/v1/domains/%s/decisions/answer' % harness.DOMAIN
+            cookie, token = factory.session('mover')
+
+            def answer_body(alias, choice='accept'):
+                receipt = factory.on_thread(factory.presenter.current, factory.requests[alias]) or {}
+                return {'request_id': receipt.get('request_id'), 'request_version': receipt.get('request_version'),
+                        'presentation_id': receipt.get('presentation_id'), 'presentation_digest': receipt.get('brief_digest'),
+                        'presentation_version': receipt.get('presentation_version'), 'choice': choice,
+                        'rationale': 'answered in the gate'}
+
+            def scope(projects):
+                factory.on_thread(factory.admin, 'steward', 'change_roles',
+                                  {'principal': 'mover', 'roles': ['project_owner', 'admission_authority'], 'scope': projects})
+
+            # The member may rule on the admission these requests ask (so an in-scope answer can settle).
+            scope(['project-a'])
+            factory.on_thread(factory.open_request, 'scope-kept', 'mover')
+            factory.on_thread(factory.open_request, 'scope-lost', 'mover')
+            kept = factory.call('POST', answer, answer_body('scope-kept'), cookie, token)
+            check('ui/out-of-scope', 'in scope, the member\'s answer settles [observed %s %s]' % (kept[0], kept[2]),
+                  kept[0] == 200 and kept[2].get('outcome') == 'settled'
+                  and len(factory.on_thread(factory.settlements, 'scope-kept')) == 1)
+            body = answer_body('scope-lost')
+            scope(['project-b'])
+            lost = factory.call('POST', answer, body, cookie, token)
+            check('ui/out-of-scope', 'after a steward narrows the scope away from the project, the answer is refused '
+                  'unauthorized:out_of_scope [observed %s %s]' % (lost[0], lost[2]),
+                  lost[0] == 403 and lost[2].get('refusal') == 'unauthorized:out_of_scope')
+            check('ui/out-of-scope', 'the refused answer settled nothing',
+                  factory.on_thread(factory.settlements, 'scope-lost') == [])
+            scope(['project-a'])
+            other = factory.on_thread(lambda: factory.conn.execute(
+                "SELECT id FROM entities WHERE kind='dispatch' ORDER BY id LIMIT 1").fetchone()[0])
+            foreign = factory.call('POST', answer, dict(body, request_id=other), cookie, token)
+            check('ui/out-of-scope', 'an answer naming a record that is not an assignment is refused and settles nothing '
+                  '[observed %s %s]' % (foreign[0], foreign[2]),
+                  foreign[0] >= 400 and foreign[2].get('refusal') and factory.on_thread(factory.settlements, 'scope-lost') == [])
+        finally:
+            factory.pool.shutdown()
+
         # AC4 ui/dependency-policy: the lockfile and served packages against the owner's provenance rules.
         ui = ROOT / 'engine' / 'ui'
         lock = read_json(ui / 'package-lock.json', {'packages': {}})
@@ -293,7 +346,8 @@ def _v145_suite():
               bool(policy.get('direct')) and all(all(e.get(f) for f in ('version', 'license', 'origin', 'tier', 'why'))
                                                  for e in policy['direct'].values()))
 
-    for name in ('ui/page-served', 'ui/unauthenticated-access', 'ui/route-trace', 'ui/dependency-policy', 'ui/installed'):
+    for name in ('ui/page-served', 'ui/unauthenticated-access', 'ui/route-trace', 'ui/dependency-policy', 'ui/installed',
+                 'ui/out-of-scope'):
         observed = rows.get(name, [])
         ok = bool(observed) and all(o for _, o in observed)
         for label, one in observed:

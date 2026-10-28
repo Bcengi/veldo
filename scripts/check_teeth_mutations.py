@@ -11559,6 +11559,13 @@ def cases():
           "            if True:  # defect: no denied name is ever matched\n",
           'ui/dependency-policy')
 
+    # VELDO-0145 AC3 (round 3, N1): an answer from a member whose scope no longer covers the request is refused by
+    # name before settlement; without the branch it reaches settlement and reads as a stale presentation.
+    ui145('ui145-out-of-scope-answered', 'control_api_authority.py',
+          "                if scope is not None and not self.CM.scope_covers(person.get('scope'), scope):\n",
+          "                if False:  # defect: an out-of-scope answer goes on to settlement\n",
+          'ui/out-of-scope')
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

@@ -436,7 +436,9 @@ class ApiAuthority:
         if a['operation'] == 'answer_decision':
             # VELDO-0145 AC3: a member whose scope does not cover the request's projects (for example a scope
             # narrowed after the decision was shown) is refused by that name before settlement is asked, so the
-            # answer reads as out of scope rather than as a stale or foreign presentation.
+            # answer reads as out of scope rather than as a stale or foreign presentation. Only an assignment is
+            # answerable: settlement reads the request from the inbox, which holds no other kind, so an answer naming
+            # any other record is refused there (missing_evidence) and nothing settles (suite 113, ui/out-of-scope).
             row = self.conn.execute('SELECT kind, data FROM entities WHERE id=?',
                                     (str(a['parameters'].get('request_id')),)).fetchone()
             if row and row[0] == 'assignment':
