@@ -170,7 +170,7 @@
     "live": {
       "schema": "veldo.registered_clients/v1",
       "consumer": "live-positive-control",
-      "registration_digest": "3c61e511a22463e215bb9d083f0965309ad63a31e40ecefd8d1b722c83bccf33",
+      "registration_digest": "f619fd9d3dce588310805cc1593de795df7f040838b76d46e7517b43034d3d78",
       "fixture_digest": "5fd56fb6f4739c9112b936dc18d274f5c9de052e780e161044b8b38b4c2d4f72",
       "registered": [
         "claim:claim/local_ipc",
@@ -354,8 +354,8 @@
         "domain_uuid": "clients-domain",
         "store_uuid": "clients-store",
         "repository_uuid": "clients-repository",
-        "clone_uuid": "fa80f732-8af4-472e-9f41-82000efc8af2",
-        "binding_digest": "sha256:47a210477c74ecec86e8a3baa30faa64f3dcb78c83112b40d9b3229ecb16c7b3"
+        "clone_uuid": "d139c0fe-62a4-4fdf-998b-83a692daf3ae",
+        "binding_digest": "sha256:a70ce2b32229227ca7f4b3a4e47fca348ca43cd2acf9a62a977811cbc0be6401"
       },
       "results": {
         "claim:claim/local_ipc": {
@@ -384,7 +384,7 @@
         },
         "control_claim_client:Client.request/local_ipc": {
           "accepted": true,
-          "digest": "1caeab496885318d37e15a0247f9cb24fd9e7fec2e03f565e83353ed099516d4"
+          "digest": "7bea0268031bf54359e85c57bbadcab3b9c426dca15e134f012dea55d18f42f5"
         },
         "control_claim_client:Client.use/local_ipc": {
           "accepted": true,
@@ -392,35 +392,35 @@
         },
         "control_client:send/local_ipc": {
           "accepted": true,
-          "digest": "8e0ade286aee50f0c49491d1f2d59d38bd1be6e3703ba996d5311a04e8409982"
+          "digest": "b8e0f3fceaf47094346e028dad9154596a46d29242720bb1c63c99e26466874e"
         },
         "control_dispatch:Dispatches.accept/in_process": {
           "accepted": true,
-          "digest": "db5d0ece84a69fbfa941ba3ac05623cdbf2bdbbe0fd21c45693b990c61df9fd0"
+          "digest": "d13214451c467192a245da2331938f6ab6c75c492133611ef3e54715d13b1c6e"
         },
         "control_dispatch:Dispatches.exit/in_process": {
           "accepted": true,
-          "digest": "85b8acc3c3463a8b2f85f9afb318b9a4cf0d13dfd2ace8c9526dfce274fbcd3f"
+          "digest": "fd93146729c833429170b9dfce1ace4edd9bb29349068da586521607047bd4c0"
         },
         "control_dispatch:Dispatches.prepare/in_process": {
           "accepted": true,
-          "digest": "4b756894c06c93952f8c2527092f4c63cd2930a33c65110b2df5203a500d4847"
+          "digest": "1d02616c507a0cd5a2295f50b4cf8397e4578d00a19bb453941fe0bb4b5813a4"
         },
         "control_dispatch:Dispatches.refuse/in_process": {
           "accepted": true,
-          "digest": "d4e2484f1d58e64e0a4c6df18cea54c57ffe0f31c07d13db698a283dbd5d5411"
+          "digest": "2348f93fe654c0d5f79a354bc5bac0ac4dd7923da4b7817a07ff8503b0c15fc3"
         },
         "control_dispatch:Dispatches.run/in_process": {
           "accepted": true,
-          "digest": "fb12b1b697a67ac27b5430b360c879143eb042c663905e6206be5c5c738372fe"
+          "digest": "841eab430e963ef634d2b371eddd19a6084c23dd0b5307146c8b3aff680b76ca"
         },
         "control_dispatch:Dispatches.unknown/in_process": {
           "accepted": true,
-          "digest": "d7f2890a9e9dea13b7d160c2bbba9bc4c91b82e871b7e0bf9773e70717f90cd9"
+          "digest": "dbe58c6fc1479c630760baf971a30a1dc3557adde84113c206c8fbb75893a3ce"
         },
         "control_relay:forward/relay": {
           "accepted": true,
-          "digest": "53ea2cfba3225b34de144b2a10aad2a2983d8e2a54ac23ce8b5b5b00cb402431"
+          "digest": "2b05b714f5dcb3944194123e86b25acd5170f3c411e30eefa615d2cde640bb7f"
         },
         "control_relay:main/relay": {
           "accepted": true,
@@ -451,7 +451,7 @@
         {
           "schema": "veldo.registered_clients/v1",
           "consumer": "lifecycle-consumer",
-          "registration_digest": "54e405b129e2a52a73abf82fcf395611ef0c0baf2138b2ff77e1a9891805af73",
+          "registration_digest": "0bcab0305343ff0601825034f7c4f289bc99f53a3f4bb9a7f96823d529b97be0",
           "fixture_digest": "5fd56fb6f4739c9112b936dc18d274f5c9de052e780e161044b8b38b4c2d4f72",
           "registered": [
             "113_veldo_0112_registered_clients:qualify.<locals>.extension/local_ipc",
@@ -504,7 +504,7 @@
               "entrypoint": "113_veldo_0112_registered_clients:qualify.<locals>.extension",
               "adapter": "extension-v1",
               "transport": "local_ipc",
-              "implementation_digest": "66899f6eaf70c1b2f79e51b3dd056d4c436c0b5e2253300697ead78af57d42b1"
+              "implementation_digest": "defa4fe53aa24b347fb9e3fcfd5718b0978c62d0704135402f9eb81ff12b15fa"
             },
             {
               "identity": "claim:claim/local_ipc",
@@ -644,13 +644,13 @@
             "domain_uuid": "clients-domain",
             "store_uuid": "clients-store",
             "repository_uuid": "clients-repository",
-            "clone_uuid": "16b55dd2-7f5f-433f-8081-2ef105cc523d",
-            "binding_digest": "sha256:37d14df4420be1ca8be1308c1ef8813232eeed9182158ff0317de7af6f951251"
+            "clone_uuid": "149e5a6d-e60b-4b1d-a698-a5daea6af740",
+            "binding_digest": "sha256:cf954c1d7fdfb4b763421c294da437f47e310027dad4b8e8b55bab3d14bbf870"
           },
           "results": {
             "113_veldo_0112_registered_clients:qualify.<locals>.extension/local_ipc": {
               "accepted": true,
-              "digest": "a4b0b223baf62b5b911a6a36e4932393b8a5210086f737d8620153168419666b"
+              "digest": "0c875890ae4ba60008cb25406af598a243bcc8c54435ec8c70a13e9fe8271a26"
             },
             "claim:claim/local_ipc": {
               "accepted": true,
@@ -678,7 +678,7 @@
             },
             "control_claim_client:Client.request/local_ipc": {
               "accepted": true,
-              "digest": "efa5e06999f2bd9d5d6b52a598bf9a21f726c332091e4cf5e2cbd2b231f20112"
+              "digest": "4aa78d46ac6e3cee0533213295a4b2b53004635a5d7c2cea0def542571bd9b02"
             },
             "control_claim_client:Client.use/local_ipc": {
               "accepted": true,
@@ -686,35 +686,35 @@
             },
             "control_client:send/local_ipc": {
               "accepted": true,
-              "digest": "683245a8adb6f6a403d63566faee0f0c6ad7702d66487aac1ad57fd87f9bb774"
+              "digest": "9cddefdcf03794c3f24733d1221072abbf64ecc3c31717e892410b519a9d4477"
             },
             "control_dispatch:Dispatches.accept/in_process": {
               "accepted": true,
-              "digest": "57c319ccaf5a0075871e4125869ef7314bc40969e8a2c702f6436696db4953ed"
+              "digest": "b0a8f327e6edb972966ad34c053c1f3d1dd79e7c113e2d22f3f5c8455c0b3da2"
             },
             "control_dispatch:Dispatches.exit/in_process": {
               "accepted": true,
-              "digest": "eb3fa3ade182916870746214f3d6f8bebbb3706b2ddb08638eeff24de7eb9e16"
+              "digest": "12ee1005e1b0e7ccfe66f587285a1a2cf55eeb8762f614260cde44cce5058500"
             },
             "control_dispatch:Dispatches.prepare/in_process": {
               "accepted": true,
-              "digest": "0d7b52e1ae1a4a28c14df2a7cb839389d5844d6312e45ac0ff335796b64434f4"
+              "digest": "07a57bea4e93cc61be7565a5fbf42addc12bab4fc7ae63f36ff33a8f000d4668"
             },
             "control_dispatch:Dispatches.refuse/in_process": {
               "accepted": true,
-              "digest": "f9dbc4f28de5d9ae033651d7b0d51081a9acdfd66b98f6a3ee15e69d8adbe073"
+              "digest": "414cf03d23ccadd585528028b2e725967ad2e42d5c0e238f8d5c76ab800558b9"
             },
             "control_dispatch:Dispatches.run/in_process": {
               "accepted": true,
-              "digest": "7df75ef1c53be0f3ce973c95926074ffa717a2538deedbe5bbf8673753975448"
+              "digest": "8b6695ca3f9e9c1587203d1a915b450c9f1bd5517850afb73e72c7e0772390c5"
             },
             "control_dispatch:Dispatches.unknown/in_process": {
               "accepted": true,
-              "digest": "93a8f83d5fcf42d22b57558ad0bb10b057e4b2acb3824914a530ae676cf05e74"
+              "digest": "e5a182b10d432417a2bb840b4dbf0a872a46b1e18f26ca06c8921bcf18f98981"
             },
             "control_relay:forward/relay": {
               "accepted": true,
-              "digest": "2d57b5e1a5c86a43a0245c231a5f0aa5439f13ba31c8b8535cae7ab702aa2419"
+              "digest": "86cca3974af9cc2d4cddaccb912c9151f2582120387bbfdd27ab5b3f4c176bf5"
             },
             "control_relay:main/relay": {
               "accepted": true,
@@ -733,7 +733,7 @@
         {
           "schema": "veldo.registered_clients/v1",
           "consumer": "refusal-consumer",
-          "registration_digest": "54e405b129e2a52a73abf82fcf395611ef0c0baf2138b2ff77e1a9891805af73",
+          "registration_digest": "0bcab0305343ff0601825034f7c4f289bc99f53a3f4bb9a7f96823d529b97be0",
           "fixture_digest": "5fd56fb6f4739c9112b936dc18d274f5c9de052e780e161044b8b38b4c2d4f72",
           "registered": [
             "113_veldo_0112_registered_clients:qualify.<locals>.extension/local_ipc",
@@ -786,7 +786,7 @@
               "entrypoint": "113_veldo_0112_registered_clients:qualify.<locals>.extension",
               "adapter": "extension-v1",
               "transport": "local_ipc",
-              "implementation_digest": "66899f6eaf70c1b2f79e51b3dd056d4c436c0b5e2253300697ead78af57d42b1"
+              "implementation_digest": "defa4fe53aa24b347fb9e3fcfd5718b0978c62d0704135402f9eb81ff12b15fa"
             },
             {
               "identity": "claim:claim/local_ipc",
@@ -926,13 +926,13 @@
             "domain_uuid": "clients-domain",
             "store_uuid": "clients-store",
             "repository_uuid": "clients-repository",
-            "clone_uuid": "7ea2a09b-743e-469a-a796-071f093b82d5",
-            "binding_digest": "sha256:94155f0dc36d695d13620f04ce1eed4309e215f3ef692ad132122d1f8ea34414"
+            "clone_uuid": "f58eef40-b1ae-4185-9fc5-d43161217ebb",
+            "binding_digest": "sha256:e6cb976df4f448448b4e97c45b2463c3d65528f73beb6d7f1b721e31d48246a7"
           },
           "results": {
             "113_veldo_0112_registered_clients:qualify.<locals>.extension/local_ipc": {
               "accepted": true,
-              "digest": "17fc491fdd7922faf37ff0d4e392d6064946cba574ff342b94302af5f4746f84"
+              "digest": "f843f17402514d2d1b73efb487c16b897a5d91d2523ef206bbab6440637867c1"
             },
             "claim:claim/local_ipc": {
               "accepted": true,
@@ -960,7 +960,7 @@
             },
             "control_claim_client:Client.request/local_ipc": {
               "accepted": true,
-              "digest": "91e1a3b2eef0b0405ece453bbe4291b8f846409dbc66eab97224db48bf529ae6"
+              "digest": "39bbbb5eb89221072ed287186d6dec9332ce76c81508520d242e9212f1dd8b35"
             },
             "control_claim_client:Client.use/local_ipc": {
               "accepted": true,
@@ -968,35 +968,35 @@
             },
             "control_client:send/local_ipc": {
               "accepted": true,
-              "digest": "208dd025061720a057e45dc62bb1398944f27d05b4ea3411cd9e918d281d8c40"
+              "digest": "b2e12fd37d10524516d7f1d5a0decd5c26c655f620bbdc09a6b2a153de4cdd41"
             },
             "control_dispatch:Dispatches.accept/in_process": {
               "accepted": true,
-              "digest": "8577cd8a4abbd7b455a3afec7ef48e080c0151afe44c5c335ee4b2890114a8b0"
+              "digest": "5fe17ae3336fa1451385508649bfe7e1855f7a4c26aecb5aabf8df1f67a25fa2"
             },
             "control_dispatch:Dispatches.exit/in_process": {
               "accepted": true,
-              "digest": "dd5f041d96fd474edc72b29a5eb2331130d1c2b72426cc6b81320b83f009ce48"
+              "digest": "5ae4a0dd64bc3936b25ccc3f727c4ef654a4b2e4950c28ebd48f71c439f9ebc1"
             },
             "control_dispatch:Dispatches.prepare/in_process": {
               "accepted": true,
-              "digest": "b6eb62537b141574ed3edf3021a29cf84417b3ecddfd2e32f78b6cc4b82bddec"
+              "digest": "cfd22dc3442be2fc5a26fd2756db03ea8aab1e3324a09edf32a6526df835e164"
             },
             "control_dispatch:Dispatches.refuse/in_process": {
               "accepted": true,
-              "digest": "1964a40940d9918d6b259d127e28c6a2d7f6253d83f48ace9e92efa15cf941b0"
+              "digest": "2b11f8ef56eb267e3ce28dd64c016ba295e15d1ff9102dae0178b65b2147a531"
             },
             "control_dispatch:Dispatches.run/in_process": {
               "accepted": true,
-              "digest": "d83b0b4433242efa3f1637539b17afae6edc720dc859b99989f3707df437f65d"
+              "digest": "84eb2d39436239f600b6e3f46281659bba38ef98a6553dce6c6873acf27bce84"
             },
             "control_dispatch:Dispatches.unknown/in_process": {
               "accepted": true,
-              "digest": "dccbbd5ef89d5e956a2d3a5ed479db2616bab7ce75f75f90c59602de441fed2e"
+              "digest": "cd537fb7d3e370a94160fc9972397a71b5a43218c02fa1268fc61a17ccffc2b0"
             },
             "control_relay:forward/relay": {
               "accepted": true,
-              "digest": "4cd714646c03b69c352cc6e8e9e7a307bdca846427da40885aec76004c543d0b"
+              "digest": "edf57e081565b5e140631a944ce4790a4bc82d5302d1c94712feb61b681e7b6d"
             },
             "control_relay:main/relay": {
               "accepted": true,
