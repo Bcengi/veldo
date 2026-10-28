@@ -38,6 +38,9 @@ def _v220_gate_scope():
     # A fixture gate only ever sees its own configuration: the variables a real gate's holder hands
     # its children (and the caller's wait) are dropped, so running inside a real gate changes nothing.
     env = {k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')}
+    # Mutation workers start with a clean environment. Name the owner's runtime
+    # directory explicitly, as the other suites that use the user manager do.
+    env['XDG_RUNTIME_DIR'] = env.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
     probe = r'''
 import json, os, signal, subprocess, sys, time
 from pathlib import Path

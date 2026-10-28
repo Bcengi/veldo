@@ -35,3 +35,12 @@ commit identities and per-case row observations.
 The test fixtures execute copies of the gate with stub stages and scratch locks.
 The repository's canonical verify command is not run. These targeted results
 cannot replace the owner's canonical gate or an independent review.
+
+The first coordinator drive after the split is retained in red-runtime/.
+It admits and executes all seven cases, rejecting the four confined mutants,
+but refuses the scope results as invalid_baseline: its clean worker environment
+has no XDG_RUNTIME_DIR or DBUS_SESSION_BUS_ADDRESS. The ordinary selected suite
+run passes all four rows because the interactive environment has the runtime
+path. Suite 114 now supplies /run/user/<uid> when XDG_RUNTIME_DIR is absent, as
+the other systemd suites do. This is fixture setup; the coordinator's environment
+and confinement policy stay unchanged.

@@ -12,10 +12,14 @@ worker in a separate session and child cgroup. Both suites are registered in the
 manifest and requires. The three scope mutants target suite 114; the other four
 still target suite 113.
 
-Remaining for this round: capture the coordinator's original refusal, run both
-ticket suites, and prove all seven falsifiers through the mutation coordinator.
-The runs are queued behind the owner's host lock. Results will be recorded in
-[round3](round3/).
+The first round 3 drive reproduced the original seven-case refusal. Both split
+suites passed, and the coordinator then admitted all seven cases. Four confined
+mutants were rejected; the scope controls exposed a missing runtime directory in
+the clean worker environment. Suite 114 now supplies the same runtime fallback
+as other host suites. The first drive is retained in round3/red-runtime/.
+
+Remaining for this round: rerun the two suites and all seven coordinator cases
+with that fixture setup, then record the final evidence in [round3](round3/).
 
 Remaining before landing: a fresh independent review of the final commit and
 the owner's canonical gate. This round is explicitly limited to the ticket's
