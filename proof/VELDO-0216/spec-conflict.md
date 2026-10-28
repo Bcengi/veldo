@@ -41,7 +41,9 @@ and one CPU core; they have no measured CPU rate. Runtime receipts still measure
 anonymous memory, and fresh source-bound measurements take precedence. The source
 change that invalidates a runtime cache no longer forces full-capacity claims.
 
-Proposed owner amendment: retain AC1 through AC3 and require this ticket to show
+Proposed owner amendment: retain the admission and verdict guarantees of AC1
+through AC3, explicitly permit the recorded cache-inclusive bootstrap estimates
+until anonymous-memory observations exist, and require this ticket to show
 independent stages admitted concurrently on the qualification host, with a full
 fresh gate ceiling of 7500 seconds, subject to canonical measurement. Move the
 6000-second qualification to the first stack containing gate-wide per-worker
