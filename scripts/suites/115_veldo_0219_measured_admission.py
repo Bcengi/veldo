@@ -406,6 +406,7 @@ def _v219_checks():
         row('cpu-per-run', regressions.per_run(gate))
         row('blocking-resource', regressions.blocking_resource(gate))
         row('unit-lifecycle', regressions.unit_lifecycle(ownership))
+        row('lifecycle-channel-serialized', regressions.lifecycle_threads(ownership))
         row('final-memory-bound', gate.resource_claim([dict(cpu_seconds=1, elapsed=2,
             peak_anon_bytes=1024, peak_memory_bytes=32*2**20)])['memory'] == 32*2**20)
 

@@ -17,6 +17,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import threading
 
 SLICE = re.compile(r'(?:v|veldo)[A-Za-z0-9]+\.slice')
 SERVICE = re.compile(r'veldo-authority-[0-9a-f]+\.service')
@@ -37,24 +38,27 @@ class Tracker:
         self.fd = fd
         self.lifecycle = socket.socket(fileno=lifecycle_fd) if lifecycle_fd is not None else None
         self.Popen = subprocess.Popen
+        self.lifecycle_lock = threading.RLock()
 
     def record(self, kind, value):
-        pair = (kind, str(value))
-        if pair not in self.seen:
-            self.seen.add(pair)
-            # Do not call the instrumented encoder recursively.
-            body = json.JSONEncoder()
-            data = ''.join(self.encode(body, list(pair))) + '\n'
-            os.write(self.fd, data.encode())
-            if kind in ('slice', 'service'):
-                self.notify('register', kind, str(value))
+        with self.lifecycle_lock:
+            pair = (kind, str(value))
+            if pair not in self.seen:
+                self.seen.add(pair)
+                # Do not call the instrumented encoder recursively.
+                body = json.JSONEncoder()
+                data = ''.join(self.encode(body, list(pair))) + '\n'
+                os.write(self.fd, data.encode())
+                if kind in ('slice', 'service'):
+                    self.notify('register', kind, str(value))
 
     def notify(self, operation, kind='', value=''):
         if self.lifecycle is None:
             return
         # This channel supplies names only. The authority reads every counter.
-        self.lifecycle.sendall(json.dumps([operation, kind, value]).encode())
-        answer = json.loads(self.lifecycle.recv(65536))
+        with self.lifecycle_lock:
+            self.lifecycle.sendall(json.dumps([operation, kind, value]).encode())
+            answer = json.loads(self.lifecycle.recv(65536))
         if answer != {'ok': True}:
             raise RuntimeError('worker_measurement_error: ' + str(answer))
 

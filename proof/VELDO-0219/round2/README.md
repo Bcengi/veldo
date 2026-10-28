@@ -36,7 +36,8 @@ removal. The manager reference preserves final accounting across explicit stop;
 InvocationID and cgroup identity distinguish restarts. All manager calls made by
 the worker's Python subprocess launcher notify the authority before and after
 completion. These notifications contain unit names, never candidate-supplied
-measurements. Cleanup removes the drop-ins, stops the private slice and releases
+measurements. Requests are serialized through the retention acknowledgement,
+including repeated registration of the same unit by concurrent threads. Cleanup removes the drop-ins, stops the private slice and releases
 references and descriptors. Existing service limits stay on the service itself.
 
 Anonymous memory remains sampled and is reported as such. The kernel's durable
@@ -57,6 +58,7 @@ still retaining their CPU totals and a memory bound above the allocated 32 MiB.
 | Refusal resource and gate totals | resource-red-green.json, old implementation false | resource-red-green.json true, plus CPU, memory and manager checks over the real channel |
 | Short units and repeated cgroup paths | lifecycle-red.json and lifecycle-falsifier-red.json | lifecycle-green.json, two real short units across a slice restart and a real installed service through the ownership channel |
 | Lifecycle requires manager admission | lifecycle-manager-red.log | lifecycle-manager-green.log, including both manager and non-manager workers |
+| Threaded lifecycle acknowledgements | lifecycle-threads-red.json and lifecycle-record-red.json | lifecycle-threads-green.json and lifecycle-threads-suite-green.log |
 | Batch qualification contract | open-red.json | open-green.json |
 
 Suite 115's lifecycle row uses a real ownership socket and a joining worker

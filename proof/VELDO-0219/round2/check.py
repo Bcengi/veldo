@@ -150,6 +150,57 @@ def unit_lifecycle(owner):
             for sock in (meter.lifecycle,meter.peer): sock.close()
         return bool(joined) and not errors and not thread.is_alive() and measured['cpu_seconds']==5
 
+def lifecycle_threads(owner):
+    import socket
+    import threading
+    with tempfile.TemporaryDirectory() as tmp:
+        server, client=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET)
+        server.settimeout(2)
+        tracker=owner.Tracker(tmp,os.open('/dev/null',os.O_WRONLY),client.detach())
+        errors=[]
+        def notify(value):
+            try: tracker.notify('before','',value)
+            except Exception as e: errors.append(str(e))
+        first=threading.Thread(target=notify,args=('first',))
+        second=threading.Thread(target=notify,args=('second',))
+        try:
+            first.start()
+            assert json.loads(server.recv(65536))[-1]=='first'
+            second.start()
+            server.settimeout(.2)
+            try:
+                premature=json.loads(server.recv(65536))[-1]=='second'
+            except TimeoutError:
+                premature=False
+            server.send(json.dumps({'ok':True}).encode())
+            if not premature:
+                server.settimeout(2)
+                assert json.loads(server.recv(65536))[-1]=='second'
+            server.send(json.dumps({'ok':True}).encode())
+            first.join(2);second.join(2)
+            if premature or errors or first.is_alive() or second.is_alive():
+                return False
+            completed=threading.Event()
+            def register(done=False):
+                try:
+                    tracker.record('slice','veldo219threads.slice')
+                    if done: completed.set()
+                except Exception as e: errors.append(str(e))
+            first=threading.Thread(target=register)
+            second=threading.Thread(target=register,args=(True,))
+            first.start()
+            assert json.loads(server.recv(65536))[0]=='register'
+            second.start()
+            # A duplicate name also waits for the original retention acknowledgement.
+            premature=completed.wait(.2)
+            server.send(json.dumps({'ok':True}).encode())
+            first.join(2);second.join(2)
+            return not premature and completed.is_set() and not errors and not first.is_alive() and not second.is_alive()
+        finally:
+            server.close();tracker.close()
+            first.join(2)
+            if second.ident is not None: second.join(2)
+
 def main():
     gate=load(ROOT/'scripts/check_gate_mutations.py')
     checks={}
