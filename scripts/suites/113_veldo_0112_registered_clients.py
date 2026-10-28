@@ -297,6 +297,16 @@ def qualify(root):
             aliases = list(workers.map(alias, range(8)))
         if len({id(a._state) for a in aliases}) != 1 or len({a.RegistryError for a in aliases}) != 1:
             problems.append('split_registry_aliases')
+    # A long-running service can load the same client by many file aliases.
+    # The registry retains its canonical callable, not every discarded module.
+    import gc
+    import weakref
+    discarded = load(root / '.veldo/claim.py', 'clients_discarded_alias')
+    reference = weakref.ref(discarded.claim)
+    del discarded
+    gc.collect()
+    if reference() is not None:
+        problems.append('registry_retains_discarded_alias')
     # Both direct and identity dispatch reject a handle after removal. A new
     # registration with the same callable identity but another client is rejected.
     record = runtime._state.entries.pop('claim:claim', None)

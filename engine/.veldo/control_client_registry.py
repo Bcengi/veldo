@@ -12,6 +12,7 @@ from pathlib import Path
 import sys
 import threading
 import types
+import weakref
 
 ROOT = Path(__file__).resolve().parent
 _KEY = '_veldo_clients_' + hashlib.sha256(str(ROOT).encode()).hexdigest()
@@ -61,8 +62,8 @@ def entrypoint(client, transports):
                 return function(*args, **kwargs)
             guarded.client_entrypoint = identity
             record = previous or dict(identity=identity, client=client, transports=modes,
-                                      origin=origin, handles=[], callable=guarded)
-            record['handles'].append(guarded)
+                                      origin=origin, handles=weakref.WeakSet(), callable=guarded)
+            record['handles'].add(guarded)
             _state.entries[identity] = record
         return guarded
     return decorate
