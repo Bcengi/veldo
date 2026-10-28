@@ -1524,6 +1524,15 @@
    ],
    "regions": "Authority-measured mutation worker deadlines and bounded store.",
    "requires_note": "Only ROOT and expect; controlled coordinator children and scratch stores, plus a real hanging child."
+  },
+  {
+   "name": "113_veldo_0115_authority_store",
+   "file": "113_veldo_0115_authority_store.py",
+   "requires": [
+    "113_veldo_0115_authority_store"
+   ],
+   "regions": "VELDO-0115 real SQLite mutation, bound-store isolation and durable reopen through authenticated IPC.",
+   "requires_note": "Only ROOT and expect. Uses scripts/fixtures/authority_store.py with real git clones, Ed25519 signatures, child authorities and local SQLite stores. No service installation or host lock manipulation."
   }
  ],
  "resource_capacities": {
