@@ -19,6 +19,7 @@ import selectors
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 
 sys.dont_write_bytecode = True
@@ -526,6 +527,7 @@ def main(argv=None):
     parser.add_argument('--directory', type=Path, required=True)
     parser.add_argument('--record', type=Path, required=True)
     parser.add_argument('--receipt', type=Path, required=True)
+    parser.add_argument('--output', type=Path)
     parser.add_argument('--stage', nargs=2, action='append', default=[])
     args = parser.parse_args(argv)
     try:
@@ -536,6 +538,16 @@ def main(argv=None):
         (args.directory / 'graph-field').write_text(',"graph":' + json.dumps(result['graph']))
         for stage, verdict in result['stages'].items():
             (args.directory / (stage + '.status')).write_text(verdict)
+        if args.output is not None:
+            fd, pending = tempfile.mkstemp(prefix='.gate-schedule-', dir=args.output.parent)
+            try:
+                with os.fdopen(fd, 'w') as handle:
+                    json.dump(result, handle, indent=2)
+                    handle.write('\n')
+                os.replace(pending, args.output)
+            finally:
+                if os.path.exists(pending):
+                    os.unlink(pending)
         return int(any(v != 'pass' for v in result['stages'].values()))
     except (OSError, ValueError, KeyError) as error:
         print('GATE: RED (scheduler: %s); no successful graph receipt' % error, flush=True)

@@ -385,6 +385,10 @@ raise SystemExit(m.main())
         for graph_enabled in (True,False,'invalid'):
             shell_out = top/('shell-'+str(graph_enabled))
             shell_out.mkdir()
+            victim = top/'receipt-link-target'
+            victim.write_text('preserve this target')
+            if graph_enabled is True:
+                (shell_out/'gate-schedule.json').symlink_to(victim)
             if not graph_enabled:
                 graph_path.unlink()
             elif graph_enabled=='invalid':
@@ -398,7 +402,10 @@ raise SystemExit(m.main())
                 shell_counts.append(result.returncode==1 and 'GATE: RED' in result.stdout
                     and not (shell_out/'mutation').exists() and ' start ' not in result.stdout)
             else:
-                shell_counts.append(result.returncode==0 and 'COUNTS 9 15 0' in result.stdout)
+                safe_output = graph_enabled is not True or (not (shell_out/'gate-schedule.json').is_symlink()
+                    and victim.read_text()=='preserve this target'
+                    and json.loads((shell_out/'gate-schedule.json').read_text())['checks_run']==9)
+                shell_counts.append(result.returncode==0 and 'COUNTS 9 15 0' in result.stdout and safe_output)
             if not shell_counts[-1]:
                 print('catalog fixture diagnostics',graph_enabled,result.returncode,result.stdout[-3000:],result.stderr[-2000:])
         row('shell-catalog', all(shell_counts))

@@ -536,8 +536,8 @@
   ],
   "source_sha256": {
     "scripts/check_gate_mutations.py": "38d697817f85a31cedcb85dc4afec66b08ba72284003870590dff20796c34901",
-    "scripts/verify.sh": "d373bba743efd14a667572b4b29f4304a26f0dafe69efdae341d576085c91669",
-    "scripts/gate_schedule.py": "401cb01c98107cb7a75abdf16ef0812a1db1ac4d3adfdf838738c58e80f7612d",
+    "scripts/verify.sh": "17d8e80fdcef4a0b9a40addcab4b70d6e0743f0d457fccb6abf4acfbfdaba839",
+    "scripts/gate_schedule.py": "c502c467ddccf2f4f1d72400b49366e32327a4a5850820415912081c709f9cca",
     "scripts/gate_legs.py": "ae6633b2dbbb1b81a0aefa5a694b7b589eccc2c86969869d8437face2025b5dc",
     "scripts/check_teeth_mutations.py": "e37625940b688bccff5e35666173cfd26a11219db631ab722ea8510c3bbbcfd4",
     ".veldo/init_scaffold.py": "ff50999aa23716fbf66b2bc135ac899350d9363671f2085c495ac567c277a9a0"

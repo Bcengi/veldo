@@ -173,10 +173,9 @@ if [ -e "$VELDO_AUTHORITY/scripts/gate_graph.json" ] || [ -L "$VELDO_AUTHORITY/s
   done
   if ! python3 -I -S "$VELDO_AUTHORITY/scripts/gate_schedule.py" --root "$(pwd -P)" \
       --directory "$VELDO_SCHEDULE" --record "$VELDO_LEGS_RECORD" --receipt "$VELDO_REUSE_RECEIPT" \
-      "${_veldo_stages[@]}"; then FAIL=1; fi
+      --output "$VELDO_OUT/gate-schedule.json" "${_veldo_stages[@]}"; then FAIL=1; fi
   if [ -f "$VELDO_SCHEDULE/graph-field" ]; then
     VELDO_GRAPH_FIELD=$(cat "$VELDO_SCHEDULE/graph-field")
-    if ! cp "$VELDO_SCHEDULE/receipt.json" "$VELDO_OUT/gate-schedule.json"; then FAIL=1; fi
   else
     echo 'GATE: RED (graph refused; no catalog stage completed)'
     exit 1
