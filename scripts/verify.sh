@@ -202,7 +202,7 @@ FAIL=0; RAN=0; NA=0; WAIVED=0; UNDECLARED=0; MUTATION_RAN=0
 TODAY=$(date -u +%Y-%m-%d)
 # VELDO-0216: the authority graph replaces only required catalog execution.
 # No graph retains the original serial path. An invalid present graph never falls back.
-VELDO_GRAPH_FIELD=""; VELDO_SCHEDULE=""
+VELDO_GRAPH_FIELD=""; VELDO_SCHEDULE=""; VELDO_GRAPH_REFUSED=0
 if [ -e "$VELDO_AUTHORITY/scripts/gate_graph.json" ] || [ -L "$VELDO_AUTHORITY/scripts/gate_graph.json" ]; then
   VELDO_SCHEDULE=$(mktemp -d)
   trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"; rm -rf "$VELDO_SCHEDULE"' EXIT
@@ -224,7 +224,8 @@ if [ -e "$VELDO_AUTHORITY/scripts/gate_graph.json" ] || [ -L "$VELDO_AUTHORITY/s
     VELDO_GRAPH_FIELD=$(cat "$VELDO_SCHEDULE/graph-field")
   else
     echo 'GATE: RED (graph refused; no catalog stage completed)'
-    exit 1
+    FAIL=1; VELDO_GRAPH_REFUSED=1
+    VELDO_GRAPH_FIELD=',"graph":null,"graph_refused":true'
   fi
 fi
 veldo_scheduled_result() {
@@ -287,6 +288,7 @@ for name in $ORDER; do
   esac
 done
 
+if [ "$VELDO_GRAPH_REFUSED" = 0 ]; then
 echo "== secret scan (built-in)"
 if grep -rInE '(api[_-]?key|secret|password|token)[[:space:]]*[:=][[:space:]]*["'"'"'][A-Za-z0-9+/_-]{16,}' \
      --include='*' --exclude-dir={.git,node_modules,venv,.venv,dist,build,proof} \
@@ -348,6 +350,8 @@ python3 -I -S "$VELDO_AUTHORITY/.veldo/events.py" reconcile-verdicts "$@" || \
       echo "   review events: landing impossible; the traceback above is the finding."; \
     fi; }
 
+fi # A refused graph reaches the normal red stamp without running more checks.
+
 COMMIT=$(git rev-parse --verify HEAD 2>/dev/null || echo "no-git")
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 if [ "$VELDO_OUT" = ".veldo" ]; then mkdir -p .veldo; fi
@@ -358,7 +362,7 @@ if [ "$FAIL" -eq 0 ]; then STATUS=green; EVENT=gate.passed; else STATUS=red; EVE
 # VELDO-0010. The exit status is checked first, and the value must still LOOK like a version, because
 # a shape test survives any future change to what that script prints.
 VELDO_VERSION=""
-if _veldo_v=$(veldo_candidate python3 .veldo/version.py 2>/dev/null); then
+if [ "$VELDO_GRAPH_REFUSED" = 0 ] && _veldo_v=$(veldo_candidate python3 .veldo/version.py 2>/dev/null); then
   _veldo_v=$(printf '%s' "$_veldo_v" | awk '{print $1}')
   case "$_veldo_v" in [0-9]*.[0-9]*) VELDO_VERSION="$_veldo_v" ;; esac
 fi

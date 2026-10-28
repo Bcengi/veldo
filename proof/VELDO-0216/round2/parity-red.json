@@ -1,0 +1,30 @@
+{
+  "mode": "mutant",
+  "rows": {
+    "VELDO-0216 concurrent-stages/graph-complete": true,
+    "VELDO-0216 concurrent-stages/graph-refusals": true,
+    "VELDO-0216 concurrent-stages/dependency-start": true,
+    "VELDO-0216 concurrent-stages/ordered-logs": true,
+    "VELDO-0216 concurrent-stages/same-verdicts": false,
+    "VELDO-0216 concurrent-stages/tree-unchanged": true,
+    "VELDO-0216 concurrent-stages/ledger-sums": true,
+    "VELDO-0216 concurrent-stages/mutation-floor": true,
+    "VELDO-0216 concurrent-stages/inherited-ledger": true,
+    "VELDO-0216 concurrent-stages/critical-path-fixture": true,
+    "VELDO-0216 concurrent-stages/measured-claims": true,
+    "VELDO-0216 concurrent-stages/measurement-record-race": true,
+    "VELDO-0216 concurrent-stages/scope-capacities": true,
+    "VELDO-0216 concurrent-stages/anonymous-metrics": true,
+    "VELDO-0216 concurrent-stages/cold-measurements": true,
+    "VELDO-0216 concurrent-stages/canonical-receipt-check": true,
+    "VELDO-0216 concurrent-stages/timing-store-refusal": true,
+    "VELDO-0216 concurrent-stages/shell-catalog": true,
+    "VELDO-0216 concurrent-stages/graph-refusal-record": false,
+    "VELDO-0216 concurrent-stages/authority-wiring": true
+  }
+}
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/veldo-0216/proof/VELDO-0216/round2/parity_probe.py", line 19, in <module>
+    assert all(ok for name,ok in rows.items() if not name.endswith('/same-verdicts'))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

@@ -1,0 +1,34 @@
+{
+  "source_commit": "b1d91eb27ac73df724ad3274fbd51966cc1c9220",
+  "checks": {
+    "recorded-startup-estimates": true,
+    "host-lock-declared": true,
+    "serial-reference": true,
+    "footprint-owner-item": true,
+    "cold-independent-overlap": true,
+    "manager-exclusion-preserved": true,
+    "host-lock-exclusion": true,
+    "host-lock-release": true,
+    "fresh-measurement-precedence": true,
+    "unknown-remains-conservative": true,
+    "invalid-estimate-refused": true
+  },
+  "source_sha256": {
+    "scripts/gate_schedule.py": "4d65ae94c76d7dea7d243c05a67ff0f829e297e0f23ddfa500985ab6d0ebfd5d",
+    "engine/scripts/gate_schedule.py": "4d65ae94c76d7dea7d243c05a67ff0f829e297e0f23ddfa500985ab6d0ebfd5d",
+    "scripts/gate_graph.json": "c048475405cadf7635a1c9f7d00dfd4fd50a386f3c83aa4809a1a7035157e0d4",
+    "scripts/gate_legs.py": "ae6633b2dbbb1b81a0aefa5a694b7b589eccc2c86969869d8437face2025b5dc",
+    "engine/scripts/gate_legs.py": "ae6633b2dbbb1b81a0aefa5a694b7b589eccc2c86969869d8437face2025b5dc",
+    "scripts/verify.sh": "701d5c576d06352f4d6edf3e4003161f79d1a07b881e61f2390c8261f3db0d00",
+    "engine/scripts/verify.sh": "c2d614fabacf69d776c233724fd8d018f9d3fe466c52a95cc4c6c939515f4140",
+    "scripts/suites/114_veldo_0216_concurrent_stages.py": "8a5caf61dfac4a21150a09b2d047e8b0f4856da00169b7778a63c12ffc206b74",
+    "scripts/check_teeth_mutations.py": "e37625940b688bccff5e35666173cfd26a11219db631ab722ea8510c3bbbcfd4"
+  },
+  "shell_syntax": "both verify.sh copies passed bash syntax checking",
+  "scheduler_mirror": "byte identical",
+  "registered_falsifiers": "four red then green",
+  "confined_ticket_rows": 22,
+  "confined_failed": 0,
+  "specification_unchanged_since": "281fd07c",
+  "status": "REMAINING"
+}

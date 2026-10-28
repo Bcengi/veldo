@@ -2,8 +2,8 @@
 """Authority DAG execution and one resource ledger (VELDO-0216).
 
 The graph and capacities never come from the candidate. No graph means the shell
-keeps its serial loop. Missing measurements reserve the entire gate, visibly; only
-passing authority observations replace that cold reservation. The inherited socket
+keeps its serial loop. Recorded authority estimates seed the first run; fresh
+anonymous-memory observations replace those cache-inclusive starting estimates. The inherited socket
 is for trusted coordinators, never for their candidate children. Future shard and
 case dispatchers claim measured needs on that socket in addition to local admission.
 """
@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 import re
 import selectors
+import shutil
 import socket
 import subprocess
 import sys
@@ -71,13 +72,18 @@ def read_graph(catalog, declaration=None, path=GRAPH):
             raise Refused('graph node set differs from required catalog: missing=%s unknown=%s' %
                           (sorted(set(required) - set(nodes)), sorted(set(nodes) - set(required))))
         for name, node in nodes.items():
-            if not isinstance(node, dict) or set(node) != {'depends_on', 'writes_candidate', 'manager', 'ports'}:
+            fields = {'depends_on', 'writes_candidate', 'manager', 'ports'}
+            if not isinstance(node, dict) or not fields <= set(node) \
+                    or set(node) - fields - {'host_lock', 'estimate'}:
                 raise Refused('invalid node ' + name)
             deps = node['depends_on']
             if not isinstance(deps, list) or any(not isinstance(d, str) or d not in nodes for d in deps) \
                     or len(set(deps)) != len(deps) or node['writes_candidate'] is not False:
                 raise Refused('invalid dependencies or candidate writer: ' + name)
-            validate_claim(dict(cpu=0, memory=0, manager=node['manager'], ports=node['ports']))
+            validate_claim(dict(cpu=0, memory=0, manager=node['manager'], ports=node['ports'],
+                                host_lock=node.get('host_lock', 'none')))
+            if 'estimate' in node:
+                startup_estimate(node['estimate'])
         done = set()
         while len(done) < len(nodes):
             ready = {n for n, v in nodes.items() if n not in done and set(v['depends_on']) <= done}
@@ -94,9 +100,11 @@ def read_graph(catalog, declaration=None, path=GRAPH):
 
 
 def validate_claim(claim):
-    if not isinstance(claim, dict) or set(claim) != {'cpu', 'memory', 'manager', 'ports'} \
+    fields = {'cpu', 'memory', 'manager', 'ports'}
+    if not isinstance(claim, dict) or not fields <= set(claim) or set(claim) - fields - {'host_lock'} \
             or not number(claim['cpu']) or not number(claim['memory']) \
             or claim['manager'] not in ('none', 'shared', 'exclusive') \
+            or claim.get('host_lock', 'none') not in ('none', 'shared', 'exclusive') \
             or not isinstance(claim['ports'], list) \
             or any(type(p) is not int or not 1 <= p <= 65535 for p in claim['ports']) \
             or len(set(claim['ports'])) != len(claim['ports']):
@@ -159,6 +167,11 @@ class Ledger:
             if totals[r] + c[r] > limit:
                 self.event('refuse', name, r, claim)
                 return False
+        lock = c.get('host_lock', 'none')
+        if lock != 'none' and any(h.get('host_lock', 'none') != 'none' and
+                'exclusive' in (lock, h.get('host_lock')) for h in self.held.values()):
+            self.event('refuse', name, 'host_lock', claim)
+            return False
         occupied = set(p for held in self.held.values() for p in held['ports'])
         if occupied.intersection(c['ports']):
             self.event('refuse', name, 'ports', claim)
@@ -168,7 +181,7 @@ class Ledger:
             self.mutation_claimants.add(name)
             if self.mutation_root is None:
                 self.mutation_root = name
-        self.event('grant', name, 'cpu,memory,manager,ports', claim)
+        self.event('grant', name, 'cpu,memory,manager,host_lock,ports', claim)
         return True
 
     def release(self, name):
@@ -178,7 +191,7 @@ class Ledger:
         self.mutation_claimants.discard(name)
         if name == self.mutation_root:
             self.mutation_pending = False
-        self.event('release', name, 'cpu,memory,manager,ports')
+        self.event('release', name, 'cpu,memory,manager,host_lock,ports')
 
 
 class Client:
@@ -202,8 +215,9 @@ class Client:
             raise Refused(answer['error'])
         return answer['granted']
 
-    def acquire(self, name, cpu, memory, manager='none', ports=()):
-        return self.request('acquire', name, dict(cpu=cpu, memory=memory, manager=manager, ports=list(ports)))
+    def acquire(self, name, cpu, memory, manager='none', ports=(), host_lock='none'):
+        return self.request('acquire', name, dict(cpu=cpu, memory=memory, manager=manager,
+                                                 ports=list(ports), host_lock=host_lock))
 
     def release(self, name):
         return self.request('release', name)
@@ -211,6 +225,36 @@ class Client:
     def close(self):
         self.file.close()
         self.socket.close()
+
+
+def startup_estimate(estimate):
+    """Historical total cgroup memory is an estimate above the observed anon use.
+
+    It is never labelled an anonymous-memory measurement. Round CPU upward to a
+    tenth of a core and memory upward to a GiB; fresh observations take precedence.
+    """
+    if not isinstance(estimate, dict) or set(estimate) != {
+            'source', 'wall_seconds', 'cpu_seconds', 'peak_cgroup_memory_bytes'} \
+            or not isinstance(estimate['source'], str) or not estimate['source'].strip() \
+            or not all(number(estimate[k], True) for k in
+                       ('wall_seconds', 'cpu_seconds', 'peak_cgroup_memory_bytes')):
+        raise Refused('invalid authority startup estimate')
+    return dict(cpu=max(1, math.ceil(estimate['cpu_seconds'] / estimate['wall_seconds'] * 10) / 10),
+                memory=math.ceil(estimate['peak_cgroup_memory_bytes'] / 2**30) * 2**30)
+
+
+def node_claim(node, measured, capacity):
+    if measured:
+        demand = dict(cpu=measured['cpu_rate'], memory=measured['peak_anon_bytes'])
+        source = 'authority anonymous-memory measurement'
+    elif 'estimate' in node:
+        demand = startup_estimate(node['estimate'])
+        source = 'recorded startup estimate: ' + node['estimate']['source']
+    else:
+        demand = dict(cpu=capacity['cpu'], memory=capacity['memory'])
+        source = 'no authority estimate; reserving full gate capacity'
+    return dict(demand, manager=node['manager'], ports=node['ports'],
+                host_lock=node.get('host_lock', 'none')), source
 
 
 def capacities(graph, scope, manifest, cgroup_root=Path('/sys/fs/cgroup')):
@@ -287,6 +331,43 @@ def input_guard(root):
     return lambda: mutation.inputs_unchanged(root, common, files, head)
 
 
+class NodeInputs:
+    """A private input snapshot identifies an unconfined leg's candidate writes.
+
+    Use the mutation stage's existing closure, Git snapshot and comparison. The
+    leg retains its unconfined runner and host access. No outer ptrace interferes
+    with nested tracers. A change to the original checkout still fails the graph
+    separately; it is never attributed by guessing which process finished last.
+    """
+    def __init__(self, root, destination, mutation=None):
+        self.mutation = mutation or load_module('check_gate_mutations')
+        common = os.environ.get('VELDO_EXPECTED_GIT_COMMON')
+        if not common:
+            raise Refused('candidate snapshot needs VELDO_EXPECTED_GIT_COMMON')
+        self.root = Path(destination)
+        self.files = self.mutation.read_inputs(root, common)
+        self.head = self.mutation.git(root, common, 'rev-parse', 'HEAD')
+        try:
+            self.common = self.mutation.snapshot(root, common, self.root, self.files, self.head)
+            if not self.unchanged():
+                raise Refused('candidate snapshot differs from input closure')
+        except BaseException:
+            self.close()
+            raise
+
+    def unchanged(self):
+        try:
+            return self.mutation.inputs_unchanged(self.root, self.common, self.files, self.head)
+        except (OSError, ValueError, self.mutation.Refused):
+            # Deleting Git metadata or replacing an input with a symlink is a
+            # named input mutation, not an exception that loses attribution.
+            return False
+
+    def close(self):
+        if self.root.exists():
+            shutil.rmtree(self.root)
+
+
 def command_for(root, stage, leg, command, record, receipt, listing, prior_times=None):
     if stage == 'mutation':
         return [sys.executable, '-I', '-S', str(HERE / 'check_gate_mutations.py'), '--root', str(root),
@@ -303,7 +384,8 @@ def command_for(root, stage, leg, command, record, receipt, listing, prior_times
 
 
 def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declaration_path=None,
-        capacity=None, measurement_store=None, meter_factory=None, guard_factory=input_guard, serial=False):
+        capacity=None, measurement_store=None, meter_factory=None, guard_factory=input_guard, serial=False,
+        node_inputs_factory=NodeInputs):
     """Run the real graph. Explicit injected boundaries are for fixture authorities only.
 
     CLI exposes no graph, capacity, measurement-store, runner or guard override.
@@ -332,16 +414,14 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
             if value:
                 prior[leg] = dict(value, fresh='an earlier gate run')
     prior_times.write_text(json.dumps(prior))
-    claims = {}
+    claims, claim_sources = {}, {}
     for name, node in graph['nodes'].items():
         measured = legs.read_resources(store, key, name)
-        claim = dict(cpu=measured['cpu_rate'] if measured else capacity['cpu'],
-                     memory=measured['peak_anon_bytes'] if measured else capacity['memory'],
-                     manager=node['manager'], ports=node['ports'])
-        ledger.demand(claim)  # Impossible requests refuse the whole run before any launch.
-        if measured is None:
-            print('node %s: no authority resource measurement; reserving full gate capacity' % name, flush=True)
+        claim, source = node_claim(node, measured, capacity)
+        ledger.demand(claim)  # Refuse impossible requests before any launch.
+        print('node %s: %s' % (name, source), flush=True)
         claims[name] = claim
+        claim_sources[name] = source
     if 'mutation' not in required:
         ledger.mutation_pending = False
     unchanged = guard_factory(root)
@@ -372,16 +452,22 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 parent, child = socket.socketpair()
                 parent.setblocking(False)
                 meter = None
+                inputs = None
                 try:
+                    if leg == 'unconfined':
+                        inputs = node_inputs_factory(root, directory / (name + '.inputs'))
+                    node_root = inputs.root if inputs else root
                     meter = meter_factory(name) if meter_factory else Meter(scope, name)
-                    argv = command_for(root, stage, leg, catalog[stage], record, receipt, declaration, prior_times)
+                    argv = command_for(node_root, stage, leg, catalog[stage], record, receipt, declaration, prior_times)
                     env = {k: v for k, v in os.environ.items() if k not in
                            (legs.LEG, legs.ENTRIES, legs.DIGEST, legs.UNIT_SECONDS, CHANNEL)}
+                    if inputs:
+                        env['VELDO_EXPECTED_GIT_COMMON'] = str(inputs.common)
                     env[CHANNEL] = str(child.fileno())
                     env['PYTHONDONTWRITEBYTECODE'] = '1'
                     env['VELDO_GATE_GRAPH_DIGEST'] = digest
                     node_started = time.monotonic()
-                    proc = subprocess.Popen(meter.command(argv), cwd=root, env=env,
+                    proc = subprocess.Popen(meter.command(argv), cwd=node_root, env=env,
                                             stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT,
                                             pass_fds=(child.fileno(), *legs._launcher_fds()))
                 except BaseException:
@@ -389,12 +475,14 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                     log.close()
                     if meter:
                         meter.finish()
+                    if inputs:
+                        inputs.close()
                     ledger.release(name)
                     raise
                 finally:
                     child.close()
                 active[name] = dict(proc=proc, log=log, meter=meter, socket=parent,
-                                    buffer=b'', started=node_started, children=set(), error=None)
+                                    buffer=b'', started=node_started, children=set(), error=None, inputs=inputs)
                 selector.register(parent, selectors.EVENT_READ, name)
                 pending.remove(name)
                 print('node %s start %.6f' % (name, active[name]['started'] - started), flush=True)
@@ -442,13 +530,10 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                     continue
                 end = time.monotonic()
                 metrics = item['meter'].finish()
-                tree_ok = unchanged()
+                tree_ok = item['inputs'].unchanged() if item['inputs'] else True
                 if not tree_ok:
                     failed_tree = True
-                    # Every overlapping node is suspect; never silently blame an innocent
-                    # last finisher and let the writing node pass.
-                    for other in active.values():
-                        other['error'] = 'candidate_tree_changed'
+                    item['error'] = 'candidate_tree_changed'
                 error = item['error'] or ('live_descendants' if metrics.get('live_descendants') else None)
                 if item['children']:
                     error = error or 'unreleased_ledger_claim'
@@ -457,13 +542,16 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 elapsed = end - item['started']
                 result = dict(start=item['started'] - started, end=end - started, wall_seconds=elapsed,
                               verdict='pass' if code == 0 and error is None else 'FAIL',
-                              returncode=code, error=error, **metrics)
+                              returncode=code, error=error, inputs_unchanged=tree_ok,
+                              input_snapshot=bool(item['inputs']), **metrics)
                 results[name] = result
                 if result['verdict'] == 'pass' and measurement_store is None:
                     try:
                         legs.record_resources(store, key, name, elapsed, metrics)
                     except OSError as error:
                         print('node %s: resource measurement not stored: %s' % (name, error), flush=True)
+                if item['inputs']:
+                    item['inputs'].close()
                 item['log'].close()
                 if item['socket'] in selector.get_map():
                     selector.unregister(item['socket'])
@@ -477,11 +565,8 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 print('== ' + name, flush=True)
                 print((directory / (name + '.log')).read_text(errors='replace'), end='', flush=True)
                 next_print += 1
-        if not unchanged():
-            failed_tree = True
-        if failed_tree:
-            for result in results.values():
-                result.update(verdict='FAIL', error=result['error'] or 'candidate_tree_changed_during_graph')
+        original_unchanged = unchanged()
+        failed_tree = failed_tree or not original_unchanged
         stages = {stage: 'pass' if all(results[n]['verdict'] == 'pass' for n, pair in required.items()
                                      if pair[0] == stage) else 'FAIL' for stage in catalog}
         for name, result in results.items():
@@ -495,9 +580,11 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
         critical = max(required, key=chain) if required else None
         return dict(schema='veldo.gate-schedule/v1', graph=digest, stages=stages, nodes=results,
                     checks_run=len(stages), inputs_unchanged=not failed_tree,
+                    original_inputs_unchanged=original_unchanged,
+                    error=None if original_unchanged else 'candidate_tree_changed_outside_node_inputs',
                     wall_seconds=time.monotonic() - started, critical_path_seconds=chain(critical) if critical else 0,
                     critical_path_end=critical, capacities=capacity, peak_granted=ledger.peak,
-                    ledger=ledger.events, claims=claims)
+                    ledger=ledger.events, claims=claims, claim_sources=claim_sources)
     finally:
         # On exceptional exit, own only these nodes. Never signal another gate or touch its lock.
         cleanup_errors = []
@@ -511,6 +598,8 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 item['proc'].wait()
                 item['log'].close()
                 item['socket'].close()
+                if item['inputs']:
+                    item['inputs'].close()
         selector.close()
         if cleanup_errors:
             raise Refused('node cleanup failed: ' + '; '.join(cleanup_errors))
@@ -548,7 +637,7 @@ def main(argv=None):
             finally:
                 if os.path.exists(pending):
                     os.unlink(pending)
-        return int(any(v != 'pass' for v in result['stages'].values()))
+        return int(not result['inputs_unchanged'] or any(v != 'pass' for v in result['stages'].values()))
     except (OSError, ValueError, KeyError) as error:
         print('GATE: RED (scheduler: %s); no successful graph receipt' % error, flush=True)
         return 1

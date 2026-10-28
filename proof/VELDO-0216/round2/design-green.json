@@ -1,0 +1,13 @@
+{
+  "recorded-startup-estimates": true,
+  "host-lock-declared": true,
+  "serial-reference": true,
+  "footprint-owner-item": true,
+  "cold-independent-overlap": true,
+  "manager-exclusion-preserved": true,
+  "host-lock-exclusion": true,
+  "host-lock-release": true,
+  "fresh-measurement-precedence": true,
+  "unknown-remains-conservative": true,
+  "invalid-estimate-refused": true
+}
