@@ -1,6 +1,6 @@
 # VButton
 
-PrimeVue's `Button` styled by the preset, with a pending state. Every button that calls the API is a
+A native `button` with Veldo's variants and a pending state. Every button that calls the API is a
 `VButton` with `:pending`.
 
 ## Props
@@ -11,14 +11,14 @@ PrimeVue's `Button` styled by the preset, with a pending state. Every button tha
 | `pendingLabel` | string | `label` | The progressive form shown while pending: "Sending answer" |
 | `pending` | boolean | `false` | Disables the button, shows a spinner, sets `aria-busy` |
 | `disabled` | boolean | `false` | |
-| `variant` | `primary` `secondary` `danger` `quiet` | `primary` | One primary per region |
-| `size` | `normal` `small` | `normal` | `small` (32 px) only in dense desktop toolbars |
+| `variant` | `primary` `secondary` `danger` `quiet` | `primary` | One primary per region. Primary is cobalt with white text |
+| `size` | `normal` `small` | `normal` | Normal is 44 px tall; `small` (36 px) only in toolbars and headers |
 | `type` | `button` `submit` | `button` | |
 | `block` | boolean | `false` | Full width (phone actions, sign-in) |
 
-## Emits
+## Slots and emits
 
-`click(event)`.
+`icon` (before the label); `click(event)`.
 
 ## Example
 
@@ -26,10 +26,12 @@ PrimeVue's `Button` styled by the preset, with a pending state. Every button tha
 <VButton label="Send answer" pending-label="Sending answer" :pending="sending" type="submit" block />
 ```
 
+A link styled as a button uses the classes directly: `<RouterLink class="vbtn vbtn-primary">Answer it</RouterLink>`.
+
 ## Accessibility
 
-The visible label is the accessible name. Normal size is 44 px tall. A pending button keeps its width
-and focus.
+The visible label is the accessible name. A pending button keeps its place and width and stays in the
+tab order position it had.
 
 ## When not to use it
 

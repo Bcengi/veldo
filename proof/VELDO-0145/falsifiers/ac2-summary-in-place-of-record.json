@@ -3,14 +3,14 @@
   "case": "ac2-summary-in-place-of-record",
   "criterion": "AC2",
   "falsifier": "Show a summarized step list in place of the record; the full-detail check must fail.",
-  "commit": "59c235f321e16319e2df99328f7d96b15596278d",
+  "commit": "f5aa18e48bbef2e090455d64672d0285f77b9605",
   "edits": [
     {
       "file": "src/features/run/RunTerminal.vue",
-      "source_sha256": "817793a6371b1e3bbb5d576645563763d7e82e72b83c75784303dda3dfc5382e",
-      "mutant_sha256": "1125d3187236ecb5399176edc23b3885c5fa24fa3bb26a977ec1918833f6e863",
-      "old": "          v-for=\"line in record.lines\"\n",
-      "new": "          v-for=\"line in record.lines.filter((l) => l.kind === 'tool call' || l.kind === 'run result')\"\n"
+      "source_sha256": "8b0c151ec6d377eb2e7a8e054a694fae4d55e23f3828f19ea40a4efecda73dcd",
+      "mutant_sha256": "97dc9a1c473f15a17fd2ab123c292487a0953f3dbf59662e1db9052781ddf656",
+      "old": "            v-for=\"line in record.lines\"\n",
+      "new": "            v-for=\"line in record.lines.filter((l) => l.kind === 'tool call' || l.kind === 'run result')\"\n"
     }
   ],
   "red": [
@@ -19,7 +19,7 @@
       "file": "e2e/run.spec.ts",
       "grep": "full detail",
       "exit": 1,
-      "seconds": 3.942,
+      "seconds": 3.623,
       "summary": [
         "Error: expect(received).toEqual(expected) // deep equality",
         "- Expected  - 7",
@@ -31,11 +31,8 @@
       "kind": "unit",
       "file": "src/features/run/RunTerminal.spec.ts",
       "exit": 1,
-      "seconds": 0.919,
+      "seconds": 1.004,
       "summary": [
-        "Tests  3 failed | 2 passed (5)",
-        "Failed Tests 3",
-        "AssertionError: expected [ 3 ] to deeply equal [ 1, 2, 3, 4, 5 ]",
         "- Expected",
         "+ Received",
         "AssertionError: expected [ Array(1) ] to deeply equal [ 'veldo-wrapper: start',  (4) ]",
@@ -43,6 +40,9 @@
         "+ Received",
         "-   \"{\\\"type\\\":\\\"user\\\",\\\"message\\\":{\\\"content\\\":[{\\\"type\\\":\\\"tool_result\\\",\\\"tool_use_id\\\":\\\"t\\\",\\\"content\\\":\\\"1 failed\\\",\\\"is_error\\\":true}]}}\",",
         "AssertionError: expected [ 3 ] to deeply equal [ 1, 2, 3, 4, 5 ]",
+        "- Expected",
+        "+ Received",
+        "AssertionError: expected [ DOMWrapper{  (3) } ] to have a length of 5 but got 1",
         "- Expected",
         "+ Received"
       ]
@@ -54,7 +54,7 @@
       "file": "e2e/run.spec.ts",
       "grep": "full detail",
       "exit": 0,
-      "seconds": 4.082,
+      "seconds": 4.065,
       "summary": [
         "1 passed (3.6s)"
       ]
@@ -63,10 +63,10 @@
       "kind": "unit",
       "file": "src/features/run/RunTerminal.spec.ts",
       "exit": 0,
-      "seconds": 0.863,
+      "seconds": 0.879,
       "summary": [
         "Test Files  1 passed (1)",
-        "Tests  5 passed (5)"
+        "Tests  6 passed (6)"
       ]
     }
   ],

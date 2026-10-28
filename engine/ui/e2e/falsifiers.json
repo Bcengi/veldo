@@ -49,8 +49,8 @@
       "edits": [
         {
           "file": "src/features/run/RunTerminal.vue",
-          "old": "          v-for=\"line in record.lines\"\n",
-          "new": "          v-for=\"line in record.lines.filter((l) => l.kind === 'tool call' || l.kind === 'run result')\"\n"
+          "old": "            v-for=\"line in record.lines\"\n",
+          "new": "            v-for=\"line in record.lines.filter((l) => l.kind === 'tool call' || l.kind === 'run result')\"\n"
         }
       ],
       "checks": [
@@ -73,6 +73,11 @@
           "file": "src/features/decisions/inbox.ts",
           "old": "    presentation_version: shown.version,\n",
           "new": ""
+        },
+        {
+          "file": "src/api/decisions.ts",
+          "old": "  presentation_version: number\n",
+          "new": "  presentation_version?: number\n"
         },
         {
           "file": "src/api/routes.json",

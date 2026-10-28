@@ -3,12 +3,12 @@
   "case": "ac4-hide-answer-at-360",
   "criterion": "AC4",
   "falsifier": "Hide the inline answer action at 360px width; the phone decisions check must fail.",
-  "commit": "59c235f321e16319e2df99328f7d96b15596278d",
+  "commit": "f5aa18e48bbef2e090455d64672d0285f77b9605",
   "edits": [
     {
       "file": "src/styles/components.css",
-      "source_sha256": "05725d04cc34aaabfde5690a3a42b8a82dd4e639047a0d191feb8ba326400692",
-      "mutant_sha256": "923eb16b827b508115cf2d6260a7a04344349f520a20809be928343e25dd60b6",
+      "source_sha256": "ec224e890d185842f648ad794ffb9c5d2edf6575d9848b94e938a9263bbd4302",
+      "mutant_sha256": "03826324af2b62d516d9375327776f25e0751b39c350296174f6f93a20ba5e30",
       "old": "  /* You */\n",
       "new": "  @media (max-width: 360px) {\n    .answer-bar .vbtn {\n      display: none;\n    }\n  }\n\n  /* You */\n"
     }
@@ -19,7 +19,7 @@
       "file": "e2e/layout.spec.ts",
       "grep": "phone decisions",
       "exit": 1,
-      "seconds": 13.936,
+      "seconds": 14.095,
       "summary": [
         "Error: expect(locator).toBeInViewport() failed",
         "Expected: in viewport",
@@ -34,9 +34,9 @@
       "file": "e2e/layout.spec.ts",
       "grep": "phone decisions",
       "exit": 0,
-      "seconds": 3.936,
+      "seconds": 4.074,
       "summary": [
-        "1 passed (3.5s)"
+        "1 passed (3.6s)"
       ]
     }
   ],

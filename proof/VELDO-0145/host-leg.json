@@ -1,0 +1,44 @@
+{
+  "schema": "veldo.ui_host_leg/v1",
+  "spec": "VELDO-0145",
+  "criterion": "AC1",
+  "commit": "f5aa18e48bbef2e090455d64672d0285f77b9605",
+  "what": "The repository's own install path laid the UI built by `npm run build` into a scratch factory root, and the real API, loaded from that root's own .veldo modules with no `ui` in its configuration, served it to Chrome for the sign-in browser checks. Not the live service.",
+  "steps": [
+    "cd engine/ui && npm ci && npm run build",
+    "python3 .veldo/init_scaffold.py <scratch root>  (prints: factory UI laid at <scratch root>/.veldo/ui (63 files))",
+    "VELDO_ORGANS=<scratch root>/.veldo VELDO_UI_INSTALLED=1 npx playwright test e2e/signin.spec.ts"
+  ],
+  "scratch_root": "/tmp/veldo-0145-factory-root-*",
+  "laid_files": 63,
+  "laid_equals_build": true,
+  "index_sha256": "ed7c803085b8ff1747254e2ed27e37b3aa652f354488e961e598ecb576ae037f",
+  "browser": {
+    "file": "engine/ui/e2e/signin.spec.ts",
+    "expected": 5,
+    "unexpected": 0,
+    "tests": [
+      {
+        "title": "enroll-then-sign-in: a fresh passkey signs in only after the host approves it",
+        "status": "passed"
+      },
+      {
+        "title": "unauthenticated access: no screen shows factory data before a passkey session",
+        "status": "passed"
+      },
+      {
+        "title": "a session that ends while a screen is open shows the named refusal and drops the data",
+        "status": "passed"
+      },
+      {
+        "title": "a member outside a project sees its named refusal and none of its data",
+        "status": "passed"
+      },
+      {
+        "title": "route trace: every request each screen makes is a published API route or a built asset",
+        "status": "passed"
+      }
+    ]
+  },
+  "not_covered": "The tailnet leg: the phone enrollment and sign-in on the host's Tailscale Serve name with the owner (OPEN.md item 4), and veldo factory setup naming this directory for the installed API service (OPEN.md item 3)."
+}

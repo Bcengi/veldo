@@ -59,7 +59,8 @@ function falsify(name) {
       writeFileSync(target, mutant)
       edits.push({ file: edit.file ?? `.veldo/${edit.organ}`, source_sha256: sha(text), mutant_sha256: sha(mutant), old: edit.old, new: edit.new })
     }
-    const built = run('npx', ['vite', 'build', '--outDir', path.join(scratch, 'dist'), '--emptyOutDir'])
+    // The package's own build script (type-check, then build), into a scratch directory.
+    const built = run('npm', ['run', 'build', '--', '--outDir', path.join(scratch, 'dist'), '--emptyOutDir'])
     if (built.exit !== 0) throw new Error(`the falsified UI did not build: ${built.summary.join(' ')}`)
     const red = checks(spec, { ...env, VELDO_UI_DIST: path.join(scratch, 'dist') })
     for (const [file, text] of originals) writeFileSync(file, text)

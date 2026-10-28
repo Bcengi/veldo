@@ -3,7 +3,7 @@
   "case": "ac1-data-before-session",
   "criterion": "AC1",
   "falsifier": "Serve a screen's factory data before the passkey session is established; the unauthenticated-access check must fail.",
-  "commit": "59c235f321e16319e2df99328f7d96b15596278d",
+  "commit": "f5aa18e48bbef2e090455d64672d0285f77b9605",
   "edits": [
     {
       "file": ".veldo/control_api.py",
@@ -26,7 +26,7 @@
       "file": "e2e/signin.spec.ts",
       "grep": "unauthenticated access",
       "exit": 1,
-      "seconds": 3.905,
+      "seconds": 3.967,
       "summary": [
         "Error: reads.decisions without a session",
         "Expected: 401",
@@ -41,9 +41,9 @@
       "file": "e2e/signin.spec.ts",
       "grep": "unauthenticated access",
       "exit": 0,
-      "seconds": 3.845,
+      "seconds": 3.989,
       "summary": [
-        "1 passed (3.4s)"
+        "1 passed (3.5s)"
       ]
     }
   ],

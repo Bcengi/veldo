@@ -3,14 +3,21 @@
   "case": "ac3-answer-without-presentation-version",
   "criterion": "AC3",
   "falsifier": "Send an answer without the presentation version it answers; the stale-answer refusal row must fail.",
-  "commit": "59c235f321e16319e2df99328f7d96b15596278d",
+  "commit": "f5aa18e48bbef2e090455d64672d0285f77b9605",
   "edits": [
     {
       "file": "src/features/decisions/inbox.ts",
-      "source_sha256": "b182d5585f23bd274146d6192db7f6648e2caf95e424b448f16b19e0a8b40add",
-      "mutant_sha256": "18061340bf889c75df3ae153d96f5f52b0cb93d8caf37ccc032e660e9b09dad6",
+      "source_sha256": "9ef71bf84c8317ed007752e1e72821f6d76cc42fec6f90b19d21693a4d97f42d",
+      "mutant_sha256": "1897c834d3cfe56f1c6c07ed7cb4ba939c2fc0aed49f07014fcba34c6a96ddde",
       "old": "    presentation_version: shown.version,\n",
       "new": ""
+    },
+    {
+      "file": "src/api/decisions.ts",
+      "source_sha256": "2f81822d992cd63ac0974b0c21a819b1f89180996bd70d582f5d384832e3420b",
+      "mutant_sha256": "600f344b1d19e3d1ce6f27342d4f94c6cb4e16c22b0bce0d27aad4ae858653f8",
+      "old": "  presentation_version: number\n",
+      "new": "  presentation_version?: number\n"
     },
     {
       "file": "src/api/routes.json",
@@ -26,7 +33,7 @@
       "file": "e2e/decisions.spec.ts",
       "grep": "stale answer",
       "exit": 1,
-      "seconds": 13.642,
+      "seconds": 13.559,
       "summary": [
         "Error: expect(locator).toHaveAttribute(expected) failed",
         "Expected: \"stale_version:stale_presentation\"",
@@ -38,13 +45,15 @@
       "kind": "unit",
       "file": "src/features/decisions/DecisionDetail.spec.ts",
       "exit": 1,
-      "seconds": 0.882,
+      "seconds": 0.917,
       "summary": [
-        "src/features/decisions/DecisionDetail.spec.ts (6 tests | 1 failed) 97ms",
+        "src/features/decisions/DecisionDetail.spec.ts (8 tests | 2 failed) 80ms",
         "Test Files  1 failed (1)",
-        "Tests  1 failed | 5 passed (6)",
-        "Failed Tests 1",
+        "Tests  2 failed | 6 passed (8)",
+        "Failed Tests 2",
         "AssertionError: expected \"sendAnswer\" to be called with arguments: [ {  (7) } ]",
+        "Received:",
+        "AssertionError: expected \"sendAnswer\" to be called with arguments: [ ObjectContaining{ } ]",
         "Received:"
       ]
     }
@@ -55,19 +64,19 @@
       "file": "e2e/decisions.spec.ts",
       "grep": "stale answer",
       "exit": 0,
-      "seconds": 4.425,
+      "seconds": 4.582,
       "summary": [
-        "1 passed (4.0s)"
+        "1 passed (4.1s)"
       ]
     },
     {
       "kind": "unit",
       "file": "src/features/decisions/DecisionDetail.spec.ts",
       "exit": 0,
-      "seconds": 0.857,
+      "seconds": 0.902,
       "summary": [
         "Test Files  1 passed (1)",
-        "Tests  6 passed (6)"
+        "Tests  8 passed (8)"
       ]
     }
   ],

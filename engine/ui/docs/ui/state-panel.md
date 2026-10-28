@@ -11,17 +11,25 @@ One region's loading, empty, error and ready states; exactly one renders, marked
 | `emptyTitle`, `emptyBody` | string | generic text; always pass your own |
 | `loadingLabel` | string | `Loading` (the status region's name) |
 | `rows` | number | 4 skeleton rows |
+| `shape` | `rows` `lines` `board` `block` | `rows` |
 
-## Slots
+The loading state is shaped like what is coming: `rows` (a lamp, two text bars and a strip, like a run or
+inbox row), `lines` (a gutter and a line, like the record), `board` (the andon board's cells), `block`.
 
-`default` (ready), `empty` (an action for the empty state), `error-actions` (inside the refusal).
+## Emits and slots
+
+`retry`: the person pressed Try again. Try again is offered only when trying again can succeed
+(`isRetryable`: the API or the network did not answer); a named refusal such as `out_of_scope` or
+`unknown_run` answers the same every time, so it gets none.
+
+Slots: `default` (ready), `empty` (an action for the empty state), `error-actions` (inside the refusal).
 
 ## Example
 
 ```vue
 <StatePanel :state="runs.state" :refusal="runs.refusal" empty-title="No worker has run yet"
-  empty-body="Runs appear here as soon as the factory dispatches a unit to a worker.">
-  <RunList :rows="runs.rows" />
+  empty-body="Runs appear here as soon as the factory dispatches a unit to a worker." @retry="runs.refresh()">
+  <RunList :runs="runs.rows" />
 </StatePanel>
 ```
 
