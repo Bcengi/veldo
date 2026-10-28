@@ -1,8 +1,9 @@
 # VELDO-0111 implementation and evidence
 
-Round 2 supersedes the implementation and qualification descriptions below.
-See [round2/README.md](round2/README.md) for current evidence and
-[OPEN.md](OPEN.md) for the named limitations and pending owner decisions.
+Round 3 supersedes the implementation and qualification descriptions below.
+See [round3/README.md](round3/README.md) for current evidence and
+[OPEN.md](OPEN.md) for the remaining AC2 limitations. The owner-approved AC2
+and AC4 amendments are applied; there is no pending owner scope decision.
 The blanket qualification failure is removed; the final round 2 suite has ten
 rows. The records below describe round 1 and their source digests are historical.
 

@@ -1,0 +1,10 @@
+--- lifecycle_census.py
++++ mutant.py
+@@ -405,6 +405,7 @@
+             return None
+         name = fields[7]
+         if len(name) == 6 and name[:1] == b'@' and all(c in b'0123456789abcdef' for c in name[1:]):
++            return None
+             return dict(unix_name_hex=(b'\0' + name[1:]).hex(),
+                         sockaddr_hex=(struct.pack('<H', socket.AF_UNIX) + b'\0' + name[1:]).hex())
+         failure(self.r, 'implicit_address', 'Unix name exists but is not a decodable autobind name')
