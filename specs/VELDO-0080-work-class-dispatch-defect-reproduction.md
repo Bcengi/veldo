@@ -14,6 +14,12 @@ depends_on: [VELDO-0079, VELDO-0126]
 placement: [contracts, engine, fleet, distribution]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_backlog.py"
+  - ".veldo/control_backlog.py"
+  - "packs/*/.veldo/control_backlog.py"
+  - "engine/.veldo/control_grooming_request.py"
+  - ".veldo/control_grooming_request.py"
+  - "packs/*/.veldo/control_grooming_request.py"
   - "engine/.veldo/request.py"
   - ".veldo/request.py"
   - "packs/*/.veldo/request.py"

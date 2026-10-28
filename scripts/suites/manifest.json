@@ -1524,6 +1524,15 @@
    ],
    "regions": "Authority-measured mutation worker deadlines and bounded store.",
    "requires_note": "Only ROOT and expect; controlled coordinator children and scratch stores, plus a real hanging child."
+  },
+  {
+   "name": "113_veldo_0080_defects",
+   "file": "113_veldo_0080_defects.py",
+   "requires": [
+    "113_veldo_0080_defects"
+   ],
+   "regions": "AC1 ordinary admission; AC2 ordinary completion; AC3 no automatic admission.",
+   "requires_note": "Only ROOT and expect. Ticket fixtures under proof/VELDO-0080, real signed SQLite commands, loopback Telegram and API intake, scratch Git repositories and ticket-only checks."
   }
  ],
  "resource_capacities": {

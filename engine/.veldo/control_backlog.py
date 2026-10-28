@@ -175,6 +175,7 @@ ADMISSION_RULINGS = {'approve': 'ADMITTED', 'reject': 'REJECTED', 'return_for_el
 DECISION_ROLES = {'admit': ('admission_authority',), 'prioritize': ('priority_authority',),
                   'reprioritize': ('priority_authority',), 'admit_message': ('admission_authority', 'priority_authority')}
 GR = _organ('control_grooming_request')
+DF = _organ('control_defect')
 DP = _organ('control_decomposition_binding')
 BLOCK_TARGET_KIND, UNIT_TARGET_KIND = 'backlog_block', 'execution_unit'
 ALTERNATIVE_OUTCOMES = ('not_required',)
@@ -412,6 +413,10 @@ class Backlog:
                 raise Refused('no_such_feature', str(command.get('feature'))[:128])
             iid, project = item_id(command['feature']), feature['data'].get('project')
             pinned = [command['feature'], feature['data'].get('objective_uuid')]
+            if command.get('work_class') == 'POLICY_DEFECT':
+                objective = _row(self.conn, feature['data'].get('objective_uuid')) or {}
+                _origin, source_reads = DF.origin(self.conn, objective.get('data', {}).get('proposal_id'), _objectives())
+                pinned += source_reads
         else:
             iid = command.get('item')
             current = read(self.conn, iid) if _is_str(iid) and iid.startswith(ID_PREFIX) else None
@@ -546,6 +551,16 @@ class Backlog:
             raise Refused('already_exists', iid)
         if command.get('work_class') not in WORK_CLASSES:
             raise Refused('unsupported_work_class:%s' % command.get('work_class'), 'the ordinary lane only')
+        defect = None
+        if command['work_class'] == 'POLICY_DEFECT':
+            origin, _reads = DF.origin(conn, objective['data'].get('proposal_id'), _objectives())
+            attribution = _objectives().attribution(conn, origin[1]) if origin else None
+            try:
+                defect = DF.report(command.get('defect'), origin, attribution)
+            except ValueError as error:
+                raise Refused(str(error)) from error
+        elif 'defect' in command:
+            raise Refused('invalid_input:defect_class', 'defect evidence belongs to POLICY_DEFECT')
         data = dict(schema=SCHEMA, uuid=iid, entity_type=KIND, domain_uuid=self.ids['domain_uuid'],
                     repository_uuid=self.ids['repository_uuid'], project=found['project'],
                     project_uuid='project:' + found['project'], objective_uuid=found['objective_uuid'],
@@ -555,6 +570,8 @@ class Backlog:
                     completion=None, cancellation=None,
                     provenance={'source': 'take', 'created_by': entry['by'], 'created_at': entry['at']},
                     history=[dict(entry, source=None, target='RAW')])
+        if defect is not None:
+            data['provenance']['defect'] = defect
         return {iid: {'kind': KIND, 'data': data}}
 
     def _unit_entry(self, conn, data, raw, taken):
