@@ -420,6 +420,9 @@
   .skeleton-strip {
     height: 8px;
   }
+  .terminal-body .skeleton {
+    background: var(--paper-raised);
+  }
   .skeleton-lines {
     gap: 10px;
     padding: var(--space-3) var(--space-4);

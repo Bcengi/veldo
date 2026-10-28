@@ -82,7 +82,7 @@ onMounted(() => {
     </ScreenHeader>
     <RunTerminal :dispatch="dispatch" :follower="follower">
       <template #strip>
-        <StationStrip :unit-state="unitState" :station="station" :live="live" />
+        <StationStrip :unit-state="unitState" :station="station" :live="live" :known="runs.state !== 'idle' && runs.state !== 'loading'" />
       </template>
     </RunTerminal>
   </section>

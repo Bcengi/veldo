@@ -3,9 +3,12 @@ import { computed } from 'vue'
 import Lamp from '@/components/Lamp.vue'
 import { LINE, OFF_LINE, stationIndex } from './lamps'
 
-/** The unit's place on the line: one lamp per station, the current one lit (live while its worker runs).
+/** `known` is false while the unit's state is still being read, so nothing is called unreadable yet.
+ * The unit's place on the line: one lamp per station, the current one lit (live while its worker runs).
  * On a phone it is one line: the lamps, and the current station's name only. */
-const props = defineProps<{ unitState: string | null; station: string | null; live: boolean }>()
+const props = withDefaults(defineProps<{ unitState: string | null; station: string | null; live: boolean; known?: boolean }>(), {
+  known: true,
+})
 const at = computed(() => stationIndex(props.unitState))
 const off = computed(() => (props.unitState ? OFF_LINE[props.unitState] : undefined))
 </script>
@@ -28,7 +31,7 @@ const off = computed(() => (props.unitState ? OFF_LINE[props.unitState] : undefi
         <span class="strip-name">{{ stop.label }}</span>
       </li>
     </ol>
-    <p v-if="off || at < 0" class="strip-note">
+    <p v-if="off || (at < 0 && props.known)" class="strip-note">
       <span v-if="off" class="strip-off"><Lamp :state="off.lamp" :label="off.word" size="sm" /> {{ off.word }}</span>
       <span v-else class="strip-unknown">{{ props.unitState ? `Unit state ${props.unitState}` : 'Unit state not readable' }}</span>
     </p>
