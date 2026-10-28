@@ -401,6 +401,7 @@ def _v219_checks():
 
         regressions = load(ROOT / 'proof/VELDO-0219/round2/check.py')
         row('aggregate-handoff', regressions.handoff(gate))
+        row('coordinator-overhead-measured', regressions.handoff(gate, warm=True))
         row('unmetered-fixed-cap', regressions.fixed_cap(gate))
         row('cpu-per-run', regressions.per_run(gate))
         row('blocking-resource', regressions.blocking_resource(gate))

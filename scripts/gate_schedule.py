@@ -448,7 +448,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
             if value:
                 prior[leg] = dict(value, fresh='an earlier gate run')
     prior_times.write_text(json.dumps(prior))
-    claims, claim_sources = {}, {}
+    claims, claim_sources, coordinator_claims = {}, {}, {}
     for name, node in graph['nodes'].items():
         measured = legs.read_resources(store, key, name)
         claim, source = node_claim(node, measured, capacity)
@@ -456,6 +456,15 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
         print('node %s: %s' % (name, source), flush=True)
         claims[name] = claim
         claim_sources[name] = source
+        if 'coordinator' in node:
+            # The graph/key-bound fresh node meter excludes per-worker cgroups.
+            # Retain that measured overhead rather than shrinking it to a default.
+            overhead = dict(node['coordinator'])
+            if measured:
+                overhead.update({r: claim[r] for r in ('cpu', 'memory')})
+            if any(overhead[r] >= graph['mutation_floor'][r] for r in ('cpu', 'memory')):
+                raise Refused('invalid_resource_requirement: coordinator consumes the mutation floor')
+            coordinator_claims[name] = overhead
     if 'mutation' not in required:
         ledger.mutation_pending = False
     unchanged = guard_factory(root)
@@ -541,7 +550,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                             raise Refused('invalid ledger claimant')
                         claimant = name + '/' + child_name
                         if request['operation'] == 'handoff':
-                            coordinator = graph['nodes'][name].get('coordinator')
+                            coordinator = coordinator_claims.get(name)
                             if name != 'mutation' or coordinator is None or item['handed_off'] or item['children']:
                                 raise Refused('invalid or repeated coordinator handoff')
                             ledger.handoff(name, coordinator)
@@ -559,7 +568,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                             granted = True
                         else:
                             raise Refused('invalid ledger operation or foreign release')
-                        overhead = graph['nodes'][name].get('coordinator', {})
+                        overhead = coordinator_claims.get(name, {})
                         answer = dict(granted=granted, resource=None if granted else ledger.blocking_resource,
                                       totals=ledger.totals(), capacities=ledger.capacity,
                                       floor={r: max(0, v - overhead.get(r, 0)) for r, v in ledger.floor.items()})

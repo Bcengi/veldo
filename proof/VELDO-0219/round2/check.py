@@ -19,7 +19,7 @@ def load(path):
     spec.loader.exec_module(module)
     return module
 
-def handoff(gate=None):
+def handoff(gate=None, warm=False):
     schedule = load(ROOT/'scripts/gate_schedule.py')
     with tempfile.TemporaryDirectory(prefix='v219-channel-') as tmp:
         top = Path(tmp)
@@ -34,6 +34,8 @@ from pathlib import Path
 s=importlib.util.spec_from_file_location('gate',sys.argv[1]);g=importlib.util.module_from_spec(s);s.loader.exec_module(g)
 g.ROOT=Path(sys.argv[2])
 a=g.Admission.authority()
+overhead=float(sys.argv[4]);memory_overhead=int(sys.argv[5])
+assert a.floor==dict(cpu=11-overhead,memory=9*2**30-memory_overhead)
 pool=g.SuiteResources(dict(resource_capacities={'systemd_user_manager':16},suites=[dict(file='x.py',resources={'systemd_user_manager':1})]))
 job=dict(case=dict(suite='x.py'),claim=dict(cpu=1,memory=1048576,source='default'))
 assert a.acquire('one',job,pool)
@@ -42,14 +44,14 @@ out,_=p.communicate(timeout=10)
 assert p.returncode==0 and 'worker ran' in out
 assert a.acquire('two',job,pool)
 a.release('one');a.release('two')
-for resource,cpu,memory,manager in [('cpu',19.75,0,'none'),('memory',0,15*2**30-268435456,'none'),('manager',0,0,'exclusive')]:
+for resource,cpu,memory,manager in [('cpu',20-overhead,0,'none'),('memory',0,15*2**30-memory_overhead,'none'),('manager',0,0,'exclusive')]:
     assert a.client.acquire('blocker',cpu,memory,manager)
     assert not a.acquire('wait-'+resource,job,pool)
     assert a.client.last_reply['resource']==resource
     a.client.release('blocker')
     assert a.acquire('wait-'+resource,job,pool)
     assert a.events[-1]['resource']==[resource]
-    assert a.events[-1]['granted']['cpu']==1.25
+    assert a.events[-1]['granted']['cpu']==1+overhead
     a.release('wait-'+resource)
 Path(sys.argv[3]).write_text(json.dumps(a.events))
 a.close()
@@ -59,7 +61,13 @@ a.close()
             def sample(self): return dict(cpu_seconds=.01,peak_anon_bytes=1024)
             def finish(self): return self.sample()
         target = Path(gate.__file__) if gate else ROOT/'scripts/check_gate_mutations.py'
-        with patch.object(schedule,'command_for',lambda *a:[sys.executable,'-B',str(child),str(target),str(ROOT),str(top/'events.json')]), contextlib.redirect_stdout(io.StringIO()):
+        original_loader=schedule.load_module
+        legs=original_loader('gate_legs')
+        if warm:
+            legs.read_resources=lambda *a: dict(cpu_rate=1,peak_anon_bytes=2**29)
+        with patch.object(schedule,'load_module',lambda name: legs if name=='gate_legs' else original_loader(name)), \
+                patch.object(schedule,'command_for',lambda *a:[sys.executable,'-B',str(child),str(target),str(ROOT),str(top/'events.json'),str(1 if warm else .25),str(2**29 if warm else 2**28)]), \
+                contextlib.redirect_stdout(io.StringIO()):
             result = schedule.run({'mutation':'fixture'},top,top/'logs',top/'legs',top/'receipt',
                 graph_path=top/'graph.json',declaration_path=top/'absent',
                 capacity=dict(cpu=20,memory=15*2**30,manager=16),measurement_store=top/'times',

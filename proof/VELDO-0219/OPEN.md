@@ -39,7 +39,7 @@ The batch gate must retain commit-bound canonical receipts and demonstrate:
 
 Round two closes the aggregate handoff, unmetered worker cap, cross-run CPU claim
 and refusal-resource defects. The mutation root atomically shrinks to the graph's
-coordinator overhead, releases manager exclusion, and retains its floor and host
+coordinator overhead, using its fresh measured need when available, releases manager exclusion, and retains its floor and host
 lock claim until children finish. Per-case replies supply actual capacities,
 remaining floor, totals and refusal resource. See round2/ for red and green checks.
 

@@ -12,8 +12,10 @@ agent/codex/veldo-0216 at 18e375b0, including round two at 1160ed38 and the appr
 AC4 amendment. Git merged cleanly and retained both branches' work.
 
 The scheduler's authority channel now has a one-time handoff. It atomically
-shrinks the mutation root to declared coordinator overhead, drops its aggregate
+shrinks the mutation root to coordinator overhead, drops its aggregate
 manager exclusion and preserves the root's reserved floor and host lock claim.
+Fresh coordinator measurements take precedence over the cold graph default;
+the actual overhead is deducted from the reserved worker floor.
 Worker admission cannot precede the handoff. Unit lifecycle channels are handed
 only to workers whose admitted manifest demand includes manager use. The authority supplies capacities,
 remaining worker floor, actual gate totals and the refusing resource. The driver
@@ -49,6 +51,7 @@ still retaining their CPU totals and a memory bound above the allocated 32 MiB.
 | Finding | Red | Green |
 | --- | --- | --- |
 | Production aggregate refusal | admission-red.json, handoff false | admission-final-green.json and suite 115 aggregate-handoff |
+| Measured coordinator overhead | warm-handoff-red.json | warm-handoff-green.json and warm-handoff-suite-green.log |
 | Unmetered worker count | admission-red.json, fixed-cap false | admission-final-green.json and suite 115 unmetered-fixed-cap |
 | Cross-run CPU demand | admission-red.json, cpu-per-run false | admission-final-green.json and suite 115 cpu-per-run |
 | Refusal resource and gate totals | resource-red-green.json, old implementation false | resource-red-green.json true, plus CPU, memory and manager checks over the real channel |
