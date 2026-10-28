@@ -23,6 +23,11 @@ the flock process itself, and a nonexistent pid cannot authenticate the holder
 environment variable. Existing successful fixture gates exercise the real
 holder path. Removing the guard must fail the held-not-started row.
 
+The [final summary](round2/summary.json) binds all seven mutant and baseline
+records to implementation commit a30a74f6. All seven mutants are red on
+their target rows and all seven baselines are green. No fixture gate or keeper
+remained after validation.
+
 Evidence in [round2](round2/):
 
 * 01-lifecycle-red.log: the original code fails both lifecycle rows after the

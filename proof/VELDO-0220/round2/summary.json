@@ -1,0 +1,183 @@
+{
+  "cleanup": "No fixture gate or keeper remained after the final run.",
+  "falsifiers": [
+    {
+      "case": "host220-forged-holder",
+      "mode": "baseline",
+      "record": "host220-forged-holder-baseline.json",
+      "sha256": "0ebead0239c5b08a122f8098e9b63bab220f61e6a3797f3d885abd25cfbb7904",
+      "targets": {
+        "host-lock/held-not-started": [
+          true
+        ]
+      }
+    },
+    {
+      "case": "host220-forged-holder",
+      "mode": "mutant",
+      "record": "host220-forged-holder-mutant.json",
+      "sha256": "fec70400460973bd7b43018388189ef465507570d5679b5cdc95045fc0bd0607",
+      "targets": {
+        "host-lock/held-not-started": [
+          false
+        ]
+      }
+    },
+    {
+      "case": "host220-ignores-lock",
+      "mode": "baseline",
+      "record": "host220-ignores-lock-baseline.json",
+      "sha256": "d3dfa13d87753b1f429ba18a3176a49f8da34e7340d040818939125fd76b03a2",
+      "targets": {
+        "host-lock/held-not-started": [
+          true
+        ]
+      }
+    },
+    {
+      "case": "host220-ignores-lock",
+      "mode": "mutant",
+      "record": "host220-ignores-lock-mutant.json",
+      "sha256": "869dee5425c55ff859ad481f484b854bad055ac368088b0fbe0a5570ab873869",
+      "targets": {
+        "host-lock/held-not-started": [
+          false
+        ]
+      }
+    },
+    {
+      "case": "host220-lock-inherited",
+      "mode": "baseline",
+      "record": "host220-lock-inherited-baseline.json",
+      "sha256": "848e466beb15ac43a75d6bece852a8ffd92c889ac2c3de7c8a41715381d0895f",
+      "targets": {
+        "host-lock/released-on-exit": [
+          true
+        ]
+      }
+    },
+    {
+      "case": "host220-lock-inherited",
+      "mode": "mutant",
+      "record": "host220-lock-inherited-mutant.json",
+      "sha256": "d2da59beb80a5e431ee54d528966de7ec91f8264d35ea25c69534ef67101a236",
+      "targets": {
+        "host-lock/released-on-exit": [
+          false
+        ]
+      }
+    },
+    {
+      "case": "host220-lock-not-retained",
+      "mode": "baseline",
+      "record": "host220-lock-not-retained-baseline.json",
+      "sha256": "9321520aa1e1ccef629e9c5089bdd419504f5acaa01acca0e45a2a451ed900df",
+      "targets": {
+        "host-scope/own-scope": [
+          true
+        ]
+      }
+    },
+    {
+      "case": "host220-lock-not-retained",
+      "mode": "mutant",
+      "record": "host220-lock-not-retained-mutant.json",
+      "sha256": "40ee67a9a3218ba7f136a573fc6ff7d0923293c4e00620b6c70c7a4cd2d5b351",
+      "targets": {
+        "host-scope/own-scope": [
+          false
+        ]
+      }
+    },
+    {
+      "case": "host220-no-scope",
+      "mode": "baseline",
+      "record": "host220-no-scope-baseline.json",
+      "sha256": "d50d43d098cefbbe3087b2cc4e72b20a9ba79298fe540a5db4e9471659a010a2",
+      "targets": {
+        "host-scope/own-scope": [
+          true
+        ]
+      }
+    },
+    {
+      "case": "host220-no-scope-kill",
+      "mode": "baseline",
+      "record": "host220-no-scope-kill-baseline.json",
+      "sha256": "8da960f537a3bd722e27faf1667a6780fe3cc9a3e9e64137221340a7a11a0e7a",
+      "targets": {
+        "host-scope/own-scope": [
+          true
+        ]
+      }
+    },
+    {
+      "case": "host220-no-scope-kill",
+      "mode": "mutant",
+      "record": "host220-no-scope-kill-mutant.json",
+      "sha256": "5d87c6fd2eb95216e1d22bd4fa1a1d427972d0b484e2bcf19ce75e0dc04ddc39",
+      "targets": {
+        "host-scope/own-scope": [
+          false
+        ]
+      }
+    },
+    {
+      "case": "host220-no-scope",
+      "mode": "mutant",
+      "record": "host220-no-scope-mutant.json",
+      "sha256": "633deea06a85a8fe57c4e7ee4ee7132ba38662156416fdc6f8c63efbdeda748a",
+      "targets": {
+        "host-scope/own-scope": [
+          false
+        ]
+      }
+    },
+    {
+      "case": "host220-not-started-is-red",
+      "mode": "baseline",
+      "record": "host220-not-started-is-red-baseline.json",
+      "sha256": "8d42887dc61504115126f7feb001e13ecebd7eb059b9ace24632f3337d7f3b7d",
+      "targets": {
+        "host-lock/not-started-not-red": [
+          true
+        ]
+      }
+    },
+    {
+      "case": "host220-not-started-is-red",
+      "mode": "mutant",
+      "record": "host220-not-started-is-red-mutant.json",
+      "sha256": "96d675c9482933a007a49821c04c7ebd713487d02ab83fcf9894694065ae5426",
+      "targets": {
+        "host-lock/not-started-not-red": [
+          false
+        ]
+      }
+    }
+  ],
+  "implementation_commit": "a30a74f675777c81e0e0522c9ec901b734b2b32f",
+  "proof_documents": {
+    "green": "07-documents-green.log",
+    "red": "06-documents-red.log"
+  },
+  "remaining": [
+    "Owner authorizes and applies the exact OPEN.md entry and spec boundaries",
+    "Owner runs the canonical gate green",
+    "Fresh independent review"
+  ],
+  "schema": "veldo.round2-local-evidence/v1",
+  "status": "REMAINING",
+  "targeted_suite": {
+    "canonical_gate_run": false,
+    "file": "113_veldo_0220_gate_host.py",
+    "log": "09-custody-green.log",
+    "ticket_rows_failed": 0,
+    "ticket_rows_passed": 4
+  },
+  "testing_scope": "Only suite 113 and its seven falsifiers. Every fixture lock is scratch-local. Initial inherited-lock mutant used the blocking host flock. Subsequent checks use the owner single-file allowance.",
+  "unchanged_owner_boundaries": {
+    "scripts/gate_unconfined.json": "209267e300d7acf00d14744f326c0c374e06fc7bf836f11eabb535c17f1e759b",
+    "specs/VELDO-0220-the-gate-holds-the-host-and-runs-in-its-own-scope.md": "e5c22d483abe7fc552c0094bb8c95e655a7923bc604ab49a55a37dcf82d040e5"
+  }
+}
