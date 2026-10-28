@@ -97,5 +97,17 @@ with tempfile.TemporaryDirectory(prefix='v220-round3-results-') as temporary:
         summary['status'] = 'passed'
     finally:
         (work / 'summary.json').write_text(json.dumps(summary, indent=2, sort_keys=True) + '\n')
-        shutil.copytree(work, DEST, dirs_exist_ok=True)
+        for output in work.iterdir():
+            if output.is_file():
+                shutil.copy2(output, DEST / output.name)
+        workers = work / 'workers'
+        if workers.exists():
+            kept = DEST / 'workers'
+            kept.mkdir(exist_ok=True)
+            for output in workers.iterdir():
+                if output.is_file() and not output.is_symlink():
+                    shutil.copy2(output, kept / output.name)
+            for job in workers.glob('*/job.json'):
+                (kept / job.parent.name).mkdir(exist_ok=True)
+                shutil.copy2(job, kept / job.parent.name / job.name)
 print('All seven cases admitted; every mutant red, every baseline and no-op green.', flush=True)
