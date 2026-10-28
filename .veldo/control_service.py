@@ -169,7 +169,7 @@ started once for each settled decision, and hands the repository it created or a
 its socket exactly as the adoption effect does (take_on_request, answered synchronously); a repository that
 ended `failed` fails its decision (VELDO-0128's report tells the owner), and once a created or adopted
 repository is `active` the same settlement activates the project with its first team and first objective in
-this process, the factory loop is woken, and it gains the repository's line (FactoryLoop.add_line), with the
+this process, the factory loop is woken, and it gains the repository's line at the journal-woken loop pass, with the
 roles of the loop's first line, so its first unit is dispatched in it. A repository this instance serves that
 the work configuration does not name gets that line at the loop's start too. The factory project, whose own
 repository holds only its team configuration and is no line, has its cycles run on the loop's factory line
@@ -2498,14 +2498,8 @@ class FactoryLoop:
         self.lines = {repository: Line(self, repository, roles, receivers[repository])
                       for repository, roles in sorted(work['repositories'].items())}
         self.configured = sorted(self.lines)
-        # VELDO-0188: what the work configuration staffs each of its repositories with, kept for a repository whose
-        # project's staffing is refused.
+        # Work roles apply only where no project record names the repository. Preserve the optional land role.
         self.work_roles = {repository: json.loads(json.dumps(line.roles)) for repository, line in self.lines.items()}
-        # VELDO-0143: a repository this instance took on (VELDO-0161) that the work configuration does not name
-        # is served by a line of its own, with the roles of the first one.
-        for repository in sorted(set(service.repositories) - set(self.lines)):
-            if receivers.get(repository) and self.lines:
-                self.add_line(repository, receivers[repository])
         self.wakes, self.ended, self.timer = [], [], None
         self.passes, self.last = 0, None
         self.counts = {'offered': 0, 'refused': 0, 'waiting': 0, 'asked': 0, 'released': 0, 'faults': 0, 'lands': 0}
@@ -2525,29 +2519,13 @@ class FactoryLoop:
             return repository
         return self.configured[0] if self.configured else None
 
-    def add_line(self, repository, receiver_path):
-        """VELDO-0143: a line for `repository`, taken on by this instance, with the roles of the loop's first
-        line (the factory's default team's builder and reviewers), through the repository's own receiver
-        configuration. Returns the repository, or None when there is no receiver configuration or no line to take
-        the roles of; a repository that has a line keeps it."""
-        if repository in self.lines:
-            return repository
-        if not receiver_path or not self.lines:
-            return None
-        template = self.lines[self.configured[0]] if self.configured else self.lines[min(self.lines)]
-        roles = json.loads(json.dumps(template.roles))
-        roles.pop('land', None)
-        self.lines[repository] = Line(self, repository, roles, receiver_path)
-        return repository
-
     def follow_store(self, cause):
         """VELDO-0188: the loop's lines made the store's: one line per project record ACTIVE or PAUSED whose
         execution repository this instance serves, over the receiver configuration it holds for it, staffed from
         the project's team or the default team (team_of, line_roles); a missing one started, one whose roles
         changed restaged (a run already dispatched keeps its roles); a CANCELED or COMPLETED project's line set
         closing (it offers nothing and leaves the loop once its runs have ended, remove_closed). A project left
-        without a line is refused by name and every other line serves on. The work configuration's line of a
-        repository whose project is refused keeps the work configuration's roles. Called at the start and at each
+        without a line is refused by name and every other line serves on. Called at the start and at each
         pass a journal advance woke, never otherwise. Returns what changed, which the pass logs."""
         service, conn = self.service, self.service.conn
         receivers = (service.config.get('receiver') or {}).get('configs') or {}
@@ -2587,23 +2565,22 @@ class FactoryLoop:
             except Refused as error:
                 refused[name] = error.code
                 changes['refused'].append(dict(about, refusal=error.code, taxonomy=taxonomy(error.code)))
-                if line is not None and repository in self.work_roles:
-                    if line.roles != self.work_roles[repository] or getattr(line, 'closing', False):
-                        line.roles, line.closing = json.loads(json.dumps(self.work_roles[repository])), False
-                        changes['restaged'].append(dict(about, receiver_config=line.receiver_path, team='work'))
-                    line.project, line.staffing = name, dict(about, receiver_config=line.receiver_path, team='work')
-                elif line is not None and not getattr(line, 'closing', False) and (
-                        getattr(line, 'from_store', False) or any(isinstance(a, dict) and a.get('engine') in L.ENGINES
-                                                                  for a in adapters.values())):
-                    # A line the store started, or one over adapters that name their engines, as an installation's
-                    # do (VELDO-0185): the project is left without a line. A taken-on repository's line over adapters
-                    # that name no engine (VELDO-0143's, before setup wrote any) keeps its roles.
+                if line is not None and not getattr(line, 'closing', False):
                     line.closing = True
                     changes['stopping'].append(dict(about, refusal=error.code))
                 continue
             if (self.work_roles.get(repository) or {}).get('land'):
                 roles['land'] = self.work_roles[repository]['land']
             staffed = dict(about, receiver_config=receiver, **staffing)
+            if line is not None and line.receiver_path != receiver:
+                line.closing = True
+                changes['stopping'].append(dict(about, refusal='receiver_changed'))
+                if line.runner.launches or line.runner.orphans:
+                    continue
+                del self.lines[repository]
+                changes['stopped'].append({'project': getattr(line, 'project', None), 'repository': repository})
+                self.line_counts['stopped'] += 1
+                line = None
             if line is None:
                 try:
                     line = self.lines[repository] = Line(self, repository, roles, receiver)
@@ -2614,11 +2591,7 @@ class FactoryLoop:
                     changes['refused'].append(dict(about, refusal=code, taxonomy=taxonomy(code)))
                     continue
                 changes['started'].append(staffed)
-            elif line.roles != roles or getattr(line, 'closing', False) or line.receiver_path != receiver:
-                if line.receiver_path != receiver:
-                    line.closing = True
-                    changes['stopping'].append(dict(about, refusal='receiver_changed'))
-                    continue
+            elif line.roles != roles or getattr(line, 'closing', False):
                 line.roles, line.closing = roles, False
                 changes['restaged'].append(staffed)
             line.project, line.staffing = name, staffed
@@ -2627,12 +2600,13 @@ class FactoryLoop:
                 line.closing = True
                 changes['stopping'].append({'project': closed[repository]['name'], 'repository': repository,
                                             'state': closed[repository]['state']})
-        changes['stopped'] = self.remove_closed()
+        changes['stopped'].extend(self.remove_closed())
         self.refused_lines = refused
         self.line_counts['started'] += len(changes['started'])
         self.line_counts['restaged'] += len(changes['restaged'])
         self.line_counts['waiting_receiver'] = sum(1 for code in refused.values()
                                                    if code.startswith('missing_authority:receiver:'))
+        self.line_counts['refused'] = {}
         for code in refused.values():
             reason = code.rsplit(':', 1)[0] if code.startswith('missing_authority:') else code
             self.line_counts['refused'][reason] = self.line_counts['refused'].get(reason, 0) + 1
@@ -2640,10 +2614,10 @@ class FactoryLoop:
 
     def remove_closed(self):
         """VELDO-0188 AC3: every closing line with no running launch and no orphan leaves the loop, its account
-        slots free; a line the work configuration names stays, offering nothing. Returns what left."""
+        slots free. Returns what left."""
         stopped = []
         for repository, line in sorted(self.lines.items()):
-            if (getattr(line, 'closing', False) and repository not in self.work_roles and not line.runner.launches
+            if (getattr(line, 'closing', False) and not line.runner.launches
                     and not line.runner.orphans):
                 del self.lines[repository]
                 stopped.append({'project': getattr(line, 'project', None), 'repository': repository})

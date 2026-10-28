@@ -30,7 +30,7 @@ in a factory loop pass: NewProjects' notify, VELDO-0143 F1). Each pass:
      revisions the team names (so the new repository's Runner binds them), then the activation, the first
      team revision, the first objective proposed and accepted, the decision activated (its report tells the
      owner); and the factory loop gains the
-     repository's line (FactoryLoop.add_line), so its first unit is dispatched in it.
+     repository's line at its journal-woken pass, so its first unit is dispatched in it.
 
 Every step is observed (kind `new_project`) with the decision, the repository and the outcome or named
 refusal, never a token or the owner's words. Organs are the service module's own instances (`modules`),
@@ -303,9 +303,6 @@ class NewProjectPass:
         finally:
             registry.clear()
             registry.update(before)
-        if result['outcome'] == 'activated' and s.loop is not None:
-            receiver = ((s.config.get('receiver') or {}).get('configs') or {}).get(result['repository'])
-            result['line'] = s.loop.add_line(result['repository'], receiver)
         return result
 
     def _activate(self, record, held):

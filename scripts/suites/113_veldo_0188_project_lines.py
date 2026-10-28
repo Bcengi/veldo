@@ -44,7 +44,8 @@ def _v188_suite():
     ROWS = ('lines/at-start', 'lines/new-project', 'lines/adopted-project', 'lines/restart',
             'staff/project-team', 'staff/default-team', 'staff/new-revision', 'staff/refused-role',
             'staff/one-mapping', 'close/canceled', 'close/completed', 'close/removed', 'close/paused-kept',
-            'observe/lines')
+            'observe/lines', 'lines/journal-only', 'close/guard', 'lines/paused-restart',
+            'staff/configured-refusal', 'staff/missing-team', 'close/configured', 'lines/receiver-change')
     emitted, raised = set(), []
 
     def check(label, parts):
@@ -626,8 +627,93 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                                                            for c in changes for r in c.get('refused') or [])),
                     ('the counts: lines started, restaged and stopped, and refusals by reason [%s]' % counts,
                      counts['started'] >= 5 and counts['restaged'] >= 1 and counts['stopped'] == 2
-                     and counts['refused'].get('invalid_input:line:role:adapter', 0) >= 1),
+                     and counts['refused'].get('invalid_input:line:role:adapter', 0) == 1),
                     ('no key or signature is logged', 'PRIVATE KEY' not in text and 'SSH SIGNATURE' not in text)])
+            with region('lines/journal-only'):
+                take_on('dune')
+                # A store change without a delivered journal wake must not change the set.
+                project('activate', 'dune', owner='olga', charter={'purpose': 'again'},
+                        execution_repository=repos['dune'],
+                        authority_policy={'team_amendment': ['project_owner'], 'admission': ['admission_authority']},
+                        coordination_budget={'capacity': 5, 'invocations': 50, 'wall_seconds': 5000})
+                # Use a new project on the closed repository; activation of a completed name is refused.
+                repos['timer'] = repos['dune']
+                activated_timer = activate('timer')
+                before_timer = set(loop.lines)
+                loop.wake('account_reset')
+                timer_pass = loop.run()
+                same = set(loop.lines) == before_timer
+                journal_pass(loop)
+                check('lines/journal-only', [
+                    ('a timer does not reconcile newly committed projects', activated_timer.get('ok') and same
+                     and timer_pass['sources'] == ['account_reset'] and 'lines' not in timer_pass),
+                    ('the journal wake does reconcile them', repos['timer'] in loop.lines)])
+                del repos['timer']
+
+            with region('close/guard'):
+                guarded = loop.lines[REPO]
+                original = {key: getattr(guarded, key) for key in ('assigned', 'next', 'wants_cycles')}
+                visited = []
+                try:
+                    guarded.closing = True
+                    guarded.wants_cycles = lambda: False
+                    guarded.assigned = lambda: ['gate-would-admit']
+                    guarded.next = lambda *args: visited.append(args[0])
+                    guarded.run({'ended': [], 'released': [], 'provisioning': []}, [])
+                finally:
+                    guarded.closing = False
+                    for key, value in original.items():
+                        setattr(guarded, key, value)
+                check('close/guard', [('a closing line never reaches a station, even with admissible work', not visited)])
+
+            with region('lines/paused-restart'):
+                paused = project('pause', 'tide', reason='restart paused', disposition='hold')
+                journal_pass(loop)
+                paused_loop = SV.FactoryLoop(service, work)
+                check('lines/paused-restart', [('a paused project is rebuilt at startup', paused.get('ok')
+                    and repos['tide'] in paused_loop.lines and not getattr(paused_loop.lines[repos['tide']], 'closing', False))])
+                project('resume', 'tide')
+
+            with region('lines/receiver-change'):
+                old_line = loop.lines[REPO]
+                changed = receivers_dir / 'factory-replaced.json'
+                changed.write_text(Path(receivers['factory'][0]).read_text())
+                service.config['receiver']['configs'][REPO] = str(changed)
+                journal_pass(loop)
+                journal_pass(loop)
+                check('lines/receiver-change', [('a drained configured line is replaced and serves again',
+                    REPO in loop.lines and loop.lines[REPO] is not old_line
+                    and loop.lines[REPO].receiver_path == str(changed) and not getattr(loop.lines[REPO], 'closing', False))])
+
+            with region('staff/configured-refusal'):
+                # The configured repository must obey the same staffing rules as every other project.
+                receiver = json.loads(changed.read_text())
+                receiver['adapters'] = {}
+                changed.write_text(json.dumps(receiver))
+                journal_pass(loop)
+                check('staff/configured-refusal', [('invalid roles remove a configured line too',
+                    REPO not in loop.lines and loop.refused_lines.get('factory') == 'invalid_input:line:role:adapter')])
+                changed.write_text(Path(receivers['factory'][0]).read_text())
+                journal_pass(loop)
+
+            with region('staff/missing-team'):
+                # Delete fixture team records only for this negative authority test; restore them afterwards.
+                saved_teams = list(conn.execute("SELECT * FROM entities WHERE kind='team'"))
+                saved_default = conn.execute('SELECT * FROM entities WHERE id=?', (TR.HEAD,)).fetchone()
+                conn.execute("DELETE FROM entities WHERE kind='team' OR id=?", (TR.HEAD,))
+                journal_pass(loop)
+                check('staff/missing-team', [('missing teams refuse configured and ordinary repositories by name',
+                    REPO not in loop.lines and loop.refused_lines.get('factory') == 'missing_authority:team:factory'
+                    and loop.refused_lines.get('tide') == 'missing_authority:team:tide')])
+                for row in saved_teams + ([saved_default] if saved_default else []):
+                    conn.execute('INSERT INTO entities VALUES (' + ','.join('?' for _ in row) + ')', tuple(row))
+                journal_pass(loop)
+
+            with region('close/configured'):
+                canceled_factory = project('cancel', 'factory', reason='done', disposition='nothing left')
+                journal_pass(loop)
+                check('close/configured', [('a closed configured project leaves loop and status',
+                    canceled_factory.get('ok') and REPO not in loop.lines and REPO not in loop.status()['lines'])])
         finally:
             for k, v in planted.items():
                 if v is None:

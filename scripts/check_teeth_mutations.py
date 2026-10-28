@@ -11547,9 +11547,18 @@ def cases():
                   ['staff/project-team'])
     # AC3 (declared): a closed project's line kept in the loop.
     project_lines('close188-line-kept', 'control_service.py',
-                  "            if (getattr(line, 'closing', False) and repository not in self.work_roles and not line.runner.launches\n",
-                  "            if (False and repository not in self.work_roles and not line.runner.launches  # defect: kept\n",
+                  "            if (getattr(line, 'closing', False) and not line.runner.launches\n",
+                  "            if (False and not line.runner.launches  # defect: kept\n",
                   ['close/removed'])
+
+    project_lines('lines188-timer-reconciles', 'control_service.py',
+                  "        if 'journal' in report['sources']:\n",
+                  "        if True:\n", ['lines/journal-only'])
+    project_lines('lines188-closing-offers', 'control_service.py',
+                  "        if getattr(self, 'closing', False):\n            return\n",
+                  "        if getattr(self, 'closing', False):\n            pass\n", ['close/guard'])
+    project_lines('lines188-paused-omitted', 'control_service.py',
+                  "PROJECT_OPEN = ('ACTIVE', 'PAUSED')", "PROJECT_OPEN = ('ACTIVE',)", ['lines/paused-restart'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
