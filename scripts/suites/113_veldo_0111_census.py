@@ -186,6 +186,9 @@ def run_checks(root, emit, module_path=None):
     emit('census/listener-lifetimes', complete_capture(r) and len(expected) >= 13
          and any(a['family'] == socket.AF_INET6 for a in expected)
          and expected_keys == actual_keys
+         and all(isinstance(e['address'],dict) and e['address']['port'] > 0 for e in actual
+                 if e['family'] in (socket.AF_INET,socket.AF_INET6))
+         and any(e['kind'] == 'descriptor_transfer' for e in r['events'])
          and all(objects[e['socket']]['created'] < e['sequence'] for e in actual)
          and all(any(close['sequence'] > e['sequence'] and close.get('inode') == objects[e['socket']]['inode']
                      for close in r['events'] if close['kind'] == 'close') for e in actual))
@@ -253,5 +256,5 @@ if __name__ == '__main__':
     evidence = run_checks(Path(__file__).resolve().parents[2], lambda name, ok: rows.append([name, bool(ok)]))
     print(json.dumps(dict(rows=rows, evidence=evidence)))
     raise SystemExit(0 if all(ok for _, ok in rows) else 1)
-else:
+elif 'ROOT' in globals():
     _v111_evidence = run_checks(ROOT, lambda name, ok: expect('VELDO-0111 ' + name, ok))

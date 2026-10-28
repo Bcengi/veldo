@@ -217,6 +217,30 @@ class Collector:
                    family=obj["family"], type=obj["type"], operation=operation,
                    address=address)
 
+    def address(self, pid, obj):
+        """Enrich an already witnessed successful operation, never infer an event."""
+        family = obj['family']
+        if family not in (socket.AF_INET, socket.AF_INET6):
+            return obj['address']
+        suffix = '6' if family == socket.AF_INET6 else ''
+        inode = obj['inode'][8:-1]
+        for protocol in ('tcp', 'udp', 'raw'):
+            try:
+                lines = Path(f'/proc/{pid}/net/{protocol}{suffix}').read_text().splitlines()[1:]
+            except OSError:
+                continue
+            for line in lines:
+                fields = line.split()
+                if len(fields) < 10 or fields[9] != inode:
+                    continue
+                encoded, port = fields[1].split(':')
+                data = bytes.fromhex(encoded)
+                data = b''.join(data[i:i + 4][::-1] for i in range(0, len(data), 4))
+                return dict(ip=socket.inet_ntop(family, data), port=int(port, 16),
+                            sockaddr_hex=obj['address'])
+        failure(self.r, 'socket_address', f'no enrichment for {obj["identity"]}')
+        return obj['address']
+
     def syscall(self, pid):
         buf = ctypes.create_string_buffer(88)
         size = ptrace(0x420e, pid, 88, ctypes.byref(buf))
@@ -308,9 +332,9 @@ class Collector:
                 self.event("bind", task=self.live[pid]["identity"], socket=obj["identity"],
                            family=obj["family"], address=obj["address"])
                 if obj["type"] in (2, 3, 10):
-                    self.expose(pid, obj, "bind", obj["address"])
+                    self.expose(pid, obj, "bind", self.address(pid, obj))
             elif nr == 50:
-                self.expose(pid, obj, "listen", obj["address"])
+                self.expose(pid, obj, "listen", self.address(pid, obj))
             elif obj["type"] in (2, 3, 10) and obj["address"] is None:
                 # The operation succeeded; the address still needs qualification.
                 self.expose(pid, obj, "implicit_receive_binding", None)
@@ -319,7 +343,11 @@ class Collector:
             self.event("descriptor_alias", task=self.live[pid]["identity"],
                        inode=entry["inode"], syscall=nr, result=result)
         elif nr == 3 and entry.get("inode"):
-            self.event("close", task=self.live[pid]["identity"], inode=entry["inode"], fd=a[0])
+            obj = self.sockets.get(entry["inode"])
+            closed = self.event("close", task=self.live[pid]["identity"], inode=entry["inode"],
+                                socket=obj["identity"] if obj else None, fd=a[0])
+            if obj:
+                obj.setdefault('descriptor_closes', []).append(closed)
         elif nr in (436, 438):
             failure(self.r, "descriptor_operation", f"unqualified syscall {nr}")
 
