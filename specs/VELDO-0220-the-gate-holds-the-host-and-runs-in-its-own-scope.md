@@ -29,7 +29,8 @@ footprint:
   - .veldo/control_proof.py
   - engine/.veldo/control_proof.py
   - scripts/check_teeth_mutations.py
-  - scripts/suites/*_veldo_0220_*.py
+  - scripts/suites/113_veldo_0220_gate_host.py
+  - scripts/suites/114_veldo_0220_gate_scope.py
   - scripts/suites/manifest.json
   - scripts/suites/requires.json
   - specs/VELDO-0220-the-gate-holds-the-host-and-runs-in-its-own-scope.md
@@ -138,7 +139,7 @@ Decisions the spec left open:
 - .veldo/reuse_evidence.py is unchanged: adding gate_host.py to AUTHORITY_FILES would invalidate
   every reuse record, and nothing here changes a mutation verdict.
 
-Open, an owner decision outside this spec's protected paths: the host-scope/own-scope row creates
+Original implementation limitation, resolved by the amendment below: the host-scope/own-scope row creates
 real scopes through the systemd user manager, which the gate's confinement refuses, so in the
 confined unit leg and in a confined mutation worker it is red by name. It needs one entry in the
 protected scripts/gate_unconfined.json:
@@ -147,8 +148,16 @@ Until then the canonical gate is red on that row.
 
 ## Amendment, 2026-10-28: the gate's own scope check runs outside the gate sandbox
 
-The host-scope rows of suite 113 create and inspect the gate's own scope through the systemd user manager,
-which the canonical gate's sandbox blocks. The footprint and protected paths add scripts/gate_unconfined.json,
-and one entry (suite 113_veldo_0220_gate_host, rows userbus) lets those rows reach the user bus. Owner
-approval: Telegram 37440 item 2 and 37442 ("all 3").
+The host-scope rows now live in suite 114_veldo_0220_gate_scope, which creates and inspects
+the gate's own scope through the systemd user manager. The canonical gate's sandbox blocks
+that manager. The footprint names both suites and scripts/gate_unconfined.json; the protected
+paths include scripts/gate_unconfined.json. Its single approved entry now names suite
+114_veldo_0220_gate_scope whole, replacing the row-scoped suite 113 entry. Owner approval:
+Telegram 37440 item 2 and 37442 ("all 3"), with this split directed in round 3.
 
+Suite 113_veldo_0220_gate_host keeps only the lock and not-started rows, all confined. Suite 114
+is registered in the manifest and requires closure, and the three scope mutants target it:
+host220-no-scope, host220-no-scope-kill and host220-lock-not-retained. The other four mutants
+still target suite 113. Whole-suite registration lets the mutation coordinator admit every
+VELDO-0220 case while confining the lock and not-started cases. Targeted coordinator receipts
+and suite results are recorded under proof/VELDO-0220/round3/.

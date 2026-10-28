@@ -43,6 +43,6 @@
     {"suite": "65_veldo_0067_edges", "reason": "nested custody confinement: the product's custody wrapper lists every ancestor of the protected directory up to /, which the gate domain cannot list"},
     {"suite": "100_veldo_0207_case_reuse", "rows": "strace", "reason": "nested strace: the sandbox-valid-worker, *-caught-undeclared-* and startup-runtime-boundary rows trace workers, and the gate domain refuses ptrace"},
     {"suite": "101_veldo_0208_landing_reuse", "rows": "strace", "reason": "nested strace: the authority-worker-* and authority-observes-kill rows trace workers, and the gate domain refuses ptrace"},
-    {"suite": "113_veldo_0220_gate_host", "rows": "userbus", "reason": "systemd user manager: the gate's own scope is created through the user manager and inspected under /sys/fs/cgroup"}
+    {"suite": "114_veldo_0220_gate_scope", "reason": "systemd user manager: the gate's own scope is created through the user manager and inspected under /sys/fs/cgroup"}
   ]
 }

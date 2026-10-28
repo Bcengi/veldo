@@ -11531,6 +11531,7 @@ def cases():
 
     # VELDO-0220: the host lock and the gate's own scope, and NOT STARTED never charged as a red.
     suite220 = '113_veldo_0220_gate_host.py'
+    scope220 = '114_veldo_0220_gate_scope.py'
     add(220, 'host220-ignores-lock', suite220, 'gate_host.py',
         '        except BlockingIOError:\n            pass\n',
         "        except BlockingIOError:\n            return fd, 'taken', 0.0\n",
@@ -11541,17 +11542,17 @@ def cases():
         '0o664)\n    os.set_inheritable(fd, True)\n    started = time.monotonic()\n',
         ['host-lock/released-on-exit'])
     result[-1]['dir'] = 'scripts'
-    add(220, 'host220-no-scope', suite220, 'gate_host.py',
+    add(220, 'host220-no-scope', scope220, 'gate_host.py',
         "        config = load()\n    except Refused as error:\n",
         "        config = dict(load(), scope=None)\n    except Refused as error:\n",
         ['host-scope/own-scope'])
     result[-1]['dir'] = 'scripts'
-    add(220, 'host220-no-scope-kill', suite220, 'gate_host.py',
+    add(220, 'host220-no-scope-kill', scope220, 'gate_host.py',
         "            (base / 'cgroup.kill').write_text('1')\n",
         "            pass  # scope kill removed\n",
         ['host-scope/own-scope'])
     result[-1]['dir'] = 'scripts'
-    add(220, 'host220-lock-not-retained', suite220, 'gate_host.py',
+    add(220, 'host220-lock-not-retained', scope220, 'gate_host.py',
         '            keep_lock(keeper_channel, parent, config)\n',
         '            if fd is not None:\n                os.close(fd)\n            keep_lock(keeper_channel, parent, config)\n',
         ['host-scope/own-scope'])

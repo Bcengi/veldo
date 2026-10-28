@@ -1,28 +1,26 @@
-# VELDO-0220 owner decision
+# VELDO-0220 round 3 status
 
-REMAINING: the canonical gate cannot pass the host-scope/own-scope row while the
-sandbox blocks the systemd user bus. The owner has already been asked. This round
-does not change the spec or the protected scripts/gate_unconfined.json.
+The owner approved the single scripts/gate_unconfined.json entry in Telegram
+37440 item 2 and 37442 ("all 3"). Round 3 directs that same entry to name the new
+suite 114_veldo_0220_gate_scope whole. It replaces suite 113's userbus row entry;
+no additional unconfined entry is added. The spec's footprint and amendment
+record the split and approval.
 
-The exact proposed object to append to the `suites` array is:
+Suite 113_veldo_0220_gate_host retains the three confined lock and not-started
+rows. Suite 114 owns scope creation and teardown, including lock custody over a
+worker in a separate session and child cgroup. Both suites are registered in the
+manifest and requires. The three scope mutants target suite 114; the other four
+still target suite 113.
 
-```json
-{
-  "suite": "113_veldo_0220_gate_host",
-  "rows": "userbus",
-  "reason": "systemd user manager: the gate's own scope is created through the user manager and inspected under /sys/fs/cgroup"
-}
-```
+Remaining for this round: capture the coordinator's original refusal, run both
+ticket suites, and prove all seven falsifiers through the mutation coordinator.
+The runs are queued behind the owner's host lock. Results will be recorded in
+[round3](round3/).
 
-The owner must authorize the protected path and update the spec's footprint and
-protected paths, then apply the entry and run the canonical gate. The row tag
-covers both scope creation and the scope teardown checks added in round 2.
-It also allows the corresponding mutation baselines to reach the user bus.
+Remaining before landing: a fresh independent review of the final commit and
+the owner's canonical gate. This round is explicitly limited to the ticket's
+suites and mutation cases; targeted results do not claim a canonical gate pass.
 
-The original independent review remains NOT SOUND. Round 2 needs a fresh
-independent review of the final commit as well as the owner's green canonical
-gate before landing. Targeted green results below are not canonical gate proof.
-
-See [README.md](README.md) for the changes and [round2](round2/) for red and green
-records. The owner boundary check in round2/documents.py compares both protected
-inputs with a0760882 and verifies this exact proposed object.
+Review note C remains unchanged: without a configured scope, teardown kills the
+command's process group only, so a stage that creates a new session could outlive
+the lock. This host configures a scope; adopters ship no host configuration.

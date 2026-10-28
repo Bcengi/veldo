@@ -1,9 +1,13 @@
 # VELDO-0220 proof index
 
-Round 2 fixes the lifecycle and test coverage findings from
-[the independent review](review-2026-10-28.md). The owner decision in
-[OPEN.md](OPEN.md) remains unresolved. This is implementation evidence, not an
-independent verdict or a claim that the canonical gate passed.
+Round 3 splits the scope checks into suite 114 and keeps the lock and not-started
+checks confined in suite 113. The owner approved the unconfined entry; its single
+line now names suite 114 whole. See [OPEN.md](OPEN.md) for current status and
+[round3](round3/) for coordinator evidence. This is implementation evidence,
+not an independent verdict or a claim that the canonical gate passed.
+
+The following records describe round 2's lifecycle and test coverage fixes from
+[the independent review](review-2026-10-28.md).
 
 A keeper forks before scope creation and retains the lock outside that scope.
 It creates the scope for the holder, detects holder death through a socket and
