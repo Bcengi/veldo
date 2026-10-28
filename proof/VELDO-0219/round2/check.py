@@ -134,7 +134,11 @@ def unit_lifecycle(owner):
                 meter.lifecycle_events(home,ledger)
                 time.sleep(.001)
             thread.join(timeout=1)
-            measured=meter.sample(home,ledger)
+            # A missing fake unit never reaches the real manager, including
+            # when the retention falsifier deliberately removes its parent.
+            import types
+            with patch.object(owner.subprocess, 'run', lambda *a, **k: types.SimpleNamespace(returncode=1, stdout='')):
+                measured=meter.sample(home,ledger)
             for sock in (meter.lifecycle,meter.peer): sock.close()
         return bool(joined) and not errors and not thread.is_alive() and measured['cpu_seconds']==5
 
