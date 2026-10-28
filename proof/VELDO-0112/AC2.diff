@@ -1,0 +1,10 @@
+--- scripts/fixtures/registered_clients.py
++++ scripts/fixtures/registered_clients.py
+@@ -45,7 +45,6 @@
+         'control_claim_client:Client.use': 'local_ipc',
+         'control_client:send': 'local_ipc',
+         'control_relay:forward': 'relay', 'control_relay:main': 'relay',
+-        'control_dispatch:Dispatches.prepare': 'in_process',
+         'control_dispatch:Dispatches.accept': 'in_process',
+         'control_dispatch:Dispatches.run': 'in_process',
+         'control_dispatch:Dispatches.exit': 'in_process',

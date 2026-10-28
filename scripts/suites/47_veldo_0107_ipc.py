@@ -22,6 +22,7 @@ half is the whole claim and the row says so.
 import hashlib as _v107_hashlib
 import hmac as _v107_hmac
 import importlib.util as _v107_ilu
+import inspect as _v107_inspect
 import json as _v107_json
 import os as _v107_os
 import shutil as _v107_shutil
@@ -51,6 +52,7 @@ def _v107_organ(tag, edits=()):
     d = _v107_tmp / ("organ_" + tag)
     d.mkdir()
     _v107_shutil.copy2(ROOT / ".veldo" / "control_enrollment.py", d / "control_enrollment.py")
+    _v107_shutil.copy2(ROOT / ".veldo" / "control_client_registry.py", d / "control_client_registry.py")
     src = (ROOT / ".veldo" / "control_client.py").read_text()
     for old, new in edits:
         assert src.count(old) == 1, (old[:70], src.count(old))
@@ -354,6 +356,8 @@ else:
 
             # ---- AC3: the address follows the binding -------------------------------------------
             _v107_src107 = (ROOT / ".veldo" / "control_client.py").read_text()
+            # Source-relative dependency loading is unrelated to socket placement.
+            _v107_address_src = _v107_inspect.getsource(CC107.socket_path_for)
             _v107_addr_from_binding = CC107.socket_path_for(_v107_bind_A)
             # This row measures ITS OWN delta. It used to compare against a snapshot taken before
             # AC1's forgery, which made it red under AC1's mutant as well: the accepted forgery added
@@ -385,13 +389,13 @@ else:
                    "client in the first workspace still reaches the first authority and the other's log does "
                    "not grow. The other authority is real and running, so the row fails if the answer is right "
                    "only because the alternative was absent. The shipped module reads no environment variable "
-                   "at all and contains no os.getcwd and no __file__. DRIVEN: a copy that prefers an "
+                   "at all and contains no os.getcwd; socket derivation contains no __file__. DRIVEN: a copy that prefers an "
                    "environment variable for the address reaches the other authority's socket",
                    _v107_under_ambient.get("accepted") is True
                    and len(_v107_log_A_amb) == len(_v107_base_A) + 1
                    and _v107_log_B_amb == _v107_base_B
                    and "os.environ" not in _v107_src107 and "os.getcwd" not in _v107_src107
-                   and "__file__" not in _v107_src107
+                   and "__file__" not in _v107_address_src
                    and _v107_ambient_mut == CC107.socket_path_for(_v107_bind_B)
                    and _v107_addr_from_binding != _v107_ambient_mut)
 

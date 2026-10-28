@@ -68,6 +68,15 @@ WHAT IT IS NOT. It launches nothing (control_launch holds the runner and the rec
 implements no recovery, replication, retry authorization or re-dispatch after an unknown outcome
 (Release 2). Standard library only.
 """
+
+# The registry is shared across aliases of this installed module.
+import importlib.util as _registry_import
+from pathlib import Path as _RegistryPath
+_registry_spec = _registry_import.spec_from_file_location(
+    "veldo_client_registry", _RegistryPath(__file__).with_name("control_client_registry.py"))
+_CLIENTS = _registry_import.module_from_spec(_registry_spec)
+_registry_spec.loader.exec_module(_CLIENTS)
+
 import copy
 import importlib.util
 import json
@@ -548,20 +557,24 @@ class Dispatches:
         self.observe(dict(event, outcome='accepted', watermark=result['seq'], state=TRANSITIONS[action][1]))
         return self.record(dispatch_id)
 
+    @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
     def prepare(self, contract, *, now):
         """Record the COMPLETE contract, the dispatch's first write and its unit/station's hold."""
         if not isinstance(contract, dict):
             raise Refused('incomplete_contract:contract')
         return self._run('prepare', contract.get('dispatch_id'), {'contract': contract}, now, contract=contract)
 
+    @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
     def accept(self, dispatch_id, contract_digest, receiver, *, now):
         """The receiver's durable acceptance of this dispatch identity, before any spawn."""
         return self._run('accept', dispatch_id, {'contract_digest': contract_digest, 'receiver': receiver}, now)
 
+    @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
     def run(self, dispatch_id, contract_digest, process, *, now):
         """The spawned worker's OS identity: the launch was accepted and the worker is running."""
         return self._run('run', dispatch_id, {'contract_digest': contract_digest, 'process': process}, now)
 
+    @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
     def exit(self, dispatch_id, contract_digest, process, termination, *, now, artifact=None, execution_record=None):
         """The reaped worker's termination, bound to the process `run` recorded, the verdict and digest
         of its engine's artifact (None for a worker with no engine) and the line count, byte count and digest
@@ -572,6 +585,7 @@ class Dispatches:
             fields['execution_record'] = execution_record
         return self._run('exit', dispatch_id, fields, now)
 
+    @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
     def refuse(self, dispatch_id, contract_digest, refusal, *, now, expected_state=None):
         """A launch that conclusively did not happen, by name, ending `expected_state` when named."""
         fields = {'contract_digest': contract_digest, 'refusal': refusal}
@@ -579,6 +593,7 @@ class Dispatches:
             fields['expected_state'] = expected_state
         return self._run('refuse', dispatch_id, fields, now)
 
+    @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
     def unknown(self, dispatch_id, contract_digest, reason, *, now, expected_state=None, execution_record=None):
         """A launch or outcome that cannot be established: the dispatch stops with a stop owed."""
         fields = {'contract_digest': contract_digest, 'reason': reason}
