@@ -112,13 +112,24 @@ def failure(r, capability, reason, category="observation_incomplete"):
 
 def consumer_rows(r, consumer):
     """A valid census permits evaluation, never establishes a consumer's claim."""
-    valid = (isinstance(r, dict) and r.get("schema") == VERSION
-             and r.get("status") == "COMPLETE" and r.get("capture_status") == "COMPLETE"
-             and r.get("state") == "drained" and not r.get("failures")
-             and r.get("lost_events") == 0
-             and r.get("qualification", {}).get("status") == "COMPLETE"
-             and not r.get("qualification", {}).get("gaps")
-             and all(k in r for k in ("input_identity", "implementation_digest", "barriers")))
+    try:
+        valid = (isinstance(r, dict) and r.get("schema") == VERSION
+                 and r.get("status") == "COMPLETE" and r.get("capture_status") == "COMPLETE"
+                 and r.get("state") == "drained" and not r.get("failures")
+                 and r.get("lost_events") == 0
+                 and r.get("qualification", {}).get("status") == "COMPLETE"
+                 and not r.get("qualification", {}).get("gaps")
+                 and r["qualification"]["inventory"]["exhaustive"] is True
+                 and [b["name"] for b in r["barriers"]] == [
+                     "armed_before_exec", "call_returned", "descendants_drained"]
+                 and all(isinstance(r[k], str) and len(r[k]) == 64
+                         and all(c in '0123456789abcdef' for c in r[k])
+                         for k in ("input_digest", "implementation_digest"))
+                 and bool(r["input_identity"])
+                 and sum(p["root"] is True for p in r["processes"]) == 1
+                 and all(p["terminal"] is not None for p in r["processes"]))
+    except (AttributeError, KeyError, TypeError, ValueError):
+        valid = False
     return [dict(name=name, status="READY" if valid else "STANDS DOWN",
                  reason=None if valid else "census_incomplete") for name in CONSUMERS[consumer]]
 

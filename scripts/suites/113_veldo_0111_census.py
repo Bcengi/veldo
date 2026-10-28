@@ -234,7 +234,10 @@ for name in (observer,'pgrep'):
                            len(r['supervision']['adopted_terminal_waits']) >= 2)
     hanging, _ = run('deadline', 'import time; time.sleep(10)', deadline=.05)
     results.append(hanging['status'] == 'INCOMPLETE' and hanging['capture_status'] == 'INCOMPLETE')
-    for value in (None, {}, {'status': 'COMPLETE'}, dict(empty, status='COMPLETE')):
+    for value in (None, {}, {'status': 'COMPLETE'}, dict(empty, status='COMPLETE'),
+                  dict(empty, status='COMPLETE', failures=[], qualification=None),
+                  dict(empty, status='COMPLETE', failures=[], qualification={
+                      'status':'COMPLETE', 'gaps':[], 'inventory':{'exhaustive':True}}, barriers=None)):
         results.extend(all(row['status'] == 'STANDS DOWN' for row in census.consumer_rows(value,c))
                        for c in expected_names)
     emit('census/incomplete-is-not-empty', all(results))

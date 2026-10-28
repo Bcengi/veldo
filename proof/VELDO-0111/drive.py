@@ -6,6 +6,7 @@ named boolean in a completed run is a detected falsifier; exceptions are errors.
 """
 
 import difflib
+import gzip
 import hashlib
 import importlib.util
 import json
@@ -79,7 +80,9 @@ def main():
             result = dict(phase=phase, rows=rows, evidence=evidence,
                           seconds=time.monotonic() - started,
                           implementation_digest=hashlib.sha256(contents.encode()).hexdigest())
-            (HERE / (ac + '-' + phase + '.json')).write_text(json.dumps(result, indent=2) + '\n')
+            log = ac + '-' + phase + '.json.gz'
+            with gzip.open(HERE / log, 'wt') as output:
+                json.dump(result, output, indent=2)
             names = [name for name, _ in rows]
             assert len(names) == len(set(names)) == 5 and target in names, (ac, phase, 'missing row')
             observed = dict(rows)[target]
@@ -87,7 +90,7 @@ def main():
             if phase == 'green':
                 assert all(ok for _, ok in rows), (ac, phase, rows)
             results.append(dict(phase=phase, row=target, passed=observed, completed=True,
-                                seconds=result['seconds'], log=ac + '-' + phase + '.json'))
+                                seconds=result['seconds'], log=log))
             print(ac, phase, target, observed, flush=True)
         report['cases'].append(dict(criterion=ac, diff=ac + '.diff', results=results))
         assert SOURCE.read_text() == original, 'worktree changed during drive'
