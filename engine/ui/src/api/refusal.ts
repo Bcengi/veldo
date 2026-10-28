@@ -77,6 +77,12 @@ const BY_REASON: Record<string, RefusalText> = {
   authority: { title: 'The factory did not answer', fix: 'Nothing was changed. Try again in a moment.' },
 }
 
+/** Whether trying the same thing again can succeed: the API or the network did not answer. A named refusal
+ * (out of scope, not found, signed out) answers the same way every time, so it gets no Try again. */
+export function isRetryable(refusal: Pick<ApiRefusal, 'error'>): boolean {
+  return refusal.error === 'unavailable' || refusal.error === 'unavailable_service'
+}
+
 /** The sentence and the fix shown for a refusal; the refusal's own name is always shown beside them. */
 export function describeRefusal(refusal: Pick<ApiRefusal, 'refusal' | 'error'>): RefusalText {
   const parts = refusal.refusal.split(':')

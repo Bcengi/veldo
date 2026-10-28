@@ -38,7 +38,7 @@ describe('request', () => {
     apiContext.domain = 'd'
     const ended = vi.fn()
     apiContext.onUnauthenticated = ended
-    const error = await request('reads.decisions').catch((e) => e)
+    const error = (await request('reads.decisions').catch((e: unknown) => e)) as ApiRefusal
     expect(error).toBeInstanceOf(ApiRefusal)
     expect(error.refusal).toBe('unauthenticated:session_expired')
     expect(ended).toHaveBeenCalledOnce()
@@ -54,7 +54,7 @@ describe('request', () => {
 
   it('names an unreachable API as unavailable, never as an answer', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => Promise.reject(new TypeError('network'))))
-    const error = await request('auth.session').catch((e) => e)
+    const error = (await request('auth.session').catch((e: unknown) => e)) as ApiRefusal
     expect(error.error).toBe('unavailable')
   })
 })

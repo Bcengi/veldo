@@ -95,7 +95,68 @@ export function pendingDecisions(answer: ReadAnswer): PendingDecision[] {
       presentation: current ?? null,
     })
   }
-  return out.sort((a, b) => (a.deadline ?? '~').localeCompare(b.deadline ?? '~') || a.alias.localeCompare(b.alias))
+  return out
+}
+
+export type Urgency = 'overdue' | 'today' | 'soon' | 'later' | 'none'
+export type RiskLevel = 'high' | 'medium' | 'low' | 'unknown'
+
+const HOUR = 3600_000
+const URGENCY_RANK: Record<Urgency, number> = { overdue: 0, today: 1, soon: 2, later: 3, none: 4 }
+const RISK_RANK: Record<RiskLevel, number> = { high: 0, medium: 1, low: 2, unknown: 3 }
+
+/** How soon a deadline falls: past it, within a day, within three days, later, or no deadline. */
+export function urgencyOf(deadline: string | null, now: number): Urgency {
+  if (!deadline) return 'none'
+  const at = Date.parse(deadline)
+  if (Number.isNaN(at)) return 'none'
+  const left = at - now
+  if (left < 0) return 'overdue'
+  if (left < 24 * HOUR) return 'today'
+  if (left < 72 * HOUR) return 'soon'
+  return 'later'
+}
+
+/** The risk level a framed risk statement opens with ("High: ...", "Low: ..."), else unknown. */
+export function riskOf(statement: string | null | undefined): RiskLevel {
+  const head = (statement ?? '').trim().toLowerCase()
+  for (const level of ['high', 'medium', 'low'] as const) if (head.startsWith(level)) return level
+  return 'unknown'
+}
+
+/** A deadline as people say it: "due in 3 d", "due in 5 h", "due in 20 min", "overdue by 2 h". */
+export function dueText(deadline: string | null, now: number): string | null {
+  if (!deadline) return null
+  const at = Date.parse(deadline)
+  if (Number.isNaN(at)) return null
+  const left = at - now
+  const span = Math.abs(left)
+  const amount = span >= 48 * HOUR ? `${Math.round(span / (24 * HOUR))} d` : span >= HOUR ? `${Math.round(span / HOUR)} h` : `${Math.max(1, Math.round(span / 60_000))} min`
+  return left < 0 ? `overdue by ${amount}` : `due in ${amount}`
+}
+
+/** The inbox's order: the most urgent deadline first, then the higher risk, then the earlier deadline. A
+ * request not presented yet cannot be answered, so it goes last. */
+export function rankDecisions(list: PendingDecision[], now: number): PendingDecision[] {
+  const key = (d: PendingDecision) => [
+    d.presentation ? 0 : 1,
+    URGENCY_RANK[urgencyOf(d.deadline, now)],
+    RISK_RANK[riskOf(d.presentation?.risk)],
+    d.deadline ? Date.parse(d.deadline) || Infinity : Infinity,
+  ]
+  return [...list].sort((a, b) => {
+    const ka = key(a)
+    const kb = key(b)
+    for (let i = 0; i < ka.length; i += 1) if (ka[i] !== kb[i]) return ka[i]! - kb[i]!
+    return a.alias.localeCompare(b.alias)
+  })
+}
+
+/** The decision that has waited longest: the earliest published presentation. */
+export function oldestDecision(list: PendingDecision[]): PendingDecision | null {
+  const presented = list.filter((d) => d.presentation)
+  if (!presented.length) return null
+  return presented.reduce((a, b) => ((b.presentation!.publishedAt ?? Infinity) < (a.presentation!.publishedAt ?? Infinity) ? b : a))
 }
 
 /** The answer to one presentation exactly as shown: its request, versions and digest, the choice and why. */

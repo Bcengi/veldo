@@ -1,5 +1,6 @@
 import { computed, type ComputedRef } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
+import type { IconName } from '@/components/Icon.vue'
 import { useDecisionsStore } from '@/stores/decisions'
 
 export type LampState = 'off' | 'here' | 'live' | 'waiting' | 'stop' | 'done'
@@ -12,15 +13,16 @@ export interface NavEntry {
   to: RouteLocationRaw
   /** The route names that count as this destination being current. */
   matches: string[]
-  icon: 'runs' | 'decisions' | 'you'
+  icon: IconName
   phone: boolean
-  /** The entry's lamp and its words, when it signals something. */
-  signal?: () => { state: LampState; label: string; count: number } | null
+  /** The entry's count badge and its words, when something waits there. */
+  badge?: () => { count: number; label: string; tone: 'waiting' | 'stop' } | null
 }
 
 export function useNavigation(): ComputedRef<NavEntry[]> {
   const decisions = useDecisionsStore()
   return computed(() => [
+    { id: 'overview', label: 'Overview', to: { name: 'overview' }, matches: ['overview'], icon: 'overview', phone: true },
     { id: 'runs', label: 'Runs', to: { name: 'runs' }, matches: ['runs', 'run'], icon: 'runs', phone: true },
     {
       id: 'decisions',
@@ -29,10 +31,8 @@ export function useNavigation(): ComputedRef<NavEntry[]> {
       matches: ['decisions', 'decision'],
       icon: 'decisions',
       phone: true,
-      signal: () =>
-        decisions.waiting > 0
-          ? { state: 'waiting', label: `${decisions.waiting} waiting on you`, count: decisions.waiting }
-          : null,
+      badge: () =>
+        decisions.waiting > 0 ? { count: decisions.waiting, label: `${decisions.waiting} waiting on you`, tone: 'waiting' } : null,
     },
     { id: 'you', label: 'You', to: { name: 'you' }, matches: ['you'], icon: 'you', phone: true },
   ])

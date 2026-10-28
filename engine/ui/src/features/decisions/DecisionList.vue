@@ -1,14 +1,30 @@
 <script setup lang="ts">
 import Lamp from '@/components/Lamp.vue'
-import type { PendingDecision } from './inbox'
+import type { LampState } from '@/app/navigation'
+import { dueText, riskOf, urgencyOf, type PendingDecision, type Urgency } from './inbox'
 
-/** The inbox: each pending decision with its question and deadline. A row opens the decision. */
-const props = defineProps<{ decisions: PendingDecision[]; current: string | null }>()
+/** The inbox: each pending decision with its question, how soon it is due and its risk, ranked by the store
+ * (most urgent first). The lamp is colored by urgency. A row opens the decision. */
+const props = defineProps<{ decisions: PendingDecision[]; current: string | null; now: number }>()
 
-function due(deadline: string | null) {
-  if (!deadline) return null
-  const d = new Date(deadline)
-  return Number.isNaN(d.getTime()) ? deadline : d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+const LAMP: Record<Urgency, { lamp: LampState; word: string }> = {
+  overdue: { lamp: 'stop', word: 'Overdue' },
+  today: { lamp: 'stop', word: 'Due within a day' },
+  soon: { lamp: 'waiting', word: 'Due within three days' },
+  later: { lamp: 'here', word: 'Due later' },
+  none: { lamp: 'here', word: 'No deadline' },
+}
+const RISK = { high: 'High risk', medium: 'Medium risk', low: 'Low risk', unknown: '' } as const
+
+function view(item: PendingDecision) {
+  const urgency = item.presentation ? urgencyOf(item.deadline, props.now) : 'none'
+  return {
+    urgency,
+    lamp: item.presentation ? LAMP[urgency] : { lamp: 'off' as LampState, word: 'Not presented yet' },
+    due: dueText(item.deadline, props.now),
+    risk: RISK[riskOf(item.presentation?.risk)],
+    level: riskOf(item.presentation?.risk),
+  }
 }
 </script>
 
@@ -18,16 +34,19 @@ function due(deadline: string | null) {
       <RouterLink
         :to="{ name: 'decision', params: { request: item.requestId.split('/') } }"
         class="inbox-row"
+        :class="`is-${view(item).urgency}`"
         :aria-current="item.requestId === props.current ? 'true' : undefined"
         :data-request="item.requestId"
+        :data-urgency="view(item).urgency"
       >
-        <Lamp :state="item.presentation ? 'waiting' : 'off'" :label="item.presentation ? 'Waiting on you' : 'Not presented yet'" />
+        <Lamp :state="view(item).lamp.lamp" :label="view(item).lamp.word" />
         <span class="inbox-main">
-          <span class="inbox-question">{{ item.presentation?.question || item.brief || item.alias }}</span>
+          <span class="inbox-question">{{ item.presentation?.question || item.brief || 'A decision not presented yet' }}</span>
           <span class="inbox-facts">
-            <span>{{ item.alias }}</span>
-            <span v-if="item.scope.length">{{ item.scope.join(', ') }}</span>
-            <span v-if="due(item.deadline)">Due {{ due(item.deadline) }}</span>
+            <span v-if="view(item).due" class="inbox-due" data-testid="due">{{ view(item).due }}</span>
+            <span v-if="view(item).risk" class="inbox-risk" :class="`risk-${view(item).level}`">{{ view(item).risk }}</span>
+            <span v-if="!item.presentation">Not presented yet</span>
+            <span v-if="item.scope.length" class="inbox-scope">{{ item.scope.join(', ') }}</span>
           </span>
         </span>
       </RouterLink>

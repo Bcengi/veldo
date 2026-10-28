@@ -3,7 +3,9 @@ import { computed, shallowRef } from 'vue'
 import { readDecisions } from '@/api/reads'
 import type { Watermark } from '@/api/types'
 import { useAsync } from '@/composables/useAsync'
-import { pendingDecisions, type PendingDecision } from '@/features/decisions/inbox'
+import { oldestDecision, pendingDecisions, rankDecisions, type PendingDecision } from '@/features/decisions/inbox'
+import { useNow } from '@/composables/useNow'
+import { useSessionStore } from './session'
 
 /** The decisions waiting on the signed-in member, as reads.decisions last answered. */
 export const useDecisionsStore = defineStore('decisions', () => {
@@ -18,7 +20,12 @@ export const useDecisionsStore = defineStore('decisions', () => {
     },
     (list) => list.length === 0,
   )
-  const pending = computed<PendingDecision[]>(() => load.data.value ?? [])
+  const now = useNow(30_000)
+  const session = useSessionStore()
+  const principal = computed(() => session.principal)
+  /** Ranked: the most urgent deadline first, then the higher risk (inbox.ts rankDecisions). */
+  const pending = computed<PendingDecision[]>(() => rankDecisions(load.data.value ?? [], now.value))
+  const oldest = computed(() => oldestDecision(pending.value))
   const waiting = computed(() => pending.value.filter((d) => d.presentation !== null).length)
 
   function find(requestId: string) {
@@ -31,5 +38,5 @@ export const useDecisionsStore = defineStore('decisions', () => {
     freshness.value = null
   }
 
-  return { state: load.state, refusal: load.refusal, pending, waiting, watermark, freshness, refresh: load.run, find, reset }
+  return { state: load.state, refusal: load.refusal, pending, oldest, now, principal, waiting, watermark, freshness, refresh: load.run, find, reset }
 })

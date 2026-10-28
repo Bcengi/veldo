@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import InputText from 'primevue/inputtext'
 import { computed, onMounted, ref, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as auth from '@/api/auth'
 import { ApiRefusal } from '@/api/refusal'
 import RefusalNotice from '@/components/RefusalNotice.vue'
 import VButton from '@/components/VButton.vue'
+import VTextField from '@/components/VTextField.vue'
 import Wordmark from '@/components/Wordmark.vue'
 import { assertPasskey, ceremonyMessage, createPasskey, passkeysAvailable } from '@/features/signin/webauthn'
+import { safeNext } from '@/router'
 import { useSessionStore } from '@/stores/session'
 
 /** Sign in with a passkey, or add this device's passkey: the registration and possession ceremonies, then the
@@ -26,7 +27,7 @@ const label = ref('')
 const pending = shallowRef<(auth.PendingRegistration & { credentialId: string; rpId: string }) | null>(null)
 const supported = passkeysAvailable()
 
-const next = computed(() => (typeof route.query.next === 'string' && route.query.next.startsWith('/') ? route.query.next : '/runs'))
+const next = computed(() => safeNext(route.query.next))
 /** Why sign-in is needed: the session that ended, or a factory screen opened without one. */
 const reason = computed<ApiRefusal | null>(() => {
   if (session.endedBy) return session.endedBy
@@ -113,8 +114,16 @@ async function signInPending() {
 
 <template>
   <main class="signin" id="main">
-    <div class="signin-panel">
+    <aside class="signin-brand">
       <Wordmark size="lg" />
+      <p class="signin-brand-line">The control center of your software factory.</p>
+      <ul class="signin-brand-lamps" aria-hidden="true">
+        <li><span class="lamp lamp-live lamp-sm" /> Runs, line by line as they happen</li>
+        <li><span class="lamp lamp-waiting lamp-sm" /> Decisions waiting on you</li>
+        <li><span class="lamp lamp-here lamp-sm" /> Every host the factory runs on</li>
+      </ul>
+    </aside>
+    <div class="signin-panel">
       <h1 ref="heading" tabindex="-1" class="signin-title">
         {{ mode === 'pending' ? 'Approve this passkey at the host' : mode === 'enroll' ? 'Add a passkey on this device' : 'Your factory, from anywhere' }}
       </h1>
@@ -140,7 +149,7 @@ async function signInPending() {
           <li>Sign in with it.</li>
         </ol>
         <label class="field-label" for="passkey-label">Passkey name, as the host will show it</label>
-        <InputText id="passkey-label" v-model="label" maxlength="64" autocomplete="off" placeholder="For example: Pixel phone" data-testid="passkey-label" />
+        <VTextField id="passkey-label" v-model="label" maxlength="64" autocomplete="off" placeholder="For example: Pixel phone" data-testid="passkey-label" />
         <div class="signin-actions">
           <VButton type="submit" label="Create passkey" pending-label="Creating passkey" :pending="busy === 'create'" block data-testid="enroll-create" />
           <VButton label="Back to sign in" variant="quiet" block @click="(mode = 'start'), clear()" />
@@ -171,7 +180,7 @@ async function signInPending() {
 
       <RefusalNotice v-if="refusal" :refusal="refusal" compact />
       <p v-if="problem" class="signin-problem" role="alert" data-testid="ceremony-problem">{{ problem }}</p>
+      <p class="signin-foot">Only this factory's own origin can use its passkeys. Nothing is shown here until you sign in.</p>
     </div>
-    <p class="signin-foot">Only this factory's own origin can use its passkeys. Nothing is shown here until you sign in.</p>
   </main>
 </template>

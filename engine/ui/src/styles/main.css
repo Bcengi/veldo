@@ -12,11 +12,10 @@
   --color-paper-raised: var(--paper-raised);
   --color-paper-sunken: var(--paper-sunken);
   --color-rule: var(--rule);
-  --color-enamel: var(--enamel);
+  --color-cobalt: var(--cobalt);
   --color-amber: var(--amber);
   --color-live: var(--live);
   --color-stop: var(--stop);
-  --font-display: var(--font-display);
   --font-text: var(--font-text);
   --font-mono: var(--font-mono);
   --breakpoint-desk: 768px;

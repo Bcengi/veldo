@@ -4,7 +4,7 @@ import { ApiRefusal } from '@/api/refusal'
 import { readWork, readWorkers } from '@/api/reads'
 import type { ReadAnswer, Watermark } from '@/api/types'
 import { useAsync } from '@/composables/useAsync'
-import { runRows, unitStates, type RunRow } from '@/features/run/runs'
+import { runRows, unitStateList, unitStates, type RunRow } from '@/features/run/runs'
 
 /** The worker runs the signed-in member can see, from reads.workers, with each unit's state from reads.work. */
 export const useRunsStore = defineStore('runs', () => {
@@ -27,6 +27,8 @@ export const useRunsStore = defineStore('runs', () => {
   )
   const rows = computed<RunRow[]>(() => load.data.value ?? [])
   const units = computed(() => unitStates(work.value))
+  /** Every unit's state, or null when the work read was refused. */
+  const unitList = computed(() => unitStateList(work.value))
 
   function find(dispatch: string) {
     return rows.value.find((r) => r.dispatch === dispatch) ?? null
@@ -38,5 +40,5 @@ export const useRunsStore = defineStore('runs', () => {
     work.value = null
   }
 
-  return { state: load.state, refusal: load.refusal, rows, units, watermark, refresh: load.run, find, reset }
+  return { state: load.state, refusal: load.refusal, rows, units, unitList, watermark, refresh: load.run, find, reset }
 })

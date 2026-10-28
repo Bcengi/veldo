@@ -1,13 +1,36 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import EditDiff from './EditDiff.vue'
-import { clock, type ShownLine } from './record'
+import { clock, since, type ShownLine } from './record'
 
-/** One kept line of the record: its sequence, receive time and stream, then how it reads. Never merged with
- * another line; in raw view the payload is shown exactly as the record holds it. */
-const props = defineProps<{ line: ShownLine; raw: boolean; match: boolean; current: boolean }>()
-const time = computed(() => clock(props.line.at))
+/** One kept line of the record: a compact gutter (its sequence and its time since the first line) and an
+ * inline tag for what kind of line it is, with the content on the same baseline. Never merged with another
+ * line; in raw view the payload is shown exactly as the record holds it. */
+const props = defineProps<{ line: ShownLine; start: number; raw: boolean; match: boolean; current: boolean }>()
+const time = computed(() => since(props.line.at, props.start))
 const pretty = (value: unknown) => (typeof value === 'string' ? value : JSON.stringify(value, null, 2))
+/** The tag's word and tone. Tones are the line's kind, never a signal color, except an error's. */
+const tag = computed(() => {
+  const l = props.line
+  if (l.error) return { word: 'error', tone: 'error' }
+  const words: Record<string, [string, string]> = {
+    'tool call': ['tool', 'tool'],
+    result: ['output', 'output'],
+    assistant: ['agent', 'agent'],
+    reasoning: ['thinking', 'agent'],
+    user: ['input', 'output'],
+    system: ['system', 'quiet'],
+    'run result': ['finished', 'finished'],
+    command: ['command', 'tool'],
+    edit: ['edit', 'tool'],
+    partial: ['partial', 'quiet'],
+    control: ['control', 'quiet'],
+    wrapper: ['wrapper', 'quiet'],
+    stderr: ['stderr', 'stderr'],
+  }
+  const [word, tone] = words[l.kind] ?? [l.kind, 'quiet']
+  return { word, tone }
+})
 </script>
 
 <template>
@@ -19,16 +42,14 @@ const pretty = (value: unknown) => (typeof value === 'string' ? value : JSON.str
     :data-error="props.line.error ? 'true' : undefined"
     :aria-label="`Line ${props.line.seq}`"
   >
-    <div class="tline-gutter" aria-hidden="false">
-      <span class="tline-seq">{{ props.line.seq }}</span>
-      <time class="tline-time" :datetime="new Date(props.line.at * 1000).toISOString()">{{ time }}</time>
-    </div>
+    <span class="tline-seq">{{ props.line.seq }}</span>
+    <span class="tline-meta">
+      <time class="tline-time" :datetime="new Date(props.line.at * 1000).toISOString()" :title="clock(props.line.at)">{{ time }}</time>
+      <span class="tline-kind" :class="`tone-${tag.tone}`">{{ tag.word }}</span>
+      <span v-if="props.line.stream !== 'engine' && tag.word !== props.line.stream" class="tline-stream">{{ props.line.stream }}</span>
+      <span v-for="kind in props.line.redacted" :key="kind" class="tline-redacted">redacted {{ kind }}</span>
+    </span>
     <div class="tline-body">
-      <p class="tline-head">
-        <span class="tline-kind">{{ props.line.error ? `Error, ${props.line.kind}` : props.line.kind }}</span>
-        <span v-if="props.line.stream !== 'engine' && props.line.kind !== props.line.stream" class="tline-stream">{{ props.line.stream }}</span>
-        <span v-for="kind in props.line.redacted" :key="kind" class="tline-redacted">Redacted {{ kind }}</span>
-      </p>
       <pre v-if="props.raw" class="tline-raw" data-testid="payload">{{ props.line.payload }}</pre>
       <template v-else>
         <template v-for="(block, i) in props.line.blocks" :key="i">
@@ -42,10 +63,7 @@ const pretty = (value: unknown) => (typeof value === 'string' ? value : JSON.str
             <p class="tb-call-head"><span class="tb-tool">{{ block.name }}</span><code class="tb-summary">{{ block.path }}</code></p>
             <EditDiff v-for="(hunk, h) in block.hunks" :key="h" :path="block.path" :before="hunk.before" :after="hunk.after" />
           </div>
-          <div v-else-if="block.type === 'tool_result'" class="tb-result" :class="{ 'is-error': block.isError }">
-            <p class="tb-result-head">{{ block.isError ? 'Tool error' : 'Output' }}</p>
-            <pre class="tb-output">{{ block.output }}</pre>
-          </div>
+          <pre v-else-if="block.type === 'tool_result'" class="tb-output" :class="{ 'is-error': block.isError }">{{ block.output }}</pre>
           <div v-else-if="block.type === 'command'" class="tb-result" :class="{ 'is-error': block.exitCode !== null && block.exitCode !== 0 }">
             <p class="tb-call-head"><span class="tb-tool">Command</span><code class="tb-summary">{{ block.command }}</code></p>
             <pre class="tb-output">{{ block.output }}</pre>
@@ -54,13 +72,13 @@ const pretty = (value: unknown) => (typeof value === 'string' ? value : JSON.str
           <ul v-else-if="block.type === 'file_change'" class="tb-files"><li v-for="p in block.paths" :key="p"><code>{{ p }}</code></li></ul>
           <p v-else-if="block.type === 'system'" class="tb-system"><strong>{{ block.title }}</strong> {{ block.detail }}</p>
           <div v-else-if="block.type === 'result'" class="tb-final" :class="{ 'is-error': block.isError }">
-            <p class="tb-result-head">{{ block.isError ? 'Run ended with an error' : 'Run finished' }} ({{ block.title }})</p>
+            <p class="tb-final-head">{{ block.isError ? 'Run ended with an error' : 'Run finished' }} ({{ block.title }})</p>
             <p class="tb-text">{{ block.text }}</p>
           </div>
           <p v-else-if="block.type === 'delta'" class="tb-delta">{{ block.text }}</p>
           <p v-else-if="block.type === 'error'" class="tb-error">{{ block.text }}</p>
           <pre v-else-if="block.type === 'raw'" class="tb-rawtext">{{ block.text }}</pre>
-          <div v-else class="tb-event"><p class="tb-result-head">{{ block.title }}</p><pre class="tb-output">{{ block.text }}</pre></div>
+          <div v-else class="tb-event"><p class="tb-final-head">{{ block.title }}</p><pre class="tb-output">{{ block.text }}</pre></div>
         </template>
       </template>
     </div>

@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import Button from 'primevue/button'
-
-/** Veldo's button: PrimeVue's Button styled by the preset, with a pending state that keeps its place. */
+/** Veldo's button: a native button with a pending state that keeps its place and names what is happening. */
 const props = withDefaults(
   defineProps<{
     label: string
@@ -20,18 +18,16 @@ defineEmits<{ click: [event: MouseEvent] }>()
 </script>
 
 <template>
-  <Button
+  <button
     :type="props.type"
-    :label="props.pending ? (props.pendingLabel ?? props.label) : props.label"
-    :loading="props.pending"
+    class="vbtn"
+    :class="[`vbtn-${props.variant}`, { 'vbtn-small': props.size === 'small', 'vbtn-block': props.block, 'is-pending': props.pending }]"
     :disabled="props.disabled || props.pending"
-    :severity="props.variant === 'quiet' ? undefined : props.variant"
-    :text="props.variant === 'quiet'"
-    :size="props.size === 'small' ? 'small' : undefined"
     :aria-busy="props.pending ? 'true' : undefined"
-    :class="{ 'vbtn-block': props.block }"
     @click="$emit('click', $event)"
   >
-    <template #loadingicon><span class="vbtn-spinner" aria-hidden="true" /></template>
-  </Button>
+    <span v-if="props.pending" class="vbtn-spinner" aria-hidden="true" />
+    <slot name="icon" />
+    <span class="vbtn-label">{{ props.pending ? (props.pendingLabel ?? props.label) : props.label }}</span>
+  </button>
 </template>

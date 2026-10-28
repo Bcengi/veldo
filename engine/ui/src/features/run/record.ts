@@ -257,3 +257,62 @@ export function clock(at: number): string {
   const two = (n: number) => String(n).padStart(2, '0')
   return `${two(date.getHours())}:${two(date.getMinutes())}:${two(date.getSeconds())}`
 }
+
+/** A line's time since the record's first line, as the gutter shows it: +0.4 s, +12 s, +3:05, +1:02:05. */
+export function since(at: number, start: number): string {
+  const s = Math.max(0, at - start)
+  if (s < 10) return `+${s.toFixed(1)} s`
+  if (s < 60) return `+${Math.floor(s)} s`
+  const two = (n: number) => String(n).padStart(2, '0')
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  const sec = Math.floor(s % 60)
+  return h ? `+${h}:${two(m)}:${two(sec)}` : `+${m}:${two(sec)}`
+}
+
+/** A span of seconds as the run header shows it: 42 s, 3 min 05 s, 1 h 02 min. */
+export function duration(seconds: number): string {
+  const s = Math.max(0, Math.floor(seconds))
+  if (s < 60) return `${s} s`
+  const m = Math.floor(s / 60)
+  if (m < 60) return `${m} min ${String(s % 60).padStart(2, '0')} s`
+  return `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')} min`
+}
+
+/** What the record says about the run itself: the engine that ran it, its model, and when its first and last
+ * lines arrived. Read from the first lines only (the engine's start and the wrapper's line come first). */
+export interface RunFacts {
+  engine: string | null
+  model: string | null
+  startedAt: number | null
+  lastAt: number | null
+}
+
+const ENGINES: Record<string, string> = { 'claude-code': 'Claude Code', claude: 'Claude Code', codex: 'Codex' }
+
+export function runFacts(lines: ShownLine[]): RunFacts {
+  let engine: string | null = null
+  let model: string | null = null
+  for (const line of lines.slice(0, 50)) {
+    if (line.stream === 'wrapper' && !engine) {
+      const named = /\bengine ([\w.-]+)/.exec(line.payload)?.[1]
+      if (named) engine = ENGINES[named] ?? named
+    }
+    if (line.stream !== 'engine' || (engine && model)) continue
+    let event: unknown
+    try {
+      event = JSON.parse(line.payload)
+    } catch {
+      continue
+    }
+    if (!isObject(event)) continue
+    if (event.type === 'system' && event.subtype === 'init') {
+      engine ??= 'Claude Code'
+      if (typeof event.model === 'string') model ??= event.model
+    } else if (typeof event.type === 'string' && (event.type.startsWith('item.') || event.type.startsWith('thread.'))) {
+      engine ??= 'Codex'
+      if (typeof event.model === 'string') model ??= event.model
+    }
+  }
+  return { engine, model, startedAt: lines[0]?.at ?? null, lastAt: lines.at(-1)?.at ?? null }
+}

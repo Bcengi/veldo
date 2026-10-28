@@ -21,4 +21,13 @@ describe('StatePanel', () => {
     expect(wrapper.text()).toContain('unauthenticated:no_session')
     expect(wrapper.find('.data').exists()).toBe(false)
   })
+
+  it('offers Try again only when trying again can succeed', () => {
+    const offered = (refusal: ApiRefusal) =>
+      mount(StatePanel, { props: { state: 'error', refusal } }).find('[data-testid="try-again"]').exists()
+    expect(offered(new ApiRefusal(0, 'unavailable:network', 'unavailable'))).toBe(true)
+    expect(offered(new ApiRefusal(503, 'unavailable_service:store', 'unavailable_service'))).toBe(true)
+    expect(offered(new ApiRefusal(403, 'unauthorized:out_of_scope', 'unauthorized'))).toBe(false)
+    expect(offered(new ApiRefusal(404, 'missing_evidence:unknown_run', 'missing_evidence'))).toBe(false)
+  })
 })

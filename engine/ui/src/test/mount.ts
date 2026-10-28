@@ -1,11 +1,9 @@
 import { mount, type ComponentMountingOptions } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import PrimeVue from 'primevue/config'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import type { Component } from 'vue'
-import { veldoPreset } from '@/ui/preset'
 
-/** Mount with what the app installs: Pinia, a memory router and PrimeVue unstyled with Veldo's preset. */
+/** Mount with what the app installs: Pinia and a memory router. */
 export function mountWith<C extends Component>(component: C, options: ComponentMountingOptions<C> = {} as ComponentMountingOptions<C>) {
   const pinia = createPinia()
   setActivePinia(pinia)
@@ -22,6 +20,6 @@ export function mountWith<C extends Component>(component: C, options: ComponentM
   })
   return mount(component, {
     ...options,
-    global: { plugins: [pinia, router, [PrimeVue, { unstyled: true, pt: veldoPreset }]], ...(options.global ?? {}) },
+    global: { plugins: [pinia, router], ...(options.global ?? {}) },
   } as ComponentMountingOptions<C>)
 }

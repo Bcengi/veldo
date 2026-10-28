@@ -1,24 +1,18 @@
 import { createPinia } from 'pinia'
-import PrimeVue from 'primevue/config'
 import { createApp, watch } from 'vue'
-import '@fontsource-variable/big-shoulders/wght.css'
-import '@fontsource-variable/atkinson-hyperlegible-next/wght.css'
-import '@fontsource-variable/atkinson-hyperlegible-mono/wght.css'
+import '@fontsource-variable/ibm-plex-sans/wght.css'
+import '@fontsource/ibm-plex-mono/400.css'
+import '@fontsource/ibm-plex-mono/500.css'
 import './styles/main.css'
 import App from './App.vue'
 import { useTheme } from './composables/useTheme'
 import { makeRouter } from './router'
 import { wireSessionEnd } from './stores'
 import { useSessionStore } from './stores/session'
-import { veldoPreset } from './ui/preset'
 
 const app = createApp(App)
 const pinia = createPinia()
 app.use(pinia)
-// Unstyled: PrimeVue injects no style element (the API's policy forbids inline style); Veldo's preset styles it.
-// Even unstyled, PrimeVue writes a small base sheet; its useStyle is Veldo's (src/ui/primevue-use-style.ts),
-// which writes it through the CSS object model, so nothing inline is needed.
-app.use(PrimeVue, { unstyled: true, pt: veldoPreset, theme: 'none' })
 const router = makeRouter()
 app.use(router)
 useTheme()

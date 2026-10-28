@@ -10,10 +10,9 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
-      // The API's policy refuses <style> elements written at run time. PrimeVue's useStyle and Monaco's
-      // domStylesheets are replaced by Veldo's own modules that write the same CSS through the CSS object
-      // model instead (src/ui/sheets.ts). Same call shapes; see docs/patterns/dependencies.md.
-      { find: /^@primevue\/core\/usestyle$/, replacement: fileURLToPath(new URL('./src/ui/primevue-use-style.ts', import.meta.url)) },
+      // The API's policy refuses <style> elements written at run time. Monaco's domStylesheets is replaced by
+      // Veldo's own module that writes the same CSS through the CSS object model instead (src/ui/sheets.ts).
+      // Same call shapes; see docs/patterns/dependencies.md.
       // Monaco's icon font sheet, which only its full bundle imports (editor.main); the diff gutter needs it.
       { find: /^monaco-codicons\.css$/, replacement: fileURLToPath(new URL('./node_modules/monaco-editor/esm/vs/base/browser/ui/codicons/codicon/codicon.css', import.meta.url)) },
       { find: /^.*\/domStylesheets\.js$/, replacement: fileURLToPath(new URL('./src/ui/monaco-stylesheets.ts', import.meta.url)) },

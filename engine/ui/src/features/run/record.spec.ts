@@ -89,3 +89,23 @@ describe('matches', () => {
     expect(matches(shown, '   ')).toBe(false)
   })
 })
+
+describe('the run header and the gutter', () => {
+  it('reads the engine and model from the record, and the span of its lines', async () => {
+    const { runFacts, showLine } = await import('./record')
+    const lines = [
+      { seq: 1, at: 100, stream: 'wrapper', redacted: [], payload: 'veldo-wrapper: engine claude-code, unit U, station build' },
+      { seq: 2, at: 100.4, stream: 'engine', redacted: [], payload: JSON.stringify({ type: 'system', subtype: 'init', model: 'claude-opus-5-5' }) },
+      { seq: 3, at: 172, stream: 'engine', redacted: [], payload: '{"type":"result","subtype":"success"}' },
+    ].map(showLine)
+    expect(runFacts(lines)).toEqual({ engine: 'Claude Code', model: 'claude-opus-5-5', startedAt: 100, lastAt: 172 })
+    const codex = [{ seq: 1, at: 5, stream: 'engine', redacted: [], payload: '{"type":"item.completed","item":{"type":"agent_message","text":"hi"}}' }].map(showLine)
+    expect(runFacts(codex).engine).toBe('Codex')
+  })
+
+  it('shows each line\'s time since the first line, compactly', async () => {
+    const { since, duration } = await import('./record')
+    expect([since(100.4, 100), since(112, 100), since(285, 100), since(3825, 100)]).toEqual(['+0.4 s', '+12 s', '+3:05', '+1:02:05'])
+    expect([duration(42), duration(185), duration(3720)]).toEqual(['42 s', '3 min 05 s', '1 h 02 min'])
+  })
+})

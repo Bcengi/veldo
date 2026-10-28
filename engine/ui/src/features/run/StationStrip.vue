@@ -3,8 +3,8 @@ import { computed } from 'vue'
 import Lamp from '@/components/Lamp.vue'
 import { LINE, OFF_LINE, stationIndex } from './lamps'
 
-/** The unit's place on the line: one lamp per station, the current one lit. The dispatch's own station
- * (build, review, coordination) names what the worker of this run does there. */
+/** The unit's place on the line: one lamp per station, the current one lit (live while its worker runs).
+ * On a phone it is one line: the lamps, and the current station's name only. */
 const props = defineProps<{ unitState: string | null; station: string | null; live: boolean }>()
 const at = computed(() => stationIndex(props.unitState))
 const off = computed(() => (props.unitState ? OFF_LINE[props.unitState] : undefined))
@@ -28,11 +28,9 @@ const off = computed(() => (props.unitState ? OFF_LINE[props.unitState] : undefi
         <span class="strip-name">{{ stop.label }}</span>
       </li>
     </ol>
-    <p class="strip-note">
-      <span v-if="at >= 0" class="strip-at" aria-hidden="true">{{ LINE[at]!.label === 'Done' ? 'Completed' : `At ${LINE[at]!.label}` }}</span>
-      <span v-if="props.station" data-testid="run-station">Station: <strong>{{ props.station }}</strong></span>
+    <p v-if="off || at < 0" class="strip-note">
       <span v-if="off" class="strip-off"><Lamp :state="off.lamp" :label="off.word" size="sm" /> {{ off.word }}</span>
-      <span v-else-if="at < 0" class="strip-unknown">{{ props.unitState ? `Unit state ${props.unitState}` : 'Unit state not readable' }}</span>
+      <span v-else class="strip-unknown">{{ props.unitState ? `Unit state ${props.unitState}` : 'Unit state not readable' }}</span>
     </p>
   </div>
 </template>

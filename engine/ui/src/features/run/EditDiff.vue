@@ -3,8 +3,10 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 import { useDesktop } from '@/composables/useMedia'
 
-/** One edit as a read-only Monaco diff. Monaco loads only once an edit scrolls into view; until then, and
- * as the text alternative for assistive technology, the old and new text are in the DOM as text. */
+/** One edit as a read-only Monaco diff: side by side and wrapped on a desktop, unified (inline) and unwrapped
+ * on a phone, where long lines scroll sideways inside the diff only. Monaco loads only once an edit scrolls
+ * into view; until then, and as the text alternative for assistive technology, the old and new text are in
+ * the DOM as text. */
 const props = defineProps<{ path: string; before: string; after: string }>()
 const root = ref<HTMLElement | null>(null)
 const host = ref<HTMLElement | null>(null)
@@ -38,17 +40,20 @@ async function mount() {
       domReadOnly: true,
       automaticLayout: true,
       renderSideBySide: desktop.value,
-      useInlineViewWhenSpaceIsLimited: true,
+      useInlineViewWhenSpaceIsLimited: false,
       renderOverviewRuler: false,
       scrollBeyondLastLine: false,
       minimap: { enabled: false },
       lineNumbersMinChars: 3,
-      fontFamily: 'Atkinson Hyperlegible Mono Variable, ui-monospace, monospace',
+      fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
       fontSize: 13,
-      wordWrap: 'on',
-      diffWordWrap: 'on',
+      wordWrap: desktop.value ? 'on' : 'off',
+      diffWordWrap: desktop.value ? 'on' : 'off',
+      renderIndicators: true,
+      glyphMargin: false,
+      folding: false,
       theme: theme.value === 'dark' ? 'veldo-dark' : 'veldo-light',
-      scrollbar: { alwaysConsumeMouseWheel: false },
+      scrollbar: { alwaysConsumeMouseWheel: false, horizontal: 'auto', horizontalScrollbarSize: 8 },
       ariaLabel: `Changes to ${props.path}`,
     })
     editor.setModel({ original, modified })
@@ -60,7 +65,9 @@ async function mount() {
     editor.onDidUpdateDiff(fit)
     editor.getModifiedEditor().onDidContentSizeChange(fit)
     const stopTheme = watch(theme, (t) => monaco.editor.setTheme(t === 'dark' ? 'veldo-dark' : 'veldo-light'))
-    const stopSide = watch(desktop, (d) => editor.updateOptions({ renderSideBySide: d }))
+    const stopSide = watch(desktop, (d) =>
+      editor.updateOptions({ renderSideBySide: d, wordWrap: d ? 'on' : 'off', diffWordWrap: d ? 'on' : 'off' }),
+    )
     dispose = () => {
       stopTheme()
       stopSide()

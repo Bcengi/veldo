@@ -9,7 +9,7 @@ export function runLamp(state: string): { lamp: LampState; word: string } {
     case 'prepared':
       return { lamp: 'waiting', word: 'Starting' }
     case 'exited':
-      return { lamp: 'done', word: 'Ended' }
+      return { lamp: 'done', word: 'Done' }
     case 'refused':
       return { lamp: 'stop', word: 'Refused' }
     default:

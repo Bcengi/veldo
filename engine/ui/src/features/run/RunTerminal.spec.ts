@@ -67,6 +67,20 @@ describe('RunTerminal', () => {
     await flushPromises()
     expect(wrapper.get('[data-testid="refusal"]').attributes('data-refusal')).toBe('unauthorized:out_of_scope')
     expect(wrapper.find('[data-testid="lines"]').exists()).toBe(false)
+    // Nothing is shown, so no record control is either; and a named refusal is not retried.
+    expect(wrapper.find('#follow').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="search"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="try-again"]').exists()).toBe(false)
+  })
+
+  it('offers Try again when the API did not answer', async () => {
+    const read = vi.spyOn(runs, 'readRecord').mockRejectedValue(new ApiRefusal(0, 'unavailable:network', 'unavailable'))
+    const wrapper = mountWith(RunTerminal, { props: { dispatch: 'd' } })
+    await flushPromises()
+    read.mockResolvedValue(page(record, { ended: true, total: 5 }))
+    await wrapper.get('[data-testid="try-again"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.findAll('[data-testid="lines"] > li')).toHaveLength(5)
   })
 
   it('says when there is no line yet', async () => {

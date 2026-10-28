@@ -2,7 +2,7 @@
  * Style sheets made through the CSS object model instead of <style> elements. The API's content security
  * policy has no style-src, so a <style> element a library writes at run time is refused (and reported);
  * a constructed sheet adopted by the document is not governed by that policy and carries only CSS text.
- * PrimeVue's useStyle and Monaco's domStylesheets are both routed here at build time (vite.config.ts).
+ * Monaco's domStylesheets is routed here at build time (vite.config.ts).
  */
 
 /** One constructed sheet in the shape a library expects of a <style> element: text, sheet and remove. */

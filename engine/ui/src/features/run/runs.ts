@@ -34,6 +34,12 @@ export function unitStates(work: ReadAnswer | null): Map<string, string> {
   return states
 }
 
+/** Each unit's state once (the map above also keys units by alias), or null when the work read was refused. */
+export function unitStateList(work: ReadAnswer | null): string[] | null {
+  if (!work) return null
+  return (work.items.execution_unit ?? []).map((item) => str((item.data as Json).state)).filter(Boolean)
+}
+
 export function runRow(item: Item, units: Map<string, string>): RunRow {
   const d = item.data as Json
   const contract = obj(d.contract)

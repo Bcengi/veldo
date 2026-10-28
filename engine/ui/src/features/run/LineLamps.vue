@@ -5,8 +5,8 @@ import { LINE, stationIndex } from './lamps'
 /** The station strip in miniature for a list row: one dot per station, the unit's own lit. */
 const props = defineProps<{ unitState: string | null; live: boolean }>()
 const at = computed(() => stationIndex(props.unitState))
-const word = computed(() => (at.value < 0 ? '' : LINE[at.value]!.label === 'Done' ? 'Completed' : LINE[at.value]!.label))
-const label = computed(() => (at.value < 0 ? 'Station not readable' : word.value === 'Completed' ? 'Completed' : `At ${word.value}`))
+const word = computed(() => (at.value < 0 ? '' : LINE[at.value]!.label))
+const label = computed(() => (at.value < 0 ? 'Station not readable' : word.value === 'Done' ? 'Done' : `At ${word.value}`))
 </script>
 
 <template>

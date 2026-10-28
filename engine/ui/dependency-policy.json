@@ -19,13 +19,11 @@
   "deny": [
     {
       "name": "primevue",
-      "from_major": 5,
-      "reason": "free and paid tiers: version 5 is under the commercial PrimeUI License with a free community tier"
+      "reason": "free and paid tiers: version 5 is under the commercial PrimeUI License with a free community tier, and the vendor sells paid add-ons around version 4 (dropped by the owner, VELDO-0145 round 2)"
     },
     {
       "name": "@primevue/*",
-      "from_major": 5,
-      "reason": "free and paid tiers: part of PrimeVue 5"
+      "reason": "free and paid tiers: version 5 is under the commercial PrimeUI License with a free community tier, and the vendor sells paid add-ons around version 4 (dropped by the owner, VELDO-0145 round 2)"
     },
     {
       "name": "@primeui/license-manager",
@@ -125,12 +123,7 @@
       "reason": "Chinese-origin UI library"
     }
   ],
-  "owner_decisions": [
-    {
-      "name": "primevue",
-      "decision": "Telegram 37228: the owner named PrimeVue 4 for the UI stack. Version 4.5.5 is MIT; the vendor's paid add-ons and the commercial version 5 are recorded as an open question in proof/VELDO-0145/OPEN.md."
-    }
-  ],
+  "owner_decisions": [],
   "overrides": {
     "dompurify": {
       "version": "3.4.17",
@@ -139,70 +132,6 @@
     }
   },
   "direct": {
-    "@fontsource-variable/atkinson-hyperlegible-mono": {
-      "version": "5.3.0",
-      "license": "OFL-1.1",
-      "origin": "Fontsource packaging of Atkinson Hyperlegible Mono (Braille Institute of America)",
-      "tier": "free, no paid tier",
-      "why": "Machine text face",
-      "kind": "runtime"
-    },
-    "@fontsource-variable/atkinson-hyperlegible-next": {
-      "version": "5.3.0",
-      "license": "OFL-1.1",
-      "origin": "Fontsource packaging of Atkinson Hyperlegible Next (Braille Institute of America)",
-      "tier": "free, no paid tier",
-      "why": "Text face",
-      "kind": "runtime"
-    },
-    "@fontsource-variable/big-shoulders": {
-      "version": "5.3.0",
-      "license": "OFL-1.1",
-      "origin": "Fontsource packaging of Big Shoulders (Patric King, Chicago type foundry XXIX)",
-      "tier": "free, no paid tier",
-      "why": "Display face",
-      "kind": "runtime"
-    },
-    "monaco-editor": {
-      "version": "0.57.0",
-      "license": "MIT",
-      "origin": "Microsoft, United States",
-      "tier": "free, no paid tier",
-      "why": "Read-only diffs of edits in the run terminal",
-      "kind": "runtime"
-    },
-    "pinia": {
-      "version": "4.1.0",
-      "license": "MIT",
-      "origin": "Vue core team (vuejs organization)",
-      "tier": "free, no paid tier",
-      "why": "State stores",
-      "kind": "runtime"
-    },
-    "primevue": {
-      "version": "4.5.5",
-      "license": "MIT",
-      "origin": "PrimeTek Informatics, Turkey",
-      "tier": "version 4 is MIT; the vendor sells paid templates, blocks and a designer, and version 5 moved to a commercial license with a free community tier",
-      "why": "Component library the owner named (PrimeVue 4), used unstyled",
-      "kind": "runtime"
-    },
-    "vue": {
-      "version": "3.5.44",
-      "license": "MIT",
-      "origin": "Vue core team (vuejs organization), open source; the owner chose Vue (Telegram 37228)",
-      "tier": "free, no paid tier",
-      "why": "The UI framework the owner named",
-      "kind": "runtime"
-    },
-    "vue-router": {
-      "version": "5.4.0",
-      "license": "MIT",
-      "origin": "Vue core team (vuejs organization)",
-      "tier": "free, no paid tier",
-      "why": "Screen routing",
-      "kind": "runtime"
-    },
     "@axe-core/playwright": {
       "version": "4.14.0",
       "license": "MPL-2.0",
@@ -210,6 +139,22 @@
       "tier": "axe-core is free; Deque sells separate products, not a paid tier of axe-core",
       "why": "Accessibility checks from the real accessibility tree",
       "kind": "build and test"
+    },
+    "@fontsource-variable/ibm-plex-sans": {
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "origin": "Fontsource packaging of IBM Plex Sans (IBM, United States; drawn with Bold Monday, Netherlands)",
+      "tier": "free, no paid tier",
+      "why": "The one face for titles and interface text (normal width, variable weight)",
+      "kind": "runtime"
+    },
+    "@fontsource/ibm-plex-mono": {
+      "version": "5.3.0",
+      "license": "OFL-1.1",
+      "origin": "Fontsource packaging of IBM Plex Mono (IBM, United States; drawn with Bold Monday, Netherlands)",
+      "tier": "free, no paid tier",
+      "why": "The record in the run terminal and the ids a person copies (dispatch ids, digests, fingerprints)",
+      "kind": "runtime"
     },
     "@playwright/test": {
       "version": "1.64.1",
@@ -259,6 +204,22 @@
       "why": "DOM for component tests",
       "kind": "build and test"
     },
+    "monaco-editor": {
+      "version": "0.57.0",
+      "license": "MIT",
+      "origin": "Microsoft, United States",
+      "tier": "free, no paid tier",
+      "why": "Read-only diffs of edits in the run terminal",
+      "kind": "runtime"
+    },
+    "pinia": {
+      "version": "4.1.0",
+      "license": "MIT",
+      "origin": "Vue core team (vuejs organization)",
+      "tier": "free, no paid tier",
+      "why": "State stores",
+      "kind": "runtime"
+    },
     "tailwindcss": {
       "version": "4.3.3",
       "license": "MIT",
@@ -290,6 +251,22 @@
       "tier": "free, no paid tier",
       "why": "Unit and component tests",
       "kind": "build and test"
+    },
+    "vue": {
+      "version": "3.5.44",
+      "license": "MIT",
+      "origin": "Vue core team (vuejs organization), open source; the owner chose Vue (Telegram 37228)",
+      "tier": "free, no paid tier",
+      "why": "The UI framework the owner named",
+      "kind": "runtime"
+    },
+    "vue-router": {
+      "version": "5.4.0",
+      "license": "MIT",
+      "origin": "Vue core team (vuejs organization)",
+      "tier": "free, no paid tier",
+      "why": "Screen routing",
+      "kind": "runtime"
     },
     "vue-tsc": {
       "version": "3.3.13",

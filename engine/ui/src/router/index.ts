@@ -10,7 +10,7 @@ declare module 'vue-router' {
 }
 
 export const routes: RouteRecordRaw[] = [
-  { path: '/', redirect: { name: 'runs' } },
+  { path: '/', name: 'overview', component: () => import('@/views/OverviewView.vue'), meta: { session: true, title: 'Overview' } },
   { path: '/sign-in', name: 'sign-in', component: () => import('@/views/SignInView.vue'), meta: { title: 'Sign in' } },
   { path: '/runs', name: 'runs', component: () => import('@/views/RunsView.vue'), meta: { session: true, title: 'Runs' } },
   {
@@ -40,8 +40,7 @@ export function makeRouter() {
       return { name: 'sign-in', query: { next: to.fullPath } }
     }
     if (to.name === 'sign-in' && session.status === 'signed-in') {
-      const next = typeof to.query.next === 'string' && to.query.next.startsWith('/') ? to.query.next : '/runs'
-      return next
+      return safeNext(to.query.next)
     }
     return true
   })
@@ -49,6 +48,13 @@ export function makeRouter() {
     document.title = to.meta.title ? `${to.meta.title} | Veldo` : 'Veldo'
   })
   return router
+}
+
+/** Where to go after sign-in: a path of this origin only. `//host` and `/\\host` name another origin to a
+ * browser, so a `next` must be one slash followed by something other than a slash or a backslash. */
+export const NEXT_PATTERN = /^\/(?![/\\])/
+export function safeNext(value: unknown): string {
+  return typeof value === 'string' && NEXT_PATTERN.test(value) ? value : '/'
 }
 
 /** The dispatch id of a run route's parameter. */
