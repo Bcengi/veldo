@@ -11531,7 +11531,7 @@ def cases():
 
     # VELDO-0188: each criterion's declared falsifier.
     def project_lines(name, module, old, new, rows, also=()):
-        add(188, name, '113_veldo_0188_project_lines.py', module, old, new, rows, also)
+        add(188, name, '116_veldo_0188_project_lines.py', module, old, new, rows, also)
 
     # AC1 (declared): the lines built only in FactoryLoop's constructor from the work configuration.
     project_lines('lines188-constructor-only', 'control_service.py',

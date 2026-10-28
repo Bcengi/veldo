@@ -1,7 +1,7 @@
 """VELDO-0188: the running factory starts a line for a project the moment the store records it, staffed from the
 project's team or the default team, and stops the line of a closed project, with no reinstall and no restart.
 
-Run: python3 scripts/selftest.py --suite 113_veldo_0188_project_lines
+Run: python3 scripts/selftest.py --suite 116_veldo_0188_project_lines
 
 Uses shared ROOT, expect and __suite_file__. AC1 runs an installed authority service as a child process through
 its installed executable and configuration, with real VELDO-0143 provisioning and VELDO-0161 adoption. Its
