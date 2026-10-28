@@ -1,0 +1,4 @@
+PASS ipc/configured-store-really-changes
+PASS ipc/only-the-bound-store-changes
+PASS ipc/accepted-state-survives-reopen
+PASS ipc/fixture-unit-controls

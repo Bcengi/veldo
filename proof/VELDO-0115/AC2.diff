@@ -1,0 +1,11 @@
+--- a/scripts/fixtures/authority_store.py
++++ b/scripts/fixtures/authority_store.py
+@@ -224,7 +224,7 @@
+     binding = cfg["binding"]
+ 
+     def apply(cmd):
+-        return store.execute(conn, cmd, "fixture", signer.sign, 1, committed_at=2)
++        return store.execute(peer_conn, cmd, "fixture", signer.sign, 1, committed_at=2)
+ 
+     authority = client.Authority(
+         binding["store_uuid"], binding["domain_uuid"], cfg["path"], enrollment,
