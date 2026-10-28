@@ -70,6 +70,11 @@ The registered suite can also run alone:
 python3 scripts/selftest.py --suite 113_veldo_0115_authority_store
 ```
 
+Recorded suite result in `suite.log`: four ticket rows passed across 16 completed
+cases, with zero failures. The harness also reports its 26 shared setup checks,
+for 30 total, and exits 2 to mark a deliberately partial run. This is ticket
+evidence under owner rule 37191, not a full-gate or landing claim.
+
 Only this ticket's checks and falsifiers are authorized here. The full gate and
 batch independent review remain the later landing process. No protected paths are
 named by this specification, and none are changed by this implementation.
