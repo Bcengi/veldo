@@ -1,4 +1,4 @@
-"""VELDO-0219 registered falsifiers only. Invoke under the blocking host flock."""
+"""Single suite 115 only: its registered mutants and controls, run sequentially."""
 import hashlib
 import importlib.util
 import json
@@ -15,6 +15,7 @@ teeth = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(teeth)
 cases = [case for case in teeth.cases() if case['finding'] == 219]
 assert len(cases) == 8
+assert {case['suite'] for case in cases} == {'115_veldo_0219_measured_admission.py'}
 paths = ['scripts/' + name for name in ('gate_schedule.py', 'gate_graph.json', 'check_gate_mutations.py',
     'mutation_ownership.py', 'reuse_worker.py', 'check_teeth_mutations.py',
     'suites/115_veldo_0219_measured_admission.py', 'suites/104_veldo_0210_mutation_workers.py')]
