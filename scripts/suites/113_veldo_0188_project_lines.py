@@ -3,24 +3,16 @@ project's team or the default team, and stops the line of a closed project, with
 
 Run: python3 scripts/selftest.py --suite 113_veldo_0188_project_lines
 
-Only shared ROOT and expect are consumed. The signed project and team fixture of VELDO-0152
-(proof/VELDO-0152/fixture.py: a real SQLite store, members enrolled by the steward's signed VELDO-0025 commands,
-the VELDO-0064 inbox, the VELDO-0065 presenter over a loopback Bot API, the VELDO-0068 settlement, the factory
-project activated by its owner and its team accepted) holds one temporary .veldo copy every module loads, with the
-production copies named in PRODUCTION (the copies a registered mutation replaces). Every project is activated,
-paused, canceled and completed by its owner's signed VELDO-0076 command, every project team accepted through
-VELDO-0089's propose, the owner's settled answer and amend, and the default team saved through VELDO-0162's
-TeamRoutes. The authority service (control_service.Service) and its FactoryLoop run in this process over the same
-store, one loop object for the whole scenario: its identity is checked across every row, and a second loop built
-over the store afterwards stands for the restarted service. Each repository is a real Git repository bound to the
-store with its configured Git identity; each line dispatches through the real VELDO-0039 Runner and the launch
-receiver (control_launch.py, a separate process) over a receiver configuration whose adapters run a fake engine
-that commits in the repository's workspace and prints the installed CLI's output shape (VELDO-0172's constructors).
-The installation's adapters, which the line's staffing reads, name their engines; the receiver the Runner calls
-runs the same adapter names without an engine binding (`identity: reported`), so no real engine, account login or
-credential is needed. A second project's repository gaining its receiver configuration stands for VELDO-0161's
-take-on (the service's repositories and receiver configurations, as Service._take_on sets them). Writes only
-temporary fixtures.
+Uses shared ROOT, expect and __suite_file__. AC1 runs an installed authority service as a child process through
+its installed executable and configuration, with real VELDO-0143 provisioning and VELDO-0161 adoption. Its
+qualified fake Codex executable commits the first unit in each repository through the real account pool and
+launch receiver. PID, process start time and installation digests remain unchanged until the explicit restart.
+The commit and author checks adapt proof/VELDO-0143/round4/first-unit-for-0188.py.
+
+The follow, staffing and closing rows also exercise Service and FactoryLoop directly on the signed VELDO-0152
+fixture. These smaller rows expose exact pass boundaries, in-flight roles and refusal diagnostics. Their protocol
+fake receiver and fixed account are explicit test seams. All mutations replace the same production copy in both
+fixtures. Every process is joined before its temporary fixture is removed.
 """
 
 
@@ -41,11 +33,12 @@ def _v188_suite():
         'control_factory_setup_dispatch.py': ROOT / ".veldo" / "control_factory_setup_dispatch.py",
     }
     PREFIX = 'VELDO-0188 '
-    ROWS = ('lines/at-start', 'lines/new-project', 'lines/adopted-project', 'lines/restart',
+    ROWS = ('follow/at-start', 'follow/new-project', 'follow/receiver-wait', 'follow/restart',
             'staff/project-team', 'staff/default-team', 'staff/new-revision', 'staff/refused-role',
             'staff/one-mapping', 'close/canceled', 'close/completed', 'close/removed', 'close/paused-kept',
             'observe/lines', 'lines/journal-only', 'close/guard', 'lines/paused-restart',
-            'staff/configured-refusal', 'staff/missing-team', 'close/configured', 'lines/receiver-change')
+            'staff/configured-refusal', 'staff/missing-team', 'close/configured', 'lines/receiver-change',
+            'lines/at-start', 'lines/new-project', 'lines/adopted-project', 'lines/restart')
     emitted, raised = set(), []
 
     def check(label, parts):
@@ -68,6 +61,7 @@ def _v188_suite():
         try:
             yield
         except Exception as error:  # noqa: BLE001 - a raise reds its rows, never skips them
+            __import__('traceback').print_exc()
             raised.append((labels[0], repr(error)))
             print('  %sdetail: %s did not run to its end: %r' % (PREFIX, labels[0], error))
             for label in labels:
@@ -368,18 +362,18 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
             # AC1: a line for every project at run time
             # =========================================================================================================
             loop = None
-            with region('lines/at-start'):
+            with region('follow/at-start'):
                 default_saved = TR.TeamRoutes(f['service'], f['settlement'], f['presenter']).save_default(
                     f['team'](), 'olga', 0, next_id('default-team'), 'sha256:' + '0' * 64)
                 loop = fit(SV.FactoryLoop(service, work))
                 identity = (id(loop), os.getpid())
-                check('lines/at-start', [
+                check('follow/at-start', [
                     ('the default team is saved through its route', default_saved.get('outcome') == 'saved'),
                     ('the service starts with the factory project\'s line only', sorted(loop.lines) == [REPO]),
                     ('the loop status lists that line and its project',
                      list(loop.status()['lines']) == [REPO] and loop.status()['lines'][REPO].get('project') == 'factory')])
 
-            with region('lines/new-project'):
+            with region('follow/new-project'):
                 take_on('tide')
                 activated = activate('tide')
                 tide_unit = unit_for('tide')
@@ -389,7 +383,7 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                 done = finish(loop, report, tide_unit)
                 built = result_of(tide_unit)
                 started = (report.get('lines') or {}).get('started') or []
-                check('lines/new-project', [
+                check('follow/new-project', [
                     ('the project is recorded ACTIVE on its own repository',
                      activated.get('ok') is True and (PJ.read(S, conn, 'tide') or {}).get('state') == 'ACTIVE'),
                     ('the pass its commit woke starts its line, in the same process and loop',
@@ -412,7 +406,7 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                     ('the run ended and was settled', any(e.get('unit') == tide_unit and e.get('state') == 'exited'
                                                           for e in done.get('ended') or []))])
 
-            with region('lines/adopted-project'):
+            with region('follow/receiver-wait'):
                 # Activated while its repository has no receiver configuration here: refused by name, and every other
                 # line serves; once the repository is taken on (VELDO-0161 AC2), the next woken pass starts it.
                 S.bind_repositories(conn, DOMAIN, {repos['cove']: str(workspaces['cove'])})
@@ -425,7 +419,7 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                 taken = journal_pass(loop)
                 cove_offer = offer_of(taken, cove_unit)
                 finish(loop, taken, cove_unit)
-                check('lines/adopted-project', [
+                check('follow/receiver-wait', [
                     ('the project is activated on the adopted repository', cove_activated.get('ok') is True),
                     ('before its receiver configuration exists it is refused by name and gets no line [%s]' % cove_refusal,
                      cove_refusal == 'missing_authority:receiver:cove' and cove_waiting == (True, 1)
@@ -594,7 +588,7 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                      and (id(loop), os.getpid()) == identity)])
                 finish(loop, resumed_pass, tide_fourth)
 
-            with region('lines/restart'):
+            with region('follow/restart'):
                 before = {r: (getattr(l, 'project', None), l.receiver_path, json.dumps(l.roles, sort_keys=True))
                           for r, l in loop.lines.items()}
                 # The restarted service serves again every repository it had taken on (VELDO-0161's take_on at the
@@ -604,7 +598,7 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                 restarted = SV.FactoryLoop(again, work)
                 after = {r: (getattr(l, 'project', None), l.receiver_path, json.dumps(l.roles, sort_keys=True))
                          for r, l in restarted.lines.items()}
-                check('lines/restart', [
+                check('follow/restart', [
                     ('a service started later builds the same lines from the store, with the same staffing',
                      before == after and len(after) == 4),
                     ('and the same refusals', restarted.status()['refused_lines'] == loop.status()['refused_lines'])])
@@ -698,13 +692,14 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
 
             with region('staff/missing-team'):
                 # Delete fixture team records only for this negative authority test; restore them afterwards.
-                saved_teams = list(conn.execute("SELECT * FROM entities WHERE kind='team'"))
+                saved_teams = list(conn.execute('SELECT * FROM entities WHERE id=?', (CT.team_id('factory'),)))
                 saved_default = conn.execute('SELECT * FROM entities WHERE id=?', (TR.HEAD,)).fetchone()
-                conn.execute("DELETE FROM entities WHERE kind='team' OR id=?", (TR.HEAD,))
+                conn.execute('DELETE FROM entities WHERE id IN (?, ?)', (CT.team_id('factory'), TR.HEAD))
                 journal_pass(loop)
                 check('staff/missing-team', [('missing teams refuse configured and ordinary repositories by name',
                     REPO not in loop.lines and loop.refused_lines.get('factory') == 'missing_authority:team:factory'
-                    and loop.refused_lines.get('tide') == 'missing_authority:team:tide')])
+                    and loop.refused_lines.get('tide') == 'missing_authority:team:tide'
+                    and repos['reef'] in loop.lines and not getattr(loop.lines[repos['reef']], 'closing', False))])
                 for row in saved_teams + ([saved_default] if saved_default else []):
                     conn.execute('INSERT INTO entities VALUES (' + ','.join('?' for _ in row) + ')', tuple(row))
                 journal_pass(loop)
@@ -725,6 +720,9 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                     for launch_ in list(line_.runner.launches.values()):
                         with contextlib.suppress(Exception):
                             launch_.stop('suite end')
+                            launch_.wait(10)
+    with region('lines/at-start', 'lines/new-project', 'lines/adopted-project', 'lines/restart'):
+        load('v188_served', ROOT / 'proof/VELDO-0188/round2/served_scenario.py').run(ROOT, PRODUCTION, check)
     for label in ROWS:
         if label not in emitted:
             check(label, [('row ran', False)])

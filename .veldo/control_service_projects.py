@@ -291,8 +291,8 @@ class NewProjectPass:
     def activate(self, record, held):
         """THE SAME SETTLEMENT ACTIVATES, in this process, once the repository is active. VELDO-0143 R3-1: the
         team, intake and project owners it builds register on the service's one connection, replacing the factory
-        line's; once it is done the connection's registrations are as it found them, and only then does the loop
-        gain the repository's line. What it puts back is only what was there before (the factory line's and the
+        line's; once it is done the connection's registrations are as it found them. The journal-woken loop pass
+        subsequently reconciles the repository's line. What it puts back is only what was there before (the factory line's and the
         service's owners), and the intake among them reads the project rows when it judges (R4-3), so the new
         project is a candidate of the factory line's intake with no rebuild."""
         s = self.service

@@ -170,8 +170,8 @@ its socket exactly as the adoption effect does (take_on_request, answered synchr
 ended `failed` fails its decision (VELDO-0128's report tells the owner), and once a created or adopted
 repository is `active` the same settlement activates the project with its first team and first objective in
 this process, the factory loop is woken, and it gains the repository's line at the journal-woken loop pass, with the
-roles of the loop's first line, so its first unit is dispatched in it. A repository this instance serves that
-the work configuration does not name gets that line at the loop's start too. The factory project, whose own
+roles of its project team or the default team, so its first unit is dispatched in it. A project already active
+when the service starts gets its line then too. The factory project, whose own
 repository holds only its team configuration and is no line, has its cycles run on the loop's factory line
 (FactoryLoop.factory_line): the line of its execution repository when there is one, otherwise the loop's
 first.

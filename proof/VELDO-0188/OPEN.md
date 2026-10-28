@@ -7,7 +7,7 @@ The specification footprint is unchanged. Files outside it required by that requ
 - scripts/suites/92_veldo_0088_pm_cycles.py
 - scripts/suites/93_veldo_0152_intake_routes.py
 - scripts/suites/110_veldo_0143_new_project.py
-- proof/VELDO-0152/fixture.py (only if shared fixture staffing needs repair)
+- proof/VELDO-0152/fixture.py (install before declaring store owners, so the process and setup use installed modules)
 
 Owner approval of this footprint extension remains a landing requirement. The requested local repairs proceed.
 
