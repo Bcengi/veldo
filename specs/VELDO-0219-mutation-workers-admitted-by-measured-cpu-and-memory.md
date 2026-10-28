@@ -204,17 +204,14 @@ The footprint and protected_paths declarations above now include
 `scripts/gate_graph.json`. These are VELDO-0216 protected paths. The mutation
 claim handoff changes their graph schema, ledger protocol and coordinator
 reservation so workers can claim resources without retaining the aggregate
-manager exclusion. Both scheduler copies carry identical changes. This is a
-proposed scope expansion, not a record of owner approval; no approval message
-has been supplied for it. Human approval remains required.
+manager exclusion. Both scheduler copies carry identical changes. The owner approved this scope expansion (Telegram 37454 and 37455).
 
 The footprint also includes the earlier edit to `proof/VELDO-0216/OPEN.md`,
 which points both tickets to the same deferred batch qualification contract.
 The exact protected file line ranges, originating commits, reasons, and this
 proof cross-reference edit are recorded in `proof/VELDO-0219/OPEN.md` under
-the dated pending amendment. Acceptance criteria are unchanged. That record
-also explains the conservative memory bound's difference from AC1, pending
-owner acceptance or revision.
+the dated approved amendment. Acceptance criteria are unchanged. The conservative memory bound is AC1's approved
+wording (amendment of 2026-10-28, Telegram 37458 and 37459).
 
 ## Amendment, 2026-10-28: the memory claim
 

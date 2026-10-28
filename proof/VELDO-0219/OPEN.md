@@ -57,10 +57,10 @@ Inherited VELDO-0220's missing suite 113 userbus declaration remains owned by th
 ticket. This round does not edit scripts/gate_unconfined.json. The batch candidate
 must carry that resolution before running its canonical suite.
 
-## Scope amendment, 2026-10-28, pending owner approval
+## Scope amendment, 2026-10-28, approved by the owner (Telegram 37454 and 37455)
 
-Owner approval remains pending for the VELDO-0219 changes to VELDO-0216's
-protected files. No owner approval is claimed or message id invented. The
+The owner approved the VELDO-0219 changes to VELDO-0216's protected files
+(Telegram 37454 and 37455). The
 VELDO-0219 spec now lists these three paths in both footprint and
 protected_paths; listing them does not grant approval. The implementation
 record's earlier word "authorized" was unsupported and has been removed.
@@ -114,5 +114,5 @@ peak remains available and prevents admission from treating that missed
 allocation as free memory. Changing the claim to sampled anonymous memory alone
 would remove the short-unit protection tested by admission/final-memory-bound.
 This explanation records the difference without changing AC1 or claiming its
-literal memory wording is satisfied. Owner acceptance of a spec amendment, or
-a revision that measures the required anonymous peak, is pending owner approval.
+literal memory wording is satisfied. The owner accepted this as AC1's wording (Telegram 37458 and 37459); the spec
+carries the amendment.

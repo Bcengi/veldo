@@ -10,7 +10,7 @@ difference remain pending. Canonical qualification remains deferred by rule 3719
 | --- | --- | --- |
 | Graph present without a ledger channel | suite115-red.log: 51 passed, 1 failed; the new CLI row fails. suite104-red.log: 32 passed, 1 failed, zero cases executed. | suite115-green.log: 52 passed, 0 failed. suite104-green.log: 33 passed, 0 failed, including the real confined four-case driver call. |
 | Channel selection in both directions | falsifiers.json: graph-without-channel and channel-ignored mutants fail their respective CLI rows. | Both baseline and no-op controls pass. The existing aggregate-handoff row also exercises the real inherited channel. |
-| Protected scope declaration | scope-red.json: all six documentation checks fail. | scope-green.json: all six pass. The spec amendment remains marked pending owner approval; this audit is not approval. |
+| Protected scope declaration | scope-red.json: all six documentation checks fail. | scope-green.json: all six pass. The spec amendment was later approved by the owner (Telegram 37454, 37455); this audit itself is not approval. |
 | Acquisition before handoff | falsifiers.json: admission219-worker-before-handoff fails admission/worker-before-handoff-refused. | Baseline and no-op pass. The row uses a real scheduler channel and verifies refusal without a worker grant. |
 | Unowned lifecycle registration | falsifiers.json: admission219-unowned-lifecycle-register fails admission/lifecycle-registration-owned. | Baseline and no-op pass. Slice and service registrations cover an absent entry, an owned entry and a ledger containing a rejected entry. No real manager effects occur in these fixtures. |
 | AC1 memory wording | scope-red.json lacks an explicit explanation of the difference. | scope-green.json verifies the explanation in OPEN.md. The conservative bound is retained; acceptance or revision remains an owner decision. |
@@ -47,3 +47,6 @@ running the copied scheduler; the full final falsifier run then passed.
 
 The memory claim and the three inherited protected implementation files are
 unchanged in round three. Their approvals remain open in the dated amendment.
+
+
+Later, 2026-10-28: the owner approved the protected scope (Telegram 37454, 37455) and the AC1 memory wording (37458, 37459); the spec records both.
