@@ -5,6 +5,7 @@ production files are never mutated. A crashed or incomplete run is an invalid dr
 """
 import difflib
 import importlib.util
+import gzip
 import json
 from pathlib import Path
 import subprocess
@@ -32,7 +33,8 @@ def main():
         for color, code in (('red', changed), ('green', source)):
             result = fixture.qualify(code, criterion)
             result['input_commit'] = head
-            (output / (criterion + '-' + color + '.json')).write_text(json.dumps(result, indent=2) + '\n')
+            receipt = criterion + '-' + color + '.json.gz'
+            (output / receipt).write_bytes(gzip.compress(json.dumps(result).encode(), mtime=0))
             expected = color == 'green'
             valid = result['valid'] and not result['incomplete'] and row in result['rows']
             observed = result['rows'].get(row)
@@ -55,7 +57,8 @@ def main():
                 valid = valid and bool(witnesses)
             summary['results'].append(dict(criterion=criterion, color=color, valid=valid,
                                            row=row, observed=observed, expected=expected,
-                                           falsifier_witness_records=witnesses))
+                                           receipt=receipt, falsifier_witness_records=witnesses,
+                                           first_witness=result['records'][witnesses[0]] if witnesses else None))
             print(criterion, color, 'valid=' + str(valid), 'row=' + str(observed), flush=True)
             if not valid or observed != expected:
                 (output / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')

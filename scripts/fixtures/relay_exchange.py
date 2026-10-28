@@ -443,10 +443,12 @@ def qualify(source, criterion=None):
             # operation the kernel selected for delivering it.
             native_ok = all(refused(r) if r['exit'] == 3 else
                             r['exit'] == 0 and r['stderr'] == '' and
-                            r['stdout'] == encoded(wire(3)[:r['case'].get('offset', 0)])
+                            r['stdout'] == encoded(wire(3)[:r['case'].get('offset', 0)
+                                                          if r['case'].get('phase') == 'recv' else 0])
                             for r in native)
             checks['AC1'] = (complete and reconciliation['matches'] and all(refused(r) for r in faults)
-                             and native_ok and any(r['exit'] == 3 and '104' in r['stderr'] for r in native))
+                             and native_ok and any(e.get('kernel_errno') == errno.ECONNRESET
+                                                  for r in native for e in r['events']))
         if 'AC4' in selected:
             checks['AC4'] = complete and all(no_replay(r) for r in faults + native)
     if 'AC2' in selected:
