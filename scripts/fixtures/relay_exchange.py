@@ -129,7 +129,6 @@ class Exchange:
         self.listener.settimeout(1)
         self.connections, self.complete, self.events, self.clients = [], [], [], []
         self.attempts, self.now, self.fired = 0, 0.0, False
-        self.raw_error = None
         if case.get('native') == 'before_connect':
             self.listener.close()
 
@@ -181,6 +180,7 @@ class Transport:
         self.x, self.raw, self.peer = exchange, raw, None
         self.sent, self.received, self.budget = 0, 0, 30.0
         self.request, self.closed, self.peer_closed = bytearray(), False, False
+        self.counted_request = False
 
     def settimeout(self, value):
         self.budget = value
@@ -227,20 +227,26 @@ class Transport:
                 got.extend(self.peer.recv(count - len(got)))
             self.request.extend(got)
         self.sent += count
+        if not self.peer_closed:
+            self.observe_request()
         return count
+
+    def observe_request(self):
+        if self.x.case.get('unread') and self.sent:
+            # Observe the identity while keeping bytes unread for native reset.
+            self.request = bytearray(self.peer.recv(65536, socket.MSG_PEEK))
+        if not self.counted_request and len(self.request) == self.x.case['request']:
+            self.x.complete.append(digest(bytes(self.request)))
+            self.counted_request = True
 
     def shutdown(self, how):
         self.x.enter(self, 'shutdown', self.sent)
         self.native_close('shutdown', self.sent)
         self.kernel('shutdown', how)
         if not self.peer_closed:
-            if self.x.case.get('unread'):
-                # Inspect without consuming: close with unread request data is
-                # an actual AF_UNIX reset. Identity count comes from the peer.
-                self.request.extend(self.peer.recv(65536, socket.MSG_PEEK))
-            else:
+            if not self.x.case.get('unread'):
                 assert self.peer.recv(1) == b''
-            self.x.complete.append(digest(bytes(self.request)))
+            self.observe_request()
 
     def recv(self, size):
         self.x.enter(self, 'recv', self.received)
@@ -301,6 +307,20 @@ def execute(source, case):
         if case.get('native'):
             value['kernel_diagnostic'] = err.getvalue()
         return value
+
+
+def classification(record):
+    if record['exit'] == 0:
+        return 'orderly_eof'
+    if record['exit'] == 4:
+        return 'request_too_large' if 'request' in record['stderr'] else 'response_too_large'
+    if record['exit'] == 3:
+        timed = {'timeout', 'ETIMEDOUT', 'stall', 'late'}
+        if (any(e.get('outcome') in timed for e in record.get('events', []))
+                or any(word in record['stderr'] for word in ('timed out', 'deadline', 'budget'))):
+            return 'endpoint_timeout'
+        return 'endpoint_error'
+    return 'unexpected'
 
 
 def refused(record):
@@ -476,9 +496,15 @@ def qualify(source, criterion=None):
         checks['AC3'] = (all(refused(r) and r['transport_seconds'] <= 31 and r['closed_by_relay']
                             for r in deadline + native_clock)
                          and all(r['injected_reached'] for r in deadline if not r['case'].get('trickle')))
+    for record in records:
+        record['classification'] = classification(record)
+        record['schedule_sha256'] = digest(json.dumps(record['case'], sort_keys=True).encode())
     valid = all(r['unexpected'] is None for r in records)
     counts = {kind: sum(r['case']['kind'] == kind for r in records) for kind in expected_counts}
     incomplete = [kind for kind in expected_counts if expected_counts[kind] != counts[kind]]
+    incomplete.extend(r['schedule_sha256'] for r in records
+                      if r['case']['kind'] in ('fault', 'deadline') and 'phase' in r['case']
+                      and not r['injected_reached'])
     return dict(fixture_version=VERSION, fixture_sha256=digest(Path(__file__).read_bytes()),
                 implementation_sha256=digest(source.encode()), reconciliation=reconciliation,
                 expected=expected_counts, executed=counts, incomplete=incomplete,
