@@ -1,52 +1,58 @@
-# VELDO-0219 remaining qualification and dependency contract
+# VELDO-0219 batch qualification contract
 
-AC4's force-fresh canonical gate and fixed-sixteen canonical falsifier are deferred
-by owner rule 37191. No canonical gate is run during this build. The 4000 second
-bound remains unqualified until the batch capture passes qualification.py.
+Status: REMAINING for canonical qualification. Owner rule 37191 defers both
+VELDO-0216 and VELDO-0219 AC4 to the batch gate. No canonical gate was run during
+this round. The approved VELDO-0216 amendment at 18e375b0 measures its target with
+VELDO-0219, without VELDO-0221. The landing candidate must contain both tickets.
 
-The inherited VELDO-0216 scheduler holds an aggregate mutation claim, including an
-exclusive manager claim, while its channel accepts only additional child claims
-and releases of those children. There is no operation to replace the aggregate
-claim with coordinator overhead. A cold mutation node reserves the whole capacity.
-Consequently per-worker claims cannot fit, even when the actual host is idle.
-The scheduler must hand off the aggregate claim, expose capacity, reserved floor
-and current totals to its dispatcher, and retain a mutation root reservation until
-all workers finish. Its mutation node must claim coordinator overhead only and
-leave manager admission to workers. Required changes are in scripts/gate_schedule.py,
-engine/scripts/gate_schedule.py and scripts/gate_graph.json, protected paths the
-owner explicitly excluded from this ticket. They are untouched. Production
-measured admission refuses this incompatible graph explicitly instead of hanging.
+The batch gate must retain commit-bound canonical receipts and demonstrate:
 
-The inventory's 2689 case count is historical. Qualification must enumerate the
-current registry and account for every case; tests retain a 2689 case scenario too.
-PLAN-0019 places this work outside its release work graph as standalone gate
-infrastructure, before 0217 and 0223 in the remaining inventory.
+1. One full force-fresh canonical gate on the qualification host, with 20 usable
+   cores, 31 GiB host memory and the 16 GiB delegated gate scope. The host is quiet
+   and the blocking lock at /home/dmitry/.local/state/core-gates/.gate.lock stays
+   held throughout. Both unit and mutation reuse counts are zero; stamp, event,
+   graph digest, schedule and mutation receipt identify the same landing candidate.
+2. The complete gate finishes in at most 6,000 seconds, against VELDO-0216's
+   10,718.803 second serial baseline. Record every node's start, end, verdict,
+   CPU seconds and peak anonymous memory, the measured critical path, manager
+   waits, ledger capacities and peak granted totals. Compare every node with
+   proof/VELDO-0216/serial-baseline.json, retaining interval bounds for short
+   baseline stages and labelling its historical memory as cache-inclusive.
+3. VELDO-0219's mutation stage separately meets its unchanged 4,000 second target
+   against 5,207 seconds. Enumerate the current registry rather than assuming
+   the historical 2,689 cases. Execute and account for every case and its required
+   controls. Require zero worker deadline expiries, zero invalid baselines,
+   zero survivors and unchanged verdicts. Record stage elapsed time, peak workers,
+   mean busy cores, sampled anonymous peak and conservative final-accounting
+   memory bounds. Record every case's elapsed time, enforced deadline, quiet
+   measurement and slowdown, plus claim provenance, gate totals and the blocking
+   resource for each wait. qualification.py checks this mutation capture.
+4. A matched fixed-sixteen canonical falsifier at the same candidate, on the same
+   quiet locked host, changes only the measured worker ceiling to 16. It must
+   fail the mutation 4,000 second check while preserving verdicts and deadlines;
+   the prior 5,207 seconds is a comparison, not substitute evidence. Retain the
+   full receipts even if the full gate still happens to meet 6,000 seconds.
+5. VELDO-0216's matched serialized canonical falsifier must exceed 6,000 seconds
+   and fail the critical path check. Keep host capacity and worker admission
+   otherwise identical. A simulation or synthetic checker result cannot qualify
+   either timing claim or either canonical falsifier.
 
-Inherited VELDO-0220 also records the missing suite 113 entry in the protected
-scripts/gate_unconfined.json. This ticket does not edit that file.
+Round two closes the aggregate handoff, unmetered worker cap, cross-run CPU claim
+and refusal-resource defects. The mutation root atomically shrinks to the graph's
+coordinator overhead, releases manager exclusion, and retains its floor and host
+lock claim until children finish. Per-case replies supply actual capacities,
+remaining floor, totals and refusal resource. See round2/ for red and green checks.
 
-AC1 lifecycle limit: polling reads known unit cgroups before coordinator cleanup,
-and the native sustained-load fixture passes its 10 percent checks. A unit can,
-however, be created and removed by candidate code between discovery polls; a
-recreated cgroup at the same path can reset its counter. Full accounting requires
-an authority lifecycle notification or other kernel accounting mechanism that
-captures final counters before every unit teardown. The current implementation
-must not be represented as proving this universal clause. Anonymous memory is
-sampled, and disjoint per-unit peaks are added conservatively.
+Unit registration now waits for authority retention before launch. Owned slices
+remain loaded; owned services use a private accounting parent. Kernel parent CPU
+counters survive short-lived child teardown, and final manager accounting is read
+around explicit stops and restarts. Invocation changes accumulate distinct CPU
+runs. Unit placement does not change candidate code or the unit's own limits.
+Anonymous memory remains sampled. A separate kernel total-memory peak supplies a
+conservative admission bound for brief allocations missed by those samples; it is
+stored as peak_memory_bytes, never relabelled as measured anonymous memory.
+The native short-unit and installed-service checks prove these lifecycle paths.
 
-Observability also awaits the ledger protocol extension: its current reply is a
-boolean grant only, without the resource of refusal or the gate-wide totals.
-The dispatcher records its own granted sums, claim provenance and elapsed wait;
-the scheduler separately records the actual gate totals and refusal resource.
-A single admission record with the complete gate state requires that extension.
-
-The lifecycle assumption conflicts with existing code on main: in
-.veldo/control_containment.py, Group.conclude resets failed units and Group.close
-releases its manager reference before the containing suite worker returns;
-.veldo/control_service.py stop also stops a unit during the worker's lifetime.
-Thus reading unit cgroups only when coordinator cleanup begins cannot recover
-all final counters. This contradicts the spec's assumption that the coordinator can read every
-unit's counters before its cleanup. These runtime modules are not policy-protected;
-the open issue is the accounting contract, not a path approval requirement. A
-lifecycle capture mechanism or an explicit sampled-accounting contract is needed
-before the complete AC1 unit-accounting claim can be made.
+Inherited VELDO-0220's missing suite 113 userbus declaration remains owned by that
+ticket. This round does not edit scripts/gate_unconfined.json. The batch candidate
+must carry that resolution before running its canonical suite.

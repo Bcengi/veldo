@@ -176,12 +176,14 @@ calculation are built on agent/codex/veldo-0219. Suite 115 supplies the ticket
 checks and the three named registered falsifiers; suite 53's host ceiling row is
 amended. The copies in engine/scripts remain byte identical.
 
-The protected VELDO-0216 scheduler still holds an aggregate mutation claim and
-cannot hand it off through its existing child-claim protocol. Measured production
-admission refuses that incompatible graph before launching a worker. Unit cgroups
-that disappear between discovery polls also require a lifecycle capture contract.
-These gaps and the existing code that contradicts the lifecycle assumption are
-recorded in proof/VELDO-0219/OPEN.md. No additional protected paths were changed.
+Round two merges VELDO-0216's reviewed fixes and approved AC4 amendment, then
+adds its authorized scheduler and graph handoff. Per-case admission takes over
+manager exclusion; repositories without a graph retain the fixed cap of 16.
+CPU rates are calculated within each recorded run before selecting the largest.
+Authority-held unit accounting parents preserve final CPU counters across short
+units and restarts. Sampled anonymous memory stays distinct from the separately
+stored kernel total-memory peak used as a conservative admission bound. These
+changes and their red and green evidence are in proof/VELDO-0219/round2/.
 
 The native cgroup fixture and all targeted falsifiers have evidence in
 proof/VELDO-0219/. The actual inventory is 2718 cases at this implementation,

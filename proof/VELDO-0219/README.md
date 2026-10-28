@@ -1,3 +1,12 @@
+# VELDO-0219 current proof status
+
+Round two supersedes the implementation limitations recorded below. See
+[round2/README.md](round2/README.md) for the merged dependency, fixes and evidence.
+The canonical AC4 runs remain deferred under rule 37191; the exact joint batch
+contract and 6,000 second full-gate target are in [OPEN.md](OPEN.md).
+
+The following is retained as the historical first-round record.
+
 # VELDO-0219 implementation and ticket proof
 
 Status: REMAINING. The coordinator implementation and targeted checks are built.
