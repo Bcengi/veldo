@@ -34,7 +34,8 @@ def main():
               'proof/VELDO-0219/qualification.py']
     evidence = dict(spec='VELDO-0219',head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
         source_sha256={p:hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in paths},runs=[],
-        canonical_qualification='NOT RUN: owner rule 37191; see OPEN.md')
+        canonical_qualification='NOT RUN: owner rule 37191; see OPEN.md',
+        inventory_count=len(load(ROOT/'scripts/check_gate_mutations.py').inventory_local(ROOT)))
     target = Path(__file__).with_name('red-green.json')
     for case in cases:
         for mode in ('mutant','baseline','noop'):

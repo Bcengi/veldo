@@ -134,7 +134,7 @@ def _v219_checks():
                 pass
 
         invocation = 0
-        def exercise(jobs, cores=40, gib=31, limit=None, floor=None, fault=None, background=False):
+        def exercise(jobs, cores=40, gib=31, limit=None, floor=None, fault=None, background=False, resources_manifest=None):
             nonlocal invocation
             invocation += 1
             home = top / ('run-%d' % invocation)
@@ -151,7 +151,7 @@ def _v219_checks():
                 ledger.acquire('other-node', dict(cpu=cores-floor['cpu'], memory=(gib*2**30)-floor['memory'],
                                                   manager='none', ports=[]))
             admission = gate.Admission(Client(ledger), capacity, floor)
-            pool = gate.SuiteResources(manifest)
+            pool = gate.SuiteResources(resources_manifest or manifest)
             workers = gate.Workers(100000, pool, parallel=gate.worker_count(cores) if limit is None else limit,
                                    admission=admission)
             children = []
@@ -227,6 +227,7 @@ def _v219_checks():
         # Enumerate the real registry without executing its unrelated suites. Seed
         # previous keys in a scratch store for every identity, never transplant times.
         inventory = gate.inventory_local(ROOT)
+        inventory_manifest = json.loads((ROOT / 'scripts/suites/manifest.json').read_text())
         inventory_store = top / 'inventory'
         inventory_store.mkdir()
         for n, c in enumerate(inventory):
@@ -235,12 +236,12 @@ def _v219_checks():
                 key=oldkey, identity=c['identity'], suite=c['suite'],
                 resource_runs=[dict(at=now, cpu_seconds=6, elapsed=10, peak_anon_bytes=2**29)])))
         known = gate.CaseClaims(inventory_store)
-        full_jobs = {c['identity']: dict(case=case, mode='baseline', budget_seconds=120,
+        full_jobs = {c['identity']: dict(case=c, mode='baseline', budget_seconds=120,
                      claim=known.claim(c, 'changed-'+str(n))) for n, c in enumerate(inventory)}
-        previous_run = exercise(full_jobs, 20, 15)
+        previous_run = exercise(full_jobs, 20, 15, resources_manifest=inventory_manifest)
         defaults = {n: dict(j, claim=empty) for n, j in full_jobs.items()}
-        empty_run = exercise(defaults, 20, 15)
-        historical = exercise(dict(list(full_jobs.items())[:2689]), 20, 15)
+        empty_run = exercise(defaults, 20, 15, resources_manifest=inventory_manifest)
+        historical = exercise(dict(list(full_jobs.items())[:2689]), 20, 15, resources_manifest=inventory_manifest)
         row('unmeasured-inventory', len(inventory) >= 2689 and previous_run[3] is None
             and previous_run[0].peak >= 16 and previous_run[0].peak == 30
             and empty_run[3] is None and empty_run[0].peak == 15 and historical[0].peak == 30

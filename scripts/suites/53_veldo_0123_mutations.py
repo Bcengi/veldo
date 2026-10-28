@@ -152,6 +152,7 @@ def gate_exit(root, gate_source):
     for name in ('validate.py', 'shape_gate.py', 'events.py', 'version.py'):
         (root / '.veldo' / name).write_text("print('3.10.1')\n")
     return _m123_sp.run(['bash', 'scripts/verify.sh'], cwd=root, capture_output=True,
+                       env=dict(_m123_os.environ, HOME=str(root.parent / 'gate-home')),
                        text=True, timeout=30, pass_fds=launcher_fds()).returncode
 
 
