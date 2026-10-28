@@ -19,12 +19,6 @@ def fixture(ROOT, PRODUCTION):
 
     PREFIX = 'VELDO-0079 '
     CHOICES = ['accept', 'return_for_elaboration', 'reject']
-    # AC1's declared set: the request schema, spelled here and not read from the module.
-    SCHEMA_FIELDS = ('class', 'lane', 'outcome', 'scope', 'exclusions', 'priority', 'ceiling', 'policy',
-                     'specifications', 'protected_paths', 'release_authority', 'expiry', 'evidence', 'decomposition',
-                     'alternatives', 'questions')
-    PROPOSED = ('exclusions', 'priority', 'ceiling', 'expiry', 'alternatives', 'questions')
-    NO_WRITER = ('class', 'lane', 'outcome', 'scope', 'policy', 'release_authority', 'evidence')
     DEFAULT_RANK = 3
     EXPIRY = '2030-01-31T17:00:00Z'
     CEILING = {'invocations': 3, 'wall_seconds': 300}
@@ -37,34 +31,6 @@ def fixture(ROOT, PRODUCTION):
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
-
-    emitted, raised = set(), []
-
-    def check(label, parts):
-        """One row: every named part must hold. A part that raises while judging is a failed part."""
-        emitted.add(label)
-        failed = []
-        for name, condition in parts:
-            try:
-                ok = bool(condition() if callable(condition) else condition)
-            except Exception as error:  # noqa: BLE001 - a malformed answer is a failed part, never a raise
-                ok, name = False, '%s (%s)' % (name, type(error).__name__)
-            if not ok:
-                failed.append(name)
-        if failed:
-            print('  %sdetail: %s: %s' % (PREFIX, label, '; '.join(failed)))
-        expect(PREFIX + label, not failed)
-
-    @contextlib.contextmanager
-    def region(*labels):
-        try:
-            yield
-        except Exception as error:  # noqa: BLE001 - a raise reds its rows, never skips them
-            raised.append((labels[0], repr(error)))
-            print('  %sdetail: %s did not run to its end: %r' % (PREFIX, labels[0], error))
-            for label in labels:
-                if label not in emitted:
-                    check(label, [('region raised', False)])
 
     def attempt(fn, default=None):
         try:
@@ -337,9 +303,6 @@ def fixture(ROOT, PRODUCTION):
                 return [(eid, json.loads(t)) for eid, t in conn.execute('SELECT id, data FROM entities WHERE kind=? ORDER BY id',
                                                                        (kind,))]
 
-            def journal_length():
-                return conn.execute('SELECT count(*) FROM journal').fetchone()[0]
-
             def first_writer(eid):
                 """The suite's own reading of the journal: the command that first wrote `eid`."""
                 for command_id, text in conn.execute('SELECT command_id, transition FROM journal ORDER BY seq'):
@@ -357,13 +320,6 @@ def fixture(ROOT, PRODUCTION):
             def request_record(iid):
                 row = entity(request_record_id(iid))
                 return dict(row['data'], version=row['version']) if row and row['kind'] == 'admission_request' else {}
-
-            def assignments_naming(iid):
-                """Every inbox request whose brief names the item."""
-                return [(eid, d) for eid, d in of_kind('assignment') if iid in str(d.get('brief'))]
-
-            def sent_naming(iid):
-                return [m for m in api['sent'] if iid in m['text']]
 
             # The team: pm is proj-a's project manager by olga's settled answer (VELDO-0089).
             teams = TM.Teams(S, CM, conn, ids, 'authority', journal_sign, inbox=inbox, assignment=I, requester='pm',
@@ -385,7 +341,7 @@ def fixture(ROOT, PRODUCTION):
                 inbox.apply(signed('pm', dict(ids, operation='open', alias=alias, principal='pm', command_id=next_id('c'),
                                               nonce=next_id('n'), assignment=dict(
                                                   kind='decision', owner=owner, scope=['proj-a'],
-                                                  deadline='2026-10-30T17:00:00Z', budget={'owner_minutes': 15}, brief=brief,
+                                                  deadline=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(time.time() + 3600)), budget={'owner_minutes': 15}, brief=brief,
                                                   choices=list(CHOICES), subject=terms.get('subject') or {}))))
                 rid = I.assignment_id(REPO, alias)
                 presenter.frame(signed('pm', dict(ids, operation='frame', alias=alias, principal='pm', request_version=1,
@@ -393,22 +349,6 @@ def fixture(ROOT, PRODUCTION):
                                                   command_id=next_id('f'), nonce=next_id('fn'))))
                 presenter.present(rid)
                 return rid, presenter.current(rid) or {}
-
-            def thin_target(record):
-                """VELDO-0078's own admission target, the item at its decomposition revision, spelled here as
-                516afd1's backlog built it (decision_target)."""
-                return {'kind': 'backlog_item', 'ref': record.get('uuid'), 'revision': record.get('decomposition_revision'),
-                        'digest': record.get('decomposition_digest')}
-
-            def thin_brief(record):
-                """VELDO-0078's thinner admission brief, spelled here as 516afd1's backlog rendered it
-                (admission_brief): no policy, ceiling, specification digests, protected paths, release authority,
-                expiry, evidence, alternatives or questions."""
-                units = '; '.join('%s (%s)' % (u['unit'], u['specification']) for u in record.get('decomposition') or [])
-                return ('Admit backlog item %s, decomposition revision %d, in project %s.\nTitle: %s\nClass: %s\n'
-                        'Scope: %s\nUnits: %s\nAdmitted work still needs its own priority before anything runs.'
-                        % (record.get('uuid'), record.get('decomposition_revision') or 0, record.get('project'),
-                           record.get('title'), record.get('work_class'), '; '.join(record.get('scope') or []), units))
 
             CG = load('team_fixture_config', mods / 'control_agent_config.py')
             configurations = CG.Configurations(S, conn, domain=ids['domain_uuid'],
@@ -457,30 +397,6 @@ def fixture(ROOT, PRODUCTION):
                                                         'signature': sign_as('api-edge', S.canonical_bytes(body))})
                 return result, body
 
-            def own_objective(outcome, project='proj-a', owner='olga'):
-                """An objective proposed by the owner from his own API message and accepted by that message."""
-                m, body = by_api(owner, 'For %s: %s' % (project, outcome))
-                made = osend(owner, 'propose', proposal=m.get('proposal_id'), outcome=outcome, scope=['checkout', 'payments'],
-                             authority={'acceptor': owner, 'assessor': 'asha'}, evidence_requirements=copy.deepcopy(EVIDENCE))
-                oid = made.get('objective_id')
-                record = OB.read(conn, oid) or {}
-                command = first_writer(IN.source_key('api_request', body['request_id']))
-                osend('pm', 'accept_message', objective=oid, objective_version=record.get('version'),
-                      revision=record.get('revision'), bound_digest=record.get('bound_digest'), intake_command=command)
-                return oid, command
-
-            def answered_objective(outcome):
-                """An objective pm proposes and olga accepts by her answer to its presentation (VELDO-0077)."""
-                m, _ = by_api('olga', 'For proj-a: %s' % outcome)
-                made = osend('pm', 'propose', proposal=m.get('proposal_id'), outcome=outcome, scope=['checkout', 'payments'],
-                             authority={'acceptor': 'olga', 'assessor': 'asha'}, evidence_requirements=copy.deepcopy(EVIDENCE))
-                oid = made.get('objective_id')
-                record = OB.read(conn, oid) or {}
-                rid, receipt = present_terms(next_id('OBJ'), OB.acceptance_target(record), OB.acceptance_brief(record))
-                answer(receipt)
-                osend('pm', 'accept', objective=oid, objective_version=(OB.read(conn, oid) or {}).get('version'), request=rid)
-                return oid, rid
-
             def bsend(who, op, **fields):
                 body = dict(ids, operation=op, principal=who, command_id=next_id('bc'), nonce=next_id('bn'), **fields)
                 return service.apply(signed(who, body))
@@ -494,17 +410,6 @@ def fixture(ROOT, PRODUCTION):
                 units_made[0] += 1
                 return dict(unit='TASK-79-%d' % units_made[0], specification=spec, scope=['checkout'], requirements=[],
                             eligible_holders=['w-build'])
-
-            def work_item(oid, name, specs=('VELDO-9791',)):
-                """A backlog item from a feature of `oid`, prepared and awaiting grooming: (item, [units])."""
-                made = osend('pm', 'propose_feature', objective=oid, objective_version=(OB.read(conn, oid) or {}).get('version'),
-                             feature='f-' + name, title='Feature %s' % name, scope=['checkout'])
-                took = bsend('pm', 'take', feature=made.get('feature_id'), work_class='PRODUCT_CHANGE')
-                iid = took.get('item_id')
-                units = [unit_entry(s) for s in specs]
-                bop('pm', 'prepare', iid, units=units)
-                bop('pm', 'request_grooming', iid)
-                return iid, [u['unit'] for u in units]
 
             def proposal(**changes):
                 value = {'ceiling': dict(CEILING), 'expiry': EXPIRY}
