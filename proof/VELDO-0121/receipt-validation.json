@@ -1,0 +1,65 @@
+{
+  "input_commit": "3b1a6f550698efa47a8f9964253a00acac0d22f2",
+  "implementation_sha256": "6749c547bb59737d9bd3026afe2bdf96ac5446c591c9ea07db53f95f15882478",
+  "fixture_sha256": "bbfebc341e522ece07bdd5dc3b4d9df7caa9c8b386e5745a5450a9f2a733ce3a",
+  "checks": [
+    {
+      "criterion": "AC1",
+      "row": "relay/transport-errors-have-zero-stdout",
+      "red": false,
+      "green": true,
+      "counts": {
+        "fault": 3180,
+        "native": 11
+      },
+      "real_time": []
+    },
+    {
+      "criterion": "AC2",
+      "row": "relay/eof-and-size-decisions-match-model",
+      "red": false,
+      "green": true,
+      "counts": {
+        "terminal": 96
+      },
+      "real_time": []
+    },
+    {
+      "criterion": "AC3",
+      "row": "relay/exchange-deadline-is-total",
+      "red": false,
+      "green": true,
+      "counts": {
+        "deadline": 15,
+        "realtime": 2
+      },
+      "real_time": [
+        {
+          "mode": "stalled",
+          "elapsed": 30.042885415023193,
+          "exit": 3,
+          "surviving_helpers": 0
+        },
+        {
+          "mode": "trickle",
+          "elapsed": 30.01389396400191,
+          "exit": 3,
+          "surviving_helpers": 0
+        }
+      ]
+    },
+    {
+      "criterion": "AC4",
+      "row": "relay/failure-does-not-replay",
+      "red": false,
+      "green": true,
+      "counts": {
+        "fault": 3180,
+        "native": 11
+      },
+      "real_time": []
+    }
+  ],
+  "all_receipts_valid": true,
+  "protected_paths_touched": []
+}

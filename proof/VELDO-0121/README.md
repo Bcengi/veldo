@@ -13,6 +13,16 @@ advance the actual sent count; zero progress refuses. The final EOF and assemble
 response must still fit the budget. Response bytes stay buffered until successful
 completion, so errors, timeouts and size violations cannot leak partial output.
 
+Final qualification is bound to input commit
+`3b1a6f55` and the implementation and fixture digests in
+`receipt-validation.json`. All four declared falsifiers turned their own row red,
+then their restored controls returned green. Every drive was valid and complete.
+The final suite passed all four ticket rows over 3304 cells. Real stalled and
+trickle exchanges returned exit 3 with zero stdout in 30.043 and 30.014 seconds,
+respectively, with zero surviving helpers. `check_receipts.py` independently
+validated the committed source bindings, applied diffs, schedule identity equality,
+expected/executed counts and red-then-green ordering. No protected path was touched.
+
 ## Checks and falsifiers
 
 | AC | Named row under `relay/` | Qualification | Applied falsifier |
