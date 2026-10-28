@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "<string>", line 6, in <module>
+  File "/home/dmitry/projects/veldo-worktrees/veldo-0124/proof/VELDO-0124/checks.py", line 68, in forged_qualification
+    refused(lambda: host.start(request), 'missing_evidence:macos_qualification')
+  File "/home/dmitry/projects/veldo-worktrees/veldo-0124/proof/VELDO-0124/checks.py", line 273, in refused
+    raise AssertionError('expected refusal: ' + prefix)
+AssertionError: expected refusal: missing_evidence:macos_qualification

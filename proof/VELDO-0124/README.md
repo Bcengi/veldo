@@ -1,6 +1,13 @@
 # VELDO-0124 build and pending qualification
 
-Latest round: [batch 2, 2026-10-15](ROUND-batch2.md). Suite catalog conflicts
+Round 2 update, 2026-10-28: evidence reference validation is fixed and the real
+Codex signal ignoring child row passed. Complete qualification remains blocked
+on Claude login. See [the current round](round2-2026-10-28/README.md),
+[owner actions and remaining blockers](OPEN.md), and [the manifest](manifest.json).
+Earlier observations below retain their original scope and dates.
+
+
+Historical round: [batch 2, 2026-10-15](ROUND-batch2.md). Suite catalog conflicts
 are resolved; nine local falsifiers were rejected and the owning suites rerun.
 Static contract defects were repaired. Real engine qualification remains blocked.
 

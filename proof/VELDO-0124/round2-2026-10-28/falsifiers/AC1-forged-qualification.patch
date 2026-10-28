@@ -1,0 +1,10 @@
+--- a/project_runner_macos_profile.py
++++ b/project_runner_macos_profile.py
+@@ -363,7 +363,6 @@
+             or not isinstance(evidence.get('rows'), dict)
+             or any(not evidence.get('rows', {}).get(e + '/' + row) for e in ENGINES for row in NATIVE_ROWS)):
+         raise Refused('missing_evidence:macos_qualification')
+-    verify_evidence(profile, evidence)
+     if file_digest(profile['engines'][engine]['argv'][0]) != profile['engines'][engine]['binary_digest']:
+         raise Refused('stale_version:engine_binary')
+     return {'profile_digest': digest(profile), 'revision': profile['revision'], 'host': facts['host'],

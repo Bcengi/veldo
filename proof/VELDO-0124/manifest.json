@@ -1,49 +1,132 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0124",
-  "commit": "eebad4f91360f494588e1a9b0f29e2f2465564d6",
+  "commit": "ea4e9d8341be48aa9bc4beb074831cc73146ea69",
   "producer": "Codex implementation agent",
-  "produced_at": "2026-10-15T15:10:09.593365+00:00",
+  "produced_at": "2026-10-28T18:19:58.174059+00:00",
   "veldo_version": "3.10.1",
   "criteria": [
     {
       "id": "AC1",
       "status": "pending",
-      "evidence": [],
-      "detail": "Pending real Claude Code/Codex qualification on the selected Mac and reviewer gate. SSH timed out on 2026-10-15; partial local diagnostics are not passing proof."
+      "evidence": [
+        "proof/VELDO-0124/round2-2026-10-28/qualification-red-green.json",
+        "proof/VELDO-0124/round2-2026-10-28/qualification-red.log",
+        "proof/VELDO-0124/round2-2026-10-28/qualification-green.log",
+        "proof/VELDO-0124/native-2026-10-28/native-engines-qualified.json",
+        "proof/VELDO-0124/round2-2026-10-28/native-engines-qualified.json"
+      ],
+      "detail": "Evidence references now resolve to protected files with matching SHA256 and host, OS, profile and passing row bindings. The reviewed handwritten-record falsifier is red, fixed code green. Prior real Codex natural isolation passed. Claude natural, cooperative and deadline remain blocked on sandbox login, as does the newly prepared child row. Complete both-engine qualification and independent review remain pending."
     },
     {
       "id": "AC2",
       "status": "pending",
-      "evidence": [],
-      "detail": "Pending real Claude Code/Codex qualification on the selected Mac and reviewer gate. SSH timed out on 2026-10-15; partial local diagnostics are not passing proof."
+      "evidence": [
+        "proof/VELDO-0124/native-2026-10-28/native-lifecycle-restored.json",
+        "proof/VELDO-0124/native-2026-10-28/native-falsifiers-red-green.json",
+        "proof/VELDO-0124/native-2026-10-28/native-engines-qualified.json",
+        "proof/VELDO-0124/round2-2026-10-28/authority-ledger.json"
+      ],
+      "detail": "Prior native capacity and real Codex deadline observations passed. The new Codex child call has a pre-call reservation, a finite accepted deadline and a two-worker profile cap. Selected suite diagnostics are not full acceptance evidence; complete native qualification and reviewer gate remain pending."
     },
     {
       "id": "AC3",
       "status": "pending",
-      "evidence": [],
-      "detail": "Pending real Claude Code/Codex qualification on the selected Mac and reviewer gate. SSH timed out on 2026-10-15; partial local diagnostics are not passing proof."
+      "evidence": [
+        "proof/VELDO-0124/native-2026-10-28/native-engines-qualified.json",
+        "proof/VELDO-0124/round2-2026-10-28/native-engines-qualified.json",
+        "proof/VELDO-0124/round2-2026-10-28/authority-ledger.json"
+      ],
+      "detail": "Real Codex signal ignoring child passed: SIGTERM observed and ignored, kill escalation, OS exit and empty coalition before lifecycle slot release in 3.137 seconds. Prior Codex natural and cooperative rows passed. The prepared real Claude child row and prior Claude rows remain blocked on sandbox login. Interrupted provider accounting retains unknown exposure; no authority retirement or complete qualification is claimed."
     }
   ],
   "checks": [
     {
       "name": "canonical_gate",
-      "status": "not_run"
+      "status": "not_run",
+      "detail": "Owner rule 37191: reserved for a later batch; only ticket suites and falsifiers are authorized here."
     },
     {
       "name": "native_macos_qualification",
-      "status": "not_run"
+      "status": "blocked",
+      "evidence": [
+        "proof/VELDO-0124/native-2026-10-28/native-engines-qualified.json",
+        "proof/VELDO-0124/round2-2026-10-28/native-engines-qualified.json"
+      ],
+      "detail": "Mac reachable. Four real Codex rows now observed across two profiles; three original Claude rows plus the prepared child row are blocked by login. No qualification issued."
+    },
+    {
+      "name": "qualification_falsifier",
+      "status": "passed",
+      "evidence": [
+        "proof/VELDO-0124/round2-2026-10-28/qualification-red-green.json"
+      ],
+      "detail": "Reviewed profile exits 1 because a forged record is accepted; fixed profile exits 0 after all refusal and intact-evidence checks."
     },
     {
       "name": "unit",
-      "status": "not_run",
-      "detail": "Full unit evidence pending the reviewer gate; selected development runs do not confer proof."
+      "status": "pending",
+      "detail": "Owning suites 103 and 104 are scoped diagnostics. Full accepted unit evidence awaits the later batch gate."
     },
     {
       "name": "integration",
-      "status": "not_run",
-      "detail": "Real qualified Claude Code and Codex runs on the selected Mac remain pending; historical synthetic native rows do not satisfy this claim."
+      "status": "pending",
+      "detail": "Real Codex child passed; Claude observations and complete profile qualification await owner login delivery under VELDO-0147."
+    },
+    {
+      "name": "ticket_single_change_falsifiers",
+      "status": "passed",
+      "evidence": [
+        "proof/VELDO-0124/round2-2026-10-28/falsifiers/negative-controls.json"
+      ],
+      "detail": "All ten isolated mutants rejected on their named rows; no installed source was mutated."
     }
   ],
-  "rollback": "Disable new Mac launches; preserve accepted records, reservations, unresolved charge exposure, profile revisions and unknown slots. No automatic retry or recovery."
+  "rollback": "Disable new Mac launches; preserve accepted records, reservations, unresolved charge exposure, profile revisions and unknown slots. No automatic retry or recovery.",
+  "reviewed_base": "e20b4c15",
+  "status": "remaining",
+  "open_items": "proof/VELDO-0124/OPEN.md",
+  "artifact_digests": {
+    "proof/VELDO-0124/OPEN.md": "sha256:9c06bc9272d3a05b45a92a843cca15a80fa3ebf264d41660db281f3b07769a19",
+    "proof/VELDO-0124/native-2026-10-28/native-engines-qualified.json": "sha256:854356dd800836f1e7b59acb1ec1fe130c82dbf5e1910ff1861339f7dcfea1c0",
+    "proof/VELDO-0124/native-2026-10-28/native-falsifiers-red-green.json": "sha256:c4b8fdc5646f9894f596f50809b0ca887548607c9b5be5584d1ab6693fce7ab6",
+    "proof/VELDO-0124/native-2026-10-28/native-lifecycle-restored.json": "sha256:eae4c832783792293aeb30e1091f56d89e8b0e9b91c91565932437790fd9e4d8",
+    "proof/VELDO-0124/round2-2026-10-28/authority-ledger.json": "sha256:6809da7b0d4f13388be137ff9d84906048efa77f9147db4a892c871e24146ff7",
+    "proof/VELDO-0124/round2-2026-10-28/drive-real-qualification.exit": "sha256:9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "proof/VELDO-0124/round2-2026-10-28/falsifiers.exit": "sha256:9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "proof/VELDO-0124/round2-2026-10-28/falsifiers/negative-controls.json": "sha256:eadebee36bb852609f2183067914a0317dffa10a14ec035e1e5feca9587147d6",
+    "proof/VELDO-0124/round2-2026-10-28/native-engines-qualified.exit": "sha256:53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+    "proof/VELDO-0124/round2-2026-10-28/native-engines-qualified.json": "sha256:8c5c6e9a21eae28aa77c536263541378a37c00aa7f7561139fdbc69260c86915",
+    "proof/VELDO-0124/round2-2026-10-28/qualification-green.exit": "sha256:9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "proof/VELDO-0124/round2-2026-10-28/qualification-green.log": "sha256:23b33a8f66b35ec90ee377859671236508fc55f11769235899796cf14799aa00",
+    "proof/VELDO-0124/round2-2026-10-28/qualification-red-green.json": "sha256:2cc3d43de147b4c09102dabbcbeac99b5aa57ad824e76e781f619687d1fe10ba",
+    "proof/VELDO-0124/round2-2026-10-28/qualification-red.exit": "sha256:4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+    "proof/VELDO-0124/round2-2026-10-28/qualification-red.log": "sha256:68eb7ef92ac0462890664ae465f29da641a4e302931f5380faac592f58e3de6e",
+    "proof/VELDO-0124/round2-2026-10-28/suite-103.exit": "sha256:53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+    "proof/VELDO-0124/round2-2026-10-28/suite-103.log": "sha256:1924ca915432b28a4eeb4bd0cd19bad050ef7f894b5fafb66d2fc78fcc348ee6",
+    "proof/VELDO-0124/round2-2026-10-28/suite-104.exit": "sha256:53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3",
+    "proof/VELDO-0124/round2-2026-10-28/suite-104.log": "sha256:04d67f0d551a27acc74593b6317222166dd95cb6ccff3e71fe57352ed8dc700c"
+  },
+  "diagnostics": {
+    "qualification_claim": false,
+    "gate_lock": "/home/dmitry/.local/state/core-gates/.gate.lock",
+    "suites": [
+      {
+        "suite": "103",
+        "passed": 55,
+        "failed": 0,
+        "exit": 2,
+        "log": "proof/VELDO-0124/round2-2026-10-28/suite-103.log",
+        "scope": "partial"
+      },
+      {
+        "suite": "104",
+        "passed": 33,
+        "failed": 0,
+        "exit": 2,
+        "log": "proof/VELDO-0124/round2-2026-10-28/suite-104.log",
+        "scope": "partial"
+      }
+    ]
+  }
 }

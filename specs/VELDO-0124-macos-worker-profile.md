@@ -112,6 +112,17 @@ not tests run by this writing revision.
 
 ## History
 
+2026-10-28: round 2 addresses the independent review at e20b4c15. Qualification
+now verifies protected evidence files, SHA256 references and native observation
+bindings; the forged record falsifier runs against the reviewed and fixed code.
+A real Codex 0.154.0 child on the selected Mac ignores SIGTERM and requires kill
+escalation, with OS exit and no live descendants before slot release. The three
+existing real Claude Code rows and the newly prepared child row remain blocked
+on login inside the Keychain denying sandbox. `proof/VELDO-0124/OPEN.md` specifies
+the VELDO-0147 credential delivery needed from the owner. The manifest records
+current observations and blockers. Acceptance text and approval requirements
+are unchanged; no complete native qualification or activation is claimed.
+
 2026-10-15: batch 2 resolved the suite catalog conflicts while retaining both
 sets of registrations and regenerating prerequisite closures. The two owning
 suites were rerun against the integrated control modules, and all nine local
