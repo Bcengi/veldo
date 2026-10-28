@@ -28,7 +28,7 @@ def _v219_checks():
     source = ROOT / "scripts" / "check_gate_mutations.py"
     gate = load(source)
     gate.ROOT = ROOT
-    scheduler = load(ROOT / 'scripts/gate_schedule.py')
+    scheduler = load(ROOT / "scripts" / "gate_schedule.py")
     ownership = load(ROOT / "scripts" / "mutation_ownership.py")
     bootstrap = load(ROOT / 'scripts/reuse_worker.py')
 
@@ -409,6 +409,12 @@ def _v219_checks():
         row('lifecycle-channel-serialized', regressions.lifecycle_threads(ownership))
         row('final-memory-bound', gate.resource_claim([dict(cpu_seconds=1, elapsed=2,
             peak_anon_bytes=1024, peak_memory_bytes=32*2**20)])['memory'] == 32*2**20)
+
+        round3 = load(ROOT / 'proof/VELDO-0219/round3/check.py')
+        row('cli-graph-without-channel', round3.cli_channel(gate, False))
+        row('cli-graph-with-channel', round3.cli_channel(gate, True))
+        row('worker-before-handoff-refused', round3.before_handoff(scheduler))
+        row('lifecycle-registration-owned', round3.ownership_registration(ownership))
 
         qualification = load(ROOT / 'proof/VELDO-0219/qualification.py')
         capture = qualification.fixture()
