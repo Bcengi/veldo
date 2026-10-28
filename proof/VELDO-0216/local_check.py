@@ -33,6 +33,7 @@ def main():
                 'source_sha256': {p:hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in paths},
                 'canonical_qualification': 'NOT RUN: owner rule 37191; see OPEN.md', 'runs': []}
     target = Path(__file__).with_name('red-green.json')
+    print('Starting VELDO-0216 red then green checks at ' + evidence['head'], flush=True)
     for case in cases:
         for mode in ('mutant','baseline'):
             started = time.monotonic()
@@ -50,6 +51,8 @@ def main():
                 assert all(rows.get(r) is False for r in case['rows']), result['targets']
             else:
                 assert rows and all(rows.values()), rows
+    assert all(hashlib.sha256((ROOT/p).read_bytes()).hexdigest() == h
+               for p,h in evidence['source_sha256'].items()), 'sources changed during proof'
     return 0
 
 
