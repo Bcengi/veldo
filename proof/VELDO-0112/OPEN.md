@@ -31,3 +31,11 @@ explicit runtime file list. Loading the full client set exposes a pre-existing
 formatted path in `dispatch._floor_organ` that the installer cannot resolve. Its
 path expression now exposes the literal file suffix without changing the path.
 The ticket checks both the scaffold list and the real service dependency closure.
+
+The first selected-suite run found one older assertion incompatible with loading
+the registry beside the installed client: suite 47 forbade `__file__` anywhere in
+the module. VELDO-0107 AC3 constrains socket placement, not dependency loading.
+The assertion now checks socket derivation for `__file__` while retaining the
+module-wide environment and current-directory checks, the two live authorities,
+and the environment-routing falsifier. The initial failure is retained in
+`selected-suites-initial.log` and `selected-suites-initial.json`.

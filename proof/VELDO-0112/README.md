@@ -50,8 +50,9 @@ exit or unexpected diagnosis is an invalid drive. Each red and subsequent green
 has its own JSON artifact; `mutations.json` records the result summary.
 
 `run_checks.py` runs the ticket baseline, those falsifiers and restored controls,
-then only suites 47, 48, 49 and 113. The first three were edited solely to copy the
-new runtime dependency into their miniature installations. The selected suite
+then only suites 47, 48, 49 and 113. The first three copy the new runtime dependency
+into their miniature installations. Suite 47 also scopes its source-location
+assertion to socket derivation, as explained in OPEN.md. The selected suite
 runner deliberately returns 2 for a successful partial run. It is not a full
 gate result. The owner explicitly deferred the full gate to a batch; it was not
 run here.
