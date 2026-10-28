@@ -47,6 +47,13 @@ The fixture exposes `handles`, `binding`, `path`, `workspace`, `baseline`,
 to the caller, stop on pipe EOF, and are reaped explicitly. Temporary fixtures do
 not acquire or manipulate any host lock.
 
+## Scope of the routing census
+
+The census in suite 113 covers the routing calls in `.veldo/control_client.py`, the client path this
+ticket changes. `ServiceAuthority.apply` in `.veldo/control_client_api.py` also writes to the store, but it
+is the service-side path that already writes through `control_store.execute` and is not in this
+specification's footprint, so it is left out of this census on purpose (review 2026-10-28, finding 2).
+
 ## Reproduction and evidence
 
 Run the ticket's falsifiers with the host lock held:

@@ -180,8 +180,8 @@ class Fixture:
         self.git(self.seed, "init", "-q")
         (self.seed / "seed").write_text("real clone fixture\n")
         self.git(self.seed, "add", "seed")
-        self.git(self.seed, "-c", "user.name=Dmitry Grinberg", "-c",
-                 "user.email=dmitry@bcengi.com", "commit", "-q", "-m", "fixture seed")
+        self.git(self.seed, "-c", "user.name=Veldo Fixture", "-c",
+                 "user.email=fixture@veldo.invalid", "commit", "-q", "-m", "fixture seed")
         self.handles = []
         for name in ("a", "b"):
             self.handles.append(AuthorityHandle(self, name))
