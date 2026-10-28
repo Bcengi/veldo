@@ -215,3 +215,7 @@ proof cross-reference edit are recorded in `proof/VELDO-0219/OPEN.md` under
 the dated pending amendment. Acceptance criteria are unchanged. That record
 also explains the conservative memory bound's difference from AC1, pending
 owner acceptance or revision.
+
+## Amendment, 2026-10-28: the memory claim
+
+AC1's memory claim for a worker is the larger of its measured anonymous memory peak and its unit's total memory peak (page cache included), so a short-lived unit whose anonymous allocation polling missed cannot be admitted as free memory. Anonymous memory stays measured and labelled separately. Owner approval: Telegram 37458 and 37459 ("Sure").
