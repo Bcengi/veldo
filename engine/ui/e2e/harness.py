@@ -124,8 +124,9 @@ class Browser:
                 'signature': b64url(self.sign(auth + hashlib.sha256(client).digest())), 'user_handle': self.user_handle}
 
 
-def record_lines():
-    """A worker run's engine and error lines in Claude Code's stream JSON shapes (VELDO-0141's formats)."""
+def record_lines(unit, station):
+    """A worker run's engine and error lines in Claude Code's stream JSON shapes (VELDO-0141's formats), its
+    wrapper line naming the run's own unit and station."""
     sid = 'session-' + secrets.token_hex(4)
 
     def assistant(*content):
@@ -137,7 +138,7 @@ def record_lines():
                 'message': {'role': 'user', 'content': [{'type': 'tool_result', 'tool_use_id': tool_id, 'content': text,
                                                          'is_error': error}]}}
     return [
-        ('wrapper', 'veldo-wrapper: engine claude-code, unit VELDO-9145, station build'),
+        ('wrapper', 'veldo-wrapper: engine claude-code, unit %s, station %s' % (unit, station)),
         ('engine', {'type': 'system', 'subtype': 'init', 'cwd': '/work/clone', 'session_id': sid,
                     'tools': ['Bash', 'Edit', 'Read', 'Write'], 'model': 'claude-opus-5-5', 'permissionMode': 'default'}),
         ('engine', assistant({'type': 'text', 'text': 'I will read the failing test first, then fix the parser.'})),
@@ -430,15 +431,15 @@ class Factory:
         residue. Two hosts; a unit waiting on authority (blocked) and one failed; five decisions whose deadlines
         and risks differ, so the inbox's ranking and urgency colors are visible. Seeded lines are paced as a
         worker prints them (PacedClock), so the gutter's times since the first line are real spans."""
-        self.dispatch('done', 'VELDO-9145', 'project-a', 'build', 'COMPLETED', record_lines(), end=True,
+        self.dispatch('done', 'VELDO-9145', 'project-a', 'build', 'COMPLETED', record_lines('VELDO-9145', 'build'), end=True,
                       paced=time.time() - 9 * 60)
-        self.dispatch('live', 'VELDO-9146', 'project-a', 'build', 'RUNNING', record_lines()[:4], paced=time.time() - 140)
+        self.dispatch('live', 'VELDO-9146', 'project-a', 'build', 'RUNNING', record_lines('VELDO-9146', 'build')[:4], paced=time.time() - 140)
         self.dispatch('quiet', 'VELDO-9147', 'project-a', 'review', 'REVIEWING', [])
-        self.dispatch('other', 'VELDO-9148', 'project-b', 'build', 'RUNNING', record_lines()[:3], host='veldo-linux-2',
+        self.dispatch('other', 'VELDO-9148', 'project-b', 'build', 'RUNNING', record_lines('VELDO-9148', 'build')[:3], host='veldo-linux-2',
                       paced=time.time() - 75)
-        self.dispatch('blocked', 'VELDO-9149', 'project-a', 'review', 'AWAITING_AUTHORITY', record_lines()[:2], end=True,
+        self.dispatch('blocked', 'VELDO-9149', 'project-a', 'review', 'AWAITING_AUTHORITY', record_lines('VELDO-9149', 'review')[:2], end=True,
                       host='veldo-linux-2', paced=time.time() - 50 * 60)
-        self.dispatch('failed', 'VELDO-9144', 'project-a', 'build', 'FAILED', record_lines()[:5], end=True,
+        self.dispatch('failed', 'VELDO-9144', 'project-a', 'build', 'FAILED', record_lines('VELDO-9144', 'build')[:5], end=True,
                       paced=time.time() - 3 * 3600)
         # Each presented some hours ago (the Bot stand-in's message date), oldest first, so "waited longest" is real.
         for alias, hours, risk, ago in (('de1', 30, 'Medium', 50), ('de2', 70, 'Low', 30), ('de3', 5, 'High', 20),
@@ -719,10 +720,11 @@ def control_server(factory, stop):
                 f.drops.add(f.recorders[body['key']]['id'])
                 return {'dropping': True}
             if path == '/dispatch/new':
-                lines = record_lines() if body.get('lines', 'seed') == 'seed' else []
+                unit, station = body.get('unit', 'VELDO-9160'), body.get('station', 'build')
+                lines = record_lines(unit, station) if body.get('lines', 'seed') == 'seed' else []
                 key = body.get('key') or 'run-' + secrets.token_hex(3)
-                f.on_thread(f.dispatch, key, body.get('unit', 'VELDO-9160'), body.get('project', 'project-a'),
-                            body.get('station', 'build'), body.get('unit_state', 'RUNNING'), lines[:body.get('count', len(lines))])
+                f.on_thread(f.dispatch, key, unit, body.get('project', 'project-a'),
+                            station, body.get('unit_state', 'RUNNING'), lines[:body.get('count', len(lines))])
                 return {'key': key, 'dispatch': f.recorders[key]['id']}
             if path == '/request/open':
                 return {'request': f.on_thread(f.open_request, body['alias'], body.get('owner', 'owner'), 'pm',

@@ -1,0 +1,7 @@
+# command: python3 -B proof/VELDO-0145/round3/check_fixture_units.py <harness> .veldo engine/ui/dist
+ok  done (VELDO-9145, build): veldo-wrapper: engine claude-code, unit VELDO-9145, station build
+BAD live (VELDO-9146, build): veldo-wrapper: engine claude-code, unit VELDO-9145, station build
+BAD other (VELDO-9148, build): veldo-wrapper: engine claude-code, unit VELDO-9145, station build
+BAD blocked (VELDO-9149, review): veldo-wrapper: engine claude-code, unit VELDO-9145, station build
+BAD failed (VELDO-9144, build): veldo-wrapper: engine claude-code, unit VELDO-9145, station build
+mismatched wrapper lines: 4
