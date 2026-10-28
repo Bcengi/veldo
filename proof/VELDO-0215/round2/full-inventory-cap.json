@@ -1,0 +1,276 @@
+{
+  "calculated_at": "2026-10-24T14:07:49.919528+00:00",
+  "inventory": 2571,
+  "workers": 16,
+  "mode": "all fresh, read-only planning; no workers launched",
+  "store": "/home/dmitry/.cache/veldo/mutation-case-seconds",
+  "measured_above_floor": 46,
+  "existing_key_files": 112,
+  "capacities": {
+    "systemd_user_manager": 16
+  },
+  "old_count_cap": 5142.0,
+  "serial_cap": 403020.9012210875,
+  "bound": 53800.03908249566,
+  "implementation_sha256": "17b19c46d38b4be409ef1d996dc7e6bd4fdaaee09c4effc8f0e44f1477c14315",
+  "measured_cases": [
+    {
+      "identity": "check_teeth_mutations.py:candidate-checks-out-trunk",
+      "key": "2fcaab410e70e5be66a153cfc6e79637",
+      "deadline": 164.59202645695768
+    },
+    {
+      "identity": "check_teeth_mutations.py:gate-output-reconcile-writes-candidate",
+      "key": "257e67523ad09df66063e67cdb135a60",
+      "deadline": 120.24704412912251
+    },
+    {
+      "identity": "check_teeth_mutations.py:claude-nonzero-ignored",
+      "key": "2ae85255b451dded96663a58d58def7f",
+      "deadline": 121.2482364270254
+    },
+    {
+      "identity": "check_teeth_mutations.py:claude-error-result-complete",
+      "key": "4026b3d74387abca399233eef3f62c21",
+      "deadline": 120.84573399910005
+    },
+    {
+      "identity": "check_teeth_mutations.py:claude-malformed-ignored",
+      "key": "2994f0088bc038713b681e8ca9089e5c",
+      "deadline": 120.92329065303784
+    },
+    {
+      "identity": "check_teeth_mutations.py:claude-stop-leaves-descendant",
+      "key": "9975e006ed82a9635ceee7771d8db87c",
+      "deadline": 151.51379432401154
+    },
+    {
+      "identity": "check_teeth_mutations.py:claude-stop-recorded-ended",
+      "key": "a49f3a8e63cd37524f796fafe770812a",
+      "deadline": 124.73662392888218
+    },
+    {
+      "identity": "check_teeth_mutations.py:claude-stopped-invocation-released",
+      "key": "d42163b9ba53b67003e00bf3c293779a",
+      "deadline": 122.84040665708017
+    },
+    {
+      "identity": "check_teeth_mutations.py:claude-argv-position-unchecked",
+      "key": "7e5c4b5273d2ce63dd153b9f03f0fd06",
+      "deadline": 128.20898730604677
+    },
+    {
+      "identity": "check_teeth_mutations.py:claude-wrapper-rehash-skipped",
+      "key": "d7d008ca859ac588cfdb1127cabd4957",
+      "deadline": 122.24358012311859
+    },
+    {
+      "identity": "check_teeth_mutations.py:claude-entrance-rehash-skipped",
+      "key": "38e4a9d7507909d05567914f114af7e2",
+      "deadline": 122.50381855806336
+    },
+    {
+      "identity": "check_teeth_mutations.py:claude-engines-unprotected",
+      "key": "672f1633e3a77ee626169ce82170321b",
+      "deadline": 122.86386429303093
+    },
+    {
+      "identity": "check_teeth_mutations.py:claude-mode-unchecked",
+      "key": "e87e37a1dc496741e34b74b97e90d9ae",
+      "deadline": 123.72605263197329
+    },
+    {
+      "identity": "check_teeth_mutations.py:claude-parent-link-followed",
+      "key": "ad3e4f381a8743a19a5354c7f5995370",
+      "deadline": 123.39800859609386
+    },
+    {
+      "identity": "check_teeth_mutations.py:claude-terminal-main-loop-usage",
+      "key": "f9d8a0a943bde9b2ef75aa07dd12980f",
+      "deadline": 122.63268646207871
+    },
+    {
+      "identity": "check_teeth_mutations.py:claude-usage-cap-stop-ignored",
+      "key": "891cc97f5bb1c4f1b9be71e789147274",
+      "deadline": 213.15661230002297
+    },
+    {
+      "identity": "check_teeth_mutations.py:receiver148-setup-clock-before-release",
+      "key": "4f7acfd12676709a8365f477d0e72dd2",
+      "deadline": 212.82722317805747
+    },
+    {
+      "identity": "check_teeth_mutations.py:receiver148-release-deadline-restarted",
+      "key": "2c55a5ad23d5c1ccb2683f4081aab928",
+      "deadline": 213.92841824702919
+    },
+    {
+      "identity": "check_teeth_mutations.py:receiver148-release-deadline-not-finite",
+      "key": "4999168ec3befc567a4af14c1fdd275d",
+      "deadline": 213.20647579198703
+    },
+    {
+      "identity": "check_teeth_mutations.py:receiver148-report-wait-unbounded",
+      "key": "052df8071e8bf310792132ec98bb9b1b",
+      "deadline": 251.20622032490792
+    },
+    {
+      "identity": "check_teeth_mutations.py:receiver148-late-wrapper-execs",
+      "key": "d5d5e8032e196bcec7f024ebacac21b5",
+      "deadline": 213.4677454921184
+    },
+    {
+      "identity": "check_teeth_mutations.py:receiver148-wrapper-eof-is-timeout",
+      "key": "ff5f4b9adf6523d203dc8cf81895a470",
+      "deadline": 214.55134865397122
+    },
+    {
+      "identity": "check_teeth_mutations.py:receiver148-placement-wait-unbounded",
+      "key": "7a61fb97b6fa896e7c2e4ef689c38abc",
+      "deadline": 218.07964514399646
+    },
+    {
+      "identity": "check_teeth_mutations.py:receiver148-placement-report-ignored",
+      "key": "0c70946655740ba383aee980b62bf302",
+      "deadline": 228.09055420506047
+    },
+    {
+      "identity": "check_teeth_mutations.py:receiver148-heartbeat-moves-after-exec",
+      "key": "958a54229fa67c2b5c1a0cc1378ad6c9",
+      "deadline": 202.86045625508996
+    },
+    {
+      "identity": "check_teeth_mutations.py:receiver148-clean-exit-invents-stop",
+      "key": "ab99218e32ba9b395954139eef5e64ba",
+      "deadline": 214.16442057606764
+    },
+    {
+      "identity": "check_teeth_mutations.py:receiver148-success-collected-before-read",
+      "key": "1022d569cbe7b2cc54b62e640c25005e",
+      "deadline": 204.46775942388922
+    },
+    {
+      "identity": "check_teeth_mutations.py:reland148-stale-left-failed",
+      "key": "cc1f13ba934460f2ada6c7efee66ae90",
+      "deadline": 203.5617073889589
+    },
+    {
+      "identity": "check_teeth_mutations.py:lease148-loss-unknown",
+      "key": "3bb314a14f6babc4fc40e3075d818291",
+      "deadline": 203.01075088209473
+    },
+    {
+      "identity": "check_teeth_mutations.py:grant148-old-tree-accepted",
+      "key": "c2e6fdd286778535a4a318a8c8c9a2b0",
+      "deadline": 203.6225094779511
+    },
+    {
+      "identity": "check_teeth_mutations.py:reland148-loop-offers-nothing",
+      "key": "1bfa12e1777907f17d1e89f12c5031a2",
+      "deadline": 203.28391953615937
+    },
+    {
+      "identity": "check_teeth_mutations.py:reland148-conflict-relanded",
+      "key": "2ed5e880d63cf223c8c4cb68a89af957",
+      "deadline": 203.46255850506714
+    },
+    {
+      "identity": "check_teeth_mutations.py:reland148-rebuild-not-reviewed",
+      "key": "ea1c006dd26aff6432c7744e91cc9e60",
+      "deadline": 224.68416732590413
+    },
+    {
+      "identity": "check_teeth_mutations.py:reland148-landed-rebuilt",
+      "key": "d2bc53458f09deb4960f30643ff0f608",
+      "deadline": 261.11125186487334
+    },
+    {
+      "identity": "check_teeth_mutations.py:reland148-end-wakes-nothing",
+      "key": "468d7f6624c01756e76d193f723a7e2f",
+      "deadline": 226.16407119302312
+    },
+    {
+      "identity": "check_teeth_mutations.py:lease148-contained-refused",
+      "key": "ae1afae34ff7d93bc4da79d93ffe60c6",
+      "deadline": 232.43525443790713
+    },
+    {
+      "identity": "check_teeth_mutations.py:lease148-tip-not-fetched",
+      "key": "73f0eaf8a935b29f52c41f95bb2d8556",
+      "deadline": 216.6305299619562
+    },
+    {
+      "identity": "check_teeth_mutations.py:never148-forced-push",
+      "key": "80d69e713045875ce5fbb96cb2812ad4",
+      "deadline": 206.61714188405313
+    },
+    {
+      "identity": "check_teeth_mutations.py:grant148-asked-every-pass",
+      "key": "483adf3d20e0dc1e814cad81c5655831",
+      "deadline": 221.8303342408617
+    },
+    {
+      "identity": "check_teeth_mutations.py:grant148-missing-treated-as-replacement",
+      "key": "4e25aee1d57de8b789bf0b0f50114910",
+      "deadline": 231.1406184390653
+    },
+    {
+      "identity": "check_teeth_mutations.py:grant148-replacement-includes-missing",
+      "key": "a2039698630f680976d9f4aa30df0a42",
+      "deadline": 228.83003262901912
+    },
+    {
+      "identity": "check_teeth_mutations.py:grant148-mixed-question-restored",
+      "key": "664c66accbdcd7e1f0ecbd67862a1d9a",
+      "deadline": 228.3943759468384
+    },
+    {
+      "identity": "check_teeth_mutations.py:grant148-proof-mismatch-replaceable",
+      "key": "1314cd18b99b2ec9d7436d9757268084",
+      "deadline": 232.55725210206583
+    },
+    {
+      "identity": "check_teeth_mutations.py:grant148-applied-again",
+      "key": "a74d11333b3862d53e8482cf4c5602c0",
+      "deadline": 228.509616777068
+    },
+    {
+      "identity": "check_teeth_mutations.py:grant148-failed-dispatch-accepted",
+      "key": "847f5316135767ec6c4860140ce762c0",
+      "deadline": 231.4688804789912
+    },
+    {
+      "identity": "check_teeth_mutations.py:grant148-revoked-overwritten",
+      "key": "0c51637316524260d35a5eea036572f4",
+      "deadline": 231.56393830804154
+    }
+  ],
+  "phases": [
+    {
+      "name": "controls",
+      "jobs": 744,
+      "resource_chains": {
+        "systemd_user_manager": {
+          "normalized_slot_time": 3022.488320899851,
+          "drain_tails": 1560
+        }
+      },
+      "work": 91169.49127556977,
+      "tail": 261.11125186487334,
+      "bound": 10541.692777487835
+    },
+    {
+      "name": "mutants",
+      "jobs": 2571,
+      "resource_chains": {
+        "systemd_user_manager": {
+          "normalized_slot_time": 13652.910679683227,
+          "drain_tails": 9741.111251864873
+        }
+      },
+      "work": 311731.4099455177,
+      "tail": 261.11125186487334,
+      "bound": 43138.34630500783
+    }
+  ]
+}

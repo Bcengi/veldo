@@ -1,0 +1,23 @@
+{
+ "commit": "8ff58403",
+ "details": [
+  "VELDO-0065 install/assets detail: .veldo/control_channel_presentation.py engine copy identical",
+  "VELDO-0065 install/assets detail: .veldo/control_channel_presentation.py laid by the installer",
+  "VELDO-0065 answer/pick-choices detail: choices the owner would type alike are not presented, and nothing is sent"
+ ],
+ "exit": 1,
+ "failed_rows": [
+  "VELDO-0065 install/assets",
+  "VELDO-0065 answer/pick-choices"
+ ],
+ "passed": 40,
+ "replacements": [
+  [
+   ".veldo/control_channel_presentation.py",
+   "        if len({_fold(choice) for choice in c['choices']}) != len(c['choices']):\n",
+   "        if False:  # defect: choices typed alike are presented\n"
+  ]
+ ],
+ "stood_in": [],
+ "suite": "62_veldo_0065_presentations"
+}

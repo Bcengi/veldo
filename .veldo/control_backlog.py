@@ -826,13 +826,16 @@ class Backlog:
         acceptance = objective['acceptance']
         self._edge(KIND, 'AWAITING_GROOMING', 'ADMITTED', {'admission_authority_receipt': True})
         self._edge(KIND, 'ADMITTED', 'PRIORITIZED', {'priority_receipt': True})
-        evidence = {'path': GR.OWN_MESSAGE, 'objective': data['objective_uuid'],
+        # The path is the objective's acceptance's: his own message, or his new-project decision (VELDO-0143).
+        evidence = {'path': acceptance.get('path'), 'objective': data['objective_uuid'],
                     'objective_revision': objective.get('accepted_revision'),
                     'intake_command': acceptance.get('intake_command'), 'intake_source': acceptance.get('intake_source'),
                     'attribution': acceptance.get('attribution'), 'admission_request': request['uuid'],
                     'request_revision': request['revision'], 'request_digest': request['digest'], 'ruling': 'approve',
                     'principals': [owner], 'revision': data['decomposition_revision'],
                     'digest': data['decomposition_digest']}
+        if acceptance.get('path') == GR.NEW_PROJECT:
+            evidence['decision'] = acceptance.get('decision')
         units = [u['unit'] for u in data['decomposition']]
         data['admission'] = dict(evidence, questions=[])
         data['priority'] = dict(evidence, rank=request['content']['priority']['rank'], units=units)

@@ -1,0 +1,161 @@
+[
+ {
+  "commit": "9e25f4da",
+  "exit": 1,
+  "summary": [
+   "  SELFTEST FAIL: VELDO-0189 switch/resumed-failure",
+   "  SELFTEST FAIL: VELDO-0189 ownership/start-drops",
+   "  SELFTEST FAIL: VELDO-0189 ownership/commit-refused",
+   "selftest (PARTIAL, 1 of 165 suites): 57 passed, 3 failed in 46.89s"
+  ],
+  "points_seen": [
+   [
+    "after kill-point section",
+    [
+     "begin",
+     "staged",
+     "prepared",
+     "exchanged",
+     "engine_pin",
+     "engines_record",
+     "adoption_key",
+     "adoption_signers",
+     "adoption_signers",
+     "unit",
+     "configuration",
+     "record",
+     "restart",
+     "removed_previous",
+     "committed",
+     "done"
+    ]
+   ],
+   [
+    "after adoption-signer-kill row",
+    [
+     "begin",
+     "adoption_key",
+     "adoption_signers",
+     "adoption_signers",
+     "restart",
+     "done"
+    ]
+   ],
+   [
+    "at resumed-failure",
+    [
+     "begin",
+     "adoption_key",
+     "adoption_signers",
+     "adoption_signers",
+     "restart",
+     "done"
+    ]
+   ],
+   [
+    "at start-drops and commit-refused",
+    [
+     "begin",
+     "adoption_key",
+     "adoption_signers",
+     "adoption_signers",
+     "restart",
+     "done"
+    ]
+   ]
+  ]
+ },
+ {
+  "commit": "02347941",
+  "exit": 2,
+  "summary": [
+   "selftest (PARTIAL, 1 of 165 suites): 60 passed, 0 failed in 51.92s"
+  ],
+  "points_seen": [
+   [
+    "after kill-point section",
+    [
+     "begin",
+     "staged",
+     "prepared",
+     "exchanged",
+     "engine_pin",
+     "engines_record",
+     "adoption_key",
+     "adoption_signers",
+     "adoption_signers",
+     "unit",
+     "configuration",
+     "record",
+     "restart",
+     "removed_previous",
+     "committed",
+     "done"
+    ]
+   ],
+   [
+    "after adoption-signer-kill row",
+    [
+     "begin",
+     "staged",
+     "prepared",
+     "exchanged",
+     "engine_pin",
+     "engines_record",
+     "adoption_key",
+     "adoption_signers",
+     "adoption_signers",
+     "unit",
+     "configuration",
+     "record",
+     "restart",
+     "removed_previous",
+     "committed",
+     "done"
+    ]
+   ],
+   [
+    "at resumed-failure",
+    [
+     "begin",
+     "staged",
+     "prepared",
+     "exchanged",
+     "engine_pin",
+     "engines_record",
+     "adoption_key",
+     "adoption_signers",
+     "adoption_signers",
+     "unit",
+     "configuration",
+     "record",
+     "restart",
+     "removed_previous",
+     "committed",
+     "done"
+    ]
+   ],
+   [
+    "at start-drops and commit-refused",
+    [
+     "begin",
+     "staged",
+     "prepared",
+     "exchanged",
+     "engine_pin",
+     "engines_record",
+     "adoption_key",
+     "adoption_signers",
+     "adoption_signers",
+     "unit",
+     "configuration",
+     "record",
+     "restart",
+     "removed_previous",
+     "committed",
+     "done"
+    ]
+   ]
+  ]
+ }
+]

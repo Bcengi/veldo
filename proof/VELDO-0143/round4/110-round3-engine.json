@@ -1,0 +1,31 @@
+{
+ "commit": "bf5a29f1",
+ "details": [
+  "VELDO-0143 detail: proposal/correction-negated: a corrected identity his words negate fails the decision by name ('settled', None); a corrected identity-shown his words negate fails the decision by name ('settled', None); a corrected visibility his words negate fails the decision by name ('settled', None); the reading his words affirm settles it, as he said it ('failed', 'invalid_input:correction:identity')",
+  "VELDO-0143 detail: service/hand-off: AF_UNIX sockets are refused on this host, so no provisioner can reach a running service over its socket",
+  "VELDO-0143 detail: first unit claim: true",
+  "VELDO-0143 detail: first unit offered: []",
+  "VELDO-0143 detail: first unit refused: []",
+  "VELDO-0143 detail: first unit faults: [{\"repository\": \"30cfec12-1d05-4867-bc6d-ceee875dc3a1\", \"reason\": \"unknown_outcome:Refused\"}, {\"repository\": \"repository-89\", \"reason\": \"unknown_outcome:Refused\"}]",
+  "VELDO-0143 detail: activation/first-unit: the new line's project cycles run beside another line's on the service's connection [invalid_registration: invalid_registration: connection already has an allocation authority]; the first unit is offered on that line and dispatched through its Runner [{'station': None, 'identity': None, 'result': None, 'dispatch_id': None}]; the dispatch is in the new repository: its packet names it and its build follows its commit; its commit is authored and committed by the identity alone, an author planted in the environment stripped [None | None]",
+  "VELDO-0143 detail: factory line kept: take no_such_feature; new line faults [{'repository': 'aac05ebc-19ac-4c1b-b522-6506350c0896', 'reason': 'unknown_outcome:Refused'}, {'repository': 'aac05ebc-19ac-4c1b-b522-6506350c0896', 'reason': 'unknown_outcome:Refused'}]; factory faults []",
+  "VELDO-0143 detail: activation/factory-line-kept: after two loop passes the factory line keeps the same cycles and the registry's backlog, team and snapshot transitions are its own; the factory line's backlog take of a RAW feature of its own repository is accepted, the item in that repository; the new line's cycles were refused once, by name, and not tried again on the second pass",
+  "VELDO-0143 detail: factory line restart: order ['110e6e2b-3585-4156-8d4d-8f4e5970229c', '177db29b-d5b5-4644-9400-5f39ab458c24', '1ee70c2a-10e1-465e-adca-bdd7ac708324', '30cfec12-1d05-4867-bc6d-ceee875dc3a1', '56a5b140-bb5a-415b-8d61-718016fa9adb', '5d1b2956-96de-496a-8965-4262a4dc48e4', '6f82b325-14c8-4dd5-b0cd-5123001b1420', '73656b1a-c0a1-4816-b33f-e74a0f578e7d', '88ae2293-1d92-4a1f-8140-7642dc00b35e', 'aac05ebc-19ac-4c1b-b522-6506350c0896', 'cd2b374c-add3-448d-a74c-d31004b6e756', 'e41bc287-8bbc-4350-83d5-f9a9a813c864', 'repository-89']; take None; faults [{'repository': '177db29b-d5b5-4644-",
+  "VELDO-0143 detail: activation/factory-line-restart: the factory project's cycles run on the factory line at both passes, its owners on the connection; its backlog take on its own repository is accepted; no other line holds cycles, and each was refused at most once"
+ ],
+ "exit": 1,
+ "failed_rows": [
+  "VELDO-0143 proposal/correction-negated",
+  "VELDO-0143 service/hand-off",
+  "VELDO-0143 activation/first-unit",
+  "VELDO-0143 activation/factory-line-kept",
+  "VELDO-0143 activation/factory-line-restart"
+ ],
+ "passed": 66,
+ "replacements": [],
+ "stood_in": [
+  "--agent",
+  "--stage"
+ ],
+ "suite": "110_veldo_0143_new_project"
+}

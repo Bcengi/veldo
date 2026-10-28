@@ -1,0 +1,75 @@
+[
+ {
+  "commit": "b44736c0",
+  "error": "0 AK blocks"
+ },
+ {
+  "commit": "6b2805e6",
+  "error": "0 AK blocks"
+ },
+ {
+  "commit": "9e25f4da",
+  "ak_block_line": 1473,
+  "ak_binds_in_suite_scope": [
+   "after",
+   "ak_bridge",
+   "ak_key",
+   "ak_log",
+   "ak_owner_only",
+   "ak_signers",
+   "at",
+   "binding",
+   "calls",
+   "code",
+   "config",
+   "engine_step",
+   "held",
+   "killed_fresh",
+   "line",
+   "now",
+   "pid",
+   "points",
+   "report",
+   "restarted",
+   "restarts",
+   "serving",
+   "signature",
+   "stale",
+   "step",
+   "trust",
+   "whole",
+   "without_signer"
+  ],
+  "later_rows_read_ak_values": [
+   {
+    "row": [
+     "RE"
+    ],
+    "name": "points",
+    "line": 1662
+   },
+   {
+    "row": [
+     "SD",
+     "CR"
+    ],
+    "name": "points",
+    "line": 1751
+   },
+   {
+    "row": [
+     "SD",
+     "CR"
+    ],
+    "name": "points",
+    "line": 1761
+   }
+  ]
+ },
+ {
+  "commit": "02347941",
+  "ak_block_line": 1579,
+  "ak_binds_in_suite_scope": [],
+  "later_rows_read_ak_values": []
+ }
+]

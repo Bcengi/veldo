@@ -108,12 +108,14 @@ def _v171_suite():
     # /dev/shm only when this process can really write there: os.access answers for permission bits,
     # not for the gate's confinement (VELDO-0208), which grants nothing beneath /dev. Inline, because
     # this source is also executed on its own by a proof fixture that supplies only ROOT.
+    # A worker TMPDIR is its registered ownership root, including in unconfined runs.
     fast = None
-    try:
-        os.rmdir(tempfile.mkdtemp(prefix='fast-probe-', dir='/dev/shm'))
-        fast = '/dev/shm'
-    except OSError:
-        pass
+    if not os.environ.get('TMPDIR'):
+        try:
+            os.rmdir(tempfile.mkdtemp(prefix='fast-probe-', dir='/dev/shm'))
+            fast = '/dev/shm'
+        except OSError:
+            pass
     base = Path(tempfile.mkdtemp(prefix='b171-', dir=fast))
     support_path = Path(globals().get('__setup_support__', ROOT / 'scripts/suites/support/setup_runtime.py'))
     runtime = load('v171_runtime', support_path)
@@ -1182,6 +1184,7 @@ def _v171_suite():
             return {k: v for k, v in snapshot(root_b, install_b, units_b, trust_b.parent, binding_b).items()
                     if not k.startswith(own)}
         before, head = trees_b(), journal(store_b)
+        before_signers_b = (host_b / 'enrollment_signers').read_text()
         before_config = json.loads((home_b / 'config' / 'service.json').read_text())
         receivers_before = {path: json.loads(Path(path).read_text())
                             for path in sorted(((before_config.get('receiver') or {}).get('configs') or {}).values())}
@@ -1227,10 +1230,20 @@ def _v171_suite():
             config_b, bin_b = home_b / 'config', str(home_b / 'bin')
             outside = [p for p in changed if not p.startswith(bin_b + '/')]
             receivers = sorted(p for p in outside if os.path.basename(p).startswith('receiver-'))
+            # VELDO-0161 AC1: the upgrade lays the adoption signer down as a fresh setup does, so the host's enrollment
+            # signers and the installation's copy of them change too, each gaining exactly that signer's line.
+            signers_b = [str(host_b / 'enrollment_signers'), str(config_b / 'enrollment_signers')]
             check(OB, 'the earlier files that changed outside the installed engine are only the service configuration, the '
-                  'key projection and the receiver configuration the upgrade adds a key to [%s]' % outside,
-                  sorted(set(outside) - set(receivers)) == sorted([str(config_b / 'service.json'), str(host_b / 'allowed_signers')])
+                  'key projection, the receiver configuration the upgrade adds a key to and the two enrollment signers '
+                  'files the adoption signer is added to [%s]' % outside,
+                  sorted(set(outside) - set(receivers))
+                  == sorted([str(config_b / 'service.json'), str(host_b / 'allowed_signers')] + signers_b)
                   and receivers == sorted(receivers_before))
+            adoption_public = derived(keys_b / F.ADOPTION_KEY) if (keys_b / F.ADOPTION_KEY).is_file() else None
+            line = '%s namespaces="%s" %s\n' % (F.ADOPTION_PRINCIPAL, EL.ENROLLMENT_NAMESPACE, adoption_public)
+            check(OB, 'each enrollment signers file kept every byte it held and gained only the adoption signer\'s line, '
+                  'with the key the upgrade generated [%s]' % [Path(p).read_text().splitlines()[-1:] for p in signers_b],
+                  adoption_public is not None and all(Path(p).read_text() == before_signers_b + line for p in signers_b))
             gained = {}
             for path, held in receivers_before.items():
                 now_held = json.loads(Path(path).read_text())
@@ -1251,6 +1264,7 @@ def _v171_suite():
                   and all(now_config.get(k) == record_a.get(k) for k in set(now_config) - set(before_config))
                   and now_config.get('api_service') == str(config_b / 'api-service.json'))
             expected = sorted(str(p) for p in (host_b / 'api-service.json', keys_b / E.edge_key_id('api'),
+                                               keys_b / F.ADOPTION_KEY, keys_b / (F.ADOPTION_KEY + '.pub'),
                                                keys_b / (E.edge_key_id('api') + '.pub'), root_b / 'edge' / 'api-auth',
                                                root_b / 'edge' / 'api-auth.pub', config_b / 'api-service.json',
                                                config_b / 'api-process.json', units_b / api_unit_b,

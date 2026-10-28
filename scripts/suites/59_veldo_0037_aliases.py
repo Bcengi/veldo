@@ -90,6 +90,11 @@ def _s37_run():
         root = _s37_Path(temporary)
         modules = root / 'modules'
         modules.mkdir()
+        # Install the production service closure before substituting mutation targets. Identity
+        # validation loads the presentation module and its renderers transitively.
+        service = _s37_load('s37_install', ROOT / '.veldo/control_service.py')
+        for name in service.closure():
+            _s37_shutil.copyfile(ROOT / '.veldo' / name, modules / name)
         # Literal anchors are required by the registered mutation driver.
         for name, source in {
             'control_alias.py': ROOT / ".veldo" / "control_alias.py",

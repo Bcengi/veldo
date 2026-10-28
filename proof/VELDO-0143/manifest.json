@@ -1,0 +1,183 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0143",
+ "commit": "c1bf6dec88828d9bd45b89fd508c66a6f4029f88",
+ "producer": "Claude implementation agent (Claude Code)",
+ "produced_at": "2026-10-23T05:29:28.352315+00:00",
+ "plan": "PLAN-0019",
+ "work": "W103",
+ "plan_revision": 4,
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "not_run",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/rebase/observations.json",
+     "detail": "Suite 110 on d859b3db in this sandbox: factory/own-repository, intake/new-project-routed, proposal/nothing-asked, proposal/fields, proposal/one-answer, proposal/correction and proposal/refusals green. pm/new-project-run (the factory PM cycle through the factory loop, Runner, launch receiver and a fake engine) is red by name: no installed graph runtime here (runtime_unavailable). Partial run of one suite, not a gate pass."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/rebase/falsifiers.json",
+     "detail": "Declared falsifier newproject143-presented-when-named turns proposal/nothing-asked red; newproject143-second-question and newproject143-factory-repository-unbound are killed too."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/110_veldo_0143_new_project.py",
+     "detail": "Real store, intake by Telegram and API, VELDO-0068 settlement over a loopback Bot API; pm/new-project-run is the host's."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0143/round2/110-head-stage-agent.json",
+     "detail": "Round 2, c1bf6dec, this sandbox with the graph stage and the recording agent stood in (sandbox_run.py): pm/new-project-run green (the factory PM run through the installed LangGraph runtime); it was refused at a07ad991 because provision/handed-over created a project of the same name (round2/README.md, 3). Partial run, not a gate pass."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0143/round5/README.md",
+     "detail": "Round 5: proposal/correction-negated (extended) and proposal/correction-phrasings green here and red on the round-4 module; round5/phrasings.py measures the binding over the review's phrasings and the limits DECISIONS 24 records."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/round6/README.md",
+     "detail": "Round 6 (the round 5 review's R5-1, R5-2, R5-4): a correction binds a value only where his words name exactly it and hold no negator anywhere, and keeps the shown one only where they name none. proposal/correction-negated and proposal/correction-phrasings (rewritten) and proposal/correction-told (new) green here at d63442e5 and red on the round-5 module; round6/phrasings.py measures each guarantee, refusal and limit DECISIONS 26 records (116 cases, 0 not as recorded)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/round7/README.md",
+     "detail": "Round 7 (owner decision, Telegram 36174 and 36175; the round 6 review): the identity and the visibility are offered choices he picks (VELDO-0065 pick kind), bound only from his pick; a correction changes only the name and the objective. proposal/choices and proposal/own-message-doubt (new), proposal/fields, one-answer, correction, correction-bound, correction-negated, correction-phrasings and correction-told green here at c5266dd4 and red on the round-6 engine; suite 62 answer/pick-choices green at 8ff58403 and red on the round-6 module; round7/phrasings.py: 90 review phrasings, 0 not as claimed (79 on the round-6 module). Partial runs, not a gate pass."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/round8/README.md",
+     "detail": "Round 8 (the round 7 review): his own message settles unasked only at private and is presented on a word of visibility (R7-1); an adoption keeps its remote as it is, offered by its identity alone and never recording a visibility (R7-2); ids that fold alike refused, and a request the presenter refuses for good fails the decision by name (R7-3); the judge's choices check has a part (R7-4). proposal/adoption-visibility, identities-fold-alike and not-presentable (new) and own-message-doubt, choices and provision/adoption-path (changed) green here at ef991d51 and, but for choices, red on the round-7 engine. Partial runs, not a gate pass."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/round9/README.md",
+     "detail": "Round 9 (the round 8 review): an adoption's pick is accept <identity> adopt, which no creation pick folds into (R8-1); the decision fails before an unpresentable request is canceled, and the next pass cancels one a crash left open (R8-2); his own message settles unasked only when every other word of it is one the rule has read (R8-3). proposal/adoption-pick-folds (new) and adoption-visibility, presentation-interrupted and own-message-doubt (changed) green here at e2430418 and 4a5247cb and red on the round-8 engine; round9/probes.py: no choices folding alike and no misbinding over 15664 layouts (204 and 40 on the round-8 module). Partial runs, not a gate pass."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "not_run",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/rebase/observations.json",
+     "detail": "On d859b3db in this sandbox: provision/settlement-required, provision/created, provision/answered-and-corrected, provision/directory-not-empty, provision/adoption-path, provision/step-failures, provision/checks-before-creation, provision/interrupted, provision/observed, provision/handed-over and service/provisions green; service/hand-off (the service-started provisioner's take-on over a real socket) red by name, AF_UNIX refused here, the host's. Partial run of one suite, not a gate pass."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/rebase/falsifiers.json",
+     "detail": "Declared falsifier newproject143-provisioner-unsettled turns provision/settlement-required red; directory-overwritten, step-failure-continues, remote-owner-unchecked, ambient-push, checks-after-creation, configuration-unchecked-before-remote, interrupted-left-provisioning, live-run-unheld, take-on-not-sent, take-on-not-due and provisioner-end-unseen are killed too."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/110_veldo_0143_new_project.py",
+     "detail": "Real Git repositories, a loopback GitHub REST stand-in creating bare remotes, pushes through the VELDO-0153 identity profile inside the hermetic fence (without its recording agent here, printed), the provisioner as its own process started by the service."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0143/round2/README.md",
+     "detail": "Round 2: no signature on a new project's path reaches an SSH agent (provision/signing-no-agent; mutation newproject143-signer-reaches-agent killed); with the agent emulated, every provision row green on c1bf6dec and red at a07ad991 as on the host. The scaffold lays init_scaffold.py, which the installer's closure reaches through the provisioner (suite 66 authority/installed-assets, the host's; installed_assets.py here)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/round7/README.md",
+     "detail": "Round 7: service/provisions requires a provisioner whose take-on is withheld to make the pass due by its end alone, on both branches; red here under newproject143-provisioner-end-unseen on that part by itself (round7/110-provisioner-end-unseen.json). provision/answered-and-corrected: the picked public created public. Partial run, not a gate pass."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/rebase/observations.json",
+     "detail": "activation/order, activation/applied, activation/failed-activates-nothing, activation/admitted-without-question and activation/new-line green on d859b3db in this sandbox. Partial run of one suite, not a gate pass."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/rebase/falsifiers.json",
+     "detail": "Declared falsifier newproject143-activated-while-provisioning turns activation/order red."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/110_veldo_0143_new_project.py",
+     "detail": "The authority service's take-on and new-project pass in this process; the owner told by the VELDO-0128 report through the loopback Bot API. The first unit dispatched in the new repository with the identity as author is no longer AC3's observation: the owner moved it to VELDO-0188 AC1 (Telegram 36153, approved by 36156; 5e934808), and suite 110's row activation/first-unit was removed (ad37b673). Its logic, unchanged, is the seed proof/VELDO-0143/round4/first-unit-for-0188.py, run by no suite."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0143/round2/110-a07-stage-agent.json",
+     "detail": "Round 2: activation/order and activation/failed-activates-nothing ended in KeyError('push') at a07ad991 with the agent emulated (the fence raised in provision/step-failures first); green on c1bf6dec (round2/110-head-stage-agent.json)."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0143/round4/first-unit-for-0188.py",
+     "detail": "The former row activation/first-unit, kept unchanged to seed VELDO-0188 AC1's new-project row (owner, Telegram 36156). It was red only on its first part (the new line's project cycles on the service's one connection, VELDO-0188's job); nothing in VELDO-0143 is open on it."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0143/round5/README.md",
+     "detail": "Round 5 (the round 4 review's R4-1 to R4-6): suite 110 here, every row green except service/hand-off (AF_UNIX, the host's); activation/factory-intake-current, activation/factory-paused-resumed and activation/new-projects-kept red on the round-4 engine. Partial run of one suite, not a gate pass."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0143/round6/README.md",
+     "detail": "Round 6 (R5-3): a line defers to the factory line only while the factory project can still run, and names each deferral (pm_cycles:deferred_to_factory_line). activation/factory-canceled (new), activation/factory-paused-resumed and activation/factory-line-restart (extended) green here and red on the round-5 engine. Partial run of one suite, not a gate pass."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "not_run",
+   "detail": "Focused: suite 110 on d859b3db, 47 rows passed, 2 red by name (service/hand-off: AF_UNIX; pm/new-project-run: runtime_unavailable). Suite 109 identical to 8f749423 (rebase/suite-109.json); 31 consumer suites identical to 8f749423 (rebase/consumer-suites.json). No full selftest."
+  },
+  {
+   "name": "integration",
+   "status": "not_run",
+   "detail": "The factory PM run, the socket hand-off, the setup suites and the AF_UNIX rows need the host (REBASE.md, Host runs)."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "detail": "Finding 143: all sixteen mutations killed through check_teeth_mutations.py --worker (rebase/falsifiers.json). Finding 161 on this branch: 55 cases run, 54 killed by a row green at baseline, adoption161-restart-take-on the host's (rebase/falsifiers-161.json). Round 6: all 44 finding-143 cases that target suite 110 killed in worker mode on d63442e5 (round6/falsifiers-143-round6.json); newproject143-scaffold-not-laid is the host's. Round 7: all 48 finding-143 cases that target suite 110 killed in worker mode on c5266dd4 (round7/falsifiers-143-round7.json); the two suite-62 cases each turn answer/pick-choices red (round7/62-*.json); newproject143-scaffold-not-laid is the host's. Round 8: 56 of the 57 finding-143 cases that target suite 110 killed in worker mode on c95472a3, and newproject143-adoption-visibility-recorded, which survived there, killed on ef991d51 with the three other adoption cases (round8/falsifiers-143-round8.json). Round 9: all 61 finding-143 cases that target suite 110 killed in worker mode on e2430418 (round9/falsifiers-143-round9.json)."
+  },
+  {
+   "name": "lint",
+   "status": "passed",
+   "detail": "bash scripts/check_lint.sh: lint pass."
+  },
+  {
+   "name": "template_sync",
+   "status": "passed",
+   "detail": "bash scripts/check_template_sync.sh: pass."
+  },
+  {
+   "name": "generated",
+   "status": "passed",
+   "detail": "bash scripts/check_generated.sh: pass."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "detail": "bash scripts/verify.sh is the host's to run (REBASE.md, Host runs)."
+  }
+ ],
+ "assumptions": [
+  "VELDO-0161 (round 5, 8f749423) and VELDO-0153 are the base of this branch and are not landed.",
+  "A correction is read by the factory PM and settles the decision without a second presentation.",
+  "\"Registered protected effect\" is the named effect repository_provisioning that only the running service starts with the trusted provisioner configuration.",
+  "The factory project's own repository is no line; its cycles run on the work configuration's first line.",
+  "A factory set up before this change keeps its factory project on the workspace and has no provisioner configuration until set up anew.",
+  "Each interpretation of the specification is listed in DECISIONS.md for the reviewer to judge.",
+  "Independent critical-risk review and the owner's approval are outstanding.",
+  "AC3's first-unit observation is VELDO-0188 AC1's (owner decision, Telegram 36156); VELDO-0143 keeps AC3's claim, set and completeness, the owner told, and its falsifier."
+ ],
+ "rollback": "Stop provisioning and adoption and disable the adoption signer; repositories already created or adopted stay as they are, with their records, for the owner to remove by hand. No automatic rollback."
+}

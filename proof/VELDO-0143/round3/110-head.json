@@ -1,0 +1,23 @@
+{
+ "commit": "74ce781d",
+ "details": [
+  "VELDO-0143 detail: service/hand-off: AF_UNIX sockets are refused on this host, so no provisioner can reach a running service over its socket",
+  "VELDO-0143 detail: first unit claim: true",
+  "VELDO-0143 detail: first unit offered: []",
+  "VELDO-0143 detail: first unit refused: []",
+  "VELDO-0143 detail: first unit faults: [{\"repository\": \"ee670d3c-4a80-487a-9a49-b12132a29012\", \"reason\": \"unknown_outcome:Refused\"}, {\"repository\": \"repository-89\", \"reason\": \"unknown_outcome:Refused\"}]",
+  "VELDO-0143 detail: activation/first-unit: the new line's project cycles run beside another line's on the service's connection [invalid_registration: invalid_registration: connection already has an allocation authority]; the first unit is offered on that line and dispatched through its Runner [{'station': None, 'identity': None, 'result': None, 'dispatch_id': None}]; the dispatch is in the new repository: its packet names it and its build follows its commit; its commit is authored and committed by the identity alone, an author planted in the environment stripped [None | None]"
+ ],
+ "exit": 1,
+ "failed_rows": [
+  "VELDO-0143 service/hand-off",
+  "VELDO-0143 activation/first-unit"
+ ],
+ "passed": 64,
+ "replacements": [],
+ "stood_in": [
+  "--agent",
+  "--stage"
+ ],
+ "suite": "110_veldo_0143_new_project"
+}

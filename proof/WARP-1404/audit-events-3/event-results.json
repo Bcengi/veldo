@@ -1,0 +1,718 @@
+{
+  "before": [
+    {
+      "case": "cold writable cache",
+      "phase": "baseline",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "warm cache",
+      "phase": "baseline",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.utime",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.utime"
+      ]
+    },
+    {
+      "case": "os.utime",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.chflags synthetic (unavailable)",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.chflags"
+      ]
+    },
+    {
+      "case": "os.chflags synthetic (unavailable)",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.lchown",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.chown"
+      ]
+    },
+    {
+      "case": "os.lchown",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.setxattr",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.setxattr"
+      ]
+    },
+    {
+      "case": "os.setxattr",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.removexattr",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.removexattr"
+      ]
+    },
+    {
+      "case": "os.removexattr",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "shutil.make_archive",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "shutil.make_archive",
+        "open archive-made.zip mode w+"
+      ]
+    },
+    {
+      "case": "shutil.make_archive",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "shutil.unpack_archive",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "shutil.unpack_archive",
+        "os.mkdir",
+        "open archive-output/member.txt mode w"
+      ]
+    },
+    {
+      "case": "shutil.unpack_archive",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "socket.__new__",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "socket.__new__"
+      ]
+    },
+    {
+      "case": "socket.__new__",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "socket.sendto",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "socket.__new__",
+        "socket.sendto"
+      ]
+    },
+    {
+      "case": "socket.sendto",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "socket.sendmsg",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "socket.__new__",
+        "socket.sendmsg"
+      ]
+    },
+    {
+      "case": "socket.sendmsg",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.replace",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.rename"
+      ]
+    },
+    {
+      "case": "os.replace",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.truncate",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.truncate"
+      ]
+    },
+    {
+      "case": "os.truncate",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.killpg",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.killpg"
+      ]
+    },
+    {
+      "case": "os.killpg",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "socket.sethostname",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "socket.sethostname"
+      ]
+    },
+    {
+      "case": "socket.sethostname",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "ctypes.dlopen",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "ctypes.dlopen",
+        "ctypes.dlopen"
+      ]
+    },
+    {
+      "case": "ctypes.dlopen",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "ctypes.call_function",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "ctypes.dlopen",
+        "ctypes.dlopen",
+        "ctypes.call_function"
+      ]
+    },
+    {
+      "case": "ctypes.call_function",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "_ctypes raw address call",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "_ctypes raw address call",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "ctypes.dlsym",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "ctypes.dlopen",
+        "ctypes.dlopen"
+      ]
+    },
+    {
+      "case": "ctypes.dlsym",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "ctypes.dlsym/handle",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "ctypes.dlopen",
+        "ctypes.dlopen"
+      ]
+    },
+    {
+      "case": "ctypes.dlsym/handle",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "ctypes.cdata",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "ctypes.dlopen"
+      ]
+    },
+    {
+      "case": "ctypes.cdata",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    }
+  ],
+  "after": [
+    {
+      "case": "cold writable cache",
+      "phase": "baseline",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "warm cache",
+      "phase": "baseline",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.utime",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.utime"
+      ]
+    },
+    {
+      "case": "os.utime",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.chflags synthetic (unavailable)",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.chflags"
+      ]
+    },
+    {
+      "case": "os.chflags synthetic (unavailable)",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.lchown",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.chown"
+      ]
+    },
+    {
+      "case": "os.lchown",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.setxattr",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.setxattr"
+      ]
+    },
+    {
+      "case": "os.setxattr",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.removexattr",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.removexattr"
+      ]
+    },
+    {
+      "case": "os.removexattr",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "shutil.make_archive",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "shutil.make_archive",
+        "open archive-made.zip mode w+"
+      ]
+    },
+    {
+      "case": "shutil.make_archive",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "shutil.unpack_archive",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "shutil.unpack_archive",
+        "os.mkdir",
+        "open archive-output/member.txt mode w"
+      ]
+    },
+    {
+      "case": "shutil.unpack_archive",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "socket.__new__",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "socket.__new__"
+      ]
+    },
+    {
+      "case": "socket.__new__",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "socket.sendto",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "socket.__new__",
+        "socket.sendto"
+      ]
+    },
+    {
+      "case": "socket.sendto",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "socket.sendmsg",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "socket.__new__",
+        "socket.sendmsg"
+      ]
+    },
+    {
+      "case": "socket.sendmsg",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.replace",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.rename"
+      ]
+    },
+    {
+      "case": "os.replace",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.truncate",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.truncate"
+      ]
+    },
+    {
+      "case": "os.truncate",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "os.killpg",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "os.killpg"
+      ]
+    },
+    {
+      "case": "os.killpg",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "socket.sethostname",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "socket.sethostname"
+      ]
+    },
+    {
+      "case": "socket.sethostname",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "ctypes.dlopen",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "import ctypes",
+        "import _ctypes",
+        "import _ctypes",
+        "ctypes.dlopen",
+        "import ctypes._endian",
+        "ctypes.dlopen",
+        "ctypes.dlsym"
+      ]
+    },
+    {
+      "case": "ctypes.dlopen",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "ctypes.call_function",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "import ctypes",
+        "import _ctypes",
+        "import _ctypes",
+        "ctypes.dlopen",
+        "import ctypes._endian",
+        "ctypes.dlopen",
+        "ctypes.dlsym",
+        "ctypes.call_function"
+      ]
+    },
+    {
+      "case": "ctypes.call_function",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "_ctypes raw address call",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "import _ctypes",
+        "import _ctypes"
+      ]
+    },
+    {
+      "case": "_ctypes raw address call",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "ctypes.dlsym",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "import ctypes",
+        "import _ctypes",
+        "import _ctypes",
+        "ctypes.dlopen",
+        "import ctypes._endian",
+        "ctypes.dlopen",
+        "ctypes.dlsym"
+      ]
+    },
+    {
+      "case": "ctypes.dlsym",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "ctypes.dlsym/handle",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "import ctypes",
+        "import _ctypes",
+        "import _ctypes",
+        "ctypes.dlopen",
+        "import ctypes._endian",
+        "ctypes.dlopen",
+        "ctypes.dlsym/handle"
+      ]
+    },
+    {
+      "case": "ctypes.dlsym/handle",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    },
+    {
+      "case": "ctypes.cdata",
+      "phase": "injected",
+      "complete": true,
+      "ac5_green": false,
+      "events": [
+        "import ctypes",
+        "import _ctypes",
+        "import _ctypes",
+        "ctypes.dlopen",
+        "import ctypes._endian",
+        "ctypes.cdata"
+      ]
+    },
+    {
+      "case": "ctypes.cdata",
+      "phase": "restored",
+      "complete": true,
+      "ac5_green": true,
+      "events": []
+    }
+  ]
+}

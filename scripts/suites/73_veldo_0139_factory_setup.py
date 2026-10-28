@@ -466,11 +466,21 @@ def _v139_suite():
             check(LD, 'every key the setup generated is a 0600 file of this account',
                   all(mode_of(p) == ('0o600', os.getuid())
                       for p in (keys / 'journal', keys / 'edge-telegram', keys / 'settlement', keys / 'qualification-requester',
+                                keys / 'adoption-signer',
                                 state_root / 'edge' / 'edge-auth')))
             signers = Path(trust.enrollment_signers).read_text() if trust is not None else ''
-            check(LD, 'this host\'s trust names its identity and the owner, with his key, as enrollment signer',
+            # VELDO-0161 AC1: "The adoption signer is a service key setup enrolls among the host's enrollment
+            # signers". So the file is exactly two lines: the owner with his key, then the adoption signer with the
+            # public key of the private key setup generated in the key directory, both in the enrollment namespace.
+            adoption_key = keys / F.ADOPTION_KEY
+            adoption_public = derived(adoption_key) if adoption_key.is_file() else ''
+            check(LD, 'this host\'s trust names its identity and, as enrollment signers, exactly the owner with his key '
+                  'and the adoption signer with its key [%d line(s)]' % len(signers.splitlines()),
                   trust is not None and trust.host_identity == report.get('host_identity')
-                  and signers.split() == [owner, 'namespaces="%s"' % EL.ENROLLMENT_NAMESPACE] + owner_public.split()
+                  and [line.split() for line in signers.splitlines()]
+                  == [[owner, 'namespaces="%s"' % EL.ENROLLMENT_NAMESPACE] + owner_public.split(),
+                      ['adoption-signer', 'namespaces="%s"' % EL.ENROLLMENT_NAMESPACE] + adoption_public.split()]
+                  and bool(adoption_public) and adoption_public != owner_public
                   and mode_of(host_trust) == ('0o600', os.getuid()))
             problems = CEN.verify_binding(str(workspace), binding, trust.verifier(owner, str(workspace)), trust.host_identity)
             check(LD, 'the workspace binding names this store, is enrolled by the owner and verifies under the host trust '

@@ -1,0 +1,31 @@
+{
+ "commit": "2e8feac2",
+ "details": [
+  "VELDO-0143 detail: proposal/correction-negated: a corrected identity-period his words negate fails the decision by name ('settled', None); a corrected visibility-period his words negate fails the decision by name ('settled', None); a corrected identity-neither his words negate fails the decision by name ('settled', None); a corrected identity-both his words negate fails the decision by name ('settled', None); a corrected identity-ambiguous his words negate fails the decision by name ('settled', None); the reading his words affirm settles it, as he said it ('failed', 'invalid_input:correction:v",
+  "VELDO-0143 detail: correction phrasings judged wrongly: [('it cannot be public', 'personal/public kept'), ('dont make it public', 'personal/public kept'), ('nothing public please', 'personal/public kept'), ('neither public', 'personal/public kept'), ('except public', 'personal/public kept'), ('other than public', 'personal/public kept'), ('anything but public', 'personal/public kept'), ('public? no', 'personal/public kept'), ('it wont be public', 'personal/public kept'), ('cant be public', 'personal/public kept'), ('didnt want it public', 'personal/public kept'), ('avoid public', 'personal/pub",
+  "VELDO-0143 detail: proposal/correction-phrasings: each value his words negate is refused by name (29 phrasings); each value his words affirm settles (7 phrasings)",
+  "VELDO-0143 detail: service/hand-off: AF_UNIX sockets are refused on this host, so no provisioner can reach a running service over its socket",
+  "VELDO-0143 detail: factory intake after the activation: inbox; candidates ['factory-check', 'driftwood', 'reef-watch', 'harbor', 'tidepool', 'mussel', 'inlet', 'cove', 'lagoon', 'rill-two', 'brook', 'fjord']; route unauthorized:project",
+  "VELDO-0143 detail: activation/factory-intake-current: a message naming the new project is recorded with it as a candidate, and hinted; the factory PM's route to it is accepted, the request now the new project's",
+  "VELDO-0143 detail: factory paused then resumed: pause pause, resume resume; held while paused {'repository-89': False, '058a5cc5-a056-4d44-a9db-8c04064dca68': True, '12b925fe-6f6e-4db4-9598-b448b9bcc93a': False, '731a5ceb-92e6-47c7-8418-f0a588951722': False, '80d5777c-26d9-42c9-ad99-dee0e828149d': False, '89b367d0-e64a-4c11-81da-8f4e68effd53': False, '937c40ba-9523-4da1-8a70-2cf86b78fa0b': False, 'af0b4771-ba77-4861-9dad-5f4eb2fed790': False, 'ba72029a-40f2-4e79-ac9c-751b8519c39f': False, 'c1a0b619-13b8-4989-a2d7-36893f725977': False, 'cfef1c1e-eca0-4c8b-8229-c5b82b77fe05': False, 'de3aab7b-bb",
+  "VELDO-0143 detail: activation/factory-paused-resumed: while it was paused no line built project cycles; once he resumed it, its cycles run on the factory line with its owners on the connection; its backlog take on its own repository is accepted; no other line holds cycles",
+  "VELDO-0143 detail: new-project decisions after a failed build: registered False; first faults [{'repository': 'repository-89', 'reason': 'unknown_outcome:Refused'}]",
+  "VELDO-0143 detail: activation/new-projects-kept: the service's new-project decisions, the ones the factory line's cycles hold, have their operation registered on the connection"
+ ],
+ "exit": 1,
+ "failed_rows": [
+  "VELDO-0143 proposal/correction-negated",
+  "VELDO-0143 proposal/correction-phrasings",
+  "VELDO-0143 service/hand-off",
+  "VELDO-0143 activation/factory-intake-current",
+  "VELDO-0143 activation/factory-paused-resumed",
+  "VELDO-0143 activation/new-projects-kept"
+ ],
+ "passed": 71,
+ "replacements": [],
+ "stood_in": [
+  "--agent",
+  "--stage"
+ ],
+ "suite": "110_veldo_0143_new_project"
+}

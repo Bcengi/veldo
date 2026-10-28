@@ -46,6 +46,39 @@ stamp and the gate event: it is visible on every run, never silent.
       unconfined. With --expect, a record that is missing, empty, unreadable or does not hold
       exactly those stages is an error, never {}: candidate code in the unconfined leg can delete or
       truncate the record, and that must not read as "no unconfined leg ran".
+
+THE MEASURED BUDGET (VELDO-0214). The integration stage's command, scripts/check_first_use.py, runs
+the identical selftest set under the identical confinement that the unit stage's same leg ran just
+before it, so the unit leg's wall time is the measurement its budget is derived from. This runner
+times every leg it runs. A unit leg that passed is recorded in the authority's leg-time store
+(LEG_TIMES, under the owner's ~/.cache, which the confined leg cannot write), keyed by this
+authority checkout, the declaration's digest and the leg; a leg that failed may have stopped early,
+so it records nothing and the last passing measurement stands. Each integration leg is then handed
+the matching unit leg's last fresh measurement in UNIT_SECONDS, beside the leg variables: this gate
+run's when the unit leg ran here, an earlier run's when it did not (a reused or skipped unit stage
+records nothing), and nothing at all when the store has none.
+
+WHO CAN TOUCH THE VALUE. Like the declaration digest, the variable is set only here and the
+caller's is always dropped, so a candidate cannot set it. The confined leg cannot reach the store
+at all: the gate profile denies ~/.cache/veldo to it. The unconfined leg runs with the owner's own
+authority (VELDO-0208), so its code can rewrite the store like anything else the owner can write,
+including the confined leg's entry between the unit and the integration stage. That buys nothing
+toward a verdict: the budget only bounds how long the gate waits, scripts/check_first_use.py holds
+it between a floor of 1800s and a ceiling of 6 hours whatever the store says, and a run over it is
+CANNOT ANSWER, which is red.
+
+THE STORE STAYS SMALL AND HOLDS ONLY GATE MEASUREMENTS. After each recording, the files of
+authority checkouts that no longer exist and every file untouched for STORE_MAX_AGE_DAYS are
+removed (a declaration revision, a deleted worktree or the lander's per-land installation leaves
+its file behind otherwise). The owner's store records only the authority's own list: a suite that
+drives this runner over a fixture list is testing the runner, not timing the gate, and its leg is
+said and not recorded. Where the authority lives is no test: the lander runs the gate from an
+installation it lays down under the system temporary directory
+(tempfile.mkdtemp(prefix="veldo-observation-") / "installed"), and that gate's measurement must
+reach its own integration stage. A suite that drives a temporary authority copy over that copy's
+own list keeps out of the owner's store from its own side, by giving that driver a scratch HOME.
+There is no environment override for the store's path, because that would be one more input to
+forge.
 """
 import argparse
 import hashlib
@@ -56,6 +89,8 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import tempfile
+import time
 
 HERE = Path(__file__).resolve().parent
 DECLARATION = HERE / 'gate_unconfined.json'
@@ -63,6 +98,12 @@ SCHEMA = 'veldo.gate-unconfined/v1'
 # verify.sh's mutation stage is no shell command: CHECK_mutation declares it by this text.
 MUTATION_COMMAND = 'authority mutation stage'
 LEG, ENTRIES, DIGEST = 'VELDO_GATE_LEG', 'VELDO_GATE_UNCONFINED', 'VELDO_GATE_DECLARATION'
+# VELDO-0214: the unit leg's measured seconds, handed to the matching integration leg.
+UNIT_SECONDS = 'VELDO_GATE_UNIT_SECONDS'
+MEASURED_STAGE, BUDGETED_STAGE = 'unit', 'integration'
+LEG_TIMES = Path.home() / '.cache' / 'veldo' / 'gate-leg-seconds'
+STORE_MAX_AGE_DAYS = 30
+TIMES_NAME = re.compile(r'^[0-9a-f]{32}\.json$')
 SUITE = re.compile(r'^[0-9A-Za-z][0-9A-Za-z_]*$')
 ROWS = re.compile(r'^[a-z][a-z0-9-]*$')
 
@@ -112,11 +153,113 @@ def entries(document):
     return [e['suite'] + (':' + e['rows'] if 'rows' in e else '') for e in document['suites']]
 
 
-def _env(leg=None, listed=(), digest=None):
-    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST)}
+def _env(leg=None, listed=(), digest=None, measured=None):
+    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST, UNIT_SECONDS)}
     if leg:
         env[LEG], env[ENTRIES], env[DIGEST] = leg, ','.join(listed), digest
+        if measured is not None:
+            env[UNIT_SECONDS] = json.dumps(dict(measured, leg=leg, declaration=digest),
+                                           sort_keys=True, separators=(',', ':'))
     return env
+
+
+def _times_file(times, digest):
+    """This authority's leg-time file for one declaration: a different list is different legs."""
+    key = hashlib.sha256(('%s\n%s' % (HERE.parent, digest)).encode()).hexdigest()[:32]
+    return Path(times) / (key + '.json')
+
+
+def read_times(times, digest):
+    """{leg: {seconds, at, run}} last recorded for this authority and declaration, or {}."""
+    try:
+        document = json.loads(_times_file(times, digest).read_text())
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(document, dict) or document.get('declaration') != digest \
+            or not isinstance(document.get('legs'), dict):
+        return {}
+    return {leg: item for leg, item in document['legs'].items() if isinstance(item, dict)}
+
+
+def record_time(times, digest, leg, seconds, run):
+    """Record one passing unit leg's wall time; a store that cannot be written is said, not fatal."""
+    try:
+        Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)
+        legs = read_times(times, digest)
+        legs[leg] = {'seconds': round(seconds, 1), 'run': run,
+                     'at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
+        target = _times_file(times, digest)
+        fd, pending = tempfile.mkstemp(prefix='.pending-', dir=str(target.parent))
+        with os.fdopen(fd, 'w') as handle:
+            json.dump({'authority': str(HERE.parent), 'declaration': digest, 'legs': legs}, handle,
+                      sort_keys=True)
+        os.replace(pending, target)
+    except OSError as error:
+        print('   unit: could not record the %s leg time in %s (%s); the integration stage uses '
+              'the last measurement recorded there' % (leg, times, error), flush=True)
+        return False
+    prune_times(times, keep=target)
+    return True
+
+
+def prune_times(times, keep, now=None):
+    """Remove the store's files whose authority checkout is gone or that are older than
+    STORE_MAX_AGE_DAYS, never `keep`; a file that cannot be read or removed is left. Said, not
+    fatal. Returns the names removed."""
+    oldest = (time.time() if now is None else now) - STORE_MAX_AGE_DAYS * 86400
+    removed = []
+    try:
+        listing = list(os.scandir(str(times)))
+    except OSError:
+        return removed
+    for entry in listing:
+        if entry.name == Path(keep).name or not (TIMES_NAME.match(entry.name)
+                                                 or entry.name.startswith('.pending-')):
+            continue
+        try:
+            if not entry.is_file(follow_symlinks=False):
+                continue
+            stale = entry.stat(follow_symlinks=False).st_mtime < oldest
+            if not stale and TIMES_NAME.match(entry.name):
+                try:
+                    authority = json.loads(Path(entry.path).read_text()).get('authority')
+                except (ValueError, AttributeError):
+                    authority = None
+                stale = isinstance(authority, str) and authority != '' and not Path(authority).exists()
+            if stale:
+                os.unlink(entry.path)
+                removed.append(entry.name)
+        except OSError:
+            continue
+    if removed:
+        print('   unit: removed %d leg-time file%s from %s (authority checkout gone or older than %d '
+              'days)' % (len(removed), '' if len(removed) == 1 else 's', times, STORE_MAX_AGE_DAYS),
+              flush=True)
+    return removed
+
+
+def owner_store_refusal(times, path, authority=None):
+    """Why this leg's time must not go into the owner's store, or None. Only the owner's store is
+    guarded: a caller that names its own store is testing the runner and records there."""
+    if Path(times) != LEG_TIMES:
+        return None
+    authority = Path(HERE.parent if authority is None else authority).resolve()
+    if Path(path).resolve() != (authority / 'scripts' / DECLARATION.name):
+        return 'the list %s is not this authority\'s own' % path
+    return None
+
+
+def measurement(times, digest, leg, run):
+    """The integration leg's handed value: the matching unit leg's last fresh time, or None."""
+    item = read_times(times, digest).get(leg)
+    try:
+        seconds = float(item['seconds'])
+    except (TypeError, KeyError, ValueError):
+        return None
+    if not seconds > 0 or seconds == float('inf'):
+        return None
+    return {'seconds': seconds, 'at': str(item.get('at')),
+            'fresh': 'this gate run' if item.get('run') == run else 'an earlier gate run'}
 
 
 def confined(root, command, env):
@@ -151,7 +294,7 @@ def unconfined(root, command, env):
                           stdin=subprocess.DEVNULL).returncode
 
 
-def run_stage(root, stage, command, record, path=DECLARATION):
+def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES):
     try:
         document, digest = load(path)
     except Invalid as error:
@@ -166,13 +309,35 @@ def run_stage(root, stage, command, record, path=DECLARATION):
     whole = [e for e in document['suites'] if 'rows' not in e]
     print('   %s: confined leg - every suite except the %d listed whole, and of the %d listed for some '
           'rows, every row but those' % (stage, len(whole), len(listed) - len(whole)), flush=True)
-    inside = confined(root, command, _env('confined', listed, digest))
-    print('   %s: confined leg: %s' % (stage, 'pass' if inside == 0 else 'FAIL'), flush=True)
+    # The record file is this gate run's own (verify.sh makes it with mktemp), so its path names
+    # the run a measurement came from.
+    run = str(record)
+
+    def leg_run(leg, runner):
+        handed = measurement(times, digest, leg, run) if stage == BUDGETED_STAGE else None
+        if stage == BUDGETED_STAGE:
+            print('   %s: %s leg budget input: %s' % (stage, leg, 'unit %s leg %.1fs, %s (%s)'
+                  % (leg, handed['seconds'], handed['fresh'], handed['at']) if handed
+                  else 'no unit %s leg measurement recorded' % leg), flush=True)
+        started = time.monotonic()
+        code = runner(root, command, _env(leg, listed, digest, handed))
+        seconds = time.monotonic() - started
+        print('   %s: %s leg: %s (%.1fs)' % (stage, leg, 'pass' if code == 0 else 'FAIL', seconds),
+              flush=True)
+        if stage == MEASURED_STAGE and code == 0:
+            refusal = owner_store_refusal(times, path)
+            if refusal is None:
+                record_time(times, digest, leg, seconds, run)
+            else:
+                print('   %s: %s leg time not recorded in the owner\'s store: %s' % (stage, leg, refusal),
+                      flush=True)
+        return code
+
+    inside = leg_run('confined', confined)
     print('   %s: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, %s), '
           '%d entr%s: %s' % (stage, os.path.basename(str(path)), len(listed),
                               'y' if len(listed) == 1 else 'ies', ', '.join(listed)), flush=True)
-    outside = unconfined(root, command, _env('unconfined', listed, digest))
-    print('   %s: unconfined leg: %s' % (stage, 'pass' if outside == 0 else 'FAIL'), flush=True)
+    outside = leg_run('unconfined', unconfined)
     write_record(record, stage, digest, listed)
     return 0 if inside == 0 and outside == 0 else 1
 

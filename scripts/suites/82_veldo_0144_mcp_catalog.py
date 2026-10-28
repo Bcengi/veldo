@@ -10,6 +10,7 @@ keyring or external host is contacted. Every row is reported exactly once.
 
 def _v144_suite():
     import base64
+    import contextlib
     import copy
     import fcntl
     import hashlib
@@ -75,8 +76,11 @@ def _v144_suite():
 
     original = {k: os.environ.get(k) for k in ('PATH', 'DBUS_SESSION_BUS_ADDRESS')}
     server, ing, fixture, lock = None, None, None, None
-    with tempfile.TemporaryDirectory(prefix='v144-') as temporary:
+    with tempfile.TemporaryDirectory(prefix='v144-') as temporary, contextlib.ExitStack() as compiled:
         base = Path(temporary)
+        compiler = load('v144_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
+        code_cache = base / 'compiled'
+        compiled.enter_context(compiler.compiled_sources(base, code_cache))
         # Capture actual fd 1 and fd 2, including os.write and inherited child descriptors.
         captures = [open(base / ('fd-' + str(fd)), 'w+b', buffering=0) for fd in (1, 2)]
         saved_fds = [os.dup(fd) for fd in (1, 2)]
@@ -109,6 +113,7 @@ def _v144_suite():
                 target.unlink(missing_ok=True)
                 if source.is_file():
                     shutil.copyfile(source, target)
+            compiler.install_main_cache(mods / 'control_signer.py', base, code_cache)
             # This executable is the only Secret Service reachable by the suite.
             fake = base / 'fake-keystore'
             fake.mkdir()

@@ -1,0 +1,53 @@
+{
+  "implementation_commit": "1679d3d32aa1dc1ca1ef1f0d4eed69ab82d5e419",
+  "command": "python3 scripts/selftest.py --suite 107_veldo_0153_identity_push",
+  "scratch": "TMPDIR; disposable local Git and loopback HTTP fixtures only.",
+  "exit": 2,
+  "summary": [
+    "107_veldo_0153_identity_push                    91 passed    2.46s",
+    "selftest (PARTIAL, 1 of 163 suites): 117 passed, 0 failed in 2.46s"
+  ],
+  "named_assertions": 91,
+  "shared_assertions": 26,
+  "failures": 0,
+  "scope": "partial, not aggregate unit or gate evidence",
+  "template_sync": {
+    "git_process.py": {
+      "identical": true,
+      "sha256": "2b84f9e5bff76ecc1dd49b5f3b2692cd2a626009cb7d6cc2b81bd86fc94f582b"
+    },
+    "control_git_identity_transport.py": {
+      "identical": true,
+      "sha256": "1732067348729fec0977460f8455672235be1afbb196147c4e7c1fc25e99f8e7"
+    },
+    "control_landing.py": {
+      "identical": true,
+      "sha256": "b81e0f302facf4f73d2d0ec1b1abf2bd7b0c393adbf49e179682d4184134b8c4"
+    },
+    "lander.py": {
+      "identical": true,
+      "sha256": "f9e21bca7e4fecba6daa9010dfc5c756582c6fd4f6b69d776a42020aad03657a"
+    },
+    "control_effect_executor.py": {
+      "identical": true,
+      "sha256": "47f8223d79333d60b27dfea039a76cab12da15b7954eb53df135123f344a64b7"
+    }
+  },
+  "host": "not_run",
+  "gate": "not_run",
+  "consumer_suites": {
+    "passed_scoped": 30,
+    "failed": 26,
+    "incomplete": 12
+  },
+  "deferred_consumers": {
+    "reason": "These consumer suites invoke mutation drivers that the user explicitly prohibited. Deferred to the reviewer rather than running those drivers indirectly.",
+    "suites": [
+      "53_veldo_0123_mutations",
+      "99_veldo_0205_reuse",
+      "101_veldo_0208_landing_reuse",
+      "104_veldo_0210_mutation_workers"
+    ]
+  },
+  "falsifiers_rejected": 14
+}

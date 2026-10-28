@@ -1,0 +1,12 @@
+{
+  "source": "https://docs.python.org/3.12/library/audit_events.html",
+  "checked_on": "2026-10-18",
+  "runtime": "CPython 3.12.3",
+  "events": {
+    "ctypes.dlsym": ["library", "name"],
+    "ctypes.dlsym/handle": ["handle", "name"],
+    "ctypes.cdata": ["address"],
+    "import": ["module", "filename", "sys.path", "sys.meta_path", "sys.path_hooks"]
+  },
+  "import_policy": "Record imports of ctypes, _ctypes and their dotted submodules in the strict bucket for every active audit window."
+}

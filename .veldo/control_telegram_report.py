@@ -20,6 +20,9 @@ real writer of that kind commits:
                        build into review (accept_build), records a review that passes or returns the unit
                        (record_review), or hands it off to landing (handoff);
   stop                 a VELDO-0075 `andon_stop` recorded (control_andon);
+  project_ready        VELDO-0143: a new-project decision (`new_project`, control_project_proposal, the one
+                       writer of that kind) entering `activated` ("<name> is ready; the first objective is
+                       next") or `failed` (it could not be set up, named by its reason, and nothing activated);
   completion           a confirmed landing: VELDO-0051's spec.shipped, derived by its own public reader
                        (control_event_projection.Projection.derive) from a revision_landed receipt for the
                        exact unit and a confirmed publication of its dispatch. Nothing else is a completion:
@@ -130,6 +133,7 @@ FLOOR_KIND = 'floor_unit'                                             # dispatch
 FLOOR_RESULTS = ('accept_build', 'record_review', 'handoff')          # dispatch.FLOOR_TRANSITIONS reported
 UNIT_KIND = 'execution_unit'                                          # entity_contract R13
 STOP_KIND, STOPPED = 'andon_stop', 'stopped'                          # control_andon (VELDO-0075)
+NEW_PROJECT_KIND = 'new_project'                                      # control_project_proposal.KIND (VELDO-0143)
 
 # The declared event set: (event, source entity kinds, handler). The completion handler reads VELDO-0051's
 # journal projection instead of one entity kind.
@@ -140,8 +144,39 @@ REGISTRY = (
     ('work_progress', (DISPATCH_KIND,), '_progress'),
     ('gate_result', (OBSERVATION_KIND, FLOOR_KIND), '_gate'),
     ('stop', (STOP_KIND,), '_stop'),
+    ('project_ready', (NEW_PROJECT_KIND,), '_new_project'),
     ('completion', None, '_completions'),
 )
+
+# VELDO-0143 rounds 6 and 7: a refused correction, in plain words. A correction changes only the project's name
+# and its first objective; the identity and the visibility are changed only by the choice he picks
+# (control_project_proposal.correction_problems), and a new name only when his words name it with no "not", "no"
+# or similar word anywhere.
+_PICKED = ('a correction changes only the name and the first objective; the identity and the visibility change '
+           'only by the choice you pick')
+CORRECTION_UNCLEAR = {
+    'invalid_input:correction:identity': 'Your correction would have set the identity: ' + _PICKED,
+    'invalid_input:correction:visibility': 'Your correction would have set the visibility: ' + _PICKED,
+    'invalid_input:correction:project': ('Your correction did not make the new name clear: I change the name only '
+                                         'when your words name it and hold no "not", "no" or similar word anywhere'),
+    'invalid_input:correction:mode': ('Your correction would change how the repository is set up, adopting a '
+                                      'directory you were not shown or creating one in place of the adoption you were '
+                                      'shown; only the question you answer decides that'),
+    # VELDO-0143 round 8 (R7-3): the question could not be asked at all.
+    'invalid_input:ambiguous_choice': ('I could not ask you: two of its choices would be typed alike, so your answer '
+                                       'could not name one of them'),
+}
+CORRECTION_NEXT = {
+    'invalid_input:correction:project': 'Ask again and give the new name with no "not" or "no" in it, for example '
+                                        '"call it <name>".',
+    # VELDO-0143 round 8: a refused mode is not about the identity or the visibility, so PICKED_NEXT does not fit it.
+    'invalid_input:correction:mode': ('Ask again with the name you want; the question then shows whether its directory '
+                                      'is adopted as it is or a new repository is created, and you answer that.'),
+    'invalid_input:ambiguous_choice': ('Give each Git identity an id that differs from the others by more than case, '
+                                       '"-" or "_", then ask again.'),
+}
+PICKED_NEXT = ('Ask again; when the question comes, pick the choice that names the identity and visibility you want, '
+               'for example "accept <identity> private", and use a correction only for the name or the objective.')
 
 TAXONOMY = {'invalid_input': 'invalid_input', 'no_enrolled_chat': 'missing_authority',
             'invalid_enrollment': 'missing_authority', 'chat_not_enrolled': 'missing_authority',
@@ -409,6 +444,31 @@ class Reporter:
                 'next': 'Features may now be proposed under it; the acceptance admits none of them.',
                 'evidence': 'settlement %s, receipt %s' % (_shown(acceptance.get('settlement_id')),
                                                           _shown(acceptance.get('receipt_id')))}
+
+    def _new_project(self, eid, entry, prior, state):
+        data, before = self._data(entry), self._data(prior)
+        if data.get('state') not in ('activated', 'failed') or data.get('state') == before.get('state'):
+            return None
+        name = _shown(data.get('project'))
+        if data['state'] == 'activated':
+            return {'unit': None, 'run': data.get('dispatch'), 'project': data.get('project'),
+                    'headline': '%s is ready; the first objective is next.' % name,
+                    'fact': 'project %s is active on repository %s, its first objective accepted by decision %s'
+                            % (name, _shown(data.get('repository')), eid),
+                    'next': 'The project manager elaborates the first objective as the project\'s first unit.',
+                    'evidence': 'decision %s, settled by %s' % (eid, _shown(data.get('path')))}
+        fact = 'decision %s failed: %s; nothing was activated' % (eid, _shown(data.get('reason')))
+        unclear = CORRECTION_UNCLEAR.get(str(data.get('reason')))
+        if unclear is None:
+            return {'unit': None, 'run': data.get('dispatch'), 'project': data.get('project'),
+                    'headline': '%s could not be set up.' % name, 'fact': fact,
+                    'next': 'Whatever was made stays as it is, for you to remove by hand; ask again to retry.',
+                    'evidence': 'decision %s' % eid}
+        return {'unit': None, 'run': data.get('dispatch'), 'project': data.get('project'),
+                'headline': '%s could not be set up.' % name,
+                'fact': '%s. %s' % (fact, unclear),
+                'next': CORRECTION_NEXT.get(str(data.get('reason')), PICKED_NEXT),
+                'evidence': 'decision %s' % eid}
 
     def _stop_request(self, request, state):
         """Whether `request` is an andon stop's own request (its notice is the decision message)."""

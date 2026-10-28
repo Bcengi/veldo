@@ -1,0 +1,25 @@
+{
+ "commit": "0fa32df0",
+ "details": [
+  "VELDO-0143 detail: proposal/own-message-doubt: share with everyone: presented for him to pick, not settled from his words None; publish: presented for him to pick, not settled from his words None; opensource: presented for him to pick, not settled from his words None; publically: presented for him to pick, not settled from his words None; everyone can see: presented for him to pick, not settled from his words None",
+  "VELDO-0143 detail: proposal/adoption-visibility: it is offered as its identity and adopt, with no visibility it cannot keep [['accept', 'accept bcengi public', 'accept nokey private', 'accept nokey public', 'accept outward private', 'accept outward public', 'accept personal', 'return_for_elaboration', 'reject']]; the brief says the adopted repository stays as it is on GitHub; a visibility typed for the adopted identity, or its identity alone, is refused unmatched_choice and it stays presented",
+  "VELDO-0143 detail: proposal/adoption-pick-folds: bcengi creating shoal is shown, bcengi-private adopting it is offered as its pick ending in adopt [['accept', 'accept bcengi public', 'accept bcengi-private', 'accept nokey private', 'accept nokey public', 'accept outward private', 'accept outward public', 'accept personal private', 'accept personal public', 'return_for_elaboration', 'reject']]; \"accept bcengi private\", the pair accept approves, and bcengi-private without adopt are refused unmatched_choice, it stays presented [{'accept bcengi private': 'unmatched_choice', 'accept bcengi-private'",
+  "VELDO-0143 detail: proposal/presentation-interrupted: the next pass presents each from its record, the same request, and it is presented; a request the presenter refuses for good, the service killed after its cancel: the decision is already failed, and after the next pass it is still failed by name, never presented [('presenting', None, 'CANCELED') ('presented', None, 'CANCELED')]; killed before its cancel: the decision is failed, and the next pass cancels the request left open [('presenting', None, 'OFFERED') ('failed', 'invalid_input:ambiguous_choice', 'CANCELED')]",
+  "VELDO-0143 detail: service/hand-off: AF_UNIX sockets are refused on this host, so no provisioner can reach a running service over its socket"
+ ],
+ "exit": 1,
+ "failed_rows": [
+  "VELDO-0143 proposal/own-message-doubt",
+  "VELDO-0143 proposal/adoption-visibility",
+  "VELDO-0143 proposal/adoption-pick-folds",
+  "VELDO-0143 proposal/presentation-interrupted",
+  "VELDO-0143 service/hand-off"
+ ],
+ "passed": 88,
+ "replacements": [],
+ "stood_in": [
+  "--agent",
+  "--stage"
+ ],
+ "suite": "110_veldo_0143_new_project"
+}

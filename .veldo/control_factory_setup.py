@@ -21,15 +21,29 @@ already exist, in the order they depend on each other, checking each. It reimple
      (control_service_channel) opens the one qualification decision request as this requester when it
      accepts his qualify command, so the live qualification needs no other preparation;
   7. this host's trust (control_eligibility.host_trust_path, read by load_host_trust) naming this host's
-     identity, the owner as enrollment signer and the settlement signer;
+     identity, the owner and the adoption signer as enrollment signers and the settlement signer. The
+     adoption signer (VELDO-0161) is a service key generated in the protected key directory with the others,
+     whose only use is signing the VELDO-0029 binding of a repository a settled owner decision names
+     (control_repository.AdoptionSigner). A re-run over a factory laid down before it existed lays the key and
+     its enrollment-signers line down exactly as this step does, in the host trust and in the installation's
+     copy of it, as part of the engine upgrade (adoption_laying, lay_adoption_signer), before its restart;
   8. the VELDO-0029 enrollment of the named workspace clone, signed by the owner (control_enrollment.enroll);
+     then the factory project's own repository (VELDO-0143, factory_repository): a small Git repository at
+     <state root>/factory that holds only that project's team configuration (team.json, the default team
+     setup saves, committed under the workspace's identity), enrolled by the owner, bound to the workspace's
+     identity and by the store, and the one execution repository the factory project is activated on, so no
+     repository carries two projects. A factory laid down before it existed keeps its factory project on the
+     workspace; a re-run neither moves it nor requires the repository;
   9. the 0600 VELDO-0073 ingress configuration (control_channel_ingress.load_config and open_ingress read
      it), naming the account's own 0600 bot token file, never a copy of the token;
  10. the VELDO-0047 authority service, installed with that ingress (control_service.install). It starts
      nothing: the service is started by the owner's explicit start and its channel is inert
      (not_activated) until his VELDO-0138 qualify and activate;
  11. the qualified Claude Code copy under the state root (control_engine_claude.pin) and the qualified
-     Codex vendor binding, checked against the installed runtime records and recorded in host/engines.json.
+     Codex vendor binding, checked against the installed runtime records and recorded in host/engines.json;
+ 12. the repository provisioner's configuration (VELDO-0143, host/provisioner.json, 0600): the store, this
+     host's trust, the journal and adoption signer keys, the scaffold templates and GitHub's REST origin, which
+     the running service hands to the provisioner it starts for a settled new-project decision.
 
 WHAT IS REFUSED, BY NAME, WITH NOTHING WRITTEN. Every check runs before the first write: a state root that
 is absent, a link, not a directory, not this account's, not 0700, on an unsupported filesystem or not
@@ -44,12 +58,14 @@ created exclusively.
 
 ROLLBACK. The setup never deletes. A step that fails after writing began is reported by name with the
 step; the owner stops and uninstalls the service with VELDO-0047's lifecycle and removes by hand the
-state root's contents, the host trust file and the workspace binding at
-<clone>/.git/veldo/control/enrollment.json. A second setup over the same paths then succeeds.
+state root's contents (the factory project's repository at <state root>/factory among them), the host
+trust file and the workspace binding at <clone>/.git/veldo/control/enrollment.json. A second setup over the
+same paths then succeeds.
 
 Observations and output carry paths, identities and digests, never a private key byte, a signature or the
 token. Standard library only; every organ is loaded as a sibling by path.
 """
+import contextlib
 import contextvars
 import functools
 import importlib.util
@@ -107,7 +123,7 @@ REQUESTER, REQUESTER_KEY, REQUESTER_SCOPE = _CHANNEL.REQUESTER, _CHANNEL.REQUEST
 PROJECT_MANAGER = 'pm'
 # The owner's name is none of them, nor a default team worker setup enrolls (VELDO-0185).
 RESERVED = (PROJECT_MANAGER, JOURNAL_PRINCIPAL, EDGE_PRINCIPAL, API_EDGE, SETTLEMENT_PRINCIPAL, 'launch-receiver', REQUESTER,
-            *organ('control_factory_setup_dispatch').TEAM_WORKERS)
+            'adoption-signer', *organ('control_factory_setup_dispatch').TEAM_WORKERS)
 # The owner's roles: the bootstrap's two (project_owner, membership_steward) and the authorities a factory
 # owner decides with.
 OWNER_ROLES = ['admission_authority', 'membership_steward', 'priority_authority', 'project_owner',
@@ -119,6 +135,12 @@ DELEGATION_DAYS = 90
 STORE_DIR, KEYS_DIR, EDGE_DIR, HOST_DIR = 'authority', 'keys', 'edge', 'host'
 STORE_NAME = 'control.sqlite3'
 JOURNAL_KEY, SETTLEMENT_KEY, CONNECTION_KEY = 'journal', 'settlement', 'edge-auth'
+# VELDO-0161: the adoption signer's key file and the principal its enrollment-signers line names.
+ADOPTION_KEY, ADOPTION_PRINCIPAL = 'adoption-signer', 'adoption-signer'
+# VELDO-0143: the factory project's own repository under the state root, the one file it holds, and the
+# repository provisioner's configuration in the host directory.
+FACTORY_DIR, TEAM_FILE, PROVISIONER_FILE = 'factory', 'team.json', 'provisioner.json'
+GITHUB_API = 'https://api.github.com'
 PLAIN = re.compile(r'[a-z][a-z0-9._-]{0,62}')
 EXIT_REFUSED, EXIT_USAGE = 1, 2
 
@@ -323,12 +345,84 @@ def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
 # What the file steps write, built once for the first run and for every re-run's comparison
 # ---------------------------------------------------------------------------------------------
 
-def host_files(plan, settlement_public):
-    """The host trust and the two signer files it names: {path: text}."""
+def adoption_signer(keys, name=ADOPTION_KEY):
+    """Generate the adoption signer's key in the protected key directory `keys` (VELDO-0161); its public key."""
+    return _keygen(os.path.join(keys, name), 'veldo-adoption-signer')
+
+
+def adoption_laying(plan, installed, home, settlement_public, differs):
+    """VELDO-0161 on a re-run, read only, before any write: what a factory needs to hold the adoption signer as
+    a fresh setup lays it down (its key in the key directory, its line after the owner's in the host's enrollment
+    signers, and the installation's copy of those signers, which the service reads at its start, equal to them).
+    Each signers file must be absent, what a setup before the adoption signer wrote (the owner's line alone), or
+    what a fresh setup writes for the key the directory holds; anything else is refused by name, never
+    overwritten."""
+    key = os.path.join(plan['keys'], ADOPTION_KEY)
+    public = organ('control_factory_setup_api').derived(key) if os.path.lexists(key) else None
+    if os.path.lexists(key) and public is None:
+        raise differs(key)
+    host_signers = os.path.join(plan['root'], HOST_DIR, 'enrollment_signers')
+    copy = os.path.join(home, 'config', 'enrollment_signers')
+    if installed.get('enrollment_signers') != copy:
+        raise differs(os.path.join(home, 'config', 'service.json'))
+    accepted = {host_files(plan, settlement_public)[host_signers]}
+    if public is not None:
+        accepted.add(host_files(plan, settlement_public, public)[host_signers])
+    held = {}
+    for path in (host_signers, copy):
+        try:
+            info = os.lstat(path)
+        except FileNotFoundError:
+            held[path] = None
+            continue
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) != 0o600
+                or Path(path).read_text() not in accepted):
+            raise differs(path)
+        held[path] = Path(path).read_text()
+    due = public is None or any(text != host_files(plan, settlement_public, public)[host_signers]
+                                for text in held.values())
+    return {'key': key, 'public': public, 'signers': [host_signers, copy], 'settlement': settlement_public, 'due': due}
+
+
+def lay_adoption_signer(plan, laying, observe, UP):
+    """Lay down what adoption_laying found missing, each write one point `observe` records after it is made, so
+    a run killed at any of them is finished by the next: the key is generated beside its place and renamed into
+    it (its public half first), and each signers file is written whole to a new file renamed over it (UP.replace,
+    `UP` the upgrade module the caller's inspection loaded, never a second load of it). A second run finds
+    everything laid and writes nothing."""
+    key, public, wrote = laying['key'], laying['public'], []
+    if public is None:
+        fresh = key + '.upgrade'
+        for leftover in (fresh, fresh + '.pub'):
+            with contextlib.suppress(FileNotFoundError):
+                os.unlink(leftover)
+        public = adoption_signer(plan['keys'], os.path.basename(fresh))
+        os.replace(fresh + '.pub', key + '.pub')
+        os.replace(fresh, key)
+        wrote.append(key)
+        observe({'point': 'adoption_key', 'path': key})
+    text = host_files(plan, laying['settlement'], public)[laying['signers'][0]]
+    for path in laying['signers']:
+        try:
+            now = Path(path).read_text()
+        except FileNotFoundError:
+            now = None
+        if now != text:
+            UP.replace(path, text, 0o600)
+            wrote.append(path)
+            observe({'point': 'adoption_signers', 'path': path})
+    return {'outcome': 'done' if wrote else 'already_done', 'principal': ADOPTION_PRINCIPAL, 'key': key,
+            'written': wrote}
+
+
+def host_files(plan, settlement_public, adoption_public=None):
+    """The host trust and the two signer files it names: {path: text}. The enrollment signers are the owner
+    and, when its key is given, the adoption signer (VELDO-0161)."""
     host = os.path.join(plan['root'], HOST_DIR)
     enrollment_signers, settlement_signers = os.path.join(host, 'enrollment_signers'), os.path.join(host, 'settlement_signers')
-    return {enrollment_signers: '%s namespaces="%s" %s\n' % (plan['owner'], organ('control_eligibility').ENROLLMENT_NAMESPACE,
-                                                             plan['owner_public']),
+    namespace = organ('control_eligibility').ENROLLMENT_NAMESPACE
+    adoption = ('%s namespaces="%s" %s\n' % (ADOPTION_PRINCIPAL, namespace, adoption_public)) if adoption_public else ''
+    return {enrollment_signers: '%s namespaces="%s" %s\n' % (plan['owner'], namespace, plan['owner_public']) + adoption,
             settlement_signers: '%s namespaces="%s" %s\n' % (SETTLEMENT_PRINCIPAL,
                                                              organ('control_decision_dependency').SETTLEMENT_NAMESPACE,
                                                              settlement_public),
@@ -419,7 +513,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     owner_sign = ACT.ssh_signer(plan['owner_key'])
     owner_public = plan['owner_public']
     D = organ('control_factory_setup_dispatch')
-    done = []
+    done, details = [], {}
     step = _Step(done)
     ids = {'domain_uuid': str(uuid.uuid4()), 'repository_uuid': str(uuid.uuid4()), 'store_uuid': str(uuid.uuid4())}
     host = os.path.join(root, HOST_DIR)
@@ -439,7 +533,8 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                   'edge': _keygen(os.path.join(keys, E.edge_key_id(CHANNEL)), 'veldo-edge-telegram'),
                   'settlement': _keygen(os.path.join(keys, SETTLEMENT_KEY), 'veldo-settlement'),
                   'connection': _keygen(os.path.join(root, EDGE_DIR, CONNECTION_KEY), 'veldo-edge-connection'),
-                  'requester': _keygen(os.path.join(keys, REQUESTER_KEY), 'veldo-qualification-requester')}
+                  'requester': _keygen(os.path.join(keys, REQUESTER_KEY), 'veldo-qualification-requester'),
+                  'adoption': adoption_signer(keys)}
         journal_principal, journal_sign = IN.journal_signer({'principal': JOURNAL_PRINCIPAL,
                                                              'key': os.path.join(keys, JOURNAL_KEY)})
     conn, lock = None, None
@@ -527,7 +622,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             K.publish(S, conn, projection)
             os.chmod(projection, 0o600)
         with step('host_trust'):
-            texts = host_files(plan, public['settlement'])
+            texts = host_files(plan, public['settlement'], public['adoption'])
             for path in (os.path.join(host, 'enrollment_signers'), os.path.join(host, 'settlement_signers')):
                 _private(path, texts[path])
             os.makedirs(os.path.dirname(plan['host_trust']), mode=0o700, exist_ok=True)
@@ -541,6 +636,11 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                 setup_identities(conn, ids['domain_uuid'], ids['repository_uuid'], workspace,
                                  git_identities, workspace_identity,
                                  observe=lambda event: done.append(dict(step='git_identity_configured', **event)))
+        factory = None
+        if git_identities is not None:
+            with step('factory_repository'):
+                factory = factory_repository(plan, ids, S, conn, git_identities, workspace_identity, clock)
+                details['factory_repository'] = {k: factory[k] for k in ('path', 'repository_uuid', 'commit')}
         with step('ingress_configuration'):
             texts = ingress_files(plan, ids)
             signer_config = _private(os.path.join(host, 'signer.json'), texts[os.path.join(host, 'signer.json')])
@@ -563,7 +663,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             organ('control_factory_setup_records').directory(root, _differs, write=True)
         with step('api_service_configuration'):
             api_service = _private(api_files['service_config'], api_service_text(plan, ids, transport['name']))
-        dispatch, details = plan['dispatch'], {}
+        dispatch = plan['dispatch']
         work = None
         if dispatch is None:
             details['dispatch'] = DEFERRED
@@ -591,9 +691,12 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             with step('reservation_principals'):
                 details['reservation_principals'] = enroll_reservation(plan, admin, S, K, conn, projection)
             store_steps(plan, dispatch, details, step, lock, Path(installed['home']) / 'bin', ingress, owner_sign,
-                        clock, 'setup-%s' % ids['store_uuid'][:8])
+                        clock, 'setup-%s' % ids['store_uuid'][:8], factory=factory)
             details['account_login'] = D.login_step(D.logins(Path(installed['home']) / 'bin', conn, dispatch['accounts'],
                                                              dispatch['adapters'], root))
+        with step('provisioner_configuration'):
+            details['provisioner_configuration'] = {'path': _private(os.path.join(host, PROVISIONER_FILE),
+                                                                     provisioner_text(plan, ids))}
         genesis = S.export_journal(conn)[0]
     finally:
         if conn is not None:
@@ -621,6 +724,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'runtime_assets_installed': installed['runtime_assets_installed'],
             'pins_made': organ('control_factory_setup_engines').count_pins(root, engines),
             'home': installed['home'], 'started': False, 'qualification_requester': REQUESTER,
+            'adoption_signer': {'principal': ADOPTION_PRINCIPAL, 'key': os.path.join(keys, ADOPTION_KEY)},
             'steps': [name if isinstance(name, dict) else dict({'step': name, 'outcome': 'done'}, **details.get(name, {}))
                       for name in done]
             + [details[name] for name in ('account_login', 'dispatch') if name in details]
@@ -659,26 +763,33 @@ def enroll_reservation(plan, admin, S, K, conn, projection):
             'workers': [p for p, _roles in due if p in D.TEAM_WORKERS]}
 
 
-def store_steps(plan, dispatch, details, step, lock, bin_dir, ingress, owner_sign, clock, prefix, missing=None):
+def store_steps(plan, dispatch, details, step, lock, bin_dir, ingress, owner_sign, clock, prefix, missing=None,
+                factory=None):
     """AC1 and AC4 on the store, after `authority` holds its role: the factory project, the default team, the
     accounts and the reservation policies, through the installed engine's writers under this run's lock. With
-    `missing` (a re-run) only the steps it names write; the policies are reconciled on every run."""
+    `missing` (a re-run) only the steps it names write; the policies are reconciled on every run. `factory` is
+    the factory project's own repository (factory_repository, VELDO-0143), which the factory project is
+    activated on and the default team is recorded in; None keeps it on the workspace (a factory laid down
+    before it existed)."""
     D = organ('control_factory_setup_dispatch')
     store = D.Store(bin_dir, ingress, plan['owner'], owner_sign, lock, clock)
     wanted = missing if missing is not None else {'factory_project', 'default_team', 'account_registration'}
     try:
         if 'factory_project' in wanted:
             with step('factory_project'):
-                answer = store.activate(prefix + '-factory-project')
+                answer = store.activate(prefix + '-factory-project',
+                                        execution_repository=(factory or {}).get('repository_uuid'))
                 if not answer.get('ok'):
                     raise Refused('factory_project_refused:%s' % answer.get('reason'))
         if 'default_team' in wanted:
             with step('default_team'):
                 try:
-                    _team, saved = store.default_team(dispatch, prefix)
+                    team, saved = store.default_team(dispatch, prefix)
                 except D.StepRefused as error:
                     raise Refused(error.code) from None
                 details['default_team'] = {'saved': saved}
+                if factory is not None:
+                    details['default_team']['factory_commit'] = record_team(factory, team)
         if 'account_registration' in wanted:
             with step('account_registration'):
                 details['account_registration'] = {'registered': store.register(dispatch['accounts'])}
@@ -1129,7 +1240,12 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         if not os.path.isfile(path):
             raise _differs(path)
     # The files the earlier steps wrote: equal ones are left alone, absent ones written, none overwritten.
-    base = dict(host_files(plan, API.derived(os.path.join(keys, SETTLEMENT_KEY))), **ingress_files(plan, ids))
+    settlement_public = API.derived(os.path.join(keys, SETTLEMENT_KEY))
+    # VELDO-0161: the adoption signer a factory laid down before it existed lacks is laid by the engine upgrade
+    # (lay_adoption_signer, below); the enrollment signers are that step's to write, not the host trust step's.
+    adoption = adoption_laying(plan, installed, home, settlement_public, _differs)
+    base = dict(host_files(plan, settlement_public, adoption['public']), **ingress_files(plan, ids))
+    base.pop(adoption['signers'][0])
     base_states = {path: API.file_state(path, data, 0o600, _differs) for path, data in base.items()}
     # The memory step's readers and searches, exercised as a fresh setup does, when the step will write.
     if memory_plan is not None and memory_plan['outcome'] == 'done':
@@ -1147,6 +1263,9 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     # here; the upgrade is the first step this run writes.
     engine = inspect_engine(plan, installed, home, unit_dir, (api['unit_path'], unit_body)
                             if os.path.lexists(api['unit_path']) else None)
+    if adoption['due'] and engine['state'] == 'current':
+        # The service reads its enrollment signers when it starts, so laying the adoption signer's restarts it once.
+        engine['restart_due'] = True
     receiver_trust.validate(trust_step, installed, engine['receivers'], _differs)
     records = organ('control_factory_setup_records')
     record_plan = records.prepare(root, installed, engine['receivers'], api, service_text, _differs, engine['writes'])
@@ -1199,7 +1318,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             for path, _expected, _own, state, text, _added in record_plan['files']:
                 if path in (api['service_config'], api['installed_service_config']) and state == 'upgrade':
                     engine['writes'].insert(0, ('configuration', path, text, 0o600))
-        upgraded = upgrade_engine(plan, engine, runner, running)
+        upgraded = upgrade_engine(plan, engine, runner, running, adoption)
         if released:
             lock = take_lock(root, create=False)
             running = (lock is None)
@@ -1425,13 +1544,18 @@ def service_answers(plan):
     return service_request(plan, {'operation': 'inspect', 'entity_ids': []})
 
 
-def upgrade_engine(plan, engine, runner, running):
+def upgrade_engine(plan, engine, runner, running, adoption):
     """Carry out the inspected upgrade; its step of setup's answer."""
     CS, API, UP = organ('control_service'), organ('control_factory_setup_api'), engine['module']
     def prepare():
         engines = organ('control_factory_setup_engines')
-        return engines.ensure(plan['root'], engine['bin'], plan['engines'], Refused,
-                       lambda point: UP.point(engine['log'], point))
+        report = dict(engines.ensure(plan['root'], engine['bin'], plan['engines'], Refused,
+                                     lambda point: UP.point(engine['log'], point)) or {})
+        # VELDO-0161: after the switch and before the restart, so the service the restart starts reads enrollment
+        # signers that name the adoption signer; each write is a point of the step log.
+        report['adoption_signer'] = lay_adoption_signer(plan, adoption, lambda point: UP.point(engine['log'], point),
+                                                        UP)
+        return report
 
     return _api(lambda: UP.run(engine, runner=runner, running=running, answers=service_answers(plan),
                                modes=CS.fixed_mode, bin_mode=CS.BIN_MODE, prepare=prepare,
@@ -1525,3 +1649,70 @@ def main(argv=None, **overrides):
 
 if __name__ == '__main__':
     raise SystemExit(main())
+
+
+# ---------------------------------------------------------------------------------------------
+# The factory project's own repository and the repository provisioner (VELDO-0143)
+# ---------------------------------------------------------------------------------------------
+
+def _git(path, *args, identity=None):
+    _git_process = organ('git_process')
+    done = _git_process.run(['git', '-C', str(path), '-c', 'core.hooksPath=' + os.devnull, *args],
+                                    capture_output=True, text=True, timeout=60, identity=identity)
+    if done.returncode:
+        raise Refused('invalid_input:factory_repository:git', '%s: %s' % (args[0], done.stderr.strip()[:200]))
+    return done.stdout.strip()
+
+
+def factory_repository(plan, ids, S, conn, identities, workspace_identity, clock):
+    """The factory project's own repository (module docstring, step 8): <state root>/factory, a Git repository
+    whose first commit holds nothing, enrolled by the owner, bound to the workspace's identity and by the store.
+    Returns {path, repository_uuid, commit, binding_digest, author}."""
+    GI, CE, EL = organ('control_git_identity'), organ('control_enrollment'), organ('control_eligibility')
+    ACT = organ('control_channel_activation')
+    record = next(r for r in identities if r['id'] == workspace_identity)
+    author = GI.author(record)
+    path = os.path.join(plan['root'], FACTORY_DIR)
+    os.mkdir(path, 0o700)
+    _git(path, 'init', '-q', '-b', 'main')
+    _git(path, '-c', 'commit.gpgsign=false', 'commit', '-q', '--allow-empty', '--no-verify', '-m',
+         'The factory project\'s repository: its team configuration only', identity=author)
+    commit = _git(path, 'rev-parse', 'HEAD')
+    repository = str(uuid.uuid4())
+    binding = CE.enroll(path, ids['domain_uuid'], ids['store_uuid'], plan['store'], plan['host_identity'], 1,
+                        ACT.ssh_signer(plan['owner_key'], EL.ENROLLMENT_NAMESPACE), plan['owner'], clock(),
+                        repository_uuid=repository)
+    setup_identities(conn, ids['domain_uuid'], repository, path, identities, workspace_identity)
+    S.bind_repositories(conn, ids['domain_uuid'], {repository: os.path.realpath(path)})
+    return {'path': os.path.realpath(path), 'repository_uuid': repository, 'commit': commit,
+            'binding_digest': binding.get('binding_digest'), 'author': list(author)}
+
+
+def team_text(team):
+    return json.dumps(team, indent=1, sort_keys=True) + '\n'
+
+
+def record_team(factory, team):
+    """The default team's configuration as the factory repository's one file, committed when it changed.
+    Returns the commit that holds it."""
+    path = os.path.join(factory['path'], TEAM_FILE)
+    text = team_text(team)
+    if os.path.isfile(path) and Path(path).read_text() == text:
+        return _git(factory['path'], 'rev-parse', 'HEAD')
+    Path(path).write_text(text)
+    _git(factory['path'], 'add', TEAM_FILE)
+    _git(factory['path'], '-c', 'commit.gpgsign=false', 'commit', '-q', '--no-verify', '-m',
+         'The factory project\'s team configuration', identity=tuple(factory['author']))
+    return _git(factory['path'], 'rev-parse', 'HEAD')
+
+
+def provisioner_text(plan, ids):
+    """The repository provisioner's configuration (control_effect_executor_creation, veldo.provisioner/v1)."""
+    keys = plan['keys']
+    config = {'schema': 'veldo.provisioner/v1', 'store': plan['store'], 'domain_uuid': ids['domain_uuid'],
+              'store_uuid': ids['store_uuid'], 'authority_generation': 1, 'host_trust': plan['host_trust'],
+              'journal': {'principal': JOURNAL_PRINCIPAL, 'key': os.path.join(keys, JOURNAL_KEY)},
+              'adoption_signer': {'key': os.path.join(keys, ADOPTION_KEY)},
+              'templates': str(organ('init_scaffold').DEFAULT_TEMPLATES),
+              'observations': os.path.join(plan['root'], HOST_DIR, 'provisioner.jsonl'), 'github_api': GITHUB_API}
+    return json.dumps(config, indent=1, sort_keys=True) + '\n'

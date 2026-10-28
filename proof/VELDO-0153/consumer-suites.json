@@ -1,0 +1,1055 @@
+{
+  "method": "Conservative direct references to the changed modules; each named suite runs sequentially with its prerequisite closure. No aggregate gate claim.",
+  "suites": [
+    {
+      "suite": "01_warp_0101_reviewer_notes",
+      "command": "python3 scripts/selftest.py --suite 01_warp_0101_reviewer_notes",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 637 passed, 0 failed in 9.43s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "04_run_status_reader_veldo",
+      "command": "python3 scripts/selftest.py --suite 04_run_status_reader_veldo",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 3 of 163 suites): 1150 passed, 2 failed in 23.19s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: init scaffold gate is GREEN on the empty starter plan",
+        "SELFTEST FAIL: init scaffold gate still GREEN after a re-run"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "06_capabilities_manifest_honesty_veldo",
+      "command": "python3 scripts/selftest.py --suite 06_capabilities_manifest_honesty_veldo",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 4 of 163 suites): 1412 passed, 2 failed in 30.00s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: init scaffold gate is GREEN on the empty starter plan",
+        "SELFTEST FAIL: init scaffold gate still GREEN after a re-run"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "08_restoration_spec_generation_veldo",
+      "command": "python3 scripts/selftest.py --suite 08_restoration_spec_generation_veldo",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 6 of 163 suites): 1961 passed, 2 failed in 36.61s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: init scaffold gate is GREEN on the empty starter plan",
+        "SELFTEST FAIL: init scaffold gate still GREEN after a re-run"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "103_veldo_0142_git_identities",
+      "command": "python3 scripts/selftest.py --suite 103_veldo_0142_git_identities",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 47 passed, 2 failed in 13.98s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0142 lander/identity-and-reland-authors",
+        "SELFTEST FAIL: VELDO-0142 lander/worker-commit-mismatch"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "106_veldo_0185_dispatch_setup",
+      "command": "python3 scripts/selftest.py --suite 106_veldo_0185_dispatch_setup",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 29 passed, 17 failed in 0.77s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0185 fresh/team: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+        "SELFTEST FAIL: VELDO-0185 fresh/adapters: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+        "SELFTEST FAIL: VELDO-0185 fresh/one-engine",
+        "SELFTEST FAIL: VELDO-0185 loop/configured: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+        "SELFTEST FAIL: VELDO-0185 reservation/principals: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+        "SELFTEST FAIL: VELDO-0185 reservation/state-root: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+        "SELFTEST FAIL: VELDO-0185 fresh/registered: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+        "SELFTEST FAIL: VELDO-0185 login/named: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+        "SELFTEST FAIL: VELDO-0185 login/receiver-refuses: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+        "SELFTEST FAIL: VELDO-0185 every-account: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+        "SELFTEST FAIL: VELDO-0185 rerun/changes-nothing: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+        "SELFTEST FAIL: VELDO-0185 rerun/over-earlier-host",
+        "SELFTEST FAIL: VELDO-0185 login/retry-excludes: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+        "SELFTEST FAIL: VELDO-0185 login/recheck: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+        "SELFTEST FAIL: VELDO-0185 rerun/missing-state-root: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+        "SELFTEST FAIL: VELDO-0185 team/workers: setup laid the owner's host down [refused unavailable_service:profile:user_manager]",
+        "SELFTEST FAIL: VELDO-0185 team/newest-model: setup laid the owner's host down [refused unavailable_service:profile:user_manager]"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "19_veldo_0002_work_state",
+      "command": "python3 scripts/selftest.py --suite 19_veldo_0002_work_state",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 63 passed, 0 failed in 0.96s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "24_veldo_0007_install_and_run",
+      "command": "python3 scripts/selftest.py --suite 24_veldo_0007_install_and_run",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 119 passed, 9 failed in 20.09s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0007 AC2 NEGATIVE CONTROL for the guard: the DEFAULT composer (the real publisher) produces packs and the stage passes, so the refusal above is a measurement of what was composed rather than the guard firing always",
+        "SELFTEST FAIL: VELDO-0007 AC3: every scaffolded repository's OWN gate exited zero, over all 7 packs. Laying files down is not installing: 1.0 laid nothing and said so, but a scaffolder that lays a repository whose gate is RED is worse, because the adopter's first act fails and the failure looks like their fault",
+        "SELFTEST FAIL: VELDO-0007 AC3 THE ADOPTER'S GREEN IS A MEASUREMENT AND NOT A SCAN OF NOTHING: every scaffolded tree was COMMITTED before its own gate ran, the index the gate reads is non-empty, and the one `required:` slot the shipped catalog carries reached MORE THAN ZERO files. No count is pinned - a growing template moves all of these numbers and reds nothing - because what is a defect by construction is a green whose required check inspected an empty corpus. Measured: [('aider', 0, 248, None), ('antigravity', 0, 249, None), ('claude', 0, 249, None), ('codex', 0, 248, None), ('copilot', 0, 248, None), ('cursor', 0, 248, None), ('opencode', 0, 248, None)]",
+        "SELFTEST FAIL: VELDO-0007 AC3 A STAND-DOWN THE NESTED GATE RECORDED IS REPORTED BY THIS STAGE: every stand-down line the adopter's gate emitted appears on this stage's own output, named, with the catalog split and the scan reach beside it. A stand-down counted into a green and never printed reads exactly like a measurement, and an operator cannot tell them apart. Reported 0 stand-down line(s)",
+        "SELFTEST FAIL: VELDO-0007 AC4 THE RUN REALLY WROTE A GREAT DEAL, which is what stops the two rows below being vacuous: the sandboxed stage composed with the real publisher, installed and ran a nested gate - exit zero, 'install-and-run: pass', more than ten files laid down - and the pack it installed FROM sits UNDER the TMPDIR it was given, so the bytes went where the criterion says they go. Said: 'rns-child (enforce)) but holds no marker of it: a process between the outer launcher and this one closed it; a child that may start a launcher is handed it with pass_fds=agent_sandbox.launcher_fds()\\n      candidate execution failed in store-denied domain (publication forbidden)\\ninstall-and-run: FAIL'",
+        "SELFTEST FAIL: VELDO-0007 AC4: the temporary directory is REMOVED BY A RUN THAT RETURNS - the TMPDIR handed to that run holds no veldo-install-and-run-* tree once it came back, and the run demonstrably did the work. THE LIMIT IS NAMED RATHER THAN CLAIMED AWAY: the removal is in a `finally`, so a KILLED process leaves its tree behind and this row cannot see that - a review found 302MB of leftovers matching three interrupted runs. Asserted over the directory this row created, never over the machine's /tmp, which is live state nobody owns",
+        "SELFTEST FAIL: VELDO-0007 AC4: THIS repository is untouched by a real in-process run too - the whole tree inventoried by path, size, sha256 and mtime before and after, ignored paths and this checkout's private git state included, shared stores excluded, with the run PASSING so the identity is across work rather than across a no-op. A check that mutated the tree it is checking is the shape that makes a green gate meaningless. Entries that moved: []",
+        "SELFTEST FAIL: VELDO-0007 VELDO-0099 special files and private reflogs: the block ran to completion rather than raising (PermissionError(1, 'Operation not permitted'))",
+        "SELFTEST FAIL: VELDO-0007 AC5: the checker is EXECUTABLE as a stage runs it - invoked as a subprocess over one pack, exiting zero"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "37_veldo_0024_replica",
+      "command": "python3 scripts/selftest.py --suite 37_veldo_0024_replica",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 42 passed, 0 failed in 1.72s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "46_veldo_0029_enrollment",
+      "command": "python3 scripts/selftest.py --suite 46_veldo_0029_enrollment",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 33 passed, 0 failed in 0.15s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "50_git_environment",
+      "command": "python3 scripts/selftest.py --suite 50_git_environment",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 30 passed, 0 failed in 2.42s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "51_parser_boundary",
+      "command": "python3 scripts/selftest.py --suite 51_parser_boundary",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 51 passed, 0 failed in 4.73s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "52_writer_boundary",
+      "command": "python3 scripts/selftest.py --suite 52_writer_boundary",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 36 passed, 0 failed in 7.11s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "56_veldo_0027_signing",
+      "command": "python3 scripts/selftest.py --suite 56_veldo_0027_signing",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 121 passed, 0 failed in 5.03s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "58_veldo_0028_effects",
+      "command": "python3 scripts/selftest.py --suite 58_veldo_0028_effects",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 34 passed, 43 failed in 18.27s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0028 effects/receiver-refused-is-unknown/provider",
+        "SELFTEST FAIL: VELDO-0028 effects/receiver-refused-is-unknown/publication",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-exact-ref",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-confirms-one-change",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-pre-push-hook",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-url-rewrite",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-smart-http",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-head-change",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-push-options",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-records-resolved-destination",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-destination-without-credentials",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-global-insteadof",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-global-credential-helper",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-env-ssh-command",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-global-ssh-command",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-destination-despite-hook-text",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-rejected-destination-recorded",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-completion-from-destination-state",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-hook-text-without-newline",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-non-utf8-output",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-fan-out-agit-report",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-scrub-scp-user-information",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-scrub-transport-prefix",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-scrub-query-fragment",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-refused-when-not-at-old-tip",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-refusal-reaches-caller",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-ref-creation",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-destination-listed-as-resolved",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-call-covers-every-destination",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-scrub-malformed-address",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-requires-clean-push-exit",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-line-break-refused",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-resolution-output-checked",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-resolution-in-c-locale",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-config-selection-parity",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-network-profile-strips-coordinates",
+        "SELFTEST FAIL: VELDO-0028 effects/revocation-in-flight/provider",
+        "SELFTEST FAIL: VELDO-0028 effects/revocation-in-flight/publication",
+        "SELFTEST FAIL: VELDO-0028 effects/publication-revoked-reviewer",
+        "SELFTEST FAIL: VELDO-0028 effects/nonce/provider",
+        "SELFTEST FAIL: VELDO-0028 effects/completion/provider",
+        "SELFTEST FAIL: VELDO-0028 effects/nonce/publication",
+        "SELFTEST FAIL: VELDO-0028 effects/completion/publication"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "58_veldo_0031_claims",
+      "command": "python3 scripts/selftest.py --suite 58_veldo_0031_claims",
+      "status": "incomplete",
+      "summary": [],
+      "failures": [],
+      "diagnostics": [
+        "PermissionError: [Errno 1] Operation not permitted",
+        "raise RuntimeError('claim service did not start')",
+        "RuntimeError: claim service did not start"
+      ]
+    },
+    {
+      "suite": "58_veldo_0035_snapshots",
+      "command": "python3 scripts/selftest.py --suite 58_veldo_0035_snapshots",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 59 passed, 0 failed in 8.27s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "59_veldo_0031_review",
+      "command": "python3 scripts/selftest.py --suite 59_veldo_0031_review",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 29 passed, 3 failed in 31.88s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0031 review claims/review-r1: AssertionError()",
+        "SELFTEST FAIL: VELDO-0031 review claims/review-r3: AssertionError()",
+        "SELFTEST FAIL: VELDO-0031 review claims/review-r6: AssertionError()"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "59_veldo_0037_aliases",
+      "command": "python3 scripts/selftest.py --suite 59_veldo_0037_aliases",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 79 passed, 0 failed in 18.48s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "59_veldo_0043_graph",
+      "command": "python3 scripts/selftest.py --suite 59_veldo_0043_graph",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 47 passed, 0 failed in 10.21s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "60_veldo_0052_eligibility",
+      "command": "python3 scripts/selftest.py --suite 60_veldo_0052_eligibility",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 80 passed, 0 failed in 2.42s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "60_veldo_0053_architecture",
+      "command": "python3 scripts/selftest.py --suite 60_veldo_0053_architecture",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 65 passed, 0 failed in 3.07s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "62_veldo_0039_dispatch",
+      "command": "python3 scripts/selftest.py --suite 62_veldo_0039_dispatch",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 37 passed, 10 failed in 65.56s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0039 dispatch/contract-before-launch",
+        "SELFTEST FAIL: VELDO-0039 dispatch/one-active-per-unit-station",
+        "SELFTEST FAIL: VELDO-0039 dispatch/launch-results",
+        "SELFTEST FAIL: VELDO-0039 dispatch/deadline-after-closed-output",
+        "SELFTEST FAIL: VELDO-0039 dispatch/unknown-never-relaunched",
+        "SELFTEST FAIL: VELDO-0039 dispatch/transitions-from-schema",
+        "SELFTEST FAIL: VELDO-0039 dispatch/result-binding",
+        "SELFTEST FAIL: VELDO-0039 dispatch/terminal-not-completion",
+        "SELFTEST FAIL: VELDO-0039 dispatch/service-principals-only",
+        "SELFTEST FAIL: VELDO-0039 dispatch/observations"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "62_veldo_0054_decisions",
+      "command": "python3 scripts/selftest.py --suite 62_veldo_0054_decisions",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 65 passed, 0 failed in 5.38s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "63_veldo_0040_containment",
+      "command": "python3 scripts/selftest.py --suite 63_veldo_0040_containment",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 72 passed, 11 failed in 25.20s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0040 containment/dedicated-group",
+        "SELFTEST FAIL: VELDO-0040 containment/ordinary-exit",
+        "SELFTEST FAIL: VELDO-0040 containment/unqualified-profile-refused",
+        "SELFTEST FAIL: VELDO-0040 containment/required-settings-refused",
+        "SELFTEST FAIL: VELDO-0040 containment/exit-notified: {\"exit_at\": null, \"idle_worker_alive_in_window\": false, \"latency\": null, \"receiver_wakes\": null, \"recorded_at\": null, \"window_seconds\": 1.5}",
+        "SELFTEST FAIL: VELDO-0040 containment/caps-installed",
+        "SELFTEST FAIL: VELDO-0040 containment/runtime-cap: {\"active\": 0.0, \"beats\": [], \"beats_monotonic\": [], \"began\": 1791636017.6476293, \"bound\": 2.7, \"checks\": {\"beats_present\": false, \"cap_stop_bound\": false, \"cause_runtime_cap\": false, \"deadline_stop\": false, \"first_beat_after_active\": false, \"last_beat_before_inactive\": false, \"result_timeout\": false, \"runtime_bound\": false, \"state_exited\": false, \"stubborn_not_living\": true, \"stubborn_present\": false, \"supervision_empty\": false, \"term_present\": false, \"timestamps_ordered\": false, \"unit_not_found\": false}, \"false_conjuncts\": [\"state_exited\", \"deadline_stop\", \"cause_runtime_cap\", \"result_timeout\", \"stubborn_present\", \"beats_present\", \"timestamps_ordered\", \"first_beat_after_active\", \"last_beat_before_inactive\", \"runtime_bound\", \"cap_stop_bound\", \"term_present\", \"supervision_empty\", \"unit_not_found\"], \"inactive\": 0, \"last_beat_after_active\": null, \"last_beat_after_running\": null, \"running_at\": null, \"state\": \"refused\", \"stopping\": 0.0, \"stubborn\": {}, \"stubborn_living\": false, \"supervision\": {}, \"term_count\": 0, \"term_monotonic\": [], \"termination\": null, \"terms\": [], \"unit_after\": null, \"unit_error\": null}",
+        "SELFTEST FAIL: VELDO-0040 containment/cooperative-stop",
+        "SELFTEST FAIL: VELDO-0040 containment/stop-escalation",
+        "SELFTEST FAIL: VELDO-0040 containment/retire-after-empty",
+        "SELFTEST FAIL: VELDO-0040 containment/observations"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "63_veldo_0049_floor",
+      "command": "python3 scripts/selftest.py --suite 63_veldo_0049_floor",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 33 passed, 13 failed in 3.53s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0049 floor/build-acceptance",
+        "SELFTEST FAIL: VELDO-0049 floor/review-independence",
+        "SELFTEST FAIL: VELDO-0049 floor/review-binding",
+        "SELFTEST FAIL: VELDO-0049 floor/land-retry-from-handoff",
+        "SELFTEST FAIL: VELDO-0049 floor/review-policy-count",
+        "SELFTEST FAIL: VELDO-0049 floor/no-builder-reviews",
+        "SELFTEST FAIL: VELDO-0049 floor/finding-not-erased",
+        "SELFTEST FAIL: VELDO-0049 floor/completion-by-lander-only",
+        "SELFTEST FAIL: VELDO-0049 floor/blocking-verdicts-stay-open",
+        "SELFTEST FAIL: VELDO-0049 floor/authority-to-projection",
+        "SELFTEST FAIL: VELDO-0049 floor/observations",
+        "SELFTEST FAIL: VELDO-0049 ran/floor/status-write-sites",
+        "SELFTEST FAIL: VELDO-0049 ran/floor/review-independence"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "64_veldo_0050_proof",
+      "command": "python3 scripts/selftest.py --suite 64_veldo_0050_proof",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 30 passed, 10 failed in 2.57s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0050 proof/accepted-before-offer",
+        "SELFTEST FAIL: VELDO-0050 proof/actual-checks",
+        "SELFTEST FAIL: VELDO-0050 proof/build-only-no-landing",
+        "SELFTEST FAIL: VELDO-0050 proof/fresh-reviewer-resolves",
+        "SELFTEST FAIL: VELDO-0050 proof/contextual-refusals",
+        "SELFTEST FAIL: VELDO-0050 proof/owning-services",
+        "SELFTEST FAIL: VELDO-0050 proof/no-default-success",
+        "SELFTEST FAIL: VELDO-0050 proof/observations",
+        "SELFTEST FAIL: VELDO-0050 ran/proof/accepted-before-offer",
+        "SELFTEST FAIL: VELDO-0050 ran/proof/no-default-success"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "65_veldo_0132_workflow",
+      "command": "python3 scripts/selftest.py --suite 65_veldo_0132_workflow",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 42 passed, 0 failed in 18.79s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "66_veldo_0042_clones",
+      "command": "python3 scripts/selftest.py --suite 66_veldo_0042_clones",
+      "status": "incomplete",
+      "summary": [],
+      "failures": [],
+      "diagnostics": [
+        "PermissionError: [Errno 13] Permission denied: '/run/user/1000/v42-xiwp6mmi'"
+      ]
+    },
+    {
+      "suite": "66_veldo_0047_authority",
+      "command": "python3 scripts/selftest.py --suite 66_veldo_0047_authority",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 27 passed, 0 failed in 0.53s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "66_veldo_0051_events",
+      "command": "python3 scripts/selftest.py --suite 66_veldo_0051_events",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 32 passed, 5 failed in 3.72s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0051 events/installed-assets",
+        "SELFTEST FAIL: VELDO-0051 events/projection-prefix",
+        "SELFTEST FAIL: VELDO-0051 events/confirmed-landing-only",
+        "SELFTEST FAIL: VELDO-0051 events/observations",
+        "SELFTEST FAIL: VELDO-0051 events/vocabulary-roundtrip"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "67_veldo_0041_heartbeat",
+      "command": "python3 scripts/selftest.py --suite 67_veldo_0041_heartbeat",
+      "status": "incomplete",
+      "summary": [],
+      "failures": [],
+      "diagnostics": [
+        "PermissionError: [Errno 13] Permission denied: '/run/user/1000/v41-zrpxpnrg'"
+      ]
+    },
+    {
+      "suite": "67_veldo_0056_candidates",
+      "command": "python3 scripts/selftest.py --suite 67_veldo_0056_candidates",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 28 passed, 9 failed in 3.81s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0056 candidate/rejection-leaves-trunk",
+        "SELFTEST FAIL: VELDO-0056 candidate/named-policy-refusals",
+        "SELFTEST FAIL: VELDO-0056 candidate/detached-held-trunk",
+        "SELFTEST FAIL: VELDO-0056 candidate/whole-candidate",
+        "SELFTEST FAIL: VELDO-0056 candidate/git-failures-refuse",
+        "SELFTEST FAIL: VELDO-0056 candidate/every-git-operation-checked",
+        "SELFTEST FAIL: VELDO-0056 candidate/observations",
+        "SELFTEST FAIL: VELDO-0056 ran/candidate/rejection-leaves-trunk",
+        "SELFTEST FAIL: VELDO-0056 ran/candidate/detached-held-trunk"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "67_veldo_0135_offers",
+      "command": "python3 scripts/selftest.py --suite 67_veldo_0135_offers",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 30 passed, 5 failed in 3.18s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0135 offers/no-reclaim",
+        "SELFTEST FAIL: VELDO-0135 offers/floor-station",
+        "SELFTEST FAIL: VELDO-0135 offers/finding-path",
+        "SELFTEST FAIL: VELDO-0135 offers/end-to-end",
+        "SELFTEST FAIL: VELDO-0135 offers/observations"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "68_veldo_0134_acceptance",
+      "command": "python3 scripts/selftest.py --suite 68_veldo_0134_acceptance",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 53 passed, 0 failed in 6.62s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "68_veldo_0137_policy_revision",
+      "command": "python3 scripts/selftest.py --suite 68_veldo_0137_policy_revision",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 28 passed, 0 failed in 0.22s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "69_veldo_0058_gate_output",
+      "command": "python3 scripts/selftest.py --suite 69_veldo_0058_gate_output",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 28 passed, 14 failed in 122.93s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0058 gate-output/review-write",
+        "SELFTEST FAIL: VELDO-0058 gate-output/sink-refusals",
+        "SELFTEST FAIL: VELDO-0058 gate-output/post-run-mutation",
+        "SELFTEST FAIL: VELDO-0058 gate-output/installed-policy",
+        "SELFTEST FAIL: VELDO-0058 gate-output/installed-policy-list",
+        "SELFTEST FAIL: VELDO-0058 gate-output/range-base-from-lander",
+        "SELFTEST FAIL: VELDO-0058 gate-output/refs-bound",
+        "SELFTEST FAIL: VELDO-0058 gate-output/live-loop-siblings",
+        "SELFTEST FAIL: VELDO-0058 ran/gate-output/review-write",
+        "SELFTEST FAIL: VELDO-0058 ran/gate-output/post-run-mutation",
+        "SELFTEST FAIL: VELDO-0058 ran/gate-output/installed-policy",
+        "SELFTEST FAIL: VELDO-0058 ran/gate-output/installed-policy-list",
+        "SELFTEST FAIL: VELDO-0058 ran/gate-output/range-base-from-lander",
+        "SELFTEST FAIL: VELDO-0058 ran/gate-output/refs-bound"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "69_veldo_0068_settlement",
+      "command": "python3 scripts/selftest.py --suite 69_veldo_0068_settlement",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 34 passed, 0 failed in 7.91s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "70_veldo_0057_landing",
+      "command": "python3 scripts/selftest.py --suite 70_veldo_0057_landing",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 35 passed, 22 failed in 2.67s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0057 exact-tip/compare-and-swap",
+        "SELFTEST FAIL: VELDO-0057 unconfirmed/confirmed-remote-evidence",
+        "SELFTEST FAIL: VELDO-0057 completion/evidence-chain",
+        "SELFTEST FAIL: VELDO-0057 exact-tip/moved-tip-refused",
+        "SELFTEST FAIL: VELDO-0057 unconfirmed/failed-no-attempt",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/authority",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/approval",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/source",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/proof",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/tree",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/dependency-version",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/dependency-unlanded",
+        "SELFTEST FAIL: VELDO-0057 exact-subject/valid-publishes",
+        "SELFTEST FAIL: VELDO-0057 unconfirmed/unknown-stops",
+        "SELFTEST FAIL: VELDO-0057 unconfirmed/moved-after-ack",
+        "SELFTEST FAIL: VELDO-0057 completion/revision-moved",
+        "SELFTEST FAIL: VELDO-0057 completion/projection-refused",
+        "SELFTEST FAIL: VELDO-0057 completion/foreign-dispatch",
+        "SELFTEST FAIL: VELDO-0057 completion/corrupt-each",
+        "SELFTEST FAIL: VELDO-0057 completion/push-disabled",
+        "SELFTEST FAIL: VELDO-0057 completion/readers",
+        "SELFTEST FAIL: VELDO-0057 completion/projection"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "70_veldo_0069_bindings",
+      "command": "python3 scripts/selftest.py --suite 70_veldo_0069_bindings",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 36 passed, 0 failed in 7.21s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "71_veldo_0076_projects",
+      "command": "python3 scripts/selftest.py --suite 71_veldo_0076_projects",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 50 passed, 8 failed in 63.80s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0076 project/paused-dispatch",
+        "SELFTEST FAIL: VELDO-0076 project/stop-policy",
+        "SELFTEST FAIL: VELDO-0076 project/resume",
+        "SELFTEST FAIL: VELDO-0076 project/cancel",
+        "SELFTEST FAIL: VELDO-0076 project/open-reservation",
+        "SELFTEST FAIL: VELDO-0076 project/complete-resolved",
+        "SELFTEST FAIL: VELDO-0076 project/observability",
+        "SELFTEST FAIL: VELDO-0076 project/owner-revoked"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "71_veldo_0130_api",
+      "command": "python3 scripts/selftest.py --suite 71_veldo_0130_api",
+      "status": "incomplete",
+      "summary": [],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0130 events/retry-after-failure"
+      ],
+      "diagnostics": [
+        "VELDO-0130 events/retry-after-failure detail: the section ran to its end (it raised PermissionError: [Errno 1] Operation not permitted)",
+        "v130s_service.Refused: unavailable_service:profile:user_manager: the worker profile is not qualified on this host"
+      ]
+    },
+    {
+      "suite": "71_veldo_0138_channel_service",
+      "command": "python3 scripts/selftest.py --suite 71_veldo_0138_channel_service",
+      "status": "incomplete",
+      "summary": [],
+      "failures": [],
+      "diagnostics": [
+        "v138_service.Refused: unavailable_service:profile:user_manager: the worker profile is not qualified on this host"
+      ]
+    },
+    {
+      "suite": "72_veldo_0128_reports",
+      "command": "python3 scripts/selftest.py --suite 72_veldo_0128_reports",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 44 passed, 0 failed in 4.43s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "73_veldo_0139_factory_setup",
+      "command": "python3 scripts/selftest.py --suite 73_veldo_0139_factory_setup",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 27 passed, 16 failed in 0.75s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0139 install/assets",
+        "SELFTEST FAIL: VELDO-0139 setup/lays-down",
+        "SELFTEST FAIL: VELDO-0139 refuse/writes-nothing",
+        "SELFTEST FAIL: VELDO-0139 refuse/existing-store",
+        "SELFTEST FAIL: VELDO-0139 edge/enrolled-with-possession",
+        "SELFTEST FAIL: VELDO-0139 chat/enrolled",
+        "SELFTEST FAIL: VELDO-0139 ingress/configuration",
+        "SELFTEST FAIL: VELDO-0139 token/never-copied",
+        "SELFTEST FAIL: VELDO-0139 service/starts-inert",
+        "SELFTEST FAIL: VELDO-0139 journey/qualified-and-active",
+        "SELFTEST FAIL: VELDO-0139 genesis/owner-signed",
+        "SELFTEST FAIL: VELDO-0139 qualification/one-request-across-restart",
+        "SELFTEST FAIL: VELDO-0139 rollback/rerun",
+        "SELFTEST FAIL: VELDO-0139 store/private-and-closed",
+        "SELFTEST FAIL: VELDO-0139 host-trust/directory-checked",
+        "SELFTEST FAIL: VELDO-0139 qualification/opening-retried"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "74_veldo_0140_standing_delegation",
+      "command": "python3 scripts/selftest.py --suite 74_veldo_0140_standing_delegation",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 35 passed, 0 failed in 11.86s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "75_veldo_0062_accounts",
+      "command": "python3 scripts/selftest.py --suite 75_veldo_0062_accounts",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 49 passed, 0 failed in 32.52s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "77_veldo_0149_adopted_activation",
+      "command": "python3 scripts/selftest.py --suite 77_veldo_0149_adopted_activation",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 39 passed, 0 failed in 2.77s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "78_veldo_0060_claude_adapter",
+      "command": "python3 scripts/selftest.py --suite 78_veldo_0060_claude_adapter",
+      "status": "incomplete",
+      "summary": [],
+      "failures": [],
+      "diagnostics": [
+        "PermissionError: [Errno 13] Permission denied: '/run/user/1000/v60-80n00qfw'"
+      ]
+    },
+    {
+      "suite": "78_veldo_0160_account_pool",
+      "command": "python3 scripts/selftest.py --suite 78_veldo_0160_account_pool",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 60 passed, 0 failed in 23.51s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "79_veldo_0061_codex_adapter",
+      "command": "python3 scripts/selftest.py --suite 79_veldo_0061_codex_adapter",
+      "status": "incomplete",
+      "summary": [],
+      "failures": [],
+      "diagnostics": [
+        "PermissionError: [Errno 13] Permission denied: '/run/user/1000/v61-93j3ko98'"
+      ]
+    },
+    {
+      "suite": "80_veldo_0155_claude_baseline",
+      "command": "python3 scripts/selftest.py --suite 80_veldo_0155_claude_baseline",
+      "status": "incomplete",
+      "summary": [],
+      "failures": [],
+      "diagnostics": [
+        "PermissionError: [Errno 13] Permission denied: '/run/user/1000/v155-blawl8a1'"
+      ]
+    },
+    {
+      "suite": "81_veldo_0156_codex_baseline",
+      "command": "python3 scripts/selftest.py --suite 81_veldo_0156_codex_baseline",
+      "status": "incomplete",
+      "summary": [],
+      "failures": [],
+      "diagnostics": [
+        "PermissionError: [Errno 13] Permission denied: '/run/user/1000/v156-nshhuxt3'"
+      ]
+    },
+    {
+      "suite": "82_veldo_0085_decomposition",
+      "command": "python3 scripts/selftest.py --suite 82_veldo_0085_decomposition",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 41 passed, 0 failed in 3.53s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "82_veldo_0129_worker_wiring",
+      "command": "python3 scripts/selftest.py --suite 82_veldo_0129_worker_wiring",
+      "status": "incomplete",
+      "summary": [],
+      "failures": [],
+      "diagnostics": [
+        "PermissionError: [Errno 13] Permission denied: '/run/user/1000/v129-p40hmefk'"
+      ]
+    },
+    {
+      "suite": "82_veldo_0141_execution_record",
+      "command": "python3 scripts/selftest.py --suite 82_veldo_0141_execution_record",
+      "status": "incomplete",
+      "summary": [],
+      "failures": [],
+      "diagnostics": [
+        "PermissionError: [Errno 13] Permission denied: '/run/user/1000/v141-qmtrvl6y'"
+      ]
+    },
+    {
+      "suite": "82_veldo_0165_launch_hygiene",
+      "command": "python3 scripts/selftest.py --suite 82_veldo_0165_launch_hygiene",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 49 passed, 0 failed in 13.18s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "82_veldo_0173_tool_registry",
+      "command": "python3 scripts/selftest.py --suite 82_veldo_0173_tool_registry",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 37 passed, 0 failed in 2.94s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "83_veldo_0154_factory_loop",
+      "command": "python3 scripts/selftest.py --suite 83_veldo_0154_factory_loop",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 28 passed, 11 failed in 5.89s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0154 install/assets",
+        "SELFTEST FAIL: VELDO-0154 loop/runner-in-service",
+        "SELFTEST FAIL: VELDO-0154 loop/journal-wake-offers",
+        "SELFTEST FAIL: VELDO-0154 loop/review-offered",
+        "SELFTEST FAIL: VELDO-0154 loop/receiver-death",
+        "SELFTEST FAIL: VELDO-0154 loop/rerun-another-account",
+        "SELFTEST FAIL: VELDO-0154 loop/ask-before-rerun",
+        "SELFTEST FAIL: VELDO-0154 loop/owner-yes-reruns",
+        "SELFTEST FAIL: VELDO-0154 loop/owner-no-stops",
+        "SELFTEST FAIL: VELDO-0154 loop/reset-timer-wake",
+        "SELFTEST FAIL: VELDO-0154 loop/no-other-timer"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "85_veldo_0158_credential_delivery",
+      "command": "python3 scripts/selftest.py --suite 85_veldo_0158_credential_delivery",
+      "status": "incomplete",
+      "summary": [],
+      "failures": [],
+      "diagnostics": [
+        "PermissionError: [Errno 13] Permission denied: '/run/user/1000/v158-ind_28ak'"
+      ]
+    },
+    {
+      "suite": "85_veldo_0171_setup_api",
+      "command": "python3 scripts/selftest.py --suite 85_veldo_0171_setup_api",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 29 passed, 15 failed in 1.78s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0171 tailscale/refusals",
+        "SELFTEST FAIL: VELDO-0171 tailscale/serve-bg",
+        "SELFTEST FAIL: VELDO-0171 api-edge/enrolled-by-owner",
+        "SELFTEST FAIL: VELDO-0171 api/service-configuration",
+        "SELFTEST FAIL: VELDO-0171 api/unit",
+        "SELFTEST FAIL: VELDO-0171 rerun/changes-nothing",
+        "SELFTEST FAIL: VELDO-0171 rerun/arguments-compared",
+        "SELFTEST FAIL: VELDO-0171 rerun/differs-refused",
+        "SELFTEST FAIL: VELDO-0171 api-edge/installed-api-call",
+        "SELFTEST FAIL: VELDO-0171 api/loopback-only",
+        "SELFTEST FAIL: VELDO-0171 passkey/first-enrollment",
+        "SELFTEST FAIL: VELDO-0171 api/content-security-policy",
+        "SELFTEST FAIL: VELDO-0171 api-edge/running-service",
+        "SELFTEST FAIL: VELDO-0171 rerun/over-0139-host",
+        "SELFTEST FAIL: VELDO-0171 api/start-rules"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "86_veldo_0148_re_land",
+      "command": "python3 scripts/selftest.py --suite 86_veldo_0148_re_land",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 26 passed, 25 failed in 2.14s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0148 install/land-station",
+        "SELFTEST FAIL: VELDO-0148 reland/stale-subject",
+        "SELFTEST FAIL: VELDO-0148 reland/review-kept",
+        "SELFTEST FAIL: VELDO-0148 reland/conflict-rebuild",
+        "SELFTEST FAIL: VELDO-0148 reland/never-forced",
+        "SELFTEST FAIL: VELDO-0148 reland/end-wakes-pass",
+        "SELFTEST FAIL: VELDO-0148 lease/trunk-moved",
+        "SELFTEST FAIL: VELDO-0148 lease/contains-unknown",
+        "SELFTEST FAIL: VELDO-0148 grant/fresh-request",
+        "SELFTEST FAIL: VELDO-0148 grant/never-granted",
+        "SELFTEST FAIL: VELDO-0148 grant/mixed-approvals",
+        "SELFTEST FAIL: VELDO-0148 grant/mixed-proof",
+        "SELFTEST FAIL: VELDO-0148 grant/once-per-dispatch",
+        "SELFTEST FAIL: VELDO-0148 grant/revoked-before-answer",
+        "SELFTEST FAIL: VELDO-0148 format/fake-lines",
+        "SELFTEST FAIL: VELDO-0148 receiver/normal-exit",
+        "SELFTEST FAIL: VELDO-0148 receiver/settled-scope",
+        "SELFTEST FAIL: VELDO-0148 receiver/fast-exit",
+        "SELFTEST FAIL: VELDO-0148 receiver/pre-release-budget",
+        "SELFTEST FAIL: VELDO-0148 receiver/placement-error",
+        "SELFTEST FAIL: VELDO-0148 receiver/placement-timeout",
+        "SELFTEST FAIL: VELDO-0148 receiver/report-timeout",
+        "SELFTEST FAIL: VELDO-0148 receiver/late-wrapper",
+        "SELFTEST FAIL: VELDO-0148 receiver/wrapper-exited",
+        "SELFTEST FAIL: VELDO-0172 fake/capture:0148_re_land"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "86_veldo_0186_setup_assets",
+      "command": "python3 scripts/selftest.py --suite 86_veldo_0186_setup_assets",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 37 passed, 0 failed in 11.95s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    },
+    {
+      "suite": "86_veldo_0189_engine_upgrade",
+      "command": "python3 scripts/selftest.py --suite 86_veldo_0189_engine_upgrade",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 26 passed, 33 failed in 0.76s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0189 install/assets",
+        "SELFTEST FAIL: VELDO-0189 upgrade/from-8bc34e94",
+        "SELFTEST FAIL: VELDO-0189 upgrade/from-971186ac",
+        "SELFTEST FAIL: VELDO-0189 upgrade/removed-module",
+        "SELFTEST FAIL: VELDO-0189 upgrade/census",
+        "SELFTEST FAIL: VELDO-0189 upgrade/refused-by-name",
+        "SELFTEST FAIL: VELDO-0189 switch/kill-points",
+        "SELFTEST FAIL: VELDO-0189 switch/failed-restart",
+        "SELFTEST FAIL: VELDO-0189 kept/owner-data",
+        "SELFTEST FAIL: VELDO-0189 announce/before-first-write",
+        "SELFTEST FAIL: VELDO-0189 restart/rules",
+        "SELFTEST FAIL: VELDO-0189 second-run/changes-nothing",
+        "SELFTEST FAIL: VELDO-0189 switch/failed-after-start",
+        "SELFTEST FAIL: VELDO-0189 ownership/restore-differs",
+        "SELFTEST FAIL: VELDO-0189 ownership/committed",
+        "SELFTEST FAIL: VELDO-0189 switch/resumed-failure",
+        "SELFTEST FAIL: VELDO-0189 switch/rollback-kills",
+        "SELFTEST FAIL: VELDO-0189 switch/stop-refused",
+        "SELFTEST FAIL: VELDO-0189 ownership/restore-reported",
+        "SELFTEST FAIL: VELDO-0189 ownership/start-drops",
+        "SELFTEST FAIL: VELDO-0189 ownership/commit-refused",
+        "SELFTEST FAIL: VELDO-0189 switch/stop-before-restore",
+        "SELFTEST FAIL: VELDO-0189 upgrade/older-0186-equivalence",
+        "SELFTEST FAIL: VELDO-0189 kept/runs",
+        "SELFTEST FAIL: VELDO-0189 upgrade/fresh-0186",
+        "SELFTEST FAIL: VELDO-0189 engines/atomic-record",
+        "SELFTEST FAIL: VELDO-0189 engines/repair-record",
+        "SELFTEST FAIL: VELDO-0189 engines/refuse-record",
+        "SELFTEST FAIL: VELDO-0189 engines/codex-refusal",
+        "SELFTEST FAIL: VELDO-0189 engines/repair-report",
+        "SELFTEST FAIL: VELDO-0189 upgrade/corrupt-runtime-record",
+        "SELFTEST FAIL: VELDO-0189 upgrade/receiver-without-store",
+        "SELFTEST FAIL: VELDO-0189 ownership/restore-commands"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "87_veldo_0170_receiver_trust",
+      "command": "python3 scripts/selftest.py --suite 87_veldo_0170_receiver_trust",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 26 passed, 12 failed in 0.74s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0170 launch/governed",
+        "SELFTEST FAIL: VELDO-0170 launch/ungoverned",
+        "SELFTEST FAIL: VELDO-0170 status/configurations",
+        "SELFTEST FAIL: VELDO-0170 rerun/launch-after-repair",
+        "SELFTEST FAIL: VELDO-0170 rerun/no-installed-trust",
+        "SELFTEST FAIL: VELDO-0170 rerun/host-identity",
+        "SELFTEST FAIL: VELDO-0170 rerun/differs",
+        "SELFTEST FAIL: VELDO-0170 rerun/differs/workspace",
+        "SELFTEST FAIL: VELDO-0170 rerun/differs/store",
+        "SELFTEST FAIL: VELDO-0170 rerun/differs/journal_key",
+        "SELFTEST FAIL: VELDO-0170 rerun/default-trust",
+        "SELFTEST FAIL: VELDO-0170 rerun/records"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "92_veldo_0088_pm_cycles",
+      "command": "python3 scripts/selftest.py --suite 92_veldo_0088_pm_cycles",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 31 passed, 20 failed in 10.48s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0088 cycle/runner",
+        "SELFTEST FAIL: VELDO-0088 cycle/no-action",
+        "SELFTEST FAIL: VELDO-0088 proposal/stop-on-refusal",
+        "SELFTEST FAIL: VELDO-0088 cycle/serialized",
+        "SELFTEST FAIL: VELDO-0088 cycle/pending-follow-up",
+        "SELFTEST FAIL: VELDO-0088 unit/one-run-staging",
+        "SELFTEST FAIL: VELDO-0088 unit/factory-builder-ticket",
+        "SELFTEST FAIL: VELDO-0088 unit/independent-review",
+        "SELFTEST FAIL: VELDO-0088 cycle/combined-inputs",
+        "SELFTEST FAIL: VELDO-0088 cycle/receipts",
+        "SELFTEST FAIL: VELDO-0088 cycle/waiting-release",
+        "SELFTEST FAIL: VELDO-0088 review/pm-principal",
+        "SELFTEST FAIL: VELDO-0088 review/current-publication",
+        "SELFTEST FAIL: VELDO-0088 review/build-refusal",
+        "SELFTEST FAIL: VELDO-0088 review/review-refusal",
+        "SELFTEST FAIL: VELDO-0088 review/pending-budget",
+        "SELFTEST FAIL: VELDO-0088 followup/setup-pm",
+        "SELFTEST FAIL: VELDO-0088 followup/setup-pm-authority",
+        "SELFTEST FAIL: VELDO-0088 followup/initial-fault",
+        "SELFTEST FAIL: VELDO-0088 followup/pending-fault"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "93_veldo_0152_intake_routes",
+      "command": "python3 scripts/selftest.py --suite 93_veldo_0152_intake_routes",
+      "status": "failed",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 37 passed, 11 failed in 8.35s"
+      ],
+      "failures": [
+        "SELFTEST FAIL: VELDO-0152 route/codex-result",
+        "SELFTEST FAIL: VELDO-0152 route/new-project",
+        "SELFTEST FAIL: VELDO-0152 route/existing-project",
+        "SELFTEST FAIL: VELDO-0152 route/asked-only-when-unclear",
+        "SELFTEST FAIL: VELDO-0152 route/answers",
+        "SELFTEST FAIL: VELDO-0152 route/read-and-report",
+        "SELFTEST FAIL: VELDO-0152 route/runner-input",
+        "SELFTEST FAIL: VELDO-0152 route/scope-refusal",
+        "SELFTEST FAIL: VELDO-0152 route/malformed",
+        "SELFTEST FAIL: VELDO-0152 route/stale",
+        "SELFTEST FAIL: VELDO-0152 route/factory-refusal"
+      ],
+      "diagnostics": []
+    },
+    {
+      "suite": "98_veldo_0204_mutation_receipts",
+      "command": "python3 scripts/selftest.py --suite 98_veldo_0204_mutation_receipts",
+      "status": "passed_scoped",
+      "summary": [
+        "selftest (PARTIAL, 1 of 163 suites): 71 passed, 0 failed in 0.47s"
+      ],
+      "failures": [],
+      "diagnostics": []
+    }
+  ],
+  "deferred": {
+    "reason": "These consumer suites invoke mutation drivers that the user explicitly prohibited. Deferred to the reviewer rather than running those drivers indirectly.",
+    "suites": [
+      "53_veldo_0123_mutations",
+      "99_veldo_0205_reuse",
+      "101_veldo_0208_landing_reuse",
+      "104_veldo_0210_mutation_workers"
+    ]
+  }
+}

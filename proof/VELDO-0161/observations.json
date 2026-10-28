@@ -1,0 +1,216 @@
+{
+ "commit": "19b38a30d7ad53bb7005c6798b9adca67bfb78bd",
+ "inprocess_harness_baseline": {
+  "command": "python3 proof/VELDO-0161/inprocess_harness.py <checkout>",
+  "rows": [
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/remote-owner-refused"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/settlement-before-signature"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/signer-scope"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/scaffold-present"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/scaffold-commit"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/signatures-journaled"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/signer-enrolled"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/push-refused"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/observed"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/taken-on-running"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/same-process"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/packet-accepted"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/not-taken-on-named"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/remote-owner-refused"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/settlement-before-signature"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/signer-scope"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/scaffold-present"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/scaffold-commit"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/signatures-journaled"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/push-refused"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/observed"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/taken-on-running"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/not-taken-on-named"
+   }
+  ],
+  "status": "development observation, not AC2 evidence (a thread shares the process: same-process is not established)"
+ },
+ "inprocess_harness_receiver_mutant": {
+  "case": "adoption161-receiver-configuration-absent",
+  "rows": [
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/remote-owner-refused"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/settlement-before-signature"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/signer-scope"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/scaffold-present"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/scaffold-commit"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/signatures-journaled"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/signer-enrolled"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/push-refused"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 adoption/observed"
+   },
+   {
+    "ok": false,
+    "row": "VELDO-0161 adoption/taken-on-running"
+   },
+   {
+    "ok": false,
+    "row": "VELDO-0161 adoption/same-process"
+   },
+   {
+    "ok": false,
+    "row": "VELDO-0161 adoption/packet-accepted"
+   },
+   {
+    "ok": false,
+    "row": "VELDO-0161 adoption/not-taken-on-named"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/remote-owner-refused"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/settlement-before-signature"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/signer-scope"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/scaffold-present"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/scaffold-commit"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/signatures-journaled"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/push-refused"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/observed"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/taken-on-running"
+   },
+   {
+    "ok": true,
+    "row": "VELDO-0161 ran/adoption/not-taken-on-named"
+   }
+  ],
+  "status": "development observation, not AC2 evidence"
+ },
+ "schema": "veldo.observation/v1",
+ "spec_id": "VELDO-0161",
+ "suite_109_sandbox": {
+  "command": "python3 scripts/selftest.py --suite 109_veldo_0161_adoption",
+  "failed_rows": [
+   "VELDO-0161 adoption/taken-on-running",
+   "VELDO-0161 adoption/same-process",
+   "VELDO-0161 adoption/packet-accepted",
+   "VELDO-0161 adoption/not-taken-on-named"
+  ],
+  "notes": [
+   "the worker profile does not qualify here (no systemd user manager): installation ran with the containment qualification answered qualified, printed by the suite",
+   "the identity wire fence ran without its recording SSH agent (an AF_UNIX socket); SSH_AUTH_SOCK named a path where nothing listens"
+  ],
+  "summary": "selftest (PARTIAL, 1 of 165 suites): 43 passed, 4 failed in 7.23s",
+  "why_failed": "AF_UNIX sockets are refused in this sandbox (seccomp), so no authority service can bind its socket: the four AC2 rows are red by name, never stood down"
+ }
+}

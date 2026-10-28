@@ -1,0 +1,25 @@
+{
+ "commit": "38b7e593",
+ "details": [
+  "VELDO-0143 detail: service/hand-off: AF_UNIX sockets are refused on this host, so no provisioner can reach a running service over its socket",
+  "VELDO-0143 detail: activation/first-unit: the new line's project cycles run beside another line's on the service's connection [invalid_registration: invalid_registration: connection already has an allocation authority]"
+ ],
+ "exit": 1,
+ "failed_rows": [
+  "VELDO-0143 service/hand-off",
+  "VELDO-0143 activation/first-unit"
+ ],
+ "passed": 64,
+ "replacements": [
+  [
+   "scripts/suites/110_veldo_0143_new_project.py",
+   "                        unit_loop.wake('journal')\n",
+   "                        unit_loop.wake('journal')\n                        tline.pm_cycles = SimpleNamespace(pass_once=lambda automatic_units=None: [])  # scratch: cycles stood in\n"
+  ]
+ ],
+ "stood_in": [
+  "--agent",
+  "--stage"
+ ],
+ "suite": "110_veldo_0143_new_project"
+}

@@ -1,0 +1,30 @@
+{
+ "schema": "veldo.drive/v1",
+ "spec_id": "VELDO-0161",
+ "round": 8,
+ "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+ "checks": [
+  [
+   "the two fetches return the one cached module, as setup's _one_setup does",
+   true
+  ],
+  [
+   "the kill at 1 finds 1 step-log lines [{'count': 1, 'lines': 1, 'last': ['adoption_key']}]",
+   true
+  ],
+  [
+   "the kill at 2 finds 2 step-log lines [{'count': 2, 'lines': 2, 'last': ['adoption_signers']}]",
+   true
+  ],
+  [
+   "the kill at 3 finds 3 step-log lines [{'count': 3, 'lines': 3, 'last': ['restart']}]",
+   true
+  ],
+  [
+   "one count per step-log line [3 counts, 3 lines]",
+   true
+  ]
+ ],
+ "passed": 5,
+ "failed": 0
+}

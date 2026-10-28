@@ -1,0 +1,75 @@
+{
+  "scope": "three refusal unit rows only; no aggregate suite or host claim",
+  "mutant": "identity153-refusal-module-identity",
+  "rejected": true,
+  "eager_mutant": "identity153-eager-transport",
+  "eager_rejected": true,
+  "restored": true,
+  "runs": {
+    "red": {
+      "command": [
+        "/usr/bin/python3",
+        "scripts/selftest.py",
+        "--suite",
+        "107_veldo_0153_identity_push"
+      ],
+      "exit": 1,
+      "failures": [
+        "SELFTEST FAIL: VELDO-0153 evidence/production-and-suite-anchors",
+        "SELFTEST FAIL: VELDO-0153 refusal-unit/route-insteadof",
+        "SELFTEST FAIL: VELDO-0153 refusal-unit/route-push-instead-of",
+        "SELFTEST FAIL: VELDO-0153 refusal-unit/shape-config-exit"
+      ],
+      "unit_observations": {
+        "route-insteadof": "uncaught-transport-refusal",
+        "route-push-instead-of": "uncaught-transport-refusal",
+        "shape-config-exit": "uncaught-transport-refusal"
+      },
+      "infrastructure": [
+        "PermissionError: [Errno 1] Operation not permitted"
+      ],
+      "summary": []
+    },
+    "eager": {
+      "command": [
+        "/usr/bin/python3",
+        "scripts/selftest.py",
+        "--suite",
+        "107_veldo_0153_identity_push"
+      ],
+      "exit": 1,
+      "failures": [
+        "SELFTEST FAIL: VELDO-0153 evidence/production-and-suite-anchors",
+        "SELFTEST FAIL: VELDO-0153 profile/isolated-without-identity-asset"
+      ],
+      "unit_observations": {
+        "route-insteadof": "binding_mismatch:identity_transport_config",
+        "route-push-instead-of": "binding_mismatch:identity_transport_config",
+        "shape-config-exit": "binding_mismatch:identity_transport_config"
+      },
+      "infrastructure": [
+        "PermissionError: [Errno 1] Operation not permitted"
+      ],
+      "summary": []
+    },
+    "green": {
+      "command": [
+        "/usr/bin/python3",
+        "scripts/selftest.py",
+        "--suite",
+        "107_veldo_0153_identity_push"
+      ],
+      "exit": 1,
+      "failures": [],
+      "unit_observations": {
+        "route-insteadof": "binding_mismatch:identity_transport_config",
+        "route-push-instead-of": "binding_mismatch:identity_transport_config",
+        "shape-config-exit": "binding_mismatch:identity_transport_config"
+      },
+      "infrastructure": [
+        "PermissionError: [Errno 1] Operation not permitted"
+      ],
+      "summary": []
+    }
+  }
+}

@@ -111,7 +111,8 @@ def _v65_checks(base):
                                   'projection/notices-per-version', 'projection/pending-notice-reconciled-after-replacement',
                                   'answer/redelivered-after-closed', 'answer/closed-tell-after-edge-scope',
                                   'answer/rationale-original-text', 'answer/stale-current-told',
-                                  'answer/owner-not-current-silent', 'answer/owner-ledger-revoked-silent')}
+                                  'answer/owner-not-current-silent', 'answer/owner-ledger-revoked-silent',
+                                  'answer/pick-choices')}
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1221,6 +1222,42 @@ def _v65_checks(base):
                 check(nfkc, '%r is the offered choice %s' % (text, choice),
                       reason(result) == ('accepted', None) and recorded.get('choice') == choice
                       and recorded.get('rationale') == rationale)
+
+        # VELDO-0143 round 7: a pick, `accept` and the values it picks, is an offered choice whose ruling is approve;
+        # it is matched as any choice is (folded, never by its parts), and choices typed alike are not presented.
+        picks_row = 'answer/pick-choices'
+        with section(picks_row):
+            check(picks_row, 'a pick maps to approve and names its values; nothing else that starts with accept does',
+                  V.ruling_of('accept alpha private') == 'approve' and V.pick_of('accept beta-two public') == ['beta-two', 'public']
+                  and V.ruling_of('accept') == 'approve' and V.pick_of('accept') is None
+                  and all(V.ruling_of(c) is None for c in ('accept ', 'accepted alpha', 'accept alpha:private',
+                                                           'accept  alpha', 'accept alph\u0430', 'maybe later', None)))
+            offered = ('accept', 'accept alpha private', 'accept beta-two public', 'return_for_elaboration', 'reject')
+            pk = []
+            for n in range(3):
+                pk.append(opened('PK-%d' % n, choices=offered))
+                presenter.present(pk[n])
+            check(picks_row, 'a request offering picks is presented with each pick\'s ruling',
+                  (presenter.current(pk[0]) or {}).get('rulings') == ['approve', 'approve', 'approve',
+                                                                      'return_for_elaboration', 'reject'])
+            result = answer(owner_reply(presenter.current(pk[0]) or {}, 'Accept Beta Two PUBLIC: the second one'))
+            recorded = answered(pk[0], 1) or {}
+            check(picks_row, 'a pick typed with other case, spaces and hyphens is the offered pick, ruled approve',
+                  reason(result) == ('accepted', None) and recorded.get('choice') == 'accept beta-two public'
+                  and recorded.get('ruling') == 'approve' and recorded.get('rationale') == 'the second one')
+            for rid, text in ((pk[1], 'accept alph\u0430 private: lookalike'), (pk[1], 'accept alpha: only part'),
+                              (pk[2], 'accept alpha public: not offered')):
+                asked = len(api['requests'])
+                result = answer(owner_reply(presenter.current(rid) or {}, text))
+                check(picks_row, '%r is refused unmatched_choice, the owner told the choices, nothing recorded' % text,
+                      reason(result) == ('refused', 'unmatched_choice') and answered(rid, 1) is None
+                      and len(api['requests']) == asked + 1 and 'accept alpha private' in api['requests'][-1][1])
+            command('pm', 'open', 'PK-A', assignment=content(choices=('accept', 'accept a-b private', 'accept a_b private')))
+            frame('pm', 'PK-A', 1, 'Low: a wrong choice costs one review cycle.')
+            asked = len(api['requests'])
+            check(picks_row, 'choices the owner would type alike are not presented, and nothing is sent',
+                  reason(presenter.present(I.assignment_id(ids['repository_uuid'], 'PK-A'))) == ('refused', 'ambiguous_choice')
+                  and len(api['requests']) == asked)
 
         # Review 3 item 2: after a version is answered, a reply is told so, not told it matched nothing
         done_row = 'answer/after-answered-reply'

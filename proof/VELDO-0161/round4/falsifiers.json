@@ -1,0 +1,1736 @@
+{
+ "cases": [
+  {
+   "baseline_targets": {
+    "adoption/signer-scope": [
+     true
+    ]
+   },
+   "case": "adoption161-signer-unscoped",
+   "killed": true,
+   "module": "control_repository.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/signer-scope",
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/signer-scope": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "add42e4b07fd09433ed0913903382d89bbc125ac953839038fdfa54b7d0f7423",
+   "old_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/signer-scope"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-receiver-configuration-absent",
+   "killed": true,
+   "module": "control_service.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/receiver-configuration-used",
+     "VELDO-0161 adoption/active-served-again"
+    ],
+    "targets": {
+     "adoption/receiver-configuration-used": [
+      false
+     ],
+     "adoption/taken-on-running": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "9dda70c5915009eb1b174e5e9349a7a4bf9dfc9137ba0815c91e2ff600cd71db",
+   "old_digest": "2453737e50c1f903c541a79c7de79a0b88af66e9da36c0a27f4eea42cd97954d",
+   "other_new_failures": [
+    "VELDO-0161 adoption/active-served-again"
+   ],
+   "rows": [
+    "adoption/receiver-configuration-used",
+    "adoption/taken-on-running"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-repository-commands-unchecked",
+   "killed": true,
+   "module": "control_repository_provisioner.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/repository-commands"
+    ],
+    "targets": {
+     "adoption/repository-commands": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "11283dd42a8b053cb254e0e1804755f44c478ae2214542286d0d13bceda981ad",
+   "old_digest": "70fbaa6685ee455c53c2499cb16da5564f387ba3e66242cbb3935b881702688a",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/repository-commands"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-take-on-store-binding-unchecked",
+   "killed": true,
+   "module": "control_service.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/take-on-refusals"
+    ],
+    "targets": {
+     "adoption/take-on-refusals": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "921fd6771a45d9cc471bd71997cc2ce223d05492b720363b457b844cc3e183af",
+   "old_digest": "2453737e50c1f903c541a79c7de79a0b88af66e9da36c0a27f4eea42cd97954d",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/take-on-refusals"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-take-on-unauthenticated",
+   "killed": true,
+   "module": "control_service.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/take-on-answered"
+    ],
+    "targets": {
+     "adoption/take-on-answered": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "b72fb6c2259d844cf397ae2c8bcce693a1af6a79e04cc4ce71fb6568b2a0eb7a",
+   "old_digest": "2453737e50c1f903c541a79c7de79a0b88af66e9da36c0a27f4eea42cd97954d",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/take-on-answered"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-repository-id-unchecked",
+   "killed": true,
+   "module": "control_repository.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/prepare-checks"
+    ],
+    "targets": {
+     "adoption/prepare-checks": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "0013ff229d7a3f2286122948a6b6f8f7bdd18149c4dc93c7c91715ad77ccd289",
+   "old_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/prepare-checks"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-alternates-unchecked",
+   "killed": true,
+   "module": "control_repository_provisioner.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/repository-commands"
+    ],
+    "targets": {
+     "adoption/repository-commands": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "7d19b8b001d148227095aa887fc2865d4b939d1886e93a6e0ed57661d8c0cabc",
+   "old_digest": "70fbaa6685ee455c53c2499cb16da5564f387ba3e66242cbb3935b881702688a",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/repository-commands"
+   ]
+  },
+  {
+   "baseline_targets": {
+    "adoption/scaffold-commit": [
+     true
+    ]
+   },
+   "case": "adoption161-scaffold-relaid",
+   "killed": true,
+   "module": "control_effect_executor_adoption.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/scaffold-commit",
+     "VELDO-0161 adoption/push-refused",
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/push-unconfirmed"
+    ],
+    "targets": {
+     "adoption/scaffold-commit": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "c21b389b38068c29c64de85d69ce2da4724ba81e3c54d3a8d425d13428a53136",
+   "old_digest": "324668dfc87d681196a2a81a8ead93566452a2ed9d7fc4286e30f21403ab08c4",
+   "other_new_failures": [
+    "VELDO-0161 adoption/push-refused",
+    "VELDO-0161 adoption/push-unconfirmed"
+   ],
+   "rows": [
+    "adoption/scaffold-commit"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-signer-agent",
+   "killed": true,
+   "module": "control_repository.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/signer-no-agent"
+    ],
+    "targets": {
+     "adoption/signer-no-agent": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "a07e393d0d098e6778c9146418adcbfc8146adb05e83091bc47f7e17510677e5",
+   "old_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/signer-no-agent"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-scaffold-unrecorded",
+   "killed": true,
+   "module": "control_repository_provisioner.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/scaffold-problems"
+    ],
+    "targets": {
+     "adoption/scaffold-problems": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "a758e3759548a1498aba9d6e9e2081e1c5275c945dd1f423071ece2f568a5912",
+   "old_digest": "70fbaa6685ee455c53c2499cb16da5564f387ba3e66242cbb3935b881702688a",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/scaffold-problems"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-signer-store-unchecked",
+   "killed": true,
+   "module": "control_repository.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/signer-scope",
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/signer-scope": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "13f9d807ff0ed0ffeeb109e2d971922794073151af05745030f80697e9295691",
+   "old_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/signer-scope"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-served-before-write",
+   "killed": true,
+   "module": "control_service.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/take-on-write-first"
+    ],
+    "targets": {
+     "adoption/take-on-write-first": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "9d5ccc7c498b088b0a96c861a3f495fd5fc9a081a07814d5ce520d85a4458471",
+   "old_digest": "2453737e50c1f903c541a79c7de79a0b88af66e9da36c0a27f4eea42cd97954d",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/take-on-write-first"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-scaffold-ref-kept",
+   "killed": true,
+   "module": "control_repository_provisioner.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/scaffold-commit",
+     "VELDO-0161 adoption/signer-enrolled",
+     "VELDO-0161 adoption/push-refused",
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/repository-commands",
+     "VELDO-0161 adoption/interrupted",
+     "VELDO-0161 adoption/store-checks-before-push"
+    ],
+    "targets": {
+     "adoption/push-refused": [
+      false
+     ],
+     "adoption/scaffold-commit": [
+      false
+     ],
+     "adoption/signer-enrolled": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "d093a01c0a7c1c4208d3a1dd73e7f2777d7183bfb03e7fd16d75bc3b61893b95",
+   "old_digest": "70fbaa6685ee455c53c2499cb16da5564f387ba3e66242cbb3935b881702688a",
+   "other_new_failures": [
+    "VELDO-0161 adoption/interrupted",
+    "VELDO-0161 adoption/repository-commands",
+    "VELDO-0161 adoption/store-checks-before-push"
+   ],
+   "rows": [
+    "adoption/scaffold-commit",
+    "adoption/signer-enrolled",
+    "adoption/push-refused"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-identity-after-push",
+   "killed": true,
+   "module": "control_effect_executor_adoption.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/store-checks-before-push"
+    ],
+    "targets": {
+     "adoption/store-checks-before-push": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "a84fc8a61ba5dda7141b92bc0c028cb36b3d83d297363b0b30ccc7944429bc12",
+   "old_digest": "324668dfc87d681196a2a81a8ead93566452a2ed9d7fc4286e30f21403ab08c4",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/store-checks-before-push"
+   ]
+  },
+  {
+   "baseline_targets": {
+    "adoption/same-process": [
+     false
+    ]
+   },
+   "case": "adoption161-restart-take-on",
+   "killed": true,
+   "module": "control_service.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/take-on-answered",
+     "VELDO-0161 adoption/receiver-configuration-used"
+    ],
+    "targets": {
+     "adoption/same-process": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "d78966b71015ff4af1ed796b8e97fcf13df1a61a6ca4f8485b2a64efea2269d9",
+   "old_digest": "2453737e50c1f903c541a79c7de79a0b88af66e9da36c0a27f4eea42cd97954d",
+   "other_new_failures": [
+    "VELDO-0161 adoption/receiver-configuration-used",
+    "VELDO-0161 adoption/take-on-answered"
+   ],
+   "rows": [
+    "adoption/same-process"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-push-before-checks",
+   "killed": true,
+   "module": "control_effect_executor_adoption.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/signer-enrolled",
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/repository-commands",
+     "VELDO-0161 adoption/store-checks-before-push"
+    ],
+    "targets": {
+     "adoption/signer-enrolled": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "67a556051fd5ec32743f599b805e0cda5b90d76f1743e3fe323d53dc7601e297",
+   "old_digest": "324668dfc87d681196a2a81a8ead93566452a2ed9d7fc4286e30f21403ab08c4",
+   "other_new_failures": [
+    "VELDO-0161 adoption/repository-commands",
+    "VELDO-0161 adoption/store-checks-before-push"
+   ],
+   "rows": [
+    "adoption/signer-enrolled"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-scaffold-parent",
+   "killed": true,
+   "module": "control_repository_provisioner.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/scaffold-problems"
+    ],
+    "targets": {
+     "adoption/scaffold-problems": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "12883b0d0ad55181482b8693524d8c7347a027b72545fddf07bcfcc5e71f698e",
+   "old_digest": "70fbaa6685ee455c53c2499cb16da5564f387ba3e66242cbb3935b881702688a",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/scaffold-problems"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-signer-identity-unchecked",
+   "killed": true,
+   "module": "control_repository.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/signer-scope",
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/signer-scope": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "2aa6b9ba38ecc29688918e2a88232f6fec1fa7fea56ea56061cb626f0fa1e290",
+   "old_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/signer-scope"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-active-rejudged-membership",
+   "killed": true,
+   "module": "control_service.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/active-served-again"
+    ],
+    "targets": {
+     "adoption/active-served-again": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "9cb3eefeb6304a5a9d1b55628f44e49ae73ac28f2c0eba8633f4d3d331ec658f",
+   "old_digest": "2453737e50c1f903c541a79c7de79a0b88af66e9da36c0a27f4eea42cd97954d",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/active-served-again"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-take-on-after-bind-missing",
+   "killed": true,
+   "module": "control_service.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/taken-on-while-starting"
+    ],
+    "targets": {
+     "adoption/taken-on-while-starting": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "5f367ece59cd7a26a59bbd8a70a884988af530880b7c6351a951bdfd7ad881d7",
+   "old_digest": "2453737e50c1f903c541a79c7de79a0b88af66e9da36c0a27f4eea42cd97954d",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/taken-on-while-starting"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-store-binding-after-push",
+   "killed": true,
+   "module": "control_effect_executor_adoption.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/store-checks-before-push"
+    ],
+    "targets": {
+     "adoption/store-checks-before-push": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "6dc3163362f86d3bedfb43f6d10f2f15030cb596ee5349889ef171b9dbdc7a70",
+   "old_digest": "324668dfc87d681196a2a81a8ead93566452a2ed9d7fc4286e30f21403ab08c4",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/store-checks-before-push"
+   ]
+  },
+  {
+   "baseline_targets": {
+    "adoption/settlement-before-signature": [
+     true
+    ]
+   },
+   "case": "adoption161-settlement-unchecked",
+   "killed": true,
+   "module": "control_effect_executor_adoption.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/settlement-before-signature",
+     "VELDO-0161 adoption/signatures-journaled",
+     "VELDO-0161 adoption/observed",
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/active-served-again"
+    ],
+    "targets": {
+     "adoption/settlement-before-signature": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "5809f28d11734260c2dd14bf7248e8197f91b9862c9b76debcdc1e257d471e9e",
+   "old_digest": "324668dfc87d681196a2a81a8ead93566452a2ed9d7fc4286e30f21403ab08c4",
+   "other_new_failures": [
+    "VELDO-0161 adoption/active-served-again",
+    "VELDO-0161 adoption/observed",
+    "VELDO-0161 adoption/signatures-journaled"
+   ],
+   "rows": [
+    "adoption/settlement-before-signature"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-enrolled-missing-key-raises",
+   "killed": true,
+   "module": "control_repository.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/signer-enrolled",
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/signer-enrolled": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "02e4c58d80679cce57b578d3615d66f3d753317cebecf6d19d653af9e664dd49",
+   "old_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/signer-enrolled"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-scaffold-modifies",
+   "killed": true,
+   "module": "control_repository_provisioner.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/scaffold-problems"
+    ],
+    "targets": {
+     "adoption/scaffold-problems": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "9732e7d6141f141d44fd38f545610123359c779b87df09324b6c55de528eb2e6",
+   "old_digest": "70fbaa6685ee455c53c2499cb16da5564f387ba3e66242cbb3935b881702688a",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/scaffold-problems"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-signer-host-unchecked",
+   "killed": true,
+   "module": "control_repository.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/signer-scope",
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/signer-scope": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "f8c4dc33986e7b2cfe4d4416fd677fb8eb6e63b40a404cab649d1cf1d9253a09",
+   "old_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/signer-scope"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-receiver-not-regenerated",
+   "killed": true,
+   "module": "control_service.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/active-served-again"
+    ],
+    "targets": {
+     "adoption/active-served-again": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "eff94c8d1ac3f761f0494ba451ce48bce9a1feda22e3fa3fe7983db964dd550e",
+   "old_digest": "2453737e50c1f903c541a79c7de79a0b88af66e9da36c0a27f4eea42cd97954d",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/active-served-again"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-take-on-timeout-unavailable",
+   "killed": true,
+   "module": "control_effect_executor_adoption.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/take-on-faults-named"
+    ],
+    "targets": {
+     "adoption/take-on-faults-named": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "81aa99970945e91c6f23605897f9f3c000e83cbcc6ff3ce29450e051bfe30c00",
+   "old_digest": "324668dfc87d681196a2a81a8ead93566452a2ed9d7fc4286e30f21403ab08c4",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/take-on-faults-named"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-generation-after-push",
+   "killed": true,
+   "module": "control_effect_executor_adoption.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/store-checks-before-push"
+    ],
+    "targets": {
+     "adoption/store-checks-before-push": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "4e01a75a34b7da84eac79acd12313b2ef3428145928c3b1385075955b7d9cbe2",
+   "old_digest": "324668dfc87d681196a2a81a8ead93566452a2ed9d7fc4286e30f21403ab08c4",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/store-checks-before-push"
+   ]
+  },
+  {
+   "baseline_targets": {
+    "adoption/remote-owner-refused": [
+     true
+    ]
+   },
+   "case": "adoption161-remote-owner-unchecked",
+   "killed": true,
+   "module": "control_effect_executor_adoption.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/remote-owner-refused",
+     "VELDO-0161 adoption/scaffold-present",
+     "VELDO-0161 adoption/signatures-journaled",
+     "VELDO-0161 adoption/observed",
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/remote-owner-refused": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "c78bccf0055d18e96b3b94f477de98d73e8608efed2c2e6819cd2c838e9c23a9",
+   "old_digest": "324668dfc87d681196a2a81a8ead93566452a2ed9d7fc4286e30f21403ab08c4",
+   "other_new_failures": [
+    "VELDO-0161 adoption/observed",
+    "VELDO-0161 adoption/scaffold-present",
+    "VELDO-0161 adoption/signatures-journaled"
+   ],
+   "rows": [
+    "adoption/remote-owner-refused"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-fault-stuck",
+   "killed": true,
+   "module": "control_effect_executor_adoption.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/unknown-outcome"
+    ],
+    "targets": {
+     "adoption/unknown-outcome": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "e0a54f16e30a6f4c0b207b78e001a0b6b65ca76298ef289b005a69a93c33a232",
+   "old_digest": "324668dfc87d681196a2a81a8ead93566452a2ed9d7fc4286e30f21403ab08c4",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/unknown-outcome"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-take-on-decision-unchecked",
+   "killed": true,
+   "module": "control_service.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/take-on-refusals",
+     "VELDO-0161 adoption/take-on-retry"
+    ],
+    "targets": {
+     "adoption/take-on-refusals": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "85287c9772f5846e1de474efa4d2656cc0d7e9f7055103a4cf41733f7c46ce95",
+   "old_digest": "2453737e50c1f903c541a79c7de79a0b88af66e9da36c0a27f4eea42cd97954d",
+   "other_new_failures": [
+    "VELDO-0161 adoption/take-on-retry"
+   ],
+   "rows": [
+    "adoption/take-on-refusals"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-signer-generation-unpinned",
+   "killed": true,
+   "module": "control_repository.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/signer-scope",
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/signer-scope": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "252dffc0738c4d5152a5ab853f98d8c247966eb8d19f1c1d3c7bd3a83ccbbb15",
+   "old_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/signer-scope"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-receiver-configuration-wrong",
+   "killed": true,
+   "module": "control_service.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/receiver-configuration-used",
+     "VELDO-0161 adoption/active-served-again"
+    ],
+    "targets": {
+     "adoption/receiver-configuration-used": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "96872d347da52f7d57abc2a18067d166a369eab6cc724109147ca019709151b1",
+   "old_digest": "2453737e50c1f903c541a79c7de79a0b88af66e9da36c0a27f4eea42cd97954d",
+   "other_new_failures": [
+    "VELDO-0161 adoption/active-served-again"
+   ],
+   "rows": [
+    "adoption/receiver-configuration-used"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-take-on-fault-raised",
+   "killed": true,
+   "module": "control_effect_executor_adoption.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/take-on-faults-named",
+     "VELDO-0161 ran/adoption/take-on-faults-named"
+    ],
+    "targets": {
+     "adoption/take-on-faults-named": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "dce9d2116f0780ed6adc11aa61b5955baf82f2c6baf3fb963fd62e967ec8779c",
+   "old_digest": "324668dfc87d681196a2a81a8ead93566452a2ed9d7fc4286e30f21403ab08c4",
+   "other_new_failures": [
+    "VELDO-0161 ran/adoption/take-on-faults-named"
+   ],
+   "rows": [
+    "adoption/take-on-faults-named"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-interrupted-left-provisioning",
+   "killed": true,
+   "module": "control_effect_executor_adoption.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/interrupted"
+    ],
+    "targets": {
+     "adoption/interrupted": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "b0b16a856c7bf1b0be0d7a80d23d80758390e0cb433615aa912a0a856433128d",
+   "old_digest": "324668dfc87d681196a2a81a8ead93566452a2ed9d7fc4286e30f21403ab08c4",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/interrupted"
+   ]
+  },
+  {
+   "baseline_targets": {
+    "adoption/signatures-journaled": [
+     true
+    ],
+    "adoption/signer-scope": [
+     true
+    ]
+   },
+   "case": "adoption161-signature-unjournaled",
+   "killed": true,
+   "module": "control_repository.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/signer-scope",
+     "VELDO-0161 adoption/signatures-journaled",
+     "VELDO-0161 adoption/observed",
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/taken-on-while-starting",
+     "VELDO-0161 adoption/take-on-answered",
+     "VELDO-0161 adoption/receiver-configuration-used",
+     "VELDO-0161 adoption/take-on-write-first",
+     "VELDO-0161 adoption/take-on-refusals",
+     "VELDO-0161 adoption/take-on-retry",
+     "VELDO-0161 adoption/active-served-again",
+     "VELDO-0161 adoption/signer-no-agent"
+    ],
+    "targets": {
+     "adoption/signatures-journaled": [
+      false
+     ],
+     "adoption/signer-scope": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "f6841f5178e0936417a5085a92879537b3d88a2b296649fd3ff1b8ac4be84c0d",
+   "old_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "other_new_failures": [
+    "VELDO-0161 adoption/active-served-again",
+    "VELDO-0161 adoption/observed",
+    "VELDO-0161 adoption/receiver-configuration-used",
+    "VELDO-0161 adoption/signer-no-agent",
+    "VELDO-0161 adoption/take-on-answered",
+    "VELDO-0161 adoption/take-on-refusals",
+    "VELDO-0161 adoption/take-on-retry",
+    "VELDO-0161 adoption/take-on-write-first",
+    "VELDO-0161 adoption/taken-on-while-starting"
+   ],
+   "rows": [
+    "adoption/signer-scope",
+    "adoption/signatures-journaled"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-push-unconfirmed-as-refused",
+   "killed": true,
+   "module": "control_repository_provisioner.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/push-unconfirmed"
+    ],
+    "targets": {
+     "adoption/push-unconfirmed": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "6290a6a5435fb21b0da168af4f0c95e9b2061505bd7b33003545e3ebf1deb482",
+   "old_digest": "70fbaa6685ee455c53c2499cb16da5564f387ba3e66242cbb3935b881702688a",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/push-unconfirmed"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-take-on-signature-unchecked",
+   "killed": true,
+   "module": "control_service.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/take-on-refusals"
+    ],
+    "targets": {
+     "adoption/take-on-refusals": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "3c131bec650d67138b8f43034a1f5f02ca50ccf39eb7fa0ab07994f84ba62fd3",
+   "old_digest": "2453737e50c1f903c541a79c7de79a0b88af66e9da36c0a27f4eea42cd97954d",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/take-on-refusals"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-signer-generation-below-store",
+   "killed": true,
+   "module": "control_repository.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/signer-scope",
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/signer-scope": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "0613e06d29a9e29572f418c069bbfea7f7f0797993a9b5c8b347c697ea14743d",
+   "old_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/signer-scope"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-retry-reset",
+   "killed": true,
+   "module": "control_service.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/take-on-retry"
+    ],
+    "targets": {
+     "adoption/take-on-retry": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "edd356fbbb548a039bc2f3a524e9bcb3a38125af4ab77baf53ebe2f3f5235735",
+   "old_digest": "2453737e50c1f903c541a79c7de79a0b88af66e9da36c0a27f4eea42cd97954d",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/take-on-retry"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-take-on-refusal-unnamed",
+   "killed": true,
+   "module": "control_effect_executor_adoption.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/take-on-faults-named"
+    ],
+    "targets": {
+     "adoption/take-on-faults-named": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "35c5c69ea05012097942bcfc69f09bd5b1b764db869384ed85385816b51af95f",
+   "old_digest": "324668dfc87d681196a2a81a8ead93566452a2ed9d7fc4286e30f21403ab08c4",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/take-on-faults-named"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-live-run-unheld",
+   "killed": true,
+   "module": "control_effect_executor_adoption.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/interrupted"
+    ],
+    "targets": {
+     "adoption/interrupted": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "2d197610030c9a1ea1d8200db6d350344b128101f40587fad9fb3f356b7daef5",
+   "old_digest": "324668dfc87d681196a2a81a8ead93566452a2ed9d7fc4286e30f21403ab08c4",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/interrupted"
+   ]
+  },
+  {
+   "baseline_targets": {
+    "adoption/scaffold-commit": [
+     true
+    ]
+   },
+   "case": "adoption161-provisioner-hooks",
+   "killed": true,
+   "module": "control_repository_provisioner.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/scaffold-commit",
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/scaffold-commit": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "a203da675c84326d88bcee78a5b22179636ac49ee014d6ca75674e7ec0f84bae",
+   "old_digest": "70fbaa6685ee455c53c2499cb16da5564f387ba3e66242cbb3935b881702688a",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/scaffold-commit"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-fsmonitor-on",
+   "killed": true,
+   "module": "control_repository_provisioner.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/repository-commands"
+    ],
+    "targets": {
+     "adoption/repository-commands": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "24017f631b07a63eba2ccf8a941ae1f3bbf10958d2577a1b4c14935fac2aa8ef",
+   "old_digest": "70fbaa6685ee455c53c2499cb16da5564f387ba3e66242cbb3935b881702688a",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/repository-commands"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-take-on-binding-signer-unchecked",
+   "killed": true,
+   "module": "control_service.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/take-on-refusals"
+    ],
+    "targets": {
+     "adoption/take-on-refusals": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "0b2bc02344c742912aef6361d71f035b1d9257d6b743bf9da1fc66f3f0891b76",
+   "old_digest": "2453737e50c1f903c541a79c7de79a0b88af66e9da36c0a27f4eea42cd97954d",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/take-on-refusals"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-take-on-not-sent",
+   "killed": true,
+   "module": "control_effect_executor_adoption.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/taken-on-while-starting",
+     "VELDO-0161 adoption/take-on-answered",
+     "VELDO-0161 adoption/receiver-configuration-used",
+     "VELDO-0161 adoption/take-on-faults-named"
+    ],
+    "targets": {
+     "adoption/take-on-answered": [
+      false
+     ],
+     "adoption/taken-on-running": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "3f76a6e4f03b2f406e6b176ea851d7451728db56268ed34a28da154c2b48a895",
+   "old_digest": "324668dfc87d681196a2a81a8ead93566452a2ed9d7fc4286e30f21403ab08c4",
+   "other_new_failures": [
+    "VELDO-0161 adoption/receiver-configuration-used",
+    "VELDO-0161 adoption/take-on-faults-named",
+    "VELDO-0161 adoption/taken-on-while-starting"
+   ],
+   "rows": [
+    "adoption/take-on-answered",
+    "adoption/taken-on-running"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-remote-configuration-unchecked",
+   "killed": true,
+   "module": "control_repository_provisioner.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/prepare-checks"
+    ],
+    "targets": {
+     "adoption/prepare-checks": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "6b1761519f2413f950ddfe44a1c1eafcbb21b1fb04cccf1416457cb8e159f229",
+   "old_digest": "70fbaa6685ee455c53c2499cb16da5564f387ba3e66242cbb3935b881702688a",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/prepare-checks"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-configuration-denylist",
+   "killed": true,
+   "module": "control_repository_provisioner.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/repository-commands"
+    ],
+    "targets": {
+     "adoption/repository-commands": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "904609a8512365a982989a932ba91c3ccb0dd2464e7c7e23f3bc59f2b3228fbe",
+   "old_digest": "70fbaa6685ee455c53c2499cb16da5564f387ba3e66242cbb3935b881702688a",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/repository-commands"
+   ]
+  },
+  {
+   "baseline_targets": null,
+   "case": "adoption161-signature-unwatched",
+   "killed": true,
+   "module": "control_repository.py",
+   "mutant": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named",
+     "VELDO-0161 adoption/signer-no-agent"
+    ],
+    "targets": {
+     "adoption/signer-no-agent": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "f153d9da62f6b100bbed2d1d20e031169331a6ff8f633e6428676021c8d235df",
+   "old_digest": "e0b97b4362e7d687d404246247cc0219bc3ba7bae18c2ee0475f9e30d0e33f3e",
+   "other_new_failures": [],
+   "rows": [
+    "adoption/signer-no-agent"
+   ]
+  }
+ ],
+ "note": "run_falsifiers.py in 7 shards at a3b1904d (code 39772b77); each shard ran the baseline before and after its cases",
+ "shards": [
+  {
+   "baseline_after": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/signer-scope": [
+      true
+     ]
+    }
+   },
+   "baseline_before": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/signer-scope": [
+      true
+     ]
+    }
+   }
+  },
+  {
+   "baseline_after": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/scaffold-commit": [
+      true
+     ]
+    }
+   },
+   "baseline_before": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/scaffold-commit": [
+      true
+     ]
+    }
+   }
+  },
+  {
+   "baseline_after": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/same-process": [
+      false
+     ]
+    }
+   },
+   "baseline_before": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/same-process": [
+      false
+     ]
+    }
+   }
+  },
+  {
+   "baseline_after": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/settlement-before-signature": [
+      true
+     ]
+    }
+   },
+   "baseline_before": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/settlement-before-signature": [
+      true
+     ]
+    }
+   }
+  },
+  {
+   "baseline_after": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/remote-owner-refused": [
+      true
+     ]
+    }
+   },
+   "baseline_before": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/remote-owner-refused": [
+      true
+     ]
+    }
+   }
+  },
+  {
+   "baseline_after": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/signatures-journaled": [
+      true
+     ],
+     "adoption/signer-scope": [
+      true
+     ]
+    }
+   },
+   "baseline_before": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/signatures-journaled": [
+      true
+     ],
+     "adoption/signer-scope": [
+      true
+     ]
+    }
+   }
+  },
+  {
+   "baseline_after": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/scaffold-commit": [
+      true
+     ]
+    }
+   },
+   "baseline_before": {
+    "count": 77,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0161 adoption/taken-on-running",
+     "VELDO-0161 adoption/same-process",
+     "VELDO-0161 adoption/packet-accepted",
+     "VELDO-0161 adoption/not-taken-on-named"
+    ],
+    "targets": {
+     "adoption/scaffold-commit": [
+      true
+     ]
+    }
+   }
+  }
+ ]
+}

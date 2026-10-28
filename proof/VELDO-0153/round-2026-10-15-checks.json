@@ -1,0 +1,89 @@
+{
+  "implementation_commit": "07eb46aea5fa3cd61af8a913eff785454e9fdebf",
+  "scope": "Scoped unit observations and static checks only. No aggregate verification or host qualification.",
+  "checks": [
+    {
+      "command": "python3 proof/VELDO-0153/reproduce_refusal.py <output.json>",
+      "exit": 0,
+      "result": "Both unit falsifiers rejected; restored four unit rows pass. All three selected suite invocations exit 1 at the unavailable AF_UNIX socket."
+    },
+    {
+      "command": "python3 scripts/selftest.py --suite 107_veldo_0153_identity_push",
+      "exit": 1,
+      "result": "Incomplete: PermissionError: [Errno 1] Operation not permitted at socket(AF_UNIX). The hermetic fence remains enabled."
+    },
+    {
+      "command": "python3 proof/VELDO-0153/audit_anchors.py <output.json> all",
+      "exit": 0,
+      "result": "2459 current registrations; zero missing anchors, unresolved expressions or mutant syntax errors. No driver or consumer suite invoked; mutant kills remain unmeasured."
+    },
+    {
+      "command": "bash scripts/check_lint.sh",
+      "exit": 0,
+      "result": "992 Python and 34 shell files"
+    },
+    {
+      "command": "bash scripts/check_generated.sh",
+      "exit": 0,
+      "result": "All declared generated artifacts current"
+    },
+    {
+      "command": "bash scripts/check_docs.sh",
+      "exit": 0,
+      "result": "docs hygiene: pass"
+    },
+    {
+      "command": "bash scripts/check_template_sync.sh",
+      "exit": 0,
+      "result": "285 pairs identical; 6 declared per-repo exceptions; 131 engine-only"
+    },
+    {
+      "command": "python3 .veldo/shape_gate.py",
+      "exit": 0,
+      "result": "Mechanizable rules pass; review lane remains review guidance"
+    },
+    {
+      "command": "python3 scripts/secret_inventory.py",
+      "exit": 0,
+      "result": "0 outstanding; executed before every code commit"
+    },
+    {
+      "command": "The built-in secret grep pipeline from scripts/verify.sh",
+      "exit": 1,
+      "result": "No matches; empty stderr. Exit 1 is grep's no-match result, not a failed secret check."
+    },
+    {
+      "command": "python3 .veldo/validate.py proof proof/VELDO-0153/manifest.json",
+      "exit": 0,
+      "result": "Proof validates, including AC3 and the digest bound to final code"
+    },
+    {
+      "command": "python3 .veldo/validate.py all",
+      "exit": 0,
+      "result": "All contracts validate after regenerating the manifest"
+    },
+    {
+      "command": "systemctl --user list-units --type=service --state=active",
+      "exit": 1,
+      "result": "Failed to connect to bus: Operation not permitted. No user service was started."
+    }
+  ],
+  "deferred": [
+    "Consumer suites, including 58, 67, 70 and 101: the owner permits only this specification's suites.",
+    "Consumer mutant kills and runtime suite 101 baseline attribution: not executed.",
+    "check_first_use.py invokes the full selftest; check_install_and_run.py invokes an adopter gate. Both are prohibited here.",
+    "Full selftest, both mutation drivers, verify.sh and live captures: prohibited.",
+    "Real GitHub, Secret Service and SSH qualification: exact host command is recorded in round-2026-10-15.md.",
+    "Fresh AC1/AC2/AC3 declared falsifier runs cannot reach their integration rows in this sandbox. Earlier receipts are historical only."
+  ],
+  "baseline": {
+    "suite101_source_identical_to": "9763249e",
+    "runtime_comparison": "not_run",
+    "four_prior_anchor_failures_fixed_by_main": [
+      "setup-starts-service",
+      "pool-highest-utilization-first",
+      "pool-most-recently-used-first",
+      "hygiene-own-values-lost"
+    ]
+  }
+}

@@ -1,0 +1,611 @@
+{
+ "baseline_after": {
+  "count": 97,
+  "exit": 0,
+  "failed_rows": [
+   "VELDO-0143 service/hand-off",
+   "VELDO-0143 pm/new-project-run",
+   "VELDO-0143 activation/first-unit"
+  ],
+  "targets": {
+   "proposal/correction-bound": [
+    true
+   ]
+  }
+ },
+ "baseline_before": {
+  "count": 97,
+  "exit": 0,
+  "failed_rows": [
+   "VELDO-0143 service/hand-off",
+   "VELDO-0143 pm/new-project-run",
+   "VELDO-0143 activation/first-unit"
+  ],
+  "targets": {
+   "proposal/correction-bound": [
+    true
+   ]
+  }
+ },
+ "cases": [
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-correction-identity-unbound",
+   "module": "control_project_proposal.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 proposal/correction-bound",
+     "VELDO-0143 proposal/correction-negated",
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit"
+    ],
+    "targets": {
+     "proposal/correction-bound": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "a542562294db3cd127ff48cbf8b10c1c33e7e83e5aa215ee7ea7872abd4db273",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 proposal/correction-bound",
+    "VELDO-0143 proposal/correction-negated"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "proposal/correction-bound"
+   ],
+   "source_digest": "5f1c64079291860dc7ff6cbd1fc2899d9af9d54ab65c0d01a96cef6f43893130"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-correction-visibility-unbound",
+   "module": "control_project_proposal.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 proposal/correction-bound",
+     "VELDO-0143 proposal/correction-negated",
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit"
+    ],
+    "targets": {
+     "proposal/correction-bound": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "b260f96082fecb9d1ed1cc78fec3473def37416e2de91c12a37e4e6164db8269",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 proposal/correction-bound",
+    "VELDO-0143 proposal/correction-negated"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "proposal/correction-bound"
+   ],
+   "source_digest": "5f1c64079291860dc7ff6cbd1fc2899d9af9d54ab65c0d01a96cef6f43893130"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-correction-mode-unbound",
+   "module": "control_project_proposal.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 proposal/correction-bound",
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit"
+    ],
+    "targets": {
+     "proposal/correction-bound": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "2c8f3eb7cec6ec07087b644f1c8c6b7f5cfbe58ea64c9ef879701421a92e1eca",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 proposal/correction-bound"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "proposal/correction-bound"
+   ],
+   "source_digest": "5f1c64079291860dc7ff6cbd1fc2899d9af9d54ab65c0d01a96cef6f43893130"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-correction-name-unbound",
+   "module": "control_project_proposal.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 proposal/correction-bound",
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit"
+    ],
+    "targets": {
+     "proposal/correction-bound": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "5eee683518b5ea2e6a8d243f4ef141a6d7d0e2e1fcb0b29cd2710f8e9a8dfaca",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 proposal/correction-bound"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "proposal/correction-bound"
+   ],
+   "source_digest": "5f1c64079291860dc7ff6cbd1fc2899d9af9d54ab65c0d01a96cef6f43893130"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-bare-yes-corrected",
+   "module": "control_project_proposal.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 proposal/correction-bound",
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit"
+    ],
+    "targets": {
+     "proposal/correction-bound": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "eb7d600b19e1d1a08725c70211b2995772dd8bc8ff214a55b0cb21ef2767edaf",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 proposal/correction-bound"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "proposal/correction-bound"
+   ],
+   "source_digest": "5f1c64079291860dc7ff6cbd1fc2899d9af9d54ab65c0d01a96cef6f43893130"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-judge-correction-unbound",
+   "module": "control_project_proposal.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 proposal/correction-bound",
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit"
+    ],
+    "targets": {
+     "proposal/correction-bound": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "3f8d28bc122977261c0dbce7f5cccf7f01839cd608d28816353e8d3d66d718d3",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 proposal/correction-bound"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "proposal/correction-bound"
+   ],
+   "source_digest": "5f1c64079291860dc7ff6cbd1fc2899d9af9d54ab65c0d01a96cef6f43893130"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-name-not-one-project",
+   "module": "control_project_proposal.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 proposal/name-taken",
+     "VELDO-0143 activation/name-taken",
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit"
+    ],
+    "targets": {
+     "activation/name-taken": [
+      false
+     ],
+     "proposal/name-taken": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "823d92f7de7d1f5fbbba2b42d936b575d710a6cafa3f4b78c1dab276e892bba5",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 activation/name-taken",
+    "VELDO-0143 proposal/name-taken"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "proposal/name-taken",
+    "activation/name-taken"
+   ],
+   "source_digest": "5f1c64079291860dc7ff6cbd1fc2899d9af9d54ab65c0d01a96cef6f43893130"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-taken-left-settled",
+   "module": "control_project_proposal.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 activation/name-taken",
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit"
+    ],
+    "targets": {
+     "activation/name-taken": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "93c1232c4c26a91799a937e1e095b660ce2da75c5616a245e7d0500811e8fe0f",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 activation/name-taken"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "activation/name-taken"
+   ],
+   "source_digest": "5f1c64079291860dc7ff6cbd1fc2899d9af9d54ab65c0d01a96cef6f43893130"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-presentation-not-resumed",
+   "module": "control_service_projects.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 proposal/presentation-interrupted",
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit"
+    ],
+    "targets": {
+     "proposal/presentation-interrupted": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "3d4cb288fcdc1dfc29d58e50a5afbc420459738d02f1e094650c980f049f88ac",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 proposal/presentation-interrupted"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "proposal/presentation-interrupted"
+   ],
+   "source_digest": "e590edc0aa751d63ab4b0d806b976cc4e76e0305ec63a2f01218e284dc55ee38"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-line-not-added",
+   "module": "control_service_projects.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/line-from-pass",
+     "VELDO-0143 activation/first-unit",
+     "VELDO-0143 activation/factory-line-kept"
+    ],
+    "targets": {
+     "activation/line-from-pass": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "075ec6ea292b7d4326e3a63740a3bcb5374eb346c54cc390bc60466874b0792c",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 activation/factory-line-kept",
+    "VELDO-0143 activation/line-from-pass"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "activation/line-from-pass"
+   ],
+   "source_digest": "e590edc0aa751d63ab4b0d806b976cc4e76e0305ec63a2f01218e284dc55ee38"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-proposed-without-provisioner",
+   "module": "control_project_proposal.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 proposal/no-provisioner",
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit"
+    ],
+    "targets": {
+     "proposal/no-provisioner": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "d23622d4c9d43961129a5822626acdab48f0a06237d27bb8766a145bb98513e3",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 proposal/no-provisioner"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "proposal/no-provisioner"
+   ],
+   "source_digest": "5f1c64079291860dc7ff6cbd1fc2899d9af9d54ab65c0d01a96cef6f43893130"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-settled-left-waiting",
+   "module": "control_service_projects.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 proposal/no-provisioner",
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit"
+    ],
+    "targets": {
+     "proposal/no-provisioner": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "26da06ddb6aece69b24b5d551bee4cb34cdcff27f7835580ef4640f700eec0d8",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 proposal/no-provisioner"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "proposal/no-provisioner"
+   ],
+   "source_digest": "e590edc0aa751d63ab4b0d806b976cc4e76e0305ec63a2f01218e284dc55ee38"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-cycles-owners-after",
+   "module": "control_workflow_cycle_pm.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit",
+     "VELDO-0143 activation/factory-line-kept",
+     "VELDO-0143 activation/factory-line-restart"
+    ],
+    "targets": {
+     "activation/factory-line-kept": [
+      false
+     ],
+     "activation/factory-line-restart": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "958f0a40c788030aeac6bc8db53b23e9edda6750fb6966537d013cb7d1b7034e",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 activation/factory-line-kept",
+    "VELDO-0143 activation/factory-line-restart"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "activation/factory-line-kept",
+    "activation/factory-line-restart"
+   ],
+   "source_digest": "79e518d4ea33d44400cad40ed13932a7c27d5c7eb972d54e149dcb3ca5dfd274"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-refused-cycles-retried",
+   "module": "control_service.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit",
+     "VELDO-0143 activation/factory-line-kept"
+    ],
+    "targets": {
+     "activation/factory-line-kept": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "258f5f475f632e8ce0a056535173709c0dc93cdb3ee54a6af559e53948b61612",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 activation/factory-line-kept"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "activation/factory-line-kept"
+   ],
+   "source_digest": "f61ee95261dba09fa83e69697e443bfe1b4e5282be464b0b231143597c107529"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-factory-owners-taken",
+   "module": "control_service.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit",
+     "VELDO-0143 activation/factory-line-restart"
+    ],
+    "targets": {
+     "activation/factory-line-restart": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "f89fc5e0b4410b777c8d1a44cc98892487db8adcf47bc615ccf44d38a7b0926e",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 activation/factory-line-restart"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "activation/factory-line-restart"
+   ],
+   "source_digest": "f61ee95261dba09fa83e69697e443bfe1b4e5282be464b0b231143597c107529"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-activation-owners-left",
+   "module": "control_service_projects.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit",
+     "VELDO-0143 activation/factory-line-kept"
+    ],
+    "targets": {
+     "activation/factory-line-kept": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "6e71335a02b43aadd6e351b3e3ff78a24f98929b5cd8dbf13cc9170996efcb14",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 activation/factory-line-kept"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "activation/factory-line-kept"
+   ],
+   "source_digest": "e590edc0aa751d63ab4b0d806b976cc4e76e0305ec63a2f01218e284dc55ee38"
+  },
+  {
+   "baseline_failed_rows": [
+    "VELDO-0143 service/hand-off",
+    "VELDO-0143 pm/new-project-run",
+    "VELDO-0143 activation/first-unit"
+   ],
+   "case": "newproject143-negation-ignored",
+   "module": "control_project_proposal.py",
+   "mutant": {
+    "count": 97,
+    "exit": 0,
+    "failed_rows": [
+     "VELDO-0143 proposal/correction-negated",
+     "VELDO-0143 service/hand-off",
+     "VELDO-0143 pm/new-project-run",
+     "VELDO-0143 activation/first-unit"
+    ],
+    "targets": {
+     "proposal/correction-negated": [
+      false
+     ]
+    }
+   },
+   "mutant_digest": "1dd748718ed198adc000023e926c77c1430b83ffaed094f1e0bf234255f7f348",
+   "new_failures_beyond_baseline": [
+    "VELDO-0143 proposal/correction-negated"
+   ],
+   "result": "killed: the target rows are red on the mutant",
+   "rows": [
+    "proposal/correction-negated"
+   ],
+   "source_digest": "5f1c64079291860dc7ff6cbd1fc2899d9af9d54ab65c0d01a96cef6f43893130"
+  }
+ ]
+}

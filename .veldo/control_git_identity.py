@@ -5,6 +5,7 @@ All checks precede writes in one transaction. Credentials are keychain reference
 this module neither reads nor copies their values. Repository creation/adoption calls
 configure_identities with the identity chosen by the owner, never one inferred from Git.
 """
+import importlib.util
 import json
 import os
 import re
@@ -53,7 +54,23 @@ def validate(identities):
         if record['id'] in found:
             raise Refused('invalid_input:duplicate_git_identity')
         found[record['id']] = record
+    # VELDO-0143 round 8 (R7-3): the owner picks an identity by typing its id in a choice, which the presentation
+    # module matches folded (case, '-' and '_' alike), so two ids that fold alike could never be told apart.
+    fold = presentation_fold()
+    folded = {fold(identity) for identity in found}
+    if len(folded) != len(found):
+        raise Refused('invalid_input:ambiguous_git_identity')
     return found
+
+
+def presentation_fold():
+    """control_channel_presentation's fold of a typed choice, the one the owner's pick is matched by."""
+    spec = importlib.util.spec_from_file_location('git_identity_presentation',
+                                                  os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                               'control_channel_presentation.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module._fold
 
 
 def one(identity):
@@ -125,6 +142,10 @@ def configure_identities(conn, domain, identities, repositories, *, check_only=F
             for identity, record in wanted.items():
                 if identity in prior and prior[identity] != record:
                     raise Refused('binding_mismatch:git_identity_change')
+            every, fold = dict(prior, **wanted), presentation_fold()
+            if len({fold(identity) for identity in every}) != len(every):
+                # An id added later that folds like one already configured (R7-3), as validate refuses within one call.
+                raise Refused('invalid_input:ambiguous_git_identity')
             for repository, target in targets.items():
                 if target['identity'] not in dict(prior, **wanted):
                     raise Refused('missing_authority:git_identity')
