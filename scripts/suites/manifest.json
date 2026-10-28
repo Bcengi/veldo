@@ -1524,6 +1524,15 @@
    ],
    "regions": "Authority-measured mutation worker deadlines and bounded store.",
    "requires_note": "Only ROOT and expect; controlled coordinator children and scratch stores, plus a real hanging child."
+  },
+  {
+   "name": "113_veldo_0111_census",
+   "file": "113_veldo_0111_census.py",
+   "requires": [
+    "113_veldo_0111_census"
+   ],
+   "regions": "Kernel process and socket events, observer isolation and census failure propagation.",
+   "requires_note": "Only ROOT and expect. Repository-only ptrace fixture with independently acknowledged tracees and private scratch output. Full host qualification remains explicitly incomplete."
   }
  ],
  "resource_capacities": {

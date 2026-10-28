@@ -1,0 +1,571 @@
+"""Repository-only Linux lifecycle observer for VELDO-0111.
+
+The supervisor and collector are outside the measured scope. Only the TRACEME
+root and inherited ptrace children belong to it. No process-name exclusions.
+Receipts distinguish event capture from full host qualification. In particular,
+the current operation inventory is NOT an exhaustive Linux protocol inventory.
+Until that gap is closed, absence consumers must stand down even on a healthy
+capture. See proof/VELDO-0111/OPEN.md.
+
+Linux UAPI: ptrace(2), PTRACE_GET_SYSCALL_INFO (Linux 5.3), x86_64 native ABI.
+No privilege changes, compiler, packages, daemon or snapshot fallback.
+"""
+
+import ctypes
+import errno
+import hashlib
+import json
+import os
+from pathlib import Path
+import platform
+import signal
+import socket
+import struct
+import subprocess
+import sys
+import tempfile
+import time
+
+
+VERSION = "veldo.lifecycle-census/1"
+WALL = 0x40000000
+OPTIONS = 1 | 2 | 4 | 8 | 16 | 64 | 0x100000
+CONSUMERS = {
+    "VELDO-0113": (
+        "unavailable/no-client-starts-the-authority",
+        "unavailable/no-client-hosts-a-listener",
+        "unavailable/no-auto-start-needs-census"),
+    "VELDO-0114": (
+        "relay/one-endpoint-one-judgement", "relay/no-listener-during-call",
+        "relay/no-second-process", "relay/listener-proof-needs-census"),
+    "VELDO-0122": (
+        "filesystem/transient-and-escaped-writes-are-seen",
+        "unavailable/no-transient-write", "unavailable/no-out-of-directory-write",
+        "unavailable/no-write-needs-complete-observation"),
+}
+FAULTS = {
+    "facilities": ("preflight", "observer_unavailable"),
+    "denied": ("arming", "observer_unavailable"),
+    "abi": ("collecting", "observation_incomplete"),
+    "corrupt": ("collecting", "event_loss"),
+    "loss": ("collecting", "event_loss"),
+    "collector_death": ("collecting", "observation_incomplete"),
+    "drain": ("draining", "observation_incomplete"),
+}
+LIBC = ctypes.CDLL(None, use_errno=True)
+if hasattr(LIBC, "ptrace"):
+    LIBC.ptrace.restype = ctypes.c_long
+    LIBC.ptrace.argtypes = [ctypes.c_uint, ctypes.c_uint, ctypes.c_void_p, ctypes.c_void_p]
+
+
+def comm(pid):
+    try:
+        return Path(f"/proc/{pid}/comm").read_text().strip()
+    except OSError:
+        return None
+
+
+class ObservationFailure(Exception):
+    def __init__(self, capability, reason, category="observation_incomplete"):
+        super().__init__(reason)
+        self.capability, self.category = capability, category
+
+
+def ptrace(request, pid, address=0, data=0):
+    if not hasattr(LIBC, "ptrace"):
+        raise OSError(errno.ENOSYS, "ptrace unavailable")
+    ctypes.set_errno(0)
+    result = LIBC.ptrace(request, pid, address, data)
+    error = ctypes.get_errno()
+    if result == -1 and error:
+        raise OSError(error, os.strerror(error))
+    return result
+
+
+def digest(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
+
+
+def receipt(request):
+    return dict(schema=VERSION, input_identity=request["identity"],
+                input_digest=digest(request), implementation_digest=hashlib.sha256(
+                    Path(__file__).read_bytes()).hexdigest(), fixture_version=VERSION,
+                host=dict(kernel=platform.release(), machine=platform.machine(),
+                          python=platform.python_version(), system=platform.system()),
+                status="INCOMPLETE", capture_status="INCOMPLETE", state="preflight",
+                barriers=[], processes=[], events=[], sockets=[], failures=[],
+                lost_events=0, observer=dict(supervisor=os.getppid(), collector=os.getpid(),
+                    comm=comm('self')),
+                qualification=dict(status="INCOMPLETE", qualified_abis=["x86_64"],
+                    gaps=["exhaustive_family_protocol_operations",
+                          "socket_address_and_shared_descriptor_races",
+                          "compat_socketcall", "asynchronous_socket_operations"]),
+                metrics={})
+
+
+def failure(r, capability, reason, category="observation_incomplete"):
+    item = dict(capability=capability, reason=str(reason), category=category, state=r["state"])
+    if item not in r["failures"]:
+        r["failures"].append(item)
+    r["status"] = "INCOMPLETE"
+
+
+def consumer_rows(r, consumer):
+    """A valid census permits evaluation, never establishes a consumer's claim."""
+    valid = (isinstance(r, dict) and r.get("schema") == VERSION
+             and r.get("status") == "COMPLETE" and r.get("capture_status") == "COMPLETE"
+             and r.get("state") == "drained" and not r.get("failures")
+             and r.get("lost_events") == 0
+             and r.get("qualification", {}).get("status") == "COMPLETE"
+             and not r.get("qualification", {}).get("gaps")
+             and all(k in r for k in ("input_identity", "implementation_digest", "barriers")))
+    return [dict(name=name, status="READY" if valid else "STANDS DOWN",
+                 reason=None if valid else "census_incomplete") for name in CONSUMERS[consumer]]
+
+
+def finish(r):
+    r["metrics"] = dict(events=len(r["events"]), lost_events=r["lost_events"],
+                        measured_tasks=len(r["processes"]),
+                        births=sum(not p["root"] for p in r["processes"]),
+                        service_events=sum(e["kind"] == "service" for e in r["events"]),
+                        supported_families=r["qualification"].get("supported_families", []),
+                        unsupported_combinations=len(r["qualification"].get("unsupported_combinations", [])))
+    r["consumer_rows"] = {c: consumer_rows(r, c) for c in CONSUMERS}
+    return r
+
+
+def host_inventory():
+    """Discovery outside the measured call. Success is availability, not coverage."""
+    inventory = []
+    for family in range(46):
+        for kind in (1, 2, 3, 4, 5, 6, 10):
+            ctypes.set_errno(0)
+            fd = LIBC.socket(family, kind | socket.SOCK_NONBLOCK | socket.SOCK_CLOEXEC, 0)
+            inventory.append(dict(family=family, type=kind, protocol=0, available=fd >= 0,
+                                  errno=ctypes.get_errno() if fd < 0 else 0))
+            if fd >= 0:
+                os.close(fd)
+    return dict(family_limit=46, types=[1, 2, 3, 4, 5, 6, 10], protocol_scope=[0],
+                exhaustive=False, combinations=inventory)
+
+
+class Collector:
+    def __init__(self, request):
+        self.request = request
+        self.r = receipt(request)
+        self.live = {}
+        self.pending = {}
+        self.sockets = {}
+        self.root = None
+        self.early_stops = {}
+        self.newborn = set()
+
+    def event(self, kind, **values):
+        event = dict(sequence=len(self.r["events"]) + 1, time_ns=time.monotonic_ns(),
+                     kind=kind, **values)
+        self.r["events"].append(event)
+        return event["sequence"]
+
+    def barrier(self, name):
+        self.r["barriers"].append(dict(name=name, time_ns=time.monotonic_ns(),
+                                       sequence=len(self.r["events"])))
+
+    def birth(self, pid, parent=None, operation="root"):
+        identity = f"{pid}:{len(self.r['processes']) + 1}"
+        task = dict(identity=identity, pid=pid, current_tid=pid, parent=parent,
+                    root=parent is None, operation=operation, terminal=None,
+                    birth=self.event("launch" if parent is None else "birth",
+                                     identity=identity, parent=parent, pid=pid), execs=[])
+        self.live[pid] = task
+        if parent is not None:
+            self.newborn.add(pid)
+        self.r["processes"].append(task)
+        return task
+
+    def memory(self, pid, address, length):
+        if length < 0 or length > 4096:
+            raise ValueError("unbounded tracee structure")
+        words = [ptrace(2, pid, address + offset) & ((1 << 64) - 1)
+                 for offset in range(0, length, 8)]
+        return b"".join(word.to_bytes(8, "little") for word in words)[:length]
+
+    def socket_at(self, pid, fd):
+        try:
+            link = os.readlink(f"/proc/{pid}/fd/{fd}")
+        except FileNotFoundError:
+            return None
+        if not link.startswith("socket:["):
+            return None
+        return link
+
+    def register_socket(self, pid, fd, family, kind, protocol):
+        inode = self.socket_at(pid, fd)
+        if inode is None:
+            failure(self.r, "socket_identity", f"missing descriptor {pid}:{fd}")
+            return
+        # Live inode identities are assigned a separate birth sequence, like tasks.
+        obj = dict(identity=f"{inode}:{len(self.r['sockets']) + 1}", inode=inode,
+                   family=family, type=kind & 15, protocol=protocol, address=None,
+                   created=self.event("socket", task=self.live[pid]["identity"], fd=fd,
+                                      family=family, type=kind & 15, inode=inode),
+                   closed=None, references=[])
+        self.sockets[inode] = obj
+        self.r["sockets"].append(obj)
+
+    def expose(self, pid, obj, operation, address):
+        self.event("service", task=self.live[pid]["identity"], socket=obj["identity"],
+                   family=obj["family"], type=obj["type"], operation=operation,
+                   address=address)
+
+    def syscall(self, pid):
+        buf = ctypes.create_string_buffer(88)
+        size = ptrace(0x420e, pid, 88, ctypes.byref(buf))
+        raw = buf.raw
+        op, arch = raw[0], struct.unpack_from("<I", raw, 4)[0]
+        if self.request.get("fault") == "abi":
+            arch = 0
+        elif self.request.get("fault") == "corrupt":
+            op = 255
+        if size < 24 or arch != 0xc000003e:
+            raise ObservationFailure("syscall_abi", f"arch={arch:x} size={size}")
+        if op == 1:
+            if size < 80:
+                raise ValueError("short syscall entry")
+            nr, *args = struct.unpack_from("<7Q", raw, 24)
+            if nr & 0x40000000:
+                raise ObservationFailure("syscall_abi", "x32")
+            entry = dict(nr=nr, args=args)
+            if nr in (49, 42):
+                entry["address"] = self.memory(pid, args[1], args[2]).hex() if args[1] else None
+            if nr in (3, 32, 33, 42, 44, 45, 46, 47, 49, 50, 72, 288, 292, 299, 307):
+                entry["inode"] = self.socket_at(pid, args[0])
+            if nr == 47:
+                entry["message"] = a_message = self.memory(pid, args[1], 56)
+                entry["control"] = struct.unpack_from("<Q", a_message, 32)[0]
+            self.pending[pid] = entry
+            # A task can deliberately escape tracing with CLONE_UNTRACED.
+            flags = args[0] if nr == 56 else 0
+            if nr == 435 and args[1] >= 8:
+                flags = int.from_bytes(self.memory(pid, args[0], 8), "little")
+            if flags & 0x800000:
+                raise ObservationFailure("trace_inheritance", "CLONE_UNTRACED would escape measured scope",
+                                         "lifecycle_violation")
+        elif op == 2:
+            if size < 33:
+                raise ValueError("short syscall exit")
+            result = struct.unpack_from("<q", raw, 24)[0]
+            entry = self.pending.pop(pid, None)
+            # A newly inherited child starts at its creation syscall's exit.
+            if entry is None:
+                return
+            self.syscall_exit(pid, entry, result)
+        else:
+            raise ValueError(f"unexpected syscall stop {op}")
+
+    def syscall_exit(self, pid, entry, result):
+        nr, a = entry["nr"], entry["args"]
+        if result < 0:
+            return
+        if nr == 47 and entry.get("control"):
+            message = self.memory(pid, a[1], 56)
+            length = struct.unpack_from("<Q", message, 40)[0]
+            control = self.memory(pid, entry["control"], length)
+            offset = 0
+            while offset + 16 <= length:
+                size, level, kind = struct.unpack_from("<Qii", control, offset)
+                if size < 16 or offset + size > length:
+                    raise ValueError("corrupt ancillary descriptor message")
+                if (level, kind) == (socket.SOL_SOCKET, socket.SCM_RIGHTS):
+                    for start in range(offset + 16, offset + size, 4):
+                        fd = struct.unpack_from("<i", control, start)[0]
+                        inode = self.socket_at(pid, fd)
+                        self.event("descriptor_transfer", task=self.live[pid]["identity"],
+                                   fd=fd, inode=inode)
+                        if inode and inode not in self.sockets:
+                            failure(self.r, "descriptor_transfer", "received out-of-scope socket")
+                offset += (size + 7) & ~7
+        if nr == 41:
+            self.register_socket(pid, result, *a[:3])
+        elif nr == 53:
+            for fd in struct.unpack("<2i", self.memory(pid, a[3], 8)):
+                self.register_socket(pid, fd, *a[:3])
+        elif nr in (425, 426, 427):
+            failure(self.r, "io_uring", "successful async interface is not decoded")
+        elif nr in (49, 50, 42, 44, 45, 46, 47, 299, 307):
+            inode = entry.get("inode")
+            if inode is None:
+                failure(self.r, "socket_identity", f"syscall {nr} has no socket identity")
+                return
+            obj = self.sockets.get(inode)
+            if obj is None:
+                failure(self.r, "descriptor_transfer", f"unknown socket {inode}")
+                return
+            if self.socket_at(pid, a[0]) != inode:
+                failure(self.r, "descriptor_race", "socket changed during operation")
+                return
+            if nr == 49:
+                obj["address"] = entry["address"]
+                self.event("bind", task=self.live[pid]["identity"], socket=obj["identity"],
+                           family=obj["family"], address=obj["address"])
+                if obj["type"] in (2, 3, 10):
+                    self.expose(pid, obj, "bind", obj["address"])
+            elif nr == 50:
+                self.expose(pid, obj, "listen", obj["address"])
+            elif obj["type"] in (2, 3, 10) and obj["address"] is None:
+                # The operation succeeded; the address still needs qualification.
+                self.expose(pid, obj, "implicit_receive_binding", None)
+                failure(self.r, "implicit_address", "implicit binding address unqualified")
+        elif nr in (32, 33, 72, 292) and entry.get("inode"):
+            self.event("descriptor_alias", task=self.live[pid]["identity"],
+                       inode=entry["inode"], syscall=nr, result=result)
+        elif nr == 3 and entry.get("inode"):
+            self.event("close", task=self.live[pid]["identity"], inode=entry["inode"], fd=a[0])
+        elif nr in (436, 438):
+            failure(self.r, "descriptor_operation", f"unqualified syscall {nr}")
+
+    def run(self):
+        r, req = self.r, self.request
+        if platform.system() != "Linux" or platform.machine() != "x86_64" or req.get("fault") == "facilities":
+            failure(r, "linux_ptrace", "required Linux native x86_64 facilities unavailable",
+                    "observer_unavailable")
+            return finish(r)
+        collector_pid = os.getpid()
+        root = os.fork()
+        if root == 0:
+            LIBC.prctl(1, signal.SIGKILL, 0, 0, 0)
+            if os.getppid() != collector_pid:
+                os._exit(125)
+            try:
+                # No inherited host lock, sockets or observer sink in the tracee.
+                out = os.open(req["output"], os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+                err = os.open(req["error"], os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+                os.dup2(out, 1)
+                os.dup2(err, 2)
+                null = os.open(os.devnull, os.O_RDONLY)
+                os.dup2(null, 0)
+                os.closerange(3, 1048576)
+                if req.get("fault") == "denied":
+                    raise PermissionError(errno.EPERM, "injected ptrace denial")
+                ptrace(0, 0)
+                os.kill(os.getpid(), signal.SIGSTOP)
+                os.chdir(req["cwd"])
+                os.execvpe(req["argv"][0], req["argv"], dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
+            except BaseException as exc:
+                os.write(2, str(exc).encode())
+                os._exit(125)
+        self.root = root
+        r["state"] = "arming"
+        _, status = os.waitpid(root, WALL)
+        if not os.WIFSTOPPED(status) or os.WSTOPSIG(status) != signal.SIGSTOP:
+            failure(r, "PTRACE_TRACEME", "root did not reach pre-exec stop", "observer_unavailable")
+            return finish(r)
+        self.birth(root)
+        try:
+            ptrace(0x4200, root, 0, OPTIONS)
+            self.barrier("armed_before_exec")
+            r["state"] = "collecting"
+            ptrace(24, root)
+            deadline = time.monotonic() + req["deadline"]
+            while self.live:
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("drain_deadline")
+                pid, status = os.waitpid(-1, WALL | os.WNOHANG)
+                if not pid:
+                    time.sleep(0.0005)
+                    continue
+                if os.WIFEXITED(status) or os.WIFSIGNALED(status):
+                    task = self.live.pop(pid, None)
+                    if task is None:
+                        raise ValueError("terminal wait for unknown birth")
+                    task["terminal"] = self.event("exit", identity=task["identity"], status=status)
+                    self.pending.pop(pid, None)
+                    if pid == root:
+                        self.barrier("call_returned")
+                        r["root_status"] = status
+                        r["state"] = "draining"
+                        if req.get("fault") == "drain":
+                            raise TimeoutError("injected drain deadline expiry")
+                    continue
+                if not os.WIFSTOPPED(status):
+                    raise ValueError("unexpected wait status")
+                event, sig = status >> 16, os.WSTOPSIG(status)
+                if pid not in self.live and event != 4:
+                    # Linux may deliver the child's initial stop before its parent's
+                    # creation event. Do not run an as-yet unaccounted task.
+                    if sig == signal.SIGSTOP and not event and pid not in self.early_stops:
+                        self.early_stops[pid] = status
+                        continue
+                    raise ValueError("stop for unknown birth identity")
+                if event in (1, 2, 3):
+                    message = ctypes.c_ulong()
+                    ptrace(0x4201, pid, 0, ctypes.byref(message))
+                    self.birth(message.value, self.live[pid]["identity"],
+                               {1: "fork", 2: "vfork", 3: "clone"}[event])
+                    if req.get("fault") == "loss":
+                        r["events"].pop()
+                        raise ObservationFailure("event_stream", "missing acknowledged birth event", "event_loss")
+                    if message.value in self.early_stops:
+                        self.early_stops.pop(message.value)
+                        self.newborn.remove(message.value)
+                        ptrace(24, message.value)
+                elif event == 4:
+                    message = ctypes.c_ulong()
+                    ptrace(0x4201, pid, 0, ctypes.byref(message))
+                    former = message.value
+                    if former != pid:
+                        displaced = self.live.pop(pid, None)
+                        task = self.live.pop(former)
+                        if displaced is not None:
+                            displaced["terminal"] = self.event("exec_replaced", identity=displaced["identity"])
+                        task["current_tid"] = pid
+                        self.live[pid] = task
+                        self.pending.pop(former, None)
+                    task = self.live[pid]
+                    task["execs"].append(self.event("exec", identity=task["identity"], former_tid=former, pid=pid))
+                    self.pending.pop(pid, None)
+                elif event == 6:
+                    self.live[pid]["comm"] = comm(pid)
+                    self.event("exit_pending", identity=self.live[pid]["identity"])
+                elif event:
+                    raise ValueError(f"unrecognised ptrace event {event}")
+                elif sig == signal.SIGTRAP | 0x80:
+                    self.syscall(pid)
+                elif sig == signal.SIGSTOP:
+                    if pid not in self.newborn:
+                        raise ValueError("unqualified tracee group stop")
+                    self.newborn.remove(pid)
+                else:
+                    ptrace(24, pid, 0, sig)
+                    continue
+                if req.get("fault") == "collector_death" and event in (1, 2, 3):
+                    os.kill(os.getpid(), signal.SIGKILL)
+                ptrace(24, pid)
+            self.barrier("descendants_drained")
+            if self.early_stops:
+                raise ValueError("unmatched child stops at drain")
+            r["state"] = "drained"
+            for obj in r["sockets"]:
+                obj["closed"] = dict(barrier="descendants_drained", exact=False)
+            if not r["failures"]:
+                r["capture_status"] = "COMPLETE"
+            # A healthy trace is not an exhaustive host qualification receipt.
+            failure(r, "qualification", ", ".join(r["qualification"]["gaps"]))
+        except ObservationFailure as exc:
+            failure(r, exc.capability, str(exc), exc.category)
+            if exc.category == "event_loss":
+                r["lost_events"] += 1
+        except (OSError, ValueError, KeyError, TimeoutError) as exc:
+            failure(r, "collection", str(exc), "event_loss" if isinstance(exc, (ValueError, KeyError))
+                    else "observation_incomplete")
+            if isinstance(exc, (ValueError, KeyError)):
+                r["lost_events"] += 1
+        finally:
+            # Only identities created in this collector's ptrace scope are signalled.
+            for pid in set(self.live) | set(self.early_stops):
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+            while self.live:
+                try:
+                    pid, status = os.waitpid(-1, WALL)
+                except ChildProcessError:
+                    break
+                if os.WIFEXITED(status) or os.WIFSIGNALED(status):
+                    self.live.pop(pid, None)
+                elif os.WIFSTOPPED(status):
+                    try:
+                        ptrace(7, pid, 0, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+        return finish(r)
+
+
+def supervise(request):
+    """Separate subreaper owns the collector and its orphans, never caller children."""
+    r = receipt(request)
+    if platform.system() != "Linux" or not hasattr(LIBC, "prctl"):
+        failure(r, "linux_ptrace", "required Linux facilities unavailable", "observer_unavailable")
+        return finish(r)
+    LIBC.prctl(1, signal.SIGKILL, 0, 0, 0)
+    if os.getppid() != request["owner_pid"]:
+        failure(r, "supervisor_parent", "caller exited before supervision armed")
+        return finish(r)
+    if LIBC.prctl(36, 1, 0, 0, 0) != 0:
+        failure(r, "subreaper", os.strerror(ctypes.get_errno()), "observer_unavailable")
+        return finish(r)
+    capabilities = host_inventory()
+    supervisor_pid = os.getpid()
+    collector = os.fork()
+    if collector == 0:
+        LIBC.prctl(1, signal.SIGKILL, 0, 0, 0)
+        if os.getppid() != supervisor_pid:
+            os._exit(126)
+        try:
+            result = Collector(request).run()
+            Path(request["receipt"]).write_text(json.dumps(result))
+            os._exit(0)
+        except BaseException:
+            os._exit(126)
+    deadline = time.monotonic() + request["deadline"] + 2
+    status = None
+    while status is None:
+        pid, value = os.waitpid(collector, os.WNOHANG)
+        if pid:
+            status = value
+        elif time.monotonic() >= deadline:
+            os.kill(collector, signal.SIGKILL)
+            _, status = os.waitpid(collector, 0)
+        else:
+            time.sleep(0.005)
+    # EXITKILL terminates tracees on collector death. Reap only our adopted children.
+    reaped = []
+    while True:
+        try:
+            pid, value = os.waitpid(-1, WALL)
+            reaped.append(dict(pid=pid, status=value))
+        except ChildProcessError:
+            break
+    if status == 0:
+        try:
+            r = json.loads(Path(request["receipt"]).read_text())
+        except (OSError, ValueError):
+            failure(r, "receipt", "collector did not deliver valid JSON", "event_loss")
+    else:
+        failure(r, "collector_death", f"collector terminal status {status}")
+    r["supervision"] = dict(collector_status=status, adopted_terminal_waits=reaped,
+                            supervisor=os.getpid(), collector=collector)
+    r["qualification"]["inventory"] = capabilities
+    r["qualification"]["supported_families"] = sorted({c["family"] for c in capabilities["combinations"] if c["available"]})
+    r["qualification"]["unsupported_combinations"] = [c for c in capabilities["combinations"] if not c["available"]]
+    return finish(r)
+
+
+def census(argv, *, identity, cwd=None, deadline=10, fault=None):
+    """Measure one argv call through descendant drain. Stdout is returned separately."""
+    if fault is not None and fault not in FAULTS:
+        raise ValueError("unknown lifecycle fault")
+    if not argv or not identity or not 0 < deadline <= 60:
+        raise ValueError("argv, identity and a bounded deadline are required")
+    with tempfile.TemporaryDirectory(prefix="veldo-census-") as scratch:
+        request = dict(argv=list(argv), identity=identity, cwd=str(cwd or Path.cwd()),
+                       owner_pid=os.getpid(), deadline=deadline, fault=fault, output=f"{scratch}/stdout",
+                       error=f"{scratch}/stderr", receipt=f"{scratch}/receipt")
+        child = subprocess.run([sys.executable, "-B", str(Path(__file__).resolve()), "supervise"],
+                               input=json.dumps(request), text=True, capture_output=True)
+        try:
+            r = json.loads(child.stdout) if child.returncode == 0 else None
+            if not isinstance(r, dict):
+                raise ValueError("supervisor failed")
+        except ValueError as exc:
+            r = receipt(request)
+            failure(r, "supervisor", str(exc))
+        r["stdout"] = Path(request["output"]).read_text(errors="replace") if Path(request["output"]).exists() else ""
+        r["stderr"] = Path(request["error"]).read_text(errors="replace") if Path(request["error"]).exists() else ""
+        return finish(r)
+
+
+if __name__ == "__main__":
+    if sys.argv[1:] != ["supervise"]:
+        raise SystemExit("internal supervisor entry only")
+    print(json.dumps(supervise(json.load(sys.stdin))))
