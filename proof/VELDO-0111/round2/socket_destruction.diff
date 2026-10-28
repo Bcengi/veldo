@@ -1,0 +1,11 @@
+--- /home/dmitry/projects/veldo-worktrees/veldo-0111/scripts/fixtures/lifecycle_census.py
++++ mutant.py
+@@ -274,6 +274,8 @@
+     """Compute named limitations from evidence; never append a blanket failure."""
+     reasons = []
+     def gap(capability, reason, evidence):
++        if capability == 'socket_destruction':
++            return
+         reasons.append(dict(capability=capability, reason=reason, evidence=evidence))
+     if not inventory['exhaustive']:
+         gap('protocol_inventory_bounds', 'bounded UAPI discovery cannot certify autoloadable families/protocols',

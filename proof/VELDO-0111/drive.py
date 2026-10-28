@@ -84,7 +84,7 @@ def main():
             with gzip.open(HERE / log, 'wt') as output:
                 json.dump(result, output, indent=2)
             names = [name for name, _ in rows]
-            assert len(names) == len(set(names)) == 5 and target in names, (ac, phase, 'missing row')
+            assert len(names) == len(set(names)) and len(names) >= 5 and target in names, (ac, phase, 'missing row')
             observed = dict(rows)[target]
             assert observed == (phase == 'green'), (ac, phase, rows)
             if phase == 'green':

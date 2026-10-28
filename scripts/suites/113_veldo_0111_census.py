@@ -7,6 +7,7 @@ Direct execution emits JSON; the standard suite dispatcher consumes ROOT/expect.
 """
 
 import importlib.util
+import inspect
 import json
 import os
 from pathlib import Path
@@ -124,19 +125,45 @@ except OSError as exc:
 '''
 
 INVENTORY_PROBE = r'''
-import ctypes,json,os,socket
+import ctypes,json,os,socket,struct
 libc=ctypes.CDLL(None,use_errno=True)
 def ack(value):
     os.write(1,(json.dumps(value)+'\n').encode())
-# AF_MAX 46, Linux UAPI through AF_MCTP. Higher families cannot be certified
-# by this inventory. Protocol zero is only a discovery probe, not exhaustion.
 for family in range(46):
+    protocols=(*range(256),262) if family in (2,10) else range(32) if family==16 else (0,)
     for kind in (1,2,3,4,5,6,10):
-        fd=libc.socket(family,kind|socket.SOCK_NONBLOCK|socket.SOCK_CLOEXEC,0)
-        ack(dict(kind='combination',family=family,type=kind,protocol=0,
-                 available=fd>=0,errno=ctypes.get_errno() if fd<0 else 0))
-        if fd>=0:
-            os.close(fd)
+        for protocol in protocols:
+            fd=libc.socket(family,kind|socket.SOCK_NONBLOCK|socket.SOCK_CLOEXEC,protocol)
+            ack(dict(kind='combination',family=family,type=kind,protocol=protocol,
+                     available=fd>=0,errno=ctypes.get_errno() if fd<0 else 0))
+            if fd<0:
+                continue
+            with socket.socket(family,kind,protocol,fileno=fd) as s:
+                if family==1:
+                    address='\0v111-generated-'+str(os.getpid())
+                elif family==2:
+                    address=('127.0.0.1',0)
+                elif family==10:
+                    address=('::1',0)
+                elif family==16:
+                    address=(0,0)
+                else:
+                    raw=ctypes.create_string_buffer(struct.pack('<H',family)+bytes(126))
+                    for operation in ('bind','listen') if kind in (1,5,6) else ('bind',):
+                        result=libc.bind(fd,raw,128) if operation=='bind' else libc.listen(fd,1)
+                        ack(dict(kind='operation',family=family,type=kind,protocol=protocol,
+                                 operation=operation,result=result,errno=ctypes.get_errno() if result<0 else 0,
+                                 inode=os.readlink('/proc/self/fd/'+str(fd)),unqualified_address=True))
+                    continue
+                for operation in ('bind','listen') if kind in (1,5,6) else ('bind',):
+                    try:
+                        s.bind(address) if operation=='bind' else s.listen(1)
+                        ack(dict(kind='operation',family=family,type=kind,protocol=protocol,
+                                 operation=operation,result=0,address=repr(s.getsockname()),
+                                 inode=os.readlink('/proc/self/fd/'+str(fd))))
+                    except OSError as exc:
+                        ack(dict(kind='operation',family=family,type=kind,protocol=protocol,
+                                 operation=operation,result=-1,errno=exc.errno))
 params=ctypes.create_string_buffer(256)
 fd=libc.syscall(425,1,ctypes.byref(params))
 ack(dict(kind='io_uring_setup',available=fd>=0,errno=ctypes.get_errno() if fd<0 else 0))
@@ -312,15 +339,40 @@ for name in (observer,'pgrep'):
                        for c in expected_names)
     emit('census/incomplete-is-not-empty', all(results))
 
-    inventory, combinations = run('inventory', INVENTORY_PROBE)
-    evidence['capabilities'] = dict(combinations=combinations, status='INCOMPLETE',
-        reason='Protocol-zero discovery is not exhaustive family/protocol/operation qualification',
-        supported=[c for c in combinations if c.get('available')],
-        unsupported=[c for c in combinations if not c.get('available')])
-    emit('census/qualification-does-not-overclaim', len(combinations) == 323
-         and all(c.get('available') or c.get('errno', 0) > 0 for c in combinations)
+    inventory, combinations = run('inventory', INVENTORY_PROBE, deadline=60)
+    cells = [c for c in combinations if c['kind'] == 'combination']
+    operations = [c for c in combinations if c['kind'] == 'operation']
+    expected = sorted((c['inode'], c['family'], c['type'], c['operation']) for c in operations
+        if c['result'] == 0 and (c['operation'] == 'listen' or c['type'] in (2,3,10)))
+    objects = {o['identity']: o for o in inventory['sockets']}
+    observed = sorted((objects[e['socket']]['inode'], e['family'], e['type'], e['operation'])
+        for e in inventory['events'] if e['kind'] == 'service')
+    evidence['capabilities'] = dict(combinations=cells, operations=operations,
+        expected_services=len(expected), observed_services=len(observed),
+        status=inventory['qualification']['status'])
+    emit('census/qualification-does-not-overclaim', len(cells) == 4123
+         and len({(c['family'],c['type'],c['protocol']) for c in cells}) == len(cells)
+         and all(c['available'] or c['errno'] > 0 for c in cells)
+         and inventory.get('root_status') == 0 and expected == observed
          and inventory['status'] == 'INCOMPLETE'
          and all(row['status'] == 'STANDS DOWN' for rows in inventory['consumer_rows'].values() for row in rows))
+    capabilities = inventory['qualification']['inventory']
+    wanted = {'protocol_inventory_bounds', 'socket_destruction', 'shared_socket_memory'}
+    wanted.update(p['gap'] for p in capabilities['operation_probes'] if p.get('gap'))
+    if capabilities['io_uring']['available']:
+        wanted.add('io_uring_socket_effects')
+    reasons = inventory['qualification']['reasons']
+    qualified = dict(inventory, qualification=dict(inventory['qualification']),
+                     failures=[], sockets=[], capture_status='COMPLETE')
+    # Synthetic positive branch tests the qualifier only. It is not a host receipt.
+    census.qualify(qualified, dict(capabilities, exhaustive=True, operation_probes=[],
+                                  io_uring={'available':False}))
+    emit('census/named-qualification-reasons', wanted == {f['capability'] for f in reasons}
+         and all(f.get('evidence') and f['reason'] for f in reasons)
+         and wanted <= {f['capability'] for f in inventory['failures']}
+         and not any(f['capability'] == 'qualification' for f in inventory['failures'])
+         and qualified['status'] == 'COMPLETE' and qualified['qualification']['gaps'] == [])
+
     extended, acks = run('socket_extensions', EXTENDED_SOCKET_PROBE)
     accepted = [a for a in acks if a['kind'] == 'accept']
     implicit = [a for a in acks if a['kind'] == 'implicit']
@@ -337,6 +389,34 @@ for name in (observer,'pgrep'):
                  for a in implicit)
          and any(a['kind'] == 'socketcall' for a in acks)
          and any(e.get('abi') == 'i386_socketcall' for e in services))
+    unix, acks = run('implicit_unix', r"""
+import json,os,socket
+receiver=socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM)
+receiver.bind('\0v111-implicit-'+str(os.getpid()))
+sender=socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM)
+sender.setsockopt(socket.SOL_SOCKET,socket.SO_PASSCRED,1)
+sender.sendto(b'x',receiver.getsockname())
+os.write(1,(json.dumps(dict(address=repr(sender.getsockname())))+'\n').encode())
+""")
+    # The compat entry decoder stops before dereferencing the unsupported msghdr.
+    compat_code = EXTENDED_SOCKET_PROBE[EXTENDED_SOCKET_PROBE.index('code=mmap.mmap'):]
+    compat_code = 'import ctypes,json,mmap,os,socket,struct\n' + compat_code
+    compat_code = compat_code.replace('    os.close(fd)', '    args[:3]=[fd,0,0]; call(16,base)\n    os.close(fd)')
+    compat, _ = run('compat_message', compat_code.replace("    ack(kind='socketcall',inode=os.readlink('/proc/self/fd/'+str(fd)))", '    pass'))
+    emit('census/unsupported-address-and-compat', unix['capture_status'] == 'INCOMPLETE'
+         and bool(acks) and any(f['capability'] == 'implicit_address' for f in unix['failures'])
+         and compat['capture_status'] == 'INCOMPLETE'
+         and any(f['capability'] == 'compat_socketcall_message' for f in compat['failures']))
+    async_code = ('import ctypes,json,os,socket,struct\n'
+                  'LIBC=ctypes.CDLL(None,use_errno=True)\n' + inspect.getsource(census.io_uring_probe)
+                  + '\nprint(json.dumps(io_uring_probe()))\n')
+    asynchronous, acks = run('async_effect', async_code)
+    effect = acks[0] if acks else {}
+    emit('census/async-effects-stand-down', bool(effect)
+         and (not effect.get('available') or (
+             effect['socket_effect'].get('completion_result', -1) >= 0
+             and asynchronous['capture_status'] == 'INCOMPLETE'
+             and any(f['capability'] == 'io_uring' for f in asynchronous['failures']))))
     escape_results = []
     for nr in (56,435):
         escaped, acks = run('escape_' + str(nr), ESCAPE_PROBE, nr)

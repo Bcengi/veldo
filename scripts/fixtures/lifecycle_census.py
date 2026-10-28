@@ -97,9 +97,7 @@ def receipt(request):
                 lost_events=0, observer=dict(supervisor=os.getppid(), collector=os.getpid(),
                     comm=comm('self')),
                 qualification=dict(status="INCOMPLETE", qualified_abis=["x86_64"],
-                    gaps=["exhaustive_family_protocol_operations",
-                          "socket_address_and_shared_descriptor_races",
-                          "compat_socketcall", "asynchronous_socket_operations"]),
+                    gaps=[], reasons=[]),
                 metrics={})
 
 
@@ -145,19 +143,162 @@ def finish(r):
     return r
 
 
+def io_uring_probe():
+    """Exercise one completed socket effect, not merely a ring submission."""
+    import mmap
+    params = ctypes.create_string_buffer(120)
+    ctypes.set_errno(0)
+    fd = LIBC.syscall(425, 2, ctypes.byref(params))
+    report = dict(available=fd >= 0, errno=ctypes.get_errno() if fd < 0 else 0,
+                  socket_effect=dict(attempted=False))
+    if fd < 0:
+        return report
+    mappings = []
+    try:
+        probe = ctypes.create_string_buffer(16 + 255 * 8)
+        result = LIBC.syscall(427, fd, 8, ctypes.byref(probe), 255)
+        report['probe_errno'] = ctypes.get_errno() if result < 0 else 0
+        report['supported_opcodes'] = [probe.raw[16 + i * 8] for i in range(probe.raw[1])
+            if struct.unpack_from('<H', probe.raw, 18 + i * 8)[0] & 1] if result == 0 else []
+        sq_entries, cq_entries = struct.unpack_from('<II', params.raw)
+        features = struct.unpack_from('<I', params.raw, 20)[0]
+        sq = struct.unpack_from('<7I', params.raw, 40)
+        cq = struct.unpack_from('<6I', params.raw, 80)
+        sq_size, cq_size = sq[6] + sq_entries * 4, cq[5] + cq_entries * 16
+        ring = mmap.mmap(fd, max(sq_size, cq_size) if features & 1 else sq_size,
+                         flags=mmap.MAP_SHARED, prot=3, offset=0)
+        mappings.append(ring)
+        if features & 1:
+            completion = ring
+        else:
+            completion = mmap.mmap(fd, cq_size, flags=mmap.MAP_SHARED, prot=3, offset=0x8000000)
+            mappings.append(completion)
+        entries = mmap.mmap(fd, sq_entries * 64, flags=mmap.MAP_SHARED, prot=3, offset=0x10000000)
+        mappings.append(entries)
+        entries[0:64] = bytes(64)
+        entries[0] = 45  # IORING_OP_SOCKET, Linux UAPI
+        struct.pack_into('<i', entries, 4, socket.AF_INET)
+        struct.pack_into('<Q', entries, 8, socket.SOCK_DGRAM)
+        struct.pack_into('<I', ring, sq[6], 0)
+        struct.pack_into('<I', ring, sq[1], 1)
+        result = LIBC.syscall(426, fd, 1, 1, 1, 0, 0)
+        report['socket_effect'] = dict(attempted=True, enter_result=result,
+                                      errno=ctypes.get_errno() if result < 0 else 0)
+        if result >= 0:
+            head = struct.unpack_from('<I', completion, cq[0])[0]
+            tail = struct.unpack_from('<I', completion, cq[1])[0]
+            if head != tail:
+                mask = struct.unpack_from('<I', completion, cq[2])[0]
+                value = struct.unpack_from('<i', completion, cq[5] + (head & mask) * 16 + 8)[0]
+                report['socket_effect']['completion_result'] = value
+                if value >= 0:
+                    report['socket_effect']['inode'] = os.readlink(f'/proc/self/fd/{value}')
+                    os.close(value)
+            else:
+                report['socket_effect']['missing_completion'] = True
+    except (OSError, ValueError, struct.error) as exc:
+        report['error'] = str(exc)
+    finally:
+        for mapping in reversed(mappings):
+            mapping.close()
+        os.close(fd)
+    return report
+
+
 def host_inventory():
-    """Discovery outside the measured call. Success is availability, not coverage."""
-    inventory = []
+    """Bounded discovery with generated safe operations and exact kernel errors.
+
+    No Linux API enumerates every socket protocol, including autoloadable ones.
+    The bounds remain explicit and prevent a claim of host-wide exhaustion.
+    """
+    inventory, operations = [], []
     for family in range(46):
+        protocols = range(256) if family in (2, 10) else range(32) if family == 16 else (0,)
+        if family in (2, 10):
+            protocols = (*protocols, 262)  # MPTCP is outside the 8-bit IP range.
         for kind in (1, 2, 3, 4, 5, 6, 10):
-            ctypes.set_errno(0)
-            fd = LIBC.socket(family, kind | socket.SOCK_NONBLOCK | socket.SOCK_CLOEXEC, 0)
-            inventory.append(dict(family=family, type=kind, protocol=0, available=fd >= 0,
-                                  errno=ctypes.get_errno() if fd < 0 else 0))
-            if fd >= 0:
-                os.close(fd)
-    return dict(family_limit=46, types=[1, 2, 3, 4, 5, 6, 10], protocol_scope=[0],
-                exhaustive=False, combinations=inventory)
+            for protocol in protocols:
+                ctypes.set_errno(0)
+                fd = LIBC.socket(family, kind | socket.SOCK_NONBLOCK | socket.SOCK_CLOEXEC, protocol)
+                cell = dict(family=family, type=kind, protocol=protocol, available=fd >= 0,
+                            errno=ctypes.get_errno() if fd < 0 else 0)
+                inventory.append(cell)
+                if fd < 0:
+                    continue
+                probe = dict(family=family, type=kind, protocol=protocol, operations=[])
+                operations.append(probe)
+                try:
+                    with socket.socket(family, kind, protocol, fileno=fd) as sock:
+                        fd = -1
+                        if family == 1:
+                            address = '\0v111-inventory-' + str(os.getpid())
+                        elif family == 2:
+                            address = ('127.0.0.1', 0)
+                        elif family == 10:
+                            address = ('::1', 0)
+                        elif family == 16:
+                            address = (0, 0)
+                        else:
+                            probe['gap'] = 'operation_address_fixture'
+                            # Exercise the entry paths, but do not mistake a zero
+                            # sockaddr for qualification of this family's inputs.
+                            raw = ctypes.create_string_buffer(struct.pack('<H', family) + bytes(126))
+                            for name in ('bind', 'listen') if kind in (1, 5, 6) else ('bind',):
+                                value = (LIBC.bind(sock.fileno(), raw, 128) if name == 'bind'
+                                         else LIBC.listen(sock.fileno(), 1))
+                                probe['operations'].append(dict(operation=name, result=value,
+                                    errno=ctypes.get_errno() if value < 0 else 0,
+                                    address_fixture='unqualified_zero_sockaddr'))
+                            continue
+                        for name in ('bind', 'listen') if kind in (1, 5, 6) else ('bind',):
+                            try:
+                                sock.bind(address) if name == 'bind' else sock.listen(1)
+                                probe['operations'].append(dict(operation=name, result=0,
+                                                                 address=repr(sock.getsockname())))
+                            except OSError as exc:
+                                probe['operations'].append(dict(operation=name, result=-1, errno=exc.errno))
+                                probe['gap'] = 'operation_configuration'
+                except OSError as exc:
+                    probe['gap'] = 'operation_address_fixture'
+                    probe['errno'] = exc.errno
+                finally:
+                    if fd >= 0:
+                        os.close(fd)
+    return dict(family_limit=46, types=[1, 2, 3, 4, 5, 6, 10],
+                protocol_scope={'inet': [0, 255, 262], 'netlink': [0, 31], 'other': [0]},
+                exhaustive=False, combinations=inventory, operation_probes=operations,
+                io_uring=io_uring_probe())
+
+
+def qualify(r, inventory):
+    """Compute named limitations from evidence; never append a blanket failure."""
+    reasons = []
+    def gap(capability, reason, evidence):
+        reasons.append(dict(capability=capability, reason=reason, evidence=evidence))
+    if not inventory['exhaustive']:
+        gap('protocol_inventory_bounds', 'bounded UAPI discovery cannot certify autoloadable families/protocols',
+            dict(family_limit=inventory['family_limit'], protocol_scope=inventory['protocol_scope']))
+    for probe in inventory['operation_probes']:
+        if probe.get('gap'):
+            gap(probe['gap'], 'available socket needs a qualified address or operation configuration', probe)
+    async_probe = inventory['io_uring']
+    if async_probe['available']:
+        gap('io_uring_socket_effects', 'shared ring completions are not correlated to traced socket identities',
+            async_probe)
+    # A descriptor close is not a kernel socket destruction notification. The
+    # reference may be queued in SCM_RIGHTS or shared with another task.
+    if r['sockets']:
+        gap('socket_destruction', 'terminal drain bounds socket destruction but does not timestamp it',
+            dict(identities=[o['identity'] for o in r['sockets'] if not (o.get('closed') or {}).get('exact')]))
+        gap('shared_socket_memory', 'entry/exit inode checks cannot exclude ABA or shared sockaddr mutation',
+            dict(identities=[o['identity'] for o in r['sockets']]))
+    r['qualification'].update(inventory=inventory, reasons=reasons,
+        gaps=sorted({item['capability'] for item in reasons}),
+        status='INCOMPLETE' if reasons else 'COMPLETE')
+    for item in reasons:
+        failure(r, item['capability'], item['reason'])
+    r['status'] = ('COMPLETE' if r['capture_status'] == 'COMPLETE' and not r['failures']
+                   and not reasons else 'INCOMPLETE')
 
 
 class Collector:
@@ -524,8 +665,7 @@ class Collector:
                 obj["closed"] = dict(barrier="descendants_drained", exact=False)
             if not r["failures"]:
                 r["capture_status"] = "COMPLETE"
-            # A healthy trace is not an exhaustive host qualification receipt.
-            failure(r, "qualification", ", ".join(r["qualification"]["gaps"]))
+            r['status'] = 'COMPLETE' if r['capture_status'] == 'COMPLETE' else 'INCOMPLETE'
         except ObservationFailure as exc:
             failure(r, exc.capability, str(exc), exc.category)
             if exc.category == "event_loss":
@@ -612,7 +752,7 @@ def supervise(request):
         failure(r, "collector_death", f"collector terminal status {status}")
     r["supervision"] = dict(collector_status=status, adopted_terminal_waits=reaped,
                             supervisor=os.getpid(), collector=collector)
-    r["qualification"]["inventory"] = capabilities
+    qualify(r, capabilities)
     r["qualification"]["supported_families"] = sorted({c["family"] for c in capabilities["combinations"] if c["available"]})
     r["qualification"]["unsupported_combinations"] = [c for c in capabilities["combinations"] if not c["available"]]
     return finish(r)

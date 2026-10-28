@@ -1,5 +1,13 @@
 # VELDO-0111 implementation and evidence
 
+Round 2 supersedes the implementation and qualification descriptions below.
+See [round2/README.md](round2/README.md) for current evidence and
+[OPEN.md](OPEN.md) for the named limitations and pending owner decisions.
+The blanket qualification failure is removed; the final round 2 suite has ten
+rows. The records below describe round 1 and their source digests are historical.
+
+## Round 1 record
+
 This is partial implementation evidence, not full acceptance or a landing claim.
 The four required named checks exercise concrete kernel effects and fault
 propagation. Full host qualification remains INCOMPLETE. See OPEN.md for the
