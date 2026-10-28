@@ -24,6 +24,7 @@ import native_checks as NC
 M, P = T.M, T.P
 C = T.load('project_runner_macos_control')
 CODEX_ENGINE = T.load('control_engine_codex')
+CLAUDE_ENGINE = T.load('control_engine_claude')
 
 
 def check_login_offline(host, policy, request, engine):
@@ -199,12 +200,12 @@ def run_probes(candidate_path):
                 raw_out = out_file.read_bytes() if out_file.exists() else b''
                 out_file.unlink(missing_ok=True)
                 err_file.unlink(missing_ok=True)
-                meter = CODEX_ENGINE.Meter()
+                meter = (CODEX_ENGINE if engine == 'codex' else CLAUDE_ENGINE).Meter()
                 events = meter.feed(raw_out)
                 events.extend(meter.close())
                 accounting = {
-                    'turns': meter.turns,
-                    'tokens': meter.tokens,
+                    **({'turns': meter.turns, 'tokens': meter.tokens} if engine == 'codex'
+                       else meter.cumulative()),
                     'final': meter.final(),
                     'limit': meter.limit(),
                     'receipt_digests': [e['receipt'] for e in events if 'receipt' in e],
