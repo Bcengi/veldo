@@ -156,7 +156,9 @@ def entries(document):
 
 
 def _env(leg=None, listed=(), digest=None, measured=None):
-    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST, UNIT_SECONDS, 'VELDO_GATE_LEDGER_FD', 'VELDO_GATE_GRAPH_DIGEST')}
+    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST, UNIT_SECONDS)}
+    for authority_variable in ('VELDO_GATE_LEDGER_FD', 'VELDO_GATE_GRAPH_DIGEST'):
+        env.pop(authority_variable, None)
     if leg:
         env[LEG], env[ENTRIES], env[DIGEST] = leg, ','.join(listed), digest
         if measured is not None:
