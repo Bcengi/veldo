@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, shallowRef } from 'vue'
 import { useRoute } from 'vue-router'
 import { ApiRefusal } from '@/api/refusal'
 import RefusalNotice from '@/components/RefusalNotice.vue'
@@ -9,6 +9,7 @@ import VButton from '@/components/VButton.vue'
 import { useMedia } from '@/composables/useMedia'
 import DecisionDetail from '@/features/decisions/DecisionDetail.vue'
 import DecisionList from '@/features/decisions/DecisionList.vue'
+import type { PendingDecision } from '@/features/decisions/inbox'
 import { joinParam } from '@/router'
 import { useDecisionsStore } from '@/stores/decisions'
 
@@ -17,7 +18,16 @@ const route = useRoute()
 const store = useDecisionsStore()
 const wide = useMedia('(min-width: 1024px)')
 const requestId = computed(() => (route.name === 'decision' ? joinParam(route.params.request as string | string[]) : null))
-const open = computed(() => (requestId.value ? store.find(requestId.value) : null))
+/** A decision answered here stays on screen with the API's outcome after the inbox no longer lists it. */
+const held = shallowRef<PendingDecision | null>(null)
+const open = computed(() => {
+  if (!requestId.value) return null
+  return store.find(requestId.value) ?? (held.value?.requestId === requestId.value ? held.value : null)
+})
+function settled() {
+  held.value = open.value
+  void store.refresh()
+}
 const showList = computed(() => wide.value || !requestId.value)
 const showDetail = computed(() => wide.value || !!requestId.value)
 /** A decision opened by its address that this member cannot see: not pending, or outside their scope. */
@@ -55,7 +65,7 @@ onMounted(() => void store.refresh())
         </StatePanel>
       </div>
       <div v-if="showDetail" class="decisions-detail">
-        <DecisionDetail v-if="open" :key="open.requestId" :decision="open" @settled="store.refresh()" />
+        <DecisionDetail v-if="open" :key="open.requestId" :decision="open" @settled="settled" />
         <RefusalNotice v-else-if="missing" :refusal="missing" />
         <p v-else-if="wide && (store.state === 'ready')" class="decisions-hint">Pick a decision to see it as it was presented and answer it.</p>
       </div>

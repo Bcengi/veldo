@@ -93,6 +93,8 @@ export function routeOf(method: string, url: string, domain: string): string | n
 
 /** Give the browser context a virtual platform authenticator (user verification on), empty. */
 export async function authenticator(context: BrowserContext, page: Page) {
+  const known = authenticators.get(page)
+  if (known) return known
   const cdp = await context.newCDPSession(page)
   await cdp.send('WebAuthn.enable')
   const { authenticatorId } = await cdp.send('WebAuthn.addVirtualAuthenticator', {
@@ -105,10 +107,13 @@ export async function authenticator(context: BrowserContext, page: Page) {
       automaticPresenceSimulation: true,
     },
   })
+  authenticators.set(page, { cdp, authenticatorId })
   return { cdp, authenticatorId }
 }
 
 const std = (b64url: string) => b64url.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (b64url.length % 4)) % 4)
+
+const authenticators = new WeakMap<Page, { cdp: import('@playwright/test').CDPSession; authenticatorId: string }>()
 
 /** Sign `principal` in through the sign-in screen with a passkey the host enrolled for them. */
 export async function signIn(page: Page, factory: Factory, principal = 'owner') {
@@ -116,7 +121,11 @@ export async function signIn(page: Page, factory: Factory, principal = 'owner') 
     '/passkey',
     { principal },
   )
-  const { cdp, authenticatorId } = await authenticator(page.context(), page)
+  const known = authenticators.get(page) ?? (await authenticator(page.context(), page))
+  authenticators.set(page, known)
+  const { cdp, authenticatorId } = known
+  // One passkey on the device at a time, so the browser's choice of passkey is this principal's.
+  await cdp.send('WebAuthn.clearCredentials', { authenticatorId })
   await cdp.send('WebAuthn.addCredential', {
     authenticatorId,
     credential: {

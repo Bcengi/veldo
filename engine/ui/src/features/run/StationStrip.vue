@@ -21,7 +21,7 @@ const off = computed(() => (props.unitState ? OFF_LINE[props.unitState] : undefi
         :aria-current="i === at ? 'step' : undefined"
       >
         <Lamp
-          :state="i === at ? (stop.label === 'Done' ? 'done' : props.live ? 'live' : 'waiting') : 'off'"
+          :state="i === at ? (stop.label === 'Done' ? 'done' : props.live ? 'live' : 'here') : 'off'"
           :label="i === at ? `${stop.label}, current` : at >= 0 && i < at ? `${stop.label}, passed` : stop.label"
           size="sm"
         />
@@ -29,6 +29,7 @@ const off = computed(() => (props.unitState ? OFF_LINE[props.unitState] : undefi
       </li>
     </ol>
     <p class="strip-note">
+      <span v-if="at >= 0" class="strip-at" aria-hidden="true">{{ LINE[at]!.label === 'Done' ? 'Completed' : `At ${LINE[at]!.label}` }}</span>
       <span v-if="props.station" data-testid="run-station">Station: <strong>{{ props.station }}</strong></span>
       <span v-if="off" class="strip-off"><Lamp :state="off.lamp" :label="off.word" size="sm" /> {{ off.word }}</span>
       <span v-else-if="at < 0" class="strip-unknown">{{ props.unitState ? `Unit state ${props.unitState}` : 'Unit state not readable' }}</span>

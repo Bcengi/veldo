@@ -2,7 +2,7 @@ import { computed, type ComputedRef } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { useDecisionsStore } from '@/stores/decisions'
 
-export type LampState = 'off' | 'live' | 'waiting' | 'stop' | 'done'
+export type LampState = 'off' | 'here' | 'live' | 'waiting' | 'stop' | 'done'
 
 /** One destination of the shell's navigation. Later screens (VELDO-0131, 0159, 0163, 0179) add entries here;
  * the rail shows every entry, the phone's bottom bar only those marked `phone` (at most four). */

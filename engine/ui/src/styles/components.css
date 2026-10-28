@@ -59,6 +59,10 @@
     background: var(--stop);
     box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--stop) 60%, var(--ink));
   }
+  .lamp-here {
+    background: var(--ink);
+    box-shadow: none;
+  }
   .lamp-done {
     --lamp: var(--enamel);
     background: var(--enamel);
@@ -674,6 +678,27 @@
   }
 
   /* Runs list */
+  .runs-groups {
+    display: grid;
+    gap: var(--space-6);
+    max-width: 1120px;
+  }
+  .runs-group-title {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-lg);
+  }
+  .runs-count {
+    font-family: var(--font-text);
+    font-size: var(--text-sm);
+    font-weight: 400;
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+  }
   .runs {
     margin: 0;
     padding: 0;
@@ -683,10 +708,10 @@
   .run-row {
     display: grid;
     grid-template-columns: 14px minmax(0, 1fr) auto;
-    grid-template-areas: 'lamp unit state' '. facts facts';
+    grid-template-areas: 'lamp unit state' '. line line' '. facts facts';
     align-items: center;
     column-gap: var(--space-3);
-    row-gap: 2px;
+    row-gap: var(--space-1);
     min-height: 64px;
     padding: var(--space-3) var(--space-2);
     border-bottom: 1px solid var(--rule);
@@ -696,7 +721,7 @@
   .run-row:hover {
     background: var(--paper-raised);
   }
-  .run-row .lamp {
+  .run-row > .lamp {
     grid-area: lamp;
   }
   .run-unit {
@@ -706,6 +731,9 @@
     font-size: var(--text-lg);
     line-height: 1.1;
     overflow-wrap: anywhere;
+  }
+  .run-line {
+    grid-area: line;
   }
   .run-state {
     grid-area: state;
@@ -726,13 +754,46 @@
   }
   @media (min-width: 768px) {
     .run-row {
-      grid-template-columns: 14px minmax(160px, 1.2fr) minmax(0, 2fr) 96px;
-      grid-template-areas: 'lamp unit facts state';
-      min-height: 56px;
+      grid-template-columns: 14px minmax(140px, 1fr) 210px minmax(0, 1.4fr) 80px;
+      grid-template-areas: 'lamp unit line facts state';
+      min-height: 60px;
     }
     .run-state {
       text-align: right;
     }
+  }
+
+  /* LineLamps: the strip in miniature */
+  .line-lamps {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .line-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1.5px var(--lamp-off);
+  }
+  .line-dot.is-past {
+    background: var(--enamel);
+    box-shadow: none;
+  }
+  .line-dot.is-current {
+    background: var(--ink);
+    box-shadow: none;
+  }
+  .line-dot.is-live {
+    --lamp: var(--live);
+    background: var(--live);
+    box-shadow: var(--lamp-glow);
+  }
+  .line-at {
+    margin-left: var(--space-2);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: var(--ink);
   }
 
   /* Station strip */
@@ -747,16 +808,14 @@
     margin: 0;
     padding: 0;
     list-style: none;
-    overflow-x: auto;
-    scrollbar-width: none;
   }
   .strip-stop {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--space-1);
-    flex: 1 0 auto;
-    min-width: 40px;
+    flex: 1 1 0;
+    min-width: 0;
     padding: var(--space-1) 0;
     color: var(--ink-muted);
     position: relative;
@@ -791,6 +850,27 @@
   }
   .strip-stop.is-current .strip-name {
     font-size: var(--text-base);
+  }
+  .strip-at {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-base);
+    color: var(--ink);
+  }
+  @media (max-width: 767px) {
+    /* On a phone the lamps carry the line; the current station is named once below them. */
+    .strip-name {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+    }
+  }
+  @media (min-width: 768px) {
+    .strip-at {
+      display: none;
+    }
   }
   .strip-note {
     display: flex;
@@ -883,7 +963,13 @@
     max-width: 360px;
     min-width: 0;
   }
+  .terminal-switches {
+    display: flex;
+    gap: var(--space-4);
+    margin-left: auto;
+  }
   @media (max-width: 767px) {
+    .terminal-controls,
     .terminal-search {
       flex-basis: 100%;
       max-width: none;
@@ -893,7 +979,7 @@
     }
   }
   .terminal-search .vfield {
-    min-height: 40px;
+    min-height: 44px;
     font-size: var(--text-sm);
     min-width: 0;
   }
@@ -1318,15 +1404,22 @@
       border-left: 0;
       border-right: 0;
     }
-    /* The answer action stays in reach above the bottom bar while the question scrolls. */
+    /* The answer action stays in reach above the bottom bar while the question scrolls; the decision
+       keeps room below it for the bar's own height. */
     .screen-decisions .answer-bar {
-      position: sticky;
+      position: fixed;
+      left: 0;
+      right: 0;
       bottom: calc(var(--bottombar) + env(safe-area-inset-bottom));
-      margin: var(--space-4) calc(var(--space-4) * -1) calc(var(--space-4) * -1);
-      padding: var(--space-3) var(--space-4);
+      z-index: 15;
+      margin: 0;
+      padding: var(--space-3) var(--gutter);
       background: var(--paper-raised);
       border-top: 1px solid var(--rule);
       box-shadow: 0 -8px 16px color-mix(in srgb, var(--ink) 10%, transparent);
+    }
+    .screen-decisions .decision {
+      padding-bottom: calc(var(--answer-bar, 80px) + var(--space-4));
     }
   }
 

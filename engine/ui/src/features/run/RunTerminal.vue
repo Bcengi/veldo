@@ -78,6 +78,8 @@ watch(state, (s, before) => {
   // Follow is on for a running run and off for one that had already ended when it opened.
   if (s === 'ended' && before === 'loading') following.value = false
   if (s === 'ended') unseen.value = 0
+  // The lines render once loading ends; a following view starts at the end of them.
+  if (before === 'loading' && following.value) void nextTick(scrollToEnd)
 })
 watch(query, () => (at.value = 0))
 watch(currentHit, (seq) => {
@@ -117,7 +119,7 @@ watch(() => props.dispatch, () => void follower.start())
         <span class="terminal-count" data-testid="line-count">{{ record.lines.length }} {{ record.lines.length === 1 ? 'line' : 'lines' }}</span>
         <span v-if="stats.reconnects" class="terminal-reconnects">{{ stats.reconnects }} {{ stats.reconnects === 1 ? 'reconnect' : 'reconnects' }}</span>
       </p>
-      <div class="terminal-controls">
+      <div class="terminal-switches">
         <label class="terminal-switch">
           <ToggleSwitch v-model="following" input-id="follow" :aria-label="'Follow the latest line'" data-testid="follow" />
           <span>Follow</span>
@@ -126,6 +128,8 @@ watch(() => props.dispatch, () => void follower.start())
           <ToggleSwitch v-model="raw" input-id="raw" aria-label="Show raw lines" data-testid="raw" />
           <span>Raw</span>
         </label>
+      </div>
+      <div class="terminal-controls">
         <div class="terminal-search">
           <label for="record-search" class="sr-only">Search the record</label>
           <InputText

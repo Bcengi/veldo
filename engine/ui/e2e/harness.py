@@ -2,8 +2,8 @@
 """A real Veldo factory for the UI's browser tests (VELDO-0145).
 
 WHAT IT BUILDS, in a fresh temporary directory: a real SQLite authority store with real OpenSSH-signed
-membership (a steward, the owner with every scope, owner2 scoped to project-a, an outsider scoped to
-project-z, and the pm service), the Telegram and API edges enrolled as VELDO-0067 lays them down, the
+membership (a steward, the owner with every scope, owner2 scoped to project-a, bmember scoped to project-b,
+cmember scoped to project-c (which has nothing yet), an outsider scoped to project-z, and the pm service), the Telegram and API edges enrolled as VELDO-0067 lays them down, the
 real VELDO-0064 inbox, VELDO-0065 presenter (against a loopback Bot API stand-in), VELDO-0068 settlement
 and VELDO-0126 intake, the real control_api_authority over that store, the real protected signer process
 for the API edge, real execution records written through control_execution_record.Recorder, and the
@@ -51,7 +51,7 @@ HERE = Path(__file__).resolve()
 ROOT = HERE.parents[3]
 CHOICES = ['accept', 'return_for_elaboration', 'reject']
 DOMAIN = 'veldo-e2e'
-PROJECTS = ('project-a', 'project-b')
+PROJECTS = ('project-a', 'project-b', 'project-c')
 
 
 def load(name, path):
@@ -230,7 +230,7 @@ class Factory:
         keys, protected, edge_dir = base / 'keys', base / 'protected', base / 'edge'
         for directory in (keys, protected, edge_dir):
             directory.mkdir()
-        keyfile = {who: keys / who for who in ('authority', 'steward', 'owner', 'owner2', 'outsider', 'pm')}
+        keyfile = {who: keys / who for who in ('authority', 'steward', 'owner', 'owner2', 'outsider', 'bmember', 'cmember', 'pm')}
         keyfile['edge'] = protected / 'edge-telegram'
         keyfile['api-edge'] = protected / 'edge-api'
         keyfile['edge-auth'] = edge_dir / 'edge-auth'
@@ -305,6 +305,8 @@ class Factory:
                                           'technical_authority'], '*')
         enroll_member('owner2', 'person', ['project_owner'], ['project-a'])
         enroll_member('outsider', 'person', [], ['project-z'])
+        enroll_member('bmember', 'person', [], ['project-b'])
+        enroll_member('cmember', 'person', [], ['project-c'])
         enroll_member('pm', 'service', [], ['project-a'])
 
         def fixture(eid, kind, data):

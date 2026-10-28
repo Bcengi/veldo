@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import RadioButton from 'primevue/radiobutton'
 import Textarea from 'primevue/textarea'
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { sendAnswer, type AnswerResult } from '@/api/decisions'
 import { ApiRefusal } from '@/api/refusal'
 import RefusalNotice from '@/components/RefusalNotice.vue'
@@ -22,6 +22,20 @@ const pending = ref(false)
 const refusal = shallowRef<ApiRefusal | null>(null)
 const result = shallowRef<AnswerResult | null>(null)
 const problem = ref<string | null>(null)
+/** The answer bar's height, so the decision keeps room for it where the bar is pinned (phone). */
+const bar = ref<HTMLElement | null>(null)
+const barHeight = ref(0)
+let sizer: ResizeObserver | null = null
+onMounted(() => {
+  if (typeof ResizeObserver === 'undefined') return
+  sizer = new ResizeObserver(() => (barHeight.value = bar.value?.offsetHeight ?? 0))
+  watch(bar, (el, was) => {
+    if (was) sizer?.unobserve(was)
+    if (el) sizer?.observe(el)
+  }, { immediate: true })
+})
+onBeforeUnmount(() => sizer?.disconnect())
+
 /** The presentation as it was when this screen showed it: an answer is bound to this, never re-read. */
 const shown = computed(() => props.decision.presentation)
 
@@ -70,7 +84,13 @@ async function send() {
 </script>
 
 <template>
-  <article class="decision" data-testid="decision" :data-request="props.decision.requestId" @keydown="onKey">
+  <article
+    class="decision"
+    data-testid="decision"
+    :data-request="props.decision.requestId"
+    :style="{ '--answer-bar': `${barHeight}px` }"
+    @keydown="onKey"
+  >
     <header class="decision-head">
       <p class="decision-alias">{{ props.decision.alias }}</p>
       <h2 class="decision-question" data-testid="question">{{ shown?.question || props.decision.brief }}</h2>
@@ -112,7 +132,7 @@ async function send() {
         <p class="answer-binding">
           Answers presentation version {{ shown.version }} of request version {{ shown.requestVersion }}.
         </p>
-        <div class="answer-bar" data-testid="answer-bar">
+        <div ref="bar" class="answer-bar" data-testid="answer-bar">
           <p v-if="problem" class="answer-problem" role="alert">{{ problem }}</p>
           <RefusalNotice v-if="refusal" :refusal="refusal" compact />
           <VButton type="submit" label="Send answer" pending-label="Sending answer" :pending="pending" block data-testid="send-answer" />

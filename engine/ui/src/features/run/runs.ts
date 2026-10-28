@@ -39,7 +39,9 @@ export function runRow(item: Item, units: Map<string, string>): RunRow {
   const contract = obj(d.contract)
   const reservation = obj(contract.reservation)
   const process = obj(d.process)
-  const dispatch = str(d.dispatch_id) || item.id.replace(/^dispatch:/, '')
+  // The entity id names the dispatch; the data's own dispatch_id may be served redacted (its random part
+  // can look like a secret to the read model's scanner), the id never is.
+  const dispatch = item.id.startsWith('dispatch:') ? item.id.slice('dispatch:'.length) : str(d.dispatch_id)
   const unit = str(contract.unit) || dispatch.split('/')[1] || dispatch
   return {
     dispatch,

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-/** The andon lamp: the one lit element of the design. States: off, live, waiting, stop, done. */
-const props = withDefaults(defineProps<{ state?: 'off' | 'live' | 'waiting' | 'stop' | 'done'; label: string; size?: 'sm' | 'md' }>(), {
+/** The andon lamp: the one lit element of the design. States: off, here (at a station, not running), live,
+ * waiting (on a person), stop and done. */
+const props = withDefaults(defineProps<{ state?: 'off' | 'here' | 'live' | 'waiting' | 'stop' | 'done'; label: string; size?: 'sm' | 'md' }>(), {
   state: 'off',
   size: 'md',
 })

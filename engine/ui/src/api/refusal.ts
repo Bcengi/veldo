@@ -59,6 +59,7 @@ const BY_REASON: Record<string, RefusalText> = {
   challenge: { title: 'The sign-in took too long', fix: 'Start again; a challenge lasts two minutes.' },
   registration: { title: 'This registration has ended', fix: 'Start adding the passkey again.' },
   pending_limit: { title: 'Three passkeys are already waiting', fix: 'Approve or let them expire at the host first.' },
+  no_project: { title: 'No project of this factory is in your scope', fix: 'Ask a steward to add one to your membership.' },
   out_of_scope: { title: 'Outside your scope', fix: "This run's project is not in your membership." },
   not_owner: { title: 'This decision is not yours to answer', fix: 'Only the member it was presented to can answer it.' },
   stale_presentation: {
