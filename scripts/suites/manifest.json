@@ -1524,6 +1524,15 @@
    ],
    "regions": "Authority-measured mutation worker deadlines and bounded store.",
    "requires_note": "Only ROOT and expect; controlled coordinator children and scratch stores, plus a real hanging child."
+  },
+  {
+   "name": "113_veldo_0121_relay_exchange",
+   "file": "113_veldo_0121_relay_exchange.py",
+   "requires": [
+    "113_veldo_0121_relay_exchange"
+   ],
+   "regions": "Generated transport failures, EOF and size boundaries, total deadline, no replay.",
+   "requires_note": "Only ROOT and expect. Loads scripts/fixtures/relay_exchange.py; scratch AF_UNIX sockets and joined CLI children, real 30-second stalled and trickle exchanges. No host lock access inside fixtures."
   }
  ],
  "resource_capacities": {
