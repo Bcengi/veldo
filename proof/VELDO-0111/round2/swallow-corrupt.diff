@@ -1,0 +1,11 @@
+--- /home/dmitry/projects/veldo-worktrees/veldo-0111/scripts/fixtures/lifecycle_census.py
++++ mutant.py
+@@ -260,7 +260,7 @@
+         if self.request.get("fault") == "abi":
+             arch = 0
+         elif self.request.get("fault") == "corrupt":
+-            op = 255
++            op = raw[0]
+         if size < 24 or arch != 0xc000003e:
+             raise ObservationFailure("syscall_abi", f"arch={arch:x} size={size}")
+         if op == 1:

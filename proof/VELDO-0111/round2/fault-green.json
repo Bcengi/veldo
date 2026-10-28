@@ -1,0 +1,104 @@
+{
+  "phase": "green",
+  "source_digest": "a100fc9d2ec551ad2c7df04b930fc0c7877062e11fd1a1bc0f83af18f41d72d7",
+  "suite_digest": "86f7943feaa5fe90782a7d516f25ba3e4be4a6f9d12477c16d32f9f4875032d9",
+  "cases": {
+    "corrupt": {
+      "detected": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          false
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ]
+      ]
+    },
+    "abi": {
+      "detected": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          false
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ]
+      ]
+    },
+    "loss": {
+      "detected": true,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          false
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ]
+      ]
+    }
+  },
+  "control": [
+    [
+      "census/process-lifetimes",
+      true
+    ],
+    [
+      "census/listener-lifetimes",
+      true
+    ],
+    [
+      "census/observer-is-outside",
+      true
+    ],
+    [
+      "census/incomplete-is-not-empty",
+      true
+    ],
+    [
+      "census/qualification-does-not-overclaim",
+      true
+    ]
+  ]
+}

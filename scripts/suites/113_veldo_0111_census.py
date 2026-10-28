@@ -226,10 +226,14 @@ for name in (observer,'pgrep'):
         'VELDO-0122': ['filesystem/transient-and-escaped-writes-are-seen', 'unavailable/no-transient-write',
                        'unavailable/no-out-of-directory-write', 'unavailable/no-write-needs-complete-observation']}
     results = []
-    for fault in ('facilities', 'denied', 'abi', 'corrupt', 'loss', 'collector_death', 'drain'):
+    for fault, (state, category, capability) in census.FAULTS.items():
         code = 'import os; p=os.fork(); os._exit(0)' if fault in ('loss', 'collector_death', 'drain') else 'pass'
         r, _ = run('fault_' + fault, code, fault=fault)
-        results.append(r['status'] == 'INCOMPLETE' and bool(r['failures']))
+        results.append(r['status'] == 'INCOMPLETE' and r['capture_status'] == 'INCOMPLETE'
+                       and any(f['capability'] == capability and f['category'] == category
+                               and f['state'] == state and bool(f['reason']) for f in r['failures']))
+        if category == 'event_loss':
+            results.append(r['lost_events'] > 0)
         for consumer, names in expected_names.items():
             rows = census.consumer_rows(r, consumer)
             results.append([row['name'] for row in rows] == names and all(

@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "spec_digests": {
+    "VELDO-0111-process-and-listener-census.md": "9567e351b6d929144cafbf0d760b6329f3c790d551920445608cb9d668a616f8",
+    "VELDO-0113-no-client-auto-starts-authority.md": "f7a19dac3e8d82b10f8052191aec54a3fc4c464ef9c1e400b5227302d9857a61",
+    "VELDO-0114-relay-has-no-listener.md": "7965e89a44e3956791120367e0b6bacaf3017c0083d89667d4874bd17baac51c",
+    "VELDO-0122-unavailable-calls-have-no-transient-writes.md": "8cb88afbe33254b123b0e3f32fe64ff38b39f54efb265ebbf64707f5231c3e60"
+  }
+}

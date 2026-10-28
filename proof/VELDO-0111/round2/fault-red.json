@@ -1,0 +1,82 @@
+{
+  "phase": "red",
+  "source_digest": "59e3eba3f53a0606a4cfa3ecb82601b99c486bfe790c3231213f4e95944990bc",
+  "suite_digest": "c82c93eb450fc5de73601bcbea66607ea9bbd696e4ed264c2f3a4311862e8e14",
+  "cases": {
+    "corrupt": {
+      "detected": false,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ]
+      ]
+    },
+    "abi": {
+      "detected": false,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ]
+      ]
+    },
+    "loss": {
+      "detected": false,
+      "rows": [
+        [
+          "census/process-lifetimes",
+          true
+        ],
+        [
+          "census/listener-lifetimes",
+          true
+        ],
+        [
+          "census/observer-is-outside",
+          true
+        ],
+        [
+          "census/incomplete-is-not-empty",
+          true
+        ],
+        [
+          "census/qualification-does-not-overclaim",
+          true
+        ]
+      ]
+    }
+  }
+}

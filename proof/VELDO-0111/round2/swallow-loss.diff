@@ -1,0 +1,11 @@
+--- /home/dmitry/projects/veldo-worktrees/veldo-0111/scripts/fixtures/lifecycle_census.py
++++ mutant.py
+@@ -440,7 +440,7 @@
+                     ptrace(0x4201, pid, 0, ctypes.byref(message))
+                     self.birth(message.value, self.live[pid]["identity"],
+                                {1: "fork", 2: "vfork", 3: "clone"}[event])
+-                    if req.get("fault") == "loss":
++                    if False: # swallowed loss
+                         r["events"].pop()
+                         raise ObservationFailure("event_stream", "missing acknowledged birth event", "event_loss")
+                     if message.value in self.early_stops:

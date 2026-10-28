@@ -44,13 +44,13 @@ CONSUMERS = {
         "unavailable/no-write-needs-complete-observation"),
 }
 FAULTS = {
-    "facilities": ("preflight", "observer_unavailable"),
-    "denied": ("arming", "observer_unavailable"),
-    "abi": ("collecting", "observation_incomplete"),
-    "corrupt": ("collecting", "event_loss"),
-    "loss": ("collecting", "event_loss"),
-    "collector_death": ("collecting", "observation_incomplete"),
-    "drain": ("draining", "observation_incomplete"),
+    "facilities": ("preflight", "observer_unavailable", "linux_ptrace"),
+    "denied": ("arming", "observer_unavailable", "PTRACE_TRACEME"),
+    "abi": ("collecting", "observation_incomplete", "syscall_abi"),
+    "corrupt": ("collecting", "event_loss", "collection"),
+    "loss": ("collecting", "event_loss", "event_stream"),
+    "collector_death": ("collecting", "observation_incomplete", "collector_death"),
+    "drain": ("draining", "observation_incomplete", "collection"),
 }
 LIBC = ctypes.CDLL(None, use_errno=True)
 if hasattr(LIBC, "ptrace"):
@@ -571,6 +571,7 @@ def supervise(request):
         except (OSError, ValueError):
             failure(r, "receipt", "collector did not deliver valid JSON", "event_loss")
     else:
+        r["state"] = "collecting"
         failure(r, "collector_death", f"collector terminal status {status}")
     r["supervision"] = dict(collector_status=status, adopted_terminal_waits=reaped,
                             supervisor=os.getpid(), collector=collector)

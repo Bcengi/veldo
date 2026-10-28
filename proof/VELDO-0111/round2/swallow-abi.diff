@@ -1,0 +1,11 @@
+--- /home/dmitry/projects/veldo-worktrees/veldo-0111/scripts/fixtures/lifecycle_census.py
++++ mutant.py
+@@ -258,7 +258,7 @@
+         raw = buf.raw
+         op, arch = raw[0], struct.unpack_from("<I", raw, 4)[0]
+         if self.request.get("fault") == "abi":
+-            arch = 0
++            arch = struct.unpack_from("<I", raw, 4)[0]
+         elif self.request.get("fault") == "corrupt":
+             op = 255
+         if size < 24 or arch != 0xc000003e:
