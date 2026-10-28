@@ -71,3 +71,24 @@ proof use no other project code or added package dependency.
 No protected paths were changed. OPEN.md records the footprint and current-code
 reconciliation, and separates this fixture qualification from worker, full
 floor, SSH authentication, unavailable-service and census qualification.
+
+## Recorded results
+
+The final locked run completed at source commit
+`c55fdc1e0b9914465df808a3af6b4f08cab9f718`, with proof already tracked at
+`79a18de507448aa1a340565409b7646a16c083c0`. All three standalone baseline rows
+passed. Each declared falsifier produced its named false row in a completed run
+with exit 1 and the expected diagnosis; restoring each mutation produced all
+three true rows with exit 0. See `AC1.diff` through `AC3.diff`, the corresponding
+red and green JSON files, and `mutations.json`.
+
+The live control exercised 19 entry and transport pairs. Each extension consumer
+exercised 20. The four selected suites reported 67 passed and zero failed with
+their required partial-run exit 2. That selected result is a regression
+diagnostic, not aggregate verification evidence. The initial 66 passed and one
+failed result is retained separately and explained in OPEN.md.
+
+`implementation.json` binds the final source files to their digests.
+`manifest.json` records the standalone acceptance and falsification evidence.
+The earlier `single-file-control.json` is retained as an additional control.
+No full gate or independent review was run for this ticket.

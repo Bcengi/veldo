@@ -354,8 +354,8 @@
         "domain_uuid": "clients-domain",
         "store_uuid": "clients-store",
         "repository_uuid": "clients-repository",
-        "clone_uuid": "237f3425-fb0d-4479-88ed-51c9d8cb95d8",
-        "binding_digest": "sha256:9e56a3758ea4e62ef7991ad2d936b17d5cb22cdb373f52ddfde714df2d7f07d0"
+        "clone_uuid": "8f50bda2-1c42-48bd-a948-4486280d9c56",
+        "binding_digest": "sha256:2224f4ea32cd8a9aa955596cd8d35c6c615c9b046114700cdd219b123e1c0959"
       },
       "results": {
         "claim:claim/local_ipc": {
@@ -384,7 +384,7 @@
         },
         "control_claim_client:Client.request/local_ipc": {
           "accepted": true,
-          "digest": "8115101d280e1e625779a9e778e1ab53b6559be007198851a0ffe6acebd4276d"
+          "digest": "c74cb0e9ff87133fc2070f2a6ca6a365caad935bfd6ddcecbb52caf00a849ae4"
         },
         "control_claim_client:Client.use/local_ipc": {
           "accepted": true,
@@ -392,35 +392,35 @@
         },
         "control_client:send/local_ipc": {
           "accepted": true,
-          "digest": "326c943110402646527635b379304eba243f203ebe41c9f89e5e3eea9a7ad596"
+          "digest": "3d257c359dbd4315c5879ffbeccc692fbf0f0614fb16fb767a2d6b6e2a367fe1"
         },
         "control_dispatch:Dispatches.accept/in_process": {
           "accepted": true,
-          "digest": "c27ca1c0f06ca44fba27bd24fd10669fd751b463d480d1fc2935de43590fb012"
+          "digest": "d545b39ef3ac734223761879c0f7ca17461a5a90f7ebae322f26208f6a7b8049"
         },
         "control_dispatch:Dispatches.exit/in_process": {
           "accepted": true,
-          "digest": "ac55d751a86d686dfbc121126c2a1e86caf608ee288af40716725b5fd52ba072"
+          "digest": "6ae9b3bde545852bba8e42679e126087f2497dc085c0b40991a9c8001e2003ba"
         },
         "control_dispatch:Dispatches.prepare/in_process": {
           "accepted": true,
-          "digest": "9aef8034325609895245d558aaed10bb0fcc415dd3ff2986748ff7c769d7b866"
+          "digest": "e8ef3d6967f0db6507d4f4eacfda212ed15e65fd98ed71e5ab17edd08d873d37"
         },
         "control_dispatch:Dispatches.refuse/in_process": {
           "accepted": true,
-          "digest": "4b6eac4a437a7e1dc27e25a73b54e36edce7c831c42f5afbbc426b1b67fce91d"
+          "digest": "4bddc00b489e3a63947e357ce3df9f17979b72b80cdee7a89dd7074d3055bcbc"
         },
         "control_dispatch:Dispatches.run/in_process": {
           "accepted": true,
-          "digest": "f760d359b97d9779a58107229487885a946cc7b320332cd638eb09f2df68b2d8"
+          "digest": "c7cb4a240d2b6b00b074bd5db01a1326b9ed6b68870102a04fffc18002d0f0e6"
         },
         "control_dispatch:Dispatches.unknown/in_process": {
           "accepted": true,
-          "digest": "7df896e49fdaf32e903fdc17211bdb34f0179cd750cb0bd165b348ff90e24a1b"
+          "digest": "8a6c65eec052f994036edc37b4821d4365630a9f34c403f3b2d3ce1136170ff9"
         },
         "control_relay:forward/relay": {
           "accepted": true,
-          "digest": "c800c6776227433bc85a767ef65770d5895637a48431ef0892911db2ea7b5b00"
+          "digest": "8fc9a08b160fc8440a7017f2d57537b263d389794b9177ce5a651a92ad18dfae"
         },
         "control_relay:main/relay": {
           "accepted": true,
@@ -644,13 +644,13 @@
             "domain_uuid": "clients-domain",
             "store_uuid": "clients-store",
             "repository_uuid": "clients-repository",
-            "clone_uuid": "81cfe6e6-107c-47ae-9668-ca93a3be6c14",
-            "binding_digest": "sha256:f919d676d3ea224783981f9c49218969fb4d675bb82a61ef11031cc15526030f"
+            "clone_uuid": "840944a3-170d-4d23-9b8b-41c5834686da",
+            "binding_digest": "sha256:3c45a1eef6eff2522fea7182ecc81428b6aa2d15d2521383982c7bf2689d1fcb"
           },
           "results": {
             "113_veldo_0112_registered_clients:qualify.<locals>.extension/local_ipc": {
               "accepted": true,
-              "digest": "b0f633701eca9330929da94f548924b40467de6ca71bef2cd08e87931121ade3"
+              "digest": "9c9c04ce79c6226f83fe672deb582c8238fd06851dc842e2287998af4678a2b1"
             },
             "claim:claim/local_ipc": {
               "accepted": true,
@@ -678,7 +678,7 @@
             },
             "control_claim_client:Client.request/local_ipc": {
               "accepted": true,
-              "digest": "e80c25bf6f954716b2566e2a70ca9cb115180061db62a7c8ea6f205bbfa83ee9"
+              "digest": "0bf76ab4648b22deca283dd06805a3f78870f57499f33f51d1bc6b565718385a"
             },
             "control_claim_client:Client.use/local_ipc": {
               "accepted": true,
@@ -686,35 +686,35 @@
             },
             "control_client:send/local_ipc": {
               "accepted": true,
-              "digest": "ee8a858e03f7f560fb0d3e3809e07b3be5d5ba426f2efab2648de53700ee2dc0"
+              "digest": "0ef056ddb172ad9a860bcb0567ffc4e67dafd624c0138355ed6f36d975ed036b"
             },
             "control_dispatch:Dispatches.accept/in_process": {
               "accepted": true,
-              "digest": "d24babf378fd8d79c1bbf01686f49eeb0c56b1a8e63f3b69b826254359798e09"
+              "digest": "2e2a9d6d1d40c08b9281e88357f9989a753236b8f56ce4945fc807c595e43f85"
             },
             "control_dispatch:Dispatches.exit/in_process": {
               "accepted": true,
-              "digest": "f53cd9abc6f30bd57f1b92e0d59f9fb0e675897b88eeba3d899e3db51965a516"
+              "digest": "1ccc4ef61358bbb88e40aa4e998941a0095b21fa66d5058d67cc6ce19af62e6e"
             },
             "control_dispatch:Dispatches.prepare/in_process": {
               "accepted": true,
-              "digest": "28071ec0d9ec9c9ec55df222a33dc6bdcaf17a7adf2f310201610e45c278d43c"
+              "digest": "fdb2116bacf6009ff62fffe24828b86803311e049881e76883bbb722bee6e712"
             },
             "control_dispatch:Dispatches.refuse/in_process": {
               "accepted": true,
-              "digest": "1fa8cd1126c6bd80613f60a5525176c06f1d6ab147202adb726cde9d9ee06261"
+              "digest": "b33c323b87067cb5872ddcbed2f7aed8b6931becd434c3471784dd0f106cbcdc"
             },
             "control_dispatch:Dispatches.run/in_process": {
               "accepted": true,
-              "digest": "c402bec0d516a1dd9e990891730abe832008ede644ce0aa0555563b8ebe7b00f"
+              "digest": "abb7f9d799b688c04fdbdef2d40dd49c428eb3b341d98d4d909a022b4efb658d"
             },
             "control_dispatch:Dispatches.unknown/in_process": {
               "accepted": true,
-              "digest": "c52934db0153c0e93b511887efdf3cdc65f20507f24c11c455614ca50afb03b8"
+              "digest": "9e186b30bf604f1096e53db6c1a6a5beee6eea80ae7b362e842d0b8e650b0261"
             },
             "control_relay:forward/relay": {
               "accepted": true,
-              "digest": "f5345e9139438361daebfd624558fb74f6b7b2d944f1c8e74e2b6f8369795337"
+              "digest": "8fcba54f634eafb88e129cad8735370e544c9255e9b50eddfed9743329f4f214"
             },
             "control_relay:main/relay": {
               "accepted": true,
@@ -926,13 +926,13 @@
             "domain_uuid": "clients-domain",
             "store_uuid": "clients-store",
             "repository_uuid": "clients-repository",
-            "clone_uuid": "954931a6-51e1-4a6a-8125-b68480d2b224",
-            "binding_digest": "sha256:23ed841728e4ab1b25644e057c6662ccd93ced6bc82c36299d3a9bda17ebace5"
+            "clone_uuid": "ce815ac8-fac7-4871-813e-d2a1f7ee9907",
+            "binding_digest": "sha256:4a9f58fc12b9acfbb0ae1284ffde90d3d16c0db69612cec1f44d5e995de23cc4"
           },
           "results": {
             "113_veldo_0112_registered_clients:qualify.<locals>.extension/local_ipc": {
               "accepted": true,
-              "digest": "26e61c27cd110a0a7eb0709ec94ef3cf057b7487b2d500ad496d97a8854ea5df"
+              "digest": "ab5679f2b4b26f6f52958b54de3cbda70ae73f7bc5c54ed46868bdfb41ff5cec"
             },
             "claim:claim/local_ipc": {
               "accepted": true,
@@ -960,7 +960,7 @@
             },
             "control_claim_client:Client.request/local_ipc": {
               "accepted": true,
-              "digest": "fb863be184bd133484c9cda4dfbf48726cb34bf10d1af8e66b91f01d1a2ed654"
+              "digest": "7b1b61831c965772fc88184081ff17b23493785866e348b74fd928a0219407be"
             },
             "control_claim_client:Client.use/local_ipc": {
               "accepted": true,
@@ -968,35 +968,35 @@
             },
             "control_client:send/local_ipc": {
               "accepted": true,
-              "digest": "041034f95c1519b680a826f7ebde07c8160e21eb3b96058a036c778fc658a045"
+              "digest": "a97597168850ad9b8ff75732a847473726330a0656137ba4a894d0c5eeb0035a"
             },
             "control_dispatch:Dispatches.accept/in_process": {
               "accepted": true,
-              "digest": "cb2bc02b8bd4737df488be1a18274103c783536847ae7b57144d6998b76c2247"
+              "digest": "1fa9477e3ffc319ff9b040e8f4c6295e0e5294a0a1d61a236535ee6194340fe7"
             },
             "control_dispatch:Dispatches.exit/in_process": {
               "accepted": true,
-              "digest": "16f4db2cd6094ba41b15af631dbe37456f440a1dfdb166c3822678e0ebf05a4f"
+              "digest": "0b3bedc0a8eef555b04bfdb41a135caae8dfcbf7a9b6324e617d79371c0f18b5"
             },
             "control_dispatch:Dispatches.prepare/in_process": {
               "accepted": true,
-              "digest": "a546aa7be9104128c1c6f7f8a21570cfc50dd1deb6bfe1457768bff62749fb9f"
+              "digest": "ed1f1555bfdd30d0fd824060ca42a084ae33bc676f17796008b5e0d939b823e3"
             },
             "control_dispatch:Dispatches.refuse/in_process": {
               "accepted": true,
-              "digest": "7e9554e7eef02dd14abcaacb7c8dffc94084c0bce72df6cae02325d2aad7b67c"
+              "digest": "89e21b1f36659bed55ec5236ca70a97c079784cb782ebd6c8587bc61eaa1170a"
             },
             "control_dispatch:Dispatches.run/in_process": {
               "accepted": true,
-              "digest": "88b67fe2c5fb38254499e1ad401b5ac0863ddd916aa4c19b9c76e3e8e5966140"
+              "digest": "fea1ec2a4173a19a4562a8d70197798cfe3f5a5ac1a37184aad014262a158b72"
             },
             "control_dispatch:Dispatches.unknown/in_process": {
               "accepted": true,
-              "digest": "172504b9a807df7a5f20dbfe19a8193b9e938357431d4a2ae8e0a23f895d25bb"
+              "digest": "b83b5ab0694ca8994cffda048798b2b3a64d2a8d048b264ed5eca751ff17a28a"
             },
             "control_relay:forward/relay": {
               "accepted": true,
-              "digest": "98426edfc311da6876852e77d91e904cc8aa9ce612858549db1d424f4c0f2e6c"
+              "digest": "a0bb7aa3f53a85e556a836d2f60bfe1a719f43071e464a11031a8953d15aad92"
             },
             "control_relay:main/relay": {
               "accepted": true,

@@ -1,6 +1,6 @@
 {
   "base_commit": "59b119a1c565c805b1c883fa56c2ce6685548d67",
-  "source_commit": "b5c406b9348e17f3794b6b5da2913571408e467a",
+  "source_commit": "c55fdc1e0b9914465df808a3af6b4f08cab9f718",
   "branch": "agent/codex/veldo-0112",
   "sha256": {
     ".veldo/claim.py": "fb9894825ee8115542857406b7c13488c3ef0bd3f751d20d51a9fe6caee3d263",
@@ -23,12 +23,13 @@
     "proof/VELDO-0112/run_checks.py": "89340b85535f2fbbd3238b66e7449b18149ec757d584a9f2e23a6fdb019d2685",
     "scripts/fixtures/registered_clients.py": "5fd56fb6f4739c9112b936dc18d274f5c9de052e780e161044b8b38b4c2d4f72",
     "scripts/suites/113_veldo_0112_registered_clients.py": "defa4fe53aa24b347fb9e3fcfd5718b0978c62d0704135402f9eb81ff12b15fa",
-    "scripts/suites/47_veldo_0107_ipc.py": "bbdad1d4409d0ca05c9521d67c8760c153bec95a9110d099942b705cf1d97131",
+    "scripts/suites/47_veldo_0107_ipc.py": "a6f3cc7ee730beceef6bba49a8eeae4032555f983ea6d5283a4aff4ca4f56146",
     "scripts/suites/48_veldo_0108_relay.py": "63901596eb3b7b57c3bc15b63fa49df0092e2990bc535935b0f2e4f940960740",
     "scripts/suites/49_veldo_0109_unavailable.py": "e97651623b3e84618a3b827acf1d2c767617c8b292a47d3e3050525aac42fae0",
     "scripts/suites/manifest.json": "d2308a6283d3e7f3dbaa8821f178b658245ce0ea191ddc005ded27de025c426a",
     "scripts/suites/requires.json": "c0a51ccc19cf94f15a54804e276e05eed7292ec236e77b2e60ed22c3f8c3a8ce",
     "specs/VELDO-0112-registered-client-fixture.md": "764ac0a1cfc3e0f280684a68753214ea4c63b84bdf835f8b8fa0e1e97ad84b69"
   },
-  "protected_paths_touched": []
+  "protected_paths_touched": [],
+  "tested_commit": "79a18de507448aa1a340565409b7646a16c083c0"
 }
