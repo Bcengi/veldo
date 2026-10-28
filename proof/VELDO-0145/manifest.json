@@ -1,0 +1,109 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0145",
+  "commit": "c31af523733c845b404803c575040a7f8184c3e0",
+  "tree": "870058810572f2003ca64ea7f457c097c6f74570",
+  "producer": "Claude implementation agent",
+  "produced_at": "2026-10-28T17:39:31.498903+00:00",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "engine/ui/e2e/signin.spec.ts",
+          "detail": "enroll-then-sign-in, unauthenticated access, session ends, member outside a project, route trace: green (proof/VELDO-0145/e2e-green.json). Falsifiers red then green: falsifiers/ac1-sign-in-before-approval.json, falsifiers/ac1-data-before-session.json. The phone leg over the tailnet with the owner is not run (OPEN.md item 4)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/suites/113_veldo_0145_ui.py",
+          "detail": "rows ui/page-served, ui/unauthenticated-access, ui/route-trace; mutants ui145-data-before-session, ui145-page-escapes-directory, ui145-page-any-host, ui145-route-moved rejected (mutations-api.json); red on the pre-change tree (red-at-59b119a1.txt)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "engine/ui/e2e/run.spec.ts",
+          "detail": "full detail line by line against the real record, live with a dropped connection resumed from the cursor, follow mode, station strip: green. Falsifier falsifiers/ac2-summary-in-place-of-record.json red then green."
+        },
+        {
+          "type": "unit",
+          "ref": "engine/ui/src/features/run/record.spec.ts",
+          "detail": "record parsing, sequence application, repeats and gaps; RunTerminal.spec.ts one row per line (proof/VELDO-0145/unit-green.json)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "engine/ui/e2e/decisions.spec.ts",
+          "detail": "exact presentation, inline answer settles once with Telegram after, Telegram first refused stale_version:request_closed, changed presentation refused stale_version:stale_presentation, member not presented to refused unauthorized:not_owner: green against the real VELDO-0068 settlement. Falsifier falsifiers/ac3-answer-without-presentation-version.json red then green."
+        },
+        {
+          "type": "unit",
+          "ref": "engine/ui/src/features/decisions/DecisionDetail.spec.ts",
+          "detail": "answer body bound to the shown presentation version; refusal beside the action; inbox.spec.ts current presentation."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "ui_states",
+          "ref": "engine/ui/e2e/layout.spec.ts",
+          "detail": "every screen and state at 360, 390, 1280, 1440 px, light and dark: no overflow, no clipped or covered primary action, no overlaps, 44 px phone targets, axe WCAG 2.2 AA zero violations, zero policy violations; keyboard-only desktop and touch phone tasks; served assets. Screens in proof/VELDO-0145/screens/. Falsifier falsifiers/ac4-hide-answer-at-360.json red then green."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/suites/113_veldo_0145_ui.py",
+          "detail": "row ui/dependency-policy over package-lock.json and dependency-policy.json; mutant ui145-tiers-admitted rejected."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit and component (vitest)",
+      "result": "46 passed",
+      "ref": "proof/VELDO-0145/unit-green.json"
+    },
+    {
+      "name": "browser (playwright, real factory harness)",
+      "result": "23 passed",
+      "ref": "proof/VELDO-0145/e2e-green.json"
+    },
+    {
+      "name": "suite 113_veldo_0145_ui (partial run)",
+      "result": "4 rows passed"
+    },
+    {
+      "name": "check_teeth_mutations --finding 145",
+      "result": "5 registered, 5 rejected"
+    },
+    {
+      "name": "scripts/verify.sh",
+      "result": "not run (owner rule 37191: the full gate runs on the batch)"
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0145/README.md",
+    "proof/VELDO-0145/OPEN.md",
+    "proof/VELDO-0145/screens/"
+  ],
+  "rollback": "Stop serving the UI; the API, the records and every decision path through Telegram are unchanged.",
+  "review": {
+    "status": "pending",
+    "note": "independent fresh-context review not yet run"
+  }
+}
