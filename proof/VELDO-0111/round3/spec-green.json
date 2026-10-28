@@ -1,0 +1,7 @@
+{
+  "checks": {
+    "exact_approved_edits": true,
+    "dated_approval": true
+  },
+  "spec_digest": "16530fa6bc0206f7f80f294fe3446cd6fb38c65a1267b28d085513d78245b85b"
+}

@@ -43,6 +43,9 @@ CONSUMERS = {
         "unavailable/no-transient-write", "unavailable/no-out-of-directory-write",
         "unavailable/no-write-needs-complete-observation"),
 }
+QUALIFICATION_FAMILIES = {1: "Unix", 2: "IPv4", 10: "IPv6", 16: "netlink"}
+
+
 FAULTS = {
     "facilities": ("preflight", "observer_unavailable", "linux_ptrace"),
     "denied": ("arming", "observer_unavailable", "PTRACE_TRACEME"),
@@ -51,6 +54,7 @@ FAULTS = {
     "loss": ("collecting", "event_loss", "event_stream"),
     "collector_death": ("collecting", "observation_incomplete", "collector_death"),
     "drain": ("draining", "observation_incomplete", "collection"),
+    "finalize": ("drained", "observation_incomplete", "receipt_finalization"),
 }
 LIBC = ctypes.CDLL(None, use_errno=True)
 if hasattr(LIBC, "ptrace"):
@@ -205,6 +209,16 @@ def io_uring_probe():
     return report
 
 
+def unqualified_family(family):
+    """A total boundary: unknown future families fail just like known others."""
+    try:
+        name = socket.AddressFamily(family).name
+    except ValueError:
+        name = f"AF_{family}"
+    return dict(family=family, name=name, capability='family_not_qualified',
+                reason=f'{name} ({family}) is outside the Unix, IPv4, IPv6 and netlink qualification universe')
+
+
 def host_inventory():
     """Bounded discovery with generated safe operations and exact kernel errors.
 
@@ -225,6 +239,9 @@ def host_inventory():
                 inventory.append(cell)
                 if fd < 0:
                     continue
+                if family not in QUALIFICATION_FAMILIES:
+                    os.close(fd)
+                    continue
                 probe = dict(family=family, type=kind, protocol=protocol, operations=[])
                 operations.append(probe)
                 try:
@@ -238,18 +255,6 @@ def host_inventory():
                             address = ('::1', 0)
                         elif family == 16:
                             address = (0, 0)
-                        else:
-                            probe['gap'] = 'operation_address_fixture'
-                            # Exercise the entry paths, but do not mistake a zero
-                            # sockaddr for qualification of this family's inputs.
-                            raw = ctypes.create_string_buffer(struct.pack('<H', family) + bytes(126))
-                            for name in ('bind', 'listen') if kind in (1, 5, 6) else ('bind',):
-                                value = (LIBC.bind(sock.fileno(), raw, 128) if name == 'bind'
-                                         else LIBC.listen(sock.fileno(), 1))
-                                probe['operations'].append(dict(operation=name, result=value,
-                                    errno=ctypes.get_errno() if value < 0 else 0,
-                                    address_fixture='unqualified_zero_sockaddr'))
-                            continue
                         for name in ('bind', 'listen') if kind in (1, 5, 6) else ('bind',):
                             try:
                                 sock.bind(address) if name == 'bind' else sock.listen(1)
@@ -264,7 +269,10 @@ def host_inventory():
                 finally:
                     if fd >= 0:
                         os.close(fd)
-    return dict(family_limit=46, types=[1, 2, 3, 4, 5, 6, 10],
+    return dict(family_limit=46, qualification_families=list(QUALIFICATION_FAMILIES),
+                not_qualified_families=[unqualified_family(f) for f in range(46)
+                                        if f not in QUALIFICATION_FAMILIES],
+                types=[1, 2, 3, 4, 5, 6, 10],
                 protocol_scope={'inet': [0, 255, 262], 'netlink': [0, 31], 'other': [0]},
                 exhaustive=False, combinations=inventory, operation_probes=operations,
                 io_uring=io_uring_probe())
@@ -276,8 +284,9 @@ def qualify(r, inventory):
     def gap(capability, reason, evidence):
         reasons.append(dict(capability=capability, reason=reason, evidence=evidence))
     if not inventory['exhaustive']:
-        gap('protocol_inventory_bounds', 'bounded UAPI discovery cannot certify autoloadable families/protocols',
-            dict(family_limit=inventory['family_limit'], protocol_scope=inventory['protocol_scope']))
+        gap('protocol_inventory_bounds', 'bounded protocol discovery does not fully qualify the four required families',
+            dict(qualification_families=inventory['qualification_families'],
+                 protocol_scope=inventory['protocol_scope']))
     for probe in inventory['operation_probes']:
         if probe.get('gap'):
             gap(probe['gap'], 'available socket needs a qualified address or operation configuration', probe)
@@ -363,12 +372,43 @@ class Collector:
                    closed=None, references=[])
         self.sockets[inode] = obj
         self.r["sockets"].append(obj)
+        if family not in QUALIFICATION_FAMILIES:
+            obj['not_qualified'] = unqualified_family(family)
+            failure(self.r, 'family_not_qualified', obj['not_qualified']['reason'])
         return obj
 
     def expose(self, pid, obj, operation, address):
         self.event("service", task=self.live[pid]["identity"], socket=obj["identity"],
                    family=obj["family"], type=obj["type"], operation=operation,
                    address=address, abi=obj.get("abi", "x86_64"))
+
+    def unix_binding(self, pid, obj):
+        """Read the stopped socket's name; an unnamed sender is not a service.
+
+        /proc renders the kernel's autobind name as @ plus five hex digits.
+        Other names cannot safely be decoded from this lossy text interface.
+        Explicit binds retain the syscall sockaddr; unknown enrichment fails.
+        """
+        inode = obj['inode'][8:-1].encode()
+        try:
+            lines = Path(f'/proc/{pid}/net/unix').read_bytes().splitlines()[1:]
+        except OSError as exc:
+            failure(self.r, 'implicit_address', f'Unix name unavailable: {exc}')
+            return None
+        matches = [parts for line in lines if len(parts := line.split(None, 7)) >= 7
+                   and parts[6] == inode]
+        if len(matches) != 1:
+            failure(self.r, 'implicit_address', 'Unix socket name missing or ambiguous')
+            return None
+        fields = matches[0]
+        if len(fields) == 7:
+            return None
+        name = fields[7]
+        if len(name) == 6 and name[:1] == b'@' and all(c in b'0123456789abcdef' for c in name[1:]):
+            return dict(unix_name_hex=(b'\0' + name[1:]).hex(),
+                        sockaddr_hex=(struct.pack('<H', socket.AF_UNIX) + b'\0' + name[1:]).hex())
+        failure(self.r, 'implicit_address', 'Unix name exists but is not a decodable autobind name')
+        return None
 
     def address(self, pid, obj):
         """Enrich an already witnessed successful operation, never infer an event."""
@@ -521,13 +561,17 @@ class Collector:
             elif nr == 50:
                 self.expose(pid, obj, "listen", self.address(pid, obj))
             elif obj["type"] in (2, 3, 10) and obj["address"] is None:
-                address = self.address(pid, obj)
-                if isinstance(address, dict) and address.get('port', 0) > 0:
+                if obj['family'] == socket.AF_UNIX:
+                    address = self.unix_binding(pid, obj)
+                    bound = address is not None
+                else:
+                    address = self.address(pid, obj)
+                    bound = isinstance(address, dict) and address.get('port', 0) > 0
+                    if not bound:
+                        failure(self.r, "implicit_address", "successful operation has no decoded local binding")
+                if bound:
                     obj['address'] = address
                     self.expose(pid, obj, "implicit_receive_binding", address)
-                else:
-                    self.expose(pid, obj, "implicit_receive_binding", address)
-                    failure(self.r, "implicit_address", "successful operation has no decoded local binding")
         elif nr in (32, 33, 72, 292) and entry.get("inode"):
             self.event("descriptor_alias", task=self.live[pid]["identity"],
                        inode=entry["inode"], syscall=nr, result=result)
@@ -661,6 +705,8 @@ class Collector:
             if self.early_stops:
                 raise ValueError("unmatched child stops at drain")
             r["state"] = "drained"
+            if req.get("fault") == "finalize":
+                raise ObservationFailure("receipt_finalization", "injected receipt finalization failure")
             for obj in r["sockets"]:
                 obj["closed"] = dict(barrier="descendants_drained", exact=False)
             if not r["failures"]:
