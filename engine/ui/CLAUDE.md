@@ -18,11 +18,16 @@ Run from `engine/ui/`.
 | `npm ci` | Install exactly the locked dependency set |
 | `npm run dev` | Vite dev server; proxies `/api` to `VELDO_API` (default `http://127.0.0.1:8765`) |
 | `npm run typecheck` | `vue-tsc --noEmit` over `src/` and tests |
-| `npm run build` | Type-check, then build to `dist/` (what the API serves) |
+| `npm run build` | Type-check, then build to `dist/` (what the API serves). The proof and the falsifiers use this script |
 | `npm test` | Unit and component tests once (Vitest, jsdom) |
 | `npm run e2e` | Browser tests against a real factory harness (Playwright, system Chrome) |
 | `npm run e2e e2e/decisions.spec.ts` | One browser test file |
 | `npm run falsify <case>` | Apply one registered falsifier, run its check, expect red, restore |
+
+To lay the build where an installed factory serves it, run the repository's install path after the build:
+`python3 .veldo/init_scaffold.py <factory repository>` lays `dist/` as `<repository>/.veldo/ui`, beside the
+API module (replaced whole when the build changed). `VELDO_ORGANS=<repository>/.veldo VELDO_UI_INSTALLED=1
+npm run e2e e2e/signin.spec.ts` runs the browser checks against that installed copy.
 
 On the shared host, any run beyond a single test file goes inside
 `flock /home/dmitry/.local/state/core-gates/.gate.lock <command>`. Never leave a dev server running:
@@ -37,11 +42,13 @@ dependency-policy suite fails on anything unlisted. See [docs/patterns/dependenc
 - Vue 3 with `<script setup lang="ts">` and the Composition API only
 - TypeScript 6, strict (vue-tsc does not run on TypeScript 7 yet)
 - Vite
-- PrimeVue 4 in **unstyled** mode, styled by Veldo's own pass-through preset (`src/ui/preset.ts`)
+- No component library: Veldo's own controls on native elements (`src/components/V*.vue`); PrimeVue was
+  dropped (free and paid tiers, PLAN-0019 C16) and the policy denies it
 - Tailwind CSS 4 for layout utilities; design tokens are CSS custom properties (`src/styles/tokens.css`)
 - Pinia (setup stores) and vue-router
 - monaco-editor for diffs only, read-only, loaded lazily
-- Fonts self-hosted from Fontsource packages: Big Shoulders, Atkinson Hyperlegible Next and Mono
+- Fonts self-hosted from Fontsource packages: IBM Plex Sans (everything) and IBM Plex Mono (the record
+  and copied ids)
 
 ## Hard rules
 
@@ -49,8 +56,8 @@ dependency-policy suite fails on anything unlisted. See [docs/patterns/dependenc
    reached any other way. Every request goes through `src/api/client.ts` and names a route of
    `src/api/routes.ts`, which mirrors the API's published `ROUTES` table; a test compares the two.
 2. **No inline script and no inline style.** The API serves a same-origin content security policy
-   (`default-src 'self'`, no `style-src`). Nothing may need `unsafe-inline`: no PrimeVue styled mode,
-   no `v-html`, no `<style>` element or `style="..."` markup created at run time. Vue `:style` bindings
+   (`default-src 'self'`, no `style-src`). Nothing may need `unsafe-inline`: no library that writes
+   style elements, no `v-html`, no `<style>` element or `style="..."` markup created at run time. Vue `:style` bindings
    are allowed (they use the CSS object model). Libraries that write styles are routed through
    `src/ui/sheets.ts` and `src/ui/style-attributes.ts`; the browser tests fail on any policy violation.
 3. **Text from the factory is text.** Record lines, questions and rationales render through text
@@ -69,18 +76,18 @@ dependency-policy suite fails on anything unlisted. See [docs/patterns/dependenc
 
 ```
 src/
-  main.ts            app bootstrap: Pinia, router, PrimeVue (unstyled + preset), fonts, styles
+  main.ts            app bootstrap: Pinia, router, fonts, styles
   App.vue            the shell switch: sign-in screen or AppShell
   api/               the only code that calls fetch or EventSource
   stores/            Pinia setup stores (session, decisions, runs)
   router/            routes and the session guard
   app/               navigation registry and shell chrome
-  features/<area>/   pure logic and the components of one area (run, decisions, signin)
+  features/<area>/   pure logic and the components of one area (overview, run, decisions, signin)
   components/        shared components, each documented in docs/ui/
   composables/       shared composables (theme, media, async state)
   views/             one per route; orchestrates, holds no fetch logic
   styles/            tokens.css, base.css, components.css
-  ui/preset.ts       PrimeVue pass-through preset
+  ui/                CSS object model shims for Monaco (sheets, style attributes)
 e2e/                 Playwright specs and the factory harness they drive
 docs/                these guidelines
 ```

@@ -1,6 +1,8 @@
 # Sign in and add a passkey
 
-Route `/sign-in`, outside the shell. Before sign-in nothing else exists: no navigation, no data.
+Route `/sign-in`, outside the shell. Before sign-in nothing else exists: no navigation, no data. On
+desktop a cobalt field carries the wordmark and what the factory UI is for, beside the panel; on a phone
+the field is a band above it.
 
 | Step | API routes |
 |---|---|
@@ -10,4 +12,5 @@ Route `/sign-in`, outside the shell. Before sign-in nothing else exists: no navi
 | Sign in with it | `auth.challenge`, `auth.sign_in`; refused `unauthenticated:unknown_credential` until the host approves |
 
 States: start, enroll form, pending (fingerprint), refusal (beside the action). The fingerprint is set
-in mono in its groups so it can be compared group by group.
+in mono at `--text-xl`, four groups to a row, so it can be read aloud group by group against
+`veldo factory passkey`.

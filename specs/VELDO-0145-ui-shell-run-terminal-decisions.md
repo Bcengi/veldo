@@ -46,7 +46,7 @@ acceptance_criteria:
     text: >
       Claim: The owner opens the factory UI on his phone and desktop in a passkey session, and every
       screen reads and acts only through the API, with factory data requiring an authenticated session.
-      Set and completeness: Build the UI with the owner's stack (Vue 3, TypeScript, Vite, PrimeVue 4, Tailwind 4, Pinia, vue-router,
+      Set and completeness: Build the UI with the owner's stack (Vue 3, TypeScript, Vite, Tailwind 4, Pinia, vue-router,
       Monaco) and serve it from the API on loopback behind Tailscale Serve. The enrollment and sign-in screen
       belongs in this Vue shell
       under PLAN-0019 C16: before sign-in it runs VELDO-0171's API registration and possession ceremonies,
@@ -182,3 +182,15 @@ falsified_by is as it was. The History entry of 2026-09-27 that says "React shel
 decided then and is left as written. Veldo is not part of any other company's product and reuses no
 code, component, style or asset from one (owner, Telegram 37232); every dependency is a public
 open-source package taken from the registry on this date with its license recorded in the proof.
+
+## Amendment 2026-10-28, round 2 (owner decision)
+
+PrimeVue leaves the stack in AC1: only five of its components were used, unstyled, and its vendor runs
+free and paid tiers, which PLAN-0019 C16 forbids; the owner decided to drop it (relayed in the round 2
+brief, after the review of 2026-10-28). The five controls are Veldo's own, on native elements, and the
+dependency policy now denies PrimeVue at every version. In the same round the owner asked for blue and
+for type that is not tall and condensed (Telegram 37382 and 37384); that is a design change, not a
+criterion change. Nothing else in the acceptance criteria changes: every claim, set, falsifier and
+falsified_by is as it was. The AC3 row "answer as a member outside the project's scope" is now exercised
+as written (a member whose scope no longer covers the request is refused `unauthorized:out_of_scope`),
+on the owner's ruling on the review's F4.

@@ -31,18 +31,18 @@ and fails when:
 
 ## Notes on choices
 
-- **PrimeVue 4, not 5.** PrimeVue 5 moved to PrimeTek's commercial "PrimeUI License" (a free
-  community tier and a paid tier) and depends on a license manager package. PrimeVue 4.5.x is MIT.
-  The vendor also sells paid add-ons for version 4 (templates, blocks, a designer), which is a free
-  and paid tier around the library; the owner named PrimeVue 4 (Telegram 37228) and the decision is
-  recorded in the policy file and in the proof's open questions.
-- **Unstyled PrimeVue.** The styled mode injects `<style>` elements at run time, which the API's
-  security policy forbids. Unstyled mode plus Veldo's pass-through preset avoids that and keeps the
-  identity Veldo's own.
+- **No component library.** PrimeVue was dropped (owner decision, VELDO-0145 round 2): only five of
+  its components were used, unstyled, and its vendor runs free and paid tiers (version 5 under the
+  commercial PrimeUI License, paid add-ons around version 4), which PLAN-0019 C16 forbids. The deny
+  list now refuses `primevue` and `@primevue/*` at every version. The five controls are Veldo's own
+  (`VButton`, `VTextField`, `VTextArea`, `VRadio`, `VSwitch`, see `docs/ui/`), built on native
+  elements.
+- **IBM Plex Sans and Mono** (Fontsource packages 5.3.0, OFL-1.1, IBM, United States) replace Big
+  Shoulders and Atkinson Hyperlegible (owner, Telegram 37382 and 37384).
 - **monaco-editor** is loaded only on the run screen, only when an edit is on screen, and with only
   its base editor worker. Its pinned `dompurify` is overridden to the fixed 3.4.17.
 - **TypeScript 6.0.3, not 7.0.2.** The registry's latest is 7.0.2, the native port, which vue-tsc
   3.3.13 cannot load (it has no `lib/tsc` export); 6.0.3 is the latest release vue-tsc runs on.
-- **Two internal modules replaced at build time** (`vite.config.ts`): PrimeVue's `useStyle` and Monaco's
-  `domStylesheets`, by Veldo's own modules with the same call shapes that write CSS through the CSS
-  object model. They are Veldo's code, not copies of the originals.
+- **One internal module replaced at build time** (`vite.config.ts`): Monaco's `domStylesheets`, by
+  Veldo's own module with the same call shapes that writes CSS through the CSS object model. It is
+  Veldo's code, not a copy of the original.
