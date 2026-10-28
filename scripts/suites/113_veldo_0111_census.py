@@ -145,6 +145,67 @@ if fd>=0:
 '''
 
 
+EXTENDED_SOCKET_PROBE = r'''
+import ctypes, json, mmap, os, socket, struct
+libc=ctypes.CDLL(None,use_errno=True)
+libc.syscall.restype=ctypes.c_long
+def ack(**v):
+    os.write(1,(json.dumps(v)+'\n').encode())
+for nr in (43,288):
+    listener=socket.socket()
+    listener.bind(('127.0.0.1',0)); listener.listen(1)
+    client=socket.socket(); client.connect(listener.getsockname())
+    fd=libc.syscall(nr,listener.fileno(),0,0,0)
+    assert fd>=0
+    accepted=socket.socket(fileno=fd)
+    client.send(b'x'); assert accepted.recv(1)==b'x'
+    ack(kind='accept',syscall=nr,inode=os.readlink('/proc/self/fd/'+str(fd)),address=accepted.getsockname())
+    accepted.close(); client.close(); listener.close()
+for family,address in ((socket.AF_INET,('127.0.0.1',0)),(socket.AF_INET6,('::1',0))):
+    target=socket.socket(family,socket.SOCK_DGRAM); target.bind(address)
+    sender=socket.socket(family,socket.SOCK_DGRAM)
+    sender.sendto(b'x',target.getsockname())
+    ack(kind='implicit',family=family,inode=os.readlink('/proc/self/fd/'+str(sender.fileno())),address=sender.getsockname())
+    sender.sendto(b'y',target.getsockname())
+    sender.close(); target.close()
+# An int 0x80 socketcall with low-address argument memory exercises the actual
+# compat ABI without a compiler, a 32-bit loader, or an installed executable.
+code=mmap.mmap(-1,4096,prot=7)
+code.write(bytes.fromhex('53 b866000000 89fb 89f1 cd80 4898 5b c3'))
+call=ctypes.CFUNCTYPE(ctypes.c_long,ctypes.c_int,ctypes.c_void_p)(ctypes.addressof(ctypes.c_char.from_buffer(code)))
+low=mmap.mmap(-1,4096,flags=mmap.MAP_PRIVATE|mmap.MAP_ANONYMOUS|0x40,prot=3)
+base=ctypes.addressof(ctypes.c_char.from_buffer(low))
+assert base < 2**32
+args=(ctypes.c_uint32*6).from_buffer(low)
+args[:3]=[socket.AF_INET,socket.SOCK_STREAM,0]
+fd=call(1,base)
+if fd<0:
+    ack(kind='socketcall_unavailable',errno=-fd)
+else:
+    low[64:80]=struct.pack('=H',socket.AF_INET)+b'\0\0'+socket.inet_aton('127.0.0.1')+b'\0'*8
+    args[:3]=[fd,base+64,16]; assert call(2,base)==0
+    args[:2]=[fd,1]; assert call(4,base)==0
+    ack(kind='socketcall',inode=os.readlink('/proc/self/fd/'+str(fd)))
+    os.close(fd)
+'''
+
+ESCAPE_PROBE = r'''
+import ctypes, json, os, signal, sys
+libc=ctypes.CDLL(None,use_errno=True)
+libc.syscall.restype=ctypes.c_long
+nr=int(sys.argv[1])
+# Invalid CLONE_THREAD combination prevents an escaped child even in the mutant.
+flags=0x800000|0x10000|signal.SIGCHLD
+if nr==56:
+    result=libc.syscall(nr,flags,0,0,0,0)
+else:
+    args=(ctypes.c_ulonglong*11)(); args[0]=flags
+    result=libc.syscall(nr,ctypes.byref(args),ctypes.sizeof(args))
+assert result<0
+os.write(1,(json.dumps(dict(returned=True,errno=ctypes.get_errno()))+'\n').encode())
+'''
+
+
 def run_checks(root, emit, module_path=None):
     spec = importlib.util.spec_from_file_location('lifecycle111', module_path or root / 'scripts/fixtures/lifecycle_census.py')
     census = importlib.util.module_from_spec(spec)
@@ -260,6 +321,29 @@ for name in (observer,'pgrep'):
          and all(c.get('available') or c.get('errno', 0) > 0 for c in combinations)
          and inventory['status'] == 'INCOMPLETE'
          and all(row['status'] == 'STANDS DOWN' for rows in inventory['consumer_rows'].values() for row in rows))
+    extended, acks = run('socket_extensions', EXTENDED_SOCKET_PROBE)
+    accepted = [a for a in acks if a['kind'] == 'accept']
+    implicit = [a for a in acks if a['kind'] == 'implicit']
+    services = [e for e in extended['events'] if e['kind'] == 'service']
+    objects = {o['identity']: o for o in extended['sockets']}
+    emit('census/accepted-and-implicit', complete_capture(extended)
+         and {a['syscall'] for a in accepted} == {43,288}
+         and all(any(o['inode'] == a['inode'] and o.get('accepted_from')
+                     for o in objects.values()) for a in accepted)
+         and len(implicit) == 2
+         and all(sum(objects[e['socket']]['inode'] == a['inode']
+                     and e['operation'] == 'implicit_receive_binding'
+                     and e['address']['port'] == a['address'][1] for e in services) == 1
+                 for a in implicit)
+         and any(a['kind'] == 'socketcall' for a in acks)
+         and any(e.get('abi') == 'i386_socketcall' for e in services))
+    escape_results = []
+    for nr in (56,435):
+        escaped, acks = run('escape_' + str(nr), ESCAPE_PROBE, nr)
+        escape_results.append(escaped['capture_status'] == 'INCOMPLETE' and not acks
+            and any(f['capability'] == 'trace_inheritance' and f['category'] == 'lifecycle_violation'
+                    and f['state'] == 'collecting' for f in escaped['failures']))
+    emit('census/clone-untraced', all(escape_results))
     return evidence
 
 

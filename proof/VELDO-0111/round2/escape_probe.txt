@@ -1,0 +1,13 @@
+import ctypes, json, os, signal, sys
+libc=ctypes.CDLL(None,use_errno=True)
+libc.syscall.restype=ctypes.c_long
+nr=int(sys.argv[1])
+# Invalid CLONE_THREAD combination prevents an escaped child even in the mutant.
+flags=0x800000|0x10000|signal.SIGCHLD
+if nr==56:
+    result=libc.syscall(nr,flags,0,0,0,0)
+else:
+    args=(ctypes.c_ulonglong*11)(); args[0]=flags
+    result=libc.syscall(nr,ctypes.byref(args),ctypes.sizeof(args))
+assert result<0
+os.write(1,(json.dumps(dict(returned=True,errno=ctypes.get_errno()))+'\n').encode())

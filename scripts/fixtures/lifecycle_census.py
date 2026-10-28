@@ -222,11 +222,12 @@ class Collector:
                    closed=None, references=[])
         self.sockets[inode] = obj
         self.r["sockets"].append(obj)
+        return obj
 
     def expose(self, pid, obj, operation, address):
         self.event("service", task=self.live[pid]["identity"], socket=obj["identity"],
                    family=obj["family"], type=obj["type"], operation=operation,
-                   address=address)
+                   address=address, abi=obj.get("abi", "x86_64"))
 
     def address(self, pid, obj):
         """Enrich an already witnessed successful operation, never infer an event."""
@@ -248,7 +249,7 @@ class Collector:
                 data = bytes.fromhex(encoded)
                 data = b''.join(data[i:i + 4][::-1] for i in range(0, len(data), 4))
                 return dict(ip=socket.inet_ntop(family, data), port=int(port, 16),
-                            sockaddr_hex=obj['address'])
+                            sockaddr_hex=obj['address'] if isinstance(obj['address'], str) else None)
         failure(self.r, 'socket_address', f'no enrichment for {obj["identity"]}')
         return obj['address']
 
@@ -261,7 +262,7 @@ class Collector:
             arch = 0
         elif self.request.get("fault") == "corrupt":
             op = 255
-        if size < 24 or arch != 0xc000003e:
+        if size < 24 or arch not in (0xc000003e, 0x40000003):
             raise ObservationFailure("syscall_abi", f"arch={arch:x} size={size}")
         if op == 1:
             if size < 80:
@@ -269,10 +270,28 @@ class Collector:
             nr, *args = struct.unpack_from("<7Q", raw, 24)
             if nr & 0x40000000:
                 raise ObservationFailure("syscall_abi", "x32")
-            entry = dict(nr=nr, args=args)
+            abi = 'x86_64'
+            if arch == 0x40000003:
+                if nr != 102:
+                    raise ObservationFailure('compat_syscall', f'unqualified i386 syscall {nr}')
+                # i386 socketcall arguments are unsigned 32-bit words. Normalize
+                # to native socket operation numbers after decoding the ABI.
+                operation, pointer = args[:2]
+                calls = {1:(41,3), 2:(49,3), 3:(42,3), 4:(50,2), 5:(43,3),
+                         6:(51,3), 7:(52,3), 8:(53,4), 9:(44,4), 10:(45,4),
+                         11:(44,6), 12:(45,6), 13:(48,2), 14:(54,5), 15:(55,5),
+                         18:(288,4)}
+                if operation not in calls:
+                    raise ObservationFailure('compat_socketcall_message',
+                                             f'unqualified socketcall operation {operation}')
+                nr, count = calls[operation]
+                args = list(struct.unpack('<' + 'I' * count, self.memory(pid, pointer, count * 4)))
+                args += [0] * (6 - count)
+                abi = 'i386_socketcall'
+            entry = dict(nr=nr, args=args, abi=abi)
             if nr in (49, 42):
                 entry["address"] = self.memory(pid, args[1], args[2]).hex() if args[1] else None
-            if nr in (3, 32, 33, 42, 44, 45, 46, 47, 49, 50, 72, 288, 292, 299, 307):
+            if nr in (3, 32, 33, 42, 43, 44, 45, 46, 47, 49, 50, 72, 288, 292, 299, 307):
                 entry["inode"] = self.socket_at(pid, args[0])
             if nr == 47:
                 entry["message"] = a_message = self.memory(pid, args[1], 56)
@@ -320,7 +339,21 @@ class Collector:
                             failure(self.r, "descriptor_transfer", "received out-of-scope socket")
                 offset += (size + 7) & ~7
         if nr == 41:
-            self.register_socket(pid, result, *a[:3])
+            obj = self.register_socket(pid, result, *a[:3])
+            if obj:
+                obj['abi'] = entry.get('abi', 'x86_64')
+        elif nr in (43, 288):
+            parent = self.sockets.get(entry.get('inode'))
+            if parent is None or self.socket_at(pid, a[0]) != entry.get('inode'):
+                failure(self.r, 'accept_identity', 'missing or changed listening descriptor')
+                return
+            obj = self.register_socket(pid, result, parent['family'], parent['type'], parent['protocol'])
+            if obj:
+                obj['accepted_from'] = parent['identity']
+                obj['address'] = parent['address']
+                obj['abi'] = entry.get('abi', 'x86_64')
+                self.event('accept', task=self.live[pid]['identity'], socket=obj['identity'],
+                           listener=parent['identity'], syscall=nr, address=self.address(pid, obj))
         elif nr == 53:
             for fd in struct.unpack("<2i", self.memory(pid, a[3], 8)):
                 self.register_socket(pid, fd, *a[:3])
@@ -347,9 +380,13 @@ class Collector:
             elif nr == 50:
                 self.expose(pid, obj, "listen", self.address(pid, obj))
             elif obj["type"] in (2, 3, 10) and obj["address"] is None:
-                # The operation succeeded; the address still needs qualification.
-                self.expose(pid, obj, "implicit_receive_binding", None)
-                failure(self.r, "implicit_address", "implicit binding address unqualified")
+                address = self.address(pid, obj)
+                if isinstance(address, dict) and address.get('port', 0) > 0:
+                    obj['address'] = address
+                    self.expose(pid, obj, "implicit_receive_binding", address)
+                else:
+                    self.expose(pid, obj, "implicit_receive_binding", address)
+                    failure(self.r, "implicit_address", "successful operation has no decoded local binding")
         elif nr in (32, 33, 72, 292) and entry.get("inode"):
             self.event("descriptor_alias", task=self.live[pid]["identity"],
                        inode=entry["inode"], syscall=nr, result=result)

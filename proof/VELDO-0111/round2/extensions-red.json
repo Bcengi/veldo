@@ -1,0 +1,66 @@
+{
+  "source_digest": "a100fc9d2ec551ad2c7df04b930fc0c7877062e11fd1a1bc0f83af18f41d72d7",
+  "suite_digest": "f51f94e39993c3086809516d3f58e24c6a59ae4b2764ef29f332c9ed8607ad11",
+  "runs": {
+    "control": [
+      [
+        "census/process-lifetimes",
+        true
+      ],
+      [
+        "census/listener-lifetimes",
+        true
+      ],
+      [
+        "census/observer-is-outside",
+        true
+      ],
+      [
+        "census/incomplete-is-not-empty",
+        true
+      ],
+      [
+        "census/qualification-does-not-overclaim",
+        true
+      ],
+      [
+        "census/accepted-and-implicit",
+        false
+      ],
+      [
+        "census/clone-untraced",
+        true
+      ]
+    ],
+    "escape-mutant": [
+      [
+        "census/process-lifetimes",
+        true
+      ],
+      [
+        "census/listener-lifetimes",
+        true
+      ],
+      [
+        "census/observer-is-outside",
+        true
+      ],
+      [
+        "census/incomplete-is-not-empty",
+        true
+      ],
+      [
+        "census/qualification-does-not-overclaim",
+        true
+      ],
+      [
+        "census/accepted-and-implicit",
+        false
+      ],
+      [
+        "census/clone-untraced",
+        false
+      ]
+    ]
+  }
+}
