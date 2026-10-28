@@ -11542,8 +11542,13 @@ def cases():
         ['host-lock/released-on-exit'])
     result[-1]['dir'] = 'scripts'
     add(220, 'host220-no-scope', suite220, 'gate_host.py',
-        "        if config['scope'] is not None:\n            try:\n",
-        '        if False:\n            try:\n',
+        "        config = load()\n    except Refused as error:\n",
+        "        config = dict(load(), scope=None)\n    except Refused as error:\n",
+        ['host-scope/own-scope'])
+    result[-1]['dir'] = 'scripts'
+    add(220, 'host220-no-scope-kill', suite220, 'gate_host.py',
+        "            (base / 'cgroup.kill').write_text('1')\n",
+        "            pass  # scope kill removed\n",
         ['host-scope/own-scope'])
     result[-1]['dir'] = 'scripts'
     add(220, 'host220-not-started-is-red', suite220, 'lander.py',

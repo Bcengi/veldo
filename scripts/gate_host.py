@@ -15,7 +15,7 @@ configured lock. An environment variable alone never answers yes. Otherwise veri
 
   1. prints the load the gate needs;
   2. takes the lock with an exclusive flock on its own open descriptor (close-on-exec, so no
-     candidate inherits it; the kernel releases it when the holder exits on any path). A lock held by
+     candidate inherits it; a keeper retains custody until all scope processes have stopped). A lock held by
      one of the gate's own ancestors (a caller that runs `flock -x <lock> verify.sh`, as the owner's
      core runner does) is the caller's hold for this gate and is used as it is. A lock held by anyone
      else is NOT STARTED: the holder recorded beside the lock is printed, then
@@ -28,8 +28,8 @@ configured lock. An environment variable alone never answers yes. Otherwise veri
      and per-node cgroups can be made beside the leaf), and sets its oom_score_adj to the stated
      score, which every gate process inherits. A scope that cannot be made is RED by name;
   5. runs verify.sh again as its only child, with the scope and the host record in the environment,
-     forwards SIGTERM, SIGINT and SIGHUP to it, has the kernel kill it if the holder dies, and exits
-     with its status.
+     exits on SIGTERM, SIGINT and SIGHUP or with the child status. A keeper outside the scope
+     detects holder death, kills the scope and waits for it to empty before releasing the lock.
 
 Standard library only; Linux (flock, /proc, cgroup v2, the systemd user manager through busctl).
 """
@@ -42,6 +42,8 @@ import pwd
 import re
 import secrets
 import signal
+import select
+import socket
 import subprocess
 import sys
 import time
@@ -246,22 +248,24 @@ def record_holder(lock, root):
     os.replace(temporary, path)
 
 
-def forget_holder(lock):
+def forget_holder(lock, pid=None):
     try:
-        if json.loads(holder_file(lock).read_text()).get('pid') == os.getpid():
+        if json.loads(holder_file(lock).read_text()).get('pid') == (pid or os.getpid()):
             holder_file(lock).unlink()
     except (OSError, ValueError, AttributeError):
         pass
 
 
-def own_cgroup():
-    return Path('/proc/self/cgroup').read_text().split('::', 1)[1].strip()
+def own_cgroup(pid=None):
+    return Path('/proc/%s/cgroup' % (pid or 'self')).read_text().split('::', 1)[1].strip()
 
 
-def make_scope(scope):
-    """Put this process in a new delegated user scope, in its leaf, and return the scope's cgroup."""
-    pid = os.getpid()
+def make_scope(scope, pid=None, state=None):
+    """Put pid in a delegated user scope and its leaf; retain cleanup state on partial failure."""
+    pid = pid or os.getpid()
+    state = state if state is not None else {}
     name = 'veldo-gate-%d-%s.scope' % (pid, secrets.token_hex(4))
+    state['name'] = name
     properties = [('PIDs', 'au', '1', str(pid)), ('Delegate', 'b', 'true'),
                   ('MemoryMax', 't', str(scope['memory_max'])), ('CPUAccounting', 'b', 'true'),
                   ('MemoryAccounting', 'b', 'true'), ('TasksAccounting', 'b', 'true'),
@@ -275,13 +279,15 @@ def make_scope(scope):
     except (OSError, subprocess.SubprocessError) as error:
         raise Refused('the user manager could not be asked: %s' % error)
     if run.returncode:
+        state.clear()  # A rejected StartTransientUnit created no scope.
         raise Refused('the user manager refused %s: %s' % (name, (run.stderr or run.stdout).strip()))
     deadline = time.monotonic() + 30
-    while not own_cgroup().endswith('/' + name):
+    while not own_cgroup(pid).endswith('/' + name):
         if time.monotonic() > deadline:
             raise Refused('the user manager did not move the gate into %s' % name)
         time.sleep(0.05)
-    cgroup = own_cgroup()
+    cgroup = own_cgroup(pid)
+    state['cgroup'] = cgroup
     base = CGROUP_ROOT / cgroup.lstrip('/')
     try:
         (base / LEAF).mkdir()
@@ -292,7 +298,7 @@ def make_scope(scope):
             raise Refused('the scope %s has no memory controller to delegate' % name)
         (base / 'cgroup.subtree_control').write_text(' '.join('+' + c for c in wanted))
         limit = (base / 'memory.max').read_text().strip()
-        Path('/proc/self/oom_score_adj').write_text(str(scope['oom_score_adj']))
+        Path('/proc/%d/oom_score_adj' % pid).write_text(str(scope['oom_score_adj']))
     except OSError as error:
         raise Refused('the scope %s could not be delegated: %s' % (name, error))
     if limit != str(scope['memory_max']):
@@ -300,8 +306,121 @@ def make_scope(scope):
     return name, cgroup
 
 
-def pdeathsig():
+def stop_scope(state):
+    """Kill through the cgroup, then keep custody until no process in any child is live."""
+    cgroup = state.get('cgroup')
+    if not cgroup and state.get('name'):
+        # Creation may have moved the holder just before it died or delegation failed.
+        run = subprocess.run(['systemctl', '--user', 'show', state['name'],
+                              '--property=ControlGroup', '--value'],
+                             capture_output=True, text=True, timeout=60)
+        if run.returncode:
+            raise Refused('cannot inspect scope ' + state['name'])
+        cgroup = run.stdout.strip()
+    if not cgroup:
+        return
+    base = CGROUP_ROOT / cgroup.lstrip('/')
+    while True:
+        try:
+            if 'populated 1' not in (base / 'cgroup.events').read_text():
+                return
+            (base / 'cgroup.kill').write_text('1')
+        except FileNotFoundError:
+            return
+        time.sleep(0.02)
+
+
+def group_live(pgid):
+    for path in Path('/proc').glob('[0-9]*/stat'):
+        try:
+            fields = path.read_text().rsplit(')', 1)[1].split()
+            if int(fields[2]) == pgid and fields[0] != 'Z':
+                return True
+        except (OSError, ValueError, IndexError):
+            pass
+    return False
+
+
+def keep_lock(channel, parent, config):
+    """EOF plus parent exit starts mandatory teardown; the keeper exits as soon as it completes.
+
+    Forked before the scope exists, this keeper retains the close-on-exec lock descriptor
+    outside it. No stage inherits the descriptor. Even SIGKILL of the holder leaves custody
+    here until cgroup.kill has emptied the scope. A pidfd avoids PID reuse and startup races.
+    """
+    state, pgid = {}, None
+    parent_fd = os.pidfd_open(parent)
+    try:
+        try:
+            if config['scope'] is not None:
+                name, cgroup = make_scope(config['scope'], parent, state)
+                channel.send(json.dumps({'name': name, 'cgroup': cgroup}).encode())
+            else:
+                channel.send(b'{}')
+        except (OSError, Refused, subprocess.SubprocessError) as error:
+            channel.send(json.dumps({'error': str(error)}).encode())
+        while True:
+            message = channel.recv(4096)
+            if not message:
+                break
+            pgid = json.loads(message)['pgid']
+    except (BrokenPipeError, ConnectionResetError):
+        pass
+    finally:
+        channel.close()
+        # The holder itself lives in the scope. Wait for its exit before killing the scope
+        # so normal green and red statuses reach the caller intact.
+        select.select([parent_fd], [], [])
+        os.close(parent_fd)
+        while True:
+            try:
+                if config['scope'] is not None:
+                    stop_scope(state)
+                elif pgid is not None:
+                    # Lock-only installations have no cgroup: the command's private group
+                    # is registered before exec, including on a parent-death startup race.
+                    while group_live(pgid):
+                        os.killpg(pgid, signal.SIGKILL)
+                        time.sleep(0.02)
+                break
+            except ProcessLookupError:
+                break
+            except (OSError, Refused, subprocess.SubprocessError) as error:
+                # A teardown error must never release the lock over live work.
+                print('gate host: waiting for scope cleanup: %s' % error, file=sys.stderr, flush=True)
+                time.sleep(0.2)
+        forget_holder(config['lock'], parent)
+
+
+def start_keeper(config):
+    parent = os.getpid()
+    channel, keeper_channel = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
+    pid = os.fork()
+    if pid == 0:
+        # A terminal or caller process-group signal must not kill custody along with the gate.
+        os.setpgid(0, 0)
+        for number in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+            signal.signal(number, signal.SIG_IGN)
+        channel.close()
+        try:
+            keep_lock(keeper_channel, parent, config)
+        finally:
+            os._exit(0)
+    keeper_channel.close()
+    ready = json.loads(channel.recv(4096))
+    if 'error' in ready:
+        channel.close()
+        raise Refused(ready['error'])
+    return channel, ready
+
+
+def prepare_child(channel, parent):
+    os.setsid()
+    channel.send(json.dumps({'pgid': os.getpid()}).encode())
+    channel.close()
     ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGKILL)  # PR_SET_PDEATHSIG
+    if os.getppid() != parent:
+        os.kill(os.getpid(), signal.SIGKILL)
 
 
 def enter(argv, root):
@@ -341,6 +460,7 @@ def enter(argv, root):
         print('== gate host: lock %s is held for this gate by its %s' % (lock, held), flush=True)
     else:
         print('== gate host: took lock %s after %.1fs' % (lock, waited), flush=True)
+    channel = None
     try:
         if fd is not None:
             record_holder(lock, root)
@@ -349,12 +469,13 @@ def enter(argv, root):
             env.pop(name, None)
         record = {'lock': lock, 'held': 'taken' if fd is not None else 'caller',
                   'waited_seconds': round(waited, 1), 'scope': None}
+        try:
+            channel, ready = start_keeper(config)
+        except Refused as error:
+            print('GATE: RED (gate scope could not be created: %s)' % error, flush=True)
+            return 1
         if config['scope'] is not None:
-            try:
-                name, cgroup = make_scope(config['scope'])
-            except Refused as error:
-                print('GATE: RED (gate scope could not be created: %s)' % error, flush=True)
-                return 1
+            name, cgroup = ready['name'], ready['cgroup']
             print('== gate host: running in scope %s (memory.max %s, oom_score_adj %d); gate processes in %s/%s'
                   % (name, gib(config['scope']['memory_max']), config['scope']['oom_score_adj'], name, LEAF),
                   flush=True)
@@ -364,14 +485,18 @@ def enter(argv, root):
         env[HOLDER_ENV] = str(os.getpid())
         env[RECORD_ENV] = json.dumps(record, sort_keys=True, separators=(',', ':'))
         # Descriptors the caller handed the gate (a launcher marker) stay open; the lock does not.
-        child = subprocess.Popen(['bash', *argv], env=env, close_fds=False, preexec_fn=pdeathsig)
+        parent = os.getpid()
         for number in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
-            signal.signal(number, lambda signum, frame: child.send_signal(signum))
+            signal.signal(number, lambda signum, frame: sys.exit(128 + signum))
+        child = subprocess.Popen(['bash', *argv], env=env, close_fds=False,
+                                 preexec_fn=lambda: prepare_child(channel, parent))
         code = child.wait()
         return 128 - code if code < 0 else code
     finally:
+        if channel is not None:
+            channel.close()
         if fd is not None:
-            forget_holder(lock)
+            os.close(fd)
 
 
 def main(argv):

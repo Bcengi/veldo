@@ -41,7 +41,7 @@ def _v220_gate_host():
     # its children (and the caller's wait) are dropped, so running inside a real gate changes nothing.
     env = {k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')}
     probe = r'''
-import json, os, sys, time
+import json, os, signal, subprocess, sys, time
 from pathlib import Path
 def cgroup(pid):
     try:
@@ -85,6 +85,19 @@ if out['scope']:
         child.rmdir()
     except OSError as error:
         out['child'] = str(error)
+lock = json.loads(os.environ['VELDO_GATE_HOST'])['lock']
+info = os.stat(lock)
+out['lock_inherited'] = any(
+    (os.fstat(int(fd)).st_dev, os.fstat(int(fd)).st_ino) == (info.st_dev, info.st_ino)
+    for fd in os.listdir('/proc/self/fd') if fd.isdigit() and os.path.exists('/proc/self/fd/' + fd))
+if os.environ.get('V220_LINGER'):
+    child = subprocess.Popen([sys.executable, '-c',
+        'import signal,time; signal.signal(signal.SIGTERM, signal.SIG_IGN); time.sleep(90)'],
+        start_new_session=True)
+    out['escaped'] = child.pid
+    worker = base / 'escaped-worker'
+    worker.mkdir()
+    (worker / 'cgroup.procs').write_text(str(child.pid))
 Path(os.environ['V220_PROBE']).write_text(json.dumps(out))
 if os.environ.get('V220_HOLD'):
     Path(os.environ['V220_HOLD']).write_text(str(os.getpid()))
@@ -170,7 +183,10 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
             os.kill(pid, 0)
         except OSError:
             return False
-        return not Path('/proc/%d/stat' % pid).read_text().rsplit(')', 1)[1].split()[0] == 'Z'
+        try:
+            return Path('/proc/%d/stat' % pid).read_text().rsplit(')', 1)[1].split()[0] != 'Z'
+        except FileNotFoundError:
+            return False
 
     def stop(pid):
         try:
@@ -242,7 +258,7 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
                              and stamp is not None and stamp['host']['lock'] == str(lock)
                              and stamp['host']['held'] == 'taken' and stamp['host']['scope'] is None
                              and events and events[-1]['host'] == stamp['host'])
-            cases['free-released'] = not held(lock) and not Path(str(lock) + '.holder').exists()
+            cases['free-released'] = until(lambda: not held(lock), 10) and not Path(str(lock) + '.holder').exists()
             if flock:
                 brief = subprocess.Popen([flock, '-x', str(lock), 'sleep', '2'], stdin=subprocess.DEVNULL)
                 until(lambda: held(lock))
@@ -256,8 +272,7 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
             row('host-lock/held-not-started', all(cases.values()) and len(cases) == 6, json.dumps(cases))
 
             # host-lock/released-on-exit. A gate killed midway (SIGKILL to the holder, and SIGTERM) leaves
-            # the lock free while a stage process it started still runs, so nothing the gate started can
-            # keep the host; a red gate releases it too.
+            # no running stage behind when the lock becomes free; a red gate releases it too.
             cases = {}
             for name, number in (('killed', signal.SIGKILL), ('terminated', signal.SIGTERM)):
                 hold = top / ('hold-' + name)
@@ -268,14 +283,15 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
                     during = held(lock)
                     gate.send_signal(number)
                     finish(gate, 30)
-                    cases[name] = during and until(lambda: not held(lock), 10) and alive(stage)
+                    cases[name] = (during and until(lambda: not held(lock), 10) and not alive(stage)
+                                   and not json.loads((top / ('probe-' + name)).read_text())['lock_inherited'])
                 else:
                     finish(gate, 30)
                     cases[name] = False
             for pid in lingering:
                 stop(pid)
             code, out = finish(start(first, top / 'probe-red', red=True))
-            cases['red'] = code == 1 and out.rstrip().endswith('GATE: RED (no-git)') and not held(lock)
+            cases['red'] = code == 1 and out.rstrip().endswith('GATE: RED (no-git)') and until(lambda: not held(lock), 10)
             row('host-lock/released-on-exit', all(cases.values()), json.dumps(cases))
 
         # host-scope/own-scope: the stated limits on a delegated user scope, every gate process in it
@@ -310,6 +326,34 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
                     and until(lambda: not Path('/sys/fs/cgroup' + scope).exists(), 15))
                 if not cases[name]:
                     seen[name] = dict(got, exit=code, out=out[-1500:])
+            # Scope teardown must also reach a worker in another session and a delegated child
+            # cgroup. Check the first instant we can take the lock, before any test cleanup.
+            for name, number, red in (('killed', signal.SIGKILL, False),
+                                      ('terminated', signal.SIGTERM, False),
+                                      ('normal', None, False), ('red', None, True)):
+                probe_path = top / ('probe-cleanup-' + name)
+                hold = top / ('hold-cleanup-' + name) if number else None
+                gate = start(scoped, probe_path, hold=hold, red=red, extra={'V220_LINGER': '1'})
+                got = {}
+                ready = until(lambda: (hold.exists() if hold else probe_path.exists())
+                              or gate.poll() is not None) and probe_path.exists()
+                if ready:
+                    got = json.loads(probe_path.read_text())
+                    if number:
+                        gate.send_signal(number)
+                    released = until(lambda: not held(top / 'locks' / '.scope.lock'), 10)
+                    dead = not alive(got['escaped']) and not alive(got['pid'])
+                    cases['cleanup-' + name] = released and dead
+                else:
+                    cases['cleanup-' + name] = False
+                code, out = finish(gate, 10)
+                if not number:
+                    cases['cleanup-' + name] &= code == int(red)
+                seen['cleanup-' + name] = dict(got, exit=code, out=out[-1500:])
+                for key in ('escaped', 'pid'):
+                    if got.get(key):
+                        stop(got[key])
+                until(lambda: not held(top / 'locks' / '.scope.lock'), 10)
             row('host-scope/own-scope', all(cases.values()), json.dumps({'cases': cases, 'seen': seen}))
 
         if leg_runs():
