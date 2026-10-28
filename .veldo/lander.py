@@ -143,6 +143,8 @@ REGEN_PATHS = tuple(path for path, _generator in PROJECTIONS)
 CANDIDATE_SCHEMA = "veldo.landing_candidate/v1"
 MANIFEST_PATH = "proof/%s/manifest.json"
 GATE_COMMAND = ("bash", "scripts/verify.sh")
+# VELDO-0220: the gate did not start because the host lock was held (EX_TEMPFAIL).
+NOT_STARTED_EXIT = 75
 POLICY_COMMAND = (".veldo/policy_check.py",)
 # The workspace's own refs: the fixed watermark, and the trunk the repository policy compares the
 # candidate with (an ordinary run of it reads origin/HEAD; the installed run is handed the watermark
@@ -290,6 +292,8 @@ class Lander:
                     self._check_ownership()
                 r = fn() or {}
                 if not r.get("ok"):
+                    if r.get("not_started"):
+                        return {"ok": False, "stage": name, "not_started": True, "detail": r}
                     return {"ok": False, "stage": name, "detail": r}
             return {"ok": True, "stage": "landed"}
         finally:
@@ -784,6 +788,15 @@ class GitLandOps(LandOps):
             return self._refuse("gate", CandidateRefused("unavailable_service:observation", type(error).__name__))
         exit_code, terminal = observed["exit"], observed["terminal"]
         last = [line for line in observed["stdout"].splitlines() if line.strip()][-1:]
+        if exit_code == NOT_STARTED_EXIT:
+            # VELDO-0220: the host lock was held, so the gate ran nothing. That is no attempt: no refusal
+            # is recorded or counted, the candidate stays built and the landing can be run again.
+            c["gate"] = {"exit": exit_code, "terminal": terminal, "green": False, "not_started": True}
+            self.observe({"schema": CANDIDATE_SCHEMA, "operation": "gate", "domain": self.domain,
+                          "repository": self.repository or self.repo_root, "unit": c.get("unit"),
+                          "request": c.get("id"), "outcome": "not_started", "exit": exit_code,
+                          "terminal": terminal})
+            return {"ok": False, "not_started": True, "exit": exit_code, "detail": last}
         green = observed["green"] is True and exit_code == 0 and terminal == "GATE: GREEN (%s)" % c["commit"]
         c["gate"] = {"exit": exit_code, "terminal": terminal, "green": green, "observation": reference,
                      "verifier": observed["gate"], "refusals": observed["refusals"],

@@ -11529,6 +11529,29 @@ def cases():
         ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0220: the host lock and the gate's own scope, and NOT STARTED never charged as a red.
+    suite220 = '113_veldo_0220_gate_host.py'
+    add(220, 'host220-ignores-lock', suite220, 'gate_host.py',
+        '        except BlockingIOError:\n            pass\n',
+        "        except BlockingIOError:\n            return fd, 'taken', 0.0\n",
+        ['host-lock/held-not-started'])
+    result[-1]['dir'] = 'scripts'
+    add(220, 'host220-lock-inherited', suite220, 'gate_host.py',
+        '0o664)\n    started = time.monotonic()\n',
+        '0o664)\n    os.set_inheritable(fd, True)\n    started = time.monotonic()\n',
+        ['host-lock/released-on-exit'])
+    result[-1]['dir'] = 'scripts'
+    add(220, 'host220-no-scope', suite220, 'gate_host.py',
+        "        if config['scope'] is not None:\n            try:\n",
+        '        if False:\n            try:\n',
+        ['host-scope/own-scope'])
+    result[-1]['dir'] = 'scripts'
+    add(220, 'host220-not-started-is-red', suite220, 'lander.py',
+        '        if exit_code == NOT_STARTED_EXIT:\n',
+        '        if False:\n',
+        ['host-lock/not-started-not-red'])
+    result[-1]['siblings'] = True
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

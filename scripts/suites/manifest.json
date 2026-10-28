@@ -1524,6 +1524,15 @@
    ],
    "regions": "Authority-measured mutation worker deadlines and bounded store.",
    "requires_note": "Only ROOT and expect; controlled coordinator children and scratch stores, plus a real hanging child."
+  },
+  {
+   "name": "113_veldo_0220_gate_host",
+   "file": "113_veldo_0220_gate_host.py",
+   "requires": [
+    "113_veldo_0220_gate_host"
+   ],
+   "regions": "The gate's host lock and its own delegated scope (VELDO-0220): NOT STARTED with exit 75 when another run holds the lock, release on every exit, the stated limits on the gate's own scope, and NOT STARTED recorded as not run by the executor, the lander and the proof store.",
+   "requires_note": "Only ROOT, expect, leg_runs and launcher_fds. Fixture authorities hold the real verify.sh and gate_host.py with stub stage commands and a configuration whose lock is in the suite's scratch directory, never the host's; util-linux flock stands in for the core runner. The host-scope/own-scope row (rows tag userbus) creates real transient scopes through the systemd user manager and is red by name where the bus is refused. The executor, lander and proof store run over a scratch Git repository and an installed fixture gate that exits 75 or 1."
   }
  ],
  "resource_capacities": {

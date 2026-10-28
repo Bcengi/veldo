@@ -357,6 +357,9 @@ class LiveLoop(LoopSteps):
                                                        bind_refs=False)
             except CV.Refused as error:
                 return {"green": False, "detail": "gate not run: %s" % error.code}
+        if CP.not_started(observed):
+            # VELDO-0220: the host lock was held, so the gate ran nothing; no observation is recorded.
+            return {"green": False, "not_started": True, "detail": CP.detail(observed)}
         result = {"green": observed["green"], "detail": CP.detail(observed)}
         if self.proofs is None:
             result["observation"] = observed
@@ -764,6 +767,13 @@ class Executor:
             # 3. gate (mechanical; the executor runs it itself)
             ob("on_step", "gate")
             g = self.hooks.gate()
+            if g.get("not_started"):
+                # VELDO-0220: GATE: NOT STARTED (exit 75) is a step that did not run, never a red gate:
+                # the receipt's gate is None and the run stops as not_started, to be run again.
+                steps.append({"name": "gate", "ok": False, "ran": False, "cycle": cycle,
+                              "detail": g.get("detail")})
+                return finish("not_started", "gate", g.get("detail") or "gate not started", None,
+                              proof, None, verdict)
             gate_green = bool(g.get("green"))
             seen = g.get("observation") if isinstance(g.get("observation"), dict) else {}
             record("gate", gate_green, cycle=cycle, detail=g.get("detail"),
