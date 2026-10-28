@@ -197,83 +197,86 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
         second = authority(top, 'second', lock)
         lingering = []
 
-        # host-lock/held-not-started. Held by another gate (its holder recorded), held by util-linux
-        # flock as the owner's core runner holds it (no holder recorded): NOT STARTED, exit 75, no
-        # check, no stamp, no event. Free: the gate runs and its stamp and event name the lock.
-        # Waiting the stated seconds, and a lock the caller took for this gate, both start.
-        cases = {}
-        holding = start(first, top / 'probe-first', hold=top / 'hold-first')
-        if until(lambda: (top / 'hold-first').exists()):
-            lingering.append(int((top / 'hold-first').read_text()))
-            code, out = finish(start(second, top / 'probe-second'))
-            cases['other-gate'] = not_started(code, out, second, top / 'probe-second',
-                                              'held by pid %d (commit unknown, root %s,' % (holding.pid, first.resolve()))
-        else:
-            cases['other-gate'] = False
-        holding.send_signal(signal.SIGTERM)
-        finish(holding)
-        for pid in lingering:
-            stop(pid)
-        until(lambda: not held(lock), 30)
-        flock = shutil.which('flock')
-        if flock:
-            # As in the core runner, the command flock starts inherits the locked descriptor, so the
-            # whole group is stopped afterwards, never flock alone.
-            core = subprocess.Popen([flock, '-x', str(lock), 'sleep', '60'], stdin=subprocess.DEVNULL,
-                                    start_new_session=True)
-            if until(lambda: held(lock)):
+        # Every row but the scope row is ordinary: in a gate leg it runs where the authority's list
+        # keeps the suite's ordinary rows (the confined leg, unless the list moves the whole suite).
+        if leg_runs():
+            # host-lock/held-not-started. Held by another gate (its holder recorded), held by util-linux
+            # flock as the owner's core runner holds it (no holder recorded): NOT STARTED, exit 75, no
+            # check, no stamp, no event. Free: the gate runs and its stamp and event name the lock.
+            # Waiting the stated seconds, and a lock the caller took for this gate, both start.
+            cases = {}
+            holding = start(first, top / 'probe-first', hold=top / 'hold-first')
+            if until(lambda: (top / 'hold-first').exists()):
+                lingering.append(int((top / 'hold-first').read_text()))
                 code, out = finish(start(second, top / 'probe-second'))
-                cases['core-flock'] = not_started(code, out, second, top / 'probe-second',
-                                                  'held by pid %d (no holder recorded)' % core.pid)
+                cases['other-gate'] = not_started(code, out, second, top / 'probe-second',
+                                                  'held by pid %d (commit unknown, root %s,' % (holding.pid, first.resolve()))
+            else:
+                cases['other-gate'] = False
+            holding.send_signal(signal.SIGTERM)
+            finish(holding)
+            for pid in lingering:
+                stop(pid)
+            until(lambda: not held(lock), 30)
+            flock = shutil.which('flock')
+            if flock:
+                # As in the core runner, the command flock starts inherits the locked descriptor, so the
+                # whole group is stopped afterwards, never flock alone.
+                core = subprocess.Popen([flock, '-x', str(lock), 'sleep', '60'], stdin=subprocess.DEVNULL,
+                                        start_new_session=True)
+                if until(lambda: held(lock)):
+                    code, out = finish(start(second, top / 'probe-second'))
+                    cases['core-flock'] = not_started(code, out, second, top / 'probe-second',
+                                                      'held by pid %d (no holder recorded)' % core.pid)
+                else:
+                    cases['core-flock'] = False
+                os.killpg(core.pid, signal.SIGKILL)
+                core.wait()
             else:
                 cases['core-flock'] = False
-            os.killpg(core.pid, signal.SIGKILL)
-            core.wait()
-        else:
-            cases['core-flock'] = False
-        until(lambda: not held(lock), 30)
-        code, out = finish(start(second, top / 'probe-second'))
-        stamp, events = records(second)
-        cases['free'] = (code == 0 and out.rstrip().endswith('GATE: GREEN (no-git)')
-                         and 'took lock %s after' % lock in out and (top / 'probe-second').is_file()
-                         and stamp is not None and stamp['host']['lock'] == str(lock)
-                         and stamp['host']['held'] == 'taken' and stamp['host']['scope'] is None
-                         and events and events[-1]['host'] == stamp['host'])
-        cases['free-released'] = not held(lock) and not Path(str(lock) + '.holder').exists()
-        if flock:
-            brief = subprocess.Popen([flock, '-x', str(lock), 'sleep', '2'], stdin=subprocess.DEVNULL)
-            until(lambda: held(lock))
-            code, out = finish(start(second, top / 'probe-wait', wait=60))
-            brief.wait()
-            took = re.search(r'took lock \S+ after ([0-9.]+)s', out)
-            cases['waits'] = code == 0 and took is not None and float(took.group(1)) >= 0.5
-            code, out = finish(start(second, top / 'probe-caller', prefix=(flock, '-x', str(lock))))
-            cases['caller-holds'] = (code == 0 and 'is held for this gate by its caller pid' in out
-                                     and records(second)[0]['host']['held'] == 'caller')
-        row('host-lock/held-not-started', all(cases.values()) and len(cases) == 6, json.dumps(cases))
+            until(lambda: not held(lock), 30)
+            code, out = finish(start(second, top / 'probe-second'))
+            stamp, events = records(second)
+            cases['free'] = (code == 0 and out.rstrip().endswith('GATE: GREEN (no-git)')
+                             and 'took lock %s after' % lock in out and (top / 'probe-second').is_file()
+                             and stamp is not None and stamp['host']['lock'] == str(lock)
+                             and stamp['host']['held'] == 'taken' and stamp['host']['scope'] is None
+                             and events and events[-1]['host'] == stamp['host'])
+            cases['free-released'] = not held(lock) and not Path(str(lock) + '.holder').exists()
+            if flock:
+                brief = subprocess.Popen([flock, '-x', str(lock), 'sleep', '2'], stdin=subprocess.DEVNULL)
+                until(lambda: held(lock))
+                code, out = finish(start(second, top / 'probe-wait', wait=60))
+                brief.wait()
+                took = re.search(r'took lock \S+ after ([0-9.]+)s', out)
+                cases['waits'] = code == 0 and took is not None and float(took.group(1)) >= 0.5
+                code, out = finish(start(second, top / 'probe-caller', prefix=(flock, '-x', str(lock))))
+                cases['caller-holds'] = (code == 0 and 'is held for this gate by its caller pid' in out
+                                         and records(second)[0]['host']['held'] == 'caller')
+            row('host-lock/held-not-started', all(cases.values()) and len(cases) == 6, json.dumps(cases))
 
-        # host-lock/released-on-exit. A gate killed midway (SIGKILL to the holder, and SIGTERM) leaves
-        # the lock free while a stage process it started still runs, so nothing the gate started can
-        # keep the host; a red gate releases it too.
-        cases = {}
-        for name, number in (('killed', signal.SIGKILL), ('terminated', signal.SIGTERM)):
-            hold = top / ('hold-' + name)
-            gate = start(first, top / ('probe-' + name), hold=hold)
-            if until(hold.exists):
-                stage = int(hold.read_text())
-                lingering.append(stage)
-                during = held(lock)
-                gate.send_signal(number)
-                finish(gate, 30)
-                cases[name] = during and until(lambda: not held(lock), 10) and alive(stage)
-            else:
-                finish(gate, 30)
-                cases[name] = False
-        for pid in lingering:
-            stop(pid)
-        code, out = finish(start(first, top / 'probe-red', red=True))
-        cases['red'] = code == 1 and out.rstrip().endswith('GATE: RED (no-git)') and not held(lock)
-        row('host-lock/released-on-exit', all(cases.values()), json.dumps(cases))
+            # host-lock/released-on-exit. A gate killed midway (SIGKILL to the holder, and SIGTERM) leaves
+            # the lock free while a stage process it started still runs, so nothing the gate started can
+            # keep the host; a red gate releases it too.
+            cases = {}
+            for name, number in (('killed', signal.SIGKILL), ('terminated', signal.SIGTERM)):
+                hold = top / ('hold-' + name)
+                gate = start(first, top / ('probe-' + name), hold=hold)
+                if until(hold.exists):
+                    stage = int(hold.read_text())
+                    lingering.append(stage)
+                    during = held(lock)
+                    gate.send_signal(number)
+                    finish(gate, 30)
+                    cases[name] = during and until(lambda: not held(lock), 10) and alive(stage)
+                else:
+                    finish(gate, 30)
+                    cases[name] = False
+            for pid in lingering:
+                stop(pid)
+            code, out = finish(start(first, top / 'probe-red', red=True))
+            cases['red'] = code == 1 and out.rstrip().endswith('GATE: RED (no-git)') and not held(lock)
+            row('host-lock/released-on-exit', all(cases.values()), json.dumps(cases))
 
         # host-scope/own-scope: the stated limits on a delegated user scope, every gate process in it
         # and in its leaf, nothing else in it, and a child cgroup creatable beneath it; started outside
@@ -309,136 +312,137 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
                     seen[name] = dict(got, exit=code, out=out[-1500:])
             row('host-scope/own-scope', all(cases.values()), json.dumps({'cases': cases, 'seen': seen}))
 
-        # host-lock/not-started-not-red: the executor, the lander and the proof store meeting a gate
-        # that did not start (exit 75), each beside the same harness meeting a red gate (exit 1).
-        repo = top / 'workspace'
-        repo.mkdir()
-        git_env = dict(env, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1', GIT_AUTHOR_NAME='f',
-                       GIT_AUTHOR_EMAIL='f@example.invalid', GIT_COMMITTER_NAME='f',
-                       GIT_COMMITTER_EMAIL='f@example.invalid')
-        (repo / 'file').write_text('fixture\n')
-        for command in (['init', '-q'], ['add', 'file'], ['commit', '-q', '-m', 'fixture']):
-            subprocess.run(['git', '-C', str(repo), *command], env=git_env, check=True, capture_output=True)
-        commit = subprocess.run(['git', '-C', str(repo), 'rev-parse', 'HEAD'], env=git_env,
-                                capture_output=True, text=True).stdout.strip()
-        installs = {}
-        for name, code, terminal in (('not-started', 75, 'GATE: NOT STARTED (host lock /fixture held by pid 1)'),
-                                     ('red', 1, 'GATE: RED (%s)' % commit)):
-            install = top / ('install-' + name)
-            (install / 'scripts').mkdir(parents=True)
-            (install / 'scripts/verify.sh').write_text(
-                '#!/usr/bin/env bash\n# veldo-gate-interface: candidate-sink/v1\necho "%s"\nexit %d\n'
-                % (terminal, code))
-            installs[name] = install
-        EX = module('v220_executor', ROOT / '.veldo/executor.py')
-        LD = module('v220_lander', ROOT / ".veldo" / "lander.py")
-        CP = module('v220_proof', ROOT / '.veldo/control_proof.py')
+        if leg_runs():
+            # host-lock/not-started-not-red: the executor, the lander and the proof store meeting a gate
+            # that did not start (exit 75), each beside the same harness meeting a red gate (exit 1).
+            repo = top / 'workspace'
+            repo.mkdir()
+            git_env = dict(env, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1', GIT_AUTHOR_NAME='f',
+                           GIT_AUTHOR_EMAIL='f@example.invalid', GIT_COMMITTER_NAME='f',
+                           GIT_COMMITTER_EMAIL='f@example.invalid')
+            (repo / 'file').write_text('fixture\n')
+            for command in (['init', '-q'], ['add', 'file'], ['commit', '-q', '-m', 'fixture']):
+                subprocess.run(['git', '-C', str(repo), *command], env=git_env, check=True, capture_output=True)
+            commit = subprocess.run(['git', '-C', str(repo), 'rev-parse', 'HEAD'], env=git_env,
+                                    capture_output=True, text=True).stdout.strip()
+            installs = {}
+            for name, code, terminal in (('not-started', 75, 'GATE: NOT STARTED (host lock /fixture held by pid 1)'),
+                                         ('red', 1, 'GATE: RED (%s)' % commit)):
+                install = top / ('install-' + name)
+                (install / 'scripts').mkdir(parents=True)
+                (install / 'scripts/verify.sh').write_text(
+                    '#!/usr/bin/env bash\n# veldo-gate-interface: candidate-sink/v1\necho "%s"\nexit %d\n'
+                    % (terminal, code))
+                installs[name] = install
+            EX = module('v220_executor', ROOT / '.veldo/executor.py')
+            LD = module('v220_lander', ROOT / ".veldo" / "lander.py")
+            CP = module('v220_proof', ROOT / '.veldo/control_proof.py')
 
-        class Proofs:
-            def __init__(self):
-                self.recorded = []
+            class Proofs:
+                def __init__(self):
+                    self.recorded = []
 
-            def record_observation(self, observation, unit=None):
-                self.recorded.append(observation)
-                return {'id': 'gate-observation:fixture', 'digest': 'sha256:fixture', 'seq': 1}
+                def record_observation(self, observation, unit=None):
+                    self.recorded.append(observation)
+                    return {'id': 'gate-observation:fixture', 'digest': 'sha256:fixture', 'seq': 1}
 
-        class Loop(EX.LoopSteps):
-            def __init__(self, live):
-                self.live = live
+            class Loop(EX.LoopSteps):
+                def __init__(self, live):
+                    self.live = live
 
-            def resolve(self, spec_id):
-                return {'id': spec_id, 'status': 'ready'}
+                def resolve(self, spec_id):
+                    return {'id': spec_id, 'status': 'ready'}
 
-            def build(self, spec, calls=None):
-                return {'ok': True, 'commit': commit}
+                def build(self, spec, calls=None):
+                    return {'ok': True, 'commit': commit}
 
-            def gate(self):
-                return self.live.gate()
+                def gate(self):
+                    return self.live.gate()
 
-            def assemble_proof(self, spec, build):
-                return {'criteria': []}
+                def assemble_proof(self, spec, build):
+                    return {'criteria': []}
 
-            def validate_proof(self, proof):
-                return True, 0
+                def validate_proof(self, proof):
+                    return True, 0
 
-            def emit(self, *args, **kwargs):
-                return {}
+                def emit(self, *args, **kwargs):
+                    return {}
 
-        class Store:
-            StoreRefused = type('StoreRefused', (Exception,), {})
+            class Store:
+                StoreRefused = type('StoreRefused', (Exception,), {})
 
-            def __init__(self):
-                self.executed = []
+                def __init__(self):
+                    self.executed = []
 
-            def execute(self, conn, command, *args):
-                self.executed.append(command['operation'])
-                raise RuntimeError('fixture store: nothing past the command is exercised')
+                def execute(self, conn, command, *args):
+                    self.executed.append(command['operation'])
+                    raise RuntimeError('fixture store: nothing past the command is exercised')
 
-        class Ops(LD.LandOps):
-            def __init__(self, result):
-                self.result = result
+            class Ops(LD.LandOps):
+                def __init__(self, result):
+                    self.result = result
 
-            def sync_main(self):
-                return {'ok': True}
+                def sync_main(self):
+                    return {'ok': True}
 
-            def reconcile(self, unit):
-                return {'ok': True}
+                def reconcile(self, unit):
+                    return {'ok': True}
 
-            def gate(self):
-                return self.result
+                def gate(self):
+                    return self.result
 
-            def finalize(self, unit):
-                return {'ok': True}
+                def finalize(self, unit):
+                    return {'ok': True}
 
-        seen = {}
-        for name, install in installs.items():
-            proofs = Proofs()
-            live = EX.LiveLoop(root=repo, proofs=proofs, installation=install)
-            result = EX.Executor(Loop(live)).run('VELDO-9220')
-            gate_steps = [s for s in result['steps'] if s['name'] == 'gate']
-            events = []
-            ops = LD.GitLandOps(repo, 'HEAD', push=False, installation=install, observations=top,
-                                observe=events.append, domain='fixture', repository='fixture')
-            ops.candidate = {'state': 'built', 'workspace': str(repo), 'commit': commit, 'unit': 'VELDO-9220',
-                             'id': 'fixture'}
-            landed = ops.gate()
-            claims = top / ('claims-' + name)
-            claims.mkdir()
-            land = LD.Lander('v220', Ops(landed), claims_root=str(claims), lock_timeout=10.0).land('VELDO-9220')
-            store = Store()
-            service = object.__new__(CP.ProofService)
-            conn = type('Conn', (), {'execute': lambda self, *a: type('Rows', (), {'fetchone': lambda self: None})()})()
-            service.store, service.conn, service.domain, service.repository = store, conn, 'fixture', 'fixture'
-            service.principal, service.signer, service.sign, service.generation = 'p', 's', None, 1
-            service.observe, service.clock, service.counts = (lambda event: None), time.time, {'accepted': 0, 'refused': 0}
-            exit_code = 75 if name == 'not-started' else 1
-            try:
-                service.record_observation({'schema': CP.OBSERVATION_SCHEMA, 'exit': exit_code, 'commit': commit,
-                                            'stdout': '', 'terminal': None})
-                stored = 'returned'
-            except CP.Refused as error:
-                stored = error.code
-            except RuntimeError:
-                stored = 'executed'
-            seen[name] = {
-                'executor': [result['state'], result['halted_at'], result['receipt']['gate'],
-                             [s['name'] for s in result['steps']], gate_steps[-1].get('ran', True) if gate_steps else None,
-                             len(proofs.recorded)],
-                'lander': [landed.get('ok'), landed.get('not_started', False), landed.get('refusal'),
-                           ops.candidate['state'], dict(ops.counts),
-                           sorted({e['outcome'] for e in events}), land.get('not_started', False), land.get('stage')],
-                'proofs': [stored, store.executed]}
-        wanted = {
-            'not-started': {
-                'executor': ['not_started', 'gate', None, ['resolve', 'build', 'gate'], False, 0],
-                'lander': [False, True, None, 'built', {'accepted': 0, 'refused': 0}, ['not_started'], True, 'gate'],
-                'proofs': ['unavailable_service:gate/not_started', []]},
-            'red': {
-                'executor': ['halted', 'gate', 'red', ['resolve', 'build', 'gate'], True, 1],
-                'lander': [False, False, 'missing_evidence:gate', 'refused', {'accepted': 0, 'refused': 1},
-                           ['refused'], False, 'gate'],
-                'proofs': ['executed', ['record_gate_observation']]}}
-        row('host-lock/not-started-not-red', seen == wanted, json.dumps(seen))
+            seen = {}
+            for name, install in installs.items():
+                proofs = Proofs()
+                live = EX.LiveLoop(root=repo, proofs=proofs, installation=install)
+                result = EX.Executor(Loop(live)).run('VELDO-9220')
+                gate_steps = [s for s in result['steps'] if s['name'] == 'gate']
+                events = []
+                ops = LD.GitLandOps(repo, 'HEAD', push=False, installation=install, observations=top,
+                                    observe=events.append, domain='fixture', repository='fixture')
+                ops.candidate = {'state': 'built', 'workspace': str(repo), 'commit': commit, 'unit': 'VELDO-9220',
+                                 'id': 'fixture'}
+                landed = ops.gate()
+                claims = top / ('claims-' + name)
+                claims.mkdir()
+                land = LD.Lander('v220', Ops(landed), claims_root=str(claims), lock_timeout=10.0).land('VELDO-9220')
+                store = Store()
+                service = object.__new__(CP.ProofService)
+                conn = type('Conn', (), {'execute': lambda self, *a: type('Rows', (), {'fetchone': lambda self: None})()})()
+                service.store, service.conn, service.domain, service.repository = store, conn, 'fixture', 'fixture'
+                service.principal, service.signer, service.sign, service.generation = 'p', 's', None, 1
+                service.observe, service.clock, service.counts = (lambda event: None), time.time, {'accepted': 0, 'refused': 0}
+                exit_code = 75 if name == 'not-started' else 1
+                try:
+                    service.record_observation({'schema': CP.OBSERVATION_SCHEMA, 'exit': exit_code, 'commit': commit,
+                                                'stdout': '', 'terminal': None})
+                    stored = 'returned'
+                except CP.Refused as error:
+                    stored = error.code
+                except RuntimeError:
+                    stored = 'executed'
+                seen[name] = {
+                    'executor': [result['state'], result['halted_at'], result['receipt']['gate'],
+                                 [s['name'] for s in result['steps']], gate_steps[-1].get('ran', True) if gate_steps else None,
+                                 len(proofs.recorded)],
+                    'lander': [landed.get('ok'), landed.get('not_started', False), landed.get('refusal'),
+                               ops.candidate['state'], dict(ops.counts),
+                               sorted({e['outcome'] for e in events}), land.get('not_started', False), land.get('stage')],
+                    'proofs': [stored, store.executed]}
+            wanted = {
+                'not-started': {
+                    'executor': ['not_started', 'gate', None, ['resolve', 'build', 'gate'], False, 0],
+                    'lander': [False, True, None, 'built', {'accepted': 0, 'refused': 0}, ['not_started'], True, 'gate'],
+                    'proofs': ['unavailable_service:gate/not_started', []]},
+                'red': {
+                    'executor': ['halted', 'gate', 'red', ['resolve', 'build', 'gate'], True, 1],
+                    'lander': [False, False, 'missing_evidence:gate', 'refused', {'accepted': 0, 'refused': 1},
+                               ['refused'], False, 'gate'],
+                    'proofs': ['executed', ['record_gate_observation']]}}
+            row('host-lock/not-started-not-red', seen == wanted, json.dumps(seen))
 
 
 _v220_gate_host()

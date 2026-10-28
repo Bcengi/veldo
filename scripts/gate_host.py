@@ -10,7 +10,8 @@ verify.sh, before its first check, asks `--inside`. That answers yes (exit 0, th
 on stdout) only when this process already runs under a gate that holds the host: inside a gate scope
 the kernel places it in (its /proc/self/cgroup beneath the scope verify.sh's holder named), or below
 a live holder process when /proc/locks names that holder, or a process above it, as holding the
-configured lock. An environment variable alone never answers yes. Otherwise verify.sh execs `--enter`, which becomes the gate's holder:
+configured lock. An environment variable alone never answers yes. Otherwise verify.sh execs
+`--enter`, which becomes the gate's holder:
 
   1. prints the load the gate needs;
   2. takes the lock with an exclusive flock on its own open descriptor (close-on-exec, so no

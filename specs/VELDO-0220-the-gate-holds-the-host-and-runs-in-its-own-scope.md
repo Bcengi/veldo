@@ -118,3 +118,28 @@ that ignore the lock.
 Normal use: the owner's runners and the lander start verify.sh on this host. Threat model: as in
 VELDO-0208. Out of review scope: lock files on network file systems, and a holder file someone edits
 by hand (it only changes the name printed).
+
+## Implementation record (2026-10-28)
+
+What was built: scripts/gate_host.py (canon engine/scripts/gate_host.py, installed with the gate) and
+scripts/gate_host.json; the hook in both verify.sh copies; NOT STARTED as not run in the executor,
+the lander and the proof store; suite 113_veldo_0220_gate_host with four registered mutants
+(host220-ignores-lock, host220-lock-inherited, host220-no-scope, host220-not-started-is-red).
+Decisions the spec left open:
+
+- The configuration's scope is optional, so a lock-only configuration (the suite's lock rows, which
+  run inside the gate's confinement) takes the lock and makes no scope.
+- A lock held by one of the gate's own ancestors (the owner's `flock -x <lock> verify.sh` runner) is
+  that caller's hold for this gate: the gate starts, records held "caller", and still makes its scope.
+- A gate started inside a running gate (a suite's nested verify.sh) is recognized by the kernel's
+  answer, never by an environment variable alone: its /proc/self/cgroup beneath the gate scope its
+  holder named, or a live holder ancestor whose lock /proc/locks shows held.
+- .veldo/reuse_evidence.py is unchanged: adding gate_host.py to AUTHORITY_FILES would invalidate
+  every reuse record, and nothing here changes a mutation verdict.
+
+Open, an owner decision outside this spec's protected paths: the host-scope/own-scope row creates
+real scopes through the systemd user manager, which the gate's confinement refuses, so in the
+confined unit leg and in a confined mutation worker it is red by name. It needs one entry in the
+protected scripts/gate_unconfined.json:
+`{"suite": "113_veldo_0220_gate_host", "rows": "userbus", "reason": "systemd user manager: the gate's own scope is created through the user manager and inspected under /sys/fs/cgroup"}`.
+Until then the canonical gate is red on that row.
