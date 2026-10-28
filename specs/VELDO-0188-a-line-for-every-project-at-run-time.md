@@ -12,7 +12,8 @@ work: W148
 plan_revision: 4
 depends_on: [VELDO-0076, VELDO-0089, VELDO-0143, VELDO-0154, VELDO-0161, VELDO-0162, VELDO-0185]
 placement: [loop, fleet]
-protected_paths: []
+protected_paths:
+  - "scripts/gate_unconfined.json"
 footprint:
   - "engine/.veldo/control_service*.py"
   - ".veldo/control_service*.py"
@@ -26,6 +27,7 @@ footprint:
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
+  - "scripts/gate_unconfined.json"
   - "specs/VELDO-0188-a-line-for-every-project-at-run-time.md"
   - "specs/index.md"
   - "proof/VELDO-0188/*"
@@ -172,3 +174,9 @@ first unit dispatched in the new repository with the identity as author moves he
 already required that unit dispatched by the running service; it now also requires the commit in the new
 repository authored and committed by the project's identity alone. The seed for that row is
 proof/VELDO-0143/round4/first-unit-for-0188.py. Nothing else changes.
+
+2026-10-28, owner decision (Telegram 37451 and 37452): the protected scripts/gate_unconfined.json joins
+this specification's footprint and protected paths. The ticket suite's installed-process rows run the
+installed service under the host user manager, which the gate's confined leg cannot reach, so the list
+names the suite whole, as it names suites 92, 93 and 110. The suite is renumbered 116_veldo_0188_project_lines
+because number 113 is taken on other branches. Nothing else changes.

@@ -185,8 +185,8 @@ otherwise. A missing line is started, a line whose roles changed is restaged (a 
 roles), and a CANCELED or COMPLETED project's line offers nothing from then on and leaves the loop at the first
 pass that finds it with no running launch and no orphan. A project left without a line is refused by name
 (missing_authority:receiver:<project>, missing_authority:team:<project>, invalid_input:line:role:<problem>)
-and every other line serves on. A repository the installed work configuration names keeps that line, with the
-work configuration's roles whenever the store cannot staff it.
+and every other line serves on. The installed work configuration's roles staff only a repository no project
+names; a project's line there is staffed, refused and closed by the store alone, like any other.
 
 KEY DIRECTORY. The custody wrapper (VELDO-0067) denies a confined worker every file created directly
 in an ancestor of a protected directory after the worker starts, so the key directory belongs where
