@@ -167,3 +167,25 @@ review scope: hosts without cgroup v2 delegation (the stage refuses by name rath
 
 Numbers are from /tmp/veldo-mutation-throughput-20261025 (full-gate-result.json, final-summary.json,
 canonical-mutations.json). Written to apply after the pending stack (3ab6e90d) and VELDO-0215 land.
+
+## Implementation record, 2026-10-28
+
+Measured claim selection, authority resource samples, worker cgroup bootstrap,
+local reservations followed by ledger admission, and reserved-floor budget
+calculation are built on agent/codex/veldo-0219. Suite 115 supplies the ticket
+checks and the three named registered falsifiers; suite 53's host ceiling row is
+amended. The copies in engine/scripts remain byte identical.
+
+The protected VELDO-0216 scheduler still holds an aggregate mutation claim and
+cannot hand it off through its existing child-claim protocol. Measured production
+admission refuses that incompatible graph before launching a worker. Unit cgroups
+that disappear between discovery polls also require a lifecycle capture contract.
+These gaps and the existing code that contradicts the lifecycle assumption are
+recorded in proof/VELDO-0219/OPEN.md. No additional protected paths were changed.
+
+The native cgroup fixture and all targeted falsifiers have evidence in
+proof/VELDO-0219/. The actual inventory is 2718 cases at this implementation,
+including this ticket's three mutants. AC4's canonical timing and fixed-sixteen
+canonical falsifier remain deferred to the batch gate under owner rule 37191.
+The capture checker and its synthetic red and green controls do not establish
+that timing result. This record does not mark the specification complete.

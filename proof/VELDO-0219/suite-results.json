@@ -1,0 +1,30 @@
+[
+  {
+    "suite": "115_veldo_0219_measured_admission",
+    "command": [
+      "/usr/bin/python3",
+      "-B",
+      "scripts/selftest.py",
+      "--suite",
+      "115_veldo_0219_measured_admission"
+    ],
+    "exit": 2,
+    "summary": [
+      "selftest (PARTIAL, 1 of 171 suites): 40 passed, 0 failed in 2.91s"
+    ]
+  },
+  {
+    "suite": "53_veldo_0123_mutations",
+    "command": [
+      "/usr/bin/python3",
+      "-B",
+      "scripts/selftest.py",
+      "--suite",
+      "53_veldo_0123_mutations"
+    ],
+    "exit": 2,
+    "summary": [
+      "selftest (PARTIAL, 1 of 171 suites): 40 passed, 0 failed in 28.72s"
+    ]
+  }
+]

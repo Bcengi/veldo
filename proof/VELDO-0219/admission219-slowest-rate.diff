@@ -1,0 +1,11 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -273,7 +273,7 @@
+ 
+ 
+ def resource_claim(runs):
+-    fastest = min(r['elapsed'] for r in runs)
++    fastest = max(r['elapsed'] for r in runs)
+     return dict(cpu=max(r['cpu_seconds'] for r in runs) / fastest,
+                 memory=max(r['peak_anon_bytes'] for r in runs))
+ 

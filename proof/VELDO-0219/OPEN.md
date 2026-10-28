@@ -24,3 +24,29 @@ infrastructure, before 0217 and 0223 in the remaining inventory.
 
 Inherited VELDO-0220 also records the missing suite 113 entry in the protected
 scripts/gate_unconfined.json. This ticket does not edit that file.
+
+AC1 lifecycle limit: polling reads known unit cgroups before coordinator cleanup,
+and the native sustained-load fixture passes its 10 percent checks. A unit can,
+however, be created and removed by candidate code between discovery polls; a
+recreated cgroup at the same path can reset its counter. Full accounting requires
+an authority lifecycle notification or other kernel accounting mechanism that
+captures final counters before every unit teardown. The current implementation
+must not be represented as proving this universal clause. Anonymous memory is
+sampled, and disjoint per-unit peaks are added conservatively.
+
+Observability also awaits the ledger protocol extension: its current reply is a
+boolean grant only, without the resource of refusal or the gate-wide totals.
+The dispatcher records its own granted sums, claim provenance and elapsed wait;
+the scheduler separately records the actual gate totals and refusal resource.
+A single admission record with the complete gate state requires that extension.
+
+The lifecycle assumption conflicts with existing code on main: in
+.veldo/control_containment.py, Group.conclude resets failed units and Group.close
+releases its manager reference before the containing suite worker returns;
+.veldo/control_service.py stop also stops a unit during the worker's lifetime.
+Thus reading unit cgroups only when coordinator cleanup begins cannot recover
+all final counters. This contradicts the spec's assumption that the coordinator can read every
+unit's counters before its cleanup. These runtime modules are not policy-protected;
+the open issue is the accounting contract, not a path approval requirement. A
+lifecycle capture mechanism or an explicit sampled-accounting contract is needed
+before the complete AC1 unit-accounting claim can be made.

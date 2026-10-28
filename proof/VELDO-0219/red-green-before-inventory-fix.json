@@ -1,0 +1,275 @@
+{
+  "canonical_qualification": "NOT RUN: owner rule 37191; see OPEN.md",
+  "head": "6956926025e93e56d7d8c4e6d61f39f3413e0241",
+  "runs": [
+    {
+      "case": "admission219-slowest-rate",
+      "failed_rows": [
+        "admission/measured-per-case",
+        "admission/fallback-order"
+      ],
+      "mode": "mutant",
+      "new_digest": "2987138dacee4e252a39b6d68a45f6271b08549f48b8adbaa793ba1c47d9382d",
+      "old_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "rows": {
+        "admission/aggregate-handoff-refused": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/cgroup-counters": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/fallback-order": false,
+        "admission/fits-ledger": true,
+        "admission/manifest-and-manager": true,
+        "admission/measured-per-case": false,
+        "admission/oversized-refused": true,
+        "admission/qualification-capture": true,
+        "admission/reserved-floor": true,
+        "admission/same-verdicts": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/unmeasured-inventory": true
+      },
+      "seconds": 2.675004257936962,
+      "target_rows": [
+        "admission/measured-per-case"
+      ]
+    },
+    {
+      "case": "admission219-slowest-rate",
+      "failed_rows": [],
+      "mode": "baseline",
+      "new_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "old_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "rows": {
+        "admission/aggregate-handoff-refused": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/cgroup-counters": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/manifest-and-manager": true,
+        "admission/measured-per-case": true,
+        "admission/oversized-refused": true,
+        "admission/qualification-capture": true,
+        "admission/reserved-floor": true,
+        "admission/same-verdicts": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/unmeasured-inventory": true
+      },
+      "seconds": 2.793401024886407,
+      "target_rows": [
+        "admission/measured-per-case"
+      ]
+    },
+    {
+      "case": "admission219-slowest-rate",
+      "failed_rows": [],
+      "mode": "noop",
+      "new_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "old_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "rows": {
+        "admission/aggregate-handoff-refused": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/cgroup-counters": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/manifest-and-manager": true,
+        "admission/measured-per-case": true,
+        "admission/oversized-refused": true,
+        "admission/qualification-capture": true,
+        "admission/reserved-floor": true,
+        "admission/same-verdicts": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/unmeasured-inventory": true
+      },
+      "seconds": 2.69475991895888,
+      "target_rows": [
+        "admission/measured-per-case"
+      ]
+    },
+    {
+      "case": "admission219-fixed-sixteen",
+      "failed_rows": [
+        "admission/fits-ledger",
+        "admission/unmeasured-inventory"
+      ],
+      "mode": "mutant",
+      "new_digest": "95db85443aa723eca15f973406d481101e7adb04c85e84d4922a018b82a91e9f",
+      "old_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "rows": {
+        "admission/aggregate-handoff-refused": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/cgroup-counters": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": false,
+        "admission/manifest-and-manager": true,
+        "admission/measured-per-case": true,
+        "admission/oversized-refused": true,
+        "admission/qualification-capture": true,
+        "admission/reserved-floor": true,
+        "admission/same-verdicts": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/unmeasured-inventory": false
+      },
+      "seconds": 2.6524196279933676,
+      "target_rows": [
+        "admission/fits-ledger"
+      ]
+    },
+    {
+      "case": "admission219-fixed-sixteen",
+      "failed_rows": [],
+      "mode": "baseline",
+      "new_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "old_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "rows": {
+        "admission/aggregate-handoff-refused": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/cgroup-counters": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/manifest-and-manager": true,
+        "admission/measured-per-case": true,
+        "admission/oversized-refused": true,
+        "admission/qualification-capture": true,
+        "admission/reserved-floor": true,
+        "admission/same-verdicts": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/unmeasured-inventory": true
+      },
+      "seconds": 2.741970301955007,
+      "target_rows": [
+        "admission/fits-ledger"
+      ]
+    },
+    {
+      "case": "admission219-fixed-sixteen",
+      "failed_rows": [],
+      "mode": "noop",
+      "new_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "old_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "rows": {
+        "admission/aggregate-handoff-refused": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/cgroup-counters": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/manifest-and-manager": true,
+        "admission/measured-per-case": true,
+        "admission/oversized-refused": true,
+        "admission/qualification-capture": true,
+        "admission/reserved-floor": true,
+        "admission/same-verdicts": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/unmeasured-inventory": true
+      },
+      "seconds": 2.766220906050876,
+      "target_rows": [
+        "admission/fits-ledger"
+      ]
+    },
+    {
+      "case": "admission219-optimistic-m",
+      "failed_rows": [
+        "admission/same-verdicts",
+        "admission/stage-receipts-and-recording"
+      ],
+      "mode": "mutant",
+      "new_digest": "54852cea56e5122d3d226c250a7e42f373bf2cf98f46443e3ee9c7aed1ac79e4",
+      "old_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "rows": {
+        "admission/aggregate-handoff-refused": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/cgroup-counters": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/manifest-and-manager": true,
+        "admission/measured-per-case": true,
+        "admission/oversized-refused": true,
+        "admission/qualification-capture": true,
+        "admission/reserved-floor": true,
+        "admission/same-verdicts": false,
+        "admission/stage-receipts-and-recording": false,
+        "admission/unmeasured-inventory": true
+      },
+      "seconds": 2.718241918948479,
+      "target_rows": [
+        "admission/same-verdicts"
+      ]
+    },
+    {
+      "case": "admission219-optimistic-m",
+      "failed_rows": [],
+      "mode": "baseline",
+      "new_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "old_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "rows": {
+        "admission/aggregate-handoff-refused": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/cgroup-counters": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/manifest-and-manager": true,
+        "admission/measured-per-case": true,
+        "admission/oversized-refused": true,
+        "admission/qualification-capture": true,
+        "admission/reserved-floor": true,
+        "admission/same-verdicts": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/unmeasured-inventory": true
+      },
+      "seconds": 2.6994395330548286,
+      "target_rows": [
+        "admission/same-verdicts"
+      ]
+    },
+    {
+      "case": "admission219-optimistic-m",
+      "failed_rows": [],
+      "mode": "noop",
+      "new_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "old_digest": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+      "rows": {
+        "admission/aggregate-handoff-refused": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/cgroup-counters": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/manifest-and-manager": true,
+        "admission/measured-per-case": true,
+        "admission/oversized-refused": true,
+        "admission/qualification-capture": true,
+        "admission/reserved-floor": true,
+        "admission/same-verdicts": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/unmeasured-inventory": true
+      },
+      "seconds": 2.705986946937628,
+      "target_rows": [
+        "admission/same-verdicts"
+      ]
+    }
+  ],
+  "source_sha256": {
+    "engine/scripts/check_gate_mutations.py": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+    "engine/scripts/mutation_ownership.py": "910c5228b298abb9595c9a6a604e9869ea5791979aa8b3ef208f68348ab8eccc",
+    "engine/scripts/reuse_worker.py": "4974909169efc09c2c37e6e71a3a1e016290c55fa8f8f59ad26163b5fd9ba8ab",
+    "proof/VELDO-0219/kernel_check.py": "2ab2cf330f4fee67e9c2aad1600905e9ba649b8504daba0146eca205ff0e8890",
+    "proof/VELDO-0219/local_check.py": "80032096e73c70b868a1a1daa4bafb56de7475b09da3498acae3b070583f879a",
+    "proof/VELDO-0219/qualification.py": "314e0ab1eb69228e82ca4f152b8d4ab62ed3d8ec7a329cfa10b90c971fca5b9f",
+    "scripts/check_gate_mutations.py": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+    "scripts/check_teeth_mutations.py": "78e324590ff9497ff3d2aff9675550bccdac0bfcca4ea05b75b20e043a5bf13e",
+    "scripts/mutation_ownership.py": "910c5228b298abb9595c9a6a604e9869ea5791979aa8b3ef208f68348ab8eccc",
+    "scripts/reuse_worker.py": "4974909169efc09c2c37e6e71a3a1e016290c55fa8f8f59ad26163b5fd9ba8ab",
+    "scripts/suites/115_veldo_0219_measured_admission.py": "a428f1a9fef49aebf640a8d9b7de7304d2febb13a880c3b14b240692c48e3815",
+    "scripts/suites/53_veldo_0123_mutations.py": "70b782b0c3ffed1fd66b2514e19cacad46dd63b5784b42ae64e8d0a842455dde",
+    "scripts/suites/manifest.json": "8f199d113a9b5953317609a20c8c58b8d17fcf175bc9e7f35e408c2568b3c30b",
+    "scripts/suites/requires.json": "4e2deb43ad19d528eda0ec0db3ea48b190f2ed0907530a9f04e1373c615e5c3b"
+  },
+  "spec": "VELDO-0219"
+}
