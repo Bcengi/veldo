@@ -74,7 +74,7 @@ def read_graph(catalog, declaration=None, path=GRAPH):
         for name, node in nodes.items():
             fields = {'depends_on', 'writes_candidate', 'manager', 'ports'}
             if not isinstance(node, dict) or not fields <= set(node) \
-                    or set(node) - fields - {'host_lock', 'estimate'}:
+                    or set(node) - fields - {'host_lock', 'estimate', 'coordinator'}:
                 raise Refused('invalid node ' + name)
             deps = node['depends_on']
             if not isinstance(deps, list) or any(not isinstance(d, str) or d not in nodes for d in deps) \
@@ -82,6 +82,12 @@ def read_graph(catalog, declaration=None, path=GRAPH):
                 raise Refused('invalid dependencies or candidate writer: ' + name)
             validate_claim(dict(cpu=0, memory=0, manager=node['manager'], ports=node['ports'],
                                 host_lock=node.get('host_lock', 'none')))
+            if 'coordinator' in node:
+                if name != 'mutation':
+                    raise Refused('only mutation may hand off its claim')
+                validate_claim(node['coordinator'])
+                if node['coordinator']['manager'] != 'none':
+                    raise Refused('coordinator cannot retain manager exclusion')
             if 'estimate' in node:
                 startup_estimate(node['estimate'])
         done = set()
@@ -126,6 +132,7 @@ class Ledger:
         self.mutation_pending = bool(any(self.floor.values()))
         self.mutation_claimants = set()
         self.mutation_root = None
+        self.blocking_resource = None
 
     def totals(self):
         return {r: sum(c[r] for c in self.held.values()) for r in self.capacity}
@@ -155,6 +162,7 @@ class Ledger:
             self.peak[r] = max(self.peak[r], totals[r])
 
     def acquire(self, name, claim, mutation=False):
+        self.blocking_resource = None
         if name in self.held:
             raise Refused('invalid_resource_requirement: duplicate claimant ' + name)
         c, totals = self.demand(claim), self.totals()
@@ -165,15 +173,18 @@ class Ledger:
                 held_for_mutation = sum(self.held[n][r] for n in self.mutation_claimants)
                 limit -= max(0, self.floor[r] - held_for_mutation)
             if totals[r] + c[r] > limit:
+                self.blocking_resource = r
                 self.event('refuse', name, r, claim)
                 return False
         lock = c.get('host_lock', 'none')
         if lock != 'none' and any(h.get('host_lock', 'none') != 'none' and
                 'exclusive' in (lock, h.get('host_lock')) for h in self.held.values()):
+            self.blocking_resource = 'host_lock'
             self.event('refuse', name, 'host_lock', claim)
             return False
         occupied = set(p for held in self.held.values() for p in held['ports'])
         if occupied.intersection(c['ports']):
+            self.blocking_resource = 'ports'
             self.event('refuse', name, 'ports', claim)
             return False
         self.held[name] = c
@@ -183,6 +194,19 @@ class Ledger:
                 self.mutation_root = name
         self.event('grant', name, 'cpu,memory,manager,host_lock,ports', claim)
         return True
+
+    def handoff(self, name, claim):
+        """Atomically shrink the mutation root; its floor lives until root release."""
+        if name != self.mutation_root or self.mutation_claimants != {name}:
+            raise Refused('handoff requires the mutation root without child claims')
+        replacement = self.demand(claim)
+        prior = self.held[name]
+        if any(replacement[r] > prior[r] for r in self.capacity) or replacement['manager']:
+            raise Refused('handoff must shrink the aggregate claim and release the manager')
+        if replacement['ports'] != prior['ports'] or replacement.get('host_lock') != prior.get('host_lock'):
+            raise Refused('handoff cannot change ports or the host lock')
+        self.held[name] = replacement
+        self.event('handoff', name, 'cpu,memory,manager', claim)
 
     def release(self, name):
         if name not in self.held:
@@ -213,11 +237,16 @@ class Client:
         answer = json.loads(raw)
         if 'error' in answer:
             raise Refused(answer['error'])
+        self.last_reply = answer
         return answer['granted']
 
     def acquire(self, name, cpu, memory, manager='none', ports=(), host_lock='none'):
         return self.request('acquire', name, dict(cpu=cpu, memory=memory, manager=manager,
                                                  ports=list(ports), host_lock=host_lock))
+
+    def handoff(self):
+        self.request('handoff', 'coordinator')
+        return self.last_reply
 
     def release(self, name):
         return self.request('release', name)
@@ -482,7 +511,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 finally:
                     child.close()
                 active[name] = dict(proc=proc, log=log, meter=meter, socket=parent,
-                                    buffer=b'', started=node_started, children=set(), error=None, inputs=inputs)
+                                    buffer=b'', started=node_started, children=set(), error=None, inputs=inputs, handed_off=False)
                 selector.register(parent, selectors.EVENT_READ, name)
                 pending.remove(name)
                 print('node %s start %.6f' % (name, active[name]['started'] - started), flush=True)
@@ -506,7 +535,16 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                         if not isinstance(child_name, str) or not re.fullmatch(r'[A-Za-z0-9_.:/-]{1,200}', child_name):
                             raise Refused('invalid ledger claimant')
                         claimant = name + '/' + child_name
-                        if request['operation'] == 'acquire':
+                        if request['operation'] == 'handoff':
+                            coordinator = graph['nodes'][name].get('coordinator')
+                            if name != 'mutation' or coordinator is None or item['handed_off'] or item['children']:
+                                raise Refused('invalid or repeated coordinator handoff')
+                            ledger.handoff(name, coordinator)
+                            item['handed_off'] = True
+                            granted = True
+                        elif request['operation'] == 'acquire':
+                            if 'coordinator' in graph['nodes'][name] and not item['handed_off']:
+                                raise Refused('worker admission requires coordinator handoff')
                             granted = ledger.acquire(claimant, request['claim'], mutation=name == 'mutation')
                             if granted:
                                 item['children'].add(claimant)
@@ -516,7 +554,11 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                             granted = True
                         else:
                             raise Refused('invalid ledger operation or foreign release')
-                        item['socket'].sendall((json.dumps({'granted': granted}) + '\n').encode())
+                        overhead = graph['nodes'][name].get('coordinator', {})
+                        answer = dict(granted=granted, resource=None if granted else ledger.blocking_resource,
+                                      totals=ledger.totals(), capacities=ledger.capacity,
+                                      floor={r: max(0, v - overhead.get(r, 0)) for r, v in ledger.floor.items()})
+                        item['socket'].sendall((json.dumps(answer) + '\n').encode())
                 except (ValueError, KeyError, TypeError, OSError) as error:
                     item['error'] = 'ledger_protocol: ' + str(error)
                     try:

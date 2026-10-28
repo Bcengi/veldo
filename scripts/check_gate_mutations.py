@@ -85,7 +85,7 @@ def worker_count(cpus=None, cgroup_root='/sys/fs/cgroup', membership='/proc/self
     return max(2, int(2 * cpus))
 
 
-PARALLEL = 1 if '--worker' in sys.argv else worker_count()
+PARALLEL = 1 if '--worker' in sys.argv else min(16, worker_count())
 OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl', '.veldo/gate-schedule.json'}
 
 
@@ -273,8 +273,7 @@ def resource_samples(item, now):
 
 
 def resource_claim(runs):
-    fastest = min(r['elapsed'] for r in runs)
-    return dict(cpu=max(r['cpu_seconds'] for r in runs) / fastest,
+    return dict(cpu=max(r['cpu_seconds'] / r['elapsed'] for r in runs),
                 memory=max(r['peak_anon_bytes'] for r in runs))
 
 
@@ -340,22 +339,22 @@ class Admission:
         self.meter_factory = meter_factory
         self.held, self.events, self.waiting = {}, [], {}
         self.peak = dict(cpu=0, memory=0)
+        self.blocked = {}
 
     @classmethod
     def authority(cls):
         scheduler = load(ROOT / 'scripts/gate_schedule.py')
         if scheduler.CHANNEL not in os.environ:
             raise Refused('worker_launch_error', 'measured admission requires the gate ledger channel')
-        graph = json.loads((ROOT / 'scripts/gate_graph.json').read_text())
-        # VELDO-0216's aggregate claim must be handed off before child admission.
-        # The current protocol cannot do that; never wait until the budget expires.
-        if graph['nodes']['mutation']['manager'] != 'none':
-            raise Refused('invalid_resource_requirement',
-                          'mutation aggregate ledger claim needs coordinator handoff; see VELDO-0219 OPEN.md')
+        client = scheduler.Client()
+        try:
+            state = client.handoff()
+        except (ValueError, OSError) as error:
+            client.close()
+            raise Refused('invalid_resource_requirement', str(error)) from error
         scope = os.environ.get('VELDO_GATE_SCOPE', '')
-        capacity = scheduler.capacities(graph, scope, ROOT / 'scripts/suites/manifest.json')
         ownership = load(ROOT / 'scripts/mutation_ownership.py')
-        return cls(scheduler.Client(), capacity, graph['mutation_floor'],
+        return cls(client, state['capacities'], state['floor'],
                    lambda name: ownership.WorkerMeter(scope, name))
 
     def validate(self, job):
@@ -378,12 +377,15 @@ class Admission:
             granted = self.client.acquire(name, claim['cpu'], claim['memory'], manager)
         except ValueError as error:
             raise Refused('invalid_resource_requirement', str(error)) from error
+        reply = getattr(self.client, 'last_reply', {})
         if not granted:
+            self.blocked.setdefault(name, set()).add(reply.get('resource', 'unknown'))
             return False
         self.held[name] = claim
         totals = {r: sum(c[r] for c in self.held.values()) for r in ('cpu', 'memory')}
         self.events.append(dict(name=name, claim=claim, waited_seconds=time.monotonic() - began,
-                                resource='ledger', granted=totals, capacities=self.capacity))
+                                resource=sorted(self.blocked.pop(name, set())),
+                                granted=reply.get('totals', totals), capacities=self.capacity))
         self.waiting.pop(name)
         for r in self.peak:
             self.peak[r] = max(self.peak[r], totals[r])
@@ -743,7 +745,7 @@ class Workers:
         self.admission = admission
         self.meters = {}
         self.deadline = deadline
-        self.parallel = PARALLEL if parallel is None else max(1, parallel)
+        self.parallel = (worker_count() if admission else min(16, PARALLEL)) if parallel is None else max(1, parallel)
         self.active = {}
         self.owned_snapshots = {}
         self.invocations = 0
@@ -1102,6 +1104,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
     try:
         if admit:
             admission = workers.admission = Admission.authority()
+            if parallel is None:
+                workers.parallel = worker_count()
         full_inventory = inventory(root, expected_common)
         cases = [c for c in full_inventory if (not findings or c['finding'] in findings)
                  and (not drivers or c['driver'] in drivers)

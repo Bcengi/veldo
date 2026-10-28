@@ -11532,8 +11532,8 @@ def cases():
     # VELDO-0219: measured admission and conservative guaranteed parallelism.
     suite219 = '115_veldo_0219_measured_admission.py'
     add(219, 'admission219-slowest-rate', suite219, 'check_gate_mutations.py',
-        "    fastest = min(r['elapsed'] for r in runs)\n",
-        "    fastest = max(r['elapsed'] for r in runs)\n",
+        "    return dict(cpu=max(r['cpu_seconds'] / r['elapsed'] for r in runs),\n",
+        "    return dict(cpu=max(r['cpu_seconds'] for r in runs) / max(r['elapsed'] for r in runs),\n",
         ['admission/measured-per-case'])
     result[-1]['dir'] = 'scripts'
     add(219, 'admission219-fixed-sixteen', suite219, 'check_gate_mutations.py',

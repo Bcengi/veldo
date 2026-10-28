@@ -142,6 +142,13 @@
         "wall_seconds": 5207.101,
         "cpu_seconds": 56175.597,
         "peak_cgroup_memory_bytes": 8862978048
+      },
+      "coordinator": {
+        "cpu": 0.25,
+        "memory": 268435456,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
       }
     }
   },

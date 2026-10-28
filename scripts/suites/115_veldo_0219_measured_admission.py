@@ -371,15 +371,11 @@ def _v219_checks():
         receipt_checks.append(stage_failed['error']=='invalid_baseline' and not list(failed_store.glob('*.json')))
         row('stage-receipts-and-recording', all(receipt_checks))
 
-        # The current protected dependency cannot transfer its aggregate claim.
-        # A named refusal is required before spawning workers or waiting forever.
-        with patch.dict(os.environ, VELDO_GATE_LEDGER_FD='invalid'):
-            try:
-                gate.Admission.authority()
-                refused = False
-            except gate.Refused as exc:
-                refused = exc.code == 'invalid_resource_requirement' and 'handoff' in exc.detail
-        row('aggregate-handoff-refused', refused)
+        regressions = load(ROOT / 'proof/VELDO-0219/round2/check.py')
+        row('aggregate-handoff', regressions.handoff(gate))
+        row('unmetered-fixed-cap', regressions.fixed_cap(gate))
+        row('cpu-per-run', regressions.per_run(gate))
+        row('blocking-resource', regressions.blocking_resource(gate))
 
         qualification = load(ROOT / 'proof/VELDO-0219/qualification.py')
         capture = qualification.fixture()
