@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 import re
 import selectors
+import shutil
 import socket
 import subprocess
 import sys
@@ -330,6 +331,38 @@ def input_guard(root):
     return lambda: mutation.inputs_unchanged(root, common, files, head)
 
 
+class NodeInputs:
+    """A private input snapshot identifies an unconfined leg's candidate writes.
+
+    Use the mutation stage's existing closure, Git snapshot and comparison. The
+    leg retains its unconfined runner and host access. No outer ptrace interferes
+    with nested tracers. A change to the original checkout still fails the graph
+    separately; it is never attributed by guessing which process finished last.
+    """
+    def __init__(self, root, destination, mutation=None):
+        self.mutation = mutation or load_module('check_gate_mutations')
+        common = os.environ.get('VELDO_EXPECTED_GIT_COMMON')
+        if not common:
+            raise Refused('candidate snapshot needs VELDO_EXPECTED_GIT_COMMON')
+        self.root = Path(destination)
+        self.files = self.mutation.read_inputs(root, common)
+        self.head = self.mutation.git(root, common, 'rev-parse', 'HEAD')
+        try:
+            self.common = self.mutation.snapshot(root, common, self.root, self.files, self.head)
+            if not self.unchanged():
+                raise Refused('candidate snapshot differs from input closure')
+        except BaseException:
+            self.close()
+            raise
+
+    def unchanged(self):
+        return self.mutation.inputs_unchanged(self.root, self.common, self.files, self.head)
+
+    def close(self):
+        if self.root.exists():
+            shutil.rmtree(self.root)
+
+
 def command_for(root, stage, leg, command, record, receipt, listing, prior_times=None):
     if stage == 'mutation':
         return [sys.executable, '-I', '-S', str(HERE / 'check_gate_mutations.py'), '--root', str(root),
@@ -346,7 +379,8 @@ def command_for(root, stage, leg, command, record, receipt, listing, prior_times
 
 
 def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declaration_path=None,
-        capacity=None, measurement_store=None, meter_factory=None, guard_factory=input_guard, serial=False):
+        capacity=None, measurement_store=None, meter_factory=None, guard_factory=input_guard, serial=False,
+        node_inputs_factory=NodeInputs):
     """Run the real graph. Explicit injected boundaries are for fixture authorities only.
 
     CLI exposes no graph, capacity, measurement-store, runner or guard override.
@@ -412,16 +446,22 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 parent, child = socket.socketpair()
                 parent.setblocking(False)
                 meter = None
+                inputs = None
                 try:
+                    if leg == 'unconfined':
+                        inputs = node_inputs_factory(root, directory / (name + '.inputs'))
+                    node_root = inputs.root if inputs else root
                     meter = meter_factory(name) if meter_factory else Meter(scope, name)
-                    argv = command_for(root, stage, leg, catalog[stage], record, receipt, declaration, prior_times)
+                    argv = command_for(node_root, stage, leg, catalog[stage], record, receipt, declaration, prior_times)
                     env = {k: v for k, v in os.environ.items() if k not in
                            (legs.LEG, legs.ENTRIES, legs.DIGEST, legs.UNIT_SECONDS, CHANNEL)}
+                    if inputs:
+                        env['VELDO_EXPECTED_GIT_COMMON'] = str(inputs.common)
                     env[CHANNEL] = str(child.fileno())
                     env['PYTHONDONTWRITEBYTECODE'] = '1'
                     env['VELDO_GATE_GRAPH_DIGEST'] = digest
                     node_started = time.monotonic()
-                    proc = subprocess.Popen(meter.command(argv), cwd=root, env=env,
+                    proc = subprocess.Popen(meter.command(argv), cwd=node_root, env=env,
                                             stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT,
                                             pass_fds=(child.fileno(), *legs._launcher_fds()))
                 except BaseException:
@@ -429,12 +469,14 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                     log.close()
                     if meter:
                         meter.finish()
+                    if inputs:
+                        inputs.close()
                     ledger.release(name)
                     raise
                 finally:
                     child.close()
                 active[name] = dict(proc=proc, log=log, meter=meter, socket=parent,
-                                    buffer=b'', started=node_started, children=set(), error=None)
+                                    buffer=b'', started=node_started, children=set(), error=None, inputs=inputs)
                 selector.register(parent, selectors.EVENT_READ, name)
                 pending.remove(name)
                 print('node %s start %.6f' % (name, active[name]['started'] - started), flush=True)
@@ -482,13 +524,10 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                     continue
                 end = time.monotonic()
                 metrics = item['meter'].finish()
-                tree_ok = unchanged()
+                tree_ok = item['inputs'].unchanged() if item['inputs'] else True
                 if not tree_ok:
                     failed_tree = True
-                    # Every overlapping node is suspect; never silently blame an innocent
-                    # last finisher and let the writing node pass.
-                    for other in active.values():
-                        other['error'] = 'candidate_tree_changed'
+                    item['error'] = 'candidate_tree_changed'
                 error = item['error'] or ('live_descendants' if metrics.get('live_descendants') else None)
                 if item['children']:
                     error = error or 'unreleased_ledger_claim'
@@ -497,13 +536,16 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 elapsed = end - item['started']
                 result = dict(start=item['started'] - started, end=end - started, wall_seconds=elapsed,
                               verdict='pass' if code == 0 and error is None else 'FAIL',
-                              returncode=code, error=error, **metrics)
+                              returncode=code, error=error, inputs_unchanged=tree_ok,
+                              input_snapshot=bool(item['inputs']), **metrics)
                 results[name] = result
                 if result['verdict'] == 'pass' and measurement_store is None:
                     try:
                         legs.record_resources(store, key, name, elapsed, metrics)
                     except OSError as error:
                         print('node %s: resource measurement not stored: %s' % (name, error), flush=True)
+                if item['inputs']:
+                    item['inputs'].close()
                 item['log'].close()
                 if item['socket'] in selector.get_map():
                     selector.unregister(item['socket'])
@@ -517,11 +559,8 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 print('== ' + name, flush=True)
                 print((directory / (name + '.log')).read_text(errors='replace'), end='', flush=True)
                 next_print += 1
-        if not unchanged():
-            failed_tree = True
-        if failed_tree:
-            for result in results.values():
-                result.update(verdict='FAIL', error=result['error'] or 'candidate_tree_changed_during_graph')
+        original_unchanged = unchanged()
+        failed_tree = failed_tree or not original_unchanged
         stages = {stage: 'pass' if all(results[n]['verdict'] == 'pass' for n, pair in required.items()
                                      if pair[0] == stage) else 'FAIL' for stage in catalog}
         for name, result in results.items():
@@ -535,6 +574,8 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
         critical = max(required, key=chain) if required else None
         return dict(schema='veldo.gate-schedule/v1', graph=digest, stages=stages, nodes=results,
                     checks_run=len(stages), inputs_unchanged=not failed_tree,
+                    original_inputs_unchanged=original_unchanged,
+                    error=None if original_unchanged else 'candidate_tree_changed_outside_node_inputs',
                     wall_seconds=time.monotonic() - started, critical_path_seconds=chain(critical) if critical else 0,
                     critical_path_end=critical, capacities=capacity, peak_granted=ledger.peak,
                     ledger=ledger.events, claims=claims)
@@ -551,6 +592,8 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 item['proc'].wait()
                 item['log'].close()
                 item['socket'].close()
+                if item['inputs']:
+                    item['inputs'].close()
         selector.close()
         if cleanup_errors:
             raise Refused('node cleanup failed: ' + '; '.join(cleanup_errors))
@@ -588,7 +631,7 @@ def main(argv=None):
             finally:
                 if os.path.exists(pending):
                     os.unlink(pending)
-        return int(any(v != 'pass' for v in result['stages'].values()))
+        return int(not result['inputs_unchanged'] or any(v != 'pass' for v in result['stages'].values()))
     except (OSError, ValueError, KeyError) as error:
         print('GATE: RED (scheduler: %s); no successful graph receipt' % error, flush=True)
         return 1
