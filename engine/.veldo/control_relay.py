@@ -30,6 +30,15 @@ a general listener/process census is INTENDED and NOT YET DEMONSTRATED.
 WHAT IT IS NOT. Not a proxy for many authorities, not a daemon, not a session. One request, one
 answer, exit. Standard library only.
 """
+
+# The registry is shared across aliases of this installed module.
+import importlib.util as _registry_import
+from pathlib import Path as _RegistryPath
+_registry_spec = _registry_import.spec_from_file_location(
+    "veldo_client_registry", _RegistryPath(__file__).with_name("control_client_registry.py"))
+_CLIENTS = _registry_import.module_from_spec(_registry_spec)
+_registry_spec.loader.exec_module(_CLIENTS)
+
 import os
 import socket
 import sys
@@ -56,6 +65,7 @@ def read_all(stream, limit=MAX_BYTES):
     return b"".join(chunks)
 
 
+@_CLIENTS.entrypoint('command', ('relay',))
 def forward(address, payload, timeout=30.0):
     """The request's bytes to the endpoint, and the endpoint's bytes back. Nothing is parsed."""
     conn = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -78,6 +88,7 @@ def forward(address, payload, timeout=30.0):
         conn.close()
 
 
+@_CLIENTS.entrypoint('command', ('relay',))
 def main(argv, stdin=None, stdout=None, stderr=None):
     """Usage: control_relay.py <endpoint-socket-path>
 

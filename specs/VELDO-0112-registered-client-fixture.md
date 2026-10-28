@@ -19,8 +19,17 @@ footprint:
   - "engine/.veldo/control_client.py"
   - ".veldo/dispatch.py"
   - "engine/.veldo/dispatch.py"
+  - ".veldo/control_claim_client.py"
+  - ".veldo/control_dispatch.py"
+  - ".veldo/control_relay.py"
+  - "engine/.veldo/control_claim_client.py"
+  - "engine/.veldo/control_dispatch.py"
+  - "engine/.veldo/control_relay.py"
   - "scripts/fixtures/registered_clients.py"
   - "scripts/suites/*_veldo_0112_*.py"
+  - "scripts/suites/47_veldo_0107_ipc.py"
+  - "scripts/suites/48_veldo_0108_relay.py"
+  - "scripts/suites/49_veldo_0109_unavailable.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "specs/VELDO-0112-registered-client-fixture.md"
@@ -83,3 +92,8 @@ Implementing refusal behavior, census collection, authority/store fixtures, or s
 The adapters accept an externally supplied authority/relay fixture; this item owns only client enumeration and invocation. VELDO-0109 is a behavioral prerequisite, not evidence that this inventory already exists. The no-auto-start, unavailable-matrix and write-observation follow-ups will consume this capability.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
+
+2026-10-28 implementation note: the actual enrolled claim, durable dispatch and
+relay modules are included in the footprint. The three older transport suites
+copy the new registry dependency into their isolated installations. See
+`proof/VELDO-0112/OPEN.md` for the main-code reconciliation and qualification scope.

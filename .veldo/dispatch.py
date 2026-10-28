@@ -86,6 +86,15 @@ published only by the Materializer, VELDO-0035's ordinary materialization of an 
 at an explicit watermark. Tracker drafting and promotion are disabled for enrolled repositories in
 tracker_bridge.py.
 """
+
+# The registry is shared across aliases of this installed module.
+import importlib.util as _registry_import
+from pathlib import Path as _RegistryPath
+_registry_spec = _registry_import.spec_from_file_location(
+    "veldo_client_registry", _RegistryPath(__file__).with_name("control_client_registry.py"))
+_CLIENTS = _registry_import.module_from_spec(_registry_spec)
+_registry_spec.loader.exec_module(_CLIENTS)
+
 import hashlib
 import importlib.util
 import json
@@ -334,6 +343,7 @@ class Dispatcher(WK.Dispatcher):
 
     # the routing
 
+    @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
     def dispatch(self, unit):
         """Route a claimed unit by its kind and return {ok: bool, ...}. The
         WorkLoop's release/failed semantics apply to the ok flag unchanged."""
@@ -554,6 +564,7 @@ class Dispatcher(WK.Dispatcher):
         return self._lander.land(unit)
 
 
+@_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
 def veldo_dispatch(unit, repo_root=None, hooks=None, reviewer=None, lander=None,
                   worker_id=None, claims_root=None, fail_status="ready", eligibility=None, calls=None,
                   authority=None):

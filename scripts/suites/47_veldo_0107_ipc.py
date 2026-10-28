@@ -51,6 +51,7 @@ def _v107_organ(tag, edits=()):
     d = _v107_tmp / ("organ_" + tag)
     d.mkdir()
     _v107_shutil.copy2(ROOT / ".veldo" / "control_enrollment.py", d / "control_enrollment.py")
+    _v107_shutil.copy2(ROOT / ".veldo" / "control_client_registry.py", d / "control_client_registry.py")
     src = (ROOT / ".veldo" / "control_client.py").read_text()
     for old, new in edits:
         assert src.count(old) == 1, (old[:70], src.count(old))

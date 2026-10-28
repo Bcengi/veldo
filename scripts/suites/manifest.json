@@ -1524,6 +1524,15 @@
    ],
    "regions": "Authority-measured mutation worker deadlines and bounded store.",
    "requires_note": "Only ROOT and expect; controlled coordinator children and scratch stores, plus a real hanging child."
+  },
+  {
+   "name": "113_veldo_0112_registered_clients",
+   "file": "113_veldo_0112_registered_clients.py",
+   "requires": [
+    "113_veldo_0112_registered_clients"
+   ],
+   "regions": "VELDO-0112 production client registration, live adapters and registry growth.",
+   "requires_note": "Only ROOT and expect. Real scratch Git enrollment, SSH signatures, SQLite and AF_UNIX. Dispatcher orchestration uses its documented external seams; durable admission uses the real Dispatches writer. No engine, real host lock or service manager is controlled."
   }
  ],
  "resource_capacities": {

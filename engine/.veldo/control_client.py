@@ -32,6 +32,15 @@ transport is a command relay to this same endpoint (VELDO-0108) and is not a sec
 happens when the authority is unreachable is VELDO-0109; this module reports it, naming the service
 unit and the operations start procedure (VELDO-0047), and does nothing else about it. Standard library only.
 """
+
+# The registry is shared across aliases of this installed module.
+import importlib.util as _registry_import
+from pathlib import Path as _RegistryPath
+_registry_spec = _registry_import.spec_from_file_location(
+    "veldo_client_registry", _RegistryPath(__file__).with_name("control_client_registry.py"))
+_CLIENTS = _registry_import.module_from_spec(_registry_spec)
+_registry_spec.loader.exec_module(_CLIENTS)
+
 import hashlib
 import json
 import os
@@ -252,6 +261,7 @@ def build_request(workspace, binding, command, sign):
 # The client
 # ---------------------------------------------------------------------------------------------
 
+@_CLIENTS.entrypoint('command', ('local_ipc',))
 def send(workspace, command, enrollment, verify, sign, host_identity, timeout=30.0,
          seen_at=None):
     """Send one command to the authority of THIS workspace and return its response.
