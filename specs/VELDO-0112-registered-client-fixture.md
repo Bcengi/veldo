@@ -25,6 +25,8 @@ footprint:
   - "engine/.veldo/control_claim_client.py"
   - "engine/.veldo/control_dispatch.py"
   - "engine/.veldo/control_relay.py"
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/init_scaffold.py"
   - "scripts/fixtures/registered_clients.py"
   - "scripts/suites/*_veldo_0112_*.py"
   - "scripts/suites/47_veldo_0107_ipc.py"

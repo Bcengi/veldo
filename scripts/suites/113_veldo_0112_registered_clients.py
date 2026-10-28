@@ -26,9 +26,9 @@ def load(path, name):
 class AuthorityFixture:
     def __init__(self, root, runtime, scratch):
         self.root, self.runtime, self.scratch = root, runtime, scratch
-        self.cc = runtime.load('control_client')
-        self.cl = runtime.load('control_claim_client')
-        self.d = runtime.load('control_dispatch')
+        self.cc = runtime.load_client_module('control_client')
+        self.cl = runtime.load_client_module('control_claim_client')
+        self.d = runtime.load_client_module('control_dispatch')
         self.en = self.cl.E
         self.cm = load(root / '.veldo/control_claim.py', 'clients_claim_authority')
         self.s = self.cm.S
@@ -126,7 +126,12 @@ class AuthorityFixture:
         if entrypoint.startswith(('claim:', 'control_claim_client:')):
             action = entrypoint.rsplit(':', 1)[1].split('.')[-1]
             # Every operation gets the prerequisite it actually consumes.
-            self.client.claim('unit', 'worker')
+            held = self.client.holder('unit')
+            if action == 'claim':
+                if held is not None:
+                    assert self.client.release('unit', 'worker')
+            elif held is None:
+                assert self.client.claim('unit', 'worker') == (True, 'granted')
             if entrypoint == 'control_claim_client:Client.request':
                 return (self.client, 'renew', 'unit', self.client.generations['unit']), {}
             if entrypoint.startswith('claim:'):
@@ -196,7 +201,7 @@ class AuthorityFixture:
         # is independently exercised above through the real dispatch store writer.
         import contextlib
         from types import SimpleNamespace
-        dsp = self.runtime.load('dispatch')
+        dsp = self.runtime.load_client_module('dispatch')
         fixture = self
         class Hooks(dsp.EX.LoopSteps):
             root = fixture.workspace
@@ -266,16 +271,25 @@ def qualify(root):
     runtime = fixture.registry(root)
     rows, detail = {}, {}
     problems = fixture.boundary_problems(runtime)
-    for name in (*runtime.MODULES, 'control_client_registry'):
+    for name in (*runtime.MODULES, 'control_client_registry', 'init_scaffold'):
         if (root / '.veldo' / (name + '.py')).read_bytes() != (root / 'engine/.veldo' / (name + '.py')).read_bytes():
             problems.append('engine_copy_differs:' + name)
+    try:
+        installer = load(root / '.veldo/init_scaffold.py', 'clients_installer')
+        service = load(root / '.veldo/control_service.py', 'clients_service_closure')
+        if '.veldo/control_client_registry.py' not in installer._FILES:
+            problems.append('registry_not_scaffolded')
+        if 'control_client_registry.py' not in service.closure():
+            problems.append('registry_not_installed')
+    except Exception as error:
+        problems.append('installation:' + repr(error))
     # Both direct and identity dispatch reject a handle after removal. A new
     # registration with the same callable identity but another client is rejected.
     record = runtime._state.entries.pop('claim:claim', None)
     checks = []
     boundary_scratch = tempfile.TemporaryDirectory(prefix='v112-boundary-')
     try:
-        for call in (lambda: runtime.load('claim').claim('unit', 'worker', root=boundary_scratch.name),
+        for call in (lambda: runtime.load_client_module('claim').claim('unit', 'worker', root=boundary_scratch.name),
                      lambda: runtime.invoke('claim:claim', 'unit', 'worker')):
             try:
                 call()

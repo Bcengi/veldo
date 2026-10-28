@@ -25,3 +25,9 @@ specifications, not this fixture inventory.
 
 No owner decision is pending. The full batch gate and independent review remain
 for the later batch as requested. No claim of source landing is made.
+
+The scaffolder also needs the new registry and the existing relay carrier in its
+explicit runtime file list. Loading the full client set exposes a pre-existing
+formatted path in `dispatch._floor_organ` that the installer cannot resolve. Its
+path expression now exposes the literal file suffix without changing the path.
+The ticket checks both the scaffold list and the real service dependency closure.

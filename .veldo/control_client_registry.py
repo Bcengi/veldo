@@ -38,9 +38,11 @@ def entrypoint(client, transports):
     def decorate(function):
         path = Path(function.__code__.co_filename).resolve()
         identity = path.stem + ':' + function.__qualname__
-        modes = tuple(sorted(set(transports)))
-        if not client or not modes or any(not isinstance(t, str) or not t for t in modes):
+        if (not isinstance(client, str) or not client.strip()
+                or not isinstance(transports, (tuple, list)) or not transports
+                or any(not isinstance(t, str) or not t.strip() for t in transports)):
             raise RegistryError('invalid_registration', identity)
+        modes = tuple(sorted(set(transports)))
         origin = (str(path), function.__qualname__)
         with _state.lock:
             previous = _state.entries.get(identity)
@@ -63,7 +65,7 @@ def entrypoint(client, transports):
     return decorate
 
 
-def load(name):
+def load_client_module(name):
     """Normal module loading, once for each source installation."""
     with _state.lock:
         if name not in _state.modules:
@@ -83,7 +85,8 @@ def registrations():
 
 def digest(records=None):
     records = registrations() if records is None else records
-    return hashlib.sha256(json.dumps(records, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    body = dict(entries=records, registry_digest=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
+    return hashlib.sha256(json.dumps(body, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
 def invoke(identity, *args, **kwargs):
@@ -103,6 +106,10 @@ def registered(function):
 
 
 def load_clients():
-    for name in MODULES:
-        load(name)
+    load_client_module('claim')
+    load_client_module('control_client')
+    load_client_module('control_claim_client')
+    load_client_module('control_relay')
+    load_client_module('control_dispatch')
+    load_client_module('dispatch')
     return registrations()

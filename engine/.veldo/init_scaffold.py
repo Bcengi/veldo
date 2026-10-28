@@ -219,6 +219,8 @@ _FILES = [
     ".veldo/control_claim.py",
     ".veldo/control_claim_client.py",
     ".veldo/control_client.py",
+    ".veldo/control_client_registry.py",
+    ".veldo/control_relay.py",
     # VELDO-0046: ordinary committed-event delivery; no validator loads this module.
     ".veldo/control_notify.py",
     # VELDO-0064: the assignment inbox and its Telegram projection; no validator loads them.

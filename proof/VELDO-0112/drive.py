@@ -67,6 +67,12 @@ def main():
             (OUT / (ac + '-red.json')).write_text(json.dumps(red, indent=2) + '\n')
             if red['rows'][ROWS[index]] is not False or red['exit_code'] != 1:
                 raise RuntimeError('falsifier did not redden its completed row: ' + ac)
+            if ac == 'AC1' and 'unregistered_entrypoint:claim:claim' not in red['detail']['boundary']['problems']:
+                raise RuntimeError('invalid drive: missing boundary diagnosis')
+            if ac == 'AC2' and 'missing_fixture_adapter' not in red['detail']['live'].get('error', ''):
+                raise RuntimeError('invalid drive: wrong adapter diagnosis')
+            if ac == 'AC3' and 'incomplete_inventory' not in red['detail']['growth'].get('error', ''):
+                raise RuntimeError('invalid drive: wrong inventory diagnosis')
             (root / path).write_text(source)
             if path.startswith('.veldo/'):
                 (root / 'engine' / path).write_text(source)

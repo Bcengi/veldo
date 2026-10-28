@@ -643,7 +643,7 @@ _FLOOR_ORGANS = {}
 def _floor_organ(name):
     """The authority's organs, loaded on first use beside this file (the unenrolled path never pays)."""
     if name not in _FLOOR_ORGANS:
-        _FLOOR_ORGANS[name] = _load("veldo_%s_floor" % name, ".veldo/%s.py" % name)
+        _FLOOR_ORGANS[name] = _load("veldo_%s_floor" % name, ".veldo/" + name + ".py")
     return _FLOOR_ORGANS[name]
 
 

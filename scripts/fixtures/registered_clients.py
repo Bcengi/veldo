@@ -130,6 +130,9 @@ def exercise(runtime, authority, *, consumer, extra_adapters=None):
         results[case.identity] = result
     evidence = receipt(runtime, inventory, executed, consumer=consumer)
     evidence['input_identity'] = authority.identity()
+    evidence['results'] = {identity: dict(accepted=True, digest=hashlib.sha256(
+        result if isinstance(result, bytes) else json.dumps(result, sort_keys=True).encode()).hexdigest())
+        for identity, result in results.items()}
     return evidence, results
 
 
@@ -158,7 +161,7 @@ def boundary_problems(runtime):
     if not {'claim', 'command', 'dispatch-admission'} <= {r['client'] for r in records}:
         problems.append('missing_required_client')
     for name, (scope, sinks) in SURFACES.items():
-        module = runtime.load(name)
+        module = runtime.load_client_module(name)
         tree = ast.parse(Path(module.__file__).read_text())
         owner = getattr(module, scope) if scope else module
         nodes = tree.body if not scope else next(n.body for n in tree.body
@@ -178,7 +181,7 @@ def boundary_problems(runtime):
                 if not runtime.registered(getattr(owner, key)):
                     problems.append('unregistered_entrypoint:' + name + ':' + key)
     # The module-level dispatcher is an alias front door, outside its class scope.
-    if not runtime.registered(runtime.load('dispatch').veldo_dispatch):
+    if not runtime.registered(runtime.load_client_module('dispatch').veldo_dispatch):
         problems.append('unregistered_entrypoint:dispatch:veldo_dispatch')
     for record in records:
         handles = runtime._state.entries[record['identity']]['handles']
