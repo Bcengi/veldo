@@ -11104,9 +11104,9 @@ def cases():
                 "        made = [self._log(e) for e in decisions.resume()]\n",
                 "        made = []  # defect: an interrupted presentation is never finished\n",
                 ['proposal/presentation-interrupted'])
-    new_project('newproject143-line-not-added', 'control_service_projects.py',
-                "        if result['outcome'] == 'activated' and s.loop is not None:\n",
-                "        if False:  # defect: the activated project's repository gets no line\n",
+    new_project('newproject143-line-not-added', 'control_service.py',
+                "        if 'journal' in report['sources']:\n",
+                "        if False:  # defect: the activation's journal pass never starts its line\n",
                 ['activation/line-from-pass'])
     new_project('newproject143-proposed-without-provisioner', 'control_project_proposal.py',
                 "            if not self.provisioning():\n",
@@ -11559,6 +11559,14 @@ def cases():
                   "        if getattr(self, 'closing', False):\n            pass\n", ['close/guard'])
     project_lines('lines188-paused-omitted', 'control_service.py',
                   "PROJECT_OPEN = ('ACTIVE', 'PAUSED')", "PROJECT_OPEN = ('ACTIVE',)", ['lines/paused-restart'])
+
+    # Consumer fixtures must provide the receiver authority needed to construct their Lines.
+    for suffix, suite in (('pm', '92_veldo_0088_pm_cycles.py'), ('intake', '93_veldo_0152_intake_routes.py')):
+        add(188, 'lines188-' + suffix + '-receiver-authority-missing', suite, suite,
+            "            service.config['receiver'] = {'configs': {repository: str(installed_receiver)}}\n",
+            "            service.config['receiver'] = {'configs': {}}  # defect: no receiver authority\n",
+            ['line/store-staffing'])
+        result[-1]['dir'] = 'scripts/suites'
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

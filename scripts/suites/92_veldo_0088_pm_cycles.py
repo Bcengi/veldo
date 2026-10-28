@@ -38,7 +38,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
     if fault_only:
         names = ('followup/initial-fault', 'followup/pending-fault')
     # In every variant: the PM cycles' exchanges staged in the fixture's own graph stage.
-    names = names + ('graph/own-stage',)
+    names = names + ('graph/own-stage', 'line/store-staffing')
     rows = {name: [] for name in names}
 
     def check(name, label, condition):
@@ -152,11 +152,20 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
                 enrollment_signers=str(enrollment_signers), observations=str(base / 'service-events.jsonl')), conn)
             service.channel = SimpleNamespace(ingress=SimpleNamespace(inbox=f['inbox'],
                 presenter=f['presenter'], settlement=f['settlement']))
+            # The installed receiver declares dispatchable engines; the protocol fake remains a launch seam.
+            installed_receiver = base / 'receiver-installed.json'
+            installed_data = json.loads(config.read_text())
+            for adapter, engine in {'protocol': 'claude_code'}.items():
+                installed_data['adapters'][adapter]['engine'] = engine
+            installed_receiver.write_text(json.dumps(installed_data))
+            service.config['receiver'] = {'configs': {repository: str(installed_receiver)}}
             factory = SV.FactoryLoop(service, {'repositories': {}})
-            line = SV.Line(factory, repository, {'builder': {'identity': 'unassigned'}, 'reviewers': []}, config)
+            check('line/store-staffing', 'the store builds the factory line from its team and receiver',
+                  repository in factory.lines)
+            line = factory.lines[repository]
             # Only the account selection is fixed; Line.run constructs the production PM services.
             def receiver_observation(contract):
-                launch = line.invoke(contract)
+                launch = L.invoke(config, contract, line.dispatches)
                 if launch.result != 'accepted':
                     print('  VELDO-0088 detail: receiver refusal:', launch.messages, 'transaction', conn.in_transaction)
                 return launch
