@@ -14,8 +14,9 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 path = ROOT / 'scripts/fixtures/relay_exchange.py'
 spec = importlib.util.spec_from_file_location('relay_exchange121', path)
+fixture_bytes = path.read_bytes()
 fixture = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(fixture)
+exec(compile(fixture_bytes, str(path), 'exec'), fixture.__dict__)
 
 
 def main():
@@ -24,6 +25,9 @@ def main():
     output = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'proof/VELDO-0121/results'
     output.mkdir(parents=True, exist_ok=True)
     head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+    for relative, data in (('.veldo/control_relay.py', source.encode()),
+                           ('scripts/fixtures/relay_exchange.py', fixture_bytes)):
+        assert subprocess.check_output(['git', 'show', head + ':' + relative], cwd=ROOT) == data, relative
     summary = dict(input_commit=head, fixture_version=fixture.VERSION, results=[])
     for criterion, row in fixture.ROWS.items():
         changed = fixture.mutate(source, criterion)
@@ -32,6 +36,11 @@ def main():
             fromfile='a/.veldo/control_relay.py', tofile='b/.veldo/control_relay.py')))
         for color, code in (('red', changed), ('green', source)):
             result = fixture.qualify(code, criterion)
+            unchanged = (path.read_bytes() == fixture_bytes
+                         and (ROOT / '.veldo/control_relay.py').read_text() == source
+                         and (ROOT / 'engine/.veldo/control_relay.py').read_text() == source)
+            result['valid'] = result['valid'] and unchanged
+            result['inputs_unchanged'] = unchanged
             result['input_commit'] = head
             receipt = criterion + '-' + color + '.json.gz'
             (output / receipt).write_bytes(gzip.compress(json.dumps(result).encode(), mtime=0))

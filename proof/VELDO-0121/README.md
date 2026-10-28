@@ -43,7 +43,8 @@ source mutation in memory, executes the entire criterion, requires the named row
 false with a concrete behavioral witness, then discards the mutation and executes
 the original source requiring the same row true. Crashes, watchdog expirations,
 missing rows and incomplete schedules invalidate the drive. Mutations never modify
-the working production files. `results/AC*.diff` retains the exact applied diffs;
+the working production files. The driver verifies committed inputs before testing
+and refuses if the implementation or fixture changes during the run. `results/AC*.diff` retains the exact applied diffs;
 `results/summary.json` retains each verdict and its first falsifier witness.
 The full receipts are lossless gzip JSON in `results/AC*-red.json.gz` and
 `results/AC*-green.json.gz`, readable with Python's `gzip` and `json` modules.
@@ -71,3 +72,8 @@ no owner decision or spec contradiction. No protected path was touched.
 
 Independent review, the later batch gate and landing are still separate steps.
 These ticket observations make no claim that those steps ran.
+
+The `earlier-attempt/` directory retains the first mutation run, excluded from final
+qualification because it began on ba3bc5f5 while the final peer-byte guard was being
+added. Receipt validation caught that stale fixture. The final run uses frozen
+committed inputs and adds explicit input-stability checks.
