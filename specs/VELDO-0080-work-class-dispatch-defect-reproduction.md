@@ -192,3 +192,7 @@ acceptance_criteria:
       Lower severity on an unreproduced security defect before grooming;
       defects/severity-preserved must detect the downgrade.
 ```
+
+## Footprint addition, 2026-10-28
+
+The footprint additions made while building this ticket were confirmed as needed by the independent review (proof/VELDO-0080/review-2026-10-28.md) and are approved under the owner's standing rule, Telegram 37437 and 37438: a builder may add reviewer-confirmed files to a ticket's footprint; protected paths still need the owner's explicit approval.

@@ -99,3 +99,7 @@ This is planned work, not implementation evidence. All named rows below this con
 relay modules are included in the footprint. The three older transport suites
 copy the new registry dependency into their isolated installations. See
 `proof/VELDO-0112/OPEN.md` for the main-code reconciliation and qualification scope.
+
+## Footprint addition, 2026-10-28
+
+The footprint additions made while building this ticket were confirmed as needed by the independent review (proof/VELDO-0112/review-2026-10-28.md) and are approved under the owner's standing rule, Telegram 37437 and 37438: a builder may add reviewer-confirmed files to a ticket's footprint; protected paths still need the owner's explicit approval.
