@@ -9,13 +9,14 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0208]
 placement: [enforcement]
-protected_paths: ["scripts/verify.sh", "engine/scripts/verify.sh", ".veldo/policy.yaml", ".veldo/reuse_evidence.py", "engine/.veldo/reuse_evidence.py", "scripts/gate_host.py", "engine/scripts/gate_host.py", "scripts/gate_host.json"]
+protected_paths: ["scripts/verify.sh", "engine/scripts/verify.sh", ".veldo/policy.yaml", ".veldo/reuse_evidence.py", "engine/.veldo/reuse_evidence.py", "scripts/gate_host.py", "engine/scripts/gate_host.py", "scripts/gate_host.json", "scripts/gate_unconfined.json"]
 footprint:
   - scripts/verify.sh
   - engine/scripts/verify.sh
   - scripts/gate_host.py
   - engine/scripts/gate_host.py
   - scripts/gate_host.json
+  - scripts/gate_unconfined.json
   - .veldo/policy.yaml
   - .veldo/reuse_evidence.py
   - engine/.veldo/reuse_evidence.py
@@ -143,3 +144,11 @@ confined unit leg and in a confined mutation worker it is red by name. It needs 
 protected scripts/gate_unconfined.json:
 `{"suite": "113_veldo_0220_gate_host", "rows": "userbus", "reason": "systemd user manager: the gate's own scope is created through the user manager and inspected under /sys/fs/cgroup"}`.
 Until then the canonical gate is red on that row.
+
+## Amendment, 2026-10-28: the gate's own scope check runs outside the gate sandbox
+
+The host-scope rows of suite 113 create and inspect the gate's own scope through the systemd user manager,
+which the canonical gate's sandbox blocks. The footprint and protected paths add scripts/gate_unconfined.json,
+and one entry (suite 113_veldo_0220_gate_host, rows userbus) lets those rows reach the user bus. Owner
+approval: Telegram 37440 item 2 and 37442 ("all 3").
+
