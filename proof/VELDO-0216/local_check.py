@@ -30,7 +30,7 @@ def main():
              'proof/VELDO-0216/qualification.py', 'proof/VELDO-0216/serial-baseline.json',
              'proof/VELDO-0216/kernel_scope_check.py', 'proof/VELDO-0216/local_check.py']
     paths += ['engine/' + p for p in ('scripts/gate_schedule.py','scripts/gate_legs.py','scripts/check_gate_mutations.py')]
-    paths += ['.veldo/policy.yaml','scripts/suites/manifest.json','scripts/suites/requires.json']
+    paths += ['.gitignore','.veldo/policy.yaml','scripts/suites/manifest.json','scripts/suites/requires.json']
     paths += [prefix + p for prefix in ('','engine/') for p in ('.veldo/reuse_evidence.py','.veldo/init_scaffold.py')]
     evidence = {'schema': 'veldo.local-checks/v1', 'spec': 'VELDO-0216',
                 'head': subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),

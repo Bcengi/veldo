@@ -72,7 +72,9 @@ The graph is optional and repository-specific, like the unconfined declaration.
 Its absence preserves the serial catalog loop. The scheduler ships to adopters;
 the repository graph does not. Both scheduler and graph enter authority identity,
 with an absent graph represented explicitly. Graph digest is in the stamp, gate
-event, scheduler receipt and scheduled mutation receipt.
+event, scheduler receipt and scheduled mutation receipt. The scheduler receipt is
+published atomically, replacing a sink symlink without following it. The repository
+ignores this generated receipt so it does not add a dirty input path to the stamp.
 
 ## Protected surface
 
@@ -93,3 +95,7 @@ For the later batch, feed a full capture to qualification.py as documented in it
 module header. That checker requires the qualification host, exact candidate, a
 green force-fresh stamp/event, matching graph identities, all node measurements,
 stable inputs, ledger peaks within capacities and full elapsed time at most 6000s.
+
+Earlier red-green files are retained as history. Only red-green.json is the final
+source-bound run; red-green-source-changed.json explicitly failed its stability
+check during a later correction and is not final evidence.

@@ -11,6 +11,7 @@ depends_on: [VELDO-0208, VELDO-0214, VELDO-0215, VELDO-0220]
 placement: [enforcement]
 protected_paths: ["scripts/verify.sh", "engine/scripts/verify.sh", "scripts/gate_legs.py", "engine/scripts/gate_legs.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", ".veldo/policy.yaml", ".veldo/reuse_evidence.py", "engine/.veldo/reuse_evidence.py", "scripts/gate_schedule.py", "engine/scripts/gate_schedule.py", "scripts/gate_graph.json"]
 footprint:
+  - .gitignore
   - scripts/verify.sh
   - engine/scripts/verify.sh
   - scripts/gate_schedule.py
