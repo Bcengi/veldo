@@ -1,0 +1,112 @@
+{
+  "schema": "veldo.macos_native_observations/v1",
+  "kind": "native",
+  "facts": {
+    "platform": "darwin",
+    "host": "dmitrys-mini.lan",
+    "os_version": "26.5.1",
+    "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+    "tools": true
+  },
+  "modules": "/Users/dmitry/veldo-0124-check/round2-2026-10-28/.veldo",
+  "rows": [
+    {
+      "row": "native/qualified-claude_code/descendant",
+      "status": "blocked",
+      "admitted_by_supervisor": true,
+      "auth_status": {
+        "rc": 1,
+        "logged_in": false,
+        "auth_method": "none",
+        "api_provider": "firstParty"
+      },
+      "reason": "Mac claude-1 account is not logged in under Keychain-denied Seatbelt (claude auth status exited 1 with loggedIn=false, authMethod=none); Mac Claude setup token requires CLAUDE_CODE_OAUTH_TOKEN, which project_runner_macos_control.CREDENTIALS strips and project_runner_macos_profile.claude_settings refuses as unsupported_configuration:claude_settings_source (VELDO-0147 territory).",
+      "reservation": "invocation/dispatch/veldo-0124-qual/claude_code-descendant"
+    },
+    {
+      "row": "native/qualified-codex/descendant",
+      "status": "passed",
+      "elapsed": 10.097,
+      "process": {
+        "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+        "host": "dmitrys-mini.lan",
+        "pid": 90687,
+        "platform": "darwin",
+        "start": "Wed Oct 28 18:07:35 2026"
+      },
+      "worker": {
+        "pgid": 90692,
+        "process": {
+          "boot_id": "{ sec = 1791866372, usec = 996311 } Tue Oct 13 04:39:32 2026",
+          "host": "dmitrys-mini.lan",
+          "pid": 90692,
+          "platform": "darwin",
+          "start": "Wed Oct 28 18:07:35 2026"
+        }
+      },
+      "coalition": 20494,
+      "steps": [
+        {
+          "stage": "cooperative",
+          "monotonic": 1344509.079603875
+        },
+        {
+          "stage": "terminate",
+          "monotonic": 1344509.105524416
+        },
+        {
+          "stage": "kill",
+          "monotonic": 1344512.108828291
+        }
+      ],
+      "cause": "requested",
+      "termination": {
+        "returncode": -15,
+        "signal": 15,
+        "output_digest": "sha256:d67e973684dec30493f570fbc871e2a4588c6f78a064add467d0b31632cad29e",
+        "output_bytes": 745,
+        "deadline_stop": false
+      },
+      "outcome": "exited",
+      "reservation": "invocation/dispatch/veldo-0124-qual/codex-descendant",
+      "accounting": {
+        "turns": 0,
+        "tokens": 0,
+        "final": {},
+        "limit": null,
+        "receipt_digests": [],
+        "wall_seconds": 10.097,
+        "output_bytes": 745
+      },
+      "signal_ignoring_child": {
+        "pid": 90732,
+        "ppid": 90692,
+        "pgid": 90732,
+        "coalition": 20494,
+        "ignored": [
+          15
+        ],
+        "ready": true
+      },
+      "stop_elapsed": 3.137,
+      "before_release": {
+        "terminated": true,
+        "cleaned": true,
+        "outcome_known": true,
+        "observer": "macos_supervisor"
+      },
+      "released": true,
+      "live_members_before_release": [],
+      "os_exit_seen": true
+    }
+  ],
+  "qualification_created": false,
+  "live_model_calls": 1,
+  "pool_status": {
+    "accepted": 1,
+    "refused": 0,
+    "pending": 0,
+    "stopped": 0
+  },
+  "status": "blocked"
+}

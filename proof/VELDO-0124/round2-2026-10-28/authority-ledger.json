@@ -1,0 +1,114 @@
+{
+  "account_balances": {
+    "claude-1": {
+      "capacity": 1,
+      "invocations": 0,
+      "messages": 0,
+      "tokens": 0,
+      "wall_seconds": 0
+    },
+    "codex-1": {
+      "capacity": 1,
+      "invocations": 1,
+      "messages": 0,
+      "tokens": 0,
+      "wall_seconds": 10.097
+    }
+  },
+  "engine_identities": {
+    "claude_code": {
+      "argv": [
+        "/Users/dmitry/.local/share/claude/versions/2.1.303",
+        "--print",
+        "--output-format",
+        "stream-json",
+        "--verbose",
+        "--setting-sources=",
+        "--strict-mcp-config",
+        "--disable-slash-commands",
+        "--mcp-config",
+        "{\"mcpServers\":{}}",
+        "--settings",
+        "{\"sandbox\":{\"enabled\":false},\"disableAllHooks\":true}",
+        "--permission-mode",
+        "bypassPermissions",
+        "Read task.txt in the current directory and execute its exact instruction immediately."
+      ],
+      "binary_digest": "sha256:d2da3b003dc08b88b7230469014fe3e1dc6fe94bc8f648e89b34175d30269370",
+      "configuration_digest": "sha256:349a7facaae7016ba5eb80495a6cc53c1a96608bb45725d3d99cfb33dafc0b59",
+      "version": "2.1.303"
+    },
+    "codex": {
+      "argv": [
+        "/Users/dmitry/.local/share/veldo-engines/codex-0.154.0/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/bin/codex",
+        "exec",
+        "--json",
+        "-c",
+        "check_for_update_on_startup=false",
+        "--ignore-user-config",
+        "--ignore-rules",
+        "--disable",
+        "apps",
+        "--ephemeral",
+        "-c",
+        "project_doc_max_bytes=0",
+        "-c",
+        "forced_login_method=\"chatgpt\"",
+        "-c",
+        "cli_auth_credentials_store=\"file\"",
+        "-c",
+        "skills.bundled.enabled=false",
+        "-c",
+        "skills.include_instructions=false",
+        "-c",
+        "approval_policy=\"never\"",
+        "--sandbox",
+        "danger-full-access",
+        "Read task.txt in the current directory and execute its exact instruction immediately."
+      ],
+      "binary_digest": "sha256:4f85982624b3898c8991cb80c0981b2aa71070e3537046c9a95950318a95afcc",
+      "configuration_digest": "sha256:8e8e406ef44ae0e02371a0427b4fe3159a1c97b753f5a0bad29f6cae30771d75",
+      "version": "0.154.0"
+    }
+  },
+  "host": "dmitrys-mini.lan",
+  "live_model_calls": 1,
+  "os_version": "26.5.1",
+  "probes": {
+    "claude_code/descendant": {
+      "charge": {
+        "invocations": 0,
+        "messages": 0,
+        "tokens": 0,
+        "wall_seconds": 0
+      },
+      "dispatch_id": "dispatch/veldo-0124-qual/claude_code-descendant",
+      "dispatch_state": "accepted",
+      "invocation": "invocation/dispatch/veldo-0124-qual/claude_code-descendant",
+      "invocation_state": "settled",
+      "observed": {},
+      "outcome": "not_executed",
+      "stop_required": false
+    },
+    "codex/descendant": {
+      "charge": {
+        "invocations": 1,
+        "wall_seconds": 10.097
+      },
+      "dispatch_id": "dispatch/veldo-0124-qual/codex-descendant",
+      "dispatch_state": "exited",
+      "invocation": "invocation/dispatch/veldo-0124-qual/codex-descendant",
+      "invocation_state": "unknown",
+      "observed": {
+        "invocations": 1,
+        "wall_seconds": 10.097
+      },
+      "outcome": "cancelled",
+      "stop_required": false
+    }
+  },
+  "profile_digest": "sha256:9a332afebef8e9a7862013e44120aef6595acf57f6e27110a9c16b6f01673869",
+  "qualified_engines_exit": 2,
+  "schema": "veldo.macos_qualification_authority_ledger/v1",
+  "stray_launchd_jobs_after_cleanup": ""
+}
