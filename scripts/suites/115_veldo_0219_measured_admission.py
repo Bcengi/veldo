@@ -178,6 +178,27 @@ def _v219_checks():
                     return types.SimpleNamespace(cleanup=lambda *a: {})
                 return loader(path)
             error = None
+            if fault == 'lifecycle':
+                admission.opened = []
+                class Meter:
+                    peak = 1024
+                    fd = None
+                    def open_join(self):
+                        return os.open('/dev/null', os.O_WRONLY)
+                    def open_lifecycle(self):
+                        admission.opened.append(True)
+                        self.fd = os.open('/dev/null', os.O_WRONLY)
+                        return self.fd
+                    def launched(self):
+                        os.close(self.fd)
+                        self.fd = None
+                    def sample(self, *args):
+                        return dict(cpu_seconds=1, peak_anon_bytes=1024)
+                    def close(self):
+                        if self.fd is not None:
+                            os.close(self.fd)
+                            self.fd = None
+                admission.meter_factory = lambda name: Meter()
             if fault == 'meter':
                 def fail(name):
                     raise PermissionError('no delegation')
@@ -213,6 +234,11 @@ def _v219_checks():
         workers, ledger, done, error, _ = exercise({'bad': jobs['j0']}, fault='meter')
         row('cgroup-launch-refused', error == 'worker_launch_error' and not workers.active
             and set(ledger.held) == {'root'} and not workers.resources.held)
+
+        no_manager = exercise({'plain': jobs['j0']}, fault='lifecycle')
+        with_manager = exercise({'managed': dict(jobs['j0'], case=dict(case, suite='manager.py'))}, fault='lifecycle')
+        row('lifecycle-manager-admission', no_manager[3] is None and with_manager[3] is None
+            and no_manager[4].opened == [] and with_manager[4].opened == [True])
 
         restricted = {}
         for n in range(28):
@@ -295,6 +321,8 @@ def _v219_checks():
                 peak = 2**28
                 def open_join(self):
                     return os.open('/dev/null', os.O_WRONLY)
+                def open_lifecycle(self):
+                    raise AssertionError('a worker without a manager claim cannot retain units')
                 def sample(self, *a):
                     return dict(cpu_seconds=4, peak_anon_bytes=self.peak)
                 def close(self):

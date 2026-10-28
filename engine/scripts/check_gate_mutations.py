@@ -930,7 +930,8 @@ class Workers:
                             meter = self.admission.meter_factory(str(self.invocations))
                             self.meters[name] = meter
                             meter_fd = meter.open_join()
-                            if hasattr(meter, 'open_lifecycle'):
+                            if (hasattr(meter, 'open_lifecycle')
+                                    and self.resources.demand(job).get('systemd_user_manager', 0)):
                                 lifecycle_fd = meter.open_lifecycle()
                         ledger = os.open(self.ledgers[name], os.O_WRONLY | os.O_CREAT | os.O_EXCL
                                          | os.O_APPEND | os.O_CLOEXEC, 0o600)

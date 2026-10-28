@@ -14,7 +14,8 @@ AC4 amendment. Git merged cleanly and retained both branches' work.
 The scheduler's authority channel now has a one-time handoff. It atomically
 shrinks the mutation root to declared coordinator overhead, drops its aggregate
 manager exclusion and preserves the root's reserved floor and host lock claim.
-Worker admission cannot precede the handoff. The authority supplies capacities,
+Worker admission cannot precede the handoff. Unit lifecycle channels are handed
+only to workers whose admitted manifest demand includes manager use. The authority supplies capacities,
 remaining worker floor, actual gate totals and the refusing resource. The driver
 records all resources encountered while waiting. A process really runs through
 the channel check, followed by real CPU, memory and manager refusals and grants.
@@ -52,6 +53,7 @@ still retaining their CPU totals and a memory bound above the allocated 32 MiB.
 | Cross-run CPU demand | admission-red.json, cpu-per-run false | admission-final-green.json and suite 115 cpu-per-run |
 | Refusal resource and gate totals | resource-red-green.json, old implementation false | resource-red-green.json true, plus CPU, memory and manager checks over the real channel |
 | Short units and repeated cgroup paths | lifecycle-red.json and lifecycle-falsifier-red.json | lifecycle-green.json, two real short units across a slice restart and a real installed service through the ownership channel |
+| Lifecycle requires manager admission | lifecycle-manager-red.log | lifecycle-manager-green.log, including both manager and non-manager workers |
 | Batch qualification contract | open-red.json | open-green.json |
 
 Suite 115's lifecycle row uses a real ownership socket and a joining worker
@@ -66,6 +68,9 @@ baseline and no-op mode, then suite 115 and the native lifecycle check.
 Its invocation takes the blocking owner host lock. Test fixtures never acquire
 that real lock. Single-file development checks are also retained here. Partial
 selftest success has exit status 2 by repository convention.
+
+falsifiers-before-manager-guard.json retains the earlier passing controls before
+the final lifecycle-channel restriction. The later falsifiers.json supersedes it.
 
 falsifiers.json binds the checks to HEAD and exact source digests. A later
 proof-only commit can contain that receipt without changing those source bytes.
