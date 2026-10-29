@@ -38,7 +38,7 @@ def _v188_suite():
             'staff/one-mapping', 'close/canceled', 'close/completed', 'close/removed', 'close/paused-kept',
             'observe/lines', 'lines/journal-only', 'close/guard', 'lines/paused-restart',
             'staff/configured-refusal', 'staff/missing-team', 'close/configured', 'lines/receiver-change',
-            'lines/at-start', 'lines/new-project', 'lines/adopted-project', 'lines/restart')
+            'lines/at-start', 'lines/new-project', 'lines/adopted-project', 'lines/restart', 'format/fake-lines')
     emitted, raised = set(), []
 
     def check(label, parts):
@@ -76,6 +76,10 @@ def _v188_suite():
 
     helper = load('v188_fixture', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/fixture.py')
     formats_f = load('v188_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    # VELDO-0172: this suite builds a fake engine, so it checks the lines that fake printed against the binary's
+    # table and, at its teardown, drives the same executable once through the shared conform_fake read-back.
+    conform_formats = load('v188_compare_formats', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    formats = json.loads((ROOT / 'proof/VELDO-0062/cli-formats.json').read_text())
     GIH = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))
     HOST = 'fixture-host'
     AUTHOR = 'Fixture Identity <fixture@example.invalid>'
@@ -111,9 +115,13 @@ def failed(kind, value, trace):
     Path(sys.argv[2], 'error-%d.txt' % os.getpid()).write_text(''.join(traceback.format_exception(kind, value, trace)))
 sys.excepthook = failed
 def emit(event):
-    print(json.dumps(complete_event(event)), flush=True)
+    event = complete_event(event)
+    with Path(sys.argv[2], 'events.jsonl').open('a') as stream:
+        stream.write(json.dumps(event) + '\\n')
+    print(json.dumps(event), flush=True)
 if '--input-format' in sys.argv:
     opening = json.loads(sys.stdin.readline())
+    assert opening['type'] == 'control_request'
     emit({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': opening['request_id'],
           'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})
     packet = json.loads(json.loads(sys.stdin.readline())['message']['content'])
@@ -725,6 +733,37 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'buil
                         with contextlib.suppress(Exception):
                             launch_.stop('suite end')
                             launch_.wait(10)
+            # VELDO-0172: every line the fake printed during the suite conforms to the binary's own table.
+            problems, printed = [], set()
+            if (out / 'events.jsonl').is_file():
+                for raw in (out / 'events.jsonl').read_text().splitlines():
+                    event = json.loads(raw)
+                    name = conform_formats.event_name(event)
+                    schema = formats['claude_code']['events'].get(name)
+                    problems += conform_formats.conform(event, schema, name) if schema else [name + ':table:no-event']
+                    printed.add(name)
+            check('format/fake-lines', [('the fake engine emitted conforming assistant and result events [%s; %s]'
+                  % (sorted(printed), problems[:4]), not problems and {'assistant', 'result/success'} <= printed)])
+
+            def fake_engine(engine):
+                return fake.read_text() if engine == 'claude' else ''
+
+            def readback_args(engine, directory):
+                # The fake commits in the workspace its first argument names and writes beside its second.
+                workspace_ = directory / 'readback-workspace'
+                workspace_.mkdir()
+                git(workspace_, 'init', '-q')
+                git(workspace_, 'config', 'user.name', 'Readback')
+                git(workspace_, 'config', 'user.email', 'readback@example.invalid')
+                git(workspace_, 'commit', '-q', '--allow-empty', '-m', 'readback seed')
+                (directory / 'readback-out').mkdir()
+                return [str(workspace_), str(directory / 'readback-out'), 'claude_code']
+
+            L = load('v188_format_launch', mods / 'control_launch.py')
+            fake_capture = conform_formats.conform_fake(locals(), '0188_project_lines')
+            for description in conform_formats.describe('0188_project_lines', *fake_capture):
+                print(description)
+            expect('VELDO-0172 fake/capture:0188_project_lines', bool(fake_capture[1]) and not fake_capture[0])
     with region('lines/at-start', 'lines/new-project', 'lines/adopted-project', 'lines/restart'):
         load('v188_served', ROOT / 'proof/VELDO-0188/round2/served_scenario.py').run(ROOT, PRODUCTION, check)
     for label in ROWS:
