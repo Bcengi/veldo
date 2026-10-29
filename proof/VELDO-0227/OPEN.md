@@ -1,5 +1,26 @@
 # VELDO-0227: open items
 
+## A. For the owner: suite 117 on the unconfined list (protected path), so the coordinator can run its mutants
+
+The four registered mutants of finding 227 (`ui227-*` in scripts/check_teeth_mutations.py) could not be proven by
+the mutation coordinator (`python3 scripts/check_gate_mutations.py --finding 227`): its confined leg ran every
+case's unmutated baseline red, because factory setup refuses `unavailable_service:profile:user_manager` inside the
+gate's confinement (receipt: `coordinator-confined-baseline-refused.log`). Suites 85, 95 and 106 run the same
+VELDO-0171 fixture and are on the owner's unconfined list for exactly this reason. That list,
+`scripts/gate_unconfined.json`, is a protected path (.veldo/policy.yaml, floor high), so it is NOT edited here.
+Proposed entry, for the owner to add:
+
+```json
+ {
+  "suite": "117_veldo_0227_ui_location",
+  "reason": "systemd user manager: factory setup installs the authority and API user services on the host VELDO-0171's fixture installs, and refuses a profile without the user manager"
+ }
+```
+
+Until then the falsifiers are proven by the teeth driver's own worker (`--worker CASE --mutant PATH`, the same
+worker the coordinator starts, with the driver's own materialize) outside the confinement:
+`proof/VELDO-0227/falsifiers.py`, receipt `falsifiers.json`. Once the entry lands, rerun the coordinator.
+
 ## 0. A footprint addition for the reviewer to confirm: suite 106 (VELDO-0185), one row
 
 `scripts/suites/106_veldo_0185_dispatch_setup.py` row `rerun/over-earlier-host` re-runs setup over a host the
