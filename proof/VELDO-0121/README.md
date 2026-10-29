@@ -8,8 +8,8 @@ were read. No outside project code or package was used; all new code uses Python
 standard library.
 
 The two byte-identical relay copies set one monotonic deadline before connect and
-use its remaining time for each send, write-half shutdown and receive. Short sends
-advance the actual sent count; zero progress refuses. The final EOF and assembled
+use its remaining time for each 64 KiB chunked sendall, write-half shutdown and
+receive. A sendall that makes no progress times out within the budget and refuses. The final EOF and assembled
 response must still fit the budget. Response bytes stay buffered until successful
 completion, so errors, timeouts and size violations cannot leak partial output.
 

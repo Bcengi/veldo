@@ -1,4 +1,4 @@
-# Exchange model, version relay-exchange-v1
+# Exchange model, version relay-exchange-v2
 
 The input is an opaque request identity (SHA-256 of its raw bytes), request length,
 response length, ordered send and receive chunk widths, and at most one selected
@@ -9,7 +9,7 @@ application authority decision and has no replay edge.
 | :--- | :--- | :--- | :--- |
 | Input | `read_all`, before transport begins | Connect, if length at most 1 MiB | Request over limit: exit 4, zero stdout |
 | Connect | `conn.connect` | Send(0), or Shutdown for empty request | OSError or timeout: exit 3, zero stdout, endpoint diagnostic |
-| Send(s) | `conn.send`, at most 65536 bytes per call | Send(s + n), or Shutdown when all bytes sent | OSError, timeout, or zero send: exit 3, zero stdout, endpoint diagnostic |
+| Send(s) | kernel send inside `conn.sendall`, one sendall per 65536-byte request chunk | Send(s + n), or Shutdown when all bytes sent | OSError, timeout, or zero progress until the sendall timeout: exit 3, zero stdout, endpoint diagnostic |
 | Shutdown | `conn.shutdown(SHUT_WR)` | Receive(0) | OSError or timeout: exit 3, zero stdout, endpoint diagnostic |
 | Receive(r) | `conn.recv(65536)` | Receive(r + n), while total at most 1 MiB | OSError or timeout: exit 3, zero stdout, endpoint diagnostic; over limit: exit 4, zero stdout |
 | Receive(r), EOF | Same recv returns empty bytes | Return exactly the accumulated bytes, exit 0 | Expired overall deadline: exit 3, zero stdout |
@@ -54,7 +54,7 @@ claim to enumerate every errno on every OS or every possible network schedule.
 `fault_schedules` generates the legal cells without reading production branches.
 Every generated cell must fire, the complete phase/outcome set must equal the table,
 and expected and executed cell counts must match. An AST reconciliation checks that
-the production `conn` calls are exactly connect, send, shutdown, recv, settimeout and
+the production `conn` calls are exactly connect, sendall, shutdown, recv, settimeout and
 close. Additional transport operations require model review; a changed call set
 fails the check. The runtime barriers execute actual AF_UNIX operations. They cap
 partial sends and receives, pump the peer synchronously, and substitute only the
@@ -101,3 +101,16 @@ stdout, return code, elapsed time and connection/request counts. Decode stdout w
 `zlib.decompress(base64.b64decode(record['stdout']['zlib_base64']))`.
 The enclosing receipt also binds the fixture digest and reports expected/executed
 counts, incomplete schedules and invalid drives.
+
+## Version 2: chunked sendall
+
+The relay sends each 64 KiB request chunk with `conn.sendall` after setting the socket
+timeout to the remaining budget. Since Python 3.5 that timeout bounds the whole
+sendall call, so the single deadline still bounds the write. The fixture's sendall
+runs the same barriered kernel sends at the same byte offsets as version 1, refuses
+a further send once its armed timeout has elapsed, and models zero progress as the
+sendall timeout expiring, because a sendall never returns a short count. The fault
+domain and cell counts are unchanged. The fixture loads the relay with `__file__`
+set to the installed `.veldo/control_relay.py`, and the real-time child gets any
+installed `control_client_registry.py` sibling, so a prelude resolving siblings from
+`__file__` works with and without that prelude.
