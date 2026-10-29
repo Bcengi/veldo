@@ -60,3 +60,7 @@ is deliberately not a canonical gate success.
 
 No canonical verify command, push or merge was performed. Earlier records in
 PROOF.md and local_checks.json describe round 1 and are retained as history.
+
+manifest.json and PROOF.md are the round 1 record at commit 8030ef4d and are superseded by
+round3/README.md (suite 113 lock rows, suite 114 scope rows) and the independent fix-check of
+round 3 (SOUND, 2026-10-28).

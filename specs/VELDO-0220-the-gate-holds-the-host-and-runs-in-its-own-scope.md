@@ -127,6 +127,8 @@ What was built: scripts/gate_host.py (canon engine/scripts/gate_host.py, install
 scripts/gate_host.json; the hook in both verify.sh copies; NOT STARTED as not run in the executor,
 the lander and the proof store; suite 113_veldo_0220_gate_host with four registered mutants
 (host220-ignores-lock, host220-lock-inherited, host220-no-scope, host220-not-started-is-red).
+(Round 1 layout; the amendment below moves the scope rows and their mutants to suite
+114_veldo_0220_gate_scope.)
 Decisions the spec left open:
 
 - The configuration's scope is optional, so a lock-only configuration (the suite's lock rows, which
@@ -153,7 +155,8 @@ the gate's own scope through the systemd user manager. The canonical gate's sand
 that manager. The footprint names both suites and scripts/gate_unconfined.json; the protected
 paths include scripts/gate_unconfined.json. Its single approved entry now names suite
 114_veldo_0220_gate_scope whole, replacing the row-scoped suite 113 entry. Owner approval:
-Telegram 37440 item 2 and 37442 ("all 3"), with this split directed in round 3.
+Telegram 37440 item 2 and 37442 ("all 3") approved the row-scoped suite 113 entry; the
+whole-suite suite 114 entry that replaces it was approved in Telegram 37469 and 37470 ("Yes").
 
 Suite 113_veldo_0220_gate_host keeps only the lock and not-started rows, all confined. Suite 114
 is registered in the manifest and requires closure, and the three scope mutants target it:

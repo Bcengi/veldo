@@ -1,8 +1,8 @@
 # VELDO-0220 round 3 status
 
-The owner approved the single scripts/gate_unconfined.json entry in Telegram
-37440 item 2 and 37442 ("all 3"). Round 3 directs that same entry to name the new
-suite 114_veldo_0220_gate_scope whole. It replaces suite 113's userbus row entry;
+The owner approved the row-scoped suite 113 entry in scripts/gate_unconfined.json in
+Telegram 37440 item 2 and 37442 ("all 3"), and the whole-suite entry for the new suite
+114_veldo_0220_gate_scope in Telegram 37469 and 37470 ("Yes"). It replaces suite 113's userbus row entry;
 no additional unconfined entry is added. The spec's footprint and amendment
 record the split and approval.
 
