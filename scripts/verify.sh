@@ -12,6 +12,9 @@
 set -u
 # The script and all security helpers come from the authority installation.
 VELDO_AUTHORITY=$(cd "$(dirname "$0")/.." && pwd -P)
+# How this gate was started, kept for the host holder (VELDO-0220), which runs it again inside
+# its lock and scope from where it was started.
+VELDO_SELF="$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"; VELDO_START=$(pwd -P); VELDO_ARGV=("$@")
 git() {
   python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --root "$(pwd -P)" -- "$@"
 }
@@ -115,6 +118,26 @@ if [ -e .git ] || [ -L .git ]; then
   export VELDO_EXPECTED_GIT_COMMON
   if ! python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --root "$(pwd -P)" --validate-only; then
     echo "GATE: RED (candidate Git boundary refused)"
+    exit 1
+  fi
+fi
+
+# THE HOST LOCK AND THE GATE'S OWN SCOPE (VELDO-0220). The authority's scripts/gate_host.json, when it
+# exists, names the lock every heavy run on this host serializes on and the scope the gate runs in.
+# Before the first check, a gate not yet running under its holder execs scripts/gate_host.py, which
+# takes the lock (or finds it held for this gate by its caller), runs in a delegated user scope of its
+# own and starts this script again inside them. A lock held by anyone else is GATE: NOT STARTED with
+# exit 75: no check runs, and no stamp and no event are written. With no file there is no lock and no
+# scope, as before; the host field below is then absent from the stamp and the event.
+VELDO_HOST_FIELD=""
+if [ -e "$VELDO_AUTHORITY/scripts/gate_host.json" ]; then
+  if _veldo_host=$(python3 -I -S "$VELDO_AUTHORITY/scripts/gate_host.py" --inside); then
+    VELDO_HOST_FIELD=",\"host\":$_veldo_host"
+  else
+    _veldo_root=$(pwd -P)
+    cd "$VELDO_START" && exec python3 -I -S "$VELDO_AUTHORITY/scripts/gate_host.py" --enter --root "$_veldo_root" \
+      -- "$VELDO_SELF" "${VELDO_ARGV[@]}"
+    echo "GATE: RED (the host holder could not be started)"
     exit 1
   fi
 fi
@@ -344,11 +367,12 @@ if [ -n "$VELDO_LEGS_EXPECTED" ]; then
     FAIL=1; STATUS=red; EVENT=gate.failed; UNCONFINED_FIELD=',"unconfined":null'
   fi
 fi
-EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d,%s%s}' \
-  "$EVENT" "$COMMIT" "$TS" "$RAN" "$REUSE_JSON" "$UNCONFINED_FIELD")
+EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d,%s%s%s}' \
+  "$EVENT" "$COMMIT" "$TS" "$RAN" "$REUSE_JSON" "$UNCONFINED_FIELD" "$VELDO_HOST_FIELD")
 veldo_write_stamp() {
-  printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s,%s%s}\n' \
-    "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" "$REUSE_JSON" "$UNCONFINED_FIELD" > "$1"
+  printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s,%s%s%s}\n' \
+    "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" "$REUSE_JSON" "$UNCONFINED_FIELD" \
+    "$VELDO_HOST_FIELD" > "$1"
 }
 if [ "$VELDO_OUT" = ".veldo" ]; then
   veldo_write_stamp .veldo/last_verify

@@ -9,13 +9,14 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0208]
 placement: [enforcement]
-protected_paths: ["scripts/verify.sh", "engine/scripts/verify.sh", ".veldo/policy.yaml", ".veldo/reuse_evidence.py", "engine/.veldo/reuse_evidence.py", "scripts/gate_host.py", "engine/scripts/gate_host.py", "scripts/gate_host.json"]
+protected_paths: ["scripts/verify.sh", "engine/scripts/verify.sh", ".veldo/policy.yaml", ".veldo/reuse_evidence.py", "engine/.veldo/reuse_evidence.py", "scripts/gate_host.py", "engine/scripts/gate_host.py", "scripts/gate_host.json", "scripts/gate_unconfined.json"]
 footprint:
   - scripts/verify.sh
   - engine/scripts/verify.sh
   - scripts/gate_host.py
   - engine/scripts/gate_host.py
   - scripts/gate_host.json
+  - scripts/gate_unconfined.json
   - .veldo/policy.yaml
   - .veldo/reuse_evidence.py
   - engine/.veldo/reuse_evidence.py
@@ -28,7 +29,8 @@ footprint:
   - .veldo/control_proof.py
   - engine/.veldo/control_proof.py
   - scripts/check_teeth_mutations.py
-  - scripts/suites/*_veldo_0220_*.py
+  - scripts/suites/113_veldo_0220_gate_host.py
+  - scripts/suites/114_veldo_0220_gate_scope.py
   - scripts/suites/manifest.json
   - scripts/suites/requires.json
   - specs/VELDO-0220-the-gate-holds-the-host-and-runs-in-its-own-scope.md
@@ -118,3 +120,47 @@ that ignore the lock.
 Normal use: the owner's runners and the lander start verify.sh on this host. Threat model: as in
 VELDO-0208. Out of review scope: lock files on network file systems, and a holder file someone edits
 by hand (it only changes the name printed).
+
+## Implementation record (2026-10-28)
+
+What was built: scripts/gate_host.py (canon engine/scripts/gate_host.py, installed with the gate) and
+scripts/gate_host.json; the hook in both verify.sh copies; NOT STARTED as not run in the executor,
+the lander and the proof store; suite 113_veldo_0220_gate_host with four registered mutants
+(host220-ignores-lock, host220-lock-inherited, host220-no-scope, host220-not-started-is-red).
+(Round 1 layout; the amendment below moves the scope rows and their mutants to suite
+114_veldo_0220_gate_scope.)
+Decisions the spec left open:
+
+- The configuration's scope is optional, so a lock-only configuration (the suite's lock rows, which
+  run inside the gate's confinement) takes the lock and makes no scope.
+- A lock held by one of the gate's own ancestors (the owner's `flock -x <lock> verify.sh` runner) is
+  that caller's hold for this gate: the gate starts, records held "caller", and still makes its scope.
+- A gate started inside a running gate (a suite's nested verify.sh) is recognized by the kernel's
+  answer, never by an environment variable alone: its /proc/self/cgroup beneath the gate scope its
+  holder named, or a live holder ancestor whose lock /proc/locks shows held.
+- .veldo/reuse_evidence.py is unchanged: adding gate_host.py to AUTHORITY_FILES would invalidate
+  every reuse record, and nothing here changes a mutation verdict.
+
+Original implementation limitation, resolved by the amendment below: the host-scope/own-scope row creates
+real scopes through the systemd user manager, which the gate's confinement refuses, so in the
+confined unit leg and in a confined mutation worker it is red by name. It needs one entry in the
+protected scripts/gate_unconfined.json:
+`{"suite": "113_veldo_0220_gate_host", "rows": "userbus", "reason": "systemd user manager: the gate's own scope is created through the user manager and inspected under /sys/fs/cgroup"}`.
+Until then the canonical gate is red on that row.
+
+## Amendment, 2026-10-28: the gate's own scope check runs outside the gate sandbox
+
+The host-scope rows now live in suite 114_veldo_0220_gate_scope, which creates and inspects
+the gate's own scope through the systemd user manager. The canonical gate's sandbox blocks
+that manager. The footprint names both suites and scripts/gate_unconfined.json; the protected
+paths include scripts/gate_unconfined.json. Its single approved entry now names suite
+114_veldo_0220_gate_scope whole, replacing the row-scoped suite 113 entry. Owner approval:
+Telegram 37440 item 2 and 37442 ("all 3") approved the row-scoped suite 113 entry; the
+whole-suite suite 114 entry that replaces it was approved in Telegram 37469 and 37470 ("Yes").
+
+Suite 113_veldo_0220_gate_host keeps only the lock and not-started rows, all confined. Suite 114
+is registered in the manifest and requires closure, and the three scope mutants target it:
+host220-no-scope, host220-no-scope-kill and host220-lock-not-retained. The other four mutants
+still target suite 113. Whole-suite registration lets the mutation coordinator admit every
+VELDO-0220 case while confining the lock and not-started cases. Targeted coordinator receipts
+and suite results are recorded under proof/VELDO-0220/round3/.

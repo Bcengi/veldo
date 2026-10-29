@@ -1560,6 +1560,27 @@
    ],
    "regions": "Generated transport failures, EOF and size boundaries, total deadline, no replay.",
    "requires_note": "Only ROOT and expect. Loads scripts/fixtures/relay_exchange.py; scratch AF_UNIX sockets and joined CLI children, real 30-second stalled and trickle exchanges. No host lock access inside fixtures."
+  },
+  {
+   "name": "113_veldo_0220_gate_host",
+   "file": "113_veldo_0220_gate_host.py",
+   "requires": [
+    "113_veldo_0220_gate_host"
+   ],
+   "regions": "The gate's host lock (VELDO-0220): NOT STARTED with exit 75 when another run holds the lock, release on every exit, and NOT STARTED recorded as not run by the executor, the lander and the proof store.",
+   "requires_note": "Only ROOT, expect and launcher_fds. Fixture authorities hold the real verify.sh and gate_host.py with stub stage commands and scratch locks; util-linux flock stands in for the core runner. The executor, lander and proof store run over a scratch Git repository and an installed fixture gate that exits 75 or 1. No systemd user manager."
+  },
+  {
+   "name": "114_veldo_0220_gate_scope",
+   "file": "114_veldo_0220_gate_scope.py",
+   "requires": [
+    "114_veldo_0220_gate_scope"
+   ],
+   "regions": "The gate's own delegated scope (VELDO-0220): stated limits, isolation, child cgroups and lock custody until every stage dies on kill, termination, normal completion and a red stage.",
+   "requires_note": "Only ROOT, expect and launcher_fds. Fixture authorities hold the real verify.sh and gate_host.py with stub stage commands and scratch locks. Creates and inspects real transient scopes through the systemd user manager; the whole suite is listed unconfined.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   }
  ],
  "resource_capacities": {

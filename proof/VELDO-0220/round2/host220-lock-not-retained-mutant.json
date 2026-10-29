@@ -1,0 +1,194 @@
+{
+  "case": "host220-lock-not-retained",
+  "head": "8304465ae4de0b629d5cc692d7fb74d7e3f58642",
+  "mode": "mutant",
+  "new_digest": "0309a29a2df670b52fbc065fddc153242666b5f70457d6d87665c85076bc893e",
+  "old_digest": "4346ed68d8a15364d98573e6a20cc66bcdd709f07f1c22713ebb90c464350236",
+  "result": {
+    "count": 30,
+    "failed_details": [
+      [
+        "VELDO-0220 host-lock/held-not-started",
+        "{\"other-gate\": true, \"core-flock\": true, \"free\": true, \"free-released\": false, \"waits\": true, \"caller-holds\": true, \"nested-holder-guard\": true}"
+      ],
+      [
+        "VELDO-0220 host-lock/released-on-exit",
+        "{\"killed\": false, \"terminated\": false, \"red\": true}"
+      ],
+      [
+        "VELDO-0220 host-scope/own-scope",
+        "{\"cases\": {\"outside\": true, \"inside-a-scope\": true, \"cleanup-killed\": false, \"cleanup-terminated\": false, \"cleanup-normal\": true, \"cleanup-red\": true}, \"seen\": {\"outside\": {\"pid\": 1761821, \"holder\": 1761740, \"chain\": [[1761821, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1761740-0e192522.scope/gate\"], [1761816, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1761740-0e192522.scope/gate\"], [1761786, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1761740-0e192522.scope/gate\"], [1761740, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1761740-0e192522.scope/gate\"]], \"scope\": \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1761740-0e192522.scope\", \"oom\": 900, \"keepers\": [1761756], \"memory_max\": \"17179869184\", \"subtree\": [\"cpu\", \"memory\", \"pids\"], \"procs\": {\"1761740\": \"gate\", \"1761786\": \"gate\", \"1761816\": \"gate\", \"1761821\": \"gate\"}, \"outsiders\": [], \"child\": true, \"lock_inherited\": false}, \"inside-a-scope\": {\"pid\": 1762032, \"holder\": 1761962, \"chain\": [[1762032, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1761962-a1974247.scope/gate\"], [1762029, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1761962-a1974247.scope/gate\"], [1762002, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1761962-a1974247.scope/gate\"], [1761962, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1761962-a1974247.scope/gate\"]], \"scope\": \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1761962-a1974247.scope\", \"oom\": 900, \"keepers\": [1761983], \"memory_max\": \"17179869184\", \"subtree\": [\"cpu\", \"memory\", \"pids\"], \"procs\": {\"1761962\": \"gate\", \"1762002\": \"gate\", \"1762029\": \"gate\", \"1762032\": \"gate\"}, \"outsiders\": [], \"child\": true, \"lock_inherited\": false}, \"cleanup-killed\": {\"pid\": 1762280, \"holder\": 1762182, \"chain\": [[1762280, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762182-9fb5a2a4.scope/gate\"], [1762269, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762182-9fb5a2a4.scope/gate\"], [1762248, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762182-9fb5a2a4.scope/gate\"], [1762182, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762182-9fb5a2a4.scope/gate\"]], \"scope\": \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762182-9fb5a2a4.scope\", \"oom\": 900, \"keepers\": [1762205], \"memory_max\": \"17179869184\", \"subtree\": [\"cpu\", \"memory\", \"pids\"], \"procs\": {\"1762182\": \"gate\", \"1762248\": \"gate\", \"1762269\": \"gate\", \"1762280\": \"gate\"}, \"outsiders\": [], \"child\": true, \"lock_inherited\": false, \"escaped\": 1762292, \"exit\": -9, \"out\": \"== gate host: this gate needs 1 cores and 1 GiB of memory (fixture)\\n== gate host: took lock /tmp/v220-4fxr0_8g/locks/.scope.lock after 0.0s\\n== gate host: running in scope veldo-gate-1762182-9fb5a2a4.scope (memory.max 16 GiB, oom_score_adj 900); gate processes in veldo-gate-1762182-9fb5a2a4.scope/gate\\n== lint\\n\"}, \"cleanup-terminated\": {\"pid\": 1762412, \"holder\": 1762334, \"chain\": [[1762412, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762334-f33b598b.scope/gate\"], [1762408, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762334-f33b598b.scope/gate\"], [1762388, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762334-f33b598b.scope/gate\"], [1762334, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762334-f33b598b.scope/gate\"]], \"scope\": \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762334-f33b598b.scope\", \"oom\": 900, \"keepers\": [1762354], \"memory_max\": \"17179869184\", \"subtree\": [\"cpu\", \"memory\", \"pids\"], \"procs\": {\"1762334\": \"gate\", \"1762388\": \"gate\", \"1762408\": \"gate\", \"1762412\": \"gate\"}, \"outsiders\": [], \"child\": true, \"lock_inherited\": false, \"escaped\": 1762416, \"exit\": 143, \"out\": \"== gate host: this gate needs 1 cores and 1 GiB of memory (fixture)\\n== gate host: took lock /tmp/v220-4fxr0_8g/locks/.scope.lock after 0.0s\\n== gate host: running in scope veldo-gate-1762334-f33b598b.scope (memory.max 16 GiB, oom_score_adj 900); gate processes in veldo-gate-1762334-f33b598b.scope/gate\\n== lint\\n\"}, \"cleanup-normal\": {\"pid\": 1762593, \"holder\": 1762433, \"chain\": [[1762593, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762433-212aee89.scope/gate\"], [1762581, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762433-212aee89.scope/gate\"], [1762548, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762433-212aee89.scope/gate\"], [1762433, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762433-212aee89.scope/gate\"]], \"scope\": \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762433-212aee89.scope\", \"oom\": 900, \"keepers\": [1762488], \"memory_max\": \"17179869184\", \"subtree\": [\"cpu\", \"memory\", \"pids\"], \"procs\": {\"1762433\": \"gate\", \"1762548\": \"gate\", \"1762581\": \"gate\", \"1762593\": \"gate\"}, \"outsiders\": [], \"child\": true, \"lock_inherited\": false, \"escaped\": 1762598, \"exit\": 0, \"out\": \"== gate host: this gate needs 1 cores and 1 GiB of memory (fixture)\\n== gate host: took lock /tmp/v220-4fxr0_8g/locks/.scope.lock after 0.0s\\n== gate host: running in scope veldo-gate-1762433-212aee89.scope (memory.max 16 GiB, oom_score_adj 900); gate processes in veldo-gate-1762433-212aee89.scope/gate\\n== lint\\n   lint: pass\\n== unit\\n   unit: pass\\n== integration\\n   integration: pass\\n== security\\n   security: pass\\n== generated\\n   generated: pass\\n== docs\\n   docs: pass\\n== packaging\\n   packaging: pass\\n== extra\\n   extra: pass\\n== mutation\\n   mutation: pass\\n== secret scan (built-in)\\n   secret scan: pass\\n== veldo contracts (built-in: fails closed if unavailable)\\n   contracts: pass\\n== shape gate (built-in: mechanizable architecture-contract rules; adoption safe, fails closed)\\n== review events (built-in: derived from the verdict artifacts; appends and reports, never judges)\\n\\ncatalog: 9 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared\\nGATE: GREEN (no-git)\\n\"}, \"cleanup-red\": {\"pid\": 1762994, \"holder\": 1762810, \"chain\": [[1762994, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762810-df76eb5c.scope/gate\"], [1762984, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762810-df76eb5c.scope/gate\"], [1762919, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762810-df76eb5c.scope/gate\"], [1762810, \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762810-df76eb5c.scope/gate\"]], \"scope\": \"/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-1762810-df76eb5c.scope\", \"oom\": 900, \"keepers\": [1762847], \"memory_max\": \"17179869184\", \"subtree\": [\"cpu\", \"memory\", \"pids\"], \"procs\": {\"1762810\": \"gate\", \"1762919\": \"gate\", \"1762984\": \"gate\", \"1762994\": \"gate\"}, \"outsiders\": [], \"child\": true, \"lock_inherited\": false, \"escaped\": 1763019, \"exit\": 1, \"out\": \"== gate host: this gate needs 1 cores and 1 GiB of memory (fixture)\\n== gate host: took lock /tmp/v220-4fxr0_8g/locks/.scope.lock after 0.0s\\n== gate host: running in scope veldo-gate-1762810-df76eb5c.scope (memory.max 16 GiB, oom_score_adj 900); gate processes in veldo-gate-1762810-df76eb5c.scope/gate\\n== lint\\n   lint: FAIL\\n== unit\\n   unit: pass\\n== integration\\n   integration: pass\\n== security\\n   security: pass\\n== generated\\n   generated: pass\\n== docs\\n   docs: pass\\n== packaging\\n   packaging: pass\\n== extra\\n   extra: pass\\n== mutation\\n   mutation: pass\\n== secret scan (built-in)\\n   secret scan: pass\\n== veldo contracts (built-in: fails closed if unavailable)\\n   contracts: pass\\n== shape gate (built-in: mechanizable architecture-contract rules; adoption safe, fails closed)\\n== review events (built-in: derived from the verdict artifacts; appends and reports, never judges)\\n\\ncatalog: 9 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared\\nGATE: RED (no-git)\\n\"}}}"
+      ]
+    ],
+    "failed_rows": [
+      "VELDO-0220 host-lock/held-not-started",
+      "VELDO-0220 host-lock/released-on-exit",
+      "VELDO-0220 host-scope/own-scope"
+    ],
+    "observations": [
+      [
+        "good spec accepted",
+        true
+      ],
+      [
+        "spec without criteria rejected",
+        true
+      ],
+      [
+        "unknown evidence kind rejected",
+        true
+      ],
+      [
+        "bad status rejected",
+        true
+      ],
+      [
+        "invented proof criterion rejected",
+        true
+      ],
+      [
+        "missing proof criterion rejected",
+        true
+      ],
+      [
+        "absent required evidence rejected",
+        true
+      ],
+      [
+        "passed-without-evidence rejected",
+        true
+      ],
+      [
+        "bad verdict value rejected",
+        true
+      ],
+      [
+        "good plan accepted",
+        true
+      ],
+      [
+        "plan dependency cycle rejected",
+        true
+      ],
+      [
+        "dangling dependency rejected",
+        true
+      ],
+      [
+        "unknown outcome ref rejected",
+        true
+      ],
+      [
+        "unknown feature ref rejected",
+        true
+      ],
+      [
+        "undeclared depends_on rejected",
+        true
+      ],
+      [
+        "ready without approval rejected",
+        true
+      ],
+      [
+        "decision without blocks rejected",
+        true
+      ],
+      [
+        "decision blocking unknown spec rejected",
+        true
+      ],
+      [
+        "duplicate work spec rejected",
+        true
+      ],
+      [
+        "bad release mode rejected",
+        true
+      ],
+      [
+        "mirror mismatch rejected",
+        true
+      ],
+      [
+        "correct mirror accepted",
+        true
+      ],
+      [
+        "spec binding to wrong plan rejected",
+        true
+      ],
+      [
+        "spec claiming missing work item rejected",
+        true
+      ],
+      [
+        "spec plan without work rejected",
+        true
+      ],
+      [
+        "correct spec binding accepted",
+        true
+      ],
+      [
+        "VELDO-0220 host-lock/held-not-started",
+        false
+      ],
+      [
+        "VELDO-0220 host-lock/released-on-exit",
+        false
+      ],
+      [
+        "VELDO-0220 host-scope/own-scope",
+        false
+      ],
+      [
+        "VELDO-0220 host-lock/not-started-not-red",
+        true
+      ]
+    ],
+    "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0220 host-lock/held-not-started",
+      "VELDO-0220 host-lock/released-on-exit",
+      "VELDO-0220 host-scope/own-scope",
+      "VELDO-0220 host-lock/not-started-not-red"
+    ],
+    "targets": {
+      "host-scope/own-scope": [
+        false
+      ]
+    }
+  },
+  "seconds": 7.25,
+  "sources": {
+    "scripts/check_teeth_mutations.py": "102866742e4418dd2d22232e82416db167053e0f4ca45676916dad8d82887cbb",
+    "scripts/gate_host.py": "4346ed68d8a15364d98573e6a20cc66bcdd709f07f1c22713ebb90c464350236",
+    "scripts/suites/113_veldo_0220_gate_host.py": "cc685a2883bb3fd12ad2fc5cdf1f74f0b2a6fe7781c39e624c5b9199616ffd42"
+  }
+}

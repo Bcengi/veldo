@@ -1,0 +1,7 @@
+{
+  "schema": "veldo.gate-host/v1",
+  "authority": "Owner practice on this host, made the gate's own behavior by VELDO-0220 (owner approval 2026-10-25, Telegram 36467): every heavy run serializes on this lock (myday/scripts/gate_core_cand.sh holds it with flock -x) and the owner's gates run in a user scope with MemoryMax=16G and oom_score_adj 900. Changing this protected file changes the gate's host behavior; removing it makes the gate take no lock and make no scope.",
+  "lock": "~/.local/state/core-gates/.gate.lock",
+  "scope": {"memory_max": "16G", "oom_score_adj": 900},
+  "load": {"cores": 10.8, "memory": "9G", "source": "VELDO-0219's measured mutation stage, the gate's largest: 56,170 CPU seconds over its wall time (10.8 of 20 cores) and 8.25 GiB peak cgroup memory, page cache included"}
+}

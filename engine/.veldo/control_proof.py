@@ -112,6 +112,14 @@ OWNER = "VELDO-0050 accepted proof"
 MANIFEST_PATH = "proof/%s/manifest.json"
 GATE_PATH = "scripts/verify.sh"
 GATE_COMMAND = ("bash", GATE_PATH)
+# VELDO-0220: the gate's exit when the host lock was held by another run (EX_TEMPFAIL). It ran no
+# check and wrote no stamp and no event, so it is no result at all: never a red, and never stored.
+NOT_STARTED_EXIT = 75
+
+
+def not_started(observation):
+    """Whether an observed gate did not start because the host lock was held (exit 75)."""
+    return isinstance(observation, dict) and observation.get("exit") == NOT_STARTED_EXIT
 WRITES = ("entities", "journal", "commands", "nonces")
 PASSED = ("passed", "pass")
 
@@ -637,6 +645,13 @@ class ProofService:
 
     def record_observation(self, observation, unit=None):
         """Store what the gate was observed doing; returns {id, digest, seq}, the reference a proof cites."""
+        if not_started(observation):
+            # VELDO-0220: a gate that never started observed nothing; the store keeps no observation.
+            code = "unavailable_service:gate/not_started"
+            self.observe({"schema": SCHEMA, "operation": OBSERVE, "domain": self.domain,
+                          "repository": self.repository, "unit": unit, "outcome": "not_started",
+                          "refusal": code, "taxonomy": taxonomy(code)})
+            raise Refused(code, "the gate did not start: the host lock was held")
         body = dict(observation or {}, domain=self.domain, repository=self.repository)
         oid = observation_id(body)
         result = self._run(OBSERVE, unit, "proof/observe/%s/" % oid[len("gate-observation:"):],

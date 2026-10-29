@@ -1,0 +1,8 @@
+{
+  "README.md exists": true,
+  "OPEN.md exists": true,
+  "exact proposed entry": true,
+  "owner work remains explicit": true,
+  "scripts/gate_unconfined.json unchanged": true,
+  "specs/VELDO-0220-the-gate-holds-the-host-and-runs-in-its-own-scope.md unchanged": true
+}

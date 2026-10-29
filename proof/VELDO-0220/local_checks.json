@@ -1,0 +1,240 @@
+{
+ "at": "2026-10-28T14:53:42Z",
+ "commit": "8030ef4dcd1347128e1f6f6789339dbb4511ef64",
+ "dirty": false,
+ "falsifiers": [
+  {
+   "case": "host220-ignores-lock",
+   "failed_rows": [],
+   "mode": "baseline",
+   "module": "gate_host.py",
+   "new_digest": "665cbb7822f30ec814fc4607cf46e1db91700348eaf93bd83ea932cc5db7e4a3",
+   "old_digest": "665cbb7822f30ec814fc4607cf46e1db91700348eaf93bd83ea932cc5db7e4a3",
+   "rows": {
+    "host-lock/held-not-started": true,
+    "host-lock/not-started-not-red": true,
+    "host-lock/released-on-exit": true,
+    "host-scope/own-scope": true
+   },
+   "seconds": 5.32,
+   "target_rows": [
+    "host-lock/held-not-started"
+   ],
+   "targets": {
+    "host-lock/held-not-started": [
+     true
+    ]
+   }
+  },
+  {
+   "case": "host220-ignores-lock",
+   "failed_rows": [
+    "VELDO-0220 host-lock/held-not-started"
+   ],
+   "mode": "mutant",
+   "module": "gate_host.py",
+   "new_digest": "7025be6a7118f0016f8fe2c618df2af0e64c32d59682021fc41f5f42400c23c7",
+   "old_digest": "665cbb7822f30ec814fc4607cf46e1db91700348eaf93bd83ea932cc5db7e4a3",
+   "rows": {
+    "host-lock/held-not-started": false,
+    "host-lock/not-started-not-red": true,
+    "host-lock/released-on-exit": true,
+    "host-scope/own-scope": true
+   },
+   "seconds": 4.89,
+   "target_rows": [
+    "host-lock/held-not-started"
+   ],
+   "targets": {
+    "host-lock/held-not-started": [
+     false
+    ]
+   }
+  },
+  {
+   "case": "host220-lock-inherited",
+   "failed_rows": [],
+   "mode": "baseline",
+   "module": "gate_host.py",
+   "new_digest": "665cbb7822f30ec814fc4607cf46e1db91700348eaf93bd83ea932cc5db7e4a3",
+   "old_digest": "665cbb7822f30ec814fc4607cf46e1db91700348eaf93bd83ea932cc5db7e4a3",
+   "rows": {
+    "host-lock/held-not-started": true,
+    "host-lock/not-started-not-red": true,
+    "host-lock/released-on-exit": true,
+    "host-scope/own-scope": true
+   },
+   "seconds": 5.3,
+   "target_rows": [
+    "host-lock/released-on-exit"
+   ],
+   "targets": {
+    "host-lock/released-on-exit": [
+     true
+    ]
+   }
+  },
+  {
+   "case": "host220-lock-inherited",
+   "failed_rows": [
+    "VELDO-0220 host-lock/released-on-exit"
+   ],
+   "mode": "mutant",
+   "module": "gate_host.py",
+   "new_digest": "f3aa32be377b879dee74eb022f3cbc6790dd971887c804241a87e049783697fc",
+   "old_digest": "665cbb7822f30ec814fc4607cf46e1db91700348eaf93bd83ea932cc5db7e4a3",
+   "rows": {
+    "host-lock/held-not-started": true,
+    "host-lock/not-started-not-red": true,
+    "host-lock/released-on-exit": false,
+    "host-scope/own-scope": true
+   },
+   "seconds": 75.38,
+   "target_rows": [
+    "host-lock/released-on-exit"
+   ],
+   "targets": {
+    "host-lock/released-on-exit": [
+     false
+    ]
+   }
+  },
+  {
+   "case": "host220-no-scope",
+   "failed_rows": [],
+   "mode": "baseline",
+   "module": "gate_host.py",
+   "new_digest": "665cbb7822f30ec814fc4607cf46e1db91700348eaf93bd83ea932cc5db7e4a3",
+   "old_digest": "665cbb7822f30ec814fc4607cf46e1db91700348eaf93bd83ea932cc5db7e4a3",
+   "rows": {
+    "host-lock/held-not-started": true,
+    "host-lock/not-started-not-red": true,
+    "host-lock/released-on-exit": true,
+    "host-scope/own-scope": true
+   },
+   "seconds": 5.36,
+   "target_rows": [
+    "host-scope/own-scope"
+   ],
+   "targets": {
+    "host-scope/own-scope": [
+     true
+    ]
+   }
+  },
+  {
+   "case": "host220-no-scope",
+   "failed_rows": [
+    "VELDO-0220 host-scope/own-scope"
+   ],
+   "mode": "mutant",
+   "module": "gate_host.py",
+   "new_digest": "59eb912bb80cbcc8fb462bfd40433bd4570e5060c84ac3359ff39b0396a1e203",
+   "old_digest": "665cbb7822f30ec814fc4607cf46e1db91700348eaf93bd83ea932cc5db7e4a3",
+   "rows": {
+    "host-lock/held-not-started": true,
+    "host-lock/not-started-not-red": true,
+    "host-lock/released-on-exit": true,
+    "host-scope/own-scope": false
+   },
+   "seconds": 5.3,
+   "target_rows": [
+    "host-scope/own-scope"
+   ],
+   "targets": {
+    "host-scope/own-scope": [
+     false
+    ]
+   }
+  },
+  {
+   "case": "host220-not-started-is-red",
+   "failed_rows": [],
+   "mode": "baseline",
+   "module": "lander.py",
+   "new_digest": "30887797b286a7b3872a190208de93674594aeade91d2785f89c7b05bdcc55fe",
+   "old_digest": "30887797b286a7b3872a190208de93674594aeade91d2785f89c7b05bdcc55fe",
+   "rows": {
+    "host-lock/held-not-started": true,
+    "host-lock/not-started-not-red": true,
+    "host-lock/released-on-exit": true,
+    "host-scope/own-scope": true
+   },
+   "seconds": 5.36,
+   "target_rows": [
+    "host-lock/not-started-not-red"
+   ],
+   "targets": {
+    "host-lock/not-started-not-red": [
+     true
+    ]
+   }
+  },
+  {
+   "case": "host220-not-started-is-red",
+   "failed_rows": [
+    "VELDO-0220 host-lock/not-started-not-red"
+   ],
+   "mode": "mutant",
+   "module": "lander.py",
+   "new_digest": "1a60a105b67fa0d4f0e87f9309bdbceb6b9bfd6425007e19576428eeb8e18380",
+   "old_digest": "30887797b286a7b3872a190208de93674594aeade91d2785f89c7b05bdcc55fe",
+   "rows": {
+    "host-lock/held-not-started": true,
+    "host-lock/not-started-not-red": false,
+    "host-lock/released-on-exit": true,
+    "host-scope/own-scope": true
+   },
+   "seconds": 5.52,
+   "target_rows": [
+    "host-lock/not-started-not-red"
+   ],
+   "targets": {
+    "host-lock/not-started-not-red": [
+     false
+    ]
+   }
+  }
+ ],
+ "schema": "veldo.local-checks/v1",
+ "spec": "VELDO-0220",
+ "suite": [
+  {
+   "command": [
+    "/usr/bin/python3",
+    "scripts/selftest.py",
+    "--suite",
+    "113_veldo_0220_gate_host"
+   ],
+   "confined": false,
+   "failed": [],
+   "suite_line": [
+    "113_veldo_0220_gate_host                         4 passed    5.23s"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 169 suites): 30 passed, 0 failed in 5.23s"
+   ]
+  },
+  {
+   "command": [
+    "/usr/bin/python3",
+    "-I",
+    "-S",
+    "scripts/gate_candidate.py",
+    "--root",
+    "/home/dmitry/projects/veldo-worktrees/veldo-0220",
+    "..."
+   ],
+   "confined": true,
+   "failed": [
+    "SELFTEST FAIL: VELDO-0220 host-scope/own-scope: {\"cases\": {\"outside\": false, \"inside-a-scope\": false}, \"seen\": {\"outside\": {\"exit\": 1, \"out\": \"== gate host: this gate needs 1 cores and 1 GiB of memory (fixture)\\n== gate host: took lock /tmp/veldo-agent-kp3fh7_5/tmp/v220-xzm7xrmo/locks/.scope.lock after 0.0s\\nGATE: RED (gate scope could not be created: the user manager refused veldo-gate-395-8c490d4f.scope: Failed to connect to bus: Operation not permitted)\\n\"}, \"inside-a-scope\": {\"exit\": 1, \"out\": \"Failed to connect to bus: Operation not permitted\\n\"}}}"
+   ],
+   "suite_line": [
+    "113_veldo_0220_gate_host                         3 passed    4.52s"
+   ],
+   "summary": [
+    "selftest (PARTIAL, 1 of 169 suites): 29 passed, 1 failed in 4.52s"
+   ]
+  }
+ ]
+}

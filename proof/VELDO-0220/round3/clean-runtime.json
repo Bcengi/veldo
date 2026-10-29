@@ -1,0 +1,19 @@
+{
+  "head": "0b25e78e0cfb519f3da12ba87225e3d0c303421e",
+  "command": [
+    "env",
+    "-u",
+    "XDG_RUNTIME_DIR",
+    "-u",
+    "DBUS_SESSION_BUS_ADDRESS",
+    "PYTHONDONTWRITEBYTECODE=1",
+    "python3",
+    "scripts/selftest.py",
+    "--suite",
+    "114_veldo_0220_gate_scope"
+  ],
+  "exit": 2,
+  "ticket_rows_passed": 1,
+  "failed_rows": 0,
+  "scope": "Single suite under the owner single-file allowance; all coordinator and combined suite runs used blocking host flock."
+}
