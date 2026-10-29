@@ -38,6 +38,7 @@ def _v145_suite():
         'control_api.py': ROOT / ".veldo" / "control_api.py",
         'control_api_ui.py': ROOT / ".veldo" / "control_api_ui.py",
         'control_api_authority.py': ROOT / ".veldo" / "control_api_authority.py",
+        'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
     }
     rows = {}
 
@@ -223,7 +224,7 @@ def _v145_suite():
         # AC1 ui/installed: the repository's own install path (init_scaffold) lays the built UI beside the installed
         # API module, and the API installed there serves it with no `ui` in its configuration. A rebuild replaces it
         # whole; an unchanged build is left as it is; no build lays nothing and says so.
-        scaffold = load('v145_scaffold', ROOT / '.veldo' / 'init_scaffold.py')
+        scaffold = load('v145_scaffold', PRODUCTION['init_scaffold.py'])
         lay = getattr(scaffold, 'lay_ui', None)
         templates, root = base / 'templates', base / 'factory-root'
         build = templates / 'ui' / 'dist'

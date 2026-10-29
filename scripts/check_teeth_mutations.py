@@ -11565,6 +11565,12 @@ def cases():
           "                if scope is not None and not self.CM.scope_covers(person.get('scope'), scope):\n",
           "                if False:  # defect: an out-of-scope answer goes on to settlement\n",
           'ui/out-of-scope')
+    # VELDO-0145 AC1 (round 4): a plain scaffold lays no UI; only a requested one (ui=True) is laid. Restoring the implicit
+    # lay makes what a scaffold writes depend on the checkout's build state.
+    ui145('ui145-scaffold-lays-implicitly', 'init_scaffold.py',
+          "    ui = lay_ui(templates, target) if ui else None\n",
+          "    ui = lay_ui(templates, target)  # defect: the UI is laid whether or not it was asked for\n",
+          'ui/scaffold-opt-in')
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
