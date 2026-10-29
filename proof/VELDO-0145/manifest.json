@@ -1,10 +1,10 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0145",
-  "commit": "ff92ed9e9026c441fe5d001def48245003bb8dd2",
-  "tree": "ec2ac9df931f6ec87424a5bcc2003b910886672e",
+  "commit": "44a650c7d7046957ca6a1ac119565494c70e731e",
+  "tree": "213bcc6ce65353624c49b426755c5886176ff019",
   "producer": "Claude implementation agent",
-  "produced_at": "2026-10-28T19:25:35.538933+00:00",
+  "produced_at": "2026-10-29T07:35:48.512142+00:00",
   "veldo_version": "3.10.1",
   "criteria": [
     {
@@ -19,7 +19,7 @@
         {
           "type": "unit",
           "ref": "scripts/suites/113_veldo_0145_ui.py",
-          "detail": "rows ui/page-served, ui/unauthenticated-access, ui/route-trace, ui/installed (init_scaffold.lay_ui into a scratch root, served by the API installed there); mutants ui145-* 5 of 5 rejected; unit next.spec.ts (safe next)."
+          "detail": "rows ui/page-served, ui/unauthenticated-access, ui/route-trace, ui/installed (init_scaffold.lay_ui into a scratch root, served by the API installed there); rows ui/out-of-scope (an out-of-scope request is refused, not answered) and ui/scaffold-opt-in (init lays the UI only when asked with --ui); mutants ui145-* 7 of 7 rejected, including ui145-out-of-scope-answered and ui145-scaffold-lays-implicitly (round4/mutations-145.log); unit next.spec.ts (safe next)."
         }
       ]
     },
@@ -94,11 +94,13 @@
     },
     {
       "name": "suite 113_veldo_0145_ui (partial run)",
-      "result": "5 rows passed"
+      "result": "7 rows passed",
+      "ref": "proof/VELDO-0145/round4/scaffold-green.log"
     },
     {
       "name": "check_teeth_mutations --finding 145",
-      "result": "5 registered, 5 rejected"
+      "result": "7 registered, 7 rejected",
+      "ref": "proof/VELDO-0145/round4/mutations-145.log"
     },
     {
       "name": "UI falsifiers (npm run falsify, all five)",
