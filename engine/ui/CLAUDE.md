@@ -24,9 +24,11 @@ Run from `engine/ui/`.
 | `npm run e2e e2e/decisions.spec.ts` | One browser test file |
 | `npm run falsify <case>` | Apply one registered falsifier, run its check, expect red, restore |
 
-To lay the build where an installed factory serves it, run the repository's install path after the build:
-`python3 .veldo/init_scaffold.py <factory repository>` lays `dist/` as `<repository>/.veldo/ui`, beside the
-API module (replaced whole when the build changed). `VELDO_ORGANS=<repository>/.veldo VELDO_UI_INSTALLED=1
+To lay the build where an installed factory serves it, run the repository's install path after the build,
+asking for the UI: `python3 .veldo/init_scaffold.py --ui <factory repository>` lays `dist/` as
+`<repository>/.veldo/ui`, beside the API module (replaced whole when the build changed), with a `.gitignore`
+that keeps it out of that repository. A plain scaffold (no `--ui`) never lays the UI. A composed pack carries
+no UI source, so the UI is always built and laid from a Veldo source checkout. `VELDO_ORGANS=<repository>/.veldo VELDO_UI_INSTALLED=1
 npm run e2e e2e/signin.spec.ts` runs the browser checks against that installed copy.
 
 On the shared host, any run beyond a single test file goes inside

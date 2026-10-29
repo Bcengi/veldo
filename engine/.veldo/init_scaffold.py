@@ -18,7 +18,9 @@ gate slots and protected paths with a human. This module is the mechanical
 scaffolder that skill, or an adopting human, can call directly.
 
 Usage:
-  python3 .veldo/init_scaffold.py <target-dir>
+  python3 .veldo/init_scaffold.py [--ui] <target-dir>
+
+--ui also lays the built factory UI (VELDO-0145) at <target-dir>/.veldo/ui; without it no UI is laid.
 """
 import importlib.util
 import json
@@ -483,10 +485,15 @@ _RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-q
 # (control_api_ui.directory), so the built UI (the templates' ui/dist, built by `npm ci && npm run build` in
 # engine/ui) is laid down as .veldo/ui. It is a build product, not authored work: when the build differs from
 # what is laid, the directory is replaced whole (as the derived index is regenerated), so a rebuilt UI never
-# leaves a stale index.html beside new assets. With no build, nothing is laid and the report says so; the API
-# then answers missing_evidence:ui_not_built until one is.
+# leaves a stale index.html beside new assets. LAYING IT IS OPT-IN (--ui, scaffold(ui=True)): a plain scaffold
+# never copies a build, so what a scaffold lays never depends on whether a UI happens to be built in the
+# checkout it runs from. The laid directory carries its own .gitignore ("*"), so the repository ignores it
+# and no build output is ever committed or listed as the repository's work. With no build, nothing is laid and
+# the report names why: the source is here but not built, or (a composed pack) this install has no UI source.
+_UI_SOURCE = "ui/package.json"
 _UI_BUILD = "ui/dist"
 _UI_TARGET = ".veldo/ui"
+_UI_IGNORE = ".gitignore"
 
 # The canonical gate is laid down transformed (see _starter_gate).
 _GATE = "scripts/verify.sh"
@@ -787,13 +794,17 @@ def _tree(root):
 
 def lay_ui(templates, target):
     """Lay the built factory UI (templates/ui/dist) at target/.veldo/ui, replacing what is there when the build
-    differs. Returns {"laid": bool, "reason": "laid" | "current" | "not_built", "files": n, "path": ...}."""
+    differs, with the .gitignore that keeps it out of the repository. Returns {"laid": bool, "reason": "laid" |
+    "current" | "not_built" | "no_source", "files": n, "path": ..., "source": templates/ui}."""
     src, dst = Path(templates) / _UI_BUILD, Path(target) / _UI_TARGET
+    source = Path(templates) / "ui"
     if not (src / "index.html").is_file():
-        return {"laid": False, "reason": "not_built", "files": 0, "path": str(dst)}
+        reason = "not_built" if (Path(templates) / _UI_SOURCE).is_file() else "no_source"
+        return {"laid": False, "reason": reason, "files": 0, "path": str(dst), "source": str(source)}
     want = _tree(src)
+    want[_UI_IGNORE] = b"# VELDO-0145: a build product laid by init_scaffold --ui; never committed.\n*\n"
     if dst.is_dir() and not dst.is_symlink() and _tree(dst) == want:
-        return {"laid": False, "reason": "current", "files": len(want), "path": str(dst)}
+        return {"laid": False, "reason": "current", "files": len(want) - 1, "path": str(dst), "source": str(source)}
     staging, retired = dst.with_name("ui.laying"), dst.with_name("ui.replaced")
     for leftover in (staging, retired):
         if leftover.is_symlink() or leftover.is_file():
@@ -812,7 +823,22 @@ def lay_ui(templates, target):
         shutil.rmtree(retired)
     else:
         staging.rename(dst)
-    return {"laid": True, "reason": "laid", "files": len(want), "path": str(dst)}
+    return {"laid": True, "reason": "laid", "files": len(want) - 1, "path": str(dst), "source": str(source)}
+
+
+def ui_message(ui):
+    """The report line for a requested UI (None when none was requested): what was laid, or why nothing was and
+    the step that fixes it where this install can take it."""
+    if not ui:
+        return None
+    if ui.get("reason") == "not_built":
+        return (f"factory UI not built: run npm ci && npm run build in {ui.get('source')}, then run this again "
+                "with --ui")
+    if ui.get("reason") == "no_source":
+        return ("factory UI not laid: this install carries no UI source (a composed pack ships none); build it "
+                "in a Veldo source checkout (npm ci && npm run build in engine/ui) and run that checkout's "
+                ".veldo/init_scaffold.py --ui <this repository>")
+    return f"factory UI {'laid' if ui.get('laid') else 'current'} at {ui.get('path')} ({ui.get('files')} files)"
 
 
 def _regenerate_index(target):
@@ -831,12 +857,14 @@ def _regenerate_index(target):
             + (res.stderr.strip() or res.stdout.strip()))
 
 
-def scaffold(target, templates=None):
+def scaffold(target, templates=None, ui=False):
     """Lay the VELDO substrate into target from the plugin templates.
 
     Idempotent: an existing file is never overwritten, so a second run over the
     same directory changes no authored file. Returns a report dict with the
-    created and skipped relative paths and the resolved target path.
+    created and skipped relative paths and the resolved target path. The built
+    factory UI is laid only when `ui` is true (lay_ui); otherwise report["ui"]
+    is None and nothing under .veldo/ui is touched.
     """
     target = Path(target)
     templates = Path(templates) if templates is not None else DEFAULT_TEMPLATES
@@ -868,8 +896,8 @@ def scaffold(target, templates=None):
             raise ScaffoldError(f"template missing: {src_rel}")
         _lay(src, target / dst_rel, dst_rel, created, skipped)
 
-    # the factory UI, when it is built (VELDO-0145)
-    ui = lay_ui(templates, target)
+    # the factory UI, only when asked for (VELDO-0145)
+    ui = lay_ui(templates, target) if ui else None
 
     # the derived index reflects the scaffolded specs and starter plan
     _regenerate_index(target)
@@ -883,11 +911,13 @@ def scaffold(target, templates=None):
 
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
-    if len(argv) != 1:
+    want_ui = "--ui" in argv
+    argv = [a for a in argv if a != "--ui"]
+    if len(argv) != 1 or argv[0].startswith("-"):
         print(__doc__)
         return 2
     try:
-        report = scaffold(argv[0])
+        report = scaffold(argv[0], ui=want_ui)
     except ScaffoldError as e:
         print(f"veldo init: FAIL: {e}")
         return 1
@@ -898,17 +928,16 @@ def main(argv=None):
     # whose own drift detector then blamed an install nobody made.
     if report.get("stamp_stand_down"):
         print(f"  {report['stamp_stand_down']}")
-    ui = report.get("ui") or {}
-    if ui.get("reason") == "not_built":
-        print("  factory UI not built: run npm ci && npm run build in engine/ui, then run this again")
-    elif ui:
-        print(f"  factory UI {'laid' if ui.get('laid') else 'current'} at {ui.get('path')} ({ui.get('files')} files)")
+    ui = report.get("ui")
+    if ui:
+        print(f"  {ui_message(ui)}")
     missing = missing_substrate(report["target"])
     if missing:
         print(f"  WARNING substrate incomplete: {', '.join(missing)}")
         return 1
     print("  substrate complete; run ./scripts/verify.sh to confirm the gate is green")
-    return 0
+    # An explicit --ui that laid nothing is a request not met.
+    return 1 if ui and ui.get("reason") in ("not_built", "no_source") else 0
 
 
 if __name__ == "__main__":

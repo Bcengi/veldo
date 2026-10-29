@@ -11,7 +11,9 @@ dependency row reads engine/ui/package.json, package-lock.json and dependency-po
 lockfile with a tiered package added, which must be refused. The installed row lays a fixture build through
 init_scaffold.lay_ui into a scratch factory root and serves it from the API installed there. The out-of-scope row
 builds the browser tests' own real factory (engine/ui/e2e/harness.py) from this suite's installed copies and answers
-a decision over the API as a member whose scope a steward narrowed. Browser checks of the same criteria live in
+a decision over the API as a member whose scope a steward narrowed. The scaffold row runs init_scaffold.scaffold
+over a copy of engine/ (no ui/, then a fixture source, then a fixture build) with and without the UI requested,
+and asks git whether the laid UI is ignored. Browser checks of the same criteria live in
 engine/ui/e2e (Playwright, a real factory harness); their red and green records are in proof/VELDO-0145.
 Mutation workers replace the production copies named in PRODUCTION below, never assertions or fixtures.
 Where the UI module is absent (the pre-change tree), the API serves no page, and each row fails by its
@@ -26,6 +28,8 @@ def _v145_suite():
     import json
     import os
     from pathlib import Path
+    import shutil
+    import subprocess
     import tempfile
     import threading
 
@@ -265,7 +269,64 @@ def _v145_suite():
             listener.server_close()
         bare = lay(base / 'no-templates', base / 'bare-root') if lay else {}
         check('ui/installed', 'with no build nothing is laid, and the report names it [%s]' % bare,
-              bare.get('reason') == 'not_built' and not (base / 'bare-root' / '.veldo' / 'ui').exists())
+              bare.get('reason') in ('not_built', 'no_source') and not (base / 'bare-root' / '.veldo' / 'ui').exists())
+
+        # AC1 ui/scaffold-opt-in: a plain scaffold never lays the UI, even with a build present, so what it lays does
+        # not depend on the checkout's build state; --ui (scaffold(ui=True)) lays it at .veldo/ui, where the API
+        # module laid beside it serves it, and the repository ignores it. Without a build the report names the right
+        # step: build here when this install has the UI source, or (a composed pack, no ui/) build in a source
+        # checkout. The templates are a copy of engine/ without ui/, given a fixture source and build step by step.
+        copied = base / 'templates-copy'
+        shutil.copytree(ROOT / 'engine', copied, symlinks=True,
+                        ignore=lambda d, names: ['ui'] if Path(d) == ROOT / 'engine' else [])
+
+        def scaffold_into(name, **kw):
+            try:
+                return scaffold.scaffold(base / name, templates=copied, **kw)
+            except Exception as exc:  # the pre-change scaffold takes no `ui`
+                return {'error': '%s: %s' % (type(exc).__name__, exc)}
+
+        def message(ui):
+            say = getattr(scaffold, 'ui_message', None)
+            return say(ui) if say else ''
+
+        pack = scaffold_into('pack-plain')
+        check('ui/scaffold-opt-in', 'a plain scaffold reports no UI and lays none [%s]' % pack.get('ui', pack.get('error')),
+              'error' not in pack and pack.get('ui') is None and not (base / 'pack-plain' / '.veldo' / 'ui').exists())
+        pack_ui = scaffold_into('pack-ui', ui=True).get('ui') or {}
+        check('ui/scaffold-opt-in', 'a requested UI from a pack (no ui/ source) is not laid and the hint sends the '
+              'adopter to a source checkout, not to a path the pack lacks [%s] [%s]' % (pack_ui, message(pack_ui)),
+              pack_ui.get('reason') == 'no_source' and 'carries no UI source' in message(pack_ui)
+              and 'run npm ci && npm run build in %s' % (copied / 'ui') not in message(pack_ui)
+              and not (base / 'pack-ui' / '.veldo' / 'ui').exists())
+        (copied / 'ui').mkdir()
+        (copied / 'ui' / 'package.json').write_text('{"name": "veldo-factory-ui"}')
+        unbuilt = scaffold_into('source-unbuilt', ui=True).get('ui') or {}
+        check('ui/scaffold-opt-in', 'a requested UI whose source is here but not built names the build in that source '
+              '[%s] [%s]' % (unbuilt, message(unbuilt)),
+              unbuilt.get('reason') == 'not_built'
+              and 'run npm ci && npm run build in %s' % (copied / 'ui') in message(unbuilt))
+        shutil.copytree(build, copied / 'ui' / 'dist')
+        built_plain = scaffold_into('built-plain')
+        check('ui/scaffold-opt-in', 'with a build present, a plain scaffold still lays no UI [%s]'
+              % built_plain.get('ui', built_plain.get('error')),
+              'error' not in built_plain and built_plain.get('ui') is None
+              and not (base / 'built-plain' / '.veldo' / 'ui').exists())
+        built_ui = scaffold_into('built-ui', ui=True).get('ui') or {}
+        laid_at = base / 'built-ui' / '.veldo' / 'ui'
+        check('ui/scaffold-opt-in', 'a requested UI is laid at .veldo/ui, beside the API module that serves it [%s]' % built_ui,
+              built_ui.get('laid') is True and (laid_at / 'index.html').read_bytes() == (build / 'index.html').read_bytes()
+              and (base / 'built-ui' / '.veldo' / 'control_api_ui.py').is_file())
+        (base / 'built-ui').mkdir(exist_ok=True)  # the pre-change scaffold refuses before it makes the target
+        git = dict(cwd=str(base / 'built-ui'), capture_output=True, text=True, timeout=30)
+        subprocess.run(['git', 'init', '-q'], **git)
+        ignored = subprocess.run(['git', 'check-ignore', '-q', '.veldo/ui/index.html'], **git).returncode == 0
+        listed = subprocess.run(['git', 'status', '--porcelain', '--untracked-files=all'], **git).stdout
+        check('ui/scaffold-opt-in', 'the repository ignores the laid UI: no file under .veldo/ui is listed as its work',
+              ignored and '.veldo/ui/' not in listed and '.veldo/control_api_ui.py' in listed)
+        again = scaffold_into('built-ui', ui=True).get('ui') or {}
+        check('ui/scaffold-opt-in', 'laying the same build again leaves it as it is [%s]' % again,
+              again.get('reason') == 'current' and again.get('files') == built_ui.get('files'))
 
         # AC3 ui/out-of-scope: an answer from a member whose scope no longer covers the request's project is refused
         # by that name (control_api_authority, answer_decision) and settles nothing. The factory is the browser
@@ -347,7 +408,7 @@ def _v145_suite():
                                                  for e in policy['direct'].values()))
 
     for name in ('ui/page-served', 'ui/unauthenticated-access', 'ui/route-trace', 'ui/dependency-policy', 'ui/installed',
-                 'ui/out-of-scope'):
+                 'ui/scaffold-opt-in', 'ui/out-of-scope'):
         observed = rows.get(name, [])
         ok = bool(observed) and all(o for _, o in observed)
         for label, one in observed:
