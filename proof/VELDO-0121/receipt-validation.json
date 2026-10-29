@@ -1,7 +1,7 @@
 {
-  "input_commit": "3b1a6f550698efa47a8f9964253a00acac0d22f2",
-  "implementation_sha256": "6749c547bb59737d9bd3026afe2bdf96ac5446c591c9ea07db53f95f15882478",
-  "fixture_sha256": "bbfebc341e522ece07bdd5dc3b4d9df7caa9c8b386e5745a5450a9f2a733ce3a",
+  "input_commit": "aca6afd40f672e409694109725de61f81aca5a5e",
+  "implementation_sha256": "baedda1c85a9427562419fe464dc279f9ef6139513a6b991696973ec9400c0de",
+  "fixture_sha256": "72046e9207b7152bf584e63bfa05690c21f065661ae38f113e00826acba24561",
   "checks": [
     {
       "criterion": "AC1",
@@ -36,13 +36,13 @@
       "real_time": [
         {
           "mode": "stalled",
-          "elapsed": 30.042885415023193,
+          "elapsed": 30.042607223964296,
           "exit": 3,
           "surviving_helpers": 0
         },
         {
           "mode": "trickle",
-          "elapsed": 30.01389396400191,
+          "elapsed": 30.01447201904375,
           "exit": 3,
           "surviving_helpers": 0
         }

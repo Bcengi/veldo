@@ -1,6 +1,6 @@
 --- a/.veldo/control_relay.py
 +++ b/.veldo/control_relay.py
-@@ -87,7 +87,18 @@
+@@ -84,7 +84,18 @@
          chunks, total = [], 0
          while True:
              conn.settimeout(remaining())

@@ -85,13 +85,10 @@ def forward(address, payload, timeout=30.0):
     try:
         conn.settimeout(remaining())
         conn.connect(address)
-        sent = 0
-        while sent < len(payload):
+        for start in range(0, len(payload), 65536):
+            # The timeout bounds the whole sendall call, so the single deadline still holds.
             conn.settimeout(remaining())
-            count = conn.send(memoryview(payload)[sent:sent + 65536])
-            if count == 0:
-                raise OSError("the endpoint stopped accepting request bytes")
-            sent += count
+            conn.sendall(memoryview(payload)[start:start + 65536])
         conn.settimeout(remaining())
         conn.shutdown(socket.SHUT_WR)
         chunks, total = [], 0

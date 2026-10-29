@@ -21,7 +21,8 @@ import time
 import types
 import zlib
 
-VERSION = 'relay-exchange-v1'
+VERSION = 'relay-exchange-v2'
+RELAY = Path(__file__).resolve().parents[2] / '.veldo' / 'control_relay.py'
 LIMIT = 1 << 20
 ROWS = {
     'AC1': 'relay/transport-errors-have-zero-stdout',
@@ -178,12 +179,12 @@ class Exchange:
 class Transport:
     def __init__(self, exchange, raw):
         self.x, self.raw, self.peer = exchange, raw, None
-        self.sent, self.received, self.budget = 0, 0, 30.0
+        self.sent, self.received, self.budget, self.armed = 0, 0, 30.0, 0.0
         self.request, self.closed, self.peer_closed = bytearray(), False, False
         self.counted_request = False
 
     def settimeout(self, value):
-        self.budget = value
+        self.budget, self.armed = value, self.x.now
         self.raw.settimeout(min(value, 1))
 
     def native_close(self, phase, offset):
@@ -231,6 +232,22 @@ class Transport:
             self.observe_request()
         return count
 
+    def sendall(self, data):
+        """Kernel sends under one timeout covering the whole call, as CPython's sendall.
+
+        A send accepting nothing does not return: sendall waits for progress until its
+        timeout expires, so the injected zero outcome becomes that timeout.
+        """
+        data, at = bytes(data), 0
+        while at < len(data):
+            if at and self.x.now - self.armed >= self.budget:
+                raise TimeoutError('timed out')
+            count = self.send(data[at:])
+            if count == 0:
+                self.x.now = self.armed + self.budget
+                raise TimeoutError('timed out')
+            at += count
+
     def observe_request(self):
         if self.x.case.get('unread') and self.sent:
             # Observe the identity while keeping bytes unread for native reset.
@@ -270,8 +287,10 @@ class Transport:
 
 
 def load(source):
+    # The installed path, so a prelude resolving siblings from __file__ finds them.
     module = types.ModuleType('relay121')
-    exec(compile(source, 'control_relay.py', 'exec'), module.__dict__)
+    module.__file__ = str(RELAY)
+    exec(compile(source, str(RELAY), 'exec'), module.__dict__)
     return module
 
 
@@ -365,8 +384,10 @@ def realtime(source, trickle):
     """
     with tempfile.TemporaryDirectory(prefix='v121-clock-') as directory:
         home = Path(directory)
-        relay = home / 'relay.py'
+        relay = home / 'control_relay.py'
         relay.write_text(source)
+        for sibling in sorted(RELAY.parent.glob('control_client_registry.py')):
+            (home / sibling.name).write_bytes(sibling.read_bytes())
         address = str(home / 'endpoint')
         listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         listener.bind(address)
@@ -440,7 +461,7 @@ def reconcile(source):
     calls = [n.func.attr for n in ast.walk(forward) if isinstance(n, ast.Call)
              and isinstance(n.func, ast.Attribute) and isinstance(n.func.value, ast.Name)
              and n.func.value.id == 'conn']
-    expected = {'settimeout', 'connect', 'send', 'shutdown', 'recv', 'close'}
+    expected = {'settimeout', 'connect', 'sendall', 'shutdown', 'recv', 'close'}
     return dict(calls=calls, expected=sorted(expected), matches=set(calls) == expected)
 
 
