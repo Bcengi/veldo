@@ -1,0 +1,265 @@
+{
+ "cases": [
+  {
+   "baseline": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 7.466,
+    "targets": {
+     "ui/fresh-config": [
+      true
+     ],
+     "ui/served": [
+      true
+     ]
+    }
+   },
+   "case": "ui227-config-omits-ui",
+   "module": ".veldo/control_factory_setup_api.py",
+   "mutant": {
+    "failed_details": [
+     [
+      "VELDO-0227 ui/fresh-config",
+      "the API process configuration names the workspace's UI directory [None]"
+     ],
+     [
+      "VELDO-0227 ui/served",
+      "GET / on the installed API now answers the laid index.html under the API's content security policy, with no edit of its configuration [404 missing_evidence:ui_not_built default-src 'self'; script-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none']"
+     ],
+     [
+      "VELDO-0227 ui/report-absent",
+      "ran to its end (raised KeyError: 'ui')"
+     ],
+     [
+      "VELDO-0227 ui/report-present",
+      "ran to its end (raised KeyError: 'ui')"
+     ],
+     [
+      "VELDO-0227 ui/rerun-unchanged",
+      "the API still serves the laid UI after the second run"
+     ],
+     [
+      "VELDO-0227 ui/upgrade-pre-change",
+      "ran to its end (raised KeyError: 'ui')"
+     ],
+     [
+      "VELDO-0227 ui/differs-refused",
+      "ran to its end (raised KeyError: 'ui')"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0227 ui/fresh-config",
+     "VELDO-0227 ui/served",
+     "VELDO-0227 ui/report-absent",
+     "VELDO-0227 ui/report-present",
+     "VELDO-0227 ui/rerun-unchanged",
+     "VELDO-0227 ui/upgrade-pre-change",
+     "VELDO-0227 ui/differs-refused"
+    ],
+    "returncode": 0,
+    "seconds": 3.418,
+    "targets": {
+     "ui/fresh-config": [
+      false
+     ],
+     "ui/served": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "8958bbdc0d0df1606f8d3328910b2ae9912891630d7b4f6e6e3a99de77d40d4c",
+   "new": "'state_dir': state_dir}}  # defect: the API is never told where the UI is\n",
+   "old": "'state_dir': state_dir, 'ui': ui_directory(workspace)}}\n",
+   "replacement_count": 1,
+   "restored": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 7.485,
+    "targets": {
+     "ui/fresh-config": [
+      true
+     ],
+     "ui/served": [
+      true
+     ]
+    }
+   },
+   "rows": [
+    "ui/fresh-config",
+    "ui/served"
+   ],
+   "source_sha256": "def89f780954ee09fd82b0d695db00ffa67d83f028cf3a07b558a4395fcf17b9",
+   "verdict": "red_under_mutant_green_restored"
+  },
+  {
+   "baseline": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 6.966,
+    "targets": {
+     "ui/report-absent": [
+      true
+     ]
+    }
+   },
+   "case": "ui227-report-always-present",
+   "module": ".veldo/control_factory_setup_api.py",
+   "mutant": {
+    "failed_details": [
+     [
+      "VELDO-0227 ui/report-absent",
+      "with no UI laid the report names the directory and the step that lays it [{'directory': '/dev/shm/b171-5d0ymsz7/clone-fresh/.veldo/ui', 'state': 'built UI present'}]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0227 ui/report-absent"
+    ],
+    "returncode": 0,
+    "seconds": 7.011,
+    "targets": {
+     "ui/report-absent": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "9a59bfbe9f035cab3abbfc18ca78fd9eb554630de546f699cc1246ea2d53c7a4",
+   "new": "    present = True  # defect: the report never says no UI is laid\n",
+   "old": "    present = os.path.isfile(os.path.join(directory, UI_INDEX))\n",
+   "replacement_count": 1,
+   "restored": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 6.939,
+    "targets": {
+     "ui/report-absent": [
+      true
+     ]
+    }
+   },
+   "rows": [
+    "ui/report-absent"
+   ],
+   "source_sha256": "def89f780954ee09fd82b0d695db00ffa67d83f028cf3a07b558a4395fcf17b9",
+   "verdict": "red_under_mutant_green_restored"
+  },
+  {
+   "baseline": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 6.93,
+    "targets": {
+     "ui/upgrade-pre-change": [
+      true
+     ]
+    }
+   },
+   "case": "ui227-pre-change-refused",
+   "module": ".veldo/control_factory_setup_api.py",
+   "mutant": {
+    "failed_details": [
+     [
+      "VELDO-0227 ui/upgrade-pre-change",
+      "the run over it is accepted and reports the configuration step done [refused invalid_input:state_root:differs:/dev/shm/b171-hbqfyvg4/install-prior/cf7f04e39b276f3e/config/api-process.json None]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0227 ui/upgrade-pre-change"
+    ],
+    "returncode": 0,
+    "seconds": 6.427,
+    "targets": {
+     "ui/upgrade-pre-change": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "40017f6d5188a7c721d34dd6b95e32e0edc21c20a6e5ffe5826b0ab624a8f1d9",
+   "new": "        if True:  # defect: a configuration without `ui` is refused, not upgraded\n",
+   "old": "        if not lacks_only_ui(path, data, mode):\n",
+   "replacement_count": 1,
+   "restored": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 6.946,
+    "targets": {
+     "ui/upgrade-pre-change": [
+      true
+     ]
+    }
+   },
+   "rows": [
+    "ui/upgrade-pre-change"
+   ],
+   "source_sha256": "def89f780954ee09fd82b0d695db00ffa67d83f028cf3a07b558a4395fcf17b9",
+   "verdict": "red_under_mutant_green_restored"
+  },
+  {
+   "baseline": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 6.944,
+    "targets": {
+     "ui/differs-refused": [
+      true
+     ]
+    }
+   },
+   "case": "ui227-any-difference-upgraded",
+   "module": ".veldo/control_factory_setup_api.py",
+   "mutant": {
+    "failed_details": [
+     [
+      "VELDO-0227 ui/differs-refused",
+      "lacks ui and listens elsewhere: refused as invalid_input:state_root:differs:<its path>, left as it is [None]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0227 ui/differs-refused"
+    ],
+    "returncode": 0,
+    "seconds": 6.925,
+    "targets": {
+     "ui/differs-refused": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "b9154c36400d0e4f5ee397ea1361f14ed8fc63d09bd55c0b939025aacfa2ef79",
+   "new": "            and isinstance(api, dict) and 'ui' not in api)  # defect: every other difference is overwritten\n",
+   "old": "            and isinstance(api, dict) and 'ui' not in api and dict(held, api=dict(api, ui=wanted['api']['ui'])) == wanted)\n",
+   "replacement_count": 1,
+   "restored": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 7.447,
+    "targets": {
+     "ui/differs-refused": [
+      true
+     ]
+    }
+   },
+   "rows": [
+    "ui/differs-refused"
+   ],
+   "source_sha256": "def89f780954ee09fd82b0d695db00ffa67d83f028cf3a07b558a4395fcf17b9",
+   "verdict": "red_under_mutant_green_restored"
+  }
+ ],
+ "commit": "58a8c622fe1aab7be0da0b3bcaed94c648255687",
+ "driver": "scripts/check_teeth_mutations.py --worker (unconfined; see OPEN.md)",
+ "driver_sha256": "ac267191ad8db08c308b2cfdb799bd7aaa2a445e2ade8428c82db0a9e7eac0f3",
+ "proven": 4,
+ "registered": 4,
+ "schema": "veldo.falsifier_receipt/v1",
+ "spec": "VELDO-0227",
+ "suite": "scripts/suites/117_veldo_0227_ui_location.py",
+ "suite_sha256": "30a3c8d54949704c49fe816ab72c4a7d7a5de002515bc4531c30f6724e7af444"
+}

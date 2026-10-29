@@ -730,7 +730,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             + [details[name] for name in ('account_login', 'dispatch') if name in details]
             + [{'step': 'api_start', 'outcome': 'deferred'}],
             'dispatch': dispatch_report(dispatch, details),
-            'api': api_report(transport['name'], port, api_files, through_service=False),
+            'api': api_report(transport['name'], port, api_files, through_service=False, workspace=plan['workspace']),
             'next': 'start it explicitly: systemctl --user start %s (the API unit %s starts with it), then veldo channel '
                     'qualify' % (installed['unit'], api_files['unit'])}
 
@@ -1128,10 +1128,13 @@ def install_api_unit(api, authority_unit, python, runner, states=None):
     return wrote
 
 
-def api_report(name, port, api, through_service):
+def api_report(name, port, api, through_service, workspace):
+    """The API's part of setup's answer; `ui` names the UI directory the API configuration names and whether a
+    built UI is there now (VELDO-0227)."""
     return {'tailnet_name': name, 'origin': 'https://' + name, 'listen': '%s:%d' % ('127.0.0.1', port), 'port': port,
             'unit': api.get('unit'), 'unit_path': api.get('unit_path'), 'service_config': api.get('service_config'),
-            'process_config': api.get('process_config'), 'store_write_through_service': through_service}
+            'process_config': api.get('process_config'), 'store_write_through_service': through_service,
+            'ui': organ('control_factory_setup_api').ui_report(workspace)}
 
 
 # The steps VELDO-0139 laid down, in its order; a re-run reports each of them.
@@ -1271,8 +1274,9 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     record_plan = records.prepare(root, installed, engine['receivers'], api, service_text, _differs, engine['writes'])
     states = {'service_config': record_plan['api_states']['service_config'],
               'installed_service_config': record_plan['api_states']['installed_service_config'],
-              'process_config': API.file_state(api['process_config'], api_process_text(plan, ids, api, name, port), 0o600,
-                                               _differs),
+              # VELDO-0227: a configuration laid down before setup named the UI gains that key and nothing else.
+              'process_config': API.process_config_state(api['process_config'], api_process_text(plan, ids, api, name, port),
+                                                         0o600, _differs),
               # An API unit the upgrade renders again from the current template is judged as that rendering.
               'unit': ('equal' if engine['state'] != 'current' and os.path.lexists(api['unit_path'])
                        else API.file_state(api['unit_path'], unit_body, 0o644, _differs)),
@@ -1420,7 +1424,9 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         mark('api_service_install', added or states['installed_service_config'] == 'absent')
         if states['process_config'] == 'absent':
             API.write_new(api['process_config'], api_process_text(plan, ids, api, name, port), 0o600)
-        mark('api_process_configuration', states['process_config'] == 'absent')
+        elif states['process_config'] == 'upgrade':
+            API.replace_file(api['process_config'], api_process_text(plan, ids, api, name, port), 0o600)
+        mark('api_process_configuration', states['process_config'] != 'equal')
         mark('api_unit', install_api_unit(api, authority_unit, installed.get('python') or '', runner, states))
         configured = False
         if pending is None:
@@ -1438,6 +1444,12 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                 code, _out, err = runner.run(['start', api['unit']])
                 if code or not API.service_running(runner, api['unit']):
                     raise Refused('unavailable_service:api', 'the API unit did not start (%s)' % err.strip()[:200])
+                started = True
+            elif not stale and states['process_config'] == 'upgrade':
+                # VELDO-0227: the running API reads its configuration when it starts; restart it to name the UI.
+                code, _out, err = runner.run(['restart', api['unit']])
+                if code or not API.service_running(runner, api['unit']):
+                    raise Refused('unavailable_service:api', 'the API unit did not restart (%s)' % err.strip()[:200])
                 started = True
             if stale:
                 outcomes.append({'step': 'api_start', 'outcome': 'deferred'})
@@ -1488,7 +1500,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'started': started, 'service_running': running, 'steps': outcomes,
             'pins_made': upgraded.get('pins_made', 0), 'engines': upgraded.get('engines', {}),
             'engines_record': upgraded.get('engines_record'),
-            'api': api_report(name, port, api, through), 'next': next_step or upgraded.get('next'),
+            'api': api_report(name, port, api, through, plan['workspace']), 'next': next_step or upgraded.get('next'),
             'dispatch': dispatch_report(plan['dispatch'], {o['step']: o for o in outcomes})}
 
 

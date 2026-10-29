@@ -39,6 +39,7 @@
     {"suite": "95_veldo_0203_owner_revisions", "reason": "systemd user manager: owner saves run on the host VELDO-0171's fixture installs, and its factory setup refuses a profile without the user manager"},
     {"suite": "96_veldo_0204_reservation_policies", "reason": "systemd user manager: the factory provisions reservation policies on installed user services"},
     {"suite": "106_veldo_0185_dispatch_setup", "reason": "systemd user manager: setup lays down dispatch on the host VELDO-0171's fixture installs, and its worker runs contained under the user manager"},
+    {"suite": "117_veldo_0227_ui_location", "reason": "systemd user manager: factory setup installs the authority and API user services on the host VELDO-0171's fixture installs, and refuses a profile without the user manager"},
     {"suite": "110_veldo_0143_new_project", "reason": "graph runtime: pm/new-project-run runs the factory PM cycle through the installed Runner and graph services, which the gate domain cannot reach, as suites 92 and 93 do"},
     {"suite": "116_veldo_0188_project_lines", "reason": "systemd user manager: the installed service profile is qualified on this host and first-unit dispatch uses registered accounts and the production engine receiver"},
     {"suite": "65_veldo_0067_edges", "reason": "nested custody confinement: the product's custody wrapper lists every ancestor of the protected directory up to /, which the gate domain cannot list"},

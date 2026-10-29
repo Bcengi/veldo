@@ -1,0 +1,6 @@
+ui227-config-omits-ui: baseline green, mutant red ['VELDO-0227 ui/fresh-config', 'VELDO-0227 ui/served', 'VELDO-0227 ui/report-absent', 'VELDO-0227 ui/report-present', 'VELDO-0227 ui/rerun-unchanged', 'VELDO-0227 ui/upgrade-pre-change', 'VELDO-0227 ui/differs-refused'], restored green -> red_under_mutant_green_restored
+ui227-report-always-present: baseline green, mutant red ['VELDO-0227 ui/report-absent'], restored green -> red_under_mutant_green_restored
+ui227-pre-change-refused: baseline green, mutant red ['VELDO-0227 ui/upgrade-pre-change'], restored green -> red_under_mutant_green_restored
+ui227-any-difference-upgraded: baseline green, mutant red ['VELDO-0227 ui/differs-refused'], restored green -> red_under_mutant_green_restored
+falsifiers: 4 of 4 red under the mutant, green restored
+falsifiers rc=0

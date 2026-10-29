@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0227
 title: Factory setup tells the installed API where the factory UI is, so no one edits its configuration by hand
-status: draft
+status: ready
 risk: standard
 owner: dmitry
 human_approval: required
@@ -15,6 +15,7 @@ footprint:
   - ".veldo/control_factory_setup*.py"
   - "packs/*/.veldo/control_factory_setup*.py"
   - "scripts/suites/*_veldo_0227_*.py"
+  - "scripts/suites/106_veldo_0185_dispatch_setup.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -100,3 +101,10 @@ sign-in leg (VELDO-0145 AC1, run by the owner).
 
 Drafted in VELDO-0145 round 3 at the reviewer's request (fix-check 2026-10-28, F1 and OPEN item 2). Not
 implemented; the owner approves it before it is claimed.
+
+## History
+
+2026-10-29: marked ready by the owner (Telegram 37476 and 37477, "Ok to build").
+- 2026-10-29: footprint gains scripts/suites/106_veldo_0185_dispatch_setup.py (one expectation), confirmed by the independent review proof/VELDO-0227/review-2026-10-29.md item 0 under owner rule 37437/37438: suite 106 rerun/over-earlier-host is red without it (45/1) and green with it (46/46).
+
+- 2026-10-29: owner approved suite 117 on scripts/gate_unconfined.json (protected), whole suite, Telegram 37529 ("approve 0227 suite 117 unconfined"), asked in 37527 (copy line 37528).
