@@ -88,8 +88,16 @@ run completed 16 cases with all four rows green, exit 0. The unit controls staye
 green throughout. Each mutant also reds the other two integration checks because
 they independently require the expected committed target transaction. All six
 runs completed, for 96 accepted requests in total. The driver itself exited 0.
-The retained reports and applied diffs are bound to the unchanged implementation
-by SHA-256 digests; the tested commit is `999448eb`, with the full ID in the result.
+These original reports and applied diffs describe the historical implementation
+at `999448eb`, with the full ID in the result and SHA-256 input digests.
+
+The batch compatibility fix at `806cc66b` copies the five required runtime modules
+plus `control_client_registry.py` when present. The authority fixture and falsifier
+driver share this selection, and both include the registry in their input digests.
+This works on the ticket without VELDO-0112 and with its registry prelude in the batch.
+`batch-fix-2026-10-28.json` records the fresh confined suite and falsifier results,
+tested revisions, receipt digests and retained artifact locations. These are scoped
+checks for inventory rows 2 and 5, not a full gate or a landing decision.
 
 Only this ticket's checks and falsifiers are authorized here. The full gate and
 batch independent review remain the later landing process. No protected paths are
