@@ -112,6 +112,12 @@ not tests run by this writing revision.
 
 ## History
 
+2026-10-29: round 3 addresses fixcheck N1 and N2 with reason-specific forged
+qualification cases, five isolated verification check mutants and a neutral
+fixture identity. Scoped suite and red/green evidence is recorded in
+`proof/VELDO-0124/round3-2026-10-29/`. Acceptance text is unchanged; the Mac owner
+action and complete native qualification remain pending.
+
 2026-10-28: round 2 addresses the independent review at e20b4c15. Qualification
 now verifies protected evidence files, SHA256 references and native observation
 bindings; the forged record falsifier runs against the reviewed and fixed code.

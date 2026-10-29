@@ -51,6 +51,19 @@ def forged_qualification(base):
     ref = original['rows'][key]
     path = Path(ref['path'])
     raw = path.read_bytes()
+
+    def evidence_refused(name, reason):
+        try:
+            host.start(request)
+        except P.Refused as error:
+            assert error.code == 'missing_evidence:macos_qualification', (name, error)
+            assert type(error.__cause__) is ValueError, (name, repr(error.__cause__))
+            assert str(error.__cause__) == reason, (name, str(error.__cause__))
+            assert backend.bootstraps == 0, name
+            print('  forged-qualification/' + name + ': refused: ' + reason)
+            return
+        raise AssertionError(name + ': expected refusal: ' + reason)
+
     cases = {}
     forged = copy.deepcopy(original)
     forged['rows'] = {k: 'handwritten-pass' for k in forged['rows']}
@@ -69,15 +82,27 @@ def forged_qualification(base):
     host.qualification = copy.deepcopy(original)
     path.write_bytes(raw + b' ')
     refused(lambda: host.start(request), 'missing_evidence:macos_qualification')
+    path.write_bytes(raw)
+    outside = paths['scratch'] / 'outside-evidence.json'
+    outside.write_bytes(raw)
+    for name, reference_path, reason in [
+            ('outside-protected', str(outside), 'evidence must be protected'),
+            ('relative-path', os.path.relpath(path), 'absolute evidence path required')]:
+        host.qualification = copy.deepcopy(original)
+        host.qualification['rows'][key]['path'] = reference_path
+        evidence_refused(name, reason)
+    blocked_rows = json.loads(raw)['rows']
+    blocked_rows[key] = 'blocked'
     for field, value in [('host', 'other-host'), ('profile_digest', 'sha256:edited'),
-                         ('rows', {key: 'blocked'})]:
+                         ('rows', blocked_rows), ('schema', 'veldo.macos_worker_evidence/v0'),
+                         ('kind', 'fixture')]:
         document = json.loads(raw)
         document[field] = value
         path.write_text(json.dumps(document))
         host.qualification = copy.deepcopy(original)
         for reference in host.qualification['rows'].values():
             reference['digest'] = P.file_digest(path)
-        refused(lambda: host.start(request), 'missing_evidence:macos_qualification')
+        evidence_refused(field, 'evidence row' if field == 'rows' else 'evidence binding')
     path.write_bytes(raw)
     host.qualification = original
     host.preflight(request)

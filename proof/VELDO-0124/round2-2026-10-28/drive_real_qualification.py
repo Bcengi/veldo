@@ -125,7 +125,7 @@ for engine in ('claude_code', 'codex'):
                 'in the foreground and wait for it to finish. Do not launch any background process.\\n'
             )
         T.git('-C', str(clone), 'add', '.')
-        T.git('-C', str(clone), '-c', 'user.name=Dmitry Grinberg', '-c', 'user.email=dmitry@bcengi.com',
+        T.git('-C', str(clone), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
               '-c', 'commit.gpgsign=false', 'commit', '-qm', 'probe-' + engine + '-' + mode)
         source = {k: T.git('-C', str(clone), 'rev-parse', 'HEAD^{%%s}' %% k) for k in ('commit', 'tree')}
         probes[key] = {'clone': str(clone), 'scratch': str(scratch), 'source': source}

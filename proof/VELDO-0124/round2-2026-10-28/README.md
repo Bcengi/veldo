@@ -16,7 +16,11 @@ references are objects containing `path` and `digest`; observation documents use
 `qualification_falsifier.py` loads an isolated copy of the reviewed profile for
 RED, then the fixed profile for GREEN. The handwritten record must refuse before
 bootstrap. The same check covers missing files, wrong digests, malformed rows,
-edited evidence bytes, substituted host/profile bindings and blocked results.
+edited evidence bytes and substituted host/profile bindings. The round 2 blocked
+results case dropped other rows and could refuse on a missing key; it did not
+prove the passed-row check. Round 3 replaces it with a complete row map containing
+exactly one blocked row and adds separate protected storage, schema, native kind
+and absolute path falsifiers. See `../round3-2026-10-29/README.md` for their results.
 Intact evidence still admits. The synthetic fixture files explicitly identify
 themselves as logic fixtures and confer no native qualification.
 
