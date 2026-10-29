@@ -38,9 +38,12 @@ the common restored GREEN log, `suite-103.log`: 29 owning rows, 55 total checks
 passed, zero failed, partial exit 2. The unchanged profile source SHA256 matches
 every new mutant's recorded source SHA256.
 
-Suite 104 capture is pending. The original queued runner reopened that log after
-a supervised rerun, so its final capture is awaited. `supervised-runs.json`
-preserves the earlier run metadata; `runs.json` records the original runner.
+Suite 104 is GREEN: 7 owning rows, 33 total checks passed, zero failed, partial
+exit 2. Its final log is `suite-104.log`. The original queued runner reopened the
+suite logs after a supervised rerun; the final captures are now complete.
+`supervised-runs.json` preserves the earlier run metadata; `runs.json` records
+the original runner's completed commands and exits. Both used the same source
+from `cebc3445`; subsequent commits update proof only.
 All commands run under `/home/dmitry/.local/state/core-gates/.gate.lock`.
 These are scoped diagnostics only. No full gate or native Mac test is part of
 this round, and no native qualification or landing decision is claimed.
