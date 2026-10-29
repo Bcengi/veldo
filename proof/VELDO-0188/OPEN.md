@@ -32,3 +32,5 @@ The coordinator receipt for all nine registered cases passed (falsifiers-receipt
 again: one variant now reports line/store-staffing, so its falsifier names a single row. The footprint extension
 to suites 83, 92, 93 and 110 and to proof/VELDO-0152/fixture.py was accepted in the round 2 fix-check. Nothing
 in this ticket is open; landing still needs independent review and the batch gate.
+
+Round 3 note: suite 113 is now 116_veldo_0188_project_lines, and suite 92 now has 30 rows (three duplicate rows this branch had added were dropped). The footprint extension above is approved under the owner's standing rule 37437 and 37438 on the independent fix-checks' confirmation; see the spec History.

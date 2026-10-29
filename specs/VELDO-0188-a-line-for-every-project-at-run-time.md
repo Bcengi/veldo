@@ -31,6 +31,11 @@ footprint:
   - "specs/VELDO-0188-a-line-for-every-project-at-run-time.md"
   - "specs/index.md"
   - "proof/VELDO-0188/*"
+  - "proof/VELDO-0152/fixture.py"
+  - "scripts/suites/83_veldo_0154_factory_loop.py"
+  - "scripts/suites/92_veldo_0088_pm_cycles.py"
+  - "scripts/suites/93_veldo_0152_intake_routes.py"
+  - "scripts/suites/110_veldo_0143_new_project.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -180,3 +185,8 @@ this specification's footprint and protected paths. The ticket suite's installed
 installed service under the host user manager, which the gate's confined leg cannot reach, so the list
 names the suite whole, as it names suites 92, 93 and 110. The suite is renumbered 116_veldo_0188_project_lines
 because number 113 is taken on other branches. Nothing else changes.
+
+2026-10-28, footprint additions: proof/VELDO-0152/fixture.py and suites 83, 92, 93 and 110 join the footprint.
+The round 2 and round 3 independent fix-checks confirmed each as needed (proof/VELDO-0188/fixcheck-2026-10-28.md;
+the round 3 fix-check, finding 1). They are approved under the owner's standing rule, Telegram 37437 and 37438: a
+builder may add reviewer-confirmed files to a ticket's footprint; protected paths still need the owner's explicit approval.
