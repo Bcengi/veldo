@@ -786,6 +786,13 @@ sys.exit(chosen['code'])
             'reviewers': [dict(ROLE, identity=REVIEWER, payload={'task': 'review the unit'})], 'land': LAND}}}
         work_file = base / 'work.json'
         work_file.write_text(json.dumps(WORK))
+        # VELDO-0188: journey names REPO, so its line is staffed from the store's team, never the work configuration
+        # (which keeps only the land role). The default team carries the work configuration's builder and reviewer.
+        team_roles = {name: dict(workers=[worker], engines=['codex'], capability_configuration=ROLE['configuration'],
+                                 budget={'wall_seconds': ROLE['seconds']})
+                      for name, worker in (('implementation', BUILDER), ('independent_review', REVIEWER))}
+        put(CS.TR.HEAD, CS.TR.KIND, {'revision': 1})
+        put(CS.TR.default_id(1), CS.TR.KIND, {'revision': 1, 'team': {'roles': team_roles}})
         systemd = Recording()
         installed, install_error = None, None
         try:
