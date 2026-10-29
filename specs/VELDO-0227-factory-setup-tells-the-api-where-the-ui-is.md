@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0227
 title: Factory setup tells the installed API where the factory UI is, so no one edits its configuration by hand
-status: draft
+status: ready
 risk: standard
 owner: dmitry
 human_approval: required
@@ -100,3 +100,7 @@ sign-in leg (VELDO-0145 AC1, run by the owner).
 
 Drafted in VELDO-0145 round 3 at the reviewer's request (fix-check 2026-10-28, F1 and OPEN item 2). Not
 implemented; the owner approves it before it is claimed.
+
+## History
+
+2026-10-29: marked ready by the owner (Telegram 37476 and 37477, "Ok to build").
