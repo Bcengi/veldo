@@ -106,3 +106,5 @@ implemented; the owner approves it before it is claimed.
 
 2026-10-29: marked ready by the owner (Telegram 37476 and 37477, "Ok to build").
 - 2026-10-29: footprint gains scripts/suites/106_veldo_0185_dispatch_setup.py (one expectation), confirmed by the independent review proof/VELDO-0227/review-2026-10-29.md item 0 under owner rule 37437/37438: suite 106 rerun/over-earlier-host is red without it (45/1) and green with it (46/46).
+
+- 2026-10-29: owner approved suite 117 on scripts/gate_unconfined.json (protected), whole suite, Telegram 37529 ("approve 0227 suite 117 unconfined"), asked in 37527 (copy line 37528).
