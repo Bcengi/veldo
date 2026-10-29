@@ -30,10 +30,20 @@ The existing ten mutants remain in the same ticket runner.
 
 ## Verification
 
-Results pending the shared gate lock. The queued commands run only the ticket's
-negative controls and suites 103 and 104, each under
-`/home/dmitry/.local/state/core-gates/.gate.lock`. The unmutated suites run after
-the isolated mutants. No full gate or native Mac test is part of this round.
+All five new mutants are RED with exit 1 on `AC1/forged-qualification`. Each log
+shows the expected refusal was missing for its own case. All fifteen ticket
+mutants are rejected on their named rows; the negative control runner exits 0.
+`qualification-red-green.json` maps each new mutant's patch and failed row to
+the common restored GREEN log, `suite-103.log`: 29 owning rows, 55 total checks
+passed, zero failed, partial exit 2. The unchanged profile source SHA256 matches
+every new mutant's recorded source SHA256.
+
+Suite 104 capture is pending. The original queued runner reopened that log after
+a supervised rerun, so its final capture is awaited. `supervised-runs.json`
+preserves the earlier run metadata; `runs.json` records the original runner.
+All commands run under `/home/dmitry/.local/state/core-gates/.gate.lock`.
+These are scoped diagnostics only. No full gate or native Mac test is part of
+this round, and no native qualification or landing decision is claimed.
 
 ## Fixture identity and historical correction
 

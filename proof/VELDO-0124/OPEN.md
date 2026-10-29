@@ -13,6 +13,12 @@ earlier blocked-row coverage claim. Results are in `round3-2026-10-29/README.md`
 The owner action below is unchanged and was not attempted in this round.
 Native observations below refer to round 2 and earlier.
 
+All fifteen local mutants were rejected, including all five new verification
+check mutants on `AC1/forged-qualification`. Restored suite 103 passed 55 checks
+with zero failures and partial exit 2. Suite 104 returned partial exit 2 in a
+supervised run, but its log was reopened by the original queued runner; that
+runner's final suite 104 capture is still pending the shared gate lock.
+
 ## Owner action: Claude Code login through VELDO-0147
 
 The existing real Claude Code natural, cooperative and deadline rows remain

@@ -1,0 +1,56 @@
+{
+  "tested_commit": "cebc34457242a0ebd6b8cf87bcaeb4fb40eb576c",
+  "state": "completed",
+  "runs": [
+    {
+      "name": "falsifiers",
+      "command": [
+        "python3",
+        "proof/VELDO-0124/negative_controls.py",
+        "--output",
+        "/home/dmitry/projects/veldo-worktrees/veldo-0124/proof/VELDO-0124/round3-2026-10-29/falsifiers"
+      ],
+      "gate_lock": "/home/dmitry/.local/state/core-gates/.gate.lock",
+      "expected_exit": 0,
+      "queued_at": "2026-10-29T07:35:19.110955+00:00",
+      "exit": 0,
+      "finished_at": "2026-10-29T07:35:49.402353+00:00"
+    },
+    {
+      "name": "suite-103",
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "103_veldo_0124_macos"
+      ],
+      "gate_lock": "/home/dmitry/.local/state/core-gates/.gate.lock",
+      "expected_exit": 2,
+      "queued_at": "2026-10-29T07:35:49.402447+00:00",
+      "exit": 2,
+      "finished_at": "2026-10-29T07:35:51.198044+00:00"
+    },
+    {
+      "name": "suite-104",
+      "command": [
+        "python3",
+        "scripts/selftest.py",
+        "--suite",
+        "104_veldo_0124_control"
+      ],
+      "gate_lock": "/home/dmitry/.local/state/core-gates/.gate.lock",
+      "expected_exit": 2,
+      "queued_at": "2026-10-29T07:35:51.198140+00:00",
+      "exit": 2,
+      "finished_at": "2026-10-29T07:35:54.112497+00:00"
+    }
+  ],
+  "lock_command": [
+    "flock",
+    "/home/dmitry/.local/state/core-gates/.gate.lock",
+    "python3",
+    "/tmp/veldo-0124-round3-usrjd3ts.py"
+  ],
+  "unit": "veldo-0124-round3-ba4fd52bb0",
+  "capture_note": "The original queued runner subsequently reopened the suite logs. Final suite logs and runs.json come from that runner; this record preserves the supervised run metadata."
+}

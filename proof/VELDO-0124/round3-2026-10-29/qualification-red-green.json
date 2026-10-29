@@ -1,0 +1,72 @@
+{
+  "tested_commit": "cebc34457242a0ebd6b8cf87bcaeb4fb40eb576c",
+  "baseline": "754b9101",
+  "source": ".veldo/project_runner_macos_profile.py",
+  "source_sha256": "4389d83ac02c8f9c0d1ef0154be99544bb00c168cae93c5461c50adbb0485b5d",
+  "runtime_unchanged": true,
+  "qualification_claim": false,
+  "restored": {
+    "log": "suite-103.log",
+    "exit": 2,
+    "passed": 55,
+    "failed": 0,
+    "scope": "partial"
+  },
+  "mutants": [
+    {
+      "name": "AC1-evidence-protected-root",
+      "case": "outside-protected",
+      "refusal_cause": "evidence must be protected",
+      "red_exit": 1,
+      "red_row": "AC1/forged-qualification",
+      "red_log": "falsifiers/AC1-evidence-protected-root.log",
+      "patch": "falsifiers/AC1-evidence-protected-root.patch",
+      "green_log": "suite-103.log",
+      "source_sha256": "4389d83ac02c8f9c0d1ef0154be99544bb00c168cae93c5461c50adbb0485b5d"
+    },
+    {
+      "name": "AC1-evidence-passed-row",
+      "case": "rows",
+      "refusal_cause": "evidence row",
+      "red_exit": 1,
+      "red_row": "AC1/forged-qualification",
+      "red_log": "falsifiers/AC1-evidence-passed-row.log",
+      "patch": "falsifiers/AC1-evidence-passed-row.patch",
+      "green_log": "suite-103.log",
+      "source_sha256": "4389d83ac02c8f9c0d1ef0154be99544bb00c168cae93c5461c50adbb0485b5d"
+    },
+    {
+      "name": "AC1-evidence-schema",
+      "case": "schema",
+      "refusal_cause": "evidence binding",
+      "red_exit": 1,
+      "red_row": "AC1/forged-qualification",
+      "red_log": "falsifiers/AC1-evidence-schema.log",
+      "patch": "falsifiers/AC1-evidence-schema.patch",
+      "green_log": "suite-103.log",
+      "source_sha256": "4389d83ac02c8f9c0d1ef0154be99544bb00c168cae93c5461c50adbb0485b5d"
+    },
+    {
+      "name": "AC1-evidence-native-kind",
+      "case": "kind",
+      "refusal_cause": "evidence binding",
+      "red_exit": 1,
+      "red_row": "AC1/forged-qualification",
+      "red_log": "falsifiers/AC1-evidence-native-kind.log",
+      "patch": "falsifiers/AC1-evidence-native-kind.patch",
+      "green_log": "suite-103.log",
+      "source_sha256": "4389d83ac02c8f9c0d1ef0154be99544bb00c168cae93c5461c50adbb0485b5d"
+    },
+    {
+      "name": "AC1-evidence-absolute-path",
+      "case": "relative-path",
+      "refusal_cause": "absolute evidence path required",
+      "red_exit": 1,
+      "red_row": "AC1/forged-qualification",
+      "red_log": "falsifiers/AC1-evidence-absolute-path.log",
+      "patch": "falsifiers/AC1-evidence-absolute-path.patch",
+      "green_log": "suite-103.log",
+      "source_sha256": "4389d83ac02c8f9c0d1ef0154be99544bb00c168cae93c5461c50adbb0485b5d"
+    }
+  ]
+}
