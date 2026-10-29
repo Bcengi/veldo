@@ -1,0 +1,176 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "/tmp/veldo-0220-round3-red-6d879aae/scripts/check_gate_mutations.py",
+        "--root",
+        "/tmp/veldo-0220-round3-red-6d879aae",
+        "--finding",
+        "220",
+        "--receipt",
+        "/tmp/v220-round3-results-maampvjk/red-coordinator.json"
+      ],
+      "cwd": "/tmp/veldo-0220-round3-red-6d879aae",
+      "exit": 1,
+      "name": "red-coordinator",
+      "seconds": 0.8221775989513844
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "scripts/selftest.py",
+        "--suite",
+        "113_veldo_0220_gate_host",
+        "--suite",
+        "114_veldo_0220_gate_scope"
+      ],
+      "cwd": "/home/dmitry/projects/veldo-worktrees/veldo-0220",
+      "exit": 2,
+      "name": "green-suites",
+      "seconds": 7.481362866004929
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "scripts/check_gate_mutations.py",
+        "--root",
+        "/home/dmitry/projects/veldo-worktrees/veldo-0220",
+        "--finding",
+        "220",
+        "--receipt",
+        "/tmp/v220-round3-results-maampvjk/green-coordinator.json",
+        "--worker-log-dir",
+        "/tmp/v220-round3-results-maampvjk/workers"
+      ],
+      "cwd": "/home/dmitry/projects/veldo-worktrees/veldo-0220",
+      "exit": 0,
+      "name": "green-coordinator",
+      "seconds": 50.77429835393559
+    }
+  ],
+  "falsifiers": [
+    {
+      "baseline": [
+        true
+      ],
+      "case": "host220-forged-holder",
+      "leg": "confined",
+      "mutant": [
+        false
+      ],
+      "noop": [
+        true
+      ],
+      "row": "host-lock/held-not-started",
+      "suite": "113_veldo_0220_gate_host"
+    },
+    {
+      "baseline": [
+        true
+      ],
+      "case": "host220-ignores-lock",
+      "leg": "confined",
+      "mutant": [
+        false
+      ],
+      "noop": [
+        true
+      ],
+      "row": "host-lock/held-not-started",
+      "suite": "113_veldo_0220_gate_host"
+    },
+    {
+      "baseline": [
+        true
+      ],
+      "case": "host220-lock-inherited",
+      "leg": "confined",
+      "mutant": [
+        false
+      ],
+      "noop": [
+        true
+      ],
+      "row": "host-lock/released-on-exit",
+      "suite": "113_veldo_0220_gate_host"
+    },
+    {
+      "baseline": [
+        true
+      ],
+      "case": "host220-lock-not-retained",
+      "leg": "unconfined",
+      "mutant": [
+        false
+      ],
+      "noop": [
+        true
+      ],
+      "row": "host-scope/own-scope",
+      "suite": "114_veldo_0220_gate_scope"
+    },
+    {
+      "baseline": [
+        true
+      ],
+      "case": "host220-no-scope",
+      "leg": "unconfined",
+      "mutant": [
+        false
+      ],
+      "noop": [
+        true
+      ],
+      "row": "host-scope/own-scope",
+      "suite": "114_veldo_0220_gate_scope"
+    },
+    {
+      "baseline": [
+        true
+      ],
+      "case": "host220-no-scope-kill",
+      "leg": "unconfined",
+      "mutant": [
+        false
+      ],
+      "noop": [
+        true
+      ],
+      "row": "host-scope/own-scope",
+      "suite": "114_veldo_0220_gate_scope"
+    },
+    {
+      "baseline": [
+        true
+      ],
+      "case": "host220-not-started-is-red",
+      "leg": "confined",
+      "mutant": [
+        false
+      ],
+      "noop": [
+        true
+      ],
+      "row": "host-lock/not-started-not-red",
+      "suite": "113_veldo_0220_gate_host"
+    }
+  ],
+  "green_head": "0b25e78e0cfb519f3da12ba87225e3d0c303421e",
+  "red_head": "6d879aae2be12f913c8160315e05917978298264",
+  "scope": "VELDO-0220 suites and mutation cases only",
+  "sources": {
+    ".veldo/control_proof.py": "60503c14b0552440631941daa2d28f22043f1fe089d78b6db22c8cf0cac3902b",
+    ".veldo/executor.py": "cf2c2d76dedf54faa373eb44658efc0823e1f1c0c77e644c5f16c52bde98bb80",
+    ".veldo/lander.py": "30887797b286a7b3872a190208de93674594aeade91d2785f89c7b05bdcc55fe",
+    "scripts/check_gate_mutations.py": "17b19c46d38b4be409ef1d996dc7e6bd4fdaaee09c4effc8f0e44f1477c14315",
+    "scripts/check_teeth_mutations.py": "47079b687588d8378168536aa52ded3cd9c5273854583be1ec1cce6791cc104d",
+    "scripts/gate_host.py": "4346ed68d8a15364d98573e6a20cc66bcdd709f07f1c22713ebb90c464350236",
+    "scripts/gate_unconfined.json": "b83ad7d8f3b1ca30aacf969492a6826605e3110559cb83f589c03109bde1b631",
+    "scripts/suites/113_veldo_0220_gate_host.py": "9e9dcbf2ce709a4696b017d742aa59541f1ffd4858851c5cbcab8c109ccbbd11",
+    "scripts/suites/114_veldo_0220_gate_scope.py": "d03609cfad5066fba78a884f289a2ed1b20c6a0f81569e7b61917798c385e58e",
+    "scripts/suites/manifest.json": "aea57db1c47a79bd8f0c31089dcae614eca8522770901a22efc40c14a3f8e32d",
+    "scripts/suites/requires.json": "258a2a1422acbf76e52249da3460ec0e2fb9b6fa02d572303bb05dcf7945a6c9"
+  },
+  "status": "passed"
+}

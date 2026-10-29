@@ -18,8 +18,14 @@ mutants were rejected; the scope controls exposed a missing runtime directory in
 the clean worker environment. Suite 114 now supplies the same runtime fallback
 as other host suites. The first drive is retained in round3/red-runtime/.
 
-Remaining for this round: rerun the two suites and all seven coordinator cases
-with that fixture setup, then record the final evidence in [round3](round3/).
+Round 3 is complete. The final drive at implementation commit 0b25e78e passes
+both suites (three confined rows and one scope row). The real mutation coordinator
+passes with seven registered, executed and rejected cases, zero reuse, and zero
+surviving workers. Every baseline and no-op is green; every mutant turns its exact
+target row red. Four cases run confined and three run unconfined. Suite 114 also
+passes with both bus environment variables absent. See [round3](round3/) for the
+red and green receipts, worker logs, source digests and per-case observations.
+There are no remaining implementation or targeted-validation items for this round.
 
 Remaining before landing: a fresh independent review of the final commit and
 the owner's canonical gate. This round is explicitly limited to the ticket's

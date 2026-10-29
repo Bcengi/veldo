@@ -44,3 +44,35 @@ run passes all four rows because the interactive environment has the runtime
 path. Suite 114 now supplies /run/user/<uid> when XDG_RUNTIME_DIR is absent, as
 the other systemd suites do. This is fixture setup; the coordinator's environment
 and confinement policy stay unchanged.
+
+## Final results
+
+Implementation commit 0b25e78e was checked through the real coordinator CLI under
+the owner's blocking host flock. red-coordinator.json records the original
+seven-case refusal. green-suites.log records three passing suite 113 rows and
+one passing suite 114 row (exit 2, a passing partial run). green-coordinator.json
+records seven registered, seven executed, seven rejected, zero reused, 13 worker
+invocations and zero surviving workers in 50.72 seconds. Every baseline and no-op
+control is green. The source hashes in summary.json match the implementation.
+
+| Falsifier | Suite | Target row | Mutant |
+| :--- | :--- | :--- | :--- |
+| host220-forged-holder | 113 | host-lock/held-not-started | red |
+| host220-ignores-lock | 113 | host-lock/held-not-started | red |
+| host220-lock-inherited | 113 | host-lock/released-on-exit | red |
+| host220-lock-not-retained | 114 | host-scope/own-scope | red |
+| host220-no-scope | 114 | host-scope/own-scope | red |
+| host220-no-scope-kill | 114 | host-scope/own-scope | red |
+| host220-not-started-is-red | 113 | host-lock/not-started-not-red | red |
+
+The coordinator receipt places the four suite 113 cases in the confined leg and
+the three suite 114 cases in the unconfined leg. Its resource and ownership
+receipts show cleanup completed; every directory named in its ownership ledgers
+is absent after the driver exits. The temporary original checkout was removed.
+
+green-clean-runtime.log and clean-runtime.json record the additional single-file
+check with XDG_RUNTIME_DIR and DBUS_SESSION_BUS_ADDRESS removed: suite 114's scope
+row passes through its runtime fallback, with zero failed rows and partial exit 2.
+This single-file check used the owner's allowance; the combined suites and all
+coordinator drives used blocking flock. A fresh independent review and the owner's
+canonical gate remain before landing, as OPEN.md records.
