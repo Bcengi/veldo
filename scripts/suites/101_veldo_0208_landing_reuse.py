@@ -594,15 +594,17 @@ print(json.dumps(results))
         expect('VELDO-0208 candidate/planted-registry-red', refused_registry)
         scaffold = load('engine/.veldo/init_scaffold.py')
         # The unconfined list is this repository's own owner decision: it is optional in the
-        # authority and never shipped, and no engine copy exists to ship.
+        # authority and never shipped, and no engine copy exists to ship. VELDO-0216's graph
+        # (scripts/gate_graph.json) is optional the same way: with none, verify.sh runs its stages
+        # one after another as before, and an adopter never receives one.
         expect('VELDO-0208 engine/scaffold-includes-boundary',
                set(E.AUTHORITY_FILES) - set(E.OPTIONAL_AUTHORITY_FILES) <= set(scaffold._FILES)
                and 'scripts/gate_legs.py' in scaffold._FILES)
         expect('VELDO-0208 engine/adopters-receive-no-unconfined-list',
-               E.OPTIONAL_AUTHORITY_FILES == ('scripts/gate_unconfined.json',)
+               E.OPTIONAL_AUTHORITY_FILES == ('scripts/gate_unconfined.json', 'scripts/gate_graph.json')
                and not set(E.OPTIONAL_AUTHORITY_FILES) & set(scaffold._FILES)
                and not set(E.OPTIONAL_AUTHORITY_FILES) & set(scaffold.REQUIRED_SUBSTRATE)
-               and not (ROOT / 'engine/scripts/gate_unconfined.json').exists())
+               and not [f for f in E.OPTIONAL_AUTHORITY_FILES if (ROOT / 'engine' / f).exists()])
         catalog = load('.veldo/control_proof.py').catalog((ROOT / 'scripts/verify.sh').read_text())
         expect('VELDO-0208 gate/catalog-includes-authority-stage',
                {'extra', 'mutation'} <= set(catalog['required']))
@@ -1210,7 +1212,9 @@ def _v208_unconfined_leg():
     leg can. Run by the gate's own confined leg, the fixture's unconfined leg is still inside the
     outer domain, which grants that directory, so the observation holds in both places."""
     import ast
+    import contextlib
     import importlib.util
+    import io
     import json
     import os
     from pathlib import Path
@@ -1219,6 +1223,7 @@ def _v208_unconfined_leg():
     import subprocess
     import sys
     import tempfile
+    from unittest.mock import patch
 
     spec = importlib.util.spec_from_file_location('gate_legs_under_test', ROOT / 'scripts/gate_legs.py')
     L = importlib.util.module_from_spec(spec); spec.loader.exec_module(L)
@@ -1237,13 +1242,14 @@ def _v208_unconfined_leg():
     control_plane = ['62_0039', '63_0040', '63_0049', '64_0050', '66_0042', '66_0047', '67_0041', '67_0135', '71_0076',
                      '71_0130', '71_0138', '73_0139', '78_0060', '79_0061', '80_0155', '81_0156', '82_0129',
                      '82_0141', '83_0154', '85_0158', '85_0171', '86_0127', '86_0148', '86_0189', '87_0170',
-                     '91_0167', '92_0088', '93_0152', '94_0162', '95_0203', '96_0204', '106_0185', '110_0143']
+                     '91_0167', '92_0088', '93_0152', '94_0162', '95_0203', '96_0204', '106_0185', '110_0143',
+                     '114_0220', '116_0188', '117_0227']
     manifest = [s['name'] for s in json.loads((ROOT / 'scripts/suites/manifest.json').read_text())['suites']]
     whole = sorted(n for n, rows in listed.items() if rows is None)
     expected_whole = sorted([n for n in manifest for short in control_plane + ['65_0067']
                              if n.startswith(short.replace('_', '_veldo_', 1) + '_')])
     expect('VELDO-0208 unconfined-leg/declared-list: ' + repr(sorted(set(whole) ^ set(expected_whole))),
-           document['stages'] == declared_commands and len(expected_whole) == 34 and whole == expected_whole
+           document['stages'] == declared_commands and len(expected_whole) == 37 and whole == expected_whole
            and {n: r for n, r in listed.items() if r} == {'100_veldo_0207_case_reuse': 'strace',
                                                          '101_veldo_0208_landing_reuse': 'strace'}
            and all(n in manifest for n in listed)
@@ -1277,7 +1283,7 @@ def _v208_unconfined_leg():
     listed_files = ['scripts/suites/%s.py' % name for name in listed]
     expect('VELDO-0208 unconfined-leg/dispatcher-is-protected',
            dispatcher_files <= set(P.protected_patterns()) and dispatcher_files <= set(front['protected_paths'])
-           and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 36
+           and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 39
            and not [f for f in listed_files for pattern in P.protected_patterns()
                     if __import__('fnmatch').fnmatch(f, pattern)])
 
@@ -1531,8 +1537,19 @@ def _v208_unconfined_leg():
                and not (top / 'fallback-record').exists())
 
         # The engine's gate, which adopters install, drops a caller's leg variables the same way: it
-        # runs no unconfined leg, so a candidate's dispatcher never reads one from the caller.
+        # runs no unconfined leg, so a candidate's dispatcher never reads one from the caller. It has
+        # no veldo_stage and never calls gate_legs; since VELDO-0216 an authority graph, when present,
+        # hands its stages to gate_schedule.py (adopters receive none, see adopters-receive-no-
+        # unconfined-list, so theirs is the serial veldo_candidate path probed here), and the graph
+        # with no unconfined list runs a stage confined through gate_candidate.py in a node
+        # environment without the caller's leg variables. The graph probe runs the engine
+        # scheduler's real run() over a one-node graph; only its meter and input guard, the
+        # boundaries it takes for fixture authorities, are fixture ones.
         engine_text = (ROOT / 'engine/scripts/verify.sh').read_text()
+        schedule_spec = importlib.util.spec_from_file_location('v208_engine_schedule', ROOT / 'engine/scripts/gate_schedule.py')
+        engine_schedule = importlib.util.module_from_spec(schedule_spec); schedule_spec.loader.exec_module(engine_schedule)
+        graph_argv = engine_schedule.command_for(candidate, 'unit', None, 'python3 scripts/selftest.py',
+                                                 top / 'graph-record', top / 'graph-receipt', None)
         engine_candidate = re.search(r'^veldo_candidate\(\) \{\n.*?^\}\n', engine_text, re.S | re.M).group(0)
         for marker in outside.iterdir():
             marker.unlink()
@@ -1544,12 +1561,45 @@ def _v208_unconfined_leg():
                                        pass_fds=launcher_fds())
         engine_markers = dict(line.split()[1:3] for line in engine_leaked.stdout.splitlines()
                               if line.startswith('V208-PROBE '))
+        for marker in outside.iterdir():
+            marker.unlink()
+
+        class GraphMeter:
+            def __init__(self, name):
+                self.name = name
+            def command(self, argv):
+                return argv
+            def sample(self):
+                return {'cpu_seconds': .01, 'peak_anon_bytes': 1024, 'metrics_source': 'fixture'}
+            def finish(self):
+                return dict(self.sample(), live_descendants=False)
+        graph_dir = top / 'engine-graph'
+        graph_dir.mkdir()
+        (graph_dir / 'gate_graph.json').write_text(json.dumps({
+            'schema': 'veldo.gate-graph/v1', 'reserve': {'cpu': 0, 'memory': 0}, 'mutation_floor': {'cpu': 0, 'memory': 0},
+            'nodes': {'unit': {'depends_on': [], 'writes_candidate': False, 'manager': 'none', 'ports': []}}}))
+        with patch.dict(os.environ, dict(V208_PROBE_OUTSIDE=str(outside), **asked)), \
+                contextlib.redirect_stdout(io.StringIO()) as graph_out:
+            graph_receipt = engine_schedule.run(
+                {'unit': 'python3 scripts/selftest.py'}, candidate, graph_dir / 'run', graph_dir / 'legs',
+                graph_dir / 'mutation', graph_path=graph_dir / 'gate_graph.json',
+                declaration_path=graph_dir / 'no-unconfined-list.json',
+                capacity={'cpu': 32, 'memory': 1048576, 'manager': 16}, measurement_store=graph_dir / 'store',
+                meter_factory=GraphMeter, guard_factory=lambda root: (lambda: True))
+        graph_log = (graph_dir / 'run/unit.log').read_text() if (graph_dir / 'run/unit.log').is_file() else ''
+        graph_markers = dict(line.split()[1:3] for line in graph_log.splitlines() if line.startswith('V208-PROBE '))
         expect('VELDO-0208 unconfined-leg/engine-gate-drops-the-callers-leg-variables: '
-               + repr((engine_leaked.returncode, engine_markers, engine_leaked.stdout[-300:])),
-               'veldo_stage' not in engine_text and 'gate_legs' not in engine_text
+               + repr((engine_leaked.returncode, engine_markers, engine_leaked.stdout[-300:],
+                       graph_argv[3:4], graph_receipt.get('stages'), graph_markers, graph_log[-300:],
+                       graph_out.getvalue()[-300:])),
+               not re.search(r'(?<!\w)veldo_stage(?!\w)', engine_text) and 'gate_legs' not in engine_text
+               and '"$VELDO_AUTHORITY/scripts/gate_schedule.py"' in engine_text
                and engine_leaked.returncode == 0 and 'selftest leg' not in engine_leaked.stdout
                and engine_markers == {'01_listed.none': 'refused', '02_asks.none': 'refused',
-                   '02_asks.strace.none': 'refused', '03_rows.none': 'refused', '03_rows.strace.none': 'refused'})
+                   '02_asks.strace.none': 'refused', '03_rows.none': 'refused', '03_rows.strace.none': 'refused'}
+               and Path(graph_argv[3]) == ROOT / 'engine/scripts/gate_candidate.py'
+               and graph_receipt.get('stages') == {'unit': 'pass'} and 'selftest leg' not in graph_log
+               and graph_markers == engine_markers)
 
         # The same through verify.sh's own veldo_stage: it learns from the authority's list that the
         # unit stage expects a leg before the stage runs, so deleting the record after the leg ran
@@ -1679,8 +1729,9 @@ def _v208_unconfined_leg():
         # The list is optional in the authority (with none, every stage is confined: the first
         # landing's authority predates it, and an adopter never receives one), so an authority
         # without it still has an identity: the list is recorded as absent, a stable value no digest
-        # equals, while any other missing authority file is still an error. The same authority runs
-        # verify.sh's veldo_stage confined whole.
+        # equals, while any other missing authority file is still an error. VELDO-0216's graph is
+        # optional the same way and enters the identity the same way. The same authority, with
+        # neither, runs verify.sh's veldo_stage confined whole.
         bare = top / 'authority-bare'
         evidence = importlib.util.spec_from_file_location('v208_bare_evidence', ROOT / '.veldo/reuse_evidence.py')
         E_bare = importlib.util.module_from_spec(evidence); evidence.loader.exec_module(E_bare)
@@ -1701,6 +1752,12 @@ def _v208_unconfined_leg():
         (bare / 'scripts/gate_unconfined.json').write_text('not a list')
         with_invalid = bare_identity()
         (bare / 'scripts/gate_unconfined.json').unlink()
+        (bare / 'scripts/gate_graph.json').write_bytes((ROOT / 'scripts/gate_graph.json').read_bytes())
+        with_graph = bare_identity()
+        (bare / 'scripts/gate_graph.json').write_text('not a graph')
+        with_invalid_graph = bare_identity()
+        (bare / 'scripts/gate_graph.json').unlink()
+        absent_again = bare_identity()
         (bare / 'scripts/gate_legs.py').rename(bare / 'gate_legs.moved')
         without_runner = bare_identity()
         (bare / 'gate_legs.moved').rename(bare / 'scripts/gate_legs.py')
@@ -1716,10 +1773,11 @@ def _v208_unconfined_leg():
         bare_markers = dict(line.split()[1:3] for line in bare_run.stdout.splitlines()
                             if line.startswith('V208-PROBE '))
         expect('VELDO-0208 unconfined-leg/authority-without-the-list-has-an-identity-and-is-confined: '
-               + repr((absent_twice, with_list, with_invalid, without_runner, bare_run.returncode, bare_markers)),
-               E_bare.OPTIONAL_AUTHORITY_FILES == ('scripts/gate_unconfined.json',)
-               and absent_twice[0] == absent_twice[1] and re.match(r'^[0-9a-f]{64}$', absent_twice[0])
-               and len({absent_twice[0], with_list, with_invalid}) == 3
+               + repr((absent_twice, with_list, with_invalid, with_graph, with_invalid_graph, absent_again,
+                       without_runner, bare_run.returncode, bare_markers)),
+               E_bare.OPTIONAL_AUTHORITY_FILES == ('scripts/gate_unconfined.json', 'scripts/gate_graph.json')
+               and absent_twice[0] == absent_twice[1] == absent_again and re.match(r'^[0-9a-f]{64}$', absent_twice[0])
+               and len({absent_twice[0], with_list, with_invalid, with_graph, with_invalid_graph}) == 5
                and without_runner == 'FileNotFoundError'
                and bare_run.returncode == 0 and 'expected=\n' in bare_run.stdout
                and 'UNCONFINED' not in bare_run.stdout and 'selftest leg' not in bare_run.stdout
