@@ -1,8 +1,17 @@
-# VELDO-0124 open items, 2026-10-28 round 2
+# VELDO-0124 open items, 2026-10-29 round 3
 
 Status: REMAINING. The acceptance text is unchanged. AC1 and AC3 still require
 real Claude Code observations on the selected Mac. No qualification record or
 operational activation was issued by this round.
+
+Round 3 addresses fixcheck N1 and N2 only. The forged qualification cases now
+require the intended ValueError cause for evidence outside protected storage,
+a complete row map with exactly one blocked row, a wrong schema, non-native kind
+and a relative path. Five isolated mutants each remove one corresponding check.
+The round 2 fixture commit identity is neutral, and its README corrects the
+earlier blocked-row coverage claim. Results are in `round3-2026-10-29/README.md`.
+The owner action below is unchanged and was not attempted in this round.
+Native observations below refer to round 2 and earlier.
 
 ## Owner action: Claude Code login through VELDO-0147
 
