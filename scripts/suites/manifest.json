@@ -1590,6 +1590,15 @@
    ],
    "regions": "Authority graph, ledger, verdict parity, and concurrency mechanics.",
    "requires_note": "Only ROOT and expect. Scratch authorities, real confined launcher, controlled mutation payload, fixture cgroup meter. No host lock or user manager."
+  },
+  {
+   "name": "115_veldo_0219_measured_admission",
+   "file": "115_veldo_0219_measured_admission.py",
+   "requires": [
+    "115_veldo_0219_measured_admission"
+   ],
+   "regions": "Measured mutation admission, resource store, conservative budgets and qualification capture.",
+   "requires_note": "Only ROOT and expect. Real Workers and ledger with controlled children, scratch cgroups and stores. Reads inventory without running other suites. No host lock or manager."
   }
  ],
  "resource_capacities": {

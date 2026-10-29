@@ -11,11 +11,13 @@ remain labelled estimates, never anonymous-memory measurements. Fresh source-bou
 anonymous measurements still take precedence. The ledger accounts separately for
 CPU, memory, shared inherited host-lock use, manager slots and ports.
 
-VELDO-0219 and VELDO-0221 are not implemented. The three aggregate manager users
-still conflict for real reasons. The production-ledger duration replay projects
-6932.501 seconds before overhead, versus AC4's 6000 seconds. See spec-conflict.md
-for the numbers, reproducible evidence and a proposed owner amendment. The spec
-has not been edited, and AC4 remains unmet.
+The approved amendment at 18e375b0 measures AC4 with VELDO-0219 and without
+VELDO-0221. This branch now includes VELDO-0219's per-case handoff: the mutation
+root releases aggregate manager exclusion when measured admission takes ownership.
+The earlier 6932.501 second replay describes VELDO-0216 alone. It is not a timing
+result for the combined implementation. The exact joint batch requirements,
+including the 6,000 second full-gate target, fixed-sixteen mutation control and
+serialized gate control, are in ../VELDO-0219/OPEN.md. Both AC4s remain deferred.
 
 VELDO-0220 already records that suite 113 needs a userbus entry in
 scripts/gate_unconfined.json. That protected file is outside this ticket's named paths.

@@ -1,0 +1,11 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -82,7 +82,7 @@
+         quota = _quota_cpus(cgroup_root, membership)
+         if quota:
+             cpus = min(cpus, quota)
+-    return max(2, int(2 * cpus))
++    return max(2, min(16, int(2 * cpus)))
+ 
+ 
+ PARALLEL = 1 if '--worker' in sys.argv else worker_count()

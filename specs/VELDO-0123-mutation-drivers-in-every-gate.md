@@ -160,3 +160,11 @@ See VELDO-0205 for the precise amendment, protected-path approval requirement an
 single-user implementing-agent confinement and authenticated non-agent gate records. Every
 registered case still needs a validated result; reuse counts remain explicit. The owner and
 unconfined orchestrator are trusted. There is no separate account, service or root requirement.
+
+2026-10-28, VELDO-0219: the worker safety ceiling is twice usable CPUs, with a
+floor of two. Fractional cgroup quotas are retained before computing that ceiling.
+The gate ledger grants each worker's measured CPU and memory claim (the larger of the anonymous peak and the unit's total peak, VELDO-0219 AC1 as amended);
+manifest manager and fixture capacities still apply. The original reference-worker
+count cap and VELDO-0215 deadlines remain. The combined measured bound uses the
+mutation reservation floor, including CPU and memory resource charges. Historical
+2..16 measurements above describe the prior implementation.

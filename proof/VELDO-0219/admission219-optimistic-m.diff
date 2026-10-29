@@ -1,0 +1,11 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -330,7 +330,7 @@
+ def guaranteed_workers(jobs, floor, ceiling):
+     largest = {r: max((j['claim'][r] for j in jobs), default=1) for r in ('cpu', 'memory')}
+     guaranteed = min(floor[r] / largest[r] for r in largest)
+-    return min(ceiling, max(2, math.floor(guaranteed)))
++    return ceiling
+ 
+ 
+ class Admission:

@@ -1,0 +1,4 @@
+{
+  "passed": false,
+  "error": "AssertionError({'cpu_seconds': 0, 'peak_anon_bytes': 0, 'peak_memory_bytes': 0, 'metrics_source': 'cgroup-v2-anon-sampled-20ms-with-final-unit-accounting', 'cgroups': ['/tmp/tmp94q8lkar/scope/worker-1835189-fixture']})"
+}

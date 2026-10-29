@@ -11529,6 +11529,51 @@ def cases():
         ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0219: measured admission and conservative guaranteed parallelism.
+    suite219 = '115_veldo_0219_measured_admission.py'
+    add(219, 'admission219-slowest-rate', suite219, 'check_gate_mutations.py',
+        "    return dict(cpu=max(r['cpu_seconds'] / r['elapsed'] for r in runs),\n",
+        "    return dict(cpu=max(r['cpu_seconds'] for r in runs) / max(r['elapsed'] for r in runs),\n",
+        ['admission/measured-per-case'])
+    result[-1]['dir'] = 'scripts'
+    add(219, 'admission219-fixed-sixteen', suite219, 'check_gate_mutations.py',
+        '    return max(2, int(2 * cpus))\n',
+        '    return max(2, min(16, int(2 * cpus)))\n',
+        ['admission/fits-ledger'])
+    result[-1]['dir'] = 'scripts'
+    add(219, 'admission219-optimistic-m', suite219, 'check_gate_mutations.py',
+        '    return min(ceiling, max(2, math.floor(guaranteed)))\n',
+        '    return ceiling\n',
+        ['admission/same-verdicts'])
+    result[-1]['dir'] = 'scripts'
+
+    add(219, 'admission219-short-unit-unaccounted', suite219, 'mutation_ownership.py',
+        '            self.retain(value)\n',
+        '            pass  # dropped lifecycle retention\n',
+        ['admission/unit-lifecycle'])
+    result[-1]['dir'] = 'scripts'
+
+    admission219_channel = "                        admit=load(ROOT / 'scripts/gate_schedule.py').CHANNEL in os.environ,\n"
+    add(219, 'admission219-graph-without-channel', suite219, 'check_gate_mutations.py',
+        admission219_channel,
+        "                        admit=(ROOT / 'scripts/gate_graph.json').is_file(),\n",
+        ['admission/cli-graph-without-channel'])
+    result[-1]['dir'] = 'scripts'
+    add(219, 'admission219-channel-ignored', suite219, 'check_gate_mutations.py',
+        admission219_channel, "                        admit=False,\n",
+        ['admission/cli-graph-with-channel'])
+    result[-1]['dir'] = 'scripts'
+    add(219, 'admission219-worker-before-handoff', suite219, 'gate_schedule.py',
+        "                            if 'coordinator' in graph['nodes'][name] and not item['handed_off']:\n",
+        "                            if False:  # worker acquired before coordinator handoff\n",
+        ['admission/worker-before-handoff-refused'])
+    result[-1]['dir'] = 'scripts'
+    add(219, 'admission219-unowned-lifecycle-register', suite219, 'mutation_ownership.py',
+        "                    if rejected or (kind, value) not in entries:\n",
+        "                    if False:  # lifecycle registration ignores ownership\n",
+        ['admission/lifecycle-registration-owned'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0216: graph completeness, concurrent records, summed claims and serial control.
     suite216 = '114_veldo_0216_concurrent_stages.py'
     add(216, 'concurrent216-missing-stage-runs-nothing', suite216, 'gate_schedule.py',

@@ -1,0 +1,81 @@
+{
+  "scope": "checker unit test only; no canonical timing measured",
+  "runs": [
+    {
+      "synthetic": true,
+      "elapsed": 5207,
+      "workers": 16,
+      "result": {
+        "passed": false,
+        "errors": [
+          "mutation stage exceeds 4000 seconds"
+        ],
+        "elapsed": 5207,
+        "baseline_seconds": 5207,
+        "peak_workers": 16,
+        "mean_busy_cores": 17,
+        "peak_anon_bytes": 13958643712,
+        "comparisons": [
+          {
+            "name": "baseline",
+            "elapsed": 10,
+            "deadline": 120,
+            "quiet_seconds": 10,
+            "slowdown": 1.0
+          },
+          {
+            "name": "noop",
+            "elapsed": 10,
+            "deadline": 120,
+            "quiet_seconds": 10,
+            "slowdown": 1.0
+          },
+          {
+            "name": "mutant",
+            "elapsed": 10,
+            "deadline": 120,
+            "quiet_seconds": 10,
+            "slowdown": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "synthetic": true,
+      "elapsed": 3300,
+      "workers": 26,
+      "result": {
+        "passed": true,
+        "errors": [],
+        "elapsed": 3300,
+        "baseline_seconds": 5207,
+        "peak_workers": 26,
+        "mean_busy_cores": 17,
+        "peak_anon_bytes": 13958643712,
+        "comparisons": [
+          {
+            "name": "baseline",
+            "elapsed": 10,
+            "deadline": 120,
+            "quiet_seconds": 10,
+            "slowdown": 1.0
+          },
+          {
+            "name": "noop",
+            "elapsed": 10,
+            "deadline": 120,
+            "quiet_seconds": 10,
+            "slowdown": 1.0
+          },
+          {
+            "name": "mutant",
+            "elapsed": 10,
+            "deadline": 120,
+            "quiet_seconds": 10,
+            "slowdown": 1.0
+          }
+        ]
+      }
+    }
+  ]
+}

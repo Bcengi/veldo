@@ -23,7 +23,22 @@ def load(path):
     return module
 
 
+def join_worker_cgroup():
+    # Authority opens this descriptor before spawn. Close it before any candidate
+    # import, and remove it from the environment before a confined tree re-exec.
+    descriptor = os.environ.pop('VELDO_MUTATION_CGROUP_FD', None)
+    if descriptor is not None:
+        fd = int(descriptor)
+        try:
+            os.write(fd, str(os.getpid()).encode())
+        except OSError as error:
+            raise RuntimeError('worker_launch_error: cannot enter worker cgroup') from error
+        finally:
+            os.close(fd)
+
+
 def main():
+    join_worker_cgroup()
     authority = Path(__file__).resolve().parents[1]
     mode, root = sys.argv[1], Path(sys.argv[2])
     if mode == 'inventory':  # Already confined by gate_candidate before this import.
@@ -36,6 +51,8 @@ def main():
     if mode not in ('worker', 'unconfined', 'tree'):
         raise ValueError('unknown worker mode: ' + mode)
     ledger, jobpath = int(sys.argv[3]), Path(sys.argv[4])
+    lifecycle = os.environ.get('VELDO_MUTATION_LIFECYCLE_FD')
+    keep = (ledger,) + ((int(lifecycle),) if lifecycle is not None else ())
     if not stat.S_ISREG(os.fstat(ledger).st_mode) or not fcntl.fcntl(ledger, fcntl.F_GETFL) & os.O_APPEND:
         raise ValueError('ownership channel must be an append-only regular file descriptor')
     job = json.loads(jobpath.read_text())
@@ -43,14 +60,14 @@ def main():
     sandbox = load(authority / 'scripts/mutation_sandbox.py')
     # The tree's marker stays too: a coordinator inside a tree the agent launcher made hands it on,
     # and a fresh worker's tree nests in that one (VELDO-0210 AC6).
-    boundary.close_descriptors([], keep=(ledger, *boundary.launcher_fds()))
+    boundary.close_descriptors([], keep=(*keep, *boundary.launcher_fds()))
     fresh = 'runtime_paths' not in job and 'snapshot_root' not in job
     if mode == 'worker' and fresh:
         # A fresh confined worker starts inside a tree the agent launcher makes, the same helper,
         # checks and init as the agent and gate profiles', and confines itself there (mode 'tree'),
         # so a gate one of its cases starts nests like any other nested launch. A declared case,
         # traced by the coordinator, never enters a tree. This process runs no candidate code.
-        sys.exit(sandbox.enter_tree(authority, root, Path(os.environ['TMPDIR']), 'tree', keep=(ledger,)))
+        sys.exit(sandbox.enter_tree(authority, root, Path(os.environ['TMPDIR']), 'tree', keep=keep))
     if mode == 'tree' and not fresh:
         raise ValueError('a declared case never runs inside a tree')
     gate = load(authority / 'scripts/check_gate_mutations.py')
@@ -60,7 +77,8 @@ def main():
     # Ownership is persisted from the authority copy before any candidate code runs, so the
     # coordinator can reap this worker's allocations even after SIGKILL. Candidate code can
     # append to the same channel, so the coordinator validates every entry before acting.
-    ownership.Tracker(jobpath.parent, ledger).install()
+    os.environ.pop('VELDO_MUTATION_LIFECYCLE_FD', None)
+    ownership.Tracker(jobpath.parent, ledger, int(lifecycle) if lifecycle is not None else None).install()
     if mode == 'unconfined':
         # The mutation stage's unconfined leg (VELDO-0208, owner decision Telegram 32403-32407): the
         # coordinator starts a case of a suite the authority's list names in this mode, and only
@@ -75,9 +93,9 @@ def main():
     # fresh worker, inside its tree, mutation_sandbox.confine_in_tree; for a declared case
     # mutation_sandbox.confine, from which this process returns only as the confined child.
     if mode == 'tree':
-        sandbox.confine_in_tree(authority, root, Path(os.environ['TMPDIR']), keep=(ledger,), boundary=boundary)
+        sandbox.confine_in_tree(authority, root, Path(os.environ['TMPDIR']), keep=keep, boundary=boundary)
     else:
-        sandbox.confine(authority, root, Path(os.environ['TMPDIR']), job.get('runtime_paths'), keep=(ledger,))
+        sandbox.confine(authority, root, Path(os.environ['TMPDIR']), job.get('runtime_paths'), keep=keep)
     observe(gate, owner, job, root)
 
 
