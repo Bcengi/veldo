@@ -11566,6 +11566,32 @@ def cases():
           "                if False:  # defect: an out-of-scope answer goes on to settlement\n",
           'ui/out-of-scope')
 
+    # VELDO-0227: setup names the factory UI directory in the API process configuration, upgrades a configuration
+    # that lacks only that key, and reports whether a built UI is there.
+    def ui227(name, old, new, rows):
+        add(227, name, '117_veldo_0227_ui_location.py', 'control_factory_setup_api.py', old, new, rows)
+
+    # AC1 (declared falsifier): process_config omits the `ui` key.
+    ui227('ui227-config-omits-ui',
+          "'state_dir': state_dir, 'ui': ui_directory(workspace)}}\n",
+          "'state_dir': state_dir}}  # defect: the API is never told where the UI is\n",
+          ['ui/fresh-config', 'ui/served'])
+    # AC2 (declared falsifier): the report always says a built UI is present.
+    ui227('ui227-report-always-present',
+          "    present = os.path.isfile(os.path.join(directory, UI_INDEX))\n",
+          "    present = True  # defect: the report never says no UI is laid\n",
+          ['ui/report-absent'])
+    # AC1: a configuration the pre-change setup wrote is refused as differing instead of upgraded.
+    ui227('ui227-pre-change-refused',
+          "        if not lacks_only_ui(path, data, mode):\n",
+          "        if True:  # defect: a configuration without `ui` is refused, not upgraded\n",
+          ['ui/upgrade-pre-change'])
+    # AC1: any difference beside the missing `ui` is upgraded over instead of refused.
+    ui227('ui227-any-difference-upgraded',
+          "            and isinstance(api, dict) and 'ui' not in api and dict(held, api=dict(api, ui=wanted['api']['ui'])) == wanted)\n",
+          "            and isinstance(api, dict) and 'ui' not in api)  # defect: every other difference is overwritten\n",
+          ['ui/differs-refused'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

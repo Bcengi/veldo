@@ -1533,6 +1533,18 @@
    ],
    "regions": "The UI's page and built assets served by the VELDO-0130 API from its own origin under its policy, every factory data route refused before a passkey session, the UI's route table traced to the API's published routes, and the UI's dependency policy over its lockfile (VELDO-0145).",
    "requires_note": "Only ROOT and expect; a real ControlApi on the real loopback listener with a recording authority stand-in, a fixture UI build, and the UI's own routes.json, package.json, package-lock.json and dependency-policy.json."
+  },
+  {
+   "name": "117_veldo_0227_ui_location",
+   "file": "117_veldo_0227_ui_location.py",
+   "requires": [
+    "117_veldo_0227_ui_location"
+   ],
+   "regions": "veldo factory setup naming the factory UI directory <workspace>/.veldo/ui in the installed API's process configuration on a fresh host, the installed API serving the UI init_scaffold --ui lays there with no edit of its configuration, setup's report naming the directory and whether a built UI is there, a second run changing nothing, a configuration laid down by the pre-change setup upgraded in place with only api.ui added and its running API restarted onto it, and every other difference refused (VELDO-0227).",
+   "requires_note": "Only ROOT and expect. VELDO-0171's installed-host fixture (suite 85's setup preamble and cleanup, reused as VELDO-0185 reuses it) with the real setup module, its user manager stand-in running the installed authority and API units, its Tailscale stand-in and loopback Bot API; a fixture UI build laid by init_scaffold.lay_ui; the .veldo of commit 1aee02d4 read from history through git_process; HTTP to the installed API's loopback listener. Writes only temporary fixtures.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   }
  ],
  "resource_capacities": {
