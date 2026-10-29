@@ -38,7 +38,11 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
     if fault_only:
         names = ('followup/initial-fault', 'followup/pending-fault')
     # In every variant: the PM cycles' exchanges staged in the fixture's own graph stage.
-    names = names + ('graph/own-stage', 'line/store-staffing')
+    names = names + ('graph/own-stage',)
+    # One variant reports the store's line, so its falsifier names a single row; the others
+    # take the same line from factory.lines and fail without it.
+    if not (review_only or setup_only or fault_only):
+        names = names + ('line/store-staffing',)
     rows = {name: [] for name in names}
 
     def check(name, label, condition):
