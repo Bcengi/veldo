@@ -1581,6 +1581,15 @@
    "resources": {
     "systemd_user_manager": 1
    }
+  },
+  {
+   "name": "114_veldo_0216_concurrent_stages",
+   "file": "114_veldo_0216_concurrent_stages.py",
+   "requires": [
+    "114_veldo_0216_concurrent_stages"
+   ],
+   "regions": "Authority graph, ledger, verdict parity, and concurrency mechanics.",
+   "requires_note": "Only ROOT and expect. Scratch authorities, real confined launcher, controlled mutation payload, fixture cgroup meter. No host lock or user manager."
   }
  ],
  "resource_capacities": {

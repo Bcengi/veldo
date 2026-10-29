@@ -11529,6 +11529,30 @@ def cases():
         ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0216: graph completeness, concurrent records, summed claims and serial control.
+    suite216 = '114_veldo_0216_concurrent_stages.py'
+    add(216, 'concurrent216-missing-stage-runs-nothing', suite216, 'gate_schedule.py',
+        "        if set(nodes) != set(required):\n",
+        "        required = {n: pair for n, pair in required.items() if n in nodes}\n"
+        "        if set(nodes) != set(required):\n",
+        ['concurrent-stages/graph-complete'])
+    result[-1]['dir'] = 'scripts'
+    add(216, 'concurrent216-lost-leg-record', suite216, 'gate_legs.py',
+        'os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)',
+        'os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)',
+        ['concurrent-stages/same-verdicts'])
+    result[-1]['dir'] = 'scripts'
+    add(216, 'concurrent216-count-not-sum', suite216, 'gate_schedule.py',
+        "        return {r: sum(c[r] for c in self.held.values()) for r in self.capacity}\n",
+        "        return {r: (len(self.held) if r != 'manager' else sum(c[r] for c in self.held.values())) for r in self.capacity}\n",
+        ['concurrent-stages/ledger-sums'])
+    result[-1]['dir'] = 'scripts'
+    add(216, 'concurrent216-serialize-nodes', suite216, 'gate_schedule.py',
+        '    pending = list(required)\n',
+        '    serial = True\n    pending = list(required)\n',
+        ['concurrent-stages/critical-path-fixture'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0220: the host lock and the gate's own scope, and NOT STARTED never charged as a red.
     suite220 = '113_veldo_0220_gate_host.py'
     scope220 = '114_veldo_0220_gate_scope.py'

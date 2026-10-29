@@ -85,7 +85,7 @@ def worker_count(cpus=None, cgroup_root='/sys/fs/cgroup', membership='/proc/self
 
 
 PARALLEL = 1 if '--worker' in sys.argv else worker_count()
-OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl'}
+OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl', '.veldo/gate-schedule.json'}
 
 
 def budget_for(count, workers=REFERENCE_WORKERS, phases=(), resources=None):
@@ -1112,6 +1112,8 @@ def main():
     # worktree of it, and its marker is checked against that directory before any Git runs.
     receipt = run_stage(args.root, common_directory(ROOT), capacities=resource_capacities(args.resource_capacity),
                         findings=args.finding, names=args.names, log_dir=args.worker_log_dir, leg=leg, measure=True)
+    if os.environ.get('VELDO_GATE_GRAPH_DIGEST'):
+        receipt['graph'] = os.environ['VELDO_GATE_GRAPH_DIGEST']
     if args.receipt:
         args.receipt.write_bytes(canonical(receipt))
     print(json.dumps(receipt, sort_keys=True), flush=True)
