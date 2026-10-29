@@ -111,6 +111,8 @@ W = organ('control_api_webauthn')
 CR = organ('control_api_credentials')
 AS = organ('control_api_assertion')
 MO = organ('control_api_models')
+# VELDO-0145: the UI's page and built assets, served from this same origin outside /api/.
+UI = organ('control_api_ui')
 AC = CR.AC
 
 COOKIE = '__Host-veldo-session'
@@ -419,6 +421,8 @@ class ControlApi:
 
     def __init__(self, config, authority, signer, clock=time.time, observe=None):
         self.origin, self.rp_id, self.host = config['origin'], config['rp_id'], config['host']
+        # VELDO-0145: the UI's built directory when the configuration names one (control_api_ui.directory).
+        self.ui = config.get('ui')
         self.domain, self.edge = config['domain'], config['edge']
         self.ids = {f: config['ids'][f] for f in AS.IDS}
         self.state_dir = Path(config['state_dir'])
@@ -607,7 +611,7 @@ class ControlApi:
             raise Refused('unavailable_service:openssl', 'no openssl executable at a fixed system location')
 
     def _session_view(self, session):
-        return {'principal': session['principal'], 'credential_id': session['credential_id'],
+        return {'principal': session['principal'], 'credential_id': session['credential_id'], 'domain': self.domain,
                 'csrf_token': session['token'], 'idle_expires_at': session['seen'] + IDLE_SECONDS,
                 'expires_at': session['created'] + ABSOLUTE_SECONDS}
 
@@ -1140,10 +1144,13 @@ def is_loopback(host):
         return False
 
 
-def listen(api, host, port):
-    """A ThreadingHTTPServer for `api` on a loopback address only; anything else refuses."""
+def listen(api, host, port, ui=None):
+    """A ThreadingHTTPServer for `api` on a loopback address only; anything else refuses. A GET or HEAD
+    outside /api/ is the UI's page or one of its built assets from `ui` (control_api_ui.directory by
+    default), which carries no factory data; every /api/ request is the API's."""
     if not is_loopback(host):
         raise Refused('invalid_input:listen', 'the API listens on a loopback address only')
+    ui_dir = Path(ui) if ui is not None else UI.directory({'ui': getattr(api, 'ui', None)})
 
     class Handler(http.server.BaseHTTPRequestHandler):
         protocol_version = 'HTTP/1.1'
@@ -1157,7 +1164,19 @@ def listen(api, host, port):
             self.send_header('Content-Security-Policy', CSP)
             super().end_headers()
 
+        def _page(self, method):
+            status, headers, payload = UI.serve(ui_dir, method, self.path, self.headers, api.host)
+            self.send_response(status)
+            for name, content in headers:
+                self.send_header(name, content)
+            if not any(name == 'Content-Length' for name, _ in headers):
+                self.send_header('Content-Length', str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+
         def _serve(self, method):
+            if method == 'GET' and UI.is_page_path(self.path):
+                return self._page(method)
             length = self.headers.get('Content-Length')
             try:
                 size = int(length) if length is not None else 0
@@ -1198,6 +1217,12 @@ def listen(api, host, port):
 
         def do_POST(self):
             self._serve('POST')
+
+        def do_HEAD(self):
+            if UI.is_page_path(self.path):
+                self._page('HEAD')
+            else:
+                self.send_error(405)
 
     server = http.server.ThreadingHTTPServer((host, port), Handler)
     server.daemon_threads = True

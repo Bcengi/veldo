@@ -1,0 +1,28 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 e2e/layout.spec.ts:531:1 › phone terminal: the record gets the screen, the headline unclipped, the strip on one line and the controls in one bar (679ms)
+
+
+  1) e2e/layout.spec.ts:531:1 › phone terminal: the record gets the screen, the headline unclipped, the strip on one line and the controls in one bar 
+
+    Error: headline clipped at 360
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      541 |     const host = headline.locator('li', { hasText: 'veldo-linux-1' })
+      542 |     await expect(host).toHaveText('on veldo-linux-1')
+    > 543 |     expect(await headline.evaluate((el) => el.scrollWidth <= el.clientWidth + 1), `headline clipped at ${viewport.width}`).toBe(true)
+          |                                                                                                                            ^
+      544 |     const hostBox = (await host.boundingBox())!
+      545 |     const lineBox = (await headline.boundingBox())!
+      546 |     expect(hostBox.x + hostBox.width, `host inside the headline at ${viewport.width}`).toBeLessThanOrEqual(Math.min(viewport.width, lineBox.x + lineBox.width) + 1)
+        at /home/dmitry/projects/veldo-worktrees/veldo-0145/engine/ui/e2e/layout.spec.ts:543:124
+
+    Error Context: test-results/layout-phone-terminal-the--e743f-and-the-controls-in-one-bar/error-context.md
+
+  1 failed
+    e2e/layout.spec.ts:531:1 › phone terminal: the record gets the screen, the headline unclipped, the strip on one line and the controls in one bar 

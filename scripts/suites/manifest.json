@@ -1612,6 +1612,15 @@
     "new_project_fixture": 1,
     "systemd_user_manager": 1
    }
+  },
+  {
+   "name": "113_veldo_0145_ui",
+   "file": "113_veldo_0145_ui.py",
+   "requires": [
+    "113_veldo_0145_ui"
+   ],
+   "regions": "Seven rows (VELDO-0145): ui/page-served, the UI's page and built assets served by the VELDO-0130 API from its own origin under its policy; ui/unauthenticated-access, every factory data route refused before a passkey session; ui/route-trace, the UI's route table traced to the API's published routes; ui/installed, a build laid at .veldo/ui by init_scaffold.lay_ui and served by the API installed beside it; ui/scaffold-opt-in, a plain scaffold lays no UI and a requested one (scaffold(ui=True)) is laid, ignored by git and named by the right step when absent; ui/out-of-scope, a member's answer refused unauthorized:out_of_scope once a steward narrows the scope, settling nothing; ui/dependency-policy, the UI's dependency policy over its lockfile.",
+   "requires_note": "Only ROOT and expect; a real ControlApi on the real loopback listener with a recording authority stand-in, a fixture UI build, and the UI's own routes.json, package.json, package-lock.json and dependency-policy.json; the installed .veldo organs laid into scratch factory roots; the browser tests' real factory harness (engine/ui/e2e/harness.py: signed store, presenter, settlement, API authority, protected signer and ControlApi, with a passkey sign-in over the API); and init_scaffold.scaffold run over a scratch copy of engine/ (without ui/, then a fixture source, then a fixture build) with git asked whether the laid UI is ignored."
   }
  ],
  "resource_capacities": {

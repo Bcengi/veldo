@@ -1,0 +1,103 @@
+/* Veldo's design tokens. Semantic names only; see docs/design/colors.md, typography.md, layout.md.
+ * Colors are six-digit hex: Monaco's themes read them and append an alpha byte. */
+:root {
+  color-scheme: light;
+  --ink: #0e1a2e;
+  --ink-muted: #4a5772;
+  --paper: #f2f5fa;
+  --paper-raised: #ffffff;
+  --paper-sunken: #e7ecf4;
+  --rule: #d5dce8;
+  --rule-strong: #7d8ba3;
+  --cobalt: #2349d4;
+  --cobalt-hover: #1b3bb0;
+  --cobalt-ink: #ffffff;
+  --cobalt-text: #2349d4;
+  --cobalt-wash: #e3e9fb;
+  --board: #0e1a2e;
+  --board-ink: #ffffff;
+  --board-muted: #9fb0d0;
+  --board-rule: #23314d;
+  --amber: #f2a900;
+  --amber-ink: #0e1a2e;
+  --amber-text: #8a5a00;
+  --amber-wash: #fbf0d6;
+  --live: #23a15c;
+  --live-text: #1d7a47;
+  --stop: #d63b2a;
+  --stop-text: #b42b1c;
+  --stop-wash: #fbe6e2;
+  --focus: #2349d4;
+  --lamp-off: #c5cedc;
+  --lamp-glow: 0 0 0 3px color-mix(in srgb, var(--lamp) 26%, transparent), 0 0 12px 1px color-mix(in srgb, var(--lamp) 50%, transparent);
+  --diff-insert: #d2f0dc;
+  --diff-remove: #f9dad5;
+  --shadow-float: 0 -6px 18px -8px color-mix(in srgb, var(--ink) 30%, transparent);
+
+  --font-text: 'IBM Plex Sans Variable', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius-control: 6px;
+  --radius-panel: 10px;
+  --rail: 248px;
+  --gutter: 16px;
+  --bottombar: 64px;
+  --measure: 68ch;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ink: #e4eaf5;
+  --ink-muted: #9ba8c2;
+  --paper: #0d1626;
+  --paper-raised: #15213a;
+  --paper-sunken: #0a1120;
+  --rule: #23314d;
+  --rule-strong: #5a6e94;
+  --cobalt: #2f5ae6;
+  --cobalt-hover: #3d66ee;
+  --cobalt-ink: #ffffff;
+  --cobalt-text: #8eacff;
+  --cobalt-wash: #1a2b52;
+  --board: #142a5c;
+  --board-ink: #ffffff;
+  --board-muted: #c9d4ea;
+  --board-rule: #2a4380;
+  --amber: #f2b52e;
+  --amber-ink: #0e1a2e;
+  --amber-text: #f5c04a;
+  --amber-wash: #33291a;
+  --live: #3cc27a;
+  --live-text: #6fd39a;
+  --stop: #f0705c;
+  --stop-text: #ff8f7d;
+  --stop-wash: #3a1d1d;
+  --focus: #8eacff;
+  --lamp-off: #2e3d5c;
+  --diff-insert: #173d2a;
+  --diff-remove: #4a2222;
+  --shadow-float: 0 -6px 18px -8px #000000;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 32px;
+  }
+}

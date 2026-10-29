@@ -1,0 +1,119 @@
+{
+  "schema": "veldo.ui_falsifiers/v1",
+  "about": "Each acceptance criterion's declared falsifier as an exact edit of production code, and the checks that must turn red under it (VELDO-0145). Run one with npm run falsify <case>; the red and green records go to proof/VELDO-0145/falsifiers/.",
+  "cases": {
+    "ac1-sign-in-before-approval": {
+      "criterion": "AC1",
+      "falsifier": "Sign in before the host approves the registration; the enroll-then-sign-in row must fail.",
+      "edits": [
+        {
+          "file": "src/views/SignInView.vue",
+          "old": "    pending.value = { ...shown, credentialId: made.credential_id, rpId: begun.rp_id }\n    mode.value = 'pending'\n",
+          "new": "    pending.value = { ...shown, credentialId: made.credential_id, rpId: begun.rp_id }\n    mode.value = 'pending'\n    // defect: the pending registration is taken as signed in, before the host approves it\n    session.adopt({ principal: name, credential_id: made.credential_id, domain: 'veldo-e2e', csrf_token: '', idle_expires_at: 0, expires_at: 0 })\n    await router.replace(next.value)\n"
+        }
+      ],
+      "checks": [
+        {
+          "kind": "e2e",
+          "file": "e2e/signin.spec.ts",
+          "grep": "enroll-then-sign-in"
+        }
+      ]
+    },
+    "ac1-data-before-session": {
+      "criterion": "AC1",
+      "falsifier": "Serve a screen's factory data before the passkey session is established; the unauthenticated-access check must fail.",
+      "edits": [
+        {
+          "organ": "control_api.py",
+          "old": "          for m in MO.READ_MODELS) + (\n",
+          "new": "          for m in MO.READ_MODELS if False) + tuple(Route(m.route, 'GET', '/api/v1/domains/{domain}/' + m.name, 'reads', False, (), (), None) for m in MO.READ_MODELS) + (  # defect: reads without a session\n"
+        },
+        {
+          "organ": "control_api.py",
+          "old": "        return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])\n",
+          "new": "        return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], (session or {'principal': 'owner'})['principal'])  # defect\n"
+        }
+      ],
+      "checks": [
+        {
+          "kind": "e2e",
+          "file": "e2e/signin.spec.ts",
+          "grep": "unauthenticated access"
+        }
+      ]
+    },
+    "ac2-summary-in-place-of-record": {
+      "criterion": "AC2",
+      "falsifier": "Show a summarized step list in place of the record; the full-detail check must fail.",
+      "edits": [
+        {
+          "file": "src/features/run/RunTerminal.vue",
+          "old": "            v-for=\"line in record.lines\"\n",
+          "new": "            v-for=\"line in record.lines.filter((l) => l.kind === 'tool call' || l.kind === 'run result')\"\n"
+        }
+      ],
+      "checks": [
+        {
+          "kind": "e2e",
+          "file": "e2e/run.spec.ts",
+          "grep": "full detail"
+        },
+        {
+          "kind": "unit",
+          "file": "src/features/run/RunTerminal.spec.ts"
+        }
+      ]
+    },
+    "ac3-answer-without-presentation-version": {
+      "criterion": "AC3",
+      "falsifier": "Send an answer without the presentation version it answers; the stale-answer refusal row must fail.",
+      "edits": [
+        {
+          "file": "src/features/decisions/inbox.ts",
+          "old": "    presentation_version: shown.version,\n",
+          "new": ""
+        },
+        {
+          "file": "src/api/decisions.ts",
+          "old": "  presentation_version: number\n",
+          "new": "  presentation_version?: number\n"
+        },
+        {
+          "file": "src/api/routes.json",
+          "old": "\"required\": [\"request_id\", \"request_version\", \"presentation_id\", \"presentation_digest\", \"presentation_version\", \"choice\", \"rationale\"]",
+          "new": "\"required\": [\"request_id\", \"request_version\", \"presentation_id\", \"presentation_digest\", \"choice\", \"rationale\"]"
+        }
+      ],
+      "checks": [
+        {
+          "kind": "e2e",
+          "file": "e2e/decisions.spec.ts",
+          "grep": "stale answer"
+        },
+        {
+          "kind": "unit",
+          "file": "src/features/decisions/DecisionDetail.spec.ts"
+        }
+      ]
+    },
+    "ac4-hide-answer-at-360": {
+      "criterion": "AC4",
+      "falsifier": "Hide the inline answer action at 360px width; the phone decisions check must fail.",
+      "edits": [
+        {
+          "file": "src/styles/components.css",
+          "old": "  /* You */\n",
+          "new": "  @media (max-width: 360px) {\n    .answer-bar .vbtn {\n      display: none;\n    }\n  }\n\n  /* You */\n"
+        }
+      ],
+      "checks": [
+        {
+          "kind": "e2e",
+          "file": "e2e/layout.spec.ts",
+          "grep": "phone decisions"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,2924 @@
+{
+ "by_case": [
+  {
+   "baseline_failed": [],
+   "case": "ui145-data-before-session",
+   "mutant_details": [],
+   "mutant_failed_rows": [
+    "VELDO-0145 ui/unauthenticated-access"
+   ],
+   "noop_failed": [],
+   "rows": [
+    "ui/unauthenticated-access"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "case": "ui145-page-escapes-directory",
+   "mutant_details": [],
+   "mutant_failed_rows": [
+    "VELDO-0145 ui/page-served"
+   ],
+   "noop_failed": [],
+   "rows": [
+    "ui/page-served"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "case": "ui145-page-any-host",
+   "mutant_details": [],
+   "mutant_failed_rows": [
+    "VELDO-0145 ui/page-served"
+   ],
+   "noop_failed": [],
+   "rows": [
+    "ui/page-served"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "case": "ui145-route-moved",
+   "mutant_details": [],
+   "mutant_failed_rows": [
+    "VELDO-0145 ui/route-trace"
+   ],
+   "noop_failed": [],
+   "rows": [
+    "ui/route-trace"
+   ]
+  },
+  {
+   "baseline_failed": [],
+   "case": "ui145-tiers-admitted",
+   "mutant_details": [],
+   "mutant_failed_rows": [
+    "VELDO-0145 ui/dependency-policy"
+   ],
+   "noop_failed": [],
+   "rows": [
+    "ui/dependency-policy"
+   ]
+  }
+ ],
+ "executed": 5,
+ "invalid_results": [],
+ "receipt": {
+  "budget_seconds": 21696.0,
+  "case_deadlines": {
+   "check_teeth_mutations.py:ui145-data-before-session": 120,
+   "check_teeth_mutations.py:ui145-page-any-host": 120,
+   "check_teeth_mutations.py:ui145-page-escapes-directory": 120,
+   "check_teeth_mutations.py:ui145-route-moved": 120,
+   "check_teeth_mutations.py:ui145-tiers-admitted": 120
+  },
+  "case_receipts": [
+   {
+    "identity": "check_teeth_mutations.py:ui145-data-before-session",
+    "key": null,
+    "reason": "unknown_closure",
+    "source": "fresh",
+    "validated": true
+   },
+   {
+    "identity": "check_teeth_mutations.py:ui145-page-escapes-directory",
+    "key": null,
+    "reason": "unknown_closure",
+    "source": "fresh",
+    "validated": true
+   },
+   {
+    "identity": "check_teeth_mutations.py:ui145-page-any-host",
+    "key": null,
+    "reason": "unknown_closure",
+    "source": "fresh",
+    "validated": true
+   },
+   {
+    "identity": "check_teeth_mutations.py:ui145-route-moved",
+    "key": null,
+    "reason": "unknown_closure",
+    "source": "fresh",
+    "validated": true
+   },
+   {
+    "identity": "check_teeth_mutations.py:ui145-tiers-admitted",
+    "key": null,
+    "reason": "unknown_closure",
+    "source": "fresh",
+    "validated": true
+   }
+  ],
+  "drivers": {
+   "check_review_mutations.py": {
+    "executed": 0,
+    "inventory_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "registered": 0,
+    "reused": 0,
+    "wall_seconds": 0,
+    "worker_seconds": 0
+   },
+   "check_teeth_mutations.py": {
+    "executed": 5,
+    "inventory_digest": "a06830ac445a1eff5ab011d34ef1be0951ca3372dd32ec55db136c6fd1f41917",
+    "registered": 5,
+    "reused": 0,
+    "wall_seconds": 7.989525835029781,
+    "worker_seconds": 14.354881170904264
+   }
+  },
+  "elapsed": 9.73411836498417,
+  "executed": 5,
+  "force_fresh": false,
+  "implementation_digest": "17b19c46d38b4be409ef1d996dc7e6bd4fdaaee09c4effc8f0e44f1477c14315",
+  "input_digest": "8f4d13b8cb330034ec3c54e7d1cc3e96fc82b306616f993289ed431f8ce74178",
+  "invalid_results": [],
+  "parallel_workers": 2,
+  "peak_workers": 2,
+  "registered": 5,
+  "rejected": 5,
+  "resources": {
+   "capacities": {
+    "new_project_fixture": 2,
+    "systemd_user_manager": 16
+   },
+   "peak_slots": {
+    "new_project_fixture": 0,
+    "systemd_user_manager": 0
+   },
+   "remaining_slots": {
+    "new_project_fixture": 0,
+    "systemd_user_manager": 0
+   }
+  },
+  "results": [
+   {
+    "baseline": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       true
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       true
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       true
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       true
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/unauthenticated-access": [
+       true
+      ]
+     }
+    },
+    "case": {
+     "also": [
+      [
+       "        return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])\n",
+       "        return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], (session or {'principal': 'owner'})['principal'])  # defect\n"
+      ]
+     ],
+     "driver": "check_teeth_mutations.py",
+     "finding": 145,
+     "identity": "check_teeth_mutations.py:ui145-data-before-session",
+     "module": "control_api.py",
+     "name": "ui145-data-before-session",
+     "new": "          for m in MO.READ_MODELS if False) + tuple(Route(m.route, 'GET', '/api/v1/domains/{domain}/' + m.name, 'reads', False, (), (), None) for m in MO.READ_MODELS) + (  # defect: reads without a session\n",
+     "old": "          for m in MO.READ_MODELS) + (\n",
+     "rows": [
+      "ui/unauthenticated-access"
+     ],
+     "suite": "113_veldo_0145_ui.py"
+    },
+    "elapsed": 1.6105628489749506,
+    "fixture_version": 1,
+    "input_digest": "b5f4a3d1a1f629d8e23b24519771976de8612de070a566b2b0cfb0c6b6f0eb58",
+    "mutant": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [
+      "VELDO-0145 ui/unauthenticated-access"
+     ],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       true
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       false
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       true
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       true
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/unauthenticated-access": [
+       false
+      ]
+     }
+    },
+    "new_digest": "6acafceb933ff1a28fe5915333152c97d7b65306b8228748a8566a5ca650e12f",
+    "noop": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       true
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       true
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       true
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       true
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/unauthenticated-access": [
+       true
+      ]
+     }
+    },
+    "old_digest": "9eae3f70aca17e23281760fdbdba83b829dbbbb1d8514661e473e670a19b0875",
+    "replacement_count": 1,
+    "reuse_key": null,
+    "reuse_reason": "unknown_closure",
+    "schema": "veldo.mutation-result/v1",
+    "source": "fresh"
+   },
+   {
+    "baseline": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       true
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       true
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       true
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       true
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/page-served": [
+       true
+      ]
+     }
+    },
+    "case": {
+     "driver": "check_teeth_mutations.py",
+     "finding": 145,
+     "identity": "check_teeth_mutations.py:ui145-page-escapes-directory",
+     "module": "control_api_ui.py",
+     "name": "ui145-page-escapes-directory",
+     "new": "    if not resolved.is_file():  # defect: a link out of the UI directory is served\n",
+     "old": "    if root not in resolved.parents or not resolved.is_file():\n",
+     "rows": [
+      "ui/page-served"
+     ],
+     "suite": "113_veldo_0145_ui.py"
+    },
+    "elapsed": 1.6118148539680988,
+    "fixture_version": 1,
+    "input_digest": "b5f4a3d1a1f629d8e23b24519771976de8612de070a566b2b0cfb0c6b6f0eb58",
+    "mutant": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [
+      "VELDO-0145 ui/page-served"
+     ],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       false
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       true
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       true
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       true
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/page-served": [
+       false
+      ]
+     }
+    },
+    "new_digest": "79d8b597be7808672ace36690478d95826c91c0b1d8ca38a430fe63212a69d41",
+    "noop": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       true
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       true
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       true
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       true
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/page-served": [
+       true
+      ]
+     }
+    },
+    "old_digest": "17be462325836e1da1123ae2277d36e7e5bc337d461dc92b2d0274dd87cb2b24",
+    "replacement_count": 1,
+    "reuse_key": null,
+    "reuse_reason": "unknown_closure",
+    "schema": "veldo.mutation-result/v1",
+    "source": "fresh"
+   },
+   {
+    "baseline": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       true
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       true
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       true
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       true
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/page-served": [
+       true
+      ]
+     }
+    },
+    "case": {
+     "driver": "check_teeth_mutations.py",
+     "finding": 145,
+     "identity": "check_teeth_mutations.py:ui145-page-any-host",
+     "module": "control_api_ui.py",
+     "name": "ui145-page-any-host",
+     "new": "    if False:  # defect: the page answers any Host\n        return _refusal(400, 'invalid_input:host')\n",
+     "old": "    if (headers.get('Host') or '') != host:\n        return _refusal(400, 'invalid_input:host')\n",
+     "rows": [
+      "ui/page-served"
+     ],
+     "suite": "113_veldo_0145_ui.py"
+    },
+    "elapsed": 1.59257472504396,
+    "fixture_version": 1,
+    "input_digest": "b5f4a3d1a1f629d8e23b24519771976de8612de070a566b2b0cfb0c6b6f0eb58",
+    "mutant": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [
+      "VELDO-0145 ui/page-served"
+     ],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       false
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       true
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       true
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       true
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/page-served": [
+       false
+      ]
+     }
+    },
+    "new_digest": "04a5f85d15fb8097081b7ed5a2c9a1398dd6cebfa9846280998e4802dddf03c8",
+    "noop": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       true
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       true
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       true
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       true
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/page-served": [
+       true
+      ]
+     }
+    },
+    "old_digest": "17be462325836e1da1123ae2277d36e7e5bc337d461dc92b2d0274dd87cb2b24",
+    "replacement_count": 1,
+    "reuse_key": null,
+    "reuse_reason": "unknown_closure",
+    "schema": "veldo.mutation-result/v1",
+    "source": "fresh"
+   },
+   {
+    "baseline": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       true
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       true
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       true
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       true
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/unauthenticated-access": [
+       true
+      ]
+     }
+    },
+    "case": {
+     "driver": "check_teeth_mutations.py",
+     "finding": 145,
+     "identity": "check_teeth_mutations.py:ui145-route-moved",
+     "module": "control_api.py",
+     "name": "ui145-route-moved",
+     "new": "    Route('runs.record', 'GET', '/api/v1/domains/{domain}/runs/lines', 'events', True, ('dispatch',), ('after',),\n",
+     "old": "    Route('runs.record', 'GET', '/api/v1/domains/{domain}/runs/record', 'events', True, ('dispatch',), ('after',),\n",
+     "rows": [
+      "ui/route-trace"
+     ],
+     "suite": "113_veldo_0145_ui.py"
+    },
+    "elapsed": 1.5933567789616063,
+    "fixture_version": 1,
+    "input_digest": "b5f4a3d1a1f629d8e23b24519771976de8612de070a566b2b0cfb0c6b6f0eb58",
+    "mutant": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [
+      "VELDO-0145 ui/route-trace"
+     ],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       true
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       true
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       false
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       true
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/route-trace": [
+       false
+      ]
+     }
+    },
+    "new_digest": "1e00783617032e82d40650be3b62b6d40a8bf613c81fc8ffe99009539be8e6fe",
+    "noop": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       true
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       true
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       true
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       true
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/unauthenticated-access": [
+       true
+      ]
+     }
+    },
+    "old_digest": "9eae3f70aca17e23281760fdbdba83b829dbbbb1d8514661e473e670a19b0875",
+    "replacement_count": 1,
+    "reuse_key": null,
+    "reuse_reason": "unknown_closure",
+    "schema": "veldo.mutation-result/v1",
+    "source": "fresh"
+   },
+   {
+    "baseline": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       true
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       true
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       true
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       true
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/page-served": [
+       true
+      ]
+     }
+    },
+    "case": {
+     "driver": "check_teeth_mutations.py",
+     "finding": 145,
+     "identity": "check_teeth_mutations.py:ui145-tiers-admitted",
+     "module": "control_api_ui.py",
+     "name": "ui145-tiers-admitted",
+     "new": "            if True:  # defect: no denied name is ever matched\n",
+     "old": "            if not fnmatch.fnmatchcase(name, rule['name']):\n",
+     "rows": [
+      "ui/dependency-policy"
+     ],
+     "suite": "113_veldo_0145_ui.py"
+    },
+    "elapsed": 1.5906234200811014,
+    "fixture_version": 1,
+    "input_digest": "b5f4a3d1a1f629d8e23b24519771976de8612de070a566b2b0cfb0c6b6f0eb58",
+    "mutant": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       true
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       true
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       true
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       false
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/dependency-policy": [
+       false
+      ]
+     }
+    },
+    "new_digest": "81068baefad34b0e28b61215c06277da1d1ca81f30ae06c5a93cd32dda3d4b9d",
+    "noop": {
+     "count": 30,
+     "failed_details": [],
+     "failed_rows": [],
+     "observations": [
+      [
+       "good spec accepted",
+       true
+      ],
+      [
+       "spec without criteria rejected",
+       true
+      ],
+      [
+       "unknown evidence kind rejected",
+       true
+      ],
+      [
+       "bad status rejected",
+       true
+      ],
+      [
+       "invented proof criterion rejected",
+       true
+      ],
+      [
+       "missing proof criterion rejected",
+       true
+      ],
+      [
+       "absent required evidence rejected",
+       true
+      ],
+      [
+       "passed-without-evidence rejected",
+       true
+      ],
+      [
+       "bad verdict value rejected",
+       true
+      ],
+      [
+       "good plan accepted",
+       true
+      ],
+      [
+       "plan dependency cycle rejected",
+       true
+      ],
+      [
+       "dangling dependency rejected",
+       true
+      ],
+      [
+       "unknown outcome ref rejected",
+       true
+      ],
+      [
+       "unknown feature ref rejected",
+       true
+      ],
+      [
+       "undeclared depends_on rejected",
+       true
+      ],
+      [
+       "ready without approval rejected",
+       true
+      ],
+      [
+       "decision without blocks rejected",
+       true
+      ],
+      [
+       "decision blocking unknown spec rejected",
+       true
+      ],
+      [
+       "duplicate work spec rejected",
+       true
+      ],
+      [
+       "bad release mode rejected",
+       true
+      ],
+      [
+       "mirror mismatch rejected",
+       true
+      ],
+      [
+       "correct mirror accepted",
+       true
+      ],
+      [
+       "spec binding to wrong plan rejected",
+       true
+      ],
+      [
+       "spec claiming missing work item rejected",
+       true
+      ],
+      [
+       "spec plan without work rejected",
+       true
+      ],
+      [
+       "correct spec binding accepted",
+       true
+      ],
+      [
+       "VELDO-0145 ui/page-served",
+       true
+      ],
+      [
+       "VELDO-0145 ui/unauthenticated-access",
+       true
+      ],
+      [
+       "VELDO-0145 ui/route-trace",
+       true
+      ],
+      [
+       "VELDO-0145 ui/dependency-policy",
+       true
+      ]
+     ],
+     "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0145 ui/page-served",
+      "VELDO-0145 ui/unauthenticated-access",
+      "VELDO-0145 ui/route-trace",
+      "VELDO-0145 ui/dependency-policy"
+     ],
+     "targets": {
+      "ui/page-served": [
+       true
+      ]
+     }
+    },
+    "old_digest": "17be462325836e1da1123ae2277d36e7e5bc337d461dc92b2d0274dd87cb2b24",
+    "replacement_count": 1,
+    "reuse_key": null,
+    "reuse_reason": "unknown_closure",
+    "schema": "veldo.mutation-result/v1",
+    "source": "fresh"
+   }
+  ],
+  "reuse_integrity_errors": [],
+  "reuse_qualified": 0,
+  "reused": 0,
+  "schema": "veldo.mutation-stage/v1",
+  "scope": "selected",
+  "status": "passed",
+  "surviving_workers": 0,
+  "worker_invocations": 9,
+  "worker_outcomes": [
+   {
+    "budget_seconds": 120,
+    "cleanup": {
+     "directories": 3,
+     "units": []
+    },
+    "driver": "check_teeth_mutations.py",
+    "elapsed": 1.5924999869894236,
+    "leg": "confined",
+    "mode": "baseline",
+    "name": "113_veldo_0145_ui.py:control_api.py:False:baseline",
+    "output_directory": "/tmp/veldo-mutations-l621fgu0/0",
+    "pid": 1992147,
+    "returncode": 0,
+    "stderr_bytes": 0,
+    "stdout_bytes": 2561
+   },
+   {
+    "budget_seconds": 120,
+    "cleanup": {
+     "directories": 3,
+     "units": []
+    },
+    "driver": "check_teeth_mutations.py",
+    "elapsed": 1.5931952149840072,
+    "leg": "confined",
+    "mode": "noop",
+    "name": "113_veldo_0145_ui.py:control_api.py:False:noop",
+    "output_directory": "/tmp/veldo-mutations-l621fgu0/1",
+    "pid": 1992148,
+    "returncode": 0,
+    "stderr_bytes": 0,
+    "stdout_bytes": 2561
+   },
+   {
+    "budget_seconds": 120,
+    "cleanup": {
+     "directories": 3,
+     "units": []
+    },
+    "driver": "check_teeth_mutations.py",
+    "elapsed": 1.5708617689087987,
+    "leg": "confined",
+    "mode": "noop",
+    "name": "113_veldo_0145_ui.py:control_api_ui.py:False:noop",
+    "output_directory": "/tmp/veldo-mutations-l621fgu0/3",
+    "pid": 1992396,
+    "returncode": 0,
+    "stderr_bytes": 0,
+    "stdout_bytes": 2550
+   },
+   {
+    "budget_seconds": 120,
+    "cleanup": {
+     "directories": 3,
+     "units": []
+    },
+    "driver": "check_teeth_mutations.py",
+    "elapsed": 1.5928930930094793,
+    "leg": "confined",
+    "mode": "baseline",
+    "name": "113_veldo_0145_ui.py:control_api_ui.py:False:baseline",
+    "output_directory": "/tmp/veldo-mutations-l621fgu0/2",
+    "pid": 1992395,
+    "returncode": 0,
+    "stderr_bytes": 0,
+    "stdout_bytes": 2550
+   },
+   {
+    "budget_seconds": 120,
+    "cleanup": {
+     "directories": 3,
+     "units": []
+    },
+    "driver": "check_teeth_mutations.py",
+    "elapsed": 1.6122183969710022,
+    "leg": "confined",
+    "mode": "mutant",
+    "name": "check_teeth_mutations.py:ui145-data-before-session",
+    "output_directory": "/tmp/veldo-mutations-l621fgu0/4",
+    "pid": 1992715,
+    "returncode": 0,
+    "stderr_bytes": 0,
+    "stdout_bytes": 2601
+   },
+   {
+    "budget_seconds": 120,
+    "cleanup": {
+     "directories": 3,
+     "units": []
+    },
+    "driver": "check_teeth_mutations.py",
+    "elapsed": 1.6129021300002933,
+    "leg": "confined",
+    "mode": "mutant",
+    "name": "check_teeth_mutations.py:ui145-page-escapes-directory",
+    "output_directory": "/tmp/veldo-mutations-l621fgu0/5",
+    "pid": 1992716,
+    "returncode": 0,
+    "stderr_bytes": 0,
+    "stdout_bytes": 2579
+   },
+   {
+    "budget_seconds": 120,
+    "cleanup": {
+     "directories": 3,
+     "units": []
+    },
+    "driver": "check_teeth_mutations.py",
+    "elapsed": 1.593906976049766,
+    "leg": "confined",
+    "mode": "mutant",
+    "name": "check_teeth_mutations.py:ui145-page-any-host",
+    "output_directory": "/tmp/veldo-mutations-l621fgu0/6",
+    "pid": 1992951,
+    "returncode": 0,
+    "stderr_bytes": 0,
+    "stdout_bytes": 2579
+   },
+   {
+    "budget_seconds": 120,
+    "cleanup": {
+     "directories": 3,
+     "units": []
+    },
+    "driver": "check_teeth_mutations.py",
+    "elapsed": 1.5943942939629778,
+    "leg": "confined",
+    "mode": "mutant",
+    "name": "check_teeth_mutations.py:ui145-route-moved",
+    "output_directory": "/tmp/veldo-mutations-l621fgu0/7",
+    "pid": 1992952,
+    "returncode": 0,
+    "stderr_bytes": 0,
+    "stdout_bytes": 2579
+   },
+   {
+    "budget_seconds": 120,
+    "cleanup": {
+     "directories": 3,
+     "units": []
+    },
+    "driver": "check_teeth_mutations.py",
+    "elapsed": 1.5920093100285158,
+    "leg": "confined",
+    "mode": "mutant",
+    "name": "check_teeth_mutations.py:ui145-tiers-admitted",
+    "output_directory": "/tmp/veldo-mutations-l621fgu0/8",
+    "pid": 1993199,
+    "returncode": 0,
+    "stderr_bytes": 0,
+    "stdout_bytes": 2591
+   }
+  ]
+ },
+ "registered": 5,
+ "rejected": 5,
+ "summary_line": "mutations: passed registered=5 executed=5 reused=0 rejected=5 workers=9 elapsed=9.734s"
+}

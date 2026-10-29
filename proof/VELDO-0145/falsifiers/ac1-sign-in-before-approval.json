@@ -1,0 +1,45 @@
+{
+  "schema": "veldo.ui_falsifier_record/v1",
+  "case": "ac1-sign-in-before-approval",
+  "criterion": "AC1",
+  "falsifier": "Sign in before the host approves the registration; the enroll-then-sign-in row must fail.",
+  "commit": "f5aa18e48bbef2e090455d64672d0285f77b9605",
+  "edits": [
+    {
+      "file": "src/views/SignInView.vue",
+      "source_sha256": "24ecac530a5476aa258229e4164504ffd5e09bbe594625cffb4b89f4e1d6f8cc",
+      "mutant_sha256": "76c42411b5d32e819fd85e056921e3af2497cc27979c6b270b6c1f7726fe78fb",
+      "old": "    pending.value = { ...shown, credentialId: made.credential_id, rpId: begun.rp_id }\n    mode.value = 'pending'\n",
+      "new": "    pending.value = { ...shown, credentialId: made.credential_id, rpId: begun.rp_id }\n    mode.value = 'pending'\n    // defect: the pending registration is taken as signed in, before the host approves it\n    session.adopt({ principal: name, credential_id: made.credential_id, domain: 'veldo-e2e', csrf_token: '', idle_expires_at: 0, expires_at: 0 })\n    await router.replace(next.value)\n"
+    }
+  ],
+  "red": [
+    {
+      "kind": "e2e",
+      "file": "e2e/signin.spec.ts",
+      "grep": "enroll-then-sign-in",
+      "exit": 1,
+      "seconds": 12.962,
+      "summary": [
+        "Error: expect(locator).toBeVisible() failed",
+        "Expected: visible",
+        "Error: element(s) not found",
+        "1 failed"
+      ]
+    }
+  ],
+  "green": [
+    {
+      "kind": "e2e",
+      "file": "e2e/signin.spec.ts",
+      "grep": "enroll-then-sign-in",
+      "exit": 0,
+      "seconds": 4.656,
+      "summary": [
+        "1 passed (4.2s)"
+      ]
+    }
+  ],
+  "red_as_required": true,
+  "green_as_required": true
+}

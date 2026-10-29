@@ -11674,6 +11674,48 @@ def cases():
             "            service.config['receiver'] = {'configs': {}}  # defect: no receiver authority\n",
             ['line/store-staffing'])
         result[-1]['dir'] = 'scripts/suites'
+    # VELDO-0145: the UI's page served by the API from its own origin, factory data only in a passkey
+    # session, the UI's route table traced to the API's, and the UI's dependency policy.
+    def ui145(name, module, old, new, row):
+        add(145, name, '113_veldo_0145_ui.py', module, old, new, [row])
+
+    # AC1 (declared falsifier): serve a screen's factory data before the passkey session is established.
+    ui145('ui145-data-before-session', 'control_api.py',
+          "          for m in MO.READ_MODELS) + (\n",
+          "          for m in MO.READ_MODELS if False) + tuple(Route(m.route, 'GET', '/api/v1/domains/{domain}/' + m.name,"
+          " 'reads', False, (), (), None) for m in MO.READ_MODELS) + (  # defect: reads without a session\n",
+          'ui/unauthenticated-access')
+    result[-1]['also'] = [["        return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])\n", "        return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], (session or {'principal': 'owner'})['principal'])  # defect\n"]]
+    ui145('ui145-page-escapes-directory', 'control_api_ui.py',
+          "    if root not in resolved.parents or not resolved.is_file():\n",
+          "    if not resolved.is_file():  # defect: a link out of the UI directory is served\n",
+          'ui/page-served')
+    ui145('ui145-page-any-host', 'control_api_ui.py',
+          "    if (headers.get('Host') or '') != host:\n        return _refusal(400, 'invalid_input:host')\n",
+          "    if False:  # defect: the page answers any Host\n        return _refusal(400, 'invalid_input:host')\n",
+          'ui/page-served')
+    ui145('ui145-route-moved', 'control_api.py',
+          "    Route('runs.record', 'GET', '/api/v1/domains/{domain}/runs/record', 'events', True, ('dispatch',), ('after',),\n",
+          "    Route('runs.record', 'GET', '/api/v1/domains/{domain}/runs/lines', 'events', True, ('dispatch',), ('after',),\n",
+          'ui/route-trace')
+    # VELDO-0131 AC4's falsifier as this slice applies it: a dependency with free and paid tiers is admitted.
+    ui145('ui145-tiers-admitted', 'control_api_ui.py',
+          "            if not fnmatch.fnmatchcase(name, rule['name']):\n",
+          "            if True:  # defect: no denied name is ever matched\n",
+          'ui/dependency-policy')
+
+    # VELDO-0145 AC3 (round 3, N1): an answer from a member whose scope no longer covers the request is refused by
+    # name before settlement; without the branch it reaches settlement and reads as a stale presentation.
+    ui145('ui145-out-of-scope-answered', 'control_api_authority.py',
+          "                if scope is not None and not self.CM.scope_covers(person.get('scope'), scope):\n",
+          "                if False:  # defect: an out-of-scope answer goes on to settlement\n",
+          'ui/out-of-scope')
+    # VELDO-0145 AC1 (round 4): a plain scaffold lays no UI; only a requested one (ui=True) is laid. Restoring the implicit
+    # lay makes what a scaffold writes depend on the checkout's build state.
+    ui145('ui145-scaffold-lays-implicitly', 'init_scaffold.py',
+          "    ui = lay_ui(templates, target) if ui else None\n",
+          "    ui = lay_ui(templates, target)  # defect: the UI is laid whether or not it was asked for\n",
+          'ui/scaffold-opt-in')
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

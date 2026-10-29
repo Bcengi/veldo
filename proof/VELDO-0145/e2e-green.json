@@ -1,0 +1,163 @@
+{
+  "schema": "veldo.ui_e2e_run/v1",
+  "stats": {
+    "startTime": "2026-10-28T19:22:40.105Z",
+    "duration": 157895.50499999998,
+    "expected": 30,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "file": "decisions.spec.ts",
+      "title": "inbox and exact presentation: the question, choices and rationale as the receipt holds them",
+      "status": "passed"
+    },
+    {
+      "file": "decisions.spec.ts",
+      "title": "ranked inbox: most urgent deadline first, then risk, with how soon each is due and an urgency lamp",
+      "status": "passed"
+    },
+    {
+      "file": "decisions.spec.ts",
+      "title": "inline answer: bound to the presentation shown, settled once, and Telegram after it settles nothing",
+      "status": "passed"
+    },
+    {
+      "file": "decisions.spec.ts",
+      "title": "answered in Telegram first: the UI answer is refused as already settled, beside the action",
+      "status": "passed"
+    },
+    {
+      "file": "decisions.spec.ts",
+      "title": "stale answer: the presentation changed after it was shown, and the answer is refused beside the action",
+      "status": "passed"
+    },
+    {
+      "file": "decisions.spec.ts",
+      "title": "snapshot binding: a refresh that brings a new version never changes what is being answered",
+      "status": "passed"
+    },
+    {
+      "file": "decisions.spec.ts",
+      "title": "answer as a member outside the project's scope: refused as out of scope beside the action",
+      "status": "passed"
+    },
+    {
+      "file": "decisions.spec.ts",
+      "title": "a member the request was not presented to: the answer is refused by name beside the action",
+      "status": "passed"
+    },
+    {
+      "file": "decisions.spec.ts",
+      "title": "the answer needs a choice and a rationale before anything is sent",
+      "status": "passed"
+    },
+    {
+      "file": "layout.spec.ts",
+      "title": "every screen and state at 360px, light and dark",
+      "status": "passed"
+    },
+    {
+      "file": "layout.spec.ts",
+      "title": "every screen and state at 390px, light and dark",
+      "status": "passed"
+    },
+    {
+      "file": "layout.spec.ts",
+      "title": "every screen and state at 1280px, light and dark",
+      "status": "passed"
+    },
+    {
+      "file": "layout.spec.ts",
+      "title": "every screen and state at 1440px, light and dark",
+      "status": "passed"
+    },
+    {
+      "file": "layout.spec.ts",
+      "title": "phone decisions: the inline answer action is visible, unclipped and works at 360px",
+      "status": "passed"
+    },
+    {
+      "file": "layout.spec.ts",
+      "title": "keyboard only on desktop: sign in, open a decision and answer it without a pointer",
+      "status": "passed"
+    },
+    {
+      "file": "layout.spec.ts",
+      "title": "touch on phone: open a run and a decision from the bottom bar and answer by tapping",
+      "status": "passed"
+    },
+    {
+      "file": "layout.spec.ts",
+      "title": "served assets: every response is this origin and every asset is a file of the build",
+      "status": "passed"
+    },
+    {
+      "file": "layout.spec.ts",
+      "title": "phone terminal: the record gets the screen, with the strip on one line and the controls in one bar",
+      "status": "passed"
+    },
+    {
+      "file": "layout.spec.ts",
+      "title": "desktop decisions: the most urgent decision is open, and the list scrolls on its own",
+      "status": "passed"
+    },
+    {
+      "file": "run.spec.ts",
+      "title": "full detail: an ended run shows every kept line, tool calls, output, edits and errors",
+      "status": "passed"
+    },
+    {
+      "file": "run.spec.ts",
+      "title": "live: lines appear as the worker prints them, and a dropped connection resumes from its cursor",
+      "status": "passed"
+    },
+    {
+      "file": "run.spec.ts",
+      "title": "follow mode: scrolling up stops following; jumping to the latest resumes it",
+      "status": "passed"
+    },
+    {
+      "file": "run.spec.ts",
+      "title": "station strip: the unit is lit at its station beside the record",
+      "status": "passed"
+    },
+    {
+      "file": "run.spec.ts",
+      "title": "run header: the run's state, elapsed time, engine and model, host and station, with the dispatch id as a copyable detail",
+      "status": "passed"
+    },
+    {
+      "file": "run.spec.ts",
+      "title": "compact gutter: each line's sequence, its time since the first line and an inline kind tag on the content's row",
+      "status": "passed"
+    },
+    {
+      "file": "signin.spec.ts",
+      "title": "enroll-then-sign-in: a fresh passkey signs in only after the host approves it",
+      "status": "passed"
+    },
+    {
+      "file": "signin.spec.ts",
+      "title": "unauthenticated access: no screen shows factory data before a passkey session",
+      "status": "passed"
+    },
+    {
+      "file": "signin.spec.ts",
+      "title": "a session that ends while a screen is open shows the named refusal and drops the data",
+      "status": "passed"
+    },
+    {
+      "file": "signin.spec.ts",
+      "title": "a member outside a project sees its named refusal and none of its data",
+      "status": "passed"
+    },
+    {
+      "file": "signin.spec.ts",
+      "title": "route trace: every request each screen makes is a published API route or a built asset",
+      "status": "passed"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "schema": "veldo.ui_falsifier_record/v1",
+  "case": "ac3-answer-without-presentation-version",
+  "criterion": "AC3",
+  "falsifier": "Send an answer without the presentation version it answers; the stale-answer refusal row must fail.",
+  "commit": "f5aa18e48bbef2e090455d64672d0285f77b9605",
+  "edits": [
+    {
+      "file": "src/features/decisions/inbox.ts",
+      "source_sha256": "9ef71bf84c8317ed007752e1e72821f6d76cc42fec6f90b19d21693a4d97f42d",
+      "mutant_sha256": "1897c834d3cfe56f1c6c07ed7cb4ba939c2fc0aed49f07014fcba34c6a96ddde",
+      "old": "    presentation_version: shown.version,\n",
+      "new": ""
+    },
+    {
+      "file": "src/api/decisions.ts",
+      "source_sha256": "2f81822d992cd63ac0974b0c21a819b1f89180996bd70d582f5d384832e3420b",
+      "mutant_sha256": "600f344b1d19e3d1ce6f27342d4f94c6cb4e16c22b0bce0d27aad4ae858653f8",
+      "old": "  presentation_version: number\n",
+      "new": "  presentation_version?: number\n"
+    },
+    {
+      "file": "src/api/routes.json",
+      "source_sha256": "e5da3dba3bdb87bf390c075b12718256af2afe5d86a596cac0c3843790365138",
+      "mutant_sha256": "9ddf846d46e27cdd41a3d731aa31b71c835bd64d74ec4a94160b47dfed2e9823",
+      "old": "\"required\": [\"request_id\", \"request_version\", \"presentation_id\", \"presentation_digest\", \"presentation_version\", \"choice\", \"rationale\"]",
+      "new": "\"required\": [\"request_id\", \"request_version\", \"presentation_id\", \"presentation_digest\", \"choice\", \"rationale\"]"
+    }
+  ],
+  "red": [
+    {
+      "kind": "e2e",
+      "file": "e2e/decisions.spec.ts",
+      "grep": "stale answer",
+      "exit": 1,
+      "seconds": 13.559,
+      "summary": [
+        "Error: expect(locator).toHaveAttribute(expected) failed",
+        "Expected: \"stale_version:stale_presentation\"",
+        "Received: \"invalid_input:fields\"",
+        "1 failed"
+      ]
+    },
+    {
+      "kind": "unit",
+      "file": "src/features/decisions/DecisionDetail.spec.ts",
+      "exit": 1,
+      "seconds": 0.917,
+      "summary": [
+        "src/features/decisions/DecisionDetail.spec.ts (8 tests | 2 failed) 80ms",
+        "Test Files  1 failed (1)",
+        "Tests  2 failed | 6 passed (8)",
+        "Failed Tests 2",
+        "AssertionError: expected \"sendAnswer\" to be called with arguments: [ {  (7) } ]",
+        "Received:",
+        "AssertionError: expected \"sendAnswer\" to be called with arguments: [ ObjectContaining{ } ]",
+        "Received:"
+      ]
+    }
+  ],
+  "green": [
+    {
+      "kind": "e2e",
+      "file": "e2e/decisions.spec.ts",
+      "grep": "stale answer",
+      "exit": 0,
+      "seconds": 4.582,
+      "summary": [
+        "1 passed (4.1s)"
+      ]
+    },
+    {
+      "kind": "unit",
+      "file": "src/features/decisions/DecisionDetail.spec.ts",
+      "exit": 0,
+      "seconds": 0.902,
+      "summary": [
+        "Test Files  1 passed (1)",
+        "Tests  8 passed (8)"
+      ]
+    }
+  ],
+  "red_as_required": true,
+  "green_as_required": true
+}

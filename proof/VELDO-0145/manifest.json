@@ -1,0 +1,127 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0145",
+  "commit": "44a650c7d7046957ca6a1ac119565494c70e731e",
+  "tree": "213bcc6ce65353624c49b426755c5886176ff019",
+  "producer": "Claude implementation agent",
+  "produced_at": "2026-10-29T07:35:48.512142+00:00",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "engine/ui/e2e/signin.spec.ts",
+          "detail": "enroll-then-sign-in (lands on the overview), unauthenticated access, session ends, member outside a project, route trace: green (e2e-green.json); also green against the UI as init_scaffold laid it in a scratch factory root (host-leg.json, 5 of 5, laid files equal to the build). Falsifiers ac1-sign-in-before-approval and ac1-data-before-session red then green. The tailnet phone leg and setup naming the UI for the systemd-installed API are open (OPEN.md items 1 and 2)."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/suites/113_veldo_0145_ui.py",
+          "detail": "rows ui/page-served, ui/unauthenticated-access, ui/route-trace, ui/installed (init_scaffold.lay_ui into a scratch root, served by the API installed there); rows ui/out-of-scope (an out-of-scope request is refused, not answered) and ui/scaffold-opt-in (init lays the UI only when asked with --ui); mutants ui145-* 7 of 7 rejected, including ui145-out-of-scope-answered and ui145-scaffold-lays-implicitly (round4/mutations-145.log); unit next.spec.ts (safe next)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "engine/ui/e2e/run.spec.ts",
+          "detail": "full detail line by line, live with a dropped connection resumed from the cursor, follow mode, station strip, run header (state, elapsed, engine and model, host, station, copyable dispatch id), compact gutter: green. Falsifier ac2-summary-in-place-of-record red then green."
+        },
+        {
+          "type": "unit",
+          "ref": "engine/ui/src/features/run/record.spec.ts",
+          "detail": "record parsing, sequence application, repeats and gaps, run facts and gutter times; RunTerminal.spec.ts one row per line, no controls and no Try again over a named refusal (unit-green.json)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "engine/ui/e2e/decisions.spec.ts",
+          "detail": "exact presentation, ranked inbox, inline answer settles once with Telegram after, Telegram first refused stale_version:request_closed, stale presentation refused then the current version loaded and answered, snapshot binding across a refresh, member outside the project scope refused unauthorized:out_of_scope, member not presented to refused unauthorized:not_owner: green against the real settlement. Falsifier ac3-answer-without-presentation-version red then green."
+        },
+        {
+          "type": "unit",
+          "ref": "engine/ui/src/features/decisions/DecisionDetail.spec.ts",
+          "detail": "answer bound to the snapshot shown; a newer version never changes what is answered; Load the current version rebinds; inbox.spec.ts ranking and due text; overview.spec.ts counts."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "ui_states",
+          "ref": "engine/ui/e2e/layout.spec.ts",
+          "detail": "every screen and state (overview, runs, run, decisions, decision, sign-in, you) at 360, 390, 1280, 1440 px, light and dark: no overflow, no clipped or covered primary action, no overlaps, 44 px phone targets, axe WCAG 2.2 AA zero violations, zero policy violations; phone decisions, phone terminal, desktop decisions, keyboard-only and touch tasks, served assets. 192 screens in proof/VELDO-0145/screens/ from a fresh curated harness. Falsifier ac4-hide-answer-at-360 red then green."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/suites/113_veldo_0145_ui.py",
+          "detail": "row ui/dependency-policy (PrimeVue denied at every version); mutant ui145-tiers-admitted rejected."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "npm run build (vue-tsc, then vite)",
+      "result": "passed"
+    },
+    {
+      "name": "unit and component (vitest)",
+      "result": "60 passed",
+      "ref": "proof/VELDO-0145/unit-green.json"
+    },
+    {
+      "name": "browser (playwright, real factory harness)",
+      "result": "30 passed",
+      "ref": "proof/VELDO-0145/e2e-green.json"
+    },
+    {
+      "name": "browser against the installed UI (scratch factory root)",
+      "result": "5 passed",
+      "ref": "proof/VELDO-0145/host-leg.json"
+    },
+    {
+      "name": "suite 113_veldo_0145_ui (partial run)",
+      "result": "7 rows passed",
+      "ref": "proof/VELDO-0145/round4/scaffold-green.log"
+    },
+    {
+      "name": "check_teeth_mutations --finding 145",
+      "result": "7 registered, 7 rejected",
+      "ref": "proof/VELDO-0145/round4/mutations-145.log"
+    },
+    {
+      "name": "UI falsifiers (npm run falsify, all five)",
+      "result": "5 red as required, 5 green as required",
+      "ref": "proof/VELDO-0145/falsifiers/"
+    },
+    {
+      "name": "scripts/verify.sh",
+      "result": "not run (owner rule 37191: the full gate runs on the batch)"
+    }
+  ],
+  "artifacts": [
+    "proof/VELDO-0145/README.md",
+    "proof/VELDO-0145/OPEN.md",
+    "proof/VELDO-0145/host-leg.json",
+    "proof/VELDO-0145/screens/",
+    "proof/VELDO-0145/review-2026-10-28.md"
+  ],
+  "rollback": "Stop serving the UI; the API, the records and every decision path through Telegram are unchanged.",
+  "review": {
+    "status": "pending",
+    "note": "round 2 after the NOT SOUND review of 2026-10-28; a fresh independent review is due"
+  }
+}
