@@ -23,3 +23,12 @@ The installed-process mutation controls require the host user manager. Suite 113
 addition is in round2/proposed-gate-entry.patch. This is a sixth file outside the footprint, pending explicit
 owner approval before changing its confinement declaration. The failed confined controls are retained; they
 are not accepted mutation evidence.
+
+## Round 3 (2026-10-28)
+
+The owner approved the gate declaration (Telegram 37451 and 37452). scripts/gate_unconfined.json lists
+116_veldo_0188_project_lines whole, and the specification's footprint and protected paths name that file.
+The coordinator receipt for all nine registered cases passed (falsifiers-receipt.json). Suite 92 was changed
+again: one variant now reports line/store-staffing, so its falsifier names a single row. The footprint extension
+to suites 83, 92, 93 and 110 and to proof/VELDO-0152/fixture.py was accepted in the round 2 fix-check. Nothing
+in this ticket is open; landing still needs independent review and the batch gate.

@@ -1,15 +1,10 @@
 # VELDO-0188 proof (branch agent/claude/veldo-0188)
 
-- Suite: scripts/suites/113_veldo_0188_project_lines.py, 14 rows.
-- Green: green-suite-113.log, `python3 scripts/selftest.py --suite 113_veldo_0188_project_lines`, 14 passed, 0 failed.
-- Red: falsifiers.json (full receipt in falsifiers-receipt.json), from `check_teeth_mutations.py --finding 188`
-  run under the host gate lock. In each case the baseline and the no-op stay green and the mutant reds its
-  declared row:
-  - AC1 lines188-constructor-only: lines built only in FactoryLoop's constructor from the work configuration.
-    lines/new-project goes red: the second project's unit is never dispatched.
-  - AC2 staff188-default-team-only: every line staffed from the default team. staff/project-team goes red on
-    the builder's engine.
-  - AC3 close188-line-kept: a closed project's line kept in the loop. close/removed goes red because the loop
-    status still lists it.
+- Suite: scripts/suites/116_veldo_0188_project_lines.py. It was renumbered from 113 in round 3, because 113 is
+  used on other branches. Logs from earlier rounds keep the old name.
+- Red then green: falsifiers.json, with the full coordinator receipt in falsifiers-receipt.json. It comes from
+  check_gate_mutations.py, run under the host gate lock for all nine registered cases (round 3). Suite 116
+  runs in the gate's unconfined leg (scripts/gate_unconfined.json, owner approval Telegram 37451 and 37452).
+- Rounds: round2/README.md and round3/README.md.
 - Open points and deviations: OPEN.md.
-- Not run here (owner rule 37191): the full gate and the consumer suites named in OPEN.md section 5.
+- Not run here (owner rule 37191): the full gate.
