@@ -1,6 +1,6 @@
 {
-  "input_commit": "3b1a6f550698efa47a8f9964253a00acac0d22f2",
-  "fixture_version": "relay-exchange-v1",
+  "input_commit": "aca6afd40f672e409694109725de61f81aca5a5e",
+  "fixture_version": "relay-exchange-v2",
   "results": [
     {
       "criterion": "AC1",
@@ -218,8 +218,8 @@
           "outcome": "ECONNRESET"
         },
         "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "implementation_sha256": "3b7d42c8c4ab8df7b551e8905ff78c711c8f723aa0ca76e0c2e20dd45e9f5066",
-        "fixture_version": "relay-exchange-v1",
+        "implementation_sha256": "eb5cf3ad50797e986b7f70c1628767bb13443317644b29ae624c01e71c8ee51b",
+        "fixture_version": "relay-exchange-v2",
         "events": [
           {
             "phase": "connect",
@@ -259,7 +259,7 @@
           "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
           "zlib_base64": "eJxjAAAAAQAB"
         },
-        "stderr": "relay: the authority at /tmp/v121-gbr08e00/endpoint is not answering: [Errno 104] injected ECONNRESET\n",
+        "stderr": "relay: the authority at /tmp/v121-lbos0saj/endpoint is not answering: [Errno 104] injected ECONNRESET\n",
         "endpoint_named": true,
         "connection_attempts": 1,
         "accepted_connections": 1,
@@ -274,7 +274,7 @@
           }
         ],
         "transport_seconds": 0.0,
-        "elapsed_seconds": 0.0005178940482437611,
+        "elapsed_seconds": 0.0004383729537948966,
         "closed_by_relay": true,
         "unexpected": null,
         "classification": "endpoint_error",
@@ -312,8 +312,8 @@
           "receives": []
         },
         "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "implementation_sha256": "865abb07dafede2a84fe8f296b6b01b6dc024db2fce2af67aa992e1bb0710b68",
-        "fixture_version": "relay-exchange-v1",
+        "implementation_sha256": "978c345e9da1fa6519a6e0fde5ddc9580a59783e7dea1bbd6c455f66ccda3d50",
+        "fixture_version": "relay-exchange-v2",
         "events": [
           {
             "phase": "connect",
@@ -347,7 +347,7 @@
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
           "zlib_base64": "eJwDAAAAAAE="
         },
-        "stderr": "relay: the authority at /tmp/v121-a5f14h46/endpoint is not answering: clean EOF misclassified\n",
+        "stderr": "relay: the authority at /tmp/v121-7sy7ver0/endpoint is not answering: clean EOF misclassified\n",
         "endpoint_named": true,
         "connection_attempts": 1,
         "accepted_connections": 1,
@@ -362,7 +362,7 @@
           }
         ],
         "transport_seconds": 0.0,
-        "elapsed_seconds": 0.0005798320053145289,
+        "elapsed_seconds": 0.0005853670882061124,
         "closed_by_relay": true,
         "unexpected": null,
         "classification": "endpoint_error",
@@ -409,8 +409,8 @@
           "trickle": true
         },
         "input_sha256": "f742b965f156c10374bc23aea96e3a8aff8facd6fc079defeaa30219ad86f211",
-        "implementation_sha256": "0a54b3a6d2dc8accba3f922cbd26851fb47aa3c55b2522fe04446ac3907ebb6f",
-        "fixture_version": "relay-exchange-v1",
+        "implementation_sha256": "aeee6d6cabe29c1020da9960ccd779581cd9ce4711a4914c295de198be72cae9",
+        "fixture_version": "relay-exchange-v2",
         "events": [
           {
             "phase": "connect",
@@ -499,7 +499,7 @@
           }
         ],
         "transport_seconds": 87.0,
-        "elapsed_seconds": 0.0004472800064831972,
+        "elapsed_seconds": 0.00043377093970775604,
         "closed_by_relay": true,
         "unexpected": null,
         "classification": "orderly_eof",
@@ -1645,8 +1645,8 @@
           "outcome": "ECONNRESET"
         },
         "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "implementation_sha256": "2d66999562a669d45f9a22783fcb9e3e04be8f1a38d9d4cf6bf278693d77525f",
-        "fixture_version": "relay-exchange-v1",
+        "implementation_sha256": "a59df669d1859f5668dfc0ee7d8a1c3786a95540774d135d954a6a82d403d76e",
+        "fixture_version": "relay-exchange-v2",
         "events": [
           {
             "phase": "connect",
@@ -1723,7 +1723,7 @@
           }
         ],
         "transport_seconds": 0.0,
-        "elapsed_seconds": 0.0004852539859712124,
+        "elapsed_seconds": 0.0004451220156624913,
         "closed_by_relay": true,
         "unexpected": null,
         "classification": "orderly_eof",

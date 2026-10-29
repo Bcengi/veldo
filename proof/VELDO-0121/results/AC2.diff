@@ -1,6 +1,6 @@
 --- a/.veldo/control_relay.py
 +++ b/.veldo/control_relay.py
-@@ -90,7 +90,7 @@
+@@ -87,7 +87,7 @@
              chunk = conn.recv(65536)
              remaining()
              if not chunk:
