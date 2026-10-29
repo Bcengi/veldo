@@ -9,6 +9,7 @@ import difflib
 import hashlib
 import json
 from pathlib import Path
+import runpy
 import shutil
 import subprocess
 import sys
@@ -85,8 +86,8 @@ def main():
         ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(), "inputs": {}, "runs": {}}
     inputs = [FIXTURE, SUITE, Path(__file__).resolve(), ROOT / "scripts/suites/manifest.json",
               ROOT / "scripts/suites/requires.json"]
-    inputs += [ROOT / ".veldo" / name for name in
-               ("control_client.py", "control_store.py", "control_enrollment.py", "git_process.py", "yamlish.py")]
+    module_names = runpy.run_path(str(FIXTURE))["module_names"]
+    inputs += [ROOT / ".veldo" / name for name in module_names(ROOT / ".veldo")]
     summary["inputs"] = {str(p.relative_to(ROOT)): sha(p) for p in inputs}
     # Red first, then green on the original implementation for each criterion.
     with tempfile.TemporaryDirectory(prefix="v115-mut-") as scratch:

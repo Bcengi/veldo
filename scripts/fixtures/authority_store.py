@@ -23,6 +23,12 @@ MODULES = ("control_client.py", "control_enrollment.py", "control_store.py",
            "git_process.py", "yamlish.py")
 
 
+def module_names(directory):
+    """Carry the registry on runtimes that include the VELDO-0112 prelude."""
+    registry = "control_client_registry.py"
+    return MODULES + ((registry,) if (Path(directory) / registry).is_file() else ())
+
+
 def load(path):
     spec = importlib.util.spec_from_file_location("fixture_" + Path(path).stem, path)
     module = importlib.util.module_from_spec(spec)
@@ -120,7 +126,7 @@ class AuthorityHandle:
         location = peer if import_other else self
         modules = location.workspace / ".veldo"
         modules.mkdir(exist_ok=True)
-        for name in MODULES:
+        for name in module_names(self.fixture.runtime):
             shutil.copyfile(self.fixture.runtime / name, modules / name)
         cfg = {"modules": str(modules), "path": str(self.path), "peer_path": str(peer.path),
                "binding": self.binding, "key_directory": str(self.fixture.signer.directory)}
@@ -236,7 +242,7 @@ def serve(config):
                           "environment_db": os.environ.get("VELDO_CONTROL_DB"),
                           "binding": binding, "database": conn.execute("PRAGMA database_list").fetchall(),
                           "module_digests": {name: hashlib.sha256((modules / name).read_bytes()).hexdigest()
-                                             for name in MODULES}}), flush=True)
+                                             for name in module_names(modules)}}), flush=True)
         while True:
             readable, _, _ = select.select([sys.stdin, listener], [], [])
             if sys.stdin in readable:

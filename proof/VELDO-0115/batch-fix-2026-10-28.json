@@ -1,0 +1,153 @@
+{
+  "batch_base": "a72d7dd07cebccc0a438d3695d8a40781992c374",
+  "batch_branch_unchanged": true,
+  "batch_merge": "ded42b9f08838afcd2aa7a5f60a3e737d37e5cb9",
+  "confinement": {
+    "MemoryHigh": "14G",
+    "MemoryMax": "16G",
+    "OOMScoreAdjust": 900,
+    "declaration": "sha256:209267e300d7acf00d14744f326c0c374e06fc7bf836f11eabb535c17f1e759b",
+    "host_lock": "/home/dmitry/.local/state/core-gates/.gate.lock",
+    "leg": "confined",
+    "profile": "gate",
+    "receipt_handling": "The first ticket falsifier attempt was invalid because the gate denies writes to the authority checkout. The successful batch run sets the imported check module PROOF directory to sandbox temporary storage, then return the receipts through captured stdout. Test sources and confinement are unchanged.",
+    "runner": "/tmp/veldo-0115-batch-fix.puIWMz/run_checks.py",
+    "runner_sha256": "092545aa65436762a06bbc1af9e2937e2c9d2f48b78d43a96be317d4cd5de225",
+    "systemd_units": [
+      "veldo-fix-0115-ticket-1793241285",
+      "veldo-fix-0115-batch-1793241389"
+    ]
+  },
+  "falsifiers": {
+    "batch": {
+      "cases_per_run": 16,
+      "completed_cases": 96,
+      "driver_exit": 0,
+      "mutants_detected": 3,
+      "receipt_directory": "/tmp/veldo-0115-batch-fix.puIWMz/batch/proof",
+      "restored_runs_passed": 3,
+      "results": {
+        "base_head": "ded42b9f08838afcd2aa7a5f60a3e737d37e5cb9",
+        "inputs": {
+          ".veldo/control_client.py": "d5c1f7e8d44d2505cec33f2783ef483a67261081e459af2b69124692969201c7",
+          ".veldo/control_client_registry.py": "82e309a5f371eab20b177fb60d912a55e318824492c43668bca69081fa29b17f",
+          ".veldo/control_enrollment.py": "1144b6921da0c8c04c7507b6b256e8eb27becc018f9d34d9daf476668e4ae147",
+          ".veldo/control_store.py": "ed4f96154d29a091852e498901a6455b84c85ef74123a79537277e419e4e3f24",
+          ".veldo/git_process.py": "2977f9f0a3cc45f7d4cb6a3e0b39447b88fe35e74e11d2ba8289837c8f2c27a7",
+          ".veldo/yamlish.py": "ed52ef434b9e18ca708710db925fe0599fc62874e521dedc2aacb2e5dadeccf6",
+          "proof/VELDO-0115/check.py": "af9150da1357b4dd5fd1245d4bcfe29b96ecc41b9b25b74f818f50079302020b",
+          "scripts/fixtures/authority_store.py": "eb7c20f3b5dfe25b0fc511a0202e68713133c0baeba75542282240966dd35363",
+          "scripts/suites/113_veldo_0115_authority_store.py": "8cfe130e70d5fdfeb2c280a06b34f30c8fa1f548fe5715d6b4f091b7427dc91d",
+          "scripts/suites/manifest.json": "a87ca08685e2e1c5d0dbb58c77ce6cb8d74462a2aab34aa5bf292ac74c4da170",
+          "scripts/suites/requires.json": "c7304514cc02744af8377acb7ac4c4d9366ea98710b92899513ef72288440acd"
+        },
+        "runs": {
+          "AC1-green": {
+            "completed_cases": 16,
+            "exit_code": 0,
+            "report_sha256": "b7810319e389b6abff309df9299a6a40627a6fa160f40e398ec5994dd192d925",
+            "rows": {
+              "ipc/accepted-state-survives-reopen": true,
+              "ipc/configured-store-really-changes": true,
+              "ipc/fixture-unit-controls": true,
+              "ipc/only-the-bound-store-changes": true
+            }
+          },
+          "AC1-red": {
+            "completed_cases": 16,
+            "exit_code": 1,
+            "report_sha256": "3de92fe99e5e846a6e50a5b9180fd973e71a3244835cfc2e94e3346dff65d109",
+            "rows": {
+              "ipc/accepted-state-survives-reopen": false,
+              "ipc/configured-store-really-changes": false,
+              "ipc/fixture-unit-controls": true,
+              "ipc/only-the-bound-store-changes": false
+            }
+          },
+          "AC2-green": {
+            "completed_cases": 16,
+            "exit_code": 0,
+            "report_sha256": "3cb3b36af526379db5d6b6bab144d780fbcf2c8832369d2cd1a7669e47a7bcdb",
+            "rows": {
+              "ipc/accepted-state-survives-reopen": true,
+              "ipc/configured-store-really-changes": true,
+              "ipc/fixture-unit-controls": true,
+              "ipc/only-the-bound-store-changes": true
+            }
+          },
+          "AC2-red": {
+            "completed_cases": 16,
+            "exit_code": 1,
+            "report_sha256": "f8b015841089d7e383d3112ba2afb996c136b54bb3dfd382207b05ec76cfe699",
+            "rows": {
+              "ipc/accepted-state-survives-reopen": false,
+              "ipc/configured-store-really-changes": false,
+              "ipc/fixture-unit-controls": true,
+              "ipc/only-the-bound-store-changes": false
+            }
+          },
+          "AC3-green": {
+            "completed_cases": 16,
+            "exit_code": 0,
+            "report_sha256": "3dd2a938a269c832050ef98cd4da967b8946c2054178653b1e89535ff4b1acff",
+            "rows": {
+              "ipc/accepted-state-survives-reopen": true,
+              "ipc/configured-store-really-changes": true,
+              "ipc/fixture-unit-controls": true,
+              "ipc/only-the-bound-store-changes": true
+            }
+          },
+          "AC3-red": {
+            "completed_cases": 16,
+            "exit_code": 1,
+            "report_sha256": "3266adb396b799be399a6fb0bf71f8f0413af89c4f445d52356166700a4f8a88",
+            "rows": {
+              "ipc/accepted-state-survives-reopen": false,
+              "ipc/configured-store-really-changes": false,
+              "ipc/fixture-unit-controls": true,
+              "ipc/only-the-bound-store-changes": false
+            }
+          }
+        }
+      }
+    }
+  },
+  "fix_commit": "806cc66b67868712a9301bf39df7ca617d5fd4f5",
+  "further_suite_failures": [],
+  "inventory_rows": [
+    2,
+    5
+  ],
+  "scope": "The named suite alone, plus its declared falsifiers. Partial selftests return 2; this is not a full gate or landing claim.",
+  "scratch_worktree_removed": true,
+  "suites": {
+    "batch_spend_recorded": {
+      "failed": 0,
+      "log": "/tmp/veldo-0115-batch-fix.puIWMz/batch/integration/integration.log",
+      "passed": 30,
+      "selftest_exit": 2,
+      "sha256": "09a5308ebd5f1059a8dec819c974ff698a00a7aa5b67b16c39a1d656fd6ce0fa",
+      "suite": "113_veldo_0115_authority_store",
+      "summary": "INV|113_veldo_0115_authority_store| selftest (PARTIAL, 1 of 172 suites): 30 passed, 0 failed in 3.84s"
+    },
+    "batch_unit": {
+      "failed": 0,
+      "log": "/tmp/veldo-0115-batch-fix.puIWMz/batch/unit/113_veldo_0115_authority_store.log",
+      "passed": 30,
+      "selftest_exit": 2,
+      "sha256": "de12652be2293d35b6ede7225230ad293a8bc5543272175fcc887451413b6670",
+      "suite": "113_veldo_0115_authority_store",
+      "summary": "selftest (PARTIAL, 1 of 172 suites): 30 passed, 0 failed in 3.87s"
+    },
+    "ticket_unit": {
+      "failed": 0,
+      "log": "/tmp/veldo-0115-batch-fix.puIWMz/ticket/unit/113_veldo_0115_authority_store.log",
+      "passed": 30,
+      "selftest_exit": 2,
+      "sha256": "4938bd69b66879dafe9b8925702e188ddb8ff83d59266414ac54f1f0310164c2",
+      "suite": "113_veldo_0115_authority_store",
+      "summary": "selftest (PARTIAL, 1 of 169 suites): 30 passed, 0 failed in 3.77s"
+    }
+  },
+  "ticket": "VELDO-0115"
+}
