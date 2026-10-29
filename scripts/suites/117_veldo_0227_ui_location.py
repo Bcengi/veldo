@@ -114,8 +114,8 @@ def _v227_suite():
             if module is None:
                 code, report = h['setup'](*args)
             else:
-                # An earlier setup module through its own command surface, with the fixture's Tailscale stand-in and
-                # port (the fixture's helper gives those to its current module only), never the host's own CLI.
+                # An earlier setup module through its own command surface, with the fixture's Tailscale stand-in, port and
+                # Git identity (the fixture's helper gives those to its current module only), never the host's own CLI.
                 out = io.StringIO()
                 with contextlib.redirect_stdout(out):
                     code = module.main(['setup', '--state-root', str(root), '--owner', h['owner'], '--owner-key',
@@ -123,7 +123,9 @@ def _v227_suite():
                                         '--token-file', str(h['token_file'])],
                                        host_trust=str(args[2]), install_root=str(args[3]), unit_dir=str(units),
                                        profile=h['profile'], writable=[], runner=manager, origin=h['url'],
-                                       tailscale=[ts.path], api_port=h['port'])
+                                       tailscale=[ts.path], api_port=h['port'],
+                                       **__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))[
+                                           'setup_options'](getattr(module, 'setup', None)))
                 try:
                     report = json.loads(out.getvalue().strip().splitlines()[-1])
                 except (ValueError, IndexError):
