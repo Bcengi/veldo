@@ -169,12 +169,24 @@ started once for each settled decision, and hands the repository it created or a
 its socket exactly as the adoption effect does (take_on_request, answered synchronously); a repository that
 ended `failed` fails its decision (VELDO-0128's report tells the owner), and once a created or adopted
 repository is `active` the same settlement activates the project with its first team and first objective in
-this process, the factory loop is woken, and it gains the repository's line (FactoryLoop.add_line), with the
-roles of the loop's first line, so its first unit is dispatched in it. A repository this instance serves that
-the work configuration does not name gets that line at the loop's start too. The factory project, whose own
+this process, the factory loop is woken, and it gains the repository's line at the journal-woken loop pass, with the
+roles of its project team or the default team, so its first unit is dispatched in it. A project already active
+when the service starts gets its line then too. The factory project, whose own
 repository holds only its team configuration and is no line, has its cycles run on the loop's factory line
 (FactoryLoop.factory_line): the line of its execution repository when there is one, otherwise the loop's
 first.
+
+LINES FROM THE STORE (VELDO-0188). The loop's lines follow the store: one line per project record ACTIVE or
+PAUSED whose execution repository this instance serves, over the receiver configuration it holds for that
+repository, its builder and reviewers from the project's current team revision, or the default team's when the
+project has none, by the mapping factory setup's work configuration uses (control_team line_roles). The set is
+read when the loop is built at the start and at every pass a journal advance woke, before work is offered; never
+otherwise. A missing line is started, a line whose roles changed is restaged (a run already dispatched keeps its
+roles), and a CANCELED or COMPLETED project's line offers nothing from then on and leaves the loop at the first
+pass that finds it with no running launch and no orphan. A project left without a line is refused by name
+(missing_authority:receiver:<project>, missing_authority:team:<project>, invalid_input:line:role:<problem>)
+and every other line serves on. The installed work configuration's roles staff only a repository no project
+names; a project's line there is staffed, refused and closed by the store alone, like any other.
 
 KEY DIRECTORY. The custody wrapper (VELDO-0067) denies a confined worker every file created directly
 in an ancestor of a protected directory after the worker starts, so the key directory belongs where
@@ -256,10 +268,14 @@ TA = _organ('control_workflow_cycle_assignment', lazy=True)
 LIM = _organ('control_account_limit', lazy=True)
 # VELDO-0148: the land station, each land its own land dispatch, and a land the trunk moved under re-landed.
 LS = _organ('control_landing_station', lazy=True)
+CT = _organ('control_team', lazy=True)
+TR = _organ('control_team_routes', lazy=True)
 WORK = 'work.json'
 # VELDO-0143 R5-3: a factory project in these states runs no cycles again (entity_contract's project lifecycle: both are
 # terminal), so no other line waits on the factory line for it.
 FACTORY_ENDED = ('CANCELED', 'COMPLETED')
+# VELDO-0188: the project states whose execution repository has a line (a paused project keeps it).
+PROJECT_OPEN = ('ACTIVE', 'PAUSED')
 
 # The store's own generic commands, taken before any service registers one of its own on this module
 # (control_claim.Receiver adds claim_operation), so a claim transition is never reachable as one.
@@ -1895,6 +1911,44 @@ def load_work(path):
     return work
 
 
+def team_of(conn, project):
+    """VELDO-0188 AC2: (team, staffing) of `project`'s line: its own team's current revision, else the default
+    team's current revision (VELDO-0162), each with where it came from; (None, None) when neither exists."""
+    row = conn.execute('SELECT kind, data FROM entities WHERE id=?', (CT.team_id(project),)).fetchone()
+    data = json.loads(row[1]) if row is not None and row[0] == CT.KIND else {}
+    if isinstance(data, dict) and data.get('revision') and isinstance(data.get('team'), dict):
+        return data['team'], {'team': 'project', 'team_revision': data['revision']}
+    head = conn.execute('SELECT data FROM entities WHERE id=?', (TR.HEAD,)).fetchone()
+    revision = (json.loads(head[0]) or {}).get('revision') if head is not None else None
+    row = conn.execute('SELECT kind, data FROM entities WHERE id=?', (TR.default_id(revision),)).fetchone() \
+        if revision else None
+    if row is not None and row[0] == TR.KIND and isinstance(json.loads(row[1]).get('team'), dict):
+        return json.loads(row[1])['team'], {'team': 'default', 'team_revision': revision}
+    return None, None
+
+
+def line_roles(team, adapters):
+    """VELDO-0188 AC2: a line's builder and reviewers from `team` by the mapping VELDO-0185 AC1 applies to the
+    default team (control_team line_roles), each on the installation's adapter (`adapters`, the receiver
+    configuration's) for the first of the role's engines one runs, or refused by name
+    (invalid_input:line:role:<problem>, the problems installable_work names)."""
+    def adapter_of(_name, spec):
+        for engine in spec.get('engines') or []:
+            named = sorted(n for n, a in adapters.items() if isinstance(a, dict) and a.get('engine') == engine)
+            if named:
+                return engine if engine in named else named[0]
+        return None
+    try:
+        roles = CT.line_roles(team['roles'], adapter_of)
+    except (KeyError, IndexError, TypeError, AttributeError):
+        raise Refused('invalid_input:line:role:fields') from None
+    for role in [roles['builder']] + roles['reviewers']:
+        problem = _role_problem(role, adapters)
+        if problem:
+            raise Refused('invalid_input:line:role:' + problem)
+    return roles
+
+
 class Line:
     """One served repository's factory line: its builder and reviewers (the work configuration), the Runner
     that dispatches them through the installed launch receiver of the repository, VELDO-0052's Gate over the
@@ -1994,6 +2048,9 @@ class Line:
         if not lost and self.runner.orphans:
             released += self.runner.release_orphans()
         report['released'] += [{'repository': self.repository, 'dispatch_id': one} for one in released]
+        # VELDO-0188 AC3: a closed project's line settles its runs and offers nothing, no station and no re-run.
+        if getattr(self, 'closing', False):
+            return
         # Coordination uses this same event-driven pass and this line's Runner; the factory project's cycles
         # run on the loop's factory line (VELDO-0143).
         if self.wants_cycles() and self.build_cycles(report):
@@ -2039,7 +2096,8 @@ class Line:
         try:
             self.pm_cycles = _organ('control_workflow_cycle_pm').from_line(self)
         except Exception as error:  # noqa: BLE001 - named in the pass's faults, never the loop's end
-            if factory is self or factory is None:
+            # A missing factory Line must not turn another project's cycle refusal into an engineering stop.
+            if factory is self or self.repository == self.loop.factory_line:
                 raise
             self.pm_refusal = getattr(error, 'code', None) or 'unknown_outcome:' + type(error).__name__
             report['faults'].append({'repository': self.repository, 'reason': 'pm_cycles:' + self.pm_refusal})
@@ -2441,14 +2499,15 @@ class FactoryLoop:
         self.lines = {repository: Line(self, repository, roles, receivers[repository])
                       for repository, roles in sorted(work['repositories'].items())}
         self.configured = sorted(self.lines)
-        # VELDO-0143: a repository this instance took on (VELDO-0161) that the work configuration does not name
-        # is served by a line of its own, with the roles of the first one.
-        for repository in sorted(set(service.repositories) - set(self.lines)):
-            if receivers.get(repository) and self.lines:
-                self.add_line(repository, receivers[repository])
+        # Work roles apply only where no project record names the repository. Preserve the optional land role.
+        self.work_roles = {repository: json.loads(json.dumps(line.roles)) for repository, line in self.lines.items()}
         self.wakes, self.ended, self.timer = [], [], None
         self.passes, self.last = 0, None
         self.counts = {'offered': 0, 'refused': 0, 'waiting': 0, 'asked': 0, 'released': 0, 'faults': 0, 'lands': 0}
+        # VELDO-0188: the lines the store's projects name, built at the start as at every journal-woken pass.
+        self.line_counts = {'started': 0, 'restaged': 0, 'stopped': 0, 'waiting_receiver': 0, 'refused': {}}
+        self.refused_lines = {}
+        self.started_lines = self.follow_store(0)
 
     @property
     def factory_line(self):
@@ -2461,20 +2520,110 @@ class FactoryLoop:
             return repository
         return self.configured[0] if self.configured else None
 
-    def add_line(self, repository, receiver_path):
-        """VELDO-0143: a line for `repository`, taken on by this instance, with the roles of the loop's first
-        line (the factory's default team's builder and reviewers), through the repository's own receiver
-        configuration. Returns the repository, or None when there is no receiver configuration or no line to take
-        the roles of; a repository that has a line keeps it."""
-        if repository in self.lines:
-            return repository
-        if not receiver_path or not self.lines:
-            return None
-        template = self.lines[self.configured[0]] if self.configured else self.lines[min(self.lines)]
-        roles = json.loads(json.dumps(template.roles))
-        roles.pop('land', None)
-        self.lines[repository] = Line(self, repository, roles, receiver_path)
-        return repository
+    def follow_store(self, cause):
+        """VELDO-0188: the loop's lines made the store's: one line per project record ACTIVE or PAUSED whose
+        execution repository this instance serves, over the receiver configuration it holds for it, staffed from
+        the project's team or the default team (team_of, line_roles); a missing one started, one whose roles
+        changed restaged (a run already dispatched keeps its roles); a CANCELED or COMPLETED project's line set
+        closing (it offers nothing and leaves the loop once its runs have ended, remove_closed). A project left
+        without a line is refused by name and every other line serves on. Called at the start and at each
+        pass a journal advance woke, never otherwise. Returns what changed, which the pass logs."""
+        service, conn = self.service, self.service.conn
+        receivers = (service.config.get('receiver') or {}).get('configs') or {}
+        changes = {'cause_pass': cause, 'watermark': service.watermark(), 'started': [], 'restaged': [],
+                   'stopping': [], 'stopped': [], 'refused': []}
+        projects, closed = {}, {}
+        for version, data in conn.execute("SELECT version, data FROM entities WHERE kind='project' ORDER BY id"):
+            project = json.loads(data)
+            project = dict(project, version=version) if isinstance(project, dict) else None
+            repository = project.get('execution_repository') if isinstance(project, dict) else None
+            if not isinstance(repository, str) or not isinstance(project.get('name'), str):
+                continue
+            if project.get('state') in PROJECT_OPEN:
+                projects.setdefault(repository, project)
+            elif project.get('state') in FACTORY_ENDED:
+                closed.setdefault(repository, project)
+        refused = {}
+        for repository, project in sorted(projects.items()):
+            name, line = project['name'], self.lines.get(repository)
+            about = {'project': name, 'repository': repository, 'project_version': project.get('version')}
+            receiver = receivers.get(repository) if repository in service.repositories else None
+            adapters = {}
+            try:
+                if not receiver:
+                    raise Refused('missing_authority:receiver:' + name)
+                try:
+                    adapters = json.loads(Path(receiver).read_text()).get('adapters') or {}
+                except (OSError, ValueError, AttributeError):
+                    raise Refused('missing_authority:receiver:' + name) from None
+                if not isinstance(adapters, dict):
+                    adapters = {}
+                    raise Refused('invalid_input:line:role:adapter')
+                team, staffing = team_of(conn, name)
+                if team is None:
+                    raise Refused('missing_authority:team:' + name)
+                roles = line_roles(team, adapters)
+            except Refused as error:
+                refused[name] = error.code
+                changes['refused'].append(dict(about, refusal=error.code, taxonomy=taxonomy(error.code)))
+                if line is not None and not getattr(line, 'closing', False):
+                    line.closing = True
+                    changes['stopping'].append(dict(about, refusal=error.code))
+                continue
+            if (self.work_roles.get(repository) or {}).get('land'):
+                roles['land'] = self.work_roles[repository]['land']
+            staffed = dict(about, receiver_config=receiver, **staffing)
+            if line is not None and line.receiver_path != receiver:
+                line.closing = True
+                changes['stopping'].append(dict(about, refusal='receiver_changed'))
+                if line.runner.launches or line.runner.orphans:
+                    continue
+                del self.lines[repository]
+                changes['stopped'].append({'project': getattr(line, 'project', None), 'repository': repository})
+                self.line_counts['stopped'] += 1
+                line = None
+            if line is None:
+                try:
+                    line = self.lines[repository] = Line(self, repository, roles, receiver)
+                    line.from_store = True
+                except Exception as error:  # noqa: BLE001 - one line that cannot be built leaves the others serving
+                    code = 'unavailable_service:line:' + type(error).__name__
+                    refused[name] = code
+                    changes['refused'].append(dict(about, refusal=code, taxonomy=taxonomy(code)))
+                    continue
+                changes['started'].append(staffed)
+            elif line.roles != roles or getattr(line, 'closing', False):
+                line.roles, line.closing = roles, False
+                changes['restaged'].append(staffed)
+            line.project, line.staffing = name, staffed
+        for repository, line in sorted(self.lines.items()):
+            if repository not in projects and repository in closed and not getattr(line, 'closing', False):
+                line.closing = True
+                changes['stopping'].append({'project': closed[repository]['name'], 'repository': repository,
+                                            'state': closed[repository]['state']})
+        changes['stopped'].extend(self.remove_closed())
+        self.refused_lines = refused
+        self.line_counts['started'] += len(changes['started'])
+        self.line_counts['restaged'] += len(changes['restaged'])
+        self.line_counts['waiting_receiver'] = sum(1 for code in refused.values()
+                                                   if code.startswith('missing_authority:receiver:'))
+        self.line_counts['refused'] = {}
+        for code in refused.values():
+            reason = code.rsplit(':', 1)[0] if code.startswith('missing_authority:') else code
+            self.line_counts['refused'][reason] = self.line_counts['refused'].get(reason, 0) + 1
+        return changes
+
+    def remove_closed(self):
+        """VELDO-0188 AC3: every closing line with no running launch and no orphan leaves the loop, its account
+        slots free. Returns what left."""
+        stopped = []
+        for repository, line in sorted(self.lines.items()):
+            if (getattr(line, 'closing', False) and not line.runner.launches
+                    and not line.runner.orphans):
+                del self.lines[repository]
+                stopped.append({'project': getattr(line, 'project', None), 'repository': repository})
+        self.line_counts['stopped'] += len(stopped)
+        return stopped
 
     def start(self):
         """The service's start (VELDO-0158): each line's Runner sweeps the run directories left from before, removing
@@ -2493,7 +2642,8 @@ class FactoryLoop:
         with contextlib.suppress(OSError):
             self.service._log({'kind': 'loop', 'operation': 'runs_swept', 'at': time.time(),
                                'domain_uuid': self.service.domain, 'swept': swept,
-                               'provisioning': started['provisioning'], 'faults': started.get('faults', [])})
+                               'provisioning': started['provisioning'], 'faults': started.get('faults', []),
+                               'lines': self.started_lines})
         return swept
 
     def provision(self, report, caller):
@@ -2556,11 +2706,21 @@ class FactoryLoop:
                   'offered': [], 'refused': [], 'waiting': [], 'decisions': [], 'asked': [], 'awaiting': [],
                   'stopped': [], 'faults': [], 'lands': [], 'provisioning': []}
         self.provision(report, 'pass')
+        # VELDO-0188: a pass a journal advance woke makes the lines the store's before any work is offered.
+        if 'journal' in report['sources']:
+            try:
+                report['lines'] = self.follow_store(self.passes)
+            except Exception as error:  # noqa: BLE001 - the lines held serve on, the fault named
+                report['faults'].append({'lines': 'follow_store', 'reason': 'unknown_outcome:' + type(error).__name__})
         for repository, line in sorted(self.lines.items()):
             try:
                 line.run(report, [launch for owner, launch in ended if owner is line])
             except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never the end
                 report['faults'].append({'repository': repository, 'reason': 'unknown_outcome:' + type(error).__name__})
+        # VELDO-0188 AC3: a closed project's line whose runs have all ended leaves the loop.
+        stopped = self.remove_closed()
+        if stopped:
+            report.setdefault('lines', {'cause_pass': self.passes}).setdefault('stopped', []).extend(stopped)
         resets = [waiting['until'] for waiting in report['waiting'] if isinstance(waiting.get('until'), int)]
         self.timer = min(resets) if resets else None
         report['timer'] = self.timer
@@ -2576,6 +2736,13 @@ class FactoryLoop:
                 'running': sorted(d for line in self.lines.values() for d in line.runner.launches),
                 'orphans': sorted(d for line in self.lines.values() for d in line.runner.orphans),
                 'last_sources': (self.last or {}).get('sources'),
+                # VELDO-0188: each line the loop holds, with the project and team that staff it, and the projects
+                # left without one by their named reason.
+                'lines': {repository: dict(getattr(line, 'staffing', None) or {'team': 'work'},
+                                           closing=bool(getattr(line, 'closing', False)))
+                          for repository, line in sorted(self.lines.items())},
+                'refused_lines': dict(sorted(self.refused_lines.items())),
+                'line_counts': json.loads(json.dumps(self.line_counts)),
                 # VELDO-0148: each land station's land dispatches: outcomes, those running, re-lands per unit.
                 'lands': {repository: line.station.status() for repository, line in sorted(self.lines.items())
                           if line.station is not None}}

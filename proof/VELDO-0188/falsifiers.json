@@ -1,0 +1,195 @@
+{
+ "command": "flock <host gate lock> python3 scripts/check_gate_mutations.py --case close188-line-kept --case lines188-closing-offers --case lines188-constructor-only --case lines188-intake-receiver-authority-missing --case lines188-paused-omitted --case lines188-pm-receiver-authority-missing --case lines188-timer-reconciles --case newproject143-line-not-added --case staff188-default-team-only --resource-capacity systemd_user_manager=2 --receipt proof/VELDO-0188/falsifiers-receipt.json",
+ "status": "passed",
+ "executed": 9,
+ "rejected": 9,
+ "input_digest": "c5b1bb62ab0a4903551378fecae5f7d3d95e3e77c03b823f0bef84b4738fca54",
+ "implementation_digest": "17b19c46d38b4be409ef1d996dc7e6bd4fdaaee09c4effc8f0e44f1477c14315",
+ "baseline_failed_rows": [],
+ "cases": [
+  {
+   "name": "close188-line-kept",
+   "suite": "116_veldo_0188_project_lines.py",
+   "declared_rows": [
+    "close/removed"
+   ],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "VELDO-0188 close/completed",
+    "VELDO-0188 close/removed",
+    "VELDO-0188 follow/restart",
+    "VELDO-0188 observe/lines",
+    "VELDO-0188 staff/configured-refusal",
+    "VELDO-0188 staff/missing-team",
+    "VELDO-0188 close/configured"
+   ]
+  },
+  {
+   "name": "lines188-closing-offers",
+   "suite": "116_veldo_0188_project_lines.py",
+   "declared_rows": [
+    "close/guard"
+   ],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "VELDO-0188 close/guard"
+   ]
+  },
+  {
+   "name": "lines188-constructor-only",
+   "suite": "116_veldo_0188_project_lines.py",
+   "declared_rows": [
+    "lines/new-project"
+   ],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "VELDO-0188 follow/at-start",
+    "VELDO-0188 follow/new-project",
+    "VELDO-0188 follow/receiver-wait",
+    "VELDO-0188 staff/project-team",
+    "VELDO-0188 staff/default-team",
+    "VELDO-0188 staff/new-revision",
+    "VELDO-0188 staff/refused-role",
+    "VELDO-0188 close/canceled",
+    "VELDO-0188 close/completed",
+    "VELDO-0188 close/removed",
+    "VELDO-0188 close/paused-kept",
+    "VELDO-0188 follow/restart",
+    "VELDO-0188 observe/lines",
+    "VELDO-0188 lines/journal-only",
+    "VELDO-0188 lines/paused-restart",
+    "VELDO-0188 lines/receiver-change",
+    "VELDO-0188 staff/configured-refusal",
+    "VELDO-0188 staff/missing-team",
+    "VELDO-0188 close/configured",
+    "VELDO-0188 lines/new-project",
+    "VELDO-0188 lines/adopted-project",
+    "VELDO-0188 lines/restart"
+   ]
+  },
+  {
+   "name": "lines188-intake-receiver-authority-missing",
+   "suite": "93_veldo_0152_intake_routes.py",
+   "declared_rows": [
+    "line/store-staffing"
+   ],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "VELDO-0152 route/codex-result",
+    "VELDO-0152 intake/scoped-context",
+    "VELDO-0152 proof/intake-companions",
+    "VELDO-0152 intake/ticket-key",
+    "VELDO-0152 intake/name-is-a-hint",
+    "VELDO-0152 intake/request-field",
+    "VELDO-0152 intake/factory-inbox",
+    "VELDO-0152 intake/factory-refusals",
+    "VELDO-0152 project/prefixes",
+    "VELDO-0152 route/new-project",
+    "VELDO-0152 route/existing-project",
+    "VELDO-0152 route/asked-only-when-unclear",
+    "VELDO-0152 route/answers",
+    "VELDO-0152 route/read-and-report",
+    "VELDO-0152 route/runner-input",
+    "VELDO-0152 route/scope-refusal",
+    "VELDO-0152 route/malformed",
+    "VELDO-0152 route/stale",
+    "VELDO-0152 route/factory-refusal",
+    "VELDO-0152 format/fake-lines",
+    "VELDO-0152 route/legacy-owner",
+    "VELDO-0152 graph/own-stage",
+    "VELDO-0152 line/store-staffing"
+   ]
+  },
+  {
+   "name": "lines188-paused-omitted",
+   "suite": "116_veldo_0188_project_lines.py",
+   "declared_rows": [
+    "lines/paused-restart"
+   ],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "VELDO-0188 lines/paused-restart"
+   ]
+  },
+  {
+   "name": "lines188-pm-receiver-authority-missing",
+   "suite": "92_veldo_0088_pm_cycles.py",
+   "declared_rows": [
+    "line/store-staffing"
+   ],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "VELDO-0088 cycle/runner",
+    "VELDO-0088 cycle/snapshot",
+    "VELDO-0088 cycle/no-action",
+    "VELDO-0088 cycle/failure",
+    "VELDO-0088 proposal/unauthorized",
+    "VELDO-0088 proposal/stop-on-refusal",
+    "VELDO-0088 cycle/serialized",
+    "VELDO-0088 cycle/pending-follow-up",
+    "VELDO-0088 cycle/budget",
+    "VELDO-0088 unit/one-run-staging",
+    "VELDO-0088 unit/factory-builder-ticket",
+    "VELDO-0088 unit/independent-review",
+    "VELDO-0088 proposal/graph-process",
+    "VELDO-0088 cycle/combined-inputs",
+    "VELDO-0088 cycle/receipts",
+    "VELDO-0088 cycle/waiting-release",
+    "VELDO-0088 graph/own-stage",
+    "VELDO-0088 line/store-staffing",
+    "VELDO-0088 review/pm-principal",
+    "VELDO-0088 review/current-publication",
+    "VELDO-0088 review/build-refusal",
+    "VELDO-0088 review/review-refusal",
+    "VELDO-0088 review/pending-budget",
+    "VELDO-0088 graph/own-stage",
+    "VELDO-0088 followup/setup-pm",
+    "VELDO-0088 followup/setup-pm-authority",
+    "VELDO-0088 graph/own-stage",
+    "VELDO-0088 followup/initial-fault",
+    "VELDO-0088 followup/pending-fault",
+    "VELDO-0088 graph/own-stage"
+   ]
+  },
+  {
+   "name": "lines188-timer-reconciles",
+   "suite": "116_veldo_0188_project_lines.py",
+   "declared_rows": [
+    "lines/journal-only"
+   ],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "VELDO-0188 lines/journal-only"
+   ]
+  },
+  {
+   "name": "newproject143-line-not-added",
+   "suite": "110_veldo_0143_new_project.py",
+   "declared_rows": [
+    "activation/line-from-pass"
+   ],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "VELDO-0143 activation/line-from-pass",
+    "VELDO-0143 activation/factory-line-kept"
+   ]
+  },
+  {
+   "name": "staff188-default-team-only",
+   "suite": "116_veldo_0188_project_lines.py",
+   "declared_rows": [
+    "staff/project-team"
+   ],
+   "noop_failed_rows": [],
+   "mutant_failed_rows": [
+    "VELDO-0188 staff/project-team",
+    "VELDO-0188 staff/new-revision",
+    "VELDO-0188 staff/refused-role",
+    "VELDO-0188 close/removed",
+    "VELDO-0188 follow/restart",
+    "VELDO-0188 observe/lines",
+    "VELDO-0188 staff/missing-team"
+   ]
+  }
+ ]
+}

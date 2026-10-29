@@ -291,6 +291,15 @@ sys.exit(chosen['code'])
                         execution_repository=self.REPO, authority_policy={'grooming': ['project_owner']},
                         coordination_budget={'capacity': 20, 'invocations': 200, 'wall_seconds': 10 ** 6, 'owner_minutes': 60})
 
+                # Project staffing is store authority. This fixture has no PM cycles, so supply its engineering
+                # roles in the default team instead of depending on the installed work configuration fallback.
+                team_roles = {name: dict(workers=[worker], engines=['codex'],
+                                         capability_configuration=ROLE['configuration'],
+                                         budget={'wall_seconds': ROLE['seconds']})
+                              for name, worker in (('implementation', BUILDER), ('independent_review', REVIEWER))}
+                self.put(CS.TR.HEAD, CS.TR.KIND, {'revision': 1})
+                self.put(CS.TR.default_id(1), CS.TR.KIND, {'revision': 1, 'team': {'roles': team_roles}})
+
                 # The owner's Codex accounts, each with its own profile on this host, and the reservation ceilings.
                 self.reserving = RES.Reservations(S, setup, domain=self.DOMAIN, repository=self.REPO, principal='authority',
                                                   authorize=RES.service_authority, signer='authority', sign=journal_sign)

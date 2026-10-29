@@ -11104,9 +11104,9 @@ def cases():
                 "        made = [self._log(e) for e in decisions.resume()]\n",
                 "        made = []  # defect: an interrupted presentation is never finished\n",
                 ['proposal/presentation-interrupted'])
-    new_project('newproject143-line-not-added', 'control_service_projects.py',
-                "        if result['outcome'] == 'activated' and s.loop is not None:\n",
-                "        if False:  # defect: the activated project's repository gets no line\n",
+    new_project('newproject143-line-not-added', 'control_service.py',
+                "        if 'journal' in report['sources']:\n",
+                "        if False:  # defect: the activation's journal pass never starts its line\n",
                 ['activation/line-from-pass'])
     new_project('newproject143-proposed-without-provisioner', 'control_project_proposal.py',
                 "            if not self.provisioning():\n",
@@ -11636,6 +11636,44 @@ def cases():
         '        if False:\n',
         ['host-lock/not-started-not-red'])
     result[-1]['siblings'] = True
+    # VELDO-0188: each criterion's declared falsifier.
+    def project_lines(name, module, old, new, rows, also=()):
+        add(188, name, '116_veldo_0188_project_lines.py', module, old, new, rows, also)
+
+    # AC1 (declared): the lines built only in FactoryLoop's constructor from the work configuration.
+    project_lines('lines188-constructor-only', 'control_service.py',
+                  "        self.started_lines = self.follow_store(0)\n",
+                  "        self.started_lines = {}  # defect: the store's projects give the loop no line\n",
+                  ['lines/new-project'],
+                  also=[("        if 'journal' in report['sources']:\n            try:\n                report['lines'] = ",
+                         "        if False:  # defect: no pass follows the store\n            try:\n                report['lines'] = ")])
+    # AC2 (declared): every line staffed from the default team.
+    project_lines('staff188-default-team-only', 'control_service.py',
+                  "    if isinstance(data, dict) and data.get('revision') and isinstance(data.get('team'), dict):\n",
+                  "    if False:  # defect: a project's own team never staffs its line\n",
+                  ['staff/project-team'])
+    # AC3 (declared): a closed project's line kept in the loop.
+    project_lines('close188-line-kept', 'control_service.py',
+                  "            if (getattr(line, 'closing', False) and not line.runner.launches\n",
+                  "            if (False and not line.runner.launches  # defect: kept\n",
+                  ['close/removed'])
+
+    project_lines('lines188-timer-reconciles', 'control_service.py',
+                  "        if 'journal' in report['sources']:\n",
+                  "        if True:\n", ['lines/journal-only'])
+    project_lines('lines188-closing-offers', 'control_service.py',
+                  "        if getattr(self, 'closing', False):\n            return\n",
+                  "        if getattr(self, 'closing', False):\n            pass\n", ['close/guard'])
+    project_lines('lines188-paused-omitted', 'control_service.py',
+                  "PROJECT_OPEN = ('ACTIVE', 'PAUSED')", "PROJECT_OPEN = ('ACTIVE',)", ['lines/paused-restart'])
+
+    # Consumer fixtures must provide the receiver authority needed to construct their Lines.
+    for suffix, suite in (('pm', '92_veldo_0088_pm_cycles.py'), ('intake', '93_veldo_0152_intake_routes.py')):
+        add(188, 'lines188-' + suffix + '-receiver-authority-missing', suite, suite,
+            "            service.config['receiver'] = {'configs': {repository: str(installed_receiver)}}\n",
+            "            service.config['receiver'] = {'configs': {}}  # defect: no receiver authority\n",
+            ['line/store-staffing'])
+        result[-1]['dir'] = 'scripts/suites'
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

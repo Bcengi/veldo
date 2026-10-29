@@ -20,7 +20,7 @@ import time
 
 @contextlib.contextmanager
 def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_project=True,
-            compiled_sources=False):
+            compiled_sources=False, install_modules=None):
     CHOICES = ['accept', 'return_for_elaboration', 'reject']
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -140,6 +140,20 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
                                check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL, env=quiet())
                 public[who] = ' '.join(path.with_name(path.name + '.pub').read_text().split()[:2])
 
+            # A served integration fixture installs before declaring any store owner, so every writer and
+            # the service bind ownership to the same installed module paths from the first command.
+            if install_modules is not None:
+                mods = install_modules(base, mods, DOMAIN, REPO, ids, keyfile, public)
+                claims = load('v89_claims', mods / 'control_claim.py')
+                S, CM, AC = claims.S, claims.CM, claims.AC
+                K = load('v89_keys', mods / 'control_keys.py')
+                I = load('v89_inbox', mods / 'control_assignment.py')
+                P = load('v89_projection', mods / 'control_channel_projection.py')
+                V = load('v89_presentation', mods / 'control_channel_presentation.py')
+                ST = load('v89_settlement', mods / 'control_request_settlement.py')
+                PJ = load('v89_project', mods / 'control_project.py')
+                contract = load('v89_contract', mods / 'entity_contract.py')
+                CT = load('v89_team', mods / 'control_team.py') if (mods / 'control_team.py').is_file() else None
             setup_report = None
             if production_setup:
                 helper = load('v88_setup_fixture', Path(__file__).with_name('setup_fixture.py'))
@@ -172,7 +186,7 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
             if setup_report:
                 db = Path(setup_report['store'])
             else:
-                (base / 'authority').mkdir()
+                (base / 'authority').mkdir(exist_ok=True)
                 db = base / 'authority' / 'control.sqlite3'
             conn = S.open_store(str(db))
             connections.append(conn)

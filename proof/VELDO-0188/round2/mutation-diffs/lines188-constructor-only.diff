@@ -1,0 +1,8 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -2510 +2510 @@
+-        self.started_lines = self.follow_store(0)
++        self.started_lines = {}  # defect: the store's projects give the loop no line
+@@ -2710 +2710 @@
+-        if 'journal' in report['sources']:
++        if False:  # defect: no pass follows the store

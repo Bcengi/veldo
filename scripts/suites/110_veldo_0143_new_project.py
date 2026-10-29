@@ -1473,7 +1473,7 @@ def _v143_suite():
             receiver_config.parent.mkdir()
             receiver_config.write_text(json.dumps({'store': str(f['db']), 'workspace': str(base / 'workspace'),
                                                    'repository': REPO, 'domain': DOMAIN, 'principal': 'pm',
-                                                   'records': str(base / 'records'), 'adapters': {}}))
+                                                   'records': str(base / 'records'), 'adapters': {'claude': {'engine': 'claude_code'}}}))
             receiver_config.chmod(0o600)
             service = SV.Service(dict(domain_uuid=DOMAIN, store_uuid=ids['store_uuid'], principal='authority',
                                       authority_generation=1, repositories={REPO: [str(base / 'workspace')]},
@@ -1593,7 +1593,7 @@ def _v143_suite():
                                                                                     payload={'task': 'review the unit'})]}}}
                 loop = SV.FactoryLoop(service, work)
                 line = loop.lines.get(tide_repo)
-                added = loop.add_line(tide_repo, service.config['receiver']['configs'][tide_repo])
+                added = tide_repo if tide_repo in loop.lines else None
                 author = GI.author(GI.resolve(conn, DOMAIN, tide_repo))
                 check('activation/new-line', [
                     ('the new repository is served with a receiver configuration of its own',
@@ -1604,9 +1604,9 @@ def _v143_suite():
                      (base_revision.get('data') or {}).get('commit') == (record(tide_repo) or {}).get('base_commit')),
                     ('the team\'s capability configurations read the same in it',
                      {k: copied[k] for k in ('role', 'engine')} == {'role': 'team-fixture', 'engine': 'claude_code'}),
-                    ('the factory loop has its line, whose Runner dispatches in it, with the first line\'s roles',
+                    ('the factory loop has its line, whose Runner dispatches in it, with its project team\'s roles',
                      added == tide_repo and line is not None and line.workspace == os.path.realpath(str(tide_dir))
-                     and line.gate.repository_uuid == tide_repo and line.roles == work['repositories'][REPO]
+                     and line.gate.repository_uuid == tide_repo and line.roles == SV.line_roles(f['team'](), {'claude': {'engine': 'claude_code'}})
                      and loop.factory_line == REPO),
                     ('its units are authored by the identity alone', author == ('Olga Personal', 'personal@example.invalid'))])
 
@@ -2266,16 +2266,23 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                     adapters={'claude': {'identity': 'reported', 'argv': [
                         sys.executable, '-B', str(mods / 'control_launch.py'), 'exec', sys.executable, '-B', str(fake),
                         str(result_file), str(packet_file)]}})))
+                pm_launch_receiver = pm_receiver
+                pm_receiver = base / 'pm-installed.json'
+                pm_installed = json.loads(pm_launch_receiver.read_text())
+                pm_installed['adapters']['claude']['engine'] = 'claude_code'
+                pm_receiver.write_text(json.dumps(pm_installed))
                 # The scheduling service's principal holds reservation_service, as VELDO-0152's suite runs it.
                 pm_service = SV.Service(dict(domain_uuid=DOMAIN, store_uuid=ids['store_uuid'], principal='team-service',
                                              authority_generation=1, repositories={REPO: [str(source)]},
                                              journal_key=str(f['keyfile']['authority']), host_identity=HOST,
                                              enrollment_signers=trust.enrollment_signers, store_path=str(f['db']),
                                              observations=str(base / 'pm-service.jsonl'),
-                                             provisioner=str(provisioner_file)), conn)
+                                             provisioner=str(provisioner_file),
+                                             receiver={'configs': {REPO: str(pm_receiver)}}), conn)
                 pm_service.channel = service.channel
                 pm_loop = SV.FactoryLoop(pm_service, {'repositories': {}})
-                line = SV.Line(pm_loop, REPO, {'builder': {'identity': 'unassigned'}, 'reviewers': []}, str(pm_receiver))
+                line = pm_loop.lines[REPO]
+                line.runner.receiver = lambda contract: SV.L.invoke(pm_launch_receiver, contract, line.dispatches)
                 line.runner.account = 'fixture-account'
                 line.engines, line.hosts = {'claude': 'claude_code'}, {'claude': HOST}
                 pm_loop.lines[REPO] = line
@@ -2339,16 +2346,21 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                     fjord_pass = service.new_project_pass()
                 finally:
                     service.loop = saved_loop
+                before_journal = fjord_repo not in unit_loop.lines
+                unit_service.take_on()
+                unit_loop.wake('journal')
+                line_pass = unit_loop.run() or {}
                 tline = unit_loop.lines.get(fjord_repo)
                 check('activation/line-from-pass', [
                     ('the pass that activates the new project, with the factory loop attached, gives the loop its line',
                      fjord.get('state') == 'active' and (PJ.read(S, conn, 'fjord') or {}).get('state') == 'ACTIVE'
                      and any(e.get('decision') == decision_u1 and e.get('outcome') == 'activated'
-                             and e.get('line') == fjord_repo for e in fjord_pass)),
+                             for e in fjord_pass) and before_journal
+                     and any(e.get('repository') == fjord_repo for e in line_pass.get('lines', {}).get('started', []))),
                     ('that line works in the new repository, through its own receiver configuration, with the roles of '
-                     'the loop\'s first line',
+                     'its project team',
                      tline is not None and tline.workspace == os.path.realpath(str(fjord_dir))
-                     and tline.gate.repository_uuid == fjord_repo and tline.roles == work['repositories'][REPO])])
+                     and tline.gate.repository_uuid == fjord_repo and tline.roles == SV.line_roles(f['team'](), {'claude': {'engine': 'claude_code'}}))])
             with region('activation/factory-line-kept', 'activation/factory-intake-current',
                         'activation/factory-line-restart'):
                 # VELDO-0143 R3-1: the line the pass adds for a new project leaves the factory's own line whole. Until
@@ -2382,6 +2394,7 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                     kestrel_pass = service.new_project_pass()
                 finally:
                     service.loop = saved_loop
+                kept_service.take_on()
                 passes = []
                 for _ in range(2):
                     kept_loop.wake('journal')
@@ -2430,7 +2443,9 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                     ('the pass activates the new project with the factory loop attached and the loop gains its line, '
                      'whose repository uuid sorts before the factory\'s', kestrel.get('state') == 'active'
                      and any(e.get('decision') == decision_k and e.get('outcome') == 'activated'
-                             and e.get('line') == kestrel_repo for e in kestrel_pass)
+                             for e in kestrel_pass)
+                     and any(e.get('repository') == kestrel_repo
+                             for one in passes for e in one.get('lines', {}).get('started', []))
                      and kline is not None and kestrel_repo < REPO),
                     ('after two loop passes the factory line keeps the same cycles and the registry\'s backlog, team and '
                      'snapshot transitions are its own', factory.pm_cycles is before_cycles and held_by(before_cycles)),
@@ -2652,7 +2667,8 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                      canceled_f.get('ok') is True and (PJ.read(S, conn, 'factory') or {}).get('state') == 'CANCELED'
                      and (PJ.read(S, conn, 'kestrel') or {}).get('state') == 'ACTIVE'
                      and kestrel_repo in canceled_loop.lines),
-                    ('the factory line builds no cycles', getattr(canceled_loop.lines[REPO], 'pm_cycles', None) is None),
+                    ('the closed factory line leaves the loop and status',
+                     REPO not in canceled_loop.lines and REPO not in canceled_loop.status()['lines']),
                     ('the first line visited that wants cycles, another active project\'s, builds them at the first pass, '
                      'its owners on the connection', first_c not in (None, REPO) and len(built_c) == 1
                      and built_c[0][0] == first_c and 'pm_cycles' in canceled_passes[0] and held_by(built_c[0][1].pm_cycles)),

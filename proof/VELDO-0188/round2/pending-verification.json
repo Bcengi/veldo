@@ -1,0 +1,31 @@
+{
+  "status": "remaining",
+  "recorded_at": "2026-10-28T21:10:38.348449+00:00",
+  "consumer_mutations": {
+    "status": "not_started",
+    "reason": "blocking host gate lock occupied; waiting flock terminated before spawning a test; no detached process",
+    "command": [
+      "flock",
+      "/home/dmitry/.local/state/core-gates/.gate.lock",
+      "python3",
+      "scripts/check_gate_mutations.py",
+      "--case",
+      "lines188-pm-receiver-authority-missing",
+      "--case",
+      "lines188-intake-receiver-authority-missing",
+      "--case",
+      "newproject143-line-not-added",
+      "--resource-capacity",
+      "systemd_user_manager=2",
+      "--worker-log-dir",
+      "/tmp/veldo188-consumer-mutation-workers",
+      "--receipt",
+      "proof/VELDO-0188/round2/consumer-falsifiers.json"
+    ]
+  },
+  "ticket_mutations": {
+    "status": "approval_required",
+    "reason": "installed-process controls need host user manager; suite 113 is absent from the protected confinement declaration",
+    "proposal": "proof/VELDO-0188/round2/proposed-gate-entry.patch"
+  }
+}
