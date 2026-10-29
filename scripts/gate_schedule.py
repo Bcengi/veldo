@@ -383,11 +383,34 @@ class NodeInputs:
         self.head = self.mutation.git(root, common, 'rev-parse', 'HEAD')
         try:
             self.common = self.mutation.snapshot(root, common, self.root, self.files, self.head)
+            self.outputs = self.carry_outputs(Path(root), common)
             if not self.unchanged():
                 raise Refused('candidate snapshot differs from input closure')
         except BaseException:
             self.close()
             raise
+
+    def carry_outputs(self, root, common):
+        # The gate's own records are outside the closure, as in the mutation stage, but a node
+        # reads them where a confined node does (integration's spend probe reads events.jsonl).
+        # Carry the checkout's copies Git lists; an ignored output (this graph's schedule) is not
+        # carried, and a linked one is refused like a linked input.
+        listed = self.mutation.git_bytes(root, common, 'ls-files', '-z', '--cached', '--others',
+                                         '--exclude-standard', '--', *sorted(self.mutation.OUTPUTS))
+        carried = []
+        top = os.path.realpath(root)
+        for rel in sorted(set(os.fsdecode(name) for name in listed.split(b'\0') if name)):
+            path = root / rel
+            if rel not in self.mutation.OUTPUTS or not os.path.lexists(path):
+                continue
+            if path.is_symlink() or os.path.realpath(path) != os.path.join(top, rel) or not path.is_file():
+                raise Refused('candidate snapshot output is not a regular file: ' + rel)
+            target = self.root / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(path.read_bytes())
+            target.chmod(path.stat().st_mode & 0o777)
+            carried.append(rel)
+        return carried
 
     def unchanged(self):
         try:

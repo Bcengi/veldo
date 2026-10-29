@@ -482,6 +482,26 @@ raise SystemExit(m.main())
         row('graph-refusal-record', all(refusal_records))
         shutil.copyfile(scripts/'gate_schedule_impl.py',scripts/'gate_schedule.py')
 
+        # An unconfined node reads the gate's own records where a confined node does; they stay
+        # outside the compared closure (batch 2026-10-29 inventory row 16).
+        records = {'.veldo/events.jsonl': b'{"event":"fixture"}\n', '.veldo/last_verify': b'{"status":"green"}\n'}
+        for rel, body in records.items():
+            (candidate/rel).parent.mkdir(exist_ok=True)
+            (candidate/rel).write_bytes(body)
+        (candidate/'.veldo/gate-schedule.json').write_text('{"ignored":"this graph writes it"}')
+        (candidate/'.gitignore').write_text('.veldo/gate-schedule.json\n')
+        subprocess.run(['git', '-C', str(candidate), 'add', '.gitignore', *records], check=True)
+        subprocess.run(['git', '-C', str(candidate), '-c', 'user.name=Fixture',
+                        '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'records'], check=True)
+        node = scheduler.NodeInputs(candidate, top / 'records.inputs', mutation)
+        try:
+            carried = {rel: (node.root/rel).read_bytes() for rel in records if (node.root/rel).is_file()}
+            row('node-reads-gate-records', carried == records and node.unchanged()
+                and sorted(node.outputs) == sorted(records) and not (node.root/'.veldo/gate-schedule.json').exists()
+                and set(records).isdisjoint(node.files))
+        finally:
+            node.close()
+
         # Production graph and catalog are independently enumerated every run.
         verify = (ROOT/'scripts/verify.sh').read_text()
         actual = dict(__import__('re').findall(r'^CHECK_(\w+)="required:([^"]+)"',verify,__import__('re').M))
