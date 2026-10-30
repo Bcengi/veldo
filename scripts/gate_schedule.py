@@ -425,6 +425,19 @@ class NodeInputs:
             shutil.rmtree(self.root)
 
 
+def stage_error(receipt):
+    """The failed mutation stage's own error and detail from its receipt, one line, or None."""
+    try:
+        document = json.loads(Path(receipt).read_text())
+    except (OSError, ValueError):
+        return None
+    if not isinstance(document, dict) or not isinstance(document.get('error'), str):
+        return None
+    detail = document.get('detail')
+    text = document['error'] + (': ' + detail if isinstance(detail, str) and detail else '')
+    return ' '.join(text.split())[:400]
+
+
 def command_for(root, stage, leg, command, record, receipt, listing, prior_times=None):
     if stage == 'mutation':
         return [sys.executable, '-I', '-S', str(HERE / 'check_gate_mutations.py'), '--root', str(root),
@@ -614,8 +627,11 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                     failed_tree = True
                     item['error'] = 'candidate_tree_changed'
                 error = item['error'] or ('live_descendants' if metrics.get('live_descendants') else None)
+                if code and required[name][0] == 'mutation':
+                    # The child's own named error comes first; a leaked claim is reported after it.
+                    error = error or stage_error(receipt)
                 if item['children']:
-                    error = error or 'unreleased_ledger_claim'
+                    error = error + '; unreleased_ledger_claim' if error else 'unreleased_ledger_claim'
                     for claimant in item['children']:
                         ledger.release(claimant)
                 elapsed = end - item['started']
