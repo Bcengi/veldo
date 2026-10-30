@@ -2640,6 +2640,17 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                 # the factory line for it: the active project's line builds its cycles, and nothing is deferred.
                 conn.command_registry.clear()
                 conn.command_registry.update(cycles_free)
+                # The variant's loop starts before the cancel, while the factory project is still active: its factory
+                # line takes a run that is still running when the first pass after the cancel comes.
+                held_service = SV.Service(dict(service.config, principal='team-service',
+                                               repositories=dict(service.repositories, **{REPO: [str(source)]}),
+                                               observations=str(base / 'held-service.jsonl'),
+                                               receiver={'configs': paused_configs}), conn)
+                held_service.channel = service.channel
+                held_loop = SV.FactoryLoop(held_service, work)
+                held_run = SimpleNamespace(dispatch_id='held-143', contract={'unit': 'held-143', 'station': 'build'},
+                                           fileno=lambda: None)
+                held_loop.lines[REPO].runner.launches[held_run.dispatch_id] = held_run
                 canceled_f = factory_change('cancel', reason='the owner closes the factory project',
                                             disposition='nothing left open')
                 canceled_service = SV.Service(dict(service.config, principal='team-service',
@@ -2659,9 +2670,32 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                 first_c = next((repository for repository, line in sorted(canceled_loop.lines.items())
                                 if line.wants_cycles()), None)
                 cfaults = [x for one in canceled_passes for x in one.get('faults') or []]
+                # Read before the variant below takes the connection's owners for its own loop's line.
+                c_owned = len(built_c) == 1 and held_by(built_c[0][1].pm_cycles)
                 if len(built_c) != 1:
                     print('  %sdetail: factory canceled: cancel %s; built %s; faults %s' % (
                         PREFIX, canceled_f.get('reason'), [r for r, _ in built_c], cfaults))
+                # The variant: the canceled factory line still holds its running launch at the first pass, so that
+                # line stays in the loop, closing, while the other lines run (VELDO-0188 AC3). A canceled factory
+                # project runs no cycles again, so no line waits on that closing line for them either.
+                conn.command_registry.clear()
+                conn.command_registry.update(cycles_free)
+                held_loop.wake('journal')
+                held_pass = held_loop.run() or {}
+                held_factory = held_loop.lines.get(REPO)
+                held_built = [(repository, line) for repository, line in sorted(held_loop.lines.items())
+                              if getattr(line, 'pm_cycles', None) is not None]
+                held_first = next((repository for repository, line in sorted(held_loop.lines.items())
+                                   if line.wants_cycles()), None)
+                held_faults = held_pass.get('faults') or []
+                held_status = held_loop.status()
+                if held_factory is not None:
+                    held_factory.runner.launches.pop(held_run.dispatch_id, None)
+                held_loop.wake('journal')
+                held_after = held_loop.run() or {}
+                if len(held_built) != 1 or any(x.get('reason') == DEFERRED for x in held_faults):
+                    print('  %sdetail: factory canceled, its line running: built %s; first %s; faults %s' % (
+                        PREFIX, [r for r, _ in held_built], held_first, held_faults))
                 check('activation/factory-canceled', [
                     ('the factory project is canceled and kestrel\'s project is active on its own line',
                      canceled_f.get('ok') is True and (PJ.read(S, conn, 'factory') or {}).get('state') == 'CANCELED'
@@ -2671,8 +2705,21 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                      REPO not in canceled_loop.lines and REPO not in canceled_loop.status()['lines']),
                     ('the first line visited that wants cycles, another active project\'s, builds them at the first pass, '
                      'its owners on the connection', first_c not in (None, REPO) and len(built_c) == 1
-                     and built_c[0][0] == first_c and 'pm_cycles' in canceled_passes[0] and held_by(built_c[0][1].pm_cycles)),
-                    ('no pass defers a line to the factory line', not any(x.get('reason') == DEFERRED for x in cfaults))])
+                     and built_c[0][0] == first_c and 'pm_cycles' in canceled_passes[0] and c_owned),
+                    ('no pass defers a line to the factory line', not any(x.get('reason') == DEFERRED for x in cfaults)),
+                    ('with a run still on the canceled factory line, that line stays in the loop through the first pass, '
+                     'closing, its run listed', held_factory is not None and getattr(held_factory, 'closing', False)
+                     and any(s.get('repository') == REPO for s in (held_pass.get('lines') or {}).get('stopping') or [])
+                     and held_status['lines'].get(REPO, {}).get('closing') is True
+                     and held_run.dispatch_id in held_status['running']),
+                    ('and at that pass the first line visited that wants cycles, another active project\'s, builds them, '
+                     'its owners on the connection', held_first not in (None, REPO) and len(held_built) == 1
+                     and held_built[0][0] == held_first and 'pm_cycles' in held_pass and held_by(held_built[0][1].pm_cycles)),
+                    ('nothing is deferred to the closing factory line', not any(x.get('reason') == DEFERRED
+                                                                                for x in held_faults)),
+                    ('once its run ends the closing factory line leaves the loop',
+                     REPO not in held_loop.lines
+                     and any(s.get('repository') == REPO for s in (held_after.get('lines') or {}).get('stopped') or []))])
 
             with region('pm/graph-stage-own'):
                 # The seam's outcome, not its frame match: the PM exchanges above (pm/new-project-run's, and those of
