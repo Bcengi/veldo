@@ -132,6 +132,7 @@ def _v204_suite():
                 enrolled = h.enroll_authority()
                 for name in ('factory', 'proj-b'):
                     h.activate(name, P[name])
+                factory_team = h.factory_team()
                 accepted = f['accept'](h.specialist(f['team'](), 'payments', PAY))
                 h.review_policy()
                 for account, provider in (('acc-c1', 'claude_code'), ('acc-c2', 'claude_code'), ('acc-x1', 'codex')):
@@ -144,10 +145,10 @@ def _v204_suite():
                 h.admit(U['a2'])
                 assigned = h.assign(U['a2'], 'payments')
                 ready = (h.lock not in (None, -1) and enrolled is not None and accepted.get('ok')
-                         and assigned.get('ok'))
+                         and assigned.get('ok') and factory_team.get('ok'))
                 for name in names:
-                    check(name, 'the fresh host is laid down [lock %s, team %s, assignment %s]' % (
-                        h.lock, accepted.get('reason'), assigned.get('reason')), ready)
+                    check(name, 'the fresh host is laid down [lock %s, team %s, factory team %s, assignment %s]' % (
+                        h.lock, accepted.get('reason'), factory_team.get('reason'), assigned.get('reason')), ready)
 
             # AC4 refuse/principal: a principal without reservation_service is refused by the writer, subject by subject.
             with region('refuse/principal'):

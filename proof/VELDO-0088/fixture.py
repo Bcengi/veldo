@@ -252,8 +252,8 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
                                 requester='team-service', request_sign=lambda m: sign_as('team-service', m))
                        if CT is not None else None)
 
-            def send(who, op, **fields):
-                body = dict(ids, operation=op, project='proj-a', principal=who, command_id=next_id('tc'),
+            def send(who, op, project='proj-a', **fields):
+                body = dict(ids, operation=op, project=project, principal=who, command_id=next_id('tc'),
                             nonce=next_id('tn'), **fields)
                 return service.apply(signed(who, body)) if service is not None else {'ok': False, 'reason': 'no_team_service'}
 
@@ -261,12 +261,12 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
                 row = conn.execute('SELECT kind, version, digest, data FROM entities WHERE id=?', (eid,)).fetchone()
                 return None if row is None else {'kind': row[0], 'version': row[1], 'digest': row[2], 'data': json.loads(row[3])}
 
-            def team_record():
-                row = entity('team:proj-a')
+            def team_record(project='proj-a'):
+                row = entity('team:' + project)
                 return dict(row['data'], version=row['version']) if row and row['kind'] == 'team' else {}
 
-            def version():
-                return team_record().get('version', 0)
+            def version(project='proj-a'):
+                return team_record(project).get('version', 0)
 
             def authority_rows():
                 """Every membership, delegation and key row and the authority versions: (id, version, digest)."""
@@ -317,16 +317,18 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
                         value[name] = spec
                 return {'roles': value}
 
-            def propose(value, who='pm', team_version=None):
-                return send(who, 'propose', team_version=version() if team_version is None else team_version, team=value)
+            def propose(value, who='pm', team_version=None, project='proj-a'):
+                return send(who, 'propose', project=project, team=value,
+                            team_version=version(project) if team_version is None else team_version)
 
-            def target_and_brief():
-                record = team_record()
+            def target_and_brief(project='proj-a'):
+                record = team_record(project)
                 if CT is None or not record.get('proposal'):
-                    return {'kind': 'team', 'ref': 'team:proj-a', 'digest': 'sha256:none'}, 'Accept the team of proj-a.'
+                    return ({'kind': 'team', 'ref': 'team:' + project, 'digest': 'sha256:none'},
+                            'Accept the team of %s.' % project)
                 return CT.amendment_target(record), CT.amendment_brief(record)
 
-            def present(alias, target, brief, owner='olga'):
+            def present(alias, target, brief, owner='olga', project='proj-a'):
                 """The requester's terms, the inbox request with its framing, and its presentation."""
                 terms = settlement.terms(signed('pm', dict(ids, operation='terms', terms=alias, principal='pm',
                                                            command_id=next_id('terms'), nonce=next_id('tn'),
@@ -334,7 +336,7 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
                                                            required_roles=[], quorum=None)))
                 inbox.apply(signed('pm', dict(ids, operation='open', alias=alias, principal='pm', command_id=next_id('c'),
                                               nonce=next_id('n'), assignment=dict(
-                                                  kind='decision', owner=owner, scope=['proj-a'],
+                                                  kind='decision', owner=owner, scope=[project],
                                                   deadline='2026-10-30T17:00:00Z', budget={'owner_minutes': 15}, brief=brief,
                                                   choices=list(CHOICES), subject=terms.get('subject') or {}))))
                 rid = I.assignment_id(REPO, alias)
@@ -352,26 +354,26 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
                             rationale='I have read the roster, its budgets and its separation.')
                 return settlement.api_answer({'answer': body, 'signature': sign_as('api-edge', S.canonical_bytes(body))})
 
-            def settle(alias, owner='olga', target=None, brief=None, choice='accept'):
-                t, b = target_and_brief()
-                rid, receipt = present(alias, target or t, brief or b, owner)
+            def settle(alias, owner='olga', target=None, brief=None, choice='accept', project='proj-a'):
+                t, b = target_and_brief(project)
+                rid, receipt = present(alias, target or t, brief or b, owner, project)
                 return rid, answer(receipt, choice, owner)
 
-            def amend(rid, who='pm', **over):
-                record = team_record()
+            def amend(rid, who='pm', project='proj-a', **over):
+                record = team_record(project)
                 proposal = record.get('proposal') or {}
                 fields = dict(team_version=record.get('version', 0), revision=proposal.get('revision'),
                               digest=proposal.get('digest'), request=rid)
                 fields.update(over)
-                return send(who, 'amend', **fields)
+                return send(who, 'amend', project=project, **fields)
 
             # Each behavioral row contains its successful real-writer control when needed.
-            def accept(value):
-                proposed = propose(value)
+            def accept(value, project='proj-a', owner='olga'):
+                proposed = propose(value, project=project)
                 if not proposed.get('ok'):
                     return proposed
-                rid, settled = settle(next_id('TEAM'))
-                result = amend(rid) if settled.get('outcome') == 'settled' else settled
+                rid, settled = settle(next_id('TEAM'), owner, project=project)
+                result = amend(rid, project=project) if settled.get('outcome') == 'settled' else settled
                 if not result.get('ok'):
                     print('  VELDO-0088 detail: acceptance result: %r' % result)
                 return result
