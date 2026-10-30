@@ -499,6 +499,29 @@ print(json.dumps(results))
         else:
             trace_refused = False
         expect('VELDO-0208 candidate/trace-still-rejects-undeclared-probes', trace_refused)
+        # A worker thread torn down by its group's exit never resumes its last call. The tracer
+        # prints that thread's end, and only an exit (or a call strace could not name) may be left
+        # pending by a thread whose end is printed; anything else is a lost read.
+        shared_read = ('1 openat(AT_FDCWD, "' + str(worker_root / 'scripts/suites/shared.py')
+                       + '", O_RDONLY|O_CLOEXEC) = 3</shared.py>\n')
+        def ended_trace(pending, end):
+            fake_trace.write_text('1 landlock_restrict_self(3, 0) = 0\n' + shared_read
+                                  + '2 ' + pending + ' <unfinished ...>\n' + '1 exit_group(0) = ?\n'
+                                  + ('2 +++ exited with 0 +++\n' if end else '') + '1 +++ exited with 0 +++\n')
+            try:
+                tracer.check(fake_trace, worker_root, ['scripts/suites/shared.py'], scratch=worker_home,
+                             after_confinement=True)
+                return list(tracer.accesses(fake_trace, after_confinement=True))
+            except ValueError as error:
+                return str(error)
+        expect('VELDO-0208 candidate/trace-ended-thread-pending-exit-accepted', all(
+            ended_trace(pending, True) == [(worker_root / 'scripts/suites/shared.py', 'content', True)]
+            for pending in ('exit_group(0', 'exit(0', '???(')))
+        expect('VELDO-0208 candidate/trace-pending-exit-without-thread-end-refused', all(
+            ended_trace(pending, False) == 'incomplete file-read trace'
+            for pending in ('exit_group(0', 'exit(0', '???(')))
+        expect('VELDO-0208 candidate/trace-ended-thread-pending-read-refused',
+               ended_trace('openat(AT_FDCWD, "/stolen-key", O_RDONLY', True) == 'incomplete file-read trace')
 
         # The unconfined coordinator reaps what a worker owns. Its ledger is the coordinator's file,
         # outside every worker grant; a confined candidate suite reaches it only through the inherited
