@@ -90,12 +90,7 @@ def read_graph(catalog, declaration=None, path=GRAPH):
                     raise Refused('coordinator cannot retain manager exclusion')
             if 'estimate' in node:
                 startup_estimate(node['estimate'])
-        done = set()
-        while len(done) < len(nodes):
-            ready = {n for n, v in nodes.items() if n not in done and set(v['depends_on']) <= done}
-            if not ready:
-                raise Refused('graph cycle')
-            done.update(ready)
+        acyclic({n: set(v['depends_on']) for n, v in nodes.items()})
         for key in ('reserve', 'mutation_floor'):
             if not isinstance(graph[key], dict) or set(graph[key]) != {'cpu', 'memory'} \
                     or not all(number(v) for v in graph[key].values()):
@@ -106,6 +101,22 @@ def read_graph(catalog, declaration=None, path=GRAPH):
         return graph, 'sha256:' + hashlib.sha256(raw).hexdigest(), required
     except (OSError, ValueError, TypeError, KeyError) as error:
         raise Refused('invalid graph: ' + str(error)) from error
+
+
+def acyclic(depends):
+    done = set()
+    while len(done) < len(depends):
+        ready = {n for n, deps in depends.items() if n not in done and deps <= done}
+        if not ready:
+            raise Refused('graph cycle')
+        done.update(ready)
+
+
+def write_prior(path, prior):
+    # Replaced whole: an integration node already running has read its own leg's value.
+    pending = path.with_name(path.name + '.pending')
+    pending.write_text(json.dumps(prior))
+    os.replace(pending, path)
 
 
 def validate_claim(claim):
@@ -477,13 +488,24 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                          Path(__file__).read_text() + (HERE / 'gate_legs.py').read_text()).encode()).hexdigest()
     prior_times = directory / 'prior-unit-times.json'
     prior = {}
+    depends = {name: set(node['depends_on']) for name, node in graph['nodes'].items()}
+    awaits_unit = {}
     if declaration:
         declaration_digest = legs.load(listing)[1]
         for leg in ('confined', 'unconfined'):
             value = legs.measurement(store, declaration_digest, leg, str(record))
             if value:
                 prior[leg] = dict(value, fresh='an earlier gate run')
-    prior_times.write_text(json.dumps(prior))
+            elif {'unit.' + leg, 'integration.' + leg} <= required.keys():
+                # No unit time under this declaration (a changed list is a new one): the integration
+                # leg waits for this gate's unit leg and is handed its fresh time, never another
+                # declaration's (VELDO-0214). A unit leg that records none leaves the floor.
+                depends['integration.' + leg].add('unit.' + leg)
+                awaits_unit['integration.' + leg] = leg
+                print('node integration.%s: no unit %s leg measurement under this declaration; it waits '
+                      'for unit.%s and takes its time' % (leg, leg, leg), flush=True)
+    acyclic(depends)
+    write_prior(prior_times, prior)
     claims, claim_sources, coordinator_claims = {}, {}, {}
     for name, node in graph['nodes'].items():
         measured = legs.read_resources(store, key, name)
@@ -517,8 +539,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
     try:
         while pending or active:
             for name in list(pending):
-                node = graph['nodes'][name]
-                if not set(node['depends_on']) <= results.keys():
+                if not depends[name] <= results.keys():
                     continue
                 if serial and active:
                     waited_for[name].update(active)
@@ -533,6 +554,11 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 meter = None
                 inputs = None
                 try:
+                    if name in awaits_unit:
+                        value = legs.measurement(store, declaration_digest, awaits_unit[name], str(record))
+                        if value:
+                            prior[awaits_unit[name]] = value
+                        write_prior(prior_times, prior)
                     if leg == 'unconfined':
                         inputs = node_inputs_factory(root, directory / (name + '.inputs'))
                     node_root = inputs.root if inputs else root
@@ -670,7 +696,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
         chains = {}
         def chain(n):
             if n not in chains:
-                chains[n] = results[n]['wall_seconds'] + max((chain(d) for d in set(graph['nodes'][n]['depends_on']) | set(results[n]['admission_dependencies'])), default=0)
+                chains[n] = results[n]['wall_seconds'] + max((chain(d) for d in depends[n] | set(results[n]['admission_dependencies'])), default=0)
             return chains[n]
         critical = max(required, key=chain) if required else None
         return dict(schema='veldo.gate-schedule/v1', graph=digest, stages=stages, nodes=results,
