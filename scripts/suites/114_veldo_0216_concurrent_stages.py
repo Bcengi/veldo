@@ -92,6 +92,10 @@ def _v216_checks():
                        'suites': [{'suite': '01_fixture', 'reason': 'controlled fixture leg for scheduling'}]}
         listing = scripts / 'gate_unconfined.json'
         listing.write_text(json.dumps(declaration))
+        # The store holds this declaration's unit leg times, as after any passing gate, so the
+        # integration legs run beside the unit legs. A store without them has its own rows below.
+        for leg in ('confined', 'unconfined'):
+            legs.record_time(top / 'store', legs.load(listing)[1], leg, 1.0, 'an earlier fixture gate')
         nodes = {n: {'depends_on': [], 'writes_candidate': False, 'manager': 'none', 'ports': []}
                  for n in scheduler.required_nodes(catalog, declaration)}
         graph = {'schema': 'veldo.gate-graph/v1', 'nodes': nodes,
@@ -117,7 +121,7 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
             return module
         stack.enter_context(patch.object(scheduler, 'load_module', fixture_load))
         counter = 0
-        def run(document=graph, fail='', serial=False, commands=None, capacity=None):
+        def run(document=graph, fail='', serial=False, commands=None, capacity=None, store=None):
             nonlocal counter
             counter += 1
             out = top / ('run-' + str(counter))
@@ -126,7 +130,7 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
             with patch.dict(os.environ, V216_FAIL=fail), contextlib.redirect_stdout(log):
                 receipt = scheduler.run(commands or catalog, candidate, out, out / 'legs', out / 'mutation',
                     graph_path=graph_path, capacity=capacity or {'cpu': 32, 'memory': 1048576, 'manager': 16},
-                    measurement_store=top / 'store', meter_factory=Meter, guard_factory=guard, serial=serial,
+                    measurement_store=store or top / 'store', meter_factory=Meter, guard_factory=guard, serial=serial,
                     node_inputs_factory=lambda root,dest: scheduler.NodeInputs(root,dest,mutation))
             return receipt, out, log.getvalue()
 
@@ -163,6 +167,32 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
         ordered, _, _ = run(dependent)
         row('dependency-start', ordered['nodes']['docs']['start'] >= ordered['nodes']['unit.confined']['end']
             and ordered['nodes']['integration.confined']['start'] < ordered['nodes']['unit.confined']['end'])
+        # With no unit time under the current declaration (a changed list is a new one), each
+        # integration leg waits for its unit leg and is handed that leg's fresh time; with one, it
+        # runs beside the unit leg on the stored time (batch 2026-10-29 inventory r2 row 1).
+        owner_store = home / '.cache/veldo/gate-leg-seconds'
+        saved = listing.read_text()
+        changed = dict(declaration, authority='controlled ticket fixture, a changed list')
+        listing.write_text(json.dumps(changed))
+        changed_digest = legs.load(listing)[1]
+        empty = legs.read_times(owner_store, changed_digest) == {}
+        waited, waited_out, waited_log = run(store=owner_store)
+        stored = legs.read_times(owner_store, changed_digest)
+        beside, beside_out, beside_log = run(store=owner_store)
+        listing.write_text(saved)
+        def handed(output, leg, fresh):
+            budget = 'integration: %s leg budget input: unit %s leg ' % (leg, leg)
+            text = (output / ('integration.' + leg + '.log')).read_text()
+            return leg in stored and (budget + '%.1fs, %s (' % (stored[leg]['seconds'], fresh)) in text
+        row('integration-waits-for-unit-without-measurement', empty and all(
+            waited['nodes']['integration.' + leg]['start'] >= waited['nodes']['unit.' + leg]['end']
+            and handed(waited_out, leg, 'this gate run')
+            and 'node integration.%s: no unit %s leg measurement' % (leg, leg) in waited_log
+            for leg in ('confined', 'unconfined')) and set(waited['stages'].values()) == {'pass'})
+        row('integration-beside-measured-unit',
+            beside['nodes']['integration.confined']['start'] < beside['nodes']['unit.confined']['end']
+            and all(handed(beside_out, leg, 'an earlier gate run') for leg in ('confined', 'unconfined'))
+            and 'no unit' not in beside_log and set(beside['stages'].values()) == {'pass'})
         # Every source block appears exactly once in catalog order, even if finish order differs.
         row('ordered-logs', [line[3:] for line in log.splitlines() if line.startswith('== ')] == list(nodes)
             and all('CHANNEL=absent' in (out / (n + '.log')).read_text() for n in nodes if n != 'mutation'))
