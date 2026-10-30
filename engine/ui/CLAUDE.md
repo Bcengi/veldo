@@ -31,8 +31,8 @@ that keeps it out of that repository. A plain scaffold (no `--ui`) never lays th
 no UI source, so the UI is always built and laid from a Veldo source checkout. `VELDO_ORGANS=<repository>/.veldo VELDO_UI_INSTALLED=1
 npm run e2e e2e/signin.spec.ts` runs the browser checks against that installed copy.
 
-On the shared host, any run beyond a single test file goes inside
-`flock /home/dmitry/.local/state/core-gates/.gate.lock <command>`. Never leave a dev server running:
+On a shared host, any run beyond a single test file goes inside `flock -x <gate lock> <command>`,
+where the gate lock is the path named by `lock` in the repository's `scripts/gate_host.json`. Never leave a dev server running:
 the e2e runner starts and stops its own harness.
 
 ## Stack

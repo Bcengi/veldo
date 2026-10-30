@@ -290,10 +290,12 @@ def _v205_reuse():
         class ControlledWorkers:
             # The coordinator's worker protocol: per-worker outcomes and on_result as each
             # worker completes, so receipts are counted from what actually launched.
-            def __init__(self, deadline, parallel=None):
+            def __init__(self, deadline, parallel=None, admission=None):
                 self.deadline = deadline
                 self.parallel = 1
                 self.resources = None
+                # VELDO-0219: the coordinator hands its measured admission in; reuse never consults it.
+                self.admission = admission
                 self.driver_spans = {}
                 self.invocations = 0
                 self.active = {}
