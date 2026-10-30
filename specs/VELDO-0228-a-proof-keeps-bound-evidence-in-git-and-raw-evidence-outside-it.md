@@ -47,8 +47,10 @@ acceptance_criteria:
       Alter one byte of a stored object. Validation still passes and the case reds.
   - id: AC4
     text: >
-      Claim: the store is durable and backed up with the repository (same host backup as
-      the daily backup), and a missing object is reported as missing evidence, never skipped.
+      Claim: the store has an off-machine copy at a location the owner chooses (no store
+      location is chosen in this item; today the repositories are protected only by their GitHub
+      remotes and no host backup covers them), and a missing object is reported as missing
+      evidence, never skipped.
     falsified_by: >
       Delete a stored object a landed manifest binds. Validation passes and the case reds.
 required_evidence: [integration]
@@ -72,6 +74,11 @@ local LFS store, and a plain content-addressed directory with digests in the man
 also decides how a squash at landing interacts with proofs already committed on an agent branch.
 
 ## History
+
+2026-10-30: owner asked where the store lives (Telegram 38039). Recommendation given: local
+folder on the PC by default, off-machine copy via Git LFS on the existing Bcengi GitHub
+repositories within the included quota; the location is the owner's decision and any paid overage
+goes through the spend gate.
 
 2026-10-30: created as a draft from the VELDO-2260 independent review (finding: 387 MB of proof
 committed on the branch).
