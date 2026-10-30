@@ -15,6 +15,7 @@ from pathlib import Path
 import re
 import shutil
 import socket
+import stat
 import subprocess
 import sys
 import threading
@@ -25,6 +26,46 @@ SERVICE = re.compile(r'veldo-authority-[0-9a-f]+\.service')
 
 def unit_directory():
     return Path('/run/user/%d/systemd/user' % os.getuid())
+
+
+# Linux CLOCK_REALTIME_COARSE: the clock the kernel stamps a new inode's birth time from, so a
+# directory made after this reading is never born before it.
+BIRTH_CLOCK = 5
+
+
+def birth_clock():
+    import time
+    return time.clock_gettime_ns(BIRTH_CLOCK)
+
+
+def birth_time(path):
+    """The kernel's birth time of `path` itself (never a link's target), in nanoseconds, or None
+    when the file system records none. The worker cannot set or backdate it."""
+    import ctypes
+    libc = ctypes.CDLL(None, use_errno=True)
+    buffer = ctypes.create_string_buffer(256)
+    # statx(AT_FDCWD, path, AT_SYMLINK_NOFOLLOW, STATX_BTIME, buffer)
+    if libc.statx(-100, os.fsencode(path), 0x100, 0x800, buffer) != 0:
+        error = ctypes.get_errno()
+        raise OSError(error, os.strerror(error), str(path))
+    if not int.from_bytes(buffer.raw[0:4], 'little') & 0x800:
+        return None
+    return (int.from_bytes(buffer.raw[80:88], 'little', signed=True) * 10**9
+            + int.from_bytes(buffer.raw[88:92], 'little'))
+
+
+def created_since(value, born_after):
+    """A directory outside the worker's home is the worker's own only when the kernel shows it was
+    born after the worker's meter started: a plain directory of this user, at its own resolved path,
+    whose birth time follows `born_after`. Anything older, linked or foreign is not."""
+    status = os.lstat(value)
+    if born_after is None or os.path.realpath(value) != value:
+        return False
+    if not stat.S_ISDIR(status.st_mode) or status.st_uid != os.getuid():
+        return False
+    born = birth_time(value)
+    # Strictly after: a birth in the meter's own clock tick is not shown to follow it.
+    return born is not None and born > born_after
 
 
 class Tracker:
@@ -137,9 +178,12 @@ class Tracker:
         os.close(self.fd)
 
 
-def remove_tree(path):
+def remove_tree(path, outside=False):
     def writable(function, name, error):
-        # Fixtures deliberately install read-only directories. Change only our tree.
+        # Fixtures deliberately install read-only directories. Change only our tree: a directory
+        # outside the home never has its parent's mode changed.
+        if outside and Path(name) == Path(path):
+            raise error
         parent = Path(name).parent
         parent.chmod(parent.stat().st_mode | 0o700)
         if Path(name).is_dir():
@@ -149,15 +193,17 @@ def remove_tree(path):
         shutil.rmtree(path, onexc=writable)
 
 
-def admitted(home, ledger, runtime=None):
+def admitted(home, ledger, runtime=None, born_after=None):
     """Split the ledger into entries the Tracker can produce for the worker at `home` and the rest:
     a directory strictly beneath that home (after resolving links), a veldo-authority-<hex>.service
     file directly in the user unit directory, or a slice of the Tracker's own pattern.
 
     Python audits tempfile.mkdtemp before its mkdir, so the Tracker also records attempts the
     domain refused (a suite probing /dev/shm) and directories the case removed itself. A directory
-    entry outside the home that does not exist names nothing to reap and is dropped; one that
-    exists, or whose absence cannot be shown, stays rejected and is never touched."""
+    entry outside the home that does not exist names nothing to reap and is dropped. One that
+    exists is the worker's own, and admitted, only when a meter started at `born_after` and the
+    kernel shows the directory was born since (created_since); otherwise it, or one whose absence
+    cannot be shown, stays rejected and is never touched."""
     home = Path(home).resolve()
     runtime = unit_directory() if runtime is None else Path(runtime)
     accepted, rejected = [], []
@@ -174,7 +220,9 @@ def admitted(home, ledger, runtime=None):
                     accepted.append((kind, str(resolved)))
                     continue
                 try:
-                    os.lstat(value)
+                    if created_since(value, born_after):
+                        accepted.append((kind, value))
+                        continue
                 except (FileNotFoundError, NotADirectoryError):
                     continue
             elif kind == 'service' and plain and path.parent == runtime and SERVICE.fullmatch(path.name):
@@ -189,11 +237,11 @@ def admitted(home, ledger, runtime=None):
     return accepted, rejected
 
 
-def cleanup(home, ledger, run=subprocess.run, runtime=None):
+def cleanup(home, ledger, run=subprocess.run, runtime=None, born_after=None):
     ledger = Path(ledger)
     if not ledger.exists():
         return {'units': [], 'directories': 0}
-    entries, rejected = admitted(home, ledger, runtime)
+    entries, rejected = admitted(home, ledger, runtime, born_after)
     directories = [v for k, v in entries if k == 'directory']
     services = [Path(v) for k, v in entries if k == 'service']
     units = sorted({v for k, v in entries if k == 'slice'} | {p.name for p in services})
@@ -217,8 +265,12 @@ def cleanup(home, ledger, run=subprocess.run, runtime=None):
         answer = ctl('daemon-reload')
         if answer.returncode:
             raise RuntimeError('worker unit reload failed: ' + answer.stderr)
+    inside = Path(home).resolve()
     for path in reversed(directories):
-        remove_tree(path)
+        if Path(path).is_relative_to(inside):
+            remove_tree(path)
+        else:
+            remove_tree(path, outside=True)
     if rejected:
         # Reap what this worker can own, then stay red: a forged entry is never acted on.
         raise RuntimeError('ownership ledger names resources outside this worker: ' + '; '.join(rejected[:5]))
@@ -326,6 +378,10 @@ class WorkerMeter:
     Anonymous memory is sampled at each coordinator poll. CPU counters are
     cumulative. Owned user units may live outside the worker's subtree; count
     only disjoint roots so a slice and its services are never charged twice.
+    A directory the worker made outside its home (a suite's /dev/shm store in
+    the unconfined leg) is admitted and tracked once the kernel shows it was
+    born after this meter started, before the worker was spawned; the reaper
+    (cleanup with born_after=started) removes exactly what this rule admits.
     """
     def __init__(self, scope, name, cgroup_root=Path('/sys/fs/cgroup')):
         import time
@@ -342,6 +398,8 @@ class WorkerMeter:
             raise ValueError('worker_launch_error: invalid worker cgroup name')
         self.path = self.root / str(scope).lstrip('/') / ('worker-%d-%s' % (os.getpid(), name))
         self.path.mkdir()
+        self.started = birth_clock()
+        self.directories = set()
         self.paths, self.counters = {}, {}
         self.peak, self.last_discovery = 0, float('-inf')
         self.lifecycle = self.peer = None
@@ -394,7 +452,7 @@ class WorkerMeter:
             try:
                 operation, kind, value = json.loads(data)
                 if operation == 'register':
-                    entries, rejected = admitted(home, ledger)
+                    entries, rejected = admitted(home, ledger, born_after=self.started)
                     if rejected or (kind, value) not in entries:
                         raise ValueError('lifecycle unit is not in the ownership ledger')
                     self.prepare_unit(kind, value)
@@ -411,9 +469,11 @@ class WorkerMeter:
         return os.open(self.path / 'cgroup.procs', os.O_WRONLY | os.O_CLOEXEC)
 
     def unit_paths(self, home, ledger):
-        entries, rejected = admitted(home, ledger)
+        entries, rejected = admitted(home, ledger, born_after=self.started)
         if rejected:
-            raise ValueError('ownership ledger contains invalid resource entries')
+            raise ValueError('ownership ledger contains invalid resource entries: ' + '; '.join(rejected[:3]))
+        inside = Path(home).resolve()
+        self.directories.update(v for k, v in entries if k == 'directory' and not Path(v).is_relative_to(inside))
         units = {v if k == 'slice' else Path(v).name for k, v in entries if k in ('slice', 'service')}
         for unit in sorted(units - self.paths.keys() - self.retained.keys() - self.covered_units):
             answer = subprocess.run(['systemctl', '--user', 'show', '-p', 'ControlGroup', '--value', unit],

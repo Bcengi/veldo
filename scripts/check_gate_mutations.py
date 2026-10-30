@@ -839,7 +839,11 @@ class Workers:
                           stderr_tail=stderr.decode(errors='replace')[-2000:])
         try:
             ownership = load(ROOT / 'scripts/mutation_ownership.py')
-            record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name])
+            # A metered worker's own directories outside its home are reaped by the rule its meter
+            # admitted them under: born after the meter started (mutation_ownership.created_since).
+            metered = getattr(self.meters.get(name), 'started', None)
+            record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name],
+                                                  **({'born_after': metered} if metered is not None else {}))
         except Exception as cleanup_error:
             error = Refused('worker_cleanup_error', name + ': ' + str(cleanup_error))
             record.update(error=error.code, detail=error.detail)
@@ -1014,11 +1018,14 @@ class Workers:
             self.check()
             return results
         finally:
-            self.cleanup(on_result)
-            # A failed mkdir or job materialization may hold a grant before spawn.
-            if self.admission:
-                for name in list(self.admission.held):
-                    if name not in self.active and name not in self.resources.held:
+            try:
+                self.cleanup(on_result)
+            finally:
+                # The stage leaves this run only when done or aborting, so no ledger grant outlives
+                # it: a failed mkdir or job materialization, a cancelled worker and one whose cleanup
+                # failed (its outcome keeps the error; its local resources stay held) all release.
+                if self.admission:
+                    for name in list(self.admission.held):
                         self.admission.release(name)
 
 

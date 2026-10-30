@@ -248,6 +248,28 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
         (candidate/'input').write_text('original\n')
         listing.write_text(saved)
 
+        # A failed mutation stage that leaves a worker claim held is named by its own error first,
+        # then the leaked claim (batch 2026-10-29 inventory row 18).
+        mutation_script = scripts / 'check_gate_mutations.py'
+        controlled_mutation = mutation_script.read_text()
+        mutation_script.write_text('''import argparse, importlib.util, json, os, socket
+from pathlib import Path
+p=argparse.ArgumentParser(); p.add_argument('--root'); p.add_argument('--receipt'); p.add_argument('--legs-record'); a=p.parse_args()
+s=importlib.util.spec_from_file_location('legs',Path(__file__).with_name('gate_legs.py')); m=importlib.util.module_from_spec(s); s.loader.exec_module(m)
+leg=m.mutation_leg(); m.write_record(a.legs_record,'mutation',leg['declaration'],leg['entries'])
+channel=socket.socket(fileno=int(os.environ['VELDO_GATE_LEDGER_FD']))
+channel.sendall((json.dumps(dict(operation='acquire',name='leaked',claim=dict(cpu=0,memory=0,manager='none',ports=[])))+'\\n').encode())
+r={'status':'failed','error':'driver_error','detail':'planted child error\\nsecond line','granted':json.loads(channel.recv(65536))['granted']}
+Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExit(1)
+''')
+        try:
+            leaked, _, _ = run()
+        finally:
+            mutation_script.write_text(controlled_mutation)
+        row('child-error-before-leaked-claim', leaked['stages']['mutation'] == 'FAIL'
+            and leaked['nodes']['mutation']['error']
+            == 'driver_error: planted child error second line; unreleased_ledger_claim')
+
         # Algebra and every recorded instant, including manager workers and fixed ports.
         ledger = scheduler.Ledger({'cpu': 10, 'memory': 1000, 'manager': 3})
         claim = lambda cpu, memory, manager='none', ports=(): dict(cpu=cpu, memory=memory, manager=manager, ports=list(ports))
@@ -481,6 +503,26 @@ raise SystemExit(m.main())
         row('shell-catalog', all(shell_counts))
         row('graph-refusal-record', all(refusal_records))
         shutil.copyfile(scripts/'gate_schedule_impl.py',scripts/'gate_schedule.py')
+
+        # An unconfined node reads the gate's own records where a confined node does; they stay
+        # outside the compared closure (batch 2026-10-29 inventory row 16).
+        records = {'.veldo/events.jsonl': b'{"event":"fixture"}\n', '.veldo/last_verify': b'{"status":"green"}\n'}
+        for rel, body in records.items():
+            (candidate/rel).parent.mkdir(exist_ok=True)
+            (candidate/rel).write_bytes(body)
+        (candidate/'.veldo/gate-schedule.json').write_text('{"ignored":"this graph writes it"}')
+        (candidate/'.gitignore').write_text('.veldo/gate-schedule.json\n')
+        subprocess.run(['git', '-C', str(candidate), 'add', '.gitignore', *records], check=True)
+        subprocess.run(['git', '-C', str(candidate), '-c', 'user.name=Fixture',
+                        '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'records'], check=True)
+        node = scheduler.NodeInputs(candidate, top / 'records.inputs', mutation)
+        try:
+            carried = {rel: (node.root/rel).read_bytes() for rel in records if (node.root/rel).is_file()}
+            row('node-reads-gate-records', carried == records and node.unchanged()
+                and sorted(node.outputs) == sorted(records) and not (node.root/'.veldo/gate-schedule.json').exists()
+                and set(records).isdisjoint(node.files))
+        finally:
+            node.close()
 
         # Production graph and catalog are independently enumerated every run.
         verify = (ROOT/'scripts/verify.sh').read_text()

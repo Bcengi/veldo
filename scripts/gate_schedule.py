@@ -383,11 +383,34 @@ class NodeInputs:
         self.head = self.mutation.git(root, common, 'rev-parse', 'HEAD')
         try:
             self.common = self.mutation.snapshot(root, common, self.root, self.files, self.head)
+            self.outputs = self.carry_outputs(Path(root), common)
             if not self.unchanged():
                 raise Refused('candidate snapshot differs from input closure')
         except BaseException:
             self.close()
             raise
+
+    def carry_outputs(self, root, common):
+        # The gate's own records are outside the closure, as in the mutation stage, but a node
+        # reads them where a confined node does (integration's spend probe reads events.jsonl).
+        # Carry the checkout's copies Git lists; an ignored output (this graph's schedule) is not
+        # carried, and a linked one is refused like a linked input.
+        listed = self.mutation.git_bytes(root, common, 'ls-files', '-z', '--cached', '--others',
+                                         '--exclude-standard', '--', *sorted(self.mutation.OUTPUTS))
+        carried = []
+        top = os.path.realpath(root)
+        for rel in sorted(set(os.fsdecode(name) for name in listed.split(b'\0') if name)):
+            path = root / rel
+            if rel not in self.mutation.OUTPUTS or not os.path.lexists(path):
+                continue
+            if path.is_symlink() or os.path.realpath(path) != os.path.join(top, rel) or not path.is_file():
+                raise Refused('candidate snapshot output is not a regular file: ' + rel)
+            target = self.root / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(path.read_bytes())
+            target.chmod(path.stat().st_mode & 0o777)
+            carried.append(rel)
+        return carried
 
     def unchanged(self):
         try:
@@ -400,6 +423,19 @@ class NodeInputs:
     def close(self):
         if self.root.exists():
             shutil.rmtree(self.root)
+
+
+def stage_error(receipt):
+    """The failed mutation stage's own error and detail from its receipt, one line, or None."""
+    try:
+        document = json.loads(Path(receipt).read_text())
+    except (OSError, ValueError):
+        return None
+    if not isinstance(document, dict) or not isinstance(document.get('error'), str):
+        return None
+    detail = document.get('detail')
+    text = document['error'] + (': ' + detail if isinstance(detail, str) and detail else '')
+    return ' '.join(text.split())[:400]
 
 
 def command_for(root, stage, leg, command, record, receipt, listing, prior_times=None):
@@ -591,8 +627,11 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                     failed_tree = True
                     item['error'] = 'candidate_tree_changed'
                 error = item['error'] or ('live_descendants' if metrics.get('live_descendants') else None)
+                if code and required[name][0] == 'mutation':
+                    # The child's own named error comes first; a leaked claim is reported after it.
+                    error = error or stage_error(receipt)
                 if item['children']:
-                    error = error or 'unreleased_ledger_claim'
+                    error = error + '; unreleased_ledger_claim' if error else 'unreleased_ledger_claim'
                     for claimant in item['children']:
                         ledger.release(claimant)
                 elapsed = end - item['started']

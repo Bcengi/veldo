@@ -105,7 +105,9 @@ def _v204_mutation_receipts():
                         driver=gate.DRIVERS[1])] if entry == 'teeth' else []),
                     'read_inputs': lambda root, expected_common: {'scripts/check_gate_mutations.py': (0o644, source.encode())},
                     'git': lambda *a: 'head', 'snapshot': snapshot,
-                    'inputs_unchanged': lambda *a: True, 'budget_for': lambda *a: 10000,
+                    'inputs_unchanged': lambda *a: True,
+                    # VELDO-0219 passes the admission floor; these drives admit nothing.
+                    'budget_for': lambda *a, floor=None: 10000,
                     # The real reuse session runs: these controlled cases declare no inputs,
                     # so every one is a fresh miss and no cache is opened. The real launcher names
                     # the marker each worker is handed (VELDO-0210 AC7).
@@ -224,8 +226,8 @@ def _v204_mutation_receipts():
         ('lost-failure', "receipt['invalid_results'].extend(failed_workers)", 'pass', 'empty'),
         ('zero-seconds', "sum(o['elapsed'] for o in workers.outcomes if o['driver'] == driver)", '0.0', None),
         ('empty-not-executed', "o['mode'] == 'mutant' and o['returncode'] is not None", 'False', 'empty'),
-        ('release-before-cleanup', "record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name])",
-         "self.resources.release(name)\n            record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name])", None),
+        ('release-before-cleanup', "record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name],",
+         "self.resources.release(name)\n            record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name],", None),
         ('queued-deadline', 'self.active[name] = (proc, out, err, time.monotonic())',
          'self.active[name] = (proc, out, err, 1.0)', None),
         ('release-failed-cleanup', "if record.get('error') != 'worker_cleanup_error':", 'if True:', 'cleanup'),
