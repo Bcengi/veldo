@@ -98,6 +98,60 @@ def _v219_checks():
         value = meter.sample()
         row('cgroup-counters', value['cpu_seconds'] == 10 and value['peak_anon_bytes'] == 96 * 2**20
             and len(value['cgroups']) == 2)
+
+        # Batch 2026-10-29 row 17 (owner decision): a directory the worker made outside its home
+        # after its meter started (suite 0067's /dev/shm store) is admitted, tracked and reaped;
+        # one that predates the meter, or a link to the worker's own, is rejected and untouched.
+        worker_home = top / 'worker-home'
+        worker_home.mkdir()
+        older = Path(os.path.realpath(tempfile.mkdtemp(prefix='v219-older-', dir=top)))
+        def next_tick(after):
+            # Birth times come from a coarse clock: step past `after` so the order is shown.
+            while ownership.birth_clock() <= after:
+                time.sleep(.001)
+        next_tick(ownership.birth_time(older))
+        own_meter = ownership.WorkerMeter('/scope', 'own', cg)
+        next_tick(own_meter.started)
+        made = Path(os.path.realpath(tempfile.mkdtemp(prefix='v219-own-', dir=top)))
+        (made / 'store').mkdir()
+        (made / 'store/data').write_text('owned')
+        linked = top / 'v219-link'
+        linked.symlink_to(made)
+        own_ledger = top / 'own-ledger.jsonl'
+        def ledger_naming(*paths):
+            own_ledger.write_text(''.join(json.dumps(['directory', str(p)]) + '\n' for p in paths))
+        outside = []
+        ledger_naming(made)
+        try:
+            own_meter.unit_paths(worker_home, own_ledger)
+            outside.append(own_meter.directories == {str(made)})
+        except ValueError:
+            outside.append(False)
+        for foreign in (older, linked):
+            ledger_naming(made, foreign)
+            try:
+                own_meter.unit_paths(worker_home, own_ledger)
+                outside.append(False)
+            except ValueError as error:
+                outside.append(str(foreign) in str(error))
+            try:
+                ownership.cleanup(worker_home, own_ledger, born_after=own_meter.started)
+                outside.append(False)
+            except RuntimeError as error:
+                outside.append('outside this worker' in str(error) and older.is_dir() and linked.is_symlink())
+            made.mkdir(exist_ok=True)
+        ledger_naming(made)
+        try:
+            ownership.cleanup(worker_home, own_ledger)
+            outside.append(False)
+        except RuntimeError:
+            outside.append(made.is_dir())
+        try:
+            reaped = ownership.cleanup(worker_home, own_ledger, born_after=own_meter.started)
+            outside.append(reaped['directories'] == 1 and not made.exists() and older.is_dir())
+        except RuntimeError:
+            outside.append(False)
+        row('own-outside-directory', all(outside))
         marker = top / 'join'
         fd = os.open(marker, os.O_WRONLY | os.O_CREAT, 0o600)
         with patch.dict(os.environ, VELDO_MUTATION_CGROUP_FD=str(fd)):
@@ -166,6 +220,8 @@ def _v219_checks():
                     kwargs['stdout'].write(json.dumps(dict(observation=obs, replacement_count=1,
                         old_digest='a', new_digest='b' if not ok else 'a')).encode())
                 def poll(self):
+                    if fault == 'abort' and self.job['mode'] == 'noop':
+                        return None
                     if clock[0] - self.born >= .2:
                         self.returncode = 0
                     return self.returncode
@@ -173,9 +229,10 @@ def _v219_checks():
                     self.returncode = 0 if self.returncode is not None else -9
                     return self.returncode
             loader = gate.load
+            reap = [lambda *a, **k: {}]
             def load_fixture(path):
                 if Path(path).name == 'mutation_ownership.py':
-                    return types.SimpleNamespace(cleanup=lambda *a: {})
+                    return types.SimpleNamespace(cleanup=lambda *a, **k: reap[0](*a, **k))
                 return loader(path)
             error = None
             if fault == 'lifecycle':
@@ -199,6 +256,11 @@ def _v219_checks():
                             os.close(self.fd)
                             self.fd = None
                 admission.meter_factory = lambda name: Meter()
+            if fault == 'abort':
+                def failing(home, ledger, **kwargs):
+                    reap[0] = lambda *a, **k: {}
+                    raise RuntimeError('[Errno 39] Directory not empty')
+                reap[0] = failing
             if fault == 'meter':
                 def fail(name):
                     raise PermissionError('no delegation')
@@ -234,6 +296,15 @@ def _v219_checks():
         workers, ledger, done, error, _ = exercise({'bad': jobs['j0']}, fault='meter')
         row('cgroup-launch-refused', error == 'worker_launch_error' and not workers.active
             and set(ledger.held) == {'root'} and not workers.resources.held)
+
+        # Batch 2026-10-29 row 18: an aborted run releases every ledger grant, a cancelled
+        # worker's and a cleanup-failed worker's included; the failed one keeps its local slot.
+        managed = dict(jobs['j0'], case=dict(case, suite='manager.py'))
+        workers, ledger, done, error, _ = exercise(
+            {'failed': managed, 'reaped': managed, 'running': dict(managed, mode='noop')}, fault='abort')
+        row('abort-releases-every-grant', error == 'worker_cleanup_error' and set(ledger.held) == {'root'}
+            and {o.get('error') for o in workers.outcomes} == {'worker_cleanup_error', None, 'worker_cancelled'}
+            and len(workers.resources.held) == 1)
 
         no_manager = exercise({'plain': jobs['j0']}, fault='lifecycle')
         with_manager = exercise({'managed': dict(jobs['j0'], case=dict(case, suite='manager.py'))}, fault='lifecycle')
