@@ -197,6 +197,29 @@ def live_lines(start, count):
     return out
 
 
+# VELDO-0159: the keystore stand-in run by control_credential_keystore.SecretService. Its argv is what that module
+# passes (store with a label, clear or lookup, then the attribute pairs); a stored value arrives on standard input.
+SECRET_TOOL = r'''#!/usr/bin/env python3
+import json, os, sys
+path, args = '@STORE@', sys.argv[1:]
+items = json.load(open(path)) if os.path.exists(path) else {}
+name = args[args.index('credential') + 1]
+if args[0] == 'store':
+    items[name] = sys.stdin.read()
+elif args[0] == 'clear':
+    items.pop(name, None)
+elif args[0] == 'lookup':
+    if name not in items:
+        sys.exit(1)
+    sys.stdout.write(items[name])
+    sys.exit(0)
+fd = os.open(path + '.tmp', os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+with os.fdopen(fd, 'w') as handle:
+    json.dump(items, handle)
+os.replace(path + '.tmp', path)
+'''
+
+
 class Factory:
     def __init__(self, base, dist, organs_from):
         self.base = base
@@ -418,6 +441,7 @@ class Factory:
             credentials=self.credentials, records=self.records, authority_lock=lock,
             notify=lambda hint: self.api_box[0].deliver(hint) if self.api_box else None)
         self.authority = authority
+        self._mcp(AUTH)  # VELDO-0159
         signer = SG.ApiSigner(config_path, 'edge-api', keyfile['api-auth'])
         config = {'origin': self.origin, 'rp_id': 'localhost', 'host': self.host, 'domain': DOMAIN, 'ids': ids,
                   'edge': 'api-edge', 'state_dir': str(base / 'api-state'),
@@ -622,6 +646,53 @@ class Factory:
         return cookie, view['csrf_token']
 
 
+    # VELDO-0159: the MCP catalog and the write-only credential commands, as control_service_api lays them
+
+    def _mcp(self, AUTH):
+        """The real catalog (VELDO-0144 AC1) and credential commands (AC2) on this store. The keystore is the real
+        control_credential_keystore.SecretService running a stand-in `secret-tool` executable that keeps each value
+        in a 0600 file of this temporary directory, so a value travels exactly as it does to the Secret Service: on
+        the executable's standard input, never its command line."""
+        self.keystore_file = self.base / 'keystore.json'
+        tool = self.base / 'bin' / 'secret-tool'
+        tool.parent.mkdir()
+        tool.write_text(SECRET_TOOL.replace('@STORE@', str(self.keystore_file)))
+        tool.chmod(0o700)
+        common = dict(domain=self.ids['domain_uuid'], repository=self.ids['repository_uuid'], signer='authority',
+                      sign=self.journal_sign, generation=1)
+        self.authority.catalog = AUTH.MC.Catalog(self.S, self.conn, **common)
+        keystore = AUTH.CV.KS.SecretService(str(tool))  # its refusals are the ones the commands catch
+        self.authority.mcp_credentials = AUTH.CV.Credentials(self.S, self.conn, keystore=keystore, **common)
+        self.mcp_session = None
+
+    def mcp_state(self):
+        """Every catalog revision and head and every credential record as the store holds them, and the keystore's
+        items by name with the digest of each value (never the value)."""
+        out = {'servers': {}, 'heads': {}, 'credentials': {}, 'keystore': {}}
+        for kind, version, data in self.conn.execute(
+                "SELECT kind, version, data FROM entities WHERE kind IN ('mcp_server', 'mcp_server_head', 'credential')"):
+            data = json.loads(data)
+            if kind == 'mcp_server':
+                out['servers'].setdefault(data['id'], {})[str(data['revision'])] = data
+            elif kind == 'mcp_server_head':
+                out['heads'][data['id']] = data['revision']
+            else:
+                out['credentials'][data['id']] = dict(data, version=version)
+        if self.keystore_file.is_file():
+            for name, value in json.loads(self.keystore_file.read_text()).items():
+                out['keystore'][name] = hashlib.sha256(value.encode()).hexdigest()
+        return out
+
+    def mcp_save(self, definition, base):
+        """Another session of the owner saves a revision through the API's catalog route (the stale-save row)."""
+        if self.mcp_session is None:
+            self.mcp_session = self.session('owner')
+        cookie, token = self.mcp_session
+        status, _h, answer = self.call('POST', '/api/v1/domains/%s/mcp/catalog/save' % DOMAIN,
+                                       {'definition': definition, 'base': base}, cookie=cookie, token=token)
+        return {'status': status, 'answer': answer}
+
+
 def message(st, bot, sender, chat, text, reply_to=None):
     with st['lock']:
         bot['next'] += 1
@@ -750,6 +821,10 @@ def control_server(factory, stop):
                 return {'ended': ended}
             if path == '/observations':
                 return {'observations': [dict(o) for o in f.api.observations]}
+            if path == '/mcp/state':  # VELDO-0159
+                return f.on_thread(f.mcp_state)
+            if path == '/mcp/save':  # VELDO-0159
+                return f.mcp_save(body['definition'], body['base'])
             if path == '/stop':
                 stop.set()
                 return {'stopping': True}

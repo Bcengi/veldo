@@ -34,6 +34,7 @@ export function useNavigation(): ComputedRef<NavEntry[]> {
       badge: () =>
         decisions.waiting > 0 ? { count: decisions.waiting, label: `${decisions.waiting} waiting on you`, tone: 'waiting' } : null,
     },
+    { id: 'servers', label: 'MCP servers', to: { name: 'servers' }, matches: ['servers', 'server'], icon: 'key', phone: false },
     { id: 'you', label: 'You', to: { name: 'you' }, matches: ['you'], icon: 'you', phone: true },
   ])
 }
