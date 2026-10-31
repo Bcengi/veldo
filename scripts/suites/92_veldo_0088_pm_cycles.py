@@ -237,8 +237,12 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
                     record = cycles.finish(record)
                 return record
 
+            # The question's deadline and the grooming request's expiry are a day past this run's own clock:
+            # a fixed date lapses with the calendar, and the backlog then refuses the request as
+            # stale_subject:expired before any role is staged.
+            later = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(time.time() + 86400))
             question = dict(ids, operation='open', alias='question-88', assignment=dict(kind='decision', owner='olga',
-                scope=['proj-a'], deadline='2026-10-30T17:00:00Z', budget={'owner_minutes': 1},
+                scope=['proj-a'], deadline=later, budget={'owner_minutes': 1},
                 brief='Choose a scope.', choices=['yes', 'no'], subject={'kind': 'pm', 'ref': 'proj-a',
                     'digest': PM.SN.digest(b'question')}))
             if not review_only and not setup_only:
@@ -340,7 +344,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
                     units=[{'result': 'publish', 'path': ['unit']}])),
                 dict(name='request', type='backlog', command=dict(ids, operation='request_grooming', item=iid, item_version=2)),
                 dict(name='groom', type='grooming', command=dict(ids, operation='propose', item=iid, item_version=3,
-                    proposal={'ceiling': {'invocations': 1}, 'expiry': '2026-10-30T17:00:00Z'})),
+                    proposal={'ceiling': {'invocations': 1}, 'expiry': later})),
                 dict(name='assign', type='assignment', command=dict(ids, operation='assign', project='proj-a',
                     team_version=f['version'](), team_revision=f['team_record']()['revision'], unit=uid,
                     role='implementation', builder='w-build', reviewers=['w-rev1']))])
