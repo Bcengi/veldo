@@ -1623,6 +1623,15 @@
    "requires_note": "Only ROOT and expect; a real ControlApi on the real loopback listener with a recording authority stand-in, a fixture UI build, and the UI's own routes.json, package.json, package-lock.json and dependency-policy.json; the installed .veldo organs laid into scratch factory roots; the browser tests' real factory harness (engine/ui/e2e/harness.py: signed store, presenter, settlement, API authority, protected signer and ControlApi, with a passkey sign-in over the API); and init_scaffold.scaffold run over a scratch copy of engine/ (without ui/, then a fixture source, then a fixture build) with git asked whether the laid UI is ignored."
   },
   {
+   "name": "119_veldo_0163_role_team_form",
+   "file": "119_veldo_0163_role_team_form.py",
+   "requires": [
+    "119_veldo_0163_role_team_form"
+   ],
+   "regions": "Ten rows (VELDO-0163): unit/forms, the role and team forms' Vitest specs; role/revisions, a role's capability configuration with every field and load mode, MCP selections from the catalog read, saved and saved again as revisions equal to what the form sent; role/stale-save, a save edited from an older revision refused beside the save action, storing nothing; role/widths, the role form at 360 and 1280 px with no primary action clipped; team/owner-save, roles added, changed and removed and the owner's save current once read back; team/authoritative, another member's proposal pending, in the decisions screen, and current only after the owner's answer there; team/refusals, no configuration, an incomplete roster and a stale team version named beside the save with the earlier revision current; team/default-team, the default team saved through the same form bound to its revision; team/default-stale-save, a stale default team save refused; team/widths, the team form and the default team at 360 and 1280 px.",
+   "requires_note": "Only ROOT and expect. Copies engine/ui into scratch with its production copies laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script, runs its Vitest specs and the Playwright browser tests of engine/ui/e2e/roles.spec.ts in system Chrome against engine/ui/e2e/team_harness.py (VELDO-0145's real factory harness with the real catalog, configuration and team services of VELDO-0144, 0127, 0089 and 0162, from the checkout's .veldo). Writes only temporary files."
+  },
+  {
    "name": "117_veldo_0227_ui_location",
    "file": "117_veldo_0227_ui_location.py",
    "requires": [

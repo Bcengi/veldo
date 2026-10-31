@@ -11743,6 +11743,31 @@ def cases():
           "            and isinstance(api, dict) and 'ui' not in api)  # defect: every other difference is overwritten\n",
           ['ui/differs-refused'])
 
+    # VELDO-0163: the role and team forms. Each mutant is one UI source module of engine/ui; suite 119 builds the UI
+    # with it laid over a scratch copy and runs the forms' unit specs and browser tests against the real harness.
+    def ui163(name, directory, module, old, new, rows, also=()):
+        add(163, name, '119_veldo_0163_role_team_form.py', module, old, new, rows, also)
+        result[-1]['dir'] = directory
+
+    # AC1 (declared falsifier): the form's save is sent without the revision it was edited from (the newest one instead).
+    ui163('ui163-config-save-unbound', 'engine/ui/src/features/roles', 'useRoleForm.ts',
+          "      const result = await saveConfiguration(definition, d.editedFrom)\n",
+          "      const result = await saveConfiguration(definition, await latestRevision(definition.role))"
+          "  // defect: not the revision it was edited from\n",
+          ['role/stale-save'])
+    # AC2 (declared falsifier 1): a saved team is shown current before the authority accepted it.
+    ui163('ui163-proposal-shown-current', 'engine/ui/src/features/team', 'team-draft.ts',
+          "  return { revision: record.revision, team: record.team }\n",
+          "  // defect: a pending proposal is shown as current before the owner's answer\n"
+          "  return record.proposal ? { revision: record.proposal.revision, team: record.proposal.team }"
+          " : { revision: record.revision, team: record.team }\n",
+          ['team/authoritative'])
+    # AC2 (declared falsifier 2): the default team's save is sent without the revision it was edited from.
+    ui163('ui163-default-save-unbound', 'engine/ui/src/features/team', 'useTeamForm.ts',
+          "        ? await saveDefaultTeam(team, d.editedFrom)\n",
+          "        ? await saveDefaultTeam(team, await latestDefaultRevision())  // defect: not the revision it was edited from\n",
+          ['team/default-stale-save'], also=[("  DEFAULT_TEAM,\n", "  DEFAULT_TEAM,\n  latestDefaultRevision,\n")])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
