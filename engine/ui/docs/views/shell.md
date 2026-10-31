@@ -31,3 +31,4 @@ sign-in with the refusal named.
 `/you`, a centered 920 px screen: Signed in (the member, the factory, when the session ends, the passkey
 id as a copyable detail) and This device (the theme switch, Sign out with `auth.sign_out`, Sign out on
 every device with `auth.sign_out_everywhere`).
+Factory setup (VELDO-0163) links to the Roles and Team screens, which the phone's bottom bar has no room for.
