@@ -11743,6 +11743,24 @@ def cases():
           "            and isinstance(api, dict) and 'ui' not in api)  # defect: every other difference is overwritten\n",
           ['ui/differs-refused'])
 
+    # VELDO-0159: the MCP server form and its write-only credential field. The mutated production copies are UI
+    # source under engine/ui/src; the suite builds the UI from them and runs its browser rows.
+    def mcp159(name, directory, module, old, new, rows):
+        add(159, name, '118_veldo_0159_mcp_credential_form.py', module, old, new, rows)
+        result[-1]['dir'] = directory
+
+    # AC1 (declared falsifier): send the form's save without the revision it was edited from.
+    mcp159('mcp159-save-without-revision', 'engine/ui/src/api', 'mcp.ts',
+           "  request<SaveResult>('mcp.save', { body: { definition, base } })\n",
+           "  request<SaveResult>('mcp.save', { body: { definition, base: undefined } })  // defect: no revision edited from\n",
+           ['mcp/stale-save'])
+    # AC2 (declared falsifier): keep the typed value in the browser's session storage after the save.
+    mcp159('mcp159-value-kept-in-session-storage', 'engine/ui/src/features/servers', 'CredentialField.vue',
+           "    store.recordCredential({ id: answer.id,",
+           "    sessionStorage.setItem(`veldo-credential-${props.credentialId}`, typed)  // defect: the typed value is kept\n"
+           "    store.recordCredential({ id: answer.id,",
+           ['cred/no-value-kept'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
