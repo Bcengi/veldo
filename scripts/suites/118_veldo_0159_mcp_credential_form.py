@@ -23,6 +23,7 @@ def _v159_suite():
     import json
     import os
     from pathlib import Path
+    import pwd
     import re
     import shutil
     import subprocess
@@ -53,12 +54,14 @@ def _v159_suite():
         rows[row].append((label, bool(condition)))
 
     def environment():
-        """The caller's environment, with a Node from nvm when none is on PATH (a systemd-run unit's PATH)."""
+        """The caller's environment with the account's newest nvm Node first on PATH when it has one: the locked
+        dependencies need a current Node, and a distribution's /usr/bin/node may be older."""
         env = dict(os.environ)
-        if not shutil.which('npm', path=env.get('PATH')):
-            found = sorted(glob.glob(os.path.expanduser('~/.nvm/versions/node/*/bin')))
-            if found:
-                env['PATH'] = found[-1] + os.pathsep + env.get('PATH', '')
+        home = pwd.getpwuid(os.getuid()).pw_dir
+        found = sorted(glob.glob(os.path.join(home, '.nvm', 'versions', 'node', 'v*', 'bin')),
+                       key=lambda p: [int(x) for x in re.findall(r'\d+', os.path.basename(os.path.dirname(p)))])
+        if found:
+            env['PATH'] = found[-1] + os.pathsep + env.get('PATH', '')
         return env
 
     def run(argv, cwd, env, timeout):
