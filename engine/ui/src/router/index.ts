@@ -27,6 +27,9 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/views/DecisionsView.vue'),
     meta: { session: true, title: 'Decision' },
   },
+  // VELDO-0163: a role's capability configuration and a project's team roles (and the default team).
+  { path: '/roles/:role?', name: 'role', component: () => import('@/views/RoleView.vue'), meta: { session: true, title: 'Roles' } },
+  { path: '/teams/:project?', name: 'team', component: () => import('@/views/TeamView.vue'), meta: { session: true, title: 'Team' } },
   { path: '/you', name: 'you', component: () => import('@/views/YouView.vue'), meta: { session: true, title: 'You' } },
   { path: '/:rest(.*)*', name: 'not-found', component: () => import('@/views/NotFoundView.vue'), meta: { title: 'Not found' } },
 ]

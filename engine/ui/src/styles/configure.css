@@ -1,0 +1,127 @@
+/* The role and team forms (VELDO-0163): tokens only, one column on a phone, the save action never clipped. */
+@layer components {
+  .configure {
+    display: grid;
+    gap: var(--space-4);
+    min-width: 0;
+  }
+  .configure-open,
+  .configure-section {
+    display: grid;
+    gap: var(--space-2);
+    min-width: 0;
+    margin: 0;
+    padding: var(--space-3) var(--space-4) var(--space-4);
+  }
+  .configure-section > legend.panel-title {
+    float: left;
+    width: 100%;
+    padding: 0 0 var(--space-2);
+  }
+  .configure-inline {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    min-width: 0;
+  }
+  .configure-inline .vfield {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .configure-inline .vbtn {
+    flex: 0 0 auto;
+  }
+  .configure-form {
+    display: grid;
+    gap: var(--space-4);
+    min-width: 0;
+  }
+  .configure-base,
+  .configure-fact {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  .configure-muted,
+  .configure-none {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: var(--text-sm);
+  }
+  .configure-pending {
+    margin: 0;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-control);
+    background: var(--amber-wash);
+    color: var(--amber-text);
+    overflow-wrap: anywhere;
+  }
+  .configure-row,
+  .configure-catalog,
+  .configure-add {
+    display: grid;
+    gap: var(--space-2);
+    min-width: 0;
+    padding-block: var(--space-2);
+    border-top: 1px solid var(--rule);
+  }
+  .configure-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+  .configure-choice {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+  }
+  .configure-check {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--cobalt);
+  }
+  .configure-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+  .configure-save {
+    position: sticky;
+    bottom: 0;
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-3) 0;
+    background: var(--paper);
+    z-index: 1;
+  }
+  .configure-outcome {
+    margin: 0;
+    color: var(--live-text);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .configure-problem {
+    margin: 0;
+    color: var(--stop-text);
+    font-weight: 600;
+  }
+  @media (max-width: 767.98px) {
+    /* Above the phone's bottom bar. */
+    .configure-save {
+      bottom: calc(var(--bottombar) + env(safe-area-inset-bottom, 0px));
+    }
+  }
+  @media (min-width: 768px) {
+    .configure-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .configure-save {
+      grid-template-columns: minmax(0, 1fr) max-content;
+      align-items: center;
+    }
+    .configure-save > .vbtn {
+      grid-column: 2;
+      grid-row: 1;
+    }
+  }
+}

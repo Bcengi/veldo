@@ -34,6 +34,9 @@ export function useNavigation(): ComputedRef<NavEntry[]> {
       badge: () =>
         decisions.waiting > 0 ? { count: decisions.waiting, label: `${decisions.waiting} waiting on you`, tone: 'waiting' } : null,
     },
+    // VELDO-0163: rail entries; on a phone the You screen links to them.
+    { id: 'roles', label: 'Roles', to: { name: 'role' }, matches: ['role'], icon: 'key', phone: false },
+    { id: 'team', label: 'Team', to: { name: 'team' }, matches: ['team'], icon: 'overview', phone: false },
     { id: 'you', label: 'You', to: { name: 'you' }, matches: ['you'], icon: 'you', phone: true },
   ])
 }

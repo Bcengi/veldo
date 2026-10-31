@@ -75,6 +75,33 @@ const BY_REASON: Record<string, RefusalText> = {
   cursor_past_end: { title: 'The record is shorter than expected', fix: 'Reload the run.' },
   ui_not_built: { title: 'The UI is not built on this host', fix: 'Build engine/ui before serving it.' },
   authority: { title: 'The factory did not answer', fix: 'Nothing was changed. Try again in a moment.' },
+  // VELDO-0163: the role and team forms' refusals (VELDO-0127, VELDO-0089, VELDO-0151, VELDO-0162).
+  agent_configuration: { title: 'The configuration was not accepted', fix: 'Check each item and its load mode, then save again.' },
+  agent_owner: { title: 'Only a project owner can save a configuration', fix: 'Ask a steward if you need this.' },
+  agent_revision: { title: 'No such configuration revision', fix: 'Open the role again to read its newest revision.' },
+  mcp_server: { title: 'No such catalog server', fix: 'Check its id; the catalog form adds servers.' },
+  stale_subject: {
+    title: 'The team changed since you opened it',
+    fix: 'Nothing was saved. Read the team again, then make your change on the current version.',
+  },
+  default_team: {
+    title: 'The default team changed since you opened it',
+    fix: 'Nothing was saved. Open the default team again, then make your change on its newest revision.',
+  },
+  default_team_owner: { title: 'Only the factory project owner keeps the default team', fix: 'Ask the owner to save it.' },
+  incomplete_roster: { title: 'The team is incomplete', fix: 'Nothing was saved. Fill in what is missing, then save again.' },
+  missing_staffing: {
+    title: 'A required role is missing or unstaffed',
+    fix: 'Nothing was saved. A team needs project_manager, elaboration, implementation and independent_review, each with workers.',
+  },
+  missing_capability_configuration: {
+    title: 'A role names no capability configuration',
+    fix: 'Nothing was saved. Name a configuration and its revision for every role.',
+  },
+  unresolved_capability_configuration: {
+    title: 'A role names a configuration that does not exist',
+    fix: 'Nothing was saved. Name a saved configuration revision (the Roles screen saves them).',
+  },
 }
 
 /** Whether trying the same thing again can succeed: the API or the network did not answer. A named refusal
