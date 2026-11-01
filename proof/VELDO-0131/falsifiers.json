@@ -540,7 +540,7 @@
    ],
    "module": ".veldo/control_api_models.py",
    "mutant": {
-    "commit": "9281411c73be3d9da96c129f8d6a482955ef679a",
+    "commit": "6bf76759e769147db74579934a381da8734ff020",
     "failed_details": [
      [
       "VELDO-0131 ac2/metadata-only",
@@ -601,21 +601,23 @@
      "VELDO-0131 ac1/usage-provider",
      "VELDO-0131 ac1/worker-capability",
      "VELDO-0131 ac2/metadata-only",
-     "VELDO-0131 ac2/pending-actions"
+     "VELDO-0131 ac2/priority-save",
+     "VELDO-0131 ac2/worker-stop",
+     "VELDO-0131 ac2/worker-cap"
     ],
-    "seconds": 96.019,
+    "seconds": 106.927,
     "targets": {
      "ac2/metadata-only": [
       false
      ]
     }
    },
-   "mutant_sha256": "dbb3312d3118d80c5eeb083c55f47c8ade15c6afdb160ab6f1431a30313b6c55",
+   "mutant_sha256": "dbad56b55f054ff41ce27c69deb10d33decec3a767b35cefbb6d1597403de791",
    "replacement_count": 1,
    "rows": [
     "ac2/metadata-only"
    ],
-   "source_sha256": "bcac3b076130f16d7343d0a4f59ff7c6990d90e214128dcdbf1aff4dcfc7dc13"
+   "source_sha256": "a2a53fac0cd359cbbe22d03f0876207bd160fc30cde8b88dca3300e72850ae70"
   },
   "api131-stop-asked-before-record": {
    "edits": [
@@ -1060,7 +1062,7 @@
    ],
    "module": "engine/ui/src/features/workers/workers.ts",
    "mutant": {
-    "commit": "9281411c73be3d9da96c129f8d6a482955ef679a",
+    "commit": "6bf76759e769147db74579934a381da8734ff020",
     "failed_details": [
      [
       "VELDO-0131 ac1/worker-capability",
@@ -1121,21 +1123,23 @@
      "VELDO-0131 ac1/usage-provider",
      "VELDO-0131 ac1/worker-capability",
      "VELDO-0131 ac2/metadata-only",
-     "VELDO-0131 ac2/pending-actions"
+     "VELDO-0131 ac2/priority-save",
+     "VELDO-0131 ac2/worker-stop",
+     "VELDO-0131 ac2/worker-cap"
     ],
-    "seconds": 104.379,
+    "seconds": 117.449,
     "targets": {
      "ac1/worker-capability": [
       false
      ]
     }
    },
-   "mutant_sha256": "b068d03a5df01a8cc2b05a5c507b1fd0ecdaf2619f655979f92ff5ab6ed0adeb",
+   "mutant_sha256": "8b45bc6c324ee936ea061e7bc45178c4ac8caac008cd3e72cc41524ca1212dfb",
    "replacement_count": 1,
    "rows": [
     "ac1/worker-capability"
    ],
-   "source_sha256": "6c680406b35c4c0bd9235bf0ba68bd2f71c60304faedf056bebd87bb448a34b1"
+   "source_sha256": "6b245ed3c73d37b1054d4e6b4d01361a30a8a8337e9c8dac34e640d0667ef3a7"
   },
   "ui131-catalog-first-server-only": {
    "edits": [
@@ -1146,11 +1150,11 @@
    ],
    "module": "engine/ui/src/features/catalog/catalog.ts",
    "mutant": {
-    "commit": "9281411c73be3d9da96c129f8d6a482955ef679a",
+    "commit": "6bf76759e769147db74579934a381da8734ff020",
     "failed_details": [
      [
       "VELDO-0131 unit/factory",
-      "the factory screens' unit specs pass [39 passed, failed ['the catalog read (fix round 2) lists every head and every credential record by metadata, its reference derived from the entity id']; JSON report written to /tmp/v131-t5j2rot1/vitest.json]"
+      "the factory screens' unit specs pass [43 passed, failed ['the catalog read (fix round 2) lists every head and every credential record by metadata, its reference derived from the entity id']; JSON report written to /tmp/v131-2nsns07i/vitest.json]"
      ],
      [
       "VELDO-0131 ac1/whole-catalog",
@@ -1212,9 +1216,11 @@
      "VELDO-0131 ac1/usage-provider",
      "VELDO-0131 ac1/worker-capability",
      "VELDO-0131 ac2/metadata-only",
-     "VELDO-0131 ac2/pending-actions"
+     "VELDO-0131 ac2/priority-save",
+     "VELDO-0131 ac2/worker-stop",
+     "VELDO-0131 ac2/worker-cap"
     ],
-    "seconds": 105.167,
+    "seconds": 115.757,
     "targets": {
      "ac1/whole-catalog": [
       false
@@ -1335,11 +1341,11 @@
    ],
    "module": "engine/ui/src/features/configuration/configuration.ts",
    "mutant": {
-    "commit": "9281411c73be3d9da96c129f8d6a482955ef679a",
+    "commit": "6bf76759e769147db74579934a381da8734ff020",
     "failed_details": [
      [
       "VELDO-0131 unit/factory",
-      "the factory screens' unit specs pass [39 passed, failed ['stored configurations (fix round 2) lists every stored role revision and skill, named by a team or not']; JSON report written to /tmp/v131-sm9k0akb/vitest.json]"
+      "the factory screens' unit specs pass [43 passed, failed ['stored configurations (fix round 2) lists every stored role revision and skill, named by a team or not']; JSON report written to /tmp/v131-4j5shdn_/vitest.json]"
      ],
      [
       "VELDO-0131 ac1/every-configuration",
@@ -1401,9 +1407,11 @@
      "VELDO-0131 ac1/usage-provider",
      "VELDO-0131 ac1/worker-capability",
      "VELDO-0131 ac2/metadata-only",
-     "VELDO-0131 ac2/pending-actions"
+     "VELDO-0131 ac2/priority-save",
+     "VELDO-0131 ac2/worker-stop",
+     "VELDO-0131 ac2/worker-cap"
     ],
-    "seconds": 106.115,
+    "seconds": 117.477,
     "targets": {
      "ac1/every-configuration": [
       false
@@ -1426,11 +1434,11 @@
    ],
    "module": "engine/ui/src/features/catalog/catalog.ts",
    "mutant": {
-    "commit": "9281411c73be3d9da96c129f8d6a482955ef679a",
+    "commit": "6bf76759e769147db74579934a381da8734ff020",
     "failed_details": [
      [
       "VELDO-0131 unit/factory",
-      "the factory screens' unit specs pass [39 passed, failed ['the catalog read (fix round 2) lists every head and every credential record by metadata, its reference derived from the entity id']; JSON report written to /tmp/v131-v7kweu7d/vitest.json]"
+      "the factory screens' unit specs pass [43 passed, failed ['the catalog read (fix round 2) lists every head and every credential record by metadata, its reference derived from the entity id']; JSON report written to /tmp/v131-uzq4tedp/vitest.json]"
      ],
      [
       "VELDO-0131 ac1/whole-catalog",
@@ -1497,9 +1505,11 @@
      "VELDO-0131 ac1/usage-provider",
      "VELDO-0131 ac1/worker-capability",
      "VELDO-0131 ac2/metadata-only",
-     "VELDO-0131 ac2/pending-actions"
+     "VELDO-0131 ac2/priority-save",
+     "VELDO-0131 ac2/worker-stop",
+     "VELDO-0131 ac2/worker-cap"
     ],
-    "seconds": 119.22,
+    "seconds": 128.382,
     "targets": {
      "ac1/whole-catalog": [
       false
@@ -1618,11 +1628,11 @@
    ],
    "module": "engine/ui/src/features/repositories/repositories.ts",
    "mutant": {
-    "commit": "9281411c73be3d9da96c129f8d6a482955ef679a",
+    "commit": "6bf76759e769147db74579934a381da8734ff020",
     "failed_details": [
      [
       "VELDO-0131 unit/factory",
-      "the factory screens' unit specs pass [39 passed, failed ['repositories and identities lists identities by label with their author']; JSON report written to /tmp/v131-ij1y50j2/vitest.json]"
+      "the factory screens' unit specs pass [43 passed, failed ['repositories and identities lists identities by label with their author']; JSON report written to /tmp/v131-c8jj6de5/vitest.json]"
      ],
      [
       "VELDO-0131 ac1/repositories",
@@ -1689,9 +1699,11 @@
      "VELDO-0131 ac1/usage-provider",
      "VELDO-0131 ac1/worker-capability",
      "VELDO-0131 ac2/metadata-only",
-     "VELDO-0131 ac2/pending-actions"
+     "VELDO-0131 ac2/priority-save",
+     "VELDO-0131 ac2/worker-stop",
+     "VELDO-0131 ac2/worker-cap"
     ],
-    "seconds": 118.25,
+    "seconds": 131.437,
     "targets": {
      "ac1/repositories": [
       false
@@ -1936,11 +1948,11 @@
    ],
    "module": "engine/ui/src/features/usage/usage.ts",
    "mutant": {
-    "commit": "9281411c73be3d9da96c129f8d6a482955ef679a",
+    "commit": "6bf76759e769147db74579934a381da8734ff020",
     "failed_details": [
      [
       "VELDO-0131 unit/factory",
-      "the factory screens' unit specs pass [39 passed, failed ['providers from the account records (fix round 2) names each invocation and account by its account record, and breaks usage down by provider']; JSON report written to /tmp/v131-vip3in9j/vitest.json]"
+      "the factory screens' unit specs pass [43 passed, failed ['providers from the account records (fix round 2) names each invocation and account by its account record, and breaks usage down by provider']; JSON report written to /tmp/v131-hbrullic/vitest.json]"
      ],
      [
       "VELDO-0131 ac1/usage-provider",
@@ -2002,9 +2014,11 @@
      "VELDO-0131 ac1/usage-provider",
      "VELDO-0131 ac1/worker-capability",
      "VELDO-0131 ac2/metadata-only",
-     "VELDO-0131 ac2/pending-actions"
+     "VELDO-0131 ac2/priority-save",
+     "VELDO-0131 ac2/worker-stop",
+     "VELDO-0131 ac2/worker-cap"
     ],
-    "seconds": 104.536,
+    "seconds": 116.814,
     "targets": {
      "ac1/usage-provider": [
       false
@@ -2202,7 +2216,27 @@
  },
  "driver": "scripts/check_teeth_mutations.py --worker (unconfined; see OPEN.md)",
  "driver_sha256": "c0712c15cca9eb5c442f03d4cd13486b42cb9c414bd61fb6aa25503b4601703c",
- "proven": [],
+ "proven": [
+  "ui131-decision-action-hidden-360",
+  "ui131-completion-from-build-state",
+  "ui131-node-settings-hover-only",
+  "ui131-tiered-dependency-locked",
+  "ui131-identities-dropped",
+  "ui131-configurations-team-named-only",
+  "ui131-catalog-first-server-only",
+  "ui131-credential-metadata-dropped",
+  "ui131-provider-unread",
+  "ui131-capability-dropped",
+  "ui131-stop-shown-unsent",
+  "ui131-priority-shown-unsent",
+  "api131-identity-credentials-served",
+  "ui131-cap-shown-unsent",
+  "backlog131-edge-command-underived",
+  "dispatch131-stop-any-scope",
+  "launch131-stop-recorded-unasked",
+  "api131-stop-asked-before-record",
+  "accounts131-cap-any-scope"
+ ],
  "registered": [
   "ui131-decision-action-hidden-360",
   "ui131-completion-from-build-state",
@@ -2225,98 +2259,446 @@
   "accounts131-cap-any-scope"
  ],
  "restored": {
-  "commit": "9281411c73be3d9da96c129f8d6a482955ef679a",
-  "failed_details": [],
+  "complete": true,
   "failed_rows": [],
-  "returncode": 0,
-  "rows": [
-   "good spec accepted",
-   "spec without criteria rejected",
-   "unknown evidence kind rejected",
-   "bad status rejected",
-   "invented proof criterion rejected",
-   "missing proof criterion rejected",
-   "absent required evidence rejected",
-   "passed-without-evidence rejected",
-   "bad verdict value rejected",
-   "good plan accepted",
-   "plan dependency cycle rejected",
-   "dangling dependency rejected",
-   "unknown outcome ref rejected",
-   "unknown feature ref rejected",
-   "undeclared depends_on rejected",
-   "ready without approval rejected",
-   "decision without blocks rejected",
-   "decision blocking unknown spec rejected",
-   "duplicate work spec rejected",
-   "bad release mode rejected",
-   "mirror mismatch rejected",
-   "correct mirror accepted",
-   "spec binding to wrong plan rejected",
-   "spec claiming missing work item rejected",
-   "spec plan without work rejected",
-   "correct spec binding accepted",
-   "VELDO-0131 unit/factory",
-   "VELDO-0131 ac4/dependency-policy",
-   "VELDO-0131 ac4/stack",
-   "VELDO-0131 ac4/served-assets",
-   "VELDO-0131 ac1/screens-360",
-   "VELDO-0131 ac1/screens-390",
-   "VELDO-0131 ac1/screens-1280",
-   "VELDO-0131 ac1/screens-1440",
-   "VELDO-0131 ac2/live",
-   "VELDO-0131 ac2/completion-receipt",
-   "VELDO-0131 ac2/message-intake",
-   "VELDO-0131 ac2/decision-settlement",
-   "VELDO-0131 ac2/refusals",
-   "VELDO-0131 ac2/api-only",
-   "VELDO-0131 ac3/keyboard-desktop",
-   "VELDO-0131 ac3/touch-phone",
-   "VELDO-0131 ac3/stale-save",
-   "VELDO-0131 ac1/repositories",
-   "VELDO-0131 ac1/every-configuration",
-   "VELDO-0131 ac1/whole-catalog",
-   "VELDO-0131 ac1/usage-provider",
-   "VELDO-0131 ac1/worker-capability",
-   "VELDO-0131 ac2/metadata-only",
-   "VELDO-0131 ac2/pending-actions"
-  ],
-  "seconds": 94.179,
+  "suites": {
+   "120_veldo_0131_factory_ui.py": {
+    "commit": "6bf76759e769147db74579934a381da8734ff020",
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "rows": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0131 unit/factory",
+     "VELDO-0131 ac4/dependency-policy",
+     "VELDO-0131 ac4/stack",
+     "VELDO-0131 ac4/served-assets",
+     "VELDO-0131 ac1/screens-360",
+     "VELDO-0131 ac1/screens-390",
+     "VELDO-0131 ac1/screens-1280",
+     "VELDO-0131 ac1/screens-1440",
+     "VELDO-0131 ac2/live",
+     "VELDO-0131 ac2/completion-receipt",
+     "VELDO-0131 ac2/message-intake",
+     "VELDO-0131 ac2/decision-settlement",
+     "VELDO-0131 ac2/refusals",
+     "VELDO-0131 ac2/api-only",
+     "VELDO-0131 ac3/keyboard-desktop",
+     "VELDO-0131 ac3/touch-phone",
+     "VELDO-0131 ac3/stale-save",
+     "VELDO-0131 ac1/repositories",
+     "VELDO-0131 ac1/every-configuration",
+     "VELDO-0131 ac1/whole-catalog",
+     "VELDO-0131 ac1/usage-provider",
+     "VELDO-0131 ac1/worker-capability",
+     "VELDO-0131 ac2/metadata-only",
+     "VELDO-0131 ac2/priority-save",
+     "VELDO-0131 ac2/worker-stop",
+     "VELDO-0131 ac2/worker-cap"
+    ],
+    "seconds": 102.876,
+    "suite_sha256": "37e853014521ac89e7db7a7e467fd51af56dac50eb963ebf99e5a25b1f8321d1",
+    "targets": {
+     "ac1/every-configuration": [
+      true
+     ],
+     "ac1/repositories": [
+      true
+     ],
+     "ac1/screens-360": [
+      true
+     ],
+     "ac1/usage-provider": [
+      true
+     ],
+     "ac1/whole-catalog": [
+      true
+     ],
+     "ac1/worker-capability": [
+      true
+     ],
+     "ac2/completion-receipt": [
+      true
+     ],
+     "ac2/metadata-only": [
+      true
+     ],
+     "ac2/priority-save": [
+      true
+     ],
+     "ac2/worker-cap": [
+      true
+     ],
+     "ac2/worker-stop": [
+      true
+     ],
+     "ac3/keyboard-desktop": [
+      true
+     ],
+     "ac3/touch-phone": [
+      true
+     ],
+     "ac4/dependency-policy": [
+      true
+     ]
+    }
+   },
+   "62_veldo_0039_dispatch.py": {
+    "commit": "6bf76759e769147db74579934a381da8734ff020",
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "rows": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0039 dispatch/contract-before-launch",
+     "VELDO-0039 dispatch/one-active-per-unit-station",
+     "VELDO-0039 dispatch/launch-results",
+     "VELDO-0039 dispatch/deadline-after-closed-output",
+     "VELDO-0039 dispatch/remote-stop-holds-unit",
+     "VELDO-0039 dispatch/unknown-never-relaunched",
+     "VELDO-0039 dispatch/transitions-from-schema",
+     "VELDO-0039 dispatch/result-binding",
+     "VELDO-0039 dispatch/terminal-not-completion",
+     "VELDO-0039 dispatch/owner-stop",
+     "VELDO-0039 dispatch/service-principals-only",
+     "VELDO-0039 dispatch/observations",
+     "VELDO-0039 dispatch/installed-assets",
+     "VELDO-0039 ran/dispatch/contract-before-launch",
+     "VELDO-0039 ran/dispatch/launch-results",
+     "VELDO-0039 ran/dispatch/deadline-after-closed-output",
+     "VELDO-0039 ran/dispatch/unknown-never-relaunched",
+     "VELDO-0039 ran/dispatch/transitions-from-schema",
+     "VELDO-0039 ran/dispatch/result-binding",
+     "VELDO-0039 ran/dispatch/owner-stop",
+     "VELDO-0039 ran/dispatch/service-principals-only",
+     "VELDO-0039 ran/dispatch/observations",
+     "VELDO-0039 ran/dispatch/installed-assets"
+    ],
+    "seconds": 12.631,
+    "suite_sha256": "55c95e5d388783392e880746fcb3218c286660439953a158dd4f4ebe1931c7ad",
+    "targets": {
+     "dispatch/owner-stop": [
+      true
+     ]
+    }
+   },
+   "71_veldo_0130_api.py": {
+    "commit": "6bf76759e769147db74579934a381da8734ff020",
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "rows": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0130 install/assets",
+     "VELDO-0130 webauthn/stand-in-browser",
+     "VELDO-0130 webauthn/independent-vectors",
+     "VELDO-0130 enrollment/pending-grants-nothing",
+     "VELDO-0130 enrollment/steward-signed",
+     "VELDO-0130 session/cookie-and-expiry",
+     "VELDO-0130 session/forgery-refused",
+     "VELDO-0130 session/revocation-ends",
+     "VELDO-0130 routes/every-family",
+     "VELDO-0130 routes/body-actor-refused",
+     "VELDO-0130 edge/signer-api-purpose",
+     "VELDO-0130 edge/authority-recheck",
+     "VELDO-0130 messages/common-intake",
+     "VELDO-0130 decisions/exact-settlement",
+     "VELDO-0130 decisions/one-ruling",
+     "VELDO-0130 transport/loopback-only",
+     "VELDO-0130 reads/model-set",
+     "VELDO-0130 reads/authoritative",
+     "VELDO-0130 reads/freshness",
+     "VELDO-0130 events/live",
+     "VELDO-0130 actions/contract",
+     "VELDO-0130 actions/workflow-save",
+     "VELDO-0130 actions/unauthorized-write",
+     "VELDO-0130 events/reconcile-past-page",
+     "VELDO-0130 events/resume-last-event-id",
+     "VELDO-0130 events/expiry-named",
+     "VELDO-0130 events/published-watermark",
+     "VELDO-0130 events/reconcile-deferred",
+     "VELDO-0130 enrollment/possession-race",
+     "VELDO-0130 webauthn/openssl-fixed-path",
+     "VELDO-0130 events/revoked-either-path",
+     "VELDO-0130 events/fill-window-revocation",
+     "VELDO-0130 events/retry-after-failure",
+     "VELDO-0130 reads/implemented-writers",
+     "VELDO-0130 work/backlog-reprioritize",
+     "VELDO-0130 work/worker-stop",
+     "VELDO-0130 work/worker-cap",
+     "VELDO-0130 service/install",
+     "VELDO-0130 service/socket-path",
+     "VELDO-0130 service/edge-signed-requests",
+     "VELDO-0130 service/host-revocation-closes-stream",
+     "VELDO-0130 service/in-process-refused",
+     "VELDO-0130 service/restart-reconciles",
+     "VELDO-0130 service/down-at-registration",
+     "VELDO-0130 service/connect-sets-cursor"
+    ],
+    "seconds": 21.188,
+    "suite_sha256": "5890aa4aed9d867346f84b4418d20b0b0080fcdf0ea4431790d28de4ee58c2e6",
+    "targets": {
+     "work/worker-stop": [
+      true
+     ]
+    }
+   },
+   "73_veldo_0078_backlog.py": {
+    "commit": "6bf76759e769147db74579934a381da8734ff020",
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "rows": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0078 install/assets",
+     "VELDO-0078 priority/declared-set",
+     "VELDO-0078 priority/missing-priority",
+     "VELDO-0078 priority/gate-question",
+     "VELDO-0078 priority/store-inspection",
+     "VELDO-0078 priority/owner-decision",
+     "VELDO-0078 lifecycle/foreign-sources",
+     "VELDO-0078 activation/first-claim",
+     "VELDO-0078 activation/decomposition-growth",
+     "VELDO-0078 ticket/sibling-changes",
+     "VELDO-0078 ticket/own-changes",
+     "VELDO-0078 blocked/resume-binding",
+     "VELDO-0078 done/missing-outcome",
+     "VELDO-0078 done/authorized-alternative",
+     "VELDO-0078 done/accepted-outcomes",
+     "VELDO-0078 done/one-completion-reader",
+     "VELDO-0078 lifecycle/regular-path",
+     "VELDO-0078 done/closed-unit",
+     "VELDO-0078 other-process",
+     "VELDO-0078 priority/owner-reprioritize",
+     "VELDO-0078 observability"
+    ],
+    "seconds": 6.293,
+    "suite_sha256": "b170bd5091a4bf7c06de9669633a933fd2c56fe3bbdf5a26386266c555a2467c",
+    "targets": {
+     "priority/owner-reprioritize": [
+      true
+     ]
+    }
+   },
+   "75_veldo_0062_accounts.py": {
+    "commit": "6bf76759e769147db74579934a381da8734ff020",
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "rows": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0062 login/recorded-account-profile",
+     "VELDO-0062 login/no-paid-api",
+     "VELDO-0062 login/configured-environment",
+     "VELDO-0062 login/substitution-refused",
+     "VELDO-0062 login/fleet-provider",
+     "VELDO-0062 usage/reserved-before-launch",
+     "VELDO-0062 usage/allowance-states",
+     "VELDO-0062 usage/competing-remainder",
+     "VELDO-0062 usage/cap-stops-worker",
+     "VELDO-0062 usage/rate-limit-reset",
+     "VELDO-0062 settle/once",
+     "VELDO-0062 settle/model-usage",
+     "VELDO-0062 settle/resumed-delta",
+     "VELDO-0062 settle/resumed-other-session",
+     "VELDO-0062 settle/missing-retained",
+     "VELDO-0062 settle/timeout-retained",
+     "VELDO-0062 settle/cancel-retained",
+     "VELDO-0062 attribution/stored-account",
+     "VELDO-0062 attribution/measurement-removed",
+     "VELDO-0062 attribution/watermark",
+     "VELDO-0062 format/claude-fake-lines",
+     "VELDO-0062 format/codex-fake-lines",
+     "VELDO-0062 accounts/owner-cap",
+     "VELDO-0172 fake/capture"
+    ],
+    "seconds": 34.482,
+    "suite_sha256": "cd6b21f1833ad9ad834277ad71102456237433be9406a5f608d9a2b7f476d957",
+    "targets": {
+     "accounts/owner-cap": [
+      true
+     ]
+    }
+   }
+  },
   "targets": {
-   "ac1/every-configuration": [
+   "120_veldo_0131_factory_ui.py ac1/every-configuration": [
     true
    ],
-   "ac1/repositories": [
+   "120_veldo_0131_factory_ui.py ac1/repositories": [
     true
    ],
-   "ac1/screens-360": [
+   "120_veldo_0131_factory_ui.py ac1/screens-360": [
     true
    ],
-   "ac1/usage-provider": [
+   "120_veldo_0131_factory_ui.py ac1/usage-provider": [
     true
    ],
-   "ac1/whole-catalog": [
+   "120_veldo_0131_factory_ui.py ac1/whole-catalog": [
     true
    ],
-   "ac1/worker-capability": [
+   "120_veldo_0131_factory_ui.py ac1/worker-capability": [
     true
    ],
-   "ac2/completion-receipt": [
+   "120_veldo_0131_factory_ui.py ac2/completion-receipt": [
     true
    ],
-   "ac2/metadata-only": [
+   "120_veldo_0131_factory_ui.py ac2/metadata-only": [
     true
    ],
-   "ac2/pending-actions": [
+   "120_veldo_0131_factory_ui.py ac2/priority-save": [
     true
    ],
-   "ac3/keyboard-desktop": [
+   "120_veldo_0131_factory_ui.py ac2/worker-cap": [
     true
    ],
-   "ac3/touch-phone": [
+   "120_veldo_0131_factory_ui.py ac2/worker-stop": [
     true
    ],
-   "ac4/dependency-policy": [
+   "120_veldo_0131_factory_ui.py ac3/keyboard-desktop": [
+    true
+   ],
+   "120_veldo_0131_factory_ui.py ac3/touch-phone": [
+    true
+   ],
+   "120_veldo_0131_factory_ui.py ac4/dependency-policy": [
+    true
+   ],
+   "62_veldo_0039_dispatch.py dispatch/owner-stop": [
+    true
+   ],
+   "71_veldo_0130_api.py work/worker-stop": [
+    true
+   ],
+   "73_veldo_0078_backlog.py priority/owner-reprioritize": [
+    true
+   ],
+   "75_veldo_0062_accounts.py accounts/owner-cap": [
     true
    ]
   }
@@ -2325,5 +2707,5 @@
  "spec": "VELDO-0131",
  "suite": "scripts/suites/120_veldo_0131_factory_ui.py",
  "suite_sha256": "37e853014521ac89e7db7a7e467fd51af56dac50eb963ebf99e5a25b1f8321d1",
- "verdict": "not_proven"
+ "verdict": "red_under_each_mutant_green_restored"
 }

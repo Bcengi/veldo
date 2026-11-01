@@ -1,0 +1,58 @@
+baseline 120_veldo_0131_factory_ui.py: green (failed rows [])
+falsifiers: 0 of 19 proven (not_proven)
+baseline 73_veldo_0078_backlog.py: green (failed rows [])
+falsifiers: 0 of 19 proven (not_proven)
+baseline 62_veldo_0039_dispatch.py: green (failed rows [])
+falsifiers: 0 of 19 proven (not_proven)
+baseline 71_veldo_0130_api.py: green (failed rows [])
+falsifiers: 0 of 19 proven (not_proven)
+baseline 75_veldo_0062_accounts.py: green (failed rows [])
+falsifiers: 0 of 19 proven (not_proven)
+backlog131-edge-command-underived: red ['VELDO-0078 priority/owner-reprioritize']
+falsifiers: 0 of 19 proven (not_proven)
+dispatch131-stop-any-scope: red ['VELDO-0039 dispatch/owner-stop']
+falsifiers: 0 of 19 proven (not_proven)
+launch131-stop-recorded-unasked: red ['VELDO-0039 dispatch/owner-stop', 'VELDO-0039 dispatch/service-principals-only']
+falsifiers: 0 of 19 proven (not_proven)
+api131-stop-asked-before-record: red ['VELDO-0130 work/worker-stop']
+falsifiers: 0 of 19 proven (not_proven)
+accounts131-cap-any-scope: red ['VELDO-0062 accounts/owner-cap']
+falsifiers: 0 of 19 proven (not_proven)
+ui131-cap-shown-unsent: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac2/worker-cap']
+falsifiers: 0 of 19 proven (not_proven)
+ui131-stop-shown-unsent: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac2/worker-stop']
+falsifiers: 0 of 19 proven (not_proven)
+ui131-priority-shown-unsent: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac2/priority-save']
+falsifiers: 0 of 19 proven (not_proven)
+ui131-decision-action-hidden-360: red ['VELDO-0131 ac1/screens-360']
+falsifiers: 0 of 19 proven (not_proven)
+ui131-completion-from-build-state: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac2/live', 'VELDO-0131 ac2/completion-receipt']
+falsifiers: 0 of 19 proven (not_proven)
+ui131-node-settings-hover-only: red ['VELDO-0131 ac1/screens-360', 'VELDO-0131 ac1/screens-390', 'VELDO-0131 ac1/screens-1280', 'VELDO-0131 ac1/screens-1440', 'VELDO-0131 ac3/keyboard-desktop', 'VELDO-0131 ac3/touch-phone']
+falsifiers: 0 of 19 proven (not_proven)
+ui131-tiered-dependency-locked: red ['VELDO-0131 ac4/dependency-policy']
+falsifiers: 0 of 19 proven (not_proven)
+ui131-identities-dropped: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac1/repositories', 'VELDO-0131 ac2/metadata-only']
+falsifiers: 0 of 19 proven (not_proven)
+ui131-configurations-team-named-only: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac1/every-configuration']
+falsifiers: 0 of 19 proven (not_proven)
+ui131-catalog-first-server-only: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac1/whole-catalog']
+falsifiers: 0 of 19 proven (not_proven)
+ui131-credential-metadata-dropped: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac1/whole-catalog', 'VELDO-0131 ac2/metadata-only']
+falsifiers: 0 of 19 proven (not_proven)
+ui131-provider-unread: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac1/usage-provider']
+falsifiers: 0 of 19 proven (not_proven)
+ui131-capability-dropped: red ['VELDO-0131 ac1/worker-capability']
+falsifiers: 0 of 19 proven (not_proven)
+api131-identity-credentials-served: red ['VELDO-0131 ac2/metadata-only']
+falsifiers: 0 of 19 proven (not_proven)
+restored 73_veldo_0078_backlog.py: green (failed rows [])
+falsifiers: 0 of 19 proven (not_proven)
+restored 62_veldo_0039_dispatch.py: green (failed rows [])
+falsifiers: 0 of 19 proven (not_proven)
+restored 71_veldo_0130_api.py: green (failed rows [])
+falsifiers: 0 of 19 proven (not_proven)
+restored 75_veldo_0062_accounts.py: green (failed rows [])
+falsifiers: 0 of 19 proven (not_proven)
+restored 120_veldo_0131_factory_ui.py: green (failed rows [])
+falsifiers: 19 of 19 proven (red_under_each_mutant_green_restored)
