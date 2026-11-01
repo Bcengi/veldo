@@ -45,6 +45,9 @@
     {"suite": "65_veldo_0067_edges", "reason": "nested custody confinement: the product's custody wrapper lists every ancestor of the protected directory up to /, which the gate domain cannot list"},
     {"suite": "100_veldo_0207_case_reuse", "rows": "strace", "reason": "nested strace: the sandbox-valid-worker, *-caught-undeclared-* and startup-runtime-boundary rows trace workers, and the gate domain refuses ptrace"},
     {"suite": "101_veldo_0208_landing_reuse", "rows": "strace", "reason": "nested strace: the authority-worker-* and authority-observes-kill rows trace workers, and the gate domain refuses ptrace"},
-    {"suite": "114_veldo_0220_gate_scope", "reason": "systemd user manager: the gate's own scope is created through the user manager and inspected under /sys/fs/cgroup"}
+    {"suite": "114_veldo_0220_gate_scope", "reason": "systemd user manager: the gate's own scope is created through the user manager and inspected under /sys/fs/cgroup"},
+    {"suite": "118_veldo_0159_mcp_credential_form", "reason": "system Chrome: the MCP credential form is driven in a real browser (Playwright, /opt/google/chrome) against the factory harness, with the UI's locked node_modules"},
+    {"suite": "119_veldo_0163_role_team_form", "reason": "system Chrome: the role and team forms are driven in a real browser (Playwright, /opt/google/chrome) against the factory harness, with the UI's locked node_modules"},
+    {"suite": "120_veldo_0131_factory_ui", "reason": "system Chrome and the npm registry: the factory screens are built from the UI's locked dependencies (npm ci needs the registry and the network) and driven in a real browser (Playwright, /opt/google/chrome) against the factory harness"}
   ]
 }
