@@ -11914,6 +11914,12 @@ def cases():
         "                if self.stop is not None:\n"
         "                    self.stop(p['dispatch'], 'owner_stop')  # defect: asked before the request is recorded\n",
         ['work/worker-stop'])
+    # Worker stop on an idle line: the loop pass a journal advance wakes does not ask for the committed stops, so the
+    # owner's stop of the line's only worker waits for a run of that line to be prepared or end.
+    add(131, 'service131-stop-not-asked-on-wake', '83_veldo_0154_factory_loop.py', 'control_service.py',
+        "        self.runner.honor_stops()\n        lost = []\n",
+        "        lost = []  # defect: the woken pass does not ask for the committed stops\n",
+        ['loop/owner-stop-asked-on-wake'])
     # Account cap: a person whose scope is one repository caps a factory-scope account.
     add(131, 'accounts131-cap-any-scope', '75_veldo_0062_accounts.py', 'control_accounts.py',
         "            if member.get('scope') not in ('*', ['*']):\n",
