@@ -826,6 +826,30 @@ sys.exit(child.wait())
                       and actors == ['owner-person', 'runner']
                       and len(of_unit('dispatch', us)) == 1)
 
+            # A runner on the same store that does not hold the running dispatch leaves its stop request waiting
+            # (another runner, e.g. control_launch_work's, may hold it); the holder asks on its own sweep.
+            with region('dispatch/owner-stop-other-runner'):
+                uo = admitted('VELDO-9341')
+                held_run = runner.submit(uo, 'build', **job(release='never-9341'))
+                oid = held_run.dispatch_id
+                marker_for(oid)
+                bystander = L.Runner(gate, reservations, dispatches, invoke, account=ACCOUNT)
+                asked_by = attempt(lambda: dispatches.request_stop(oid, dispatches.version(oid), 'owner-person',
+                                                                   now=time.time(), request='stop-other'))
+                by_bystander = bystander.honor_stops()
+                still = dispatches.stop_requests()
+                by_holder = runner.honor_stops()
+                runner.wait(held_run)
+                settled = rec(oid)
+                observed['owner_stop_other_runner'] = {'requested': asked_by[0], 'bystander': by_bystander,
+                                                       'still': still, 'holder': by_holder,
+                                                       'state': settled.get('state'),
+                                                       'stop_request': settled.get('stop_request')}
+                check('dispatch/owner-stop-other-runner',
+                      asked_by[0] == 'ok' and by_bystander == [] and still == [(oid, 'owner_stop')]
+                      and by_holder == [(oid, True)] and settled.get('state') == 'exited'
+                      and ((settled.get('stop_request') or {}).get('result') or {}).get('asked') is True)
+
             # Authority: only an active service member of this repository writes a record
             with region('dispatch/service-principals-only'):
                 outsiders = {}

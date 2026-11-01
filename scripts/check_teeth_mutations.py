@@ -11902,6 +11902,11 @@ def cases():
         "                asked = bool(launch is not None and launch.stop(reason or 'owner_stop'))\n",
         "                asked = launch is not None  # defect: recorded as asked, the receiver never asked\n",
         ['dispatch/owner-stop'])
+    # Worker stop: a runner that does not hold the running dispatch consumes its stop request as not asked.
+    add(131, 'launch131-stop-consumed-unheld', '62_veldo_0039_dispatch.py', 'control_launch.py',
+        "            if launch is None and (self.dispatches.record(dispatch_id) or {}).get('state') in D.STOPPABLE:\n",
+        "            if False:  # defect: a stop this runner does not hold is recorded not asked\n",
+        ['dispatch/owner-stop-other-runner'])
     # Worker stop through the API: the receiver is asked before the authority has recorded (and judged) the request.
     add(131, 'api131-stop-asked-before-record', '71_veldo_0130_api.py', 'control_api_authority.py',
         "                    return {'outcome': 'refused', 'reason': 'unavailable_service:dispatches'}\n",
