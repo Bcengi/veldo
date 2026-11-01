@@ -1,0 +1,129 @@
+{
+ "cases": [
+  {
+   "baseline": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 18.915,
+    "targets": {
+     "mcp/stale-save": [
+      true
+     ]
+    }
+   },
+   "case": "mcp159-save-without-revision",
+   "module": "engine/ui/src/api/mcp.ts",
+   "mutant": {
+    "failed_details": [
+     [
+      "VELDO-0159 mcp/define-desktop",
+      "[mcp/define-desktop] at 1280px the owner defines a stdio server and the Atlassian http server; each save and edit is a new catalog revision holding every field the form sent [Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByTestId('server-saved')\nExpected: \"Saved as revision 1\"\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toHaveText\" getByTestId('server-saved') with timeout 10000ms\n  - waiting for getByTestId('server-saved')\n\n\n  122 | async function save(page: Page, revision: number) {\n  123 |   await page.getByTestId('server-save').click()\n> 124 |   await expect(page.getByTestId('server-saved')).toHaveText(`Saved as revision $]"
+     ],
+     [
+      "VELDO-0159 mcp/define-phone",
+      "[mcp/define-phone] at 360px the owner defines a stdio server and an http server; each save and edit is a new catalog revision holding every field the form sent [Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByTestId('server-saved')\nExpected: \"Saved as revision 1\"\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toHaveText\" getByTestId('server-saved') with timeout 10000ms\n  - waiting for getByTestId('server-saved')\n\n\n  122 | async function save(page: Page, revision: number) {\n  123 |   await page.getByTestId('server-save').click()\n> 124 |   await expect(page.getByTestId('server-saved')).toHaveText(`Saved as revision $]"
+     ],
+     [
+      "VELDO-0159 mcp/stale-save",
+      "[mcp/stale-save] a save edited from an older revision shows the stale refusal beside the save action and stores nothing [Error: expect(locator).toHaveText(expected) failed\n\nLocator: getByTestId('server-saved')\nExpected: \"Saved as revision 1\"\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toHaveText\" getByTestId('server-saved') with timeout 10000ms\n  - waiting for getByTestId('server-saved')\n\n\n  122 | async function save(page: Page, revision: number) {\n  123 |   await page.getByTestId('server-save').click()\n> 124 |   await expect(page.getByTestId('server-saved')).toHaveText(`Saved as revision $]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0159 mcp/define-desktop",
+     "VELDO-0159 mcp/define-phone",
+     "VELDO-0159 mcp/stale-save"
+    ],
+    "returncode": 0,
+    "seconds": 51.546,
+    "targets": {
+     "mcp/stale-save": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "c15f25c9d96a1893a616bd1775022b10dad77f9d976c7eab5aebf2ff2331b872",
+   "new": "  request<SaveResult>('mcp.save', { body: { definition, base: undefined } })  // defect: no revision edited from\n",
+   "old": "  request<SaveResult>('mcp.save', { body: { definition, base } })\n",
+   "replacement_count": 1,
+   "restored": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 19.078,
+    "targets": {
+     "mcp/stale-save": [
+      true
+     ]
+    }
+   },
+   "rows": [
+    "mcp/stale-save"
+   ],
+   "source_sha256": "08aa852f904ad3e63f4c7c8b0212e81f5db85ffc64bef5dc2f932ffb39d2ff53",
+   "verdict": "red_under_mutant_green_restored"
+  },
+  {
+   "baseline": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 18.682,
+    "targets": {
+     "cred/no-value-kept": [
+      true
+     ]
+    }
+   },
+   "case": "mcp159-value-kept-in-session-storage",
+   "module": "engine/ui/src/features/servers/CredentialField.vue",
+   "mutant": {
+    "failed_details": [
+     [
+      "VELDO-0159 cred/no-value-kept",
+      "[cred/no-value-kept] a typed value appears only in the body of the one request to the credential route, and nowhere after it is sent; reopening shows an empty field [Error: kept nowhere after it is sent\n\nexpect(received).toEqual(expected) // deep equality\n\n- Expected  - 1\n+ Received  + 3\n\n- Array []\n+ Array [\n+   \"session storage\",\n+ ]\n\n  383 |       expect(JSON.parse(carrying[0]!.body).value).toBe(value)\n  384 |       for (const answer of answers) expect(answer, 'no answer echoes it').not.toContain(value)\n> 385 |       expect(await nowhere(value), 'kept nowhere after it is sent').toEqual([])\n      |                                                           ]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0159 cred/no-value-kept"
+    ],
+    "returncode": 0,
+    "seconds": 18.037,
+    "targets": {
+     "cred/no-value-kept": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "766e64390e573231243d21d38c264362f0c9a1256cda7ca4b462b7f7da2d4dd5",
+   "new": "    sessionStorage.setItem(`veldo-credential-${props.credentialId}`, typed)  // defect: the typed value is kept\n    store.recordCredential({ id: answer.id,",
+   "old": "    store.recordCredential({ id: answer.id,",
+   "replacement_count": 1,
+   "restored": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 18.679,
+    "targets": {
+     "cred/no-value-kept": [
+      true
+     ]
+    }
+   },
+   "rows": [
+    "cred/no-value-kept"
+   ],
+   "source_sha256": "c6cf87c53ada33941ec4e659963a214ce9766555922fe4842c373e6cdf9d3679",
+   "verdict": "red_under_mutant_green_restored"
+  }
+ ],
+ "commit": "1fbb408155fa3e11552ce65e7a0bff2d13b29a2a",
+ "driver": "scripts/check_teeth_mutations.py --worker (unconfined; see OPEN.md)",
+ "driver_sha256": "d1b1a5ad748ce9e59cc5160142ce27a3a22c54f8a23e278d66898c13de389aba",
+ "proven": 2,
+ "registered": 2,
+ "schema": "veldo.falsifier_receipt/v1",
+ "spec": "VELDO-0159",
+ "suite": "scripts/suites/118_veldo_0159_mcp_credential_form.py",
+ "suite_sha256": "2a790b4a9aab619ce694a368a0a11905c914e645d2cb073dd5c47c9719a82387"
+}

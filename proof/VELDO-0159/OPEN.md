@@ -20,13 +20,14 @@ credential written earlier: it shows no metadata for it, and a Replace from a fr
 `base` 0 and is refused `stale_version` beside the action, by name. Nothing is lost or overwritten. The
 credential list with its records is VELDO-0131's row ("the catalog table and credential list").
 
-## C. Mutation proof leg
+## C. Mutation proof leg (owner)
 
-See README "Falsifiers": whether the coordinator's confined leg could run suite 118 (it builds the UI with the
-account's nvm Node and drives system Chrome; the confined leg's PATH is /usr/bin:/bin, whose Node 18 is older
-than the locked toolchain needs). If it could not, the falsifiers are proven by the driver's own worker
-unconfined (`falsifiers.py`, as VELDO-0227 did), and putting `118_veldo_0159_mcp_credential_form` on
-`scripts/gate_unconfined.json` is a protected-path change for the owner.
+The coordinator refused both finding-159 cases as invalid baselines (`coordinator-159.log`): its confined leg runs
+the suite from a snapshot that has no `engine/ui/node_modules` (untracked) and a PATH of /usr/bin:/bin (Node 18,
+older than the locked toolchain needs), and suite 118 also starts system Chrome. The falsifiers are proven by the
+driver's own worker unconfined instead (`falsifiers.py`, `falsifiers.json`: 2 of 2), as VELDO-0227 did. For the
+coordinator to prove them itself, the owner would add `118_veldo_0159_mcp_credential_form` to
+`scripts/gate_unconfined.json` (protected), and the gate host needs `npm ci` in engine/ui. Not done here.
 
 ## D. Footprint
 
