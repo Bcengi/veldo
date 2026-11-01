@@ -75,6 +75,13 @@ async function openTeam(page: Page, factory: TeamFactory, project: string) {
   await expect(page.getByTestId('team-current')).toBeVisible()
 }
 
+/** The value field of the engine setting named `key`, wherever the stored order put it. */
+async function setting(page: Page, key: string) {
+  const keys = await page.locator('[id^="setting-key-"]').evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value))
+  expect(keys).toContain(key)
+  return page.locator(`#setting-value-${keys.indexOf(key)}`)
+}
+
 const stripped = (stored: Record<string, unknown> | null) => {
   if (!stored) return null
   const { revision: _r, digest: _d, previous: _p, assertion_digest: _a, ...rest } = stored
@@ -167,12 +174,12 @@ test('role/stale-save: a save edited from an older revision is refused beside th
   // Another tab saves a newer revision while this one is still open on the older one.
   const other = await context.newPage()
   await openRole(other, factory, 'builder_jira')
-  await other.locator('#setting-value-0').fill('opus')
+  await (await setting(other, 'model')).fill('opus')
   await other.getByTestId('role-save').click()
   const newer = Number(edited) + 1
   await expect(other.getByTestId('role-saved')).toHaveAttribute('data-revision', String(newer))
 
-  await page.locator('#setting-value-0').fill('haiku')
+  await (await setting(page, 'model')).fill('haiku')
   await page.getByTestId('role-save').click()
   const bar = page.getByTestId('role-save-bar')
   await expect(bar.getByTestId('refusal')).toHaveAttribute('data-refusal', /^stale_version/)
@@ -216,6 +223,9 @@ test('team/owner-save: the owner adds, changes and removes roles and his save is
   await page.getByTestId('responsibilities-builder_jira').fill('fetch_tickets, report')
   await page.getByTestId('expertise-builder_jira').fill('jira')
   await page.getByTestId('permissions-builder_jira').fill('finding')
+  await page.getByTestId('capacity-builder_jira').fill('1')
+  await page.getByTestId('invocations-builder_jira').fill('2')
+  await page.getByTestId('wall-builder_jira').fill('100')
   await page.getByTestId('config-role-implementation').fill('builder_jira')
   await page.getByTestId('config-revision-implementation').fill('2')
   await page.getByTestId('remove-reporter').click()

@@ -63,7 +63,7 @@ export function newRow(name: string): RoleRow {
     engines: 'claude_code',
     capacity: '1',
     invocations: '1',
-    wallSeconds: '600',
+    wallSeconds: '100',
     distinctFrom: '',
   }
 }

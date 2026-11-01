@@ -146,8 +146,11 @@ class TeamFactory(H.Factory):
                       if r[0] not in set(self.requests.values()))
 
 
+BASE_CONTROL = H.control_server
+
+
 def control_server(factory, stop):
-    server = H.control_server(factory, stop)
+    server = BASE_CONTROL(factory, stop)
     handler = server.RequestHandlerClass
     route = handler.route
 

@@ -8,7 +8,8 @@ copies named in PRODUCTION below laid over it (the registered mutation driver su
 locked dependencies are the checkout's engine/ui/node_modules (or `npm ci --prefer-offline` into the scratch copy
 when the checkout has none), and it is built with the package's own build script (vue-tsc, then vite). Then:
 
-- unit/forms: the forms' Vitest specs (src/features/roles, src/features/team) in jsdom.
+- unit/forms: the forms' Vitest specs (src/features/roles, src/features/team) and the decisions inbox's
+  (src/features/decisions/inbox.spec.ts: a team request whose ids the API redacted still binds) in jsdom.
 - every other row: the browser tests of engine/ui/e2e/roles.spec.ts in system Chrome (Playwright), against
   e2e/team_harness.py: VELDO-0145's real factory harness (a signed SQLite store, real membership, the real
   inbox, presenter, settlement and API authority, the real control_api on its loopback listener serving the
@@ -91,7 +92,8 @@ def _v163_suite():
             return
 
         report = base / 'vitest.json'
-        code, out = run(['npx', 'vitest', 'run', 'src/features/roles', 'src/features/team', '--reporter=json',
+        code, out = run(['npx', 'vitest', 'run', 'src/features/roles', 'src/features/team', 'src/features/decisions/inbox.spec.ts',
+                         '--reporter=json',
                          '--outputFile=' + str(report)], ui, timeout=300)
         try:
             unit = json.loads(report.read_text())

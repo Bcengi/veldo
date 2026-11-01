@@ -43,12 +43,20 @@ const str = (v: unknown) => (typeof v === 'string' ? v : '')
 const num = (v: unknown) => (typeof v === 'number' ? v : 0)
 const strings = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [])
 
-function presentationOf(item: Item): Presentation {
+/** A receipt's own field the API redacted (its secret scan can take a store identifier for a token). */
+const masked = (redacted: ReadonlySet<string>, item: Item, field: string) => redacted.has(`$.${item.id}.${field}`)
+
+/** The presentation id VELDO-0065 gives a receipt (control_channel_presentation.presentation_id), which is also
+ * the receipt's own entity id: how a receipt whose request_id was redacted is still bound to its request. */
+const presentationIdOf = (channel: string, requestId: string, requestVersion: number, briefDigest: string) =>
+  `presentation:${channel}:${requestId}:${requestVersion}:${briefDigest.split(':').pop() ?? ''}`
+
+function presentationOf(item: Item, redacted: ReadonlySet<string> = new Set(), requestId?: string): Presentation {
   const d = item.data as Json
   const request = (d.request ?? {}) as Json
   return {
-    id: str(d.presentation_id) || item.id,
-    requestId: str(d.request_id),
+    id: masked(redacted, item, 'presentation_id') ? item.id : str(d.presentation_id) || item.id,
+    requestId: masked(redacted, item, 'request_id') && requestId ? requestId : str(d.request_id),
     requestVersion: num(d.request_version),
     version: num(d.presentation_version),
     digest: str(d.brief_digest),
@@ -73,14 +81,22 @@ function presentationOf(item: Item): Presentation {
 export function pendingDecisions(answer: ReadAnswer): PendingDecision[] {
   const assignments = answer.items.assignment ?? []
   const receipts = (answer.items.channel_presentation ?? []).filter((r) => (r.data as Json).outcome === 'published')
+  const redacted = new Set(answer.redacted ?? [])
+  /** Whether the receipt presents this request: by its request_id, or by its own id when that field was redacted. */
+  const presents = (r: Item, requestId: string, version: number) => {
+    const d = r.data as Json
+    if (num(d.request_version) !== version) return false
+    if (!masked(redacted, r, 'request_id')) return str(d.request_id) === requestId
+    return r.id === presentationIdOf(str(d.channel), requestId, version, str(d.brief_digest))
+  }
   const out: PendingDecision[] = []
   for (const item of assignments) {
     const d = item.data as Json
     if (!PENDING_STATES.has(str(d.state)) || str(d.kind) !== 'decision') continue
     const version = num(d.request_version)
     const current = receipts
-      .filter((r) => str((r.data as Json).request_id) === item.id && num((r.data as Json).request_version) === version)
-      .map(presentationOf)
+      .filter((r) => presents(r, item.id, version))
+      .map((r) => presentationOf(r, redacted, item.id))
       .sort((a, b) => b.version - a.version)[0]
     out.push({
       requestId: item.id,

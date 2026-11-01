@@ -122,15 +122,15 @@ const request = computed(() => form.answer.value?.owner_request ?? null)
             </div>
             <div>
               <label class="field-label" :for="`capacity-${i}`">Capacity</label>
-              <VTextField :id="`capacity-${i}`" v-model="row.capacity" inputmode="numeric" />
+              <VTextField :id="`capacity-${i}`" v-model="row.capacity" inputmode="numeric" :data-testid="`capacity-${row.name}`" />
             </div>
             <div>
               <label class="field-label" :for="`invocations-${i}`">Invocations</label>
-              <VTextField :id="`invocations-${i}`" v-model="row.invocations" inputmode="numeric" />
+              <VTextField :id="`invocations-${i}`" v-model="row.invocations" inputmode="numeric" :data-testid="`invocations-${row.name}`" />
             </div>
             <div>
               <label class="field-label" :for="`wall-${i}`">Wall seconds</label>
-              <VTextField :id="`wall-${i}`" v-model="row.wallSeconds" inputmode="numeric" />
+              <VTextField :id="`wall-${i}`" v-model="row.wallSeconds" inputmode="numeric" :data-testid="`wall-${row.name}`" />
             </div>
             <div>
               <label class="field-label" :for="`distinct-${i}`">Independent of roles</label>
