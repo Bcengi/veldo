@@ -245,12 +245,13 @@ class ApiAuthority:
                 self.counts[key] = self.counts.get(key, 0) + count
 
     def read(self, model, principal):
-        """One published read model for `principal`, read on this connection now."""
-        if model not in MO.MODELS:
+        """One published read model, or one metadata read of control_api_models.METADATA_READS (VELDO-0131), for
+        `principal`, read on this connection now."""
+        if model not in MO.MODELS and model not in MO.METADATA:
             return {'ok': False, 'reason': 'missing_evidence:read_model', 'taxonomy': 'missing_evidence'}
         def produce():
             scope = self._read_scope(principal)
-            answer = MO.read_model(self.S, self.conn, model, scope=scope)
+            answer = MO.read_model(self.S, self.conn, model, scope=scope, domain=self.ids['domain_uuid'])
             self._observe_read(principal, model, scope, answer)
             return answer
         return self._answer(principal, produce)

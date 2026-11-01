@@ -189,6 +189,10 @@ ROUTES = (
           ('id', 'base'), (), 'delete_mcp_credential'),
     Route('mcp.credential_read', 'GET', '/api/v1/domains/{domain}/mcp/credentials', 'configuration', True,
           ('id',), (), None),
+    # VELDO-0131: the metadata-only reads of control_api_models.METADATA_READS: the whole MCP catalog with the
+    # credential records' metadata (never a value), and the repositories with their Git identities.
+    Route('mcp.list', 'GET', '/api/v1/domains/{domain}/mcp/servers', 'configuration', True, (), (), None),
+    Route('repositories.read', 'GET', '/api/v1/domains/{domain}/repositories', 'configuration', True, (), (), None),
     Route('events.read', 'GET', '/api/v1/domains/{domain}/events', 'events', True, (), ('after',), None),
     Route('events.stream', 'GET', '/api/v1/domains/{domain}/events/stream', 'events', True, (), ('after',), None),
     # VELDO-0141: one run's execution record, read from a cursor and followed live.
@@ -455,6 +459,7 @@ class ControlApi:
                               'mcp.credential_set': self._write, 'mcp.credential_delete': self._write,
                               'mcp.credential_read': self._credential_read_refused})
         self.handlers.update({m.route: self._read for m in MO.READ_MODELS})
+        self.handlers.update({m.route: self._metadata_read for m in MO.METADATA_READS})
 
     def route_problems(self):
         """Every route without a handler and every handler without a route, by name; [] when they agree."""
@@ -819,6 +824,10 @@ class ControlApi:
 
     def _read(self, route, body, session, extra, headers):
         return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])
+
+    def _metadata_read(self, route, body, session, extra, headers):
+        model = next(m.name for m in MO.METADATA_READS if m.route == route.name)
+        return 200, self._ask(self.authority.read, model, session['principal'])
 
     def _configuration_read(self, route, body, session, extra, headers):
         configuration = organ('control_agent_config')

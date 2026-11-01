@@ -99,20 +99,49 @@ READ_MODELS = (
         Kind('gate_observation', 'control_proof', 'OBSERVATION_KIND', 'VELDO-0058', ('repository', 'repository')),
         Kind('completion_receipt', 'control_event_projection', 'RECEIPT_KIND', 'VELDO-0021', ('reference', 'subject.id')))),
     ReadModel('spend', 'reads.spend', 'spend', (
-        Kind('subscription_reservation', 'control_reservations', None, 'VELDO-0036', ('reservation',)),)),
+        Kind('subscription_reservation', 'control_reservations', None, 'VELDO-0036', ('reservation',)),
+        # VELDO-0131 (review-2026-11-01 F4): the accounts the reservations charge, so the spend view can name each
+        # account's provider. An account is factory scope (control_accounts), so it is shared like a configuration.
+        Kind('account', 'control_accounts', 'KIND', 'VELDO-0062', ('shared',)))),
     ReadModel('configuration', 'reads.configuration', 'configuration/workflows', (
         Kind('workflow_head', 'control_workflow', 'HEAD_KIND', 'VELDO-0132', ('field', 'repository')),
         Kind('workflow_revision', 'control_workflow', 'REVISION_KIND', 'VELDO-0132', ('field', 'repository')),
         Kind('default_team_revision', 'control_team_routes', 'KIND', 'VELDO-0162', ('shared',)),
         Kind('team', 'control_team', 'KIND', 'VELDO-0089', ('field', 'project')),
         Kind('role_configuration', 'control_workflow', 'REFERENCE_KINDS', 'VELDO-0127', ('shared',)),
-        Kind('tool_configuration', 'control_workflow', 'REFERENCE_KINDS', 'VELDO-0127', ('shared',)))),
+        Kind('tool_configuration', 'control_workflow', 'REFERENCE_KINDS', 'VELDO-0127', ('shared',)),
+        # VELDO-0131 (review-2026-11-01 F3): the kinds VELDO-0127's writer actually stores, so every stored role
+        # configuration and skill is served, not only those a team names.
+        Kind('agent_configuration', 'control_agent_config', 'KINDS', 'VELDO-0127', ('shared',)),
+        Kind('agent_skill', 'control_agent_config', 'KINDS', 'VELDO-0127', ('shared',)))),
 )
 MODELS = {m.name: m for m in READ_MODELS}
+
+# VELDO-0131 (review-2026-11-01 F1 and F4): two metadata-only reads the factory screens need, served by their own
+# configuration-family routes (control_api.ROUTES) through the same authority read, member check and scope as the
+# read models. They are not criterion subjects of VELDO-0130's AC2, so they are kept apart from READ_MODELS.
+#   catalog       the MCP catalog's heads and revisions (VELDO-0144) and the credential records (metadata only:
+#                 the record holds no value, and CREDENTIAL_METADATA is every field served of one)
+#   repositories  the repository records (VELDO-0161, VELDO-0143) and the Git identities (VELDO-0142), which are
+#                 setup tables, not entities: each identity is served as IDENTITY_METADATA only, never its
+#                 credential references
+METADATA_READS = (
+    ReadModel('catalog', 'mcp.list', 'MCP catalog and credential metadata', (
+        Kind('mcp_server_head', 'control_mcp_catalog', 'HEAD_KIND', 'VELDO-0144', ('shared',)),
+        Kind('mcp_server', 'control_mcp_catalog', 'KIND', 'VELDO-0144', ('shared',)),
+        Kind('credential', 'control_credential', 'KIND', 'VELDO-0144', ('shared',)))),
+    ReadModel('repositories', 'repositories.read', 'repositories and Git identities', (
+        Kind('repository', 'control_repository', 'KIND', 'VELDO-0161', ('repository', 'repository')),)),
+)
+METADATA = {m.name: m for m in METADATA_READS}
+CREDENTIAL_METADATA = ('id', 'label', 'reference', 'set_at', 'set_by', 'deleted')
+IDENTITY_METADATA = ('id', 'label', 'author_name', 'author_email', 'remote_host', 'remote_owner', 'projects_root',
+                     'default_visibility')
 SCOPE = _organ('control_api_models_scope')
 
 def reader_scope(conn, membership, scope):
-    return SCOPE.ReaderScope(conn, membership, scope, {k.kind: k.project_rule for m in READ_MODELS for k in m.kinds})
+    return SCOPE.ReaderScope(conn, membership, scope, {k.kind: k.project_rule for m in READ_MODELS + METADATA_READS
+                                                       for k in m.kinds})
 
 # THE UI ACTION CONTRACT. An action with a route executes the named existing command; an action without
 # one is a gap owned by the named specification.
@@ -190,6 +219,8 @@ def _item(store, conn, row, scope=None):
             return None, {'id': identity, 'kind': kind, 'refusal': error.code}
         if checked['id'] != identity:
             return None, {'id': identity, 'kind': kind, 'refusal': 'missing_evidence:revision_identity'}
+    if kind == 'credential':
+        data = {k: data[k] for k in CREDENTIAL_METADATA if k in data}
     served_data = scope.project_data(kind, data) if scope is not None else data
     served, paths = redact(served_data, '$.' + identity)
     # A route's dispatch is a public authority identity, even when its random suffix
@@ -203,9 +234,10 @@ def _item(store, conn, row, scope=None):
     return {'id': identity, 'kind': kind, 'version': version, 'digest': digest, 'data': served}, paths
 
 
-def read_model(store, conn, name, scope=None):
-    """One read model from the authority's connection, in one read transaction at one watermark."""
-    model = MODELS[name]
+def read_model(store, conn, name, scope=None, domain=None):
+    """One read model (or metadata read) from the authority's connection, in one read transaction at one
+    watermark. `domain` is the domain uuid whose Git identities the repositories read serves."""
+    model = MODELS.get(name) or METADATA[name]
     kinds = [k.kind for k in model.kinds]
     items, problems, redacted = {k: [] for k in kinds}, [], []
     opened = not conn.in_transaction
@@ -231,7 +263,32 @@ def read_model(store, conn, name, scope=None):
               'gaps': [g._asdict() for g in GAPS if g.criterion == 'AC2' and _gap_of(g, name)]}
     if name == 'workers':
         answer['machines'] = machines(items['dispatch'])
+    if name == 'repositories':
+        answer['identities'] = identities(conn, domain, items['repository'], scope)
     return answer
+
+
+def identities(conn, domain, repositories, scope=None):
+    """The Git identities of `domain` (control_git_identity's setup table), each as IDENTITY_METADATA only, with
+    the repositories bound to it. A reader whose scope is not universal sees only the identities of the
+    repositories it sees."""
+    if not isinstance(domain, str):
+        return []
+    GI = _organ('control_git_identity')
+    bound = {}
+    if GI.exists(conn, 'git_identity_repositories'):
+        for repository, identity in conn.execute('SELECT repository, identity FROM git_identity_repositories '
+                                                 'WHERE domain=? ORDER BY repository', (domain,)):
+            bound.setdefault(identity, []).append(repository)
+    seen = {item['data'].get('identity') for item in repositories}
+    served = []
+    for record in GI.records(conn, domain):
+        if scope is not None and not scope.universal and record.get('id') not in seen:
+            continue
+        value, _paths = redact(dict({k: record.get(k) for k in IDENTITY_METADATA},
+                                    repositories=bound.get(record.get('id'), [])))
+        served.append(value)
+    return served
 
 
 def _gap_of(gap, name):

@@ -79,8 +79,9 @@ _V130_EXPECTED_KINDS = {
     'workers': ['dispatch', 'dispatch_active'], 'runs': ['workflow_cycle'],
     'decisions': ['assignment', 'settlement_terms', 'request_settlement', 'decision_settlement', 'decision',
                   'channel_presentation'],
-    'proof': ['proof_bundle', 'gate_observation', 'completion_receipt'], 'spend': ['subscription_reservation'],
-    'configuration': ['workflow_head', 'workflow_revision', 'default_team_revision', 'team', 'role_configuration', 'tool_configuration']}
+    'proof': ['proof_bundle', 'gate_observation', 'completion_receipt'], 'spend': ['subscription_reservation', 'account'],
+    'configuration': ['workflow_head', 'workflow_revision', 'default_team_revision', 'team', 'role_configuration', 'tool_configuration',
+                      'agent_configuration', 'agent_skill']}
 # The criteria's own phrases (parsed from the specification) and the published action or read model each is.
 _V130_AC4_ACTIONS = {'owner admission': 'owner_admission', 'owner priority': 'owner_priority',
                      'project pause': 'project_pause', 'project cancel': 'project_cancel', 'worker stop': 'worker_stop',
