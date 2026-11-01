@@ -657,6 +657,9 @@ def _v130_checks(base):
     fixture('completion-receipt:VELDO-9130', 'completion_receipt', dict(fact='build_accepted', subject='VELDO-9130'))
     fixture('reservation:worker:VELDO-9130', 'subscription_reservation', dict(kind='worker', account='owner-plan',
                                                                               reserved=1, state='held'))
+    # VELDO-0131 fix round 2: the account the spend read now serves (a skill is saved by its writer below).
+    fixture('account:owner-plan', 'account', dict(id='owner-plan', provider='claude_code', label='Owner plan',
+                                                  status='active', concurrency=1))
     fixture('VELDO-9130', 'execution_unit', dict(state='READY', repository_uuid=ids['repository_uuid'], revision=1))
     fixture('fixture-document:VELDO-9130', 'accepted_document', dict(alias='VELDO-9130', version=1))
     fixture('fixture-document-version:VELDO-9130:1', 'document_version', dict(alias='VELDO-9130', version=1))
@@ -1742,6 +1745,9 @@ def _v130_checks(base):
             configurations.save(dict(role='team-fixture', engine='claude_code', native_tools=[],
                 mcp=[], skills=[], instructions=[], settings={}), principal='steward', base=0,
                 command_id=next_id('capability'))
+            # VELDO-0131 fix round 2: a skill revision, which the configuration read now serves (agent_skill).
+            configurations.save(dict(skill='coding', source='factory', path='skills/coding.md'), principal='steward',
+                                base=0, command_id=next_id('skill'), kind=CG.KINDS[1])
 
             def role(members, duty, perms=('feature',), engines=('claude_code',), distinct=()):
                 return dict(kind='required', capability_configuration={'role': 'team-fixture', 'revision': 1}, workers=list(members), responsibilities=[duty, 'report'], expertise=['python'],
