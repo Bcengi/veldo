@@ -34,3 +34,4 @@ every device with `auth.sign_out_everywhere`).
 
 Factory setup (VELDO-0159) lists the destinations that are in the rail but not the phone's bottom bar:
 "MCP servers and credentials" opens [the server form](servers.md).
+Factory setup (VELDO-0163) links to the Roles and Team screens, which the phone's bottom bar has no room for.

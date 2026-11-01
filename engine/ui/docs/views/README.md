@@ -13,3 +13,5 @@ refusals it shows.
 | Decisions | `/decisions`, `/decisions/<request>` | [decisions.md](decisions.md) |
 | You | `/you` | [shell.md](shell.md#you) |
 | MCP server form | `/servers`, `/servers/<id>` | [servers.md](servers.md) |
+| Roles | `/roles`, `/roles/<role>` | [roles.md](roles.md) |
+| Team | `/teams`, `/teams/<project>`, `/teams/default` | [team.md](team.md) |

@@ -20,6 +20,23 @@ describe('pendingDecisions', () => {
     expect(first!.presentation!.id).toBe('p2')
   })
 
+  it('binds a receipt whose request and presentation ids the API redacted by its own presentation id (VELDO-0163)', () => {
+    const rid = 'assignment:r:team-amend-f2256b243f6d78a8a93b02af-v2'
+    const pid = `presentation:telegram_chat:${rid}:1:brief`
+    const other = `presentation:telegram_chat:assignment:r:de9:1:brief`
+    const answer = read({
+      assignment: [assignment('team-amend', { alias: '[redacted]' })].map((a) => ({ ...a, id: rid })),
+      channel_presentation: [
+        item(pid, 'channel_presentation', receipt(rid, { request_id: '[redacted]', presentation_id: '[redacted]' })),
+        item(other, 'channel_presentation', receipt('assignment:r:de9', { request_id: '[redacted]', presentation_id: '[redacted]' })),
+      ],
+    })
+    answer.redacted = [`$.${pid}.request_id`, `$.${pid}.presentation_id`, `$.${other}.request_id`, `$.${other}.presentation_id`]
+    const [first] = pendingDecisions(answer)
+    expect(first!.presentation!.id).toBe(pid)
+    expect(first!.presentation!.requestId).toBe(rid)
+  })
+
   it('ignores a presentation of an older request version', () => {
     const answer = read({
       assignment: [assignment('de1', { request_version: 2 })],

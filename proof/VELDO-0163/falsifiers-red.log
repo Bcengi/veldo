@@ -1,0 +1,30 @@
+VELDO-0163 finding 163: each mutant red on its declared row, by the teeth driver worker (unconfined), commit 1af514deccc7c253ab41abd86be7389c94832903
+
+baseline: failed rows []; targets {'role/stale-save': [True], 'team/authoritative': [True], 'team/default-stale-save': [True]}
+
+ui163-config-save-unbound (engine/ui/src/features/roles/useRoleForm.ts), declared rows ['role/stale-save']: targets {'role/stale-save': [False]}
+  RED VELDO-0163 unit/forms: the role and team forms' unit specs pass [23 passed, failed ['useRoleForm saves bound to the revision the draft was edited from and shows the revision read back']; JSON report written to /tmp/v163-wr7whzsg/vitest.json]
+  RED VELDO-0163 role/stale-save: its browser test ran and passed [['failed']; Error: element(s) not found | Call log: |   - Expect "toHaveAttribute" getByTestId('role-save-bar').getByTestId('refusal') with timeout 10000ms |   - waiting for getByTestId('role-save-bar').getByTestId('refusal')]
+  RED VELDO-0163 role/widths: its browser test ran and passed [['skipped']; ]
+  RED VELDO-0163 team/owner-save: its browser test ran and passed [['skipped']; ]
+  RED VELDO-0163 team/authoritative: its browser test ran and passed [['skipped']; ]
+  RED VELDO-0163 team/refusals: its browser test ran and passed [['skipped']; ]
+  RED VELDO-0163 team/default-team: its browser test ran and passed [['skipped']; ]
+  RED VELDO-0163 team/default-stale-save: its browser test ran and passed [['skipped']; ]
+  RED VELDO-0163 team/widths: its browser test ran and passed [['skipped']; ]
+
+ui163-default-save-unbound (engine/ui/src/features/team/useTeamForm.ts), declared rows ['team/default-stale-save']: targets {'team/default-stale-save': [False]}
+  RED VELDO-0163 unit/forms: the role and team forms' unit specs pass [23 passed, failed ['useTeamForm saves the default team bound to the revision it was edited from']; JSON report written to /tmp/v163-7nla81l5/vitest.json]
+  RED VELDO-0163 team/default-stale-save: its browser test ran and passed [['failed']; Error: element(s) not found | Call log: |   - Expect "toHaveAttribute" getByTestId('team-save-bar').getByTestId('refusal') with timeout 10000ms |   - waiting for getByTestId('team-save-bar').getByTestId('refusal')]
+  RED VELDO-0163 team/widths: its browser test ran and passed [['skipped']; ]
+
+ui163-proposal-shown-current (engine/ui/src/features/team/team-draft.ts), declared rows ['team/authoritative']: targets {'team/authoritative': [False]}
+  RED VELDO-0163 unit/forms: the role and team forms' unit specs pass [22 passed, failed ['team draft shows as current only the accepted revision, never a pending proposal', 'useTeamForm saves a project team bound to its team version and shows a proposal as pending, not current']; JSON report written to /tmp/v163-0x6hqy_f/vitest.json]
+  RED VELDO-0163 team/authoritative: its browser test ran and passed [['failed'];   - Expect "toHaveAttribute" getByTestId('team-current') with timeout 10000ms |   - waiting for getByTestId('team-current') |     24 ? locator resolved to <p data-revision="3" class="configure-fact" data-testid="team-current">Current: revision 3</p> |        - unexpected value "3"]
+  RED VELDO-0163 team/refusals: its browser test ran and passed [['skipped']; ]
+  RED VELDO-0163 team/default-team: its browser test ran and passed [['skipped']; ]
+  RED VELDO-0163 team/default-stale-save: its browser test ran and passed [['skipped']; ]
+  RED VELDO-0163 team/widths: its browser test ran and passed [['skipped']; ]
+
+restored: failed rows []; targets {'role/stale-save': [True], 'team/authoritative': [True], 'team/default-stale-save': [True]}
+verdict: red_under_each_mutant_green_restored (3 of 3)
