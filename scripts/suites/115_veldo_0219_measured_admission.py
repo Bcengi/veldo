@@ -173,6 +173,29 @@ def _v219_checks():
         except RuntimeError:
             outside.append(False)
         row('own-outside-directory', all(outside))
+
+        # Batch 2026-10-29 gate 1029n: the meter read a ledger while the worker was appending to it and
+        # saw a last line cut mid-path. A last line without its newline is an append in progress: the
+        # live meter leaves it for the next read; cleanup, after the worker exits, still rejects it.
+        inner = worker_home / 'v219-inner'
+        inner.mkdir()
+        whole = json.dumps(['directory', str(inner)]) + '\n'
+        own_ledger.write_text(whole + json.dumps(['directory', str(inner / 'next')])[:30])
+        torn = []
+        try:
+            own_meter.unit_paths(worker_home, own_ledger)
+            torn.append(True)
+        except ValueError:
+            torn.append(False)
+        try:
+            ownership.cleanup(worker_home, own_ledger)
+            torn.append(False)
+        except RuntimeError as error:
+            torn.append('outside this worker' in str(error))
+        own_ledger.write_text(whole)
+        torn.append(ownership.admitted(worker_home, own_ledger, writing=True)
+                    == ownership.admitted(worker_home, own_ledger) == ([('directory', str(inner))], []))
+        row('ledger-line-mid-write', all(torn))
         marker = top / 'join'
         fd = os.open(marker, os.O_WRONLY | os.O_CREAT, 0o600)
         with patch.dict(os.environ, VELDO_MUTATION_CGROUP_FD=str(fd)):

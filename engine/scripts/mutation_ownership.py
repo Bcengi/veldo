@@ -200,7 +200,7 @@ def remove_tree(path, outside=False):
         shutil.rmtree(path, onexc=writable)
 
 
-def admitted(home, ledger, runtime=None, born_after=None):
+def admitted(home, ledger, runtime=None, born_after=None, writing=False):
     """Split the ledger into entries the Tracker can produce for the worker at `home` and the rest:
     a directory strictly beneath that home (after resolving links), a veldo-authority-<hex>.service
     file directly in the user unit directory, or a slice of the Tracker's own pattern.
@@ -210,11 +210,19 @@ def admitted(home, ledger, runtime=None, born_after=None):
     entry outside the home that does not exist names nothing to reap and is dropped. One that
     exists is the worker's own, and admitted, only when a meter started at `born_after` and the
     kernel shows the directory was born since (created_since); otherwise it, or one whose absence
-    cannot be shown, stays rejected and is never touched."""
+    cannot be shown, stays rejected and is never touched.
+
+    The Tracker ends every entry with a newline. While the worker runs (`writing`), a last line
+    without one is an append still in progress and is left for the next read; once it has exited,
+    cleanup reads with `writing` false and such a line is rejected like any other."""
     home = Path(home).resolve()
     runtime = unit_directory() if runtime is None else Path(runtime)
     accepted, rejected = [], []
-    for line in Path(ledger).read_text(errors='replace').splitlines():
+    text = Path(ledger).read_text(errors='replace')
+    lines = text.splitlines()
+    if writing and lines and not text.endswith('\n'):
+        lines.pop()
+    for line in lines:
         try:
             kind, value = json.loads(line)
             if not isinstance(kind, str) or not isinstance(value, str):
@@ -460,7 +468,7 @@ class WorkerMeter:
             try:
                 operation, kind, value = json.loads(data)
                 if operation == 'register':
-                    entries, rejected = admitted(home, ledger, born_after=self.started)
+                    entries, rejected = admitted(home, ledger, born_after=self.started, writing=True)
                     if rejected or (kind, value) not in entries:
                         raise ValueError('lifecycle unit is not in the ownership ledger')
                     self.prepare_unit(kind, value)
@@ -477,7 +485,7 @@ class WorkerMeter:
         return os.open(self.path / 'cgroup.procs', os.O_WRONLY | os.O_CLOEXEC)
 
     def unit_paths(self, home, ledger):
-        entries, rejected = admitted(home, ledger, born_after=self.started)
+        entries, rejected = admitted(home, ledger, born_after=self.started, writing=True)
         if rejected:
             raise ValueError('ownership ledger contains invalid resource entries: ' + '; '.join(rejected[:3]))
         inside = Path(home).resolve()
