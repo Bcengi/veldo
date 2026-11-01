@@ -74,8 +74,10 @@ acceptance_criteria:
     text: >
       Claim: The built UI and its dependency set satisfy the owner stack and provenance rules. Set
       and completeness: Compare the real build manifest, lockfile and imported/served assets to
-      React/TypeScript/Vite, shadcn/ui AI chat, TanStack Table, React Flow, Monaco and
-      Chart.js with react-chartjs-2 requirements; explicitly reject shadcn charts and Recharts;
+      Vue 3/TypeScript/Vite, Tailwind 4, Pinia, vue-router, Veldo's own controls on native elements
+      (no PrimeVue, no shadcn), TanStack Table through @tanstack/vue-table, Veldo's own Vue canvas
+      for the workflow editor, Monaco through monaco-editor and Chart.js requirements; explicitly
+      reject shadcn charts and Recharts;
       record origin/license/tier evidence for each direct/transitive dependency and bundled asset.
       Reject unresolved origin, Chinese-origin dependencies or any library with free/paid tiers
       before qualification. Falsifier: Allow a dependency flagged with free and paid library tiers
@@ -128,8 +130,10 @@ specification status, implementation, test, runtime policy or deployed service c
 ## Notes
 
 The owner requires this UI in Telegram 28857: "otherwise we'll be flying blind". The selected
-stack is React + TypeScript + Vite, shadcn/ui including its AI chat parts, TanStack Table,
-React Flow for the editor, Monaco for code/diffs and Chart.js with react-chartjs-2 for charts. No Chinese-origin dependency anywhere and
+stack is the owner's Vue stack that VELDO-0145 built: Vue 3 + TypeScript + Vite, Tailwind 4, Pinia,
+vue-router, Veldo's own controls on native elements including the message box (no PrimeVue, no
+shadcn), TanStack Table through @tanstack/vue-table, Veldo's own Vue canvas for the editor, Monaco
+through the framework-neutral monaco-editor package for code/diffs and Chart.js for charts. No Chinese-origin dependency anywhere and
 no library with free and paid tiers; verify direct and transitive provenance and licenses
 before choosing versions. If a selected component conflicts, record an owner decision instead
 of silently substituting or exempting it. Bcengi products remain on Vue.
@@ -144,12 +148,11 @@ not tests run by this writing revision.
 
 ### Allowed dependencies
 
-The allowed direct UI dependency list is React, TypeScript, Vite, shadcn/ui AI chat and UI
-components (excluding shadcn charts), TanStack Table, React Flow, Monaco, Chart.js and
-react-chartjs-2. Chart.js and react-chartjs-2 are both MIT licensed. Chart.js is the charting
-library Bcengi's Vue apps already use. Use Chart.js through react-chartjs-2 for the
+The allowed direct UI dependency list is VELDO-0145's (Vue 3, TypeScript, Vite, Tailwind 4,
+Pinia, vue-router, monaco-editor and the self-hosted IBM Plex fonts) plus @tanstack/vue-table and
+Chart.js. Chart.js is MIT licensed and is used directly, without a wrapper. Use Chart.js for the
 spend-over-time screen; shadcn charts and Recharts are prohibited under the owner's
-no-Chinese-origin rule. Exact versions and transitive dependencies still require the
+no-Chinese-origin rule. PrimeVue and shadcn/ui are not used. Exact versions and transitive dependencies still require the
 provenance/license checks in AC4.
 
 ## Screen contract
@@ -160,16 +163,16 @@ source of state and mutations. A phone is not a reduced read-only mode.
 | Screen | Desktop | Phone |
 |---|---|---|
 | Objectives and projects | Searchable list, objective evidence/status and project detail; AI chat message box alongside | Stacked project cards and full-width objective detail; persistent accessible message action and chat sheet |
-| Backlog and nested units | TanStack Table with expandable specification/unit hierarchy, priority and blockers | Compact cards/rows with expand controls and a detail sheet; reorder/priority actions usable by touch without drag-only requirements |
+| Backlog and nested units | TanStack Table with expandable specification/unit hierarchy, priority and blockers; drag-and-drop reorder of the rows, with the same reorder available from the keyboard (no drag-only action) | Compact cards/rows with expand controls and a detail sheet; reorder/priority actions usable by touch without drag-only requirements |
 | Workers per machine | Linux/Mac groups with capability, activity, cap and stop controls | Machine sections with worker cards and visible host labels; inline stop confirmation/result |
 | Live agent run | The run's live terminal, built first by VELDO-0145 AC2 over the record route of VELDO-0141: every event of the execution record in order, tool calls with inputs and results, command output in monospace, edits as Monaco diffs, errors marked, follow mode and search, beside a pipeline strip showing the unit's station | The same terminal full width, with follow mode, search and tap-open tool calls; the pipeline strip stays visible while reading; never a summary in place of the record |
 | Pending decisions | Inbox plus exact shown question, choices, rationale and inline answer | Full-width decision cards, readable presentation and inline choices/rationale; stale-answer feedback stays beside the action |
 | Gate and review results | Check table, findings, proof links and Monaco source/diff panes | Check/finding cards with navigable proof; Monaco code/diff view supports wrapping and single-pane old/new selection |
-| Subscription usage over time (spend view) | Chart.js via react-chartjs-2 time series in invocation/time/CLI-reported token or message units, with provider/account/project/run breakdown, each account's rate-limit windows, reset times and active runs, "no account until" the earliest reset, and unknown usage; no invented per-call price | Readable time range and summary, touch-selectable points and a compact per-account breakdown with reset times; unknown exposure never shown as zero |
+| Subscription usage over time (spend view) | Chart.js time series in invocation/time/CLI-reported token or message units, with provider/account/project/run breakdown, each account's rate-limit windows, reset times and active runs, "no account until" the earliest reset, and unknown usage; no invented per-call price | Readable time range and summary, touch-selectable points and a compact per-account breakdown with reset times; unknown exposure never shown as zero |
 | Team and agent/tool/MCP configuration | Role table with each team and configuration revision's history and versioned detail listing exact effective tools/servers, opening the role and team form, which VELDO-0163 builds earlier over VELDO-0162's routes | Role cards and full-width detail opening the same form; all tools/servers and protected credential references remain inspectable, and editable through that form |
 | MCP servers and credentials | Catalog table of servers (VELDO-0144) with revision history, transport, hosts and read-only tools, and each credential's label, set at and set by, opening the server form with its write-only credential fields, which VELDO-0159 builds earlier | Server cards opening the same form; no value is ever shown or read back |
 | Repositories and identities | Read-only table of Git identities (label, author, remote owner, projects root, default visibility) and repositories (identity, path, remote, origin created or adopted, state with its named reason) | Identity and repository cards with the same fields; read-only |
-| Workflow/pipeline editor | React Flow canvas, palette and node/edge properties with version/save state | Pan/zoom canvas plus an accessible ordered node/edge list and property sheet; add/connect/reorder via touch controls, with visible version/save state |
+| Workflow/pipeline editor | Veldo's own Vue canvas, palette and node/edge properties with version/save state | Pan/zoom canvas plus an accessible ordered node/edge list and property sheet; add/connect/reorder via touch controls, with visible version/save state |
 
 The workflow canvas edits VELDO-0132 data. It has no engine, shell executor, direct provider call or
 local run button that bypasses admission. Any ordinary execution action is an authenticated API
@@ -206,3 +209,21 @@ give a role the Atlassian server and put it in a team before this specification 
 agent/tool/MCP configuration" row keeps the role table, the revision history and the effective
 tools/servers detail and opens that form, so it is not built twice, and depends_on adds VELDO-0162 and
 VELDO-0163. Status unchanged.
+
+## Amendment 2026-11-01 (owner, Telegram 37226, 37233 and 32843)
+
+Two changes, both named by the plan inventory research, and nothing else. (a) The stack in AC4, in the
+Notes, in Allowed dependencies and in the spend and editor rows of the screen contract changes from
+React to the owner's Vue stack that VELDO-0145 built (Telegram 37226: build the web UI now; 37233: "Vue
+is fine"): Vue 3, TypeScript, Vite, Tailwind 4, Pinia, vue-router, Veldo's own controls on native
+elements (no PrimeVue, no shadcn), Monaco through the framework-neutral monaco-editor package, Chart.js
+for charts (used directly: a wrapper adds a package for one small component) and TanStack Table through
+@tanstack/vue-table. The canvas library expected for the workflow editor, Vue Flow, was checked on this
+date and not admitted: it cannot be installed without @vueuse/core, whose creator and leading
+maintainers are of Chinese origin, so the editor's canvas is Veldo's own Vue control, as the owner's
+rule for a failing library allows. The registry, origin and tier evidence for every added package is in
+proof/VELDO-0131/. shadcn charts and Recharts stay explicitly rejected. (b) The backlog row gains
+drag-and-drop reorder on desktop (Telegram 32843: a real control center with visual priority moves);
+the phone keeps its touch controls and the same reorder stays available from the keyboard, so AC3's
+rule against drag-only and hover-only actions is unchanged. Every claim, set, falsifier and falsified_by
+is as it was. The History entries above record what was decided then and are left as written.
