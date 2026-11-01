@@ -1,0 +1,15 @@
+
+Running 9 tests using 1 worker
+
+  ok  1 e2e/roles.spec.ts:91:1 > role/revisions: a role with every field and load mode is saved, edited and saved again as new revisions (2.3s)
+  ok  2 e2e/roles.spec.ts:170:1 > role/stale-save: a save edited from an older revision is refused beside the save action and stores nothing (2.0s)
+  ok  3 e2e/roles.spec.ts:194:1 > role/widths: the role form opens from the shell at 360px and 1280px with no primary action clipped (2.5s)
+  ok  4 e2e/roles.spec.ts:211:1 > team/owner-save: the owner adds, changes and removes roles and his save is current once read back (1.9s)
+  ok  5 e2e/roles.spec.ts:251:1 > team/authoritative: another member's proposal shows pending, appears in Decisions, and is current only after the owner answers (3.5s)
+  ok  6 e2e/roles.spec.ts:293:1 > team/refusals: no configuration, an incomplete roster and a stale team version are named beside the save at 360px (6.2s)
+  ok  7 e2e/roles.spec.ts:330:1 > team/default-team: the same form saves the default team bound to the revision it was edited from (1.3s)
+  ok  8 e2e/roles.spec.ts:348:1 > team/default-stale-save: a default team save edited from an older revision is refused and stores nothing (2.1s)
+  ok  9 e2e/roles.spec.ts:368:1 > team/widths: the team form and the default team open from the shell at 360px and 1280px with no primary action clipped (2.6s)
+
+  9 passed (28.0s)
+exit=0

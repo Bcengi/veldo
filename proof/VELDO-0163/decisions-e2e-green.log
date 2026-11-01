@@ -1,0 +1,14 @@
+
+Running 9 tests using 1 worker
+
+  ok  1 e2e/decisions.spec.ts:35:1 > inbox and exact presentation: the question, choices and rationale as the receipt holds them (1.0s)
+  ok  2 e2e/decisions.spec.ts:60:1 > ranked inbox: most urgent deadline first, then risk, with how soon each is due and an urgency lamp (748ms)
+  ok  3 e2e/decisions.spec.ts:81:1 > inline answer: bound to the presentation shown, settled once, and Telegram after it settles nothing (1.3s)
+  ok  4 e2e/decisions.spec.ts:105:1 > answered in Telegram first: the UI answer is refused as already settled, beside the action (1.2s)
+  ok  5 e2e/decisions.spec.ts:121:1 > stale answer: the presentation changed after it was shown, and the answer is refused beside the action (1.4s)
+  ok  6 e2e/decisions.spec.ts:147:1 > snapshot binding: a refresh that brings a new version never changes what is being answered (1.2s)
+  ok  7 e2e/decisions.spec.ts:176:1 > answer as a member outside the project's scope: refused as out of scope beside the action (1.0s)
+  ok  8 e2e/decisions.spec.ts:195:1 > a member the request was not presented to: the answer is refused by name beside the action (992ms)
+  ok  9 e2e/decisions.spec.ts:206:1 > the answer needs a choice and a rationale before anything is sent (764ms)
+
+  9 passed (12.1s)
