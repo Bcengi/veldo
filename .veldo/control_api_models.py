@@ -279,12 +279,15 @@ def identities(conn, domain, repositories, scope=None):
                                                  'WHERE domain=? ORDER BY repository', (domain,)):
             bound.setdefault(identity, []).append(repository)
     seen = {item['data'].get('identity') for item in repositories}
+    visible = {item['id'] for item in repositories} | {item['data'].get('repository') for item in repositories}
+    narrowed = scope is not None and not scope.universal
     served = []
     for record in GI.records(conn, domain):
-        if scope is not None and not scope.universal and record.get('id') not in seen:
+        if narrowed and record.get('id') not in seen:
             continue
-        value, _paths = redact(dict({k: record.get(k) for k in IDENTITY_METADATA},
-                                    repositories=bound.get(record.get('id'), [])))
+        # A narrowed reader sees only the bound repositories its own read serves, never the names of others.
+        names = [r for r in bound.get(record.get('id'), []) if not narrowed or r in visible]
+        value, _paths = redact(dict({k: record.get(k) for k in IDENTITY_METADATA}, repositories=names))
         served.append(value)
     return served
 
