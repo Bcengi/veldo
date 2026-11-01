@@ -31,7 +31,7 @@ value in the body of one `mcp.credential_set` request and empties the field as t
 success and on refusal alike. The value is never shown, put in a store, storage, the URL or the DOM, and
 reopening the form shows an empty field. Delete value is `mcp.credential_delete`.
 
-After each write the field shows only the credential's label, set at (Deleted at) and set by (Deleted by).
+After each write the field shows only the credential's label, set at (Deleted at) and set by (Deleted by); set at and set by are the stored record's, as the credential route's answer returns them, never the browser's clock.
 The API refuses every read-back, so these come from the write itself: the label sent, the moment the route
 accepted the write, and the session's member, which the authority records as set by. They are kept in the
 `servers` store in memory for the session, together with the reference and version the route answered (the
