@@ -298,8 +298,11 @@ test.describe('MCP server form (VELDO-0159)', () => {
       await expect(meta.locator('dt')).toHaveText(outcome === 'deleted' ? ['Label', 'Deleted at', 'Deleted by'] : ['Label', 'Set at', 'Set by'])
       await expect(box.getByTestId('credential-label')).toHaveText(stored.label)
       await expect(box.getByTestId('credential-set-by')).toHaveText(stored.set_by)
-      const shownAt = Number(await box.getByTestId('credential-set-at').getAttribute('data-set-at'))
-      expect(Math.abs(shownAt - stored.set_at), 'set at is the time the route accepted the write').toBeLessThan(5)
+      // Set at is the stored record's set at, exactly: never the browser's clock, which on a phone may be off.
+      const shown = box.getByTestId('credential-set-at')
+      expect(Number(await shown.getAttribute('data-set-at')), 'set at is the stored record\'s set at').toBe(stored.set_at)
+      const recordText = await page.evaluate((at) => new Date(at * 1000).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'medium' }), stored.set_at)
+      await expect(shown, 'the shown set at is the stored record\'s set at').toHaveText(recordText)
       expect(stored.label).toBe(label)
       expect(stored.set_by).toBe('owner')
       const name = stored.reference.split(':')[1]!

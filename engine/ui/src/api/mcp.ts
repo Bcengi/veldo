@@ -33,6 +33,9 @@ export interface CredentialResult {
   id: string
   reference: string
   version: number
+  /** The stored credential record's set at (seconds since the epoch) and set by, never the value. */
+  set_at: number
+  set_by: string
   api_request_id: string
 }
 

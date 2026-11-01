@@ -11760,6 +11760,11 @@ def cases():
            "    sessionStorage.setItem(`veldo-credential-${props.credentialId}`, typed)  // defect: the typed value is kept\n"
            "    store.recordCredential({ id: answer.id,",
            ['cred/no-value-kept'])
+    # AC2 (review 2026-11-01 F1): the form shows the stored record's set at, not the browser's clock.
+    mcp159('mcp159-set-at-browser-clock', 'engine/ui/src/features/servers', 'CredentialField.vue',
+           "setAt: answer.set_at, setBy: answer.set_by, reference: answer.reference",
+           "setAt: Date.now() / 1000, setBy: answer.set_by, reference: answer.reference",
+           ['cred/metadata-only'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

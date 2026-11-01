@@ -107,8 +107,13 @@ class Credentials:
         finally:
             if operation in OPERATIONS:
                 self.conn.command_registry[operation] = {'transaction_transition': without_value, 'writes': MC.WRITES}
+        # The stored record's set at and set by, read from the journal entry this command committed; a replay
+        # answers with the ORIGINAL record's, never a new clock reading. Metadata only: the value is never stored.
+        row = self.conn.execute('SELECT transition FROM journal WHERE seq = ?', (saved['seq'],)).fetchone()
+        written = json.loads(row[0])[eid]['data'] if row else {}
         self.record(dict(about, outcome=outcome, seq=saved['seq']))
-        return dict(outcome=outcome, id=identity, reference=ref, version=params['base'] + 1, seq=saved['seq'])
+        return dict(outcome=outcome, id=identity, reference=ref, version=params['base'] + 1, seq=saved['seq'],
+                    set_at=written.get('set_at'), set_by=written.get('set_by'))
 
     def record(self, event):
         self.observations.append(event)

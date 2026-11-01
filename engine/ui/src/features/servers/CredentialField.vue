@@ -6,17 +6,15 @@ import RefusalNotice from '@/components/RefusalNotice.vue'
 import VButton from '@/components/VButton.vue'
 import VTextField from '@/components/VTextField.vue'
 import { useServersStore } from '@/stores/servers'
-import { useSessionStore } from '@/stores/session'
 
 /**
  * One credential's write-only field (VELDO-0159 AC2). A value typed here goes once, in the body of one request to
  * the credential route, and is cleared from the field as that request leaves; it is never shown, kept or read back.
- * What the field shows afterwards is the credential's label, set at and set by, from the route's answer and the
- * session, since the API refuses every read-back. A refusal is shown beside the action it concerns.
+ * What the field shows afterwards is the credential's label, and the stored record's set at and set by as the route's
+ * answer returns them (never the browser's clock), since the API refuses every read-back. A refusal is shown beside the action it concerns.
  */
 const props = defineProps<{ credentialId: string }>()
 const store = useServersStore()
-const session = useSessionStore()
 const meta = computed(() => store.credentials[props.credentialId] ?? null)
 const label = ref(meta.value?.label ?? '')
 /** The typed value while it is being typed. Emptied before the request is sent, on success and on refusal. */
@@ -42,7 +40,7 @@ async function write() {
   pending.value = 'set'
   try {
     const answer = await setCredential(props.credentialId, label.value.trim(), meta.value?.version ?? 0, typed)
-    store.recordCredential({ id: answer.id, label: label.value.trim(), setAt: Date.now() / 1000, setBy: session.principal ?? '', reference: answer.reference, version: answer.version, deleted: false })
+    store.recordCredential({ id: answer.id, label: label.value.trim(), setAt: answer.set_at, setBy: answer.set_by, reference: answer.reference, version: answer.version, deleted: false })
   } catch (error) {
     failed('set', error)
   } finally {
@@ -59,7 +57,7 @@ async function remove() {
   pending.value = 'delete'
   try {
     const answer = await deleteCredential(props.credentialId, known.version)
-    store.recordCredential({ ...known, setAt: Date.now() / 1000, setBy: session.principal ?? '', version: answer.version, deleted: true })
+    store.recordCredential({ ...known, setAt: answer.set_at, setBy: answer.set_by, version: answer.version, deleted: true })
   } catch (error) {
     failed('delete', error)
   } finally {
