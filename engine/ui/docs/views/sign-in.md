@@ -1,8 +1,8 @@
 # Sign in and add a passkey
 
 Route `/sign-in`, outside the shell. Before sign-in nothing else exists: no navigation, no data. On
-desktop a cobalt field carries the wordmark and what the factory UI is for, beside the panel; on a phone
-the field is a band above it.
+desktop the panel color carries the wordmark and what the factory UI is for, beside the passkey panel,
+a card on the page; on a phone it is a band above it. Same type, theme and controls as the shell.
 
 | Step | API routes |
 |---|---|
