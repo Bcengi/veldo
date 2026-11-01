@@ -10,12 +10,12 @@ import { useLiveRead } from '@/composables/useLiveRead'
 import { useNow } from '@/composables/useNow'
 import LiveMeta from '@/features/factory/LiveMeta.vue'
 import UsageChart from '@/features/usage/UsageChart.vue'
-import { accountsOf, amount, breakdown, invocationsOf, noAccountUntil, seriesOf, timesOf, UNITS, type UsageUnit } from '@/features/usage/usage'
+import { accountsOf, amount, breakdown, invocationsOf, noAccountUntil, seriesOf, timesOf, UNITS, type BreakdownKey, type UsageUnit } from '@/features/usage/usage'
 import '@/styles/factory.css'
 
 /** Subscription usage over time (VELDO-0131): the spend read's invocations in the units the CLI reports
  * (invocations, wall seconds, tokens, messages), bucketed by the journal time each was committed, with the
- * breakdown by account, project and run, each account's rate-limit windows, reset times and active runs, and
+ * breakdown by provider, account, project and run, each account's rate-limit windows, reset times and active runs, and
  * "no account until" the earliest reset when every account is out. Unknown usage is shown as unknown, never as
  * zero, and no price is ever computed. */
 const events = shallowRef<JournalEvent[]>([])
@@ -40,7 +40,8 @@ const live = useLiveRead(
 const desktop = useDesktop()
 const now = useNow(30_000)
 const unit = ref<UsageUnit>('tokens')
-const by = ref<'account' | 'project' | 'dispatch'>('account')
+const by = ref<BreakdownKey>('account')
+const BY_WORDS: Record<BreakdownKey, string> = { provider: 'Provider', account: 'Account', project: 'Project', dispatch: 'Run' }
 const selected = ref<number | null>(null)
 const invocations = computed(() => invocationsOf(live.data.value))
 const series = computed(() => seriesOf(invocations.value, timesOf(events.value), unit.value))
@@ -112,7 +113,9 @@ onMounted(() => void live.start())
                   <span class="factory-tag" :class="a.blockedUntil ? 'is-stop' : 'is-done'">{{ a.blockedUntil ? `Out until ${when(a.blockedUntil)}` : 'Available' }}</span>
                 </span>
                 <dl class="factory-facts">
-                  <dt>Provider</dt><dd>not in the spend read</dd>
+                  <dt>Provider</dt><dd data-testid="account-provider">{{ a.provider || 'no account record' }}</dd>
+                  <dt>Label</dt><dd>{{ a.label || 'no account record' }}</dd>
+                  <dt>Status</dt><dd>{{ a.status || 'no account record' }}</dd>
                   <dt>Active runs</dt><dd>{{ a.activeRuns.length ? a.activeRuns.join(', ') : 'none' }}</dd>
                   <dt>{{ words(unit) }}</dt><dd>{{ amount(a.totals[unit] ?? 0, a.unknown[unit] ?? 0, unit) }}</dd>
                 </dl>
@@ -131,6 +134,7 @@ onMounted(() => void live.start())
               <div class="factory-search">
                 <label for="usage-by" class="field-label">By</label>
                 <select id="usage-by" v-model="by" class="factory-select" data-testid="usage-by">
+                  <option value="provider">Provider</option>
                   <option value="account">Account</option>
                   <option value="project">Project</option>
                   <option value="dispatch">Run</option>
@@ -138,7 +142,7 @@ onMounted(() => void live.start())
               </div>
               <div v-if="desktop" class="factory-table-wrap">
                 <table class="factory-table" aria-label="Usage breakdown">
-                  <thead><tr><th scope="col">{{ by === 'dispatch' ? 'Run' : by === 'project' ? 'Project' : 'Account' }}</th><th scope="col">Invocations</th><th scope="col">{{ words(unit) }}</th></tr></thead>
+                  <thead><tr><th scope="col">{{ BY_WORDS[by] }}</th><th scope="col">Invocations</th><th scope="col">{{ words(unit) }}</th></tr></thead>
                   <tbody>
                     <tr v-for="row in rows" :key="row.key" :data-key="row.key"><td class="factory-mono">{{ row.key }}</td><td>{{ row.count }}</td><td>{{ amount(row.known, row.unknown, unit) }}</td></tr>
                   </tbody>

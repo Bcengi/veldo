@@ -30,3 +30,12 @@ describe('machinesOf', () => {
     expect(machinesOf(null)).toEqual([])
   })
 })
+
+describe('worker capability (fix round 2)', () => {
+  it('names the adapter, the configuration role and its servers and tools', async () => {
+    const { capabilityOf } = await import('./workers')
+    expect(capabilityOf({ capability: { adapter: 'claude_code', configuration: { role: 'general', revision: 2,
+      mcp: [{ server: 'atlassian' }], native_tools: [{ name: 'Read' }] } } })).toBe('claude_code; role general r2; servers atlassian; tools Read')
+    expect(capabilityOf({})).toBe('')
+  })
+})

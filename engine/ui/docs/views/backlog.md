@@ -9,7 +9,10 @@ open blockers; each item expands to the units taken from it, each with its state
 without one is "Built, landing not confirmed" (`src/features/backlog/completion.ts`, VELDO-0131 AC2).
 
 Reorder: drag a row onto another on a desktop, or Move up / Move down on any row (Alt+Up and Alt+Down on a
-focused move button), by keyboard or touch; every move is announced. The new order is the owner's draft:
-"Save priority order" names the API's gap (`owner_priority` has no route yet, VELDO-0078) and sends nothing,
-and "Back to the stored order" drops the draft. Details opens the item's facts, blockers and units beside the
+focused move button), by keyboard or touch; every move is announced. The new order is the owner's draft.
+"Save priority order" maps it to ranks (the prioritized items in order take ranks 1 to 5; an unchanged rank
+sends nothing) and sends one rank command per changed item through `src/api/actions.ts`, to the route the
+contract names, else `backlog.reprioritize`, stopping at the first refusal, which it names. While the API
+publishes no such route (the command is VELDO-0078's reprioritize) nothing is sent and the result names the
+route and the gap. "Back to the stored order" drops the draft. Details opens the item's facts, blockers and units beside the
 table on a desktop and as a sheet on a phone.

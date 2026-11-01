@@ -62,6 +62,7 @@ async function out(everywhere: boolean) {
           <RouterLink :to="{ name: 'usage' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-usage">Usage</RouterLink>
           <RouterLink :to="{ name: 'configuration' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-configuration">Configuration</RouterLink>
           <RouterLink :to="{ name: 'catalog' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-catalog">MCP catalog</RouterLink>
+          <RouterLink :to="{ name: 'repositories' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-repositories">Repositories and identities</RouterLink>
           <RouterLink :to="{ name: 'workflow' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-workflows">Workflows</RouterLink>
         </nav>
       </section>

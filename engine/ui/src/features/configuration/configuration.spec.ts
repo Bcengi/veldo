@@ -30,3 +30,15 @@ describe('configuration', () => {
     expect(view!.history.map((r) => r.revision)).toEqual([2, 1])
   })
 })
+
+describe('stored configurations (fix round 2)', () => {
+  it('lists every stored role revision and skill, named by a team or not', async () => {
+    const { skillsOf, storedRoles } = await import('./configuration')
+    const stored = { items: {
+      agent_configuration: [item('c1', 'agent_configuration', 1, { ...rev(1, ['Read']), role: 'reviewer' }), item('c2', 'agent_configuration', 1, { ...rev(2, ['Read']) })],
+      agent_skill: [item('s1', 'agent_skill', 1, { skill: 'coding', source: 'factory', path: 'skills/coding.md', revision: 1 })],
+    } } as unknown as ReadAnswer
+    expect([...storedRoles(stored).keys()].sort()).toEqual(['general', 'reviewer'])
+    expect(skillsOf(stored)).toEqual([{ skill: 'coding', revision: 1, source: 'factory', path: 'skills/coding.md' }])
+  })
+})

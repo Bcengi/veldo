@@ -8,13 +8,14 @@ import StatePanel from '@/components/StatePanel.vue'
 import VButton from '@/components/VButton.vue'
 import { useDesktop } from '@/composables/useMedia'
 import { useLiveRead } from '@/composables/useLiveRead'
-import { namedRoles, roleView, teamsOf, type RoleView } from '@/features/configuration/configuration'
+import { namedRoles, roleView, skillsOf, storedRoles, teamsOf, type RoleView } from '@/features/configuration/configuration'
 import LiveMeta from '@/features/factory/LiveMeta.vue'
 import '@/styles/factory.css'
 
-/** Team and agent/tool/MCP configuration (VELDO-0131): the teams of the configuration read and every capability
- * configuration they name, each with its revision history and the exact tools, MCP servers and skills of the
- * selected revision, opening VELDO-0163's role and team forms to edit them. */
+/** Team and agent/tool/MCP configuration (VELDO-0131): the teams of the configuration read and every stored
+ * capability configuration (named by a team or not), each with its revision history and the exact tools, MCP
+ * servers and skills of the selected revision, and every stored skill, opening VELDO-0163's role and team forms
+ * to edit them. A configuration a team names that the read does not serve is read through configurations.read. */
 const roles = shallowRef<RoleView[]>([])
 async function revisions(role: string, signal: AbortSignal): Promise<ConfigurationRevision[]> {
   const out: ConfigurationRevision[] = []
@@ -32,19 +33,21 @@ const live = useLiveRead(
   async (signal) => {
     const answer = await readConfigurationModel(signal)
     const named = namedRoles(answer)
+    const stored = storedRoles(answer)
     const views: RoleView[] = []
-    for (const [role, teams] of [...named].sort(([a], [b]) => a.localeCompare(b))) {
-      const view = roleView(role, await revisions(role, signal), teams)
+    for (const role of [...new Set([...stored.keys(), ...named.keys()])].sort((a, b) => a.localeCompare(b))) {
+      const view = roleView(role, stored.get(role) ?? (await revisions(role, signal)), named.get(role) ?? [])
       if (view) views.push(view)
     }
     roles.value = views
     return answer
   },
   (a) => a.watermark,
-  (a) => (a.items.team ?? []).length === 0 && (a.items.default_team_revision ?? []).length === 0,
+  (a) => ['team', 'default_team_revision', 'agent_configuration', 'agent_skill'].every((k) => (a.items[k] ?? []).length === 0),
 )
 const desktop = useDesktop()
 const teams = computed(() => teamsOf(live.data.value))
+const skills = computed(() => skillsOf(live.data.value))
 const picked = ref<Record<string, number>>({})
 const shown = (role: RoleView) => role.history.find((r) => r.revision === picked.value[role.role]) ?? role.current
 onMounted(() => void live.start())
@@ -61,8 +64,8 @@ onMounted(() => void live.start())
     <StatePanel
       :state="live.state.value"
       :refusal="live.refusal.value"
-      empty-title="No team yet"
-      empty-body="Teams and the configurations they use appear here once a team is saved."
+      empty-title="No configuration yet"
+      empty-body="Capability configurations, skills and teams appear here once one is saved."
       loading-label="Loading configuration"
       @retry="live.refresh()"
     >
@@ -86,7 +89,7 @@ onMounted(() => void live.start())
                     <td>{{ shown(role).tools.join(', ') || 'none' }}</td>
                     <td>{{ shown(role).servers.join('; ') || 'none' }}</td>
                     <td>{{ shown(role).skills.join(', ') || 'none' }}</td>
-                    <td>{{ role.teams.join(', ') }}</td>
+                    <td>{{ role.teams.join(', ') || 'no team' }}</td>
                     <td><RouterLink :to="{ name: 'role', params: { role: role.role } }" class="vbtn vbtn-secondary vbtn-small" :aria-label="`Edit ${role.role}`" data-testid="role-edit">Edit</RouterLink></td>
                   </tr>
                 </tbody>
@@ -106,12 +109,22 @@ onMounted(() => void live.start())
                   <dt>Native tools</dt><dd>{{ shown(role).tools.join(', ') || 'none' }}</dd>
                   <dt>MCP servers</dt><dd>{{ shown(role).servers.join('; ') || 'none' }}</dd>
                   <dt>Skills</dt><dd>{{ shown(role).skills.join(', ') || 'none' }}</dd>
-                  <dt>Teams</dt><dd>{{ role.teams.join(', ') }}</dd>
+                  <dt>Teams</dt><dd>{{ role.teams.join(', ') || 'no team' }}</dd>
                 </dl>
                 <RouterLink :to="{ name: 'role', params: { role: role.role } }" class="vbtn vbtn-secondary vbtn-block" :aria-label="`Edit ${role.role}`" data-testid="role-edit">Edit</RouterLink>
               </li>
             </ul>
           </div>
+        </section>
+        <section class="panel" aria-labelledby="skills-title" data-testid="skills">
+          <h2 id="skills-title" class="panel-title">Skills <span class="panel-count">{{ skills.length }}</span></h2>
+          <p v-if="!skills.length" class="factory-body factory-meta">No skill is stored yet.</p>
+          <ul v-else class="factory-body factory-list">
+            <li v-for="skill in skills" :key="`${skill.skill}-${skill.revision}`" class="factory-card" :data-skill="skill.skill">
+              <span class="factory-card-title">{{ skill.skill }} <span class="factory-tag">revision {{ skill.revision }}</span></span>
+              <span class="factory-meta">{{ skill.source }}: {{ skill.path }}</span>
+            </li>
+          </ul>
         </section>
         <section class="panel" aria-labelledby="teams-title" data-testid="teams">
           <h2 id="teams-title" class="panel-title">Teams <span class="panel-count">{{ teams.length }}</span></h2>

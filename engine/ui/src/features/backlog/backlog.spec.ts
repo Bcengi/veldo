@@ -48,3 +48,16 @@ describe('backlog', () => {
     expect(moveBy(['a', 'b', 'c'], 'c', 5)).toEqual(['a', 'b', 'c'])
   })
 })
+
+describe('rank commands from the owner order (fix round 2)', () => {
+  it('ranks the prioritized items 1, 2, ... in order, sends nothing for an unchanged rank or an unranked state', async () => {
+    const { rankChanges } = await import('./backlog')
+    const entry = (id: string, state: string, rank: number | null) =>
+      ({ id, version: 4, title: id, project: 'p', objective: 'o', state, rank, blockers: [], units: [] })
+    const entries = [entry('a', 'ACTIVE', 1), entry('b', 'PRIORITIZED', 2), entry('c', 'BLOCKED', 3), entry('d', 'ADMITTED', null)]
+    expect(rankChanges(entries, ['a', 'b', 'c', 'd'])).toEqual([])
+    expect(rankChanges(entries, ['c', 'd', 'a', 'b']).map((c) => [c.id, c.from, c.to, c.version])).toEqual([
+      ['c', 3, 1, 4], ['a', 1, 2, 4], ['b', 2, 3, 4],
+    ])
+  })
+})

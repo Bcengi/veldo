@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, shallowRef } from 'vue'
+import { reprioritize } from '@/api/actions'
 import { readProof, readWork } from '@/api/reads'
 import { ApiRefusal } from '@/api/refusal'
 import type { ReadAnswer } from '@/api/types'
@@ -8,7 +9,7 @@ import StatePanel from '@/components/StatePanel.vue'
 import VButton from '@/components/VButton.vue'
 import { useDesktop } from '@/composables/useMedia'
 import { useLiveRead } from '@/composables/useLiveRead'
-import { authorityOrder, backlogOf, backlogRows, moveBy, moveTo, type BacklogEntry } from '@/features/backlog/backlog'
+import { authorityOrder, backlogOf, backlogRows, moveBy, moveTo, rankChanges, type BacklogEntry } from '@/features/backlog/backlog'
 import { landedUnits } from '@/features/backlog/completion'
 import { gapSentence } from '@/features/contract/gaps'
 import FactorySheet from '@/features/factory/FactorySheet.vue'
@@ -21,7 +22,9 @@ import '@/styles/factory.css'
 
 /** The backlog (VELDO-0131): items in the authority's priority order with their blockers and the units taken from
  * them. Reorder is drag and drop on a desktop and Move up / Move down buttons everywhere (keyboard and touch);
- * the reordered list is the owner's draft until the API carries the priority action. */
+ * Save sends one rank command per prioritized item whose rank changes (src/api/actions.ts), in order, and stops at
+ * the first refusal, which it names. While the API publishes no priority route nothing is sent, the reordered list
+ * stays the owner's draft and the result names the missing route. */
 const proof = shallowRef<ReadAnswer | null>(null)
 const live = useLiveRead(
   async (signal) => {
@@ -54,6 +57,35 @@ const selected = ref<string | null>(null)
 const detail = computed(() => entries.value.find((e) => e.id === selected.value) ?? null)
 const announce = ref('')
 const tried = ref(false)
+const saving = ref(false)
+const saveResult = ref('')
+const changes = computed(() => rankChanges(entries.value, order.value))
+
+async function save() {
+  saving.value = true
+  saveResult.value = ''
+  const done: string[] = []
+  try {
+    for (const change of changes.value) {
+      const sent = await reprioritize(change.id, change.version, change.to, priority.value.route)
+      if (!sent.sent) {
+        saveResult.value = `Not saved: the API publishes no route ${sent.route} yet. ${gapSentence(priority.value)}`
+        return
+      }
+      done.push(`${change.title} rank ${change.to}`)
+    }
+    saveResult.value = done.length
+      ? `Saved: ${done.join('; ')}. The order shown follows the backlog read.`
+      : 'Nothing to save: no prioritized item changes rank in this order.'
+    draft.value = null
+  } catch (error) {
+    const named = error instanceof ApiRefusal ? error.refusal : (error as Error).message
+    saveResult.value = `Not saved: ${named}${done.length ? ` (saved before it: ${done.join('; ')})` : ''}`
+  } finally {
+    saving.value = false
+    tried.value = true
+  }
+}
 const columns = [
   { id: 'title', header: 'Item', primary: true },
   { id: 'position', header: 'Order' },
@@ -74,6 +106,7 @@ function say(id: string) {
   const entry = entries.value.find((e) => e.id === id)
   announce.value = `${entry?.title ?? id} is now number ${order.value.indexOf(id) + 1} of ${order.value.length} in your order.`
   tried.value = false
+  saveResult.value = ''
 }
 function rowKey(event: KeyboardEvent, row: TreeRow) {
   if (!event.altKey) return
@@ -136,15 +169,13 @@ onMounted(() => void live.start())
               </template>
             </TreeTable>
             <div class="factory-actions">
-              <VButton label="Save priority order" :disabled="!changed" data-testid="priority-save" @click="tried = true" />
+              <VButton label="Save priority order" :disabled="!changed" :pending="saving" pending-label="Saving" data-testid="priority-save" @click="save()" />
               <VButton v-if="changed" label="Back to the stored order" variant="secondary" @click="draft = null" />
             </div>
             <p v-if="changed && !priority.route" class="factory-gap" role="status" data-testid="priority-gap">
               Your order is a draft on this screen. {{ gapSentence(priority) }}
             </p>
-            <p v-if="tried && !priority.route" class="factory-gap" role="alert" data-testid="priority-gap-result">
-              Not saved: <code>{{ priority.name }}</code> has no API route yet.
-            </p>
+            <p v-if="tried && saveResult" class="factory-gap" role="alert" data-testid="priority-gap-result">{{ saveResult }}</p>
           </div>
         </section>
         <section v-if="detail && desktop" class="panel" aria-labelledby="backlog-detail-title" data-testid="backlog-detail">

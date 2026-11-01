@@ -45,3 +45,22 @@ describe('usage', () => {
     ])
   })
 })
+
+describe('providers from the account records (fix round 2)', () => {
+  it('names each invocation and account by its account record, and breaks usage down by provider', async () => {
+    const { accountRecords } = await import('./usage')
+    const item = (id: string, kind: string, data: Record<string, unknown>) => ({ id, kind, version: 1, digest: 'd', data })
+    const spend = { items: {
+      account: [item('account:a', 'account', { id: 'a', provider: 'codex', label: 'A', status: 'active' })],
+      subscription_reservation: [
+        item('r1', 'subscription_reservation', { type: 'invocation', context: { account: 'a' }, charge: { tokens: 5 }, unknown: [] }),
+        item('r2', 'subscription_reservation', { type: 'invocation', context: { account: 'b' }, charge: {}, unknown: ['tokens'] }),
+      ],
+    } } as never
+    expect(accountRecords(spend).get('a')).toEqual({ provider: 'codex', label: 'A', status: 'active' })
+    expect(accountsOf(spend, 0).map((a) => [a.account, a.provider])).toEqual([['a', 'codex'], ['b', '']])
+    expect(breakdown(invocationsOf(spend), 'tokens', 'provider').map((r) => [r.key, r.known, r.unknown])).toEqual([
+      ['codex', 5, 0], ['not recorded', 0, 1],
+    ])
+  })
+})

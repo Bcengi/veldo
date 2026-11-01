@@ -124,3 +124,27 @@ export function backlogRows(entries: BacklogEntry[], order: string[]): TreeRow[]
       })),
     }))
 }
+
+/** The states whose rank the owner's reprioritize command changes (control_backlog: prioritized work). */
+export const RERANKABLE = ['PRIORITIZED', 'ACTIVE', 'BLOCKED']
+/** The ranks the command accepts (control_grooming_request.PRIORITY_RANKS); 1 is first. */
+export const MAX_RANK = 5
+
+export interface RankChange {
+  id: string
+  version: number
+  title: string
+  from: number | null
+  to: number
+}
+
+/** The rank commands that make the stored ranks follow `order`: the prioritized items, in `order`, take ranks
+ * 1, 2, ... up to MAX_RANK (the rest share the last rank); an item already at its rank sends nothing, and an
+ * item the command cannot rank (not yet prioritized) is left to its admission. */
+export function rankChanges(entries: BacklogEntry[], order: string[]): RankChange[] {
+  const byId = new Map(entries.map((e) => [e.id, e]))
+  const ranked = order.map((id) => byId.get(id)).filter((e): e is BacklogEntry => !!e && RERANKABLE.includes(e.state))
+  return ranked
+    .map((e, index) => ({ id: e.id, version: e.version, title: e.title, from: e.rank, to: Math.min(index + 1, MAX_RANK) }))
+    .filter((c) => c.from !== c.to)
+}

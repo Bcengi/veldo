@@ -3,6 +3,11 @@ import type { Item, ReadAnswer } from '@/api/types'
 /** One worker run on a machine, from its dispatch record (reads.workers). */
 export interface WorkerCard {
   dispatch: string
+  /** The dispatch record's version, which a stop names. */
+  version: number
+  /** What the worker runs with, from its contract's capability: the adapter, then the configuration's role,
+   * servers and tools when it names them. */
+  capability: string
   unit: string
   station: string
   project: string
@@ -29,6 +34,25 @@ export function familyOf(platform: string | null | undefined): string {
   return FAMILY[platform.toLowerCase()] ?? platform
 }
 
+/** The capability sentence of a dispatch contract (control_launch: {adapter, configuration, configuration_digest}). */
+export function capabilityOf(contract: Record<string, any>): string {
+  const capability = (contract.capability ?? null) as Record<string, any> | null
+  if (!capability || typeof capability !== 'object') return ''
+  const configuration = (capability.configuration ?? {}) as Record<string, any>
+  const parts: string[] = []
+  if (typeof capability.adapter === 'string') parts.push(capability.adapter)
+  if (typeof configuration.role === 'string') {
+    parts.push(`role ${configuration.role}${configuration.revision != null ? ` r${String(configuration.revision)}` : ''}`)
+  }
+  const names = (list: unknown, key: string) =>
+    Array.isArray(list) ? list.map((x) => (x && typeof x === 'object' ? (x as Record<string, unknown>)[key] : x)).filter((x): x is string => typeof x === 'string') : []
+  const servers = names(configuration.mcp, 'server')
+  const tools = names(configuration.native_tools, 'name')
+  if (servers.length) parts.push(`servers ${servers.join(', ')}`)
+  if (tools.length) parts.push(`tools ${tools.join(', ')}`)
+  return parts.join('; ')
+}
+
 function card(item: Item): WorkerCard {
   const d = item.data as Record<string, any>
   const contract = (d.contract ?? {}) as Record<string, any>
@@ -39,6 +63,8 @@ function card(item: Item): WorkerCard {
     // The entity id carries the dispatch id whole; inside the data the API's secret scanner may redact its
     // random suffix (a high-entropy string), so the id is the one to link and to follow.
     dispatch: item.id.replace(/^dispatch:/, ''),
+    version: item.version,
+    capability: capabilityOf(contract),
     unit: String(contract.unit ?? 'unknown unit'),
     station: String(contract.station ?? ''),
     project: String(reservation.project ?? ''),

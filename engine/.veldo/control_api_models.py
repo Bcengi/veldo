@@ -234,9 +234,9 @@ def _item(store, conn, row, scope=None):
     return {'id': identity, 'kind': kind, 'version': version, 'digest': digest, 'data': served}, paths
 
 
-def read_model(store, conn, name, scope=None, domain=None):
+def read_model(store, conn, name, scope=None):
     """One read model (or metadata read) from the authority's connection, in one read transaction at one
-    watermark. `domain` is the domain uuid whose Git identities the repositories read serves."""
+    watermark. The repositories read's Git identities are added by the authority (`identities`)."""
     model = MODELS.get(name) or METADATA[name]
     kinds = [k.kind for k in model.kinds]
     items, problems, redacted = {k: [] for k in kinds}, [], []
@@ -263,8 +263,6 @@ def read_model(store, conn, name, scope=None, domain=None):
               'gaps': [g._asdict() for g in GAPS if g.criterion == 'AC2' and _gap_of(g, name)]}
     if name == 'workers':
         answer['machines'] = machines(items['dispatch'])
-    if name == 'repositories':
-        answer['identities'] = identities(conn, domain, items['repository'], scope)
     return answer
 
 

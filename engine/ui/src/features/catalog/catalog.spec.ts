@@ -22,3 +22,17 @@ describe('catalog', () => {
     expect(credentialMeta({}, 'x')).toBeNull()
   })
 })
+
+describe('the catalog read (fix round 2)', () => {
+  it('lists every head and every credential record by metadata, its reference derived from the entity id', async () => {
+    const { credentialsOf, headsOf, referenceOfEntity } = await import('./catalog')
+    const item = (id: string, kind: string, data: Record<string, unknown>) => ({ id, kind, version: 2, digest: 'd', data })
+    const answer = { items: {
+      mcp_server_head: [item('mcp-head:2', 'mcp_server_head', { id: 'github', revision: 1 }), item('mcp-head:1', 'mcp_server_head', { id: 'atlassian', revision: 2 })],
+      credential: [item('credential:abc', 'credential', { id: 'github-token', label: 'GitHub', set_at: 5, set_by: 'owner', reference: '[redacted]' })],
+    } } as never
+    expect(headsOf(answer)).toEqual([{ id: 'atlassian', revision: 2 }, { id: 'github', revision: 1 }])
+    expect(credentialsOf(answer)).toEqual([{ id: 'github-token', label: 'GitHub', setAt: 5, setBy: 'owner', reference: 'keychain:veldo/abc', version: 2, deleted: false }])
+    expect(referenceOfEntity('credential:abc')).toBe('keychain:veldo/abc')
+  })
+})

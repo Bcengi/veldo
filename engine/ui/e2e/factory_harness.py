@@ -87,6 +87,27 @@ class FactoryUi(T.TeamFactory):
                                       mcp=[dict(server='atlassian', revision=1, tools=['jira_search'], load='always')],
                                       skills=[], instructions=[], settings={}),
                                  principal='owner', base=1, command_id=self.next_id('general2'))
+        # VELDO-0131 fix round 2: a configuration no team names, a credential record and a server no configuration
+        # selects that references it (the configuration and catalog screens list every stored one), the Git
+        # identities and their repository bindings (VELDO-0142's setup tables, through its own writer).
+        self.configurations.save(dict(role='reviewer', engine='claude_code', native_tools=[dict(name='Grep', load='always')],
+                                      mcp=[], skills=[], instructions=[], settings={}),
+                                 principal='owner', base=0, command_id=self.next_id('reviewer'))
+        credential = self.authority.mcp_credentials.apply(
+            'set_mcp_credential', dict(id='github-token', base=0, label='GitHub token for the factory',
+                                       value='e2e-' + 'x' * 24), principal='owner', command_id=self.next_id('credential'))
+        self.catalog.save(dict(id='github', label='GitHub', transport='stdio', command='github-mcp', arguments=['stdio'],
+                               url=None, environment={'GITHUB_TOKEN': {'reference': credential['reference']}},
+                               headers={}, hosts=['linux', 'mac'], read_only_tools=['get_issue']),
+                          principal='owner', base=0, command_id=self.next_id('github'))
+        GI = H.load('e2e_factory_git_identity', organs / 'control_git_identity.py')
+        work = dict(id='work', label='Work', author_name='Factory Owner', author_email='owner@example.com',
+                    remote_host='github.com', remote_owner='acme', api_token='keychain:veldo/e2e-api-token',
+                    push_credential={'kind': 'token', 'reference': 'keychain:veldo/e2e-push-token'},
+                    projects_root='/srv/veldo/projects', default_visibility='private')
+        GI.configure_identities(conn, ids['domain_uuid'], [work, dict(work, id='personal', label='Personal',
+                                author_email='me@example.com', remote_owner='me', default_visibility='public')],
+                                {REPOSITORY: {'path': '/srv/veldo/projects/importer', 'identity': 'work'}})
         self._factory_seed()
 
     def _factory_seed(self):
@@ -169,6 +190,26 @@ class FactoryUi(T.TeamFactory):
             observation={'id': 'gate-observation:131-parse', 'digest': sha(observation)},
             accepted={'at': now - 7000, 'principal': 'pm'}))
         self.land('unit-131-parse')
+        # The repository records (control_repository's stored shape): this factory's repository, adopted and active,
+        # and one whose creation failed with its named reason.
+        self.fixture('repository:' + REPOSITORY, 'repository', dict(
+            schema='veldo.repository/v1', repository=REPOSITORY, name='importer', identity='work',
+            path='/srv/veldo/projects/importer',
+            remote={'url': 'git@github.com:acme/importer.git', 'owner': 'acme', 'default_branch': 'main'},
+            origin='adopted', state='active', updated_at=now - 600,
+            history=[{'step': 'settled', 'state': 'provisioning', 'at': now - 900},
+                     {'step': 'enrolled', 'state': 'active', 'at': now - 600}]))
+        self.fixture('repository:e2e-billing', 'repository', dict(
+            schema='veldo.repository/v1', repository='e2e-billing', name='billing', identity='work',
+            path='/srv/veldo/projects/billing', remote={'url': None, 'owner': 'acme', 'default_branch': 'main'},
+            origin='created', state='failed', reason='remote_exists', updated_at=now - 300,
+            history=[{'step': 'settled', 'state': 'provisioning', 'at': now - 400},
+                     {'step': 'remote', 'state': 'failed', 'at': now - 300, 'reason': 'remote_exists'}]))
+        # The account the reservations charge (control_accounts' stored shape), so usage names its provider.
+        self.fixture('account:owner-plan', 'account', dict(
+            schema='veldo.account/v1', id='owner-plan', provider='claude_code', label="Owner's plan", status='active',
+            profiles={'veldo-linux-1': '/srv/veldo/profiles/owner-plan'}, windows={}, concurrency=1,
+            registered_at=now - 86400))
         # The usage screen: one account's policy with its windows, two workers, and their invocations, one
         # settled with its tokens and one whose tokens are unknown.
         account = 'owner-plan'

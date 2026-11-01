@@ -11830,6 +11830,57 @@ def cases():
           '    "node_modules/ag-grid-enterprise": {\n      "version": "34.2.0",\n      "license": "MIT"\n    },\n'
           '    "node_modules/chart.js": {\n',
           ['ac4/dependency-policy'])
+    # Fix round 2 (review-2026-11-01 F1 to F5): one mutant for each new behavior an acceptance criterion covers.
+    # AC1, Repositories and identities row: the identities are dropped from the screen.
+    ui131('ui131-identities-dropped', 'engine/ui/src/features/repositories', 'repositories.ts',
+          "  return [...(answer?.identities ?? [])].sort(",
+          "  return [...([] as IdentityMeta[])].sort(  // defect: the identities are not listed\n    // ",
+          ['ac1/repositories'])
+    # AC1, configuration row (F3): only the configurations a team names are listed again.
+    ui131('ui131-configurations-team-named-only', 'engine/ui/src/features/configuration', 'configuration.ts',
+          "  for (const item of answer?.items.agent_configuration ?? []) {\n",
+          "  for (const item of [] as typeof answer extends null ? never : Item[]) {  // defect: stored ones unlisted\n",
+          ['ac1/every-configuration'],
+          also=[("import type { ReadAnswer } from '@/api/types'\n", "import type { Item, ReadAnswer } from '@/api/types'\n")])
+    # AC1, MCP row (F4): the catalog lists only its first server.
+    ui131('ui131-catalog-first-server-only', 'engine/ui/src/features/catalog', 'catalog.ts',
+          "    .sort((a, b) => a.id.localeCompare(b.id))\n}\n\n/** The keystore reference",
+          "    .sort((a, b) => a.id.localeCompare(b.id))\n    .slice(0, 1)  // defect: not the whole catalog\n}\n\n"
+          "/** The keystore reference",
+          ['ac1/whole-catalog'])
+    # AC1, MCP row (F4): a credential's record (label, set at, set by) is not read.
+    ui131('ui131-credential-metadata-dropped', 'engine/ui/src/features/catalog', 'catalog.ts',
+          "  return (answer?.items.credential ?? [])\n",
+          "  return ([] as Item[])  // defect: the credential records are not listed\n",
+          ['ac1/whole-catalog'])
+    # AC1, usage row (F4): the account records are not read, so no provider shows.
+    ui131('ui131-provider-unread', 'engine/ui/src/features/usage', 'usage.ts',
+          "  for (const item of spend?.items.account ?? []) {\n",
+          "  for (const item of (spend ? [] : []) as { id: string; data: unknown }[]) {  // defect: providers unread\n",
+          ['ac1/usage-provider'])
+    # AC1, workers row (F2): a worker's capability is not shown.
+    ui131('ui131-capability-dropped', 'engine/ui/src/features/workers', 'workers.ts',
+          "    capability: capabilityOf(contract),\n",
+          "    capability: '',  // defect: the capability is not shown\n",
+          ['ac1/worker-capability'])
+    # AC2, workers row (F5): Stop reports a stop that was never sent (local optimism).
+    ui131('ui131-stop-shown-unsent', 'engine/ui/src/api', 'actions.ts',
+          "  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.worker_stop, { dispatch, dispatch_version: version })\n",
+          "  void send; void contractRoute; void dispatch; void version\n"
+          "  return Promise.resolve({ sent: true as const, answer: { outcome: 'stopped' } as Record<string, unknown> })  // defect\n",
+          ['ac2/pending-actions'])
+    # AC2, backlog row (F5): Save priority order reports ranks that were never sent.
+    ui131('ui131-priority-shown-unsent', 'engine/ui/src/api', 'actions.ts',
+          "  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.owner_priority, { item, item_version: itemVersion, rank })\n",
+          "  void contractRoute; void item; void itemVersion; void rank\n"
+          "  return Promise.resolve({ sent: true as const, answer: { outcome: 'reprioritized' } as Record<string, unknown> })  // defect\n",
+          ['ac2/pending-actions'])
+    # AC2, absent secrets: the repositories read serves an identity's credential references.
+    add(131, 'api131-identity-credentials-served', '120_veldo_0131_factory_ui.py', 'control_api_models.py',
+        "IDENTITY_METADATA = ('id', 'label', 'author_name', 'author_email', 'remote_host', 'remote_owner', 'projects_root',\n",
+        "IDENTITY_METADATA = ('api_token', 'push_credential',  # defect: credential references served\n"
+        "                     'id', 'label', 'author_name', 'author_email', 'remote_host', 'remote_owner', 'projects_root',\n",
+        ['ac2/metadata-only'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

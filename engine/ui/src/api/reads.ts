@@ -24,3 +24,22 @@ export interface Contract {
   gaps: { criterion: string; subject: string; spec: string | null; what: string }[]
 }
 export const readContract = (signal?: AbortSignal) => request<Contract>('reads.contract', { signal })
+
+// VELDO-0131 fix round 2: the metadata-only reads (control_api_models.METADATA_READS), served like a read model.
+/** The whole MCP catalog (heads and revisions) and every credential record's metadata (never a value). */
+export const readCatalog = (signal?: AbortSignal) => request<ReadAnswer>('mcp.list', { signal })
+/** One Git identity as the repositories read serves it: metadata only, never its credential references. */
+export interface IdentityMeta {
+  id: string
+  label: string
+  author_name: string
+  author_email: string
+  remote_host: string
+  remote_owner: string
+  projects_root: string
+  default_visibility: string
+  repositories: string[]
+}
+/** The repository records and the Git identities. */
+export const readRepositories = (signal?: AbortSignal) =>
+  request<ReadAnswer & { identities: IdentityMeta[] }>('repositories.read', { signal })

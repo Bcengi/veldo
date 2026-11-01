@@ -8,6 +8,8 @@ export type UsageUnit = (typeof UNITS)[number]
 export interface Invocation {
   id: string
   account: string
+  /** The account's provider from its account record (VELDO-0062), or '' when the spend read has no record of it. */
+  provider: string
   project: string
   unit: string
   dispatch: string
@@ -27,6 +29,10 @@ export interface Window {
 
 export interface AccountView {
   account: string
+  /** The provider (claude_code or codex), label and status of the account's record; '' when not recorded. */
+  provider: string
+  label: string
+  status: string
   windows: Window[]
   activeRuns: string[]
   /** When the account can take work again, if a window has run out and not yet reset; null when it can now. */
@@ -38,7 +44,25 @@ export interface AccountView {
 const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null)
 const str = (v: unknown) => (typeof v === 'string' ? v : '')
 
+export interface AccountRecord {
+  provider: string
+  label: string
+  status: string
+}
+
+/** The account records of the spend read (kind `account`), by account id. */
+export function accountRecords(spend: ReadAnswer | null): Map<string, AccountRecord> {
+  const records = new Map<string, AccountRecord>()
+  for (const item of spend?.items.account ?? []) {
+    const d = item.data as Record<string, unknown>
+    const id = str(d.id) || item.id.replace(/^account:/, '')
+    records.set(id, { provider: str(d.provider), label: str(d.label), status: str(d.status) })
+  }
+  return records
+}
+
 export function invocationsOf(spend: ReadAnswer | null): Invocation[] {
+  const records = accountRecords(spend)
   return (spend?.items.subscription_reservation ?? [])
     .filter((i) => (i.data as { type?: unknown }).type === 'invocation')
     .map((i) => {
@@ -50,7 +74,7 @@ export function invocationsOf(spend: ReadAnswer | null): Invocation[] {
         if (v != null) charge[u] = v
       }
       return {
-        id: i.id, account: str(context.account), project: str(context.project), unit: str(context.unit), dispatch: str(d.dispatch),
+        id: i.id, account: str(context.account), provider: records.get(str(context.account))?.provider ?? '', project: str(context.project), unit: str(context.unit), dispatch: str(d.dispatch),
         seq: num(d.accepted_seq), charge, unknown: (Array.isArray(d.unknown) ? d.unknown : []).filter((u: string) => (UNITS as readonly string[]).includes(u)),
         state: str(d.state),
       }
@@ -60,9 +84,11 @@ export function invocationsOf(spend: ReadAnswer | null): Invocation[] {
 /** Each account's windows, active runs, totals and unknown counts, and when it can work again. */
 export function accountsOf(spend: ReadAnswer | null, now: number): AccountView[] {
   const records = (spend?.items.subscription_reservation ?? []).map((i) => i.data as Record<string, any>)
+  const known = accountRecords(spend)
   const accounts = new Map<string, AccountView>()
   const get = (account: string) => {
-    if (!accounts.has(account)) accounts.set(account, { account, windows: [], activeRuns: [], blockedUntil: null, totals: {}, unknown: {} })
+    const record = known.get(account)
+    if (!accounts.has(account)) accounts.set(account, { account, provider: record?.provider ?? '', label: record?.label ?? '', status: record?.status ?? '', windows: [], activeRuns: [], blockedUntil: null, totals: {}, unknown: {} })
     return accounts.get(account)!
   }
   for (const r of records) {
@@ -134,7 +160,8 @@ export function seriesOf(invocations: Invocation[], times: Map<number, number>, 
 }
 
 /** Totals of one unit by a breakdown key, with the unknown count beside each. */
-export function breakdown(invocations: Invocation[], unit: UsageUnit, key: 'account' | 'project' | 'dispatch') {
+export type BreakdownKey = 'provider' | 'account' | 'project' | 'dispatch'
+export function breakdown(invocations: Invocation[], unit: UsageUnit, key: BreakdownKey) {
   const rows = new Map<string, { key: string; known: number; unknown: number; count: number }>()
   for (const inv of invocations) {
     const k = inv[key] || 'not recorded'

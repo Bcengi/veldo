@@ -49,10 +49,25 @@ def _v131_suite():
         'src/features/workflow/FlowProperties.vue': ROOT / "engine/ui/src/features/workflow" / "FlowProperties.vue",
         'src/features/decisions/DecisionDetail.vue': ROOT / "engine/ui/src/features/decisions" / "DecisionDetail.vue",
         'package-lock.json': ROOT / "engine/ui" / "package-lock.json",
+        # Fix round 2 (review-2026-11-01): the modules of the new screens and actions.
+        'src/features/repositories/repositories.ts': ROOT / "engine/ui/src/features/repositories" / "repositories.ts",
+        'src/features/configuration/configuration.ts': ROOT / "engine/ui/src/features/configuration" / "configuration.ts",
+        'src/features/catalog/catalog.ts': ROOT / "engine/ui/src/features/catalog" / "catalog.ts",
+        'src/features/usage/usage.ts': ROOT / "engine/ui/src/features/usage" / "usage.ts",
+        'src/features/workers/workers.ts': ROOT / "engine/ui/src/features/workers" / "workers.ts",
+        'src/api/actions.ts': ROOT / "engine/ui/src/api" / "actions.ts",
+    }
+    # The API organs the factory harness loads (VELDO_ORGANS): the checkout's .veldo, with these production copies
+    # laid over a scratch copy of it (the registered mutation driver substitutes each of them here).
+    ORGANS = {
+        'control_api_models.py': ROOT / ".veldo" / "control_api_models.py",
     }
     BROWSER = ('ac1/screens-360', 'ac1/screens-390', 'ac1/screens-1280', 'ac1/screens-1440', 'ac2/live',
                'ac2/completion-receipt', 'ac2/message-intake', 'ac2/decision-settlement', 'ac2/refusals',
-               'ac2/api-only', 'ac3/keyboard-desktop', 'ac3/touch-phone', 'ac3/stale-save')
+               'ac2/api-only', 'ac3/keyboard-desktop', 'ac3/touch-phone', 'ac3/stale-save',
+               # Fix round 2 (review-2026-11-01 F1 to F5).
+               'ac1/repositories', 'ac1/every-configuration', 'ac1/whole-catalog', 'ac1/usage-provider',
+               'ac1/worker-capability', 'ac2/metadata-only', 'ac2/pending-actions')
     ROWS = ('unit/factory', 'ac4/dependency-policy', 'ac4/stack', 'ac4/served-assets') + BROWSER
     STACK = ('vue', 'vue-router', 'pinia', 'vite', 'typescript', 'tailwindcss', 'monaco-editor', '@tanstack/vue-table',
              'chart.js')
@@ -120,6 +135,12 @@ def _v131_suite():
             elif target.exists():
                 target.unlink()
         os.symlink(ROOT / '.veldo', base / '.veldo')
+        organs = base / 'organs'
+        organs.mkdir()
+        for source in sorted((ROOT / '.veldo').glob('*.py')):
+            shutil.copyfile(source, organs / source.name)
+        for name, source in ORGANS.items():
+            shutil.copyfile(source, organs / name)
         os.symlink(ROOT / 'proof', base / 'proof')
         modules = UI / 'node_modules'
         if modules.is_dir():
@@ -146,7 +167,8 @@ def _v131_suite():
 
         report = base / 'vitest.json'
         code, out = run(['npx', 'vitest', 'run'] + ['src/features/' + f for f in (
-            'backlog', 'projects', 'proof', 'usage', 'configuration', 'catalog', 'workflow', 'workers', 'table')]
+            'backlog', 'projects', 'proof', 'usage', 'configuration', 'catalog', 'workflow', 'workers', 'table',
+            'repositories')] + ['src/api/actions.spec.ts']
             + ['--reporter=json', '--outputFile=' + str(report)], ui, timeout=300)
         try:
             unit = json.loads(report.read_text())
@@ -160,7 +182,7 @@ def _v131_suite():
 
         e2e = base / 'e2e.json'
         code, out = run(['npx', 'playwright', 'test', 'e2e/factory.spec.ts'], ui,
-                        env={'VELDO_UI_DIST': str(dist), 'VELDO_ORGANS': str(ROOT / '.veldo'),
+                        env={'VELDO_UI_DIST': str(dist), 'VELDO_ORGANS': str(organs),
                              'VELDO_E2E_REPORT': str(e2e)}, timeout=3000)
         try:
             browser = json.loads(e2e.read_text())

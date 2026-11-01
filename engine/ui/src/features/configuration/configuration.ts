@@ -76,3 +76,35 @@ export function roleView(role: string, revisions: ConfigurationRevision[], teams
   const history = revisions.map(revisionView).sort((a, b) => b.revision - a.revision)
   return history.length ? { role, current: history[0]!, history, teams } : null
 }
+
+/** Every stored capability configuration revision of the configuration read (VELDO-0127's agent_configuration,
+ * served since VELDO-0131 fix round 2), by role: the roles the table lists, named by a team or not. */
+export function storedRoles(answer: ReadAnswer | null): Map<string, ConfigurationRevision[]> {
+  const stored = new Map<string, ConfigurationRevision[]>()
+  for (const item of answer?.items.agent_configuration ?? []) {
+    const d = item.data as unknown as ConfigurationRevision
+    if (typeof d?.role !== 'string' || typeof d.revision !== 'number') continue
+    stored.set(d.role, [...(stored.get(d.role) ?? []), {
+      ...d, native_tools: d.native_tools ?? [], mcp: d.mcp ?? [], skills: d.skills ?? [],
+    }])
+  }
+  return stored
+}
+
+export interface SkillView {
+  skill: string
+  revision: number
+  source: string
+  path: string
+}
+
+/** Every stored skill revision (agent_skill), newest revision of each skill first. */
+export function skillsOf(answer: ReadAnswer | null): SkillView[] {
+  return (answer?.items.agent_skill ?? [])
+    .map((item) => {
+      const d = item.data as Record<string, unknown>
+      return { skill: str(d.skill), revision: typeof d.revision === 'number' ? d.revision : 0, source: str(d.source), path: str(d.path) }
+    })
+    .filter((s) => s.skill)
+    .sort((a, b) => a.skill.localeCompare(b.skill) || b.revision - a.revision)
+}

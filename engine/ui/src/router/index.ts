@@ -40,6 +40,7 @@ export const routes: RouteRecordRaw[] = [
   { path: '/proof', name: 'proof', component: () => import('@/views/ProofView.vue'), meta: { session: true, title: 'Gate and review' } },
   { path: '/usage', name: 'usage', component: () => import('@/views/UsageView.vue'), meta: { session: true, title: 'Usage' } },
   { path: '/configuration', name: 'configuration', component: () => import('@/views/ConfigurationView.vue'), meta: { session: true, title: 'Configuration' } },
+  { path: '/repositories', name: 'repositories', component: () => import('@/views/RepositoriesView.vue'), meta: { session: true, title: 'Repositories and identities' } },
   { path: '/catalog', name: 'catalog', component: () => import('@/views/CatalogView.vue'), meta: { session: true, title: 'MCP catalog' } },
   { path: '/workflows/:workflow?', name: 'workflow', component: () => import('@/views/WorkflowView.vue'), meta: { session: true, title: 'Workflows' } },
   { path: '/you', name: 'you', component: () => import('@/views/YouView.vue'), meta: { session: true, title: 'You' } },

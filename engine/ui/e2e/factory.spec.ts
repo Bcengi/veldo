@@ -17,6 +17,10 @@ import { expect, guard, routeOf, signIn, test, type FactoryUi } from './factory-
  * ac2/message-intake, ac2/decision-settlement, ac2/refusals: a message reaches the common intake; an inline
  *   answer settles once; a stale presentation and an unauthorized save are refused beside their action.
  * ac2/api-only: every request is a published route; nothing reaches storage, the URL or another origin.
+ * Fix round 2 (review-2026-11-01): ac1/repositories, ac1/every-configuration, ac1/whole-catalog, ac1/usage-provider and
+ *   ac1/worker-capability check the rows' required content at a desktop and a phone width; ac2/metadata-only checks
+ *   that the metadata reads serve no credential reference or value; ac2/pending-actions checks that Stop and Save
+ *   priority order send nothing while their routes are unpublished and name the missing route.
  * ac3/keyboard-desktop and ac3/touch-phone: the owner's task path by keyboard only (1280 px) and by touch (390 px):
  *   backlog reorder, detail and sheet focus restoration, message, workflow step settings, add, connect, reorder
  *   and save, with 44 px touch targets and announced results.
@@ -65,6 +69,7 @@ const SCREENS: { name: string; path: string; ready: string; primary: (page: Page
   { name: 'configuration', path: '/configuration', ready: '[data-testid="roles-table"]', primary: () => '[data-testid="role-edit"]' },
   { name: 'catalog', path: '/catalog', ready: '[data-testid="catalog"]', primary: () => '[data-testid="server-edit"]' },
   { name: 'workflows', path: '/workflows/delivery', ready: '[data-testid="workflow-editor"]', primary: () => '[data-testid="add-grooming"]' },
+  { name: 'repositories', path: '/repositories', ready: '[data-testid="repositories"]', primary: () => '[data-repository="billing"]', empty: 'cmember' },
 ]
 
 function renders(): Render[] {
@@ -186,7 +191,9 @@ interface Problems {
 /** The page as rendered: page-wide overflow, overlapping controls and the primary action (VELDO-0145's measure,
  * with the factory screens' internal scrollers allowed: a table wrapper and the canvas scroll inside). */
 async function measure(page: Page, primary: string | null, phone: boolean): Promise<Problems> {
-  if (primary) await page.locator(primary).first().scrollIntoViewIfNeeded().catch(() => undefined)
+  // The primary action scrolled to the middle of the viewport, as the owner scrolls to it: a fixed bar may cover the
+  // page's bottom edge, so an action is judged where it can be reached, never where the page happened to stop.
+  if (primary) await page.locator(primary).first().evaluate((el) => el.scrollIntoView({ block: 'center' })).catch(() => undefined)
   return page.evaluate(
     ({ primary, phone }) => {
       const vw = window.innerWidth
@@ -581,5 +588,154 @@ test('ac3/stale-save: a workflow save from an older version is refused beside Sa
   await page.getByTestId('flow-reload').click()
   await expect(page.getByTestId('flow-state')).toHaveAttribute('data-state', 'saved')
   await other.context().close()
+  await page.context().close()
+})
+
+// Fix round 2 (review-2026-11-01): the rows the review found missing or partial.
+const PAIR = [{ width: 1280, height: 860 }, { width: 390, height: 844 }]
+
+test('ac1/repositories: the read-only identities and repositories, a table on a desktop and cards on a phone', async ({ browser, factory }) => {
+  test.setTimeout(120_000)
+  for (const viewport of PAIR) {
+    const page = await pageAs(browser, factory, 'owner', viewport)
+    await page.goto(factory.origin + '/repositories')
+    await expect(page.getByTestId('repositories')).toBeVisible()
+    const phone = isPhone(page)
+    await expect(page.locator('table[aria-label="Git identities"]')).toHaveCount(phone ? 0 : 1)
+    await expect(page.locator('table[aria-label="Repositories"]')).toHaveCount(phone ? 0 : 1)
+    const work = page.locator('[data-identity="work"]')
+    for (const text of ['Work', 'Factory Owner <owner@example.com>', 'github.com/acme', '/projects', 'private'])
+      await expect(work).toContainText(text)
+    await expect(page.locator('[data-identity="personal"]')).toContainText('public')
+    const importer = page.locator('[data-repository="importer"]')
+    for (const text of ['work', '/projects/importer', 'git@github.com:acme/importer.git', 'adopted', 'active'])
+      await expect(importer).toContainText(text)
+    const billing = page.locator('[data-repository="billing"]')
+    await expect(billing).toHaveAttribute('data-state', 'failed')
+    for (const text of ['created', 'failed', 'remote_exists (at remote)']) await expect(billing).toContainText(text)
+    // Read-only: no control acts on a repository or an identity.
+    await expect(page.getByTestId('repositories').locator('button, input, select, textarea')).toHaveCount(0)
+    await expect(page.locator('body')).not.toContainText('keychain:')
+    await page.context().close()
+  }
+})
+
+test('ac1/every-configuration: every stored role revision and skill is listed, a role no team names too', async ({ browser, factory }) => {
+  test.setTimeout(120_000)
+  for (const viewport of PAIR) {
+    const page = await pageAs(browser, factory, 'owner', viewport)
+    await page.goto(factory.origin + '/configuration')
+    await expect(page.getByTestId('roles-table')).toBeVisible()
+    const reviewer = page.locator('[data-role="reviewer"]')
+    await expect(reviewer).toBeVisible()
+    await expect(reviewer).toContainText('Grep')
+    await expect(reviewer).toContainText('no team')
+    await expect(page.locator('[data-role="general"]')).toHaveAttribute('data-revision', '2')
+    await expect(page.locator('[data-skill="coding"]')).toContainText('skills/coding.md')
+    await page.context().close()
+  }
+})
+
+test('ac1/whole-catalog: every catalog server and every credential record by label, set at and set by', async ({ browser, factory }) => {
+  test.setTimeout(120_000)
+  for (const viewport of PAIR) {
+    const page = await pageAs(browser, factory, 'owner', viewport)
+    await page.goto(factory.origin + '/catalog')
+    await expect(page.getByTestId('catalog')).toBeVisible()
+    // github is selected by no configuration; the catalog read lists it with atlassian.
+    await expect(page.locator('[data-server="atlassian"]')).toBeVisible()
+    const github = page.locator('[data-server="github"]')
+    await expect(github).toBeVisible()
+    await expect(github).toContainText('GitHub token for the factory')
+    await expect(github).toContainText('owner')
+    const record = page.locator('[data-credential-record="github-token"]')
+    await expect(record).toContainText('GitHub token for the factory')
+    await expect(record).toContainText('owner')
+    await expect(record).not.toContainText('not recorded')
+    await expect(page.locator('body')).not.toContainText('e2e-xxxx')
+    await page.context().close()
+  }
+})
+
+test('ac1/usage-provider: each account names its provider and usage breaks down by provider', async ({ browser, factory }) => {
+  test.setTimeout(120_000)
+  for (const viewport of PAIR) {
+    const page = await pageAs(browser, factory, 'owner', viewport)
+    await page.goto(factory.origin + '/usage')
+    await expect(page.getByTestId('usage')).toBeVisible()
+    const account = page.locator('[data-account="owner-plan"]')
+    await expect(account.getByTestId('account-provider')).toHaveText('claude_code')
+    await expect(account).toContainText("Owner's plan")
+    await page.getByTestId('usage-by').selectOption('provider')
+    await expect(page.getByTestId('usage-breakdown').locator('[data-key="claude_code"]').first()).toBeVisible()
+    await page.context().close()
+  }
+})
+
+test('ac1/worker-capability: each worker shows its capability, and the missing cap command is named', async ({ browser, factory }) => {
+  test.setTimeout(120_000)
+  for (const viewport of PAIR) {
+    const page = await pageAs(browser, factory, 'owner', viewport)
+    await page.goto(factory.origin + '/workers')
+    await expect(page.getByTestId('workers')).toBeVisible()
+    const capability = page.locator('[data-dispatch*="VELDO-9146"]').getByTestId('worker-capability')
+    await expect(capability).toContainText('claude_code')
+    await expect(capability).toContainText('role general r2')
+    await expect(capability).toContainText('servers atlassian')
+    await expect(page.getByTestId('workers-cap-gap')).toContainText('VELDO-0125')
+    await page.context().close()
+  }
+})
+
+test('ac2/metadata-only: the catalog and repositories reads serve metadata, never a credential reference or value', async ({ browser, factory }) => {
+  test.setTimeout(120_000)
+  const page = await pageAs(browser, factory, 'owner', { width: 1280, height: 860 })
+  const bodies: Record<string, string> = {}
+  page.on('response', async (response) => {
+    const name = routeOf(response.request().method(), response.url(), factory.domain)
+    if (name === 'mcp.list' || name === 'repositories.read') bodies[name] = await response.text().catch(() => '')
+  })
+  await page.goto(factory.origin + '/repositories')
+  await expect(page.locator('[data-identity="work"]')).toBeVisible()
+  await page.goto(factory.origin + '/catalog')
+  await expect(page.locator('[data-credential-record="github-token"]')).toBeVisible()
+  await expect.poll(() => Object.keys(bodies).sort()).toEqual(['mcp.list', 'repositories.read'])
+  const repositories = JSON.parse(bodies['repositories.read']!)
+  const fields = ['author_email', 'author_name', 'default_visibility', 'id', 'label', 'projects_root', 'remote_host', 'remote_owner', 'repositories']
+  expect(repositories.identities.map((i: Record<string, unknown>) => i.id).sort()).toEqual(['personal', 'work'])
+  for (const identity of repositories.identities) expect(Object.keys(identity).sort()).toEqual(fields)
+  for (const secret of ['e2e-api-token', 'e2e-push-token', 'api_token', 'push_credential']) expect(bodies['repositories.read']).not.toContain(secret)
+  const catalog = JSON.parse(bodies['mcp.list']!)
+  expect(catalog.items.credential.map((c: { data: Record<string, unknown> }) => c.data.label)).toEqual(['GitHub token for the factory'])
+  for (const c of catalog.items.credential)
+    expect(Object.keys(c.data).every((k) => ['id', 'label', 'reference', 'set_at', 'set_by', 'deleted'].includes(k))).toBe(true)
+  expect(bodies['mcp.list']).not.toContain('e2e-xxxx')
+  expect(bodies['mcp.list']).not.toContain('value_digest')
+  await page.context().close()
+})
+
+test('ac2/pending-actions: Stop and Save priority order send nothing while their routes are unpublished and name the route', async ({ browser, factory }) => {
+  test.setTimeout(120_000)
+  const page = await pageAs(browser, factory, 'owner', { width: 1280, height: 860 })
+  const watch = await guard(page)
+  await page.goto(factory.origin + '/workers')
+  const card = page.locator('[data-dispatch*="VELDO-9146"]')
+  await card.getByTestId('worker-stop').click()
+  await card.getByTestId('worker-stop-confirm').click()
+  const stopped = card.getByTestId('worker-stop-result')
+  await expect(stopped).toContainText('Not stopped')
+  await expect(stopped).toContainText('workers.stop')
+  await expect(stopped).toContainText('VELDO-0041')
+  await expect(card).toHaveAttribute('data-state', 'running')
+  const before = await factory.entity('backlog:131-encoding')
+  await page.goto(factory.origin + '/backlog')
+  await page.locator('.tree-grid [data-row="backlog:131-encoding"] [data-testid="move-up"]').click()
+  await page.getByTestId('priority-save').click()
+  const saved = page.getByTestId('priority-gap-result')
+  await expect(saved).toContainText('Not saved')
+  await expect(saved).toContainText('backlog.reprioritize')
+  await expect(saved).toContainText('VELDO-0078')
+  expect((await factory.entity('backlog:131-encoding'))?.version).toBe(before?.version)
+  expect(watch.requests.filter((r) => r.method === 'POST').map((r) => r.url)).toEqual([])
   await page.context().close()
 })

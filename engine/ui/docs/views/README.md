@@ -22,6 +22,7 @@ refusals it shows.
 | Usage | `/usage` | [usage.md](usage.md) |
 | Configuration | `/configuration` | [configuration.md](configuration.md) |
 | MCP catalog | `/catalog` | [catalog.md](catalog.md) |
+| Repositories and identities | `/repositories` | [repositories.md](repositories.md) |
 | Workflows | `/workflows`, `/workflows/<workflow>` | [workflows.md](workflows.md) |
 
 The factory screens (VELDO-0131) share [live reads](factory.md): each follows the journal and re-reads its model.

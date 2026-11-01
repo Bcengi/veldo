@@ -46,6 +46,7 @@ export function useNavigation(): ComputedRef<NavEntry[]> {
     { id: 'usage', label: 'Usage', to: { name: 'usage' }, matches: ['usage'], icon: 'refresh', phone: false },
     { id: 'configuration', label: 'Configuration', to: { name: 'configuration' }, matches: ['configuration'], icon: 'key', phone: false },
     { id: 'catalog', label: 'MCP catalog', to: { name: 'catalog' }, matches: ['catalog'], icon: 'search', phone: false },
+    { id: 'repositories', label: 'Repositories', to: { name: 'repositories' }, matches: ['repositories'], icon: 'overview', phone: false },
     { id: 'workflows', label: 'Workflows', to: { name: 'workflow' }, matches: ['workflow'], icon: 'follow', phone: false },
     { id: 'you', label: 'You', to: { name: 'you' }, matches: ['you'], icon: 'you', phone: true },
   ])

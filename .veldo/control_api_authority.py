@@ -251,7 +251,11 @@ class ApiAuthority:
             return {'ok': False, 'reason': 'missing_evidence:read_model', 'taxonomy': 'missing_evidence'}
         def produce():
             scope = self._read_scope(principal)
-            answer = MO.read_model(self.S, self.conn, model, scope=scope, domain=self.ids['domain_uuid'])
+            answer = MO.read_model(self.S, self.conn, model, scope=scope)
+            if model == 'repositories':
+                # VELDO-0131: the Git identities (setup tables, not entities), metadata only, in this read.
+                answer['identities'] = MO.identities(self.conn, self.ids['domain_uuid'], answer['items']['repository'],
+                                                     scope)
             self._observe_read(principal, model, scope, answer)
             return answer
         return self._answer(principal, produce)
