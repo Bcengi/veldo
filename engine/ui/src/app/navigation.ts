@@ -38,6 +38,15 @@ export function useNavigation(): ComputedRef<NavEntry[]> {
     // VELDO-0163: rail entries; on a phone the You screen links to them.
     { id: 'roles', label: 'Roles', to: { name: 'role' }, matches: ['role'], icon: 'key', phone: false },
     { id: 'team', label: 'Team', to: { name: 'team' }, matches: ['team'], icon: 'overview', phone: false },
+    // VELDO-0131: rail entries; on a phone the You screen links to them.
+    { id: 'projects', label: 'Projects', to: { name: 'project' }, matches: ['project'], icon: 'overview', phone: false },
+    { id: 'backlog', label: 'Backlog', to: { name: 'backlog' }, matches: ['backlog'], icon: 'decisions', phone: false },
+    { id: 'workers', label: 'Workers', to: { name: 'workers' }, matches: ['workers'], icon: 'runs', phone: false },
+    { id: 'proof', label: 'Gate and review', to: { name: 'proof' }, matches: ['proof'], icon: 'check', phone: false },
+    { id: 'usage', label: 'Usage', to: { name: 'usage' }, matches: ['usage'], icon: 'refresh', phone: false },
+    { id: 'configuration', label: 'Configuration', to: { name: 'configuration' }, matches: ['configuration'], icon: 'key', phone: false },
+    { id: 'catalog', label: 'MCP catalog', to: { name: 'catalog' }, matches: ['catalog'], icon: 'search', phone: false },
+    { id: 'workflows', label: 'Workflows', to: { name: 'workflow' }, matches: ['workflow'], icon: 'follow', phone: false },
     { id: 'you', label: 'You', to: { name: 'you' }, matches: ['you'], icon: 'you', phone: true },
   ])
 }

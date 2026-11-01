@@ -51,6 +51,20 @@ async function out(everywhere: boolean) {
           <RouterLink :to="{ name: 'team' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-team">Team</RouterLink>
         </nav>
       </section>
+      <!-- VELDO-0131: the factory screens the phone's bottom bar has no room for. -->
+      <section class="panel you-setup" aria-labelledby="you-factory">
+        <h2 id="you-factory" class="panel-title">Factory</h2>
+        <nav class="you-actions" aria-label="Factory">
+          <RouterLink :to="{ name: 'project' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-projects">Projects</RouterLink>
+          <RouterLink :to="{ name: 'backlog' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-backlog">Backlog</RouterLink>
+          <RouterLink :to="{ name: 'workers' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-workers">Workers</RouterLink>
+          <RouterLink :to="{ name: 'proof' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-proof">Gate and review</RouterLink>
+          <RouterLink :to="{ name: 'usage' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-usage">Usage</RouterLink>
+          <RouterLink :to="{ name: 'configuration' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-configuration">Configuration</RouterLink>
+          <RouterLink :to="{ name: 'catalog' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-catalog">MCP catalog</RouterLink>
+          <RouterLink :to="{ name: 'workflow' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-workflows">Workflows</RouterLink>
+        </nav>
+      </section>
       <section class="panel you-device" aria-labelledby="you-device">
         <h2 id="you-device" class="panel-title">This device</h2>
         <div class="you-row">
