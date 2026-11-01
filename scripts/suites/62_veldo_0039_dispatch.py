@@ -809,7 +809,8 @@ sys.exit(child.wait())
                 observed['owner_stop'] = {'stale': stale, 'outside': outside, 'roleless': roleless, 'requested': requested[0],
                                           'swept': swept, 'state': ended.get('state'), 'again': again,
                                           'stop_request': ended.get('stop_request'), 'elapsed': round(elapsed, 2),
-                                          'actors': actors}
+                                          'actors': actors, 'termination': ended.get('termination'),
+                                          'stop_requested': stopping.stop_requested}
                 check('dispatch/owner-stop',
                       running_seen.get('dispatch') == sid
                       and stale == ('refused', 'stale_version') and outside == ('refused', 'not_authorized:scope')
@@ -818,7 +819,7 @@ sys.exit(child.wait())
                       and (held.get('stop_request') or {}).get('by') == 'owner-person'
                       and (held.get('stop_request') or {}).get('result') is None
                       and pending_before == [(sid, 'owner_stop')] and swept == [(sid, True)]
-                      and ended.get('state') == 'exited' and elapsed < 60
+                      and ended.get('state') == 'exited' and elapsed < 40 and stopping.stop_requested is True
                       and ((ended.get('stop_request') or {}).get('result') or {}).get('asked') is True
                       and dispatches.stop_requests() == []
                       and again[0] == 'refused' and str(again[1]).startswith('transition_refused:exited')

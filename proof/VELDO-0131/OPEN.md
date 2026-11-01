@@ -33,33 +33,56 @@ scripts/suites/71_veldo_0130_api.py (`_V130_EXPECTED_KINDS` gains `account`, `ag
 reads/authoritative row still finds every kind in the store) and scripts/suites/104_veldo_0164_scoped_reads.py
 (the shared set gains the same three kinds). Both edits are additive; both suites are green.
 
-## REMAINING
+## Owner approval, fix round 3 (Telegram 38184)
 
-1. **Backlog priority save: no route, blocked on files the review did not confirm.** The review expected the
-   route to sit over the engine's reprioritize command in the four API files. It cannot: `control_backlog.Backlog`
-   accepts a command only under the principal's OWN enrolled key (`_apply` verifies `active_key(principal)`), and
-   unlike control_team.py (`_api_edge`), control_intake.py and control_request_settlement.py it has no path that
-   accepts the API edge's signature over a verified assertion. The authority service also constructs no Backlog
-   for ApiAuthority (control_service_api.py). A route published over it would refuse every save, and
-   control_api_models' own rule is that an action without a working command has no route, so no route was
-   published and `owner_priority` stays a gap owned by VELDO-0078. Completing it needs the owner to widen the
-   footprint to control_backlog.py (an API-edge verification for `reprioritize`, as control_team._api_edge) and
-   control_service_api.py (hand a Backlog to ApiAuthority), or to amend VELDO-0078. The UI is wired (F5): "Save
-   priority order" maps the order to ranks 1 to 5 (`rankChanges`, src/features/backlog/backlog.ts) and sends one
-   `{item, item_version, rank}` per changed item through `src/api/actions.ts` to the contract's route, else
-   `backlog.reprioritize`; until that route is published it sends nothing and the result names the route and
-   VELDO-0078 (ac2/pending-actions).
-2. **Worker stop: waits for the owner.** The review did not confirm the engine change (a signed stop command in
-   control_dispatch.py and control_launch.py, owned by VELDO-0041); neither file was touched. The Stop button keeps
-   its inline confirmation and now sends `{dispatch, dispatch_version}` through `src/api/actions.ts` to the
-   contract's route, else `workers.stop`, the moment the route is published; until then nothing is sent and the
-   result names `workers.stop` and VELDO-0041 (ac2/pending-actions).
-3. **Worker cap: no engine command (F2).** Capability is now shown on every worker card (the dispatch contract's
-   adapter, configuration role and revision, servers and tools). No engine command sets a worker or machine cap:
-   machines are derived from dispatches until VELDO-0125's machine registry exists (the read's own gap), and an
-   account's run concurrency is set only when VELDO-0062's `register` records it (VELDO-0160's pool reads it).
-   No command was invented; the workers screen names the gap (`workers-cap-gap`). Owning specification:
-   VELDO-0125 (machine and host capability records), with VELDO-0062 for a per-account concurrency change.
+Round 2 left three controls waiting on engine commands this ticket's footprint did not cover (round 2's REMAINING 1
+to 3, kept in git history at 6727193e). The owner approved widening the footprint so they work: Telegram 38184
+("Yes"), answering 38182 and 38183. The approval covers exactly three authority commands, each reached only through
+the authenticated API with the existing commands' signing, refusal taxonomy, journal record and observability:
+
+1. backlog priority save: control_backlog.Backlog accepts the api edge's signature as control_team._api_edge does,
+   control_service_api hands the Backlog to ApiAuthority, and `backlog.reprioritize` is published over the
+   existing reprioritize command;
+2. worker stop: a signed stop command in the dispatch and launch authority (control_dispatch, control_launch) that
+   requests the existing stop mechanism, recorded in the journal with its result, published as `workers.stop`;
+3. worker cap: a signed command that sets a concurrency cap as a versioned record, published, with the cap control
+   on the workers row.
+
+Files this round changed outside the 0131-only paths (each engine/.veldo/ file and its .veldo/ copy byte-identical
+by cmp; no protected path):
+
+| File | Change |
+|---|---|
+| control_api_assertion.py | operations `reprioritize_backlog` (item, item_version, rank), `stop_worker` (dispatch, dispatch_version), `set_account_cap` (account, account_version, concurrency), each at command_acceptance; `domain_request` derives reprioritize's own backlog command, which the protected signer signs as it signs the team command |
+| control_backlog.py | `apply(packet, api_assertion=None)`; `_api_edge` verifies the assertion and the derived command against the enrolled api edge key, the assertion live and its credential current, for reprioritize only; the record and history carry channel api and the assertion digest; taxonomy names `unauthenticated` |
+| control_dispatch.py | `request_stop` (a person holding project_owner whose scope covers the contract's project, the dispatch at the version shown, prepared, accepted or running, no stop pending) records `stop_request` with no state moved; `stop_result` (the runner, a service member) records the ask's result; `stop_requests` lists the pending ones; both outside TRANSITIONS, so the lifecycle table is unchanged |
+| control_launch.py | `Runner.honor_stops` (called at the start of every `sweep`) asks each pending stop's receiver through `Launch.stop` and records `stop_result`; `stop_requester(runner)` is the in-process ask, as control_project.runner_stop |
+| control_accounts.py | `cap` sets an account's concurrency (1 to CAP_LIMIT 16) at the version shown, never retried, by a person holding an owner role whose scope is the whole factory; `concurrency_history` keeps each change |
+| control_api_authority.py | `backlog`, `dispatches`, `accounts` and `stop` writers; `_work` executes the three operations and names each writer's refusal in the specification's classes (`_named`); `commands()` maps them to backlog_operation, dispatch_transition and account_registry |
+| control_api.py | routes `backlog.reprioritize`, `workers.stop` and `workers.cap` in a new `work` family; expected versions and targets of the assertion; the result fields served |
+| control_api_models.py | ACTIONS `owner_priority` and `worker_stop` now carry routes, and `worker_cap` is added; their AC4 gaps are gone |
+| control_service_api.py | constructs the Backlog, Dispatches and Accounts on the ingress connection and hands them to ApiAuthority (an account ownership bound to other code leaves the cap route unavailable_service by name, never the service) |
+
+The suites of those modules gain a row each (accepted, stale refused, unauthorized refused): 71 work/backlog-reprioritize,
+work/worker-stop and work/worker-cap (and its route-family and AC4 contract checks name the new routes), 73
+priority/owner-reprioritize, 62 dispatch/owner-stop (a real receiver and worker: the runner's sweep stops it), 75
+accounts/owner-cap. Suite 71's fixture registers its account through Accounts (the writer declares the kind's owner,
+so a fixture may no longer write one).
+
+## REMAINING after fix round 3
+
+1. **A machine's own cap.** The cap built here is an account's run concurrency (control_accounts), the cap the
+   pool reads today. A per-machine cap needs a machine record, and machines are still derived from dispatches
+   until VELDO-0125's machine registry exists (the workers read's own AC2 gap). The workers screen says so.
+2. **When a running factory asks the receiver.** The API records the stop request and its result is recorded by
+   the runner that holds the run's receiver, in `Runner.honor_stops`, which every `Runner.sweep` makes first. In
+   the running factory that runner is a line's (control_service.Line, the factory loop in the authority service's
+   process), and its sweep runs around a preparation (`prepare`) and a run's end (`wait`). So a stop of the only
+   running worker on an otherwise idle line waits for that line's next preparation or end; the card says "waiting
+   for the runner to ask its receiver" until the record says it was asked. Making the ask immediate is one call of
+   `self.runner.honor_stops()` at the start of each loop pass (control_service.Line.run), or passing
+   `control_launch.stop_requester(line.runner)` to the API's judge as its `stop`; both are in control_service.py,
+   which the approval (Telegram 38184) does not name, so neither was made. Needs the owner's word on that file.
 
 ## A. For the owner: suite 120 on the unconfined list (protected path)
 
