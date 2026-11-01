@@ -1,0 +1,100 @@
+/* VELDO-0159: the MCP server form and its write-only credential fields. Tokens only (tokens.css). */
+@layer components {
+  .server-open {
+    display: grid;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+  .server-form {
+    display: grid;
+    gap: var(--space-4);
+    padding-bottom: var(--space-6);
+  }
+  .server-section {
+    display: grid;
+    gap: var(--space-3);
+    padding-bottom: var(--space-4);
+  }
+  .server-grid,
+  .server-credentials,
+  .binding-list,
+  .binding-add {
+    display: grid;
+    gap: var(--space-2);
+    padding: 0 var(--space-4);
+  }
+  .server-grid .field-label {
+    margin-top: var(--space-2);
+  }
+  .server-add {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .server-add-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+  .binding-list {
+    margin: 0;
+    list-style: none;
+  }
+  .binding-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .credential {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-control);
+    background: var(--paper);
+  }
+  .credential-title {
+    font-size: var(--text-base);
+    font-weight: 650;
+    overflow-wrap: anywhere;
+  }
+  .credential-fields {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .credential-note,
+  .server-revision {
+    color: var(--ink-muted);
+    font-size: var(--text-sm);
+  }
+  .credential-actions {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .form-problem {
+    color: var(--stop-text);
+  }
+  .server-save {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .server-saved {
+    font-weight: 600;
+  }
+  @media (min-width: 768px) {
+    .server-add-row {
+      grid-template-columns: minmax(0, 1fr) max-content;
+    }
+    .binding-row {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, 3fr) max-content;
+      align-items: center;
+    }
+    .binding-row-header {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 4.2fr) max-content;
+    }
+    .credential-actions {
+      grid-template-columns: repeat(2, max-content);
+    }
+  }
+}

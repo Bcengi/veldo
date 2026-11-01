@@ -27,6 +27,9 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/views/DecisionsView.vue'),
     meta: { session: true, title: 'Decision' },
   },
+  // VELDO-0159: the MCP server form and its write-only credential fields.
+  { path: '/servers', name: 'servers', component: () => import('@/views/ServersView.vue'), meta: { session: true, title: 'MCP servers' } },
+  { path: '/servers/:server', name: 'server', component: () => import('@/views/ServersView.vue'), meta: { session: true, title: 'MCP server' } },
   { path: '/you', name: 'you', component: () => import('@/views/YouView.vue'), meta: { session: true, title: 'You' } },
   { path: '/:rest(.*)*', name: 'not-found', component: () => import('@/views/NotFoundView.vue'), meta: { title: 'Not found' } },
 ]

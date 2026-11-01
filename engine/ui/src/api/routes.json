@@ -14,6 +14,10 @@
     "reads.decisions": {"method": "GET", "path": "/api/v1/domains/{domain}/decisions", "required": [], "optional": []},
     "reads.workers": {"method": "GET", "path": "/api/v1/domains/{domain}/workers", "required": [], "optional": []},
     "reads.work": {"method": "GET", "path": "/api/v1/domains/{domain}/work", "required": [], "optional": []},
+    "mcp.save": {"method": "POST", "path": "/api/v1/domains/{domain}/mcp/catalog/save", "required": ["definition", "base"], "optional": []},
+    "mcp.read": {"method": "GET", "path": "/api/v1/domains/{domain}/mcp/catalog", "required": ["server", "revision"], "optional": []},
+    "mcp.credential_set": {"method": "POST", "path": "/api/v1/domains/{domain}/mcp/credentials/set", "required": ["id", "label", "base", "value"], "optional": []},
+    "mcp.credential_delete": {"method": "POST", "path": "/api/v1/domains/{domain}/mcp/credentials/delete", "required": ["id", "base"], "optional": []},
     "runs.record": {"method": "GET", "path": "/api/v1/domains/{domain}/runs/record", "required": ["dispatch"], "optional": ["after"]},
     "runs.record_stream": {"method": "GET", "path": "/api/v1/domains/{domain}/runs/record/stream", "required": ["dispatch"], "optional": ["after"]}
   }

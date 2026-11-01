@@ -1,0 +1,8 @@
+PASS api/set {"outcome": "written", "set_at": 1793508419.578829, "set_by": "owner"} record 1793508419.578829
+PASS api/replace {"outcome": "replaced", "set_at": 1793508419.6654472, "set_by": "owner"} record 1793508419.6654472
+PASS api/delete {"outcome": "deleted", "set_at": 1793508419.748012, "set_by": "owner"} record 1793508419.748012
+PASS authority/set-replay first 1793508419.7695477 replay 1793508419.7695477 record 1793508419.7695477
+PASS authority/delete-replay first 1793508421.2938643 replay 1793508421.2938643 record 1793508421.2938643
+PASS authority/no-value 
+replay-set-at: 6 of 6 checks passed
+exit 0
