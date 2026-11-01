@@ -36,40 +36,86 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      Nuxt UI 4.12.0 (exact pin, MIT, NuxtLabs) is installed through its Vite plugin in the existing Vue 3
-      + Vite app (no Nuxt framework, no SSR). Veldo's own form and display controls (engine/ui/src/components
-      VButton, VTextField, VTextArea, VSwitch, VRadio, StatePanel and the like, plus tabs, modals, toasts,
-      badges, menus and tables where the screens have them) are replaced by the Nuxt UI components. Nuxt
-      UI's own dependencies are approved by the owner's dependency rule (Telegram 28929: dependencies of
-      software we pick are approved automatically, pinned exactly and recorded). The origin, license and
-      version evidence for Nuxt UI is in proof/VELDO-0229/.
+      Nuxt UI 4.12.0 (exact pin, MIT, NuxtLabs) runs in the existing Vue 3, TypeScript, Vite, Tailwind CSS,
+      Pinia and Vue Router app through its Vite plugin and Vue plugin (no Nuxt framework, no SSR), with UApp at
+      the root (Telegram 38234 and 38235, sections 1 and 4). The shared buttons, cards, status badges and the
+      account avatar are Nuxt UI components (UButton, UCard, UBadge, UAvatar). VButton keeps its interface and
+      is adapted internally onto UButton: label, pending label, pending, disabled, variant, size, block, button
+      type, passed attributes and the emitted click event are preserved. There is one theme preference:
+      useTheme() drives both Veldo's data-theme attribute and Nuxt UI's dark and light classes; the sidebar
+      carries a clearly labeled appearance switch and the account screen keeps its control, both on that one
+      preference. Every new direct package is pinned exactly and recorded in dependency-policy.json; @vueuse/*
+      is no longer denied (the VELDO-0131 and VELDO-0145 amendments, owner's dependency rule Telegram 28929);
+      suite 120's stack lists Nuxt UI; the UI's CLAUDE.md and docs describe the stack, the theme and the
+      wrappers.
     falsified_by: >
-      A Veldo V* control left in a screen, or @nuxt/ui missing from the lockfile or not exactly pinned; the
-      suite 120 ac4/stack row must fail.
+      @nuxt/ui missing from the lockfile or not exactly pinned (suite 113 ui/dependency-policy and suite 120
+      ac4/dependency-policy and ac4/stack fail); a VButton component test that finds no Nuxt UI button, a lost
+      pending label, disabled state, type, attribute or click event; a useTheme unit test where setting the
+      preference leaves data-theme and the dark class disagreeing, or the sidebar switch and the account
+      switch showing different preferences.
   - id: AC2
     text: >
-      Behavior is unchanged: the same routes, API calls, refusals, accessibility (the axe checks) and phone
-      layouts. Every existing UI check passes: suites 113, 117, 118, 119 and 120, the VELDO-0145 layout
-      spec and the unit tests.
+      The visual direction of Telegram 38234 and 38235 (sections 2 and 3): a calm, spacious infrastructure and
+      AI control center on the owner's palette (light page #F6F8FC, panel #FFFFFF, text #1B263C, secondary
+      #59667B, borders #E0E6EF, primary #3956DF; dark page #10141C, panel #181E29, text #E7EDF7, secondary
+      #A1ACC0, borders #2A3342, primary #4862E8), blue for actions and selection, green running, amber waiting,
+      red failures, every status color with its text, IBM Plex Sans for the interface and IBM Plex Mono for
+      logs, code and ids, and about a 240px sidebar, 32px gutters, 24px between panels, 14px panel and 8px
+      control corners on desktop. The sidebar is restrained with navigation, factory identity, host activity
+      and an account footer. Overview: the four real signals (running, blocked, failed, waiting on me) in one
+      joined summary panel with large counts; beneath it the oldest waiting decision (question, waiting and
+      deadline, a prominent answer action) and the host roster; then the ranked inbox and the current runs.
+      Runs: active runs separated from stopped runs, unit, project, host, pipeline position and status easy
+      to scan, and a header summary of runs, distinct projects and distinct hosts computed from the displayed
+      rows. Run detail: the complete record (tool calls, output, errors, Monaco diffs), live updates, reconnect,
+      follow, search, raw view and the station pipeline kept, the record taking most of the screen height.
+      Decisions: on desktop the ranked inbox beside the open decision, each scrolling on its own, with the
+      question, risk, choices, rationale and answer action clearly organized; on phones the single-pane flow
+      and its accessible answer controls. Sign-in, account preferences, empty, loading and error states carry
+      the same type, theme and controls. No metric is shown that the existing API responses do not support.
     falsified_by: >
-      Any row of suites 113, 117, 118, 119 or 120, any test of the VELDO-0145 layout spec, or any unit test
-      failing on the moved UI.
+      A unit test of the runs summary whose run, project or host count differs from the rows shown; the
+      VELDO-0145 layout spec (decisions panes scrolling independently, the record's share of the height, the
+      phone single-pane flow) or suites 113 and 120 failing; a section 7 screenshot that does not show the
+      described layout or palette.
   - id: AC3
     text: >
-      The look keeps Veldo's identity on Nuxt UI's theme: Veldo's fonts (IBM Plex) and palette from
-      engine/ui/src/styles/tokens.css mapped onto Nuxt UI's primary and neutral colors, dark and light
-      both. The built UI makes no runtime request off the machine: icons are bundled from a local
-      collection (no Iconify API) and fonts stay local (no font CDN, @nuxt/fonts off).
+      Security and behavior are preserved (Telegram 38234 and 38235, section 5): every read and action still
+      goes through the existing API layer; passkey sign-in, sessions, authorization, decision-version binding,
+      pending states, named refusals and the API's actual outcome are unchanged; factory content renders as
+      text. The strict content security policy stays intact: fonts, icons, scripts and styles are served from
+      the build; Nuxt UI's runtime color injector (which writes a style element) is replaced by a narrowly
+      scoped, documented adapter and the theme variables come from compiled CSS; icons, including loading
+      indicators, are bundled from a local collection so nothing requests the Iconify API; the Monaco
+      integration is unchanged. The primary button meets contrast in its normal and hover states in both
+      themes, and keyboard focus stays visible on Nuxt UI controls.
     falsified_by: >
-      A built asset that names the Iconify API host or a font CDN, or a browser test that sees a response
-      from another origin; the suite 120 ac2/api-only row must fail.
+      Any content security policy violation or response from another origin in the browser tests (the layout
+      spec's policy check, suite 120 ac2/api-only, suite 113's served-assets row); a built asset naming the
+      Iconify API host; an axe color-contrast violation; a browser check that finds no visible focus outline
+      on a focused Nuxt UI button or a primary button below 4.5:1 in its normal or hover state.
   - id: AC4
     text: >
-      Screenshots: PNGs of these screens against the factory harness, dark and light, desktop 1440x900,
-      plus Overview and Backlog on a 390x844 phone in dark: Sign in, Overview, Backlog, Workers, Decisions,
-      Role, Team, Configuration, Usage. In proof/VELDO-0229/screens/ with an index.md naming each.
+      Verified as section 6 of Telegram 38234 and 38235 asks: the typecheck, the production build, the unit and
+      component tests, and the browser tests (suites 113, 117, 118, 119 and 120 and the VELDO-0145 layout spec)
+      pass; both themes are exercised at 360, 390, 1280 and 1440 pixels with no page overflow or overlapping
+      controls, readable contrast, visible focus, accessible names that include the visible labels, usable
+      phone touch targets, the theme kept across navigation and reload, working sign-in, live run viewing and
+      decision submission, and no policy violation or unexpected external request. Tests that selected a native
+      element now rendered by Nuxt UI select it by role or label, keeping their row names and intent.
     falsified_by: >
-      A named screen without its PNG in proof/VELDO-0229/screens/ or without its line in the index.
+      Any failing row of suites 113, 117, 118, 119 or 120, any failing test of the layout spec (including its
+      theme persistence test), a failing typecheck, build or unit test.
+  - id: AC5
+    text: >
+      Screenshots (Telegram 38234 and 38235, section 7): full-resolution PNGs captured from the production
+      build with the factory harness of engine/ui/e2e/, labeled as seeded demonstration data, at least
+      Overview dark, Overview light, Run detail dark with a code diff, Decisions light and one phone screen, in
+      proof/VELDO-0229/screens/ with an index.md naming each and saying the data is seeded.
+    falsified_by: >
+      One of the five named screens without its PNG or its line in the index, or an index that does not say
+      the data is seeded demonstration data.
 required_evidence: [unit, integration, ui_states]
 rollback: >
   Revert the change: the UI returns to Veldo's own controls on native elements; the API, its routes and
@@ -80,6 +126,10 @@ rollback: >
 
 The owner wants Veldo's web UI built on a real component library rather than Veldo's own controls:
 "for veldo, let's do nuxt ui" (Telegram 38228), with screenshots once it is integrated (Telegram 38229).
+The full requirements followed in Telegram 38234 and 38235: integrate Nuxt UI into the existing
+application and give it a polished, spacious infrastructure and AI operations dashboard design with
+deliberate dark and light themes, verify the existing workflows, and show browser screenshots. They
+supersede the shorter brief and the first acceptance criteria.
 
 ## Context
 
@@ -89,12 +139,16 @@ the role and team forms and the factory screens on the same controls. Nuxt UI ru
 app through its Vite plugin, so the stack keeps Vue, Vite, Tailwind 4, Pinia, vue-router, Monaco,
 Chart.js and TanStack Table, and the controls move onto Nuxt UI. Its dependencies include @vueuse/*,
 which VELDO-0131 had rejected; the owner's dependency rule (Telegram 28929) approves the dependencies of
-software he picks, so the amendments of VELDO-0131 and VELDO-0145 on this date lift that rejection.
+software he picks, so the amendments of VELDO-0131 and VELDO-0145 on this date lift that rejection. The
+owner's selection of Nuxt UI supersedes the older instruction to use no component library (Telegram
+38234); the security, dependency and testing requirements stay. Wrappers whose interface protects
+behavior (VButton) stay and are adapted internally.
 
 ## Out of scope
 
 New screens, new routes, new behavior and any change to the API; the Nuxt framework and SSR; Nuxt UI's
-editor, chat and content components the screens do not need.
+editor, chat and content components the screens do not need; metrics the existing API responses do not
+support; production deployment (Telegram 38235).
 
 ## What the reviewer judges
 
@@ -111,6 +165,10 @@ Nuxt UI is MIT, from NuxtLabs. Its icons are rendered from a local Iconify JSON 
 start, so no request reaches the Iconify API; the IBM Plex faces stay on the Fontsource packages.
 
 ## History
+
+2026-11-01: acceptance criteria rewritten to the owner's full requirements (Telegram 38234 and 38235), which
+supersede the first four; the reference screenshots the owner mentions did not reach the repository, so the
+written visual direction governs.
 
 2026-11-01: written and marked ready on the owner's decision (Telegram 38228 and 38229). The brief asked for
 risk medium; the repository's tiers are low, standard, high and critical, and the footprint spans the

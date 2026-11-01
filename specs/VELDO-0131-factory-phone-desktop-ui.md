@@ -228,10 +228,12 @@ the phone keeps its touch controls and the same reorder stays available from the
 rule against drag-only and hover-only actions is unchanged. Every claim, set, falsifier and falsified_by
 is as it was. The History entries above record what was decided then and are left as written.
 
-## Amendment 2026-11-01, Nuxt UI (owner, Telegram 38229)
+## Amendment 2026-11-01, Nuxt UI (owner, Telegram 38229 and 38234)
 
 The stack's "Veldo's own controls on native elements" becomes Nuxt UI: the owner decided to build the web
-UI on Nuxt UI (Telegram 38228 and 38229), installed through its Vite plugin in the same Vue 3 + Vite app,
+UI on Nuxt UI (Telegram 38228, 38229 and 38234), installed through its Vite plugin in the same Vue 3 + Vite app,
 under VELDO-0229. @vueuse/* is no longer rejected: it is a Nuxt UI dependency, approved by the owner's
 dependency rule (Telegram 28929: dependencies of software we pick are approved automatically, pinned
-exactly and recorded). Nothing else changes.
+exactly and recorded). Telegram 38234: the selection of Nuxt UI supersedes the older
+instruction to use no component library; the security, dependency and testing requirements stay. Nothing
+else changes.

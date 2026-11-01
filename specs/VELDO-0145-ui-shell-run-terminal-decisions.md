@@ -195,10 +195,12 @@ falsified_by is as it was. The AC3 row "answer as a member outside the project's
 as written (a member whose scope no longer covers the request is refused `unauthorized:out_of_scope`),
 on the owner's ruling on the review's F4.
 
-## Amendment 2026-11-01, Nuxt UI (owner, Telegram 38229)
+## Amendment 2026-11-01, Nuxt UI (owner, Telegram 38229 and 38234)
 
 The stack's "Veldo's own controls on native elements" becomes Nuxt UI: the owner decided to build the web
-UI on Nuxt UI (Telegram 38228 and 38229), installed through its Vite plugin in the same Vue 3 + Vite app,
+UI on Nuxt UI (Telegram 38228, 38229 and 38234), installed through its Vite plugin in the same Vue 3 + Vite app,
 under VELDO-0229. @vueuse/* is no longer rejected: it is a Nuxt UI dependency, approved by the owner's
 dependency rule (Telegram 28929: dependencies of software we pick are approved automatically, pinned
-exactly and recorded). Nothing else changes.
+exactly and recorded). Telegram 38234: the selection of Nuxt UI supersedes the older
+instruction to use no component library; the security, dependency and testing requirements stay. Nothing
+else changes.
