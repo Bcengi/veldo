@@ -6,7 +6,8 @@ by deadline urgency, then risk, then deadline. Answers through `decisions.answer
 [../ui/decision.md](../ui/decision.md)).
 
 Wide (1024 px and up): the ranked inbox beside the open decision, exactly the viewport's height, each
-scrolling on its own; with nothing picked, the most urgent decision opens (the route becomes its
+scrolling on its own; the open decision shows its due time and risk badge, the question, the risk
+statement in its own box, the choices, the rationale field and the answer action, in that order; with nothing picked, the most urgent decision opens (the route becomes its
 address). Narrower: one at a time, with a back link.
 
 States: loading, empty ("Nothing is waiting on you"), error (the read's refusal), a decision that is not

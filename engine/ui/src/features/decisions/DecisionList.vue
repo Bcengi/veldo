@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import UBadge from '@nuxt/ui/components/Badge.vue'
 import Lamp from '@/components/Lamp.vue'
 import type { LampState } from '@/app/navigation'
 import { dueText, riskOf, urgencyOf, type PendingDecision, type Urgency } from './inbox'
 
 /** The inbox: each pending decision with its question, how soon it is due and its risk, ranked by the store
- * (most urgent first). The lamp is colored by urgency. A row opens the decision. */
+ * (most urgent first). The lamp is colored by urgency; the risk is a badge with its word. A row opens the decision. */
 const props = defineProps<{ decisions: PendingDecision[]; current: string | null; now: number }>()
 
 const LAMP: Record<Urgency, { lamp: LampState; word: string }> = {
@@ -44,7 +45,15 @@ function view(item: PendingDecision) {
           <span class="inbox-question">{{ item.presentation?.question || item.brief || 'A decision not presented yet' }}</span>
           <span class="inbox-facts">
             <span v-if="view(item).due" class="inbox-due" data-testid="due">{{ view(item).due }}</span>
-            <span v-if="view(item).risk" class="inbox-risk" :class="`risk-${view(item).level}`">{{ view(item).risk }}</span>
+            <UBadge
+              v-if="view(item).risk"
+              class="inbox-risk status-badge"
+              :class="`risk-${view(item).level}`"
+              :color="view(item).level === 'high' ? 'error' : view(item).level === 'medium' ? 'warning' : 'neutral'"
+              variant="subtle"
+              size="sm"
+              :label="view(item).risk"
+            />
             <span v-if="!item.presentation">Not presented yet</span>
             <span v-if="item.scope.length" class="inbox-scope">{{ item.scope.join(', ') }}</span>
           </span>
