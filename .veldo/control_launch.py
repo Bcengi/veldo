@@ -516,13 +516,18 @@ class Runner:
         Launch this runner holds asks its receiver to stop (Launch.stop: R44's cooperative stop, then the group's
         escalation), and the runner records what the ask returned (stop_result: asked true, or false when it
         holds no receiver of that dispatch to ask). Nothing is recovered, retried or restarted: the worker's end
-        is recorded by its receiver as every end is. The [(dispatch, asked)] it recorded, in order."""
+        is recorded by its receiver as every end is. A request for a dispatch still running that this runner does
+        not hold is left waiting: another runner on the same store may hold it and asks it on its own sweep. One
+        whose dispatch has ended is recorded not asked, since no receiver is left to ask. The [(dispatch, asked)]
+        it recorded, in order."""
         pending = getattr(self.dispatches, 'stop_requests', None)
         if pending is None:
             return []
         done = []
         for dispatch_id, reason in pending():
             launch = self.launches.get(dispatch_id)
+            if launch is None and (self.dispatches.record(dispatch_id) or {}).get('state') in D.STOPPABLE:
+                continue
             try:
                 asked = bool(launch is not None and launch.stop(reason or 'owner_stop'))
             except Exception:  # noqa: BLE001 - a receiver that cannot be asked is recorded as not asked
