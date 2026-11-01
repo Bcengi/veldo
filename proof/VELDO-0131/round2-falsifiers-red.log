@@ -1,0 +1,65 @@
+Running as unit: veldo-0131r2-1793516159.service; invocation ID: 1f4ea27f1bd34662bebe594c9718d15f
+baseline: green (failed rows [])
+falsifiers: 4 of 13 proven (not_proven)
+ui131-decision-action-hidden-360: red ['VELDO-0131 ac1/screens-360']
+falsifiers: 4 of 13 proven (not_proven)
+ui131-completion-from-build-state: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac2/live', 'VELDO-0131 ac2/completion-receipt']
+falsifiers: 4 of 13 proven (not_proven)
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 5min 7.725s
+CPU time consumed: 4min 25.468s
+Memory peak: 508.0K
+Memory swap peak: 0B
+Running as unit: veldo-0131r2-1793516470.service; invocation ID: cb7fcebc84444aaa97d5a8fe1c43e01f
+ui131-node-settings-hover-only: red ['VELDO-0131 ac1/screens-360', 'VELDO-0131 ac1/screens-390', 'VELDO-0131 ac1/screens-1280', 'VELDO-0131 ac1/screens-1440', 'VELDO-0131 ac3/keyboard-desktop', 'VELDO-0131 ac3/touch-phone']
+falsifiers: 4 of 13 proven (not_proven)
+ui131-tiered-dependency-locked: red ['VELDO-0131 ac4/dependency-policy']
+falsifiers: 4 of 13 proven (not_proven)
+ui131-identities-dropped: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac1/repositories', 'VELDO-0131 ac2/metadata-only']
+falsifiers: 5 of 13 proven (not_proven)
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 6min 25.940s
+CPU time consumed: 4min 39.767s
+Memory peak: 256.0K
+Memory swap peak: 0B
+Running as unit: veldo-0131r2-1793516860.service; invocation ID: 4348b6a6e8e84537a06a727f96b56c95
+ui131-configurations-team-named-only: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac1/every-configuration']
+falsifiers: 6 of 13 proven (not_proven)
+ui131-catalog-first-server-only: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac1/whole-catalog']
+falsifiers: 7 of 13 proven (not_proven)
+ui131-credential-metadata-dropped: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac1/whole-catalog', 'VELDO-0131 ac2/metadata-only']
+falsifiers: 8 of 13 proven (not_proven)
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 5min 30.609s
+CPU time consumed: 4min 27.062s
+Memory peak: 256.0K
+Memory swap peak: 0B
+Running as unit: veldo-0131r2-1793517194.service; invocation ID: a496952a7aa745f8aea46f8a142d2cca
+ui131-provider-unread: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac1/usage-provider']
+falsifiers: 9 of 13 proven (not_proven)
+ui131-capability-dropped: red ['VELDO-0131 ac1/worker-capability']
+falsifiers: 10 of 13 proven (not_proven)
+ui131-stop-shown-unsent: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac2/pending-actions']
+falsifiers: 11 of 13 proven (not_proven)
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 5min 11.826s
+CPU time consumed: 4min 19.702s
+Memory peak: 512.0K
+Memory swap peak: 0B
+Running as unit: veldo-0131r2-1793517511.service; invocation ID: 4476b3ebb0294a0eb8a40b8f69425578
+ui131-priority-shown-unsent: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac2/pending-actions']
+falsifiers: 12 of 13 proven (not_proven)
+api131-identity-credentials-served: red ['VELDO-0131 ac2/metadata-only']
+falsifiers: 13 of 13 proven (red_under_each_mutant_green_restored)
+restored: green (failed rows [])
+falsifiers: 13 of 13 proven (red_under_each_mutant_green_restored)
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 4min 54.427s
+CPU time consumed: 4min 20.933s
+Memory peak: 256.0K
+Memory swap peak: 0B

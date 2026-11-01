@@ -1,0 +1,15 @@
+
+Running 10 tests using 1 worker
+
+  ✓   1 e2e/layout.spec.ts:374:3 › every screen and state at 360px, light and dark (29.0s)
+  ✓   2 e2e/layout.spec.ts:374:3 › every screen and state at 390px, light and dark (28.3s)
+  ✓   3 e2e/layout.spec.ts:374:3 › every screen and state at 1280px, light and dark (29.7s)
+  ✓   4 e2e/layout.spec.ts:374:3 › every screen and state at 1440px, light and dark (29.3s)
+  ✓   5 e2e/layout.spec.ts:425:1 › phone decisions: the inline answer action is visible, unclipped and works at 360px (701ms)
+  ✓   6 e2e/layout.spec.ts:457:1 › keyboard only on desktop: sign in, open a decision and answer it without a pointer (1.2s)
+  ✓   7 e2e/layout.spec.ts:490:1 › touch on phone: open a run and a decision from the bottom bar and answer by tapping (1.6s)
+  ✓   8 e2e/layout.spec.ts:512:1 › served assets: every response is this origin and every asset is a file of the build (4.0s)
+  ✓   9 e2e/layout.spec.ts:531:1 › phone terminal: the record gets the screen, the headline unclipped, the strip on one line and the controls in one bar (1.5s)
+  ✓  10 e2e/layout.spec.ts:566:1 › desktop decisions: the most urgent decision is open, and the list scrolls on its own (1.6s)
+
+  10 passed (2.2m)
