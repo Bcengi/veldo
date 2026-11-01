@@ -422,4 +422,19 @@
     display: grid;
     gap: var(--space-3);
   }
+  /* On a phone every control of the factory screens is a 44 px touch target, small buttons included. */
+  @media (max-width: 767px) {
+    .tree-card .vbtn,
+    .factory-card .vbtn,
+    .factory-actions .vbtn,
+    .flow-order .vbtn,
+    .flow-palette .vbtn,
+    .flow-zoom .vbtn,
+    .flow-pan .vbtn,
+    .flow-props .vbtn,
+    .factory-sheet .vbtn {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
 }

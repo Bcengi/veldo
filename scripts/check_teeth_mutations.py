@@ -11791,6 +11791,46 @@ def cases():
           "        ? await saveDefaultTeam(team, await latestDefaultRevision())  // defect: not the revision it was edited from\n",
           ['team/default-stale-save'], also=[("  DEFAULT_TEAM,\n", "  DEFAULT_TEAM,\n  latestDefaultRevision,\n")])
 
+    # VELDO-0131: the factory screens. Each mutant is one UI source module of engine/ui (or its lockfile); suite 120
+    # builds the UI with it laid over a scratch copy, applies the dependency policy and runs the browser tests
+    # against the factory harness.
+    def ui131(name, directory, module, old, new, rows, also=()):
+        add(131, name, '120_veldo_0131_factory_ui.py', module, old, new, rows, also)
+        result[-1]['dir'] = directory
+
+    # AC1 (declared falsifier): hide an inline decision action at 360px width.
+    ui131('ui131-decision-action-hidden-360', 'engine/ui/src/features/decisions', 'DecisionDetail.vue',
+          'block data-testid="send-answer" />',
+          'block data-testid="send-answer" v-show="!hideAt360" />',
+          ['ac1/screens-360'],
+          also=[("const props = defineProps<{ decision: PendingDecision }>()\n",
+                 "const props = defineProps<{ decision: PendingDecision }>()\n"
+                 "const hideAt360 = useMedia('(max-width: 360px)')  // defect: the inline answer is hidden on a 360px phone\n"),
+                ("import VTextArea from '@/components/VTextArea.vue'\n",
+                 "import VTextArea from '@/components/VTextArea.vue'\nimport { useMedia } from '@/composables/useMedia'\n")])
+    # AC2 (declared falsifier): show completion from the unit's local build state before its landing receipt.
+    ui131('ui131-completion-from-build-state', 'engine/ui/src/features/backlog', 'completion.ts',
+          "  if (landed.has(unit)) return 'landed'\n",
+          "  if (landed.has(unit) || state === 'COMPLETED') return 'landed'  // defect: build state shown as complete\n",
+          ['ac2/completion-receipt'])
+    # AC3 (declared falsifier): a workflow step's settings reachable only by hover.
+    ui131('ui131-node-settings-hover-only', 'engine/ui/src/features/workflow', 'FlowProperties.vue',
+          '<div class="flow-props" data-testid="node-settings">',
+          '<div v-show="hovered" class="flow-props" data-testid="node-settings">',
+          ['ac3/keyboard-desktop', 'ac3/touch-phone'],
+          also=[('<div class="flow-props" data-testid="flow-properties">',
+                 '<div class="flow-props" data-testid="flow-properties" @mouseenter="hovered = true" @mouseleave="hovered = false">'),
+                ("const value = (event: Event) => (event.target as HTMLSelectElement).value\n",
+                 "const value = (event: Event) => (event.target as HTMLSelectElement).value\n"
+                 "const hovered = ref(false)  // defect: the step settings show only while the pointer hovers\n"),
+                ("import { computed } from 'vue'\n", "import { computed, ref } from 'vue'\n")])
+    # AC4 (declared falsifier): a dependency flagged with free and paid library tiers in the accepted lockfile.
+    ui131('ui131-tiered-dependency-locked', 'engine/ui', 'package-lock.json',
+          '    "node_modules/chart.js": {\n',
+          '    "node_modules/ag-grid-enterprise": {\n      "version": "34.2.0",\n      "license": "MIT"\n    },\n'
+          '    "node_modules/chart.js": {\n',
+          ['ac4/dependency-policy'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

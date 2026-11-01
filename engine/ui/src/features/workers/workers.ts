@@ -36,7 +36,9 @@ function card(item: Item): WorkerCard {
   const process = (d.process ?? {}) as Record<string, any>
   const record = (d.execution_record ?? null) as Record<string, any> | null
   return {
-    dispatch: String(d.dispatch_id ?? item.id.replace(/^dispatch:/, '')),
+    // The entity id carries the dispatch id whole; inside the data the API's secret scanner may redact its
+    // random suffix (a high-entropy string), so the id is the one to link and to follow.
+    dispatch: item.id.replace(/^dispatch:/, ''),
     unit: String(contract.unit ?? 'unknown unit'),
     station: String(contract.station ?? ''),
     project: String(reservation.project ?? ''),

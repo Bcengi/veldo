@@ -14,6 +14,7 @@ import { namedRoles } from '@/features/configuration/configuration'
 import FactorySheet from '@/features/factory/FactorySheet.vue'
 import FlowCanvas from '@/features/workflow/FlowCanvas.vue'
 import FlowProperties from '@/features/workflow/FlowProperties.vue'
+import LiveMeta from '@/features/factory/LiveMeta.vue'
 import {
   KINDS, addNode, connect, moveNode, nodeIds, problems, removeNode, reorder, same, transitionOf, type Draft,
 } from '@/features/workflow/workflow-doc'
@@ -33,11 +34,16 @@ const workflows = computed(() =>
 )
 const roles = computed(() => [...namedRoles(configuration.data.value).keys()].sort())
 const doc = shallowRef<WorkflowDocument | null>(null)
-const load = useAsync(async (signal) => {
-  const answer = await readWorkflow(name.value, undefined, signal)
-  doc.value = answer
-  return answer
-})
+const readAt = ref<number | null>(null)
+const load = useAsync(
+  async (signal) => {
+    const answer = await readWorkflow(name.value, undefined, signal)
+    doc.value = answer.definition ? answer : null
+    readAt.value = Date.now()
+    return answer
+  },
+  (answer) => !answer.definition,
+)
 const draft = ref<Draft | null>(null)
 const stored = computed<Draft | null>(() => (doc.value ? { definition: doc.value.definition, layout: doc.value.layout ?? {} } : null))
 watch(stored, (s) => (draft.value = s ? JSON.parse(JSON.stringify(s)) : null))
@@ -111,6 +117,7 @@ const label = (id: string) => `${id} (${KINDS[draft.value?.definition.nodes[id]?
   <section class="screen screen-wide">
     <ScreenHeader :title="name ? `Workflow ${name}` : 'Workflows'" />
     <p class="sr-only" aria-live="polite" data-testid="flow-announce">{{ announce }}</p>
+    <LiveMeta v-if="load.data.value" live="idle" :seq="load.data.value.watermark?.seq ?? null" :freshness="load.data.value.freshness ?? null" :read-at="readAt" />
     <div class="factory-actions">
       <div class="factory-search">
         <label for="workflow-pick" class="field-label">Workflow</label>
@@ -120,7 +127,7 @@ const label = (id: string) => `${id} (${KINDS[draft.value?.definition.nodes[id]?
       </div>
     </div>
     <StatePanel v-if="configuration.state.value !== 'ready' || !name" :state="!name && configuration.state.value === 'ready' ? 'empty' : configuration.state.value" :refusal="configuration.refusal.value" empty-title="No workflow yet" empty-body="Workflows appear here once one is saved." loading-label="Loading workflows" @retry="configuration.run()" />
-    <StatePanel v-else :state="load.state.value" :refusal="load.refusal.value" loading-label="Loading the workflow" shape="block" @retry="load.run()">
+    <StatePanel v-else :state="load.state.value" :refusal="load.refusal.value" empty-title="No such workflow in your scope" empty-body="The API serves no workflow by this name to you." loading-label="Loading the workflow" shape="block" @retry="load.run()">
       <div v-if="draft && doc" class="factory-grid factory-split" data-testid="workflow-editor">
         <div class="factory-grid">
           <section class="panel" aria-labelledby="flow-state-title">
