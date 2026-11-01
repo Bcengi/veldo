@@ -1623,6 +1623,15 @@
    "requires_note": "Only ROOT and expect; a real ControlApi on the real loopback listener with a recording authority stand-in, a fixture UI build, and the UI's own routes.json, package.json, package-lock.json and dependency-policy.json; the installed .veldo organs laid into scratch factory roots; the browser tests' real factory harness (engine/ui/e2e/harness.py: signed store, presenter, settlement, API authority, protected signer and ControlApi, with a passkey sign-in over the API); and init_scaffold.scaffold run over a scratch copy of engine/ (without ui/, then a fixture source, then a fixture build) with git asked whether the laid UI is ignored."
   },
   {
+   "name": "118_veldo_0159_mcp_credential_form",
+   "file": "118_veldo_0159_mcp_credential_form.py",
+   "requires": [
+    "118_veldo_0159_mcp_credential_form"
+   ],
+   "regions": "Seven rows (VELDO-0159): mcp/define-desktop and mcp/define-phone, at 1280px and 360px the owner enters a stdio server (command, arguments, environment as literals and credential references, hosts, read-only tools) and an http server (url, headers as credential references, hosts, read-only tools; the Atlassian server at 1280px) in the Vue shell's server form in a passkey session, saves each, reopens it from the catalog route, edits and saves again, and every field each save sent is the revision the catalog route stored; mcp/stale-save, a save edited from an older revision shows the stale refusal beside the save action and stores nothing; mcp/phone-actions, no primary action of the form or the credential field is clipped or covered at 360px; cred/metadata-only, the Atlassian credential set, replaced and deleted through the write-only field, after each only its label, set at and set by shown, matching the credential record, with the keystore holding the value written; cred/no-value-kept, a typed value only in the body of the one request to the credential route and nowhere after it is sent (rendered page, fields, accessibility tree, local and session storage, IndexedDB, URL, history, every request and answer), and an empty field on reopening; mcp/definition-unit, the form's definition module.",
+   "requires_note": "Only ROOT and expect. Copies engine/ui into scratch with the production copies (PRODUCTION) laid over it, builds it with the package's build script and runs engine/ui/e2e/servers.spec.ts (Playwright, system Chrome) against the browser tests' real factory harness (engine/ui/e2e/harness.py) with the real VELDO-0144 catalog and credential commands and a stand-in secret-tool behind the real SecretService; Vitest for the definition module. Needs npm ci in engine/ui and Google Chrome. Writes only temporary files."
+  },
+  {
    "name": "117_veldo_0227_ui_location",
    "file": "117_veldo_0227_ui_location.py",
    "requires": [

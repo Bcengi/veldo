@@ -31,3 +31,6 @@ sign-in with the refusal named.
 `/you`, a centered 920 px screen: Signed in (the member, the factory, when the session ends, the passkey
 id as a copyable detail) and This device (the theme switch, Sign out with `auth.sign_out`, Sign out on
 every device with `auth.sign_out_everywhere`).
+
+Factory setup (VELDO-0159) lists the destinations that are in the rail but not the phone's bottom bar:
+"MCP servers and credentials" opens [the server form](servers.md).

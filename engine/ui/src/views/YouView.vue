@@ -42,6 +42,12 @@ async function out(everywhere: boolean) {
           <div v-if="session.view?.credential_id"><dt>Passkey</dt><dd><CopyId :value="session.view.credential_id" label="passkey id" /></dd></div>
         </dl>
       </section>
+      <section class="panel you-setup" aria-labelledby="you-setup">
+        <h2 id="you-setup" class="panel-title">Factory setup</h2>
+        <div class="you-actions">
+          <RouterLink :to="{ name: 'servers' }" class="vbtn vbtn-secondary vbtn-block" data-testid="you-servers">MCP servers and credentials</RouterLink>
+        </div>
+      </section>
       <section class="panel you-device" aria-labelledby="you-device">
         <h2 id="you-device" class="panel-title">This device</h2>
         <div class="you-row">

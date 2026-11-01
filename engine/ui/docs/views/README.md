@@ -12,3 +12,4 @@ refusals it shows.
 | Run | `/runs/<dispatch>` | [run.md](run.md) |
 | Decisions | `/decisions`, `/decisions/<request>` | [decisions.md](decisions.md) |
 | You | `/you` | [shell.md](shell.md#you) |
+| MCP server form | `/servers`, `/servers/<id>` | [servers.md](servers.md) |
