@@ -899,7 +899,9 @@ sys.exit(payload.get('code', 0))
             with contextlib.suppress(Exception):
                 started['runtime'] = (time.time(), runner('runtime').submit(admitted('VELDO-9420'), 'build', **job(
                     descendants=[['stubborn', 'stubborn', 10]], hold=10, beat=True)))
-                started['idle'] = runner('main').submit(admitted('VELDO-9421'), 'build', **job(hold=8, release='idle'))
+                # The idle worker ends only on its release (its hold is a backstop under the 60 s deadline): a
+                # worker that ended by itself inside the watched window would wake its receiver by right.
+                started['idle'] = runner('main').submit(admitted('VELDO-9421'), 'build', **job(hold=50, release='idle'))
 
             # AC1: the worker and its ordinary descendants in the dispatch's own group
             with region('containment/dedicated-group', 'containment/ordinary-exit'):
@@ -1044,9 +1046,12 @@ sys.exit(payload.get('code', 0))
                 observed['exit_notified'] = {'window_seconds': round(window, 2), 'receiver_wakes': wakes,
                                              'exit_at': exit_at, 'recorded_at': recorded_at,
                                              'latency': round(recorded_at - exit_at, 3) if exit_at and recorded_at else None,
-                                             'idle_worker_alive_in_window': bool(idle_facts)}
+                                             'idle_worker_alive_in_window': bool(idle_facts),
+                                             'exited_after_window': bool(exit_at and len(counted) == 2
+                                                                         and exit_at > counted[-1][0])}
                 check('containment/exit-notified',
                       ended.get('state') == 'exited' and bool(idle_facts) and window >= 1.5 and wakes == 0
+                      and observed['exit_notified']['exited_after_window']
                       and exit_at is not None and recorded_at is not None
                       and 0 <= recorded_at - exit_at < 0.75, observed['exit_notified'])
 
