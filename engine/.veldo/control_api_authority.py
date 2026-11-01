@@ -40,6 +40,19 @@ verified principal with the base version the assertion carries: its own transact
 refuses a base that is not the current head as stale_version, so a stale or unauthorized edit is refused
 by name and writes nothing.
 
+THE OWNER'S WORK COMMANDS (VELDO-0131, owner Telegram 38184). Three more operations execute existing writers
+for the verified principal, each refusing by name and writing nothing on a refusal:
+  - reprioritize_backlog: control_backlog.Backlog's own reprioritize command, derived from the assertion
+    (control_api_assertion.domain_request) and signed by the edge (the packet's domain signature); the Backlog
+    verifies the edge, the assertion and the command again (its `api_assertion`), then judges the member as for
+    his own signature: the project's owner holding priority_authority, the item at the version he saw.
+  - stop_worker: control_dispatch.Dispatches.request_stop, the person's stop request of one dispatch at the
+    version he saw, recorded on the dispatch. When this authority holds the runner's receivers (`stop`, a
+    control_launch.stop_requester) it asks the receiver at once and records the ask's result (stop_result);
+    otherwise the runner that holds them does on its next sweep (control_launch.Runner.honor_stops).
+  - set_account_cap: control_accounts.Accounts.cap, a versioned change of the account's run concurrency.
+A missing writer is unavailable_service by name.
+
 READS (AC2). `inspect` is the read the API's session checks go through: named committed entities and the
 journal watermark, as the VELDO-0047 service's inspect answers them. `read` serves one published read
 model (control_api_models.read_model) from this connection for a principal who is a current person
@@ -96,6 +109,11 @@ MC = organ('control_mcp_catalog')
 CV = organ('control_credential')
 E = organ('control_channel_enrollment')
 ER = organ('control_execution_record')
+# VELDO-0131: the writers of the owner's work commands (their taxonomies and record identities).
+BL = organ('control_backlog')
+DP = organ('control_dispatch')
+AA = organ('control_accounts')
+WORK_OPERATIONS = ('reprioritize_backlog', 'stop_worker', 'set_account_cap')
 RECORD_SCHEMA = 'veldo.api_execution_record/v1'
 RECORD_LIMIT = 512
 # A dispatch's states once its run has ended (control_dispatch.STATES): its record grows no more.
@@ -130,6 +148,17 @@ def taxonomy(code):
     return 'unknown_outcome'
 
 
+def _named(code, organ_taxonomy):
+    """A writer's refusal under the specification's class (VELDO-0131): its own name when its head is a class here,
+    else prefixed with the class the writer's own taxonomy gives it, so a refusal is never an unknown outcome."""
+    code = str(code)
+    head = code.split(':', 1)[0]
+    if head in CLASSES:
+        return code
+    klass = CLASSES.get(organ_taxonomy(code), 'unknown_outcome')
+    return '%s:%s' % (klass, code)
+
+
 def _class_of(code):
     """The taxonomy class of an organ's refusal: its own head, else VELDO-0132's class for it."""
     head = str(code).split(':', 1)[0]
@@ -151,8 +180,12 @@ class ApiAuthority:
 
     def __init__(self, store, membership, conn, *, ids, domain, edge, intake, settlement, credentials,
                  workflows=None, publication=None, notify=None, clock=time.time, observe=None, authority_lock=None,
-                 catalog=None, mcp_credentials=None, records=None, configurations=None, team_routes=None):
+                 catalog=None, mcp_credentials=None, records=None, configurations=None, team_routes=None,
+                 backlog=None, dispatches=None, accounts=None, stop=None):
         self.S, self.CM, self.conn = store, membership, conn
+        # VELDO-0131: control_backlog.Backlog, control_dispatch.Dispatches and control_accounts.Accounts on `conn`,
+        # and `stop(dispatch_id, reason)`, the runner's in-process ask (control_launch.stop_requester), when held.
+        self.backlog, self.dispatches, self.accounts, self.stop = backlog, dispatches, accounts, stop
         # VELDO-0141: the launch receivers' records directory (control_execution_record.directory).
         self.records = records
         self.configurations, self.team_routes = configurations, team_routes
@@ -462,6 +495,8 @@ class ApiAuthority:
             return self._mcp(a, packet)
         if a['operation'] == 'save_workflow':
             return self._save_workflow(a)
+        if a['operation'] in WORK_OPERATIONS:
+            return self._work(a, packet, provenance)
         done = self.credentials.revoke_as_member(a['principal'], a['parameters']['credential_id'], provenance)
         if done['refusal']:
             return {'outcome': 'refused', 'reason': '%s:%s' % (CLASSES.get(done['error_class'], 'unknown_outcome'), done['refusal'])}
@@ -508,6 +543,52 @@ class ApiAuthority:
         except (MC.Refused, CV.Refused) as error:
             return {'outcome': 'refused', 'reason': error.code}
 
+    def _work(self, a, packet, provenance):
+        """VELDO-0131: the owner's backlog priority, worker stop and account cap, each by its own writer."""
+        p, now = a['parameters'], self.clock()
+        try:
+            if a['operation'] == 'reprioritize_backlog':
+                if self.backlog is None:
+                    return {'outcome': 'refused', 'reason': 'unavailable_service:backlog'}
+                done = self.backlog.apply({'command': AS.domain_request(a), 'signature': packet.get('domain_signature')},
+                                          api_assertion=packet)
+                if not done.get('ok'):
+                    return {'outcome': 'refused', 'reason': _named(done.get('reason'), BL.taxonomy)}
+                item = done.get('item') or {}
+                return {'outcome': 'reprioritized', 'id': done.get('item_id'), 'version': item.get('version'),
+                        'rank': (item.get('priority') or {}).get('rank')}
+            if a['operation'] == 'stop_worker':
+                if self.dispatches is None:
+                    return {'outcome': 'refused', 'reason': 'unavailable_service:dispatches'}
+                record = self.dispatches.request_stop(p['dispatch'], p['dispatch_version'], a['principal'], now=now,
+                                                      request=a['request_id'], channel=AS.CHANNEL,
+                                                      assertion_digest=provenance['assertion_digest'])
+                asked = None
+                if self.stop is not None:
+                    try:
+                        asked = bool(self.stop(p['dispatch'], 'owner_stop'))
+                    except Exception:  # noqa: BLE001 - an unreachable receiver is recorded as not asked
+                        asked = False
+                    record = self.dispatches.stop_result(p['dispatch'], asked, now=self.clock())
+                return {'outcome': 'stop_requested', 'dispatch': p['dispatch'],
+                        'version': self.dispatches.version(p['dispatch']), 'state': (record or {}).get('state'),
+                        'stop': {'asked': asked, 'requested_at': ((record or {}).get('stop_request') or {}).get('at')}}
+            if self.accounts is None:
+                return {'outcome': 'refused', 'reason': 'unavailable_service:accounts'}
+            self.accounts.cap(a['request_id'], p['account'], p['concurrency'], base=p['account_version'],
+                              principal=a['principal'], now=now, assertion_digest=provenance['assertion_digest'])
+            row = self.conn.execute('SELECT version, data FROM entities WHERE id=?',
+                                    (AA.entity_id(p['account']),)).fetchone()
+            return {'outcome': 'capped', 'account': p['account'], 'version': row[0] if row else None,
+                    'concurrency': json.loads(row[1]).get('concurrency') if row else None}
+        except Exception as error:  # noqa: BLE001 - each writer's named refusal (its own Refused class)
+            code = getattr(error, 'code', None)
+            if not isinstance(code, str):
+                raise
+            organ = DP.taxonomy if a['operation'] == 'stop_worker' else (lambda c: 'missing_authority' if str(c).startswith(
+                'missing_authority') else 'invalid_input' if str(c).startswith('invalid_input') else 'unknown_outcome')
+            return {'outcome': 'refused', 'reason': _named(code, organ)}
+
     def _save_workflow(self, a):
         """VELDO-0132's save for the verified principal: its transaction judges the editor and the base."""
         p = a['parameters']
@@ -532,7 +613,8 @@ class ApiAuthority:
         return {'send_message': AS.IN.RECORD, 'answer_decision': AS.ST.API, 'revoke_credential': CR.REVOKE,
                 'save_workflow': WF.SAVE, MC.SAVE: MC.SAVE, CV.SET: CV.SET, CV.DELETE: CV.DELETE,
                 'save_capability_configuration': 'save_agent_configuration', 'propose_team': 'team_operation',
-                'save_default_team': 'save_default_team_revision'}
+                'save_default_team': 'save_default_team_revision', 'reprioritize_backlog': BL.OPERATION,
+                'stop_worker': DP.OPERATION, 'set_account_cap': AA.OPERATION}
 
     def _observe(self, about, ok, refusal, result):
         self.counts['accepted' if ok else 'refused'] += 1

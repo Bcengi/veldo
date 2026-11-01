@@ -47,6 +47,14 @@ window and reset its engine's stream stated (each engine meter's `limit()`): whe
 its rate-limit result, always; when only the stream reported the window exhausted, unless the run
 completed. No other run is classified so.
 
+THE OWNER'S CAP (VELDO-0131, owner Telegram 38184). An account's run concurrency was set only by `register`.
+`cap` sets it again by the owner's command, as a versioned change of the same record: it names the account at the
+version the owner saw (a version that moved is refused stale, never retried), the person whose command it is
+(its journal actor; a person holding an owner role whose membership scope is the whole factory, since an account
+is factory scope, else missing_authority), and the new concurrency (an integer from 1 to CAP_LIMIT, unchanged
+refused). The record keeps every change in `concurrency_history` (concurrency, previous, by, at, command and,
+from the API, the assertion digest). Control_account_pool reads `concurrency` as it always has.
+
 Writes go through the store's signed transaction under a declared owner, so only this module's
 command writes an `account` record. `authorize(conn, command)` is the caller's current-authority
 predicate, run inside the transaction. Standard library only.
@@ -85,6 +93,8 @@ WINDOW_STATUSES = ('allowed', 'rejected', None)
 # Who may register or change an account (the owner) and who records what a CLI reported (the
 # trusted launch receiver's service membership).
 OWNER_ROLES = ('project_owner', 'operations_authority')
+# VELDO-0131: the most concurrent runs one account's cap may name.
+CAP_LIMIT = 16
 OBSERVER_ROLE = 'reservation_service'
 # VELDO-0160: the outcome of a run its account's limit stopped, and the signals that state the limit.
 LIMIT_OUTCOME = 'account_limit'
@@ -290,6 +300,27 @@ class Accounts:
                                           reset_at=reset_at, utilization=utilization,
                                           source_dispatch=source_dispatch, now=now, clear_rejection=clear_rejection))
 
+    def cap(self, command_id, account, concurrency, *, base, principal, now, assertion_digest=None):
+        """VELDO-0131: the owner's change of one account's run concurrency at version `base`, `principal`'s
+        command. Never retried: a version that moved is the owner's stale view, refused stale_version."""
+        if (not _text(command_id) or not _text(account) or not _text(principal) or not _number(now)
+                or type(concurrency) is not int or not 1 <= concurrency <= CAP_LIMIT
+                or type(base) is not int or base < 1):
+            raise Refused('invalid_input:cap', 'an account at its version and a concurrency from 1 to %d' % CAP_LIMIT)
+        target = entity_id(account)
+        params = dict(action='cap', account=account, concurrency=concurrency, now=now, command_id=command_id,
+                      assertion_digest=assertion_digest)
+        command = dict(command_id=command_id, operation=OPERATION, principal=principal, nonce='account/' + command_id,
+                       parameters=params, expected_versions={target: base}, artifact_digests=[])
+        self._command = command
+        try:
+            result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
+        except (self.store.StoreRefused, Refused):
+            self.counts['refused'] += 1
+            raise
+        self.counts['accepted'] += 1
+        return result
+
     def _in_transaction(self, conn, params, before):
         if self.authorize(conn, self._command) is not True:
             raise Refused('missing_authority')
@@ -319,6 +350,18 @@ class Accounts:
             raise Refused('missing_authority:account', params['account'])
         elif action == 'status':
             value = dict(current, status=params['status'])
+        elif action == 'cap':
+            member = _member(conn, self._command.get('principal')) or {}
+            if member.get('scope') not in ('*', ['*']):
+                raise Refused('missing_authority:scope', 'an account is factory scope')
+            if current.get('concurrency') == params['concurrency']:
+                raise Refused('invalid_input:unchanged', 'the account already has this concurrency')
+            entry = {'concurrency': params['concurrency'], 'previous': current.get('concurrency'),
+                     'by': self._command['principal'], 'at': params['now'], 'command_id': params['command_id']}
+            if params.get('assertion_digest'):
+                entry.update(channel='api', assertion_digest=params['assertion_digest'])
+            value = dict(current, concurrency=params['concurrency'],
+                         concurrency_history=list(current.get('concurrency_history') or []) + [entry])
         elif action == 'observe':
             unified = current['windows'].get('unified')
             if (params.get('clear_rejection') and unified is not None

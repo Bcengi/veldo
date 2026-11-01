@@ -504,9 +504,39 @@ class Runner:
         """Retry every pending retirement whose obligations have changed since its last attempt, or whose
         clone can now be removed (VELDO-0041); the dispatches whose slots it released. Each preparation
         and each wait makes one, and a scheduler may make one at any time. It also removes each run directory left
-        behind whose run the kernel now shows gone (clear_runs)."""
+        behind whose run the kernel now shows gone (clear_runs), and first honors every owner's stop request the
+        authority committed (honor_stops, VELDO-0131)."""
+        self.honor_stops()
         self.clear_runs()
         return self.retirements.sweep()
+
+    def honor_stops(self):
+        """VELDO-0131: the existing stop mechanism, requested by the owner's committed stop command. For each
+        dispatch of this domain and repository whose stop request waits (control_dispatch.request_stop), the
+        Launch this runner holds asks its receiver to stop (Launch.stop: R44's cooperative stop, then the group's
+        escalation), and the runner records what the ask returned (stop_result: asked true, or false when it
+        holds no receiver of that dispatch to ask). Nothing is recovered, retried or restarted: the worker's end
+        is recorded by its receiver as every end is. The [(dispatch, asked)] it recorded, in order."""
+        pending = getattr(self.dispatches, 'stop_requests', None)
+        if pending is None:
+            return []
+        done = []
+        for dispatch_id, reason in pending():
+            launch = self.launches.get(dispatch_id)
+            try:
+                asked = bool(launch is not None and launch.stop(reason or 'owner_stop'))
+            except Exception:  # noqa: BLE001 - a receiver that cannot be asked is recorded as not asked
+                asked = False
+            try:
+                self.dispatches.stop_result(dispatch_id, asked, now=self.clock())
+            except D.Refused as error:
+                self.observations.append({'operation': 'stop_result', 'dispatch_id': dispatch_id, 'outcome': 'refused',
+                                          'refusal': error.code, 'asked': asked})
+                continue
+            self.observations.append({'operation': 'stop_result', 'dispatch_id': dispatch_id, 'outcome': 'recorded',
+                                      'asked': asked})
+            done.append((dispatch_id, asked))
+        return done
 
     def _left(self, dispatch_id, group=None, process=None):
         """A settled dispatch whose run directory its receiver may have left: removed once its run is gone."""
@@ -700,6 +730,15 @@ class Runner:
 
 # VELDO-0154: how long the runner waits for the kernel to show an orphaned worker gone after its stop.
 ORPHAN_SECONDS = 5.0
+
+
+def stop_requester(runner):
+    """VELDO-0131: an in-process stop of one dispatch through the runner that holds its receiver, as
+    control_project.runner_stop asks it: True when that Launch asked its receiver to stop."""
+    def stop(dispatch_id, reason):
+        launch = runner.launches.get(dispatch_id)
+        return bool(launch is not None and launch.stop(reason))
+    return stop
 
 
 def _stop_orphan(group, process):

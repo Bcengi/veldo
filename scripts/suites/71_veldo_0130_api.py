@@ -70,7 +70,7 @@ _V130_ROWS = ('install/assets', 'webauthn/stand-in-browser', 'webauthn/independe
               'events/resume-last-event-id', 'events/expiry-named', 'events/published-watermark',
               'events/reconcile-deferred', 'enrollment/possession-race', 'webauthn/openssl-fixed-path',
               'events/revoked-either-path', 'events/fill-window-revocation', 'events/retry-after-failure',
-              'reads/implemented-writers')
+              'reads/implemented-writers', 'work/backlog-reprioritize', 'work/worker-stop', 'work/worker-cap')
 # The kinds each read model serves, as this suite expects them from the owning modules (compared with the
 # published registry, never derived from it).
 _V130_EXPECTED_KINDS = {
@@ -342,7 +342,7 @@ def _v130_checks(base):
             return True
 
     (IA, WB, WV, EP, ES, SC, SF, SR, RF, RB, EG, EA, MS, DE, DO, TL, RM, RA, RR, EL, AK, AW, AU,
-     ER, EI, EX, EW, RD, PR, WO, RV, FW, RT, RW) = _V130_ROWS
+     ER, EI, EX, EW, RD, PR, WO, RV, FW, RT, RW, WKB, WKS, WKC) = _V130_ROWS
     # The production copies under test; mutation workers replace exactly these paths.
     PRODUCTION = {
         'control_api.py': ROOT / ".veldo" / "control_api.py",
@@ -593,6 +593,16 @@ def _v130_checks(base):
         team_service = TR.CT.Teams(S, CM, conn, ids, 'authority', journal_sign, inbox=inbox, assignment=I,
                                   requester='pm', request_sign=lambda b: sign_as('pm', b))
         phase2.update(configurations=configurations, team_routes=TR.TeamRoutes(team_service, settlement, presenter))
+    # VELDO-0131: the writers of the owner's backlog priority, worker stop and account cap, on the same connection.
+    # The account is registered by its own writer (it declares the kind's owner, so no fixture may write one).
+    work_writers = {}
+    if here and 'backlog' in _v130_inspect.signature(AUTH.ApiAuthority).parameters:
+        work_writers = dict(
+            backlog=AUTH.BL.Backlog(S, CM, conn, ids, 'authority', journal_sign),
+            dispatches=AUTH.DP.Dispatches(S, conn, domain=ids['domain_uuid'], repository=ids['repository_uuid'],
+                                          principal='runner', signer='authority', sign=journal_sign),
+            accounts=AUTH.AA.Accounts(S, conn, principal='owner', signer='authority', sign=journal_sign))
+        phase2.update(work_writers)
     # Phase 3: the judge runs only in the process holding the authority's lock beside the store; this
     # fixture is that authority for its own store, so it takes the lock as the service would.
     lock_held = _v130_os.open(str(base / 'authority' / 'authority.lock'), _v130_os.O_RDWR | _v130_os.O_CREAT, 0o600)
@@ -658,8 +668,12 @@ def _v130_checks(base):
     fixture('reservation:worker:VELDO-9130', 'subscription_reservation', dict(kind='worker', account='owner-plan',
                                                                               reserved=1, state='held'))
     # VELDO-0131 fix round 2: the account the spend read now serves (a skill is saved by its writer below).
-    fixture('account:owner-plan', 'account', dict(id='owner-plan', provider='claude_code', label='Owner plan',
-                                                  status='active', concurrency=1))
+    if work_writers:
+        work_writers['accounts'].register(next_id('account'), 'owner-plan', 'claude_code', 'Owner plan',
+                                          {'veldo-linux-1': str(base / 'profiles' / 'owner-plan')}, now=_v130_time.time())
+    else:
+        fixture('account:owner-plan', 'account', dict(id='owner-plan', provider='claude_code', label='Owner plan',
+                                                      status='active', concurrency=1))
     fixture('VELDO-9130', 'execution_unit', dict(state='READY', repository_uuid=ids['repository_uuid'], revision=1))
     fixture('fixture-document:VELDO-9130', 'accepted_document', dict(alias='VELDO-9130', version=1))
     fixture('fixture-document-version:VELDO-9130:1', 'document_version', dict(alias='VELDO-9130', version=1))
@@ -1207,6 +1221,10 @@ def _v130_checks(base):
             bodies.update({'configurations.save': {'definition': {}, 'base': 0},
                            'teams.save': {'project': 'project-a', 'team': {}, 'team_version': 0},
                            'teams.default_save': {'team': {}, 'base': 0}})
+        if 'reprioritize_backlog' in getattr(AS, 'OPERATIONS', {}):
+            bodies.update({'backlog.reprioritize': {'item': 'backlog:none', 'item_version': 1, 'rank': 2},
+                           'workers.stop': {'dispatch': 'dispatch/none/x', 'dispatch_version': 1},
+                           'workers.cap': {'account': 'none', 'account_version': 1, 'concurrency': 2}})
 
         def path_of(route, domain=DOMAIN):
             return route.path.replace('{domain}', domain)
@@ -1244,8 +1262,9 @@ def _v130_checks(base):
             table = list(getattr(API, 'ROUTES', ()))
             check(RF, 'the route table and the registered handlers agree [observed %s]' % api[0].route_problems(),
                   table and api[0].route_problems() == [])
-            check(RF, 'the table publishes the auth, messages, decisions, reads, configuration and events families',
-                  sorted({r.family for r in table}) == ['auth', 'configuration', 'decisions', 'events', 'messages', 'reads'])
+            check(RF, 'the table publishes the auth, messages, decisions, reads, configuration, work and events families',
+                  sorted({r.family for r in table}) == ['auth', 'configuration', 'decisions', 'events', 'messages', 'reads',
+                                                        'work'])
             for route in [r for r in table if r.session]:
                 body = bodies.get(route.name) if route.method == 'POST' else None
                 before = journal_count()
@@ -2628,6 +2647,176 @@ def _v130_checks(base):
             valid = authority.apply(edge_signed(save_assertion('owner', phone.credential_id)))
             check(AU, 'the same save, edge-signed for the current credential, is accepted [observed %s]' % valid.get('reason'),
                   valid.get('ok') is True and (entity(hid) or {}).get('data', {}).get('version') == 1)
+
+        # VELDO-0131 (owner, Telegram 38184): the owner's backlog priority, worker stop and account cap, each the
+        # existing writer's command through the authenticated API: accepted, a stale version refused, an
+        # unauthorized member refused, each refusal writing nothing, and the journal naming the member.
+        work_routes = {r.name: r for r in getattr(API, 'ROUTES', ()) if r.family == 'work'}
+        WORK = '/api/v1/domains/%s/' % DOMAIN
+
+        def journal_tail():
+            row = conn.execute('SELECT principal, command_id, transition FROM journal ORDER BY seq DESC LIMIT 1').fetchone()
+            return {'principal': row[0], 'command_id': row[1], 'transition': row[2]}
+
+        def work_observed(operation):
+            return [o for o in getattr(authority, 'observations', []) if o.get('operation') == operation]
+
+        if work_writers and entity('project:project-a') is None:
+            PJw = _v130_load('v130_work_project', organs / 'control_project.py')
+            PJw.Projects(S, CM, conn, ids, 'authority', journal_sign, stop=lambda dispatch, reason: False).apply(
+                signed_command('owner', dict(ids, operation='activate', project='project-a', owner='owner',
+                    principal='owner', command_id=next_id('wk-activate'), nonce=next_id('wk-activate-n'),
+                    charter={'purpose': 'Work commands.'}, execution_repository=ids['repository_uuid'],
+                    authority_policy={'team_amendment': ['project_owner']},
+                    coordination_budget={'capacity': 5, 'invocations': 5, 'wall_seconds': 500})))
+
+        with section(WKB):
+            # A prioritized item in control_backlog's stored shape (a fixture: prioritizing it through grooming and
+            # settlement is suite 73's; this row proves the route and the edge path into the real command).
+            bid = 'backlog:v131-work'
+            fixture(bid, 'backlog_item', dict(
+                schema='veldo.backlog_item/v1', uuid=bid, entity_type='backlog_item', domain_uuid=ids['domain_uuid'],
+                repository_uuid=ids['repository_uuid'], project='project-a', project_uuid='project:project-a',
+                objective_uuid='objective:v131', feature_uuid='objective-feature:v131', scope=['checkout'],
+                work_class='PRODUCT_CHANGE', state='PRIORITIZED', decomposition=[], decomposition_revision=1,
+                decomposition_digest='sha256:' + '0' * 64, admission=None,
+                priority={'path': 'owner_command', 'rank': 3, 'previous_rank': None, 'ruling': 'approve',
+                          'principals': ['owner'], 'revision': 1, 'units': []},
+                priorities=[], blocks=[], applied=[], history=[]))
+            route = work_routes.get('backlog.reprioritize')
+            check(WKB, 'backlog.reprioritize is a published work route carrying reprioritize_backlog',
+                  route is not None and route.method == 'POST' and route.operation == 'reprioritize_backlog'
+                  and route.required == ('item', 'item_version', 'rank'))
+            version = (entity(bid) or {}).get('version')
+            before = journal_count()
+            stale = call('POST', WORK + 'backlog/reprioritize', {'item': bid, 'item_version': version + 1, 'rank': 1},
+                         cookie=owner_cookie, token=owner_token)
+            check(WKB, 'a stale item version is refused stale_version, nothing written' + seen(stale),
+                  stale[0] == 409 and str(refusal(stale)).startswith('stale_version') and journal_count() == before)
+            for who, (cookie, token), name in (('owner2, not the project owner', (owner2_cookie, owner2_token), 'not_owner:project'),
+                                               ('a member outside the project', (member_cookie, member_token), 'not_authorized:scope')):
+                got = call('POST', WORK + 'backlog/reprioritize', {'item': bid, 'item_version': version, 'rank': 1},
+                           cookie=cookie, token=token)
+                check(WKB, '%s is refused unauthorized (%s), nothing written' % (who, name) + seen(got),
+                      got[0] == 403 and name in str(refusal(got)) and journal_count() == before)
+            ok = call('POST', WORK + 'backlog/reprioritize', {'item': bid, 'item_version': version, 'rank': 1},
+                      cookie=owner_cookie, token=owner_token)
+            stored = (entity(bid) or {}).get('data') or {}
+            tail = journal_tail()
+            check(WKB, 'the owner\'s rank change is accepted: the item at its next version, rank 1' + seen(ok),
+                  ok[0] == 200 and ok[2].get('outcome') == 'reprioritized' and ok[2].get('rank') == 1
+                  and ok[2].get('version') == version + 1 and (stored.get('priority') or {}).get('rank') == 1
+                  and stored.get('state') == 'PRIORITIZED' and journal_count() == before + 1)
+            check(WKB, 'the journal record is control_backlog\'s command, its actor the member, the assertion named',
+                  tail['principal'] == 'owner' and tail['command_id'] == ok[2].get('api_request_id')
+                  and (stored.get('priority') or {}).get('channel') == 'api'
+                  and (stored.get('priority') or {}).get('assertion_digest', '').startswith('sha256:')
+                  and (stored.get('history') or [{}])[-1].get('channel') == 'api')
+            forged = assertion_for('owner', phone.credential_id, 'reprioritize_backlog',
+                                   {'item': bid, 'item_version': version + 1, 'rank': 2})
+            command = AS.domain_request(forged)
+            packet = {'assertion': forged, 'signature': sign_as('api-edge', S.canonical_bytes(forged)),
+                      'domain_signature': sign_as('owner', S.canonical_bytes(command))}
+            unsigned = authority.apply(packet)
+            check(WKB, 'a command the edge did not sign is refused unauthenticated by the backlog itself [observed %s]'
+                  % unsigned.get('reason'), unsigned.get('ok') is False
+                  and unsigned.get('reason') == 'unauthenticated:signature'
+                  and ((entity(bid) or {}).get('data') or {}).get('priority', {}).get('rank') == 1)
+            seen_ops = work_observed('reprioritize_backlog')
+            check(WKB, 'each outcome is observed with its class, never a signature',
+                  [o.get('taxonomy') for o in seen_ops][-5:] == ['stale_version', 'unauthorized', 'unauthorized', None,
+                                                                 'unauthenticated']
+                  and 'SSH SIGNATURE' not in _v130_json.dumps(seen_ops))
+
+        with section(WKS):
+            runner_key = keys / 'runner'
+            if 'runner' not in public:
+                keyfile['runner'] = runner_key
+                _v130_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v130-runner', '-f', str(runner_key)],
+                             check=True, capture_output=True, timeout=10)
+                public['runner'] = ' '.join(runner_key.with_name('runner.pub').read_text().split()[:2])
+                enroll_member('runner', 'service', [], '*')
+            did = 'dispatch/VELDO-9132/s1'
+            fixture('dispatch:' + did, 'dispatch', dict(
+                schema='veldo.dispatch/v1', dispatch_id=did, state='running', contract_digest='sha256:' + '1' * 64,
+                process={'platform': 'linux', 'host': 'veldo-linux-1', 'boot_id': 'b', 'pid': 4343, 'start': 9},
+                contract={'domain': ids['domain_uuid'], 'repository': ids['repository_uuid'], 'unit': 'VELDO-9132',
+                          'station': 'build', 'reservation': {'project': 'project-a', 'account': 'owner-plan'}},
+                stop=None, history=[{'action': 'run', 'at': 1, 'principal': 'runner', 'state': 'running'}]))
+            asked = []
+            authority.stop = lambda dispatch, reason: asked.append((dispatch, reason)) or True
+            version = (entity('dispatch:' + did) or {}).get('version')
+            before = journal_count()
+            stale = call('POST', WORK + 'workers/stop', {'dispatch': did, 'dispatch_version': version + 1},
+                         cookie=owner_cookie, token=owner_token)
+            check(WKS, 'a stale dispatch version is refused stale_version, nothing written or asked' + seen(stale),
+                  stale[0] == 409 and str(refusal(stale)).startswith('stale_version') and journal_count() == before
+                  and not asked)
+            got = call('POST', WORK + 'workers/stop', {'dispatch': did, 'dispatch_version': version},
+                       cookie=member_cookie, token=member_token)
+            check(WKS, 'a member with no owner role in the project is refused unauthorized, nothing written or asked'
+                  + seen(got), got[0] == 403 and 'not_authorized:' in str(refusal(got)) and journal_count() == before
+                  and not asked)
+            ok = call('POST', WORK + 'workers/stop', {'dispatch': did, 'dispatch_version': version},
+                      cookie=owner_cookie, token=owner_token)
+            stored = (entity('dispatch:' + did) or {}).get('data') or {}
+            request = stored.get('stop_request') or {}
+            check(WKS, 'the owner\'s stop is accepted: the request recorded, the receiver asked once, the result '
+                       'recorded, the state unchanged' + seen(ok),
+                  ok[0] == 200 and ok[2].get('outcome') == 'stop_requested' and asked == [(did, 'owner_stop')]
+                  and request.get('by') == 'owner' and request.get('channel') == 'api'
+                  and (request.get('result') or {}).get('asked') is True and stored.get('state') == 'running'
+                  and journal_count() == before + 2 and ok[2].get('stop', {}).get('asked') is True)
+            actors = [r[0] for r in conn.execute('SELECT principal FROM journal ORDER BY seq DESC LIMIT 2')]
+            check(WKS, 'the journal holds the member\'s request and the runner\'s result [observed %s]' % actors,
+                  actors == ['runner', 'owner'] and [h.get('action') for h in stored.get('history', [])][-2:]
+                  == ['request_stop', 'stop_result'])
+            again = call('POST', WORK + 'workers/stop', {'dispatch': did, 'dispatch_version': version + 2},
+                         cookie=owner_cookie, token=owner_token)
+            check(WKS, 'a second stop of the same dispatch is refused by name, never re-asked' + seen(again),
+                  again[0] == 409 and 'stop_requested' in str(refusal(again)) and len(asked) == 1)
+            authority.stop = None
+            ended = 'dispatch/VELDO-9133/s1'
+            fixture('dispatch:' + ended, 'dispatch', dict(stored, dispatch_id=ended, state='exited', stop_request=None,
+                                                         contract=dict(stored['contract'], unit='VELDO-9133')))
+            done = call('POST', WORK + 'workers/stop', {'dispatch': ended, 'dispatch_version': 1},
+                        cookie=owner_cookie, token=owner_token)
+            check(WKS, 'an ended dispatch is not stopped (no recovery, retry or restart) and nothing is written' + seen(done),
+                  done[0] == 409 and 'transition_refused' in str(refusal(done))
+                  and ((entity('dispatch:' + ended) or {}).get('data') or {}).get('state') == 'exited')
+
+        with section(WKC):
+            aid = 'account:owner-plan'
+            version = (entity(aid) or {}).get('version')
+            before = journal_count()
+            stale = call('POST', WORK + 'workers/cap', {'account': 'owner-plan', 'account_version': version + 1,
+                                                        'concurrency': 3}, cookie=owner_cookie, token=owner_token)
+            check(WKC, 'a stale account version is refused stale_version, nothing written' + seen(stale),
+                  stale[0] == 409 and str(refusal(stale)).startswith('stale_version') and journal_count() == before)
+            for who, (cookie, token), name in (('owner2, scoped to one project', (owner2_cookie, owner2_token), 'missing_authority:scope'),
+                                               ('a member with no owner role', (member_cookie, member_token), 'missing_authority')):
+                got = call('POST', WORK + 'workers/cap', {'account': 'owner-plan', 'account_version': version,
+                                                          'concurrency': 3}, cookie=cookie, token=token)
+                check(WKC, '%s is refused unauthorized (%s), nothing written' % (who, name) + seen(got),
+                      got[0] == 403 and name in str(refusal(got)) and journal_count() == before)
+            ok = call('POST', WORK + 'workers/cap', {'account': 'owner-plan', 'account_version': version,
+                                                     'concurrency': 3}, cookie=owner_cookie, token=owner_token)
+            stored = entity(aid) or {}
+            history = (stored.get('data') or {}).get('concurrency_history') or []
+            check(WKC, 'the owner\'s cap is accepted as the account\'s next version, its change kept' + seen(ok),
+                  ok[0] == 200 and ok[2].get('outcome') == 'capped' and ok[2].get('concurrency') == 3
+                  and stored.get('version') == version + 1 and stored['data'].get('concurrency') == 3
+                  and len(history) == 1 and history[0].get('previous') == 1 and history[0].get('by') == 'owner'
+                  and history[0].get('channel') == 'api' and journal_tail()['principal'] == 'owner'
+                  and journal_count() == before + 1)
+            bad = call('POST', WORK + 'workers/cap', {'account': 'owner-plan', 'account_version': version + 1,
+                                                      'concurrency': 0}, cookie=owner_cookie, token=owner_token)
+            check(WKC, 'a concurrency outside 1 to the limit is refused invalid_input' + seen(bad),
+                  bad[0] == 400 and 'invalid_input' in str(refusal(bad)) and journal_count() == before + 1)
+            seen_ops = work_observed('set_account_cap')
+            check(WKC, 'each outcome is observed with its class',
+                  [o.get('taxonomy') for o in seen_ops][-5:] == ['stale_version', 'unauthorized', 'unauthorized', None,
+                                                                 'invalid_input'])
 
         # transport/loopback-only: plain HTTP on a loopback address only, behind the host's TLS terminator.
         with section(TL):

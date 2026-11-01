@@ -10,7 +10,8 @@ target and exact parameters, the expected versions, the issue time and an expiry
 
 EACH OPERATION HAS ONE DOMAIN COMMAND, derived here (`domain_request`) and never written by a caller: a
 message is VELDO-0126's API intake request unchanged, carrying the assertion's principal; a decision
-answer is VELDO-0068's API answer on channel api; a credential revocation executes
+answer is VELDO-0068's API answer on channel api; a backlog priority change is control_backlog's own
+reprioritize command (VELDO-0131), verified there against the edge's key; a credential revocation executes
 revoke_api_credential and a workflow save executes VELDO-0132's Workflows.save (the store command
 save_workflow_revision) for the assertion's principal, and neither has a separate signed request.
 The signer signs the assertion and its derived request, and the authority derives the request again
@@ -64,6 +65,10 @@ OPERATIONS = {
                         'boundary': 'decision_settlement'},
     'revoke_credential': {'parameters': ('credential_id',), 'boundary': 'command_acceptance'},
     'save_workflow': {'parameters': ('workflow', 'base', 'definition', 'layout'), 'boundary': 'command_acceptance'},
+    # VELDO-0131 (owner, Telegram 38184): the owner's backlog priority, worker stop and account cap.
+    'reprioritize_backlog': {'parameters': ('item', 'item_version', 'rank'), 'boundary': 'command_acceptance'},
+    'stop_worker': {'parameters': ('dispatch', 'dispatch_version'), 'boundary': 'command_acceptance'},
+    'set_account_cap': {'parameters': ('account', 'account_version', 'concurrency'), 'boundary': 'command_acceptance'},
 }
 
 CALL = 'api_call'
@@ -123,12 +128,18 @@ def time_problem(a, now):
 
 
 def domain_request(a):
-    """The one signed domain request an assertion's operation carries, or None for revoke_credential and
-    save_workflow, which execute from the verified assertion itself."""
+    """The one signed domain request an assertion's operation carries, or None for the operations that execute
+    from the verified assertion itself (revoke_credential, save_workflow, stop_worker, set_account_cap and the
+    configuration saves)."""
     p = a['parameters']
     if a['operation'] == 'propose_team':
         return dict({f: a[f] for f in IDS}, operation='propose', project=p['project'], team=p['team'],
                     team_version=p['team_version'], principal=a['principal'], command_id=a['request_id'],
+                    nonce=a['request_id'])
+    if a['operation'] == 'reprioritize_backlog':
+        # VELDO-0131: control_backlog's own reprioritize command, carried by the edge for the session's member.
+        return dict({f: a[f] for f in IDS}, operation='reprioritize', item=p['item'], item_version=p['item_version'],
+                    priority={'rank': p['rank']}, principal=a['principal'], command_id=a['request_id'],
                     nonce=a['request_id'])
     if a['operation'] == 'send_message':
         return {'schema': IN.API_SCHEMA, 'domain': a['domain'], 'request_id': a['request_id'], 'edge': a['edge'],

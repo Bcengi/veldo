@@ -66,7 +66,7 @@ def _v62_suite():
             'settle/missing-retained', 'settle/timeout-retained',
             'settle/cancel-retained',
             'attribution/stored-account', 'attribution/measurement-removed', 'attribution/watermark',
-            'format/claude-fake-lines', 'format/codex-fake-lines')
+            'format/claude-fake-lines', 'format/codex-fake-lines', 'accounts/owner-cap')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -1661,6 +1661,49 @@ sys.exit(payload.get('code', 0))
                   len(messages) >= 8 and all(pattern.match(m or '') or m in table for m in messages)
                   and any('again at' in m for m in messages) and any('later' in m for m in messages)
                   and any(m in table for m in messages))
+        # VELDO-0131 (owner, Telegram 38184): the owner's cap of an account's run concurrency, a versioned change of
+        # the account's record. A stale version, a person scoped to one repository (an account is factory scope),
+        # a member with no owner role and a concurrency out of range are refused and write nothing; the factory
+        # owner's change is accepted at the next version, kept in the record's history; the pool reads it.
+        with region('accounts/owner-cap'):
+            put('factory-owner', 'membership', dict(principal_type='person', roles=['project_owner'], scope='*',
+                                                    revoked_at=None, expires_at=None))
+            put('factory-member', 'membership', dict(principal_type='person', roles=[], scope='*',
+                                                     revoked_at=None, expires_at=None))
+            target = 'acct-paused'
+            before = entity('account:' + target)
+            seq = lambda: writer.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0]
+            head = seq()
+            _r, stale = attempt(lambda: accounts.cap('cap/stale', target, 3, base=before['version'] + 1,
+                                                     principal='factory-owner', now=time.time()))
+            _r, narrow = attempt(lambda: accounts.cap('cap/narrow', target, 3, base=before['version'],
+                                                      principal='owner', now=time.time()))
+            _r, roleless = attempt(lambda: accounts.cap('cap/roleless', target, 3, base=before['version'],
+                                                        principal='factory-member', now=time.time()))
+            _r, ranged = attempt(lambda: accounts.cap('cap/range', target, ACC.CAP_LIMIT + 1, base=before['version'],
+                                                      principal='factory-owner', now=time.time()))
+            check('accounts/owner-cap', 'refusals by name [%s]' % [stale, narrow, roleless, ranged],
+                  stale == 'stale_version' and narrow == 'missing_authority:scope' and roleless == 'missing_authority'
+                  and ranged == 'invalid_input:cap')
+            check('accounts/owner-cap', 'no refusal wrote anything', seq() == head
+                  and entity('account:' + target)['version'] == before['version'])
+            done, error = attempt(lambda: accounts.cap('cap/ok', target, 3, base=before['version'],
+                                                       principal='factory-owner', now=time.time(),
+                                                       assertion_digest='sha256:' + '2' * 64))
+            after = entity('account:' + target)
+            history = after['data'].get('concurrency_history') or []
+            check('accounts/owner-cap', 'the owner\'s cap is accepted as the record\'s next version [%s]' % error,
+                  error is None and after['version'] == before['version'] + 1 and after['data']['concurrency'] == 3
+                  and after['data']['status'] == before['data']['status']
+                  and after['data']['profiles'] == before['data']['profiles'])
+            check('accounts/owner-cap', 'the change is kept with who, what before and the assertion',
+                  len(history) == 1 and history[0]['concurrency'] == 3 and history[0]['previous'] == before['data']['concurrency']
+                  and history[0]['by'] == 'factory-owner' and history[0]['channel'] == 'api'
+                  and writer.execute('SELECT principal FROM journal WHERE command_id=?', ('cap/ok',)).fetchone()[0]
+                  == 'factory-owner')
+            _r, unchanged = attempt(lambda: accounts.cap('cap/same', target, 3, base=after['version'],
+                                                         principal='factory-owner', now=time.time()))
+            check('accounts/owner-cap', 'an unchanged cap is refused [%s]' % unchanged, unchanged == 'invalid_input:unchanged')
     except Exception as exc:  # noqa: BLE001 - recorded against every row, never raised past the suite
         for name in ROWS:
             check(name, 'the run ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)

@@ -155,10 +155,13 @@ ACTIONS = (
            'VELDO-0130'),
     Action('workflow_save', 'workflows.save', 'save_workflow', 'control_workflow', 'SAVE', 'VELDO-0132'),
     Action('owner_admission', None, None, None, None, 'VELDO-0079'),
-    Action('owner_priority', None, None, None, None, 'VELDO-0078'),
+    # VELDO-0131 (owner, Telegram 38184): the owner's backlog priority, worker stop and account cap, each the
+    # existing writer's command reached through the API (control_api_authority._work).
+    Action('owner_priority', 'backlog.reprioritize', 'reprioritize_backlog', 'control_backlog', 'OPERATION', 'VELDO-0078'),
     Action('project_pause', None, None, None, None, 'VELDO-0076'),
     Action('project_cancel', None, None, None, None, 'VELDO-0076'),
-    Action('worker_stop', None, None, None, None, 'VELDO-0041'),
+    Action('worker_stop', 'workers.stop', 'stop_worker', 'control_dispatch', 'OPERATION', 'VELDO-0041'),
+    Action('worker_cap', 'workers.cap', 'set_account_cap', 'control_accounts', 'OPERATION', 'VELDO-0062'),
     Action('team_configuration_edit', 'teams.save', 'propose_team', 'control_team', 'OPERATION', 'VELDO-0162'),
     Action('agent_configuration_edit', 'configurations.save', 'save_capability_configuration',
            'control_agent_config', 'SAVE', 'VELDO-0162'),

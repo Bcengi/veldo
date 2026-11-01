@@ -58,6 +58,19 @@ principal to be an active `service` member (authority_contract.BOUNDARIES['dispa
 whose scope covers this repository, so a worker principal writes no dispatch record. The claim and
 reservation a contract binds are re-read in the same transaction at preparation and at acceptance.
 
+THE OWNER'S STOP (VELDO-0131, owner Telegram 38184). The stop mechanism is the launch receiver's (R44's
+cooperative stop, then the group's escalation: control_launch.Launch.stop). An owner asks for it by a
+command of its own, `request_stop`, outside the ordinary lifecycle: it names the dispatch at the version the
+owner saw (a stale version is refused by the store's expected versions), is judged inside the transaction
+(the principal an active person member holding project_owner whose scope covers the project the contract
+reserved, else not_authorized), is accepted only while the dispatch is prepared, accepted or running and has
+no stop request yet, and records the request on the dispatch (`stop_request`: by, at, request, channel,
+assertion digest, result None) with one history entry, the dispatch's state unchanged. The runner that holds
+the dispatch's receiver then asks it to stop (control_launch.Runner.honor_stops) and records what that ask
+returned with `stop_result` (asked true or false), its own service command. The worker's end is recorded by
+the receiver as every end is. A stop request recovers, retries or restarts nothing: it moves no state, frees
+no unit or station and authorizes no new dispatch.
+
 OBSERVABILITY. Each command is reported to `observe` with operation, domain, repository, unit,
 station, dispatch, request, accepted versions, outcome, named refusal and its taxonomy (invalid
 input, missing authority, stale subject, unavailable service, missing evidence, unknown outcome;
@@ -124,6 +137,10 @@ STOP = 'dispatch-outcome-unknown'
 CONTRACT_FIELDS = ('schema', 'dispatch_id', 'domain', 'repository', 'unit', 'station', 'attempt', 'source',
                    'input', 'capability', 'reservation', 'claim', 'deadline', 'authority_generation')
 IDENTITY_FIELDS = ('platform', 'host', 'boot_id', 'pid', 'start')
+# VELDO-0131: the owner's stop request and the runner's record of its ask, outside TRANSITIONS (no state moves).
+STOP_ACTIONS = ('request_stop', 'stop_result')
+STOPPABLE = ('prepared', 'accepted', 'running')
+STOP_ROLE = 'project_owner'
 TERMINATION_FIELDS = ('returncode', 'signal', 'output_digest', 'output_bytes', 'deadline_stop')
 ARTIFACT_FIELDS = ('verdict', 'complete', 'digest')
 # VELDO-0141: what an exit commits of the run's execution record (control_execution_record).
@@ -139,7 +156,8 @@ TAXONOMY = {
     'reservation_mismatch': 'stale_subject', 'stale_claim': 'stale_subject', 'active_dispatch': 'stale_subject',
     'transition_refused': 'stale_subject', 'deadline_passed': 'stale_subject', 'stale_attempt': 'stale_subject',
     'stale_version': 'stale_subject', 'stale_input': 'stale_subject', 'stale_scope': 'stale_subject',
-    'not_prepared': 'stale_subject', 'stale_authority': 'stale_subject',
+    'not_prepared': 'stale_subject', 'stale_authority': 'stale_subject', 'stop_requested': 'stale_subject',
+    'no_stop_request': 'stale_subject',
     'unresolved_dependency': 'missing_evidence', 'missing_evidence': 'missing_evidence',
     'unavailable_service': 'unavailable_service', 'receiver_unavailable': 'unavailable_service',
     'spawn_failed': 'unavailable_service',
@@ -360,9 +378,60 @@ def _claim_bound(conn, contract):
         raise Refused('stale_claim', binding['entity'])
 
 
+def _authorize_stop(conn, principal, contract, now):
+    """VELDO-0131: an owner's stop request is a person's: an active member holding project_owner whose scope
+    covers the project the contract reserved (the repository when it reserved none), read in the transaction."""
+    row = _entity(conn, principal) if _text(principal) else None
+    entry = dict(row['data'], principal=principal) if row and row['kind'] == 'membership' else None
+    active, why = AC.active_member(entry, now)
+    if not active:
+        raise Refused('not_authorized:' + str(why or 'not_member'), 'not a current member')
+    if entry.get('principal_type') != 'person' or STOP_ROLE not in (entry.get('roles') or []):
+        raise Refused('not_authorized:role', 'a stop is requested by a person holding ' + STOP_ROLE)
+    project = ((contract or {}).get('reservation') or {}).get('project') or (contract or {}).get('repository')
+    if not _text(project) or not CM.scope_covers(entry.get('scope'), project):
+        raise Refused('not_authorized:scope', 'the dispatch\'s project is outside the member\'s scope')
+
+
+def stop_transition(conn, params, before):
+    """VELDO-0131: an owner's stop request, or the runner's record of the ask it made; no state moves."""
+    action, now = params.get('action'), params.get('now')
+    if action not in STOP_ACTIONS or not _number(now) or not _text(params.get('dispatch_id')):
+        raise Refused('invalid_input', 'unknown action, time or dispatch')
+    rid = record_id(params['dispatch_id'])
+    current = before.get(rid)
+    if not current or current['kind'] != RECORD_KIND:
+        raise Refused('missing_dispatch', rid)
+    record = copy.deepcopy(current['data'])
+    pending = record.get('stop_request')
+    if action == 'request_stop':
+        _authorize_stop(conn, params.get('principal'), record.get('contract'), now)
+        if record.get('state') not in STOPPABLE:
+            raise Refused('transition_refused:%s:request_stop' % record.get('state'), 'the dispatch has ended')
+        if pending:
+            raise Refused('stop_requested', 'a stop is already requested for this dispatch')
+        if not _text(params.get('request')) or not _text(params.get('reason')):
+            raise Refused('invalid_input', 'a stop request names its request and reason')
+        record['stop_request'] = {'by': params['principal'], 'at': now, 'request': params['request'],
+                                  'reason': params['reason'], 'channel': params.get('channel'),
+                                  'assertion_digest': params.get('assertion_digest'), 'result': None}
+    else:
+        _authorize(conn, params.get('principal'), params.get('repository'), now)
+        if not pending or pending.get('result') is not None:
+            raise Refused('no_stop_request', 'no stop request waits for its result')
+        if type(params.get('asked')) is not bool:
+            raise Refused('invalid_input', 'a stop result says whether the receiver was asked')
+        pending['result'] = {'asked': params['asked'], 'at': now, 'by': params['principal']}
+    record['history'] = list(record.get('history') or []) + [
+        {'action': action, 'at': now, 'principal': params['principal'], 'state': record.get('state')}]
+    return {rid: {'kind': RECORD_KIND, 'data': record}}
+
+
 def transition(conn, params, before):
     """THE ONE TRANSITION every dispatch command commits, inside its store transaction."""
     action, now = params.get('action'), params.get('now')
+    if action in STOP_ACTIONS:
+        return stop_transition(conn, params, before)
     if action not in TRANSITIONS or not _number(now) or not _text(params.get('dispatch_id')):
         raise Refused('invalid_input', 'unknown action, time or dispatch')
     _authorize(conn, params.get('principal'), params.get('repository'), now)
@@ -516,6 +585,7 @@ class Dispatches:
                 states[record['dispatch_id']] = record['state']
         return dict(self.counts, pending=sorted(d for d, s in states.items() if s in ('prepared', 'accepted', 'running')),
                     stopped=sorted(d for d, s in states.items() if s == 'unknown'),
+                    stop_requests=[d for d, _reason in self.stop_requests()],
                     states={s: sum(v == s for v in states.values()) for s in STATES})
 
     # Commands.
@@ -556,6 +626,65 @@ class Dispatches:
         self.counts['accepted'] += 1
         self.observe(dict(event, outcome='accepted', watermark=result['seq'], state=TRANSITIONS[action][1]))
         return self.record(dispatch_id)
+
+    def request_stop(self, dispatch_id, version, principal, *, now, request, reason='owner_stop', channel=None,
+                     assertion_digest=None):
+        """VELDO-0131: an owner's stop request of one dispatch at `version`, the person `principal`'s command (its
+        journal actor), judged in the transaction (stop_transition). A version that moved is refused stale."""
+        if not _text(dispatch_id) or type(version) is not int or isinstance(version, bool) or not _text(request):
+            raise Refused('invalid_input', 'a dispatch, its version and the request are named')
+        rid = record_id(dispatch_id)
+        params = dict(action='request_stop', dispatch_id=dispatch_id, now=now, principal=principal, request=request,
+                      reason=reason, channel=channel, assertion_digest=assertion_digest, domain=self.domain,
+                      repository=self.repository)
+        command_id = 'dispatch/request_stop/%s/%s' % (dispatch_id, digest([request])[len('sha256:'):][:24])
+        command = dict(command_id=command_id, principal=principal, operation=OPERATION, parameters=params,
+                       expected_versions={rid: version}, artifact_digests=[], nonce='dispatch/' + command_id)
+        return self._stop_command('request_stop', dispatch_id, command, {rid: version})
+
+    def stop_result(self, dispatch_id, asked, *, now):
+        """VELDO-0131: the runner's record of the ask a stop request made of the dispatch's receiver."""
+        rid = record_id(dispatch_id) if _text(dispatch_id) else None
+        if rid is None:
+            raise Refused('invalid_input', 'a dispatch is named')
+        expected = {rid: self.version(dispatch_id)}
+        params = dict(action='stop_result', dispatch_id=dispatch_id, now=now, principal=self.principal,
+                      asked=asked, domain=self.domain, repository=self.repository)
+        command_id = 'dispatch/stop_result/%s/%s' % (dispatch_id, digest(params)[len('sha256:'):][:24])
+        command = dict(command_id=command_id, principal=self.principal, operation=OPERATION, parameters=params,
+                       expected_versions=expected, artifact_digests=[], nonce='dispatch/' + command_id)
+        return self._stop_command('stop_result', dispatch_id, command, expected)
+
+    def stop_requests(self):
+        """The dispatches of this domain and repository whose stop request waits for its ask, oldest first."""
+        found = []
+        for (data,) in self.conn.execute('SELECT data FROM entities WHERE kind=?', (RECORD_KIND,)):
+            record = json.loads(data)
+            contract, pending = record.get('contract') or {}, record.get('stop_request') or {}
+            if (contract.get('domain') == self.domain and contract.get('repository') == self.repository
+                    and pending and pending.get('result') is None):
+                found.append((pending.get('at') or 0, record['dispatch_id'], pending.get('reason')))
+        return [(d, r) for _at, d, r in sorted(found)]
+
+    def _stop_command(self, action, dispatch_id, command, expected):
+        current = (self.record(dispatch_id) or {}).get('contract') or {}
+        event = {'schema': SCHEMA, 'operation': action, 'domain': self.domain, 'repository': self.repository,
+                 'unit': current.get('unit'), 'station': current.get('station'), 'dispatch_id': dispatch_id,
+                 'principal': command['principal'], 'request': command['command_id'],
+                 'accepted_versions': dict(expected)}
+        try:
+            result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
+        except (Refused, self.store.StoreRefused) as error:
+            self.counts['refused'] += 1
+            self.observe(dict(event, outcome='refused', refusal=error.code, taxonomy=taxonomy(error.code)))
+            if isinstance(error, Refused):
+                raise
+            raise Refused(error.code, error.detail) from error
+        self.counts['accepted'] += 1
+        record = self.record(dispatch_id)
+        self.observe(dict(event, outcome='accepted', watermark=result['seq'], state=(record or {}).get('state'),
+                          stop=dict((record or {}).get('stop_request') or {})))
+        return record
 
     @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
     def prepare(self, contract, *, now):
