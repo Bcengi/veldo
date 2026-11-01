@@ -54,3 +54,15 @@ Pick one and write it into the specifications:
 
 Pinning matters only if the host can be told not to delete a pinned version. Without that, (b) breaks
 again at the next auto-update.
+
+## Resolved 2026-11-01: option (a), the pinned bytes restored
+
+The 2.1.281 binary was downloaded from the publisher's release store
+(downloads.claude.ai/claude-code-releases/2.1.281/linux-x64/claude). The release manifest's checksum
+for linux-x64 and the downloaded file's sha256 are both 56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1,
+the digest proof/VELDO-0173/claude-tools.json records. It is installed, mode 755, at
+/home/dmitry/.local/share/claude/versions/2.1.281; the active Claude Code (the ~/.local/bin/claude
+link, 2.1.316) is unchanged. No criterion, record or code changed.
+
+The installer's cleanup may remove this version again. The same two commands restore it:
+fetch that URL, check the sha256 above, install it at the same path.
