@@ -53,7 +53,7 @@ const range = computed(() => {
   if (!b.length) return 'No timed usage yet'
   return `${when(b[0]!.start)} to ${when(b[b.length - 1]!.start + 3600)}`
 })
-const when = (seconds: number) => new Date(seconds * 1000).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+const when = (seconds: number) => new Date(seconds * 1000).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })
 const words = (u: string) => u.replace('_', ' ')
 onMounted(() => void live.start())
 </script>

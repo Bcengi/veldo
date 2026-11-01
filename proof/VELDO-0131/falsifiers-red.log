@@ -1,0 +1,15 @@
+commit 5a3ba79bd1d85cf6a847c6f811493a2edbb2161d
+2026-11-01T05:22:13Z
+baseline: green (failed rows [])
+falsifiers: 0 of 4 proven (not_proven)
+ui131-decision-action-hidden-360: red ['VELDO-0131 ac1/screens-360']
+falsifiers: 0 of 4 proven (not_proven)
+ui131-completion-from-build-state: red ['VELDO-0131 unit/factory', 'VELDO-0131 ac2/live', 'VELDO-0131 ac2/completion-receipt']
+falsifiers: 0 of 4 proven (not_proven)
+ui131-node-settings-hover-only: red ['VELDO-0131 ac1/screens-360', 'VELDO-0131 ac1/screens-390', 'VELDO-0131 ac1/screens-1280', 'VELDO-0131 ac1/screens-1440', 'VELDO-0131 ac3/keyboard-desktop', 'VELDO-0131 ac3/touch-phone']
+falsifiers: 0 of 4 proven (not_proven)
+ui131-tiered-dependency-locked: red ['VELDO-0131 ac4/dependency-policy']
+falsifiers: 0 of 4 proven (not_proven)
+restored: green (failed rows [])
+falsifiers: 4 of 4 proven (red_under_each_mutant_green_restored)
+2026-11-01T05:32:29Z

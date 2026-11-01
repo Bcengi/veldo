@@ -69,15 +69,26 @@ export function transitionOf(d: Draft, from: string, port: string): Transition |
   return d.definition.transitions.find((t) => t.from === from && t.port === port) ?? null
 }
 
-/** Move node `id` by `delta` places in the definition's node order (the ordered list). */
+/** The steps in their order on the canvas: left to right, then top to bottom. This is the order the list shows
+ * and the one a save keeps, since it lives in the layout (the API stores the definition's nodes by name). */
+export function orderedIds(d: Draft): string[] {
+  return nodeIds(d)
+    .map((id) => ({ id, ...position(d, id) }))
+    .sort((a, b) => a.x - b.x || a.y - b.y || a.id.localeCompare(b.id))
+    .map((n) => n.id)
+}
+
+/** Move step `id` by `delta` places in the canvas order: it trades places on the canvas with that neighbor. */
 export function reorder(d: Draft, id: string, delta: number): Draft {
-  const ids = nodeIds(d)
+  const ids = orderedIds(d)
   const from = ids.indexOf(id)
   const to = Math.max(0, Math.min(ids.length - 1, from + delta))
   if (from < 0 || from === to) return d
-  ids.splice(to, 0, ...ids.splice(from, 1))
+  const other = ids[to]!
+  const a = position(d, id)
+  const b = position(d, other)
   const next = clone(d)
-  next.definition.nodes = Object.fromEntries(ids.map((k) => [k, d.definition.nodes[k]!]))
+  next.layout.nodes = { ...(next.layout.nodes ?? {}), [id]: b, [other]: a }
   return next
 }
 

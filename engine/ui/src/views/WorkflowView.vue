@@ -16,7 +16,7 @@ import FlowCanvas from '@/features/workflow/FlowCanvas.vue'
 import FlowProperties from '@/features/workflow/FlowProperties.vue'
 import LiveMeta from '@/features/factory/LiveMeta.vue'
 import {
-  KINDS, addNode, connect, moveNode, nodeIds, problems, removeNode, reorder, same, transitionOf, type Draft,
+  KINDS, addNode, connect, moveNode, orderedIds, problems, removeNode, reorder, same, transitionOf, type Draft,
 } from '@/features/workflow/workflow-doc'
 import '@/styles/factory.css'
 
@@ -156,13 +156,13 @@ const label = (id: string) => `${id} (${KINDS[draft.value?.definition.nodes[id]?
             </div>
           </section>
           <section class="panel" aria-labelledby="flow-list-title" data-testid="flow-list">
-            <h2 id="flow-list-title" class="panel-title">Steps in order <span class="panel-count">{{ nodeIds(draft).length }}</span></h2>
+            <h2 id="flow-list-title" class="panel-title">Steps in order <span class="panel-count">{{ orderedIds(draft).length }}</span></h2>
             <ol class="factory-body flow-order">
-              <li v-for="(id, index) in nodeIds(draft)" :key="id" :aria-current="selected?.kind === 'node' && selected.id === id ? 'true' : undefined" :data-step="id">
+              <li v-for="(id, index) in orderedIds(draft)" :key="id" :aria-current="selected?.kind === 'node' && selected.id === id ? 'true' : undefined" :data-step="id">
                 <VButton :label="label(id)" variant="quiet" size="small" :aria-label="`Select step ${id}`" data-testid="step-select" @click="select({ kind: 'node', id })" />
                 <span class="factory-actions">
                   <VButton label="Up" size="small" variant="secondary" :disabled="index === 0" :aria-label="`Move ${id} up`" @click="apply(reorder(draft!, id, -1), `${id} moved up.`)" />
-                  <VButton label="Down" size="small" variant="secondary" :disabled="index === nodeIds(draft).length - 1" :aria-label="`Move ${id} down`" @click="apply(reorder(draft!, id, 1), `${id} moved down.`)" />
+                  <VButton label="Down" size="small" variant="secondary" :disabled="index === orderedIds(draft).length - 1" :aria-label="`Move ${id} down`" @click="apply(reorder(draft!, id, 1), `${id} moved down.`)" />
                 </span>
                 <ul class="factory-list" :aria-label="`Transitions from ${id}`">
                   <li v-for="port in KINDS[draft.definition.nodes[id]!.kind]?.ports ?? []" :key="port" class="factory-meta" :data-port="`${id}.${port}`">

@@ -1,0 +1,233 @@
+{
+ "commands": [
+  "npm view <package> name version license repository.url maintainers dependencies --json",
+  "gh api users/<owner>"
+ ],
+ "locked": {
+  "@kurkle/color": {
+   "license": "MIT",
+   "version": "0.3.4"
+  },
+  "@tanstack/store": {
+   "license": "MIT",
+   "version": "0.11.2"
+  },
+  "@tanstack/table-core": {
+   "license": "MIT",
+   "version": "9.3.1"
+  },
+  "@tanstack/vue-table": {
+   "license": "MIT",
+   "version": "9.3.1"
+  },
+  "chart.js": {
+   "license": "MIT",
+   "version": "4.6.1"
+  }
+ },
+ "owners": {
+  "TanStack": {
+   "blog": "https://tanstack.com",
+   "company": null,
+   "created_at": "2020-10-07T17:25:54Z",
+   "location": null,
+   "login": "TanStack",
+   "name": "TanStack",
+   "type": "Organization"
+  },
+  "antfu": {
+   "blog": "https://antfu.me",
+   "company": "@vercel | @nuxt",
+   "created_at": "2015-02-28T16:55:50Z",
+   "location": "Gifu, Japan",
+   "login": "antfu",
+   "name": "Anthony Fu",
+   "type": "User"
+  },
+  "apertureless": {
+   "blog": "",
+   "company": null,
+   "created_at": "2013-07-09T18:51:45Z",
+   "location": null,
+   "login": "apertureless",
+   "name": "Jakub",
+   "type": "User"
+  },
+  "bcakmakoglu": {
+   "blog": "https://www.scheissaufdeinmarketingdusalamiwurst.de",
+   "company": null,
+   "created_at": "2021-02-02T09:23:18Z",
+   "location": "Hamburg, Germany",
+   "login": "bcakmakoglu",
+   "name": "Braks",
+   "type": "User"
+  },
+  "chartjs": {
+   "blog": "http://www.chartjs.org/",
+   "company": null,
+   "created_at": "2014-12-29T19:20:21Z",
+   "location": null,
+   "login": "chartjs",
+   "name": "Chart.js",
+   "type": "Organization"
+  },
+  "kurkle": {
+   "blog": "",
+   "company": null,
+   "created_at": "2017-04-24T18:39:26Z",
+   "location": "Finland",
+   "login": "kurkle",
+   "name": "Jukka Kurkela",
+   "type": "User"
+  },
+  "tannerlinsley": {
+   "blog": "https://tanstack.com",
+   "company": "@tanstack & @nozzle",
+   "created_at": "2013-09-30T21:34:41Z",
+   "location": "Utah",
+   "login": "tannerlinsley",
+   "name": "Tanner Linsley",
+   "type": "User"
+  },
+  "vueuse": {
+   "blog": "https://vueuse.org",
+   "company": null,
+   "created_at": "2021-01-17T14:38:22Z",
+   "location": null,
+   "login": "vueuse",
+   "name": "VueUse",
+   "type": "Organization"
+  }
+ },
+ "packages": {
+  "@kurkle/color": {
+   "license": "MIT",
+   "maintainers": [
+    "kurkle <jukka.kurkela@gmail.com>"
+   ],
+   "name": "@kurkle/color",
+   "repository.url": "git+https://github.com/kurkle/color.git",
+   "version": "0.6.5"
+  },
+  "@tanstack/store": {
+   "license": "MIT",
+   "maintainers": [
+    "tannerlinsley <tannerlinsley@gmail.com>",
+    "alemtuzlak <t.zlak97@gmail.com>",
+    "kevinvandy <kevinvandy656@gmail.com>"
+   ],
+   "name": "@tanstack/store",
+   "repository.url": "git+https://github.com/TanStack/store.git",
+   "version": "0.11.2"
+  },
+  "@tanstack/table-core": {
+   "dependencies": {
+    "@tanstack/store": "^0.11.2"
+   },
+   "license": "MIT",
+   "maintainers": [
+    "tannerlinsley <tannerlinsley@gmail.com>",
+    "alemtuzlak <t.zlak97@gmail.com>",
+    "kevinvandy <kevinvandy656@gmail.com>"
+   ],
+   "name": "@tanstack/table-core",
+   "repository.url": "https://github.com/TanStack/table.git",
+   "version": "9.3.1"
+  },
+  "@tanstack/vue-table": {
+   "dependencies": {
+    "@tanstack/store": "^0.11.2",
+    "@tanstack/table-core": "9.3.1"
+   },
+   "license": "MIT",
+   "maintainers": [
+    "tannerlinsley <tannerlinsley@gmail.com>",
+    "alemtuzlak <t.zlak97@gmail.com>",
+    "kevinvandy <kevinvandy656@gmail.com>"
+   ],
+   "name": "@tanstack/vue-table",
+   "repository.url": "https://github.com/TanStack/table.git",
+   "version": "9.3.1"
+  },
+  "@vue-flow/core": {
+   "dependencies": {
+    "@vueuse/core": "^10.5.0",
+    "d3-drag": "^3.0.0",
+    "d3-interpolate": "^3.0.1",
+    "d3-selection": "^3.0.0",
+    "d3-zoom": "^3.0.0"
+   },
+   "license": "MIT",
+   "maintainers": [
+    "braks <brainbraks@googlemail.com>"
+   ],
+   "name": "@vue-flow/core",
+   "repository.url": "git+https://github.com/bcakmakoglu/vue-flow.git",
+   "version": "1.48.2"
+  },
+  "@vueuse/core": {
+   "dependencies": {
+    "@types/web-bluetooth": "^0.0.21",
+    "@vueuse/metadata": "15.0.0",
+    "@vueuse/shared": "15.0.0"
+   },
+   "license": "MIT",
+   "maintainers": [
+    "vueuse-bot <npm-vueuse@antfu.me>"
+   ],
+   "name": "@vueuse/core",
+   "repository.url": "git+https://github.com/vueuse/vueuse.git",
+   "version": "15.0.0"
+  },
+  "chart.js": {
+   "dependencies": {
+    "@kurkle/color": "^0.3.0"
+   },
+   "license": "MIT",
+   "maintainers": [
+    "nnnick <hello@nickdownie.com>",
+    "tannerlinsley <tannerlinsley@gmail.com>",
+    "etimberg <evert.timberg+npm@gmail.com>",
+    "simonbrunel <s.b.npmjs@abysscorp.org>",
+    "chartjs-ci <chartjs-ci@abysscorp.org>"
+   ],
+   "name": "chart.js",
+   "repository.url": "git+https://github.com/chartjs/Chart.js.git",
+   "version": "4.6.1"
+  },
+  "vue-chartjs": {
+   "license": "MIT",
+   "maintainers": [
+    "apertureless <juszczak.j@googlemail.com>"
+   ],
+   "name": "vue-chartjs",
+   "repository.url": "git+ssh://git@github.com/apertureless/vue-chartjs.git",
+   "version": "5.3.4"
+  }
+ },
+ "schema": "veldo.dependency_evidence/v1",
+ "spec": "VELDO-0131",
+ "taken_at": "2026-11-01T05:43:17Z",
+ "vueuse_top_contributors": [
+  {
+   "contributions": 1706,
+   "login": "antfu"
+  },
+  {
+   "contributions": 89,
+   "login": "okxiaoliang4"
+  },
+  {
+   "contributions": 72,
+   "login": "webfansplz"
+  },
+  {
+   "contributions": 67,
+   "login": "wheatjs"
+  },
+  {
+   "contributions": 64,
+   "login": "Alfred-Skyblue"
+  }
+ ]
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addNode, connect, nodeIds, problems, removeNode, reorder, setConfig, transitionOf, type Draft } from './workflow-doc'
+import { addNode, connect, nodeIds, orderedIds, problems, removeNode, reorder, setConfig, transitionOf, type Draft } from './workflow-doc'
 
 const base: Draft = {
   definition: {
@@ -25,7 +25,11 @@ describe('workflow document', () => {
     expect(transitionOf(connect(wired, id, 'admit', ''), id, 'admit')).toBeNull()
   })
   it('reorders nodes and removes one with its transitions', () => {
-    expect(nodeIds(reorder(base, 'finish', -1))).toEqual(['finish', 'groom'])
+    expect(orderedIds(base)).toEqual(['groom', 'finish'])
+    const swapped = reorder(base, 'finish', -1)
+    expect(orderedIds(swapped)).toEqual(['finish', 'groom'])
+    expect(swapped.layout.nodes).toEqual({ groom: { x: 200, y: 0 }, finish: { x: 0, y: 0 } })
+    expect(nodeIds(swapped)).toEqual(['groom', 'finish'])
     expect(removeNode(base, 'finish').definition.transitions).toEqual([])
   })
   it('sets and clears a node setting', () => {

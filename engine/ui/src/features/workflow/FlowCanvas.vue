@@ -10,27 +10,32 @@ import { KINDS, nodeIds, position, type Draft } from './workflow-doc'
  * never on hover. */
 const props = defineProps<{ draft: Draft; selected: { kind: 'node' | 'edge'; id: string } | null }>()
 const emit = defineEmits<{ select: [target: { kind: 'node' | 'edge'; id: string }]; move: [id: string, x: number, y: number] }>()
-const W = 168
-const H = 56
+const W = 180
+const H = 64
 const view = ref({ x: -20, y: -20, zoom: 1 })
 const svg = ref<SVGSVGElement | null>(null)
 const nodes = computed(() => nodeIds(props.draft).map((id) => ({ id, ...position(props.draft, id), kind: props.draft.definition.nodes[id]!.kind })))
-const edges = computed(() =>
-  props.draft.definition.transitions
+const edges = computed(() => {
+  const all = props.draft.definition.transitions
+  return all
     .map((t) => {
       const a = nodes.value.find((n) => n.id === t.from)
       const b = nodes.value.find((n) => n.id === t.to)
       if (!a || !b) return null
+      // Transitions between the same two steps fan out, so each arrow and its port label stand apart.
+      const twins = all.filter((o) => o.from === t.from && o.to === t.to)
+      const fan = (twins.indexOf(t) - (twins.length - 1) / 2) * 34
       const x1 = a.x + W, y1 = a.y + H / 2, x2 = b.x, y2 = b.y + H / 2
       const back = x2 < x1
-      const bend = back ? Math.max(60, Math.abs(y2 - y1) / 2 + 40) : 0
+      const bend = (back ? Math.max(60, Math.abs(y2 - y1) / 2 + 40) : 0) + fan
+      const mx = (x1 + x2) / 2
       const d = back
         ? `M${x1},${y1} C${x1 + 60},${y1 + bend} ${x2 - 60},${y2 + bend} ${x2},${y2}`
-        : `M${x1},${y1} C${(x1 + x2) / 2},${y1} ${(x1 + x2) / 2},${y2} ${x2},${y2}`
-      return { ...t, d, lx: (x1 + x2) / 2, ly: (y1 + y2) / 2 + (back ? bend * 0.75 : -6) }
+        : `M${x1},${y1} C${mx},${y1 + fan * 1.5} ${mx},${y2 + fan * 1.5} ${x2},${y2}`
+      return { ...t, d, lx: mx, ly: (y1 + y2) / 2 + (back ? bend * 0.75 : fan * 1.2 - 6) }
     })
-    .filter((e) => e !== null),
-)
+    .filter((e) => e !== null)
+})
 const box = computed(() => `${view.value.x} ${view.value.y} ${900 / view.value.zoom} ${420 / view.value.zoom}`)
 
 let drag: { kind: 'node' | 'pan'; id?: string; sx: number; sy: number; ox: number; oy: number; moved: boolean } | null = null
@@ -147,8 +152,8 @@ const isSel = (kind: 'node' | 'edge', id: string) => props.selected?.kind === ki
         @keydown="key($event, n.id)"
       >
         <rect :width="W" :height="H" rx="8" />
-        <text x="12" y="23" font-weight="600">{{ n.id }}</text>
-        <text x="12" y="42" class="flow-kind">{{ KINDS[n.kind]?.label ?? n.kind }}{{ props.draft.definition.entry === n.id ? ' (entry)' : '' }}</text>
+        <text x="12" y="26" font-weight="600">{{ n.id }}</text>
+        <text x="12" y="48" class="flow-kind">{{ KINDS[n.kind]?.label ?? n.kind }}{{ props.draft.definition.entry === n.id ? ' (entry)' : '' }}</text>
       </g>
     </svg>
     <div class="flow-zoom" role="group" aria-label="Canvas view">

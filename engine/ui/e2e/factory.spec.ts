@@ -290,7 +290,7 @@ for (const viewport of WIDTHS) {
       }
       const violations = await watch.violations()
       if (violations.length) failures.push(`${render.name}: content security policy ${violations[0]}`)
-      if (SCREENS_DIR && !render.name.endsWith('-loading')) {
+      if (SCREENS_DIR && !/-(loading|error|empty)$/.test(render.name)) {
         mkdirSync(SCREENS_DIR, { recursive: true })
         await page.screenshot({ path: path.join(SCREENS_DIR, `${viewport.width}-${render.name}.png`), fullPage: true })
       }
@@ -547,7 +547,10 @@ test('ac3/touch-phone: the owner\'s task path by touch on a phone', async ({ bro
   await page.locator('[data-step="wait"] [data-testid="step-select"]').tap()
   await page.getByTestId('flow-sheet').getByTestId('node-port-decline').selectOption('grooming_1')
   await page.getByTestId('flow-sheet').getByRole('button', { name: 'Close' }).tap()
+  const steps = () => page.locator('[data-testid="flow-list"] li[data-step]').evaluateAll((li) => li.map((x) => x.getAttribute('data-step')))
+  const was = (await steps()).indexOf('grooming_1')
   await page.locator('[data-step="grooming_1"] button[aria-label="Move grooming_1 up"]').tap()
+  expect((await steps()).indexOf('grooming_1')).toBe(was - 1)
   await big('[data-testid="flow-save"]')
   await page.getByTestId('flow-save').tap()
   await expect(page.getByTestId('flow-state')).toContainText(`Saved as version ${version + 1}`)

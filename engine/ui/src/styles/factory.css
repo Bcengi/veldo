@@ -337,7 +337,7 @@
   }
   .flow-node text {
     fill: var(--ink);
-    font-size: 13px;
+    font-size: 16px;
     font-family: var(--font-text);
   }
   .flow-node:focus-visible rect {
@@ -401,7 +401,7 @@
   .flow-port,
   .flow-kind {
     fill: var(--ink-muted);
-    font-size: 12px;
+    font-size: 14px;
     font-family: var(--font-text);
   }
   .flow-arrowhead {
