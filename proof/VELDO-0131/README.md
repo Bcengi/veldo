@@ -1,11 +1,9 @@
 # VELDO-0131: the Veldo factory UI on phone and desktop
 
-Status after fix round 2 (review-2026-11-01): REMAINING. Every screen row is built, every acceptance
-criterion's check and falsifier is built and proven (13 of 13), and the review's F1 to F5 are fixed as far as the
-confirmed footprint allows. Three controls wait on engine commands that do not exist: backlog priority save (the
-backlog accepts no API-edge command, files the review did not confirm), worker stop (VELDO-0041, awaiting the
-owner) and the worker cap (no command; VELDO-0125). Both actions are wired to the routes they will use and send
-nothing until those exist. See [OPEN.md](OPEN.md).
+Status after fix round 3 (owner approval, Telegram 38184): see the round 3 section below and [OPEN.md](OPEN.md).
+Round 2's three waiting controls work: backlog priority save, worker stop and the run cap are authority
+commands reached only through the authenticated API. Round 2's status (REMAINING on those three) is in git
+history at 6727193e.
 
 ## Spec amendment (2026-11-01)
 
@@ -15,13 +13,35 @@ was not admitted (it requires @vueuse/core, of Chinese origin), so the canvas is
 (b) The backlog row gains desktop drag-and-drop reorder, and keyboard and touch reorder stay. No other
 acceptance text changed.
 
+## Fix round 3 (owner, Telegram 38184)
+
+The owner widened the footprint to the engine files OPEN.md lists, for exactly three commands. Each is the engine's
+own writer, reached only through the authenticated API (`work` route family), with the existing commands' edge
+signing, refusal classes, journal record (the session's member is the journal actor) and observations.
+
+| Control | Route | Command | Accepted | Stale | Unauthorized |
+|---|---|---|---|---|---|
+| Save priority order (backlog) | `backlog.reprioritize` {item, item_version, rank} | control_backlog's reprioritize, the api edge's signature verified there again (`_api_edge`) | new rank, item at its next version, record names channel api and the assertion digest | `stale_version`, beside Save | `unauthorized:not_owner:project`, `:not_authorized:role`, beside Save |
+| Stop (workers) | `workers.stop` {dispatch, dispatch_version} | control_dispatch's `request_stop`, then the runner's `honor_stops` asks the receiver (Launch.stop) and records `stop_result` | request on the dispatch, state unchanged; the card shows it from the record | `stale_version`, beside the card | `unauthorized:not_authorized:role` or `:scope`, beside the card |
+| Save cap (workers, Run caps by account) | `workers.cap` {account, account_version, concurrency} | control_accounts' `cap` | concurrency at the record's next version, change kept in `concurrency_history` | `stale_version`, beside the control | `unauthorized:missing_authority:scope` or `missing_authority` |
+
+Rows (all green on this tree, logs `round3-*`):
+
+| Suite | New rows | Result |
+|---|---|---|
+| 71 (API) | work/backlog-reprioritize, work/worker-stop, work/worker-cap; route family and AC4 contract now name the routes | 45 rows green ([log](round3-suite-71_veldo_0130_api.log)) |
+| 73 (backlog) | priority/owner-reprioritize (own signature accepted, stale, not the owner; edge packets of another operation, another command, an unenrolled edge refused unauthenticated) | 21 rows green |
+| 62 (dispatch) | dispatch/owner-stop (a real receiver and worker: request refused stale, outside scope and without the role; accepted; the runner's sweep asks the receiver, the worker ends, the result is journaled; an ended run is not stopped again) | 23 rows green |
+| 75 (accounts) | accounts/owner-cap | 24 rows green |
+| 120 (UI) | ac2/priority-save, ac2/worker-stop, ac2/worker-cap (each: unauthorized, stale with the page's stream held, accepted), replacing ac2/pending-actions | 26 rows green ([log](round3-suite120-green.log)) |
+
 ## What was built, by screen row
 
 | Row | Route | Built |
 |---|---|---|
 | Objectives and projects | `/projects`, `/projects/<p>` | Searchable list, objective evidence and status, project detail, and the message box beside it (to `messages.send`). Phone: cards, a full-width detail, a persistent Message button and a chat sheet |
-| Backlog and nested units | `/backlog` | TanStack Table (`@tanstack/vue-table`) item-to-unit hierarchy with priority and blockers. Desktop drag and drop, plus Move up / Move down by keyboard (Enter, Alt+Up/Down) and touch. Detail panel on desktop, sheet on phone. Save maps the order to ranks and sends them through `src/api/actions.ts` to `backlog.reprioritize` once published; until then it sends nothing and names the route (OPEN, REMAINING 1) |
-| Workers per machine | `/workers` | Linux and Mac groups, host labels, worker cards with capability, activity and account, the named cap gap (OPEN, REMAINING 3), and Stop with an inline confirmation sent to `workers.stop` once published; until then nothing is sent and the result names the route (OPEN, REMAINING 2) |
+| Backlog and nested units | `/backlog` | TanStack Table (`@tanstack/vue-table`) item-to-unit hierarchy with priority and blockers. Desktop drag and drop, plus Move up / Move down by keyboard (Enter, Alt+Up/Down) and touch. Detail panel on desktop, sheet on phone. Save maps the order to ranks and sends each through `backlog.reprioritize` at the version read; a refusal is named beside Save (round 3) |
+| Workers per machine | `/workers` | Linux and Mac groups, host labels, worker cards with capability, activity and account; Stop with an inline confirmation sent to `workers.stop`, the stop shown from the dispatch record; Run caps by account with Save cap sent to `workers.cap` (round 3; a machine's own cap waits on VELDO-0125, OPEN) |
 | Live agent run | `/runs/<dispatch>` | VELDO-0145's terminal, checked at all four widths (ac1) and fed live (ac2/live) |
 | Pending decisions | `/decisions/<request>` | VELDO-0145's inline answer, checked at all four widths (ac1, carries the AC1 falsifier), with settlement and refusals (ac2) |
 | Gate and review | `/proof` | Check table (cards on phone), findings, proof links, and Monaco manifest and gate-output panes with old/new/changes selection and a wrap switch |

@@ -627,6 +627,7 @@ class Dispatches:
         self.observe(dict(event, outcome='accepted', watermark=result['seq'], state=TRANSITIONS[action][1]))
         return self.record(dispatch_id)
 
+    @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
     def request_stop(self, dispatch_id, version, principal, *, now, request, reason='owner_stop', channel=None,
                      assertion_digest=None):
         """VELDO-0131: an owner's stop request of one dispatch at `version`, the person `principal`'s command (its
@@ -642,6 +643,7 @@ class Dispatches:
                        expected_versions={rid: version}, artifact_digests=[], nonce='dispatch/' + command_id)
         return self._stop_command('request_stop', dispatch_id, command, {rid: version})
 
+    @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
     def stop_result(self, dispatch_id, asked, *, now):
         """VELDO-0131: the runner's record of the ask a stop request made of the dispatch's receiver."""
         rid = record_id(dispatch_id) if _text(dispatch_id) else None

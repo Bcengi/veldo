@@ -51,6 +51,9 @@ def adapters():
         'control_dispatch:Dispatches.exit': 'in_process',
         'control_dispatch:Dispatches.refuse': 'in_process',
         'control_dispatch:Dispatches.unknown': 'in_process',
+        # VELDO-0131: the owner's stop request and the runner's record of its ask.
+        'control_dispatch:Dispatches.request_stop': 'in_process',
+        'control_dispatch:Dispatches.stop_result': 'in_process',
         'dispatch:Dispatcher.dispatch': 'in_process', 'dispatch:veldo_dispatch': 'in_process',
     }
     return {(entry, mode): Adapter(entry + '-v1', entry) for entry, mode in paths.items()}
