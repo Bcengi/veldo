@@ -1,0 +1,5 @@
+mcp159-save-without-revision: baseline green, mutant red ['VELDO-0159 mcp/define-desktop', 'VELDO-0159 mcp/define-phone', 'VELDO-0159 mcp/stale-save'], restored green -> red_under_mutant_green_restored
+mcp159-value-kept-in-session-storage: baseline green, mutant red ['VELDO-0159 cred/no-value-kept'], restored green -> red_under_mutant_green_restored
+mcp159-set-at-browser-clock: baseline green, mutant red ['VELDO-0159 cred/metadata-only'], restored green -> red_under_mutant_green_restored
+falsifiers: 3 of 3 red under the mutant, green restored
+exit 0

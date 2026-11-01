@@ -5,7 +5,7 @@
     "failed_details": [],
     "failed_rows": [],
     "returncode": 0,
-    "seconds": 18.915,
+    "seconds": 19.509,
     "targets": {
      "mcp/stale-save": [
       true
@@ -35,14 +35,14 @@
      "VELDO-0159 mcp/stale-save"
     ],
     "returncode": 0,
-    "seconds": 51.546,
+    "seconds": 52.132,
     "targets": {
      "mcp/stale-save": [
       false
      ]
     }
    },
-   "mutant_sha256": "c15f25c9d96a1893a616bd1775022b10dad77f9d976c7eab5aebf2ff2331b872",
+   "mutant_sha256": "52f64ef173d58c988cc0af1970bb452b1f603846a3f8c8832a275859994d5c0f",
    "new": "  request<SaveResult>('mcp.save', { body: { definition, base: undefined } })  // defect: no revision edited from\n",
    "old": "  request<SaveResult>('mcp.save', { body: { definition, base } })\n",
    "replacement_count": 1,
@@ -50,7 +50,7 @@
     "failed_details": [],
     "failed_rows": [],
     "returncode": 0,
-    "seconds": 19.078,
+    "seconds": 18.707,
     "targets": {
      "mcp/stale-save": [
       true
@@ -60,7 +60,7 @@
    "rows": [
     "mcp/stale-save"
    ],
-   "source_sha256": "08aa852f904ad3e63f4c7c8b0212e81f5db85ffc64bef5dc2f932ffb39d2ff53",
+   "source_sha256": "208118abf6a0f2352bc9624720dbbbd3adc082c388688689efbd076c89c0cf31",
    "verdict": "red_under_mutant_green_restored"
   },
   {
@@ -68,7 +68,7 @@
     "failed_details": [],
     "failed_rows": [],
     "returncode": 0,
-    "seconds": 18.682,
+    "seconds": 19.206,
     "targets": {
      "cred/no-value-kept": [
       true
@@ -81,21 +81,21 @@
     "failed_details": [
      [
       "VELDO-0159 cred/no-value-kept",
-      "[cred/no-value-kept] a typed value appears only in the body of the one request to the credential route, and nowhere after it is sent; reopening shows an empty field [Error: kept nowhere after it is sent\n\nexpect(received).toEqual(expected) // deep equality\n\n- Expected  - 1\n+ Received  + 3\n\n- Array []\n+ Array [\n+   \"session storage\",\n+ ]\n\n  383 |       expect(JSON.parse(carrying[0]!.body).value).toBe(value)\n  384 |       for (const answer of answers) expect(answer, 'no answer echoes it').not.toContain(value)\n> 385 |       expect(await nowhere(value), 'kept nowhere after it is sent').toEqual([])\n      |                                                           ]"
+      "[cred/no-value-kept] a typed value appears only in the body of the one request to the credential route, and nowhere after it is sent; reopening shows an empty field [Error: kept nowhere after it is sent\n\nexpect(received).toEqual(expected) // deep equality\n\n- Expected  - 1\n+ Received  + 3\n\n- Array []\n+ Array [\n+   \"session storage\",\n+ ]\n\n  386 |       expect(JSON.parse(carrying[0]!.body).value).toBe(value)\n  387 |       for (const answer of answers) expect(answer, 'no answer echoes it').not.toContain(value)\n> 388 |       expect(await nowhere(value), 'kept nowhere after it is sent').toEqual([])\n      |                                                           ]"
      ]
     ],
     "failed_rows": [
      "VELDO-0159 cred/no-value-kept"
     ],
     "returncode": 0,
-    "seconds": 18.037,
+    "seconds": 18.143,
     "targets": {
      "cred/no-value-kept": [
       false
      ]
     }
    },
-   "mutant_sha256": "766e64390e573231243d21d38c264362f0c9a1256cda7ca4b462b7f7da2d4dd5",
+   "mutant_sha256": "62f036ad6fb5834a1623a8e54fa8e8dbfd086a282e673aa2c75729a71f6c458c",
    "new": "    sessionStorage.setItem(`veldo-credential-${props.credentialId}`, typed)  // defect: the typed value is kept\n    store.recordCredential({ id: answer.id,",
    "old": "    store.recordCredential({ id: answer.id,",
    "replacement_count": 1,
@@ -103,7 +103,7 @@
     "failed_details": [],
     "failed_rows": [],
     "returncode": 0,
-    "seconds": 18.679,
+    "seconds": 18.519,
     "targets": {
      "cred/no-value-kept": [
       true
@@ -113,15 +113,68 @@
    "rows": [
     "cred/no-value-kept"
    ],
-   "source_sha256": "c6cf87c53ada33941ec4e659963a214ce9766555922fe4842c373e6cdf9d3679",
+   "source_sha256": "4426f88662fdcd328ff46398c87a5a01091a18c13f0a2cbb47be5de0abbbd00b",
+   "verdict": "red_under_mutant_green_restored"
+  },
+  {
+   "baseline": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 18.549,
+    "targets": {
+     "cred/metadata-only": [
+      true
+     ]
+    }
+   },
+   "case": "mcp159-set-at-browser-clock",
+   "module": "engine/ui/src/features/servers/CredentialField.vue",
+   "mutant": {
+    "failed_details": [
+     [
+      "VELDO-0159 cred/metadata-only",
+      "[cred/metadata-only] the Atlassian credential is set, replaced and deleted through the field; after each the form shows only its label, set at and set by [Error: set at is the stored record's set at\n\nexpect(received).toBe(expected) // Object.is equality\n\nExpected: 1793508704.708842\nReceived: 1793508704.759\n\n  301 |       // Set at is the stored record's set at, exactly: never the browser's clock, which on a phone may be off.\n  302 |       const shown = box.getByTestId('credential-set-at')\n> 303 |       expect(Number(await shown.getAttribute('data-set-at')), 'set at is the stored record\\'s set at').toBe(stored.set_at)\n      |                       ]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0159 cred/metadata-only"
+    ],
+    "returncode": 0,
+    "seconds": 21.219,
+    "targets": {
+     "cred/metadata-only": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "e934dde94ce6f09b8d4d0dcbd13f4940a29f423b338c643169fcf1e5ac20c877",
+   "new": "setAt: Date.now() / 1000, setBy: answer.set_by, reference: answer.reference",
+   "old": "setAt: answer.set_at, setBy: answer.set_by, reference: answer.reference",
+   "replacement_count": 1,
+   "restored": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 19.11,
+    "targets": {
+     "cred/metadata-only": [
+      true
+     ]
+    }
+   },
+   "rows": [
+    "cred/metadata-only"
+   ],
+   "source_sha256": "4426f88662fdcd328ff46398c87a5a01091a18c13f0a2cbb47be5de0abbbd00b",
    "verdict": "red_under_mutant_green_restored"
   }
  ],
- "commit": "1fbb408155fa3e11552ce65e7a0bff2d13b29a2a",
+ "commit": "d1f3a9c9ef7e3ec6464ad952baa20dbde94cc241",
  "driver": "scripts/check_teeth_mutations.py --worker (unconfined; see OPEN.md)",
- "driver_sha256": "d1b1a5ad748ce9e59cc5160142ce27a3a22c54f8a23e278d66898c13de389aba",
- "proven": 2,
- "registered": 2,
+ "driver_sha256": "8df66cba5dd59c99878525a58fc48a45ebade6730005bb26fba85bde56491a3e",
+ "proven": 3,
+ "registered": 3,
  "schema": "veldo.falsifier_receipt/v1",
  "spec": "VELDO-0159",
  "suite": "scripts/suites/118_veldo_0159_mcp_credential_form.py",
