@@ -2,10 +2,15 @@
 
 `App.vue` shows only the sign-in screen until the session store says signed in; then `AppShell`.
 
-Desktop: a 248 px rail with the wordmark, the factory's name (the session's domain), the destinations
-(Overview, Runs, Decisions with a count badge, You), the hosts with a lamp each (live while a run runs
-there) and who is signed in. Phone: a bottom bar with the same four destinations; the decisions entry
-carries the same count badge. The theme switch lives on the You screen only.
+`App.vue` wraps both in Nuxt UI's `UApp` (its tooltip and overlay providers; no toaster).
+
+Desktop: a restrained 240 px sidebar with the wordmark and the factory's name (the session's domain),
+the destinations with their icons (Decisions with a count badge, a Nuxt UI `UBadge`), the hosts with a
+lamp each (live while a run runs there) and their activity, a "Dark appearance" switch (Nuxt UI
+`USwitch`), and the account footer: the member's initials in a `UAvatar` and "Signed in as", opening the
+You screen. Phone: a bottom bar with the four phone destinations; the decisions entry carries the same
+count badge. The sidebar's switch and the You screen's switch set the one theme preference
+(`useTheme`).
 
 The shell reads the runs and decisions stores once on mount, so the badge and the hosts are live from
 the first screen.
@@ -28,9 +33,9 @@ sign-in with the refusal named.
 
 ## You
 
-`/you`, a centered 920 px screen: Signed in (the member, the factory, when the session ends, the passkey
-id as a copyable detail) and This device (the theme switch, Sign out with `auth.sign_out`, Sign out on
-every device with `auth.sign_out_everywhere`).
+`/you`, a centered 920 px screen of cards: Signed in (the member's avatar and name, the factory, when
+the session ends, the passkey id as a copyable detail) and Appearance and this device (the theme switch,
+Sign out with `auth.sign_out`, Sign out on every device with `auth.sign_out_everywhere`).
 
 Factory setup (VELDO-0159) lists the destinations that are in the rail but not the phone's bottom bar:
 "MCP servers and credentials" opens [the server form](servers.md).

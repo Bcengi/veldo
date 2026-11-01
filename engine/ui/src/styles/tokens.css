@@ -2,38 +2,40 @@
  * Colors are six-digit hex: Monaco's themes read them and append an alpha byte. */
 :root {
   color-scheme: light;
-  --ink: #0e1a2e;
-  --ink-muted: #4a5772;
-  --paper: #f2f5fa;
+  /* The owner's palette (VELDO-0229, Telegram 38234): page, panel, text, secondary text, borders, action. */
+  --ink: #1b263c;
+  --ink-muted: #59667b;
+  --paper: #f6f8fc;
   --paper-raised: #ffffff;
-  --paper-sunken: #e7ecf4;
-  --rule: #d5dce8;
+  --paper-sunken: #eef2f8;
+  --rule: #e0e6ef;
   --rule-strong: #7d8ba3;
-  --cobalt: #2349d4;
-  --cobalt-hover: #1b3bb0;
+  --cobalt: #3956df;
+  --cobalt-hover: #2e47c2;
   --cobalt-ink: #ffffff;
-  --cobalt-text: #2349d4;
-  --cobalt-wash: #e3e9fb;
-  --board: #0e1a2e;
-  --board-ink: #ffffff;
-  --board-muted: #9fb0d0;
-  --board-rule: #23314d;
+  --cobalt-text: #3956df;
+  --cobalt-wash: #e8edfc;
+  --board: #ffffff;
+  --board-ink: #1b263c;
+  --board-muted: #59667b;
+  --board-rule: #e0e6ef;
   --amber: #f2a900;
-  --amber-ink: #0e1a2e;
+  --amber-ink: #1b263c;
   --amber-text: #8a5a00;
-  --amber-wash: #fbf0d6;
+  --amber-wash: #fdf3dc;
   --live: #23a15c;
   --live-text: #1d7a47;
+  --live-wash: #e1f5e9;
   --stop: #d63b2a;
   --stop-text: #b42b1c;
   --stop-wash: #fbe6e2;
-  --focus: #2349d4;
+  --focus: #3956df;
   --lamp-off: #c5cedc;
   --lamp-glow: 0 0 0 3px color-mix(in srgb, var(--lamp) 26%, transparent), 0 0 12px 1px color-mix(in srgb, var(--lamp) 50%, transparent);
   --diff-insert: #d2f0dc;
   --diff-remove: #f9dad5;
   --shadow-float: 0 -6px 18px -8px color-mix(in srgb, var(--ink) 30%, transparent);
-
+  --shadow-panel: 0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent);
   --font-text: 'IBM Plex Sans Variable', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
@@ -53,9 +55,10 @@
   --space-6: 32px;
   --space-7: 48px;
 
-  --radius-control: 6px;
-  --radius-panel: 10px;
-  --rail: 248px;
+  --radius-control: 8px;
+  --radius-panel: 14px;
+  --rail: 240px;
+  --panel-gap: 16px;
   --gutter: 16px;
   --bottombar: 64px;
   --measure: 68ch;
@@ -64,40 +67,43 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --ink: #e4eaf5;
-  --ink-muted: #9ba8c2;
-  --paper: #0d1626;
-  --paper-raised: #15213a;
-  --paper-sunken: #0a1120;
-  --rule: #23314d;
-  --rule-strong: #5a6e94;
-  --cobalt: #2f5ae6;
-  --cobalt-hover: #3d66ee;
+  --ink: #e7edf7;
+  --ink-muted: #a1acc0;
+  --paper: #10141c;
+  --paper-raised: #181e29;
+  --paper-sunken: #0c1017;
+  --rule: #2a3342;
+  --rule-strong: #64718a;
+  --cobalt: #4862e8;
+  --cobalt-hover: #3a52d6;
   --cobalt-ink: #ffffff;
-  --cobalt-text: #8eacff;
-  --cobalt-wash: #1a2b52;
-  --board: #142a5c;
-  --board-ink: #ffffff;
-  --board-muted: #c9d4ea;
-  --board-rule: #2a4380;
+  --cobalt-text: #8ea2ff;
+  --cobalt-wash: #1e2950;
+  --board: #181e29;
+  --board-ink: #e7edf7;
+  --board-muted: #a1acc0;
+  --board-rule: #2a3342;
   --amber: #f2b52e;
-  --amber-ink: #0e1a2e;
+  --amber-ink: #10141c;
   --amber-text: #f5c04a;
-  --amber-wash: #33291a;
+  --amber-wash: #2f2716;
   --live: #3cc27a;
   --live-text: #6fd39a;
+  --live-wash: #15301f;
   --stop: #f0705c;
   --stop-text: #ff8f7d;
   --stop-wash: #3a1d1d;
-  --focus: #8eacff;
-  --lamp-off: #2e3d5c;
+  --focus: #8ea2ff;
+  --lamp-off: #3a4558;
   --diff-insert: #173d2a;
   --diff-remove: #4a2222;
   --shadow-float: 0 -6px 18px -8px #000000;
+  --shadow-panel: 0 1px 2px #00000040;
 }
 
 @media (min-width: 768px) {
   :root {
     --gutter: 32px;
+    --panel-gap: 24px;
   }
 }
