@@ -183,6 +183,13 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
         except FileNotFoundError:
             return False
 
+    def state(pid):
+        """The process state letter, or None once it is gone."""
+        try:
+            return Path('/proc/%d/stat' % pid).read_text().rsplit(')', 1)[1].split()[0]
+        except (FileNotFoundError, ProcessLookupError):
+            return None
+
     def stop(pid):
         try:
             os.kill(pid, signal.SIGKILL)
@@ -241,17 +248,24 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
                 custody = True
                 if number:
                     keepers = got.get('keepers', [])
+                    # A keeper that vanishes while stopped is recorded and reds the row; it never
+                    # crashes the suite before the evidence is written.
+                    evidence = got['keeper_evidence'] = {}
                     if len(keepers) == 1:
                         os.kill(keepers[0], signal.SIGSTOP)
-                        until(lambda: Path('/proc/%d/stat' % keepers[0]).read_text()
-                              .rsplit(')', 1)[1].split()[0] == 'T', 5)
+                        evidence['stopped'] = until(lambda: state(keepers[0]) == 'T', 5)
+                        evidence['before_signal'] = state(keepers[0])
                     try:
                         gate.send_signal(number)
                         finish(gate, 10)
                         custody = len(keepers) == 1 and held(top / 'locks' / '.scope.lock')
                     finally:
+                        evidence['at_resume'] = [state(keeper) for keeper in keepers]
                         for keeper in keepers:
-                            os.kill(keeper, signal.SIGCONT)
+                            try:
+                                os.kill(keeper, signal.SIGCONT)
+                            except ProcessLookupError:
+                                custody = False
                 released = until(lambda: not held(top / 'locks' / '.scope.lock'), 10)
                 dead = bool(got.get('escaped')) and not alive(got['escaped']) and not alive(got['pid'])
                 cases['cleanup-' + name] = custody and released and dead
