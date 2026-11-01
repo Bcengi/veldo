@@ -99,6 +99,27 @@ def _v219_checks():
         row('cgroup-counters', value['cpu_seconds'] == 10 and value['peak_anon_bytes'] == 96 * 2**20
             and len(value['cgroups']) == 2)
 
+        # Batch 2026-10-29 gate 1029j: a unit's cgroup removed between the open and the read answers ENODEV.
+        # The unit is gone and its last sample stands; the meter's own cgroup gone is still an error.
+        import errno
+        real_read = Path.read_text
+        def removed(*gone):
+            def read_text(path, *args, **kwargs):
+                if path.parent in gone:
+                    raise OSError(errno.ENODEV, 'No such device')
+                return real_read(path, *args, **kwargs)
+            return read_text
+        with patch.object(Path, 'read_text', removed(external)):
+            kept = meter.sample()
+        try:
+            with patch.object(Path, 'read_text', removed(meter.path)):
+                meter.sample()
+            own_raised = False
+        except OSError as error:
+            own_raised = error.errno == errno.ENODEV
+        row('cgroup-removed-mid-read', kept['cpu_seconds'] == 10 and kept['peak_anon_bytes'] == 96 * 2**20
+            and own_raised)
+
         # Batch 2026-10-29 row 17 (owner decision): a directory the worker made outside its home
         # after its meter started (suite 0067's /dev/shm store) is admitted, tracked and reaped;
         # one that predates the meter, or a link to the worker's own, is rejected and untouched.

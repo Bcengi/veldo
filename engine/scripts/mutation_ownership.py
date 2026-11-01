@@ -9,6 +9,7 @@ holds only an append descriptor to it, and candidate code shares that process, s
 every line is a claim, not a fact: cleanup() acts only on entries of the exact shapes
 the Tracker can produce for that worker and turns anything else into an error.
 """
+import errno
 import json
 import os
 from pathlib import Path
@@ -22,6 +23,12 @@ import threading
 
 SLICE = re.compile(r'(?:v|veldo)[A-Za-z0-9]+\.slice')
 SERVICE = re.compile(r'veldo-authority-[0-9a-f]+\.service')
+
+
+def vanished(error):
+    """A cgroup removed while it was read: absent before the open (ENOENT), or removed between the open and
+    the read, which the kernel answers ENODEV. Either way the unit is gone and its last sample stands."""
+    return isinstance(error, FileNotFoundError) or getattr(error, 'errno', None) == errno.ENODEV
 
 
 def unit_directory():
@@ -361,8 +368,9 @@ class RetainedSlice:
                 self.current = max(self.current, int(cpu['usage_usec'])/1e6)
                 self.peak = max(self.peak, int(memory['anon']))
                 self.memory_peak = max(self.memory_peak, int((self.path/'memory.peak').read_text()))
-            except FileNotFoundError:
-                pass
+            except OSError as error:
+                if not vanished(error):
+                    raise
         return self.total + self.current, self.peak
 
     def close(self):
@@ -506,8 +514,8 @@ class WorkerMeter:
                 prior = self.counters.get(path, (0, 0))
                 self.counters[path] = (max(prior[0], int(cpu['usage_usec']) / 1e6),
                                        max(prior[1], int(memory['anon'])))
-            except FileNotFoundError:
-                if path == self.path:
+            except OSError as error:
+                if path == self.path or not vanished(error):
                     raise
         self.counters.update(retained_values)
         # Sum per-root peaks conservatively. Removed units retain their counters.
