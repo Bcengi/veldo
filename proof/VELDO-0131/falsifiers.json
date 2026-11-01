@@ -1,6 +1,6 @@
 {
  "baseline": {
-  "commit": "5a3ba79bd1d85cf6a847c6f811493a2edbb2161d",
+  "commit": "caffeef803cdbb2fe480b05235d1c43ae3687908",
   "failed_details": [],
   "failed_rows": [],
   "returncode": 0,
@@ -49,7 +49,7 @@
    "VELDO-0131 ac3/touch-phone",
    "VELDO-0131 ac3/stale-save"
   ],
-  "seconds": 83.151,
+  "seconds": 82.008,
   "targets": {
    "ac1/screens-360": [
     true
@@ -78,11 +78,11 @@
    ],
    "module": "engine/ui/src/features/backlog/completion.ts",
    "mutant": {
-    "commit": "5a3ba79bd1d85cf6a847c6f811493a2edbb2161d",
+    "commit": "caffeef803cdbb2fe480b05235d1c43ae3687908",
     "failed_details": [
      [
       "VELDO-0131 unit/factory",
-      "the factory screens' unit specs pass [29 passed, failed ['completion is landed only with the landing receipt', 'backlog names open blockers and nests units with their completion']; JSON report written to /tmp/v131-eyrao1jl/vitest.json]"
+      "the factory screens' unit specs pass [29 passed, failed ['completion is landed only with the landing receipt', 'backlog names open blockers and nests units with their completion']; JSON report written to /tmp/v131-cux16hry/vitest.json]"
      ],
      [
       "VELDO-0131 ac2/live",
@@ -144,7 +144,7 @@
      "VELDO-0131 ac3/touch-phone",
      "VELDO-0131 ac3/stale-save"
     ],
-    "seconds": 109.507,
+    "seconds": 108.625,
     "targets": {
      "ac2/completion-receipt": [
       false
@@ -175,7 +175,7 @@
    ],
    "module": "engine/ui/src/features/decisions/DecisionDetail.vue",
    "mutant": {
-    "commit": "5a3ba79bd1d85cf6a847c6f811493a2edbb2161d",
+    "commit": "caffeef803cdbb2fe480b05235d1c43ae3687908",
     "failed_details": [
      [
       "VELDO-0131 ac1/screens-360",
@@ -231,7 +231,7 @@
      "VELDO-0131 ac3/touch-phone",
      "VELDO-0131 ac3/stale-save"
     ],
-    "seconds": 96.57,
+    "seconds": 95.943,
     "targets": {
      "ac1/screens-360": [
       false
@@ -266,7 +266,7 @@
    ],
    "module": "engine/ui/src/features/workflow/FlowProperties.vue",
    "mutant": {
-    "commit": "5a3ba79bd1d85cf6a847c6f811493a2edbb2161d",
+    "commit": "caffeef803cdbb2fe480b05235d1c43ae3687908",
     "failed_details": [
      [
       "VELDO-0131 ac1/screens-360",
@@ -347,7 +347,7 @@
      "VELDO-0131 ac3/touch-phone",
      "VELDO-0131 ac3/stale-save"
     ],
-    "seconds": 161.459,
+    "seconds": 161.034,
     "targets": {
      "ac3/keyboard-desktop": [
       false
@@ -374,7 +374,7 @@
    ],
    "module": "engine/ui/package-lock.json",
    "mutant": {
-    "commit": "5a3ba79bd1d85cf6a847c6f811493a2edbb2161d",
+    "commit": "caffeef803cdbb2fe480b05235d1c43ae3687908",
     "failed_details": [
      [
       "VELDO-0131 ac4/dependency-policy",
@@ -430,7 +430,7 @@
      "VELDO-0131 ac3/touch-phone",
      "VELDO-0131 ac3/stale-save"
     ],
-    "seconds": 82.375,
+    "seconds": 81.573,
     "targets": {
      "ac4/dependency-policy": [
       false
@@ -460,7 +460,7 @@
   "ui131-tiered-dependency-locked"
  ],
  "restored": {
-  "commit": "5a3ba79bd1d85cf6a847c6f811493a2edbb2161d",
+  "commit": "caffeef803cdbb2fe480b05235d1c43ae3687908",
   "failed_details": [],
   "failed_rows": [],
   "returncode": 0,
@@ -509,7 +509,7 @@
    "VELDO-0131 ac3/touch-phone",
    "VELDO-0131 ac3/stale-save"
   ],
-  "seconds": 82.16,
+  "seconds": 81.416,
   "targets": {
    "ac1/screens-360": [
     true
