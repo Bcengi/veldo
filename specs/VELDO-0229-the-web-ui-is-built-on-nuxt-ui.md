@@ -12,6 +12,9 @@ placement: [loop, distribution]
 protected_paths: []
 footprint:
   - "engine/ui/**"
+  - "engine/.veldo/control_api_ui.py"
+  - ".veldo/control_api_ui.py"
+  - "scripts/suites/113_*"
   - "scripts/suites/118_*"
   - "scripts/suites/119_*"
   - "scripts/suites/120_*"
@@ -165,6 +168,12 @@ Nuxt UI is MIT, from NuxtLabs. Its icons are rendered from a local Iconify JSON 
 start, so no request reaches the Iconify API; the IBM Plex faces stay on the Fontsource packages.
 
 ## History
+
+2026-11-01: footprint extended by the dependency check (engine/.veldo/control_api_ui.py, its synced copy and
+suite 113's row): two Nuxt UI dependencies needed it. tslib is 0BSD (added to the allowed licenses), and
+vaul-vue 0.4.1 publishes no license field although its repository is MIT; the check now admits a package
+without a declared license only through a policy record of its exact version, an allowed license and the
+evidence, and suite 113 proves an unrecorded one is still refused.
 
 2026-11-01: acceptance criteria rewritten to the owner's full requirements (Telegram 38234 and 38235), which
 supersede the first four; the reference screenshots the owner mentions did not reach the repository, so the

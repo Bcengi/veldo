@@ -15,8 +15,9 @@ when the checkout has none), and it is built with the package's own build script
   allowed, nothing on the deny list (Chinese-origin libraries, libraries with free and paid tiers, shadcn and
   Recharts), every direct package pinned and recorded with its origin, license and tier.
 - ac4/stack: the lockfile holds the owner's stack (vue, vue-router, pinia, vite, typescript, tailwindcss,
-  monaco-editor, @tanstack/vue-table, chart.js) and none of the rejected one (react, react-dom, recharts,
-  shadcn, primevue, @vue-flow, @vueuse); every direct dependency is one of the stack's or the build's own.
+  monaco-editor, @tanstack/vue-table, chart.js, and Nuxt UI since VELDO-0229) and none of the rejected one
+  (react, react-dom, recharts, shadcn, primevue, @vue-flow; @vueuse is no longer rejected, VELDO-0229, the
+  VELDO-0131 amendment of 2026-11-01); every direct dependency is one of the stack's or the build's own.
 - ac4/served-assets: the build's assets name none of the rejected libraries; the browser row ac2/api-only
   checks that every response the page used came from this origin.
 - every other row: the browser tests of engine/ui/e2e/factory.spec.ts in system Chrome (Playwright), against
@@ -72,12 +73,12 @@ def _v131_suite():
                'ac2/priority-save', 'ac2/worker-stop', 'ac2/worker-cap')
     ROWS = ('unit/factory', 'ac4/dependency-policy', 'ac4/stack', 'ac4/served-assets') + BROWSER
     STACK = ('vue', 'vue-router', 'pinia', 'vite', 'typescript', 'tailwindcss', 'monaco-editor', '@tanstack/vue-table',
-             'chart.js')
+             'chart.js', '@nuxt/ui')
     REJECTED = ('react', 'react-dom', 'recharts', 'shadcn', 'shadcn-vue', '@shadcn/*', 'primevue', '@primevue/*',
-                '@vue-flow/*', '@vueuse/*', 'vue-chartjs', 'echarts')
+                '@vue-flow/*', 'vue-chartjs', 'echarts')
     BUILD = ('@axe-core/playwright', '@playwright/test', '@tailwindcss/vite', '@types/node', '@vitejs/plugin-vue',
              '@vue/test-utils', 'jsdom', 'vitest', 'vue-tsc', '@fontsource-variable/ibm-plex-sans',
-             '@fontsource/ibm-plex-mono')
+             '@fontsource/ibm-plex-mono', '@iconify-json/lucide')
     rows = {name: [] for name in ROWS}
     started = time.monotonic()
     UI = ROOT / 'engine' / 'ui'
@@ -161,8 +162,7 @@ def _v131_suite():
             return
 
         assets = [p for p in (dist / 'assets').rglob('*') if p.is_file() and p.suffix in ('.js', '.css')]
-        found = sorted({marker for p in assets for marker in ('recharts', 'react-dom', 'shadcn', 'primevue', 'vue-flow',
-                                                              '@vueuse')
+        found = sorted({marker for p in assets for marker in ('recharts', 'react-dom', 'shadcn', 'primevue', 'vue-flow')
                         if marker in p.read_text(errors='replace')})
         check('ac4/served-assets', 'the build has assets (%d)' % len(assets), len(assets) > 0)
         check('ac4/served-assets', 'no built asset names a rejected library (%s)' % found, not found)

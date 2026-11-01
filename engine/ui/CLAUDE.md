@@ -44,9 +44,16 @@ dependency-policy suite fails on anything unlisted. See [docs/patterns/dependenc
 - Vue 3 with `<script setup lang="ts">` and the Composition API only
 - TypeScript 6, strict (vue-tsc does not run on TypeScript 7 yet)
 - Vite
-- No component library: Veldo's own controls on native elements (`src/components/V*.vue`); PrimeVue was
-  dropped (free and paid tiers, PLAN-0019 C16) and the policy denies it
-- Tailwind CSS 4 for layout utilities; design tokens are CSS custom properties (`src/styles/tokens.css`)
+- Nuxt UI 4 (VELDO-0229, the owner's choice, Telegram 38228, 38229 and 38234) through its Vite and Vue
+  plugins, no Nuxt framework: UApp at the root, UButton under `VButton`, UCard for panels, UBadge for status
+  and counts, UAvatar for the account, USwitch for the sidebar's appearance switch. Components are imported
+  explicitly (`@nuxt/ui/components/<Name>.vue`); its color mode, fonts and runtime color plugin are off (see
+  the content security policy rule below); icons are bundled at build time from `@iconify-json/lucide`
+  (`src/ui/icons.ts`). Wrappers that protect behavior (`VButton`) keep their interface; the native
+  `VTextField`, `VTextArea`, `VRadio` and `VSwitch` stay. PrimeVue stays denied by the policy
+- Tailwind CSS 4 (through Nuxt UI's Vite plugin) for layout utilities; design tokens are CSS custom
+  properties (`src/styles/tokens.css`), and Nuxt UI's theme variables are compiled from them
+  (`src/styles/theme.css`)
 - Pinia (setup stores) and vue-router
 - monaco-editor for diffs only, read-only, loaded lazily
 - Fonts self-hosted from Fontsource packages: IBM Plex Sans (everything) and IBM Plex Mono (the record
@@ -62,6 +69,9 @@ dependency-policy suite fails on anything unlisted. See [docs/patterns/dependenc
    style elements, no `v-html`, no `<style>` element or `style="..."` markup created at run time. Vue `:style` bindings
    are allowed (they use the CSS object model). Libraries that write styles are routed through
    `src/ui/sheets.ts` and `src/ui/style-attributes.ts`; the browser tests fail on any policy violation.
+   Nuxt UI's runtime color plugin (a `<style>` element through unhead) is replaced by `src/ui/nuxt-ui-colors.ts`
+   and `@iconify/vue` by `src/ui/iconify-offline.ts` (its offline build: no icon is ever fetched); both
+   substitutions are in `vite.config.ts`. A new icon is added to `src/ui/icons.ts` or the build fails.
 3. **Text from the factory is text.** Record lines, questions and rationales render through text
    interpolation, never `v-html` or markdown rendering.
 4. **Never show optimism.** A decision is answered only when the API says so; a refusal is shown beside
@@ -88,8 +98,9 @@ src/
   components/        shared components, each documented in docs/ui/
   composables/       shared composables (theme, media, async state)
   views/             one per route; orchestrates, holds no fetch logic
-  styles/            tokens.css, base.css, components.css
-  ui/                CSS object model shims for Monaco (sheets, style attributes)
+  styles/            tokens.css, theme.css (Nuxt UI's variables), base.css, components.css
+  ui/                CSS object model shims for Monaco (sheets, style attributes); Nuxt UI adapters
+                     (runtime colors, offline icons) and the bundled icon list
 e2e/                 Playwright specs and the factory harness they drive
 docs/                these guidelines
 ```

@@ -19,11 +19,20 @@ function stored(): Theme | null {
 const theme = ref<Theme>(stored() ?? systemTheme())
 let started = false
 
-/** Light or dark, following the system until the person picks one. Only the choice itself is stored. */
+/** Put the theme on the document: Veldo's data-theme attribute and Nuxt UI's dark and light classes, together. */
+export function applyTheme(root: HTMLElement, value: Theme) {
+  root.setAttribute('data-theme', value)
+  root.classList.toggle('dark', value === 'dark')
+  root.classList.toggle('light', value === 'light')
+}
+
+/** Light or dark, following the system until the person picks one. Only the choice itself is stored. The one
+ * preference drives both Veldo's tokens (data-theme) and Nuxt UI's components (the dark class); the sidebar's
+ * appearance switch and the account screen's switch both read and set it here (VELDO-0229). */
 export function useTheme() {
   if (!started && typeof document !== 'undefined') {
     started = true
-    watchEffect(() => document.documentElement.setAttribute('data-theme', theme.value))
+    watchEffect(() => applyTheme(document.documentElement, theme.value))
   }
   function set(next: Theme) {
     theme.value = next
