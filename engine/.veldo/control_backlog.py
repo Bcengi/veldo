@@ -153,7 +153,7 @@ def _objectives():
     return _READER['objectives']
 
 
-def _api(name):
+def _api_organ(name):
     """An API organ beside this file (VELDO-0131's edge verification), loaded on its first use."""
     if name not in _READER:
         _READER[name] = _organ(name)
@@ -505,8 +505,8 @@ class Backlog:
         """VELDO-0131: the API edge's signature over a verified assertion stands for the member's own on
         reprioritize only. Every check is made here again; the caller's word that it verified is no evidence.
         Returns the provenance the record keeps (never the assertion's text or a signature)."""
-        assertions, credentials = _api('control_api_assertion'), _api('control_api_credentials')
-        edges = _api('control_channel_enrollment')
+        assertions, credentials = _api_organ('control_api_assertion'), _api_organ('control_api_credentials')
+        edges = _api_organ('control_channel_enrollment')
         a = proof.get('assertion') if isinstance(proof, dict) else None
         if (not isinstance(a, dict) or assertions.shape_problems(a) or a['operation'] != API_OPERATION
                 or command.get('operation') != 'reprioritize' or assertions.domain_request(a) != command):

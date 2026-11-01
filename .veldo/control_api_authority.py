@@ -585,9 +585,9 @@ class ApiAuthority:
             code = getattr(error, 'code', None)
             if not isinstance(code, str):
                 raise
-            organ = DP.taxonomy if a['operation'] == 'stop_worker' else (lambda c: 'missing_authority' if str(c).startswith(
+            classify = DP.taxonomy if a['operation'] == 'stop_worker' else (lambda c: 'missing_authority' if str(c).startswith(
                 'missing_authority') else 'invalid_input' if str(c).startswith('invalid_input') else 'unknown_outcome')
-            return {'outcome': 'refused', 'reason': _named(code, organ)}
+            return {'outcome': 'refused', 'reason': _named(code, classify)}
 
     def _save_workflow(self, a):
         """VELDO-0132's save for the verified principal: its transaction judges the editor and the base."""

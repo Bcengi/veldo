@@ -2670,6 +2670,20 @@ def _v130_checks(base):
                     authority_policy={'team_amendment': ['project_owner']},
                     coordination_budget={'capacity': 5, 'invocations': 5, 'wall_seconds': 500})))
 
+        # A person member of project-a with no role, enrolled with a passkey here (the member's credential above is
+        # revoked by then): the unauthorized member of the three rows.
+        w_cookie = w_token = None
+        if work_writers:
+            w_key = keys / 'plain131'
+            keyfile['plain131'] = w_key
+            _v130_sp.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'v130-plain131', '-f', str(w_key)],
+                         check=True, capture_output=True, timeout=10)
+            public['plain131'] = ' '.join(w_key.with_name('plain131.pub').read_text().split()[:2])
+            enroll_member('plain131', 'person', [], ['project-a'])
+            plain_phone = _V130Browser(base / 'browsers', 'plain131-phone', -7)
+            enrolled(plain_phone, 'plain131', 'Plain phone')
+            _s, w_cookie, w_token = sign_in(plain_phone)
+
         with section(WKB):
             # A prioritized item in control_backlog's stored shape (a fixture: prioritizing it through grooming and
             # settlement is suite 73's; this row proves the route and the edge path into the real command).
@@ -2694,7 +2708,7 @@ def _v130_checks(base):
             check(WKB, 'a stale item version is refused stale_version, nothing written' + seen(stale),
                   stale[0] == 409 and str(refusal(stale)).startswith('stale_version') and journal_count() == before)
             for who, (cookie, token), name in (('owner2, not the project owner', (owner2_cookie, owner2_token), 'not_owner:project'),
-                                               ('a member outside the project', (member_cookie, member_token), 'not_authorized:scope')):
+                                               ('a project member with no role', (w_cookie, w_token), 'not_authorized:role')):
                 got = call('POST', WORK + 'backlog/reprioritize', {'item': bid, 'item_version': version, 'rank': 1},
                            cookie=cookie, token=token)
                 check(WKB, '%s is refused unauthorized (%s), nothing written' % (who, name) + seen(got),
@@ -2753,7 +2767,7 @@ def _v130_checks(base):
                   stale[0] == 409 and str(refusal(stale)).startswith('stale_version') and journal_count() == before
                   and not asked)
             got = call('POST', WORK + 'workers/stop', {'dispatch': did, 'dispatch_version': version},
-                       cookie=member_cookie, token=member_token)
+                       cookie=w_cookie, token=w_token)
             check(WKS, 'a member with no owner role in the project is refused unauthorized, nothing written or asked'
                   + seen(got), got[0] == 403 and 'not_authorized:' in str(refusal(got)) and journal_count() == before
                   and not asked)
@@ -2794,7 +2808,7 @@ def _v130_checks(base):
             check(WKC, 'a stale account version is refused stale_version, nothing written' + seen(stale),
                   stale[0] == 409 and str(refusal(stale)).startswith('stale_version') and journal_count() == before)
             for who, (cookie, token), name in (('owner2, scoped to one project', (owner2_cookie, owner2_token), 'missing_authority:scope'),
-                                               ('a member with no owner role', (member_cookie, member_token), 'missing_authority')):
+                                               ('a member with no owner role', (w_cookie, w_token), 'missing_authority')):
                 got = call('POST', WORK + 'workers/cap', {'account': 'owner-plan', 'account_version': version,
                                                           'concurrency': 3}, cookie=cookie, token=token)
                 check(WKC, '%s is refused unauthorized (%s), nothing written' % (who, name) + seen(got),
