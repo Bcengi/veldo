@@ -82,7 +82,7 @@ def main(argv):
             made = T.materialize(case, 'mutant', directory)
             outcome = dict(run(case, made['mutant']), commit=commit)
         receipt['cases'][case['name']] = {
-            'module': case['dir'] + '/' + case['module'], 'rows': case['rows'], 'edits': T.edits(case),
+            'module': case.get('dir', '.veldo') + '/' + case['module'], 'rows': case['rows'], 'edits': T.edits(case),
             'source_sha256': made['old_digest'], 'mutant_sha256': made['new_digest'],
             'replacement_count': made['replacement_count'], 'mutant': outcome}
         print('%s: %s %s' % (case['name'], 'red' if red(outcome) else 'NOT RED', outcome.get('failed_rows')))
