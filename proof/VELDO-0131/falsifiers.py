@@ -5,12 +5,15 @@ and the UI's locked node_modules, and is not (yet) on the owner's protected unco
 (scripts/gate_unconfined.json); see OPEN.md.
 
 One step per call, so each locked run is short; every step's outcome is merged into falsifiers.json beside this
-file:
-  baseline          the unmutated production copies: every target row of every case green
+file. Fix round 3 adds cases whose suites are the engine's own (73, 62, 75 and 71), so the baseline and the
+restored run are made once per suite, each a step of its own:
+  baseline [SUITE]  the unmutated production copies: every target row of every case of SUITE (default: every
+                    suite) green
   mutant CASE       the driver's own materialize (its exact replacements) into a temporary copy the suite's
                     production anchor is pointed at: at least one of the case's target rows red
-  restored          the unmutated copies again: every target row green
-The source files are never edited. Usage: python3 proof/VELDO-0131/falsifiers.py baseline|mutant CASE|restored
+  restored [SUITE]  the unmutated copies again: every target row green
+The source files are never edited.
+Usage: python3 proof/VELDO-0131/falsifiers.py baseline [SUITE] | mutant CASE | restored [SUITE]
 """
 import hashlib
 import importlib.util
@@ -23,7 +26,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[2]
 RECEIPT = Path(__file__).with_name('falsifiers.json')
-SUITE = 'scripts/suites/120_veldo_0131_factory_ui.py'
+SUITE = 'scripts/suites/120_veldo_0131_factory_ui.py'  # the UI cases' suite; the engine cases name their own
 spec = importlib.util.spec_from_file_location('teeth', ROOT / 'scripts' / 'check_teeth_mutations.py')
 T = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(T)
@@ -68,14 +71,28 @@ def main(argv):
     commit = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
     step = argv[0] if argv else ''
     if step in ('baseline', 'restored'):
-        # Every case's targets come from one worker run: the unmutated suite's rows are the same for each case.
-        outcome = dict(run(CASES[0]), commit=commit)
-        rows = outcome.get('rows') or []
-        failed = set(outcome.get('failed_rows') or [])
-        outcome['targets'] = {row: [name not in failed for name in rows if name.split()[-1] == row]
-                              for case in CASES for row in case['rows']}
-        receipt[step] = outcome
-        print('%s: %s (failed rows %s)' % (step, 'green' if green(outcome) else 'NOT GREEN', outcome.get('failed_rows')))
+        # Each suite's targets come from one worker run of it: the unmutated suite's rows are the same for each case.
+        suites = sorted({c['suite'] for c in CASES})
+        wanted = [argv[1]] if len(argv) == 2 else suites
+        merged = receipt.get(step) if isinstance((receipt.get(step) or {}).get('suites'), dict) else {'suites': {}}
+        for suite in wanted:
+            cases = [c for c in CASES if c['suite'] == suite]
+            outcome = dict(run(cases[0]), commit=commit, suite_sha256=sha(ROOT / 'scripts' / 'suites' / suite))
+            rows = outcome.get('rows') or []
+            failed = set(outcome.get('failed_rows') or [])
+            outcome['targets'] = {row: [name not in failed for name in rows if name.split()[-1] == row]
+                                  for case in cases for row in case['rows']}
+            merged['suites'][suite] = outcome
+            print('%s %s: %s (failed rows %s)' % (step, suite, 'green' if green(outcome) else 'NOT GREEN',
+                                                  outcome.get('failed_rows')))
+        runs = merged['suites']
+        merged['targets'] = {}
+        for suite in suites:
+            if suite in runs:
+                merged['targets'].update({'%s %s' % (suite, row): values for row, values in runs[suite]['targets'].items()})
+        merged['failed_rows'] = ['%s %s' % (s, r) for s in sorted(runs) for r in runs[s].get('failed_rows') or []]
+        merged['complete'] = sorted(runs) == suites
+        receipt[step] = merged
     elif step == 'mutant' and len(argv) == 2:
         case = next(c for c in CASES if c['name'] == argv[1])
         with tempfile.TemporaryDirectory(prefix='v131-mutant-') as directory:
@@ -91,6 +108,7 @@ def main(argv):
         return 64
     proven = [c['name'] for c in CASES
               if green(receipt.get('baseline', {})) and green(receipt.get('restored', {}))
+              and (receipt.get('baseline') or {}).get('complete') and (receipt.get('restored') or {}).get('complete')
               and red((receipt['cases'].get(c['name']) or {}).get('mutant', {}))]
     receipt.update(registered=[c['name'] for c in CASES], proven=proven,
                    verdict='red_under_each_mutant_green_restored' if len(proven) == len(CASES) else 'not_proven')

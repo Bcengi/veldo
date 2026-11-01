@@ -67,7 +67,9 @@ def _v131_suite():
                'ac2/api-only', 'ac3/keyboard-desktop', 'ac3/touch-phone', 'ac3/stale-save',
                # Fix round 2 (review-2026-11-01 F1 to F5).
                'ac1/repositories', 'ac1/every-configuration', 'ac1/whole-catalog', 'ac1/usage-provider',
-               'ac1/worker-capability', 'ac2/metadata-only', 'ac2/pending-actions')
+               'ac1/worker-capability', 'ac2/metadata-only',
+               # Fix round 3 (owner, Telegram 38184): the owner's backlog priority, worker stop and account cap.
+               'ac2/priority-save', 'ac2/worker-stop', 'ac2/worker-cap')
     ROWS = ('unit/factory', 'ac4/dependency-policy', 'ac4/stack', 'ac4/served-assets') + BROWSER
     STACK = ('vue', 'vue-router', 'pinia', 'vite', 'typescript', 'tailwindcss', 'monaco-editor', '@tanstack/vue-table',
              'chart.js')

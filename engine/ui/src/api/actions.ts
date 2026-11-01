@@ -1,14 +1,15 @@
 import { request } from './client'
 import { ROUTES, type RouteName } from './routes'
 
-/** Owner actions whose API route is not published yet (VELDO-0131 fix round 2). Each names the route it will use,
- * so the screen's call works the moment the API publishes it: the contract's own route when it names one,
- * else this name. Until then nothing is sent and the result names the missing route. */
+/** The owner's work commands (VELDO-0131, owner Telegram 38184): each names the route it uses, the contract's own
+ * when it names one, else this name. A route the API does not publish sends nothing and the result names it. */
 export const ACTION_ROUTES = {
-  /** A signed stop command in the dispatch and launch authority (VELDO-0041), awaiting the owner. */
+  /** The owner's stop request of one worker run (control_dispatch.request_stop). */
   worker_stop: 'workers.stop',
-  /** The backlog's reprioritize command through the API edge (VELDO-0078), awaiting the owner. */
+  /** The owner's rank of one backlog item (control_backlog's reprioritize, through the API edge). */
   owner_priority: 'backlog.reprioritize',
+  /** The owner's cap of one account's concurrent runs (control_accounts.cap). */
+  worker_cap: 'workers.cap',
 } as const
 
 export type ActionResult<T> = { sent: true; answer: T } | { sent: false; route: string }
@@ -31,4 +32,9 @@ export function stopWorker(dispatch: string, version: number, contractRoute: str
 /** Set one backlog item's rank (1 to 5) at the version shown, by the owner's own command. */
 export function reprioritize(item: string, itemVersion: number, rank: number, contractRoute: string | null = null) {
   return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.owner_priority, { item, item_version: itemVersion, rank })
+}
+
+/** Set one account's run concurrency (1 to 16) at the version shown, by the owner's own command. */
+export function setCap(account: string, accountVersion: number, concurrency: number, contractRoute: string | null = null) {
+  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.worker_cap, { account, account_version: accountVersion, concurrency })
 }

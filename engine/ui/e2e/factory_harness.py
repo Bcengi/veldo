@@ -12,6 +12,11 @@ WHAT IT ADDS, on the same store connection and authority thread:
 - THE WORKFLOW SERVICE. The real VELDO-0132 Workflows (control_workflow.Workflows) handed to the authority as
   its `workflows`, with one workflow saved through it by the owner (`delivery`), so `reads.workflow` and
   `workflows.save` execute the real service.
+- THE OWNER'S WORK COMMANDS (VELDO-0131, owner Telegram 38184). The real control_backlog Backlog,
+  control_dispatch Dispatches and control_accounts Accounts on the authority's connection, handed to the real
+  control_api_authority, so `backlog.reprioritize`, `workers.stop` and `workers.cap` execute the real commands.
+  The account is registered through Accounts (its writer owns the kind). No runner holds a receiver here, so a
+  stop request stays recorded with its ask pending, as in the authority service.
 - THE READ MODELS' RECORDS, in their writers' stored shapes (the shapes control_objective, control_backlog,
   control_proof, control_landing and control_reservations write; see the docstrings there): objectives of
   project-a and factory, backlog items with priorities and a blocker, the execution units under them, a proof
@@ -80,6 +85,13 @@ class FactoryUi(T.TeamFactory):
                                       signer='authority', sign=self.journal_sign)
         self.authority.workflows = self.workflows
         self.workflows.save(seed_workflow(), principal='owner', base=0)
+        # VELDO-0131: the writers of the owner's backlog priority, worker stop and account cap.
+        AUTH = H.load('e2e_factory_authority', organs / 'control_api_authority.py')
+        self.authority.backlog = AUTH.BL.Backlog(S, self.CM, conn, ids, 'authority', self.journal_sign)
+        self.authority.dispatches = AUTH.DP.Dispatches(S, conn, domain=ids['domain_uuid'], repository=ids['repository_uuid'],
+                                                       principal='pm', signer='authority', sign=self.journal_sign)
+        self.accounts = AUTH.AA.Accounts(S, conn, principal='owner', signer='authority', sign=self.journal_sign)
+        self.authority.accounts = self.accounts
         # A second revision of the team's capability configuration, selecting the Atlassian server (VELDO-0127's
         # real writer), so the configuration and catalog screens have a history and a selected server to show.
         self.configurations.save(dict(role='general', engine='claude_code',
@@ -144,6 +156,7 @@ class FactoryUi(T.TeamFactory):
                 repository_uuid=ids['repository_uuid'], project='project-a', project_uuid='project:project-a',
                 objective_uuid=objective, feature_uuid='objective-feature:' + bid.split(':')[1], title=title,
                 scope=['importer'], work_class='PRODUCT_CHANGE', state=state, decomposition_revision=1,
+                decomposition_digest=sha(bid), decomposition=[],
                 priority=({'path': 'owner_command', 'rank': rank, 'previous_rank': None, 'ruling': 'approve',
                            'principals': ['owner'], 'revision': 1, 'units': []} if rank else None),
                 priorities=[], blocks=blocks, applied=[], completion=None, cancellation=None, history=[]))
@@ -206,10 +219,8 @@ class FactoryUi(T.TeamFactory):
             history=[{'step': 'settled', 'state': 'provisioning', 'at': now - 400},
                      {'step': 'remote', 'state': 'failed', 'at': now - 300, 'reason': 'remote_exists'}]))
         # The account the reservations charge (control_accounts' stored shape), so usage names its provider.
-        self.fixture('account:owner-plan', 'account', dict(
-            schema='veldo.account/v1', id='owner-plan', provider='claude_code', label="Owner's plan", status='active',
-            profiles={'veldo-linux-1': '/srv/veldo/profiles/owner-plan'}, windows={}, concurrency=1,
-            registered_at=now - 86400))
+        self.accounts.register(self.next_id('account'), 'owner-plan', 'claude_code', "Owner's plan",
+                               {'veldo-linux-1': '/srv/veldo/profiles/owner-plan'}, now=now - 86400)
         # The usage screen: one account's policy with its windows, two workers, and their invocations, one
         # settled with its tokens and one whose tokens are unknown.
         account = 'owner-plan'

@@ -16,6 +16,68 @@ export interface WorkerCard {
   running: boolean
   pid: number | null
   recordLines: number | null
+  /** The owner's stop request as the dispatch record holds it (VELDO-0131), or null when none was made. */
+  stop: StopState | null
+}
+
+/** A stop request read from the dispatch record: who asked, and whether the runner has asked the receiver yet. */
+export interface StopState {
+  by: string
+  at: number | null
+  /** true: the receiver was asked to stop; false: the runner held no receiver to ask; null: not asked yet. */
+  asked: boolean | null
+}
+
+/** One account's run cap, from its account record in the spend read (VELDO-0062, set by VELDO-0131's command). */
+export interface AccountCap {
+  account: string
+  label: string
+  provider: string
+  /** The record's version, which a cap change names. */
+  version: number
+  concurrency: number | null
+  /** Each recorded change, newest last: the new cap, the previous one, who and when. */
+  history: { concurrency: number; previous: number | null; by: string; at: number | null }[]
+}
+
+/** The lowest and highest run cap the account command accepts (control_accounts.CAP_LIMIT). */
+export const CAP_MIN = 1
+export const CAP_MAX = 16
+
+/** Whether a typed cap is a whole number the command accepts. */
+export function capValue(text: string): number | null {
+  if (!/^\d{1,2}$/.test(text.trim())) return null
+  const value = Number(text.trim())
+  return value >= CAP_MIN && value <= CAP_MAX ? value : null
+}
+
+/** Every account record of the spend read with its cap, by account id. */
+export function capsOf(spend: ReadAnswer | null): AccountCap[] {
+  return (spend?.items.account ?? [])
+    .map((item) => {
+      const d = item.data as Record<string, any>
+      const history = Array.isArray(d.concurrency_history) ? d.concurrency_history : []
+      return {
+        account: typeof d.id === 'string' && d.id ? d.id : item.id.replace(/^account:/, ''),
+        label: typeof d.label === 'string' ? d.label : '',
+        provider: typeof d.provider === 'string' ? d.provider : '',
+        version: item.version,
+        concurrency: typeof d.concurrency === 'number' ? d.concurrency : null,
+        history: history.map((h: Record<string, any>) => ({
+          concurrency: Number(h.concurrency), previous: typeof h.previous === 'number' ? h.previous : null,
+          by: String(h.by ?? ''), at: typeof h.at === 'number' ? h.at : null,
+        })),
+      }
+    })
+    .sort((a, b) => a.account.localeCompare(b.account))
+}
+
+function stopOf(d: Record<string, any>): StopState | null {
+  const request = d.stop_request
+  if (!request || typeof request !== 'object') return null
+  const result = request.result && typeof request.result === 'object' ? request.result : null
+  return { by: String(request.by ?? ''), at: typeof request.at === 'number' ? request.at : null,
+    asked: result && typeof result.asked === 'boolean' ? result.asked : null }
 }
 
 export interface Machine {
@@ -73,6 +135,7 @@ function card(item: Item): WorkerCard {
     running: d.state === 'running',
     pid: typeof process.pid === 'number' ? process.pid : null,
     recordLines: record && typeof record.lines === 'number' ? record.lines : null,
+    stop: stopOf(d),
   }
 }
 

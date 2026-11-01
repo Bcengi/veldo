@@ -11,8 +11,10 @@ without one is "Built, landing not confirmed" (`src/features/backlog/completion.
 Reorder: drag a row onto another on a desktop, or Move up / Move down on any row (Alt+Up and Alt+Down on a
 focused move button), by keyboard or touch; every move is announced. The new order is the owner's draft.
 "Save priority order" maps it to ranks (the prioritized items in order take ranks 1 to 5; an unchanged rank
-sends nothing) and sends one rank command per changed item through `src/api/actions.ts`, to the route the
-contract names, else `backlog.reprioritize`, stopping at the first refusal, which it names. While the API
-publishes no such route (the command is VELDO-0078's reprioritize) nothing is sent and the result names the
-route and the gap. "Back to the stored order" drops the draft. Details opens the item's facts, blockers and units beside the
+sends nothing) and sends one rank command per changed item through `src/api/actions.ts` to `backlog.reprioritize`
+(VELDO-0078's reprioritize, carried by the API edge for the session's member, VELDO-0131), each at the item
+version the screen read, stopping at the first refusal, which it names beside Save with its name in
+`data-refusal`: a version another save moved first is `stale_version`, and a member who is not the project's owner
+is `unauthorized:not_owner:project`. Nothing is shown as saved until the API answers; the order then follows the
+backlog read. A route the API did not publish would send nothing and the result would name it. "Back to the stored order" drops the draft. Details opens the item's facts, blockers and units beside the
 table on a desktop and as a sheet on a phone.

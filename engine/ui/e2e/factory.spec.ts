@@ -19,8 +19,10 @@ import { expect, guard, routeOf, signIn, test, type FactoryUi } from './factory-
  * ac2/api-only: every request is a published route; nothing reaches storage, the URL or another origin.
  * Fix round 2 (review-2026-11-01): ac1/repositories, ac1/every-configuration, ac1/whole-catalog, ac1/usage-provider and
  *   ac1/worker-capability check the rows' required content at a desktop and a phone width; ac2/metadata-only checks
- *   that the metadata reads serve no credential reference or value; ac2/pending-actions checks that Stop and Save
- *   priority order send nothing while their routes are unpublished and name the missing route.
+ *   that the metadata reads serve no credential reference or value.
+ * Fix round 3 (owner, Telegram 38184): ac2/priority-save, ac2/worker-stop and ac2/worker-cap drive the owner's three
+ *   work commands through the real API: accepted, a stale version refused and an unauthorized member refused, each
+ *   refusal named beside its control and nothing written.
  * ac3/keyboard-desktop and ac3/touch-phone: the owner's task path by keyboard only (1280 px) and by touch (390 px):
  *   backlog reorder, detail and sheet focus restoration, message, workflow step settings, add, connect, reorder
  *   and save, with 44 px touch targets and announced results.
@@ -714,28 +716,138 @@ test('ac2/metadata-only: the catalog and repositories reads serve metadata, neve
   await page.context().close()
 })
 
-test('ac2/pending-actions: Stop and Save priority order send nothing while their routes are unpublished and name the route', async ({ browser, factory }) => {
-  test.setTimeout(120_000)
-  const page = await pageAs(browser, factory, 'owner', { width: 1280, height: 860 })
-  const watch = await guard(page)
-  await page.goto(factory.origin + '/workers')
-  const card = page.locator('[data-dispatch*="VELDO-9146"]')
-  await card.getByTestId('worker-stop').click()
-  await card.getByTestId('worker-stop-confirm').click()
-  const stopped = card.getByTestId('worker-stop-result')
-  await expect(stopped).toContainText('Not stopped')
-  await expect(stopped).toContainText('workers.stop')
-  await expect(stopped).toContainText('VELDO-0041')
-  await expect(card).toHaveAttribute('data-state', 'running')
+/** Hold the page's live event stream open and silent, as a stalled connection does: the screen keeps the versions it
+ * read, so another session's change makes them stale. Nothing is mocked; the held request is never answered. */
+async function holdStream(page: Page) {
+  await page.route(/\/events\/stream/, () => undefined)
+}
+
+// Fix round 3 (owner, Telegram 38184): the owner's backlog priority, worker stop and account cap, each the engine's
+// own command through the authenticated API: accepted, a stale version refused beside the control, an unauthorized
+// member refused beside the control. These run last: they change the harness's ranks, a run and the cap.
+test('ac2/priority-save: Save priority order sends each rank at its version; stale and unauthorized saves are refused beside Save', async ({ browser, factory }) => {
+  test.setTimeout(180_000)
+  const desk = { width: 1280, height: 860 }
+  const moveFirst = async (page: Page, id: string) => {
+    await page.goto(factory.origin + '/backlog')
+    await expect(page.getByTestId('backlog')).toBeVisible()
+    await page.locator(`.tree-grid [data-row="${id}"] [data-testid="move-up"]`).click()
+    await page.getByTestId('priority-save').click()
+    return page.getByTestId('priority-gap-result')
+  }
+  // Unauthorized: owner2 owns no project here, so the backlog refuses the rank and nothing is written.
   const before = await factory.entity('backlog:131-encoding')
-  await page.goto(factory.origin + '/backlog')
-  await page.locator('.tree-grid [data-row="backlog:131-encoding"] [data-testid="move-up"]').click()
-  await page.getByTestId('priority-save').click()
-  const saved = page.getByTestId('priority-gap-result')
-  await expect(saved).toContainText('Not saved')
-  await expect(saved).toContainText('backlog.reprioritize')
-  await expect(saved).toContainText('VELDO-0078')
+  const other = await pageAs(browser, factory, 'owner2', desk)
+  const refused = await moveFirst(other, 'backlog:131-encoding')
+  await expect(refused).toHaveAttribute('data-refusal', /not_owner:project/)
+  await expect(refused).toContainText('Not saved')
   expect((await factory.entity('backlog:131-encoding'))?.version).toBe(before?.version)
-  expect(watch.requests.filter((r) => r.method === 'POST').map((r) => r.url)).toEqual([])
-  await page.context().close()
+  await other.context().close()
+  // Stale: this page's stream is held, so it keeps the versions it read; another session saves first.
+  const stalled = await pageAs(browser, factory, 'owner', desk)
+  await holdStream(stalled)
+  await stalled.goto(factory.origin + '/backlog')
+  await expect(stalled.getByTestId('backlog')).toBeVisible()
+  const owner = await pageAs(browser, factory, 'owner', desk)
+  const watch = await guard(owner)
+  const saved = await moveFirst(owner, 'backlog:131-encoding')
+  await expect(saved).toContainText('Saved')
+  const after = await factory.entity('backlog:131-encoding')
+  expect(after?.data.priority.rank).toBe(1)
+  expect(after?.data.priority.channel).toBe('api')
+  expect(after?.version).toBe((before?.version ?? 0) + 1)
+  expect((await factory.entity('backlog:131-parser'))?.data.priority.rank).toBe(2)
+  expect(watch.requests.filter((r) => r.method === 'POST').map((r) => routeOf('POST', r.url, factory.domain))).toEqual(['backlog.reprioritize', 'backlog.reprioritize'])
+  await stalled.locator('.tree-grid [data-row="backlog:131-encoding"] [data-testid="move-up"]').click()
+  await stalled.getByTestId('priority-save').click()
+  const stale = stalled.getByTestId('priority-gap-result')
+  await expect(stale).toHaveAttribute('data-refusal', /^stale_version/)
+  expect((await factory.entity('backlog:131-encoding'))?.version).toBe(after?.version)
+  await stalled.context().close()
+  await owner.context().close()
+})
+
+test('ac2/worker-stop: Stop records the owner\'s stop request on the dispatch; stale and unauthorized stops are refused beside the card', async ({ browser, factory }) => {
+  test.setTimeout(180_000)
+  const desk = { width: 1280, height: 860 }
+  const { dispatch } = await factory.control<{ dispatch: string }>('/dispatch/new', { unit: 'VELDO-9181', key: 'stop131', count: 2 })
+  const { dispatch: elsewhere } = await factory.control<{ dispatch: string }>('/dispatch/new', { unit: 'VELDO-9182', key: 'stopb131', project: 'project-b', count: 2 })
+  const stopOn = async (page: Page, unit: string) => {
+    await page.goto(factory.origin + '/workers')
+    const card = page.locator(`[data-dispatch*="${unit}"]`)
+    await card.getByTestId('worker-stop').click()
+    await card.getByTestId('worker-stop-confirm').click()
+    return card
+  }
+  // Unauthorized: bmember sees project-b's run but holds no owner role, so the stop is refused and nothing written.
+  const member = await pageAs(browser, factory, 'bmember', desk)
+  const memberCard = await stopOn(member, 'VELDO-9182')
+  await expect(memberCard.getByTestId('worker-stop-result')).toHaveAttribute('data-refusal', /not_authorized:role/)
+  expect((await factory.entity('dispatch:' + elsewhere))?.data.stop_request ?? null).toBeNull()
+  await member.context().close()
+  // Stale: the record moves after this page read it (its stream held), so its stop names an old version.
+  const stalled = await pageAs(browser, factory, 'owner', desk)
+  await holdStream(stalled)
+  await stalled.goto(factory.origin + '/workers')
+  await expect(stalled.locator('[data-dispatch*="VELDO-9181"]')).toBeVisible()
+  const held = await factory.entity('dispatch:' + dispatch)
+  await factory.upsert('dispatch:' + dispatch, 'dispatch', { ...held!.data, receiver: { note: 'moved' } })
+  const staleCard = stalled.locator('[data-dispatch*="VELDO-9181"]')
+  await staleCard.getByTestId('worker-stop').click()
+  await staleCard.getByTestId('worker-stop-confirm').click()
+  await expect(staleCard.getByTestId('worker-stop-result')).toHaveAttribute('data-refusal', /^stale_version/)
+  expect((await factory.entity('dispatch:' + dispatch))?.data.stop_request ?? null).toBeNull()
+  await stalled.context().close()
+  // Accepted: the request is on the dispatch record, the run still running (nothing recovered or restarted), and the
+  // card shows the stop only as the record holds it.
+  const owner = await pageAs(browser, factory, 'owner', desk)
+  const card = await stopOn(owner, 'VELDO-9181')
+  await expect(card.getByTestId('worker-stop-result')).toContainText('Stop requested')
+  await expect(card.getByTestId('worker-stop-state')).toContainText('Requested by owner')
+  await expect(card.getByTestId('worker-stop-state')).toHaveAttribute('data-asked', 'null')
+  await expect(card.getByTestId('worker-stop')).toHaveCount(0)
+  const stored = await factory.entity('dispatch:' + dispatch)
+  expect(stored?.data.stop_request.by).toBe('owner')
+  expect(stored?.data.stop_request.channel).toBe('api')
+  expect(stored?.data.state).toBe('running')
+  await owner.context().close()
+})
+
+test('ac2/worker-cap: Save cap sets the account\'s run cap at its version; stale and unauthorized caps are refused beside the control', async ({ browser, factory }) => {
+  test.setTimeout(180_000)
+  const desk = { width: 1280, height: 860 }
+  const capTo = async (page: Page, value: string) => {
+    const row = page.locator('[data-account="owner-plan"]')
+    await row.getByTestId('cap-input').fill(value)
+    await row.getByTestId('cap-save').click()
+    return row.getByTestId('cap-result')
+  }
+  const before = await factory.entity('account:owner-plan')
+  // Unauthorized: owner2's scope is one project, and an account is factory scope.
+  const other = await pageAs(browser, factory, 'owner2', desk)
+  await other.goto(factory.origin + '/workers')
+  await expect(other.getByTestId('worker-caps')).toBeVisible()
+  const refused = await capTo(other, '3')
+  await expect(refused).toHaveAttribute('data-refusal', /missing_authority:scope/)
+  expect((await factory.entity('account:owner-plan'))?.version).toBe(before?.version)
+  await other.context().close()
+  // Stale: this page's stream is held; another session changes the cap first.
+  const stalled = await pageAs(browser, factory, 'owner', desk)
+  await holdStream(stalled)
+  await stalled.goto(factory.origin + '/workers')
+  await expect(stalled.getByTestId('worker-caps')).toBeVisible()
+  const owner = await pageAs(browser, factory, 'owner', desk)
+  await owner.goto(factory.origin + '/workers')
+  const saved = await capTo(owner, '2')
+  await expect(saved).toContainText('Cap saved: 2')
+  const after = await factory.entity('account:owner-plan')
+  expect(after?.data.concurrency).toBe(2)
+  expect(after?.version).toBe((before?.version ?? 0) + 1)
+  expect(after?.data.concurrency_history.at(-1).by).toBe('owner')
+  await expect(owner.locator('[data-account="owner-plan"] [data-testid="cap-current"]')).toContainText('2 concurrent runs')
+  const stale = await capTo(stalled, '4')
+  await expect(stale).toHaveAttribute('data-refusal', /^stale_version/)
+  expect((await factory.entity('account:owner-plan'))?.data.concurrency).toBe(2)
+  await stalled.context().close()
+  await owner.context().close()
 })

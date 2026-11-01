@@ -11867,19 +11867,53 @@ def cases():
           "  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.worker_stop, { dispatch, dispatch_version: version })\n",
           "  void send; void contractRoute; void dispatch; void version\n"
           "  return Promise.resolve<ActionResult<Record<string, unknown>>>({ sent: true, answer: { outcome: 'stopped' } })  // defect\n",
-          ['ac2/pending-actions'])
+          ['ac2/worker-stop'])
     # AC2, backlog row (F5): Save priority order reports ranks that were never sent.
     ui131('ui131-priority-shown-unsent', 'engine/ui/src/api', 'actions.ts',
           "  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.owner_priority, { item, item_version: itemVersion, rank })\n",
           "  void contractRoute; void item; void itemVersion; void rank\n"
           "  return Promise.resolve<ActionResult<Record<string, unknown>>>({ sent: true, answer: { outcome: 'reprioritized' } })  // defect\n",
-          ['ac2/pending-actions'])
+          ['ac2/priority-save'])
     # AC2, absent secrets: the repositories read serves an identity's credential references.
     add(131, 'api131-identity-credentials-served', '120_veldo_0131_factory_ui.py', 'control_api_models.py',
         "IDENTITY_METADATA = ('id', 'label', 'author_name', 'author_email', 'remote_host', 'remote_owner', 'projects_root',\n",
         "IDENTITY_METADATA = ('api_token', 'push_credential',  # defect: credential references served\n"
         "                     'id', 'label', 'author_name', 'author_email', 'remote_host', 'remote_owner', 'projects_root',\n",
         ['ac2/metadata-only'])
+    # Fix round 3 (owner, Telegram 38184): one mutant for each new behavior of the three work commands.
+    # AC2, workers row: Save cap reports a cap that was never sent.
+    ui131('ui131-cap-shown-unsent', 'engine/ui/src/api', 'actions.ts',
+          "  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.worker_cap, { account, account_version: accountVersion, concurrency })\n",
+          "  void contractRoute; void account; void accountVersion\n"
+          "  return Promise.resolve<ActionResult<Record<string, unknown>>>({ sent: true, answer: { outcome: 'capped', concurrency } })  // defect\n",
+          ['ac2/worker-cap'])
+    # Backlog priority through the API edge: the edge's signature stands for a command the assertion does not derive.
+    add(131, 'backlog131-edge-command-underived', '73_veldo_0078_backlog.py', 'control_backlog.py',
+        "                or command.get('operation') != 'reprioritize' or assertions.domain_request(a) != command):\n",
+        "                or command.get('operation') != 'reprioritize'):  # defect: any command rides the assertion\n",
+        ['priority/owner-reprioritize'])
+    # Worker stop: a stop request is accepted from an owner whose scope does not cover the run's project.
+    add(131, 'dispatch131-stop-any-scope', '62_veldo_0039_dispatch.py', 'control_dispatch.py',
+        "    if not _text(project) or not CM.scope_covers(entry.get('scope'), project):\n",
+        "    if not _text(project):  # defect: the member's scope is not judged\n",
+        ['dispatch/owner-stop'])
+    # Worker stop: the runner records the ask without asking the receiver (the stop mechanism is never requested).
+    add(131, 'launch131-stop-recorded-unasked', '62_veldo_0039_dispatch.py', 'control_launch.py',
+        "                asked = bool(launch is not None and launch.stop(reason or 'owner_stop'))\n",
+        "                asked = launch is not None  # defect: recorded as asked, the receiver never asked\n",
+        ['dispatch/owner-stop'])
+    # Worker stop through the API: the receiver is asked before the authority has recorded (and judged) the request.
+    add(131, 'api131-stop-asked-before-record', '71_veldo_0130_api.py', 'control_api_authority.py',
+        "                    return {'outcome': 'refused', 'reason': 'unavailable_service:dispatches'}\n",
+        "                    return {'outcome': 'refused', 'reason': 'unavailable_service:dispatches'}\n"
+        "                if self.stop is not None:\n"
+        "                    self.stop(p['dispatch'], 'owner_stop')  # defect: asked before the request is recorded\n",
+        ['work/worker-stop'])
+    # Account cap: a person whose scope is one repository caps a factory-scope account.
+    add(131, 'accounts131-cap-any-scope', '75_veldo_0062_accounts.py', 'control_accounts.py',
+        "            if member.get('scope') not in ('*', ['*']):\n",
+        "            if False:  # defect: the member's scope is not judged\n",
+        ['accounts/owner-cap'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

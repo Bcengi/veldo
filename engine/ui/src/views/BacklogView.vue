@@ -22,9 +22,10 @@ import '@/styles/factory.css'
 
 /** The backlog (VELDO-0131): items in the authority's priority order with their blockers and the units taken from
  * them. Reorder is drag and drop on a desktop and Move up / Move down buttons everywhere (keyboard and touch);
- * Save sends one rank command per prioritized item whose rank changes (src/api/actions.ts), in order, and stops at
- * the first refusal, which it names. While the API publishes no priority route nothing is sent, the reordered list
- * stays the owner's draft and the result names the missing route. */
+ * Save sends one rank command per prioritized item whose rank changes to `backlog.reprioritize` (src/api/actions.ts,
+ * control_backlog's own reprioritize through the API edge), each at the item version shown, in order, and stops at
+ * the first refusal, which it names beside Save (a stale version among them). If the API published no priority
+ * route nothing would be sent, the reordered list would stay the owner's draft and the result would name the route. */
 const proof = shallowRef<ReadAnswer | null>(null)
 const live = useLiveRead(
   async (signal) => {
@@ -59,11 +60,13 @@ const announce = ref('')
 const tried = ref(false)
 const saving = ref(false)
 const saveResult = ref('')
+const saveRefusal = ref<string | null>(null)
 const changes = computed(() => rankChanges(entries.value, order.value))
 
 async function save() {
   saving.value = true
   saveResult.value = ''
+  saveRefusal.value = null
   const done: string[] = []
   try {
     for (const change of changes.value) {
@@ -80,6 +83,7 @@ async function save() {
     draft.value = null
   } catch (error) {
     const named = error instanceof ApiRefusal ? error.refusal : (error as Error).message
+    saveRefusal.value = error instanceof ApiRefusal ? error.refusal : 'unavailable_service'
     saveResult.value = `Not saved: ${named}${done.length ? ` (saved before it: ${done.join('; ')})` : ''}`
   } finally {
     saving.value = false
@@ -175,7 +179,7 @@ onMounted(() => void live.start())
             <p v-if="changed && !priority.route" class="factory-gap" role="status" data-testid="priority-gap">
               Your order is a draft on this screen. {{ gapSentence(priority) }}
             </p>
-            <p v-if="tried && saveResult" class="factory-gap" role="alert" data-testid="priority-gap-result">{{ saveResult }}</p>
+            <p v-if="tried && saveResult" class="factory-gap" role="alert" data-testid="priority-gap-result" :data-refusal="saveRefusal ?? undefined">{{ saveResult }}</p>
           </div>
         </section>
         <section v-if="detail && desktop" class="panel" aria-labelledby="backlog-detail-title" data-testid="backlog-detail">

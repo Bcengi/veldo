@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ReadAnswer } from '@/api/types'
-import { familiesOf, machinesOf } from './workers'
+import { capValue, capsOf, familiesOf, machinesOf } from './workers'
 
 function dispatch(id: string, host: string, platform: string, state: string, unit: string) {
   return {
@@ -37,5 +37,27 @@ describe('worker capability (fix round 2)', () => {
     expect(capabilityOf({ capability: { adapter: 'claude_code', configuration: { role: 'general', revision: 2,
       mcp: [{ server: 'atlassian' }], native_tools: [{ name: 'Read' }] } } })).toBe('claude_code; role general r2; servers atlassian; tools Read')
     expect(capabilityOf({})).toBe('')
+  })
+})
+
+describe('stop and cap from the records', () => {
+  it('reads a stop request and its result from the dispatch record, never from the screen', () => {
+    const asked = dispatch('d4', 'l1', 'linux', 'running', 'U4')
+    ;(asked.data as Record<string, unknown>).stop_request = { by: 'owner', at: 5, result: null }
+    const machines = machinesOf({ items: { dispatch: [asked] }, machines: [{ platform: 'linux', host: 'l1', workers: ['dispatch:d4'] }] } as unknown as ReadAnswer)
+    expect(machines[0]!.workers[0]!.stop).toEqual({ by: 'owner', at: 5, asked: null })
+    expect(machinesOf(answer)[1]!.workers[0]!.stop).toBeNull()
+  })
+  it('lists each account record with its cap, version and changes', () => {
+    const spend = { items: { account: [
+      { id: 'account:b', kind: 'account', version: 3, digest: 'd', data: { id: 'b', label: 'B', provider: 'codex', concurrency: 2,
+        concurrency_history: [{ concurrency: 2, previous: 1, by: 'owner', at: 9 }] } },
+      { id: 'account:a', kind: 'account', version: 1, digest: 'd', data: { id: 'a', label: 'A', provider: 'claude_code', concurrency: 1 } },
+    ] } } as unknown as ReadAnswer
+    expect(capsOf(spend).map((c) => [c.account, c.version, c.concurrency, c.history.length])).toEqual([['a', 1, 1, 0], ['b', 3, 2, 1]])
+    expect(capsOf(null)).toEqual([])
+  })
+  it('accepts a cap from 1 to 16 only', () => {
+    expect(['1', '16', ' 4 ', '0', '17', '2.5', 'x', ''].map(capValue)).toEqual([1, 16, 4, null, null, null, null, null])
   })
 })
