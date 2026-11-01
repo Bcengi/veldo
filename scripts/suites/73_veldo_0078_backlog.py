@@ -1196,6 +1196,65 @@ def _v78_suite():
                     ('it gets the same outcome answers', seen.get('outcomes', {}).get(U4) == []
                      and seen.get('outcomes', {}).get('VELDO-9783') == ['missing_outcome:VELDO-9783'])])
 
+            # VELDO-0131 (owner, Telegram 38184): the owner's reprioritize, the command the API's priority save carries.
+            # Accepted by the owner's own signature at the item's version; a stale version and a member who is not
+            # the project's owner are refused and write nothing; through the API edge path, a packet whose assertion
+            # does not derive this command, or whose edge is not the enrolled api channel edge, is refused
+            # unauthenticated. (The accepted edge path, with a passkey credential, is suite 71's work/backlog-reprioritize.)
+            with region('priority/owner-reprioritize'):
+                AS = load('v78_api_assertion', mods / 'control_api_assertion.py')
+                target = next((eid for eid, d in of_kind('backlog_item')
+                               if d.get('project') == 'proj-a' and d.get('state') in ('PRIORITIZED', 'ACTIVE', 'BLOCKED')), None)
+                held = item(target)
+                rank = 2 if (held.get('priority') or {}).get('rank') != 2 else 3
+                journal = lambda: conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
+                before = journal()
+                stale = bsend('olga', 'reprioritize', item=target, item_version=held.get('version', 0) + 1,
+                              priority={'rank': rank})
+                foreign = bsend('zed', 'reprioritize', item=target, item_version=held.get('version'), priority={'rank': rank})
+                now = time.time()
+                body = dict(ids, operation='reprioritize', item=target, item_version=held.get('version'),
+                            priority={'rank': rank}, principal='olga', command_id=next_id('api'))
+                body['nonce'] = body['command_id']
+                assertion = dict(ids, schema=AS.SCHEMA, domain=DOMAIN, channel='api', edge='api-edge',
+                                 edge_key_id='edge-api', request_id=body['command_id'], principal='olga',
+                                 credential_id='none', session='s', operation='reprioritize_backlog', target=str(target),
+                                 parameters={'item': target, 'item_version': held.get('version'), 'rank': rank},
+                                 expected_versions={}, issued_at=now, expires_at=now + AS.LIFETIME)
+                edge_packet = {'command': body, 'signature': sign_as('api-edge', S.canonical_bytes(body))}
+                other_op = service.apply(edge_packet, api_assertion={
+                    'assertion': dict(assertion, operation='save_workflow'), 'signature': ''})
+                not_derived = service.apply(edge_packet, api_assertion={
+                    'assertion': dict(assertion, parameters=dict(assertion['parameters'], rank=1)), 'signature': ''})
+                no_edge = service.apply(edge_packet, api_assertion={
+                    'assertion': assertion, 'signature': sign_as('api-edge', S.canonical_bytes(assertion))})
+                unchanged = journal() == before and item(target).get('version') == held.get('version')
+                accepted = bsend('olga', 'reprioritize', item=target, item_version=held.get('version'),
+                                 priority={'rank': rank})
+                after = item(target)
+                check('priority/owner-reprioritize', [
+                    ('a prioritized item of proj-a is there to reprioritize', target is not None),
+                    ('a stale item version is refused stale_version', stale.get('reason') == 'stale_version'),
+                    ('a member who is not the project\'s owner is refused not_owner', foreign.get('reason') == 'not_owner:project'),
+                    ('an edge packet whose assertion is another operation is refused unauthenticated',
+                     other_op.get('reason') == 'unauthenticated:assertion'),
+                    ('an edge packet whose assertion derives another command is refused unauthenticated',
+                     not_derived.get('reason') == 'unauthenticated:assertion'),
+                    ('an edge that is not the enrolled api channel edge is refused unauthenticated',
+                     no_edge.get('reason') == 'unauthenticated:edge'),
+                    ('no refusal wrote anything', unchanged),
+                    ('the owner\'s own command is accepted: the new rank, the state and units unchanged',
+                     accepted.get('ok') is True and (after.get('priority') or {}).get('rank') == rank
+                     and after.get('state') == held.get('state') and after.get('version') == held.get('version') + 1
+                     and after.get('decomposition') == held.get('decomposition')),
+                    ('the record and its history name the owner\'s command and the previous rank',
+                     (after.get('priority') or {}).get('path') == 'owner_command'
+                     and (after.get('priority') or {}).get('previous_rank') == (held.get('priority') or {}).get('rank')
+                     and (after.get('history') or [{}])[-1].get('operation') == 'reprioritize'
+                     and (after.get('history') or [{}])[-1].get('by') == 'olga'),
+                    ('the refusals are observed classified', [o.get('taxonomy') for o in service.observations][-6:]
+                     == ['stale_subject', 'missing_authority', 'unauthenticated', 'unauthenticated', 'unauthenticated', None])])
+
             with region('observability'):
                 metrics = service.metrics() if service is not None else {}
                 observations = service.observations if service is not None else []

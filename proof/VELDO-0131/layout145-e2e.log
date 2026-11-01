@@ -1,0 +1,75 @@
+
+Running 10 tests using 1 worker
+
+[1/10] e2e/layout.spec.ts:374:3 › every screen and state at 360px, light and dark
+[2/10] e2e/layout.spec.ts:374:3 › every screen and state at 390px, light and dark
+[3/10] e2e/layout.spec.ts:374:3 › every screen and state at 1280px, light and dark
+[4/10] e2e/layout.spec.ts:374:3 › every screen and state at 1440px, light and dark
+[5/10] e2e/layout.spec.ts:425:1 › phone decisions: the inline answer action is visible, unclipped and works at 360px
+[6/10] e2e/layout.spec.ts:457:1 › keyboard only on desktop: sign in, open a decision and answer it without a pointer
+[7/10] e2e/layout.spec.ts:490:1 › touch on phone: open a run and a decision from the bottom bar and answer by tapping
+[8/10] e2e/layout.spec.ts:512:1 › served assets: every response is this origin and every asset is a file of the build
+  1) e2e/layout.spec.ts:512:1 › served assets: every response is this origin and every asset is a file of the build 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 38
+
+    - Array []
+    + Array [
+    +   "/assets/index-DukojI-A.css",
+    +   "/assets/index-BS_H9NEi.js",
+    +   "/assets/VTextField-O4E2S8Z5.js",
+    +   "/assets/SignInView-CpJ6RiZk.js",
+    +   "/assets/RunList-Ci0B3MzM.js",
+    +   "/assets/DecisionList-DfBjO7Az.js",
+    +   "/assets/OverviewView-CaND5ziH.js",
+    +   "/assets/index-BS_H9NEi.js",
+    +   "/assets/index-DukojI-A.css",
+    +   "/assets/RunList-Ci0B3MzM.js",
+    +   "/assets/RunsView-D0wrNwaI.js",
+    +   "/assets/index-BS_H9NEi.js",
+    +   "/assets/index-DukojI-A.css",
+    +   "/assets/VTextField-O4E2S8Z5.js",
+    +   "/assets/RunView-B_bKlZwY.js",
+    +   "/assets/VSwitch-NdsKW7g4.js",
+    +   "/assets/CopyId-CWFA1kE5.js",
+    +   "/assets/monaco-UcyZJwE7.js",
+    +   "/assets/python-BX9tBPrJ.js",
+    +   "/assets/index-BS_H9NEi.js",
+    +   "/assets/index-DukojI-A.css",
+    +   "/assets/DecisionList-DfBjO7Az.js",
+    +   "/assets/VRadio-CRyUSyDe.js",
+    +   "/assets/VTextArea-0EfH5_uP.js",
+    +   "/assets/DecisionsView-DvHELA_L.js",
+    +   "/assets/index-BS_H9NEi.js",
+    +   "/assets/index-DukojI-A.css",
+    +   "/assets/DecisionsView-DvHELA_L.js",
+    +   "/assets/VRadio-CRyUSyDe.js",
+    +   "/assets/VTextArea-0EfH5_uP.js",
+    +   "/assets/DecisionList-DfBjO7Az.js",
+    +   "/assets/index-BS_H9NEi.js",
+    +   "/assets/index-DukojI-A.css",
+    +   "/assets/CopyId-CWFA1kE5.js",
+    +   "/assets/VSwitch-NdsKW7g4.js",
+    +   "/assets/YouView-BZmg8b9b.js",
+    + ]
+
+      524 |   expect(foreign).toEqual([])
+      525 |   const assets = responses.map((r) => new URL(r.url).pathname).filter((p) => p.startsWith('/assets/'))
+    > 526 |   expect(assets.filter((p) => !built.has(p))).toEqual([])
+          |                                               ^
+      527 |   const fonts = assets.filter((p) => p.endsWith('.woff2') || p.endsWith('.ttf'))
+      528 |   for (const font of fonts) expect(font).toMatch(/^\/assets\/(ibm-plex-(sans|mono)|codicon)-/)
+      529 | })
+        at /home/dmitry/projects/veldo-worktrees/veldo-0131/engine/ui/e2e/layout.spec.ts:526:47
+
+    Error Context: test-results/layout-served-assets-every-6dc9d-sset-is-a-file-of-the-build/error-context.md
+
+
+[9/10] e2e/layout.spec.ts:531:1 › phone terminal: the record gets the screen, the headline unclipped, the strip on one line and the controls in one bar
+[10/10] e2e/layout.spec.ts:566:1 › desktop decisions: the most urgent decision is open, and the list scrolls on its own
+  1 failed
+    e2e/layout.spec.ts:512:1 › served assets: every response is this origin and every asset is a file of the build 
+  9 passed (2.2m)

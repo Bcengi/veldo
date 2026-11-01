@@ -11766,6 +11766,166 @@ def cases():
            "setAt: Date.now() / 1000, setBy: answer.set_by, reference: answer.reference",
            ['cred/metadata-only'])
 
+    # VELDO-0163: the role and team forms. Each mutant is one UI source module of engine/ui; suite 119 builds the UI
+    # with it laid over a scratch copy and runs the forms' unit specs and browser tests against the real harness.
+    def ui163(name, directory, module, old, new, rows, also=()):
+        add(163, name, '119_veldo_0163_role_team_form.py', module, old, new, rows, also)
+        result[-1]['dir'] = directory
+
+    # AC1 (declared falsifier): the form's save is sent without the revision it was edited from (the newest one instead).
+    ui163('ui163-config-save-unbound', 'engine/ui/src/features/roles', 'useRoleForm.ts',
+          "      const result = await saveConfiguration(definition, d.editedFrom)\n",
+          "      const result = await saveConfiguration(definition, await latestRevision(definition.role))"
+          "  // defect: not the revision it was edited from\n",
+          ['role/stale-save'])
+    # AC2 (declared falsifier 1): a saved team is shown current before the authority accepted it.
+    ui163('ui163-proposal-shown-current', 'engine/ui/src/features/team', 'team-draft.ts',
+          "  return { revision: record.revision, team: record.team }\n",
+          "  // defect: a pending proposal is shown as current before the owner's answer\n"
+          "  return record.proposal ? { revision: record.proposal.revision, team: record.proposal.team }"
+          " : { revision: record.revision, team: record.team }\n",
+          ['team/authoritative'])
+    # AC2 (declared falsifier 2): the default team's save is sent without the revision it was edited from.
+    ui163('ui163-default-save-unbound', 'engine/ui/src/features/team', 'useTeamForm.ts',
+          "        ? await saveDefaultTeam(team, d.editedFrom)\n",
+          "        ? await saveDefaultTeam(team, await latestDefaultRevision())  // defect: not the revision it was edited from\n",
+          ['team/default-stale-save'], also=[("  DEFAULT_TEAM,\n", "  DEFAULT_TEAM,\n  latestDefaultRevision,\n")])
+
+    # VELDO-0131: the factory screens. Each mutant is one UI source module of engine/ui (or its lockfile); suite 120
+    # builds the UI with it laid over a scratch copy, applies the dependency policy and runs the browser tests
+    # against the factory harness.
+    def ui131(name, directory, module, old, new, rows, also=()):
+        add(131, name, '120_veldo_0131_factory_ui.py', module, old, new, rows, also)
+        result[-1]['dir'] = directory
+
+    # AC1 (declared falsifier): hide an inline decision action at 360px width.
+    ui131('ui131-decision-action-hidden-360', 'engine/ui/src/features/decisions', 'DecisionDetail.vue',
+          'block data-testid="send-answer" />',
+          'block data-testid="send-answer" v-show="!hideAt360" />',
+          ['ac1/screens-360'],
+          also=[("const props = defineProps<{ decision: PendingDecision }>()\n",
+                 "const props = defineProps<{ decision: PendingDecision }>()\n"
+                 "const hideAt360 = useMedia('(max-width: 360px)')  // defect: the inline answer is hidden on a 360px phone\n"),
+                ("import VTextArea from '@/components/VTextArea.vue'\n",
+                 "import VTextArea from '@/components/VTextArea.vue'\nimport { useMedia } from '@/composables/useMedia'\n")])
+    # AC2 (declared falsifier): show completion from the unit's local build state before its landing receipt.
+    ui131('ui131-completion-from-build-state', 'engine/ui/src/features/backlog', 'completion.ts',
+          "  if (landed.has(unit)) return 'landed'\n",
+          "  if (landed.has(unit) || state === 'COMPLETED') return 'landed'  // defect: build state shown as complete\n",
+          ['ac2/completion-receipt'])
+    # AC3 (declared falsifier): a workflow step's settings reachable only by hover.
+    ui131('ui131-node-settings-hover-only', 'engine/ui/src/features/workflow', 'FlowProperties.vue',
+          '<div class="flow-props" data-testid="node-settings">',
+          '<div v-show="hovered" class="flow-props" data-testid="node-settings">',
+          ['ac3/keyboard-desktop', 'ac3/touch-phone'],
+          also=[('<div class="flow-props" data-testid="flow-properties">',
+                 '<div class="flow-props" data-testid="flow-properties" @mouseenter="hovered = true" @mouseleave="hovered = false">'),
+                ("const value = (event: Event) => (event.target as HTMLSelectElement).value\n",
+                 "const value = (event: Event) => (event.target as HTMLSelectElement).value\n"
+                 "const hovered = ref(false)  // defect: the step settings show only while the pointer hovers\n"),
+                ("import { computed } from 'vue'\n", "import { computed, ref } from 'vue'\n")])
+    # AC4 (declared falsifier): a dependency flagged with free and paid library tiers in the accepted lockfile.
+    ui131('ui131-tiered-dependency-locked', 'engine/ui', 'package-lock.json',
+          '    "node_modules/chart.js": {\n',
+          '    "node_modules/ag-grid-enterprise": {\n      "version": "34.2.0",\n      "license": "MIT"\n    },\n'
+          '    "node_modules/chart.js": {\n',
+          ['ac4/dependency-policy'])
+    # Fix round 2 (review-2026-11-01 F1 to F5): one mutant for each new behavior an acceptance criterion covers.
+    # AC1, Repositories and identities row: the identities are dropped from the screen.
+    ui131('ui131-identities-dropped', 'engine/ui/src/features/repositories', 'repositories.ts',
+          "  return [...(answer?.identities ?? [])].sort(",
+          "  return [...(answer?.identities ?? [])].filter(() => false).sort(",
+          ['ac1/repositories'])
+    # AC1, configuration row (F3): only the configurations a team names are listed again.
+    ui131('ui131-configurations-team-named-only', 'engine/ui/src/features/configuration', 'configuration.ts',
+          "  for (const item of answer?.items.agent_configuration ?? []) {\n",
+          "  for (const item of (answer?.items.agent_configuration ?? []).filter(() => false)) {  // defect: unlisted\n",
+          ['ac1/every-configuration'])
+    # AC1, MCP row (F4): the catalog lists only its first server.
+    ui131('ui131-catalog-first-server-only', 'engine/ui/src/features/catalog', 'catalog.ts',
+          "    .sort((a, b) => a.id.localeCompare(b.id))\n}\n\n/** The keystore reference",
+          "    .sort((a, b) => a.id.localeCompare(b.id))\n    .slice(0, 1)  // defect: not the whole catalog\n}\n\n"
+          "/** The keystore reference",
+          ['ac1/whole-catalog'])
+    # AC1, MCP row (F4): a credential's record (label, set at, set by) is not read.
+    ui131('ui131-credential-metadata-dropped', 'engine/ui/src/features/catalog', 'catalog.ts',
+          "  return (answer?.items.credential ?? [])\n",
+          "  return (answer?.items.credential ?? []).filter(() => false)  // defect: the credential records are not listed\n",
+          ['ac1/whole-catalog'])
+    # AC1, usage row (F4): the account records are not read, so no provider shows.
+    ui131('ui131-provider-unread', 'engine/ui/src/features/usage', 'usage.ts',
+          "  for (const item of spend?.items.account ?? []) {\n",
+          "  for (const item of (spend?.items.account ?? []).filter(() => false)) {  // defect: providers unread\n",
+          ['ac1/usage-provider'])
+    # AC1, workers row (F2): a worker's capability is not shown.
+    ui131('ui131-capability-dropped', 'engine/ui/src/features/workers', 'workers.ts',
+          "    capability: capabilityOf(contract),\n",
+          "    capability: '',  // defect: the capability is not shown\n",
+          ['ac1/worker-capability'])
+    # AC2, workers row (F5): Stop reports a stop that was never sent (local optimism).
+    ui131('ui131-stop-shown-unsent', 'engine/ui/src/api', 'actions.ts',
+          "  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.worker_stop, { dispatch, dispatch_version: version })\n",
+          "  void send; void contractRoute; void dispatch; void version\n"
+          "  return Promise.resolve<ActionResult<Record<string, unknown>>>({ sent: true, answer: { outcome: 'stopped' } })  // defect\n",
+          ['ac2/worker-stop'])
+    # AC2, backlog row (F5): Save priority order reports ranks that were never sent.
+    ui131('ui131-priority-shown-unsent', 'engine/ui/src/api', 'actions.ts',
+          "  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.owner_priority, { item, item_version: itemVersion, rank })\n",
+          "  void contractRoute; void item; void itemVersion; void rank\n"
+          "  return Promise.resolve<ActionResult<Record<string, unknown>>>({ sent: true, answer: { outcome: 'reprioritized' } })  // defect\n",
+          ['ac2/priority-save'])
+    # AC2, absent secrets: the repositories read serves an identity's credential references.
+    add(131, 'api131-identity-credentials-served', '120_veldo_0131_factory_ui.py', 'control_api_models.py',
+        "IDENTITY_METADATA = ('id', 'label', 'author_name', 'author_email', 'remote_host', 'remote_owner', 'projects_root',\n",
+        "IDENTITY_METADATA = ('api_token', 'push_credential',  # defect: credential references served\n"
+        "                     'id', 'label', 'author_name', 'author_email', 'remote_host', 'remote_owner', 'projects_root',\n",
+        ['ac2/metadata-only'])
+    # Fix round 3 (owner, Telegram 38184): one mutant for each new behavior of the three work commands.
+    # AC2, workers row: Save cap reports a cap that was never sent.
+    ui131('ui131-cap-shown-unsent', 'engine/ui/src/api', 'actions.ts',
+          "  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.worker_cap, { account, account_version: accountVersion, concurrency })\n",
+          "  void contractRoute; void account; void accountVersion\n"
+          "  return Promise.resolve<ActionResult<Record<string, unknown>>>({ sent: true, answer: { outcome: 'capped', concurrency } })  // defect\n",
+          ['ac2/worker-cap'])
+    # Backlog priority through the API edge: the edge's signature stands for a command the assertion does not derive.
+    add(131, 'backlog131-edge-command-underived', '73_veldo_0078_backlog.py', 'control_backlog.py',
+        "                or command.get('operation') != 'reprioritize' or assertions.domain_request(a) != command):\n",
+        "                or command.get('operation') != 'reprioritize'):  # defect: any command rides the assertion\n",
+        ['priority/owner-reprioritize'])
+    # Worker stop: a stop request is accepted from an owner whose scope does not cover the run's project.
+    add(131, 'dispatch131-stop-any-scope', '62_veldo_0039_dispatch.py', 'control_dispatch.py',
+        "    if not _text(project) or not CM.scope_covers(entry.get('scope'), project):\n",
+        "    if not _text(project):  # defect: the member's scope is not judged\n",
+        ['dispatch/owner-stop'])
+    # Worker stop: the runner records the ask without asking the receiver (the stop mechanism is never requested).
+    add(131, 'launch131-stop-recorded-unasked', '62_veldo_0039_dispatch.py', 'control_launch.py',
+        "                asked = bool(launch is not None and launch.stop(reason or 'owner_stop'))\n",
+        "                asked = launch is not None  # defect: recorded as asked, the receiver never asked\n",
+        ['dispatch/owner-stop'])
+    # Worker stop: a runner that does not hold the running dispatch consumes its stop request as not asked.
+    add(131, 'launch131-stop-consumed-unheld', '62_veldo_0039_dispatch.py', 'control_launch.py',
+        "            if launch is None and (self.dispatches.record(dispatch_id) or {}).get('state') in D.STOPPABLE:\n",
+        "            if False:  # defect: a stop this runner does not hold is recorded not asked\n",
+        ['dispatch/owner-stop-other-runner'])
+    # Worker stop through the API: the receiver is asked before the authority has recorded (and judged) the request.
+    add(131, 'api131-stop-asked-before-record', '71_veldo_0130_api.py', 'control_api_authority.py',
+        "                    return {'outcome': 'refused', 'reason': 'unavailable_service:dispatches'}\n",
+        "                    return {'outcome': 'refused', 'reason': 'unavailable_service:dispatches'}\n"
+        "                if self.stop is not None:\n"
+        "                    self.stop(p['dispatch'], 'owner_stop')  # defect: asked before the request is recorded\n",
+        ['work/worker-stop'])
+    # Worker stop on an idle line: the loop pass a journal advance wakes does not ask for the committed stops, so the
+    # owner's stop of the line's only worker waits for a run of that line to be prepared or end.
+    add(131, 'service131-stop-not-asked-on-wake', '83_veldo_0154_factory_loop.py', 'control_service.py',
+        "        self.runner.honor_stops()\n        lost = []\n",
+        "        lost = []  # defect: the woken pass does not ask for the committed stops\n",
+        ['loop/owner-stop-asked-on-wake'])
+    # Account cap: a person whose scope is one repository caps a factory-scope account.
+    add(131, 'accounts131-cap-any-scope', '75_veldo_0062_accounts.py', 'control_accounts.py',
+        "            if member.get('scope') not in ('*', ['*']):\n",
+        "            if False:  # defect: the member's scope is not judged\n",
+        ['accounts/owner-cap'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

@@ -1,0 +1,428 @@
+{
+ "baseline": {
+  "commit": "1af514deccc7c253ab41abd86be7389c94832903",
+  "failed_details": [],
+  "failed_rows": [],
+  "returncode": 0,
+  "rows": [
+   "good spec accepted",
+   "spec without criteria rejected",
+   "unknown evidence kind rejected",
+   "bad status rejected",
+   "invented proof criterion rejected",
+   "missing proof criterion rejected",
+   "absent required evidence rejected",
+   "passed-without-evidence rejected",
+   "bad verdict value rejected",
+   "good plan accepted",
+   "plan dependency cycle rejected",
+   "dangling dependency rejected",
+   "unknown outcome ref rejected",
+   "unknown feature ref rejected",
+   "undeclared depends_on rejected",
+   "ready without approval rejected",
+   "decision without blocks rejected",
+   "decision blocking unknown spec rejected",
+   "duplicate work spec rejected",
+   "bad release mode rejected",
+   "mirror mismatch rejected",
+   "correct mirror accepted",
+   "spec binding to wrong plan rejected",
+   "spec claiming missing work item rejected",
+   "spec plan without work rejected",
+   "correct spec binding accepted",
+   "VELDO-0163 unit/forms",
+   "VELDO-0163 role/revisions",
+   "VELDO-0163 role/stale-save",
+   "VELDO-0163 role/widths",
+   "VELDO-0163 team/owner-save",
+   "VELDO-0163 team/authoritative",
+   "VELDO-0163 team/refusals",
+   "VELDO-0163 team/default-team",
+   "VELDO-0163 team/default-stale-save",
+   "VELDO-0163 team/widths"
+  ],
+  "seconds": 32.705,
+  "targets": {
+   "role/stale-save": [
+    true
+   ],
+   "team/authoritative": [
+    true
+   ],
+   "team/default-stale-save": [
+    true
+   ]
+  }
+ },
+ "cases": {
+  "ui163-config-save-unbound": {
+   "edits": [
+    [
+     "      const result = await saveConfiguration(definition, d.editedFrom)\n",
+     "      const result = await saveConfiguration(definition, await latestRevision(definition.role))  // defect: not the revision it was edited from\n"
+    ]
+   ],
+   "module": "engine/ui/src/features/roles/useRoleForm.ts",
+   "mutant": {
+    "commit": "1af514deccc7c253ab41abd86be7389c94832903",
+    "failed_details": [
+     [
+      "VELDO-0163 unit/forms",
+      "the role and team forms' unit specs pass [23 passed, failed ['useRoleForm saves bound to the revision the draft was edited from and shows the revision read back']; JSON report written to /tmp/v163-wr7whzsg/vitest.json]"
+     ],
+     [
+      "VELDO-0163 role/stale-save",
+      "its browser test ran and passed [['failed']; Error: element(s) not found | Call log: | \u001b[2m  - Expect \"toHaveAttribute\" getByTestId('role-save-bar').getByTestId('refusal') with timeout 10000ms\u001b[22m | \u001b[2m  - waiting for getByTestId('role-save-bar').getByTestId('refusal')\u001b[22m]"
+     ],
+     [
+      "VELDO-0163 role/widths",
+      "its browser test ran and passed [['skipped']; ]"
+     ],
+     [
+      "VELDO-0163 team/owner-save",
+      "its browser test ran and passed [['skipped']; ]"
+     ],
+     [
+      "VELDO-0163 team/authoritative",
+      "its browser test ran and passed [['skipped']; ]"
+     ],
+     [
+      "VELDO-0163 team/refusals",
+      "its browser test ran and passed [['skipped']; ]"
+     ],
+     [
+      "VELDO-0163 team/default-team",
+      "its browser test ran and passed [['skipped']; ]"
+     ],
+     [
+      "VELDO-0163 team/default-stale-save",
+      "its browser test ran and passed [['skipped']; ]"
+     ],
+     [
+      "VELDO-0163 team/widths",
+      "its browser test ran and passed [['skipped']; ]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0163 unit/forms",
+     "VELDO-0163 role/stale-save",
+     "VELDO-0163 role/widths",
+     "VELDO-0163 team/owner-save",
+     "VELDO-0163 team/authoritative",
+     "VELDO-0163 team/refusals",
+     "VELDO-0163 team/default-team",
+     "VELDO-0163 team/default-stale-save",
+     "VELDO-0163 team/widths"
+    ],
+    "returncode": 0,
+    "rows": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0163 unit/forms",
+     "VELDO-0163 role/revisions",
+     "VELDO-0163 role/stale-save",
+     "VELDO-0163 role/widths",
+     "VELDO-0163 team/owner-save",
+     "VELDO-0163 team/authoritative",
+     "VELDO-0163 team/refusals",
+     "VELDO-0163 team/default-team",
+     "VELDO-0163 team/default-stale-save",
+     "VELDO-0163 team/widths"
+    ],
+    "seconds": 23.442,
+    "targets": {
+     "role/stale-save": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "ae257227c0b5acf922b6b830f39ac23b8ec76f3c24422ee813daf8720b325062",
+   "replacement_count": 1,
+   "rows": [
+    "role/stale-save"
+   ],
+   "source_sha256": "694bc629c7ea939734eb0246a7e1d89410281ab0fe0f2fe2fafc23095f6e8790"
+  },
+  "ui163-default-save-unbound": {
+   "edits": [
+    [
+     "        ? await saveDefaultTeam(team, d.editedFrom)\n",
+     "        ? await saveDefaultTeam(team, await latestDefaultRevision())  // defect: not the revision it was edited from\n"
+    ],
+    [
+     "  DEFAULT_TEAM,\n",
+     "  DEFAULT_TEAM,\n  latestDefaultRevision,\n"
+    ]
+   ],
+   "module": "engine/ui/src/features/team/useTeamForm.ts",
+   "mutant": {
+    "commit": "1af514deccc7c253ab41abd86be7389c94832903",
+    "failed_details": [
+     [
+      "VELDO-0163 unit/forms",
+      "the role and team forms' unit specs pass [23 passed, failed ['useTeamForm saves the default team bound to the revision it was edited from']; JSON report written to /tmp/v163-7nla81l5/vitest.json]"
+     ],
+     [
+      "VELDO-0163 team/default-stale-save",
+      "its browser test ran and passed [['failed']; Error: element(s) not found | Call log: | \u001b[2m  - Expect \"toHaveAttribute\" getByTestId('team-save-bar').getByTestId('refusal') with timeout 10000ms\u001b[22m | \u001b[2m  - waiting for getByTestId('team-save-bar').getByTestId('refusal')\u001b[22m]"
+     ],
+     [
+      "VELDO-0163 team/widths",
+      "its browser test ran and passed [['skipped']; ]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0163 unit/forms",
+     "VELDO-0163 team/default-stale-save",
+     "VELDO-0163 team/widths"
+    ],
+    "returncode": 0,
+    "rows": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0163 unit/forms",
+     "VELDO-0163 role/revisions",
+     "VELDO-0163 role/stale-save",
+     "VELDO-0163 role/widths",
+     "VELDO-0163 team/owner-save",
+     "VELDO-0163 team/authoritative",
+     "VELDO-0163 team/refusals",
+     "VELDO-0163 team/default-team",
+     "VELDO-0163 team/default-stale-save",
+     "VELDO-0163 team/widths"
+    ],
+    "seconds": 39.75,
+    "targets": {
+     "team/default-stale-save": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "8f2484bd5b4970957e3de5f0e51221571d72d41da55ee28003970bda19a36978",
+   "replacement_count": 1,
+   "rows": [
+    "team/default-stale-save"
+   ],
+   "source_sha256": "14b557d05c2ef131c02886a6020d5f4831b3b2a1fa2499d8da7ab7364bc99401"
+  },
+  "ui163-proposal-shown-current": {
+   "edits": [
+    [
+     "  return { revision: record.revision, team: record.team }\n",
+     "  // defect: a pending proposal is shown as current before the owner's answer\n  return record.proposal ? { revision: record.proposal.revision, team: record.proposal.team } : { revision: record.revision, team: record.team }\n"
+    ]
+   ],
+   "module": "engine/ui/src/features/team/team-draft.ts",
+   "mutant": {
+    "commit": "1af514deccc7c253ab41abd86be7389c94832903",
+    "failed_details": [
+     [
+      "VELDO-0163 unit/forms",
+      "the role and team forms' unit specs pass [22 passed, failed ['team draft shows as current only the accepted revision, never a pending proposal', 'useTeamForm saves a project team bound to its team version and shows a proposal as pending, not current']; JSON report written to /tmp/v163-0x6hqy_f/vitest.json]"
+     ],
+     [
+      "VELDO-0163 team/authoritative",
+      "its browser test ran and passed [['failed']; \u001b[2m  - Expect \"toHaveAttribute\" getByTestId('team-current') with timeout 10000ms\u001b[22m | \u001b[2m  - waiting for getByTestId('team-current')\u001b[22m | \u001b[2m    24 ? locator resolved to <p data-revision=\"3\" class=\"configure-fact\" data-testid=\"team-current\">Current: revision 3</p>\u001b[22m | \u001b[2m       - unexpected value \"3\"\u001b[22m]"
+     ],
+     [
+      "VELDO-0163 team/refusals",
+      "its browser test ran and passed [['skipped']; ]"
+     ],
+     [
+      "VELDO-0163 team/default-team",
+      "its browser test ran and passed [['skipped']; ]"
+     ],
+     [
+      "VELDO-0163 team/default-stale-save",
+      "its browser test ran and passed [['skipped']; ]"
+     ],
+     [
+      "VELDO-0163 team/widths",
+      "its browser test ran and passed [['skipped']; ]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0163 unit/forms",
+     "VELDO-0163 team/authoritative",
+     "VELDO-0163 team/refusals",
+     "VELDO-0163 team/default-team",
+     "VELDO-0163 team/default-stale-save",
+     "VELDO-0163 team/widths"
+    ],
+    "returncode": 0,
+    "rows": [
+     "good spec accepted",
+     "spec without criteria rejected",
+     "unknown evidence kind rejected",
+     "bad status rejected",
+     "invented proof criterion rejected",
+     "missing proof criterion rejected",
+     "absent required evidence rejected",
+     "passed-without-evidence rejected",
+     "bad verdict value rejected",
+     "good plan accepted",
+     "plan dependency cycle rejected",
+     "dangling dependency rejected",
+     "unknown outcome ref rejected",
+     "unknown feature ref rejected",
+     "undeclared depends_on rejected",
+     "ready without approval rejected",
+     "decision without blocks rejected",
+     "decision blocking unknown spec rejected",
+     "duplicate work spec rejected",
+     "bad release mode rejected",
+     "mirror mismatch rejected",
+     "correct mirror accepted",
+     "spec binding to wrong plan rejected",
+     "spec claiming missing work item rejected",
+     "spec plan without work rejected",
+     "correct spec binding accepted",
+     "VELDO-0163 unit/forms",
+     "VELDO-0163 role/revisions",
+     "VELDO-0163 role/stale-save",
+     "VELDO-0163 role/widths",
+     "VELDO-0163 team/owner-save",
+     "VELDO-0163 team/authoritative",
+     "VELDO-0163 team/refusals",
+     "VELDO-0163 team/default-team",
+     "VELDO-0163 team/default-stale-save",
+     "VELDO-0163 team/widths"
+    ],
+    "seconds": 27.865,
+    "targets": {
+     "team/authoritative": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "4ad4beb922ff23781aeeb519e076ea332da3ceb89840b79a013bc30df8c6a0f8",
+   "replacement_count": 1,
+   "rows": [
+    "team/authoritative"
+   ],
+   "source_sha256": "9d170af369733c8f4926bf09a8b925e07f2dbc69b0b1b1dbd2e0c98d524a3914"
+  }
+ },
+ "driver": "scripts/check_teeth_mutations.py --worker (unconfined; see OPEN.md)",
+ "driver_sha256": "97dfdb9178f471f03598f55dce27dd24037e416a65f6fb1a63ef4124c0715c4a",
+ "proven": [
+  "ui163-config-save-unbound",
+  "ui163-proposal-shown-current",
+  "ui163-default-save-unbound"
+ ],
+ "registered": [
+  "ui163-config-save-unbound",
+  "ui163-proposal-shown-current",
+  "ui163-default-save-unbound"
+ ],
+ "restored": {
+  "commit": "1af514deccc7c253ab41abd86be7389c94832903",
+  "failed_details": [],
+  "failed_rows": [],
+  "returncode": 0,
+  "rows": [
+   "good spec accepted",
+   "spec without criteria rejected",
+   "unknown evidence kind rejected",
+   "bad status rejected",
+   "invented proof criterion rejected",
+   "missing proof criterion rejected",
+   "absent required evidence rejected",
+   "passed-without-evidence rejected",
+   "bad verdict value rejected",
+   "good plan accepted",
+   "plan dependency cycle rejected",
+   "dangling dependency rejected",
+   "unknown outcome ref rejected",
+   "unknown feature ref rejected",
+   "undeclared depends_on rejected",
+   "ready without approval rejected",
+   "decision without blocks rejected",
+   "decision blocking unknown spec rejected",
+   "duplicate work spec rejected",
+   "bad release mode rejected",
+   "mirror mismatch rejected",
+   "correct mirror accepted",
+   "spec binding to wrong plan rejected",
+   "spec claiming missing work item rejected",
+   "spec plan without work rejected",
+   "correct spec binding accepted",
+   "VELDO-0163 unit/forms",
+   "VELDO-0163 role/revisions",
+   "VELDO-0163 role/stale-save",
+   "VELDO-0163 role/widths",
+   "VELDO-0163 team/owner-save",
+   "VELDO-0163 team/authoritative",
+   "VELDO-0163 team/refusals",
+   "VELDO-0163 team/default-team",
+   "VELDO-0163 team/default-stale-save",
+   "VELDO-0163 team/widths"
+  ],
+  "seconds": 32.673,
+  "targets": {
+   "role/stale-save": [
+    true
+   ],
+   "team/authoritative": [
+    true
+   ],
+   "team/default-stale-save": [
+    true
+   ]
+  }
+ },
+ "schema": "veldo.falsifier_receipt/v1",
+ "spec": "VELDO-0163",
+ "suite": "scripts/suites/119_veldo_0163_role_team_form.py",
+ "suite_sha256": "70abffe3d3bc9464ffde8a5065bfa47050513b6bc0011da3a048ace4c901eac5",
+ "verdict": "red_under_each_mutant_green_restored"
+}

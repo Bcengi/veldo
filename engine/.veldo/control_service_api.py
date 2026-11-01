@@ -21,6 +21,12 @@ the API and the API's request signature stands in for no command. `call` then ru
 `apply` (one edge-signed assertion packet, rechecked there), `inspect`, `read`, `workflow`, `events`,
 `feed` and `record` (one run's execution record after a cursor, VELDO-0141), and `subscribe`.
 
+THE OWNER'S WORK COMMANDS (VELDO-0131). The judge is handed, on the same connection, control_backlog's Backlog
+(its reprioritize accepts the api edge's signature over a verified assertion), control_dispatch's Dispatches
+written as the service's journal principal (an owner's stop request is recorded there; the runner that holds the
+receivers asks them to stop on its next sweep, control_launch.Runner.honor_stops, since this process holds none)
+and control_accounts' Accounts (an account's versioned cap).
+
 HOST COMMITS REACH THE API. A steward's enroll_api_credential or revoke_api_credential, signed at the host
 and sent to the service (`credential`), is admitted by control_api_credentials.Credentials on the same
 connection. After every packet or channel pass that advanced the journal, whoever sent it, the service
@@ -190,13 +196,27 @@ class ServiceApi:
             assignment=ingress.settlement.I, requester=requester, request_sign=request_sign,
             authority_generation=generation, clock=clock)
         team_routes = routes.TeamRoutes(teams, ingress.settlement, ingress.presenter)
+        # VELDO-0131: the writers of the owner's backlog priority, worker stop and account cap.
+        backlog = AUTH.BL.Backlog(self.S, CM, self.conn, ids, principal, sign, authority_generation=generation,
+                                  clock=clock)
+        dispatches = AUTH.DP.Dispatches(self.S, self.conn, domain=ids['domain_uuid'], repository=ids['repository_uuid'],
+                                        principal=principal, signer=principal, sign=sign, generation=generation,
+                                        observe=self.observe_mcp)
+        try:
+            accounts = AUTH.AA.Accounts(self.S, self.conn, principal=principal, signer=principal, sign=sign,
+                                        generation=generation)
+        except self.S.StoreRefused:
+            # An account record's ownership bound to other code (an installation not yet upgraded): the cap route
+            # answers unavailable_service:accounts by name, and every other route serves as before.
+            accounts = None
         self.edge = self.config['api_edge']
         self.authority = AUTH.ApiAuthority(self.S, CM, self.conn, ids=ids, domain=self.config['domain'], edge=self.edge,
                                            intake=intake, settlement=ingress.settlement, credentials=self.credentials,
                                            workflows=workflows, publication=publication, clock=clock,
                                            authority_lock=lock, catalog=catalog, mcp_credentials=mcp_credentials,
                                            records=self.config.get('records'), configurations=configurations,
-                                           team_routes=team_routes)
+                                           team_routes=team_routes, backlog=backlog, dispatches=dispatches,
+                                           accounts=accounts)
         self.instance = '%d-%s' % (os.getpid(), os.urandom(6).hex())
         # The subscribed APIs' hint sockets, remembered across a restart in this 0600 file of the service's
         # state directory, and each one's hint number from this instance.

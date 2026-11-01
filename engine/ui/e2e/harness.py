@@ -479,7 +479,12 @@ class Factory:
                     process={'platform': 'linux', 'host': host, 'boot_id': 'boot-e2e', 'pid': 4000 + len(self.recorders),
                              'start': 17},
                     contract={'unit': unit, 'station': station, 'attempt': 1,
-                              'reservation': {'project': project, 'account': 'owner-plan'}})
+                              'reservation': {'project': project, 'account': 'owner-plan'},
+                              # VELDO-0131: control_launch's capability (the adapter and the configuration it runs).
+                              'capability': {'adapter': 'claude_code',
+                                             'configuration': {'role': 'general', 'revision': 2,
+                                                               'native_tools': [{'name': 'Read', 'load': 'always'}],
+                                                               'mcp': [{'server': 'atlassian', 'revision': 1}]}}})
         self.fixture('dispatch:' + dispatch_id, 'dispatch', data)
         self.fixture(unit, 'execution_unit', dict(state=unit_state, repository_uuid=self.ids['repository_uuid'],
                                                   revision=1, project=project))

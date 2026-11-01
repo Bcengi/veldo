@@ -2035,6 +2035,9 @@ class Line:
         """This line's part of one loop pass: settle each run whose end the launch pipe showed, free the account
         slot of each whose receiver died, then offer each assigned unit its next station."""
         self.activate()
+        # VELDO-0131: an owner's stop command advances the journal and wakes this pass, so the runner asks for each
+        # committed stop now, even on a line with no run starting or ending.
+        self.runner.honor_stops()
         lost = []
         for launch in ended:
             record = self.runner.wait(launch, timeout=0) or {}

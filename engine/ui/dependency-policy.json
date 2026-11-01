@@ -1,6 +1,6 @@
 {
   "schema": "veldo.ui_dependency_policy/v1",
-  "about": "Every package the UI may install (VELDO-0145, applying VELDO-0131 AC4). Direct packages are listed with their exact registry version (taken on 2026-10-28 with npm view), license, origin and tier; every package of package-lock.json must carry an allowed license and match no denied name. The VELDO-0145 suite applies this file with control_api_ui.dependency_problems.",
+  "about": "Every package the UI may install (VELDO-0145 and VELDO-0131, applying VELDO-0131 AC4). Direct packages are listed with their exact registry version (taken on 2026-10-28 with npm view), license, origin and tier; every package of package-lock.json must carry an allowed license and match no denied name. The VELDO-0145 suite applies this file with control_api_ui.dependency_problems.",
   "licenses": {
     "allowed": [
       "(MPL-2.0 OR Apache-2.0)",
@@ -121,6 +121,26 @@
     {
       "name": "@nutui/*",
       "reason": "Chinese-origin UI library"
+    },
+    {
+      "name": "recharts",
+      "reason": "prohibited by the owner (VELDO-0131 AC4: shadcn charts and Recharts are explicitly rejected)"
+    },
+    {
+      "name": "shadcn",
+      "reason": "not in the owner's Vue stack (VELDO-0131 AC4, amendment 2026-11-01)"
+    },
+    {
+      "name": "shadcn-vue",
+      "reason": "not in the owner's Vue stack (VELDO-0131 AC4, amendment 2026-11-01)"
+    },
+    {
+      "name": "@vue-flow/*",
+      "reason": "not admitted (VELDO-0131, 2026-11-01): it requires @vueuse/core, whose creator and leading maintainers are of Chinese origin"
+    },
+    {
+      "name": "@vueuse/*",
+      "reason": "Chinese-origin library (creator and leading maintainers; checked 2026-11-01 for VELDO-0131)"
     }
   ],
   "owner_decisions": [],
@@ -172,6 +192,14 @@
       "why": "Tailwind in Vite",
       "kind": "build and test"
     },
+    "@tanstack/vue-table": {
+      "version": "9.3.1",
+      "license": "MIT",
+      "origin": "TanStack (Tanner Linsley, Utah, United States); github.com/TanStack/table",
+      "tier": "free, no paid tier (TanStack's tenets page: paid tiers none; it sells consulting and support, not a tier of the library)",
+      "why": "The backlog hierarchy table: expandable item and unit rows (VELDO-0131)",
+      "kind": "runtime"
+    },
     "@types/node": {
       "version": "26.6.5",
       "license": "MIT",
@@ -195,6 +223,14 @@
       "tier": "free, no paid tier",
       "why": "Component tests",
       "kind": "build and test"
+    },
+    "chart.js": {
+      "version": "4.6.1",
+      "license": "MIT",
+      "origin": "Chart.js organization (community maintained; github.com/chartjs/Chart.js); its one dependency @kurkle/color by Jukka Kurkela, Finland",
+      "tier": "free, no paid tier",
+      "why": "The usage over time chart, used directly without a wrapper (VELDO-0131)",
+      "kind": "runtime"
     },
     "jsdom": {
       "version": "30.1.3",

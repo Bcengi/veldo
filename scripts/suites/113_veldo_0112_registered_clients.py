@@ -161,6 +161,13 @@ class AuthorityFixture:
             process = dict(platform='linux', host='fixture', boot_id='fixture-boot', pid=1, start='1')
             if action == 'accept':
                 return (self.dispatches, dispatch, digest, dict(process, principal='service')), dict(now=time.time())
+            if action == 'request_stop':
+                return (self.dispatches, dispatch, self.dispatches.version(dispatch), 'owner'), dict(
+                    now=time.time(), request='fixture-stop-' + str(self.serial))
+            if action == 'stop_result':
+                self.dispatches.request_stop(dispatch, self.dispatches.version(dispatch), 'owner', now=time.time(),
+                                             request='fixture-stop-' + str(self.serial))
+                return (self.dispatches, dispatch, True), dict(now=time.time())
             if action in ('run', 'exit', 'unknown'):
                 self.dispatches.accept(dispatch, digest, dict(process, principal='service'), now=time.time())
             if action == 'run':

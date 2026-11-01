@@ -13,7 +13,8 @@ session, its exact body fields and the authority operation it asks for. The hand
 route name, and `route_problems` compares the two, so a route without a handler or a handler without a
 route is a defect the suite names. The families are auth, messages, decisions, reads (the published
 contract and every read model of control_api_models.READ_MODELS), configuration (a workflow revision's
-read and its save) and events (the event read and the live stream). A GET's query parameters are its
+read and its save), work (VELDO-0131: the owner's backlog priority, worker stop and account cap) and events
+(the event read and the live stream). A GET's query parameters are its
 exact fields, judged like a write's body.
 
 SIGN-IN. The owner signs in with a passkey (WebAuthn Level 2, discoverable, user verification required,
@@ -189,6 +190,18 @@ ROUTES = (
           ('id', 'base'), (), 'delete_mcp_credential'),
     Route('mcp.credential_read', 'GET', '/api/v1/domains/{domain}/mcp/credentials', 'configuration', True,
           ('id',), (), None),
+    # VELDO-0131: the metadata-only reads of control_api_models.METADATA_READS: the whole MCP catalog with the
+    # credential records' metadata (never a value), and the repositories with their Git identities.
+    Route('mcp.list', 'GET', '/api/v1/domains/{domain}/mcp/servers', 'configuration', True, (), (), None),
+    Route('repositories.read', 'GET', '/api/v1/domains/{domain}/repositories', 'configuration', True, (), (), None),
+    # VELDO-0131 (owner, Telegram 38184): the owner's commands over the factory's work, each the existing writer's
+    # command for the session's member at the version the screen showed (control_api_authority._work).
+    Route('backlog.reprioritize', 'POST', '/api/v1/domains/{domain}/backlog/reprioritize', 'work', True,
+          ('item', 'item_version', 'rank'), (), 'reprioritize_backlog'),
+    Route('workers.stop', 'POST', '/api/v1/domains/{domain}/workers/stop', 'work', True,
+          ('dispatch', 'dispatch_version'), (), 'stop_worker'),
+    Route('workers.cap', 'POST', '/api/v1/domains/{domain}/workers/cap', 'work', True,
+          ('account', 'account_version', 'concurrency'), (), 'set_account_cap'),
     Route('events.read', 'GET', '/api/v1/domains/{domain}/events', 'events', True, (), ('after',), None),
     Route('events.stream', 'GET', '/api/v1/domains/{domain}/events/stream', 'events', True, (), ('after',), None),
     # VELDO-0141: one run's execution record, read from a cursor and followed live.
@@ -454,7 +467,9 @@ class ControlApi:
         self.handlers.update({'mcp.save': self._write, 'mcp.read': self._mcp_read,
                               'mcp.credential_set': self._write, 'mcp.credential_delete': self._write,
                               'mcp.credential_read': self._credential_read_refused})
+        self.handlers.update({'backlog.reprioritize': self._write, 'workers.stop': self._write, 'workers.cap': self._write})
         self.handlers.update({m.route: self._read for m in MO.READ_MODELS})
+        self.handlers.update({m.route: self._metadata_read for m in MO.METADATA_READS})
 
     def route_problems(self):
         """Every route without a handler and every handler without a route, by name; [] when they agree."""
@@ -750,11 +765,19 @@ class ControlApi:
             expected = {'team:' + str(parameters['project']): parameters['team_version']}
         elif route.operation in ('save_capability_configuration', 'save_default_team'):
             expected = {'base': parameters['base']}
+        elif route.operation == 'reprioritize_backlog':
+            expected = {str(parameters['item']): parameters['item_version']}
+        elif route.operation == 'stop_worker':
+            expected = {'dispatch:' + str(parameters['dispatch']): parameters['dispatch_version']}
+        elif route.operation == 'set_account_cap':
+            expected = {'account:' + str(parameters['account']): parameters['account_version']}
         target = {'save_capability_configuration': 'agent_configuration', 'propose_team': str(parameters.get('project')),
                   'save_default_team': 'default_team', 'send_message': self.domain, 'answer_decision': str(parameters.get('request_id')),
                   'revoke_credential': 'api_credential', 'save_workflow': str(parameters.get('workflow')),
                   'save_mcp_server': 'mcp_catalog', 'set_mcp_credential': 'mcp_credential',
-                  'delete_mcp_credential': 'mcp_credential'}[route.operation]
+                  'delete_mcp_credential': 'mcp_credential', 'reprioritize_backlog': str(parameters.get('item')),
+                  'stop_worker': 'dispatch:' + str(parameters.get('dispatch')),
+                  'set_account_cap': 'account:' + str(parameters.get('account'))}[route.operation]
         assertion = dict(self.ids, schema=AS.SCHEMA, domain=self.domain, channel=AS.CHANNEL, edge=self.edge,
                          edge_key_id=AC.edge_channel(AS.CHANNEL)['edge_key_id'], request_id=request_id,
                          principal=session['principal'], credential_id=session['credential_id'],
@@ -788,7 +811,7 @@ class ControlApi:
         keep = ('outcome', 'proposal_id', 'question_id', 'question', 'project', 'repeated', 'request_id', 'answer',
                 'settlement', 'ruling', 'workflow', 'version', 'revision', 'entity_digest', 'definition_digest',
                 'layout_digest', 'server', 'id', 'reference', 'seq', 'role', 'digest', 'team_id', 'owner_request',
-                'team_application', 'set_at', 'set_by')
+                'team_application', 'set_at', 'set_by', 'rank', 'dispatch', 'state', 'stop', 'account', 'concurrency')
         return 200, dict({k: result[k] for k in keep if k in result}, api_request_id=request_id)
 
     @staticmethod
@@ -819,6 +842,10 @@ class ControlApi:
 
     def _read(self, route, body, session, extra, headers):
         return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])
+
+    def _metadata_read(self, route, body, session, extra, headers):
+        model = next(m.name for m in MO.METADATA_READS if m.route == route.name)
+        return 200, self._ask(self.authority.read, model, session['principal'])
 
     def _configuration_read(self, route, body, session, extra, headers):
         configuration = organ('control_agent_config')

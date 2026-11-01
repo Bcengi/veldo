@@ -46,3 +46,8 @@ and fails when:
 - **One internal module replaced at build time** (`vite.config.ts`): Monaco's `domStylesheets`, by
   Veldo's own module with the same call shapes that writes CSS through the CSS object model. It is
   Veldo's code, not a copy of the original.
+- **@tanstack/vue-table 9.3.1 and chart.js 4.6.1** (VELDO-0131, registry and origin checked 2026-11-01; evidence
+  in proof/VELDO-0131/dependencies.md). Chart.js is used directly, without a wrapper.
+- **Vue Flow is not admitted** (VELDO-0131): it cannot be installed without `@vueuse/core`, whose creator and
+  leading maintainers are of Chinese origin; the deny list refuses `@vue-flow/*` and `@vueuse/*`, and the
+  workflow canvas is Veldo's own SVG control. `shadcn`, `shadcn-vue` and `recharts` are denied by name.
