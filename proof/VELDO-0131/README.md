@@ -25,6 +25,17 @@ signing, refusal classes, journal record (the session's member is the journal ac
 | Stop (workers) | `workers.stop` {dispatch, dispatch_version} | control_dispatch's `request_stop`, then the runner's `honor_stops` asks the receiver (Launch.stop) and records `stop_result` | request on the dispatch, state unchanged; the card shows it from the record | `stale_version`, beside the card | `unauthorized:not_authorized:role` or `:scope`, beside the card |
 | Save cap (workers, Run caps by account) | `workers.cap` {account, account_version, concurrency} | control_accounts' `cap` | concurrency at the record's next version, change kept in `concurrency_history` | `stale_version`, beside the control | `unauthorized:missing_authority:scope` or `missing_authority` |
 
+Falsifiers: 19 of 19 proven ([falsifiers.json](falsifiers.json), [round3-falsifiers-red.log](round3-falsifiers-red.log)):
+baselines and restored runs of suites 120, 73, 62, 71 and 75 green, each of the 19 mutants red on its target row.
+The driver now runs a baseline and a restored run per suite (falsifiers.py). The runs span commits f42dafee to
+981db41f, which differ only in proof files. Round 2's receipt is kept as round2-falsifiers.json.
+
+Neighbors run this round (logs `round3-suite-<name>.log`), green: 113 (7), 118 (7), 119 (10), 104, 82_0144, 94, 93,
+85_0158, 82_0141, 85_0171, 117, 76, 113_0112 (its client inventory now drives the two new dispatch entrypoints),
+67_0041, 78_0160, 83_0154, 65, 82_0129, 83_0166, 92_0088, 105. Red: 86_0127 on its two live-capture rows only,
+because they bind control_launch.py's digest (OPEN.md, REMAINING 3). VELDO-0145's layout spec: 10 of 10
+([round3-layout145-e2e.log](round3-layout145-e2e.log)).
+
 Rows (all green on this tree, logs `round3-*`):
 
 | Suite | New rows | Result |
@@ -69,8 +80,14 @@ You screen for phone.
 | AC1 (round 2) | ac1/whole-catalog | `ui131-credential-metadata-dropped`: credential records are not listed | ac1/whole-catalog (and unit/factory, ac2/metadata-only) |
 | AC1 (round 2) | ac1/usage-provider | `ui131-provider-unread`: the account records are not read | ac1/usage-provider (and unit/factory) |
 | AC1 (round 2) | ac1/worker-capability | `ui131-capability-dropped`: a worker's capability is not shown | ac1/worker-capability |
-| AC2 (round 2) | ac2/pending-actions | `ui131-stop-shown-unsent`: Stop reports a stop it never sent | ac2/pending-actions (and unit/factory) |
-| AC2 (round 2) | ac2/pending-actions | `ui131-priority-shown-unsent`: Save reports ranks it never sent | ac2/pending-actions (and unit/factory) |
+| AC2 (round 2, retargeted in round 3) | ac2/worker-stop | `ui131-stop-shown-unsent`: Stop reports a stop it never sent | ac2/worker-stop (and unit/factory) |
+| AC2 (round 2, retargeted in round 3) | ac2/priority-save | `ui131-priority-shown-unsent`: Save reports ranks it never sent | ac2/priority-save (and unit/factory) |
+| AC1/AC2 (round 3) | ac2/worker-cap | `ui131-cap-shown-unsent`: Save cap reports a cap it never sent | ac2/worker-cap (and unit/factory) |
+| AC2 (round 3) | 73 priority/owner-reprioritize | `backlog131-edge-command-underived` (control_backlog.py): the edge's signature stands for a command the assertion does not derive | priority/owner-reprioritize |
+| AC2 (round 3) | 62 dispatch/owner-stop | `dispatch131-stop-any-scope` (control_dispatch.py): a stop from an owner outside the run's project | dispatch/owner-stop |
+| AC2 (round 3) | 62 dispatch/owner-stop | `launch131-stop-recorded-unasked` (control_launch.py): the ask recorded, the receiver never asked | dispatch/owner-stop (and service-principals-only) |
+| AC2 (round 3) | 71 work/worker-stop | `api131-stop-asked-before-record` (control_api_authority.py): the receiver asked before the request is recorded | work/worker-stop |
+| AC2 (round 3) | 75 accounts/owner-cap | `accounts131-cap-any-scope` (control_accounts.py): a one-repository owner caps a factory account | accounts/owner-cap |
 | AC2 (round 2) | ac2/metadata-only | `api131-identity-credentials-served` (control_api_models.py): an identity's credential references served | ac2/metadata-only |
 
 Round 2: suite 120 has 24 rows, all green ([round2-suite120-green.log](round2-suite120-green.log)). The whole UI

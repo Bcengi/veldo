@@ -1,8 +1,11 @@
 # VELDO-0131: open items
 
-Status after fix round 2: REMAINING. Three controls of two screen rows wait on engine commands that do not exist
-and that this round may not invent (items 1 to 3). Everything else the review (review-2026-11-01.md) asked of the
-fix round is built and proven; see README.md.
+Status after fix round 3: REMAINING. The three controls round 2 left waiting (backlog priority save, worker stop,
+worker cap) are built as authority commands through the authenticated API under the owner's approval (Telegram
+38184) and proven (suite rows and 19 of 19 falsifiers; README.md). What remains is in "REMAINING after fix round 3"
+below: a machine's own cap (VELDO-0125), the prompt ask of a running factory's runner (control_service.py, not
+named by the approval), and the VELDO-0127 live captures this round's control_launch.py change made stale (a lead
+action).
 
 ## Footprint additions confirmed by the review
 
@@ -63,6 +66,11 @@ by cmp; no protected path):
 | control_api_models.py | ACTIONS `owner_priority` and `worker_stop` now carry routes, and `worker_cap` is added; their AC4 gaps are gone |
 | control_service_api.py | constructs the Backlog, Dispatches and Accounts on the ingress connection and hands them to ApiAuthority (an account ownership bound to other code leaves the cap route unavailable_service by name, never the service) |
 
+Two test files outside the 0131-only paths also changed, because the dispatch module's two new public writers are
+registered client entrypoints (`dispatch-admission`, in process), which VELDO-0112's inventory requires of every
+public method of Dispatches that writes: scripts/fixtures/registered_clients.py (two adapters) and
+scripts/suites/113_veldo_0112_registered_clients.py (their call arguments). Suite 113_0112 is green.
+
 The suites of those modules gain a row each (accepted, stale refused, unauthorized refused): 71 work/backlog-reprioritize,
 work/worker-stop and work/worker-cap (and its route-family and AC4 contract checks name the new routes), 73
 priority/owner-reprioritize, 62 dispatch/owner-stop (a real receiver and worker: the runner's sweep stops it), 75
@@ -83,6 +91,14 @@ so a fixture may no longer write one).
    `self.runner.honor_stops()` at the start of each loop pass (control_service.Line.run), or passing
    `control_launch.stop_requester(line.runner)` to the API's judge as its `stop`; both are in control_service.py,
    which the approval (Telegram 38184) does not name, so neither was made. Needs the owner's word on that file.
+
+3. **VELDO-0127's live captures are stale (lead action).** proof/VELDO-0127/evidence.py binds each live capture to the
+   digest of control_launch.py, which this round changed (`Runner.honor_stops`, `stop_requester`). Suite
+   86_veldo_0127_agent_configuration is therefore red on exactly its two live rows (live/claude, live/codex:
+   "missing or stale live capture"; its other 25 rows green, [log](round3-suite-86_veldo_0127_agent_configuration.log)),
+   and the gate is red until they are retaken. proof/VELDO-0127/live.py is the lead-only subscription capture ("never
+   run by the implementer or suite"), retaken after each control_launch.py change before (dd059e62 after VELDO-0213,
+   owner approval Telegram 33126), so it was not run here.
 
 ## A. For the owner: suite 120 on the unconfined list (protected path)
 
