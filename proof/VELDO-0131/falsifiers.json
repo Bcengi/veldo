@@ -1237,11 +1237,11 @@
    ],
    "module": "engine/ui/src/features/backlog/completion.ts",
    "mutant": {
-    "commit": "9281411c73be3d9da96c129f8d6a482955ef679a",
+    "commit": "157416c03abda5b77e614ed3ab565e5d71a277f5",
     "failed_details": [
      [
       "VELDO-0131 unit/factory",
-      "the factory screens' unit specs pass [38 passed, failed ['completion is landed only with the landing receipt', 'backlog names open blockers and nests units with their completion']; JSON report written to /tmp/v131-8tb46_1_/vitest.json]"
+      "the factory screens' unit specs pass [42 passed, failed ['completion is landed only with the landing receipt', 'backlog names open blockers and nests units with their completion']; JSON report written to /tmp/v131-d45nl0kk/vitest.json]"
      ],
      [
       "VELDO-0131 ac2/live",
@@ -1308,9 +1308,11 @@
      "VELDO-0131 ac1/usage-provider",
      "VELDO-0131 ac1/worker-capability",
      "VELDO-0131 ac2/metadata-only",
-     "VELDO-0131 ac2/pending-actions"
+     "VELDO-0131 ac2/priority-save",
+     "VELDO-0131 ac2/worker-stop",
+     "VELDO-0131 ac2/worker-cap"
     ],
-    "seconds": 119.529,
+    "seconds": 132.916,
     "targets": {
      "ac2/completion-receipt": [
       false
@@ -1724,7 +1726,7 @@
    ],
    "module": "engine/ui/src/features/workflow/FlowProperties.vue",
    "mutant": {
-    "commit": "9281411c73be3d9da96c129f8d6a482955ef679a",
+    "commit": "157416c03abda5b77e614ed3ab565e5d71a277f5",
     "failed_details": [
      [
       "VELDO-0131 ac1/screens-360",
@@ -1810,9 +1812,11 @@
      "VELDO-0131 ac1/usage-provider",
      "VELDO-0131 ac1/worker-capability",
      "VELDO-0131 ac2/metadata-only",
-     "VELDO-0131 ac2/pending-actions"
+     "VELDO-0131 ac2/priority-save",
+     "VELDO-0131 ac2/worker-stop",
+     "VELDO-0131 ac2/worker-cap"
     ],
-    "seconds": 174.144,
+    "seconds": 186.651,
     "targets": {
      "ac3/keyboard-desktop": [
       false
@@ -2116,7 +2120,7 @@
    ],
    "module": "engine/ui/package-lock.json",
    "mutant": {
-    "commit": "9281411c73be3d9da96c129f8d6a482955ef679a",
+    "commit": "157416c03abda5b77e614ed3ab565e5d71a277f5",
     "failed_details": [
      [
       "VELDO-0131 ac4/dependency-policy",
@@ -2177,9 +2181,11 @@
      "VELDO-0131 ac1/usage-provider",
      "VELDO-0131 ac1/worker-capability",
      "VELDO-0131 ac2/metadata-only",
-     "VELDO-0131 ac2/pending-actions"
+     "VELDO-0131 ac2/priority-save",
+     "VELDO-0131 ac2/worker-stop",
+     "VELDO-0131 ac2/worker-cap"
     ],
-    "seconds": 93.438,
+    "seconds": 103.999,
     "targets": {
      "ac4/dependency-policy": [
       false
