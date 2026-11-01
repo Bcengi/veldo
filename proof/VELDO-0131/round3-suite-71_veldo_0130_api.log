@@ -1,4 +1,4 @@
-Running as unit: veldo-0131r3-1793528895.service; invocation ID: f5095e99437e4b189d116318e77b5ace
+Running as unit: veldo-0131r3-1793542189.service; invocation ID: 425ddd814b994077ab5b9fb83cbff861
 ==============================================================================
 PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
 ==============================================================================
@@ -13,28 +13,28 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-  /tmp/tmpx8xzsv0k: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpx8xzsv0k/nocrit.md: no acceptance criteria
-  /tmp/tmpx8xzsv0k/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/tmpx8xzsv0k/status.md: bad status: donezo
-  /tmp/tmpx8xzsv0k/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/tmpx8xzsv0k/proof2.json: spec criterion AC1 missing from proof
-  /tmp/tmpx8xzsv0k/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/tmpx8xzsv0k/proof4.json: criterion AC1 passed without evidence
-  /tmp/tmpx8xzsv0k/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/tmpx8xzsv0k/verdict.json: bad verdict: looks_fine
-  /tmp/tmphj2wkj3d/cycle.md: dependency cycle through WARP-9101
-  /tmp/tmphj2wkj3d/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/tmphj2wkj3d/oref.md: feature F1: unknown outcome ref O7
-  /tmp/tmphj2wkj3d/fref.md: work W1: unknown feature ref F9
-  /tmp/tmphj2wkj3d/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/tmphj2wkj3d/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/tmphj2wkj3d/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/tmphj2wkj3d/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/tmphj2wkj3d/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/tmphj2wkj3d/dupspec.md: duplicate spec ids across work items
-  /tmp/tmphj2wkj3d/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/tmphj2wkj3d/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  /tmp/tmpg16f67_h: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpg16f67_h/nocrit.md: no acceptance criteria
+  /tmp/tmpg16f67_h/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmpg16f67_h/status.md: bad status: donezo
+  /tmp/tmpg16f67_h/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmpg16f67_h/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmpg16f67_h/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmpg16f67_h/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmpg16f67_h/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmpg16f67_h/verdict.json: bad verdict: looks_fine
+  /tmp/tmpmamycyws/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmpmamycyws/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmpmamycyws/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmpmamycyws/fref.md: work W1: unknown feature ref F9
+  /tmp/tmpmamycyws/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmpmamycyws/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmpmamycyws/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmpmamycyws/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmpmamycyws/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmpmamycyws/dupspec.md: duplicate spec ids across work items
+  /tmp/tmpmamycyws/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmpmamycyws/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
@@ -83,13 +83,13 @@ VELDO-0130 row: service/in-process-refused passed
 VELDO-0130 row: service/restart-reconciles passed
 VELDO-0130 row: service/down-at-registration passed
 VELDO-0130 row: service/connect-sets-cursor passed
-VELDO-0130 suite seconds: 21.675
-  71_veldo_0130_api                               45 passed   21.72s
-selftest (PARTIAL, 1 of 182 suites): 71 passed, 0 failed in 21.72s
+VELDO-0130 suite seconds: 20.528
+  71_veldo_0130_api                               45 passed   20.57s
+selftest (PARTIAL, 1 of 182 suites): 71 passed, 0 failed in 20.57s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
 Finished with result: exit-code
 Main processes terminated with: code=exited/status=2
-Service runtime: 21.800s
-CPU time consumed: 18.681s
-Memory peak: 256.0K
+Service runtime: 20.658s
+CPU time consumed: 18.390s
+Memory peak: 288.0K
 Memory swap peak: 0B
