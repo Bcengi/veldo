@@ -59,14 +59,22 @@ acceptance_criteria:
       switch showing different preferences.
   - id: AC2
     text: >
-      The visual direction of Telegram 38234 and 38235 (sections 2 and 3): a calm, spacious infrastructure and
-      AI control center on the owner's palette (light page #F6F8FC, panel #FFFFFF, text #1B263C, secondary
-      #59667B, borders #E0E6EF, primary #3956DF; dark page #10141C, panel #181E29, text #E7EDF7, secondary
-      #A1ACC0, borders #2A3342, primary #4862E8), blue for actions and selection, green running, amber waiting,
-      red failures, every status color with its text, IBM Plex Sans for the interface and IBM Plex Mono for
-      logs, code and ids, and about a 240px sidebar, 32px gutters, 24px between panels, 14px panel and 8px
-      control corners on desktop. The sidebar is restrained with navigation, factory identity, host activity
-      and an account footer. Overview: the four real signals (running, blocked, failed, waiting on me) in one
+      The look of Telegram 38255, which supersedes the look of 38234 and 38235 (the owner's chosen dashboard
+      template, its gallery as visual reference only, no code, text or assets copied): neutral surfaces, white
+      page and panels in light and a near-black page with panels barely lighter in dark, no colored
+      backgrounds, shadows or gradients; thin 1px neutral borders and about 8px corners on every panel, 20 to
+      24px inner padding and 16 to 20px between panels; a narrow icon rail sidebar (about 50px, icons only,
+      grouped by subtle separators, the account avatar at the bottom) that a panel toggle in the top bar
+      expands to a labeled sidebar of about 240px keeping the factory identity, host activity and account
+      footer of 38234; a slim top bar per screen (about 50px: the panel toggle, the page title, actions at the
+      right, a bottom border); segmented tabs in a bordered strip with the selected one a solid inverted pill;
+      neutral buttons and selection (solid inverted for the main action, bordered neutral for the rest) in
+      place of 38234's blue primary; compact KPI panels with a secondary label and a large semibold value;
+      tables with a plain secondary header row, thin row dividers, monospace identifiers and small tinted
+      status badges. Status keeps the meanings of 38234: green running, amber waiting, red failures or urgent
+      attention, every status color with its text. IBM Plex Sans for the interface and IBM Plex Mono for logs,
+      code and ids (38234). Behavior and content follow 38234 and 38235 (sections 2 and 3): the sidebar has
+      navigation, factory identity, host activity and an account footer. Overview: the four real signals (running, blocked, failed, waiting on me) in one
       joined summary panel with large counts; beneath it the oldest waiting decision (question, waiting and
       deadline, a prominent answer action) and the host roster; then the ranked inbox and the current runs.
       Runs: active runs separated from stopped runs, unit, project, host, pipeline position and status easy
@@ -81,7 +89,9 @@ acceptance_criteria:
       A unit test of the runs summary whose run, project or host count differs from the rows shown; the
       VELDO-0145 layout spec (decisions panes scrolling independently, the record's share of the height, the
       phone single-pane flow) or suites 113 and 120 failing; a section 7 screenshot that does not show the
-      described layout or palette.
+      described layout or the neutral template look of Telegram 38255 (a colored primary action, a colored
+      page or panel background, panel corners well above 8px, or a sidebar that cannot collapse to an icon
+      rail).
   - id: AC3
     text: >
       Security and behavior are preserved (Telegram 38234 and 38235, section 5): every read and action still
@@ -155,12 +165,12 @@ support; production deployment (Telegram 38235).
 
 ## What the reviewer judges
 
-- Normal use: every screen looks like Veldo (IBM Plex, the blue palette, dark and light) and behaves
-  exactly as before on phone and desktop.
+- Normal use: every screen has the neutral template look of Telegram 38255 (IBM Plex, dark and light) and
+  behaves exactly as before on phone and desktop.
 - Threat model: a control library that loads icons or fonts from the network, writes inline styles the
   content security policy refuses, or changes what a screen sends to the API.
-- Out of review scope (filed, not blocking): the visual taste of individual screens beyond keeping
-  Veldo's identity.
+- Out of review scope (filed, not blocking): the visual taste of individual screens beyond the look of
+  Telegram 38255.
 
 ## Notes
 
@@ -168,6 +178,15 @@ Nuxt UI is MIT, from NuxtLabs. Its icons are rendered from a local Iconify JSON 
 start, so no request reaches the Iconify API; the IBM Plex faces stay on the Fontsource packages.
 
 ## History
+
+2026-11-01: AC2's visual criterion restated to the owner's newer style direction (Telegram 38255, 23:24Z): the
+look of the nuxt-dashboard template's gallery (neutral surfaces, an icon rail sidebar that expands, a slim top
+bar, segmented tabs, neutral buttons, 8px panels) replaces 38234's blue primary, palette and 14px corners. 38255
+wins on look only; behavior, security, content, wrappers, the one theme preference, verification and the
+screenshots stay as 38234 and 38235 ask. Nuxt UI's dashboard layout components were weighed for the shell and
+not used: UDashboardGroup fixes the frame (fixed, overflow hidden) and UDashboardSidebar hides below 1024px and
+replaces the phone's bottom bar with a slide-over, which would change the scrolling and the phone flow this
+specification keeps; the rail is Veldo's shell restyled, its toggle a Nuxt UI button.
 
 2026-11-01: footprint extended by the dependency check (engine/.veldo/control_api_ui.py, its synced copy and
 suite 113's row): two Nuxt UI dependencies needed it. tslib is 0BSD (added to the allowed licenses), and
