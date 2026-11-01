@@ -305,6 +305,7 @@ test('team/refusals: no configuration, an incomplete roster and a stale team ver
     const stored = (await factory.team('project-a'))!
     expect([stored.revision, stored.team, stored.proposal ?? null]).toEqual([before.revision, before.team, null])
     await page.getByTestId('team-reload').tap()
+    await expect(bar.getByTestId('refusal')).toHaveCount(0)
   }
   await page.getByTestId('config-role-builder_jira').fill('')
   await page.getByTestId('config-revision-builder_jira').fill('')

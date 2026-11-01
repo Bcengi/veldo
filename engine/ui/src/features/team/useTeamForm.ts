@@ -51,12 +51,15 @@ export function useTeamForm() {
     }
   }
 
-  /** Read the team again (after an answer in the decisions screen, for example), keeping the last outcome. */
+  /** Read the team again (after an answer in the decisions screen, for example): the draft starts over from
+   * what the team route reads, and the last save's outcome is cleared with it. */
   async function reload() {
     if (!project.value) return
     try {
       reset(await readTeam(project.value))
       refusal.value = null
+      saveRefusal.value = null
+      answer.value = null
     } catch (error) {
       refusal.value = named(error)
     }

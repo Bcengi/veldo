@@ -89,10 +89,19 @@
     position: sticky;
     bottom: 0;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
     gap: var(--space-2);
     padding: var(--space-3) 0;
     background: var(--paper);
     z-index: 1;
+  }
+  /* A refusal's own name can be one long token; it wraps rather than widening the bar past the screen. */
+  .configure-save > * {
+    min-width: 0;
+  }
+  .configure-save .refusal {
+    overflow-wrap: anywhere;
   }
   .configure-outcome {
     margin: 0;
