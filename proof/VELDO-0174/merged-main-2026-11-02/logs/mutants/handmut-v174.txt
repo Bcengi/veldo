@@ -1,0 +1,8 @@
+v174-attach-outside-current-scope 123_veldo_0174_conversations rows ['AC1/project-scope'] RED 2
+v174-attach-another-owners-project 123_veldo_0174_conversations rows ['AC1/project-owner'] RED 1
+v174-record-memory-only 123_veldo_0174_conversations rows ['AC1/restart-open'] RED 37
+v174-offer-every-waiting-turn 123_veldo_0174_conversations rows ['AC2/one-offer-per-pass'] RED 3
+v174-project-lines-first 123_veldo_0174_conversations rows ['AC3/turn-before-project'] RED 17
+v174-no-work-conversation-line-dropped 123_veldo_0174_conversations rows ['AC4/no-work-line'] RED 23
+v174-mutation-siblings-missing 123_veldo_0174_conversations rows ['proof/mutation-dependencies'] RED 1
+v174-signed-commands-bypass-mutant 123_veldo_0174_conversations rows ['proof/signed-command-module'] RED 1

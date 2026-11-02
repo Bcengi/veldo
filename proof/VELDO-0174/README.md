@@ -1,6 +1,12 @@
 # VELDO-0174 implementation and review record
 
-Latest round: [merged-main-2026-10-28/README.md](merged-main-2026-10-28/README.md). Main 59b119a1
+Latest round: [merged-main-2026-11-02/README.md](merged-main-2026-11-02/README.md). Main 646b2d68
+merged in (c81eebf4); the journey fixture follows main's store-made project lines (f50f7848); the
+suite is renumbered 123 and nine teeth anchors moved by this ticket are re-anchored (d5f72fb6).
+Suite 123 is 64 of 64 in 9.5 s; all ten 0174 falsifiers and the nine re-anchored
+mutants go red by hand. Open items: proof/VELDO-0174/OPEN.md.
+
+Previous round: [merged-main-2026-10-28/README.md](merged-main-2026-10-28/README.md). Main 59b119a1
 merged in; a journey stand-in missing `repositories` was fixed (b1f2d1d2). On a host with AF_UNIX,
 suite 107 is 64 of 64 including both restart rows, suite 105 passes, and all ten falsifiers go red
 and restore green. Suite 86 still needs a fresh Codex live capture for this ticket's launch change.
