@@ -1242,12 +1242,18 @@ with _sgb_tmp.TemporaryDirectory() as _sgb:
     _sgb_git("add", "-A"); _sgb_git("commit", "-qm", "batch")
     _sgb_changed = SG.changed_source_paths(_sgb)
     _sgb_batch = SG.footprint_findings(_sgb_changed, _sgb, V, ARCH)
+    # A caller that names its own change set is judged on that set alone: the branch's proof of S2
+    # names S2 for the git change, never for a named set that carries no proof.
+    _sgb_ambient = SG.footprint_findings({"other/y.py"}, _sgb, V, ARCH)
+    _sgb_named = SG.footprint_findings({"other/y.py"}, _sgb, V, ARCH, {"other/y.py"})
     _sgb_git("rm", "-q", "proof/S2/result.json"); _sgb_git("commit", "-qm", "no proof")
     _sgb_single = SG.footprint_findings(SG.changed_source_paths(_sgb), _sgb, V, ARCH)
     expect("WARP-1102 AC5: a change carrying a second spec's proof is a multi-spec change and stands down; "
            "without it the one edited spec refuses the other spec's path by name",
            _sgb_changed == {"specs/S1-one.md", "src/x.py", "src/z.py"} and _sgb_batch == []
            and any("src/z.py" in f for f in _sgb_single))
+    expect("VELDO-0229: a named change set is judged on its own paths; the proof the branch carries governs only the git change",
+           any("other/y.py" in f for f in _sgb_ambient) and _sgb_named == [])
 
 # AC6 RJ1: a seeded violation of each mechanizable rule class present fails the gate with the rule
 # named, and the clean current tree stays green.

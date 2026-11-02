@@ -12,6 +12,9 @@ placement: [loop, distribution]
 protected_paths: []
 footprint:
   - "engine/ui/**"
+  - ".veldo/shape_gate.py"
+  - "engine/.veldo/shape_gate.py"
+  - "scripts/suites/07_warp_1103_completion_mandatory.py"
   - "engine/.veldo/control_api_ui.py"
   - ".veldo/control_api_ui.py"
   - "scripts/suites/113_*"
@@ -178,6 +181,12 @@ Nuxt UI is MIT, from NuxtLabs. Its icons are rendered from a local Iconify JSON 
 start, so no request reaches the Iconify API; the IBM Plex faces stay on the Fontsource packages.
 
 ## History
+
+2026-11-02: footprint extended by the lead (.veldo/shape_gate.py, its synced copy and suite 07's row). The
+first gate of this branch failed suite 08's WARP-1012 AC6 row: shape_gate.run, given a named change set,
+still read the branch's own git diff to choose the governing spec, so on any branch carrying exactly one
+footprinted spec's proof the named set was judged against that spec. A named change set now supplies its
+own evidence; the gate's own call, which names none, still reads git. Suite 07 proves both.
 
 2026-11-01: AC2's visual criterion restated to the owner's newer style direction (Telegram 38255, 23:24Z): the
 look of the nuxt-dashboard template's gallery (neutral surfaces, an icon rail sidebar that expands, a slim top
