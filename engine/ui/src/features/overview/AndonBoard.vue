@@ -22,10 +22,10 @@ interface Cell {
 const cells = computed<Cell[]>(() => {
   const c = props.counts
   return [
-    { id: 'running', word: 'running', count: c?.running ?? null, lamp: 'live', tone: 'live', to: { name: 'runs' } },
-    { id: 'blocked', word: 'blocked', count: c?.blocked ?? null, lamp: 'waiting', tone: 'waiting', to: { name: 'runs' } },
-    { id: 'failed', word: 'failed', count: c?.failed ?? null, lamp: 'stop', tone: 'stop', to: { name: 'runs' } },
-    { id: 'waiting', word: 'waiting on you', count: c?.waiting ?? null, lamp: 'waiting', tone: 'waiting', to: { name: 'decisions' } },
+    { id: 'running', word: 'Running', count: c?.running ?? null, lamp: 'live', tone: 'live', to: { name: 'runs' } },
+    { id: 'blocked', word: 'Blocked', count: c?.blocked ?? null, lamp: 'waiting', tone: 'waiting', to: { name: 'runs' } },
+    { id: 'failed', word: 'Failed', count: c?.failed ?? null, lamp: 'stop', tone: 'stop', to: { name: 'runs' } },
+    { id: 'waiting', word: 'Waiting on you', count: c?.waiting ?? null, lamp: 'waiting', tone: 'waiting', to: { name: 'decisions' } },
   ]
 })
 </script>

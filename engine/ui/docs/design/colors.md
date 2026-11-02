@@ -63,7 +63,6 @@ neutral done, idle or low risk. Actions and selection are neutral (Telegram 3825
 2. **Never color alone.** Every state shown in color also has a word, an icon shape or a pattern.
 3. **Contrast** is at least 4.5:1 for text and 3:1 for large text and control borders, in both themes.
    The values above were measured; the browser tests run axe on every screen and state.
-4. **The lit lamp** is the only element with a glow (`--lamp-glow`), and only `live`, `waiting` and
-   `stop`.
+4. **No glow.** `--lamp-glow` is `none` (Telegram 38255: no shadows); a lit lamp is a plain filled dot.
 5. **Monaco** gets its colors from two themes in `features/run/monaco.ts` that read these tokens.
 6. **Adding a token**: both themes, a row here, contrast checked in both.

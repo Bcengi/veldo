@@ -29,7 +29,7 @@
     top: var(--space-3);
   }
 
-  /* Lamp: the andon lamp. Off is a ring; lit lamps fill with their signal; live and waiting glow. */
+  /* Lamp: the andon lamp. Off is a ring; lit lamps fill with their signal, with no glow. */
   .lamp {
     --lamp: var(--lamp-off);
     display: inline-block;
@@ -934,7 +934,6 @@
     color: var(--ink-muted);
     font-size: var(--text-sm);
     font-weight: 500;
-    text-transform: capitalize;
   }
   .andon-count {
     font-size: var(--text-2xl);
@@ -945,15 +944,6 @@
   }
   .andon-cell:not(.is-lit) .andon-count {
     color: var(--ink-muted);
-  }
-  .andon-cell.is-lit.tone-live .andon-word {
-    color: var(--live-text);
-  }
-  .andon-cell.is-lit.tone-waiting .andon-word {
-    color: var(--amber-text);
-  }
-  .andon-cell.is-lit.tone-stop .andon-word {
-    color: var(--stop-text);
   }
   .andon-cell.is-unread .andon-count {
     font-size: var(--text-base);

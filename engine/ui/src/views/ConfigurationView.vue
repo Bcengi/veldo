@@ -57,7 +57,7 @@ onMounted(() => void live.start())
   <section class="screen screen-wide">
     <ScreenHeader title="Configuration">
       <template #aside>
-        <VButton label="Refresh" variant="quiet" size="small" :pending="live.state.value === 'loading'" pending-label="Refreshing" @click="live.refresh()" />
+        <VButton label="Refresh" variant="secondary" size="small" :pending="live.state.value === 'loading'" pending-label="Refreshing" @click="live.refresh()" />
       </template>
     </ScreenHeader>
     <LiveMeta :live="live.live.value" :seq="live.data.value?.watermark.seq ?? null" :freshness="live.data.value?.freshness ?? null" :read-at="live.readAt.value" />

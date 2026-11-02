@@ -1,8 +1,8 @@
 # AndonBoard
 
 The overview's summary: one joined panel (a Nuxt UI `UCard`, VELDO-0229) of four cells, running, blocked,
-failed and waiting on you, each a word with its lamp and a large count; while a count is above zero the
-cell's lamp lights, its word takes its signal color and a rule of that color tops the cell. Each cell is
+failed and waiting on you, each a word in sentence case and secondary text with its lamp and a large count;
+while a count is above zero the cell's lamp lights in its signal color (the word stays secondary). Each cell is
 a link to the screen behind it. Two by two on a phone, four across on desktop.
 
 ## Props

@@ -12,5 +12,5 @@ overview.
 ## States and words
 
 `runSignal(dispatchState, unitState)` in `features/run/lamps.ts`: a unit off the line wins (Failed and
-Canceled in red, Blocked in amber), else the dispatch: Running (green, glows), Starting (amber), Done
+Canceled in red, Blocked in amber), else the dispatch: Running (green), Starting (amber), Done
 (a filled grey lamp), Refused (red). The same words as the andon board.

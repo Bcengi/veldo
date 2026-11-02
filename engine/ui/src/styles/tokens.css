@@ -33,7 +33,7 @@
   --stop-wash: #fbe6e2;
   --focus: #171717;
   --lamp-off: #d4d4d4;
-  --lamp-glow: 0 0 0 3px color-mix(in srgb, var(--lamp) 26%, transparent);
+  --lamp-glow: none;
   --diff-insert: #d2f0dc;
   --diff-remove: #f9dad5;
   --shadow-float: none;
