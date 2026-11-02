@@ -11808,9 +11808,10 @@ def cases():
 
     # VELDO-0131: the factory screens. Each mutant is one UI source module of engine/ui (or its lockfile); suite 120
     # builds the UI with it laid over a scratch copy, applies the dependency policy and runs the browser tests
-    # against the factory harness.
-    def ui131(name, directory, module, old, new, rows, also=()):
-        add(131, name, '120_veldo_0131_factory_ui.py', module, old, new, rows, also)
+    # against the factory harness. The ac1/screens rows are suites 121 (360 and 390 px) and 122 (1280 and 1440 px),
+    # which build and run the same way, so a mutant whose rows are screens rows names that suite.
+    def ui131(name, directory, module, old, new, rows, also=(), suite='120_veldo_0131_factory_ui.py'):
+        add(131, name, suite, module, old, new, rows, also)
         result[-1]['dir'] = directory
 
     # AC1 (declared falsifier): hide an inline decision action at 360px width.
@@ -11822,7 +11823,8 @@ def cases():
                  "const props = defineProps<{ decision: PendingDecision }>()\n"
                  "const hideAt360 = useMedia('(max-width: 360px)')  // defect: the inline answer is hidden on a 360px phone\n"),
                 ("import VTextArea from '@/components/VTextArea.vue'\n",
-                 "import VTextArea from '@/components/VTextArea.vue'\nimport { useMedia } from '@/composables/useMedia'\n")])
+                 "import VTextArea from '@/components/VTextArea.vue'\nimport { useMedia } from '@/composables/useMedia'\n")],
+          suite='121_veldo_0131_factory_screens_narrow.py')
     # AC2 (declared falsifier): show completion from the unit's local build state before its landing receipt.
     ui131('ui131-completion-from-build-state', 'engine/ui/src/features/backlog', 'completion.ts',
           "  if (landed.has(unit)) return 'landed'\n",

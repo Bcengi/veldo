@@ -19,7 +19,9 @@ when the checkout has none), and it is built with the package's own build script
   shadcn, primevue, @vue-flow, @vueuse); every direct dependency is one of the stack's or the build's own.
 - ac4/served-assets: the build's assets name none of the rejected libraries; the browser row ac2/api-only
   checks that every response the page used came from this origin.
-- every other row: the browser tests of engine/ui/e2e/factory.spec.ts in system Chrome (Playwright), against
+- every other row: the browser tests of engine/ui/e2e/factory.spec.ts but the four ac1/screens tests (Playwright
+  --grep-invert; suites 121_veldo_0131_factory_screens_narrow and 122_veldo_0131_factory_screens_wide run those, so
+  that each suite fits the mutation stage's floor) in system Chrome, against
   e2e/factory_harness.py: VELDO-0163's team harness over VELDO-0145's real factory (a signed SQLite store,
   real membership, the real inbox, presenter, settlement and API authority, the real control_api on its
   loopback listener serving the scratch build under its content security policy, passkeys as real WebAuthn
@@ -65,8 +67,8 @@ def _v131_suite():
     ORGANS = {
         'control_api_models.py': ROOT / ".veldo" / "control_api_models.py",
     }
-    BROWSER = ('ac1/screens-360', 'ac1/screens-390', 'ac1/screens-1280', 'ac1/screens-1440', 'ac2/live',
-               'ac2/completion-receipt', 'ac2/message-intake', 'ac2/decision-settlement', 'ac2/refusals',
+    # The four ac1/screens rows (360, 390, 1280 and 1440 px) are suites 121 and 122.
+    BROWSER = ('ac2/live', 'ac2/completion-receipt', 'ac2/message-intake', 'ac2/decision-settlement', 'ac2/refusals',
                'ac2/api-only', 'ac3/keyboard-desktop', 'ac3/touch-phone', 'ac3/stale-save',
                # Fix round 2 (review-2026-11-01 F1 to F5).
                'ac1/repositories', 'ac1/every-configuration', 'ac1/whole-catalog', 'ac1/usage-provider',
@@ -197,8 +199,8 @@ def _v131_suite():
               code == 0 and unit.get('numPassedTests', 0) > 0 and unit.get('numFailedTests', 1) == 0 and not failed)
 
         e2e = base / 'e2e.json'
-        code, out = run(['npx', 'playwright', 'test', 'e2e/factory.spec.ts'], ui,
-                        env={'VELDO_UI_DIST': str(dist), 'VELDO_ORGANS': str(organs),
+        code, out = run(['npx', 'playwright', 'test', 'e2e/factory.spec.ts', '--grep-invert', 'ac1/screens-'],
+                        ui, env={'VELDO_UI_DIST': str(dist), 'VELDO_ORGANS': str(organs),
                              'VELDO_E2E_REPORT': str(e2e)}, timeout=3000)
         try:
             browser = json.loads(e2e.read_text())
