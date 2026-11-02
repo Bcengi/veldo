@@ -177,7 +177,9 @@ def loop(f, CS, receiver):
           domain=authority.ids['domain_uuid'],principal='authority',generation=1,sign=authority.journal_sign,
           conversations=lambda:f['conversations'],_log=events.append,
           # Like Service.repositories (VELDO-0161): an installation without work that took on no repository.
-          repositories={})
+          repositories={},
+          # Like Service.watermark, which main's FactoryLoop.follow_store (VELDO-0188) reads.
+          watermark=lambda:authority.conn.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0])
     wrapper=f['root']/'receiver-driver.py'
     wrapper.write_text('import runpy,sys\nsys.stderr=open('+repr(str(f['root']/'receiver-errors.log'))+", 'a')\nrunpy.run_path("+repr(str(f['root']/'modules/control_launch.py'))+",run_name='__main__')\n")
     CS.L.RECEIVER = str(wrapper)
@@ -242,8 +244,20 @@ def project_line(f, factory, CS, E):
         'project-builder',a.journal_sign,1)
     config=dict(factory.conversation.receiver,receiver_kind='project',repository=repository,workspace=str(workspace))
     path=f['root']/'project-receiver.json'; path.write_text(json.dumps(config)); path.chmod(0o600)
-    role=dict(identity='project-builder',adapter='claude_code',configuration={},payload={},seconds=30)
-    line=CS.Line(factory,repository,{'builder':role,'reviewers':[dict(role,identity='project-reviewer')]},str(path))
+    # VELDO-0188: the loop keeps a project's line only while this instance serves its execution repository
+    # over a receiver configuration and the project has a team, so the stand-in serves it and the project
+    # has its own team naming this line's builder and reviewer.
+    factory.service.repositories[repository]={'workspace':str(workspace)}
+    factory.service.config['receiver'].setdefault('configs',{})[repository]=str(path)
+    def team_role(worker):
+        return {'workers':[worker],'engines':['claude_code'],'capability_configuration':{},
+                'budget':{'wall_seconds':30}}
+    a.fixture(CS.CT.team_id('activation-repository'),CS.CT.KIND,
+              {'revision':1,'team':{'roles':{'implementation':team_role('project-builder'),
+                                             'independent_review':team_role('project-reviewer')}}})
+    roles=CS.line_roles({'roles':{'implementation':team_role('project-builder'),
+                                  'independent_review':team_role('project-reviewer')}},config['adapters'])
+    line=CS.Line(factory,repository,roles,str(path))
     line.reservations.configure('priority-unit-policy','unit',unit,
                                 {'capacity':4,'invocations':20,'wall_seconds':300},now=time.time())
     return repository,line

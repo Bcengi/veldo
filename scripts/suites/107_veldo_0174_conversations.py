@@ -215,6 +215,9 @@ def _v174_suite():
             for launch in list(line.runner.launches.values()):
                 J.eventually(lambda: launch.pump(), 10)
                 line.runner.wait(launch, timeout=3)
+            # The stand-in stops serving the project's repository, so VELDO-0188's follow_store builds no line
+            # for it at later passes.
+            factory.service.repositories.pop(repository, None)
             factory.lines.clear()
 
     try:
