@@ -200,8 +200,11 @@ ac1/worker-capability, ac2/priority-save, ac2/worker-stop and ac2/worker-cap (Pl
 its other fourteen rows (--grep-invert). The nine mutation cases whose rows are 124's move to it (each module's
 cases stay in one suite, so the stage runs no more controls); none spans suites. gate_unconfined.json lists 124
 with 120's reason (protected: the owner's landing approval, OPEN.md); suite 101 expects 43 whole and 45 listed.
-Measured alone under the gate lock, clean checkout without node_modules: 120, 14 of 14 rows, 31.6 s; 124, 8 of
-8 rows, 32.3 s.
+Measured alone under the gate lock, clean checkout without node_modules: 120, 14 of 14 rows, 31.6 s (with
+PATH=/usr/bin:/bin, 31.7 s); 124, 8 of 8 rows, 32.3 s (31.1 s). Hand mutants: all thirteen cases red on their rows (ui131-completion-from-build-state,
+ui131-node-settings-hover-only, ui131-tiered-dependency-locked and api131-identity-credentials-served in 120; the
+nine moved cases in 124), every source restored. Suite 101: every unconfined-leg row green; its two sandbox rows
+and the case-input proposal's strace error fail identically at e6f62382, before this change.
 
 2026-11-02: footprint extended by the lead (scripts/suites/manifest.json). The first two gates failed only
 in the mutation stage: near the end of the stage the coordinator started eleven to sixteen browser cases within
