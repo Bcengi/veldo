@@ -1267,12 +1267,14 @@ def _v208_unconfined_leg():
                      '82_0141', '83_0154', '85_0158', '85_0171', '86_0127', '86_0148', '86_0189', '87_0170',
                      '91_0167', '92_0088', '93_0152', '94_0162', '95_0203', '96_0204', '106_0185', '110_0143',
                      '114_0220', '116_0188', '117_0227']
+    # Browser suites (system Chrome, and the npm registry for 120 to 122): VELDO-0159, 0163 and 0131.
+    browser = ['118_0159', '119_0163', '120_0131', '121_0131', '122_0131']
     manifest = [s['name'] for s in json.loads((ROOT / 'scripts/suites/manifest.json').read_text())['suites']]
     whole = sorted(n for n, rows in listed.items() if rows is None)
-    expected_whole = sorted([n for n in manifest for short in control_plane + ['65_0067']
+    expected_whole = sorted([n for n in manifest for short in control_plane + browser + ['65_0067']
                              if n.startswith(short.replace('_', '_veldo_', 1) + '_')])
     expect('VELDO-0208 unconfined-leg/declared-list: ' + repr(sorted(set(whole) ^ set(expected_whole))),
-           document['stages'] == declared_commands and len(expected_whole) == 37 and whole == expected_whole
+           document['stages'] == declared_commands and len(expected_whole) == 42 and whole == expected_whole
            and {n: r for n, r in listed.items() if r} == {'100_veldo_0207_case_reuse': 'strace',
                                                          '101_veldo_0208_landing_reuse': 'strace'}
            and all(n in manifest for n in listed)
@@ -1306,7 +1308,7 @@ def _v208_unconfined_leg():
     listed_files = ['scripts/suites/%s.py' % name for name in listed]
     expect('VELDO-0208 unconfined-leg/dispatcher-is-protected',
            dispatcher_files <= set(P.protected_patterns()) and dispatcher_files <= set(front['protected_paths'])
-           and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 39
+           and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 44
            and not [f for f in listed_files for pattern in P.protected_patterns()
                     if __import__('fnmatch').fnmatch(f, pattern)])
 

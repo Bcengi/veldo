@@ -798,7 +798,9 @@ sys.exit(child.wait())
                 held = rec(sid)
                 pending_before = dispatches.stop_requests()
                 swept = runner.honor_stops()
-                runner.wait(stopping)
+                # Bounded: a receiver never asked would leave the never-released worker running, and the row must
+                # then fail by its checks rather than wait out the worker (an asked stop ends in a few seconds).
+                runner.wait(stopping, timeout=25)
                 elapsed = time.monotonic() - started
                 ended = rec(sid)
                 again = attempt(lambda: dispatches.request_stop(sid, dispatches.version(sid), 'owner-person',
@@ -839,7 +841,7 @@ sys.exit(child.wait())
                 by_bystander = bystander.honor_stops()
                 still = dispatches.stop_requests()
                 by_holder = runner.honor_stops()
-                runner.wait(held_run)
+                runner.wait(held_run, timeout=25)  # bounded as in dispatch/owner-stop
                 settled = rec(oid)
                 observed['owner_stop_other_runner'] = {'requested': asked_by[0], 'bystander': by_bystander,
                                                        'still': still, 'holder': by_holder,

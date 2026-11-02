@@ -161,6 +161,11 @@ def changed_source_paths(root):
     Runtime/derived/evidence artifacts are excluded (they are not the change). Empty when
     git is unavailable or nothing changed, so the size and footprint rules simply have
     nothing to bind (green), never a corpus sweep."""
+    return {p for p in _changed_paths(root) if p and not _denied(p)}
+
+
+def _changed_paths(root):
+    """Every path this change touches, evidence included (changed_source_paths filters it)."""
     paths = set()
     paths |= set(_git(root, "diff", "--name-only", "HEAD"))
     paths |= set(_git(root, "diff", "--name-only", "--cached"))
@@ -172,7 +177,7 @@ def changed_source_paths(root):
         if base and base[0] and base[0] != head:
             paths |= set(_git(root, "diff", "--name-only", ref + "...HEAD"))
             break
-    return {p for p in paths if p and not _denied(p)}
+    return paths
 
 
 # ---------------------------------------------------------------------------
@@ -376,6 +381,15 @@ def footprint_findings(changed, root, V, arch):
             fm = _spec_fm(V, Path(root) / rel)
             fp = [g for g in _as_list(fm.get("footprint")) if _is_str(g)]
             if fp:
+                specs.append((rel, fp))
+    # A change that carries a spec's proof names that spec too: a batch whose specs are already
+    # on the trunk lands each one's proof, so it is a multi-spec change, not the one spec it edits.
+    proofs = {p.split("/")[1] for p in _changed_paths(root) if p.startswith("proof/") and p.count("/") >= 2}
+    for spec_id in sorted(proofs):
+        for path in sorted((Path(root) / "specs").glob(spec_id + "-*.md")):
+            rel = "specs/" + path.name
+            fp = [g for g in _as_list(_spec_fm(V, path).get("footprint")) if _is_str(g)]
+            if fp and rel not in [named for named, _ in specs]:
                 specs.append((rel, fp))
     if len(specs) != 1:
         return []

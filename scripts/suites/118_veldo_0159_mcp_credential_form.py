@@ -12,7 +12,7 @@ loopback listener serving that build, with a passkey session from the browser's 
 is control_credential_keystore.SecretService running a stand-in `secret-tool` that keeps values in a 0600 scratch
 file, so a value reaches it on standard input exactly as it reaches the Secret Service. Each browser test's title
 names the row it proves in brackets; this suite reads the rows from Playwright's JSON report. The definition row runs
-the form's pure definition module's unit tests (Vitest) in the same scratch copy. Needs `npm ci` in engine/ui and
+the form's pure definition module's unit tests (Vitest) in the same scratch copy. Installs the locked dependencies into the scratch copy (npm ci from the cache) when the checkout has none, and
 Google Chrome; without them every row fails by name. Mutation workers replace the production copies named in
 PRODUCTION, never assertions, the harness or the browser tests. Writes only temporary files.
 """
@@ -84,15 +84,20 @@ def _v159_suite():
 
     def exercise(base):
         env = environment()
-        if not (UI / 'node_modules' / '.bin' / 'vite').exists():
-            for row in ROWS:
-                check(row, 'engine/ui has its locked dependencies (run npm ci in engine/ui)', False)
-            return
         repo = base / 'repo'
         ui = repo / 'engine' / 'ui'
         shutil.copytree(str(UI), str(ui), symlinks=True, ignore=shutil.ignore_patterns(
             'node_modules', 'dist', 'test-results', 'playwright-report'))
-        os.symlink(str(UI / 'node_modules'), str(ui / 'node_modules'))
+        # The gate's candidate is a clean checkout with no node_modules, so the locked dependencies are
+        # installed into the scratch copy from the npm cache, as suite 119 does.
+        if (UI / 'node_modules' / '.bin' / 'vite').exists():
+            os.symlink(str(UI / 'node_modules'), str(ui / 'node_modules'))
+        else:
+            code, out = run(['npm', 'ci', '--prefer-offline', '--no-audit', '--no-fund'], ui, env, 600)
+            if code != 0:
+                for row in ROWS:
+                    check(row, 'the locked UI dependencies are installed (npm ci) [%s]' % tail(out), False)
+                return
         os.symlink(str(ROOT / '.veldo'), str(repo / '.veldo'))
         for name, source in PRODUCTION.items():
             target = ui / PLACE[name]

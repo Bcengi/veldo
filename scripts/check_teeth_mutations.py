@@ -3092,8 +3092,11 @@ def cases():
              "                    data={'fact': 'revision_landed', 'subject': {'id': record['contract']['unit'], 'revision': 1}})),\n"
              "                    self.dispatches.signer, self.dispatches.sign, self.dispatches.generation)\n",
              'terminal-not-completion')
+    # Anchored on the transition's own guard: VELDO-0131's stop_transition makes the same call, indented deeper.
     dispatch('dispatch-authority-unchecked', 'control_dispatch.py',
+             "        raise Refused('invalid_input', 'unknown action, time or dispatch')\n"
              "    _authorize(conn, params.get('principal'), params.get('repository'), now)\n",
+             "        raise Refused('invalid_input', 'unknown action, time or dispatch')\n"
              "    pass  # defect: the principal's authority is not checked\n",
              'service-principals-only')
     dispatch('dispatch-any-principal-type', 'control_dispatch.py',
@@ -3104,8 +3107,19 @@ def cases():
              "stopped=sorted(d for d, s in states.items() if s == 'unknown'),",
              "stopped=sorted(d for d, s in states.items() if s == 'refused'),",
              'observations')
+    # Anchored on the transition writer's event: VELDO-0131's _stop_command observes its refusals the same way.
     dispatch('dispatch-refusal-not-observed', 'control_dispatch.py',
+             "                 'request': command_id, 'accepted_versions': dict(expected)}\n"
+             "        try:\n"
+             "            result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)\n"
+             "        except (Refused, self.store.StoreRefused) as error:\n"
+             "            self.counts['refused'] += 1\n"
              "            self.observe(dict(event, outcome='refused', refusal=error.code, taxonomy=taxonomy(error.code)))\n",
+             "                 'request': command_id, 'accepted_versions': dict(expected)}\n"
+             "        try:\n"
+             "            result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)\n"
+             "        except (Refused, self.store.StoreRefused) as error:\n"
+             "            self.counts['refused'] += 1\n"
              "            pass  # defect: a refusal is not observed\n",
              'observations')
     dispatch('dispatch-receiver-not-installed', 'init_scaffold.py',
@@ -5332,7 +5346,8 @@ def cases():
         "        if AS.shape_problems(assertion):\n            raise Refused('invalid_input:parameters'",
         ['actions/workflow-save'])
     api('action-contract-drops-worker-stop', MO130,
-        "    Action('worker_stop', None, None, None, None, 'VELDO-0041'),\n", '', ['actions/contract'])
+        "    Action('worker_stop', 'workers.stop', 'stop_worker', 'control_dispatch', 'OPERATION', 'VELDO-0041'),\n", '',
+        ['actions/contract'])
     api('save-executes-another-command', AU130, "'save_workflow': WF.SAVE, MC.SAVE",
         "'save_workflow': AS.IN.RECORD, MC.SAVE", ['actions/contract'])
     # VELDO-0130 phase 3: the API through the installed authority service. The API runs a command in-process
@@ -10377,7 +10392,7 @@ def cases():
     add(162, 'v162-settlement-not-consumed', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', '        self.S.execute(self.conn, dict(command_id=command_id, principal=self.teams.requester,\n            operation=CONSUME, parameters=params, expected_versions={identity: 0}, artifact_digests=[],\n            nonce=command_id), self.teams.journal_signer, self.teams.sign, self.teams.authority_generation)', '        pass', ['team/consumed'], ())
     add(162, 'v162-application-exception-unrecorded', '94_veldo_0162_configuration_routes.py', 'control_team_routes.py', "            result = dict(ok=False, reason='unavailable_service:team_application')", '            raise', ['team/application-exception'], ())
     add(162, 'v162-publication-exception-suppresses-hints', '94_veldo_0162_configuration_routes.py', 'control_service_api.py', '        except Exception:  # A consumer failure cannot suppress journal hints.', '        except Exception:\n            raise', ['team/application-exception'], ())
-    add(162, 'v162-api-team-application-hidden', '94_veldo_0162_configuration_routes.py', 'control_api.py', "                'team_application')", "                'hidden_team_application')", ['team/owner-answer'], ())
+    add(162, 'v162-api-team-application-hidden', '94_veldo_0162_configuration_routes.py', 'control_api.py', "                'team_application', 'set_at'", "                'hidden_team_application', 'set_at'", ['team/owner-answer'], ())
 
     # Apply dependency metadata after every case is registered, including VELDO-0152.
     # VELDO-0168: the four Telegram senders load the shared renderer (and the presentation its retained
@@ -11793,9 +11808,10 @@ def cases():
 
     # VELDO-0131: the factory screens. Each mutant is one UI source module of engine/ui (or its lockfile); suite 120
     # builds the UI with it laid over a scratch copy, applies the dependency policy and runs the browser tests
-    # against the factory harness.
-    def ui131(name, directory, module, old, new, rows, also=()):
-        add(131, name, '120_veldo_0131_factory_ui.py', module, old, new, rows, also)
+    # against the factory harness. The ac1/screens rows are suites 121 (360 and 390 px) and 122 (1280 and 1440 px),
+    # which build and run the same way, so a mutant whose rows are screens rows names that suite.
+    def ui131(name, directory, module, old, new, rows, also=(), suite='120_veldo_0131_factory_ui.py'):
+        add(131, name, suite, module, old, new, rows, also)
         result[-1]['dir'] = directory
 
     # AC1 (declared falsifier): hide an inline decision action at 360px width.
@@ -11807,7 +11823,8 @@ def cases():
                  "const props = defineProps<{ decision: PendingDecision }>()\n"
                  "const hideAt360 = useMedia('(max-width: 360px)')  // defect: the inline answer is hidden on a 360px phone\n"),
                 ("import VTextArea from '@/components/VTextArea.vue'\n",
-                 "import VTextArea from '@/components/VTextArea.vue'\nimport { useMedia } from '@/composables/useMedia'\n")])
+                 "import VTextArea from '@/components/VTextArea.vue'\nimport { useMedia } from '@/composables/useMedia'\n")],
+          suite='121_veldo_0131_factory_screens_narrow.py')
     # AC2 (declared falsifier): show completion from the unit's local build state before its landing receipt.
     ui131('ui131-completion-from-build-state', 'engine/ui/src/features/backlog', 'completion.ts',
           "  if (landed.has(unit)) return 'landed'\n",
