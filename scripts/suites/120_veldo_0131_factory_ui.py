@@ -34,9 +34,12 @@ row fails by name. Writes only temporary files.
 
 def _v131_suite():
     import fnmatch
+    import glob
     import importlib.util
     import json
     import os
+    import pwd
+    import re
     from pathlib import Path
     import shutil
     import subprocess
@@ -94,9 +97,20 @@ def _v131_suite():
         lines = [line.strip() for line in (text or '').splitlines() if line.strip()]
         return ' | '.join(line.encode('ascii', 'replace').decode() for line in lines[-n:])[:900]
 
+    def environment():
+        """The caller's environment with the account's newest nvm Node first on PATH when it has one: the locked
+        dependencies need a current Node, and a distribution's /usr/bin/node may be older (as suite 118 does)."""
+        env = dict(os.environ)
+        home = pwd.getpwuid(os.getuid()).pw_dir
+        found = sorted(glob.glob(os.path.join(home, '.nvm', 'versions', 'node', 'v*', 'bin')),
+                       key=lambda p: [int(x) for x in re.findall(r'\d+', os.path.basename(os.path.dirname(p)))])
+        if found:
+            env['PATH'] = found[-1] + os.pathsep + env.get('PATH', '')
+        return env
+
     def run(args, cwd, env=None, timeout=900):
         try:
-            done = subprocess.run(args, cwd=str(cwd), env=dict(os.environ, **(env or {})), capture_output=True,
+            done = subprocess.run(args, cwd=str(cwd), env=dict(environment(), **(env or {})), capture_output=True,
                                   text=True, timeout=timeout, stdin=subprocess.DEVNULL)
             return done.returncode, (done.stdout or '') + (done.stderr or '')
         except (OSError, subprocess.TimeoutExpired) as error:
