@@ -1,4 +1,4 @@
-"""Run one VELDO-0174 falsifier with only suite 107, restoring the source in finally.
+"""Run one VELDO-0174 falsifier with only suite 123 (107 before the 2026-11-02 merge), restoring the source in finally.
 
 Reads the gate's declared substitutions as AST data; never executes its mutation
 driver. Logs stay in --log-dir. A red target is not a green gate or a host result.
@@ -58,7 +58,7 @@ def main():
         raise RuntimeError('expected exactly one mutation anchor: ' + filename)
     args.log_dir.mkdir(parents=True, exist_ok=True)
     log = args.log_dir / (args.case + '.log')
-    argv = ['python3', 'scripts/selftest.py', '--suite', '107_veldo_0174_conversations']
+    argv = ['python3', 'scripts/selftest.py', '--suite', '123_veldo_0174_conversations']
     started = time.monotonic()
     try:
         path.write_text(source.replace(before, after))

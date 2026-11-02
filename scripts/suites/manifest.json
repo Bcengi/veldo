@@ -1680,10 +1680,10 @@
    }
   },
   {
-   "name": "107_veldo_0174_conversations",
-   "file": "107_veldo_0174_conversations.py",
+   "name": "123_veldo_0174_conversations",
+   "file": "123_veldo_0174_conversations.py",
    "requires": [
-    "107_veldo_0174_conversations"
+    "123_veldo_0174_conversations"
    ],
    "regions": "Durable conversation records and turns, repository-free dispatches, shared account-pool priority and the installed conversation receiver.",
    "requires_note": "Only ROOT, expect and fast_temp. Real signed SQLite authority stores, OpenSSH identities, default-team revisions, account records, VELDO-0039 dispatch preparation and real installer layout over an enrolled Git workspace. No service, socket, login, user unit or real engine starts."

@@ -2732,7 +2732,9 @@ def cases():
             "            members = [(m['id'], m['version'], m['digest']) for m in value]  # defect: tuples never equal JSON\n",
             'launch/receiver-recheck', module='control_eligibility.py')
     add(69, 'installer-receiver-without-host-trust', '66_veldo_0047_authority.py', 'control_service.py',
+        "                                'authority_generation': first['authority_generation'], 'workspace': members[0],\n"
         "                                'host_trust': os.path.abspath(str(trust_path)), 'profile': profile,\n",
+        "                                'authority_generation': first['authority_generation'], 'workspace': members[0],\n"
         "                                'profile': profile,  # defect: the receiver is configured with no host trust\n",
         ['authority/receiver-configured-with-host-profile'])
     # VELDO-0042: each criterion's declared falsifier first, then a second, different defect per row.
@@ -2990,7 +2992,9 @@ def cases():
     # twice (the runner commits before invoking; the receiver spawns only after an acceptance that
     # needs the prepared record), so the defect is both edits.
     dispatch('dispatch-spawn-before-contract', 'control_launch.py',
+             "            }\n"
              "            self.dispatches.prepare(contract, now=now)\n",
+             "            }\n"
              "            self.early = self.receiver(contract)  # defect: invoked before the contract commits\n"
              "            self.dispatches.prepare(contract, now=now)\n",
              'contract-before-launch',
@@ -3095,7 +3099,8 @@ def cases():
     # Anchored on the transition's own guard: VELDO-0131's stop_transition makes the same call, indented deeper.
     dispatch('dispatch-authority-unchecked', 'control_dispatch.py',
              "        raise Refused('invalid_input', 'unknown action, time or dispatch')\n"
-             "    _authorize(conn, params.get('principal'), params.get('repository'), now)\n",
+             "    _authorize(conn, params.get('principal'), params.get('repository'), now,\n"
+             "               params.get('subject_kind', 'project'))\n",
              "        raise Refused('invalid_input', 'unknown action, time or dispatch')\n"
              "    pass  # defect: the principal's authority is not checked\n",
              'service-principals-only')
@@ -3456,8 +3461,8 @@ def cases():
          "        self.launches.pop(launch.dispatch_id, None)  # defect: a wait sweeps no pending retirement\n",
          'retirement/live-descendant')
     beat('retire-no-sweep-on-prepare', 'control_launch.py',
-         "        self.sweep()\n        now = self.clock()\n",
-         "        now = self.clock()  # defect: a preparation sweeps no pending retirement\n",
+         "        self.sweep()\n        now = self.clock()\n        try:\n",
+         "        now = self.clock()  # defect: a preparation sweeps no pending retirement\n        try:\n",
          'retirement/unknown-outcome')
     beat('retire-sweep-retries-unchanged', 'control_retirement.py',
          "        if seen['open'] != entry['open']:\n            return True\n",
@@ -3913,7 +3918,9 @@ def cases():
             "    pass  # defect: a relative key directory is judged wherever it resolves\n", 'key-directory-relative-refused')
     # AC1: the launch receiver's configuration carries this host's qualified worker profile.
     service('authority-receiver-profile-omitted', 'control_service.py',
+            "                                'authority_generation': first['authority_generation'], 'workspace': members[0],\n"
             "                                'host_trust': os.path.abspath(str(trust_path)), 'profile': profile,\n",
+            "                                'authority_generation': first['authority_generation'], 'workspace': members[0],\n"
             "                                'host_trust': os.path.abspath(str(trust_path)),  # defect: the receiver gets no worker profile\n",
             'receiver-configured-with-host-profile')
     service('authority-profile-not-qualified', 'control_service.py',
@@ -10051,7 +10058,7 @@ def cases():
     add(186, 'setup186-claude-digest-unchecked', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        if claude._file_digest(paths['claude_code']) != entry['sha256']:", '        if False:', ['engines/digest'], [])
     add(186, 'setup186-codex-digest-unchecked', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        bound = codex.bind({'executable': vendor})", "        bound = {'sha256': record['sha256']}", ['engines/digest'], [])
 
-    add(186, 'setup186-receiver-without-state-root', '86_veldo_0186_setup_assets.py', 'control_service.py', "                                'adapters': adapters, 'state_root': state_root})", "                                'adapters': adapters, 'state_root': None})", ['bind/engines'], [])
+    add(186, 'setup186-receiver-without-state-root', '86_veldo_0186_setup_assets.py', 'control_service.py', "                                'adapters': adapters, 'state_root': state_root, 'receiver_kind': 'project'})", "                                'adapters': adapters, 'state_root': None, 'receiver_kind': 'project'})", ['bind/engines'], [])
 
     add(186, 'setup186-skip-setup-asset-check', '86_veldo_0186_setup_assets.py', 'control_factory_setup.py', '        CS.runtime_assets(CS.closure())', '        pass', ['runtime/setup-missing'], [])
     add(186, 'setup186-writable-runtime', '86_veldo_0186_setup_assets.py', 'control_service.py', '            os.chmod(directory, BIN_MODE)', '            os.chmod(directory, 0o700)', ['runtime/modes'], [])
@@ -10484,8 +10491,8 @@ def cases():
         "        subjects.append(('project', record.get('name'), {k: budget[k] for k in RES.KINDS if k in budget},\n",
         "        subjects.append(('project', record.get('name'), dict(budget),\n", ['derive/values'], ())
     add(204, 'v204-account-sum-first-project', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
-        '    sums = {kind: sum(_budget(record).get(kind, 0) for _eid, record in projects) for kind in ACCOUNT_KINDS}\n',
-        '    sums = {kind: sum(_budget(record).get(kind, 0) for _eid, record in projects[:1]) for kind in ACCOUNT_KINDS}\n', ['derive/values', 'source/project'], ())
+        '    sums = {kind: (sum(_budget(record).get(kind, 0) for _eid, record in projects)\n',
+        '    sums = {kind: (sum(_budget(record).get(kind, 0) for _eid, record in projects[:1])\n', ['derive/values', 'source/project'], ())
     add(204, 'v204-windows-compared', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
         "        if stored is not None and stored.get('caps') == caps:\n",
         "        if stored is not None and stored.get('caps') == caps and not stored.get('windows'):\n", ['service/rerun'], ())
@@ -10496,8 +10503,8 @@ def cases():
         "        self.loop.provision(report, 'line:' + self.repository)\n",
         '', ['service/pm-assigned', 'service/rerun'], ())
     add(204, 'v204-loop-lock-dropped', '96_veldo_0204_reservation_policies.py', 'control_service.py',
-        "        loop = FactoryLoop(service, load_work(config['work']), lock)\n",
-        "        loop = FactoryLoop(service, load_work(config['work']))\n", ['service/start'], ())
+        "        loop = FactoryLoop(service, load_work(config['work']) if config.get('work') else None, lock)\n",
+        "        loop = FactoryLoop(service, load_work(config['work']) if config.get('work') else None)\n", ['service/start'], ())
     add(204, 'v204-serve-lock-dropped', '96_veldo_0204_reservation_policies.py', 'control_service.py',
         '            service.loop, service.loop_refusal = open_loop(config, service, lock)\n',
         '            service.loop, service.loop_refusal = open_loop(config, service)\n', ['service/serve'], ())
@@ -10508,10 +10515,10 @@ def cases():
         '    ".veldo/control_reservation_policies.py",\n',
         '', ['service/start'], ())
     add(204, 'v204-second-policy-writer', '96_veldo_0204_reservation_policies.py', 'control_service.py',
-        "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n",
-        "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n        if False:\n            self.reservations.configure('x', 'unit', 'x', {}, now=0)\n", ['census/writer'], ())
+        "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n\n    def _rows(self, kind):\n",
+        "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n        if False:\n            self.reservations.configure('x', 'unit', 'x', {}, now=0)\n\n    def _rows(self, kind):\n", ['census/writer'], ())
     # VELDO-0174: one exact single-edit falsifier for each acceptance criterion.
-    S174 = '107_veldo_0174_conversations.py'
+    S174 = '123_veldo_0174_conversations.py'
     add(174, 'v174-attach-outside-current-scope', S174, 'control_conversation.py',
         "            if not CM.scope_covers(member.get('scope'), [project]):\n"
         "                raise Refused('missing_authority:project')\n",

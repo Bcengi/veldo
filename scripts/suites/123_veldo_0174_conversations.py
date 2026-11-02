@@ -1,6 +1,6 @@
 """VELDO-0174: durable conversations, ordered turns, shared-pool priority and receiver binding.
 
-Run: python3 scripts/selftest.py --suite 107_veldo_0174_conversations
+Run: python3 scripts/selftest.py --suite 123_veldo_0174_conversations
 
 Only ROOT, expect and fast_temp are consumed.  The suite uses real signed SQLite authority stores,
 OpenSSH identities, default-team and capability records, the production conversation authority,
