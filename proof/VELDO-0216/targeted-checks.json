@@ -1,0 +1,52 @@
+{
+  "spec": "VELDO-0216",
+  "scope": "single ticket suite under real gate confinement",
+  "head": "d046b6aa55675422a4a4f18283cf5c1462b84b0c",
+  "command": [
+    "/usr/bin/python3",
+    "-I",
+    "-S",
+    "scripts/gate_candidate.py",
+    "--root",
+    "/home/dmitry/projects/veldo-worktrees/veldo-0216",
+    "--",
+    "/usr/bin/python3",
+    "scripts/selftest.py",
+    "--suite",
+    "114_veldo_0216_concurrent_stages"
+  ],
+  "exit": 2,
+  "exit_contract": "selftest partial runs exit 2 even on success; gate_candidate relays that status",
+  "ticket_rows": 19,
+  "shared_preamble_rows": 26,
+  "failed": 0,
+  "source_sha256": {
+    "scripts/gate_schedule.py": "c502c467ddccf2f4f1d72400b49366e32327a4a5850820415912081c709f9cca",
+    "scripts/gate_legs.py": "ae6633b2dbbb1b81a0aefa5a694b7b589eccc2c86969869d8437face2025b5dc",
+    "scripts/gate_graph.json": "4ba30fad7be3e0efa2a35c613815037ff1bb162efb554e35344e880b59297d23",
+    "scripts/verify.sh": "17d8e80fdcef4a0b9a40addcab4b70d6e0743f0d457fccb6abf4acfbfdaba839",
+    "engine/scripts/verify.sh": "10261131e7462fc79eaac50a472daee4030d45489fe3ec2bc1b577e3ad4b73bb",
+    "scripts/check_gate_mutations.py": "38d697817f85a31cedcb85dc4afec66b08ba72284003870590dff20796c34901",
+    "scripts/suites/114_veldo_0216_concurrent_stages.py": "516065112937887bd99147af21e740691d38d6276fed91d98ad731f61f227a94",
+    "scripts/check_teeth_mutations.py": "e37625940b688bccff5e35666173cfd26a11219db631ab722ea8510c3bbbcfd4",
+    "proof/VELDO-0216/qualification.py": "5437819bd46c8a25b95b94d977a3481f680b1d7f2063efa32391a643bbafb07c",
+    "proof/VELDO-0216/serial-baseline.json": "5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
+    "proof/VELDO-0216/kernel_scope_check.py": "7c67c2e16d546c1024220b3c5cf5512c479126151aca6ac1d380e049bea939cf",
+    "proof/VELDO-0216/local_check.py": "8616a9e82daff68ec6847b294f5b8177218da22f04ef0bb34425a8f475f5c31c",
+    "engine/scripts/gate_schedule.py": "c502c467ddccf2f4f1d72400b49366e32327a4a5850820415912081c709f9cca",
+    "engine/scripts/gate_legs.py": "ae6633b2dbbb1b81a0aefa5a694b7b589eccc2c86969869d8437face2025b5dc",
+    "engine/scripts/check_gate_mutations.py": "38d697817f85a31cedcb85dc4afec66b08ba72284003870590dff20796c34901",
+    ".gitignore": "2848806b8edb78836c832c7cb9bd95334dbb3d4b6200603155f3a61502afbd2c",
+    ".veldo/policy.yaml": "94d0efd96b75a5a4ba086ba445fda1fc6e61e94b6f2ea21ef888cbb717643144",
+    "scripts/suites/manifest.json": "492e7e3626e5bab066b3ea5fca4e627b69a07b3cdd8c49ade1ada07b82495429",
+    "scripts/suites/requires.json": "41960c7e91d85ed2e5481ea405bf21af099ed607271efb3d88c9876edf503f3b",
+    ".veldo/reuse_evidence.py": "175aef7ce1884fbf3855c7b4569a25084494bdc02624512ad017fbebf6ad279a",
+    ".veldo/init_scaffold.py": "ff50999aa23716fbf66b2bc135ac899350d9363671f2085c495ac567c277a9a0",
+    "engine/.veldo/reuse_evidence.py": "175aef7ce1884fbf3855c7b4569a25084494bdc02624512ad017fbebf6ad279a",
+    "engine/.veldo/init_scaffold.py": "ff50999aa23716fbf66b2bc135ac899350d9363671f2085c495ac567c277a9a0"
+  },
+  "summary": [
+    "114_veldo_0216_concurrent_stages                19 passed   22.93s",
+    "selftest (PARTIAL, 1 of 170 suites): 45 passed, 0 failed in 22.93s"
+  ]
+}

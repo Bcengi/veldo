@@ -39,6 +39,10 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
         names = ('followup/initial-fault', 'followup/pending-fault')
     # In every variant: the PM cycles' exchanges staged in the fixture's own graph stage.
     names = names + ('graph/own-stage',)
+    # One variant reports the store's line, so its falsifier names a single row; the others
+    # take the same line from factory.lines and fail without it.
+    if not (review_only or setup_only or fault_only):
+        names = names + ('line/store-staffing',)
     rows = {name: [] for name in names}
 
     def check(name, label, condition):
@@ -152,11 +156,20 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
                 enrollment_signers=str(enrollment_signers), observations=str(base / 'service-events.jsonl')), conn)
             service.channel = SimpleNamespace(ingress=SimpleNamespace(inbox=f['inbox'],
                 presenter=f['presenter'], settlement=f['settlement']))
+            # The installed receiver declares dispatchable engines; the protocol fake remains a launch seam.
+            installed_receiver = base / 'receiver-installed.json'
+            installed_data = json.loads(config.read_text())
+            for adapter, engine in {'protocol': 'claude_code'}.items():
+                installed_data['adapters'][adapter]['engine'] = engine
+            installed_receiver.write_text(json.dumps(installed_data))
+            service.config['receiver'] = {'configs': {repository: str(installed_receiver)}}
             factory = SV.FactoryLoop(service, {'repositories': {}})
-            line = SV.Line(factory, repository, {'builder': {'identity': 'unassigned'}, 'reviewers': []}, config)
+            check('line/store-staffing', 'the store builds the factory line from its team and receiver',
+                  repository in factory.lines)
+            line = factory.lines[repository]
             # Only the account selection is fixed; Line.run constructs the production PM services.
             def receiver_observation(contract):
-                launch = line.invoke(contract)
+                launch = L.invoke(config, contract, line.dispatches)
                 if launch.result != 'accepted':
                     print('  VELDO-0088 detail: receiver refusal:', launch.messages, 'transaction', conn.in_transaction)
                 return launch
@@ -224,8 +237,12 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
                     record = cycles.finish(record)
                 return record
 
+            # The question's deadline and the grooming request's expiry are a day past this run's own clock:
+            # a fixed date lapses with the calendar, and the backlog then refuses the request as
+            # stale_subject:expired before any role is staged.
+            later = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(time.time() + 86400))
             question = dict(ids, operation='open', alias='question-88', assignment=dict(kind='decision', owner='olga',
-                scope=['proj-a'], deadline='2026-10-30T17:00:00Z', budget={'owner_minutes': 1},
+                scope=['proj-a'], deadline=later, budget={'owner_minutes': 1},
                 brief='Choose a scope.', choices=['yes', 'no'], subject={'kind': 'pm', 'ref': 'proj-a',
                     'digest': PM.SN.digest(b'question')}))
             if not review_only and not setup_only:
@@ -327,7 +344,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
                     units=[{'result': 'publish', 'path': ['unit']}])),
                 dict(name='request', type='backlog', command=dict(ids, operation='request_grooming', item=iid, item_version=2)),
                 dict(name='groom', type='grooming', command=dict(ids, operation='propose', item=iid, item_version=3,
-                    proposal={'ceiling': {'invocations': 1}, 'expiry': '2026-10-30T17:00:00Z'})),
+                    proposal={'ceiling': {'invocations': 1}, 'expiry': later})),
                 dict(name='assign', type='assignment', command=dict(ids, operation='assign', project='proj-a',
                     team_version=f['version'](), team_revision=f['team_record']()['revision'], unit=uid,
                     role='implementation', builder='w-build', reviewers=['w-rev1']))])

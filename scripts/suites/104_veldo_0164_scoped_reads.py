@@ -26,7 +26,7 @@ def _v164_suite():
             A, MO, S, authority, conn = f.A, f.A.MO, f.S, f.authority, f.conn
             legacy = dict(vars(A), **vars(MO))
             exec((here / 'legacy.py').read_text(), legacy)
-            shared = {'role_configuration','tool_configuration',f.TR.KIND}
+            shared = {'role_configuration','tool_configuration',f.TR.KIND,'agent_configuration','agent_skill','account'}
             registrations = {k.kind:k for m in MO.READ_MODELS for k in m.kinds}
             check('reads/registration','every project kind has independent A and B seed records',
                   set(registrations) == set(f.expected['A']) | shared == set(f.expected['B']) | shared)

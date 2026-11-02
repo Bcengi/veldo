@@ -11,6 +11,7 @@ depends_on: [VELDO-0208, VELDO-0214, VELDO-0215, VELDO-0220]
 placement: [enforcement]
 protected_paths: ["scripts/verify.sh", "engine/scripts/verify.sh", "scripts/gate_legs.py", "engine/scripts/gate_legs.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", ".veldo/policy.yaml", ".veldo/reuse_evidence.py", "engine/.veldo/reuse_evidence.py", "scripts/gate_schedule.py", "engine/scripts/gate_schedule.py", "scripts/gate_graph.json"]
 footprint:
+  - .gitignore
   - scripts/verify.sh
   - engine/scripts/verify.sh
   - scripts/gate_schedule.py
@@ -91,8 +92,8 @@ acceptance_criteria:
   - id: AC4
     text: >
       Claim: on the qualification host (20 cores, 31 GiB, the 16 GiB gate scope of VELDO-0220) a
-      full fresh gate with this change and without VELDO-0219 and VELDO-0221 finishes in at most
-      6,000 seconds against the measured 10,719, because its critical path becomes the mutation
+      full fresh gate with this change and VELDO-0219 (measured worker admission), without VELDO-0221,
+      finishes in at most 6,000 seconds against the measured 10,719, because its critical path becomes the mutation
       stage (5,207 s measured) instead of the sum of every stage. Set: one force-fresh canonical
       gate at the landing candidate. Completeness: the receipt records every node's start, end,
       CPU seconds and peak memory; the proof states the critical path and compares each node with
@@ -211,3 +212,13 @@ measured figure in its spec's proof.
 This spec is written to apply after the pending stack (agent/claude/cand-veldo-stack, tip
 3ab6e90d) lands: its manifest adds the new_project_fixture resource, which stays a mutation-stage
 resource and is not a ledger capacity.
+
+## Amendment, 2026-10-28: AC4 is measured with VELDO-0219
+
+Round 2 replayed the recorded 2026-10-25 stage durations through the production ledger: this change alone
+projects 6,932.5 seconds against 10,718.8 serial, because the mutation stage and both unconfined legs need
+exclusive use of the user service manager until VELDO-0219 connects per-case worker admission to the gate
+ledger (proof/VELDO-0216/spec-conflict.md). AC4's 6,000-second claim is therefore measured on a landing
+candidate that carries VELDO-0219 too; this change alone is held to its projection. Owner approval:
+Telegram 37436 (the question) and 37442 ("all 3").
+

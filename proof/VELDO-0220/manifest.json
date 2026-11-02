@@ -1,0 +1,87 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0220",
+ "commit": "8030ef4dcd1347128e1f6f6789339dbb4511ef64",
+ "tree": "cafb2e852424cd9b7ffa58b7628cc3147f8bf54f",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-10-28T14:54:02.822274+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0220/local_checks.json",
+     "detail": "Row host-lock/held-not-started passes in suite 113 (baseline: all four VELDO-0220 rows green). Registered mutant host220-ignores-lock fails it (mutant run: VELDO-0220 host-lock/held-not-started)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0220/local_checks.json",
+     "detail": "Row host-lock/released-on-exit passes in suite 113 (baseline: all four VELDO-0220 rows green). Registered mutant host220-lock-inherited fails it (mutant run: VELDO-0220 host-lock/released-on-exit)."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0220/PROOF.md",
+     "detail": "NOT RUN: the canonical ./scripts/verify.sh runs later on a batch, by the owner."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0220/local_checks.json",
+     "detail": "Row host-scope/own-scope passes in suite 113 (baseline: all four VELDO-0220 rows green). Registered mutant host220-no-scope fails it (mutant run: VELDO-0220 host-scope/own-scope)."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0220/PROOF.md",
+     "detail": "The row needs the systemd user manager; inside the gate confinement it is red by name until scripts/gate_unconfined.json lists it (owner decision, protected path outside this spec). Canonical gate not run."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "passed",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0220/local_checks.json",
+     "detail": "Row host-lock/not-started-not-red passes in suite 113 (baseline: all four VELDO-0220 rows green). Registered mutant host220-not-started-is-red fails it (mutant run: VELDO-0220 host-lock/not-started-not-red)."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0220/PROOF.md",
+     "detail": "NOT RUN: the canonical ./scripts/verify.sh runs later on a batch, by the owner."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "flock /home/dmitry/.local/state/core-gates/.gate.lock python3 proof/VELDO-0220/local_check.py"
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "Owner runs ./scripts/verify.sh on a batch (owner rule 37191)."
+  }
+ ],
+ "artifacts": [
+  "proof/VELDO-0220/local_check.py",
+  "proof/VELDO-0220/local_checks.json",
+  "proof/VELDO-0220/PROOF.md"
+ ],
+ "artifact_digests": {
+  "proof/VELDO-0220/local_check.py": "sha256:477622917b4a8a4ed19e17b446c21dd250e57d253f6e6aba4b236b5c9c01e603",
+  "proof/VELDO-0220/local_checks.json": "sha256:d2bc89ad062489ed8e4c57929a22552f0fcecc0218e2c94b27d133a0812370a9",
+  "proof/VELDO-0220/PROOF.md": "sha256:c58525ff9af5ee18e8a214327bb35818ce0e23325fe4ab217cf49c4349471878"
+ },
+ "rollback": "Remove scripts/gate_host.json; the gate then takes no lock and makes no scope, as before.",
+ "review": "Independent fresh-context review, the canonical gate and the owner approval for the protected paths are pending; no gate stamp or approval claimed."
+}

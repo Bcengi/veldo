@@ -1,0 +1,67 @@
+{
+  "green_exit": 0,
+  "mutations": [
+    {
+      "ac": "AC1",
+      "exit": 1,
+      "killed": true,
+      "mutant_sha256": "b92ed2594d3ba57701ea8e2f34387368ae3240897a4ca3c1430733e484a69221",
+      "mutation": "label-admits",
+      "row": "defects/ordinary-admission",
+      "source_sha256": "51350e88332440def8fa1941af714e75f7f39d26232e6ee30280d1a228b98cfc",
+      "target": ".veldo/control_backlog_priority.py"
+    },
+    {
+      "ac": "AC2",
+      "exit": 1,
+      "killed": true,
+      "mutant_sha256": "61fb9e9add3e2bb64f1deb6f8301729a4a4d56250d7877d95ba6fe8138254c44",
+      "mutation": "missing-review-completes",
+      "row": "defects/ordinary-completion",
+      "source_sha256": "f57ebe36df3bb50d7f16322a5eb57475917ca176be3061e20123c96a1fff1ed9",
+      "target": ".veldo/dispatch.py"
+    },
+    {
+      "ac": "AC3",
+      "exit": 1,
+      "killed": true,
+      "mutant_sha256": "591fdbb08d125a5f220bf605d12918fef7260e0aa957f54bf76d24245e4e8307",
+      "mutation": "model-claim-admits",
+      "row": "defects/no-automatic-admission",
+      "source_sha256": "4f2bf93f6d32534894d5e044d18d4ab6529a60b8d26d3dbfd0a8304faa48a240",
+      "target": ".veldo/control_grooming_request.py"
+    },
+    {
+      "ac": "AC1",
+      "exit": 1,
+      "killed": true,
+      "mutant_sha256": "2b6a58659f51035b4b8ddaff458fda2748f27da37fb125a9ccf2b5dee7b2a0aa",
+      "mutation": "severity-lost",
+      "row": "defects/ordinary-admission",
+      "source_sha256": "27510ebb5a570e650d1d0e9e5a714239406642f63e338f1aa55513e439c3d786",
+      "target": ".veldo/control_defect.py"
+    },
+    {
+      "ac": "AC1",
+      "exit": 1,
+      "killed": true,
+      "mutant_sha256": "4146023f2f5b5df96c008fb783332064bdc771ae59e75cfa2c43a98f8d4bbd75",
+      "mutation": "report-unbound",
+      "row": "defects/ordinary-admission",
+      "source_sha256": "4f2bf93f6d32534894d5e044d18d4ab6529a60b8d26d3dbfd0a8304faa48a240",
+      "target": ".veldo/control_grooming_request.py"
+    },
+    {
+      "ac": "AC3",
+      "exit": 1,
+      "killed": true,
+      "mutant_sha256": "e2c09c1e9042f9825a45519d7d0cac119e18a23f7d2a7618bb1683b5cbfda927",
+      "mutation": "scope-change-admits",
+      "row": "defects/no-automatic-admission",
+      "source_sha256": "4f2bf93f6d32534894d5e044d18d4ab6529a60b8d26d3dbfd0a8304faa48a240",
+      "target": ".veldo/control_grooming_request.py"
+    }
+  ],
+  "schema": "veldo.ticket-falsifiers/v1",
+  "ticket": "VELDO-0080"
+}

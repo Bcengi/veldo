@@ -51,7 +51,13 @@ feature and is never written here), and it moves along entity_contract's R11 voc
                     current revision with the same binding, and the rank is the one that revision binds;
                     an item with no admission request is refused as at admit.
   reprioritize      The project's owner changes the rank of prioritized work by his own signed command:
-                    a new priority record, the item's state and units unchanged.
+                    a new priority record, the item's state and units unchanged. VELDO-0131: the same command
+                    also arrives from the authenticated API (the UI's Save priority order), signed by the "api"
+                    edge for the session's member over a verified veldo.api_assertion/v1 (apply's
+                    `api_assertion`, verified here again as control_team verifies its own: the assertion and the
+                    command against the enrolled edge key, the assertion live, its credential current, and the
+                    command exactly the one the assertion derives). Only reprioritize is accepted that way; the
+                    member is then judged as for his own signature, and the record carries the assertion digest.
   append            A member appends a proposed unit to a PRIORITIZED or ACTIVE item: a new decomposition
                     revision and digest, the unit PLANNED. It needs its own settled prioritization of that
                     revision; the approved units continue meanwhile.
@@ -147,6 +153,13 @@ def _objectives():
     return _READER['objectives']
 
 
+def _api_organ(name):
+    """An API organ beside this file (VELDO-0131's edge verification), loaded on its first use."""
+    if name not in _READER:
+        _READER[name] = _organ(name)
+    return _READER[name]
+
+
 def _eligibility():
     """control_eligibility.py beside this file, loaded on the first DONE: the Gate is the one completion
     reader. It is not loaded at import because the Gate loads this module for its priority predicate."""
@@ -175,6 +188,7 @@ ADMISSION_RULINGS = {'approve': 'ADMITTED', 'reject': 'REJECTED', 'return_for_el
 DECISION_ROLES = {'admit': ('admission_authority',), 'prioritize': ('priority_authority',),
                   'reprioritize': ('priority_authority',), 'admit_message': ('admission_authority', 'priority_authority')}
 GR = _organ('control_grooming_request')
+DF = _organ('control_defect')
 DP = _organ('control_decomposition_binding')
 BLOCK_TARGET_KIND, UNIT_TARGET_KIND = 'backlog_block', 'execution_unit'
 ALTERNATIVE_OUTCOMES = ('not_required',)
@@ -211,7 +225,9 @@ if classification_problems():
     raise ImportError('control_backlog_priority.py does not classify the entity contract\'s backlog states: '
                       + ', '.join(classification_problems()))
 UNIT_FIELDS = ('unit', 'specification', 'scope', 'requirements', 'eligible_holders')
-TAXONOMY = {'invalid_input': 'invalid_input', 'missing_field': 'invalid_input', 'out_of_scope': 'invalid_input',
+# VELDO-0131: the API edge's operation that carries reprioritize, and its unauthenticated refusals.
+API_OPERATION = 'reprioritize_backlog'
+TAXONOMY = {'unauthenticated': 'unauthenticated', 'invalid_input': 'invalid_input', 'missing_field': 'invalid_input', 'out_of_scope': 'invalid_input',
             'no_such_item': 'invalid_input', 'no_such_feature': 'invalid_input', 'unsupported_work_class': 'invalid_input',
             'unsupported_outcome': 'invalid_input', 'not_authorized': 'missing_authority', 'not_owner': 'missing_authority',
             'project_not_active': 'missing_authority', 'not_approved': 'missing_authority',
@@ -367,13 +383,15 @@ class Backlog:
 
     # Commands.
 
-    def apply(self, packet):
+    def apply(self, packet, api_assertion=None):
+        """One signed command. `api_assertion` is the API edge's packet (assertion, signature) when the command
+        arrives from the authenticated API (VELDO-0131): the command is then signed by the edge, not the member."""
         command = packet.get('command') if isinstance(packet, dict) else None
         command = command if isinstance(command, dict) else {}
         observation = dict(self.ids, schema=SCHEMA, operation=command.get('operation'), item=None,
                            command_id=command.get('command_id'), accepted_versions={})
         try:
-            result = self._apply(packet, command, observation)
+            result = self._apply(packet, command, observation, api_assertion)
         except Refused as exc:
             result = {'ok': False, 'reason': exc.code}
         except self.store.StoreRefused as exc:
@@ -382,12 +400,13 @@ class Backlog:
             result = {'ok': False, 'reason': 'unavailable_service'}
         observation.update(outcome='accepted' if result['ok'] else 'refused',
                            refusal=None if result['ok'] else result['reason'],
-                           taxonomy=None if result['ok'] else taxonomy(result['reason']))
+                           taxonomy=None if result['ok'] else taxonomy(result['reason']),
+                           channel='api' if api_assertion is not None else 'signed')
         self.counts[observation['outcome']] += 1
         self.observations.append(observation)
         return result
 
-    def _apply(self, packet, command, observation):
+    def _apply(self, packet, command, observation, api_assertion=None):
         if (not isinstance(packet, dict) or not isinstance(packet.get('command'), dict)
                 or not isinstance(packet.get('signature'), str) or not packet['signature'].isascii()):
             raise Refused('invalid_input', 'command must be a mapping and signature ASCII text')
@@ -399,19 +418,27 @@ class Backlog:
         op, principal = command['operation'], command['principal']
         state = self.membership.authority_state(self.store, self.conn)
         now = self.clock()
-        key = self.AC.active_key(state['keyring'], principal, now)
-        if not key:
-            raise Refused('not_authorized', 'no active verification key')
-        verified, _ = self.AC.ssh_keygen_verify(self.store.canonical_bytes(command), packet['signature'],
-                                                self.AC.allowed_signers_line(principal, key['public_key']), principal)
-        if not verified:
-            raise Refused('not_authorized', 'command signature did not verify')
+        provenance = None
+        if api_assertion is not None:
+            provenance = self._api_edge(packet, command, api_assertion, state, now)
+        else:
+            key = self.AC.active_key(state['keyring'], principal, now)
+            if not key:
+                raise Refused('not_authorized', 'no active verification key')
+            verified, _ = self.AC.ssh_keygen_verify(self.store.canonical_bytes(command), packet['signature'],
+                                                    self.AC.allowed_signers_line(principal, key['public_key']), principal)
+            if not verified:
+                raise Refused('not_authorized', 'command signature did not verify')
         if op == 'take':
             feature = _row(self.conn, command.get('feature')) if _is_str(command.get('feature')) else None
             if (feature is None or feature['kind'] != KIND or not command['feature'].startswith(FEATURE_PREFIX)):
                 raise Refused('no_such_feature', str(command.get('feature'))[:128])
             iid, project = item_id(command['feature']), feature['data'].get('project')
             pinned = [command['feature'], feature['data'].get('objective_uuid')]
+            if command.get('work_class') == 'POLICY_DEFECT':
+                objective = _row(self.conn, feature['data'].get('objective_uuid')) or {}
+                _origin, source_reads = DF.origin(self.conn, objective.get('data', {}).get('proposal_id'), _objectives())
+                pinned += source_reads
         else:
             iid = command.get('item')
             current = read(self.conn, iid) if _is_str(iid) and iid.startswith(ID_PREFIX) else None
@@ -467,10 +494,40 @@ class Backlog:
                     for eid in dict.fromkeys(written + [p for p in pinned if _is_str(p)] + [principal])}
         observation['accepted_versions'] = versions
         params = dict(command=command, item=iid, project=project, at=now)
+        if provenance is not None:
+            params['api'] = provenance
         stored = dict(command_id=command['command_id'], principal=principal, operation=OPERATION, parameters=params,
                       expected_versions=versions, artifact_digests=[], nonce=command['nonce'])
         receipt = self.store.execute(self.conn, stored, self.journal_signer, self.sign, self.authority_generation)
         return {'ok': True, 'reason': op, 'item_id': iid, 'item': read(self.conn, iid), 'receipt': receipt}
+
+    def _api_edge(self, packet, command, proof, state, now):
+        """VELDO-0131: the API edge's signature over a verified assertion stands for the member's own on
+        reprioritize only. Every check is made here again; the caller's word that it verified is no evidence.
+        Returns the provenance the record keeps (never the assertion's text or a signature)."""
+        assertions, credentials = _api_organ('control_api_assertion'), _api_organ('control_api_credentials')
+        edges = _api_organ('control_channel_enrollment')
+        a = proof.get('assertion') if isinstance(proof, dict) else None
+        if (not isinstance(a, dict) or assertions.shape_problems(a) or a['operation'] != API_OPERATION
+                or command.get('operation') != 'reprioritize' or assertions.domain_request(a) != command):
+            raise Refused('unauthenticated:assertion', 'the command is not the one a verified assertion derives')
+        key = edges.edge_record(state, self.AC.edge_channel('api')['edge_key_id'])
+        member = self.AC.membership_entry(state['membership'], a['edge'])
+        if (not key or key['principal'] != a['edge'] or key['channel'] != 'api'
+                or a['edge_key_id'] != key['key_id'] or not edges.active(key, now)
+                or not self.AC.active_member(member, now)[0] or member.get('principal_type') != 'service'):
+            raise Refused('unauthenticated:edge', 'the api edge is not a current enrolled service member')
+        for value, signature in ((a, proof.get('signature')), (command, packet['signature'])):
+            verified, _ = self.AC.ssh_keygen_verify(self.store.canonical_bytes(value),
+                                                    signature if isinstance(signature, str) else '',
+                                                    self.AC.allowed_signers_line(a['edge'], key['public_key']), a['edge'])
+            if not verified:
+                raise Refused('unauthenticated:signature', 'not signed by the api edge')
+        if assertions.time_problem(a, now) or credentials.current(state, a['credential_id'], now,
+                                                                  principal=a['principal'])[1]:
+            raise Refused('unauthenticated:credential', 'the assertion is not live or its credential not current')
+        return {'channel': 'api', 'edge': a['edge'], 'request_id': a['request_id'],
+                'credential_id': a['credential_id'], 'assertion_digest': assertions.digest(a)}
 
     def _written(self, op, iid, command):
         """Every record the operation may write, so each is pinned at the version the command was decided on."""
@@ -518,6 +575,9 @@ class Backlog:
         command, iid, now = params['command'], params['item'], params['at']
         op, principal = command['operation'], command['principal']
         entry = {'by': principal, 'at': now, 'command_id': command['command_id'], 'operation': op}
+        if params.get('api'):
+            # VELDO-0131: a command the API edge carried names its channel and assertion in the history.
+            entry.update(channel='api', assertion_digest=params['api']['assertion_digest'])
         project = _row(conn, 'project:' + params['project'])
         if project is None or project['kind'] != PROJECT_KIND:
             raise Refused('project_not_active:missing', params['project'])
@@ -546,6 +606,16 @@ class Backlog:
             raise Refused('already_exists', iid)
         if command.get('work_class') not in WORK_CLASSES:
             raise Refused('unsupported_work_class:%s' % command.get('work_class'), 'the ordinary lane only')
+        defect = None
+        if command['work_class'] == 'POLICY_DEFECT':
+            origin, _reads = DF.origin(conn, objective['data'].get('proposal_id'), _objectives())
+            attribution = _objectives().attribution(conn, origin[1]) if origin else None
+            try:
+                defect = DF.report(command.get('defect'), origin, attribution)
+            except ValueError as error:
+                raise Refused(str(error)) from error
+        elif 'defect' in command:
+            raise Refused('invalid_input:defect_class', 'defect evidence belongs to POLICY_DEFECT')
         data = dict(schema=SCHEMA, uuid=iid, entity_type=KIND, domain_uuid=self.ids['domain_uuid'],
                     repository_uuid=self.ids['repository_uuid'], project=found['project'],
                     project_uuid='project:' + found['project'], objective_uuid=found['objective_uuid'],
@@ -555,6 +625,8 @@ class Backlog:
                     completion=None, cancellation=None,
                     provenance={'source': 'take', 'created_by': entry['by'], 'created_at': entry['at']},
                     history=[dict(entry, source=None, target='RAW')])
+        if defect is not None:
+            data['provenance']['defect'] = defect
         return {iid: {'kind': KIND, 'data': data}}
 
     def _unit_entry(self, conn, data, raw, taken):
@@ -878,6 +950,8 @@ class Backlog:
                   'previous_rank': previous, 'ruling': 'approve', 'principals': [entry['by']],
                   'revision': data['decomposition_revision'], 'digest': data['decomposition_digest'],
                   'units': list((data.get('priority') or {}).get('units') or [])}
+        if entry.get('assertion_digest'):
+            record.update(channel='api', assertion_digest=entry['assertion_digest'])
         data['priority'] = record
         data['priorities'] = list(data['priorities']) + [record]
         data['history'] = list(data['history']) + [dict(entry, source=data['state'], target=data['state'],

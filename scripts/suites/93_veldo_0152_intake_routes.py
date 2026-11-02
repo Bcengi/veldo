@@ -27,7 +27,7 @@ def _v152_suite():
              'route/new-project', 'route/existing-project', 'route/asked-only-when-unclear',
              'route/answers', 'route/read-and-report', 'route/runner-input',
              'route/scope-refusal', 'route/malformed', 'route/stale', 'route/factory-refusal',
-             'format/fake-lines', 'route/legacy-owner', 'graph/own-stage')
+             'format/fake-lines', 'route/legacy-owner', 'graph/own-stage', 'line/store-staffing')
     rows = {n: [] for n in names}
     def check(name, label, condition):
         rows[name].append((label, bool(condition)))
@@ -288,8 +288,21 @@ else:
             # No row changes the installed runtime. Validate it once, then pass
             # the same real runtime through ProjectCycles' explicit runtime seam.
             runtime = PM.CY.installed_runtime()
+            # The installed receiver declares dispatchable engines; the protocol fake remains a launch seam.
+            installed_receiver = base / 'receiver-installed.json'
+            installed_data = json.loads(config.read_text())
+            for adapter, engine in {'claude': 'claude_code', 'codex': 'codex'}.items():
+                installed_data['adapters'][adapter]['engine'] = engine
+            installed_receiver.write_text(json.dumps(installed_data))
+            service.config['receiver'] = {'configs': {repository: str(installed_receiver)}}
+            # Intake's projects share the source repository; projects without an explicit team use its default.
+            default_team = SV.TR.TeamRoutes(f['service'], f['settlement'], f['presenter']).save_default(
+                f['team'](), 'olga', 0, f['next_id']('default-team'), 'sha256:' + '0' * 64)
             factory = SV.FactoryLoop(service, {'repositories': {}})
-            line = SV.Line(factory, repository, {'builder': {'identity': 'unassigned'}, 'reviewers': []}, config)
+            check('line/store-staffing', 'the store builds the configured receiver line from its default team',
+                  default_team.get('outcome') == 'saved' and repository in factory.lines)
+            line = factory.lines[repository]
+            line.runner.receiver = lambda contract: SV.L.invoke(config, contract, line.dispatches)
             line.runner.account = 'fixture-account'
             line.engines, line.hosts = {'claude': 'claude_code', 'codex': 'codex'}, {'claude': 'fixture-host', 'codex': 'fixture-host'}
             factory.lines[repository] = line

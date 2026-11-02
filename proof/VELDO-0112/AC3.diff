@@ -1,0 +1,11 @@
+--- scripts/fixtures/registered_clients.py
++++ scripts/fixtures/registered_clients.py
+@@ -94,7 +94,7 @@
+         if chosen is None:
+             raise runtime.RegistryError('unregistered_entrypoint', adapter.entrypoint)
+         result.append(Case(chosen['client'], transport, adapter, stamp, chosen['implementation_digest']))
+-    return tuple(result)
++    return tuple(case for case in result if case.client != 'extension')
+ 
+ 
+ def receipt(runtime, inventory, executed, *, consumer):

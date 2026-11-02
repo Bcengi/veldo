@@ -758,6 +758,43 @@ sys.exit(payload.get('code', 0))
                 check('containment/not-found-unknown', result == 'unknown' and group.timestamps == {},
                       observed['not_found_unknown'])
 
+        with region('containment/status-ended-group'):
+            # Three groups populated at the scan. Answering for each one, the manager sees `collected` end
+            # and be collected (the bare unit name as its Description), `emptied` end while still loaded,
+            # and `running` still run. Only `running` is pending work.
+            names = {key: C.unit_name('dispatch/VELDO-95%02d' % n)
+                     for n, key in enumerate(('collected', 'emptied', 'running'))}
+            fake_cgroup = base / 'status-cgroup'
+            for unit in names.values():
+                (fake_cgroup / 'status.slice' / unit).mkdir(parents=True)
+                (fake_cgroup / 'status.slice' / unit / 'cgroup.events').write_text('populated 1')
+            asked = []
+
+            def answer(command, **kwargs):
+                unit = command[-1]
+                asked.append(unit)
+                if unit == 'status.slice':
+                    shown = {'ControlGroup': '/status.slice'}
+                else:
+                    if unit != names['running']:
+                        (fake_cgroup / 'status.slice' / unit / 'cgroup.events').write_text('populated 0')
+                    shown = ({'Description': unit, 'LoadState': 'not-found', 'ActiveState': 'inactive', 'ControlGroup': ''}
+                             if unit == names['collected'] else
+                             {'Description': 'Veldo dispatch ' + unit, 'LoadState': 'loaded', 'ActiveState': 'active',
+                              'ControlGroup': '/status.slice/' + unit})
+                return types.SimpleNamespace(returncode=0, stdout=''.join('%s=%s\n' % item for item in shown.items()))
+
+            fake_subprocess = types.SimpleNamespace(**vars(subprocess))
+            fake_subprocess.run = answer
+            qualified = {'qualified': True, 'host': {'systemctl': 'fake-systemctl'}, 'settings': {}}
+            with patch.object(C, 'subprocess', fake_subprocess), patch.object(C, 'CGROUP', fake_cgroup), \
+                    patch.object(C, 'qualify', lambda profile, environment=None: qualified):
+                shown = C.status({'kind': 'linux-systemd', 'slice': 'status.slice'})
+            observed['status_ended_group'] = dict(status=shown, asked=asked)
+            check('containment/status-ended-group',
+                  shown.get('groups') == [{'unit': names['running'], 'description': 'Veldo dispatch ' + names['running']}]
+                  and sorted(asked) == sorted(['status.slice'] + list(names.values())), observed['status_ended_group'])
+
         with region('containment/normal-exit-before-cap'):
             rows = [reap_sequence([record], start=start, code=0, exit_at=10.5)
                     for record in (gone, manager_record('inactive', 'success'))]
@@ -862,7 +899,9 @@ sys.exit(payload.get('code', 0))
             with contextlib.suppress(Exception):
                 started['runtime'] = (time.time(), runner('runtime').submit(admitted('VELDO-9420'), 'build', **job(
                     descendants=[['stubborn', 'stubborn', 10]], hold=10, beat=True)))
-                started['idle'] = runner('main').submit(admitted('VELDO-9421'), 'build', **job(hold=8, release='idle'))
+                # The idle worker ends only on its release (its hold is a backstop under the 60 s deadline): a
+                # worker that ended by itself inside the watched window would wake its receiver by right.
+                started['idle'] = runner('main').submit(admitted('VELDO-9421'), 'build', **job(hold=50, release='idle'))
 
             # AC1: the worker and its ordinary descendants in the dispatch's own group
             with region('containment/dedicated-group', 'containment/ordinary-exit'):
@@ -1007,9 +1046,12 @@ sys.exit(payload.get('code', 0))
                 observed['exit_notified'] = {'window_seconds': round(window, 2), 'receiver_wakes': wakes,
                                              'exit_at': exit_at, 'recorded_at': recorded_at,
                                              'latency': round(recorded_at - exit_at, 3) if exit_at and recorded_at else None,
-                                             'idle_worker_alive_in_window': bool(idle_facts)}
+                                             'idle_worker_alive_in_window': bool(idle_facts),
+                                             'exited_after_window': bool(exit_at and len(counted) == 2
+                                                                         and exit_at > counted[-1][0])}
                 check('containment/exit-notified',
                       ended.get('state') == 'exited' and bool(idle_facts) and window >= 1.5 and wakes == 0
+                      and observed['exit_notified']['exited_after_window']
                       and exit_at is not None and recorded_at is not None
                       and 0 <= recorded_at - exit_at < 0.75, observed['exit_notified'])
 
@@ -1045,9 +1087,11 @@ sys.exit(payload.get('code', 0))
                 runner('concurrency').wait(ca)
                 runner('concurrency').wait(cc)
                 cd = runner('concurrency').submit(rec(cc.dispatch_id).get('contract', {}).get('unit', 'VELDO-9409'),
-                                                  'build', **job(hold=0.2))
+                                                  'build', **job(hold=30, release='cd'))
+                # cb and cd are both held on their release files, so the live set is fixed while it is read.
                 live_groups = C.status(profile(slice=slices[1], lock=str(base / 'b.lock'), concurrency=2)).get('groups')
                 release(cb)
+                release(cd)
                 concurrency = {'first': ca.result, 'second': cb.result, 'third': [cc.result, rec(cc.dispatch_id).get('refusal'),
                                                                                     states(cc)],
                                'after_one_ended': cd.result, 'live_while_two_ran': live_groups}

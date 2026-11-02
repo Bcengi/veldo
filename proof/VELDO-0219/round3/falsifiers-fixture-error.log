@@ -1,0 +1,38 @@
+admission219-slowest-rate mutant ['admission/measured-per-case', 'admission/fallback-order', 'admission/cpu-per-run']
+admission219-slowest-rate baseline []
+admission219-slowest-rate noop []
+admission219-fixed-sixteen mutant ['admission/fits-ledger', 'admission/unmeasured-inventory']
+admission219-fixed-sixteen baseline []
+admission219-fixed-sixteen noop []
+admission219-optimistic-m mutant ['admission/same-verdicts', 'admission/stage-receipts-and-recording']
+admission219-optimistic-m baseline []
+admission219-optimistic-m noop []
+admission219-short-unit-unaccounted mutant ['admission/unit-lifecycle']
+admission219-short-unit-unaccounted baseline []
+admission219-short-unit-unaccounted noop []
+admission219-graph-without-channel mutant ['admission/cli-graph-without-channel']
+admission219-graph-without-channel baseline []
+admission219-graph-without-channel noop []
+admission219-channel-ignored mutant ['admission/cli-graph-with-channel']
+admission219-channel-ignored baseline []
+admission219-channel-ignored noop []
+Traceback (most recent call last):
+  File "/home/dmitry/projects/veldo-worktrees/veldo-0219/proof/VELDO-0219/round3/falsifiers.py", line 32, in <module>
+    result = teeth.worker(case, str(made['mutant']) if made['mutant'] else None)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/veldo-0219/scripts/check_teeth_mutations.py", line 11723, in worker
+    exec(compile(source, str(suite), 'exec'), ns)
+  File "/home/dmitry/projects/veldo-worktrees/veldo-0219/scripts/suites/115_veldo_0219_measured_admission.py", line 431, in <module>
+    _v219_checks()
+  File "/home/dmitry/projects/veldo-worktrees/veldo-0219/scripts/suites/115_veldo_0219_measured_admission.py", line 416, in _v219_checks
+    row('worker-before-handoff-refused', round3.before_handoff(scheduler))
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dmitry/projects/veldo-worktrees/veldo-0219/proof/VELDO-0219/round3/check.py", line 79, in before_handoff
+    result = schedule.run({'mutation': 'fixture'}, top, top / 'logs', top / 'legs', top / 'receipt',
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/v219-round3-falsifier-bhg3is35/gate_schedule.py", line 429, in run
+  File "/tmp/v219-round3-falsifier-bhg3is35/gate_schedule.py", line 40, in load_module
+  File "<frozen importlib._bootstrap_external>", line 991, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1128, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1186, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/v219-round3-falsifier-bhg3is35/gate_legs.py'

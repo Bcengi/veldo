@@ -53,6 +53,15 @@ protected_paths:
   - {path: "scripts/gate_unconfined.json", floor: high}
   - {path: "scripts/gate_legs.py", floor: high}
   - {path: "engine/scripts/gate_legs.py", floor: high}
+  # VELDO-0220 (owner approval 2026-10-25, Telegram 36467): the host configuration (the lock every
+  # heavy run serializes on, the scope's memory limit and out-of-memory score) and the holder
+  # that takes the lock and makes the scope before the gate's first check.
+  - {path: "scripts/gate_graph.json", floor: high}
+  - {path: "scripts/gate_schedule.py", floor: high}
+  - {path: "engine/scripts/gate_schedule.py", floor: high}
+  - {path: "scripts/gate_host.json", floor: high}
+  - {path: "scripts/gate_host.py", floor: high}
+  - {path: "engine/scripts/gate_host.py", floor: high}
   # The candidate's dispatcher applies that list: selftest.py picks each leg's suites, run_scope.py
   # and suites/shared.py (leg_runs) pick the rows. check_first_use.py is the integration stage's
   # command: in the unconfined leg it runs whole outside the confinement and hands its environment,

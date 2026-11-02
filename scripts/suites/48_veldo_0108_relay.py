@@ -52,7 +52,7 @@ def _v108_organ(tag, edits=()):
     """A copy of the relay with the client and the enrollment reader beside it."""
     d = _v108_tmp / ("organ_" + tag)
     d.mkdir()
-    for name in ("control_enrollment.py", "control_client.py"):
+    for name in ("control_enrollment.py", "control_client.py", "control_client_registry.py"):
         _v108_shutil.copy2(ROOT / ".veldo" / name, d / name)
     src = (ROOT / ".veldo" / "control_relay.py").read_text()
     for old, new in edits:

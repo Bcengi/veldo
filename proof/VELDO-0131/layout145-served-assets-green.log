@@ -1,0 +1,5 @@
+
+Running 1 test using 1 worker
+
+[1/1] e2e/layout.spec.ts:512:1 › served assets: every response is this origin and every asset is a file of the build
+  1 passed (6.7s)

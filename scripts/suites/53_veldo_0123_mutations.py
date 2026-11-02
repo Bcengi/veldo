@@ -152,6 +152,7 @@ def gate_exit(root, gate_source):
     for name in ('validate.py', 'shape_gate.py', 'events.py', 'version.py'):
         (root / '.veldo' / name).write_text("print('3.10.1')\n")
     return _m123_sp.run(['bash', 'scripts/verify.sh'], cwd=root, capture_output=True,
+                       env=dict(_m123_os.environ, HOME=str(root.parent / 'gate-home')),
                        text=True, timeout=30, pass_fds=launcher_fds()).returncode
 
 
@@ -650,7 +651,7 @@ if 'expect' in globals():
            and _m123_id(_m123_base) != _m123_id(dict(_m123_base, **{'a/b.txt': (0o600, b'one')}))
            and _m123_id(_m123_base) != _m123_id({'a/B.txt': (0o644, b'one'), 'c.txt': (0o755, b'two')}))
 
-    # The stage's parallelism follows the host: the CPUs this process may use, clamped to 2..16.
+    # The stage's parallelism follows the host: the CPUs this process may use, bounded by twice usable CPUs, with a floor of two.
     # Driven, not read: a child whose CPU set is narrowed sees that count, and Workers.run really
     # keeps exactly PARALLEL workers running at once when there are more jobs than that.
     _m123_affinity = None
@@ -722,14 +723,14 @@ if 'expect' in globals():
                         for n in ('self-cgroup', 'none-cgroup', 'v1-cgroup', 'half-cgroup', 'tight-cgroup',
                                   'escape-cgroup')]
         _m123_sp.run(['rm', '-rf', str(_m123_cgp.parent / (_m123_cgp.name + '-evil'))], check=True)
-        # And the worker count really applies it: a 3.5-CPU quota rounds UP to 4 workers.
+        # And the worker count really applies it: a 3.5-CPU quota permits a ceiling of seven workers.
         _m123_quota_workers = _m123_gate.worker_count(None, str(_m123_cgp), str(_m123_cgp / 'half-cgroup'))
         _m123_host_workers = _m123_gate.worker_count(None, str(_m123_cgp), str(_m123_cgp / 'none-cgroup'))
     expect('VELDO-0123 gate/workers-follow-the-host: the mutation stage runs as many workers as the CPUs it '
-           'may use (its affinity set, bounded by a cgroup quota), never fewer than 2 or more than 16: a '
-           'child pinned to 1 or 4 CPUs computes 2 or 4, and Workers.run really runs exactly that many at once',
-           [_m123_gate.worker_count(n) for n in (1, 2, 8, 20, 64)] == [2, 2, 8, 16, 16]
-           and (_m123_affinity is None or all(_m123_affinity.get(n) == str(max(2, n)) for n in _m123_affinity))
+           'may use (its affinity set, bounded by a cgroup quota), with a ceiling of twice usable CPUs: a '
+           'child pinned to 1 or 4 CPUs computes 2 or 8, and Workers.run really runs exactly that many at once',
+           [_m123_gate.worker_count(n) for n in (1, 2, 8, 20, 64)] == [2, 4, 16, 40, 128]
+           and (_m123_affinity is None or all(_m123_affinity.get(n) == str(max(2, 2*n)) for n in _m123_affinity))
            and sorted(_m123_done) == sorted(_m123_jobs) and _m123_peak[0] == _m123_driven_parallel == 3
-           and _m123_quotas == [2, None, None, 4, 2, None]
-           and _m123_quota_workers == min(4, _m123_host_workers))
+           and _m123_quotas == [2, None, None, 3.5, 1.5, None]
+           and _m123_quota_workers == min(7, _m123_host_workers))

@@ -1,0 +1,3 @@
+PASS VELDO-0080 defects/ordinary-admission
+PASS VELDO-0080 defects/no-automatic-admission
+PASS VELDO-0080 defects/ordinary-completion

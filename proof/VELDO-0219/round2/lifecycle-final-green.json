@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "cycles": [
+    {
+      "known": 0.063675802,
+      "measurement": {
+        "cpu_seconds": 0.0653,
+        "peak_anon_bytes": 0,
+        "peak_memory_bytes": 38531072,
+        "metrics_source": "cgroup-v2-anon-sampled-20ms-with-final-unit-accounting",
+        "cgroups": [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/veldo21923862fbff9da.slice",
+          "/tmp/tmppced_t1d/scope/worker-2360241-fixture"
+        ]
+      },
+      "final": [
+        0.0653,
+        0
+      ]
+    },
+    {
+      "known": 0.064052731,
+      "measurement": {
+        "cpu_seconds": 0.130626,
+        "peak_anon_bytes": 0,
+        "peak_memory_bytes": 38793216,
+        "metrics_source": "cgroup-v2-anon-sampled-20ms-with-final-unit-accounting",
+        "cgroups": [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/veldo21923862fbff9da.slice",
+          "/tmp/tmppced_t1d/scope/worker-2360241-fixture"
+        ]
+      },
+      "final": [
+        0.130626,
+        0
+      ]
+    }
+  ],
+  "service": {
+    "passed": true,
+    "known": 0.067182026,
+    "measurement": {
+      "cpu_seconds": 0.06914,
+      "peak_anon_bytes": 15003648,
+      "peak_memory_bytes": 39362560,
+      "metrics_source": "cgroup-v2-anon-sampled-20ms-with-final-unit-accounting",
+      "cgroups": [
+        "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/veldometerworker2360241service.slice",
+        "/tmp/tmppv6m4sqh/scope/worker-2360241-service"
+      ]
+    }
+  }
+}

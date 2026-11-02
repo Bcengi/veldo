@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-BATCH-VELDO-2026-10-28-LANDING",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0121",
+    "commit": "b8c690d7412721076458fba43feee7c72fea0f7e",
+    "paths": []
+  },
+  "basis": "Dmitry approved landing of the Veldo batch batch/veldo-2026-10-28 (VELDO-0080, VELDO-0112, VELDO-0115 and VELDO-0121 on main 59b119a1, with the 0115 and 0121 batch fixes) at b8c690d7 over Telegram on 2026-10-29T10:47:08Z (message 37501, 'approve Veldo batch b8c690d7'), asked in 37497 (copy line 37498). The ask stated that the batch changes no protected path against main. The canonical gate was GREEN at b8c690d7 (selftest 7,947 passed, 0 failed; every stage pass; mutation executed fresh). WHAT IT DOES NOT COVER: any protected path, and any change made after b8c690d7 other than this record and the gate stamp.",
+  "recorded_at": "2026-10-29T10:55:00Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-11-29T00:00:00Z"
+}

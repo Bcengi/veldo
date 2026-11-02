@@ -243,6 +243,10 @@ def _v215_case_deadlines():
         # An installed authority verifies another root. Only its CLI opts into recording;
         # neither a caller environment variable nor --root grants a fixture library call this.
         calls = []
+        # main() loads gate_legs.py for the leg and (VELDO-0219) gate_schedule.py for its ledger CHANNEL; only
+        # the leg is doubled, every other module main loads is the real one.
+        real_load = gate.load
+        legs_double = types.SimpleNamespace(mutation_leg=lambda: None)
         def cli_stage(root, common, **kwargs):
             calls.append((root, kwargs))
             return dict(status='passed', registered=0, executed=0, reused=0, rejected=0,
@@ -250,7 +254,7 @@ def _v215_case_deadlines():
         with patch.object(gate.sys, 'argv', ['check_gate_mutations.py', '--root', str(scratch / 'candidate')]), \
                 patch.object(gate, 'run_stage', cli_stage), \
                 patch.object(gate, 'common_directory', lambda root: root / '.git'), \
-                patch.object(gate, 'load', lambda path: types.SimpleNamespace(mutation_leg=lambda: None)), \
+                patch.object(gate, 'load', lambda path: legs_double if Path(path).name == 'gate_legs.py' else real_load(path)), \
                 contextlib.redirect_stdout(__import__('io').StringIO()):
             code = gate.main()
         row('candidate-authority', code == 0 and calls[0][0] == scratch / 'candidate'

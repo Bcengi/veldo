@@ -1,0 +1,34 @@
+Batch context: scratch detached worktree at batch/veldo-2026-10-28 a72d7dd0, merged agent/codex/veldo-0121 at 58156832 (merge 1cde7b38); batch branch unchanged.
+Confined leg per suite (gate_candidate.py, gate profile, leg env digest sha256:209267e3...), under the host gate lock and systemd-run MemoryHigh=14G MemoryMax=16G.
+Exit 2 is the partial-selector exit; the store-denied line appears in every partial run of the inventory too.
+Before the merge (inventory, batch HEAD a72d7dd0): 86_veldo_0168_text FAIL 51/1 inventory/sends-and-assets; 113_veldo_0121_relay_exchange crash NameError __file__ (0 rows).
+
+## unit
+unit 4 confined suites, digest sha256:209267e300d7acf00d14744f326c0c374e06fc7bf836f11eabb535c17f1e759b
+00:34:57 start 1/4 48_veldo_0108_relay
+00:34:59 done 48_veldo_0108_relay rc=2 2s
+00:34:59 start 2/4 86_veldo_0168_text
+00:35:04 done 86_veldo_0168_text rc=2 5s
+00:35:04 start 3/4 113_veldo_0112_registered_clients
+00:35:10 done 113_veldo_0112_registered_clients rc=2 7s
+00:35:10 start 4/4 113_veldo_0121_relay_exchange
+00:35:47 done 113_veldo_0121_relay_exchange rc=2 36s
+ALL DONE
+  113_veldo_0112_registered_clients                3 passed    6.57s
+selftest (PARTIAL, 1 of 172 suites): 29 passed, 0 failed in 6.57s
+  113_veldo_0121_relay_exchange                    4 passed   36.12s
+selftest (PARTIAL, 1 of 172 suites): 30 passed, 0 failed in 36.12s
+  48_veldo_0108_relay                             10 passed    1.29s
+selftest (PARTIAL, 1 of 172 suites): 36 passed, 0 failed in 1.29s
+  86_veldo_0168_text                              26 passed    4.61s
+selftest (PARTIAL, 1 of 172 suites): 52 passed, 0 failed in 4.61s
+
+## integration (spend_recorded first-use tree)
+integration 2 confined suites, digest sha256:209267e300d7acf00d14744f326c0c374e06fc7bf836f11eabb535c17f1e759b
+00:35:47 start integration (one confined invocation)
+00:36:30 done integration rc=0 43s
+ALL DONE
+INV|86_veldo_0168_text| selftest (PARTIAL, 1 of 172 suites): 52 passed, 0 failed in 4.62s
+INV done 86_veldo_0168_text rc=2 5s
+INV|113_veldo_0121_relay_exchange| selftest (PARTIAL, 1 of 172 suites): 30 passed, 0 failed in 35.88s
+INV done 113_veldo_0121_relay_exchange rc=2 36s

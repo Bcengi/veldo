@@ -11,11 +11,17 @@ PATH_READS = {'open', 'openat', 'openat2', 'stat', 'lstat', 'statx', 'newfstatat
               'statfs', 'getxattr', 'lgetxattr', 'listxattr', 'llistxattr',
               'execve', 'execveat', 'chdir', 'symlink', 'symlinkat'}
 FD_READS = {'fstat', 'fstatfs', 'getdents', 'getdents64', 'fchdir'}
+# -q, not -qq: strace prints each traced thread's own end, so a call that never resumed is known to
+# belong to a thread that ended. Only an exit, or a call strace could not name, may end that way.
+ENDED = re.compile(r'^\d+ \+\+\+ (?:exited with -?\d+|killed by SIG[A-Z0-9]+(?: \(core dumped\))?) \+\+\+$')
+STATUS = re.compile(r'^\d+ \+\+\+ .* \+\+\+$')
+ENDING_CALLS = {'exit', 'exit_group', '???'}
+PENDING_CALL = re.compile(r'^\d+ ([a-zA-Z0-9_]+|\?\?\?)\(')
 
 
 def command(trace, argv):
     # file includes metadata probes, even failed ones. getdents is not in file.
-    return ['/usr/bin/strace', '-f', '-qq', '-yy', '-s', '65535',
+    return ['/usr/bin/strace', '-f', '-q', '-yy', '-s', '65535',
             '-e', 'trace=%file,%process,fstat,fstatfs,getdents,getdents64,fchdir,landlock_restrict_self',
             '-o', str(trace), *argv]
 
@@ -24,6 +30,16 @@ def syscall_lines(trace):
     pending = {}
     for line in Path(trace).read_text(errors='replace').splitlines():
         pid = line.split(None, 1)[0]
+        if ENDED.match(line):
+            # A thread torn down by its group's exit never resumes its last call. Accept that
+            # call only when it is an exit; any other call of an ended thread is lost evidence.
+            call = pending.pop(pid, None)
+            name = PENDING_CALL.match(call) if call is not None else None
+            if call is not None and (name is None or name[1] not in ENDING_CALLS):
+                raise ValueError('incomplete file-read trace')
+            continue
+        if STATUS.match(line):
+            continue
         if '<unfinished ...>' in line:
             pending[pid] = line.replace('<unfinished ...>', '')
             continue

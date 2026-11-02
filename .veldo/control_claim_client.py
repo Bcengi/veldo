@@ -5,6 +5,15 @@ from the successful claim, never refreshed from a read to make a stale holder
 current. renew/release/use also accept an explicit generation for dispatched work.
 The service runner supplies signing and verification callables and the host ID.
 """
+
+# The registry is shared across aliases of this installed module.
+import importlib.util as _registry_import
+from pathlib import Path as _RegistryPath
+_registry_spec = _registry_import.spec_from_file_location(
+    "veldo_client_registry", _RegistryPath(__file__).with_name("control_client_registry.py"))
+_CLIENTS = _registry_import.module_from_spec(_registry_spec)
+_registry_spec.loader.exec_module(_CLIENTS)
+
 import importlib.util
 from pathlib import Path
 import uuid
@@ -30,6 +39,7 @@ class Client:
         self.sign, self.verify, self.host_identity = sign, verify, host_identity
         self.timeout, self.generations = timeout, {}
 
+    @_CLIENTS.entrypoint('claim', ('local_ipc',))
     def request(self, operation, unit, generation=0, capabilities=()):
         problem = CL.unit_id_problem(unit)
         if problem:
@@ -55,6 +65,7 @@ class Client:
             raise CL.ClaimStopped(result['reason'])
         return result
 
+    @_CLIENTS.entrypoint('claim', ('local_ipc',))
     def claim(self, unit, worker, worker_caps=None, requirements=None):
         if worker != self.principal:
             return False, 'not_owner'
@@ -69,12 +80,15 @@ class Client:
         result = self.request(operation, unit, self.generations.get(unit, 0) if generation is None else generation)
         return result['ok']
 
+    @_CLIENTS.entrypoint('claim', ('local_ipc',))
     def heartbeat(self, unit, worker):
         return self._owned('renew', unit, worker)
 
+    @_CLIENTS.entrypoint('claim', ('local_ipc',))
     def release(self, unit, worker):
         return self._owned('release', unit, worker)
 
+    @_CLIENTS.entrypoint('claim', ('local_ipc',))
     def use(self, unit, generation=None):
         """Receiver-side protected-use check, consumed immediately by the effect caller."""
         return self._owned('use', unit, self.principal, generation)

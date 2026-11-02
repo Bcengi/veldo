@@ -1,0 +1,4 @@
+{
+  "passed": false,
+  "error": "no lifecycle accounting before units start"
+}

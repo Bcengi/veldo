@@ -1,0 +1,11 @@
+--- .veldo/control_grooming_request.py
++++ mutant/control_grooming_request.py
+@@ -225,7 +225,7 @@
+                    'authority_policy_digest': digest(project.get('authority_policy'))},
+         'release_authority': {'maximum': RELEASE_AUTHORITY, 'repository': project.get('execution_repository')},
+         'evidence': {'requirements': [dict(e) for e in bound.get('evidence_requirements') or [] if isinstance(e, dict)],
+-                     'acceptance': accepted, **({'defect': DF.evidence(item)} if DF.evidence(item) is not None else {})},
++                     'acceptance': accepted},
+         'decomposition': {'revision': item.get('decomposition_revision'), 'digest': item.get('decomposition_digest'),
+                           'units': [{'unit': u.get('unit'), 'specification': u.get('specification'),
+                                      'scope': list(u.get('scope') or [])} for u in item.get('decomposition') or []]},

@@ -65,7 +65,8 @@ def _v154_suite():
     }
     ROWS = ('install/assets', 'loop/runner-in-service', 'loop/journal-wake-offers', 'loop/review-offered',
             'loop/receiver-death', 'loop/rerun-another-account', 'loop/ask-before-rerun', 'loop/owner-yes-reruns',
-            'loop/owner-no-stops', 'loop/reset-timer-wake', 'loop/no-other-timer', 'format/fake-lines')
+            'loop/owner-no-stops', 'loop/owner-stop-asked-on-wake', 'loop/reset-timer-wake', 'loop/no-other-timer',
+            'format/fake-lines')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -290,6 +291,15 @@ sys.exit(chosen['code'])
                         'activate', name, owner='owner', charter={'purpose': 'Deliver the %s work.' % name, 'exclusions': []},
                         execution_repository=self.REPO, authority_policy={'grooming': ['project_owner']},
                         coordination_budget={'capacity': 20, 'invocations': 200, 'wall_seconds': 10 ** 6, 'owner_minutes': 60})
+
+                # Project staffing is store authority. This fixture has no PM cycles, so supply its engineering
+                # roles in the default team instead of depending on the installed work configuration fallback.
+                team_roles = {name: dict(workers=[worker], engines=['codex'],
+                                         capability_configuration=ROLE['configuration'],
+                                         budget={'wall_seconds': ROLE['seconds']})
+                              for name, worker in (('implementation', BUILDER), ('independent_review', REVIEWER))}
+                self.put(CS.TR.HEAD, CS.TR.KIND, {'revision': 1})
+                self.put(CS.TR.default_id(1), CS.TR.KIND, {'revision': 1, 'team': {'roles': team_roles}})
 
                 # The owner's Codex accounts, each with its own profile on this host, and the reservation ceilings.
                 self.reserving = RES.Reservations(S, setup, domain=self.DOMAIN, repository=self.REPO, principal='authority',
@@ -610,7 +620,8 @@ sys.exit(chosen['code'])
         def held(name):
             return {'script': [thread(), turn(), {'wait': gate(name)}, done()], 'code': 0}
 
-        U = {key: 'VELDO-9154-' + key for key in ('U1', 'U2', 'UP', 'UX', 'B1', 'B2', 'B3', 'W', 'L1', 'L2', 'L3', 'L4')}
+        U = {key: 'VELDO-9154-' + key for key in ('U1', 'U2', 'UP', 'UX', 'B1', 'B2', 'B3', 'W', 'L1', 'L2', 'L3', 'L4',
+                                                  'S1')}
         # The second instance, built and started first: its one account and the reset row's unit.
         B = Instance('b', ('acct-y1',), [(U['L4'], 'journey')])
         instances.append(B)
@@ -967,6 +978,60 @@ sys.exit(chosen['code'])
                   and later is not None and [s['unit'] for s in later.get('stopped') or []] == [U['L3']]
                   and len(dispatches(U['L3'])) == 1 and not offered(stop, U['L3']) and not offered(later, U['L3']))
 
+        # VELDO-0131 (review F1): the owner's stop of the only worker on an idle line is asked on the pass the journal
+        # advance wakes, with no run of that line prepared or ended to ask it. The stop request is committed through
+        # the dispatch store, then a signed packet through the service advances the journal and wakes the loop.
+        with region('loop/owner-stop-asked-on-wake'):
+            D = L.D
+            script(U['S1'], 'build', [held('s1-never')])
+            claim(U['S1'])
+            mark = last_pass()
+            note()
+            took = wait_pass(lambda p: bool(offered(p, U['S1'], 'build')), mark)
+            wait_until(lambda: (dispatches(U['S1'], 'build') or [{}])[0].get('state') == 'running')
+            running = (dispatches(U['S1'], 'build') or [{}])[0]
+            sid = running.get('dispatch_id') or ''
+            owner_dispatches = D.Dispatches(S, setup, domain=A.DOMAIN, repository=REPO, principal='authority',
+                                            signer='authority', sign=journal_sign)
+            mark = last_pass()
+            requested = owner_dispatches.request_stop(sid, owner_dispatches.version(sid), 'owner', now=time.time(),
+                                                      request='stop-' + sid, channel='api')
+            asked_at = time.monotonic()
+            woke = note()
+            # Polled here rather than through wait_until, so a stop that is never asked reds this row alone.
+            end = time.time() + min(WAIT, max(0.0, A.deadline - time.time()))
+            settled = running
+            while time.time() < end and A.live():
+                settled = (dispatches(U['S1'], 'build') or [{}])[0]
+                if settled.get('state') not in D.STOPPABLE:
+                    break
+                time.sleep(0.05)
+            elapsed = time.monotonic() - asked_at
+            # The pass is logged once it is done, after the receiver it asked has recorded the end.
+            wait_pass(lambda p: 'journal' in p['sources'], mark)
+            after = [p for p in passes() if p['pass'] > mark]
+            stop_request = settled.get('stop_request') or {}
+            check('loop/owner-stop-asked-on-wake', 'the line\'s only worker ran, offered by a journal pass [%s, %s]'
+                  % ((took or {}).get('sources'), running.get('state')),
+                  took is not None and running.get('state') == 'running' and bool(sid))
+            check('loop/owner-stop-asked-on-wake', 'the owner\'s stop request committed while the run worked, and the '
+                  'journal advance that woke the loop started a pass that offered and ended nothing [%s, %s, %s]'
+                  % ((requested or {}).get('stop_request'), woke,
+                     [(p['pass'], p['sources'], len(offered(p)), len(ended(p))) for p in after]),
+                  (requested or {}).get('state') == 'running'
+                  and ((requested or {}).get('stop_request') or {}).get('by') == 'owner'
+                  and bool(after) and after[0]['sources'] == ['journal'] and not offered(after[0])
+                  and not ended(after[0]))
+            check('loop/owner-stop-asked-on-wake', 'that pass asked the receiver to stop: the stop request\'s result is '
+                  'asked true, and the dispatch ended within %.0f s [%s, %s, %.2f s]'
+                  % (WAIT, stop_request, settled.get('state'), elapsed),
+                  (stop_request.get('result') or {}).get('asked') is True
+                  and settled.get('state') not in D.STOPPABLE and elapsed < WAIT
+                  and len(dispatches(U['S1'])) == 1)
+            # A stop never asked leaves the worker held: release it, so the later rows run on a settled line.
+            release('s1-never')
+            wait_until(lambda: (dispatches(U['S1'], 'build') or [{}])[0].get('state') not in D.STOPPABLE)
+
         timing['rows'] = time.monotonic() - started
         # AC1 and AC4, closed at the end: the second instance's reset wake, and the quiet interval before it.
         with region('loop/reset-timer-wake', 'loop/no-other-timer'):
@@ -1038,7 +1103,7 @@ sys.exit(chosen['code'])
     finally:
         watching.set()
         with contextlib.suppress(Exception):
-            for name in ('u1', 'u2-never', 'blockers', 'w', 'l1'):
+            for name in ('u1', 'u2-never', 'blockers', 'w', 'l1', 's1-never'):
                 (base / 'gates' / name).write_text('go')
         if watcher[0] is not None:
             watcher[0].join(10)

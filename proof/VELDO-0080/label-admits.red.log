@@ -1,0 +1,6 @@
+VELDO-0080 detail: defects/ordinary-admission: AssertionError('label admitted without owner')
+FAIL VELDO-0080 defects/ordinary-admission
+VELDO-0080 detail: defects/no-automatic-admission: AssertionError('model assertion admitted automatically')
+FAIL VELDO-0080 defects/no-automatic-admission
+VELDO-0080 detail: defects/ordinary-completion: AssertionError('AC1 must provide admitted work')
+FAIL VELDO-0080 defects/ordinary-completion

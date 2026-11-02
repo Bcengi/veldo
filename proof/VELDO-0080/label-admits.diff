@@ -1,0 +1,11 @@
+--- .veldo/control_backlog_priority.py
++++ mutant/control_backlog_priority.py
+@@ -61,6 +61,8 @@
+     missing_authority:backlog/<terminal state>, missing_authority:priority (admitted but not prioritized,
+     or a unit appended after the last prioritization, still PLANNED), missing_authority:admission (not
+     admitted), missing_authority:unit/<terminal state>."""
++    if (item or {}).get('work_class') == 'POLICY_DEFECT':
++        return []
+     held = (unit if isinstance(unit, dict) else {}).get('state')
+     state = (item if isinstance(item, dict) else {}).get('state')
+     if state == ITEM_BLOCKED:

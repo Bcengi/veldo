@@ -1,0 +1,6 @@
+ok  done (VELDO-9145, build): veldo-wrapper: engine claude-code, unit VELDO-9145, station build
+ok  live (VELDO-9146, build): veldo-wrapper: engine claude-code, unit VELDO-9146, station build
+ok  other (VELDO-9148, build): veldo-wrapper: engine claude-code, unit VELDO-9148, station build
+ok  blocked (VELDO-9149, review): veldo-wrapper: engine claude-code, unit VELDO-9149, station review
+ok  failed (VELDO-9144, build): veldo-wrapper: engine claude-code, unit VELDO-9144, station build
+mismatched wrapper lines: 0

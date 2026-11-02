@@ -1,0 +1,116 @@
+{
+  "schema": "veldo.serial-baseline/v1",
+  "head": "797b28fa9c5d677e7bbdd340516c83c5dd5f55d0",
+  "elapsed": 10718.80284181796,
+  "cpu_seconds": 61247.252795,
+  "source": "2026-10-25 canonical receipts in /tmp/veldo-mutation-throughput-20261025",
+  "memory_note": "Historical cgroup memory includes reclaimable cache. Anonymous peaks were not captured. Never used as measured ledger claims.",
+  "source_sha256": {
+    "full-gate.log": "511d65a70ecab96685efad61c4caf5f221d04c6fa8041f6a736e74db400a4237",
+    "full-gate-result.json": "eef3e594902e0a29452a6a99b0bd274022804930630681c305f6032b63fb7f8d",
+    "gate-resources.json": "1870c9faf55636bdda0b13f9dca0883f44549268de34a99283472635cde0d8d2",
+    "canonical-stage-start.json": "b0111020cf4a9578693c5bf089066a8631c0c54c283fad601fe838a5c17e290e"
+  },
+  "nodes": {
+    "lint": {
+      "wall_seconds": 5.001,
+      "wall_source": "5 second cgroup samples, may coalesce short stages",
+      "cpu_seconds_sampled": 3.474,
+      "peak_cgroup_memory_bytes_sampled": 228331520,
+      "peak_anon_bytes": null,
+      "log_offset": 0
+    },
+    "unit.confined": {
+      "wall_seconds": 1913.2,
+      "wall_source": "leg or mutation log",
+      "cpu_seconds_sampled": 1902.376,
+      "peak_cgroup_memory_bytes_sampled": 2700840960,
+      "peak_anon_bytes": null,
+      "log_offset": 64
+    },
+    "unit.unconfined": {
+      "wall_seconds": 891.6,
+      "wall_source": "leg or mutation log",
+      "cpu_seconds_sampled": 663.906,
+      "peak_cgroup_memory_bytes_sampled": 2011017216,
+      "peak_anon_bytes": null,
+      "log_offset": 225451
+    },
+    "integration.confined": {
+      "wall_seconds": 1795.0,
+      "wall_source": "leg or mutation log",
+      "cpu_seconds_sampled": 1799.225,
+      "peak_cgroup_memory_bytes_sampled": 3101982720,
+      "peak_anon_bytes": null,
+      "log_offset": 262767
+    },
+    "integration.unconfined": {
+      "wall_seconds": 833.8,
+      "wall_source": "leg or mutation log",
+      "cpu_seconds_sampled": 634.106,
+      "peak_cgroup_memory_bytes_sampled": 2433224704,
+      "peak_anon_bytes": null,
+      "log_offset": 264247
+    },
+    "security": {
+      "wall_seconds": 55.025,
+      "wall_source": "5 second cgroup samples, may coalesce short stages",
+      "cpu_seconds_sampled": 55.571,
+      "peak_cgroup_memory_bytes_sampled": 1677230080,
+      "peak_anon_bytes": null,
+      "log_offset": 266725
+    },
+    "generated": {
+      "wall_seconds": null,
+      "wall_source": "5 second cgroup samples, may coalesce short stages",
+      "cpu_seconds_sampled": 0.0,
+      "peak_cgroup_memory_bytes_sampled": 448303104,
+      "peak_anon_bytes": null,
+      "log_offset": 266917,
+      "wall_interval_seconds": [
+        0,
+        5.1
+      ]
+    },
+    "docs": {
+      "wall_seconds": null,
+      "wall_source": "5 second cgroup samples, may coalesce short stages",
+      "cpu_seconds_sampled": 0.0,
+      "peak_cgroup_memory_bytes_sampled": 448303104,
+      "peak_anon_bytes": null,
+      "log_offset": 267199,
+      "wall_interval_seconds": [
+        0,
+        5.1
+      ]
+    },
+    "packaging": {
+      "wall_seconds": 10.005,
+      "wall_source": "5 second cgroup samples, may coalesce short stages",
+      "cpu_seconds_sampled": 10.039,
+      "peak_cgroup_memory_bytes_sampled": 496013312,
+      "peak_anon_bytes": null,
+      "log_offset": 267534
+    },
+    "extra": {
+      "wall_seconds": null,
+      "wall_source": "5 second cgroup samples, may coalesce short stages",
+      "cpu_seconds_sampled": 0.0,
+      "peak_cgroup_memory_bytes_sampled": 290365440,
+      "peak_anon_bytes": null,
+      "log_offset": 276935,
+      "wall_interval_seconds": [
+        0,
+        5.1
+      ]
+    },
+    "mutation": {
+      "wall_seconds": 5207.101,
+      "wall_source": "leg or mutation log",
+      "cpu_seconds_sampled": 56175.597,
+      "peak_cgroup_memory_bytes_sampled": 8862978048,
+      "peak_anon_bytes": null,
+      "log_offset": 277040
+    }
+  }
+}

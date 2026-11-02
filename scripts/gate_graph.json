@@ -1,0 +1,163 @@
+{
+  "schema": "veldo.gate-graph/v1",
+  "nodes": {
+    "lint": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared",
+      "estimate": {
+        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
+        "wall_seconds": 5.001,
+        "cpu_seconds": 3.474,
+        "peak_cgroup_memory_bytes": 228331520
+      }
+    },
+    "unit.confined": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared",
+      "estimate": {
+        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
+        "wall_seconds": 1913.2,
+        "cpu_seconds": 1902.376,
+        "peak_cgroup_memory_bytes": 2700840960
+      }
+    },
+    "unit.unconfined": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "exclusive",
+      "ports": [],
+      "host_lock": "shared",
+      "estimate": {
+        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
+        "wall_seconds": 891.6,
+        "cpu_seconds": 663.906,
+        "peak_cgroup_memory_bytes": 2011017216
+      }
+    },
+    "integration.confined": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared",
+      "estimate": {
+        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
+        "wall_seconds": 1795.0,
+        "cpu_seconds": 1799.225,
+        "peak_cgroup_memory_bytes": 3101982720
+      }
+    },
+    "integration.unconfined": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "exclusive",
+      "ports": [],
+      "host_lock": "shared",
+      "estimate": {
+        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
+        "wall_seconds": 833.8,
+        "cpu_seconds": 634.106,
+        "peak_cgroup_memory_bytes": 2433224704
+      }
+    },
+    "security": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared",
+      "estimate": {
+        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
+        "wall_seconds": 55.025,
+        "cpu_seconds": 55.571,
+        "peak_cgroup_memory_bytes": 1677230080
+      }
+    },
+    "generated": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared",
+      "estimate": {
+        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
+        "wall_seconds": 5.1,
+        "cpu_seconds": 5.1,
+        "peak_cgroup_memory_bytes": 448303104
+      }
+    },
+    "docs": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared",
+      "estimate": {
+        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
+        "wall_seconds": 5.1,
+        "cpu_seconds": 5.1,
+        "peak_cgroup_memory_bytes": 448303104
+      }
+    },
+    "packaging": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared",
+      "estimate": {
+        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
+        "wall_seconds": 10.005,
+        "cpu_seconds": 10.039,
+        "peak_cgroup_memory_bytes": 496013312
+      }
+    },
+    "extra": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared",
+      "estimate": {
+        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
+        "wall_seconds": 5.1,
+        "cpu_seconds": 5.1,
+        "peak_cgroup_memory_bytes": 290365440
+      }
+    },
+    "mutation": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "exclusive",
+      "ports": [],
+      "host_lock": "shared",
+      "estimate": {
+        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
+        "wall_seconds": 5207.101,
+        "cpu_seconds": 56175.597,
+        "peak_cgroup_memory_bytes": 8862978048
+      },
+      "coordinator": {
+        "cpu": 0.25,
+        "memory": 268435456,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      }
+    }
+  },
+  "reserve": {
+    "cpu": 0,
+    "memory": 1073741824
+  },
+  "mutation_floor": {
+    "cpu": 11,
+    "memory": 9663676416
+  }
+}

@@ -1,0 +1,152 @@
+[
+  {
+    "case": "deadline215-fixed-worker",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-drop-measurement",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-no-expiry",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-timeout-is-baseline",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-no-authority-guard",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-key-omits-sources",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-key-omits-definition",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-no-prune",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-old-stage-cap",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-serial-stage-cap",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-latest-sample",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-first-control",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-no-ceiling",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-lost-baseline-details",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-record-invalid",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-setup-timeout-is-driver-error",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-candidate-authority-not-recorded",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "deadline215-stage-drops-authority",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "admission219-slowest-rate",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "admission219-fixed-sixteen",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "admission219-optimistic-m",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "admission219-short-unit-unaccounted",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "concurrent216-missing-stage-runs-nothing",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "concurrent216-count-not-sum",
+    "counts": [
+      1
+    ]
+  },
+  {
+    "case": "concurrent216-serialize-nodes",
+    "counts": [
+      1
+    ]
+  }
+]

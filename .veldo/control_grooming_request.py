@@ -104,6 +104,7 @@ def _organ(name):
 AD = _organ('admission_contract')
 Y = _organ('yamlish')
 AS = _organ('control_assignment')
+DF = _organ('control_defect')
 PRESENTED = 'presented'
 REQUEST_KIND = 'assignment'
 
@@ -224,7 +225,7 @@ def derived(item, objective, project):
                    'authority_policy_digest': digest(project.get('authority_policy'))},
         'release_authority': {'maximum': RELEASE_AUTHORITY, 'repository': project.get('execution_repository')},
         'evidence': {'requirements': [dict(e) for e in bound.get('evidence_requirements') or [] if isinstance(e, dict)],
-                     'acceptance': accepted},
+                     'acceptance': accepted, **({'defect': DF.evidence(item)} if DF.evidence(item) is not None else {})},
         'decomposition': {'revision': item.get('decomposition_revision'), 'digest': item.get('decomposition_digest'),
                           'units': [{'unit': u.get('unit'), 'specification': u.get('specification'),
                                      'scope': list(u.get('scope') or [])} for u in item.get('decomposition') or []]},
@@ -393,6 +394,9 @@ def brief(record, touchpoint):
          if touchpoint == ADMISSION else
          'Admission and priority are separate decisions: approving makes the listed units executable at this rank.'),
     ]
+    if evidence.get('defect') is not None:
+        lines.insert(-1, 'Reported defect (not automatic admission): ' + json.dumps(
+            evidence['defect'], sort_keys=True, ensure_ascii=True))
     return '\n'.join(lines)
 
 
@@ -411,6 +415,8 @@ def route(fields, touchpoints, objective, owner, managers, author, opened, used=
     requests grooming ever opened to the owner for this item; `used` is message_history's: those opened
     for any other item from the same message."""
     reasons = []
+    if ((fields.get('evidence') or {}).get('defect') or {}).get('scope_changes'):
+        reasons.append('scope_changing_restoration')
     acceptance = objective.get('acceptance') if isinstance(objective.get('acceptance'), dict) else {}
     if acceptance.get('path') not in ADMITTING or objective.get('accepted_revision') is None:
         reasons.append('objective_by_answer')

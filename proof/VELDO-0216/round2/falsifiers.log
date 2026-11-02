@@ -1,0 +1,9 @@
+concurrent216-missing-stage-runs-nothing mutant ['concurrent-stages/graph-complete', 'concurrent-stages/graph-refusals']
+concurrent216-missing-stage-runs-nothing baseline []
+concurrent216-lost-leg-record mutant ['concurrent-stages/same-verdicts']
+concurrent216-lost-leg-record baseline []
+concurrent216-count-not-sum mutant ['concurrent-stages/ledger-sums', 'concurrent-stages/mutation-floor']
+concurrent216-count-not-sum baseline []
+concurrent216-serialize-nodes mutant ['concurrent-stages/dependency-start', 'concurrent-stages/critical-path-fixture', 'concurrent-stages/seeded-first-run']
+concurrent216-serialize-nodes baseline []
+Four red then green falsifiers; confined suite 22 ticket rows green

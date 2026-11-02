@@ -1,0 +1,6 @@
+{
+  "README.md exists": false,
+  "OPEN.md exists": false,
+  "scripts/gate_unconfined.json unchanged": true,
+  "specs/VELDO-0220-the-gate-holds-the-host-and-runs-in-its-own-scope.md unchanged": true
+}

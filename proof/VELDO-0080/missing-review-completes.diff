@@ -1,0 +1,11 @@
+--- .veldo/dispatch.py
++++ mutant/dispatch.py
+@@ -1100,7 +1100,7 @@
+     if not _text(risk) or not isinstance(need, int) or isinstance(need, bool) or need < 1:
+         raise FloorRefused("missing_authority:review_policy", "no accepted review count for risk %r" % risk)
+     attempt = record["attempt"]
+-    passing = sorted({r["reviewer"] for r in record["reviews"] if r["attempt"] == attempt and r["passes"]})
++    passing = sorted({r["reviewer"] for r in record["reviews"] if r["attempt"] == attempt and r["passes"]}) or ["w-rev"]
+     unresolved = sorted(fid for fid, f in record["findings"].items() if not f.get("resolved"))
+     codes = []
+     if len(passing) < need:

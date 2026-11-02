@@ -1,0 +1,75 @@
+{
+  "ok": true,
+  "results": [
+    {
+      "color": "red",
+      "implementation_sha256": "6749c547bb59737d9bd3026afe2bdf96ac5446c591c9ea07db53f95f15882478",
+      "fixture_sha256": "72046e9207b7152bf584e63bfa05690c21f065661ae38f113e00826acba24561",
+      "reconciliation": {
+        "calls": [
+          "settimeout",
+          "connect",
+          "settimeout",
+          "shutdown",
+          "close",
+          "settimeout",
+          "send",
+          "settimeout",
+          "recv"
+        ],
+        "expected": [
+          "close",
+          "connect",
+          "recv",
+          "sendall",
+          "settimeout",
+          "shutdown"
+        ],
+        "matches": false
+      },
+      "valid": true,
+      "incomplete": [],
+      "executed": {
+        "fault": 3180,
+        "native": 11
+      },
+      "row": "relay/transport-errors-have-zero-stdout",
+      "observed": false
+    },
+    {
+      "color": "green",
+      "implementation_sha256": "baedda1c85a9427562419fe464dc279f9ef6139513a6b991696973ec9400c0de",
+      "fixture_sha256": "72046e9207b7152bf584e63bfa05690c21f065661ae38f113e00826acba24561",
+      "reconciliation": {
+        "calls": [
+          "settimeout",
+          "connect",
+          "settimeout",
+          "shutdown",
+          "close",
+          "settimeout",
+          "sendall",
+          "settimeout",
+          "recv"
+        ],
+        "expected": [
+          "close",
+          "connect",
+          "recv",
+          "sendall",
+          "settimeout",
+          "shutdown"
+        ],
+        "matches": true
+      },
+      "valid": true,
+      "incomplete": [],
+      "executed": {
+        "fault": 3180,
+        "native": 11
+      },
+      "row": "relay/transport-errors-have-zero-stdout",
+      "observed": true
+    }
+  ]
+}

@@ -771,6 +771,87 @@ sys.exit(child.wait())
                       and terminal.get('output_bytes') == len(a_out) and entity(ua)['version'] == unit_version
                       and entity(ua)['data'].get('state') == 'CLAIMED')
 
+            # VELDO-0131 (owner, Telegram 38184): the owner's signed stop request asks the existing stop mechanism.
+            # A stale version and a member outside the project are refused and write nothing; the accepted request
+            # is recorded on the dispatch with its state unchanged; the runner's sweep asks the receiver it holds
+            # (Launch.stop) and records the ask; the receiver ends the worker and records its end as every end is;
+            # nothing is recovered, retried or restarted.
+            with region('dispatch/owner-stop'):
+                member('owner-person', kind='person', roles=['project_owner'], scope=['p1'])
+                member('stranger-person', kind='person', roles=['project_owner'], scope=['p9'])
+                member('plain-person', kind='person', roles=[], scope=['p1'])
+                us = admitted('VELDO-9340')
+                stopping = runner.submit(us, 'build', **job(release='never-9340'))
+                running_seen = marker_for(stopping.dispatch_id)
+                sid = stopping.dispatch_id
+                version = dispatches.version(sid)
+                stale = attempt(lambda: dispatches.request_stop(sid, version + 1, 'owner-person', now=time.time(),
+                                                                request='stop-stale'))
+                outside = attempt(lambda: dispatches.request_stop(sid, version, 'stranger-person', now=time.time(),
+                                                                  request='stop-outside'))
+                roleless = attempt(lambda: dispatches.request_stop(sid, version, 'plain-person', now=time.time(),
+                                                                   request='stop-roleless'))
+                untouched = dispatches.version(sid) == version and not rec(sid).get('stop_request')
+                started = time.monotonic()
+                requested = attempt(lambda: dispatches.request_stop(sid, version, 'owner-person', now=time.time(),
+                                                                    request='stop-1', channel='api'))
+                held = rec(sid)
+                pending_before = dispatches.stop_requests()
+                swept = runner.honor_stops()
+                # Bounded: a receiver never asked would leave the never-released worker running, and the row must
+                # then fail by its checks rather than wait out the worker (an asked stop ends in a few seconds).
+                runner.wait(stopping, timeout=25)
+                elapsed = time.monotonic() - started
+                ended = rec(sid)
+                again = attempt(lambda: dispatches.request_stop(sid, dispatches.version(sid), 'owner-person',
+                                                                now=time.time(), request='stop-2'))
+                actors = [r[0] for r in writer.execute(
+                    "SELECT principal FROM journal WHERE command_id LIKE ? ORDER BY seq",
+                    ('dispatch/%stop%' + sid + '%',))]
+                observed['owner_stop'] = {'stale': stale, 'outside': outside, 'roleless': roleless, 'requested': requested[0],
+                                          'swept': swept, 'state': ended.get('state'), 'again': again,
+                                          'stop_request': ended.get('stop_request'), 'elapsed': round(elapsed, 2),
+                                          'actors': actors, 'termination': ended.get('termination'),
+                                          'stop_requested': stopping.stop_requested}
+                check('dispatch/owner-stop',
+                      running_seen.get('dispatch') == sid
+                      and stale == ('refused', 'stale_version') and outside == ('refused', 'not_authorized:scope')
+                      and roleless == ('refused', 'not_authorized:role') and untouched
+                      and requested[0] == 'ok' and held.get('state') == 'running'
+                      and (held.get('stop_request') or {}).get('by') == 'owner-person'
+                      and (held.get('stop_request') or {}).get('result') is None
+                      and pending_before == [(sid, 'owner_stop')] and swept == [(sid, True)]
+                      and ended.get('state') == 'exited' and elapsed < 40 and stopping.stop_requested is True
+                      and ((ended.get('stop_request') or {}).get('result') or {}).get('asked') is True
+                      and dispatches.stop_requests() == []
+                      and again[0] == 'refused' and str(again[1]).startswith('transition_refused:exited')
+                      and actors == ['owner-person', 'runner']
+                      and len(of_unit('dispatch', us)) == 1)
+
+            # A runner on the same store that does not hold the running dispatch leaves its stop request waiting
+            # (another runner, e.g. control_launch_work's, may hold it); the holder asks on its own sweep.
+            with region('dispatch/owner-stop-other-runner'):
+                uo = admitted('VELDO-9341')
+                held_run = runner.submit(uo, 'build', **job(release='never-9341'))
+                oid = held_run.dispatch_id
+                marker_for(oid)
+                bystander = L.Runner(gate, reservations, dispatches, invoke, account=ACCOUNT)
+                asked_by = attempt(lambda: dispatches.request_stop(oid, dispatches.version(oid), 'owner-person',
+                                                                   now=time.time(), request='stop-other'))
+                by_bystander = bystander.honor_stops()
+                still = dispatches.stop_requests()
+                by_holder = runner.honor_stops()
+                runner.wait(held_run, timeout=25)  # bounded as in dispatch/owner-stop
+                settled = rec(oid)
+                observed['owner_stop_other_runner'] = {'requested': asked_by[0], 'bystander': by_bystander,
+                                                       'still': still, 'holder': by_holder,
+                                                       'state': settled.get('state'),
+                                                       'stop_request': settled.get('stop_request')}
+                check('dispatch/owner-stop-other-runner',
+                      asked_by[0] == 'ok' and by_bystander == [] and still == [(oid, 'owner_stop')]
+                      and by_holder == [(oid, True)] and settled.get('state') == 'exited'
+                      and ((settled.get('stop_request') or {}).get('result') or {}).get('asked') is True)
+
             # Authority: only an active service member of this repository writes a record
             with region('dispatch/service-principals-only'):
                 outsiders = {}

@@ -13,7 +13,8 @@ session, its exact body fields and the authority operation it asks for. The hand
 route name, and `route_problems` compares the two, so a route without a handler or a handler without a
 route is a defect the suite names. The families are auth, messages, decisions, reads (the published
 contract and every read model of control_api_models.READ_MODELS), configuration (a workflow revision's
-read and its save) and events (the event read and the live stream). A GET's query parameters are its
+read and its save), work (VELDO-0131: the owner's backlog priority, worker stop and account cap) and events
+(the event read and the live stream). A GET's query parameters are its
 exact fields, judged like a write's body.
 
 SIGN-IN. The owner signs in with a passkey (WebAuthn Level 2, discoverable, user verification required,
@@ -111,6 +112,8 @@ W = organ('control_api_webauthn')
 CR = organ('control_api_credentials')
 AS = organ('control_api_assertion')
 MO = organ('control_api_models')
+# VELDO-0145: the UI's page and built assets, served from this same origin outside /api/.
+UI = organ('control_api_ui')
 AC = CR.AC
 
 COOKIE = '__Host-veldo-session'
@@ -187,6 +190,18 @@ ROUTES = (
           ('id', 'base'), (), 'delete_mcp_credential'),
     Route('mcp.credential_read', 'GET', '/api/v1/domains/{domain}/mcp/credentials', 'configuration', True,
           ('id',), (), None),
+    # VELDO-0131: the metadata-only reads of control_api_models.METADATA_READS: the whole MCP catalog with the
+    # credential records' metadata (never a value), and the repositories with their Git identities.
+    Route('mcp.list', 'GET', '/api/v1/domains/{domain}/mcp/servers', 'configuration', True, (), (), None),
+    Route('repositories.read', 'GET', '/api/v1/domains/{domain}/repositories', 'configuration', True, (), (), None),
+    # VELDO-0131 (owner, Telegram 38184): the owner's commands over the factory's work, each the existing writer's
+    # command for the session's member at the version the screen showed (control_api_authority._work).
+    Route('backlog.reprioritize', 'POST', '/api/v1/domains/{domain}/backlog/reprioritize', 'work', True,
+          ('item', 'item_version', 'rank'), (), 'reprioritize_backlog'),
+    Route('workers.stop', 'POST', '/api/v1/domains/{domain}/workers/stop', 'work', True,
+          ('dispatch', 'dispatch_version'), (), 'stop_worker'),
+    Route('workers.cap', 'POST', '/api/v1/domains/{domain}/workers/cap', 'work', True,
+          ('account', 'account_version', 'concurrency'), (), 'set_account_cap'),
     Route('events.read', 'GET', '/api/v1/domains/{domain}/events', 'events', True, (), ('after',), None),
     Route('events.stream', 'GET', '/api/v1/domains/{domain}/events/stream', 'events', True, (), ('after',), None),
     # VELDO-0141: one run's execution record, read from a cursor and followed live.
@@ -419,6 +434,8 @@ class ControlApi:
 
     def __init__(self, config, authority, signer, clock=time.time, observe=None):
         self.origin, self.rp_id, self.host = config['origin'], config['rp_id'], config['host']
+        # VELDO-0145: the UI's built directory when the configuration names one (control_api_ui.directory).
+        self.ui = config.get('ui')
         self.domain, self.edge = config['domain'], config['edge']
         self.ids = {f: config['ids'][f] for f in AS.IDS}
         self.state_dir = Path(config['state_dir'])
@@ -450,7 +467,9 @@ class ControlApi:
         self.handlers.update({'mcp.save': self._write, 'mcp.read': self._mcp_read,
                               'mcp.credential_set': self._write, 'mcp.credential_delete': self._write,
                               'mcp.credential_read': self._credential_read_refused})
+        self.handlers.update({'backlog.reprioritize': self._write, 'workers.stop': self._write, 'workers.cap': self._write})
         self.handlers.update({m.route: self._read for m in MO.READ_MODELS})
+        self.handlers.update({m.route: self._metadata_read for m in MO.METADATA_READS})
 
     def route_problems(self):
         """Every route without a handler and every handler without a route, by name; [] when they agree."""
@@ -607,7 +626,7 @@ class ControlApi:
             raise Refused('unavailable_service:openssl', 'no openssl executable at a fixed system location')
 
     def _session_view(self, session):
-        return {'principal': session['principal'], 'credential_id': session['credential_id'],
+        return {'principal': session['principal'], 'credential_id': session['credential_id'], 'domain': self.domain,
                 'csrf_token': session['token'], 'idle_expires_at': session['seen'] + IDLE_SECONDS,
                 'expires_at': session['created'] + ABSOLUTE_SECONDS}
 
@@ -746,11 +765,19 @@ class ControlApi:
             expected = {'team:' + str(parameters['project']): parameters['team_version']}
         elif route.operation in ('save_capability_configuration', 'save_default_team'):
             expected = {'base': parameters['base']}
+        elif route.operation == 'reprioritize_backlog':
+            expected = {str(parameters['item']): parameters['item_version']}
+        elif route.operation == 'stop_worker':
+            expected = {'dispatch:' + str(parameters['dispatch']): parameters['dispatch_version']}
+        elif route.operation == 'set_account_cap':
+            expected = {'account:' + str(parameters['account']): parameters['account_version']}
         target = {'save_capability_configuration': 'agent_configuration', 'propose_team': str(parameters.get('project')),
                   'save_default_team': 'default_team', 'send_message': self.domain, 'answer_decision': str(parameters.get('request_id')),
                   'revoke_credential': 'api_credential', 'save_workflow': str(parameters.get('workflow')),
                   'save_mcp_server': 'mcp_catalog', 'set_mcp_credential': 'mcp_credential',
-                  'delete_mcp_credential': 'mcp_credential'}[route.operation]
+                  'delete_mcp_credential': 'mcp_credential', 'reprioritize_backlog': str(parameters.get('item')),
+                  'stop_worker': 'dispatch:' + str(parameters.get('dispatch')),
+                  'set_account_cap': 'account:' + str(parameters.get('account'))}[route.operation]
         assertion = dict(self.ids, schema=AS.SCHEMA, domain=self.domain, channel=AS.CHANNEL, edge=self.edge,
                          edge_key_id=AC.edge_channel(AS.CHANNEL)['edge_key_id'], request_id=request_id,
                          principal=session['principal'], credential_id=session['credential_id'],
@@ -784,7 +811,7 @@ class ControlApi:
         keep = ('outcome', 'proposal_id', 'question_id', 'question', 'project', 'repeated', 'request_id', 'answer',
                 'settlement', 'ruling', 'workflow', 'version', 'revision', 'entity_digest', 'definition_digest',
                 'layout_digest', 'server', 'id', 'reference', 'seq', 'role', 'digest', 'team_id', 'owner_request',
-                'team_application')
+                'team_application', 'set_at', 'set_by', 'rank', 'dispatch', 'state', 'stop', 'account', 'concurrency')
         return 200, dict({k: result[k] for k in keep if k in result}, api_request_id=request_id)
 
     @staticmethod
@@ -815,6 +842,10 @@ class ControlApi:
 
     def _read(self, route, body, session, extra, headers):
         return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])
+
+    def _metadata_read(self, route, body, session, extra, headers):
+        model = next(m.name for m in MO.METADATA_READS if m.route == route.name)
+        return 200, self._ask(self.authority.read, model, session['principal'])
 
     def _configuration_read(self, route, body, session, extra, headers):
         configuration = organ('control_agent_config')
@@ -1140,10 +1171,13 @@ def is_loopback(host):
         return False
 
 
-def listen(api, host, port):
-    """A ThreadingHTTPServer for `api` on a loopback address only; anything else refuses."""
+def listen(api, host, port, ui=None):
+    """A ThreadingHTTPServer for `api` on a loopback address only; anything else refuses. A GET or HEAD
+    outside /api/ is the UI's page or one of its built assets from `ui` (control_api_ui.directory by
+    default), which carries no factory data; every /api/ request is the API's."""
     if not is_loopback(host):
         raise Refused('invalid_input:listen', 'the API listens on a loopback address only')
+    ui_dir = Path(ui) if ui is not None else UI.directory({'ui': getattr(api, 'ui', None)})
 
     class Handler(http.server.BaseHTTPRequestHandler):
         protocol_version = 'HTTP/1.1'
@@ -1157,7 +1191,19 @@ def listen(api, host, port):
             self.send_header('Content-Security-Policy', CSP)
             super().end_headers()
 
+        def _page(self, method):
+            status, headers, payload = UI.serve(ui_dir, method, self.path, self.headers, api.host)
+            self.send_response(status)
+            for name, content in headers:
+                self.send_header(name, content)
+            if not any(name == 'Content-Length' for name, _ in headers):
+                self.send_header('Content-Length', str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+
         def _serve(self, method):
+            if method == 'GET' and UI.is_page_path(self.path):
+                return self._page(method)
             length = self.headers.get('Content-Length')
             try:
                 size = int(length) if length is not None else 0
@@ -1198,6 +1244,12 @@ def listen(api, host, port):
 
         def do_POST(self):
             self._serve('POST')
+
+        def do_HEAD(self):
+            if UI.is_page_path(self.path):
+                self._page('HEAD')
+            else:
+                self.send_error(405)
 
     server = http.server.ThreadingHTTPServer((host, port), Handler)
     server.daemon_threads = True

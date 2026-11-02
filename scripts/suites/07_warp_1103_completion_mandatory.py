@@ -1213,6 +1213,42 @@ _sg_changed_real = SG.changed_source_paths(ROOT)
 expect("WARP-1102 AC5 dogfood: over the real change set, footprint-versus-diff passes (this spec's footprint covers every path it touches)",
        SG.footprint_findings(_sg_changed_real, ROOT, V, ARCH) == [])
 
+# AC5 batch: a change that carries another spec's proof names that spec too, so a batch whose specs are
+# already on the trunk is a multi-spec change and stands down; without that proof the one spec it edits judges it.
+import os as _sgb_os, subprocess as _sgb_sp, tempfile as _sgb_tmp
+from pathlib import Path as _SgbPath
+with _sgb_tmp.TemporaryDirectory() as _sgb:
+    _sgb_env = dict(_sgb_os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@example.invalid",
+                    GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@example.invalid")
+
+    def _sgb_git(*args):
+        _sgb_sp.run(["git", "-C", _sgb, *args], check=True, capture_output=True, env=_sgb_env)
+
+    _sgb_git("init", "-q", "-b", "main")
+    (_SgbPath(_sgb) / "specs").mkdir()
+    (_SgbPath(_sgb) / "specs" / "S1-one.md").write_text(
+        "---\nschema: veldo.spec/v1\nid: S1\nfootprint:\n  - src/x.py\n  - specs/S1-one.md\n---\nb\n")
+    (_SgbPath(_sgb) / "specs" / "S2-two.md").write_text(
+        "---\nschema: veldo.spec/v1\nid: S2\nfootprint:\n  - src/z.py\n---\nb\n")
+    _sgb_git("add", "-A"); _sgb_git("commit", "-qm", "trunk")
+    _sgb_git("checkout", "-qb", "batch")
+    (_SgbPath(_sgb) / "src").mkdir()
+    (_SgbPath(_sgb) / "src" / "x.py").write_text("x = 1\n")
+    (_SgbPath(_sgb) / "src" / "z.py").write_text("z = 1\n")
+    (_SgbPath(_sgb) / "proof" / "S2").mkdir(parents=True)
+    (_SgbPath(_sgb) / "proof" / "S2" / "result.json").write_text("{}\n")
+    with open(_SgbPath(_sgb) / "specs" / "S1-one.md", "a") as _sgb_f:
+        _sgb_f.write("amended\n")
+    _sgb_git("add", "-A"); _sgb_git("commit", "-qm", "batch")
+    _sgb_changed = SG.changed_source_paths(_sgb)
+    _sgb_batch = SG.footprint_findings(_sgb_changed, _sgb, V, ARCH)
+    _sgb_git("rm", "-q", "proof/S2/result.json"); _sgb_git("commit", "-qm", "no proof")
+    _sgb_single = SG.footprint_findings(SG.changed_source_paths(_sgb), _sgb, V, ARCH)
+    expect("WARP-1102 AC5: a change carrying a second spec's proof is a multi-spec change and stands down; "
+           "without it the one edited spec refuses the other spec's path by name",
+           _sgb_changed == {"specs/S1-one.md", "src/x.py", "src/z.py"} and _sgb_batch == []
+           and any("src/z.py" in f for f in _sgb_single))
+
 # AC6 RJ1: a seeded violation of each mechanizable rule class present fails the gate with the rule
 # named, and the clean current tree stays green.
 with tempfile.TemporaryDirectory() as _sgm:  # no scripts/ dir -> the enforcing checks are absent

@@ -1,0 +1,1062 @@
+{
+  "basis": "recorded 2026-10-25 durations, short stages at interval upper bounds, production admission",
+  "source_revision": "b1d91eb27ac73df724ad3274fbd51966cc1c9220",
+  "scheduler_sha256": "4d65ae94c76d7dea7d243c05a67ff0f829e297e0f23ddfa500985ab6d0ebfd5d",
+  "graph_sha256": "c048475405cadf7635a1c9f7d00dfd4fd50a386f3c83aa4809a1a7035157e0d4",
+  "graph_seconds": 6932.501,
+  "target_seconds": 6000,
+  "target_met": false,
+  "manager_lower_bound": 6932.500999999999,
+  "qualification": "NOT RUN; projection excludes contention and shell overhead",
+  "intervals": {
+    "mutation": {
+      "start": 0,
+      "end": 5207.101,
+      "seconds": 5207.101
+    },
+    "lint": {
+      "start": 0,
+      "end": 5.001,
+      "seconds": 5.001
+    },
+    "unit.confined": {
+      "start": 0,
+      "end": 1913.2,
+      "seconds": 1913.2
+    },
+    "security": {
+      "start": 0,
+      "end": 55.025,
+      "seconds": 55.025
+    },
+    "generated": {
+      "start": 5.001,
+      "end": 10.100999999999999,
+      "seconds": 5.1
+    },
+    "docs": {
+      "start": 10.100999999999999,
+      "end": 15.200999999999999,
+      "seconds": 5.1
+    },
+    "packaging": {
+      "start": 15.200999999999999,
+      "end": 25.206,
+      "seconds": 10.005
+    },
+    "extra": {
+      "start": 25.206,
+      "end": 30.305999999999997,
+      "seconds": 5.1
+    },
+    "integration.confined": {
+      "start": 55.025,
+      "end": 1850.025,
+      "seconds": 1795.0
+    },
+    "unit.unconfined": {
+      "start": 5207.101,
+      "end": 6098.701,
+      "seconds": 891.6
+    },
+    "integration.unconfined": {
+      "start": 6098.701,
+      "end": 6932.501,
+      "seconds": 833.8
+    }
+  },
+  "claims": {
+    "lint": {
+      "cpu": 1,
+      "memory": 1073741824,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared"
+    },
+    "unit.confined": {
+      "cpu": 1,
+      "memory": 3221225472,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared"
+    },
+    "unit.unconfined": {
+      "cpu": 1,
+      "memory": 2147483648,
+      "manager": "exclusive",
+      "ports": [],
+      "host_lock": "shared"
+    },
+    "integration.confined": {
+      "cpu": 1.1,
+      "memory": 3221225472,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared"
+    },
+    "integration.unconfined": {
+      "cpu": 1,
+      "memory": 3221225472,
+      "manager": "exclusive",
+      "ports": [],
+      "host_lock": "shared"
+    },
+    "security": {
+      "cpu": 1.1,
+      "memory": 2147483648,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared"
+    },
+    "generated": {
+      "cpu": 1,
+      "memory": 1073741824,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared"
+    },
+    "docs": {
+      "cpu": 1,
+      "memory": 1073741824,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared"
+    },
+    "packaging": {
+      "cpu": 1.1,
+      "memory": 1073741824,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared"
+    },
+    "extra": {
+      "cpu": 1,
+      "memory": 1073741824,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared"
+    },
+    "mutation": {
+      "cpu": 10.8,
+      "memory": 9663676416,
+      "manager": "exclusive",
+      "ports": [],
+      "host_lock": "shared"
+    }
+  },
+  "capacities": {
+    "cpu": 20,
+    "memory": 16106127360,
+    "manager": 16
+  },
+  "peak_granted": {
+    "cpu": 14.0,
+    "memory": 16106127360,
+    "manager": 16
+  },
+  "ledger": [
+    {
+      "action": "grant",
+      "claimant": "mutation",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 10.8,
+        "memory": 9663676416,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 10.8,
+        "memory": 9663676416,
+        "manager": 16
+      }
+    },
+    {
+      "action": "grant",
+      "claimant": "lint",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 11.8,
+        "memory": 10737418240,
+        "manager": 16
+      }
+    },
+    {
+      "action": "grant",
+      "claimant": "unit.confined",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 1,
+        "memory": 3221225472,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.8,
+        "memory": 13958643712,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "unit.unconfined",
+      "resource": "manager",
+      "claim": {
+        "cpu": 1,
+        "memory": 2147483648,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.8,
+        "memory": 13958643712,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.confined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1.1,
+        "memory": 3221225472,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.8,
+        "memory": 13958643712,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.unconfined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 3221225472,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.8,
+        "memory": 13958643712,
+        "manager": 16
+      }
+    },
+    {
+      "action": "grant",
+      "claimant": "security",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 1.1,
+        "memory": 2147483648,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 13.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "generated",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 13.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "docs",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 13.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "packaging",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1.1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 13.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "extra",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 13.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "release",
+      "claimant": "lint",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "unit.unconfined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 2147483648,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.confined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1.1,
+        "memory": 3221225472,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.unconfined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 3221225472,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "grant",
+      "claimant": "generated",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 13.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "docs",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 13.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "packaging",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1.1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 13.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "extra",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 13.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "release",
+      "claimant": "generated",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "unit.unconfined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 2147483648,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.confined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1.1,
+        "memory": 3221225472,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.unconfined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 3221225472,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "grant",
+      "claimant": "docs",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 13.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "packaging",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1.1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 13.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "extra",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 13.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "release",
+      "claimant": "docs",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "unit.unconfined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 2147483648,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.confined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1.1,
+        "memory": 3221225472,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.unconfined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 3221225472,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "grant",
+      "claimant": "packaging",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 1.1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 14.0,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "extra",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 14.0,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "release",
+      "claimant": "packaging",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "unit.unconfined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 2147483648,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.confined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1.1,
+        "memory": 3221225472,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.unconfined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 3221225472,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "grant",
+      "claimant": "extra",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 13.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "release",
+      "claimant": "extra",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "unit.unconfined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 2147483648,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.confined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1.1,
+        "memory": 3221225472,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.unconfined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 3221225472,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 15032385536,
+        "manager": 16
+      }
+    },
+    {
+      "action": "release",
+      "claimant": "security",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 11.8,
+        "memory": 12884901888,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "unit.unconfined",
+      "resource": "manager",
+      "claim": {
+        "cpu": 1,
+        "memory": 2147483648,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 11.8,
+        "memory": 12884901888,
+        "manager": 16
+      }
+    },
+    {
+      "action": "grant",
+      "claimant": "integration.confined",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 1.1,
+        "memory": 3221225472,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.unconfined",
+      "resource": "memory",
+      "claim": {
+        "cpu": 1,
+        "memory": 3221225472,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 12.9,
+        "memory": 16106127360,
+        "manager": 16
+      }
+    },
+    {
+      "action": "release",
+      "claimant": "integration.confined",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 11.8,
+        "memory": 12884901888,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "unit.unconfined",
+      "resource": "manager",
+      "claim": {
+        "cpu": 1,
+        "memory": 2147483648,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 11.8,
+        "memory": 12884901888,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.unconfined",
+      "resource": "manager",
+      "claim": {
+        "cpu": 1,
+        "memory": 3221225472,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 11.8,
+        "memory": 12884901888,
+        "manager": 16
+      }
+    },
+    {
+      "action": "release",
+      "claimant": "unit.confined",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 10.8,
+        "memory": 9663676416,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "unit.unconfined",
+      "resource": "manager",
+      "claim": {
+        "cpu": 1,
+        "memory": 2147483648,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 10.8,
+        "memory": 9663676416,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.unconfined",
+      "resource": "manager",
+      "claim": {
+        "cpu": 1,
+        "memory": 3221225472,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 10.8,
+        "memory": 9663676416,
+        "manager": 16
+      }
+    },
+    {
+      "action": "release",
+      "claimant": "mutation",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 0,
+        "memory": 0,
+        "manager": 0
+      }
+    },
+    {
+      "action": "grant",
+      "claimant": "unit.unconfined",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 1,
+        "memory": 2147483648,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 1,
+        "memory": 2147483648,
+        "manager": 16
+      }
+    },
+    {
+      "action": "refuse",
+      "claimant": "integration.unconfined",
+      "resource": "manager",
+      "claim": {
+        "cpu": 1,
+        "memory": 3221225472,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 1,
+        "memory": 2147483648,
+        "manager": 16
+      }
+    },
+    {
+      "action": "release",
+      "claimant": "unit.unconfined",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 0,
+        "memory": 0,
+        "manager": 0
+      }
+    },
+    {
+      "action": "grant",
+      "claimant": "integration.unconfined",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 1,
+        "memory": 3221225472,
+        "manager": "exclusive",
+        "ports": [],
+        "host_lock": "shared"
+      },
+      "granted": {
+        "cpu": 1,
+        "memory": 3221225472,
+        "manager": 16
+      }
+    },
+    {
+      "action": "release",
+      "claimant": "integration.unconfined",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 0,
+        "memory": 0,
+        "manager": 0
+      }
+    }
+  ]
+}

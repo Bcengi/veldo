@@ -65,7 +65,6 @@ PERMISSIONS = {'project_manager': ['objective', 'feature', 'backlog_item', 'deci
 # Each role's budget, and the factory project's coordination budget the account policies sum (VELDO-0204).
 ROLE_BUDGET = {'capacity': 1, 'invocations': 20, 'wall_seconds': 3600}
 FACTORY_BUDGET = {'capacity': 4, 'invocations': 400, 'wall_seconds': 7 * 86400}
-TASKS = {'implementation': 'build the unit', 'independent_review': 'review the unit'}
 RESERVATION_PRINCIPALS = ('authority', 'launch-receiver')
 RESERVATION_ROLE = 'reservation_service'
 WORK_FILE = 'work.json'
@@ -174,14 +173,11 @@ def team(CT, roles, revisions):
 
 def work(repository, roles_of_team, engine_of):
     """The work configuration from a team's roles: the builder from `implementation`, the reviewer from
-    `independent_review`, each on the adapter of its role's engine (adapters are named by engine)."""
-    def role(name):
-        spec = roles_of_team[name]
-        return {'identity': spec['workers'][0], 'adapter': engine_of[name],
-                'configuration': dict(spec['capability_configuration']), 'seconds': spec['budget']['wall_seconds'],
-                'payload': {'task': TASKS[name]}}
+    `independent_review`, each on the adapter of its role's engine (adapters are named by engine), by the one
+    mapping the running service's lines use too (control_team line_roles, VELDO-0188)."""
     return {'schema': 'veldo.factory_work/v1',
-            'repositories': {repository: {'builder': role('implementation'), 'reviewers': [role('independent_review')]}}}
+            'repositories': {repository: organ('control_team').line_roles(roles_of_team,
+                                                                          lambda name, _spec: engine_of[name])}}
 
 
 def text(value):

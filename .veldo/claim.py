@@ -34,6 +34,15 @@ this module Unix-only (Linux and macOS, the fleet's target machines); the claims
 resolves from git but is overridable for tests. This is the claim mechanics only; WHICH units are claimable
 (across plans, bugs, reviews, and a worker's scope) is Y2 (WARP-0702)."""
 
+# The registry is shared across aliases of this installed module.
+import importlib.util as _registry_import
+from pathlib import Path as _RegistryPath
+_registry_spec = _registry_import.spec_from_file_location(
+    "veldo_client_registry", _RegistryPath(__file__).with_name("control_client_registry.py"))
+_CLIENTS = _registry_import.module_from_spec(_registry_spec)
+_registry_spec.loader.exec_module(_CLIENTS)
+
+
 # Load the shared Git boundary by sibling path, including when imported by file location.
 import importlib.util as _git_importlib
 from pathlib import Path as _GitPath
@@ -297,6 +306,7 @@ def _publish(d, path, rec):
                 pass
 
 
+@_CLIENTS.entrypoint('claim', ('local_ipc',))
 def claim(unit_id, worker_id, worker_caps=None, requirements=None, root=None):
     """Try to claim unit_id for worker_id. Returns (ok, reason).
 
@@ -342,6 +352,7 @@ def claim(unit_id, worker_id, worker_caps=None, requirements=None, root=None):
         return True, "granted"
 
 
+@_CLIENTS.entrypoint('claim', ('local_ipc',))
 def heartbeat(unit_id, worker_id, root=None):
     """Refresh the heartbeat if this worker holds the claim. Returns True on success. Runs
     under the per-unit lock so a heartbeat cannot clobber a concurrent takeover: if the claim
@@ -360,6 +371,7 @@ def heartbeat(unit_id, worker_id, root=None):
         return True
 
 
+@_CLIENTS.entrypoint('claim', ('local_ipc',))
 def release(unit_id, worker_id, root=None):
     """Release this worker's claim. Returns True if released; False if not the holder. Runs
     under the per-unit lock so a release cannot remove a claim that was taken over by another

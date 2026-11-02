@@ -981,6 +981,8 @@ err.close()
                                             repositories={REPOSITORY: str(src)},
                                             conn=service_conn, domain=DOMAIN, principal='runner', sign=sign, generation=1,
                                             _log=logged.append)
+            # VELDO-0188: the loop records the journal position its lines follow, read as the service reads it.
+            service.watermark = types.MethodType(SV.Service.watermark, service)
             loop, refusal = SV.open_loop({'work': str(work_path)}, service)
             swept = [x for x in logged if x.get('operation') == 'runs_swept']
             return {'loop': loop is not None, 'refusal': refusal,

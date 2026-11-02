@@ -1,0 +1,55 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "/tmp/veldo-0220-round3-red-6d879aae/scripts/check_gate_mutations.py",
+        "--root",
+        "/tmp/veldo-0220-round3-red-6d879aae",
+        "--finding",
+        "220",
+        "--receipt",
+        "/tmp/v220-round3-results-re_dg4dn/red-coordinator.json"
+      ],
+      "cwd": "/tmp/veldo-0220-round3-red-6d879aae",
+      "exit": 1,
+      "name": "red-coordinator",
+      "seconds": 0.875961439916864
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "scripts/selftest.py",
+        "--suite",
+        "113_veldo_0220_gate_host",
+        "--suite",
+        "114_veldo_0220_gate_scope"
+      ],
+      "cwd": "/home/dmitry/projects/veldo-worktrees/veldo-0220",
+      "exit": 2,
+      "name": "green-suites",
+      "seconds": 8.072554601938464
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "scripts/check_gate_mutations.py",
+        "--root",
+        "/home/dmitry/projects/veldo-worktrees/veldo-0220",
+        "--finding",
+        "220",
+        "--receipt",
+        "/tmp/v220-round3-results-re_dg4dn/green-coordinator.json",
+        "--worker-log-dir",
+        "/tmp/v220-round3-results-re_dg4dn/workers"
+      ],
+      "cwd": "/home/dmitry/projects/veldo-worktrees/veldo-0220",
+      "exit": 1,
+      "name": "green-coordinator",
+      "seconds": 13.2006505059544
+    }
+  ],
+  "green_head": "82cf6c3a7e978cc9b64585870eab7f9903364452",
+  "red_head": "6d879aae2be12f913c8160315e05917978298264",
+  "scope": "VELDO-0220 suites and mutation cases only"
+}

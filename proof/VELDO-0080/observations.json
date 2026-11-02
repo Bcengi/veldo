@@ -1,0 +1,1233 @@
+{
+  "api_request": {
+    "item": {
+      "admission": {
+        "admission_request": "admission-request:94c27504d8aa3cef2cd6211be492b2ab",
+        "digest": "sha256:79d5afe1ea776b9c8a459c320271ee5617166e909fe0effff6df4520eeee314a",
+        "effect_id": "settlement-effect:assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-admission-1:1",
+        "principals": [
+          "olga"
+        ],
+        "questions": [],
+        "receipt_id": "settlement-receipt:assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-admission-1:1",
+        "request_digest": "sha256:9ec5b90502f0f7fd15c64ba56b41115f35a4c57e2935bbcd23e152acaac26131",
+        "request_id": "assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-admission-1",
+        "request_revision": 1,
+        "request_version": 1,
+        "revision": 1,
+        "ruling": "approve",
+        "settlement_id": "request-settlement:assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-admission-1:1"
+      },
+      "applied": [
+        "assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-admission-1",
+        "assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-priority-1"
+      ],
+      "blocks": [],
+      "cancellation": null,
+      "completion": null,
+      "decomposition": [
+        {
+          "eligible_holders": [
+            "w-build"
+          ],
+          "requirements": [],
+          "scope": [
+            "checkout"
+          ],
+          "specification": "VELDO-9802",
+          "unit": "VELDO-9802"
+        }
+      ],
+      "decomposition_digest": "sha256:79d5afe1ea776b9c8a459c320271ee5617166e909fe0effff6df4520eeee314a",
+      "decomposition_revision": 1,
+      "domain_uuid": "domain-79",
+      "entity_type": "backlog_item",
+      "feature_uuid": "objective-feature:0d97c5d9b49b8b66f5570f2b257e4c8a",
+      "history": [
+        {
+          "at": 1793194363.5382268,
+          "by": "pm",
+          "command_id": "bc-76",
+          "operation": "take",
+          "source": null,
+          "target": "RAW"
+        },
+        {
+          "at": 1793194363.549222,
+          "by": "pm",
+          "command_id": "bc-78",
+          "operation": "prepare",
+          "revision": 1,
+          "source": "RAW",
+          "target": "PREPARED",
+          "units": [
+            "VELDO-9802"
+          ]
+        },
+        {
+          "at": 1793194363.559532,
+          "by": "pm",
+          "command_id": "bc-80",
+          "operation": "request_grooming",
+          "revision": 1,
+          "source": "PREPARED",
+          "target": "AWAITING_GROOMING"
+        },
+        {
+          "at": 1793194363.726674,
+          "by": "grooming",
+          "command_id": "groom-c-713698382744adce",
+          "operation": "admit",
+          "request_id": "assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-admission-1",
+          "revision": 1,
+          "ruling": "approve",
+          "source": "AWAITING_GROOMING",
+          "target": "ADMITTED"
+        },
+        {
+          "at": 1793194363.7681797,
+          "by": "grooming",
+          "command_id": "groom-c-3041287cc4b113d3",
+          "operation": "prioritize",
+          "request_id": "assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-priority-1",
+          "revision": 1,
+          "ruling": "approve",
+          "source": "ADMITTED",
+          "target": "PRIORITIZED",
+          "units": [
+            "VELDO-9802"
+          ]
+        }
+      ],
+      "objective_uuid": "objective:bfa1a5ec6d94937541a6e53bf96e1ca4",
+      "priorities": [
+        {
+          "admission_request": "admission-request:94c27504d8aa3cef2cd6211be492b2ab",
+          "digest": "sha256:79d5afe1ea776b9c8a459c320271ee5617166e909fe0effff6df4520eeee314a",
+          "effect_id": "settlement-effect:assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-priority-1:1",
+          "principals": [
+            "olga"
+          ],
+          "rank": 3,
+          "receipt_id": "settlement-receipt:assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-priority-1:1",
+          "request_digest": "sha256:9ec5b90502f0f7fd15c64ba56b41115f35a4c57e2935bbcd23e152acaac26131",
+          "request_id": "assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-priority-1",
+          "request_revision": 1,
+          "request_version": 1,
+          "revision": 1,
+          "ruling": "approve",
+          "settlement_id": "request-settlement:assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-priority-1:1",
+          "units": [
+            "VELDO-9802"
+          ]
+        }
+      ],
+      "priority": {
+        "admission_request": "admission-request:94c27504d8aa3cef2cd6211be492b2ab",
+        "digest": "sha256:79d5afe1ea776b9c8a459c320271ee5617166e909fe0effff6df4520eeee314a",
+        "effect_id": "settlement-effect:assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-priority-1:1",
+        "principals": [
+          "olga"
+        ],
+        "rank": 3,
+        "receipt_id": "settlement-receipt:assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-priority-1:1",
+        "request_digest": "sha256:9ec5b90502f0f7fd15c64ba56b41115f35a4c57e2935bbcd23e152acaac26131",
+        "request_id": "assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-priority-1",
+        "request_revision": 1,
+        "request_version": 1,
+        "revision": 1,
+        "ruling": "approve",
+        "settlement_id": "request-settlement:assignment:repository-79:groom-94c27504d8aa3cef2cd6211b-priority-1:1",
+        "units": [
+          "VELDO-9802"
+        ]
+      },
+      "project": "proj-a",
+      "project_uuid": "project:proj-a",
+      "provenance": {
+        "created_at": 1793194363.5382268,
+        "created_by": "pm",
+        "defect": {
+          "reproduction": "",
+          "scope_changes": [],
+          "severity": "high",
+          "source": {
+            "attribution": {
+              "channel": "api",
+              "edge": "api-edge",
+              "principal": "olga",
+              "request_digest": "sha256:f50e1d2d0da82558c0bd501b705a29bcd3e289c32cad1ded7019f8f1a61e8613",
+              "request_id": "req-60"
+            },
+            "content_digest": "sha256:615cd392bb927e7eb65c35222cfd6d70b5aea33e989517c0974dc28c2f515221",
+            "id": "intake_source:7faef144e7a1b82b5abce56469f62270",
+            "kind": "api_request",
+            "principal": "olga",
+            "ref": "req-60",
+            "text": "For proj-a: Fix this bug: checkout returns the wrong total. Severity: high. api_request"
+          }
+        },
+        "source": "take"
+      },
+      "repository_uuid": "repository-79",
+      "schema": "veldo.backlog_item/v1",
+      "scope": [
+        "checkout"
+      ],
+      "state": "PRIORITIZED",
+      "title": "Restore accepted checkout total",
+      "uuid": "backlog:ec52adfcb95e5bcb456fc1d298b49def",
+      "version": 5,
+      "work_class": "POLICY_DEFECT"
+    },
+    "request": {
+      "author": "pm",
+      "content": {
+        "alternatives": [],
+        "ceiling": {
+          "invocations": 3,
+          "wall_seconds": 300
+        },
+        "class": "POLICY_DEFECT",
+        "decomposition": {
+          "digest": "sha256:79d5afe1ea776b9c8a459c320271ee5617166e909fe0effff6df4520eeee314a",
+          "revision": 1,
+          "units": [
+            {
+              "scope": [
+                "checkout"
+              ],
+              "specification": "VELDO-9802",
+              "unit": "VELDO-9802"
+            }
+          ]
+        },
+        "evidence": {
+          "acceptance": {
+            "path": "answer",
+            "request_id": "assignment:repository-79:objective-63",
+            "settlement_id": "request-settlement:assignment:repository-79:objective-63:1"
+          },
+          "defect": {
+            "reproduction": "",
+            "scope_changes": [],
+            "severity": "high",
+            "source": {
+              "attribution": {
+                "channel": "api",
+                "edge": "api-edge",
+                "principal": "olga",
+                "request_digest": "sha256:f50e1d2d0da82558c0bd501b705a29bcd3e289c32cad1ded7019f8f1a61e8613",
+                "request_id": "req-60"
+              },
+              "content_digest": "sha256:615cd392bb927e7eb65c35222cfd6d70b5aea33e989517c0974dc28c2f515221",
+              "id": "intake_source:7faef144e7a1b82b5abce56469f62270",
+              "kind": "api_request",
+              "principal": "olga",
+              "ref": "req-60",
+              "text": "For proj-a: Fix this bug: checkout returns the wrong total. Severity: high. api_request"
+            }
+          },
+          "requirements": [
+            {
+              "id": "outcome",
+              "kind": "gate_observation"
+            }
+          ]
+        },
+        "exclusions": [],
+        "expiry": "2030-01-31T17:00:00Z",
+        "lane": "policy_qualified",
+        "outcome": {
+          "accepted_revision": 1,
+          "bound_digest": "sha256:033c4387ffba6329c47d0be9efdfa283ee8996c269f567be4e59e95561a9ee9a",
+          "objective": "objective:bfa1a5ec6d94937541a6e53bf96e1ca4",
+          "text": "Checkout returns the accepted total."
+        },
+        "policy": {
+          "authority_policy_digest": "sha256:1c092eb01cdd948bf8af035968510c2a6d5d887615623a41367033295910481f",
+          "charter_digest": "sha256:c691a1fe2f66a8a9844944eb2527e906cca49a6bb5a3e1e07c6fefc1456567da",
+          "charter_revision": 1,
+          "project": "proj-a"
+        },
+        "priority": {
+          "rank": 3
+        },
+        "protected_paths": [],
+        "questions": [],
+        "release_authority": {
+          "maximum": "land",
+          "repository": "repository-79"
+        },
+        "scope": [
+          "checkout"
+        ],
+        "specifications": [
+          {
+            "digest": "sha256:3af2237f4c1ef8871afaa6bf335693f8919fe38675de6313f3e2c3a023eae7ea",
+            "id": "VELDO-9802"
+          }
+        ]
+      },
+      "digest": "sha256:9ec5b90502f0f7fd15c64ba56b41115f35a4c57e2935bbcd23e152acaac26131",
+      "domain_uuid": "domain-79",
+      "entity_type": "admission_request",
+      "item": "backlog:ec52adfcb95e5bcb456fc1d298b49def",
+      "project": "proj-a",
+      "repository_uuid": "repository-79",
+      "revision": 1,
+      "revisions": [
+        {
+          "at": 1793194363.5693746,
+          "author": "pm",
+          "command_id": "gc-82",
+          "content": {
+            "alternatives": [],
+            "ceiling": {
+              "invocations": 3,
+              "wall_seconds": 300
+            },
+            "class": "POLICY_DEFECT",
+            "decomposition": {
+              "digest": "sha256:79d5afe1ea776b9c8a459c320271ee5617166e909fe0effff6df4520eeee314a",
+              "revision": 1,
+              "units": [
+                {
+                  "scope": [
+                    "checkout"
+                  ],
+                  "specification": "VELDO-9802",
+                  "unit": "VELDO-9802"
+                }
+              ]
+            },
+            "evidence": {
+              "acceptance": {
+                "path": "answer",
+                "request_id": "assignment:repository-79:objective-63",
+                "settlement_id": "request-settlement:assignment:repository-79:objective-63:1"
+              },
+              "defect": {
+                "reproduction": "",
+                "scope_changes": [],
+                "severity": "high",
+                "source": {
+                  "attribution": {
+                    "channel": "api",
+                    "edge": "api-edge",
+                    "principal": "olga",
+                    "request_digest": "sha256:f50e1d2d0da82558c0bd501b705a29bcd3e289c32cad1ded7019f8f1a61e8613",
+                    "request_id": "req-60"
+                  },
+                  "content_digest": "sha256:615cd392bb927e7eb65c35222cfd6d70b5aea33e989517c0974dc28c2f515221",
+                  "id": "intake_source:7faef144e7a1b82b5abce56469f62270",
+                  "kind": "api_request",
+                  "principal": "olga",
+                  "ref": "req-60",
+                  "text": "For proj-a: Fix this bug: checkout returns the wrong total. Severity: high. api_request"
+                }
+              },
+              "requirements": [
+                {
+                  "id": "outcome",
+                  "kind": "gate_observation"
+                }
+              ]
+            },
+            "exclusions": [],
+            "expiry": "2030-01-31T17:00:00Z",
+            "lane": "policy_qualified",
+            "outcome": {
+              "accepted_revision": 1,
+              "bound_digest": "sha256:033c4387ffba6329c47d0be9efdfa283ee8996c269f567be4e59e95561a9ee9a",
+              "objective": "objective:bfa1a5ec6d94937541a6e53bf96e1ca4",
+              "text": "Checkout returns the accepted total."
+            },
+            "policy": {
+              "authority_policy_digest": "sha256:1c092eb01cdd948bf8af035968510c2a6d5d887615623a41367033295910481f",
+              "charter_digest": "sha256:c691a1fe2f66a8a9844944eb2527e906cca49a6bb5a3e1e07c6fefc1456567da",
+              "charter_revision": 1,
+              "project": "proj-a"
+            },
+            "priority": {
+              "rank": 3
+            },
+            "protected_paths": [],
+            "questions": [],
+            "release_authority": {
+              "maximum": "land",
+              "repository": "repository-79"
+            },
+            "scope": [
+              "checkout"
+            ],
+            "specifications": [
+              {
+                "digest": "sha256:3af2237f4c1ef8871afaa6bf335693f8919fe38675de6313f3e2c3a023eae7ea",
+                "id": "VELDO-9802"
+              }
+            ]
+          },
+          "digest": "sha256:9ec5b90502f0f7fd15c64ba56b41115f35a4c57e2935bbcd23e152acaac26131",
+          "revision": 1,
+          "touchpoints": [
+            "admission",
+            "priority"
+          ]
+        }
+      ],
+      "schema": "veldo.admission_request/v1",
+      "title": "Restore accepted checkout total",
+      "touchpoints": [
+        "admission",
+        "priority"
+      ],
+      "uuid": "admission-request:94c27504d8aa3cef2cd6211be492b2ab",
+      "version": 1
+    }
+  },
+  "completion": {
+    "build_pid": 1517184,
+    "candidate_observation": {
+      "candidate": {
+        "binds_refs": true,
+        "commit": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2",
+        "root": "/tmp/v79-rzln33vs/defect-candidate",
+        "state": "sha256:fa3f41ac3b6b59deb2de9e1c7ac06f5dbf154d66fe201b5b42938f14913ffe7a",
+        "tree": "5adc57b54692a1f0617074716f85db73deb88bd2"
+      },
+      "capture": "53397d1c24884876b3e0762759f5188e",
+      "catalog": {
+        "commands": {
+          "unit": "python3 -B check.py"
+        },
+        "required": [
+          "unit"
+        ],
+        "results": {
+          "unit": "pass"
+        }
+      },
+      "command": [
+        "bash",
+        "/tmp/v79-rzln33vs/ticket-verifier/scripts/defect-check.sh",
+        "--candidate",
+        "/tmp/v79-rzln33vs/defect-candidate",
+        "--sink",
+        "/tmp/v79-rzln33vs/candidate-observation/sink"
+      ],
+      "commit": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2",
+      "exit": 0,
+      "finished_at": 1793194367.8380353,
+      "gate": {
+        "digest": "sha256:3abe55ca4537c0df5f22993c8d7eefec716f57ec0d0a98ad152d49ad7db9f386",
+        "installation": "VELDO-0080 ticket verifier",
+        "path": "scripts/defect-check.sh"
+      },
+      "green": true,
+      "outputs": {
+        "appended": [
+          {
+            "commit": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2",
+            "producer": "verify.sh",
+            "type": "gate.passed"
+          }
+        ],
+        "events_digest": "sha256:4d01bb3288eb843693cf8a06eea9d79b56902b8d3ee0ad300858100908427765",
+        "events_lines": 1,
+        "gate_event": {
+          "commit": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2",
+          "force_fresh": true,
+          "producer": "verify.sh",
+          "reused": {
+            "mutation": 0,
+            "unit": 0
+          },
+          "type": "gate.passed"
+        },
+        "last_verify": {
+          "commit": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2",
+          "force_fresh": true,
+          "reused": {
+            "mutation": 0,
+            "unit": 0
+          },
+          "status": "green"
+        },
+        "last_verify_digest": "sha256:2913e6becb448ce38f90f8e58862480fc532b0cf50d899fefc6d614a65851aae",
+        "sink": "/tmp/v79-rzln33vs/candidate-observation/sink"
+      },
+      "post_run": {
+        "changed": [],
+        "changed_count": 0,
+        "equal": true,
+        "state": "sha256:fa3f41ac3b6b59deb2de9e1c7ac06f5dbf154d66fe201b5b42938f14913ffe7a"
+      },
+      "refusals": [],
+      "schema": "veldo.gate_observation/v1",
+      "started_at": 1793194367.8122003,
+      "stderr": "",
+      "stderr_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "== unit\n   unit: pass\nGATE: GREEN (2a60c1b44db4b8e05b23d139855ce120a51fe7f2)\n",
+      "stdout_digest": "sha256:8140859faf703d221009c03d842c214c20cde9bbe16f9966e44c6d482f0bf4c1",
+      "terminal": "GATE: GREEN (2a60c1b44db4b8e05b23d139855ce120a51fe7f2)"
+    },
+    "floor": {
+      "assignments": {
+        "VELDO-9802/1/w-rev/1": {
+          "attempt": 1,
+          "payload": {
+            "assignment": "VELDO-9802/1/w-rev/1",
+            "attempt": 1,
+            "context": {
+              "diff": "diff --git a/checkout.py b/checkout.py\nindex 641054b..baa6382 100644\n--- a/checkout.py\n+++ b/checkout.py\n@@ -1,2 +1,2 @@\n def total(price, quantity):\n-    return price + quantity\n+    return price * quantity\ndiff --git a/proof/VELDO-9802/manifest.json b/proof/VELDO-9802/manifest.json\nnew file mode 100644\nindex 0000000..07929cd\n--- /dev/null\n+++ b/proof/VELDO-9802/manifest.json\n@@ -0,0 +1 @@\n+{\"checks\": [{\"name\": \"unit\", \"status\": \"passed\"}], \"commit\": \"08babbe25cfe932d6bd5165fdb9d0268843352b6\", \"criteria\": [{\"evidence\": [{\"digest\": \"sha256:bad2562a654e9e9d894047b0eb6f672a07e109dc2d62f9760030a91b96f229ed\", \"path\": \"check.py\", \"type\": \"unit\"}], \"id\": \"AC1\", \"status\": \"passed\"}], \"producer\": \"w-build\", \"rollback\": \"git revert\", \"schema\": \"veldo.proof/v1\", \"spec_id\": \"VELDO-9802\", \"spec_revision\": \"sha256:3af2237f4c1ef8871afaa6bf335693f8919fe38675de6313f3e2c3a023eae7ea\"}\n",
+              "output": "Return JSON veldo.review_receipt/v1 with assignment, unit, reviewer, source (commit), proof (digest), verdict and findings. Review the exact source in this fresh clone. No builder conversation is supplied.",
+              "proof": {
+                "checks": [
+                  {
+                    "name": "unit",
+                    "status": "passed"
+                  }
+                ],
+                "commit": "08babbe25cfe932d6bd5165fdb9d0268843352b6",
+                "criteria": [
+                  {
+                    "evidence": [
+                      {
+                        "digest": "sha256:bad2562a654e9e9d894047b0eb6f672a07e109dc2d62f9760030a91b96f229ed",
+                        "path": "check.py",
+                        "type": "unit"
+                      }
+                    ],
+                    "id": "AC1",
+                    "status": "passed"
+                  }
+                ],
+                "producer": "w-build",
+                "rollback": "git revert",
+                "schema": "veldo.proof/v1",
+                "spec_id": "VELDO-9802",
+                "spec_revision": "sha256:3af2237f4c1ef8871afaa6bf335693f8919fe38675de6313f3e2c3a023eae7ea"
+              },
+              "spec": "---\nschema: veldo.spec/v1\nid: VELDO-9802\ntitle: Grooming fixture unit\nstatus: ready\nrisk: standard\nowner: dmitry\nhuman_approval: not_required\nlane: standalone\nprotected_paths: []\nacceptance_criteria:\n  - id: AC1\n    text: The unit check passes.\nrequired_evidence: [unit]\nrollback: git revert\n---\n\n## Intent\n\nFixture.\n"
+            },
+            "proof": {
+              "digest": "sha256:310d208ff6a088c42ca3b55e2c404f6e2a1e35b226c22ffab5cacb91a68737ab",
+              "path": "proof/VELDO-9802/manifest.json"
+            },
+            "reviewer": "w-rev",
+            "schema": "veldo.review_assignment/v1",
+            "source": {
+              "commit": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2"
+            },
+            "unit": "VELDO-9802"
+          },
+          "payload_digest": "sha256:6cdbe46daacf0e4287d082e771c5d82f4155239f022a81d456d25df41743e108",
+          "reviewer": "w-rev",
+          "state": "fulfilled"
+        }
+      },
+      "attempt": 1,
+      "build": {
+        "dispatch": "defect-build",
+        "process": {
+          "pid": 1517184
+        }
+      },
+      "builder": "w-build",
+      "builders": [
+        "w-build"
+      ],
+      "dispositions": [],
+      "domain": "domain-79",
+      "findings": {},
+      "gate": {
+        "commit": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2",
+        "detail": null,
+        "green": true
+      },
+      "generation": 1,
+      "handoff": {
+        "attempt": 1,
+        "policy": {
+          "digest": "sha256:7694c9737b66a4ce88c38c13a62cf6b7c76de16072a34b2823f99f4d2f4ebea0",
+          "version": 1
+        },
+        "proof": {
+          "digest": "sha256:310d208ff6a088c42ca3b55e2c404f6e2a1e35b226c22ffab5cacb91a68737ab",
+          "path": "proof/VELDO-9802/manifest.json"
+        },
+        "required": 1,
+        "reviewers": [
+          "w-rev"
+        ],
+        "risk": "standard",
+        "source": {
+          "commit": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2",
+          "implementation": "08babbe25cfe932d6bd5165fdb9d0268843352b6"
+        }
+      },
+      "history": [
+        {
+          "action": "accept_build",
+          "at": 1793194367.6751635,
+          "principal": "pm",
+          "state": "review"
+        },
+        {
+          "action": "assign_review",
+          "at": 1793194367.7350397,
+          "principal": "pm",
+          "state": "review"
+        },
+        {
+          "action": "record_review",
+          "at": 1793194367.7866623,
+          "principal": "pm",
+          "state": "review"
+        },
+        {
+          "action": "handoff",
+          "at": 1793194367.7953656,
+          "principal": "pm",
+          "state": "handoff"
+        }
+      ],
+      "proof": {
+        "digest": "sha256:310d208ff6a088c42ca3b55e2c404f6e2a1e35b226c22ffab5cacb91a68737ab",
+        "path": "proof/VELDO-9802/manifest.json"
+      },
+      "proof_bundle": "proof-bundle:[\"domain-79\",\"repository-79\",\"VELDO-9802\",\"2a60c1b44db4b8e05b23d139855ce120a51fe7f2\"]",
+      "repository": "repository-79",
+      "returned_to": null,
+      "reviews": [
+        {
+          "assignment": "VELDO-9802/1/w-rev/1",
+          "attempt": 1,
+          "body": {
+            "assignment": "VELDO-9802/1/w-rev/1",
+            "findings": [],
+            "proof": "sha256:310d208ff6a088c42ca3b55e2c404f6e2a1e35b226c22ffab5cacb91a68737ab",
+            "reviewer": "w-rev",
+            "schema": "veldo.review_receipt/v1",
+            "source": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2",
+            "unit": "VELDO-9802",
+            "verdict": "pass"
+          },
+          "dispatch": "defect-review",
+          "output_digest": "sha256:c0a3717662394d13b21888302023bb21de36c86c41d4f61abb5b2599fd5813da",
+          "passes": true,
+          "process": {
+            "pid": 1517260
+          },
+          "raised": [],
+          "reviewer": "w-rev",
+          "signature_digest": "sha256:8471251a733a7f819fa69cd400887ffcad3d2771dc4ae1b208677c2b5935ad1a",
+          "verdict": "pass"
+        }
+      ],
+      "schema": "veldo.floor/v1",
+      "source": {
+        "commit": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2",
+        "implementation": "08babbe25cfe932d6bd5165fdb9d0268843352b6"
+      },
+      "state": "handoff",
+      "unit": "VELDO-9802"
+    },
+    "missing_review_refusal": "awaiting_reviews:0/1",
+    "proof_bundle": {
+      "bundle": "proof-bundle:[\"domain-79\",\"repository-79\",\"VELDO-9802\",\"2a60c1b44db4b8e05b23d139855ce120a51fe7f2\"]",
+      "digest": "sha256:b7debe2a50cddc28573a2b65e58446968529af92e178f7bc1fca48656b7287de",
+      "record": {
+        "accepted": {
+          "at": 1793194367.5709808,
+          "principal": "pm"
+        },
+        "artifacts": [
+          {
+            "criterion": "AC1",
+            "digest": "sha256:bad2562a654e9e9d894047b0eb6f672a07e109dc2d62f9760030a91b96f229ed",
+            "path": "check.py",
+            "type": "unit"
+          }
+        ],
+        "base": "a0324305b4047be3cbadca9d24c7e3e73ba31e31",
+        "builder": "w-build",
+        "catalog": {
+          "commands": {
+            "unit": "python3 -B check.py"
+          },
+          "digest": "sha256:3abe55ca4537c0df5f22993c8d7eefec716f57ec0d0a98ad152d49ad7db9f386",
+          "path": "scripts/verify.sh",
+          "required": [
+            "unit"
+          ]
+        },
+        "checks": [
+          {
+            "command": "python3 -B check.py",
+            "gate_exit": 0,
+            "name": "unit",
+            "observation": "gate-observation:381f5987e0f5ddf864e85459ddb11b08fe7eb139408881f5aa0d1b59dc71532e",
+            "observed": "   unit: pass",
+            "status": "passed"
+          }
+        ],
+        "domain": "domain-79",
+        "implementation": {
+          "commit": "08babbe25cfe932d6bd5165fdb9d0268843352b6"
+        },
+        "manifest": {
+          "body": {
+            "checks": [
+              {
+                "name": "unit",
+                "status": "passed"
+              }
+            ],
+            "commit": "08babbe25cfe932d6bd5165fdb9d0268843352b6",
+            "criteria": [
+              {
+                "evidence": [
+                  {
+                    "digest": "sha256:bad2562a654e9e9d894047b0eb6f672a07e109dc2d62f9760030a91b96f229ed",
+                    "path": "check.py",
+                    "type": "unit"
+                  }
+                ],
+                "id": "AC1",
+                "status": "passed"
+              }
+            ],
+            "producer": "w-build",
+            "rollback": "git revert",
+            "schema": "veldo.proof/v1",
+            "spec_id": "VELDO-9802",
+            "spec_revision": "sha256:3af2237f4c1ef8871afaa6bf335693f8919fe38675de6313f3e2c3a023eae7ea"
+          },
+          "digest": "sha256:310d208ff6a088c42ca3b55e2c404f6e2a1e35b226c22ffab5cacb91a68737ab",
+          "location": "git",
+          "path": "proof/VELDO-9802/manifest.json"
+        },
+        "observation": {
+          "digest": "sha256:0cf7b6569e458398ac369f6b4d0a7cd6056087710ee326a0db50d98bdc05220c",
+          "id": "gate-observation:381f5987e0f5ddf864e85459ddb11b08fe7eb139408881f5aa0d1b59dc71532e"
+        },
+        "producer": "w-build",
+        "repository": "repository-79",
+        "schema": "veldo.proof_bundle/v1",
+        "source": {
+          "commit": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2"
+        },
+        "spec": {
+          "criteria": [
+            "AC1"
+          ],
+          "path": "specs/VELDO-9802-grooming-fixture.md",
+          "required_evidence": [
+            "unit"
+          ],
+          "revision": "sha256:3af2237f4c1ef8871afaa6bf335693f8919fe38675de6313f3e2c3a023eae7ea"
+        },
+        "unit": "VELDO-9802"
+      },
+      "seq": 343
+    },
+    "receipt": {
+      "fact": "revision_landed",
+      "publication_receipt": {
+        "candidate_commit": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2",
+        "dispatch_id": "defect-land",
+        "evidence_commit": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2",
+        "gate_invocation": {
+          "command": [
+            "bash",
+            "/tmp/v79-rzln33vs/ticket-verifier/scripts/defect-check.sh",
+            "--candidate",
+            "/tmp/v79-rzln33vs/defect-candidate",
+            "--sink",
+            "/tmp/v79-rzln33vs/candidate-observation/sink"
+          ],
+          "observation_digest": "sha256:4b60d5208e38469ec1f7e3ca3da2dc79f0370aec38884e992680dd0f1b35e1e7",
+          "verifier": "sha256:3abe55ca4537c0df5f22993c8d7eefec716f57ec0d0a98ad152d49ad7db9f386"
+        },
+        "gate_output_location": "/tmp/v79-rzln33vs/candidate-observation/observation.json",
+        "implementation_commit": "08babbe25cfe932d6bd5165fdb9d0268843352b6",
+        "old_remote_tip": "a0324305b4047be3cbadca9d24c7e3e73ba31e31",
+        "proof_digest": "sha256:310d208ff6a088c42ca3b55e2c404f6e2a1e35b226c22ffab5cacb91a68737ab",
+        "publication_effect": {
+          "digest": "sha256:cedb3fd68a7bed21eb0b9d4504490a18a93d9df981cd3251b124ac9a9956acb4",
+          "evidence": "sha256:96274e35fd5a6c598c844527daa66b9eecca9abac1665b9fb4baa1217112ba3a",
+          "id": "effect:defect-land",
+          "version": 2
+        },
+        "remote_confirmation": {
+          "commit": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2",
+          "read_at": 1793194368.251112,
+          "ref": "refs/heads/main",
+          "remote": "https://github.com/fixture/defects.git"
+        },
+        "replication_receipt": "local-journal",
+        "reviewed_proof_digest": "sha256:310d208ff6a088c42ca3b55e2c404f6e2a1e35b226c22ffab5cacb91a68737ab",
+        "reviewed_source": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2",
+        "reviewed_source_digest": "sha256:816c2f6cee105c1b7c9824895eb3dc54802bb4b3fe1ea62b09e623e7c3f7b7ba",
+        "reviewers": [
+          "w-rev"
+        ],
+        "tested_tree": "5adc57b54692a1f0617074716f85db73deb88bd2",
+        "unit_id": "VELDO-9802"
+      },
+      "remote_confirmation": {
+        "commit": "2a60c1b44db4b8e05b23d139855ce120a51fe7f2",
+        "read_at": 1793194368.251112,
+        "ref": "refs/heads/main",
+        "remote": "https://github.com/fixture/defects.git"
+      },
+      "replicated": "local-journal",
+      "spec_shipped_event": "3f5db2cb4b84",
+      "subject": {
+        "id": "VELDO-9802",
+        "revision": 1
+      }
+    },
+    "red_reproduction_exit": 1,
+    "result": {
+      "dispatch": "defect-land",
+      "ok": true,
+      "outcome": "landed",
+      "projection": {
+        "duplicates": 0,
+        "published": [
+          "3f5db2cb4b84"
+        ],
+        "watermark": 360
+      },
+      "published": true,
+      "receipt": "receipt:revision_landed:VELDO-9802:540eb0cbe929a852",
+      "refusal": null,
+      "refusals": [],
+      "unit": "VELDO-9802"
+    },
+    "review_pid": 1517260
+  },
+  "scope_changes": [
+    "contract",
+    "criterion",
+    "public_behavior",
+    "interface",
+    "data_model",
+    "dependency_policy",
+    "protected_scope",
+    "release_policy",
+    "compatibility"
+  ],
+  "telegram_message": {
+    "item": {
+      "admission": {
+        "admission_request": "admission-request:c71a7b29c4d7175f6e6699a8ea476fac",
+        "digest": "sha256:7418bdb50362e4c4479a1ead4efa68ce9ea8c0a0b36f9b0b622f37efb2381bbd",
+        "effect_id": "settlement-effect:assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-admission-1:1",
+        "principals": [
+          "olga"
+        ],
+        "questions": [],
+        "receipt_id": "settlement-receipt:assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-admission-1:1",
+        "request_digest": "sha256:5727d3a73d044eff05d1ba8fae568187cefdda9f2d659fb6917211375631b3a0",
+        "request_id": "assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-admission-1",
+        "request_revision": 1,
+        "request_version": 1,
+        "revision": 1,
+        "ruling": "approve",
+        "settlement_id": "request-settlement:assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-admission-1:1"
+      },
+      "applied": [
+        "assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-admission-1",
+        "assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-priority-1"
+      ],
+      "blocks": [],
+      "cancellation": null,
+      "completion": null,
+      "decomposition": [
+        {
+          "eligible_holders": [
+            "w-build"
+          ],
+          "requirements": [],
+          "scope": [
+            "checkout"
+          ],
+          "specification": "VELDO-9801",
+          "unit": "VELDO-9801"
+        }
+      ],
+      "decomposition_digest": "sha256:7418bdb50362e4c4479a1ead4efa68ce9ea8c0a0b36f9b0b622f37efb2381bbd",
+      "decomposition_revision": 1,
+      "domain_uuid": "domain-79",
+      "entity_type": "backlog_item",
+      "feature_uuid": "objective-feature:74a352eb40edadaa1a76273806cae37f",
+      "history": [
+        {
+          "at": 1793194363.044079,
+          "by": "pm",
+          "command_id": "bc-48",
+          "operation": "take",
+          "source": null,
+          "target": "RAW"
+        },
+        {
+          "at": 1793194363.0648613,
+          "by": "pm",
+          "command_id": "bc-50",
+          "operation": "prepare",
+          "revision": 1,
+          "source": "RAW",
+          "target": "PREPARED",
+          "units": [
+            "VELDO-9801"
+          ]
+        },
+        {
+          "at": 1793194363.0788987,
+          "by": "pm",
+          "command_id": "bc-52",
+          "operation": "request_grooming",
+          "revision": 1,
+          "source": "PREPARED",
+          "target": "AWAITING_GROOMING"
+        },
+        {
+          "at": 1793194363.300284,
+          "by": "grooming",
+          "command_id": "groom-c-03f10ae01a0c5047",
+          "operation": "admit",
+          "request_id": "assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-admission-1",
+          "revision": 1,
+          "ruling": "approve",
+          "source": "AWAITING_GROOMING",
+          "target": "ADMITTED"
+        },
+        {
+          "at": 1793194363.3509836,
+          "by": "grooming",
+          "command_id": "groom-c-014bdc645d035f98",
+          "operation": "prioritize",
+          "request_id": "assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-priority-1",
+          "revision": 1,
+          "ruling": "approve",
+          "source": "ADMITTED",
+          "target": "PRIORITIZED",
+          "units": [
+            "VELDO-9801"
+          ]
+        }
+      ],
+      "objective_uuid": "objective:d3eb185b9d9aa8bb06b4462f0a467096",
+      "priorities": [
+        {
+          "admission_request": "admission-request:c71a7b29c4d7175f6e6699a8ea476fac",
+          "digest": "sha256:7418bdb50362e4c4479a1ead4efa68ce9ea8c0a0b36f9b0b622f37efb2381bbd",
+          "effect_id": "settlement-effect:assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-priority-1:1",
+          "principals": [
+            "olga"
+          ],
+          "rank": 3,
+          "receipt_id": "settlement-receipt:assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-priority-1:1",
+          "request_digest": "sha256:5727d3a73d044eff05d1ba8fae568187cefdda9f2d659fb6917211375631b3a0",
+          "request_id": "assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-priority-1",
+          "request_revision": 1,
+          "request_version": 1,
+          "revision": 1,
+          "ruling": "approve",
+          "settlement_id": "request-settlement:assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-priority-1:1",
+          "units": [
+            "VELDO-9801"
+          ]
+        }
+      ],
+      "priority": {
+        "admission_request": "admission-request:c71a7b29c4d7175f6e6699a8ea476fac",
+        "digest": "sha256:7418bdb50362e4c4479a1ead4efa68ce9ea8c0a0b36f9b0b622f37efb2381bbd",
+        "effect_id": "settlement-effect:assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-priority-1:1",
+        "principals": [
+          "olga"
+        ],
+        "rank": 3,
+        "receipt_id": "settlement-receipt:assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-priority-1:1",
+        "request_digest": "sha256:5727d3a73d044eff05d1ba8fae568187cefdda9f2d659fb6917211375631b3a0",
+        "request_id": "assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-priority-1",
+        "request_revision": 1,
+        "request_version": 1,
+        "revision": 1,
+        "ruling": "approve",
+        "settlement_id": "request-settlement:assignment:repository-79:groom-c71a7b29c4d7175f6e6699a8-priority-1:1",
+        "units": [
+          "VELDO-9801"
+        ]
+      },
+      "project": "proj-a",
+      "project_uuid": "project:proj-a",
+      "provenance": {
+        "created_at": 1793194363.044079,
+        "created_by": "pm",
+        "defect": {
+          "reproduction": "",
+          "scope_changes": [],
+          "severity": "high",
+          "source": {
+            "attribution": {
+              "bot_id": 8000000079,
+              "channel": "telegram_chat",
+              "chat_id": 5790001,
+              "date": 1793194364,
+              "evidence_digest": "sha256:e1c9249fee69c3b5555c2e7fe2ea7cb6be4f6517e402e17a893f8921b5b2ac88",
+              "evidence_id": "channel-evidence:telegram_chat:8000000079:1009002",
+              "message_id": 9002,
+              "sender_id": 5790001,
+              "update_id": 1009002
+            },
+            "content_digest": "sha256:05f39ad8694154bd3ee6fdeb82cd324e2d68b8a3659819ee316981d395bd4065",
+            "id": "intake_source:d581bba16ffee1ebfbe1ff694f6283af",
+            "kind": "telegram_message",
+            "principal": "olga",
+            "ref": "8000000079:5790001:9002",
+            "text": "Fix this bug: checkout returns the wrong total. Severity: high. telegram_message"
+          }
+        },
+        "source": "take"
+      },
+      "repository_uuid": "repository-79",
+      "schema": "veldo.backlog_item/v1",
+      "scope": [
+        "checkout"
+      ],
+      "state": "PRIORITIZED",
+      "title": "Restore accepted checkout total",
+      "uuid": "backlog:0e888129a75401d37011198107cab39f",
+      "version": 5,
+      "work_class": "POLICY_DEFECT"
+    },
+    "request": {
+      "author": "pm",
+      "content": {
+        "alternatives": [],
+        "ceiling": {
+          "invocations": 3,
+          "wall_seconds": 300
+        },
+        "class": "POLICY_DEFECT",
+        "decomposition": {
+          "digest": "sha256:7418bdb50362e4c4479a1ead4efa68ce9ea8c0a0b36f9b0b622f37efb2381bbd",
+          "revision": 1,
+          "units": [
+            {
+              "scope": [
+                "checkout"
+              ],
+              "specification": "VELDO-9801",
+              "unit": "VELDO-9801"
+            }
+          ]
+        },
+        "evidence": {
+          "acceptance": {
+            "path": "answer",
+            "request_id": "assignment:repository-79:objective-35",
+            "settlement_id": "request-settlement:assignment:repository-79:objective-35:1"
+          },
+          "defect": {
+            "reproduction": "",
+            "scope_changes": [],
+            "severity": "high",
+            "source": {
+              "attribution": {
+                "bot_id": 8000000079,
+                "channel": "telegram_chat",
+                "chat_id": 5790001,
+                "date": 1793194364,
+                "evidence_digest": "sha256:e1c9249fee69c3b5555c2e7fe2ea7cb6be4f6517e402e17a893f8921b5b2ac88",
+                "evidence_id": "channel-evidence:telegram_chat:8000000079:1009002",
+                "message_id": 9002,
+                "sender_id": 5790001,
+                "update_id": 1009002
+              },
+              "content_digest": "sha256:05f39ad8694154bd3ee6fdeb82cd324e2d68b8a3659819ee316981d395bd4065",
+              "id": "intake_source:d581bba16ffee1ebfbe1ff694f6283af",
+              "kind": "telegram_message",
+              "principal": "olga",
+              "ref": "8000000079:5790001:9002",
+              "text": "Fix this bug: checkout returns the wrong total. Severity: high. telegram_message"
+            }
+          },
+          "requirements": [
+            {
+              "id": "outcome",
+              "kind": "gate_observation"
+            }
+          ]
+        },
+        "exclusions": [],
+        "expiry": "2030-01-31T17:00:00Z",
+        "lane": "policy_qualified",
+        "outcome": {
+          "accepted_revision": 1,
+          "bound_digest": "sha256:eb92ada367a1b070275b6cac412ff0f610839efbc11f1073055cf3822218989d",
+          "objective": "objective:d3eb185b9d9aa8bb06b4462f0a467096",
+          "text": "Checkout returns the accepted total."
+        },
+        "policy": {
+          "authority_policy_digest": "sha256:1c092eb01cdd948bf8af035968510c2a6d5d887615623a41367033295910481f",
+          "charter_digest": "sha256:c691a1fe2f66a8a9844944eb2527e906cca49a6bb5a3e1e07c6fefc1456567da",
+          "charter_revision": 1,
+          "project": "proj-a"
+        },
+        "priority": {
+          "rank": 3
+        },
+        "protected_paths": [],
+        "questions": [],
+        "release_authority": {
+          "maximum": "land",
+          "repository": "repository-79"
+        },
+        "scope": [
+          "checkout"
+        ],
+        "specifications": [
+          {
+            "digest": "sha256:5b6c7ed62dbeab26988c366c365ba2c89078278ed0a07efa94aaa77fd5c0c825",
+            "id": "VELDO-9801"
+          }
+        ]
+      },
+      "digest": "sha256:5727d3a73d044eff05d1ba8fae568187cefdda9f2d659fb6917211375631b3a0",
+      "domain_uuid": "domain-79",
+      "entity_type": "admission_request",
+      "item": "backlog:0e888129a75401d37011198107cab39f",
+      "project": "proj-a",
+      "repository_uuid": "repository-79",
+      "revision": 1,
+      "revisions": [
+        {
+          "at": 1793194363.0922477,
+          "author": "pm",
+          "command_id": "gc-54",
+          "content": {
+            "alternatives": [],
+            "ceiling": {
+              "invocations": 3,
+              "wall_seconds": 300
+            },
+            "class": "POLICY_DEFECT",
+            "decomposition": {
+              "digest": "sha256:7418bdb50362e4c4479a1ead4efa68ce9ea8c0a0b36f9b0b622f37efb2381bbd",
+              "revision": 1,
+              "units": [
+                {
+                  "scope": [
+                    "checkout"
+                  ],
+                  "specification": "VELDO-9801",
+                  "unit": "VELDO-9801"
+                }
+              ]
+            },
+            "evidence": {
+              "acceptance": {
+                "path": "answer",
+                "request_id": "assignment:repository-79:objective-35",
+                "settlement_id": "request-settlement:assignment:repository-79:objective-35:1"
+              },
+              "defect": {
+                "reproduction": "",
+                "scope_changes": [],
+                "severity": "high",
+                "source": {
+                  "attribution": {
+                    "bot_id": 8000000079,
+                    "channel": "telegram_chat",
+                    "chat_id": 5790001,
+                    "date": 1793194364,
+                    "evidence_digest": "sha256:e1c9249fee69c3b5555c2e7fe2ea7cb6be4f6517e402e17a893f8921b5b2ac88",
+                    "evidence_id": "channel-evidence:telegram_chat:8000000079:1009002",
+                    "message_id": 9002,
+                    "sender_id": 5790001,
+                    "update_id": 1009002
+                  },
+                  "content_digest": "sha256:05f39ad8694154bd3ee6fdeb82cd324e2d68b8a3659819ee316981d395bd4065",
+                  "id": "intake_source:d581bba16ffee1ebfbe1ff694f6283af",
+                  "kind": "telegram_message",
+                  "principal": "olga",
+                  "ref": "8000000079:5790001:9002",
+                  "text": "Fix this bug: checkout returns the wrong total. Severity: high. telegram_message"
+                }
+              },
+              "requirements": [
+                {
+                  "id": "outcome",
+                  "kind": "gate_observation"
+                }
+              ]
+            },
+            "exclusions": [],
+            "expiry": "2030-01-31T17:00:00Z",
+            "lane": "policy_qualified",
+            "outcome": {
+              "accepted_revision": 1,
+              "bound_digest": "sha256:eb92ada367a1b070275b6cac412ff0f610839efbc11f1073055cf3822218989d",
+              "objective": "objective:d3eb185b9d9aa8bb06b4462f0a467096",
+              "text": "Checkout returns the accepted total."
+            },
+            "policy": {
+              "authority_policy_digest": "sha256:1c092eb01cdd948bf8af035968510c2a6d5d887615623a41367033295910481f",
+              "charter_digest": "sha256:c691a1fe2f66a8a9844944eb2527e906cca49a6bb5a3e1e07c6fefc1456567da",
+              "charter_revision": 1,
+              "project": "proj-a"
+            },
+            "priority": {
+              "rank": 3
+            },
+            "protected_paths": [],
+            "questions": [],
+            "release_authority": {
+              "maximum": "land",
+              "repository": "repository-79"
+            },
+            "scope": [
+              "checkout"
+            ],
+            "specifications": [
+              {
+                "digest": "sha256:5b6c7ed62dbeab26988c366c365ba2c89078278ed0a07efa94aaa77fd5c0c825",
+                "id": "VELDO-9801"
+              }
+            ]
+          },
+          "digest": "sha256:5727d3a73d044eff05d1ba8fae568187cefdda9f2d659fb6917211375631b3a0",
+          "revision": 1,
+          "touchpoints": [
+            "admission",
+            "priority"
+          ]
+        }
+      ],
+      "schema": "veldo.admission_request/v1",
+      "title": "Restore accepted checkout total",
+      "touchpoints": [
+        "admission",
+        "priority"
+      ],
+      "uuid": "admission-request:c71a7b29c4d7175f6e6699a8ea476fac",
+      "version": 1
+    }
+  },
+  "withheld_authority": {
+    "admission": {
+      "ok": false,
+      "reason": "not_admitted"
+    },
+    "priority": {
+      "ok": false,
+      "reason": "not_admitted"
+    }
+  }
+}

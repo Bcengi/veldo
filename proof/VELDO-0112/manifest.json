@@ -1,0 +1,142 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0112",
+  "commit": "79a18de507448aa1a340565409b7646a16c083c0",
+  "producer": "Codex implementing agent under owner Telegram 37209 and 37212",
+  "produced_at": "2026-10-28T17:59:17.355427Z",
+  "veldo_version": "3.10.1",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "row": "clients/registry-is-the-boundary",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0112/baseline.json",
+          "detail": "Independent mutation-sink census, guarded direct and identity dispatch, unique identities, concurrent aliases, collectible discarded aliases, engine mirrors and installer inclusion."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0112/baseline.json",
+          "detail": "Normal production module loading supplies claim, command and dispatch-admission registrations; the real service dependency closure includes the registry."
+        }
+      ],
+      "falsification": {
+        "diff": "proof/VELDO-0112/AC1.diff",
+        "red": "proof/VELDO-0112/AC1-red.json",
+        "restored_green": "proof/VELDO-0112/AC1-green.json",
+        "named_row_red": true,
+        "restored_all_rows_green": true
+      }
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "row": "clients/every-registration-is-drivable",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0112/baseline.json",
+          "detail": "Exact registration and transport product joined to adapters by public entry identity; missing adapters refuse."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0112/baseline.json",
+          "detail": "All 19 registered entry and transport pairs invoke their real public callable and advance the signed authority journal with valid enrollment and preconditions. Dispatch orchestration uses the external seams documented in OPEN.md."
+        }
+      ],
+      "falsification": {
+        "diff": "proof/VELDO-0112/AC2.diff",
+        "red": "proof/VELDO-0112/AC2-red.json",
+        "restored_green": "proof/VELDO-0112/AC2-green.json",
+        "named_row_red": true,
+        "restored_all_rows_green": true
+      }
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "row": "clients/registry-growth-expands-cases",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0112/baseline.json",
+          "detail": "Fresh inventories and receipts reject omitted, duplicate, stale and empty sets; new registrations require adapters."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0112/baseline.json",
+          "detail": "Two independently enumerated consumers each execute all 20 cases after a temporary production registration; both receipts include the extension and the same registration digest."
+        }
+      ],
+      "falsification": {
+        "diff": "proof/VELDO-0112/AC3.diff",
+        "red": "proof/VELDO-0112/AC3-red.json",
+        "restored_green": "proof/VELDO-0112/AC3-green.json",
+        "named_row_red": true,
+        "restored_all_rows_green": true
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "ticket-acceptance-controls-and-declared-falsifiers",
+      "status": "passed",
+      "command": "flock /home/dmitry/.local/state/core-gates/.gate.lock python3 -B proof/VELDO-0112/run_checks.py",
+      "exit_code": 0,
+      "ref": "proof/VELDO-0112/mutations.json",
+      "detail": "The evidence is the standalone ticket rows and completed source falsifiers. The selected selftest run is supplementary diagnostics, not aggregate unit verification."
+    }
+  ],
+  "full_gate_run": false,
+  "protected_paths_touched": [],
+  "rollback": "Revert the registry, client guards, scaffold wiring and fixture consumers together.",
+  "review": "Implementation evidence only. Full gate and independent review are deferred to the owner batch. No push or merge performed.",
+  "artifacts": [
+    "proof/VELDO-0112/AC1-green.json",
+    "proof/VELDO-0112/AC1-red.json",
+    "proof/VELDO-0112/AC1.diff",
+    "proof/VELDO-0112/AC2-green.json",
+    "proof/VELDO-0112/AC2-red.json",
+    "proof/VELDO-0112/AC2.diff",
+    "proof/VELDO-0112/AC3-green.json",
+    "proof/VELDO-0112/AC3-red.json",
+    "proof/VELDO-0112/AC3.diff",
+    "proof/VELDO-0112/OPEN.md",
+    "proof/VELDO-0112/README.md",
+    "proof/VELDO-0112/baseline.json",
+    "proof/VELDO-0112/drive.py",
+    "proof/VELDO-0112/implementation.json",
+    "proof/VELDO-0112/mutations.json",
+    "proof/VELDO-0112/run_checks.py",
+    "proof/VELDO-0112/selected-suites-initial.json",
+    "proof/VELDO-0112/selected-suites-initial.log",
+    "proof/VELDO-0112/selected-suites.json",
+    "proof/VELDO-0112/selected-suites.log",
+    "proof/VELDO-0112/single-file-control.json"
+  ],
+  "artifact_sha256": {
+    "proof/VELDO-0112/AC1-green.json": "a7f78758e35a1bc104d200ae63e44c30365ccddf71f4b14d9340680091e86a95",
+    "proof/VELDO-0112/AC1-red.json": "eb1e517529e53c39c0ed854359c8b158e69d3325e62967c5cab70268974b0bbf",
+    "proof/VELDO-0112/AC1.diff": "b0f738fdcd4e7d2bb5263bf9f75c01bd9529c5bc4a7dc2bb933356a04cc5fc26",
+    "proof/VELDO-0112/AC2-green.json": "afa44810e9b35dbb633d25825a6a7f421ea6d332153db17c44a4872fb5b260f2",
+    "proof/VELDO-0112/AC2-red.json": "dc424c33286717114bda13a27b365de73642c2188632a22bde27a9b1f4cda063",
+    "proof/VELDO-0112/AC2.diff": "7dae4b6c28c026ccb42706f98ca838d678dda685422fbc495e676510e7d30ff0",
+    "proof/VELDO-0112/AC3-green.json": "1f05220096bcf3be0fe7d85292ede3fcb00f9c27de20c4f6b8d30946cee10e0a",
+    "proof/VELDO-0112/AC3-red.json": "54d1a44ca6d87a32d2a70897cccd2e2dd3d557483bbb4f0e5b265f81b2cccd1c",
+    "proof/VELDO-0112/AC3.diff": "e87398d714b02b820ef5c3de6dbd92d2152d3874d0eada41eaf1d132b02c302c",
+    "proof/VELDO-0112/OPEN.md": "246bb45314d9b6ae26a5747a8015b59a997f80226bd2448f280f7b259fb330ab",
+    "proof/VELDO-0112/README.md": "3cd5bc671b9cc9ff904a7a5a93e400f55a31df646a94ed62b098187443ecc2cb",
+    "proof/VELDO-0112/baseline.json": "deff9c7fad378fe6696d8c948599cee22a76f58dc7fbb2992ea7833746fa3a02",
+    "proof/VELDO-0112/drive.py": "66ace1769cfee3b98850aa9188e392c8d74fc57b06b5b24515a19c2214aa02c5",
+    "proof/VELDO-0112/implementation.json": "61a398e163a7feb08d24a469f21c1505e1730294bfdfb781c6db71481c89a7df",
+    "proof/VELDO-0112/mutations.json": "9a26f1606f033c167f3243191519c396ca4628cb87c1b7e4dd20c81146512ac1",
+    "proof/VELDO-0112/run_checks.py": "89340b85535f2fbbd3238b66e7449b18149ec757d584a9f2e23a6fdb019d2685",
+    "proof/VELDO-0112/selected-suites-initial.json": "7b681496f2f2d336357bdcdd62b66f28bfe166c7296a901a13e5474b76a34358",
+    "proof/VELDO-0112/selected-suites-initial.log": "1f828d3e2b78a5485f6344cacd36091f22be16775f44260a07e3ce305ac6d799",
+    "proof/VELDO-0112/selected-suites.json": "2686da55e2847b14147e76d859026ed0de0ca55196fb0fa825a2c4538fa9bbfb",
+    "proof/VELDO-0112/selected-suites.log": "1622b0b5388f297e1d60b9c032e3d3a2b52f9f88e528a59405bca2cf711f49ac",
+    "proof/VELDO-0112/single-file-control.json": "8a9b7c52a326f87c6c6a11aa333f9b3e495d29665bc3b604ea09bcff20b80047"
+  }
+}

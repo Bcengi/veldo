@@ -1,0 +1,84 @@
+{
+  "criteria": {
+    "AC1": {
+      "checks": "14-row ticket suite and native cgroup fixture passed",
+      "falsifier": "admission219-slowest-rate: red, then baseline and no-op green",
+      "remaining": "Lifecycle-bound capture for transient or recreated unit cgroups"
+    },
+    "AC2": {
+      "checks": "Capacity matrix, actual 2718-case inventory, historical 2689-case subset and defaults passed",
+      "falsifier": "admission219-fixed-sixteen: red, then baseline and no-op green",
+      "remaining": "Protected scheduler aggregate-claim handoff and detailed admission replies"
+    },
+    "AC3": {
+      "checks": "Four real coordinator fixture receipts and independent cap formula passed",
+      "falsifier": "admission219-optimistic-m: red, then baseline and no-op green",
+      "remaining": null
+    },
+    "AC4": {
+      "checks": "Capture checker rejects synthetic 5207s and accepts synthetic 3300s",
+      "falsifier": "Canonical fixed-sixteen run not performed",
+      "remaining": "Force-fresh canonical gate and fixed-sixteen canonical control at the landing candidate"
+    }
+  },
+  "current_source_head": "7d5ec577784f95c5db33eb7ba43eeb02f4cb8c7f",
+  "full_gate": "NOT RUN: owner rule 37191",
+  "inventory_count": 2718,
+  "native_max_cpu_relative_error": 0.015955895551254207,
+  "native_max_memory_relative_error": 0.0154571533203125,
+  "protected_paths_touched": [
+    "scripts/check_gate_mutations.py",
+    "engine/scripts/check_gate_mutations.py",
+    "scripts/reuse_worker.py",
+    "engine/scripts/reuse_worker.py"
+  ],
+  "source_sha256": {
+    "engine/scripts/check_gate_mutations.py": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+    "engine/scripts/mutation_ownership.py": "910c5228b298abb9595c9a6a604e9869ea5791979aa8b3ef208f68348ab8eccc",
+    "engine/scripts/reuse_worker.py": "4974909169efc09c2c37e6e71a3a1e016290c55fa8f8f59ad26163b5fd9ba8ab",
+    "proof/VELDO-0219/kernel_check.py": "2ab2cf330f4fee67e9c2aad1600905e9ba649b8504daba0146eca205ff0e8890",
+    "proof/VELDO-0219/local_check.py": "490d132b4af582c391a86f43ba3dc5482c62b5957c2d85e56e218bbd091dea72",
+    "proof/VELDO-0219/qualification.py": "314e0ab1eb69228e82ca4f152b8d4ab62ed3d8ec7a329cfa10b90c971fca5b9f",
+    "scripts/check_gate_mutations.py": "39844926e46a3cb8c2040e71fe481d1773c26365cc4097180b792b1e8cd9e250",
+    "scripts/check_teeth_mutations.py": "78e324590ff9497ff3d2aff9675550bccdac0bfcca4ea05b75b20e043a5bf13e",
+    "scripts/mutation_ownership.py": "910c5228b298abb9595c9a6a604e9869ea5791979aa8b3ef208f68348ab8eccc",
+    "scripts/reuse_worker.py": "4974909169efc09c2c37e6e71a3a1e016290c55fa8f8f59ad26163b5fd9ba8ab",
+    "scripts/suites/115_veldo_0219_measured_admission.py": "a298899ebd8fcf88235e31f0fa1030f7dcee2bb4476cc478c59a76854a038b3d",
+    "scripts/suites/53_veldo_0123_mutations.py": "942f31382d22ff67bae539647102090b849b9ecdd81d9ce1ccd3b3a6836567a7",
+    "scripts/suites/manifest.json": "8f199d113a9b5953317609a20c8c58b8d17fcf175bc9e7f35e408c2568b3c30b",
+    "scripts/suites/requires.json": "4e2deb43ad19d528eda0ec0db3ea48b190f2ed0907530a9f04e1373c615e5c3b"
+  },
+  "spec": "VELDO-0219",
+  "status": "REMAINING",
+  "tested_source_head": "7d5ec577784f95c5db33eb7ba43eeb02f4cb8c7f",
+  "tests": [
+    {
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "scripts/selftest.py",
+        "--suite",
+        "115_veldo_0219_measured_admission"
+      ],
+      "exit": 2,
+      "suite": "115_veldo_0219_measured_admission",
+      "summary": [
+        "selftest (PARTIAL, 1 of 171 suites): 40 passed, 0 failed in 2.91s"
+      ]
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "-B",
+        "scripts/selftest.py",
+        "--suite",
+        "53_veldo_0123_mutations"
+      ],
+      "exit": 2,
+      "suite": "53_veldo_0123_mutations",
+      "summary": [
+        "selftest (PARTIAL, 1 of 171 suites): 40 passed, 0 failed in 28.72s"
+      ]
+    }
+  ]
+}

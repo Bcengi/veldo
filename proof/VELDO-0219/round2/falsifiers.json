@@ -1,0 +1,468 @@
+{
+  "head": "4b1a01996b78cea89324239b5289de888735e935",
+  "sources": {
+    "scripts/gate_schedule.py": "a1495fcd8f0b5f8fdb437bfb6cfefab04a5ec1f283860a353ac0e96174506787",
+    "scripts/gate_graph.json": "37de7747778fab2c8b02b51e6c3c8b9b3a61089a4094943ed3a3b192f281507f",
+    "scripts/check_gate_mutations.py": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a",
+    "scripts/mutation_ownership.py": "f99f24e6820595766cb7a86c7172c55142f31b8fd51a260596fcf593e07031d6",
+    "scripts/reuse_worker.py": "314c2925e431dcab0e6b02cd3d1d5cc6d28b993e0bec23a90e16c658fdc16d74",
+    "scripts/check_teeth_mutations.py": "17fa3ab9050f18fa814d6690c16c15e87c16fe278e9a889309f9e2af65c7ca5e",
+    "scripts/suites/115_veldo_0219_measured_admission.py": "d43cf2bd2e9300dc4a19995d4d1a62dfe817387782837daeec6451bc3d99b7bf",
+    "engine/scripts/gate_schedule.py": "a1495fcd8f0b5f8fdb437bfb6cfefab04a5ec1f283860a353ac0e96174506787",
+    "engine/scripts/check_gate_mutations.py": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a",
+    "engine/scripts/mutation_ownership.py": "f99f24e6820595766cb7a86c7172c55142f31b8fd51a260596fcf593e07031d6",
+    "engine/scripts/reuse_worker.py": "314c2925e431dcab0e6b02cd3d1d5cc6d28b993e0bec23a90e16c658fdc16d74",
+    "proof/VELDO-0219/round2/check.py": "cc7262b0349ed7a9d25691ad5ae3f1d2a08b6cef544855aae18191bad7734fe2",
+    "proof/VELDO-0219/round2/lifecycle_check.py": "f76e934232e0531c12de0672961f0df44d6d046fbd700cf46ca077c274b0be03",
+    "proof/VELDO-0219/round2/falsifiers.py": "734ce3f4d17f405c0d85e82dadaa81f7d2d4756207e0f66800f342a069bf4e96"
+  },
+  "runs": [
+    {
+      "case": "admission219-slowest-rate",
+      "mode": "mutant",
+      "rows": {
+        "admission/measured-per-case": false,
+        "admission/cgroup-counters": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/fallback-order": false,
+        "admission/fits-ledger": true,
+        "admission/oversized-refused": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/lifecycle-manager-admission": true,
+        "admission/manifest-and-manager": true,
+        "admission/unmeasured-inventory": true,
+        "admission/same-verdicts": true,
+        "admission/reserved-floor": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/aggregate-handoff": true,
+        "admission/coordinator-overhead-measured": true,
+        "admission/unmetered-fixed-cap": true,
+        "admission/cpu-per-run": false,
+        "admission/blocking-resource": true,
+        "admission/unit-lifecycle": true,
+        "admission/lifecycle-channel-serialized": true,
+        "admission/final-memory-bound": true,
+        "admission/qualification-capture": true
+      },
+      "failed": [
+        "admission/measured-per-case",
+        "admission/fallback-order",
+        "admission/cpu-per-run"
+      ],
+      "old_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a",
+      "new_digest": "5c1cfdd22178ab092f8097a60e3a4f9f971a16588652c1ced9fd96302715fbad"
+    },
+    {
+      "case": "admission219-slowest-rate",
+      "mode": "baseline",
+      "rows": {
+        "admission/measured-per-case": true,
+        "admission/cgroup-counters": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/oversized-refused": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/lifecycle-manager-admission": true,
+        "admission/manifest-and-manager": true,
+        "admission/unmeasured-inventory": true,
+        "admission/same-verdicts": true,
+        "admission/reserved-floor": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/aggregate-handoff": true,
+        "admission/coordinator-overhead-measured": true,
+        "admission/unmetered-fixed-cap": true,
+        "admission/cpu-per-run": true,
+        "admission/blocking-resource": true,
+        "admission/unit-lifecycle": true,
+        "admission/lifecycle-channel-serialized": true,
+        "admission/final-memory-bound": true,
+        "admission/qualification-capture": true
+      },
+      "failed": [],
+      "old_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a",
+      "new_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a"
+    },
+    {
+      "case": "admission219-slowest-rate",
+      "mode": "noop",
+      "rows": {
+        "admission/measured-per-case": true,
+        "admission/cgroup-counters": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/oversized-refused": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/lifecycle-manager-admission": true,
+        "admission/manifest-and-manager": true,
+        "admission/unmeasured-inventory": true,
+        "admission/same-verdicts": true,
+        "admission/reserved-floor": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/aggregate-handoff": true,
+        "admission/coordinator-overhead-measured": true,
+        "admission/unmetered-fixed-cap": true,
+        "admission/cpu-per-run": true,
+        "admission/blocking-resource": true,
+        "admission/unit-lifecycle": true,
+        "admission/lifecycle-channel-serialized": true,
+        "admission/final-memory-bound": true,
+        "admission/qualification-capture": true
+      },
+      "failed": [],
+      "old_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a",
+      "new_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a"
+    },
+    {
+      "case": "admission219-fixed-sixteen",
+      "mode": "mutant",
+      "rows": {
+        "admission/measured-per-case": true,
+        "admission/cgroup-counters": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": false,
+        "admission/oversized-refused": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/lifecycle-manager-admission": true,
+        "admission/manifest-and-manager": true,
+        "admission/unmeasured-inventory": false,
+        "admission/same-verdicts": true,
+        "admission/reserved-floor": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/aggregate-handoff": true,
+        "admission/coordinator-overhead-measured": true,
+        "admission/unmetered-fixed-cap": true,
+        "admission/cpu-per-run": true,
+        "admission/blocking-resource": true,
+        "admission/unit-lifecycle": true,
+        "admission/lifecycle-channel-serialized": true,
+        "admission/final-memory-bound": true,
+        "admission/qualification-capture": true
+      },
+      "failed": [
+        "admission/fits-ledger",
+        "admission/unmeasured-inventory"
+      ],
+      "old_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a",
+      "new_digest": "260a3c2b29b1a2e737dfa5d8e1814ae6d16cfaf7b8b8306f06ae66d79893fcf0"
+    },
+    {
+      "case": "admission219-fixed-sixteen",
+      "mode": "baseline",
+      "rows": {
+        "admission/measured-per-case": true,
+        "admission/cgroup-counters": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/oversized-refused": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/lifecycle-manager-admission": true,
+        "admission/manifest-and-manager": true,
+        "admission/unmeasured-inventory": true,
+        "admission/same-verdicts": true,
+        "admission/reserved-floor": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/aggregate-handoff": true,
+        "admission/coordinator-overhead-measured": true,
+        "admission/unmetered-fixed-cap": true,
+        "admission/cpu-per-run": true,
+        "admission/blocking-resource": true,
+        "admission/unit-lifecycle": true,
+        "admission/lifecycle-channel-serialized": true,
+        "admission/final-memory-bound": true,
+        "admission/qualification-capture": true
+      },
+      "failed": [],
+      "old_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a",
+      "new_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a"
+    },
+    {
+      "case": "admission219-fixed-sixteen",
+      "mode": "noop",
+      "rows": {
+        "admission/measured-per-case": true,
+        "admission/cgroup-counters": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/oversized-refused": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/lifecycle-manager-admission": true,
+        "admission/manifest-and-manager": true,
+        "admission/unmeasured-inventory": true,
+        "admission/same-verdicts": true,
+        "admission/reserved-floor": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/aggregate-handoff": true,
+        "admission/coordinator-overhead-measured": true,
+        "admission/unmetered-fixed-cap": true,
+        "admission/cpu-per-run": true,
+        "admission/blocking-resource": true,
+        "admission/unit-lifecycle": true,
+        "admission/lifecycle-channel-serialized": true,
+        "admission/final-memory-bound": true,
+        "admission/qualification-capture": true
+      },
+      "failed": [],
+      "old_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a",
+      "new_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a"
+    },
+    {
+      "case": "admission219-optimistic-m",
+      "mode": "mutant",
+      "rows": {
+        "admission/measured-per-case": true,
+        "admission/cgroup-counters": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/oversized-refused": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/lifecycle-manager-admission": true,
+        "admission/manifest-and-manager": true,
+        "admission/unmeasured-inventory": true,
+        "admission/same-verdicts": false,
+        "admission/reserved-floor": true,
+        "admission/stage-receipts-and-recording": false,
+        "admission/aggregate-handoff": true,
+        "admission/coordinator-overhead-measured": true,
+        "admission/unmetered-fixed-cap": true,
+        "admission/cpu-per-run": true,
+        "admission/blocking-resource": true,
+        "admission/unit-lifecycle": true,
+        "admission/lifecycle-channel-serialized": true,
+        "admission/final-memory-bound": true,
+        "admission/qualification-capture": true
+      },
+      "failed": [
+        "admission/same-verdicts",
+        "admission/stage-receipts-and-recording"
+      ],
+      "old_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a",
+      "new_digest": "a0a0cf8b72733caaa6db9a5730d7f3877c95a71d791978a608e363cafac4b84b"
+    },
+    {
+      "case": "admission219-optimistic-m",
+      "mode": "baseline",
+      "rows": {
+        "admission/measured-per-case": true,
+        "admission/cgroup-counters": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/oversized-refused": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/lifecycle-manager-admission": true,
+        "admission/manifest-and-manager": true,
+        "admission/unmeasured-inventory": true,
+        "admission/same-verdicts": true,
+        "admission/reserved-floor": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/aggregate-handoff": true,
+        "admission/coordinator-overhead-measured": true,
+        "admission/unmetered-fixed-cap": true,
+        "admission/cpu-per-run": true,
+        "admission/blocking-resource": true,
+        "admission/unit-lifecycle": true,
+        "admission/lifecycle-channel-serialized": true,
+        "admission/final-memory-bound": true,
+        "admission/qualification-capture": true
+      },
+      "failed": [],
+      "old_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a",
+      "new_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a"
+    },
+    {
+      "case": "admission219-optimistic-m",
+      "mode": "noop",
+      "rows": {
+        "admission/measured-per-case": true,
+        "admission/cgroup-counters": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/oversized-refused": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/lifecycle-manager-admission": true,
+        "admission/manifest-and-manager": true,
+        "admission/unmeasured-inventory": true,
+        "admission/same-verdicts": true,
+        "admission/reserved-floor": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/aggregate-handoff": true,
+        "admission/coordinator-overhead-measured": true,
+        "admission/unmetered-fixed-cap": true,
+        "admission/cpu-per-run": true,
+        "admission/blocking-resource": true,
+        "admission/unit-lifecycle": true,
+        "admission/lifecycle-channel-serialized": true,
+        "admission/final-memory-bound": true,
+        "admission/qualification-capture": true
+      },
+      "failed": [],
+      "old_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a",
+      "new_digest": "8a4227a476889c47536ec8b7d0d4f4fd2950f273ae075de68182d0ce9cd3be2a"
+    },
+    {
+      "case": "admission219-short-unit-unaccounted",
+      "mode": "mutant",
+      "rows": {
+        "admission/measured-per-case": true,
+        "admission/cgroup-counters": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/oversized-refused": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/lifecycle-manager-admission": true,
+        "admission/manifest-and-manager": true,
+        "admission/unmeasured-inventory": true,
+        "admission/same-verdicts": true,
+        "admission/reserved-floor": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/aggregate-handoff": true,
+        "admission/coordinator-overhead-measured": true,
+        "admission/unmetered-fixed-cap": true,
+        "admission/cpu-per-run": true,
+        "admission/blocking-resource": true,
+        "admission/unit-lifecycle": false,
+        "admission/lifecycle-channel-serialized": true,
+        "admission/final-memory-bound": true,
+        "admission/qualification-capture": true
+      },
+      "failed": [
+        "admission/unit-lifecycle"
+      ],
+      "old_digest": "f99f24e6820595766cb7a86c7172c55142f31b8fd51a260596fcf593e07031d6",
+      "new_digest": "649e64a2826a025ee78a49152cb67904c6c8e2cc9813a32aa1aec53f7c4e5ddb"
+    },
+    {
+      "case": "admission219-short-unit-unaccounted",
+      "mode": "baseline",
+      "rows": {
+        "admission/measured-per-case": true,
+        "admission/cgroup-counters": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/oversized-refused": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/lifecycle-manager-admission": true,
+        "admission/manifest-and-manager": true,
+        "admission/unmeasured-inventory": true,
+        "admission/same-verdicts": true,
+        "admission/reserved-floor": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/aggregate-handoff": true,
+        "admission/coordinator-overhead-measured": true,
+        "admission/unmetered-fixed-cap": true,
+        "admission/cpu-per-run": true,
+        "admission/blocking-resource": true,
+        "admission/unit-lifecycle": true,
+        "admission/lifecycle-channel-serialized": true,
+        "admission/final-memory-bound": true,
+        "admission/qualification-capture": true
+      },
+      "failed": [],
+      "old_digest": "f99f24e6820595766cb7a86c7172c55142f31b8fd51a260596fcf593e07031d6",
+      "new_digest": "f99f24e6820595766cb7a86c7172c55142f31b8fd51a260596fcf593e07031d6"
+    },
+    {
+      "case": "admission219-short-unit-unaccounted",
+      "mode": "noop",
+      "rows": {
+        "admission/measured-per-case": true,
+        "admission/cgroup-counters": true,
+        "admission/bootstrap-joins-before-import": true,
+        "admission/fallback-order": true,
+        "admission/fits-ledger": true,
+        "admission/oversized-refused": true,
+        "admission/cgroup-launch-refused": true,
+        "admission/lifecycle-manager-admission": true,
+        "admission/manifest-and-manager": true,
+        "admission/unmeasured-inventory": true,
+        "admission/same-verdicts": true,
+        "admission/reserved-floor": true,
+        "admission/stage-receipts-and-recording": true,
+        "admission/aggregate-handoff": true,
+        "admission/coordinator-overhead-measured": true,
+        "admission/unmetered-fixed-cap": true,
+        "admission/cpu-per-run": true,
+        "admission/blocking-resource": true,
+        "admission/unit-lifecycle": true,
+        "admission/lifecycle-channel-serialized": true,
+        "admission/final-memory-bound": true,
+        "admission/qualification-capture": true
+      },
+      "failed": [],
+      "old_digest": "f99f24e6820595766cb7a86c7172c55142f31b8fd51a260596fcf593e07031d6",
+      "new_digest": "f99f24e6820595766cb7a86c7172c55142f31b8fd51a260596fcf593e07031d6"
+    }
+  ],
+  "suites": [
+    {
+      "suite": "115_veldo_0219_measured_admission",
+      "exit": 2,
+      "summary": [
+        "selftest (PARTIAL, 1 of 171 suites): 48 passed, 0 failed in 3.72s"
+      ]
+    }
+  ],
+  "native_lifecycle": {
+    "passed": true,
+    "cycles": [
+      {
+        "known": 0.063675802,
+        "measurement": {
+          "cpu_seconds": 0.0653,
+          "peak_anon_bytes": 0,
+          "peak_memory_bytes": 38531072,
+          "metrics_source": "cgroup-v2-anon-sampled-20ms-with-final-unit-accounting",
+          "cgroups": [
+            "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/veldo21923862fbff9da.slice",
+            "/tmp/tmppced_t1d/scope/worker-2360241-fixture"
+          ]
+        },
+        "final": [
+          0.0653,
+          0
+        ]
+      },
+      {
+        "known": 0.064052731,
+        "measurement": {
+          "cpu_seconds": 0.130626,
+          "peak_anon_bytes": 0,
+          "peak_memory_bytes": 38793216,
+          "metrics_source": "cgroup-v2-anon-sampled-20ms-with-final-unit-accounting",
+          "cgroups": [
+            "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/veldo21923862fbff9da.slice",
+            "/tmp/tmppced_t1d/scope/worker-2360241-fixture"
+          ]
+        },
+        "final": [
+          0.130626,
+          0
+        ]
+      }
+    ],
+    "service": {
+      "passed": true,
+      "known": 0.067182026,
+      "measurement": {
+        "cpu_seconds": 0.06914,
+        "peak_anon_bytes": 15003648,
+        "peak_memory_bytes": 39362560,
+        "metrics_source": "cgroup-v2-anon-sampled-20ms-with-final-unit-accounting",
+        "cgroups": [
+          "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/veldometerworker2360241service.slice",
+          "/tmp/tmppv6m4sqh/scope/worker-2360241-service"
+        ]
+      }
+    }
+  },
+  "passed": true
+}

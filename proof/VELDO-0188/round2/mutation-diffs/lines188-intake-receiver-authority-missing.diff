@@ -1,0 +1,5 @@
+--- a/scripts/suites/93_veldo_0152_intake_routes.py
++++ b/scripts/suites/93_veldo_0152_intake_routes.py
+@@ -297 +297 @@
+-            service.config['receiver'] = {'configs': {repository: str(installed_receiver)}}
++            service.config['receiver'] = {'configs': {}}  # defect: no receiver authority

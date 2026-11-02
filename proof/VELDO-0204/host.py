@@ -320,7 +320,14 @@ class Host:
         """control_service's Service on this host's connection, its ingress and API judge opened as serve opens
         them with the lock this host holds; the loop is opened later (open_loop)."""
         installed = self.installed_config()
-        receiver = self.line_receiver()
+        self.launch_receiver = self.line_receiver()
+        # VELDO-0188: the store's line is staffed over the receiver's dispatchable engines, so the configuration the
+        # service holds declares the claude_code engine its protocol adapter stands for; launches still go through
+        # the engine-less protocol receiver (fit), as suites 92 and 93 keep it as their launch seam.
+        staffing = json.loads(self.launch_receiver.read_text())
+        staffing['adapters']['protocol']['engine'] = 'claude_code'
+        receiver = self.base / 'v204-receiver-installed.json'
+        receiver.write_text(json.dumps(staffing))
         work = self.base / 'v204-work.json'
         work.write_text(json.dumps({'schema': self.SV.WORK_SCHEMA, 'repositories': {self.REPO: {
             'builder': dict(adapter='protocol', configuration={'tools': ['Read']}, seconds=120, identity=builder,
@@ -354,7 +361,25 @@ class Host:
             line.engines, line.hosts = {'protocol': 'claude_code'}, {'protocol': self.hostname}
             line.runner.account = self.RES.POOL.Pool({'protocol': {'engine': 'claude_code', 'host': self.hostname}})
             line.reservations.observe = self.observed.append
+            line.runner.receiver = lambda contract, line=line: self.SV.L.invoke(str(self.launch_receiver), contract,
+                                                                                line.dispatches)
         return loop
+
+    def factory_team(self, builder='w-any', reviewer='w-any-review'):
+        """VELDO-0188: the factory project, the first open project naming this host's repository, staffs its line
+        from its own team, so on a store with no default team the line keeps the work configuration's builder (its
+        identity and seconds). The owner accepts it through VELDO-0089's writer, as the fixture accepts proj-a's;
+        its independent reviewer is an agent of its own."""
+        self.agent(reviewer)
+        role = self.f['role']
+        team = {'roles': {
+            'project_manager': role(['pm'], 'coordinate', ('objective', 'feature', 'team_amendment')),
+            'elaboration': role([builder], 'elaborate'),
+            'implementation': role([builder], 'implement', ('finding',),
+                                   budget={'capacity': 1, 'invocations': 2, 'wall_seconds': 120}),
+            'independent_review': role([reviewer], 'review', ('finding',), distinct=('implementation',),
+                                       budget={'capacity': 1, 'invocations': 2, 'wall_seconds': 120})}}
+        return self.f['accept'](team, project='factory', owner=self.owner)
 
     def open_loop(self):
         loop, refusal = self.SV.open_loop(self.config, self.svc, self.lock)

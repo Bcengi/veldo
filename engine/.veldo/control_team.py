@@ -301,6 +301,24 @@ def read(store, conn, name):
     return dict(json.loads(row[2]), version=row[1])
 
 
+# VELDO-0185 AC1 and VELDO-0188 AC2: what each line role's run is asked to do.
+LINE_TASKS = {'implementation': 'build the unit', 'independent_review': 'review the unit'}
+
+
+def line_roles(roles, adapter_of):
+    """{builder, reviewers} of a factory line from a team's `roles`: the builder from `implementation` and the
+    reviewer from `independent_review`, each as control_service's ROLE_FIELDS: the role's first worker as its
+    identity, adapter_of(role name, role) as its adapter, its capability configuration reference, its budget's
+    wall seconds and its task. The one mapping factory setup's work configuration (VELDO-0185 AC1) and the
+    running service's lines (VELDO-0188 AC2) both use."""
+    def role(name):
+        spec = roles[name]
+        return {'identity': spec['workers'][0], 'adapter': adapter_of(name, spec),
+                'configuration': dict(spec['capability_configuration']), 'seconds': spec['budget']['wall_seconds'],
+                'payload': {'task': LINE_TASKS[name]}}
+    return {'builder': role('implementation'), 'reviewers': [role('independent_review')]}
+
+
 def assignments(conn, unit=None):
     """Every team assignment (of `unit` when named), on any connection."""
     return TA.assignments(conn, unit)

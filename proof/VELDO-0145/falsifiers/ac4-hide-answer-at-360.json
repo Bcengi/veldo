@@ -1,0 +1,45 @@
+{
+  "schema": "veldo.ui_falsifier_record/v1",
+  "case": "ac4-hide-answer-at-360",
+  "criterion": "AC4",
+  "falsifier": "Hide the inline answer action at 360px width; the phone decisions check must fail.",
+  "commit": "f5aa18e48bbef2e090455d64672d0285f77b9605",
+  "edits": [
+    {
+      "file": "src/styles/components.css",
+      "source_sha256": "ec224e890d185842f648ad794ffb9c5d2edf6575d9848b94e938a9263bbd4302",
+      "mutant_sha256": "03826324af2b62d516d9375327776f25e0751b39c350296174f6f93a20ba5e30",
+      "old": "  /* You */\n",
+      "new": "  @media (max-width: 360px) {\n    .answer-bar .vbtn {\n      display: none;\n    }\n  }\n\n  /* You */\n"
+    }
+  ],
+  "red": [
+    {
+      "kind": "e2e",
+      "file": "e2e/layout.spec.ts",
+      "grep": "phone decisions",
+      "exit": 1,
+      "seconds": 14.095,
+      "summary": [
+        "Error: expect(locator).toBeInViewport() failed",
+        "Expected: in viewport",
+        "Received: viewport ratio 0",
+        "1 failed"
+      ]
+    }
+  ],
+  "green": [
+    {
+      "kind": "e2e",
+      "file": "e2e/layout.spec.ts",
+      "grep": "phone decisions",
+      "exit": 0,
+      "seconds": 4.074,
+      "summary": [
+        "1 passed (3.6s)"
+      ]
+    }
+  ],
+  "red_as_required": true,
+  "green_as_required": true
+}

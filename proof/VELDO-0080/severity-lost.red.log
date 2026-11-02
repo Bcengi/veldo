@@ -1,0 +1,5 @@
+VELDO-0080 detail: defects/ordinary-admission: AssertionError('source and severity retained')
+FAIL VELDO-0080 defects/ordinary-admission
+PASS VELDO-0080 defects/no-automatic-admission
+VELDO-0080 detail: defects/ordinary-completion: AssertionError('AC1 must provide admitted work')
+FAIL VELDO-0080 defects/ordinary-completion

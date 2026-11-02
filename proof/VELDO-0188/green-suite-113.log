@@ -1,0 +1,8 @@
+==============================================================================
+  x.md: declares plan PLAN-9002 but no such plan exists
+  x.md: plan PLAN-9001 has no work item W9
+  x.md: plan and work must be declared together
+VELDO-0188 suite seconds: 5.995
+  113_veldo_0188_project_lines                    14 passed    6.00s
+selftest (PARTIAL, 1 of 169 suites): 40 passed, 0 failed in 6.00s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

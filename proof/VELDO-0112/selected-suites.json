@@ -1,0 +1,12 @@
+{
+  "suites": [
+    "47_veldo_0107_ipc",
+    "48_veldo_0108_relay",
+    "49_veldo_0109_unavailable",
+    "113_veldo_0112_registered_clients"
+  ],
+  "exit_code": 2,
+  "passed": 67,
+  "failed": 0,
+  "full_gate_run": false
+}

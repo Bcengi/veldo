@@ -18,7 +18,10 @@ alone, an absent one is written, and an existing one that would differ is refuse
                         and its origin https://<that name>;
   api_service_install   the installation's copy (VELDO-0047's api_service option on a fresh host; on a host
                         laid down before, its config/api-service.json and service.json naming it);
-  api_process_configuration   the 0600 veldo.api_process/v1 of the API process, listening on loopback only;
+  api_process_configuration   the 0600 veldo.api_process/v1 of the API process, listening on loopback only,
+                        naming the factory UI directory <workspace>/.veldo/ui (VELDO-0227). A file setup laid
+                        down before it named one, and differing from what setup writes in only that `ui` key,
+                        is upgraded in place with the key and nothing else (process_config_state);
   api_unit              the systemd user unit rendered from services/veldo-api.service, which binds to the
                         authority unit, and the link that has the authority unit want it, so it starts and
                         stops with the authority service;
@@ -80,6 +83,12 @@ UNIT_PREFIX = 'veldo-api-'
 UNIT_SCHEMA = 'veldo.api_unit/v1'
 TEMPLATE = Path(__file__).resolve().parent / 'services' / 'veldo-api.service'
 API_EXECUTABLE = 'control_client_api.py'
+# VELDO-0227: where init_scaffold.py --ui lays the built factory UI in the workspace, and the page it serves.
+UI_DIRECTORY = ('.veldo', 'ui')
+UI_INDEX = 'index.html'
+UI_PRESENT = 'built UI present'
+UI_ABSENT = ('no UI laid yet: run init_scaffold.py --ui %s from a Veldo source checkout after npm ci && npm run '
+             'build in engine/ui')
 # A tailnet name: a lower-case DNS name of at least two labels.
 NAME = re.compile(r'(?=.{1,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+')
 UNIT_VALUE = re.compile(r'[A-Za-z0-9._/+-]+')
@@ -226,6 +235,41 @@ def replace_file(path, data, mode):
     os.replace(temporary, str(path))
 
 
+def process_config_state(path, data, mode, differs):
+    """file_state, except that an existing file setup laid down before VELDO-0227, which differs from `data` in
+    only the API's `ui` key (absent there), is 'upgrade': setup adds that key and nothing else."""
+    try:
+        return file_state(path, data, mode, differs)
+    except Exception:
+        if not lacks_only_ui(path, data, mode):
+            raise
+        return 'upgrade'
+
+
+def lacks_only_ui(path, data, mode):
+    """Whether the file at `path` is this account's regular `mode` file holding `data` without the API's `ui`."""
+    try:
+        info = os.lstat(str(path))
+        held, wanted = json.loads(Path(path).read_text()), json.loads(data)
+    except (OSError, ValueError):
+        return False
+    api = held.get('api') if isinstance(held, dict) else None
+    return (stat.S_ISREG(info.st_mode) and info.st_uid == os.getuid() and stat.S_IMODE(info.st_mode) == mode
+            and isinstance(api, dict) and 'ui' not in api and dict(held, api=dict(api, ui=wanted['api']['ui'])) == wanted)
+
+
+def ui_directory(workspace):
+    """The factory UI directory setup names to the API: the one init_scaffold.py --ui lays in the workspace."""
+    return os.path.join(str(workspace), *UI_DIRECTORY)
+
+
+def ui_report(workspace):
+    """The UI directory and one of its two states: a built UI is there (it holds index.html) or none is laid."""
+    directory = ui_directory(workspace)
+    present = os.path.isfile(os.path.join(directory, UI_INDEX))
+    return {'directory': directory, 'state': UI_PRESENT if present else UI_ABSENT % workspace}
+
+
 def service_config(store, ids, journal, api_edge, workspace, name):
     """The veldo.api_service/v1 the authority service constructs the API's judge from: this authority's
     store, identities and journal, the ingress's api edge, the served repository as the one intake project
@@ -239,12 +283,13 @@ def service_config(store, ids, journal, api_edge, workspace, name):
 
 
 def process_config(ids, workspace, host_trust, signer_config, key_id, connection_key, api_edge, state_dir, name, port):
-    """The 0600 veldo.api_process/v1 the API process is constructed from (control_client_api.open_api)."""
+    """The 0600 veldo.api_process/v1 the API process is constructed from (control_client_api.open_api); its
+    API's `ui` is the workspace's factory UI directory, the only place the installed API learns it (VELDO-0227)."""
     return {'schema': 'veldo.api_process/v1', 'workspace': workspace, 'host_trust': host_trust,
             'signer': {'config': signer_config, 'edge_key_id': key_id, 'connection_key': connection_key},
             'listen': {'host': LOOPBACK, 'port': port},
             'api': {'origin': 'https://' + name, 'rp_id': name, 'host': name, 'domain': ids['domain_uuid'],
-                    'ids': dict(ids), 'edge': api_edge, 'state_dir': state_dir}}
+                    'ids': dict(ids), 'edge': api_edge, 'state_dir': state_dir, 'ui': ui_directory(workspace)}}
 
 
 def unit_text(authority_unit, python, executable, config):

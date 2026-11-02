@@ -1526,6 +1526,160 @@
    "requires_note": "Only ROOT and expect; controlled coordinator children and scratch stores, plus a real hanging child."
   },
   {
+   "name": "113_veldo_0080_defects",
+   "file": "113_veldo_0080_defects.py",
+   "requires": [
+    "113_veldo_0080_defects"
+   ],
+   "regions": "AC1 ordinary admission; AC2 ordinary completion; AC3 no automatic admission.",
+   "requires_note": "Only ROOT and expect. Ticket fixtures under proof/VELDO-0080, real signed SQLite commands, loopback Telegram and API intake, scratch Git repositories and ticket-only checks."
+  },
+  {
+   "name": "113_veldo_0112_registered_clients",
+   "file": "113_veldo_0112_registered_clients.py",
+   "requires": [
+    "113_veldo_0112_registered_clients"
+   ],
+   "regions": "VELDO-0112 production client registration, live adapters and registry growth.",
+   "requires_note": "Only ROOT and expect. Real scratch Git enrollment, SSH signatures, SQLite and AF_UNIX. Dispatcher orchestration uses its documented external seams; durable admission uses the real Dispatches writer. No engine, real host lock or service manager is controlled."
+  },
+  {
+   "name": "113_veldo_0115_authority_store",
+   "file": "113_veldo_0115_authority_store.py",
+   "requires": [
+    "113_veldo_0115_authority_store"
+   ],
+   "regions": "VELDO-0115 real SQLite mutation, bound-store isolation and durable reopen through authenticated IPC.",
+   "requires_note": "Only ROOT and expect. Uses scripts/fixtures/authority_store.py with real git clones, Ed25519 signatures, child authorities and local SQLite stores. No service installation or host lock manipulation."
+  },
+  {
+   "name": "113_veldo_0121_relay_exchange",
+   "file": "113_veldo_0121_relay_exchange.py",
+   "requires": [
+    "113_veldo_0121_relay_exchange"
+   ],
+   "regions": "Generated transport failures, EOF and size boundaries, total deadline, no replay.",
+   "requires_note": "Only ROOT and expect. Loads scripts/fixtures/relay_exchange.py; scratch AF_UNIX sockets and joined CLI children, real 30-second stalled and trickle exchanges. No host lock access inside fixtures."
+  },
+  {
+   "name": "113_veldo_0220_gate_host",
+   "file": "113_veldo_0220_gate_host.py",
+   "requires": [
+    "113_veldo_0220_gate_host"
+   ],
+   "regions": "The gate's host lock (VELDO-0220): NOT STARTED with exit 75 when another run holds the lock, release on every exit, and NOT STARTED recorded as not run by the executor, the lander and the proof store.",
+   "requires_note": "Only ROOT, expect and launcher_fds. Fixture authorities hold the real verify.sh and gate_host.py with stub stage commands and scratch locks; util-linux flock stands in for the core runner. The executor, lander and proof store run over a scratch Git repository and an installed fixture gate that exits 75 or 1. No systemd user manager."
+  },
+  {
+   "name": "114_veldo_0220_gate_scope",
+   "file": "114_veldo_0220_gate_scope.py",
+   "requires": [
+    "114_veldo_0220_gate_scope"
+   ],
+   "regions": "The gate's own delegated scope (VELDO-0220): stated limits, isolation, child cgroups and lock custody until every stage dies on kill, termination, normal completion and a red stage.",
+   "requires_note": "Only ROOT, expect and launcher_fds. Fixture authorities hold the real verify.sh and gate_host.py with stub stage commands and scratch locks. Creates and inspects real transient scopes through the systemd user manager; the whole suite is listed unconfined.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
+  },
+  {
+   "name": "114_veldo_0216_concurrent_stages",
+   "file": "114_veldo_0216_concurrent_stages.py",
+   "requires": [
+    "114_veldo_0216_concurrent_stages"
+   ],
+   "regions": "Authority graph, ledger, verdict parity, and concurrency mechanics.",
+   "requires_note": "Only ROOT and expect. Scratch authorities, real confined launcher, controlled mutation payload, fixture cgroup meter. No host lock or user manager."
+  },
+  {
+   "name": "115_veldo_0219_measured_admission",
+   "file": "115_veldo_0219_measured_admission.py",
+   "requires": [
+    "115_veldo_0219_measured_admission"
+   ],
+   "regions": "Measured mutation admission, resource store, conservative budgets and qualification capture.",
+   "requires_note": "Only ROOT and expect. Real Workers and ledger with controlled children, scratch cgroups and stores. Reads inventory without running other suites. No host lock or manager."
+  },
+  {
+   "name": "116_veldo_0188_project_lines",
+   "file": "116_veldo_0188_project_lines.py",
+   "requires": [
+    "116_veldo_0188_project_lines"
+   ],
+   "regions": "A line for every project at run time: the running service's factory loop starting a line at the journal-woken pass for a project the store records ACTIVE, its first unit dispatched in its repository with its commit authored by the repository's identity alone; a project whose repository has no receiver configuration yet refused by name and started at the pass after it is taken on; the line staffed from the project's team or the default team by the one mapping setup's work configuration uses, restaged by a new team revision while a run already dispatched keeps its roles, a role the installation cannot dispatch refused by name with every other line serving; a canceled project's line offering nothing and leaving the loop once its run ended, a completed one's at once, a paused one kept; a service started later building the same lines; the lines logged and counted",
+   "requires_note": "Uses shared ROOT, expect and __suite_file__. Loads the signed VELDO-0152 fixture and the round2 served fixture. AC1 starts the installed service ExecStart as a joined child, drives the real VELDO-0143 provisioner and VELDO-0161 adoption over its socket, and dispatches through registered accounts to a qualified fake Codex executable. Smaller direct-loop rows test pass boundaries, staffing, closing, refusals and receiver replacement. Uses local Git repositories, a loopback GitHub API and the fenced identity wire. Writes only temporary fixtures.",
+   "resources": {
+    "new_project_fixture": 1,
+    "systemd_user_manager": 1
+   }
+  },
+  {
+   "name": "113_veldo_0145_ui",
+   "file": "113_veldo_0145_ui.py",
+   "requires": [
+    "113_veldo_0145_ui"
+   ],
+   "regions": "Seven rows (VELDO-0145): ui/page-served, the UI's page and built assets served by the VELDO-0130 API from its own origin under its policy; ui/unauthenticated-access, every factory data route refused before a passkey session; ui/route-trace, the UI's route table traced to the API's published routes; ui/installed, a build laid at .veldo/ui by init_scaffold.lay_ui and served by the API installed beside it; ui/scaffold-opt-in, a plain scaffold lays no UI and a requested one (scaffold(ui=True)) is laid, ignored by git and named by the right step when absent; ui/out-of-scope, a member's answer refused unauthorized:out_of_scope once a steward narrows the scope, settling nothing; ui/dependency-policy, the UI's dependency policy over its lockfile.",
+   "requires_note": "Only ROOT and expect; a real ControlApi on the real loopback listener with a recording authority stand-in, a fixture UI build, and the UI's own routes.json, package.json, package-lock.json and dependency-policy.json; the installed .veldo organs laid into scratch factory roots; the browser tests' real factory harness (engine/ui/e2e/harness.py: signed store, presenter, settlement, API authority, protected signer and ControlApi, with a passkey sign-in over the API); and init_scaffold.scaffold run over a scratch copy of engine/ (without ui/, then a fixture source, then a fixture build) with git asked whether the laid UI is ignored."
+  },
+  {
+   "name": "118_veldo_0159_mcp_credential_form",
+   "file": "118_veldo_0159_mcp_credential_form.py",
+   "requires": [
+    "118_veldo_0159_mcp_credential_form"
+   ],
+   "regions": "Seven rows (VELDO-0159): mcp/define-desktop and mcp/define-phone, at 1280px and 360px the owner enters a stdio server (command, arguments, environment as literals and credential references, hosts, read-only tools) and an http server (url, headers as credential references, hosts, read-only tools; the Atlassian server at 1280px) in the Vue shell's server form in a passkey session, saves each, reopens it from the catalog route, edits and saves again, and every field each save sent is the revision the catalog route stored; mcp/stale-save, a save edited from an older revision shows the stale refusal beside the save action and stores nothing; mcp/phone-actions, no primary action of the form or the credential field is clipped or covered at 360px; cred/metadata-only, the Atlassian credential set, replaced and deleted through the write-only field, after each only its label, set at and set by shown, matching the credential record, with the keystore holding the value written; cred/no-value-kept, a typed value only in the body of the one request to the credential route and nowhere after it is sent (rendered page, fields, accessibility tree, local and session storage, IndexedDB, URL, history, every request and answer), and an empty field on reopening; mcp/definition-unit, the form's definition module.",
+   "requires_note": "Only ROOT and expect. Copies engine/ui into scratch with the production copies (PRODUCTION) laid over it, builds it with the package's build script and runs engine/ui/e2e/servers.spec.ts (Playwright, system Chrome) against the browser tests' real factory harness (engine/ui/e2e/harness.py) with the real VELDO-0144 catalog and credential commands and a stand-in secret-tool behind the real SecretService; Vitest for the definition module. Needs npm ci in engine/ui and Google Chrome. Writes only temporary files."
+  },
+  {
+   "name": "119_veldo_0163_role_team_form",
+   "file": "119_veldo_0163_role_team_form.py",
+   "requires": [
+    "119_veldo_0163_role_team_form"
+   ],
+   "regions": "Ten rows (VELDO-0163): unit/forms, the role and team forms' Vitest specs; role/revisions, a role's capability configuration with every field and load mode, MCP selections from the catalog read, saved and saved again as revisions equal to what the form sent; role/stale-save, a save edited from an older revision refused beside the save action, storing nothing; role/widths, the role form at 360 and 1280 px with no primary action clipped; team/owner-save, roles added, changed and removed and the owner's save current once read back; team/authoritative, another member's proposal pending, in the decisions screen, and current only after the owner's answer there; team/refusals, no configuration, an incomplete roster and a stale team version named beside the save with the earlier revision current; team/default-team, the default team saved through the same form bound to its revision; team/default-stale-save, a stale default team save refused; team/widths, the team form and the default team at 360 and 1280 px.",
+   "requires_note": "Only ROOT and expect. Copies engine/ui into scratch with its production copies laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script, runs its Vitest specs and the Playwright browser tests of engine/ui/e2e/roles.spec.ts in system Chrome against engine/ui/e2e/team_harness.py (VELDO-0145's real factory harness with the real catalog, configuration and team services of VELDO-0144, 0127, 0089 and 0162, from the checkout's .veldo). Writes only temporary files."
+  },
+  {
+   "name": "120_veldo_0131_factory_ui",
+   "file": "120_veldo_0131_factory_ui.py",
+   "requires": [
+    "120_veldo_0131_factory_ui"
+   ],
+   "regions": "Twenty-two rows (VELDO-0131; the four ac1/screens rows are suites 121 and 122): unit/factory, the factory screens' Vitest specs; ac4/dependency-policy, ac4/stack and ac4/served-assets, the lockfile, package.json and dependency policy against the owner's Vue stack (Vue 3, Vite, TypeScript, Tailwind 4, Pinia, vue-router, monaco-editor, @tanstack/vue-table, Chart.js) with every package's license, origin and tier and no Chinese-origin or tiered library, shadcn or Recharts; ac2/live, assignment, step and tool call, stop, gate and review and completion reaching the open screens through events.stream; ac2/completion-receipt, landed only with the landing's receipt; ac2/message-intake, ac2/decision-settlement, ac2/refusals and ac2/api-only; ac3/keyboard-desktop, ac3/touch-phone and ac3/stale-save, the owner's task path by keyboard and by touch including workflow step settings, add, connect, reorder and save; fix round 2 (review-2026-11-01): ac1/repositories, the read-only Git identities and repositories (table on a desktop, cards on a phone); ac1/every-configuration, every stored role and skill; ac1/whole-catalog, every catalog server and credential record by label, set at and set by; ac1/usage-provider, each account's provider and the provider breakdown; ac1/worker-capability, each worker's capability and the named cap gap; ac2/metadata-only, no credential reference or value in the metadata reads; fix round 3 (owner, Telegram 38184): ac2/priority-save, ac2/worker-stop and ac2/worker-cap, the owner's three work commands through the real API, accepted, a stale version refused and an unauthorized member refused beside the control, nothing written.",
+   "requires_note": "Only ROOT and expect. Copies engine/ui into scratch with its production copies (PRODUCTION) laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script, applies the checkout's .veldo/control_api_ui.dependency_problems, runs its Vitest specs and the Playwright browser tests of engine/ui/e2e/factory.spec.ts but the ac1/screens tests (--grep-invert) in system Chrome against engine/ui/e2e/factory_harness.py (VELDO-0163's team harness over VELDO-0145's real factory, with the real journal feed and workflow service, from the checkout's .veldo). Writes only temporary files."
+  },
+  {
+   "name": "121_veldo_0131_factory_screens_narrow",
+   "file": "121_veldo_0131_factory_screens_narrow.py",
+   "requires": [
+    "121_veldo_0131_factory_screens_narrow"
+   ],
+   "regions": "Two rows (VELDO-0131, split from suite 120): ac1/screens-360 and ac1/screens-390, every screen row (projects and objectives with the message box, backlog, workers per machine, gate and review, usage, configuration, MCP catalog, workflow editor, the live run and the inline decision) at 360 and 390 px in its loading, empty, error and populated states with no clipped primary action, overlap or page-wide overflow, 44 px phone targets and axe.",
+   "requires_note": "Only ROOT and expect. As suite 120: copies engine/ui into scratch with its production copies (PRODUCTION) laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script and runs the Playwright browser tests of engine/ui/e2e/factory.spec.ts whose titles begin with ac1/screens-360 and ac1/screens-390 (--grep) in system Chrome against engine/ui/e2e/factory_harness.py with the API organs (ORGANS) laid over a scratch copy of the checkout's .veldo. Writes only temporary files."
+  },
+  {
+   "name": "122_veldo_0131_factory_screens_wide",
+   "file": "122_veldo_0131_factory_screens_wide.py",
+   "requires": [
+    "122_veldo_0131_factory_screens_wide"
+   ],
+   "regions": "Two rows (VELDO-0131, split from suite 120): ac1/screens-1280 and ac1/screens-1440, every screen row (projects and objectives with the message box, backlog, workers per machine, gate and review, usage, configuration, MCP catalog, workflow editor, the live run and the inline decision) at 1280 and 1440 px in its loading, empty, error and populated states with no clipped primary action, overlap or page-wide overflow and axe.",
+   "requires_note": "Only ROOT and expect. As suite 120: copies engine/ui into scratch with its production copies (PRODUCTION) laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script and runs the Playwright browser tests of engine/ui/e2e/factory.spec.ts whose titles begin with ac1/screens-1280 and ac1/screens-1440 (--grep) in system Chrome against engine/ui/e2e/factory_harness.py with the API organs (ORGANS) laid over a scratch copy of the checkout's .veldo. Writes only temporary files."
+  },
+  {
+   "name": "117_veldo_0227_ui_location",
+   "file": "117_veldo_0227_ui_location.py",
+   "requires": [
+    "117_veldo_0227_ui_location"
+   ],
+   "regions": "veldo factory setup naming the factory UI directory <workspace>/.veldo/ui in the installed API's process configuration on a fresh host, the installed API serving the UI init_scaffold --ui lays there with no edit of its configuration, setup's report naming the directory and whether a built UI is there, a second run changing nothing, a configuration laid down by the pre-change setup upgraded in place with only api.ui added and its running API restarted onto it, and every other difference refused (VELDO-0227).",
+   "requires_note": "Only ROOT and expect. VELDO-0171's installed-host fixture (suite 85's setup preamble and cleanup, reused as VELDO-0185 reuses it) with the real setup module, its user manager stand-in running the installed authority and API units, its Tailscale stand-in and loopback Bot API; a fixture UI build laid by init_scaffold.lay_ui; the .veldo of commit 1aee02d4 read from history through git_process; HTTP to the installed API's loopback listener. Writes only temporary fixtures.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
+  },
+  {
    "name": "107_veldo_0174_conversations",
    "file": "107_veldo_0174_conversations.py",
    "requires": [

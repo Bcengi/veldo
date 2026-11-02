@@ -1,0 +1,186 @@
+diff --git a/engine/scripts/gate_schedule.py b/engine/scripts/gate_schedule.py
+index eb98f03a..9352398d 100644
+--- a/engine/scripts/gate_schedule.py
++++ b/engine/scripts/gate_schedule.py
+@@ -77 +77 @@ def read_graph(catalog, declaration=None, path=GRAPH):
+-                    or set(node) - fields - {'host_lock', 'estimate'}:
++                    or set(node) - fields - {'host_lock', 'estimate', 'coordinator'}:
+@@ -84,0 +85,6 @@ def read_graph(catalog, declaration=None, path=GRAPH):
++            if 'coordinator' in node:
++                if name != 'mutation':
++                    raise Refused('only mutation may hand off its claim')
++                validate_claim(node['coordinator'])
++                if node['coordinator']['manager'] != 'none':
++                    raise Refused('coordinator cannot retain manager exclusion')
+@@ -96,0 +103,3 @@ def read_graph(catalog, declaration=None, path=GRAPH):
++        coordinator = nodes.get('mutation', {}).get('coordinator')
++        if coordinator and any(coordinator[r] >= graph['mutation_floor'][r] for r in ('cpu', 'memory')):
++            raise Refused('coordinator consumes the entire mutation floor')
+@@ -128,0 +138 @@ class Ledger:
++        self.blocking_resource = None
+@@ -157,0 +168 @@ class Ledger:
++        self.blocking_resource = None
+@@ -167,0 +179 @@ class Ledger:
++                self.blocking_resource = r
+@@ -172,0 +185 @@ class Ledger:
++            self.blocking_resource = 'host_lock'
+@@ -176,0 +190 @@ class Ledger:
++            self.blocking_resource = 'ports'
+@@ -186,0 +201,13 @@ class Ledger:
++    def handoff(self, name, claim):
++        """Atomically shrink the mutation root; its floor lives until root release."""
++        if name != self.mutation_root or self.mutation_claimants != {name}:
++            raise Refused('handoff requires the mutation root without child claims')
++        replacement = self.demand(claim)
++        prior = self.held[name]
++        if any(replacement[r] > prior[r] for r in self.capacity) or replacement['manager']:
++            raise Refused('handoff must shrink the aggregate claim and release the manager')
++        if replacement['ports'] != prior['ports'] or replacement.get('host_lock') != prior.get('host_lock'):
++            raise Refused('handoff cannot change ports or the host lock')
++        self.held[name] = replacement
++        self.event('handoff', name, 'cpu,memory,manager', claim)
++
+@@ -215,0 +243 @@ class Client:
++        self.last_reply = answer
+@@ -221,0 +250,4 @@ class Client:
++    def handoff(self):
++        self.request('handoff', 'coordinator')
++        return self.last_reply
++
+@@ -255,0 +288,2 @@ def node_claim(node, measured, capacity):
++    if 'coordinator' in node:
++        demand = {r: max(demand[r], node['coordinator'][r]) for r in ('cpu', 'memory')}
+@@ -417 +451 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
+-    claims, claim_sources = {}, {}
++    claims, claim_sources, coordinator_claims = {}, {}, {}
+@@ -424,0 +459,9 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
++        if 'coordinator' in node:
++            # The graph/key-bound fresh node meter excludes per-worker cgroups.
++            # Retain that measured overhead rather than shrinking it to a default.
++            overhead = dict(node['coordinator'])
++            if measured:
++                overhead.update({r: claim[r] for r in ('cpu', 'memory')})
++            if any(overhead[r] >= graph['mutation_floor'][r] for r in ('cpu', 'memory')):
++                raise Refused('invalid_resource_requirement: coordinator consumes the mutation floor')
++            coordinator_claims[name] = overhead
+@@ -485 +528 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
+-                                    buffer=b'', started=node_started, children=set(), error=None, inputs=inputs)
++                                    buffer=b'', started=node_started, children=set(), error=None, inputs=inputs, handed_off=False)
+@@ -509 +552,10 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
+-                        if request['operation'] == 'acquire':
++                        if request['operation'] == 'handoff':
++                            coordinator = coordinator_claims.get(name)
++                            if name != 'mutation' or coordinator is None or item['handed_off'] or item['children']:
++                                raise Refused('invalid or repeated coordinator handoff')
++                            ledger.handoff(name, coordinator)
++                            item['handed_off'] = True
++                            granted = True
++                        elif request['operation'] == 'acquire':
++                            if 'coordinator' in graph['nodes'][name] and not item['handed_off']:
++                                raise Refused('worker admission requires coordinator handoff')
+@@ -519 +571,5 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
+-                        item['socket'].sendall((json.dumps({'granted': granted}) + '\n').encode())
++                        overhead = coordinator_claims.get(name, {})
++                        answer = dict(granted=granted, resource=None if granted else ledger.blocking_resource,
++                                      totals=ledger.totals(), capacities=ledger.capacity,
++                                      floor={r: max(0, v - overhead.get(r, 0)) for r, v in ledger.floor.items()})
++                        item['socket'].sendall((json.dumps(answer) + '\n').encode())
+diff --git a/scripts/gate_graph.json b/scripts/gate_graph.json
+index 5b200035..7f541954 100644
+--- a/scripts/gate_graph.json
++++ b/scripts/gate_graph.json
+@@ -144,0 +145,7 @@
++      },
++      "coordinator": {
++        "cpu": 0.25,
++        "memory": 268435456,
++        "manager": "none",
++        "ports": [],
++        "host_lock": "shared"
+diff --git a/scripts/gate_schedule.py b/scripts/gate_schedule.py
+index eb98f03a..9352398d 100644
+--- a/scripts/gate_schedule.py
++++ b/scripts/gate_schedule.py
+@@ -77 +77 @@ def read_graph(catalog, declaration=None, path=GRAPH):
+-                    or set(node) - fields - {'host_lock', 'estimate'}:
++                    or set(node) - fields - {'host_lock', 'estimate', 'coordinator'}:
+@@ -84,0 +85,6 @@ def read_graph(catalog, declaration=None, path=GRAPH):
++            if 'coordinator' in node:
++                if name != 'mutation':
++                    raise Refused('only mutation may hand off its claim')
++                validate_claim(node['coordinator'])
++                if node['coordinator']['manager'] != 'none':
++                    raise Refused('coordinator cannot retain manager exclusion')
+@@ -96,0 +103,3 @@ def read_graph(catalog, declaration=None, path=GRAPH):
++        coordinator = nodes.get('mutation', {}).get('coordinator')
++        if coordinator and any(coordinator[r] >= graph['mutation_floor'][r] for r in ('cpu', 'memory')):
++            raise Refused('coordinator consumes the entire mutation floor')
+@@ -128,0 +138 @@ class Ledger:
++        self.blocking_resource = None
+@@ -157,0 +168 @@ class Ledger:
++        self.blocking_resource = None
+@@ -167,0 +179 @@ class Ledger:
++                self.blocking_resource = r
+@@ -172,0 +185 @@ class Ledger:
++            self.blocking_resource = 'host_lock'
+@@ -176,0 +190 @@ class Ledger:
++            self.blocking_resource = 'ports'
+@@ -186,0 +201,13 @@ class Ledger:
++    def handoff(self, name, claim):
++        """Atomically shrink the mutation root; its floor lives until root release."""
++        if name != self.mutation_root or self.mutation_claimants != {name}:
++            raise Refused('handoff requires the mutation root without child claims')
++        replacement = self.demand(claim)
++        prior = self.held[name]
++        if any(replacement[r] > prior[r] for r in self.capacity) or replacement['manager']:
++            raise Refused('handoff must shrink the aggregate claim and release the manager')
++        if replacement['ports'] != prior['ports'] or replacement.get('host_lock') != prior.get('host_lock'):
++            raise Refused('handoff cannot change ports or the host lock')
++        self.held[name] = replacement
++        self.event('handoff', name, 'cpu,memory,manager', claim)
++
+@@ -215,0 +243 @@ class Client:
++        self.last_reply = answer
+@@ -221,0 +250,4 @@ class Client:
++    def handoff(self):
++        self.request('handoff', 'coordinator')
++        return self.last_reply
++
+@@ -255,0 +288,2 @@ def node_claim(node, measured, capacity):
++    if 'coordinator' in node:
++        demand = {r: max(demand[r], node['coordinator'][r]) for r in ('cpu', 'memory')}
+@@ -417 +451 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
+-    claims, claim_sources = {}, {}
++    claims, claim_sources, coordinator_claims = {}, {}, {}
+@@ -424,0 +459,9 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
++        if 'coordinator' in node:
++            # The graph/key-bound fresh node meter excludes per-worker cgroups.
++            # Retain that measured overhead rather than shrinking it to a default.
++            overhead = dict(node['coordinator'])
++            if measured:
++                overhead.update({r: claim[r] for r in ('cpu', 'memory')})
++            if any(overhead[r] >= graph['mutation_floor'][r] for r in ('cpu', 'memory')):
++                raise Refused('invalid_resource_requirement: coordinator consumes the mutation floor')
++            coordinator_claims[name] = overhead
+@@ -485 +528 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
+-                                    buffer=b'', started=node_started, children=set(), error=None, inputs=inputs)
++                                    buffer=b'', started=node_started, children=set(), error=None, inputs=inputs, handed_off=False)
+@@ -509 +552,10 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
+-                        if request['operation'] == 'acquire':
++                        if request['operation'] == 'handoff':
++                            coordinator = coordinator_claims.get(name)
++                            if name != 'mutation' or coordinator is None or item['handed_off'] or item['children']:
++                                raise Refused('invalid or repeated coordinator handoff')
++                            ledger.handoff(name, coordinator)
++                            item['handed_off'] = True
++                            granted = True
++                        elif request['operation'] == 'acquire':
++                            if 'coordinator' in graph['nodes'][name] and not item['handed_off']:
++                                raise Refused('worker admission requires coordinator handoff')
+@@ -519 +571,5 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
+-                        item['socket'].sendall((json.dumps({'granted': granted}) + '\n').encode())
++                        overhead = coordinator_claims.get(name, {})
++                        answer = dict(granted=granted, resource=None if granted else ledger.blocking_resource,
++                                      totals=ledger.totals(), capacities=ledger.capacity,
++                                      floor={r: max(0, v - overhead.get(r, 0)) for r, v in ledger.floor.items()})
++                        item['socket'].sendall((json.dumps(answer) + '\n').encode())

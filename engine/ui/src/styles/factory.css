@@ -1,0 +1,440 @@
+/* VELDO-0131: the factory screens (projects, backlog, workers, gate and review, usage, configuration, catalog,
+   workflow editor). Tokens only (tokens.css); the shell, panels and controls are VELDO-0145's. */
+@layer components {
+  .factory-grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+  @media (min-width: 1024px) {
+    .factory-split {
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
+      align-items: start;
+    }
+    .factory-split-even {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+  .factory-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    color: var(--ink-muted);
+    font-size: var(--text-sm);
+  }
+  .factory-live {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .factory-body {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4) var(--space-4);
+    min-width: 0;
+  }
+  .factory-facts {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: var(--space-1) var(--space-3);
+    font-size: var(--text-sm);
+  }
+  .factory-facts dt {
+    color: var(--ink-muted);
+  }
+  .factory-facts dd {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .factory-gap {
+    padding: var(--space-3);
+    border: 1px dashed var(--rule-strong);
+    border-radius: var(--radius-control);
+    font-size: var(--text-sm);
+    color: var(--ink-muted);
+  }
+  .factory-gap code,
+  .factory-mono {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    overflow-wrap: anywhere;
+  }
+  .factory-tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 var(--space-2);
+    border-radius: 999px;
+    border: 1px solid var(--rule);
+    background: var(--paper-sunken);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .factory-tag.is-done {
+    border-color: var(--live);
+    color: var(--live-text);
+  }
+  .factory-tag.is-stop {
+    border-color: var(--stop);
+    color: var(--stop-text);
+  }
+  .factory-tag.is-waiting {
+    border-color: var(--amber);
+    color: var(--amber-text);
+  }
+  .factory-search {
+    display: grid;
+    gap: var(--space-1);
+  }
+  .factory-search input,
+  .factory-select {
+    min-height: 44px;
+    width: 100%;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--radius-control);
+    background: var(--paper-raised);
+    color: var(--ink);
+    font: inherit;
+  }
+  .factory-list {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .factory-card {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-control);
+    background: var(--paper-raised);
+    min-width: 0;
+  }
+  .factory-card[aria-current='true'] {
+    border-color: var(--cobalt);
+    box-shadow: inset 3px 0 0 var(--cobalt);
+  }
+  .factory-card-button {
+    display: grid;
+    gap: var(--space-1);
+    width: 100%;
+    min-height: 44px;
+    text-align: start;
+    background: none;
+    border: 0;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    padding: 0;
+  }
+  .factory-card-title {
+    font-weight: 650;
+    overflow-wrap: anywhere;
+  }
+  .factory-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .factory-table-wrap {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+  .factory-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+  .factory-table th,
+  .factory-table td {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--rule);
+    text-align: start;
+    vertical-align: top;
+  }
+  .factory-table th {
+    color: var(--ink-muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* TreeTable: a native table on a desktop, stacked cards on a phone. */
+  .tree-cards {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .tree-grid {
+    display: none;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+  @media (min-width: 768px) {
+    .tree-grid {
+      display: table;
+    }
+    .tree-cards {
+      display: none;
+    }
+  }
+  .tree-grid th,
+  .tree-grid td {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--rule);
+    text-align: start;
+    vertical-align: middle;
+  }
+  .tree-grid th {
+    color: var(--ink-muted);
+    font-weight: 600;
+  }
+  .tree-indent {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+  .tree-toggle,
+  .tree-toggle-space {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 32px;
+    height: 32px;
+  }
+  .tree-toggle {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-control);
+    background: var(--paper-raised);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .tree-card {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-control);
+    background: var(--paper-raised);
+    min-width: 0;
+  }
+  .tree-card .tree-toggle {
+    width: 44px;
+    height: 44px;
+  }
+  .tree-card-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+  .tree-card-title {
+    font-weight: 650;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .tree-card-facts {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: var(--space-1) var(--space-3);
+    font-size: var(--text-sm);
+  }
+  .tree-card-facts > div {
+    display: contents;
+  }
+  .tree-card-facts dt {
+    color: var(--ink-muted);
+  }
+  .tree-card-facts dd {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .tree-card-actions,
+  .tree-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .tree-row-dragging {
+    opacity: 0.5;
+  }
+  .tree-row-target {
+    box-shadow: inset 0 3px 0 var(--cobalt);
+  }
+
+  /* A sheet: a phone's full-width panel over the screen, a dialog on a desktop. */
+  .factory-sheet {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40;
+    max-height: 85vh;
+    overflow: auto;
+    padding: var(--space-4);
+    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--rule);
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    background: var(--paper-raised);
+    box-shadow: var(--shadow-float);
+  }
+  .factory-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+  .factory-fab {
+    position: fixed;
+    inset-inline-end: var(--space-4);
+    bottom: calc(var(--bottombar) + var(--space-4) + env(safe-area-inset-bottom));
+    z-index: 30;
+  }
+  @media (min-width: 768px) {
+    .factory-fab {
+      bottom: var(--space-5);
+    }
+  }
+
+  /* The chart of the usage screen. */
+  .usage-chart {
+    position: relative;
+    height: 280px;
+    min-width: 0;
+  }
+  .usage-chart canvas {
+    max-width: 100%;
+  }
+
+  /* The workflow editor's canvas. */
+  .flow-canvas {
+    position: relative;
+    height: 420px;
+    overflow: hidden;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-control);
+    background: var(--paper-sunken);
+    touch-action: none;
+  }
+  @media (max-width: 767px) {
+    .flow-canvas {
+      height: 300px;
+    }
+  }
+  .flow-canvas svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .flow-node rect {
+    fill: var(--paper-raised);
+    stroke: var(--rule-strong);
+    stroke-width: 1.5;
+  }
+  .flow-node.is-selected rect {
+    stroke: var(--cobalt);
+    stroke-width: 3;
+  }
+  .flow-node text {
+    fill: var(--ink);
+    font-size: 16px;
+    font-family: var(--font-text);
+  }
+  .flow-node:focus-visible rect {
+    stroke: var(--focus);
+    stroke-width: 3;
+  }
+  .flow-edge {
+    stroke: var(--ink-muted);
+    stroke-width: 2;
+    fill: none;
+  }
+  .flow-edge.is-selected {
+    stroke: var(--cobalt);
+    stroke-width: 3;
+  }
+  .flow-zoom {
+    position: absolute;
+    inset-inline-end: var(--space-2);
+    top: var(--space-2);
+    display: flex;
+    gap: var(--space-1);
+  }
+  .flow-palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .flow-order {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .flow-order li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-control);
+    background: var(--paper-raised);
+  }
+  .flow-order li[aria-current='true'] {
+    border-color: var(--cobalt);
+  }
+  .flow-state {
+    display: inline-flex;
+    gap: var(--space-2);
+    align-items: center;
+    font-size: var(--text-sm);
+  }
+  .flow-pan {
+    position: absolute;
+    inset-inline-start: var(--space-2);
+    bottom: var(--space-2);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    max-width: calc(100% - 2 * var(--space-2));
+  }
+  .flow-port,
+  .flow-kind {
+    fill: var(--ink-muted);
+    font-size: 14px;
+    font-family: var(--font-text);
+  }
+  .flow-arrowhead {
+    fill: var(--ink-muted);
+  }
+  .flow-edge:focus-visible {
+    stroke: var(--focus);
+    stroke-width: 4;
+    outline: none;
+  }
+  .flow-node {
+    cursor: grab;
+  }
+  .flow-node:focus-visible {
+    outline: none;
+  }
+  .flow-props {
+    display: grid;
+    gap: var(--space-3);
+  }
+  /* On a phone every control of the factory screens is a 44 px touch target, small buttons included. */
+  @media (max-width: 767px) {
+    .tree-card .vbtn,
+    .factory-card .vbtn,
+    .factory-actions .vbtn,
+    .flow-order .vbtn,
+    .flow-palette .vbtn,
+    .flow-zoom .vbtn,
+    .flow-pan .vbtn,
+    .flow-props .vbtn,
+    .factory-sheet .vbtn {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+}

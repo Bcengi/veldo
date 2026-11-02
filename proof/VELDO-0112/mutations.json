@@ -1,0 +1,23 @@
+[
+  {
+    "ac": "AC1",
+    "row": "clients/registry-is-the-boundary",
+    "red": false,
+    "restored_green": true,
+    "mutation_digest": "b0f738fdcd4e7d2bb5263bf9f75c01bd9529c5bc4a7dc2bb933356a04cc5fc26"
+  },
+  {
+    "ac": "AC2",
+    "row": "clients/every-registration-is-drivable",
+    "red": false,
+    "restored_green": true,
+    "mutation_digest": "7dae4b6c28c026ccb42706f98ca838d678dda685422fbc495e676510e7d30ff0"
+  },
+  {
+    "ac": "AC3",
+    "row": "clients/registry-growth-expands-cases",
+    "red": false,
+    "restored_green": true,
+    "mutation_digest": "e87398d714b02b820ef5c3de6dbd92d2152d3874d0eada41eaf1d132b02c302c"
+  }
+]

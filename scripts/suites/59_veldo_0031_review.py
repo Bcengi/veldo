@@ -177,15 +177,16 @@ def review_r1(f):
     f.start_server()
     client = f.client(1)
     assert client.claim('unit', 'worker-b')[0]
-    # IPC.send rejects lone surrogates while encoding, before reaching the receiver.
+    # IPC.send rejects lone surrogates while encoding, before reaching the receiver. The timeout only
+    # bounds a hung server: under a loaded gate one answer can take longer than a fraction of a second.
     wire_bad = [p for p in bad if not isinstance(p, dict) or p.get('signature') != '\ud800']
     for packet in wire_bad:
         try:
             r = f.IPC.send(str(f.repos[0]), packet, f.E, f.verify,
-                           lambda m: f.sign('worker-a', m), 'test-host', timeout=.3)
+                           lambda m: f.sign('worker-a', m), 'test-host', timeout=10)
             answers.append(r['result']['reason'] if r['accepted'] else r['reason'])
         except Exception as exc:
-            answers.append(type(exc).__name__)
+            answers.append('%s(%s)' % (type(exc).__name__, getattr(exc, 'reason', '')))
     alive = f.server.is_alive()
     holder = client.holder('unit') if alive else None
     assert answers == ['malformed_request'] * (len(bad) + len(wire_bad)), answers

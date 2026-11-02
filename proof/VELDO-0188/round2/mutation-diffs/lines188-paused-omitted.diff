@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -278 +278 @@
+-PROJECT_OPEN = ('ACTIVE', 'PAUSED')
++PROJECT_OPEN = ('ACTIVE',)

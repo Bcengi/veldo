@@ -449,6 +449,11 @@ def _v168_suite():
                 ('scripts/runners/api/fixtures/mock_server.py', 'Handler.do_POST', 'self', '_send'): 2,
                 ('scripts/runners/auth/fixtures/mock_server.py', 'Handler.do_GET', 'self', '_send'): 8,
                 ('scripts/runners/integration/fixtures/mock_server.py', 'Handler.do_GET', 'self', '_send'): 3,
+                # VELDO-0220's host lock and scope holder and VELDO-0219's worker meter answer their parent over a
+                # private socketpair; none of them carries text to a person.
+                ('scripts/gate_host.py', 'keep_lock', 'channel', 'send'): 3,
+                ('scripts/gate_host.py', 'prepare_child', 'channel', 'send'): 1,
+                ('scripts/mutation_ownership.py', 'WorkerMeter.lifecycle_events', 'self.lifecycle', 'send'): 2,
             })
             outside_calls = Counter({('request_doorbell.py', 'ring', 'sink', 'send'): 1})
             # Trace the text producers of Presenter._send: render -> _send_parts, _tell,

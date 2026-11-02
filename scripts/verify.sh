@@ -12,6 +12,9 @@
 set -u
 # The script and all security helpers come from the authority installation.
 VELDO_AUTHORITY=$(cd "$(dirname "$0")/.." && pwd -P)
+# How this gate was started, kept for the host holder (VELDO-0220), which runs it again inside
+# its lock and scope from where it was started.
+VELDO_SELF="$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"; VELDO_START=$(pwd -P); VELDO_ARGV=("$@")
 git() {
   python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --root "$(pwd -P)" -- "$@"
 }
@@ -119,6 +122,26 @@ if [ -e .git ] || [ -L .git ]; then
   fi
 fi
 
+# THE HOST LOCK AND THE GATE'S OWN SCOPE (VELDO-0220). The authority's scripts/gate_host.json, when it
+# exists, names the lock every heavy run on this host serializes on and the scope the gate runs in.
+# Before the first check, a gate not yet running under its holder execs scripts/gate_host.py, which
+# takes the lock (or finds it held for this gate by its caller), runs in a delegated user scope of its
+# own and starts this script again inside them. A lock held by anyone else is GATE: NOT STARTED with
+# exit 75: no check runs, and no stamp and no event are written. With no file there is no lock and no
+# scope, as before; the host field below is then absent from the stamp and the event.
+VELDO_HOST_FIELD=""
+if [ -e "$VELDO_AUTHORITY/scripts/gate_host.json" ]; then
+  if _veldo_host=$(python3 -I -S "$VELDO_AUTHORITY/scripts/gate_host.py" --inside); then
+    VELDO_HOST_FIELD=",\"host\":$_veldo_host"
+  else
+    _veldo_root=$(pwd -P)
+    cd "$VELDO_START" && exec python3 -I -S "$VELDO_AUTHORITY/scripts/gate_host.py" --enter --root "$_veldo_root" \
+      -- "$VELDO_SELF" "${VELDO_ARGV[@]}"
+    echo "GATE: RED (the host holder could not be started)"
+    exit 1
+  fi
+fi
+
 # ---- the validation catalog: declare EVERY item (see header) ---------------
 CHECK_format="na:no formatter adopted yet"
 CHECK_lint="required:bash scripts/check_lint.sh"
@@ -177,6 +200,41 @@ generated docs performance coverage packaging deploy_dry_run extra mutation"
 
 FAIL=0; RAN=0; NA=0; WAIVED=0; UNDECLARED=0; MUTATION_RAN=0
 TODAY=$(date -u +%Y-%m-%d)
+# VELDO-0216: the authority graph replaces only required catalog execution.
+# No graph retains the original serial path. An invalid present graph never falls back.
+VELDO_GRAPH_FIELD=""; VELDO_SCHEDULE=""; VELDO_GRAPH_REFUSED=0
+if [ -e "$VELDO_AUTHORITY/scripts/gate_graph.json" ] || [ -L "$VELDO_AUTHORITY/scripts/gate_graph.json" ]; then
+  VELDO_SCHEDULE=$(mktemp -d)
+  trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"; rm -rf "$VELDO_SCHEDULE"' EXIT
+  _veldo_stages=()
+  for _veldo_name in $ORDER; do
+    _veldo_var="CHECK_${_veldo_name}"; _veldo_decl="${!_veldo_var}"
+    case "$_veldo_decl" in
+      required:*) _veldo_cmd="${_veldo_decl#required:}" ;;
+      ""|na:*|waived:*) continue ;;
+      *) _veldo_cmd="$_veldo_decl" ;;
+    esac
+    _veldo_stages+=(--stage "$_veldo_name" "$_veldo_cmd")
+    veldo_expect_leg "$_veldo_name" "$_veldo_cmd"
+  done
+  if ! python3 -I -S "$VELDO_AUTHORITY/scripts/gate_schedule.py" --root "$(pwd -P)" \
+      --directory "$VELDO_SCHEDULE" --record "$VELDO_LEGS_RECORD" --receipt "$VELDO_REUSE_RECEIPT" \
+      --output "$VELDO_OUT/gate-schedule.json" "${_veldo_stages[@]}"; then FAIL=1; fi
+  if [ -f "$VELDO_SCHEDULE/graph-field" ]; then
+    VELDO_GRAPH_FIELD=$(cat "$VELDO_SCHEDULE/graph-field")
+  else
+    echo 'GATE: RED (graph refused; no catalog stage completed)'
+    FAIL=1; VELDO_GRAPH_REFUSED=1
+    VELDO_GRAPH_FIELD=',"graph":null,"graph_refused":true'
+  fi
+fi
+veldo_scheduled_result() {
+  if [ -f "$VELDO_SCHEDULE/$1.status" ]; then
+    RAN=$((RAN+1))
+    if [ "$(cat "$VELDO_SCHEDULE/$1.status")" = pass ]; then echo "   $1: pass"
+    else echo "   $1: FAIL"; FAIL=1; fi
+  else echo "   $1: FAIL (graph refused before completion)"; FAIL=1; fi
+}
 for name in $ORDER; do
   var="CHECK_${name}"
   decl="${!var}"
@@ -187,6 +245,11 @@ for name in $ORDER; do
       ;;
     required:*)
       cmd="${decl#required:}"
+      if [ -n "$VELDO_SCHEDULE" ]; then
+        veldo_scheduled_result "$name"
+        if [ "$name" = mutation ] && [ -f "$VELDO_SCHEDULE/mutation.status" ]; then MUTATION_RAN=1; fi
+        continue
+      fi
       echo "== ${name}"
       if [ "$name" = mutation ]; then MUTATION_RAN=1; veldo_expect_leg "$name" "$cmd"; fi
       if { if [ "$name" = mutation ]; then
@@ -210,6 +273,11 @@ for name in $ORDER; do
       ;;
     *)
       # legacy plain command = treat as required
+      if [ -n "$VELDO_SCHEDULE" ]; then
+        veldo_scheduled_result "$name"
+        if [ "$name" = mutation ] && [ -f "$VELDO_SCHEDULE/mutation.status" ]; then MUTATION_RAN=1; fi
+        continue
+      fi
       echo "== ${name}"
       if veldo_candidate bash -c "$decl"; then
         echo "   ${name}: pass"; RAN=$((RAN+1))
@@ -220,6 +288,7 @@ for name in $ORDER; do
   esac
 done
 
+if [ "$VELDO_GRAPH_REFUSED" = 0 ]; then
 echo "== secret scan (built-in)"
 if grep -rInE '(api[_-]?key|secret|password|token)[[:space:]]*[:=][[:space:]]*["'"'"'][A-Za-z0-9+/_-]{16,}' \
      --include='*' --exclude-dir={.git,node_modules,venv,.venv,dist,build,proof} \
@@ -281,6 +350,8 @@ python3 -I -S "$VELDO_AUTHORITY/.veldo/events.py" reconcile-verdicts "$@" || \
       echo "   review events: landing impossible; the traceback above is the finding."; \
     fi; }
 
+fi # A refused graph reaches the normal red stamp without running more checks.
+
 COMMIT=$(git rev-parse --verify HEAD 2>/dev/null || echo "no-git")
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 if [ "$VELDO_OUT" = ".veldo" ]; then mkdir -p .veldo; fi
@@ -291,7 +362,7 @@ if [ "$FAIL" -eq 0 ]; then STATUS=green; EVENT=gate.passed; else STATUS=red; EVE
 # VELDO-0010. The exit status is checked first, and the value must still LOOK like a version, because
 # a shape test survives any future change to what that script prints.
 VELDO_VERSION=""
-if _veldo_v=$(veldo_candidate python3 .veldo/version.py 2>/dev/null); then
+if [ "$VELDO_GRAPH_REFUSED" = 0 ] && _veldo_v=$(veldo_candidate python3 .veldo/version.py 2>/dev/null); then
   _veldo_v=$(printf '%s' "$_veldo_v" | awk '{print $1}')
   case "$_veldo_v" in [0-9]*.[0-9]*) VELDO_VERSION="$_veldo_v" ;; esac
 fi
@@ -344,11 +415,13 @@ if [ -n "$VELDO_LEGS_EXPECTED" ]; then
     FAIL=1; STATUS=red; EVENT=gate.failed; UNCONFINED_FIELD=',"unconfined":null'
   fi
 fi
-EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d,%s%s}' \
-  "$EVENT" "$COMMIT" "$TS" "$RAN" "$REUSE_JSON" "$UNCONFINED_FIELD")
+VELDO_HOST_FIELD="$VELDO_HOST_FIELD$VELDO_GRAPH_FIELD"
+EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d,%s%s%s}' \
+  "$EVENT" "$COMMIT" "$TS" "$RAN" "$REUSE_JSON" "$UNCONFINED_FIELD" "$VELDO_HOST_FIELD")
 veldo_write_stamp() {
-  printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s,%s%s}\n' \
-    "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" "$REUSE_JSON" "$UNCONFINED_FIELD" > "$1"
+  printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s,%s%s%s}\n' \
+    "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" "$REUSE_JSON" "$UNCONFINED_FIELD" \
+    "$VELDO_HOST_FIELD" > "$1"
 }
 if [ "$VELDO_OUT" = ".veldo" ]; then
   veldo_write_stamp .veldo/last_verify

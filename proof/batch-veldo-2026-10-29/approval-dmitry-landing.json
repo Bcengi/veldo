@@ -1,0 +1,36 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-BATCH-VELDO-2026-10-29-LANDING",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0220",
+    "commit": "074f55f4c27115d04c75ab9fdfa17589cc73e753",
+    "paths": [
+      ".veldo/policy.yaml",
+      ".veldo/reuse_evidence.py",
+      "engine/.veldo/reuse_evidence.py",
+      "engine/scripts/case_trace.py",
+      "engine/scripts/check_gate_mutations.py",
+      "engine/scripts/gate_host.py",
+      "engine/scripts/gate_legs.py",
+      "engine/scripts/gate_schedule.py",
+      "engine/scripts/reuse_worker.py",
+      "engine/scripts/verify.sh",
+      "scripts/case_trace.py",
+      "scripts/check_gate_mutations.py",
+      "scripts/gate_graph.json",
+      "scripts/gate_host.json",
+      "scripts/gate_host.py",
+      "scripts/gate_legs.py",
+      "scripts/gate_schedule.py",
+      "scripts/gate_unconfined.json",
+      "scripts/reuse_worker.py",
+      "scripts/verify.sh"
+    ]
+  },
+  "basis": "Dmitry approved landing of the Veldo batch batch/veldo-2026-10-29 (VELDO-0220, VELDO-0216, VELDO-0219, VELDO-0188, VELDO-0145 and VELDO-0227 on main 6bced0be, with fix rounds A to G and rounds 5 to 8) at 074f55f4 over Telegram on 2026-11-01T20:52:08Z (message 38217, 'approve Veldo batch 074f55f4'), asked in 38215 (copy line 38216). The canonical gate was GREEN at 074f55f4 (selftest confined 8,016 passed, 0 failed; unconfined 1,027 passed, 0 failed; every stage pass; mutation executed fresh). Earlier approvals of d8825de1 (38185), 8e3b3c91 (38199) and e50d4c26 (38202) are superseded: their gates failed in the mutation stage only. The fixes after e50d4c26 are round 7 (309b25e4: suite 59 review-r1 wire timeout raised from 0.3 s to 10 s under a loaded gate, and suite 114 records lock-keeper evidence instead of crashing) and round 8 (4f75802f: the live meter in scripts/mutation_ownership.py and its engine copy leaves an ownership ledger line still being appended for its next read, cleanup stays strict, suite 115 row ledger-line-mid-write). Neither round touches a protected path; the ask (38215) stated this. The original ask (38180) stated the batch touches 20 protected files, all gate machinery: the gate scripts, the stage graph, the worker meter, the unconfined suite list and the Veldo policy file; these are the 20 paths listed here. WHAT IT DOES NOT COVER: any protected path not listed here, and any change made after 074f55f4 other than this record and the gate stamp.",
+  "recorded_at": "2026-11-01T20:55:00Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-12-01T00:00:00Z"
+}

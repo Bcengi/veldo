@@ -30,9 +30,19 @@ a general listener/process census is INTENDED and NOT YET DEMONSTRATED.
 WHAT IT IS NOT. Not a proxy for many authorities, not a daemon, not a session. One request, one
 answer, exit. Standard library only.
 """
+
+# The registry is shared across aliases of this installed module.
+import importlib.util as _registry_import
+from pathlib import Path as _RegistryPath
+_registry_spec = _registry_import.spec_from_file_location(
+    "veldo_client_registry", _RegistryPath(__file__).with_name("control_client_registry.py"))
+_CLIENTS = _registry_import.module_from_spec(_registry_spec)
+_registry_spec.loader.exec_module(_CLIENTS)
+
 import os
 import socket
 import sys
+import time
 
 MAX_BYTES = 1 << 20
 EXIT_OK = 0
@@ -56,28 +66,50 @@ def read_all(stream, limit=MAX_BYTES):
     return b"".join(chunks)
 
 
+@_CLIENTS.entrypoint('command', ('relay',))
 def forward(address, payload, timeout=30.0):
-    """The request's bytes to the endpoint, and the endpoint's bytes back. Nothing is parsed."""
+    """Carry opaque bytes within one monotonic connect-to-completion budget.
+
+    Progress never renews the budget. Keep the answer private until clean EOF and
+    all size/deadline checks succeed: a transport refusal must emit no answer.
+    """
+    deadline = time.monotonic() + timeout
+
+    def remaining():
+        budget = deadline - time.monotonic()
+        if budget <= 0:
+            raise TimeoutError("the transport deadline expired")
+        return budget
+
     conn = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    conn.settimeout(timeout)
     try:
+        conn.settimeout(remaining())
         conn.connect(address)
-        conn.sendall(payload)
+        for start in range(0, len(payload), 65536):
+            # The timeout bounds the whole sendall call, so the single deadline still holds.
+            conn.settimeout(remaining())
+            conn.sendall(memoryview(payload)[start:start + 65536])
+        conn.settimeout(remaining())
         conn.shutdown(socket.SHUT_WR)
         chunks, total = [], 0
         while True:
+            conn.settimeout(remaining())
             chunk = conn.recv(65536)
+            remaining()
             if not chunk:
                 break
             total += len(chunk)
             if total > MAX_BYTES:
                 raise ValueError("the response exceeded %d bytes" % MAX_BYTES)
             chunks.append(chunk)
-        return b"".join(chunks)
+        answer = b"".join(chunks)
+        remaining()
+        return answer
     finally:
         conn.close()
 
 
+@_CLIENTS.entrypoint('command', ('relay',))
 def main(argv, stdin=None, stdout=None, stderr=None):
     """Usage: control_relay.py <endpoint-socket-path>
 

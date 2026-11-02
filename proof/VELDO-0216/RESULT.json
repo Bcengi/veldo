@@ -1,0 +1,61 @@
+{
+  "spec": "VELDO-0216",
+  "implementation_commit": "b1d91eb27ac73df724ad3274fbd51966cc1c9220",
+  "status": "REMAINING",
+  "local_checks": {
+    "ticket_rows": 22,
+    "shared_preamble_rows": 26,
+    "failed": 0,
+    "falsifiers_red_then_green": 4,
+    "split_only_falsifier": "same-verdicts red; all other rows green",
+    "evidence": "round2/falsifiers.json"
+  },
+  "protected_paths_touched": [
+    ".veldo/policy.yaml",
+    ".veldo/reuse_evidence.py",
+    "engine/.veldo/reuse_evidence.py",
+    "engine/scripts/check_gate_mutations.py",
+    "engine/scripts/gate_legs.py",
+    "engine/scripts/gate_schedule.py",
+    "engine/scripts/verify.sh",
+    "scripts/check_gate_mutations.py",
+    "scripts/gate_graph.json",
+    "scripts/gate_legs.py",
+    "scripts/gate_schedule.py",
+    "scripts/verify.sh"
+  ],
+  "remaining": [
+    "AC4 remains unmet; owner amendment proposed in spec-conflict.md, specification unchanged",
+    "Canonical force-fresh and serialized qualification prohibited this round by owner rule 37191",
+    "Owner approval for the earlier .gitignore specification footprint addition has no citation; listed in OPEN.md",
+    "Per-worker and per-shard measured admission belongs to VELDO-0219 and VELDO-0221",
+    "Inherited VELDO-0220 unconfined-list entry remains outside this ticket protected paths"
+  ],
+  "canonical_gate_executed": false,
+  "evidence_sources_match": true,
+  "prior_implementation_commit": "d046b6aa55675422a4a4f18283cf5c1462b84b0c",
+  "round": "round2",
+  "projection": {
+    "graph_seconds": 6932.501,
+    "ac4_target_seconds": 6000,
+    "ac4_met": false,
+    "basis": "production ledger replay of recorded 2026-10-25 durations",
+    "evidence": "round2/schedule-green.json",
+    "excludes": [
+      "contention",
+      "snapshot preparation",
+      "shell overhead"
+    ]
+  },
+  "source_sha256": {
+    "scripts/gate_schedule.py": "4d65ae94c76d7dea7d243c05a67ff0f829e297e0f23ddfa500985ab6d0ebfd5d",
+    "engine/scripts/gate_schedule.py": "4d65ae94c76d7dea7d243c05a67ff0f829e297e0f23ddfa500985ab6d0ebfd5d",
+    "scripts/gate_graph.json": "c048475405cadf7635a1c9f7d00dfd4fd50a386f3c83aa4809a1a7035157e0d4",
+    "scripts/gate_legs.py": "ae6633b2dbbb1b81a0aefa5a694b7b589eccc2c86969869d8437face2025b5dc",
+    "engine/scripts/gate_legs.py": "ae6633b2dbbb1b81a0aefa5a694b7b589eccc2c86969869d8437face2025b5dc",
+    "scripts/verify.sh": "701d5c576d06352f4d6edf3e4003161f79d1a07b881e61f2390c8261f3db0d00",
+    "engine/scripts/verify.sh": "c2d614fabacf69d776c233724fd8d018f9d3fe466c52a95cc4c6c939515f4140",
+    "scripts/suites/114_veldo_0216_concurrent_stages.py": "8a5caf61dfac4a21150a09b2d047e8b0f4856da00169b7778a63c12ffc206b74",
+    "scripts/check_teeth_mutations.py": "e37625940b688bccff5e35666173cfd26a11219db631ab722ea8510c3bbbcfd4"
+  }
+}

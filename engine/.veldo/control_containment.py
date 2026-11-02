@@ -73,6 +73,8 @@ QUALIFICATION = 'veldo.worker_qualification/v1'
 LINUX = 'linux-systemd'
 CGROUP = Path('/sys/fs/cgroup')
 UNIT_PREFIX = 'veldo-dispatch-'
+# The manager's active states of a scope that still holds its processes (status).
+LIVE_STATES = ('active', 'activating', 'deactivating', 'reloading')
 DEFAULT_SLICE = 'veldo-workers.slice'
 SETTLE_SECONDS = 5.0
 TOOL_SECONDS = 20
@@ -713,7 +715,11 @@ def retirement(group, process):
 
 
 def status(profile, environment=None):
-    """Pending work of one profile: its live dispatch groups (unit and description), from the manager."""
+    """Pending work of one profile: its live dispatch groups (unit and description), from the manager. A
+    scope found populated can end and be collected before the manager is asked about it, and the manager
+    then answers with the bare unit name as its Description. So the Description is read in one call with
+    the unit's load and active state and its cgroup, and the group is live only if the manager still has
+    it loaded and active and that cgroup is still populated after the read."""
     qualification = qualify(profile, environment)
     if not qualification['qualified']:
         return {'qualified': False, 'refusal': qualification['refusal'], 'groups': []}
@@ -721,5 +727,9 @@ def status(profile, environment=None):
     groups = []
     for unit in group.live():
         with contextlib.suppress(OSError, subprocess.SubprocessError):
-            groups.append({'unit': unit, 'description': group._show(unit, ('Description',)).get('Description')})
+            shown = group._show(unit, ('Description', 'LoadState', 'ActiveState', 'ControlGroup'))
+            path = shown.get('ControlGroup', '')
+            if (shown.get('LoadState') == 'loaded' and shown.get('ActiveState') in LIVE_STATES
+                    and path.endswith('/' + unit) and populated(CGROUP / path.lstrip('/'))):
+                groups.append({'unit': unit, 'description': shown.get('Description')})
     return {'qualified': True, 'refusal': None, 'groups': groups}

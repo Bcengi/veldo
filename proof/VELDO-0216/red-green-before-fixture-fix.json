@@ -1,0 +1,286 @@
+{
+  "canonical_qualification": "NOT RUN: owner rule 37191; see OPEN.md",
+  "head": "31f23a93666d87469b211b48919ee8e7347eb310",
+  "runs": [
+    {
+      "case": "concurrent216-missing-stage-runs-nothing",
+      "failed_rows": [
+        "concurrent-stages/graph-complete",
+        "concurrent-stages/graph-refusals"
+      ],
+      "mode": "mutant",
+      "new_digest": "b446f19e1fdb6e8a752f69b431161cd4522094cb978831fbbce89900749c8fdf",
+      "old_digest": "9ebddd7be4e169bab789b76d2be53b8e7bd9672298b5a85d31790b27fd778479",
+      "rows": {
+        "concurrent-stages/anonymous-metrics": true,
+        "concurrent-stages/authority-wiring": true,
+        "concurrent-stages/canonical-receipt-check": true,
+        "concurrent-stages/cold-measurements": true,
+        "concurrent-stages/critical-path-fixture": true,
+        "concurrent-stages/dependency-start": true,
+        "concurrent-stages/graph-complete": false,
+        "concurrent-stages/graph-refusals": false,
+        "concurrent-stages/inherited-ledger": true,
+        "concurrent-stages/ledger-sums": true,
+        "concurrent-stages/measured-claims": true,
+        "concurrent-stages/measurement-record-race": true,
+        "concurrent-stages/mutation-floor": true,
+        "concurrent-stages/ordered-logs": true,
+        "concurrent-stages/same-verdicts": true,
+        "concurrent-stages/scope-capacities": true,
+        "concurrent-stages/shell-catalog": true,
+        "concurrent-stages/timing-store-refusal": true,
+        "concurrent-stages/tree-unchanged": true
+      },
+      "seconds": 26.71874476992525,
+      "target_rows": [
+        "concurrent-stages/graph-complete"
+      ]
+    },
+    {
+      "case": "concurrent216-missing-stage-runs-nothing",
+      "failed_rows": [],
+      "mode": "baseline",
+      "new_digest": "9ebddd7be4e169bab789b76d2be53b8e7bd9672298b5a85d31790b27fd778479",
+      "old_digest": "9ebddd7be4e169bab789b76d2be53b8e7bd9672298b5a85d31790b27fd778479",
+      "rows": {
+        "concurrent-stages/anonymous-metrics": true,
+        "concurrent-stages/authority-wiring": true,
+        "concurrent-stages/canonical-receipt-check": true,
+        "concurrent-stages/cold-measurements": true,
+        "concurrent-stages/critical-path-fixture": true,
+        "concurrent-stages/dependency-start": true,
+        "concurrent-stages/graph-complete": true,
+        "concurrent-stages/graph-refusals": true,
+        "concurrent-stages/inherited-ledger": true,
+        "concurrent-stages/ledger-sums": true,
+        "concurrent-stages/measured-claims": true,
+        "concurrent-stages/measurement-record-race": true,
+        "concurrent-stages/mutation-floor": true,
+        "concurrent-stages/ordered-logs": true,
+        "concurrent-stages/same-verdicts": true,
+        "concurrent-stages/scope-capacities": true,
+        "concurrent-stages/shell-catalog": true,
+        "concurrent-stages/timing-store-refusal": true,
+        "concurrent-stages/tree-unchanged": true
+      },
+      "seconds": 25.40734135895036,
+      "target_rows": [
+        "concurrent-stages/graph-complete"
+      ]
+    },
+    {
+      "case": "concurrent216-lost-leg-record",
+      "failed_rows": [
+        "concurrent-stages/same-verdicts"
+      ],
+      "mode": "mutant",
+      "new_digest": "5a435efd0749560acf020de6ab7b2b516a7d324450e129abb1ccd66f7d951524",
+      "old_digest": "bdf9ca3c649111162f163da3332e5d579c649f486daf294b1ee0440805e0076e",
+      "rows": {
+        "concurrent-stages/anonymous-metrics": true,
+        "concurrent-stages/authority-wiring": true,
+        "concurrent-stages/canonical-receipt-check": true,
+        "concurrent-stages/cold-measurements": true,
+        "concurrent-stages/critical-path-fixture": true,
+        "concurrent-stages/dependency-start": true,
+        "concurrent-stages/graph-complete": true,
+        "concurrent-stages/graph-refusals": true,
+        "concurrent-stages/inherited-ledger": true,
+        "concurrent-stages/ledger-sums": true,
+        "concurrent-stages/measured-claims": true,
+        "concurrent-stages/measurement-record-race": true,
+        "concurrent-stages/mutation-floor": true,
+        "concurrent-stages/ordered-logs": true,
+        "concurrent-stages/same-verdicts": false,
+        "concurrent-stages/scope-capacities": true,
+        "concurrent-stages/shell-catalog": true,
+        "concurrent-stages/timing-store-refusal": true,
+        "concurrent-stages/tree-unchanged": true
+      },
+      "seconds": 25.16811146296095,
+      "target_rows": [
+        "concurrent-stages/same-verdicts"
+      ]
+    },
+    {
+      "case": "concurrent216-lost-leg-record",
+      "failed_rows": [],
+      "mode": "baseline",
+      "new_digest": "bdf9ca3c649111162f163da3332e5d579c649f486daf294b1ee0440805e0076e",
+      "old_digest": "bdf9ca3c649111162f163da3332e5d579c649f486daf294b1ee0440805e0076e",
+      "rows": {
+        "concurrent-stages/anonymous-metrics": true,
+        "concurrent-stages/authority-wiring": true,
+        "concurrent-stages/canonical-receipt-check": true,
+        "concurrent-stages/cold-measurements": true,
+        "concurrent-stages/critical-path-fixture": true,
+        "concurrent-stages/dependency-start": true,
+        "concurrent-stages/graph-complete": true,
+        "concurrent-stages/graph-refusals": true,
+        "concurrent-stages/inherited-ledger": true,
+        "concurrent-stages/ledger-sums": true,
+        "concurrent-stages/measured-claims": true,
+        "concurrent-stages/measurement-record-race": true,
+        "concurrent-stages/mutation-floor": true,
+        "concurrent-stages/ordered-logs": true,
+        "concurrent-stages/same-verdicts": true,
+        "concurrent-stages/scope-capacities": true,
+        "concurrent-stages/shell-catalog": true,
+        "concurrent-stages/timing-store-refusal": true,
+        "concurrent-stages/tree-unchanged": true
+      },
+      "seconds": 25.180645036976784,
+      "target_rows": [
+        "concurrent-stages/same-verdicts"
+      ]
+    },
+    {
+      "case": "concurrent216-count-not-sum",
+      "failed_rows": [
+        "concurrent-stages/ledger-sums"
+      ],
+      "mode": "mutant",
+      "new_digest": "bab79d0a4d709ec4de034c6168fdb37393474bf310107dcfffb2398a297f7035",
+      "old_digest": "9ebddd7be4e169bab789b76d2be53b8e7bd9672298b5a85d31790b27fd778479",
+      "rows": {
+        "concurrent-stages/anonymous-metrics": true,
+        "concurrent-stages/authority-wiring": true,
+        "concurrent-stages/canonical-receipt-check": true,
+        "concurrent-stages/cold-measurements": true,
+        "concurrent-stages/critical-path-fixture": true,
+        "concurrent-stages/dependency-start": true,
+        "concurrent-stages/graph-complete": true,
+        "concurrent-stages/graph-refusals": true,
+        "concurrent-stages/inherited-ledger": true,
+        "concurrent-stages/ledger-sums": false,
+        "concurrent-stages/measured-claims": true,
+        "concurrent-stages/measurement-record-race": true,
+        "concurrent-stages/mutation-floor": true,
+        "concurrent-stages/ordered-logs": true,
+        "concurrent-stages/same-verdicts": true,
+        "concurrent-stages/scope-capacities": true,
+        "concurrent-stages/shell-catalog": true,
+        "concurrent-stages/timing-store-refusal": true,
+        "concurrent-stages/tree-unchanged": true
+      },
+      "seconds": 25.196770262089558,
+      "target_rows": [
+        "concurrent-stages/ledger-sums"
+      ]
+    },
+    {
+      "case": "concurrent216-count-not-sum",
+      "failed_rows": [],
+      "mode": "baseline",
+      "new_digest": "9ebddd7be4e169bab789b76d2be53b8e7bd9672298b5a85d31790b27fd778479",
+      "old_digest": "9ebddd7be4e169bab789b76d2be53b8e7bd9672298b5a85d31790b27fd778479",
+      "rows": {
+        "concurrent-stages/anonymous-metrics": true,
+        "concurrent-stages/authority-wiring": true,
+        "concurrent-stages/canonical-receipt-check": true,
+        "concurrent-stages/cold-measurements": true,
+        "concurrent-stages/critical-path-fixture": true,
+        "concurrent-stages/dependency-start": true,
+        "concurrent-stages/graph-complete": true,
+        "concurrent-stages/graph-refusals": true,
+        "concurrent-stages/inherited-ledger": true,
+        "concurrent-stages/ledger-sums": true,
+        "concurrent-stages/measured-claims": true,
+        "concurrent-stages/measurement-record-race": true,
+        "concurrent-stages/mutation-floor": true,
+        "concurrent-stages/ordered-logs": true,
+        "concurrent-stages/same-verdicts": true,
+        "concurrent-stages/scope-capacities": true,
+        "concurrent-stages/shell-catalog": true,
+        "concurrent-stages/timing-store-refusal": true,
+        "concurrent-stages/tree-unchanged": true
+      },
+      "seconds": 25.00421610905323,
+      "target_rows": [
+        "concurrent-stages/ledger-sums"
+      ]
+    },
+    {
+      "case": "concurrent216-serialize-nodes",
+      "failed_rows": [
+        "concurrent-stages/dependency-start",
+        "concurrent-stages/critical-path-fixture"
+      ],
+      "mode": "mutant",
+      "new_digest": "52193ff8e7627f6f7b5e35922f816fe26b0fb7218290489d07ac0686538c4fa8",
+      "old_digest": "9ebddd7be4e169bab789b76d2be53b8e7bd9672298b5a85d31790b27fd778479",
+      "rows": {
+        "concurrent-stages/anonymous-metrics": true,
+        "concurrent-stages/authority-wiring": true,
+        "concurrent-stages/canonical-receipt-check": true,
+        "concurrent-stages/cold-measurements": true,
+        "concurrent-stages/critical-path-fixture": false,
+        "concurrent-stages/dependency-start": false,
+        "concurrent-stages/graph-complete": true,
+        "concurrent-stages/graph-refusals": true,
+        "concurrent-stages/inherited-ledger": true,
+        "concurrent-stages/ledger-sums": true,
+        "concurrent-stages/measured-claims": true,
+        "concurrent-stages/measurement-record-race": true,
+        "concurrent-stages/mutation-floor": true,
+        "concurrent-stages/ordered-logs": true,
+        "concurrent-stages/same-verdicts": true,
+        "concurrent-stages/scope-capacities": true,
+        "concurrent-stages/shell-catalog": true,
+        "concurrent-stages/timing-store-refusal": true,
+        "concurrent-stages/tree-unchanged": true
+      },
+      "seconds": 45.483782976982184,
+      "target_rows": [
+        "concurrent-stages/critical-path-fixture"
+      ]
+    },
+    {
+      "case": "concurrent216-serialize-nodes",
+      "failed_rows": [],
+      "mode": "baseline",
+      "new_digest": "9ebddd7be4e169bab789b76d2be53b8e7bd9672298b5a85d31790b27fd778479",
+      "old_digest": "9ebddd7be4e169bab789b76d2be53b8e7bd9672298b5a85d31790b27fd778479",
+      "rows": {
+        "concurrent-stages/anonymous-metrics": true,
+        "concurrent-stages/authority-wiring": true,
+        "concurrent-stages/canonical-receipt-check": true,
+        "concurrent-stages/cold-measurements": true,
+        "concurrent-stages/critical-path-fixture": true,
+        "concurrent-stages/dependency-start": true,
+        "concurrent-stages/graph-complete": true,
+        "concurrent-stages/graph-refusals": true,
+        "concurrent-stages/inherited-ledger": true,
+        "concurrent-stages/ledger-sums": true,
+        "concurrent-stages/measured-claims": true,
+        "concurrent-stages/measurement-record-race": true,
+        "concurrent-stages/mutation-floor": true,
+        "concurrent-stages/ordered-logs": true,
+        "concurrent-stages/same-verdicts": true,
+        "concurrent-stages/scope-capacities": true,
+        "concurrent-stages/shell-catalog": true,
+        "concurrent-stages/timing-store-refusal": true,
+        "concurrent-stages/tree-unchanged": true
+      },
+      "seconds": 25.155751393991522,
+      "target_rows": [
+        "concurrent-stages/critical-path-fixture"
+      ]
+    }
+  ],
+  "schema": "veldo.local-checks/v1",
+  "source_sha256": {
+    "engine/scripts/verify.sh": "06695fa8248582f2b0babfeb8233431d7c4eaa3620b185f303380bf27864f904",
+    "proof/VELDO-0216/qualification.py": "5437819bd46c8a25b95b94d977a3481f680b1d7f2063efa32391a643bbafb07c",
+    "proof/VELDO-0216/serial-baseline.json": "5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
+    "scripts/check_gate_mutations.py": "38d697817f85a31cedcb85dc4afec66b08ba72284003870590dff20796c34901",
+    "scripts/check_teeth_mutations.py": "e37625940b688bccff5e35666173cfd26a11219db631ab722ea8510c3bbbcfd4",
+    "scripts/gate_graph.json": "4ba30fad7be3e0efa2a35c613815037ff1bb162efb554e35344e880b59297d23",
+    "scripts/gate_legs.py": "bdf9ca3c649111162f163da3332e5d579c649f486daf294b1ee0440805e0076e",
+    "scripts/gate_schedule.py": "9ebddd7be4e169bab789b76d2be53b8e7bd9672298b5a85d31790b27fd778479",
+    "scripts/suites/114_veldo_0216_concurrent_stages.py": "bd6aa8aee7a1344b69e0aee730b5b9226e4a3d039f4bc0771fb2c3f4e3d87aef",
+    "scripts/verify.sh": "d373bba743efd14a667572b4b29f4304a26f0dafe69efdae341d576085c91669"
+  },
+  "spec": "VELDO-0216"
+}

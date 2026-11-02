@@ -1,0 +1,545 @@
+{
+  "scope": "Read-only anchor counts on changed modules. No non-ticket mutant or suite was executed.",
+  "checked": [
+    {
+      "case": "edge-enrollment-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "edge-custody-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "settlement-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "settlement-claimed-as-substrate",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "clone-module-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "clone-env-provision-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "scaffold-omits-runtime-lock",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "scaffold-omits-runtime-records",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "dispatch-receiver-not-installed",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "dispatch-authority-not-installed",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "containment-not-installed",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "heartbeat-not-installed",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "retirement-not-installed",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "proof-module-not-installed",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "proof-closure-not-installed",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "authority-service-not-installed",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "authority-unit-template-not-installed",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "authority-supervisor-not-installed",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "scaffold-vocabulary-not-laid",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "scaffold-projection-not-laid",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "gate-output-reconcile-writes-candidate",
+      "target": "scripts/verify.sh",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "gate-output-stamp-written-to-candidate",
+      "target": "scripts/verify.sh",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "gate-output-sink-failure-still-green",
+      "target": "scripts/verify.sh",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "gate-output-sink-inside-candidate-accepted",
+      "target": "scripts/verify.sh",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "activation-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "project-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "channel-module-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "module-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "objective-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "andon-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "report-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "team-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "backlog-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "backlog-question-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "grooming-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "grooming-request-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "pool-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "decision-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "claude-qualification-not-installed",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "adapter-qualification-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "decomposition-service-not-installed",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "worker129-runtime-not-installed",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "api171-module-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "upgrade189-module-not-scaffolded",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "role127-scaffold-omits-role-modules",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "v152-intake-companions-missing",
+      "target": "scripts/check_teeth_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "v203-scaffold-absent",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "v204-scaffold-absent",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "v185-scaffold-absent",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "newproject143-scaffold-not-laid",
+      "target": ".veldo/init_scaffold.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "budget214-caller-value-kept",
+      "target": "scripts/gate_legs.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "budget214-failed-leg-recorded",
+      "target": "scripts/gate_legs.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "budget214-temporary-authority-refused",
+      "target": "scripts/gate_legs.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "budget214-keep-not-spared",
+      "target": "scripts/gate_legs.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-fixed-worker",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-drop-measurement",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-no-expiry",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-timeout-is-baseline",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-no-authority-guard",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-key-omits-sources",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-key-omits-definition",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-no-prune",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-old-stage-cap",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-serial-stage-cap",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-latest-sample",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-first-control",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-no-ceiling",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-lost-baseline-details",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-record-invalid",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-setup-timeout-is-driver-error",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-candidate-authority-not-recorded",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "deadline215-stage-drops-authority",
+      "target": "scripts/check_gate_mutations.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "concurrent216-missing-stage-runs-nothing",
+      "target": "scripts/gate_schedule.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "concurrent216-lost-leg-record",
+      "target": "scripts/gate_legs.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "concurrent216-count-not-sum",
+      "target": "scripts/gate_schedule.py",
+      "anchor_counts": [
+        1
+      ]
+    },
+    {
+      "case": "concurrent216-serialize-nodes",
+      "target": "scripts/gate_schedule.py",
+      "anchor_counts": [
+        1
+      ]
+    }
+  ],
+  "source_sha256": {
+    "scripts/check_gate_mutations.py": "38d697817f85a31cedcb85dc4afec66b08ba72284003870590dff20796c34901",
+    "scripts/verify.sh": "17d8e80fdcef4a0b9a40addcab4b70d6e0743f0d457fccb6abf4acfbfdaba839",
+    "scripts/gate_schedule.py": "c502c467ddccf2f4f1d72400b49366e32327a4a5850820415912081c709f9cca",
+    "scripts/gate_legs.py": "ae6633b2dbbb1b81a0aefa5a694b7b589eccc2c86969869d8437face2025b5dc",
+    "scripts/check_teeth_mutations.py": "e37625940b688bccff5e35666173cfd26a11219db631ab722ea8510c3bbbcfd4",
+    ".veldo/init_scaffold.py": "ff50999aa23716fbf66b2bc135ac899350d9363671f2085c495ac567c277a9a0"
+  }
+}

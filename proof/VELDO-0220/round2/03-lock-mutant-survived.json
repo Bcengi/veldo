@@ -1,0 +1,177 @@
+{
+  "case": "host220-lock-inherited",
+  "head": "7bdcb036fdcd3acbac7b7360a0ddb9a6208d9700",
+  "mode": "mutant",
+  "new_digest": "bfad98d360d529219f4cd9d419dca528801147c9018140813353968a7ac6242a",
+  "old_digest": "38241d5c4a8cd1cbd909ac7eaca29d842a45b521944b64b467b5d4b216b77ecb",
+  "result": {
+    "count": 30,
+    "failed_details": [],
+    "failed_rows": [],
+    "observations": [
+      [
+        "good spec accepted",
+        true
+      ],
+      [
+        "spec without criteria rejected",
+        true
+      ],
+      [
+        "unknown evidence kind rejected",
+        true
+      ],
+      [
+        "bad status rejected",
+        true
+      ],
+      [
+        "invented proof criterion rejected",
+        true
+      ],
+      [
+        "missing proof criterion rejected",
+        true
+      ],
+      [
+        "absent required evidence rejected",
+        true
+      ],
+      [
+        "passed-without-evidence rejected",
+        true
+      ],
+      [
+        "bad verdict value rejected",
+        true
+      ],
+      [
+        "good plan accepted",
+        true
+      ],
+      [
+        "plan dependency cycle rejected",
+        true
+      ],
+      [
+        "dangling dependency rejected",
+        true
+      ],
+      [
+        "unknown outcome ref rejected",
+        true
+      ],
+      [
+        "unknown feature ref rejected",
+        true
+      ],
+      [
+        "undeclared depends_on rejected",
+        true
+      ],
+      [
+        "ready without approval rejected",
+        true
+      ],
+      [
+        "decision without blocks rejected",
+        true
+      ],
+      [
+        "decision blocking unknown spec rejected",
+        true
+      ],
+      [
+        "duplicate work spec rejected",
+        true
+      ],
+      [
+        "bad release mode rejected",
+        true
+      ],
+      [
+        "mirror mismatch rejected",
+        true
+      ],
+      [
+        "correct mirror accepted",
+        true
+      ],
+      [
+        "spec binding to wrong plan rejected",
+        true
+      ],
+      [
+        "spec claiming missing work item rejected",
+        true
+      ],
+      [
+        "spec plan without work rejected",
+        true
+      ],
+      [
+        "correct spec binding accepted",
+        true
+      ],
+      [
+        "VELDO-0220 host-lock/held-not-started",
+        true
+      ],
+      [
+        "VELDO-0220 host-lock/released-on-exit",
+        true
+      ],
+      [
+        "VELDO-0220 host-scope/own-scope",
+        true
+      ],
+      [
+        "VELDO-0220 host-lock/not-started-not-red",
+        true
+      ]
+    ],
+    "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0220 host-lock/held-not-started",
+      "VELDO-0220 host-lock/released-on-exit",
+      "VELDO-0220 host-scope/own-scope",
+      "VELDO-0220 host-lock/not-started-not-red"
+    ],
+    "targets": {
+      "host-lock/released-on-exit": [
+        true
+      ]
+    }
+  },
+  "seconds": 7.48,
+  "sources": {
+    "scripts/check_teeth_mutations.py": "45bf195613b65f6215ca829c6f304710734c4f40913cb1153f3a2360f8b86272",
+    "scripts/gate_host.py": "38241d5c4a8cd1cbd909ac7eaca29d842a45b521944b64b467b5d4b216b77ecb",
+    "scripts/suites/113_veldo_0220_gate_host.py": "e14b37763b8023521a5075f248926033dcab4d403372126504afe4a730cc1443"
+  }
+}

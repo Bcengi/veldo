@@ -892,6 +892,9 @@ else:
         # earlier engine laid down without one gains it in this same run.
         if 'git_identities' in __import__('inspect').signature(h['F'].setup).parameters:
             mine.add('git_identities')
+        # VELDO-0227: the current setup names the factory UI in the API configuration the earlier engine wrote.
+        if hasattr(h['FA'], 'ui_directory'):
+            mine.add('api_process_configuration')
         wrote ={name for name, s in steps.items() if s.get('outcome') == 'done'}
         check(row, 'the run adds exactly these steps, after the engine upgrade the changed engine needs [%s %s %s]'
               % (report.get('outcome'), report.get('reason'), sorted(wrote)),
