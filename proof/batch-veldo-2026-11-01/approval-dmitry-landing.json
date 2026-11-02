@@ -1,0 +1,17 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-BATCH-VELDO-2026-11-01-LANDING",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0131",
+    "commit": "5f64d6d77d0c09fc3f854b351515553dad62c52a",
+    "paths": [
+      "scripts/gate_unconfined.json"
+    ]
+  },
+  "basis": "Dmitry approved landing of the Veldo batch 2026-11-01 (VELDO-0131 factory screens, VELDO-0159 MCP server form and write-only credential field, VELDO-0163 Roles and Team forms, on main 60c72bfd, with gate fix rounds 1 to 3 on fix/veldo-batch-1101-a) at 5f64d6d7 over Telegram on 2026-11-02T10:08:54Z (message 38296, 'approve Veldo batch 5f64d6d7'), asked in 38294 (copy line 38295). The canonical gate was GREEN at 5f64d6d7 (every stage pass; mutation executed fresh). The ask stated the batch touches one protected file, scripts/gate_unconfined.json, which lets the five browser suites 118 to 122 run in the unconfined leg because they need system Chrome and the npm registry; that is the one path listed here. WHAT IT DOES NOT COVER: any protected path not listed here, and any change made after 5f64d6d7 other than this record and the gate stamp.",
+  "recorded_at": "2026-11-02T10:10:00Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-12-02T00:00:00Z"
+}
