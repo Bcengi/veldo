@@ -15,10 +15,4 @@ was authored.
   service and bind its AF_UNIX authority socket. They pass on this host outside any confinement;
   whether the gate's confined leg lets them bind is decided only by the gate run. If they fail
   there, listing the suite is an owner decision (a protected change), not an agent step.
-- Suite 86 `live/claude` and `live/codex` fail: missing or stale live capture.
-  proof/VELDO-0127/claude-live.json (main's version, retaken in batch 2026-11-01) and
-  codex-live.json pin sha256 digests of control_launch.py (main 4498f28c...) and
-  control_agent_config_handoff.py (main b73d425b...); this ticket changes both (now 69eff0e9...
-  and 9cb6c5fb...). Clearing them needs fresh Claude and Codex live captures on owner accounts
-  (proof/VELDO-0127/live.py), taken with owner approval. Not taken here, and no assertion was
-  changed to hide them.
+- Suite 86 live captures: retaken by the lead (c06f165a); suite 86 passes 53 of 53.

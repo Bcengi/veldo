@@ -14,6 +14,7 @@ depends_on: [VELDO-0039, VELDO-0127, VELDO-0154, VELDO-0160, VELDO-0162, VELDO-0
 placement: [contracts, loop, fleet]
 protected_paths: []
 footprint:
+  - "proof/VELDO-0188/round2/served_scenario.py"
   - "engine/.veldo/control_conversation*.py"
   - ".veldo/control_conversation*.py"
   - "engine/.veldo/control_dispatch.py"
@@ -200,6 +201,11 @@ saves the `assistant` role into the default team (VELDO-0177 AC2); until it land
 suite supplies a fixture role.
 
 ## History
+
+2026-11-02: footprint extended by the lead (proof/VELDO-0188/round2/served_scenario.py). After main
+646b2d68 was merged, suite 116 (VELDO-0188) failed 4 of 53 rows: its protocol fake read the repository field
+of every installed receiver, and this ticket's conversations receiver has none, as AC4 requires. The fake now
+skips receivers without a repository (r.get), so it finds the build receiver it means; no assertion changed.
 
 2026-09-27: new draft for the owner's conversation requirement (Telegram, 2026-09-27). Only the owner
 marks a specification ready.

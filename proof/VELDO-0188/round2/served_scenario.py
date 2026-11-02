@@ -98,7 +98,7 @@ if packet.get('station') != 'build' or not unit:
     sys.exit(3)
 # This protocol fake implements the seed's workspace argument by reading its installed receiver.
 receivers=[json.loads(p.read_text()) for p in Path(RECEIVERS).glob('receiver-*.json')]
-receiver=next(r for r in receivers if r['repository']==packet['source']['repository_uuid'])
+receiver=next(r for r in receivers if r.get('repository')==packet['source']['repository_uuid'])
 os.chdir(receiver['workspace'])
 def git(*args):
     return subprocess.run(['git','-c','core.hooksPath=/dev/null','-c','commit.gpgsign=false',*args],
