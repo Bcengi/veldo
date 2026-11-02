@@ -22,6 +22,11 @@ footprint:
   - "scripts/suites/118_*"
   - "scripts/suites/119_*"
   - "scripts/suites/120_*"
+  - "scripts/suites/124_*"
+  - "scripts/suites/requires.json"
+  - "scripts/gate_unconfined.json"
+  - "scripts/suites/101_veldo_0208_landing_reuse.py"
+  - "scripts/check_teeth_mutations.py"
   - "engine/ui/e2e/layout.spec.ts"
   - "engine/ui/e2e/fixtures.ts"
   - "engine/ui/e2e/harness.py"
@@ -182,6 +187,21 @@ Nuxt UI is MIT, from NuxtLabs. Its icons are rendered from a local Iconify JSON 
 start, so no request reaches the Iconify API; the IBM Plex faces stay on the Fontsource packages.
 
 ## History
+
+2026-11-02: footprint extended by the lead's builder (scripts/suites/124_*, scripts/suites/requires.json,
+scripts/gate_unconfined.json, scripts/suites/101_veldo_0208_landing_reuse.py, scripts/check_teeth_mutations.py).
+Three gates of this branch failed only in the mutation stage: suite 120's baseline and noop controls ran 85 to
+120 s each under the gate's own parallel load, and the last ones passed the 120 s worker deadline for cases with
+no record in a new worktree. The ui_browser capacity of 4 was not enough, because suite 120 itself took 51.1 s
+alone in a clean checkout since the Nuxt UI (VELDO-0215: about 45 s or less). As commit 5f64d6d7 did, suite 120 is
+split: 124_veldo_0131_factory_reads_commands, a self-contained copy of the build and run holding ui_browser like
+120, runs ac1/repositories, ac1/every-configuration, ac1/whole-catalog, ac1/usage-provider,
+ac1/worker-capability, ac2/priority-save, ac2/worker-stop and ac2/worker-cap (Playwright --grep); suite 120 keeps
+its other fourteen rows (--grep-invert). The nine mutation cases whose rows are 124's move to it (each module's
+cases stay in one suite, so the stage runs no more controls); none spans suites. gate_unconfined.json lists 124
+with 120's reason (protected: the owner's landing approval, OPEN.md); suite 101 expects 43 whole and 45 listed.
+Measured alone under the gate lock, clean checkout without node_modules: 120, 14 of 14 rows, 31.6 s; 124, 8 of
+8 rows, 32.3 s.
 
 2026-11-02: footprint extended by the lead (scripts/suites/manifest.json). The first two gates failed only
 in the mutation stage: near the end of the stage the coordinator started eleven to sixteen browser cases within

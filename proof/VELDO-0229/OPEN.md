@@ -12,6 +12,11 @@ Status: REMAINING (review and the canonical gate). The build, the restyle to the
 3. **Owner's look check.** The screenshots in screens/ are the evidence for AC2 and AC5; the owner judges whether
    the look matches the template's gallery.
 4. **PDF rendering** is not affected (no docs/ change).
+5. **Owner's landing approval for a protected path.** The 2026-11-02 split of suite 120 (the specification's
+   History) adds one entry to the protected `scripts/gate_unconfined.json` (policy floor high, VELDO-0208):
+   `124_veldo_0131_factory_reads_commands`, whole, with suite 120's reason (system Chrome and the npm registry).
+   The new suite is a piece of suite 120, which the file already lists, and runs only where 120 runs. No approval
+   is recorded here; the change lands only with the owner's.
 
 ## Choices the reviewer should check
 
