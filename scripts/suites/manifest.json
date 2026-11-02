@@ -1620,7 +1620,10 @@
     "113_veldo_0145_ui"
    ],
    "regions": "Seven rows (VELDO-0145): ui/page-served, the UI's page and built assets served by the VELDO-0130 API from its own origin under its policy; ui/unauthenticated-access, every factory data route refused before a passkey session; ui/route-trace, the UI's route table traced to the API's published routes; ui/installed, a build laid at .veldo/ui by init_scaffold.lay_ui and served by the API installed beside it; ui/scaffold-opt-in, a plain scaffold lays no UI and a requested one (scaffold(ui=True)) is laid, ignored by git and named by the right step when absent; ui/out-of-scope, a member's answer refused unauthorized:out_of_scope once a steward narrows the scope, settling nothing; ui/dependency-policy, the UI's dependency policy over its lockfile.",
-   "requires_note": "Only ROOT and expect; a real ControlApi on the real loopback listener with a recording authority stand-in, a fixture UI build, and the UI's own routes.json, package.json, package-lock.json and dependency-policy.json; the installed .veldo organs laid into scratch factory roots; the browser tests' real factory harness (engine/ui/e2e/harness.py: signed store, presenter, settlement, API authority, protected signer and ControlApi, with a passkey sign-in over the API); and init_scaffold.scaffold run over a scratch copy of engine/ (without ui/, then a fixture source, then a fixture build) with git asked whether the laid UI is ignored."
+   "requires_note": "Only ROOT and expect; a real ControlApi on the real loopback listener with a recording authority stand-in, a fixture UI build, and the UI's own routes.json, package.json, package-lock.json and dependency-policy.json; the installed .veldo organs laid into scratch factory roots; the browser tests' real factory harness (engine/ui/e2e/harness.py: signed store, presenter, settlement, API authority, protected signer and ControlApi, with a passkey sign-in over the API); and init_scaffold.scaffold run over a scratch copy of engine/ (without ui/, then a fixture source, then a fixture build) with git asked whether the laid UI is ignored.",
+   "resources": {
+    "ui_browser": 1
+   }
   },
   {
    "name": "118_veldo_0159_mcp_credential_form",
@@ -1629,7 +1632,10 @@
     "118_veldo_0159_mcp_credential_form"
    ],
    "regions": "Seven rows (VELDO-0159): mcp/define-desktop and mcp/define-phone, at 1280px and 360px the owner enters a stdio server (command, arguments, environment as literals and credential references, hosts, read-only tools) and an http server (url, headers as credential references, hosts, read-only tools; the Atlassian server at 1280px) in the Vue shell's server form in a passkey session, saves each, reopens it from the catalog route, edits and saves again, and every field each save sent is the revision the catalog route stored; mcp/stale-save, a save edited from an older revision shows the stale refusal beside the save action and stores nothing; mcp/phone-actions, no primary action of the form or the credential field is clipped or covered at 360px; cred/metadata-only, the Atlassian credential set, replaced and deleted through the write-only field, after each only its label, set at and set by shown, matching the credential record, with the keystore holding the value written; cred/no-value-kept, a typed value only in the body of the one request to the credential route and nowhere after it is sent (rendered page, fields, accessibility tree, local and session storage, IndexedDB, URL, history, every request and answer), and an empty field on reopening; mcp/definition-unit, the form's definition module.",
-   "requires_note": "Only ROOT and expect. Copies engine/ui into scratch with the production copies (PRODUCTION) laid over it, builds it with the package's build script and runs engine/ui/e2e/servers.spec.ts (Playwright, system Chrome) against the browser tests' real factory harness (engine/ui/e2e/harness.py) with the real VELDO-0144 catalog and credential commands and a stand-in secret-tool behind the real SecretService; Vitest for the definition module. Needs npm ci in engine/ui and Google Chrome. Writes only temporary files."
+   "requires_note": "Only ROOT and expect. Copies engine/ui into scratch with the production copies (PRODUCTION) laid over it, builds it with the package's build script and runs engine/ui/e2e/servers.spec.ts (Playwright, system Chrome) against the browser tests' real factory harness (engine/ui/e2e/harness.py) with the real VELDO-0144 catalog and credential commands and a stand-in secret-tool behind the real SecretService; Vitest for the definition module. Needs npm ci in engine/ui and Google Chrome. Writes only temporary files.",
+   "resources": {
+    "ui_browser": 1
+   }
   },
   {
    "name": "119_veldo_0163_role_team_form",
@@ -1638,7 +1644,10 @@
     "119_veldo_0163_role_team_form"
    ],
    "regions": "Ten rows (VELDO-0163): unit/forms, the role and team forms' Vitest specs; role/revisions, a role's capability configuration with every field and load mode, MCP selections from the catalog read, saved and saved again as revisions equal to what the form sent; role/stale-save, a save edited from an older revision refused beside the save action, storing nothing; role/widths, the role form at 360 and 1280 px with no primary action clipped; team/owner-save, roles added, changed and removed and the owner's save current once read back; team/authoritative, another member's proposal pending, in the decisions screen, and current only after the owner's answer there; team/refusals, no configuration, an incomplete roster and a stale team version named beside the save with the earlier revision current; team/default-team, the default team saved through the same form bound to its revision; team/default-stale-save, a stale default team save refused; team/widths, the team form and the default team at 360 and 1280 px.",
-   "requires_note": "Only ROOT and expect. Copies engine/ui into scratch with its production copies laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script, runs its Vitest specs and the Playwright browser tests of engine/ui/e2e/roles.spec.ts in system Chrome against engine/ui/e2e/team_harness.py (VELDO-0145's real factory harness with the real catalog, configuration and team services of VELDO-0144, 0127, 0089 and 0162, from the checkout's .veldo). Writes only temporary files."
+   "requires_note": "Only ROOT and expect. Copies engine/ui into scratch with its production copies laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script, runs its Vitest specs and the Playwright browser tests of engine/ui/e2e/roles.spec.ts in system Chrome against engine/ui/e2e/team_harness.py (VELDO-0145's real factory harness with the real catalog, configuration and team services of VELDO-0144, 0127, 0089 and 0162, from the checkout's .veldo). Writes only temporary files.",
+   "resources": {
+    "ui_browser": 1
+   }
   },
   {
    "name": "120_veldo_0131_factory_ui",
@@ -1647,7 +1656,10 @@
     "120_veldo_0131_factory_ui"
    ],
    "regions": "Twenty-two rows (VELDO-0131; the four ac1/screens rows are suites 121 and 122): unit/factory, the factory screens' Vitest specs; ac4/dependency-policy, ac4/stack and ac4/served-assets, the lockfile, package.json and dependency policy against the owner's Vue stack (Vue 3, Vite, TypeScript, Tailwind 4, Pinia, vue-router, monaco-editor, @tanstack/vue-table, Chart.js) with every package's license, origin and tier and no Chinese-origin or tiered library, shadcn or Recharts; ac2/live, assignment, step and tool call, stop, gate and review and completion reaching the open screens through events.stream; ac2/completion-receipt, landed only with the landing's receipt; ac2/message-intake, ac2/decision-settlement, ac2/refusals and ac2/api-only; ac3/keyboard-desktop, ac3/touch-phone and ac3/stale-save, the owner's task path by keyboard and by touch including workflow step settings, add, connect, reorder and save; fix round 2 (review-2026-11-01): ac1/repositories, the read-only Git identities and repositories (table on a desktop, cards on a phone); ac1/every-configuration, every stored role and skill; ac1/whole-catalog, every catalog server and credential record by label, set at and set by; ac1/usage-provider, each account's provider and the provider breakdown; ac1/worker-capability, each worker's capability and the named cap gap; ac2/metadata-only, no credential reference or value in the metadata reads; fix round 3 (owner, Telegram 38184): ac2/priority-save, ac2/worker-stop and ac2/worker-cap, the owner's three work commands through the real API, accepted, a stale version refused and an unauthorized member refused beside the control, nothing written.",
-   "requires_note": "Only ROOT and expect. Copies engine/ui into scratch with its production copies (PRODUCTION) laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script, applies the checkout's .veldo/control_api_ui.dependency_problems, runs its Vitest specs and the Playwright browser tests of engine/ui/e2e/factory.spec.ts but the ac1/screens tests (--grep-invert) in system Chrome against engine/ui/e2e/factory_harness.py (VELDO-0163's team harness over VELDO-0145's real factory, with the real journal feed and workflow service, from the checkout's .veldo). Writes only temporary files."
+   "requires_note": "Only ROOT and expect. Copies engine/ui into scratch with its production copies (PRODUCTION) laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script, applies the checkout's .veldo/control_api_ui.dependency_problems, runs its Vitest specs and the Playwright browser tests of engine/ui/e2e/factory.spec.ts but the ac1/screens tests (--grep-invert) in system Chrome against engine/ui/e2e/factory_harness.py (VELDO-0163's team harness over VELDO-0145's real factory, with the real journal feed and workflow service, from the checkout's .veldo). Writes only temporary files.",
+   "resources": {
+    "ui_browser": 1
+   }
   },
   {
    "name": "121_veldo_0131_factory_screens_narrow",
@@ -1656,7 +1668,10 @@
     "121_veldo_0131_factory_screens_narrow"
    ],
    "regions": "Two rows (VELDO-0131, split from suite 120): ac1/screens-360 and ac1/screens-390, every screen row (projects and objectives with the message box, backlog, workers per machine, gate and review, usage, configuration, MCP catalog, workflow editor, the live run and the inline decision) at 360 and 390 px in its loading, empty, error and populated states with no clipped primary action, overlap or page-wide overflow, 44 px phone targets and axe.",
-   "requires_note": "Only ROOT and expect. As suite 120: copies engine/ui into scratch with its production copies (PRODUCTION) laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script and runs the Playwright browser tests of engine/ui/e2e/factory.spec.ts whose titles begin with ac1/screens-360 and ac1/screens-390 (--grep) in system Chrome against engine/ui/e2e/factory_harness.py with the API organs (ORGANS) laid over a scratch copy of the checkout's .veldo. Writes only temporary files."
+   "requires_note": "Only ROOT and expect. As suite 120: copies engine/ui into scratch with its production copies (PRODUCTION) laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script and runs the Playwright browser tests of engine/ui/e2e/factory.spec.ts whose titles begin with ac1/screens-360 and ac1/screens-390 (--grep) in system Chrome against engine/ui/e2e/factory_harness.py with the API organs (ORGANS) laid over a scratch copy of the checkout's .veldo. Writes only temporary files.",
+   "resources": {
+    "ui_browser": 1
+   }
   },
   {
    "name": "122_veldo_0131_factory_screens_wide",
@@ -1665,7 +1680,10 @@
     "122_veldo_0131_factory_screens_wide"
    ],
    "regions": "Two rows (VELDO-0131, split from suite 120): ac1/screens-1280 and ac1/screens-1440, every screen row (projects and objectives with the message box, backlog, workers per machine, gate and review, usage, configuration, MCP catalog, workflow editor, the live run and the inline decision) at 1280 and 1440 px in its loading, empty, error and populated states with no clipped primary action, overlap or page-wide overflow and axe.",
-   "requires_note": "Only ROOT and expect. As suite 120: copies engine/ui into scratch with its production copies (PRODUCTION) laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script and runs the Playwright browser tests of engine/ui/e2e/factory.spec.ts whose titles begin with ac1/screens-1280 and ac1/screens-1440 (--grep) in system Chrome against engine/ui/e2e/factory_harness.py with the API organs (ORGANS) laid over a scratch copy of the checkout's .veldo. Writes only temporary files."
+   "requires_note": "Only ROOT and expect. As suite 120: copies engine/ui into scratch with its production copies (PRODUCTION) laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script and runs the Playwright browser tests of engine/ui/e2e/factory.spec.ts whose titles begin with ac1/screens-1280 and ac1/screens-1440 (--grep) in system Chrome against engine/ui/e2e/factory_harness.py with the API organs (ORGANS) laid over a scratch copy of the checkout's .veldo. Writes only temporary files.",
+   "resources": {
+    "ui_browser": 1
+   }
   },
   {
    "name": "117_veldo_0227_ui_location",
@@ -1682,7 +1700,8 @@
  ],
  "resource_capacities": {
   "systemd_user_manager": 16,
-  "new_project_fixture": 2
+  "new_project_fixture": 2,
+  "ui_browser": 4
  },
  "resource_note": "Mutation admission: positive integer slots or exclusive. Suites 63 and 66 need an undisturbed manager for notification bounds and authority service lifecycle checks. Other manager consumers share slots; unrelated suites consume none. Override capacity with --resource-capacity systemd_user_manager=N; the receipt records effective capacity and peak slots. The new-project suite admits at most two fixtures together, selected by mixed-family stage throughput rather than isolated fixture wall time."
 }

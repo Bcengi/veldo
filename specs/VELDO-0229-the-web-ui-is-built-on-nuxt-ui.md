@@ -13,6 +13,7 @@ protected_paths: []
 footprint:
   - "engine/ui/**"
   - ".veldo/shape_gate.py"
+  - "scripts/suites/manifest.json"
   - "engine/.veldo/shape_gate.py"
   - "scripts/suites/07_warp_1103_completion_mandatory.py"
   - "engine/.veldo/control_api_ui.py"
@@ -181,6 +182,14 @@ Nuxt UI is MIT, from NuxtLabs. Its icons are rendered from a local Iconify JSON 
 start, so no request reaches the Iconify API; the IBM Plex faces stay on the Fontsource packages.
 
 ## History
+
+2026-11-02: footprint extended by the lead (scripts/suites/manifest.json). The first two gates failed only
+in the mutation stage: near the end of the stage the coordinator started eleven to sixteen browser cases within
+a minute (suites 113 and 118 to 122 each build the UI and drive Chrome), beside the confined integration leg;
+they ran 78 to 120 s each, and one passed the 120 s floor for a case with no record in a new worktree. The same
+cases took 9 to 16 s once the others had finished, and suite 118 alone takes 25 s. The manifest declares
+a ui_browser capacity of 4 that those six suites each hold, the way new_project_fixture already bounds its
+suite; no deadline, floor or claim rule changed.
 
 2026-11-02: footprint extended by the lead (.veldo/shape_gate.py, its synced copy and suite 07's row). The
 first gate of this branch failed suite 08's WARP-1012 AC6 row: shape_gate.run, given a named change set,
