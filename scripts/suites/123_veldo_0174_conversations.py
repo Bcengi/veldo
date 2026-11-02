@@ -542,12 +542,21 @@ def _v174_suite():
                                writable=[], state_root=str(f4['root'] / 'factory-state'))
         finally:
             CS.C.qualify = original_qualify
-        conversation_path = layout['config']['receiver']['conversations']
+        conversation_path = layout['conversation_receiver']
         receiver = layout['receivers'].get(conversation_path) or {}
         repository_receiver = next(value for value in layout['receivers'].values()
-                                   if value.get('receiver_kind') == 'project')
+                                   if 'repository' in value)
+        # The service finds the receiver by its fixed name beside the observations once it is written there.
+        found_dir = f4['root'] / 'found-state'
+        found_dir.mkdir()
+        (found_dir / CS.CONVERSATION_RECEIVER).write_text('{}')
+        found = CS.conversation_receiver({'receiver': {}, 'observations': str(found_dir / 'observations.jsonl')})
+        absent = CS.conversation_receiver({'receiver': {}, 'observations': str(f4['root'] / 'observations.jsonl')})
         check('AC4/install-conversation-receiver', 'installation without work writes and names one conversation receiver',
               layout['config']['work'] is None and receiver.get('receiver_kind') == 'conversation'
+              and conversation_path == os.path.join(layout['state'], CS.CONVERSATION_RECEIVER)
+              and 'conversations' not in layout['config']['receiver'] and 'state_root' not in layout['config']
+              and found == str(found_dir / CS.CONVERSATION_RECEIVER) and absent is None
               and receiver.get('state_root') == str(f4['root'] / 'factory-state')
               and all(receiver.get(field) == repository_receiver.get(field) for field in
                       ('store', 'journal_key', 'principal', 'domain', 'authority_generation',
@@ -558,6 +567,8 @@ def _v174_suite():
         check('AC4/receiver-kind-refusal', 'each receiver kind refuses the other contract before spawn',
               L.receiver_kind_problem(receiver, project_contract) == 'binding_mismatch:conversation_receiver'
               and L.receiver_kind_problem({'receiver_kind': 'project'}, conversation_contract)
+              == 'binding_mismatch:conversation_receiver'
+              and L.receiver_kind_problem(repository_receiver, conversation_contract)
               == 'binding_mismatch:conversation_receiver')
         # AC2/AC4: the real Line invokes both real receiver processes with pinned fake engines.
         live = fixture('live', providers=('claude_code','codex'), account_count=2)

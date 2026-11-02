@@ -72,6 +72,11 @@ def prepare(root, installed, receivers, api, service_text, differs, engine_write
     upgrading = {path for kind, path, _text, _mode in engine_writes if kind == 'configuration'}
     for path, expected in sorted(receivers.items()):
         # Earlier engine keys are added by the engine upgrade before this step writes.
+        if path in upgrading and not os.path.lexists(path):
+            # VELDO-0174: a receiver the engine upgrade creates (the conversation receiver an older
+            # installation lacks) gains this step's keys after the upgrade wrote it (apply re-reads it).
+            files.append((path, None, owned, 'upgrade', None, list(owned)))
+            continue
         try:
             held = json.loads(Path(path).read_text())
         except (OSError, ValueError):
@@ -129,7 +134,15 @@ def fresh(service_config, root, differs):
     installed = json.loads(Path(service_config).read_text())
     own = keys(root, installed['socket'])
     files = []
-    for path in sorted(installed['receiver']['configs'].values()):
+    # VELDO-0174: the conversation receiver is a receiver too, so a re-run finds it already holding these keys.
+    # Its name and place are control_service's (CONVERSATION_RECEIVER, beside the observations).
+    paths = list(installed['receiver']['configs'].values())
+    observations = installed.get('observations')
+    conversations = installed['receiver'].get('conversations') or (
+        os.path.join(os.path.dirname(observations), 'receiver-conversations.json') if observations else None)
+    if conversations and os.path.isfile(conversations):
+        paths.append(conversations)
+    for path in sorted(paths):
         expected = dict(json.loads(Path(path).read_text()), **own)
         state, text, added = patch(path, expected, own, differs)
         files.append((path, expected, own, state, text, added))

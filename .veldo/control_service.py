@@ -246,6 +246,7 @@ SIG = _organ('control_signer')
 L = _organ('control_launch')
 C = L.C
 CV = _organ('control_conversation')
+CONVERSATION_RECEIVER = 'receiver-conversations.json'
 CH = _organ('control_service_channel')
 CHANNEL_INGRESS = 'channel-ingress.json'
 SA = _organ('control_service_api')
@@ -1125,8 +1126,13 @@ def layout(workspaces, *, host_trust=None, key_directory=None, install_root=None
                                 'domain': first['domain_uuid'], 'repository': repository,
                                 'authority_generation': first['authority_generation'], 'workspace': members[0],
                                 'host_trust': os.path.abspath(str(trust_path)), 'profile': profile,
-                                'adapters': adapters, 'state_root': state_root, 'receiver_kind': 'project'})
-    conversation_path = os.path.join(config_dir, 'receiver-conversations.json')
+                                'adapters': adapters, 'state_root': state_root})
+    # A project receiver keeps the shape older engines wrote (no receiver_kind: control_launch reads its absence
+    # as 'project'), so setup and upgrade over an older host find each held receiver equal to this rendering.
+    # VELDO-0174 AC4: the conversation receiver is wholly derived from the installation, so it lives in the
+    # installation's state directory under a fixed name and the record names nothing new: an upgrade lays it
+    # there and leaves the owner's configuration files and the record's receiver as they were.
+    conversation_path = os.path.join(state_dir, CONVERSATION_RECEIVER)
     receivers[conversation_path] = {'store': first['store_path'], 'journal_key': journal,
                                     'principal': receiver_principal, 'domain': first['domain_uuid'],
                                     'authority_generation': first['authority_generation'],
@@ -1141,11 +1147,9 @@ def layout(workspaces, *, host_trust=None, key_directory=None, install_root=None
               'enrollment_signers': os.path.join(config_dir, 'enrollment_signers'), 'principal': principal,
               'journal_key': journal, 'key_directory': keys,
               'observations': os.path.join(state_dir, 'observations.jsonl'),
-              'state_root': state_root,
               'executable': values['EXECUTABLE'], 'python': python,
               'receiver': {'executable': os.path.join(bin_dir, 'control_launch.py'), 'configs': {
-                  record['repository']: path for path, record in receivers.items() if record.get('receiver_kind') == 'project'},
-                  'conversations': conversation_path},
+                  record['repository']: path for path, record in receivers.items() if 'repository' in record}},
               'closure': {name: _digest(data) for name, data in fixed.items()},
               'runtime_assets': {name: _digest(data) for name, data in assets.items()},
               'template': _digest(TEMPLATE.read_bytes()),
@@ -1156,7 +1160,21 @@ def layout(workspaces, *, host_trust=None, key_directory=None, install_root=None
             'unit': unit, 'journal': journal, 'keys': keys, 'qualification': qualification, 'bin': bin_dir,
             'config_dir': config_dir, 'state': state_dir, 'config_path': config_path, 'values': values, 'text': text,
             'fixed': fixed, 'assets': assets, 'signers': signers, 'ingress': ingress, 'api': api, 'lines': lines,
-            'receivers': receivers, 'config': config, 'repositories': repositories}
+            'receivers': receivers, 'config': config, 'repositories': repositories,
+            'conversation_receiver': conversation_path}
+
+
+def conversation_receiver(config):
+    """VELDO-0174 AC4: the conversation receiver configuration of an installation: the one its `receiver` names
+    as `conversations`, else the installer's, named CONVERSATION_RECEIVER beside its observations in its state
+    directory, when that file is there; None when the installation has none."""
+    named = (config.get('receiver') or {}).get('conversations')
+    if named:
+        return named
+    if not isinstance(config.get('observations'), str):
+        return None
+    path = os.path.join(os.path.dirname(config['observations']), CONVERSATION_RECEIVER)
+    return path if os.path.isfile(path) else None
 
 
 def uninstall(unit, *, install_root=None, unit_dir=None, runner=None):
@@ -1470,7 +1488,12 @@ class Service:
 
     def conversations(self):
         if self._conversations is None:
-            root = self.config.get('state_root') or os.path.dirname(self.config['store_path'])
+            root = self.config.get('state_root')
+            receiver = conversation_receiver(self.config) if not root else None
+            if receiver:
+                with contextlib.suppress(OSError, ValueError, AttributeError):
+                    root = json.loads(Path(receiver).read_text()).get('state_root')
+            root = root or os.path.dirname(self.config['store_path'])
             self._conversations = CV.Conversations(
                 S, self.conn, domain=self.domain, principal=self.principal, signer=self.principal,
                 sign=self.sign, state_root=root, generation=self.generation,
@@ -1600,7 +1623,7 @@ class Service:
 
     def loop_status(self):
         if self.loop is None:
-            configured = bool(self.config.get('work') or (self.config.get('receiver') or {}).get('conversations'))
+            configured = bool(self.config.get('work') or conversation_receiver(self.config))
             return {'available': False, 'configured': configured, 'refusal': self.loop_refusal}
         return dict(self.loop.status(), configured=True)
 
@@ -2769,8 +2792,8 @@ class FactoryLoop:
         # Work roles apply only where no project record names the repository. Preserve the optional land role.
         self.work_roles = {repository: json.loads(json.dumps(line.roles)) for repository, line in self.lines.items()}
         # VELDO-0174 AC4: the conversation Line, whenever the installation names its receiver configuration.
-        conversation_receiver = (service.config.get('receiver') or {}).get('conversations')
-        self.conversation = ConversationLine(self, conversation_receiver) if conversation_receiver else None
+        conversation_path = conversation_receiver(service.config)
+        self.conversation = ConversationLine(self, conversation_path) if conversation_path else None
         self.wakes, self.ended, self.timer = [], [], None
         self.passes, self.last = 0, None
         self.counts = {'offered': 0, 'conversation_offered': 0, 'refused': 0, 'waiting': 0,
@@ -3042,7 +3065,7 @@ class FactoryLoop:
 def open_loop(config, service, lock=None):
     """(FactoryLoop, None) for an installation's work configuration, (None, refusal) when it cannot be
     constructed, and (None, None) when the installation names none: then nothing in the service dispatches."""
-    if not config.get('work') and not (config.get('receiver') or {}).get('conversations'):
+    if not config.get('work') and not conversation_receiver(config):
         return None, None
     try:
         loop = FactoryLoop(service, load_work(config['work']) if config.get('work') else None, lock)

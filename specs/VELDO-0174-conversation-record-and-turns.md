@@ -24,6 +24,10 @@ footprint:
   - "engine/.veldo/control_launch*.py"
   - ".veldo/control_launch*.py"
   - "engine/.veldo/control_agent_config_handoff.py"
+  - "engine/.veldo/control_factory_setup_records.py"
+  - ".veldo/control_factory_setup_records.py"
+  - "engine/.veldo/control_factory_setup_upgrade.py"
+  - ".veldo/control_factory_setup_upgrade.py"
   - ".veldo/control_agent_config_handoff.py"
   - "engine/.veldo/control_project.py"
   - ".veldo/control_project.py"
@@ -125,11 +129,12 @@ acceptance_criteria:
       Claim: The installed service launches every turn through one conversation Line and one conversation
       receiver configuration, since a conversation has no repository and the service otherwise runs one Line
       and one launch receiver configuration per repository. Set and completeness: The installer
-      (control_service `install`) writes, beside each repository's `receiver-<repository>.json`, one
-      `receiver-conversations.json` with the same store, journal key, `launch-receiver` principal, domain,
-      authority generation, host trust, worker profile, adapters and `state_root` (VELDO-0185 AC2), no
-      repository and no workspace, and names it in the installation's `receiver` as `conversations`.
-      `serve` builds the conversation Line beside the FactoryLoop's repository Lines whenever the
+      (control_service `install`) writes, in the installation's state directory beside its observations,
+      one `receiver-conversations.json` with the same store, journal key, `launch-receiver` principal,
+      domain, authority generation, host trust, worker profile, adapters and `state_root` (VELDO-0185 AC2)
+      as each repository's `receiver-<repository>.json`, no repository and no workspace; the service finds
+      it there by that name (or where the installation's `receiver` names it as `conversations`), and an
+      engine upgrade over an older installation lays it there. `serve` builds the conversation Line beside the FactoryLoop's repository Lines whenever the
       installation names that configuration, with or without a work configuration; its Runner decides a turn
       by the conversation check (open, owned, no active turn) in place of VELDO-0052's Gate and reserves the
       account slot with the conversation as its subject and no project. The launch receiver, run with that
@@ -201,6 +206,22 @@ saves the `assistant` role into the default team (VELDO-0177 AC2); until it land
 suite supplies a fixture role.
 
 ## History
+
+2026-11-02: setup and upgrade over hosts with the conversations receiver (gate log veldo-gate-0174a). Suites
+0171, 0185, 0167, 0189 and 0227 failed: project receivers had gained `receiver_kind`, so every receiver an
+older engine wrote was refused as differing (invalid_input:state_root:differs), and the conversation
+receiver in config/ was not given the records keys on a fresh run, so a re-run rewrote it. Project receivers
+keep the shape older engines wrote (control_launch reads an absent `receiver_kind` as `project`). AC4's
+placement of the conversation receiver changed from beside the repository receivers, named in the record's
+`receiver`, to the installation's state directory, found by its fixed name: suite 0189 requires an
+upgraded host's record `receiver` unchanged and its configuration files equal to a fresh host's, and suite
+0171 forbids an upgrade adding a configuration file or a host-specific record key, which together leave no
+place in config/ or the record for it. For the same reason the record no longer carries a top-level
+`state_root`; the service reads the conversation receiver's. Footprint extended by
+control_factory_setup_records.py (the fresh run gives the conversation receiver the records keys; a
+receiver the upgrade creates gains them after it) and control_factory_setup_upgrade.py (the upgrade lays the
+conversation receiver an older installation lacks, and a switch back removes a file the upgrade created).
+The owner confirms the AC4 wording change (proof/VELDO-0174/OPEN.md).
 
 2026-11-02: footprint extended by the lead (proof/VELDO-0188/round2/served_scenario.py). After main
 646b2d68 was merged, suite 116 (VELDO-0188) failed 4 of 53 rows: its protocol fake read the repository field

@@ -197,6 +197,11 @@ def inspect(laid, record, record_path, api_unit=None):
         if held is not None and any(key not in held for key in fresh):
             writes.append(('configuration', path, _text(dict(held, **{k: v for k, v in fresh.items() if k not in held})),
                            0o600))
+        elif held is None and path == laid.get('conversation_receiver') and not os.path.lexists(path):
+            # VELDO-0174 AC4: an older installation has no conversation receiver; the upgrade lays the current
+            # installer's whole rendering of it in the state directory, host trust included, and a switch back
+            # removes it again.
+            writes.append(('configuration', path, _text(laid['receivers'][path]), 0o600))
     upgraded = dict(record, closure=laid['config']['closure'],
                     runtime_assets=laid['config']['runtime_assets'], template=template)
     upgraded.update({k: v for k, v in laid['config'].items() if k not in record})
@@ -386,7 +391,9 @@ def run(plan, *, runner, running, answers, modes, bin_mode, is_active, stream, c
         units = False
         for kind, path, body, mode in plan['writes']:
             if not any(saved[0] == path for saved in replaced):
-                replaced.append((path, Path(path).read_bytes(), stat.S_IMODE(os.lstat(path).st_mode)))
+                # A file this run creates is backed up as absent (None), so a switch back removes it.
+                replaced.append((path, Path(path).read_bytes(), stat.S_IMODE(os.lstat(path).st_mode))
+                                if os.path.lexists(path) else (path, None, None))
             replace(path, body, mode)
             units = units or kind == 'unit'
             point(log, {'point': kind, 'path': path})
@@ -442,7 +449,11 @@ def switch_back(plan, replaced, runner, reason, restart_again, answers):
     restart, the service restarted once on the previous engine."""
     exchange(plan['stage'], plan['bin'])
     for path, body, mode in reversed(replaced):
-        replace(path, body, mode)
+        if body is None:
+            with contextlib.suppress(FileNotFoundError):
+                os.unlink(path)
+        else:
+            replace(path, body, mode)
     if any(path.endswith('.service') for path, _body, _mode in replaced):
         runner.run(['daemon-reload'])
     point(plan['log'], {'point': 'switched_back', 'reason': reason})

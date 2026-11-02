@@ -10058,7 +10058,7 @@ def cases():
     add(186, 'setup186-claude-digest-unchecked', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        if claude._file_digest(paths['claude_code']) != entry['sha256']:", '        if False:', ['engines/digest'], [])
     add(186, 'setup186-codex-digest-unchecked', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        bound = codex.bind({'executable': vendor})", "        bound = {'sha256': record['sha256']}", ['engines/digest'], [])
 
-    add(186, 'setup186-receiver-without-state-root', '86_veldo_0186_setup_assets.py', 'control_service.py', "                                'adapters': adapters, 'state_root': state_root, 'receiver_kind': 'project'})", "                                'adapters': adapters, 'state_root': None, 'receiver_kind': 'project'})", ['bind/engines'], [])
+    add(186, 'setup186-receiver-without-state-root', '86_veldo_0186_setup_assets.py', 'control_service.py', "                                'adapters': adapters, 'state_root': state_root})", "                                'adapters': adapters, 'state_root': None})", ['bind/engines'], [])
 
     add(186, 'setup186-skip-setup-asset-check', '86_veldo_0186_setup_assets.py', 'control_factory_setup.py', '        CS.runtime_assets(CS.closure())', '        pass', ['runtime/setup-missing'], [])
     add(186, 'setup186-writable-runtime', '86_veldo_0186_setup_assets.py', 'control_service.py', '            os.chmod(directory, BIN_MODE)', '            os.chmod(directory, 0o700)', ['runtime/modes'], [])
@@ -10561,8 +10561,8 @@ def cases():
         "        for repository, line in ():\n",
         ['AC3/turn-before-project'], ())
     add(174, 'v174-no-work-conversation-line-dropped', S174, 'control_service.py',
-        '        self.conversation = ConversationLine(self, conversation_receiver) if conversation_receiver else None\n',
-        '        self.conversation = ConversationLine(self, conversation_receiver) if conversation_receiver and work else None\n',
+        '        self.conversation = ConversationLine(self, conversation_path) if conversation_path else None\n',
+        '        self.conversation = ConversationLine(self, conversation_path) if conversation_path and work else None\n',
         ['AC4/no-work-line'], ())
 
     # These modules resolve transitive authority dependencies beside their own file.

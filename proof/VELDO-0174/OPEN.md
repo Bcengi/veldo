@@ -16,3 +16,11 @@ was authored.
   whether the gate's confined leg lets them bind is decided only by the gate run. If they fail
   there, listing the suite is an owner decision (a protected change), not an agent step.
 - Suite 86 live captures: retaken by the lead (c06f165a); suite 86 passes 53 of 53.
+- AC4 wording changed on 2026-11-02 (spec History): the conversation receiver is written to the
+  installation's state directory and found there by name, no longer beside the repository receivers and
+  named in the record's `receiver` as `conversations`. Suites 0189 (kept/owner-data with
+  upgrade/from-8bc34e94) and 0171 (rerun/over-0139-host) leave no other place for it. The owner confirms or
+  rejects the change in an approved criterion.
+- Not covered: a setup re-run whose dispatch step adds adapters to project receivers that held none does not
+  add them to the conversation receiver (control_factory_setup_dispatch covers the installation's project
+  receivers only). A fresh setup with dispatch gives the conversation receiver its adapters at install.
