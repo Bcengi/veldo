@@ -599,11 +599,12 @@ test('theme: one preference across the sidebar and the account switch, navigatio
   // Telegram 38255: an icon rail by default; the top bar's panel toggle expands it to the labeled sidebar.
   const rail = page.locator('nav.rail')
   expect((await rail.boundingBox())!.width).toBeLessThanOrEqual(64)
-  await expect(page.getByText('Dark appearance')).not.toBeVisible()
+  // Collapsed, the switch's label is for screen readers only (a 1px clipped box).
+  expect(await page.getByText('Dark appearance').evaluate((e) => e.getBoundingClientRect().width)).toBeLessThanOrEqual(1)
   await page.getByRole('button', { name: 'Expand sidebar' }).click()
   await expect(page.getByRole('button', { name: 'Collapse sidebar' })).toHaveAttribute('aria-expanded', 'true')
   await expect.poll(async () => (await rail.boundingBox())!.width).toBeGreaterThanOrEqual(220)
-  await expect(page.getByText('Dark appearance')).toBeVisible()
+  expect(await page.getByText('Dark appearance').evaluate((e) => e.getBoundingClientRect().width)).toBeGreaterThan(40)
   await page.getByText('Dark appearance').click()
   await expect(appearance).toHaveAttribute('aria-checked', 'true')
   expect(await theme()).toEqual({ attr: 'dark', dark: true })

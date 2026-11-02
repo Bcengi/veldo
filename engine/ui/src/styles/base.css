@@ -1,5 +1,7 @@
 @layer base {
   html {
+    /* On a phone the bottom bar is pinned over the page: scrolling an element into view keeps it above the bar. */
+    scroll-padding-bottom: calc(var(--bottombar) + env(safe-area-inset-bottom));
     font-family: var(--font-text);
     font-size: 100%;
     line-height: 1.5;

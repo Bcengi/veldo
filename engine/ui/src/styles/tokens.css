@@ -6,7 +6,7 @@
    * neutral borders, the main action solid inverted (near-black on light), no colored surfaces and no shadows.
    * Status keeps its colors (38234): green running, amber waiting, red failures, each with its text. */
   --ink: #171717;
-  --ink-muted: #6e6e6e;
+  --ink-muted: #636363;
   --paper: #ffffff;
   --paper-raised: #ffffff;
   --paper-sunken: #fafafa;
@@ -19,7 +19,7 @@
   --accent-wash: #f2f2f2;
   --board: #ffffff;
   --board-ink: #171717;
-  --board-muted: #6e6e6e;
+  --board-muted: #636363;
   --board-rule: #e5e5e5;
   --amber: #f2a900;
   --amber-ink: #171717;

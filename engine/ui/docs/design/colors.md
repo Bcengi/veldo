@@ -16,7 +16,7 @@ tokens in `src/styles/theme.css`.
 | Token | Light | Dark | Use |
 |---|---|---|---|
 | `--ink` | `#171717` | `#F5F5F5` | Main text |
-| `--ink-muted` | `#6E6E6E` | `#A3A3A3` | Secondary text; 4.6:1 or better on every surface |
+| `--ink-muted` | `#636363` | `#A3A3A3` | Secondary text; 5.0:1 or better on every surface and wash |
 | `--paper` | `#FFFFFF` | `#171717` | Page background, the sidebar and the top bars |
 | `--paper-raised` | `#FFFFFF` | `#1C1C1C` | Panels and cards, the open decision, the terminal frame |
 | `--paper-sunken` | `#FAFAFA` | `#121212` | The record body, skeletons, code chips, the risk box |

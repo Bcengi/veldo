@@ -497,6 +497,7 @@
     padding: var(--space-1) var(--gutter);
     border-bottom: 1px solid var(--rule);
   }
+  /* A wrapper, so the phone's display: none is not outranked by the button's own utility classes. */
   .screen-rail-toggle {
     display: none;
     margin-left: calc(-1 * var(--space-2));
@@ -1292,8 +1293,13 @@
     margin-bottom: 0;
   }
   @media (max-width: 767.98px) {
+    .screen-run .screen-header {
+      margin-bottom: var(--space-2);
+    }
     .screen-run .screen-bar {
       flex-wrap: nowrap;
+      min-height: 48px;
+      padding-block: 0;
     }
     .screen-run .screen-title {
       font-size: var(--text-lg);
