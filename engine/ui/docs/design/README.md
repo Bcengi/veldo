@@ -16,23 +16,24 @@ A factory floor talks through an **andon board**: one dark board where a lamp pe
 something needs attention, readable from across the room. Veldo's one memorable element is that board
 and its lamps. The board opens the overview (running, blocked, failed, waiting on you); the same lamp
 language lights each run row, the station strip above a run, and the urgency of each decision.
-Everything around it is a quiet logbook in a confident blue: plain surfaces, one sans in real weights,
+Everything around it is a quiet neutral logbook: plain surfaces, one sans in real weights,
 and structure only where it separates things that differ.
 
 ## Palette
 
-The owner asked for blue (Telegram 37382, 37384). Cobalt is the operating color: what you can act on,
-where you are, the brand. The signals are not blue, so a state never reads as a link. The full token
-set is in [colors.md](colors.md).
+The look is the owner's style direction of VELDO-0229 (Telegram 38255), which replaced the blue of earlier
+rounds: neutral surfaces (white in light, near-black in dark with panels barely lighter), thin neutral
+borders, no shadows or gradients, and the main action solid inverted (near-black on light, near-white on
+dark). Only the signals carry color, so a state never reads as decoration. The full token set is in
+[colors.md](colors.md).
 
-| Name | Hex | Role |
-|---|---|---|
-| Cobalt | `#2349D4` | Primary actions, links, the current place (nav, selected row), the brand |
-| Navy ink | `#0E1A2E` | Text in light; the andon board in light |
-| Steel paper | `#F2F5FA` | The base surface in light (a cool blue grey, not cream, not white) |
-| Night | `#0D1626` | The base surface in dark (a blue night, not a tinted black) |
-| Andon amber | `#F2A900` | Waiting on a person: decisions, blocked units, due within three days |
-| Lamp green / stop red | `#23A15C` / `#D63B2A` | Running; failed, refused, overdue |
+| Name | Light | Dark | Role |
+|---|---|---|---|
+| Ink | `#171717` | `#F5F5F5` | Text, and the main action's fill (inverted) |
+| Paper | `#FFFFFF` | `#171717` | The page, the sidebar, the top bars |
+| Panel | `#FFFFFF` | `#1C1C1C` | Panels and cards, each with a 1 px `#E5E5E5` / `#2B2B2B` border |
+| Andon amber | `#F2A900` | `#F2B52E` | Waiting on a person: decisions, blocked units, due within three days |
+| Lamp green / stop red | `#23A15C` / `#D63B2A` | `#3CC27A` / `#F0705C` | Running; failed, refused, overdue |
 
 ## Type
 
@@ -49,8 +50,9 @@ Scale and spacing are in [typography.md](typography.md) and [layout.md](layout.m
 
 ## Layout concept
 
-Desktop: a rail (the wordmark, the factory's name, the destinations with a decisions badge, the hosts
-with their lamps, who is signed in) and the screen. The overview opens on the board.
+Desktop: an icon rail that expands to the labeled sidebar (the wordmark, the factory's name, the
+destinations with a decisions badge, the hosts with their lamps, who is signed in) and the screen under its
+slim top bar. The overview opens on the board.
 
 ```
 +-----------+----------------------------------------------------------+
@@ -98,15 +100,15 @@ Alignment is left everywhere; counts and gutter numbers are tabular and right al
 1. **The record is the product.** Never summarize it, never hide a line; the gutter carries each line's
    sequence and time, and a tag says what kind of line it is.
 2. **Signal color means state, nothing else.** Amber, green and red are never decoration, and a state
-   is never told by color alone (a word or shape goes with it). Cobalt means "you can act here" or
-   "you are here".
+   is never told by color alone (a word or shape goes with it). The solid inverted fill means "you can
+   act here"; a neutral wash means "you are here".
 3. **One bold thing.** The andon board and its lit lamps. No gradients, no glow except a lit lamp's, no
    card grid of identical tiles.
 4. **Words are instructions.** Buttons say what happens ("Send answer", "Load the current version"),
    empty screens say what will appear, refusals say what happened and how to fix it. No internal
    identifier is shown to the owner unless they ask for it (behind "Dispatch id", "Who can answer this").
 
-## Review of the plan against the brief (round 2)
+## Review of the plan against the brief (round 2, superseded on look by Telegram 38255)
 
 The first round (green enamel, amber, Big Shoulders condensed titles) was rejected by the owner: "I
 don't like colors and fonts", "I like blue and fonts that are not this tall". The review called the

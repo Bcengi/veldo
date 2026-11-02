@@ -19,7 +19,7 @@ const css = (name: string) => getComputedStyle(document.documentElement).getProp
 const hour = (start: number) => new Date(start * 1000).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 
 function config() {
-  const cobalt = css('--cobalt')
+  const accent = css('--accent')
   const amber = css('--amber')
   const ink = css('--ink-muted')
   const rule = css('--rule')
@@ -29,7 +29,7 @@ function config() {
       {
         label: `${props.unit.replace('_', ' ')} (known)`,
         data: props.buckets.map((b) => b.known),
-        backgroundColor: props.buckets.map((b) => (b.start === props.selected ? css('--cobalt-hover') : cobalt)),
+        backgroundColor: props.buckets.map((b) => (b.start === props.selected ? css('--accent-hover') : accent)),
         yAxisID: 'y',
       },
       {

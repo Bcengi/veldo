@@ -22,4 +22,4 @@ the whole label is the target (48 px choice rows in the decision).
 </label>
 ```
 
-Checked: a cobalt ring and dot. Focus: the focus ring around the box (`:focus-visible` on the input).
+Checked: an accent (ink) ring and dot. Focus: the focus ring around the box (`:focus-visible` on the input).

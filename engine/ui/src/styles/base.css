@@ -25,7 +25,7 @@
     margin: 0;
   }
   a {
-    color: var(--cobalt-text);
+    color: var(--accent-text);
     text-underline-offset: 0.18em;
   }
   code,
@@ -39,7 +39,7 @@
     outline-offset: 2px;
   }
   ::selection {
-    background: color-mix(in srgb, var(--cobalt) 28%, transparent);
+    background: color-mix(in srgb, var(--accent) 28%, transparent);
   }
   @media (prefers-reduced-motion: reduce) {
     *,

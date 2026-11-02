@@ -6,7 +6,7 @@ The andon lamp ([direction](../design/README.md)): the one lit element of the de
 
 | Prop | Type | Default | Meaning |
 |---|---|---|---|
-| `state` | `off` `here` `live` `waiting` `stop` `done` | `off` | `off`: a ring. `here`: at a station, not running, or due later (cobalt). `live`: running (green, glows). `waiting`: on a person (amber, glows). `stop`: failed, refused, overdue (red, glows). `done`: finished (grey, filled) |
+| `state` | `off` `here` `live` `waiting` `stop` `done` | `off` | `off`: a ring. `here`: at a station, not running, or due later (the accent, ink). `live`: running (green, glows). `waiting`: on a person (amber, glows). `stop`: failed, refused, overdue (red, glows). `done`: finished (grey, filled) |
 | `label` | string | required | The words for the state; the lamp's accessible name (`role="img"`). Pass `''` with `aria-hidden="true"` when the words are right beside it |
 | `size` | `sm` `md` | `md` | 9 or 12 px |
 

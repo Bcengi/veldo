@@ -23,14 +23,15 @@ const props = withDefaults(
 )
 const emit = defineEmits<{ click: [event: MouseEvent] }>()
 
-/** Veldo's variants on Nuxt UI's colors and variants. The overrides keep the owner's rules: white text on the
- * action blue in both themes, a darker (not lighter) hover so contrast holds, and a solid focus outline instead of
- * Nuxt UI's translucent one. */
+/** Veldo's variants on Nuxt UI's colors and variants, in the neutral look of Telegram 38255: the main action solid
+ * inverted (near-black on light, near-white on dark) with a hover that keeps its contrast, the rest bordered
+ * neutral, danger bordered red, quiet a plain neutral text button. The focus outline is solid instead of Nuxt UI's
+ * translucent ring. */
 const LOOK = {
-  primary: { color: 'primary', variant: 'solid', class: 'text-(--cobalt-ink) hover:bg-(--cobalt-hover) active:bg-(--cobalt-hover)' },
+  primary: { color: 'primary', variant: 'solid', class: 'text-(color:--accent-ink) hover:bg-(color:--accent-hover) active:bg-(color:--accent-hover)' },
   secondary: { color: 'neutral', variant: 'outline', class: '' },
   danger: { color: 'error', variant: 'outline', class: '' },
-  quiet: { color: 'primary', variant: 'ghost', class: 'text-(--cobalt-text) hover:bg-(--cobalt-wash) active:bg-(--cobalt-wash)' },
+  quiet: { color: 'neutral', variant: 'ghost', class: 'text-(color:--ink) hover:bg-(color:--accent-wash) active:bg-(color:--accent-wash)' },
 } as const
 const look = computed(() => LOOK[props.variant])
 const shown = computed(() => (props.pending ? (props.pendingLabel ?? props.label) : props.label))
@@ -48,7 +49,7 @@ const shown = computed(() => (props.pending ? (props.pendingLabel ?? props.label
     :loading="props.pending"
     :disabled="props.disabled"
     :aria-busy="props.pending ? 'true' : undefined"
-    class="vbtn font-semibold justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus)"
+    class="vbtn font-medium justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(color:--focus)"
     :class="[`vbtn-${props.variant}`, look.class, { 'vbtn-small': props.size === 'small', 'vbtn-block': props.block, 'is-pending': props.pending }]"
     :ui="{ label: 'vbtn-label' }"
     @click="(event: MouseEvent) => emit('click', event)"

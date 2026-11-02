@@ -5,25 +5,27 @@
  * outrank Nuxt UI's own defaults in its theme layer. */
 :root {
   --ui-radius: 0.25rem;
-  --ui-primary: var(--cobalt);
+  /* Telegram 38255: Nuxt UI's primary is the neutral inverted action (near-black on light, near-white on dark). */
+  --ui-primary: var(--accent);
   --ui-secondary: var(--ink-muted);
   --ui-success: var(--live-text);
-  --ui-info: var(--cobalt);
+  --ui-info: var(--accent-text);
   --ui-warning: var(--amber-text);
   --ui-error: var(--stop-text);
 
-  --ui-color-neutral-50: #f6f8fc;
-  --ui-color-neutral-100: #eef2f8;
-  --ui-color-neutral-200: #e0e6ef;
-  --ui-color-neutral-300: #c5cedc;
-  --ui-color-neutral-400: #97a3b6;
-  --ui-color-neutral-500: #6b778c;
-  --ui-color-neutral-600: #59667b;
-  --ui-color-neutral-700: #3a465c;
-  --ui-color-neutral-800: #222b3a;
-  --ui-color-neutral-900: #181e29;
-  --ui-color-neutral-950: #10141c;
+  --ui-color-neutral-50: #fafafa;
+  --ui-color-neutral-100: #f5f5f5;
+  --ui-color-neutral-200: #e5e5e5;
+  --ui-color-neutral-300: #d4d4d4;
+  --ui-color-neutral-400: #a3a3a3;
+  --ui-color-neutral-500: #737373;
+  --ui-color-neutral-600: #525252;
+  --ui-color-neutral-700: #404040;
+  --ui-color-neutral-800: #262626;
+  --ui-color-neutral-900: #171717;
+  --ui-color-neutral-950: #0a0a0a;
 
+  --ui-header-height: var(--topbar);
   --ui-text-dimmed: var(--ink-muted);
   --ui-text-muted: var(--ink-muted);
   --ui-text-toned: var(--ink-muted);
@@ -32,7 +34,7 @@
   --ui-text-inverted: var(--paper-raised);
   --ui-bg: var(--paper-raised);
   --ui-bg-muted: var(--paper);
-  --ui-bg-elevated: var(--paper-sunken);
+  --ui-bg-elevated: var(--accent-wash);
   --ui-bg-accented: var(--rule);
   --ui-bg-inverted: var(--ink);
   --ui-border: var(--rule);
