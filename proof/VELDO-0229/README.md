@@ -40,3 +40,4 @@ wrappers, theme preference, CSP adapters, the screens' layouts, browser checks) 
   119_veldo_0163_role_team_form 36 passed, 120_veldo_0131_factory_ui 52 passed; 0 failed in each (logs
   `suite-*.log`).
 - `scripts/verify.sh`: not run (this round's brief).
+- Polish round (2026-11-02, the review's four low findings): You selected by link name in servers.spec.ts, every top bar Refresh the bordered neutral button, overview KPI labels in secondary text and sentence case, no lamp glow (89ded518); typecheck clean, 132 unit tests and 71 browser tests passed (1 skipped), suites 113 (33), 117 (33), 118 (33), 119 (36), 120 (52) passed with 0 failed; the eight screenshots regenerated (263d1063).
