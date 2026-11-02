@@ -4,7 +4,7 @@
 factory. Each image also carries the label "Seeded demonstration data (Veldo test harness)", drawn by the test.
 
 Captured from the production build (`npm run build`, served by the factory API under its content security policy)
-by `VELDO_SCREENS_0229=1 npx playwright test e2e/screens.spec.ts` in system Chrome, 2026-11-01 23:54 EST, full
+by `VELDO_SCREENS_0229=1 npx playwright test e2e/screens.spec.ts` in system Chrome, 2026-11-02 04:32 EST, full
 resolution: desktop 1440 x 900 at device scale 2 (2880 x 1800 PNG), phone 390 x 844 at device scale 3 (1170 x 2532).
 The desktop sidebar is shown in its default icon rail; the browser tests check it expands to the labeled sidebar.
 
