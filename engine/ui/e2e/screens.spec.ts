@@ -19,7 +19,7 @@ async function label(page: Page) {
     // CSS object model only: the policy refuses style markup, not style properties.
     Object.assign(tag.style, {
       position: 'fixed', right: '12px', bottom: '12px', zIndex: '9999', padding: '4px 10px', borderRadius: '999px',
-      font: '600 12px "IBM Plex Sans Variable", sans-serif', background: '#f2a900', color: '#1b263c', pointerEvents: 'none',
+      font: '600 12px "IBM Plex Sans Variable", sans-serif', background: '#f2a900', color: '#171717', pointerEvents: 'none',
     })
     document.body.appendChild(tag)
   })

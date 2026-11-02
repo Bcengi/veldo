@@ -1,7 +1,10 @@
 # ScreenHeader
 
-The screen title (`h1`, Plex Sans semibold), an optional back link, an aside (the screen's actions or its
-status, such as Refresh or the run's state) and a meta slot (the run's headline facts).
+The screen's slim top bar (Telegram 38255): 50 px, the full width of the screen, a bottom border. On desktop
+the panel toggle (a Nuxt UI `UButton`, "Expand sidebar" or "Collapse sidebar", `aria-expanded`, controlling
+the rail) comes first; then an optional back link, the screen title (`h1`, Plex Sans semibold, 18 px) and an
+aside at the right (the screen's actions or its status, such as Refresh or the run's state). A meta slot
+below the bar holds the screen's summary (the run's headline facts, the runs' KPI tiles).
 
 ## Props
 

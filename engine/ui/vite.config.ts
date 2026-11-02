@@ -20,10 +20,11 @@ export default defineConfig({
       dts: false,
       router: true,
       theme: { colors: ['primary', 'secondary', 'success', 'info', 'warning', 'error'] },
-      ui: { colors: { primary: 'blue', secondary: 'slate', success: 'green', info: 'blue', warning: 'amber', error: 'red', neutral: 'slate' },
-        // Veldo's panels: 14px corners, a hairline border and a faint shadow; the body is edge to edge so rows
-        // and records reach the border (a card that wants padding sets its own body).
-        card: { slots: { root: 'rounded-[14px] shadow-(--shadow-panel)', header: 'px-5 py-4 sm:px-6', body: 'p-0 sm:p-0', footer: 'px-5 py-3 sm:px-6' } },
+      // Telegram 38255: neutral actions and selection; the variables themselves are compiled in src/styles/theme.css.
+      ui: { colors: { primary: 'neutral', secondary: 'neutral', success: 'green', info: 'neutral', warning: 'amber', error: 'red', neutral: 'neutral' },
+        // Veldo's panels: 8px corners and a 1px neutral border (Nuxt UI's ring), no shadow; the body is edge to edge
+        // so rows and records reach the border (a card that wants padding sets its own body).
+        card: { slots: { root: 'rounded-(--radius-panel)', header: 'px-5 py-4 sm:px-6', body: 'p-0 sm:p-0', footer: 'px-5 py-3 sm:px-6' } },
       },
       icon: { mode: 'svg', clientBundle: { icons: [...ICONS], scan: false } },
     }),

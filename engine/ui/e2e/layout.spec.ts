@@ -596,6 +596,14 @@ test('theme: one preference across the sidebar and the account switch, navigatio
   const appearance = page.getByRole('switch', { name: 'Dark appearance' })
   await expect(appearance).toHaveAttribute('aria-checked', 'false')
   expect(await theme()).toEqual({ attr: 'light', dark: false })
+  // Telegram 38255: an icon rail by default; the top bar's panel toggle expands it to the labeled sidebar.
+  const rail = page.locator('nav.rail')
+  expect((await rail.boundingBox())!.width).toBeLessThanOrEqual(64)
+  await expect(page.getByText('Dark appearance')).not.toBeVisible()
+  await page.getByRole('button', { name: 'Expand sidebar' }).click()
+  await expect(page.getByRole('button', { name: 'Collapse sidebar' })).toHaveAttribute('aria-expanded', 'true')
+  await expect.poll(async () => (await rail.boundingBox())!.width).toBeGreaterThanOrEqual(220)
+  await expect(page.getByText('Dark appearance')).toBeVisible()
   await page.getByText('Dark appearance').click()
   await expect(appearance).toHaveAttribute('aria-checked', 'true')
   expect(await theme()).toEqual({ attr: 'dark', dark: true })
@@ -660,6 +668,8 @@ for (const theme of ['light', 'dark'] as Theme[]) {
     await page.locator('h1').focus()
     for (let n = 0; n < 6 && !(await button.evaluate((e) => e === document.activeElement)); n += 1) await page.keyboard.press('Tab')
     expect(await button.evaluate((e) => e === document.activeElement && e.matches(':focus-visible'))).toBe(true)
+    // Nuxt UI's buttons transition their colors, the outline's included: read it once settled.
+    await page.waitForTimeout(300)
     const ring = await button.evaluate((e) => {
       const s = getComputedStyle(e)
       return { style: s.outlineStyle, width: parseFloat(s.outlineWidth), color: s.outlineColor, page: getComputedStyle(document.body).backgroundColor }

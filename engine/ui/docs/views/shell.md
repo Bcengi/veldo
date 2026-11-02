@@ -4,7 +4,12 @@
 
 `App.vue` wraps both in Nuxt UI's `UApp` (its tooltip and overlay providers; no toaster).
 
-Desktop: a restrained 240 px sidebar with the wordmark and the factory's name (the session's domain),
+Desktop (Telegram 38255): a narrow icon rail (52 px, a thin right border) with the Veldo lamp, the
+destinations as icons grouped by subtle separators (operate: Overview, Runs, Decisions; the factory; setup),
+the appearance switch and the account avatar at the bottom; each icon names its destination for screen
+readers and in its tooltip. The panel toggle in every screen's top bar (`ScreenHeader`, state in
+`app/rail.ts`, kept across navigation for the page's lifetime, not stored) expands it to the labeled 240 px
+sidebar with the wordmark and the factory's name (the session's domain),
 the destinations with their icons (Decisions with a count badge, a Nuxt UI `UBadge`), the hosts with a
 lamp each (live while a run runs there) and their activity, a "Dark appearance" switch (Nuxt UI
 `USwitch`), and the account footer: the member's initials in a `UAvatar` and "Signed in as", opening the

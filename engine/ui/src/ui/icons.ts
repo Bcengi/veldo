@@ -30,6 +30,7 @@ export const ICONS = [
   'i-lucide-copy',
   'i-lucide-check',
   'i-lucide-loader-circle',
+  'i-lucide-panel-left',
 ] as const
 
 export type IconId = (typeof ICONS)[number]
