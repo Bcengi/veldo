@@ -96,7 +96,8 @@ Each applied, its suite run, a named row confirmed red, the source restored (log
 ## Open
 
 - Suite 86 live/claude and live/codex need fresh live captures on owner accounts (../OPEN.md).
-- Suite 105 switch/retry-rechecks failed once on the branch and passed on main. The row exercises
-  control_factory_setup_memory, control_memory and control_memory_check, none of which this
-  branch changes. A rerun on the branch could not get the gate lock within 2 h; see OPEN.md for
-  its result.
+- Suite 105 switch/retry-rechecks failed once on the branch (76.39 s) and passed on main. The row
+  exercises control_factory_setup_memory, control_memory and control_memory_check, none of which
+  this branch changes. Rerun on the branch, same command: 153 passed, 0 failed in 77.74 s
+  (logs/suites/105_veldo_0182_memory-rerun.log). An intermittent row, not this branch's; the gate
+  will show whether it recurs.

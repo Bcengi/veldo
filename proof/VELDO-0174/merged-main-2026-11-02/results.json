@@ -108,6 +108,14 @@
    "failed_rows": [],
    "log": "logs/suites/main-646b2d68-105_veldo_0182_memory.log",
    "log_sha256": "12609d5fb594390934bce5aff53b170f69c6c1595dc12359650291c5ace2ff49"
+  },
+  "105_veldo_0182_memory-rerun": {
+   "passed": 153,
+   "failed": 0,
+   "seconds": 77.74,
+   "failed_rows": [],
+   "log": "logs/suites/105_veldo_0182_memory-rerun.log",
+   "log_sha256": "f51658474d6918d0aead40f5251e6453a7c95eee876a7e4588bec5533d98ed7b"
   }
  },
  "anchor_scan": {
