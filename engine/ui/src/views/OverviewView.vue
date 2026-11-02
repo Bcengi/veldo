@@ -81,7 +81,7 @@ onMounted(refresh)
           trailing-icon="i-lucide-arrow-right"
           color="primary"
           size="lg"
-          class="vbtn vbtn-primary oldest-open font-semibold text-(--cobalt-ink) hover:bg-(--cobalt-hover) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus)"
+          class="vbtn vbtn-primary oldest-open font-medium text-(color:--accent-ink) hover:bg-(color:--accent-hover) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(color:--focus)"
         />
       </UCard>
       <UCard v-if="counts?.hosts.length" as="section" class="hosts" aria-labelledby="hosts-title" data-testid="hosts">

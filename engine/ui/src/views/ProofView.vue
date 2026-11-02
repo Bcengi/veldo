@@ -137,10 +137,12 @@ onMounted(() => void live.start())
                 </select>
               </div>
             </div>
-            <div class="factory-actions" role="group" aria-label="Pane">
-              <VButton label="Changes" size="small" :variant="pane === 'changes' ? 'primary' : 'secondary'" :aria-pressed="pane === 'changes'" data-testid="pane-changes" @click="pane = 'changes'" />
-              <VButton label="Old only" size="small" :variant="pane === 'old' ? 'primary' : 'secondary'" :aria-pressed="pane === 'old'" data-testid="pane-old" @click="pane = 'old'" />
-              <VButton label="New only" size="small" :variant="pane === 'new' ? 'primary' : 'secondary'" :aria-pressed="pane === 'new'" data-testid="pane-new" @click="pane = 'new'" />
+            <div class="factory-actions">
+              <div class="segmented" role="group" aria-label="Pane">
+                <VButton label="Changes" size="small" :variant="pane === 'changes' ? 'primary' : 'quiet'" :aria-pressed="pane === 'changes'" data-testid="pane-changes" @click="pane = 'changes'" />
+                <VButton label="Old only" size="small" :variant="pane === 'old' ? 'primary' : 'quiet'" :aria-pressed="pane === 'old'" data-testid="pane-old" @click="pane = 'old'" />
+                <VButton label="New only" size="small" :variant="pane === 'new' ? 'primary' : 'quiet'" :aria-pressed="pane === 'new'" data-testid="pane-new" @click="pane = 'new'" />
+              </div>
               <VButton :label="wrap ? 'Wrap lines: on' : 'Wrap lines: off'" size="small" variant="secondary" :aria-pressed="wrap" data-testid="wrap" @click="wrap = !wrap" />
             </div>
             <p v-if="older && newer" class="factory-meta">{{ older.command }}: {{ older.terminal || `exit ${older.exit}` }} then {{ newer.terminal || `exit ${newer.exit}` }}</p>
