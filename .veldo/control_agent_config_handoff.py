@@ -466,6 +466,10 @@ def codex_expected_tools(wanted, body, modes=None):
     modes = X.model_tool_modes() if modes is None else modes
     if modes.get(wanted.get('model')) == 'code_mode_only':
         names.extend(['exec', 'wait'])
+    # VELDO-0230: the resource readers the binary offers with no server selected (none to list or read), as its
+    # qualification records them for the model's tool mode; never a grant, and no other extra tool is accepted.
+    if not wanted.get('mcp_servers'):
+        names.extend(X.offered_without_server().get(modes.get(wanted.get('model')) or 'direct', []))
     return sorted(set(names))
 
 

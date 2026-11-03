@@ -1,5 +1,5 @@
 {
- "owner_decision": "Telegram 29400/29401, 2026-09-28",
+ "owner_decision": "Telegram 29400/29401, 2026-09-28; 38878, 2026-11-03",
  "binary_sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
  "cases": [
   {
@@ -271,6 +271,7 @@
    "exact_equality": true
   }
  ],
- "rule": "Exactly three resource readers with a selected MCP server; none without one.",
+ "offered_without_server": {},
+ "rule": "Exactly three resource readers with a selected MCP server; without one, none granted and exactly those the binary offers a model of its tool mode accepted (nothing to list or read).",
  "network": "127.0.0.1 stand-in; empty temporary HOME and CODEX_HOME; Landlock TCP restriction"
 }

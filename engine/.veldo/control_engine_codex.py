@@ -449,6 +449,17 @@ def model_tool_modes(record=None):
     return modes if isinstance(modes, dict) else {}
 
 
+def offered_without_server(record=None):
+    """VELDO-0230: the MCP resource readers the qualified binary offers a model with no MCP server selected, by
+    the model's tool mode ({'code_mode_only' or 'direct': [names]}; .veldo/qualify.py reads them from the
+    binary's own loopback request). With no server they have nothing to list or read: the wire comparison
+    accepts exactly these for a run without a server, and a role is never granted them
+    (runtime/capability-decisions.json, codex_tools_without_server)."""
+    record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
+    offered = (record.get('mcp_resource_rule') or {}).get('offered_without_server')
+    return offered if isinstance(offered, dict) else {}
+
+
 ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
 # The stop causes the receiver records (control_launch): an invocation stopped for one is never complete.
 STOPS = ('requested', 'usage_cap', 'heartbeat_missing', 'paid_api')
@@ -567,7 +578,8 @@ def qualification(executable, flags=FLAGS, *, catalog=False):
             'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
             'baseline': BASELINE, 'session_environment': session_environment(executable),
             'native_tool_mapping': NATIVE_TOOL_MAPPING, 'model_tool_modes': {},
-            'mcp_resource_rule': {'when': 'nonempty_mcp_servers', 'mapping': 'mcp_server', 'otherwise': []},
+            'mcp_resource_rule': {'when': 'nonempty_mcp_servers', 'mapping': 'mcp_server', 'otherwise': [],
+                                  'offered_without_server': {}},
             'terminal_protocol': {'stream': 'stdout, one JSON event per line', 'events': sorted(EVENTS),
                                   'terminal': 'turn.completed', 'failed': 'turn.failed', 'item_kinds': list(ITEM_KINDS)},
             'authentication': 'the subscription login of the account profile CODEX_HOME names',

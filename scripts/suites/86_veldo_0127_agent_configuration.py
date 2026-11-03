@@ -447,11 +447,21 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 check('wire/resources', mode + ': retained binary request equals grants including configured-server readers',
                       facts is not None and facts.get('missing') == [] and facts.get('unexpected') == [] and facts.get('stop') is None)
             qualified = json.loads((base / 'codex-qualification.json').read_text())
-            check('wire/no-server', 'qualification records the conditional MCP server grant',
+            # VELDO-0230 (Telegram 38878): without a server, none is granted; the readers the qualified binary
+            # offers a model of its tool mode anyway (nothing to list or read) are recorded and accepted, no other.
+            shipped_offered = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text())[
+                'mcp_resource_rule'].get('offered_without_server')
+            check('wire/no-server', 'qualification records the conditional MCP server grant and the readers the '
+                  'binary offers without a server [%s]' % shipped_offered,
                   qualified.get('native_tool_mapping', {}).get('mcp_server') == resources
-                  and qualified.get('mcp_resource_rule') == {
-                      'when':'nonempty_mcp_servers', 'mapping':'mcp_server', 'otherwise':[]})
+                  and {k: v for k, v in (qualified.get('mcp_resource_rule') or {}).items() if k != 'offered_without_server'}
+                  == {'when':'nonempty_mcp_servers', 'mapping':'mcp_server', 'otherwise':[]}
+                  and isinstance(shipped_offered, dict)
+                  and all(set(v) <= set(resources) and k in ('code_mode_only', 'direct') for k, v in shipped_offered.items())
+                  and (qualified.get('mcp_resource_rule') or {}).get('offered_without_server') == shipped_offered)
             for model in FIXTURE_MODELS:
+                offered = set((shipped_offered or {}).get(
+                    dict(_V127_MODES).get(model) or 'direct', []))
                 definition = f.role('codex', 'no-server-' + model)
                 definition['settings']['model'] = model
                 definition['mcp'] = []
@@ -461,19 +471,20 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 wanted = L.HANDOFF.expected({'revision':revision, 'skills':[]}, {})
                 wire = own.get('wire', {})
                 observed = evidence.wire_observation(wire, wanted, L.HANDOFF)
-                check('wire/no-server', model + ': accepted empty server selection exposes no resource readers',
+                check('wire/no-server', model + ': accepted empty server selection exposes no resource reader but '
+                      'those the binary offers without one [%s]' % sorted(offered),
                       f.D.completed(rec) and own.get('configuration', {}).get('mcp_servers', {}) == {}
                       and observed['actual'] == observed['expected'] and observed['stop'] is None
-                      and not set(resources) & set(observed['actual']))
+                      and set(resources) & set(observed['actual']) == offered)
                 captured = json.loads((TREE / ('proof/VELDO-0127/resources-' + model + '-none.json')).read_text())
                 observations = [evidence.wire_observation(r['body'], wanted, L.HANDOFF)
                                 for r in captured.get('requests', [])]
                 check('wire/no-server', model + ': real loopback capture confirms absence without a server',
                       captured.get('returncode') == 0 and bool(observations)
                       and captured.get('configuration', {}).get('mcp_servers') == {}
-                      and all(o['actual'] == o['expected'] and not set(resources) & set(o['actual'])
+                      and all(o['actual'] == o['expected'] and set(resources) & set(o['actual']) == offered
                               and o['stop'] is None for o in observations))
-                for resource in resources:
+                for resource in sorted(set(resources) - offered):
                     extra = copy.deepcopy(wire)
                     extra.setdefault('tools', []).append({'type':'function', 'name':resource})
                     check('wire/no-server', model + ': unselected reader ' + resource + ' fails closed',

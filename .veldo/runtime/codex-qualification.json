@@ -42,6 +42,7 @@
  ],
  "mcp_resource_rule": {
   "mapping": "mcp_server",
+  "offered_without_server": {},
   "otherwise": [],
   "when": "nonempty_mcp_servers"
  },

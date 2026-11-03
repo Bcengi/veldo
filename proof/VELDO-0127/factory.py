@@ -221,7 +221,13 @@ for raw in sys.stdin:
         vendored.write_text(fake_engine('codex'))
         vendored.chmod(0o700)
     codex_qualification = base / 'codex-qualification.json'
-    codex_qualification.write_text(json.dumps(X.qualification(str(vendored), **({'catalog': True} if hasattr(X, 'bundled_catalog') else {}))))
+    codex_record = X.qualification(str(vendored), **({'catalog': True} if hasattr(X, 'bundled_catalog') else {}))
+    # VELDO-0230: the fake forwards every model request to the qualified binary, so it offers what that binary
+    # offers without a server: the shipped record's reading of it (qualify.py's loopback capture).
+    shipped_rule = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text()).get('mcp_resource_rule') or {}
+    if 'offered_without_server' in shipped_rule and isinstance(codex_record.get('mcp_resource_rule'), dict):
+        codex_record['mcp_resource_rule']['offered_without_server'] = shipped_rule['offered_without_server']
+    codex_qualification.write_text(json.dumps(codex_record))
     shutil.copyfile(codex_qualification, mods / 'runtime/codex-qualification.json')
     config = base / 'receiver.json'
     wrapper = []

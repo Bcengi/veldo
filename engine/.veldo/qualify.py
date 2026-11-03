@@ -302,7 +302,7 @@ def fixtures(root, executable, written):
     outputs = {'catalog-fixture.json': fixture_text(qualified['model_catalog'])}
     outputs['features-fixture.json'] = text(normalized(LB.capture(executable, {}, features=True)))
     source = json.loads((here / 'codex-live.json').read_text())['runs'][0]
-    cases = []
+    captured = []
     with tempfile.TemporaryDirectory(prefix='v127-resource-probe-') as temp:
         for model in fixture_models(qualified['model_catalog']):
             for selected in (True, False):
@@ -317,21 +317,40 @@ def fixtures(root, executable, written):
                 cfg['mcp_servers'] = {'jira': {'enabled_tools': ['jira_search']}} if selected else {}
                 catalog = H.codex_model(qualified, revision)
                 H.codex(cfg, capability, inventory, Path(temp), catalog=catalog)
-                wanted = H.expected(capability, inventory)
-                result = LB.capture(executable, cfg, catalog=catalog)
-                observations = [E.wire_observation(r['body'], wanted, H) for r in result['requests']]
-                result.update(expected=wanted, observations=observations, model_catalog=catalog,
-                              production=E.production(Path(root)), selected_server=selected,
-                              owner_decision='Telegram 29400/29401, 2026-09-28')
-                name = 'resources-' + model + ('-selected' if selected else '-none') + '.json'
-                outputs[name] = text(normalized(result))
-                cases.append({'model': model, 'selected_server': selected, 'record': name,
-                              'returncode': result['returncode'], 'observations': normalized(observations),
-                              'exact_equality': result['returncode'] == 0 and bool(observations) and all(
-                                  o['stop'] is None and o['actual'] == o['expected'] for o in observations)})
+                captured.append((model, selected, capability, inventory, catalog,
+                                 LB.capture(executable, cfg, catalog=catalog)))
+    # VELDO-0230: the resource readers the binary offers with no server selected, by the model's tool mode, read
+    # from its own request; recorded in the Codex record (offered, never granted) before the comparison below.
+    readers = set(qualified['native_tool_mapping']['mcp_server'])
+    offered = {}
+    for model, selected, _, _, _, result in captured:
+        if not selected:
+            for request in result['requests']:
+                found = readers & set(H.codex_tool_names(H.codex_request_tools(request['body'])))
+                if found:
+                    mode = qualified['model_tool_modes'].get(model) or 'direct'
+                    offered[mode] = sorted(set(offered.get(mode, [])) | found)
+    if qualified['mcp_resource_rule'].get('offered_without_server') != offered:
+        qualified['mcp_resource_rule']['offered_without_server'] = offered
+        write(root, 'codex-qualification.json', text(qualified), [])
+    cases = []
+    for model, selected, capability, inventory, catalog, result in captured:
+        wanted = H.expected(capability, inventory)
+        observations = [E.wire_observation(r['body'], wanted, H) for r in result['requests']]
+        result.update(expected=wanted, observations=observations, model_catalog=catalog,
+                      production=E.production(Path(root)), selected_server=selected,
+                      owner_decision='Telegram 29400/29401, 2026-09-28; 38878, 2026-11-03')
+        name = 'resources-' + model + ('-selected' if selected else '-none') + '.json'
+        outputs[name] = text(normalized(result))
+        cases.append({'model': model, 'selected_server': selected, 'record': name,
+                      'returncode': result['returncode'], 'observations': normalized(observations),
+                      'exact_equality': result['returncode'] == 0 and bool(observations) and all(
+                          o['stop'] is None and o['actual'] == o['expected'] for o in observations)})
     outputs['resource-qualification.json'] = json.dumps({
-        'owner_decision': 'Telegram 29400/29401, 2026-09-28', 'binary_sha256': qualified['sha256'], 'cases': cases,
-        'rule': 'Exactly three resource readers with a selected MCP server; none without one.',
+        'owner_decision': 'Telegram 29400/29401, 2026-09-28; 38878, 2026-11-03', 'binary_sha256': qualified['sha256'],
+        'cases': cases, 'offered_without_server': offered,
+        'rule': 'Exactly three resource readers with a selected MCP server; without one, none granted and exactly '
+                'those the binary offers a model of its tool mode accepted (nothing to list or read).',
         'network': '127.0.0.1 stand-in; empty temporary HOME and CODEX_HOME; Landlock TCP restriction'},
         indent=1) + '\n'
     for name, content in outputs.items():
