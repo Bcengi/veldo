@@ -173,6 +173,9 @@ _FILES = [
     # VELDO-0039: dispatch records and the runner/receiver launch path; runtime assets the
     # receiver process executes, no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_dispatch.py",
+    # VELDO-0174: repository-free conversations, their ordered turns and shared account reservations;
+    # loaded by the authority service and launch receiver.
+    ".veldo/control_conversation.py",
     ".veldo/control_launch.py",
     # VELDO-0141: every run's execution record, which control_launch.py writes and the API authority reads;
     # a runtime asset, no validator import, not REQUIRED_SUBSTRATE.

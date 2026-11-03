@@ -1,0 +1,106 @@
+{
+  "spec": "VELDO-0174",
+  "base": "87498451",
+  "implementation_commit": "4ee14eff5b633486bd0a3217fd7641e95850d0fd",
+  "status": "BLOCKED: both production restart rows require a host permitting AF_UNIX sockets",
+  "scope": "Focused review-fix evidence; not a proof manifest, gate pass, approval or landing decision.",
+  "finding": "Attachment checked project ownership but ignored the current membership scope.",
+  "fix": "Reuse the active owner membership read inside transition and require CM.scope_covers for the target project before changing the record. Preserve the separate ownership check.",
+  "regression": {
+    "row": "AC1/project-scope",
+    "commands": "Real signed owner attachments and signed steward change_roles commands over the SQLite authority store.",
+    "denied": [
+      "A steward removes the project from scope, leaving unrelated repository scope.",
+      "A steward removes all scope.",
+      "Both an unattached conversation and an existing attachment retain their full durable row, version and digest on refusal."
+    ],
+    "allowed": [
+      "Restored named scope as a list.",
+      "Restored named scope as a string.",
+      "Universal scope as a string.",
+      "Universal scope in a list."
+    ],
+    "refusal": "missing_authority:project"
+  },
+  "before_fix": {
+    "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+    "exit_code": 1,
+    "summary": [
+      "selftest (PARTIAL, 1 of 163 suites): 59 passed, 3 failed in 11.48s"
+    ],
+    "failed_rows": [
+      "VELDO-0174 AC1/project-scope",
+      "VELDO-0174 AC1/restart-open",
+      "VELDO-0174 AC2/restart-turns"
+    ],
+    "log_sha256": "3bbae3ccbce059aba6d947096038b363ecca19f413a2915113b8d8979dfd3c4f",
+    "socket_denied": true
+  },
+  "after_fix": {
+    "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+    "exit_code": 1,
+    "summary": [
+      "selftest (PARTIAL, 1 of 163 suites): 60 passed, 2 failed in 11.43s"
+    ],
+    "failed_rows": [
+      "VELDO-0174 AC1/restart-open",
+      "VELDO-0174 AC2/restart-turns"
+    ],
+    "log_sha256": "85cca687228ccf0f411974ea4857f50dceaab325155f2ae994825956942cf385",
+    "socket_denied": true
+  },
+  "falsifier": {
+    "case": "v174-attach-outside-current-scope",
+    "command": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "107_veldo_0174_conversations"
+    ],
+    "exit_code": 1,
+    "target_rows": [
+      "AC1/project-scope"
+    ],
+    "failed_rows": [
+      "AC1/project-scope",
+      "AC1/restart-open",
+      "AC2/restart-turns"
+    ],
+    "targets_red": true,
+    "sources_restored": true,
+    "mutation": "            if not CM.scope_covers(member.get('scope'), [project]):\n                raise Refused('missing_authority:project')\n",
+    "log_sha256": "5842ca2c5a0da04c3402ca31bc761b86791a8a38ea4705fd54d6c5e550e3d723",
+    "registered_in": "scripts/check_teeth_mutations.py",
+    "driver_executed": false,
+    "copies_mutated_together": true
+  },
+  "falsifier_suite": {
+    "command": "python3 scripts/selftest.py --suite 107_veldo_0174_conversations",
+    "exit_code": 1,
+    "summary": [
+      "selftest (PARTIAL, 1 of 163 suites): 59 passed, 3 failed in 11.43s"
+    ],
+    "failed_rows": [
+      "VELDO-0174 AC1/project-scope",
+      "VELDO-0174 AC1/restart-open",
+      "VELDO-0174 AC2/restart-turns"
+    ],
+    "log_sha256": "5842ca2c5a0da04c3402ca31bc761b86791a8a38ea4705fd54d6c5e550e3d723",
+    "socket_denied": true
+  },
+  "final_ticket_rows": {
+    "passed": 34,
+    "failed": 2
+  },
+  "copies_byte_identical": true,
+  "source_sha256": {
+    ".veldo/control_conversation.py": "07abd4527fada336edca64594613a93f053b3bd0363c178a5a0cb21060377684",
+    "engine/.veldo/control_conversation.py": "07abd4527fada336edca64594613a93f053b3bd0363c178a5a0cb21060377684",
+    "scripts/suites/107_veldo_0174_conversations.py": "2afc61a68bf54d37f55ee2c450601d32024dee9e04660f2b599b6c06339addae",
+    "scripts/check_teeth_mutations.py": "075f615253736f970c00c4ef16991cb27c479a13b66285d655ccc9a3250fb0bc"
+  },
+  "limitations": [
+    "AC1/restart-open and AC2/restart-turns fail at socket(AF_UNIX, SOCK_STREAM) with EPERM on this host.",
+    "The full gate and both mutation drivers were not run, per owner instructions."
+  ]
+}

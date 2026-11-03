@@ -79,7 +79,7 @@ def _budget(record):
 
 def _team(conn, project):
     """The team a unit of `project` takes its roles from, with where it came from, or (None, None)."""
-    record = CT.read(None, conn, project)
+    record = CT.read(None, conn, project) if isinstance(project, str) else None
     if record is not None and isinstance(record.get('team'), dict) and record.get('revision'):
         return record['team'], dict(team='team:' + project, revision=record['revision'])
     head = CT._row(conn, TR.HEAD)
@@ -117,13 +117,29 @@ def unit_source(conn, unit, record):
 def derive(conn):
     """Every subject this store's records name: [(scope, subject, caps or None, source)]."""
     projects = _kind(conn, PJ.KIND)
+    conversations = _kind(conn, 'conversation')
     subjects = []
     for _eid, record in projects:
         budget = _budget(record)
         subjects.append(('project', record.get('name'), {k: budget[k] for k in RES.KINDS if k in budget},
                          dict(project=record.get('name'))))
-    sums = {kind: sum(_budget(record).get(kind, 0) for _eid, record in projects) for kind in ACCOUNT_KINDS}
-    names = sorted(str(record.get('name')) for _eid, record in projects)
+    conversation_caps = []
+    default, default_source = _team(conn, None)
+    default_roles = (default or {}).get('roles') or {}
+    for _eid, record in conversations:
+        role = record.get('role')
+        budget = (default_roles.get(role) or {}).get('budget')
+        caps = ({kind: budget[kind] for kind in RES.KINDS if kind in budget}
+                if isinstance(budget, dict) else None)
+        source = dict(conversation=record.get('id'), role=role, **(default_source or {}))
+        conversation_caps.append((record.get('id'), caps, source))
+        subjects.append(('project', record.get('id'), caps, source))
+        subjects.append(('unit', record.get('id'), caps, source))
+    sums = {kind: (sum(_budget(record).get(kind, 0) for _eid, record in projects)
+                   + sum((caps or {}).get(kind, 0) for _name, caps, _source in conversation_caps))
+            for kind in ACCOUNT_KINDS}
+    names = (sorted(str(record.get('name')) for _eid, record in projects)
+             + sorted('conversation:' + str(name) for name, _caps, _source in conversation_caps))
     for _eid, record in _kind(conn, ACC.KIND):
         subjects.append(('account', record.get('id'), dict(sums), dict(projects=names)))
     for eid, record in _kind(conn, 'execution_unit'):

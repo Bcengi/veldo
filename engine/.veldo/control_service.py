@@ -245,6 +245,8 @@ EL = _organ('control_eligibility')
 SIG = _organ('control_signer')
 L = _organ('control_launch')
 C = L.C
+CV = _organ('control_conversation')
+CONVERSATION_RECEIVER = 'receiver-conversations.json'
 CH = _organ('control_service_channel')
 CHANNEL_INGRESS = 'channel-ingress.json'
 SA = _organ('control_service_api')
@@ -1125,6 +1127,18 @@ def layout(workspaces, *, host_trust=None, key_directory=None, install_root=None
                                 'authority_generation': first['authority_generation'], 'workspace': members[0],
                                 'host_trust': os.path.abspath(str(trust_path)), 'profile': profile,
                                 'adapters': adapters, 'state_root': state_root})
+    # A project receiver keeps the shape older engines wrote (no receiver_kind: control_launch reads its absence
+    # as 'project'), so setup and upgrade over an older host find each held receiver equal to this rendering.
+    # VELDO-0174 AC4: the conversation receiver is wholly derived from the installation, so it lives in the
+    # installation's state directory under a fixed name and the record names nothing new: an upgrade lays it
+    # there and leaves the owner's configuration files and the record's receiver as they were.
+    conversation_path = os.path.join(state_dir, CONVERSATION_RECEIVER)
+    receivers[conversation_path] = {'store': first['store_path'], 'journal_key': journal,
+                                    'principal': receiver_principal, 'domain': first['domain_uuid'],
+                                    'authority_generation': first['authority_generation'],
+                                    'host_trust': os.path.abspath(str(trust_path)), 'profile': profile,
+                                    'adapters': adapters, 'state_root': state_root,
+                                    'receiver_kind': 'conversation'}
     config = {'schema': SCHEMA, 'service': service, 'unit': unit, 'domain_uuid': first['domain_uuid'],
               'store_uuid': first['store_uuid'], 'store_path': first['store_path'],
               'socket': CC.socket_path_for(first), 'lock': os.path.join(os.path.dirname(first['store_path']), LOCK_NAME),
@@ -1135,7 +1149,7 @@ def layout(workspaces, *, host_trust=None, key_directory=None, install_root=None
               'observations': os.path.join(state_dir, 'observations.jsonl'),
               'executable': values['EXECUTABLE'], 'python': python,
               'receiver': {'executable': os.path.join(bin_dir, 'control_launch.py'), 'configs': {
-                  record['repository']: path for path, record in receivers.items()}},
+                  record['repository']: path for path, record in receivers.items() if 'repository' in record}},
               'closure': {name: _digest(data) for name, data in fixed.items()},
               'runtime_assets': {name: _digest(data) for name, data in assets.items()},
               'template': _digest(TEMPLATE.read_bytes()),
@@ -1146,7 +1160,21 @@ def layout(workspaces, *, host_trust=None, key_directory=None, install_root=None
             'unit': unit, 'journal': journal, 'keys': keys, 'qualification': qualification, 'bin': bin_dir,
             'config_dir': config_dir, 'state': state_dir, 'config_path': config_path, 'values': values, 'text': text,
             'fixed': fixed, 'assets': assets, 'signers': signers, 'ingress': ingress, 'api': api, 'lines': lines,
-            'receivers': receivers, 'config': config, 'repositories': repositories}
+            'receivers': receivers, 'config': config, 'repositories': repositories,
+            'conversation_receiver': conversation_path}
+
+
+def conversation_receiver(config):
+    """VELDO-0174 AC4: the conversation receiver configuration of an installation: the one its `receiver` names
+    as `conversations`, else the installer's, named CONVERSATION_RECEIVER beside its observations in its state
+    directory, when that file is there; None when the installation has none."""
+    named = (config.get('receiver') or {}).get('conversations')
+    if named:
+        return named
+    if not isinstance(config.get('observations'), str):
+        return None
+    path = os.path.join(os.path.dirname(config['observations']), CONVERSATION_RECEIVER)
+    return path if os.path.isfile(path) else None
 
 
 def uninstall(unit, *, install_root=None, unit_dir=None, runner=None):
@@ -1250,6 +1278,7 @@ class Service:
         self.api, self.api_refusal = None, None
         # The factory loop (VELDO-0154): set by serve() when the installation names a work configuration.
         self.loop, self.loop_refusal = None, None
+        self._conversations = None
         # VELDO-0161: this serving process, as a record of taking a repository on names it; the receiver
         # configurations installed with it (an adopted repository's is written beside them, never over one);
         # each repository whose taking on faulted, with the monotonic time it may be judged again; and the
@@ -1358,6 +1387,8 @@ class Service:
                     result = memory.Memory(S, self.conn, ids, self.principal, self.sign, self.generation).admit(packet)
                 except memory.Refused as error:
                     result = dict(ok=False, reason=error.code)
+            elif command.get('operation') in CV.OWNER_OPERATIONS:
+                result = self.conversation_command(packet, command, repository, observation)
             elif command.get('operation') in (SA.AUTH.MC.SAVE,) + SA.AUTH.CV.OPERATIONS:
                 result = self.mcp_command(packet, repository)
             elif command.get('operation') in ('save_capability_configuration', 'save_default_team') and 'envelope' in packet:
@@ -1455,6 +1486,72 @@ class Service:
             return {'ok': False, 'reason': error.code}
         return {'ok': True, 'reason': command['operation'], 'result': result}
 
+    def conversations(self):
+        if self._conversations is None:
+            root = self.config.get('state_root')
+            receiver = conversation_receiver(self.config) if not root else None
+            if receiver:
+                with contextlib.suppress(OSError, ValueError, AttributeError):
+                    root = json.loads(Path(receiver).read_text()).get('state_root')
+            root = root or os.path.dirname(self.config['store_path'])
+            self._conversations = CV.Conversations(
+                S, self.conn, domain=self.domain, principal=self.principal, signer=self.principal,
+                sign=self.sign, state_root=root, generation=self.generation,
+                observe=lambda event: self._log(dict(event, kind='conversation', at=time.time(),
+                                                     domain_uuid=self.domain)))
+        return self._conversations
+
+    def conversation_command(self, packet, command, repository, observation):
+        """Admit a signed owner command and execute it as durable conversation authority data."""
+        if (not isinstance(packet.get('signature'), str) or not packet['signature'].isascii()
+                or command.get('operation') not in CV.OWNER_OPERATIONS):
+            raise Refused('invalid_input:conversation_command')
+        expected = {'domain_uuid': self.domain, 'store_uuid': self.store, 'repository_uuid': repository}
+        if any(command.get(k) != value for k, value in expected.items()):
+            raise Refused('invalid_input:coordinates')
+        principal, now = command.get('principal'), time.time()
+        state = CM.authority_state(S, self.conn)
+        member = AC.membership_entry(state['membership'], principal)
+        active, why = AC.active_member(member, now)
+        key = AC.active_key(state['keyring'], principal, now) if active else None
+        verified = False if key is None else AC.ssh_keygen_verify(
+            S.canonical_bytes(command), packet['signature'], AC.allowed_signers_line(principal, key['public_key']),
+            principal)[0]
+        if not active or key is None or not verified:
+            raise Refused('missing_authority:conversation_owner', why or 'signature did not verify')
+        params = command.get('parameters')
+        if not isinstance(params, dict) or not CV._text(params.get('conversation')):
+            raise Refused('invalid_input:conversation_command')
+        identity = params['conversation']
+        conversations = self.conversations()
+        intake_digest = S.digest_of(command)
+        try:
+            if command['operation'] == CV.OPEN:
+                value = conversations.open(identity, owner=principal, role=params.get('role') or CV.DEFAULT_ROLE,
+                                           intake_digest=intake_digest, command_id=command.get('command_id'), now=now)
+                result = {'conversation': value}
+            elif command['operation'] == CV.CLOSE:
+                value = conversations.close(identity, params.get('version'), owner=principal,
+                                            command_id=command.get('command_id'), now=now)
+                result = {'conversation': value}
+            elif command['operation'] == CV.ROLE:
+                value = conversations.change_role(identity, params.get('version'), params.get('role'),
+                                                  owner=principal, command_id=command.get('command_id'), now=now)
+                result = {'conversation': value}
+            elif command['operation'] == CV.ATTACH:
+                value = conversations.attach_project(identity, params.get('version'), params.get('project'),
+                                                     owner=principal, command_id=command.get('command_id'), now=now)
+                result = {'conversation': value}
+            else:
+                value = conversations.message(identity, command.get('command_id'), intake_digest, owner=principal,
+                                              command_id=command.get('command_id'), now=now)
+                result = {'turn': value}
+        except CV.Refused as error:
+            return {'ok': False, 'reason': error.code}
+        observation.update(conversation=identity, read_version=params.get('version'),
+                           written_version=(result.get('conversation') or {}).get('version'))
+        return {'ok': True, 'reason': command['operation'], **result}
+
     def api_edge(self, packet, repository, observation):
         """The owner's enroll_channel_edge of the API's own edge (channel "api", VELDO-0171), signed at the host
         with the edge key's possession co-signature and sent by veldo factory setup while this service holds
@@ -1526,7 +1623,8 @@ class Service:
 
     def loop_status(self):
         if self.loop is None:
-            return {'available': False, 'configured': bool(self.config.get('work')), 'refusal': self.loop_refusal}
+            configured = bool(self.config.get('work') or conversation_receiver(self.config))
+            return {'available': False, 'configured': configured, 'refusal': self.loop_refusal}
         return dict(self.loop.status(), configured=True)
 
     def receiver(self, repository):
@@ -2039,8 +2137,12 @@ class Line:
         # committed stop now, even on a line with no run starting or ending.
         self.runner.honor_stops()
         lost = []
+        self.activate()
+        report['released'].extend({'dispatch_id': identity} for identity in self.runner.release_orphans())
         for launch in ended:
             record = self.runner.wait(launch, timeout=0) or {}
+            if record.get('state') == 'unknown':
+                report['released'].extend({'dispatch_id': identity} for identity in self.runner.orphaned(launch))
             report['ended'].append({'repository': self.repository, 'dispatch_id': launch.dispatch_id,
                                     'unit': launch.contract['unit'], 'station': launch.contract['station'],
                                     'state': record.get('state'), 'reason': record.get('reason') or record.get('refusal'),
@@ -2484,6 +2586,190 @@ class Line:
                                   'loop-ask/' + record['dispatch_id'])
 
 
+class ConversationLine:
+    """The installation's one repository-free Line for every open conversation."""
+
+    def __init__(self, loop, receiver_path):
+        self.loop, self.service, self.receiver_path = loop, loop.service, receiver_path
+        receiver = json.loads(Path(receiver_path).read_text())
+        if receiver.get('receiver_kind') != 'conversation' or 'repository' in receiver or 'workspace' in receiver:
+            raise Refused('binding_mismatch:conversation_receiver')
+        self.receiver = receiver
+        self.conversations = self.service.conversations()
+        common = dict(domain=self.service.domain, repository=None, principal=self.service.principal,
+                      signer=self.service.principal, sign=self.service.sign, generation=self.service.generation)
+        self.dispatches = L.D.Dispatches(S, self.service.conn, **common, subject_kind='conversation')
+        self.reservations = L.D.RES.Reservations(
+            S, self.service.conn, domain=self.service.domain, repository=None,
+            principal=self.service.principal, authorize=L.D.RES.service_authority,
+            signer=self.service.principal, sign=self.service.sign, generation=self.service.generation,
+            subject_kind='conversation')
+        host = receiver.get('host') or socket.gethostname()
+        adapters = {name: {'engine': value.get('engine'), 'host': host}
+                    for name, value in (receiver.get('adapters') or {}).items()
+                    if isinstance(value, dict) and value.get('engine') in L.ENGINES}
+        self.pool = L.D.RES.POOL.Pool(adapters)
+        self.runner = L.Runner(None, self.reservations, self.dispatches, self.invoke, account=self.pool,
+                               runs=L.runs_root(receiver), profile=receiver.get('profile'))
+        self.active_refusals = set()
+        self.registration = S.COMMAND_REGISTRY['subscription_reservation']
+
+    def activate(self):
+        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration
+
+    def invoke(self, contract):
+        return L.invoke(self.receiver_path, contract, self.dispatches)
+
+    def _turn_for(self, dispatch_id):
+        return next((turn for conversation in self._conversation_ids()
+                     for turn in self.conversations.turns(conversation)
+                     if turn.get('dispatch_id') == dispatch_id), None)
+
+    def _conversation_ids(self):
+        return [json.loads(data)['id'] for (data,) in self.service.conn.execute(
+            'SELECT data FROM entities WHERE kind=? ORDER BY id', (CV.KIND,))]
+
+    def recover(self):
+        """Settle durable in-flight turns whose receiver was lost with the prior service."""
+        recovered = []
+        for identity in self._conversation_ids():
+            for turn in self.conversations.turns(identity):
+                if turn.get('state') != 'dispatched' or not turn.get('dispatch_id'):
+                    continue
+                dispatch_id = turn['dispatch_id']
+                record = self.dispatches.record(dispatch_id) or {}
+                state = record.get('state')
+                if state == 'prepared':
+                    self.dispatches.refuse(dispatch_id, record['contract_digest'], 'receiver_unavailable',
+                                           now=time.time(), expected_state='prepared')
+                    self.runner._retire(dispatch_id, 'cancelled', 'never_spawned')
+                    outcome = 'receiver_unavailable'
+                elif state in ('accepted', 'running'):
+                    self.dispatches.unknown(dispatch_id, record['contract_digest'], 'outcome_unknown:service_restart',
+                                            now=time.time(), expected_state=state)
+                    outcome = 'outcome_unknown'
+                elif state == 'unknown':
+                    outcome = 'outcome_unknown'
+                else:
+                    outcome = record.get('refusal') or state or 'outcome_unknown'
+                if state in ('accepted', 'running', 'unknown'):
+                    self.runner.orphans[dispatch_id] = {'group': None, 'process': record.get('process'), 'stopped': False}
+                    self.runner.release_orphans()
+                self.conversations.ended(identity, turn['sequence'], dispatch_id, outcome)
+                recovered.append({'conversation': identity, 'turn': turn['sequence'],
+                                  'dispatch_id': dispatch_id, 'outcome': outcome})
+        return recovered
+
+    def run(self, report, ended):
+        """Settle ended turns, then offer at most the first waiting turn of each conversation."""
+        self.activate()
+        report['released'].extend({'dispatch_id': identity} for identity in self.runner.release_orphans())
+        for launch in ended:
+            record = self.runner.wait(launch, timeout=0) or {}
+            if record.get('state') == 'unknown':
+                report['released'].extend({'dispatch_id': identity} for identity in self.runner.orphaned(launch))
+            turn = self._turn_for(launch.dispatch_id)
+            if turn is None:
+                continue
+            outcome = ('outcome_unknown' if record.get('state') == 'unknown' else
+                       record.get('refusal') or record.get('reason') or
+                       ('completed' if L.D.completed(record) else
+                        'outcome_unknown' if record.get('state') == 'unknown' else
+                        record.get('state') or 'outcome_unknown'))
+            try:
+                ended_turn = self.conversations.ended(turn['conversation'], turn['sequence'],
+                                                      launch.dispatch_id, outcome)
+            except CV.Refused as error:
+                report['faults'].append({'conversation': turn['conversation'], 'turn': turn['sequence'],
+                                         'reason': error.code})
+            else:
+                report['ended'].append({'conversation': turn['conversation'], 'turn': turn['sequence'],
+                                        'dispatch_id': launch.dispatch_id, 'outcome': ended_turn['outcome']})
+        active = {turn['conversation'] for identity in self._conversation_ids()
+                  for turn in self.conversations.turns(identity) if turn.get('state') == 'dispatched'}
+        offered = set()
+        for turn in self.conversations.waiting():
+            if turn['conversation'] in offered:
+                continue
+            offered.add(turn['conversation'])
+            key = (turn['conversation'], turn['sequence'])
+            if turn['conversation'] in active:
+                if key not in self.active_refusals:
+                    self.active_refusals.add(key)
+                    report['refused'].append({'kind': 'conversation', 'conversation': turn['conversation'],
+                                              'turn': turn['sequence'], 'station': 'turn',
+                                              'refusals': ['active_dispatch']})
+                continue
+            self.active_refusals.discard(key)
+            self.offer(turn, report)
+
+    def offer(self, turn, report):
+        identity, sequence = turn['conversation'], turn['sequence']
+        conversation = self.conversations.read(identity)
+        entry = {'kind': 'conversation', 'conversation': identity, 'turn': sequence, 'station': 'turn'}
+        contract = launch = None
+        excluded = []
+        try:
+            role, revision, team_revision = CV.role_at(self.service.conn, conversation['role'])
+            engine = revision['engine']
+            adapter = next((name for name, value in sorted((self.receiver.get('adapters') or {}).items())
+                            if isinstance(value, dict) and value.get('engine') == engine), None)
+            if adapter is None:
+                raise CV.Refused('unregistered_adapter:' + engine)
+            seconds = ((role.get('budget') or {}).get('wall_seconds'))
+            if not isinstance(seconds, (int, float)) or isinstance(seconds, bool) or seconds <= 0:
+                raise CV.Refused('invalid_input:conversation_role_budget')
+            payload = {'conversation': identity, 'turn': sequence, 'owner': conversation['owner'],
+                       'intake_command': turn['intake_command'], 'team_revision': team_revision,
+                       'directory': conversation['directory']}
+            while True:
+                contract = self.runner.prepare_conversation(
+                    identity, sequence, intake_digest=turn['intake_digest'], payload=payload, adapter=adapter,
+                    configuration={'role': conversation['role'], 'revision': revision['revision']},
+                    role_revision=revision, deadline=time.time() + seconds, exclude=excluded)
+                try:
+                    self.conversations.dispatched(identity, sequence, contract['dispatch_id'], revision['revision'],
+                                                  contract['reservation']['account'], self.receiver_path)
+                except CV.Refused as error:
+                    self.runner.cancel_prepared(contract, error.code)
+                    raise
+                launch = self.runner.launch_prepared(contract)
+                refusal = str((launch.record or {}).get('refusal') or '')
+                temporary = (refusal.startswith(L.ACCOUNT_LOGIN)
+                             or refusal.startswith(('host_trust_required', 'missing_authority:host_trust',
+                                                     'missing_evidence:engine_baseline',
+                                                     'unavailable_service:engine',
+                                                     'unsupported_configuration:engine')))
+                if not temporary:
+                    break
+                self.runner.wait(launch, timeout=0)
+                excluded.append(contract['reservation']['account'])
+        except Exception as error:  # noqa: BLE001 - one refused turn never ends the pass
+            code = str(getattr(error, 'code', None) or 'unknown_outcome:' + type(error).__name__)
+            if contract is not None and launch is not None and excluded:
+                with contextlib.suppress(CV.Refused):
+                    self.conversations.deferred(identity, sequence, contract['dispatch_id'], code)
+            if code.startswith('no_account'):
+                until = code.split(':', 1)[1] if code.startswith('no_account_until:') else ''
+                report['waiting'].append(dict(entry, refusal=code, until=int(until) if until.isdigit() else None))
+            else:
+                report['refused'].append(dict(entry, refusals=[code]))
+            return None
+        shown = dict(entry, dispatch_id=contract['dispatch_id'], account=contract['reservation']['account'],
+                     role=conversation['role'], role_revision=revision['revision'], adapter=adapter,
+                     result=launch.result)
+        report['offered'].append(shown)
+        report['conversation_offered'].append(shown)
+        if launch.result != 'accepted' or (launch.record or {}).get('state') != 'running':
+            record = self.runner.wait(launch, timeout=0) or {}
+            outcome = record.get('refusal') or record.get('reason') or record.get('state') or 'outcome_unknown'
+            with contextlib.suppress(CV.Refused):
+                self.conversations.ended(identity, sequence, contract['dispatch_id'], outcome)
+        elif launch.pump(read=False):
+            self.loop.saw_end(self, launch)
+        return launch
+
+
 class FactoryLoop:
     """THE FACTORY LOOP (VELDO-0154): the Runner of every line, inside this authority service, the one scheduling
     instance. A pass starts only from its three WAKE SOURCES: a packet or channel pass that advanced the journal
@@ -2499,14 +2785,19 @@ class FactoryLoop:
         # VELDO-0204: the store's lock serve holds, which the reservation provisioning requires (VELDO-0171).
         self.lock, self.provisioning = lock, RP.Provisioning()
         receivers = (service.config.get('receiver') or {}).get('configs') or {}
+        repositories = (work or {}).get('repositories') or {}
         self.lines = {repository: Line(self, repository, roles, receivers[repository])
-                      for repository, roles in sorted(work['repositories'].items())}
+                      for repository, roles in sorted(repositories.items())}
         self.configured = sorted(self.lines)
         # Work roles apply only where no project record names the repository. Preserve the optional land role.
         self.work_roles = {repository: json.loads(json.dumps(line.roles)) for repository, line in self.lines.items()}
+        # VELDO-0174 AC4: the conversation Line, whenever the installation names its receiver configuration.
+        conversation_path = conversation_receiver(service.config)
+        self.conversation = ConversationLine(self, conversation_path) if conversation_path else None
         self.wakes, self.ended, self.timer = [], [], None
         self.passes, self.last = 0, None
-        self.counts = {'offered': 0, 'refused': 0, 'waiting': 0, 'asked': 0, 'released': 0, 'faults': 0, 'lands': 0}
+        self.counts = {'offered': 0, 'conversation_offered': 0, 'refused': 0, 'waiting': 0,
+                       'asked': 0, 'released': 0, 'faults': 0, 'lands': 0}
         # VELDO-0188: the lines the store's projects name, built at the start as at every journal-woken pass.
         self.line_counts = {'started': 0, 'restaged': 0, 'stopped': 0, 'waiting_receiver': 0, 'refused': {}}
         self.refused_lines = {}
@@ -2633,6 +2924,12 @@ class FactoryLoop:
         every one whose dispatch is settled and whose run the kernel shows gone; one still alive stays until a later
         pass. Logged (kind `loop`, operation `runs_swept`) with the dispatches whose directories went, never a value."""
         swept = {}
+        if self.conversation is not None:
+            try:
+                swept['conversation_recovered'] = self.conversation.recover()
+                swept['conversations'] = self.conversation.runner.sweep_runs()
+            except Exception as error:  # noqa: BLE001
+                swept['conversations'] = {'refusal': 'unknown_outcome:' + type(error).__name__}
         for repository, line in sorted(self.lines.items()):
             try:
                 swept[repository] = line.runner.sweep_runs()
@@ -2653,7 +2950,7 @@ class FactoryLoop:
         """VELDO-0204: provision every reservation policy (control_reservation_policies) on the service's connection
         with the lock serve holds, through the first line's Reservations made current by its activate. Its answer
         goes into `report`; one that raised is a fault by name in it, never the loop's end."""
-        first = next((line for _repository, line in sorted(self.lines.items())), None)
+        first = next((line for _repository, line in sorted(self.lines.items())), self.conversation)
         if first is None:
             return None
         try:
@@ -2676,6 +2973,11 @@ class FactoryLoop:
                 fd = launch.fileno()
                 if fd is not None:
                     found[fd] = (line, launch)
+        if self.conversation is not None:
+            for launch in list(self.conversation.runner.launches.values()):
+                fd = launch.fileno()
+                if fd is not None:
+                    found[fd] = (self.conversation, launch)
         return found
 
     def readable(self, held):
@@ -2707,7 +3009,7 @@ class FactoryLoop:
                   'domain_uuid': self.service.domain, 'principal': self.service.principal,
                   'sources': sorted({wake['source'] for wake in wakes}), 'wakes': wakes, 'ended': [], 'released': [],
                   'offered': [], 'refused': [], 'waiting': [], 'decisions': [], 'asked': [], 'awaiting': [],
-                  'stopped': [], 'faults': [], 'lands': [], 'provisioning': []}
+                  'stopped': [], 'faults': [], 'lands': [], 'provisioning': [], 'conversation_offered': []}
         self.provision(report, 'pass')
         # VELDO-0188: a pass a journal advance woke makes the lines the store's before any work is offered.
         if 'journal' in report['sources']:
@@ -2715,6 +3017,13 @@ class FactoryLoop:
                 report['lines'] = self.follow_store(self.passes)
             except Exception as error:  # noqa: BLE001 - the lines held serve on, the fault named
                 report['faults'].append({'lines': 'follow_store', 'reason': 'unknown_outcome:' + type(error).__name__})
+        # The owner's waiting conversation turns are always offered before project stations.
+        if self.conversation is not None:
+            try:
+                self.conversation.run(report, [launch for owner, launch in ended if owner is self.conversation])
+            except Exception as error:  # noqa: BLE001
+                report['faults'].append({'conversation': True,
+                                         'reason': 'unknown_outcome:' + type(error).__name__})
         for repository, line in sorted(self.lines.items()):
             try:
                 line.run(report, [launch for owner, launch in ended if owner is line])
@@ -2748,16 +3057,18 @@ class FactoryLoop:
                 'line_counts': json.loads(json.dumps(self.line_counts)),
                 # VELDO-0148: each land station's land dispatches: outcomes, those running, re-lands per unit.
                 'lands': {repository: line.station.status() for repository, line in sorted(self.lines.items())
-                          if line.station is not None}}
+                          if line.station is not None},
+                'conversations': self.service.conversations().status() if self.conversation is not None else None,
+                'conversation_running': sorted(self.conversation.runner.launches) if self.conversation else []}
 
 
 def open_loop(config, service, lock=None):
     """(FactoryLoop, None) for an installation's work configuration, (None, refusal) when it cannot be
     constructed, and (None, None) when the installation names none: then nothing in the service dispatches."""
-    if not config.get('work'):
+    if not config.get('work') and not conversation_receiver(config):
         return None, None
     try:
-        loop = FactoryLoop(service, load_work(config['work']), lock)
+        loop = FactoryLoop(service, load_work(config['work']) if config.get('work') else None, lock)
         loop.start()
         return loop, None
     except Refused as error:

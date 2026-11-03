@@ -381,6 +381,9 @@ class Projects:
             raise Refused('invalid_input', 'invalid project command or authority coordinates')
         op, principal, name = command['operation'], command['principal'], command['project']
         pid = project_id(name)
+        if self.conn.execute('SELECT 1 FROM entities WHERE id=? AND kind=?',
+                             ('conversation:' + name, 'conversation')).fetchone():
+            raise Refused('invalid_input:conversation', 'a conversation id is not a project')
         observation['project'] = pid
         state = self.membership.authority_state(self.store, self.conn)
         now = self.clock()

@@ -2732,7 +2732,9 @@ def cases():
             "            members = [(m['id'], m['version'], m['digest']) for m in value]  # defect: tuples never equal JSON\n",
             'launch/receiver-recheck', module='control_eligibility.py')
     add(69, 'installer-receiver-without-host-trust', '66_veldo_0047_authority.py', 'control_service.py',
+        "                                'authority_generation': first['authority_generation'], 'workspace': members[0],\n"
         "                                'host_trust': os.path.abspath(str(trust_path)), 'profile': profile,\n",
+        "                                'authority_generation': first['authority_generation'], 'workspace': members[0],\n"
         "                                'profile': profile,  # defect: the receiver is configured with no host trust\n",
         ['authority/receiver-configured-with-host-profile'])
     # VELDO-0042: each criterion's declared falsifier first, then a second, different defect per row.
@@ -2990,7 +2992,9 @@ def cases():
     # twice (the runner commits before invoking; the receiver spawns only after an acceptance that
     # needs the prepared record), so the defect is both edits.
     dispatch('dispatch-spawn-before-contract', 'control_launch.py',
+             "            }\n"
              "            self.dispatches.prepare(contract, now=now)\n",
+             "            }\n"
              "            self.early = self.receiver(contract)  # defect: invoked before the contract commits\n"
              "            self.dispatches.prepare(contract, now=now)\n",
              'contract-before-launch',
@@ -3095,7 +3099,8 @@ def cases():
     # Anchored on the transition's own guard: VELDO-0131's stop_transition makes the same call, indented deeper.
     dispatch('dispatch-authority-unchecked', 'control_dispatch.py',
              "        raise Refused('invalid_input', 'unknown action, time or dispatch')\n"
-             "    _authorize(conn, params.get('principal'), params.get('repository'), now)\n",
+             "    _authorize(conn, params.get('principal'), params.get('repository'), now,\n"
+             "               params.get('subject_kind', 'project'))\n",
              "        raise Refused('invalid_input', 'unknown action, time or dispatch')\n"
              "    pass  # defect: the principal's authority is not checked\n",
              'service-principals-only')
@@ -3456,8 +3461,8 @@ def cases():
          "        self.launches.pop(launch.dispatch_id, None)  # defect: a wait sweeps no pending retirement\n",
          'retirement/live-descendant')
     beat('retire-no-sweep-on-prepare', 'control_launch.py',
-         "        self.sweep()\n        now = self.clock()\n",
-         "        now = self.clock()  # defect: a preparation sweeps no pending retirement\n",
+         "        self.sweep()\n        now = self.clock()\n        try:\n",
+         "        now = self.clock()  # defect: a preparation sweeps no pending retirement\n        try:\n",
          'retirement/unknown-outcome')
     beat('retire-sweep-retries-unchanged', 'control_retirement.py',
          "        if seen['open'] != entry['open']:\n            return True\n",
@@ -3913,7 +3918,9 @@ def cases():
             "    pass  # defect: a relative key directory is judged wherever it resolves\n", 'key-directory-relative-refused')
     # AC1: the launch receiver's configuration carries this host's qualified worker profile.
     service('authority-receiver-profile-omitted', 'control_service.py',
+            "                                'authority_generation': first['authority_generation'], 'workspace': members[0],\n"
             "                                'host_trust': os.path.abspath(str(trust_path)), 'profile': profile,\n",
+            "                                'authority_generation': first['authority_generation'], 'workspace': members[0],\n"
             "                                'host_trust': os.path.abspath(str(trust_path)),  # defect: the receiver gets no worker profile\n",
             'receiver-configured-with-host-profile')
     service('authority-profile-not-qualified', 'control_service.py',
@@ -10492,8 +10499,8 @@ def cases():
         "        subjects.append(('project', record.get('name'), {k: budget[k] for k in RES.KINDS if k in budget},\n",
         "        subjects.append(('project', record.get('name'), dict(budget),\n", ['derive/values'], ())
     add(204, 'v204-account-sum-first-project', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
-        '    sums = {kind: sum(_budget(record).get(kind, 0) for _eid, record in projects) for kind in ACCOUNT_KINDS}\n',
-        '    sums = {kind: sum(_budget(record).get(kind, 0) for _eid, record in projects[:1]) for kind in ACCOUNT_KINDS}\n', ['derive/values', 'source/project'], ())
+        '    sums = {kind: (sum(_budget(record).get(kind, 0) for _eid, record in projects)\n',
+        '    sums = {kind: (sum(_budget(record).get(kind, 0) for _eid, record in projects[:1])\n', ['derive/values', 'source/project'], ())
     add(204, 'v204-windows-compared', '96_veldo_0204_reservation_policies.py', 'control_reservation_policies.py',
         "        if stored is not None and stored.get('caps') == caps:\n",
         "        if stored is not None and stored.get('caps') == caps and not stored.get('windows'):\n", ['service/rerun'], ())
@@ -10504,8 +10511,8 @@ def cases():
         "        self.loop.provision(report, 'line:' + self.repository)\n",
         '', ['service/pm-assigned', 'service/rerun'], ())
     add(204, 'v204-loop-lock-dropped', '96_veldo_0204_reservation_policies.py', 'control_service.py',
-        "        loop = FactoryLoop(service, load_work(config['work']), lock)\n",
-        "        loop = FactoryLoop(service, load_work(config['work']))\n", ['service/start'], ())
+        "        loop = FactoryLoop(service, load_work(config['work']) if config.get('work') else None, lock)\n",
+        "        loop = FactoryLoop(service, load_work(config['work']) if config.get('work') else None)\n", ['service/start'], ())
     add(204, 'v204-serve-lock-dropped', '96_veldo_0204_reservation_policies.py', 'control_service.py',
         '            service.loop, service.loop_refusal = open_loop(config, service, lock)\n',
         '            service.loop, service.loop_refusal = open_loop(config, service)\n', ['service/serve'], ())
@@ -10516,8 +10523,69 @@ def cases():
         '    ".veldo/control_reservation_policies.py",\n',
         '', ['service/start'], ())
     add(204, 'v204-second-policy-writer', '96_veldo_0204_reservation_policies.py', 'control_service.py',
-        "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n",
-        "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n        if False:\n            self.reservations.configure('x', 'unit', 'x', {}, now=0)\n", ['census/writer'], ())
+        "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n\n    def _rows(self, kind):\n",
+        "    def activate(self):\n        S.COMMAND_REGISTRY['subscription_reservation'] = self.registration\n        if False:\n            self.reservations.configure('x', 'unit', 'x', {}, now=0)\n\n    def _rows(self, kind):\n", ['census/writer'], ())
+    # VELDO-0174: one exact single-edit falsifier for each acceptance criterion.
+    S174 = '123_veldo_0174_conversations.py'
+    add(174, 'v174-attach-outside-current-scope', S174, 'control_conversation.py',
+        "            if not CM.scope_covers(member.get('scope'), [project]):\n"
+        "                raise Refused('missing_authority:project')\n",
+        '', ['AC1/project-scope'], ())
+    add(174, 'v174-attach-another-owners-project', S174, 'control_conversation.py',
+        "            if target['data'].get('owner') != record.get('owner'):\n"
+        "                raise Refused('missing_authority:project')\n",
+        '', ['AC1/project-owner'], ())
+    add(174, 'v174-record-memory-only', S174, 'control_conversation.py',
+        "        self.store, self.conn, self.domain, self.principal = store, conn, domain, principal\n",
+        "        memory = __import__('sqlite3').connect(':memory:', isolation_level=None, factory=type(conn))\n"
+        "        conn.backup(memory)\n"
+        "        memory.command_registry = dict(conn.command_registry)\n"
+        "        conn = memory\n"
+        "        self.store, self.conn, self.domain, self.principal = store, conn, domain, principal\n",
+        ['AC1/restart-open'], ())
+    add(174, 'v174-offer-every-waiting-turn', S174, 'control_service.py',
+        "            offered.add(turn['conversation'])\n", '', ['AC2/one-offer-per-pass'], ())
+    add(174, 'v174-project-lines-first', S174, 'control_service.py',
+        "        # The owner's waiting conversation turns are always offered before project stations.\n"
+        "        if self.conversation is not None:\n"
+        "            try:\n"
+        "                self.conversation.run(report, [launch for owner, launch in ended if owner is self.conversation])\n"
+        "            except Exception as error:  # noqa: BLE001\n"
+        "                report['faults'].append({'conversation': True,\n"
+        "                                         'reason': 'unknown_outcome:' + type(error).__name__})\n"
+        "        for repository, line in sorted(self.lines.items()):\n",
+        "        # Defect: project stations consume the shared pool before conversation turns.\n"
+        "        for repository, line in sorted(self.lines.items()):\n"
+        "            try:\n"
+        "                line.run(report, [launch for owner, launch in ended if owner is line])\n"
+        "            except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never the end\n"
+        "                report['faults'].append({'repository': repository, 'reason': 'unknown_outcome:' + type(error).__name__})\n"
+        "        if self.conversation is not None:\n"
+        "            try:\n"
+        "                self.conversation.run(report, [launch for owner, launch in ended if owner is self.conversation])\n"
+        "            except Exception as error:  # noqa: BLE001\n"
+        "                report['faults'].append({'conversation': True,\n"
+        "                                         'reason': 'unknown_outcome:' + type(error).__name__})\n"
+        "        for repository, line in ():\n",
+        ['AC3/turn-before-project'], ())
+    add(174, 'v174-no-work-conversation-line-dropped', S174, 'control_service.py',
+        '        self.conversation = ConversationLine(self, conversation_path) if conversation_path else None\n',
+        '        self.conversation = ConversationLine(self, conversation_path) if conversation_path and work else None\n',
+        ['AC4/no-work-line'], ())
+
+    # These modules resolve transitive authority dependencies beside their own file.
+    for case in result:
+        if case['finding'] == 174 and case['module'] in ('control_conversation.py', 'control_service.py'):
+            case['siblings'] = True
+    add(174, 'v174-mutation-siblings-missing', S174, 'check_teeth_mutations.py',
+        "        if case['finding'] == 174 and case['module'] in ('control_conversation.py', 'control_service.py'):\n",
+        '        if False:  # defect: isolated conversation mutants lose their dependencies\n',
+        ['proof/mutation-dependencies'])
+    result[-1]['dir'] = 'scripts'
+    add(174, 'v174-signed-commands-bypass-mutant', S174, S174,
+        '    CS.CV = CV\n', '', ['proof/signed-command-module'])
+    result[-1]['dir'] = 'scripts/suites'
+
     # VELDO-0185: each acceptance criterion's declared falsifier, then the guards its rows also hold.
     S185 = '106_veldo_0185_dispatch_setup.py'
     add(185, 'v185-work-not-installed', S185, 'control_factory_setup.py',

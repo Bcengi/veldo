@@ -1,0 +1,740 @@
+{
+  "affected_suite_runs": [
+    {
+      "assertions_passed": false,
+      "exit_code": 1,
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0142 launch/spawn-config-commit-authors"
+      ],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "52fbb0d5955ea6fdb2391194a9343f29f97d1c3fc601a63199944778bed257ca",
+      "seconds": 14.95,
+      "suite": "103_veldo_0142_git_identities",
+      "summary": [
+        "  103_veldo_0142_git_identities                   22 passed   14.84s",
+        "selftest (PARTIAL, 1 of 163 suites): 48 passed, 1 failed in 14.84s"
+      ]
+    },
+    {
+      "assertions_passed": false,
+      "exit_code": 1,
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0182 worker/backfill-bounded"
+      ],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "7de5317eef4cd66a1a6751d60aebf9495bdc1995dd8e2f13b48d93cb2d0a2f90",
+      "seconds": 76.79,
+      "suite": "105_veldo_0182_memory",
+      "summary": [
+        "  105_veldo_0182_memory                          126 passed   76.66s",
+        "selftest (PARTIAL, 1 of 163 suites): 152 passed, 1 failed in 76.66s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "1750d9d3d69c62644b2f2b2a6d6cc7cdf23bf7af408b7dda0d2b7e9c2df3e057",
+      "seconds": 11.14,
+      "suite": "58_veldo_0036_reservations",
+      "summary": [
+        "  58_veldo_0036_reservations                      10 passed   11.07s",
+        "selftest (PARTIAL, 1 of 163 suites): 36 passed, 0 failed in 11.07s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "4f40fe861846beb8442ec9ed983a8a985e34f2699d70229bab94881eb0547b08",
+      "seconds": 2.42,
+      "suite": "60_veldo_0052_eligibility",
+      "summary": [
+        "  60_veldo_0052_eligibility                       54 passed    2.34s",
+        "selftest (PARTIAL, 1 of 163 suites): 80 passed, 0 failed in 2.34s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "bcb14557aa7cc425d39bc1a6faf693b2f08ce059cd2bd2f216225fb81429e126",
+      "seconds": 3.02,
+      "suite": "60_veldo_0053_architecture",
+      "summary": [
+        "  60_veldo_0053_architecture                      39 passed    2.92s",
+        "selftest (PARTIAL, 1 of 163 suites): 65 passed, 0 failed in 2.92s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "23e87d69d69788130d39f02cedbe810056a8d243d2e8f7bbf02cfe08c4a868a9",
+      "seconds": 16.25,
+      "suite": "65_veldo_0132_workflow",
+      "summary": [
+        "  65_veldo_0132_workflow                          16 passed   16.18s",
+        "selftest (PARTIAL, 1 of 163 suites): 42 passed, 0 failed in 16.18s"
+      ]
+    },
+    {
+      "assertions_passed": false,
+      "exit_code": 1,
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0056 candidate/rejection-leaves-trunk",
+        "  SELFTEST FAIL: VELDO-0056 candidate/named-policy-refusals",
+        "  SELFTEST FAIL: VELDO-0056 candidate/detached-held-trunk",
+        "  SELFTEST FAIL: VELDO-0056 candidate/whole-candidate",
+        "  SELFTEST FAIL: VELDO-0056 candidate/observations",
+        "  SELFTEST FAIL: VELDO-0056 ran/candidate/rejection-leaves-trunk",
+        "  SELFTEST FAIL: VELDO-0056 ran/candidate/detached-held-trunk"
+      ],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "5a3bb7a3e2dfc4ad7581aa1a7314613870de0f9ef3ee0c4fb480a3beb7d57510",
+      "seconds": 16.65,
+      "suite": "67_veldo_0056_candidates",
+      "summary": [
+        "  67_veldo_0056_candidates                         4 passed   16.54s",
+        "selftest (PARTIAL, 1 of 163 suites): 30 passed, 7 failed in 16.54s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "cdfe14c6098d147b93383a7d635f60f5fb2e21e60ee3024d983334066fee2f1b",
+      "seconds": 5.48,
+      "suite": "69_veldo_0133_dispositions",
+      "summary": [
+        "  69_veldo_0133_dispositions                      33 passed    5.39s",
+        "selftest (PARTIAL, 1 of 163 suites): 59 passed, 0 failed in 5.39s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "fb1cd1c5c9b2f7cc3c308fa8589618ce0a455638c791fd700a18108e8fb65221",
+      "seconds": 6.93,
+      "suite": "70_veldo_0069_bindings",
+      "summary": [
+        "  70_veldo_0069_bindings                          10 passed    6.82s",
+        "selftest (PARTIAL, 1 of 163 suites): 36 passed, 0 failed in 6.82s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "fe6ce529afc5d5ecffe10f6e594fcba0dbfbdc352ceb8edc3257798563c4a4c1",
+      "seconds": 3.52,
+      "suite": "72_veldo_0077_objectives",
+      "summary": [
+        "  72_veldo_0077_objectives                        20 passed    3.42s",
+        "selftest (PARTIAL, 1 of 163 suites): 46 passed, 0 failed in 3.42s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "f3e9ce8d9d4f9aee9231f89b2ff8f6bd2992e94b9c2dafdf865da475229f4d64",
+      "seconds": 4.62,
+      "suite": "72_veldo_0128_reports",
+      "summary": [
+        "  72_veldo_0128_reports                           18 passed    4.51s",
+        "selftest (PARTIAL, 1 of 163 suites): 44 passed, 0 failed in 4.51s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "4735a8adf62558263660848227a05257f286431bba2ade68dcaa0372d9ecaaa2",
+      "seconds": 6.58,
+      "suite": "73_veldo_0078_backlog",
+      "summary": [
+        "  73_veldo_0078_backlog                           20 passed    6.47s",
+        "selftest (PARTIAL, 1 of 163 suites): 46 passed, 0 failed in 6.47s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "0c9cf0566ffd8c077be9082b506a0a3053cc8c25d5265d6f620acb472ec47ad3",
+      "seconds": 3.02,
+      "suite": "73_veldo_0089_team",
+      "summary": [
+        "  73_veldo_0089_team                              26 passed    2.91s",
+        "selftest (PARTIAL, 1 of 163 suites): 52 passed, 0 failed in 2.91s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "78c939fb82d437f0319b87842606056e2147feaac8e4e9c5d6a791ddadc4ec43",
+      "seconds": 2.67,
+      "suite": "75_veldo_0150_own_message_acceptance",
+      "summary": [
+        "  75_veldo_0150_own_message_acceptance            13 passed    2.57s",
+        "selftest (PARTIAL, 1 of 163 suites): 39 passed, 0 failed in 2.57s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "336dd678a4df43e48d24e69f1cfc7b6ff2a85a174688b249731bcc99cad53af2",
+      "seconds": 14.15,
+      "suite": "76_veldo_0079_grooming",
+      "summary": [
+        "  76_veldo_0079_grooming                          22 passed   14.08s",
+        "selftest (PARTIAL, 1 of 163 suites): 48 passed, 0 failed in 14.08s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "7c33d1cbc6bb01528811854f6a7f878dfb534f983766d68c1518b9c2bac406bb",
+      "seconds": 2.82,
+      "suite": "77_veldo_0149_adopted_activation",
+      "summary": [
+        "  77_veldo_0149_adopted_activation                13 passed    2.75s",
+        "selftest (PARTIAL, 1 of 163 suites): 39 passed, 0 failed in 2.75s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "90cbd6416197b785ab407fbe0dfbe71e331332f1f0cc7e1187575b253621447e",
+      "seconds": 3.62,
+      "suite": "82_veldo_0085_decomposition",
+      "summary": [
+        "  82_veldo_0085_decomposition                     15 passed    3.53s",
+        "selftest (PARTIAL, 1 of 163 suites): 41 passed, 0 failed in 3.53s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "5a408057aaeb39846106cc7588d8006654fd15d8a7d259db595ccfbd275cd9f1",
+      "seconds": 27.57,
+      "suite": "82_veldo_0144_mcp_catalog",
+      "summary": [
+        "  82_veldo_0144_mcp_catalog                       29 passed   27.47s",
+        "selftest (PARTIAL, 1 of 163 suites): 55 passed, 0 failed in 27.47s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "c9676324c6add856b35581d1821dffdd7a4c5cfaabd5e4406c759ba7beb6d61d",
+      "seconds": 13.44,
+      "suite": "82_veldo_0165_launch_hygiene",
+      "summary": [
+        "  82_veldo_0165_launch_hygiene                    23 passed   13.33s",
+        "selftest (PARTIAL, 1 of 163 suites): 49 passed, 0 failed in 13.33s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "02b0be653486e80bf28a292fdc976461b3dac1b3a10dafb3b0e1548368f765df",
+      "seconds": 3.07,
+      "suite": "82_veldo_0173_tool_registry",
+      "summary": [
+        "  82_veldo_0173_tool_registry                     11 passed    2.98s",
+        "selftest (PARTIAL, 1 of 163 suites): 37 passed, 0 failed in 2.98s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "92412f0ef074db1ba7b4879cb0762632fb48a91ded1de0a2193dbf0fb30ba663",
+      "seconds": 1.37,
+      "suite": "83_veldo_0166_usage_windows",
+      "summary": [
+        "  83_veldo_0166_usage_windows                     19 passed    1.27s",
+        "selftest (PARTIAL, 1 of 163 suites): 45 passed, 0 failed in 1.27s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "f09cc3aa8655c743f2f23da7698974fb1a1464481e2cbc314ec38254b4d9f17a",
+      "seconds": 13.69,
+      "suite": "84_veldo_0169_project_handouts",
+      "summary": [
+        "  84_veldo_0169_project_handouts                  27 passed   13.17s",
+        "selftest (PARTIAL, 1 of 163 suites): 53 passed, 0 failed in 13.17s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "ccaa76f74b7f4017ef9be1243fb4ac15bb76f85dbfe08b2e0424b16526627fbf",
+      "seconds": 4.22,
+      "suite": "86_veldo_0168_text",
+      "summary": [
+        "  86_veldo_0168_text                              26 passed    4.13s",
+        "selftest (PARTIAL, 1 of 163 suites): 52 passed, 0 failed in 4.13s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "3cbeb87526b33bffd58291a9bf15b2ddc17590202216128f0090db0cb756add7",
+      "seconds": 12.29,
+      "suite": "86_veldo_0186_setup_assets",
+      "summary": [
+        "  86_veldo_0186_setup_assets                      11 passed   12.17s",
+        "selftest (PARTIAL, 1 of 163 suites): 37 passed, 0 failed in 12.17s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "c0e1e566e8bf49bcde18fe40f7e2c7ba961f3cde6e2cba5feea1e30aaa7f9aa4",
+      "seconds": 50.12,
+      "suite": "87_veldo_0127_codex_delivery",
+      "summary": [
+        "  87_veldo_0127_codex_delivery                   176 passed   50.02s",
+        "selftest (PARTIAL, 1 of 163 suites): 202 passed, 0 failed in 50.02s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "a7c08d01e6a1ba617d3e00fa6b57dcc71ffa22c75c0a77891ad92051df5a79c5",
+      "seconds": 6.33,
+      "suite": "88_veldo_0127_feature_defaults",
+      "summary": [
+        "  88_veldo_0127_feature_defaults                  25 passed    6.24s",
+        "selftest (PARTIAL, 1 of 163 suites): 51 passed, 0 failed in 6.24s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "f6b71d3874a44a51785f1a0ae47b92c452459b283e3fd01433ac87dda25658fa",
+      "seconds": 4.63,
+      "suite": "89_veldo_0127_feature_listing",
+      "summary": [
+        "  89_veldo_0127_feature_listing                   11 passed    4.51s",
+        "selftest (PARTIAL, 1 of 163 suites): 37 passed, 0 failed in 4.51s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "1023c9006bf74661f429c37ce43258adf42a80cbef1e2313ab28963782bfe02b",
+      "seconds": 11.89,
+      "suite": "90_veldo_0127_feature_profile",
+      "summary": [
+        "  90_veldo_0127_feature_profile                    2 passed   11.81s",
+        "selftest (PARTIAL, 1 of 163 suites): 28 passed, 0 failed in 11.81s"
+      ]
+    },
+    {
+      "assertions_passed": true,
+      "exit_code": 2,
+      "failures": [],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "50627daf1483e3ba57525d527d69df54c35c2b0433d9152e19f3b274ba7d13fb",
+      "seconds": 2.42,
+      "suite": "91_veldo_0151_specialists",
+      "summary": [
+        "  91_veldo_0151_specialists                       25 passed    2.32s",
+        "selftest (PARTIAL, 1 of 163 suites): 51 passed, 0 failed in 2.32s"
+      ]
+    },
+    {
+      "assertions_passed": false,
+      "exit_code": 1,
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0088 cycle/runner",
+        "  SELFTEST FAIL: VELDO-0088 cycle/no-action",
+        "  SELFTEST FAIL: VELDO-0088 proposal/stop-on-refusal",
+        "  SELFTEST FAIL: VELDO-0088 cycle/serialized",
+        "  SELFTEST FAIL: VELDO-0088 cycle/pending-follow-up",
+        "  SELFTEST FAIL: VELDO-0088 unit/one-run-staging",
+        "  SELFTEST FAIL: VELDO-0088 unit/factory-builder-ticket",
+        "  SELFTEST FAIL: VELDO-0088 unit/independent-review",
+        "  SELFTEST FAIL: VELDO-0088 cycle/combined-inputs",
+        "  SELFTEST FAIL: VELDO-0088 cycle/receipts",
+        "  SELFTEST FAIL: VELDO-0088 cycle/waiting-release",
+        "  SELFTEST FAIL: VELDO-0088 review/pm-principal",
+        "  SELFTEST FAIL: VELDO-0088 review/current-publication",
+        "  SELFTEST FAIL: VELDO-0088 review/build-refusal",
+        "  SELFTEST FAIL: VELDO-0088 review/review-refusal",
+        "  SELFTEST FAIL: VELDO-0088 review/pending-budget",
+        "  SELFTEST FAIL: VELDO-0088 followup/setup-pm",
+        "  SELFTEST FAIL: VELDO-0088 followup/setup-pm-authority",
+        "  SELFTEST FAIL: VELDO-0088 followup/initial-fault",
+        "  SELFTEST FAIL: VELDO-0088 followup/pending-fault"
+      ],
+      "host_user_manager_unavailable": true,
+      "log_sha256": "b97c2101e6788c2fceb10751b89af92c9ddbf4310a17224868206ebdf02962e1",
+      "seconds": 10.69,
+      "suite": "92_veldo_0088_pm_cycles",
+      "summary": [
+        "  92_veldo_0088_pm_cycles                          5 passed   10.56s",
+        "selftest (PARTIAL, 1 of 163 suites): 31 passed, 20 failed in 10.56s"
+      ]
+    },
+    {
+      "assertions_passed": false,
+      "exit_code": 1,
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0152 route/codex-result",
+        "  SELFTEST FAIL: VELDO-0152 route/new-project",
+        "  SELFTEST FAIL: VELDO-0152 route/existing-project",
+        "  SELFTEST FAIL: VELDO-0152 route/asked-only-when-unclear",
+        "  SELFTEST FAIL: VELDO-0152 route/answers",
+        "  SELFTEST FAIL: VELDO-0152 route/read-and-report",
+        "  SELFTEST FAIL: VELDO-0152 route/runner-input",
+        "  SELFTEST FAIL: VELDO-0152 route/scope-refusal",
+        "  SELFTEST FAIL: VELDO-0152 route/malformed",
+        "  SELFTEST FAIL: VELDO-0152 route/stale",
+        "  SELFTEST FAIL: VELDO-0152 route/factory-refusal"
+      ],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "1b55439fa100888d8809c02708fb8441369c8bcd7d48bb87c071a674342cbca3",
+      "seconds": 8.58,
+      "suite": "93_veldo_0152_intake_routes",
+      "summary": [
+        "  93_veldo_0152_intake_routes                     11 passed    8.47s",
+        "selftest (PARTIAL, 1 of 163 suites): 37 passed, 11 failed in 8.47s"
+      ]
+    },
+    {
+      "assertions_passed": false,
+      "exit_code": 1,
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0162 routes/redaction",
+        "  SELFTEST FAIL: VELDO-0162 routes/contract",
+        "  SELFTEST FAIL: VELDO-0162 install/assets",
+        "  SELFTEST FAIL: VELDO-0162 configuration/revisions",
+        "  SELFTEST FAIL: VELDO-0162 configuration/unauthorized-save",
+        "  SELFTEST FAIL: VELDO-0162 configuration/refusals",
+        "  SELFTEST FAIL: VELDO-0162 team/roundtrip",
+        "  SELFTEST FAIL: VELDO-0162 team/stale-team",
+        "  SELFTEST FAIL: VELDO-0162 team/staffing",
+        "  SELFTEST FAIL: VELDO-0162 team/owner-save",
+        "  SELFTEST FAIL: VELDO-0162 team/decider",
+        "  SELFTEST FAIL: VELDO-0162 team/unverified-assertion",
+        "  SELFTEST FAIL: VELDO-0162 team/owner-answer",
+        "  SELFTEST FAIL: VELDO-0162 team/telegram",
+        "  SELFTEST FAIL: VELDO-0162 team/decline",
+        "  SELFTEST FAIL: VELDO-0162 team/other-request",
+        "  SELFTEST FAIL: VELDO-0162 default/history",
+        "  SELFTEST FAIL: VELDO-0162 default/refusals",
+        "  SELFTEST FAIL: VELDO-0162 default/named-revision",
+        "  SELFTEST FAIL: VELDO-0162 default/staffing",
+        "  SELFTEST FAIL: VELDO-0162 team/setup-requester",
+        "  SELFTEST FAIL: VELDO-0162 team/reproposal",
+        "  SELFTEST FAIL: VELDO-0162 team/consumed",
+        "  SELFTEST FAIL: VELDO-0162 team/application-exception",
+        "  SELFTEST FAIL: VELDO-0162 format/fake-lines"
+      ],
+      "host_user_manager_unavailable": true,
+      "log_sha256": "3a81d0b3e6b806644e0846ecf6446d4e18e85938c9316b5243cf80d6d760aa23",
+      "seconds": 0.57,
+      "suite": "94_veldo_0162_configuration_routes",
+      "summary": [
+        "  94_veldo_0162_configuration_routes               1 passed    0.47s",
+        "selftest (PARTIAL, 1 of 163 suites): 27 passed, 25 failed in 0.47s"
+      ]
+    },
+    {
+      "assertions_passed": false,
+      "exit_code": 1,
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0203 offline/saves",
+        "  SELFTEST FAIL: VELDO-0203 writer/configuration-stale",
+        "  SELFTEST FAIL: VELDO-0203 writer/team-stale",
+        "  SELFTEST FAIL: VELDO-0203 writer/roster",
+        "  SELFTEST FAIL: VELDO-0203 writer/credential",
+        "  SELFTEST FAIL: VELDO-0203 authentication/unsigned",
+        "  SELFTEST FAIL: VELDO-0203 authentication/other-key",
+        "  SELFTEST FAIL: VELDO-0203 authentication/revoked",
+        "  SELFTEST FAIL: VELDO-0203 authentication/not-owner",
+        "  SELFTEST FAIL: VELDO-0203 authentication/definition",
+        "  SELFTEST FAIL: VELDO-0203 authentication/base",
+        "  SELFTEST FAIL: VELDO-0203 authentication/team",
+        "  SELFTEST FAIL: VELDO-0203 authentication/membership",
+        "  SELFTEST FAIL: VELDO-0203 authentication/delegation",
+        "  SELFTEST FAIL: VELDO-0203 authentication/domain",
+        "  SELFTEST FAIL: VELDO-0203 authentication/store",
+        "  SELFTEST FAIL: VELDO-0203 authentication/repository",
+        "  SELFTEST FAIL: VELDO-0203 authentication/expiry",
+        "  SELFTEST FAIL: VELDO-0203 authentication/command-id",
+        "  SELFTEST FAIL: VELDO-0203 authentication/operations",
+        "  SELFTEST FAIL: VELDO-0203 replay/identical",
+        "  SELFTEST FAIL: VELDO-0203 replay/content-conflict",
+        "  SELFTEST FAIL: VELDO-0203 replay/consumed-nonce",
+        "  SELFTEST FAIL: VELDO-0203 replay/nonce-binding",
+        "  SELFTEST FAIL: VELDO-0203 lock/second-connection",
+        "  SELFTEST FAIL: VELDO-0203 lock/writer-connection",
+        "  SELFTEST FAIL: VELDO-0203 input/malformed",
+        "  SELFTEST FAIL: VELDO-0203 service/malformed",
+        "  SELFTEST FAIL: VELDO-0203 service/non-owner-malformed",
+        "  SELFTEST FAIL: VELDO-0203 format/fake-lines",
+        "  SELFTEST FAIL: VELDO-0203 service/saves",
+        "  SELFTEST FAIL: VELDO-0203 service/forged",
+        "  SELFTEST FAIL: VELDO-0203 service/writer-refusal",
+        "  SELFTEST FAIL: VELDO-0203 service/unconfigured",
+        "  SELFTEST FAIL: VELDO-0203 install/asset"
+      ],
+      "host_user_manager_unavailable": false,
+      "log_sha256": "3dd273bf95999707df24f3308d1110a6ba9dc90c139457b08e61124172f69e60",
+      "seconds": 0.87,
+      "suite": "95_veldo_0203_owner_revisions",
+      "summary": [
+        "  95_veldo_0203_owner_revisions                    1 passed    0.78s",
+        "selftest (PARTIAL, 1 of 163 suites): 27 passed, 35 failed in 0.78s"
+      ]
+    },
+    {
+      "assertions_passed": false,
+      "exit_code": 1,
+      "failures": [
+        "  SELFTEST FAIL: VELDO-0204 derive/values",
+        "  SELFTEST FAIL: VELDO-0204 fresh/dispatch",
+        "  SELFTEST FAIL: VELDO-0204 rerun/unchanged",
+        "  SELFTEST FAIL: VELDO-0204 source/project",
+        "  SELFTEST FAIL: VELDO-0204 source/team",
+        "  SELFTEST FAIL: VELDO-0204 source/account",
+        "  SELFTEST FAIL: VELDO-0204 source/unit",
+        "  SELFTEST FAIL: VELDO-0204 source/windows",
+        "  SELFTEST FAIL: VELDO-0204 source/absent",
+        "  SELFTEST FAIL: VELDO-0204 lock/second-connection",
+        "  SELFTEST FAIL: VELDO-0204 service/start",
+        "  SELFTEST FAIL: VELDO-0204 service/added",
+        "  SELFTEST FAIL: VELDO-0204 service/team",
+        "  SELFTEST FAIL: VELDO-0204 service/pm-assigned",
+        "  SELFTEST FAIL: VELDO-0204 service/rerun",
+        "  SELFTEST FAIL: VELDO-0204 refuse/missing-source",
+        "  SELFTEST FAIL: VELDO-0204 refuse/principal",
+        "  SELFTEST FAIL: VELDO-0204 census/writer",
+        "  SELFTEST FAIL: VELDO-0204 service/serve"
+      ],
+      "host_user_manager_unavailable": true,
+      "log_sha256": "652c688301204f79db0cff0a40e0b6fd22cdc38dfbcff510bc861af8980a2662",
+      "seconds": 0.47,
+      "suite": "96_veldo_0204_reservation_policies",
+      "summary": [
+        "  96_veldo_0204_reservation_policies               0 passed    0.35s",
+        "selftest (PARTIAL, 1 of 163 suites): 26 passed, 19 failed in 0.35s"
+      ]
+    }
+  ],
+  "attempted_suites_requiring_user_manager": [
+    "92_veldo_0088_pm_cycles",
+    "94_veldo_0162_configuration_routes",
+    "96_veldo_0204_reservation_policies"
+  ],
+  "compatibility_retest": {
+    "assertions_passed": true,
+    "exit_code": 2,
+    "failures": [],
+    "host_user_manager_unavailable": false,
+    "log_sha256": "40a4e157b2a63f1e69e3ad4c6fc01eefb7e07b356cec88bab8bfe7a7748a18a3",
+    "suite": "103_veldo_0142_git_identities",
+    "summary": [
+      "  103_veldo_0142_git_identities                   23 passed   14.78s",
+      "selftest (PARTIAL, 1 of 163 suites): 49 passed, 0 failed in 14.78s"
+    ]
+  },
+  "deferred_host_suites": [
+    "106_veldo_0185_dispatch_setup",
+    "62_veldo_0039_dispatch",
+    "63_veldo_0040_containment",
+    "63_veldo_0049_floor",
+    "64_veldo_0050_proof",
+    "66_veldo_0042_clones",
+    "66_veldo_0047_authority",
+    "67_veldo_0041_heartbeat",
+    "67_veldo_0135_offers",
+    "71_veldo_0076_projects",
+    "71_veldo_0130_api",
+    "71_veldo_0138_channel_service",
+    "73_veldo_0139_factory_setup",
+    "74_veldo_0140_standing_delegation",
+    "75_veldo_0062_accounts",
+    "78_veldo_0060_claude_adapter",
+    "78_veldo_0160_account_pool",
+    "79_veldo_0061_codex_adapter",
+    "80_veldo_0155_claude_baseline",
+    "81_veldo_0156_codex_baseline",
+    "82_veldo_0129_worker_wiring",
+    "82_veldo_0141_execution_record",
+    "83_veldo_0154_factory_loop",
+    "85_veldo_0158_credential_delivery",
+    "85_veldo_0171_setup_api",
+    "86_veldo_0127_agent_configuration",
+    "86_veldo_0148_re_land",
+    "86_veldo_0189_engine_upgrade",
+    "87_veldo_0170_receiver_trust",
+    "91_veldo_0167_setup_records"
+  ],
+  "falsifiers": [
+    {
+      "name": "v174-record-memory-only",
+      "status": "requires host: positive service restart row is blocked by EPERM"
+    },
+    {
+      "exit_code": 1,
+      "failed_rows": [
+        "AC2/one-offer-per-pass"
+      ],
+      "name": "v174-offer-every-waiting-turn",
+      "status": "rejected",
+      "target_rows": [
+        "AC2/one-offer-per-pass"
+      ]
+    },
+    {
+      "exit_code": 1,
+      "failed_rows": [
+        "AC3/turn-before-project"
+      ],
+      "name": "v174-project-lines-first",
+      "status": "rejected",
+      "target_rows": [
+        "AC3/turn-before-project"
+      ]
+    },
+    {
+      "exit_code": 1,
+      "failed_rows": [
+        "AC4/no-work-line"
+      ],
+      "name": "v174-no-work-conversation-line-dropped",
+      "status": "rejected",
+      "target_rows": [
+        "AC4/no-work-line"
+      ]
+    }
+  ],
+  "implementation_commit": "053f1adefb7a4f6c5a7b376ee3fb27ddd3ac1382",
+  "index": "scripts/update_index.py ran; generated specs/index.md was unchanged.",
+  "logs": "Temporary logs were removed after retaining their digests, summaries and failing row names.",
+  "mcp_followup": "Nonempty MCP delivery is refused for reported adapters. Its local containment journey and skills need host verification. Portable fixture verifies the empty MCP selection and exact native tools.",
+  "open_items": [
+    "Diagnose remaining affected-suite failures recorded here.",
+    "Run the complete transitive suite closure and the canonical gate on the review host.",
+    "Complete the full project Line priority journey.",
+    "Complete a turn after real service restart with retained unknown accounting.",
+    "VELDO-0175 and VELDO-0176: role-change and project-attach versioning, message delivery, session continuity."
+  ],
+  "restart_blocker": "Production service socket creation denied by kernel EPERM. Failed row retained.",
+  "rows": [
+    "AC1/not-project",
+    "AC1/project-commands",
+    "AC1/restart-open",
+    "AC1/unknown-conversation",
+    "AC1/version-owner",
+    "AC2/account-retry",
+    "AC2/active-refusal-once",
+    "AC2/charged-windows",
+    "AC2/closed-dispatch",
+    "AC2/current-role-revision",
+    "AC2/domain-cap",
+    "AC2/durable-recovery",
+    "AC2/one-active-ordered",
+    "AC2/one-offer-per-pass",
+    "AC2/own-directory",
+    "AC2/real-ordered-turns",
+    "AC2/receiver-loss",
+    "AC2/redelivery",
+    "AC2/role-tools",
+    "AC3/parallel-conversations",
+    "AC3/turn-before-project",
+    "AC3/turn-first-slot",
+    "AC4/install-conversation-receiver",
+    "AC4/no-work-line",
+    "AC4/real-kind-refusal",
+    "AC4/receiver-kind-refusal",
+    "AC4/turn-kind"
+  ],
+  "scope": "Focused suite observations only. Not a proof manifest, approval, gate stamp or landing claim.",
+  "source_sha256": {
+    ".veldo/control_agent_config_handoff.py": "9cb6c5fb5965302c79c45051009d117ef0bde5370fb5b7715d9eaa67bad25d2f",
+    ".veldo/control_conversation.py": "8ba8a0da26bcb72c6ca165a94e3798c7b2a6d76b84da6faaf45142b498e51bd8",
+    ".veldo/control_dispatch.py": "0fd7e664095892417e46fe1148a2b79dd173e5b7d507c56a3173ef63cbb55aca",
+    ".veldo/control_launch.py": "58cf910a16745adc0c4790149d2cc3d6da11ffe11608fae05ad42249ddba4540",
+    ".veldo/control_project.py": "109b7ced5440e39b188ae314fdde5033530a326e182862dc6a264f338b49779d",
+    ".veldo/control_reservation_policies.py": "e1f016f05c83b049798ae4254fb1d50e5166ab2c99520054dbff2d97fc19f9e7",
+    ".veldo/control_reservations.py": "d8e647f19bd70184ff5ee7daa9cb728e0ff8c16be914fc1773ec59cd1d8caa14",
+    ".veldo/control_service.py": "8b72f5615c396bbc9ee8112da19316a64341a1a11bea46accc82b09063bff6d9",
+    "engine/.veldo/control_agent_config_handoff.py": "9cb6c5fb5965302c79c45051009d117ef0bde5370fb5b7715d9eaa67bad25d2f",
+    "engine/.veldo/control_conversation.py": "8ba8a0da26bcb72c6ca165a94e3798c7b2a6d76b84da6faaf45142b498e51bd8",
+    "engine/.veldo/control_dispatch.py": "0fd7e664095892417e46fe1148a2b79dd173e5b7d507c56a3173ef63cbb55aca",
+    "engine/.veldo/control_launch.py": "58cf910a16745adc0c4790149d2cc3d6da11ffe11608fae05ad42249ddba4540",
+    "engine/.veldo/control_project.py": "109b7ced5440e39b188ae314fdde5033530a326e182862dc6a264f338b49779d",
+    "engine/.veldo/control_reservation_policies.py": "e1f016f05c83b049798ae4254fb1d50e5166ab2c99520054dbff2d97fc19f9e7",
+    "engine/.veldo/control_reservations.py": "d8e647f19bd70184ff5ee7daa9cb728e0ff8c16be914fc1773ec59cd1d8caa14",
+    "engine/.veldo/control_service.py": "8b72f5615c396bbc9ee8112da19316a64341a1a11bea46accc82b09063bff6d9",
+    "scripts/check_teeth_mutations.py": "dcfc2b58d5be9b2ae17118709017a022dcb97ab8c0fa77ae66b46be9abb6717e",
+    "scripts/suites/107_veldo_0174_conversations.py": "44e88f3a6cd01191c1c61e8e0155fc3c3b75de659f837dc9b55344644ac77b37",
+    "scripts/suites/support/v174_journey.py": "c25a42c9597cdcce21a0149af323f30b1eb3a9cba477a93a07c9fa21db78440b"
+  },
+  "spec": "VELDO-0174",
+  "status": "incomplete, requires host verification and follow-up",
+  "suite_107": {
+    "assertions_passed": false,
+    "exit_code": 1,
+    "failures": [
+      "  SELFTEST FAIL: VELDO-0174 AC1/restart-open"
+    ],
+    "host_user_manager_unavailable": false,
+    "log_sha256": "27953db5281af96758f1590cb78d5e727e858ba3cc96e2e77682a37a8fee8932",
+    "suite": "107_veldo_0174_conversations",
+    "summary": [
+      "  107_veldo_0174_conversations                    26 passed    7.90s",
+      "selftest (PARTIAL, 1 of 163 suites): 52 passed, 1 failed in 7.90s"
+    ]
+  }
+}

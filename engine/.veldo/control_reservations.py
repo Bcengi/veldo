@@ -76,9 +76,14 @@ def service_authority(conn, command):
 
 class Reservations:
     def __init__(self, store, conn, *, domain, repository, principal, authorize,
-                 signer, sign, generation=1, observe=lambda event: None):
+                 signer, sign, generation=1, observe=lambda event: None, subject_kind='project'):
         self.store, self.conn = store, conn
-        self.domain, self.repository = identity(domain), identity(repository)
+        if subject_kind not in ('project', 'conversation'):
+            raise Refused('invalid_input')
+        self.domain = identity(domain)
+        self.repository = (identity(repository) if subject_kind == 'project'
+                           else None if repository is None else identity(repository))
+        self.subject_kind = subject_kind
         self.principal = identity(principal)
         self.authorize, self.signer, self.sign = authorize, signer, sign
         self.generation, self.observe = generation, observe
@@ -91,11 +96,20 @@ class Reservations:
             "SELECT id, data FROM entities WHERE kind='subscription_reservation'")}
 
     def _context(self, account, project, unit):
+        unit = identity(unit)
+        if self.subject_kind == 'conversation':
+            if project is not None:
+                raise Refused('invalid_input')
+            return dict(domain=self.domain, repository=None, account=identity(account), project=None,
+                        unit=unit, subject_kind='conversation', allowance_subject=unit)
         return dict(domain=self.domain, repository=self.repository,
-                    account=identity(account), project=identity(project), unit=identity(unit))
+                    account=identity(account), project=identity(project), unit=unit)
 
     def _matches(self, record, scope, subject):
-        return record['context']['domain'] == self.domain and record['context'][scope] == subject
+        context = record['context']
+        actual = (context.get('allowance_subject') if context.get('subject_kind') == 'conversation'
+                  and scope == 'project' else context.get(scope))
+        return context['domain'] == self.domain and actual == subject
 
     def balances(self, scope, subject, records=None):
         records = self._records() if records is None else records
@@ -114,9 +128,13 @@ class Reservations:
         return entity('policy', [self.domain, scope, subject])
 
     def _policies(self, context, records):
-        policies = []
+        # A domain policy, when configured, caps project and conversation work together.
+        domain_policy = records.get(self._policy_id('domain', self.domain))
+        policies = [domain_policy] if domain_policy is not None else []
         for scope in SCOPES:
-            policy = records.get(self._policy_id(scope, context[scope]))
+            subject = (context.get('allowance_subject') if context.get('subject_kind') == 'conversation'
+                       and scope == 'project' else context.get(scope))
+            policy = records.get(self._policy_id(scope, subject))
             if policy is None:
                 raise Refused('missing_ceiling:' + scope)
             policies.append(policy)
@@ -190,7 +208,7 @@ class Reservations:
         return result
 
     def configure(self, command_id, scope, subject, caps, *, now):
-        if scope not in SCOPES or not isinstance(caps, dict) or not caps or set(caps) - set(KINDS):
+        if scope not in SCOPES + ('domain',) or not isinstance(caps, dict) or not caps or set(caps) - set(KINDS):
             raise Refused('invalid_input')
         if any(not number(value) for value in caps.values()):
             raise Refused('invalid_input')
@@ -214,8 +232,12 @@ class Reservations:
                 or ('exclude' in request and not (isinstance(request['exclude'], list) and request['exclude'] and all(
                     isinstance(a, str) and a.strip() for a in request['exclude'])))):
             raise Refused('invalid_input')
+        if self.subject_kind == 'conversation':
+            project = None if project is None else identity(project)
+        else:
+            project = identity(project)
         return self._run(command_id, 'pooled_worker', entity('worker', [self.domain, identity(dispatch)]),
-                         dict(dispatch=dispatch, request=dict(request), project=identity(project), unit=identity(unit)),
+                         dict(dispatch=dispatch, request=dict(request), project=project, unit=identity(unit)),
                          now)
 
     def worker(self, dispatch):

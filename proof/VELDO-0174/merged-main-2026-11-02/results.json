@@ -1,0 +1,256 @@
+{
+ "ticket": "VELDO-0174",
+ "date": "2026-11-02",
+ "main": "646b2d68",
+ "merge": "c81eebf4",
+ "commits": [
+  "c81eebf4",
+  "f50f7848",
+  "d5f72fb6"
+ ],
+ "note": "Focused evidence, not a gate stamp, review verdict or landing decision. Suite logs named main-646b2d68-* ran on main in a temporary worktree.",
+ "suites": {
+  "101_veldo_0208_landing_reuse": {
+   "passed": 214,
+   "failed": 2,
+   "seconds": 233.69,
+   "failed_rows": [
+    "VELDO-0208 sandbox/unavailable-refuses-before-exec",
+    "VELDO-0208 sandbox/old-abi-refuses-before-exec"
+   ],
+   "log": "logs/suites/101_veldo_0208_landing_reuse.log",
+   "log_sha256": "5ea5a3add84084d3c9bf26190b21a88bee7473897b667a3b53b1a48de655deaf"
+  },
+  "105_veldo_0182_memory": {
+   "passed": 152,
+   "failed": 1,
+   "seconds": 76.39,
+   "failed_rows": [
+    "VELDO-0182 switch/retry-rechecks"
+   ],
+   "log": "logs/suites/105_veldo_0182_memory.log",
+   "log_sha256": "85dc90a5b7a6ef79b778c6a3d8e844bbaf0d1fe19ee1c5536f258b0cbbaa951e"
+  },
+  "123_veldo_0174_conversations": {
+   "passed": 64,
+   "failed": 0,
+   "seconds": 9.54,
+   "failed_rows": [],
+   "log": "logs/suites/123_veldo_0174_conversations.log",
+   "log_sha256": "a6c0a4c333e0e781f0493ef40a22b6ebaf1cfd21462f62d0a1c0b26ea9ff793e"
+  },
+  "62_veldo_0039_dispatch": {
+   "passed": 51,
+   "failed": 0,
+   "seconds": 9.2,
+   "failed_rows": [],
+   "log": "logs/suites/62_veldo_0039_dispatch.log",
+   "log_sha256": "6c12c95385ae728bc58c078cfb844afbcac244c549ee25c0243e4df02f98df54"
+  },
+  "66_veldo_0047_authority": {
+   "passed": 56,
+   "failed": 0,
+   "seconds": 11.2,
+   "failed_rows": [],
+   "log": "logs/suites/66_veldo_0047_authority.log",
+   "log_sha256": "e4dcf2463e7b0d802939d239bffdc5a835703e53e43811419e1879e1d8ada913"
+  },
+  "67_veldo_0041_heartbeat": {
+   "passed": 49,
+   "failed": 0,
+   "seconds": 11.24,
+   "failed_rows": [],
+   "log": "logs/suites/67_veldo_0041_heartbeat.log",
+   "log_sha256": "409a9c8ae26b4eb43d37017148ad64eb535830f073195e8bf3fb7cb9061b963f"
+  },
+  "86_veldo_0127_agent_configuration": {
+   "passed": 51,
+   "failed": 2,
+   "seconds": 37.9,
+   "failed_rows": [
+    "VELDO-0127 live/claude",
+    "VELDO-0127 live/codex"
+   ],
+   "log": "logs/suites/86_veldo_0127_agent_configuration.log",
+   "log_sha256": "f54b42ab5c8f3a13ce84e886311b4888dc6350d1fdb38b4e72a4eae217962f95"
+  },
+  "86_veldo_0186_setup_assets": {
+   "passed": 37,
+   "failed": 0,
+   "seconds": 14.71,
+   "failed_rows": [],
+   "log": "logs/suites/86_veldo_0186_setup_assets.log",
+   "log_sha256": "de8fd37840b562b7d125f4f6288b1c913233986011ae9faeae13bac9f199e9b9"
+  },
+  "96_veldo_0204_reservation_policies": {
+   "passed": 46,
+   "failed": 0,
+   "seconds": 15.99,
+   "failed_rows": [],
+   "log": "logs/suites/96_veldo_0204_reservation_policies.log",
+   "log_sha256": "855bff769238478cd75576c1da667c2997e016b7b5a394cb813658e1b61e8f1e"
+  },
+  "main-646b2d68-101_veldo_0208_landing_reuse": {
+   "passed": 214,
+   "failed": 2,
+   "seconds": 234.4,
+   "failed_rows": [
+    "VELDO-0208 sandbox/unavailable-refuses-before-exec",
+    "VELDO-0208 sandbox/old-abi-refuses-before-exec"
+   ],
+   "log": "logs/suites/main-646b2d68-101_veldo_0208_landing_reuse.log",
+   "log_sha256": "43c406089e32bc5de0ef81afc5e17e71661ffa362b0c95dd27f4a6dfcde16d8f"
+  },
+  "main-646b2d68-105_veldo_0182_memory": {
+   "passed": 153,
+   "failed": 0,
+   "seconds": 78.21,
+   "failed_rows": [],
+   "log": "logs/suites/main-646b2d68-105_veldo_0182_memory.log",
+   "log_sha256": "12609d5fb594390934bce5aff53b170f69c6c1595dc12359650291c5ace2ff49"
+  },
+  "105_veldo_0182_memory-rerun": {
+   "passed": 153,
+   "failed": 0,
+   "seconds": 77.74,
+   "failed_rows": [],
+   "log": "logs/suites/105_veldo_0182_memory-rerun.log",
+   "log_sha256": "f51658474d6918d0aead40f5251e6453a7c95eee876a7e4588bec5533d98ed7b"
+  }
+ },
+ "anchor_scan": {
+  "cases": 2775,
+  "bad": 0,
+  "bad_before_fix": 9,
+  "bad_on_main": 0,
+  "bad_on_3e898da2": 9
+ },
+ "teeth_v174": [
+  {
+   "case": "v174-attach-outside-current-scope",
+   "suite": "123_veldo_0174_conversations",
+   "verdict": "RED"
+  },
+  {
+   "case": "v174-attach-another-owners-project",
+   "suite": "123_veldo_0174_conversations",
+   "verdict": "RED"
+  },
+  {
+   "case": "v174-record-memory-only",
+   "suite": "123_veldo_0174_conversations",
+   "verdict": "RED"
+  },
+  {
+   "case": "v174-offer-every-waiting-turn",
+   "suite": "123_veldo_0174_conversations",
+   "verdict": "RED"
+  },
+  {
+   "case": "v174-project-lines-first",
+   "suite": "123_veldo_0174_conversations",
+   "verdict": "RED"
+  },
+  {
+   "case": "v174-no-work-conversation-line-dropped",
+   "suite": "123_veldo_0174_conversations",
+   "verdict": "RED"
+  },
+  {
+   "case": "v174-mutation-siblings-missing",
+   "suite": "123_veldo_0174_conversations",
+   "verdict": "RED"
+  },
+  {
+   "case": "v174-signed-commands-bypass-mutant",
+   "suite": "123_veldo_0174_conversations",
+   "verdict": "RED"
+  }
+ ],
+ "teeth_reanchored": [
+  {
+   "case": "installer-receiver-without-host-trust",
+   "suite": "66_veldo_0047_authority",
+   "verdict": "RED"
+  },
+  {
+   "case": "dispatch-spawn-before-contract",
+   "suite": "62_veldo_0039_dispatch",
+   "verdict": "RED"
+  },
+  {
+   "case": "dispatch-authority-unchecked",
+   "suite": "62_veldo_0039_dispatch",
+   "verdict": "RED"
+  },
+  {
+   "case": "retire-no-sweep-on-prepare",
+   "suite": "67_veldo_0041_heartbeat",
+   "verdict": "RED"
+  },
+  {
+   "case": "authority-receiver-profile-omitted",
+   "suite": "66_veldo_0047_authority",
+   "verdict": "RED"
+  },
+  {
+   "case": "setup186-receiver-without-state-root",
+   "suite": "86_veldo_0186_setup_assets",
+   "verdict": "RED"
+  },
+  {
+   "case": "v204-account-sum-first-project",
+   "suite": "96_veldo_0204_reservation_policies",
+   "verdict": "RED"
+  },
+  {
+   "case": "v204-loop-lock-dropped",
+   "suite": "96_veldo_0204_reservation_policies",
+   "verdict": "RED"
+  },
+  {
+   "case": "v204-second-policy-writer",
+   "suite": "96_veldo_0204_reservation_policies",
+   "verdict": "RED"
+  }
+ ],
+ "run_falsifier": {
+  "v174-drop-skills": {
+   "exit_code": 1,
+   "target_rows": [
+    "AC2/role-skills"
+   ],
+   "targets_red": true,
+   "source_restored": true,
+   "seconds": 9.69
+  },
+  "v174-ignore-record-version": {
+   "exit_code": 1,
+   "target_rows": [
+    "AC1/versioned-mutations"
+   ],
+   "targets_red": true,
+   "source_restored": true,
+   "seconds": 1.52
+  },
+  "v174-record-memory-only": {
+   "exit_code": 1,
+   "target_rows": [
+    "AC1/restart-open",
+    "AC1/durable-store"
+   ],
+   "targets_red": true,
+   "source_restored": true,
+   "seconds": 1.52
+  }
+ },
+ "restored_suite_123": {
+  "passed": 64,
+  "failed": 0,
+  "seconds": 9.47,
+  "log": "logs/mutants/restored-123.log"
+ },
+ "validate_ready": 0,
+ "policy_check": 0,
+ "protected_paths_touched": []
+}

@@ -50,7 +50,20 @@ def materialize(conn, domain, repository, revision, roots):
         return None
     if 'digest' not in revision:
         raise Refused('invalid_input:role_revision')
-    C.verify_binding(conn, domain, repository, revision)
+    if repository is None:
+        candidates = []
+        for (raw,) in conn.execute('SELECT data FROM entities WHERE kind=?', (C.KINDS[0],)):
+            value = json.loads(raw)
+            if value.get('role') == revision.get('role') and value.get('revision') == revision.get('revision'):
+                candidates.append(value)
+        if len(candidates) != 1:
+            raise Refused('missing_evidence:agent_revision')
+        accepted = dict(candidates[0], native_tools=[item['name'] for item in candidates[0]['native_tools']
+                                                    if item['load'] == 'always'])
+        if accepted != revision:
+            raise Refused('stale_version:agent_binding')
+    else:
+        C.verify_binding(conn, domain, repository, revision)
     settings = revision['settings']
     allowed = {'model'} if revision['engine'] == 'claude_code' else {'model', 'sandbox_mode', 'model_reasoning_effort'}
     if set(settings) - allowed or any(not isinstance(v, str) or not v for v in settings.values()):
@@ -59,7 +72,16 @@ def materialize(conn, domain, repository, revision, roots):
         raise Refused('unsupported_configuration:native_tools')
     skills = []
     for item in selected(revision, 'skills'):
-        source = C.read(conn, domain, repository, item['skill'], item['revision'], C.KINDS[1])
+        if repository is None:
+            sources = [json.loads(raw) for (raw,) in conn.execute(
+                'SELECT data FROM entities WHERE kind=?', (C.KINDS[1],))
+                if (value := json.loads(raw)).get('skill') == item['skill']
+                and value.get('revision') == item['revision']]
+            if len(sources) != 1:
+                raise Refused('missing_evidence:agent_revision')
+            source = sources[0]
+        else:
+            source = C.read(conn, domain, repository, item['skill'], item['revision'], C.KINDS[1])
         skills.append({'name': item['skill'], 'body': content(source, roots),
                        'source_path': str(Path(roots[source['source']]) / source['path'])})
     return {'revision': revision, 'project': roots.get('project'), 'instructions': '\n\n'.join(content(i, roots) for i in selected(revision, 'instructions')),
@@ -574,13 +596,15 @@ def stage_skills(capability, config):
             if link.is_dir() and (link / 'SKILL.md').resolve() == Path(skill['source_path']).resolve():
                 continue
             exclude = _git_process.run(['git', '-C', str(capability['project']), 'rev-parse',
-                                      OPTION + 'git-path', 'info/exclude'], check=True, capture_output=True, text=True)
-            path = Path(exclude.stdout.strip())
-            if not path.is_absolute():
-                path = Path(capability['project']) / path
-            path.parent.mkdir(parents=True, exist_ok=True)
-            with path.open('a') as handle:
-                handle.write('\n/.agents/skills/' + skill['name'] + '\n')
+                                      OPTION + 'git-path', 'info/exclude'], check=False,
+                                      capture_output=True, text=True)
+            if exclude.returncode == 0 and exclude.stdout.strip():
+                path = Path(exclude.stdout.strip())
+                if not path.is_absolute():
+                    path = Path(capability['project']) / path
+                path.parent.mkdir(parents=True, exist_ok=True)
+                with path.open('a') as handle:
+                    handle.write('\n/.agents/skills/' + skill['name'] + '\n')
             link.symlink_to(config / 'role-skills' / skill['name'], target_is_directory=True)
             staged.append(link)
     return staged

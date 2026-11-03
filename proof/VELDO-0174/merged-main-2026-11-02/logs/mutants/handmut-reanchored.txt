@@ -1,0 +1,9 @@
+installer-receiver-without-host-trust 66_veldo_0047_authority rows ['authority/receiver-configured-with-host-profile'] RED 2
+dispatch-spawn-before-contract 62_veldo_0039_dispatch rows ['dispatch/contract-before-launch'] RED 13
+dispatch-authority-unchecked 62_veldo_0039_dispatch rows ['dispatch/service-principals-only'] RED 2
+retire-no-sweep-on-prepare 67_veldo_0041_heartbeat rows ['retirement/unknown-outcome'] RED 2
+authority-receiver-profile-omitted 66_veldo_0047_authority rows ['authority/receiver-configured-with-host-profile'] RED 2
+setup186-receiver-without-state-root 86_veldo_0186_setup_assets rows ['bind/engines'] RED 2
+v204-account-sum-first-project 96_veldo_0204_reservation_policies rows ['derive/values', 'source/project'] RED 5
+v204-loop-lock-dropped 96_veldo_0204_reservation_policies rows ['service/start'] RED 7
+v204-second-policy-writer 96_veldo_0204_reservation_policies rows ['census/writer'] RED 1

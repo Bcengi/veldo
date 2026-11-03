@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0174-LANDING",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0174",
+    "commit": "772b20d35d9a5a761d847316806d4d31b427d6dd",
+    "paths": []
+  },
+  "basis": "Dmitry approved landing of VELDO-0174 (conversation record and turns) at 772b20d3 over Telegram on 2026-11-03T22:19Z (message 38870, 'approve Veldo 0174 772b20d3 with the AC4 change'), asked in 38868 (copy line 38869). The approval includes the AC4 wording change recorded in the spec History on 2026-11-02: the conversation receiver is written to the installation's state directory and found there by name, no longer beside the repository receivers. No protected path changed against main (policy_check exits 0). The canonical gate was GREEN at 772b20d3 (gate 0174f). WHAT IT DOES NOT COVER: any protected path or any other commit.",
+  "recorded_at": "2026-11-03T22:21:00Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-12-03T00:00:00Z"
+}
