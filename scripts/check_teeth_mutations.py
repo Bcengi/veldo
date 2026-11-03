@@ -12061,6 +12061,9 @@ def cases():
     add(230, 'qualify230-claude-record-unwritten', '126_veldo_0230_qualify_reproduces.py', 'qualify.py',
         "    write(root, 'claude-qualification.json', text(claude_qualification), written)\n",
         "    pass  # defect: the Claude Code record is not written\n", ['qualify/covers'])
+    add(230, 'qualify230-granted-feature-off', '88_veldo_0127_feature_defaults.py', 'control_agent_config_handoff.py',
+        "        if feature in granted and feature not in CODEX_FEATURE_GRANTS and feature not in CODEX_FEATURES_UNGRANTED:\n",
+        "        if False:  # defect: an evaluation's grant is ignored\n", ['defaults/unknown'])
     add(230, 'setup230-claude-from-path', census230, 'control_factory_setup_engines.py',
         "    paths = {'claude_code': qualified_claude(Refused)}\n",
         "    paths = {'claude_code': Path(shutil.which('claude')).resolve()}\n", ['setup/engines-record'])

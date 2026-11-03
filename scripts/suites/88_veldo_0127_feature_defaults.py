@@ -123,6 +123,19 @@ def _v127_feature_defaults():
                   and requalified.get('unclassified_default_on') == ['future_role_tool']
                   and tools is not None and set(tools) == set(before or []) and bool(args),
                   str((error, flags.get('future_role_tool'), requalified.get('unclassified_default_on'), tools)))
+            # VELDO-0230 AC3 (Telegram 38878): a new feature the record's evaluation grants stays at its default at
+            # launch (not written off), and the launch still proceeds with the tools it had.
+            installed = f.mods / 'runtime' / 'codex-qualification.json'
+            original = installed.read_bytes()
+            try:
+                installed.write_text(json.dumps(dict(json.loads(original), new_capabilities=[
+                    {'kind': 'features', 'name': 'future_role_tool', 'decision': 'granted', 'reason': 'fixture'}])))
+                flags, error, tools, args = launch([])
+            finally:
+                installed.write_bytes(original)
+            check('defaults/unknown', error is None and 'future_role_tool' not in flags
+                  and tools is not None and set(tools) == set(before or []) and bool(args),
+                  str(('granted', error, flags.get('future_role_tool'), tools)))
         except Exception as error:
             for row in rows:
                 check(row, False, 'raised ' + type(error).__name__ + ': ' + str(error)[:160])

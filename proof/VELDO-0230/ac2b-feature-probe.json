@@ -1,0 +1,477 @@
+{
+ "binary_sha256": "sha256:b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8",
+ "probe": {
+  "gpt-5.5": {
+   "api_key_cyber_access_programs": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-iyslfhes\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-iyslfhes/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "api_key_model_discovery": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-tnsp_zx5\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-tnsp_zx5/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "baseline": {
+    "requests": 1,
+    "returncode": 0,
+    "tools": [
+     [
+      "exec_command",
+      "update_plan",
+      "write_stdin"
+     ]
+    ]
+   },
+   "bedrock_setup_wizard": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-sf3loo4e\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-sf3loo4e/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "browser_annotation_api": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-u82stssq\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-u82stssq/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "cli_daybreak": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-uek153xz\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-uek153xz/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "code_mode_interrupt": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-b4xc6_0s\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-b4xc6_0s/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "daemon_auto_start": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-8fp00vtc\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-8fp00vtc/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "guardian_reuse_parent_compaction": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-8_0oh2nq\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-8_0oh2nq/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "in_app_voice": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-lc490vzs\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-lc490vzs/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "incremental_tools": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-n2l_l8ue\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-n2l_l8ue/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "instant_interrupt": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-k_mzudfi\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-k_mzudfi/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "mcp_oauth_refresh_coordination": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-j8vt3sfi\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-j8vt3sfi/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "plugin_discovery_prefetch": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-9_01pl78\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-9_01pl78/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "prediction_preserve_parent_tools": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-cahrxetb\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-cahrxetb/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "realtime_conversation": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-z3fjzgkh\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-z3fjzgkh/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "reasoning_effort_override": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-d9g35usg\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-d9g35usg/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "system_proxy_fallback": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-99muatck\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-99muatck/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "ultrafast_mode": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-idy8c3vp\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-idy8c3vp/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "worktrees": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-5kl_z115\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-5kl_z115/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "write_stdin_approval": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-x6j_g8y_\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-x6j_g8y_/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   }
+  },
+  "gpt-6-astra": {
+   "api_key_cyber_access_programs": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-j91ad3n_\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-j91ad3n_/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "api_key_model_discovery": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-80he6fvc\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-80he6fvc/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "baseline": {
+    "requests": 1,
+    "returncode": 0,
+    "tools": [
+     [
+      "exec",
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ]
+    ]
+   },
+   "bedrock_setup_wizard": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-_3auxbjn\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-_3auxbjn/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "browser_annotation_api": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-rj7l0mi1\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-rj7l0mi1/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "cli_daybreak": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-ir5oj1pk\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-ir5oj1pk/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "code_mode_interrupt": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-cwfxpjlu\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-cwfxpjlu/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "daemon_auto_start": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-ovn76n5k\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-ovn76n5k/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "guardian_reuse_parent_compaction": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-pjawl1_7\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-pjawl1_7/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "in_app_voice": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-sggfybzx\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-sggfybzx/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "incremental_tools": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-oh799170\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-oh799170/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "instant_interrupt": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-fk02oiep\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-fk02oiep/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "mcp_oauth_refresh_coordination": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-_mt8iu9r\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-_mt8iu9r/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "plugin_discovery_prefetch": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-8ug1jrau\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-8ug1jrau/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "prediction_preserve_parent_tools": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-0v1ksduh\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-0v1ksduh/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "realtime_conversation": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-hm16spp9\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-hm16spp9/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "reasoning_effort_override": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-17ex2rxe\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-17ex2rxe/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "system_proxy_fallback": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-osdj8yuk\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-osdj8yuk/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "ultrafast_mode": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-qakedn_f\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-qakedn_f/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "worktrees": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-mg3lqe_n\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-mg3lqe_n/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   },
+   "write_stdin_approval": {
+    "prompt_size_delta": [
+     0
+    ],
+    "request_fields_changed": true,
+    "requests": 1,
+    "returncode": 0,
+    "stderr_tail": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-ctf8eeph\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-ctf8eeph/profile\"))\nReading prompt from stdin...\n",
+    "tools_added": [],
+    "tools_removed": []
+   }
+  }
+ },
+ "version": "0.166.0"
+}
