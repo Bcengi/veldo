@@ -448,6 +448,22 @@ def _zone(name):
         return None
 
 
+def limit_names():
+    """{name: window}: LIMIT_NAMES and, VELDO-0230, the names every qualified version's own table gives its
+    windows (the record's `limit_names`, written by qualify.py from cli-formats.json), so a version that renames
+    a window is read by its own name."""
+    names = dict(LIMIT_NAMES)
+    try:
+        record = qualification()
+    except Refused:
+        return names
+    for entry in record['versions'].values():
+        named = entry.get('limit_names') if isinstance(entry, dict) else None
+        if isinstance(named, dict):
+            names.update({text: window for window, text in named.items() if isinstance(text, str)})
+    return names
+
+
 def limit_window(text):
     """The window a usage-limit message names, or None when the text is not the usage-limit message."""
     if isinstance(text, str) and text.startswith(LIMIT_REJECTED):
@@ -455,7 +471,7 @@ def limit_window(text):
     if not isinstance(text, str) or not text.startswith(LIMIT_MESSAGE):
         return None
     name = text[len(LIMIT_MESSAGE):].split(' \u00b7 ', 1)[0]
-    return LIMIT_NAMES.get(name, LIMIT_WINDOW)
+    return limit_names().get(name, LIMIT_WINDOW)
 
 
 def limit_reset(text, now):

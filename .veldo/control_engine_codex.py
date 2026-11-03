@@ -363,6 +363,8 @@ class Meter:
         the reset it states (or none), every other with no reset. The same statement again adds nothing."""
         if not isinstance(message, str):
             return []
+        # VELDO-0230: a later binary prints the same messages with a typographic apostrophe (U+2019).
+        message = message.replace('\u2019', "'")
         if LIMIT_MESSAGE in message:
             window, reset = LIMIT_WINDOW, limit_reset(message, self.clock(), self.zone)
         else:

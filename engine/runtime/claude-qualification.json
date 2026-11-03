@@ -66,6 +66,14 @@
    ],
    "host_kind": "linux",
    "input": "stream JSON input (VELDO-0155 AC3): the initialize control request first, then the dispatch packet as the user message only once the answer names a subscription login",
+   "limit_names": {
+    "five_hour": "session limit",
+    "overage": "usage credit limit",
+    "seven_day": "weekly limit",
+    "seven_day_opus": "Opus limit",
+    "seven_day_overage_included": "Fable limit",
+    "seven_day_sonnet": "Sonnet limit"
+   },
    "live_usage": null,
    "login_status": {
     "argv": [

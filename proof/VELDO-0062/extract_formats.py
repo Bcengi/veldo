@@ -490,6 +490,15 @@ class Reader:
             schema = {'type': 'any', 'ref': name}
         finally:
             self.seen.pop()
+        if schema == {'type': 'any', 'ref': name} and len(spans) == 2:
+            # VELDO-0230: an unresolved NAME(transform, SCHEMA), the preprocess wrapper a later build puts around
+            # a field: the schema it wraps, with its own optionality.
+            try:
+                inner, _ = self.parse(spans[1], depth)
+            except (Moved, StopIteration):
+                inner = None
+            if inner is not None and inner.get('type') != 'any':
+                return dict(inner, ref=name)
         return dict(schema, ref=name)
 
     def fields(self, at, depth):

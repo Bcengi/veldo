@@ -3723,7 +3723,15 @@
      },
      "permissionMode": {
       "ref": "ne",
-      "type": "any"
+      "type": "enum",
+      "values": [
+       "default",
+       "acceptEdits",
+       "bypassPermissions",
+       "plan",
+       "dontAsk",
+       "auto"
+      ]
      },
      "plugin_errors": {
       "items": {

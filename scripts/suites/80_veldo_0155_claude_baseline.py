@@ -1078,7 +1078,8 @@ out.close()
             events = FORMATS['events']
             printed = [e for own in (normal, token_own, unguarded, shaken) for e in own.get('printed') or []]
             # The initialize answer, in the shape the binary's control response and Kfe() account give it.
-            fields = set(re.findall(r'(\w+):(?:ie\?\.\w+|He\(\))', INPUT['account']['text']))
+            # VELDO-0230: the minifier's names (the account value's and the provider getter's) are any name.
+            fields = set(re.findall(r'(\w+):(?:[\w$]+\?\.\w+|[\w$]+\(\))', INPUT['account']['text']))
             answers = [e for e in printed if e.get('type') == 'control_response']
             bad = [('control_response', sorted(e)) for e in answers
                    if set(e) != {'type', 'response'} or (e['response'] or {}).get('subtype') != 'success'

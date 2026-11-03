@@ -340,9 +340,12 @@ sys.exit(payload.get('code', 0))
         LINK.symlink_to(GOOD)
         # ~/.nvm/.../bin/codex, the shim the package manager links: found beside the node the package is under.
         NPM_LINK = None
+        # (VELDO-0230: or node_modules/.bin/codex, where an install into a prefix links it.)
         for parent in Path(REAL).parents:
-            if (parent / 'bin' / 'codex').is_symlink():
-                NPM_LINK = str(parent / 'bin' / 'codex')
+            found = next((link for link in (parent / 'bin' / 'codex', parent / 'node_modules' / '.bin' / 'codex')
+                          if link.is_symlink()), None)
+            if found is not None:
+                NPM_LINK = str(found)
                 break
 
         # Every contained spawn: the profile's systemd-run records its dispatch, then becomes the real one.
@@ -544,7 +547,8 @@ sys.exit(payload.get('code', 0))
 
         def get_run(name):
             return runs[name][1]
-        LIMIT = "You've hit your usage limit. Try again later."
+        # VELDO-0230: the qualified binary's own usage-limit message with its no-reset phrase.
+        LIMIT = FORMATS['usage_limit']['message'] + FORMATS['usage_limit']['retry_later'][0]
         runs, ended = {}, {}
         try:
             # Phase 1: every independent launch, submitted one after another, then each waited for.

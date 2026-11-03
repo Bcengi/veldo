@@ -407,10 +407,10 @@ sys.exit(payload.get('code', 0))
         check('launch/no-revision', 'one engine ran the dispatch to its end',
               record.get('state') == 'exited' and len(observed) == 1)
         check('launch/no-revision', 'the tools option names exactly the in-run list %s' % options.get('--tools'),
-              options.get('--tools') == sorted(IN_RUN) and len(IN_RUN) == 18)
+              options.get('--tools') == sorted(IN_RUN) and bool(IN_RUN))
         check('launch/no-revision', 'the init event offers the in-run list the binary registers, %s missing only %s'
               % (sorted(init), sorted(set(IN_RUN) - init)),
-              init == set(IN_RUN) & set(REGISTRY) and sorted(set(IN_RUN) - init) == UNREGISTERED == ['REPL'])
+              init == set(IN_RUN) & set(REGISTRY) and sorted(set(IN_RUN) - init) == sorted(set(UNREGISTERED) & set(IN_RUN)))
         check('launch/no-revision', 'RemoteTrigger is absent from the init event', bool(init) and 'RemoteTrigger' not in init)
         check('launch/no-revision', 'SendMessage, PushNotification and the claude.ai-writing tools are absent %s'
               % sorted(init.intersection(OUTSIDE)), bool(init) and not init.intersection(OUTSIDE))
@@ -494,9 +494,11 @@ sys.exit(payload.get('code', 0))
         check('evidence/registry', 'the registry holds the live init\'s tools and the outward ones the table lacks',
               set(LIVE) | set(OUTSIDE) <= set(registry) and len(registry) >= 25
               and not set(LIVE) <= set(TABLE22) and 'ReportFindings' not in TABLE22)
-        check('evidence/registry', 'every in-run tool is registered but the compiled-out REPL slot',
-              set(IN_RUN) - set(registry) == {'REPL'} and data.find(b'function mr(){return null}') == (
-                  (fresh.get('unregistered_in_run') or {}).get('REPL') or {}).get('offset'))
+        # VELDO-0230: the compiled-out slots are the extraction's own, each found at the offset it names.
+        unregistered = fresh.get('unregistered_in_run') or {}
+        check('evidence/registry', 'every in-run tool is registered but a compiled-out slot %s' % sorted(unregistered),
+              set(IN_RUN) - set(registry) == set(unregistered) & set(IN_RUN) and bool(unregistered)
+              and all(data.find(entry['slot'].encode()) == entry['offset'] for entry in unregistered.values()))
         classification = shipped_entry.get('tool_classification') or {}
         check('evidence/classification', 'every registry tool is classified in_run or outward',
               bool(registry) and set(registry) <= set(classification)

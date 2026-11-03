@@ -202,7 +202,15 @@
      "permission_mode": {
       "optional": true,
       "ref": "ne",
-      "type": "any"
+      "type": "enum",
+      "values": [
+       "default",
+       "acceptEdits",
+       "bypassPermissions",
+       "plan",
+       "dontAsk",
+       "auto"
+      ]
      },
      "plan_content": {
       "optional": true,

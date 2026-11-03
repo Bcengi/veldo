@@ -247,12 +247,14 @@ def claude_record(root, executable):
     C = load('qualify_claude', HERE / 'control_engine_claude.py')
     proof = Path(root) / 'proof'
     version = claude_version(executable)
-    formats = json.loads((proof / 'VELDO-0062/cli-formats.json').read_text())['claude_code']['events']
+    table = json.loads((proof / 'VELDO-0062/cli-formats.json').read_text())['claude_code']
+    formats, usage = table['events'], table['usage_limit']
     tools = json.loads((proof / 'VELDO-0173/claude-tools.json').read_text())
     login = json.loads((proof / 'VELDO-0185/login-status.json').read_text())['record']
     plugins, skills = claude_builtins(executable, C.BASELINE)
     entry = dict(json.loads(json.dumps(CLAUDE_POLICY)), baseline=C.BASELINE, engine_plugins=plugins,
-                 engine_skills=skills, login_status=login, pinned='<state root>/engines/claude_code/' + version,
+                 engine_skills=skills, limit_names=usage['names'], login_status=login,
+                 pinned='<state root>/engines/claude_code/' + version,
                  rate_limit_windows=formats['rate_limit_event']['fields']['rate_limit_info']['fields']['rateLimitType']['values'],
                  session_environment=C.session_environment(executable), sha256=digest(executable),
                  source=home_form(executable),

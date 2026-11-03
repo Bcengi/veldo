@@ -637,7 +637,10 @@ sys.exit(payload.get('code', 0))
             names_now = set((extracted or {}).get('session_names') or [])
             check('evidence/outside-scan', engine + ': extracted session names equal an independent strings scan',
                   outside_error is None and bool(outside) and bool(names_now) and names_now == outside
-                  and required <= names_now and required <= outside)
+                  # VELDO-0230: a later build packs a required name against the next literal, which both scans
+                  # read as one piece starting with it.
+                  and all(any(n.startswith(r) for n in names_now) and any(n.startswith(r) for n in outside)
+                          for r in required))
             check('evidence/prefixes', engine + ': wrapper and qualified baseline use identical prefixes',
                   list(getattr(L, 'SESSION_PREFIXES', ())) == module.BASELINE.get('strip_prefixes'))
             prefixes = (entry.get('baseline') or {}).get('strip_prefixes') or []
