@@ -1,0 +1,16 @@
+{
+ "claude_code": {
+  "binary": "~/.local/share/claude/versions/2.1.281",
+  "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+  "version": "2.1.281"
+ },
+ "codex": {
+  "binary": "~/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+  "package_version": "0.154.0-linux-x64",
+  "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+  "version": "0.154.0"
+ },
+ "note": "The qualified agent CLIs, written by python3 .veldo/qualify.py and read by every extractor, suite, census row and setup step that needs a version, a binary path or a digest.",
+ "schema": "veldo.engines/v1",
+ "spec_id": "VELDO-0230"
+}
