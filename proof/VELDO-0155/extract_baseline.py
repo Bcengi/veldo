@@ -16,32 +16,50 @@ under test.
     python3 -B proof/VELDO-0155/extract_baseline.py [--claude PATH]            # write
     python3 -B proof/VELDO-0155/extract_baseline.py --check [--claude PATH]    # compare, exit 1 on a change
 
-Every anchor is the exact text of 2.1.281 and must occur in the binary; a version that moved one fails
-here by name rather than yielding a guessed table.
+THE ANCHORS. Each anchor is written as the text of the qualified binary it was first read from, and is
+read as a pattern: a minified identifier (a name that is not a keyword, a global, a property after `.` or
+an object key) matches any identifier, the same name twice matches the same identifier twice, a string
+literal and every other character match only themselves. Where a later build reworded or restructured the
+code an anchor quotes, the anchor marks the part that moved: `#s` any one string literal, `#N` up to N
+characters that hold no `;`, `#~N` up to N characters that cross no `function `, and `#>` the start of
+context that must follow but is not recorded. The table records the text the binary holds, so on the
+binary an anchor was written from it records the anchor itself. An anchor that matches nothing, or two
+different texts, fails here by name rather than yielding a guessed table. The default binary and the
+version recorded come from the engines record (.veldo/qualify.py).
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import re
 import sys
 
 HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
 OUT = HERE / 'claude-baseline.json'
 FORMATS = HERE.parent / 'VELDO-0062' / 'cli-formats.json'
-DEFAULT_CLAUDE = Path.home() / '.local/share/claude/versions/2.1.281'
-VERSION = '2.1.281'
+
+
+def _qualify():
+    spec = importlib.util.spec_from_file_location('veldo_qualify', ROOT / '.veldo' / 'qualify.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+Q = _qualify()
 
 # Each option of the baseline, as the main command declares it, and the two it deliberately does not use.
 OPTIONS = {
-    '--setting-sources': '.option("--setting-sources <sources>","Comma-separated list of setting sources to load (user, project, local).")',
+    '--setting-sources': '.option("--setting-sources <sources>",#s)',
     '--settings': '"--settings <file-or-json>"',
-    '--strict-mcp-config': '.option("--strict-mcp-config","Only use MCP servers from --mcp-config, ignoring all other MCP configurations",()=>!0)',
+    '--strict-mcp-config': '.option("--strict-mcp-config",#s,()=>!0)',
     '--mcp-config': '"--mcp-config <configs...>"',
-    '--disable-slash-commands': '.option("--disable-slash-commands","Disable all skills",()=>!0)',
+    '--disable-slash-commands': '.option("--disable-slash-commands",#s,()=>!0)',
     # VELDO-0141: the stream options every run adds so partial messages and subagent text reach the stream.
-    '--include-partial-messages': '.option("--include-partial-messages","Include partial message chunks as they arrive (only works with --print and --output-format=stream-json)",()=>!0)',
-    '--forward-subagent-text': '.option("--forward-subagent-text","Forward subagent text and thinking blocks as assistant/user messages with parent_tool_use_id set (only works with --print and --output-format=stream-json)",()=>!0)',
+    '--include-partial-messages': '.option("--include-partial-messages",#s,()=>!0)',
+    '--forward-subagent-text': '.option("--forward-subagent-text",#s,()=>!0)',
 }
 NOT_USED = {
     '--bare': 'Anthropic auth is strictly ANTHROPIC_API_KEY or apiKeyHelper via --settings (OAuth and keychain are never read)',
@@ -50,11 +68,11 @@ NOT_USED = {
 # What the binary reads for each switch.
 SWITCHES = {
     'setting_sources': {'kind': 'option', 'name': '--setting-sources', 'value': '',
-                        'anchors': ['function KIr(e){if(e==="")return[];',
+                        'anchors': ['function KIr(e){if(e==="")return[];#>let n=e.split(",")',
                                     'function d$n(){let r=vD("--setting-sources");if(r!==void 0)g(r);',
                                     'let t=new Set(e);t.add("flagSettings"),t.add("policySettings");']},
     'strict_mcp_config': {'kind': 'option', 'name': '--strict-mcp-config',
-                          'anchors': ['ns=(wt||uo()||Vn()?Promise.resolve({servers:{}}):wO(',
+                          'anchors': ['ns=(wt||uo()||Vn()?Promise.resolve({servers:{}}):#20wO(#>Lt,{storageV5:',
                                       'function HZe(){return!VI()&&!d2e()&&!uo()}']},
     'disable_slash_commands': {'kind': 'option', 'name': '--disable-slash-commands',
                                'anchors': ['Ce=this.disableSlashCommands?this.noCommands:']},
@@ -65,12 +83,12 @@ SWITCHES = {
                             'anchors': ['let e=process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY;if(Oe(e))return"off";',
                                         'if(Va()){if(n={auto:Qs()}']},
     'disable_all_hooks': {'kind': 'setting', 'name': 'disableAllHooks', 'value': True,
-                          'anchors': ['let t=Un();if(t.disableAllHooks===!0)return o?.hooks??{};return t.hooks??{}']},
+                          'anchors': ['let t=Un();if(t.disableAllHooks===!0)#16return o?.hooks??{};return #16t.hooks??{}']},
     # VELDO-0141: the two stream options (boolean; each honored only with --print and stream JSON output,
     # which the qualified flags carry): partial message chunks, and subagent text and thinking forwarded as
     # messages with parent_tool_use_id set, without which a subagent's work is hidden from the stream.
     'include_partial_messages': {'kind': 'option', 'name': '--include-partial-messages',
-                                 'anchors': ['if(ie){if(!Ze||ze!=="stream-json"){if(ko)return Yt("Error: --include-partial-messages requires --print and --output-format=stream-json.");ie=!1}}']},
+                                 'anchors': ['if(#120ie){if(!Ze||ze!=="stream-json"){if(ko)return Yt("Error: --include-partial-messages requires --print and --output-format=stream-json.");ie=!1}}']},
     'forward_subagent_text': {'kind': 'option', 'name': '--forward-subagent-text',
                               'anchors': ['if(_e){if(!Ze||ze!=="stream-json"){if(vo)return Yt("Error: --forward-subagent-text requires --print and --output-format=stream-json.");_e=!1}}',
                                           'forwardSubagentText:n.options.forwardSubagentText??!1']},
@@ -98,14 +116,14 @@ GATES = {
                       'anchors': ['Ce=this.disableSlashCommands?this.noCommands:']},
     'instructions_profile': {'where': 'the profile CLAUDE.md (user) and the clone CLAUDE.md (project)',
                              'kept_out_by': ['setting_sources', 'disable_claude_mds'],
-                             'anchors': ['Pe=pr("userSettings"),Le=we(),De=$8("User")',
-                                         'We=pw("projectSettings"),st=pw("localSettings")']},
+                             'anchors': ['Pe=pr("userSettings")#80$8("User")',
+                                         'We=pw("projectSettings"),st=pw("localSettings")#>#~400"CLAUDE.local.md"']},
     'memory': {'where': 'the profile projects/<project>/memory/MEMORY.md (auto memory)',
                'kept_out_by': ['disable_auto_memory'],
                'anchors': ['function By(){if(Ar())return"off";if(gC())return"off";']},
     'hooks_profile': {'where': 'hooks in the profile settings.json and the clone .claude/settings.json',
                       'kept_out_by': ['setting_sources', 'disable_all_hooks'],
-                      'anchors': ['let t=Un();if(t.disableAllHooks===!0)return o?.hooks??{};return t.hooks??{}']},
+                      'anchors': ['let t=Un();if(t.disableAllHooks===!0)#16return o?.hooks??{};return #16t.hooks??{}']},
 }
 # The login the init event cannot show: the Anthropic profile store and its precedence over claude.ai.
 PROFILE = {
@@ -133,31 +151,91 @@ INPUT = {
     'error': 'mY=f(()=>d({subtype:R("error"),request_id:o()',
     'answer': 'ie=Kfe(),z=g().toolPermissionContext.mode',
     'account': 'account:{email:ie?.email,organization:ie?.organization,subscriptionType:ie?.subscription,'
-               'tokenSource:ie?.tokenSource,apiKeySource:ie?.apiKeySource,apiProvider:He()}',
+               'tokenSource:ie?.tokenSource,apiKeySource:ie?.apiKeySource,apiProvider:He()}#>,pid:process.pid',
     'account_login': 'function Kfe(){if(He()!=="firstParty")return;let{source:n}=Mc(),r={};',
     'account_key': 'let{key:s,source:g}=Yf();if(s)r.apiKeySource=g;',
     'providers': 'apiProvider:z(["firstParty","bedrock","vertex","foundry","anthropicAws","anthropicGoogleCloud",'
                  '"mantle","gateway"])',
     'user': 'XR=f(()=>d({type:R("user"),message:J0(),parent_tool_use_id:o().nullable()',
-    'answered': 's.enqueue({type:"control_response",response:{subtype:"success",request_id:r,response:Pe,',
+    'answered': 's.enqueue({type:"control_response",response:{subtype:"success",request_id:r,response:Pe#160,'
+                '#>pending_permission_requests:P.getPendingPermissionRequests()',
     'account_token': 'if(n==="CLAUDE_CODE_OAUTH_TOKEN"||n==="CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR")r.tokenSource=n;'
                      'else if(pt())r.subscription=wBn();else if(n!=="profile")r.tokenSource=n;',
     'token_sources': 'function Mc(){if(uo()){if(D_())return{source:"apiKeyHelper",hasToken:!0};return{source:"none",'
                      'hasToken:!1}}if(hH()&&!_Ht())return{source:"ANTHROPIC_AUTH_TOKEN",hasToken:!0};'
-                     'if(a.CLAUDE_CODE_OAUTH_TOKEN)return{source:"CLAUDE_CODE_OAUTH_TOKEN",hasToken:!0};if(OI()){'
+                     'if(a.CLAUDE_CODE_OAUTH_TOKEN#24)return{source:"CLAUDE_CODE_OAUTH_TOKEN",hasToken:!0};if(OI()){'
                      'if(q4("CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR"))return{source:"CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR",'
                      'hasToken:!0};return{source:"CCR_OAUTH_TOKEN_FILE",hasToken:!0}}if(D_()&&!In())return{source:'
                      '"apiKeyHelper",hasToken:!0};if(Oc())return{source:"profile",hasToken:!0};let r=un();'
                      'if(_N(r?.scopes)&&r?.accessToken)return{source:"claude.ai",hasToken:!0};return{source:"none",'
                      'hasToken:!1}}',
-    'subscriptions': 'function wBn(){switch(tr()){case"enterprise":return"Claude Enterprise";case"team":return'
+    'subscriptions': 'function wBn(){#~120switch(#12){case"enterprise":return"Claude Enterprise";case"team":return'
                      '"Claude Team";case"max":return"Claude Max";case"pro":return"Claude Pro";default:return"Claude API"}}',
 }
-BUNDLED = re.compile(r'Vo\(\{name:"([a-z][a-z0-9-]*)",(?:menuDescription|description):')
+# A bundled skill: a call of the function that registers update-config, with a literal name, either on an
+# object literal or on the object a factory function returns.
+IDENT = r'[A-Za-z_$][\w$]*'
+SKILL = r'\{name:"([a-z][a-z0-9-]*)",(?:menuDescription|description):'
+REGISTERS = re.compile(r'(?<![\w$.])(' + IDENT + r')\(\{name:"update-config",')
+
+# Reading an anchor as a pattern (see THE ANCHORS above).
+KEEP = frozenset('function return if else let const var new this typeof void async await in of null true false '
+                 'switch case default break do while for try catch throw delete instanceof Promise Boolean Set Map '
+                 'Object process Array String Number Error JSON Math Symbol'.split())
+TOKEN = re.compile(r'#>|#~?[0-9]+|#s|\.\.\.|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`|' + IDENT + r'|.', re.S)
 
 
 class Moved(Exception):
     pass
+
+
+def pattern(anchor):
+    """(regex, longest literal run, reach) of an anchor: the regex matches the text the anchor stands for,
+    the literal run locates its candidates, the reach bounds how far a match extends from that run."""
+    out, names, runs, run, reach = [], {}, [], '', 64 + 4 * len(anchor)
+    tokens = [m.group(0) for m in TOKEN.finditer(anchor)]
+    context = False
+    for n, tok in enumerate(tokens):
+        prev, following = tokens[n - 1] if n else '', tokens[n + 1] if n + 1 < len(tokens) else ''
+        gap = re.fullmatch(r'#(~?)([0-9]+)', tok)
+        if tok == '#>':
+            out.append('(?=')
+            runs.append(run)
+            context = True
+        elif gap:
+            reach += int(gap.group(2))
+            out.append(('(?:(?!function )[\\s\\S])' if gap.group(1) else '[^;]') + '{0,%s}?' % gap.group(2))
+        elif tok == '#s':
+            out.append(r'"(?:[^"\\]|\\.)*"')
+        elif (re.fullmatch(IDENT, tok) and tok not in KEEP and prev not in ('.', '...')
+              and not (following == ':' and prev in ('{', ','))):
+            if tok in names:
+                out.append('(?P=v%d)' % names[tok])
+            else:
+                names[tok] = len(names)
+                out.append(('' if n else r'(?<![\w$])') + '(?P<v%d>%s)' % (names[tok], IDENT))
+        else:
+            out.append(re.escape(tok))
+            run += '' if context else tok
+            continue
+        runs.append(run)
+        run = ''
+    runs.append(run)
+    return re.compile(''.join(out) + (')' if context else '')), max(runs, key=len), reach
+
+
+def matches(text, anchor):
+    """The distinct texts of the binary the anchor matches."""
+    regex, key, reach = pattern(anchor)
+    if not key:
+        raise Moved('an anchor without literal text: ' + anchor[:80])
+    found, at = set(), text.find(key)
+    while at >= 0:
+        for m in regex.finditer(text, max(0, at - reach), at + len(key) + reach):
+            if m.start() <= at < max(m.end(), m.start() + 1):
+                found.add(m.group(0))
+        at = text.find(key, at + 1)
+    return sorted(found)
 
 
 def _digest(path):
@@ -171,20 +249,23 @@ def _digest(path):
 def extract(path):
     text = Path(path).read_bytes().decode('latin-1')
 
-    def found(anchor, what):
-        count = text.count(anchor)
-        if not count:
+    def found(anchor, what, literal=False):
+        texts = ([anchor] if anchor in text else []) if literal else matches(text, anchor)
+        if not texts:
             raise Moved('%s: not in the binary: %s' % (what, anchor[:80]))
-        return {'text': anchor, 'count': count}
-    table = {'binary': str(path), 'version': VERSION, 'sha256': _digest(path),
+        if len(texts) > 1:
+            raise Moved('%s: %d different texts in the binary match: %s' % (what, len(texts), anchor[:80]))
+        return {'text': texts[0], 'count': text.count(texts[0])}
+    table = {'binary': str(path), 'version': Q.claude_version(path), 'sha256': _digest(path),
              'options': {name: found(anchor, name) for name, anchor in OPTIONS.items()},
-             'not_used': {name: found(anchor, name) for name, anchor in NOT_USED.items()},
+             # Prose of the binary's help, matched as written.
+             'not_used': {name: found(anchor, name, literal=True) for name, anchor in NOT_USED.items()},
              'switches': {}, 'gates': {}, 'profile': {},
              'input_protocol': {name: found(anchor, 'input ' + name) for name, anchor in INPUT.items()}}
     protocol = table['input_protocol']
 
     def values(name, pattern):
-        return list(dict.fromkeys(re.findall(pattern, INPUT[name])))
+        return list(dict.fromkeys(re.findall(pattern, protocol[name]['text'])))
     protocol['providers'] = dict(protocol['providers'], values=values('providers', r'"([A-Za-z]+)"'),
                                  subscription='firstParty')
     # Kfe()'s tokenSource: every source Mc() returns but an Anthropic profile's; the one the receiver
@@ -202,9 +283,17 @@ def extract(path):
     for name, anchor in PROFILE.items():
         table['profile'][name] = found(anchor, 'profile ' + name)
     table['profile']['types'] = dict(table['profile']['types'], values=['user_oauth', 'oidc_federation'])
-    bundled = sorted(set(BUNDLED.findall(text)))
-    if 'update-config' not in bundled:
+    registers = REGISTERS.search(text)
+    if not registers:
         raise Moved('bundled skills: update-config is not registered')
+    call = re.escape(registers.group(1)) + r'\('
+    bundled = set(re.findall(r'(?<![\w$.])' + call + SKILL, text))
+    for factory in set(re.findall(r'(?<![\w$.])' + call + '(' + IDENT + r')\([^()]*\)\)', text)):
+        for body in re.finditer(r'function ' + re.escape(factory) + r'\(', text):
+            named = re.search(r'return(?: |[^;]{0,200}?,)' + SKILL, text[body.end():body.end() + 600])
+            if named:
+                bundled.add(named.group(1))
+    bundled = sorted(bundled)
     table['bundled_skills'] = bundled
     formats = json.loads(FORMATS.read_text())['claude_code']
     sources = formats['events']['system/init']['fields']['apiKeySource']['values']
@@ -216,11 +305,11 @@ def extract(path):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
-    parser.add_argument('--claude', default=str(DEFAULT_CLAUDE))
+    parser.add_argument('--claude', default=None, help='the Claude Code binary (default: the engines record\'s)')
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args(argv)
     try:
-        table = extract(args.claude)
+        table = extract(args.claude or str(Q.binary('claude_code')))
     except Moved as error:
         sys.stderr.write('moved: %s\n' % error)
         return 1

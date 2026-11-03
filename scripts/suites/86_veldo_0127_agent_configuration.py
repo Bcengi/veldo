@@ -1,4 +1,12 @@
 """Accepted role revisions through both production adapters, Runner and receiver."""
+
+# VELDO-0230: the models these rows run are the qualified binary's own, from its bundled catalog (the
+# catalog fixture qualify.py writes): the first four Code Mode models, and the catalog's first Code Mode and
+# first direct model, the two the loopback resource captures were taken with.
+_V127_MODES = [(m['slug'], m.get('tool_mode')) for m in __import__('json').loads(
+    (ROOT / 'proof' / 'VELDO-0127' / 'catalog-fixture.json').read_text())['models']]
+CODE_MODE_MODELS = [slug for slug, mode in _V127_MODES if mode == 'code_mode_only'][:4]
+FIXTURE_MODELS = (CODE_MODE_MODELS[0], next(slug for slug, mode in _V127_MODES if mode is None))
 def _v127_suite():
     import copy
     import importlib.util
@@ -119,7 +127,7 @@ def server_tools(entry):
     return [t['name'] for a in answer if a.get('id') == 2 for t in a.get('result',{}).get('tools',[])]
 own = {'argv':args, 'dispatch':os.environ.get('VELDO_DISPATCH_ID'), 'engine':engine}
 if engine == 'claude':
-    # As Claude Code 2.1.281: its built-in plugins, bundled skills, built-in skills and built-in commands
+    # As the qualified Claude Code: its built-in plugins, bundled skills, built-in skills and built-in commands
     # load unless the generated settings turn them off; `--disable-slash-commands` withdraws every skill
     # and the Skill tool; the init event comes only when a first user message arrives, and a message
     # with shouldQuery false draws it and a zero-turn result without any turn.
@@ -427,7 +435,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                   qualified.get('native_tool_mapping', {}).get('mcp_server') == resources
                   and qualified.get('mcp_resource_rule') == {
                       'when':'nonempty_mcp_servers', 'mapping':'mcp_server', 'otherwise':[]})
-            for model in ('gpt-6-astra', 'gpt-5.5'):
+            for model in FIXTURE_MODELS:
                 definition = f.role('codex', 'no-server-' + model)
                 definition['settings']['model'] = model
                 definition['mcp'] = []
@@ -454,7 +462,8 @@ for step in (packet.get('payload') or {}).get('script',[]):
                     extra.setdefault('tools', []).append({'type':'function', 'name':resource})
                     check('wire/no-server', model + ': unselected reader ' + resource + ' fails closed',
                           compare(extra, wanted) == 'configuration_stop:codex_unexpected_tool')
-            modes = json.loads((TREE / 'proof/VELDO-0127/codex-tool-investigation.json').read_text()).get('qualified_model_tool_modes')
+            modes = {m['slug']: m.get('tool_mode') for m in json.loads(
+                (TREE / 'proof/VELDO-0127/catalog-fixture.json').read_text())['models']}
             check('review/codex-mode', 'qualification writer retains the empty-profile binary model modes',
                   bool(modes) and qualified.get('model_tool_modes') == modes)
             absent_modes = dict(qualified); absent_modes.pop('model_tool_modes', None)
@@ -466,7 +475,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                   catalog == json.loads((TREE / 'proof/VELDO-0127/catalog-fixture.json').read_text())
                   and qualified.get('model_catalog_digest') == f.config_api.digest(catalog))
             role_model = getattr(L.HANDOFF, 'codex_model', None)
-            for model in ('gpt-6-astra', 'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna'):
+            for model in CODE_MODE_MODELS:
                 definition = f.role('codex', 'restricted-' + model)
                 definition['settings']['model'] = model
                 accepted = f.save(definition)
@@ -640,7 +649,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                   and direct.get('model_catalog', {}).get('models', [{}])[0].get('tool_mode') == 'code_mode_only')
             select_model = getattr(live, 'codex_model', None)
             accepted_models = []
-            for model in ('gpt-6-astra', 'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna'):
+            for model in CODE_MODE_MODELS:
                 try:
                     if select_model: select_model(model, L.HANDOFF.X)
                     accepted_models.append(True)

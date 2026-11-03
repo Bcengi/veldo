@@ -32,6 +32,12 @@ inside the suite's budget of 100 s, and once a wait for a pass the scenario need
 wait of that installation returns at once, so a defect that stops the loop reds its rows by assertion promptly.
 """
 
+# VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
+ENGINES_RECORD = __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+CLAUDE_VERSION = ENGINES_RECORD['claude_code']['version']
+CODEX_VERSION = ENGINES_RECORD['codex']['version']
+CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
+
 
 def _v154_suite():
     import contextlib
@@ -216,7 +222,7 @@ sys.exit(chosen['code'])
         package = base / 'bin' / 'codex-package'
         vendored = package / 'vendor' / 'x86_64-unknown-linux-musl' / 'bin' / 'codex'
         vendored.parent.mkdir(parents=True)
-        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
+        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         vendored.write_text(fake.replace('Path(MARKERS)', 'Path(%r)' % str(markers))
                             .replace('Path(SCRIPTS)', 'Path(%r)' % str(scripts)))
         vendored.chmod(0o755)

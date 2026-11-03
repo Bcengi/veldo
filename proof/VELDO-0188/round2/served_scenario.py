@@ -18,6 +18,9 @@ import time
 
 
 def run(ROOT, PRODUCTION, check):
+    # VELDO-0230: the qualified versions are the engines record's, never typed here.
+    CLAUDE_VERSION, CODEX_VERSION, CODEX_PACKAGE_VERSION = (lambda r: (r['claude_code']['version'], r['codex']['version'], r['codex']['package_version']))(
+        __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text()))
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
         module = importlib.util.module_from_spec(spec)
@@ -65,7 +68,7 @@ def run(ROOT, PRODUCTION, check):
         package = base / 'vendor-package'
         executable = package / 'vendor/x86_64-unknown-linux-musl/bin/codex'
         executable.parent.mkdir(parents=True)
-        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
+        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         executable.write_text('''#!EXEC -B
 import json,os,subprocess,sys
 from pathlib import Path

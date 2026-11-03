@@ -11,19 +11,22 @@ credential tables stay in VELDO-0062's table (proof/VELDO-0062/cli-formats.json)
     python3 -B proof/VELDO-0060/extract_cli.py [--claude PATH]            # write
     python3 -B proof/VELDO-0060/extract_cli.py --check [--claude PATH]    # compare, exit 1 on a change
 
-Writes proof/VELDO-0060/cli-options.json. The anchors are the exact text of 2.1.281; a version that
-moved one fails here by name rather than yielding a guessed table.
+Writes proof/VELDO-0060/cli-options.json. The default binary is the one the engines record names and the
+version recorded is that binary's (both through .veldo/qualify.py). The anchors are string literals and
+commander's own method names, never a minified identifier; a version that moved one fails here by name
+rather than yielding a guessed table.
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import re
 import sys
 
 HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
 OUT = HERE / 'cli-options.json'
-DEFAULT_CLAUDE = Path.home() / '.local/share/claude/versions/2.1.281'
 MAIN = '.name("claude")'
 PRINT = '"-p, --print"'
 VERBOSE_REQUIRED = 'Error: When using --print, --output-format=stream-json requires --verbose'
@@ -37,6 +40,16 @@ CHOICES = re.compile(r'\.choices\(\[((?:"[^"]*",?)+)\]\)')
 
 class Moved(Exception):
     pass
+
+
+def _qualify():
+    spec = importlib.util.spec_from_file_location('veldo_qualify', ROOT / '.veldo' / 'qualify.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+Q = _qualify()
 
 
 def _digest(path):
@@ -81,7 +94,7 @@ def claude(path):
                         text)
     if not updater:
         raise Moved('the binary reads no ' + UPDATER)
-    return {'binary': str(Path(path)), 'version': Path(path).resolve().name, 'sha256': _digest(path),
+    return {'binary': str(Path(path)), 'version': Q.claude_version(Path(path).resolve()), 'sha256': _digest(path),
             'source': 'the commander chain of the main claude command embedded in the binary',
             'options': {name: options[name] for name in sorted(options)},
             'requires': {'--output-format=stream-json': {'with': '--print', 'needs': '--verbose',
@@ -96,10 +109,14 @@ def extract(claude_path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--claude', default=str(DEFAULT_CLAUDE))
+    parser.add_argument('--claude', default=None, help="the Claude Code binary (default: the engines record's)")
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
-    table = extract(args.claude)
+    try:
+        table = extract(args.claude or str(Q.binary('claude_code')))
+    except Moved as error:
+        sys.stderr.write('moved: %s\n' % error)
+        return 1
     text = json.dumps(table, indent=1, sort_keys=True) + '\n'
     if args.check:
         same = OUT.is_file() and OUT.read_text() == text

@@ -8802,7 +8802,9 @@ def cases():
     extracted165 = set()
     for engine165 in ('claude', 'codex'):
         record165 = json.loads((ROOT / '.veldo' / 'runtime' / (engine165 + '-qualification.json')).read_text())
-        entry165 = record165['versions']['2.1.281'] if engine165 == 'claude' else record165
+        engines165 = json.loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+        entry165 = (record165['versions'][engines165['claude_code']['version']] if engine165 == 'claude'
+                    else record165)
         extracted165.update(entry165.get('session_environment') or [])
     hygiene165('listed-names-only', 'control_launch.py',
                'name.startswith(SESSION_PREFIXES)',
@@ -9759,10 +9761,11 @@ def cases():
         ['wire/resources'])
     # VELDO-0127 model-dependent qualification and lead capture, with no invented switch claims.
     add(127, 'role127-model-modes-omitted', '86_veldo_0127_agent_configuration.py', 'control_engine_codex.py',
-        "model_tool_modes={m['slug']: m.get('tool_mode') for m in bundled['models']}",
-        "model_tool_modes={}", ['review/codex-mode'])
+        "model_tool_modes=catalog_modes(bundled),",
+        "model_tool_modes={},", ['review/codex-mode'])
     add(127, 'role127-model-baseline-unchecked', '86_veldo_0127_agent_configuration.py', 'control_engine_codex.py',
-        "    if record.get('model_tool_modes') != MODEL_TOOL_MODES:", "    if False:", ['review/codex-mode'])
+        "    if not isinstance(modes, dict) or (isinstance(catalog, dict) and modes != catalog_modes(catalog)):",
+        "    if False:", ['review/codex-mode'])
     add(127, 'role127-code-mode-refusal-bypassed', '86_veldo_0127_agent_configuration.py', 'control_agent_config_handoff.py',
         "        raise Refused('configuration_stop:codex_code_mode_model')", "        return None", ['review/codex-mode'])
     add(127, 'role127-lead-model-mode-ignored', '86_veldo_0127_agent_configuration.py', 'proof/VELDO-0127/live.py',
@@ -9820,11 +9823,11 @@ def cases():
         "PROBE = {'type': 'user', 'message': {'role': 'user', 'content': []},",
         "PROBE = {'type': 'user', 'message': {'role': 'user', 'content': 'capability check'},", ['handoff/claude'])
     add(127, 'role127-engine-plugins-kept', suite127, 'control_agent_config_handoff.py',
-        "    settings.update(enabledPlugins={name: False for name in CLAUDE_ENGINE_PLUGINS}, disableBundledSkills=True,",
+        "    settings.update(enabledPlugins={name: False for name in plugins}, disableBundledSkills=True,",
         "    settings.update(disableBundledSkills=True,", ['handoff/claude'])
     add(127, 'role127-bundled-skills-kept', suite127, 'control_agent_config_handoff.py',
-        "for name in CLAUDE_ENGINE_PLUGINS}, disableBundledSkills=True,",
-        "for name in CLAUDE_ENGINE_PLUGINS}, disableBundledSkills=False,", ['handoff/claude'])
+        "for name in plugins}, disableBundledSkills=True,",
+        "for name in plugins}, disableBundledSkills=False,", ['handoff/claude'])
     add(127, 'role127-builtin-commands-compared', suite127, 'control_agent_config_handoff.py',
         "            value = [v for v in value if v not in set(builtin)]",
         "            value = list(value)", ['handoff/claude'])
@@ -10009,9 +10012,14 @@ def cases():
             ['defaults/' + feature] + mapped127, [])
     add(127, 'role127-default-clock-grant-lost', defaults127, 'control_agent_config_handoff.py',
         "'sleep_tool': {'clock'},", "'sleep_tool': set(),", ['mapped/clock'], [])
-    add(127, 'role127-default-unknown-accepted', defaults127, 'control_agent_config_handoff.py',
-        "            raise Refused('configuration_stop:codex_unknown_default_feature:' + feature)",
-        "            pass", ['defaults/unknown'], [])
+    # VELDO-0230 AC3: an unknown feature on by default is off at launch and named in the record; these were
+    # role127-default-unknown-accepted while such a feature refused the launch.
+    add(230, 'role230-unknown-default-left-on', defaults127, 'control_agent_config_handoff.py',
+        "        else:\n            configuration[key] = False\n",
+        "        else:\n            configuration[key] = enabled\n", ['defaults/unknown'], [])
+    add(230, 'role230-unknown-default-unlisted', defaults127, 'control_agent_config_handoff.py',
+        "    return sorted(f for f, on in codex_defaults(listing).items() if on and f not in known)",
+        "    return []", ['defaults/unknown'], [])
 
     listing127 = '89_veldo_0127_feature_listing.py'
     add(127, 'role127-feature-listing-ignored', listing127, 'control_agent_config_handoff.py',
@@ -10024,7 +10032,7 @@ def cases():
         "        if not match or match[1] in defaults:\n"
         "            return {}")])
     add(127, 'role127-feature-default-off-skipped', listing127, 'control_agent_config_handoff.py',
-        "        if feature in non_tools:", "        if feature in non_tools or not enabled:",
+        "        if feature in CODEX_FEATURES_NON_TOOLS:", "        if feature in CODEX_FEATURES_NON_TOOLS or not enabled:",
         ['explicit/' + n for n in ('memories', 'recommended_plugins', 'request_permissions_tool',
          'standalone_web_search', 'enable_mcp_apps', 'guardianv2.thread_context',
          'mapped-default-off', 'unknown-default-off')] +

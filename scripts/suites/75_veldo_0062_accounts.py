@@ -23,6 +23,12 @@ suite never touches; the engine environment, the pre-launch reservation and the 
 code on both paths. Each row is reported once: the cases of a row are parts of it.
 """
 
+# VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
+ENGINES_RECORD = __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+CLAUDE_VERSION = ENGINES_RECORD['claude_code']['version']
+CODEX_VERSION = ENGINES_RECORD['codex']['version']
+CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
+
 
 def _v62_suite():
     import contextlib
@@ -335,7 +341,7 @@ def say(event):
     sys.stdout.write(text + chr(10))
     sys.stdout.flush()
 def stream_input():
-    # VELDO-0155: stream JSON input (--input-format stream-json) as the 2.1.281 binary reads it: the initialize
+    # VELDO-0155: stream JSON input (--input-format stream-json) as the qualified Claude Code binary reads it: the initialize
     # control request is answered with the login (the binary's Kfe()), the user message's content is the
     # prompt; without it the whole input is the prompt.
     at = sys.argv.index('--input-format') if '--input-format' in sys.argv else -1
@@ -381,40 +387,40 @@ sys.exit(payload.get('code', 0))
         # pin copies it under the factory state root.
         versions = base / 'versions'
         versions.mkdir()
-        (versions / '2.1.281').write_text(fake.replace(
+        (versions / CLAUDE_VERSION).write_text(fake.replace(
             'store, markers, domain = sys.argv[-3], Path(sys.argv[-2]), sys.argv[-1]',
             'store, markers, domain = %r, Path(%r), %r' % (str(db), str(markers), DOMAIN)))
-        (versions / '2.1.281').chmod(0o755)
+        (versions / CLAUDE_VERSION).chmod(0o755)
         (mods / 'runtime').mkdir()
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps({
-            'schema': 'veldo.engine_qualification/v1', 'engine': 'claude_code', 'versions': {'2.1.281': {
-                'sha256': 'sha256:' + hashlib.sha256((versions / '2.1.281').read_bytes()).hexdigest(),
+            'schema': 'veldo.engine_qualification/v1', 'engine': 'claude_code', 'versions': {CLAUDE_VERSION: {
+                'sha256': 'sha256:' + hashlib.sha256((versions / CLAUDE_VERSION).read_bytes()).hexdigest(),
                 'flags': ['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json'],
                 'environment': {'DISABLE_AUTOUPDATER': '1'},
                 # VELDO-0155: the version is qualified with the everything-off baseline.
                 **({'baseline': L.ENGINES['claude_code'].BASELINE,
-                    'session_environment': (L.ENGINES['claude_code'].session_environment(versions / '2.1.281')
+                    'session_environment': (L.ENGINES['claude_code'].session_environment(versions / CLAUDE_VERSION)
                                             if hasattr(L.ENGINES['claude_code'], 'session_environment') else [])}
                    if hasattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'BASELINE') else {})}}}))
         factory = base / 'factory'
         factory.mkdir(mode=0o700)
         if hasattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'qualified_tools'):
-            # VELDO-0173: the full tool registry and its classification, read from the pinned 2.1.281 bytes.
+            # VELDO-0173: the full tool registry and its classification, read from the pinned qualified bytes.
             tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
             record173 = json.loads((mods / 'runtime' / 'claude-qualification.json').read_text())
-            record173['versions']['2.1.281'].update(tool_registry=tools173['tool_registry'],
+            record173['versions'][CLAUDE_VERSION].update(tool_registry=tools173['tool_registry'],
                                                     tool_classification=tools173['tool_classification'])
             (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(record173))
         pin = getattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'pin', None)
         if pin is not None:
-            pin('2.1.281', versions=str(versions), state_root=str(factory))
+            pin(CLAUDE_VERSION, versions=str(versions), state_root=str(factory))
         # VELDO-0061: a Codex adapter launches a pinned vendor binary inside its package, with the qualified
         # flags, checked against a qualification record the production writer makes. The fake Codex is laid
         # out as such a package and qualified; the Codex adapters below name it and its record.
         package = engines / 'codex-package'
         vendored = package / 'vendor' / 'x86_64-unknown-linux-musl' / 'bin' / 'codex'
         vendored.parent.mkdir(parents=True)
-        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
+        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         vendored.write_text(fake)
         vendored.chmod(0o755)
         CODEX_ENGINE = getattr(L, 'ENGINES', {}).get('codex')
@@ -433,7 +439,7 @@ sys.exit(payload.get('code', 0))
         # the trusted wrapper (the same pid): a spawn is recorded even when its engine never runs.
         spawn = ['/bin/sh', '-c', 'printf %s "$VELDO_DISPATCH_ID" > "$0/spawn-$$"; exec "$@"', str(markers)]
         wrapper = spawn + [sys.executable, '-B', str(mods / 'control_launch.py'), 'exec']
-        CLAUDE = {'identity': 'reported', 'engine': 'claude_code', 'executable': {'version': '2.1.281'}, 'argv': wrapper}
+        CLAUDE = {'identity': 'reported', 'engine': 'claude_code', 'executable': {'version': CLAUDE_VERSION}, 'argv': wrapper}
         planted = {}
 
         def plant(name):
@@ -696,7 +702,7 @@ sys.exit(payload.get('code', 0))
             return own_tokens(dispatch_id) if header else None
 
         # Stream lines in the shapes the installed CLIs print (the format rows check each one against
-        # the table extracted from the binaries). Claude Code 2.1.281's stream JSON:
+        # the table extracted from the binaries). the qualified Claude Code's stream JSON:
         SESSION = 'session-62-' + os.urandom(4).hex()
 
         def c_usage(inp, out, read=0, create=0):
@@ -707,7 +713,7 @@ sys.exit(payload.get('code', 0))
 
         @live_step
         def c_init(session=None):
-            return {'line': {'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'claude_code_version': '2.1.281',
+            return {'line': {'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'claude_code_version': CLAUDE_VERSION,
                              'cwd': '/work', 'tools': ['Read', 'Edit', 'Bash'],
                              'mcp_servers': [], 'model': 'configured-model',
                              'permissionMode': 'default', 'slash_commands': [], 'output_style': 'default', 'skills': [],

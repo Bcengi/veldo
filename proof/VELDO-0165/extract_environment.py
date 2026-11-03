@@ -17,17 +17,20 @@ the bytes hold them; the prefixes, not this list, decide the strip.
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import re
 import struct
 
 HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent.parent
+_SPEC = importlib.util.spec_from_file_location('v165_qualify', str(ROOT / '.veldo' / 'qualify.py'))
+Q = importlib.util.module_from_spec(_SPEC)
+_SPEC.loader.exec_module(Q)
 PREFIXES = ('CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX')
-PINNED = {
-    'claude': ('2.1.281', Path('/home/dmitry/.local/share/claude/versions/2.1.281')),
-    'codex': ('0.154.0', Path('/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex')),
-}
+# Each engine's key in the engines record (.veldo/runtime/engines.json): the default binary is the qualified one.
+ENGINES = {'claude': 'claude_code', 'codex': 'codex'}
 NAME = rb'[A-Z][A-Z0-9_]{2,127}'
 FAMILY = rb'CLAUDE|AI_AGENT|CODEX'
 # A prefix that does not follow an underscore starts a new literal: Rust abuts literals.
@@ -88,7 +91,10 @@ def parent_environment(engine, data, names):
         arrays = [m for m in arrays if b'"GIT_EDITOR"' in m.group() and b'"TRACEPARENT"' in m.group()]
         assert len(arrays) == 1, 'child environment list missing or ambiguous'
         child = arrays[0]
-        assert b'spawnEnvKeys()' in data[child.end():child.end() + 1000], 'child environment consumer missing'
+        # Its consumer: the spawn key set that iterates this very array (the minifier renames both).
+        variable = re.match(rb'var ([A-Za-z_$][A-Za-z0-9_$]*)=', child.group()).group(1)
+        consumer = re.compile(rb'spawnEnvKeys\([A-Za-z_$]*\)\{[^}]*?of ' + re.escape(variable) + rb'\)')
+        assert consumer.search(data, child.end(), child.end() + 1000), 'child environment consumer missing'
         assignments = list(re.finditer(
             rb'process\.env\.[A-Za-z_][A-Za-z0-9_]*="[^"]*";(?:process\.env\.[A-Za-z_][A-Za-z0-9_]*="[^"]*";)+', data))
         assignments = [m for m in assignments if b'COREPACK_ENABLE_AUTO_PIN' in m.group()]
@@ -219,35 +225,53 @@ def inventory(data):
     return {name: sorted(offsets) for name, offsets in sorted(found.items())}
 
 
+def version(engine, path):
+    """The version of the binary read, never a pinned one."""
+    return Q.claude_version(path) if engine == 'claude' else Q.codex_version(path)[0]
+
+
+def mcp_naming(data):
+    """The SDK-server prefix switch and the three anchors of the MCP tool name it feeds, located by shape (the
+    minifier renames every identifier): the first `let V=e.config.type==="sdk"&&X.CLAUDE_AGENT_SDK_MCP_NO_PREFIX`,
+    its `skipPrefix:V,` hand-off after it, the `name:F?T.name:P` choice before it, and the `mcp__${` template."""
+    switch = re.search(rb'let ([A-Za-z_$][A-Za-z0-9_$]*)=e\.config\.type==="sdk"&&[A-Za-z_$][A-Za-z0-9_$]*'
+                       rb'\.CLAUDE_AGENT_SDK_MCP_NO_PREFIX', data)
+    assert switch, 'MCP prefix switch missing'
+    skip = data.find(b'skipPrefix:' + switch.group(1) + b',', switch.end())
+    assert skip >= 0, 'MCP prefix hand-off missing'
+    names = list(re.finditer(rb'name:[A-Za-z_$][A-Za-z0-9_$]*\?[A-Za-z_$][A-Za-z0-9_$]*\.name:[A-Za-z_$][A-Za-z0-9_$]*'
+                             rb'(?=[,}])', data[max(0, switch.start() - 10000):switch.start()]))
+    assert names, 'MCP tool name choice missing'
+    choice = names[-1]
+    template = data.index(b'`mcp__${')
+    anchors = [(skip, b'skipPrefix:' + switch.group(1) + b','),
+               (max(0, switch.start() - 10000) + choice.start(), choice.group()), (template, b'`mcp__${')]
+    return ({'offset': switch.start(), 'text': switch.group().decode()},
+            [{'offset': at, 'text': text.decode()} for at, text in anchors])
+
+
 def extract(engine, path):
     data = path.read_bytes()
     names = inventory(data)
     parents, structures = parent_environment(engine, data, names)
     result = {'schema': 'veldo.environment_inventory/v1', 'engine': engine,
-              'version': PINNED[engine][0], 'sha256': 'sha256:' + hashlib.sha256(data).hexdigest(),
+              'version': version(engine, path), 'sha256': 'sha256:' + hashlib.sha256(data).hexdigest(),
               'method': 'uppercase identifier candidates outside code plus ELF string slices; conservative superset',
               'names': names,
               'session_names': session_names(data),
               'parent_session_names': parents, 'parent_structures': structures}
     if engine == 'claude':
-        anchor = b'let C=e.config.type==="sdk"&&a.CLAUDE_AGENT_SDK_MCP_NO_PREFIX'
-        at = data.index(anchor)
-        result['mcp_naming'] = {'offset': at, 'text': anchor.decode()}
-        anchors = [b'skipPrefix:C,', b'name:u?J.name:Me', b'`mcp__${']
-        result['mcp_name_anchors'] = []
-        for anchor in anchors:
-            at = data.index(anchor)
-            result['mcp_name_anchors'].append({'offset': at, 'text': anchor.decode()})
+        result['mcp_naming'], result['mcp_name_anchors'] = mcp_naming(data)
     return result
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
-    for engine, (_, default) in PINNED.items():
-        parser.add_argument('--' + engine, type=Path, default=default)
+    for engine, key in ENGINES.items():
+        parser.add_argument('--' + engine, type=Path, default=Q.binary(key))
     args = parser.parse_args()
-    for engine in PINNED:
+    for engine in ENGINES:
         record = extract(engine, getattr(args, engine))
         path = HERE / (engine + '-environment.json')
         text = json.dumps(record, indent=1, sort_keys=True) + '\n'

@@ -24,6 +24,12 @@ dispatch before it becomes the real systemd-run, so a spawn for a refused invoca
 is reported once: the cases of a row are parts of it.
 """
 
+# VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
+ENGINES_RECORD = __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+CLAUDE_VERSION = ENGINES_RECORD['claude_code']['version']
+CODEX_VERSION = ENGINES_RECORD['codex']['version']
+CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
+
 
 def _v61_suite():
     import contextlib
@@ -307,7 +313,7 @@ sys.exit(payload.get('code', 0))
 ''' % str(child)
         fake = fake_formats.embed(fake)
 
-        def package(name, version='0.154.0-linux-x64', extra=b''):
+        def package(name, version=CODEX_PACKAGE_VERSION, extra=b''):
             """A fake Codex vendor package: its manifest and the vendored binary at the real package path."""
             root = base / 'packages' / name
             vendored = root / 'vendor' / 'x86_64-unknown-linux-musl' / 'bin' / 'codex'
@@ -742,7 +748,7 @@ sys.exit(payload.get('code', 0))
                                     stdin=subprocess.DEVNULL,
                                     env={'PATH': '/usr/bin:/bin', 'HOME': str(home), 'LANG': 'C.UTF-8', 'COLUMNS': '100',
                                          'CODEX_HOME': str(base / 'direct-codex-home')})
-            check('lifecycle/actual-binary', 'the installed Codex 0.154.0 vendor binary, pinned by the installed '
+            check('lifecycle/actual-binary', 'the installed qualified Codex vendor binary, pinned by the installed '
                   'qualification, was launched through the trusted runner in its clone and exited 0 [%s %s %s]'
                   % (history(launch), termination, record.get('refusal')),
                   history(launch) == ['prepared', 'accepted', 'running', 'exited'] and termination.get('returncode') == 0
@@ -794,9 +800,9 @@ sys.exit(payload.get('code', 0))
             fresh, error = attempt(lambda: X.qualification(REAL, catalog=True))
             check('pin/qualified-record', 'the installed qualification record is what the production writer makes of '
                   'the installed vendor binary now [%s]' % error, installed and fresh == installed)
-            check('pin/qualified-record', 'it names Codex 0.154.0, the vendor path inside @openai/codex, the digest both '
+            check('pin/qualified-record', 'it names the qualified Codex, the vendor path inside @openai/codex, the digest both '
                   'extracted tables read from the binary, and the qualified flags',
-                  installed.get('version') == FORMATS['version'] == EXEC['version'] == '0.154.0'
+                  installed.get('version') == FORMATS['version'] == EXEC['version'] == CODEX_VERSION
                   and installed.get('sha256') == FORMATS['sha256'] == EXEC['sha256']
                   and installed.get('executable') == 'vendor/x86_64-unknown-linux-musl/bin/codex'
                   and installed.get('package') == '@openai/codex' and installed.get('flags') == ['exec', '--json', '-c', 'check_for_update_on_startup=false']

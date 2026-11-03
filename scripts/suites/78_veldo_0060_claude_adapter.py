@@ -36,6 +36,12 @@ each observed. The floor row drives VELDO-0049's FloorAuthority over the same st
 reported once.
 """
 
+# VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
+ENGINES_RECORD = __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+CLAUDE_VERSION = ENGINES_RECORD['claude_code']['version']
+CODEX_VERSION = ENGINES_RECORD['codex']['version']
+CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
+
 
 def _v60_suite():
     import contextlib
@@ -59,7 +65,7 @@ def _v60_suite():
     OPTIONS = json.loads((TREE / 'proof' / 'VELDO-0060' / 'cli-options.json').read_text())['claude_code']
     # VELDO-0155: the stream JSON input protocol, read from the same binary's bytes.
     INPUT = json.loads((TREE / 'proof' / 'VELDO-0155' / 'claude-baseline.json').read_text())['input_protocol']
-    VERSION = '2.1.281'
+    VERSION = CLAUDE_VERSION
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -291,7 +297,7 @@ own = {'pid': os.getpid(), 'start': start(os.getpid()), 'sid': os.getsid(0), 'pg
 (markers / ('%%d.tmp' %% os.getpid())).rename(markers / ('%%d.json' %% os.getpid()))
 out = open(markers / ('%%d.out' %% os.getpid()), 'wb')
 def stream_input():
-    # VELDO-0155: stream JSON input (--input-format stream-json) as the 2.1.281 binary reads it: the initialize
+    # VELDO-0155: stream JSON input (--input-format stream-json) as the qualified Claude Code binary reads it: the initialize
     # control request is answered with the login (the binary's Kfe(), a claude.ai subscription here), the user
     # message's content is the prompt; without it the whole input is the prompt.
     at = sys.argv.index('--input-format') if '--input-format' in sys.argv else -1
@@ -384,7 +390,7 @@ sys.exit(payload.get('code', 0))
             if hasattr(E, 'session_environment'):
                 test_record['versions'][VERSION]['session_environment'] = E.session_environment(versions / VERSION)
             if hasattr(E, 'qualified_tools'):
-                # VELDO-0173: the full tool registry and its classification, read from the pinned 2.1.281 bytes.
+                # VELDO-0173: the full tool registry and its classification, read from the pinned qualified bytes.
                 tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
                 test_record['versions'][VERSION].update(tool_registry=tools173['tool_registry'],
                                                         tool_classification=tools173['tool_classification'])
@@ -404,7 +410,7 @@ sys.exit(payload.get('code', 0))
             root = base / 'packages' / name
             vendored = root / 'vendor' / 'x86_64-unknown-linux-musl' / 'bin' / 'codex'
             vendored.parent.mkdir(parents=True)
-            (root / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
+            (root / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
             vendored.write_bytes(fake.encode() + extra)
             vendored.chmod(0o755)
             return vendored
@@ -656,7 +662,7 @@ sys.exit(payload.get('code', 0))
         def nothing_ran(dispatch_id):
             return not engine_markers(dispatch_id) and not spawned(dispatch_id) and not invocation(dispatch_id)
 
-        # Stream lines in the shape Claude Code 2.1.281 prints (the format row checks each one).
+        # Stream lines in the shape the qualified Claude Code prints (the format row checks each one).
         SESSION = 'session-60-' + os.urandom(4).hex()
 
         def c_usage(inp, out, read=0, create=0):
@@ -913,7 +919,7 @@ sys.exit(payload.get('code', 0))
                   and ('runtime/claude-qualification.json', '.veldo/runtime/claude-qualification.json')
                   in [tuple(a) for a in getattr(load('v60_scaffold', PRODUCTION['init_scaffold.py']),
                                                 '_RUNTIME_ASSETS', [])])
-            check('pin/shipped-qualification', 'its 2.1.281 digest is the installed binary\'s, as both extractions read '
+            check('pin/shipped-qualification', 'its qualified digest is the installed binary\'s, as both extractions read '
                   'it [%s]' % entry.get('sha256'),
                   entry.get('sha256') == FORMATS['sha256'] == OPTIONS['sha256'] and FORMATS['version'] == VERSION)
             flags = entry.get('flags') or []

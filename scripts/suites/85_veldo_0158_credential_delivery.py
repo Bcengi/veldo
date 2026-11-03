@@ -28,6 +28,12 @@ suite reads every process of the account from /proc. No real engine runs, nothin
 exists (every value is assembled at run time). Each row is reported once.
 """
 
+# VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
+ENGINES_RECORD = __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+CLAUDE_VERSION = ENGINES_RECORD['claude_code']['version']
+CODEX_VERSION = ENGINES_RECORD['codex']['version']
+CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
+
 
 def _v158_suite():
     import contextlib
@@ -51,7 +57,7 @@ def _v158_suite():
     FORMATS = json.loads((TREE / 'proof' / 'VELDO-0062' / 'cli-formats.json').read_text())
     STREAM = json.loads((TREE / 'proof' / 'VELDO-0141' / 'stream-formats.json').read_text())
     CODEX_ITEMS = json.loads((TREE / 'proof' / 'VELDO-0061' / 'codex-exec.json').read_text())['item']
-    VERSION = '2.1.281'
+    VERSION = CLAUDE_VERSION
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -488,7 +494,7 @@ if argv[:2] == ['login', 'status']:
     except (OSError, ValueError):
         mode = None
     if mode == 'chatgpt':
-        # The 0.154.0 binary prints its login status on stderr.
+        # The qualified Codex binary prints its login status on stderr.
         print('Logged in using ChatGPT', file=sys.stderr)
         sys.exit(0)
     sys.exit(1)
@@ -570,7 +576,7 @@ err.close()
                       'environment': {'DISABLE_AUTOUPDATER': '1'}, 'baseline': E.BASELINE,
                       'session_environment': E.session_environment(versions / VERSION)}}}
         if hasattr(E, 'qualified_tools'):
-            # VELDO-0173: the full tool registry and its classification, read from the pinned 2.1.281 bytes.
+            # VELDO-0173: the full tool registry and its classification, read from the pinned qualified bytes.
             tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
             test_record['versions'][VERSION].update(tool_registry=tools173['tool_registry'],
                                                     tool_classification=tools173['tool_classification'])
@@ -582,7 +588,7 @@ err.close()
         package = base / 'packages' / 'codex'
         CODEX_BIN = package / 'vendor' / 'x86_64-unknown-linux-musl' / 'bin' / 'codex'
         CODEX_BIN.parent.mkdir(parents=True)
-        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
+        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         CODEX_BIN.write_text(fake_codex)
         CODEX_BIN.chmod(0o755)
         codex_record_path = base / 'codex-qualification.json'

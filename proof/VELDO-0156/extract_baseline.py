@@ -12,19 +12,26 @@ this table, never from the module under test.
     python3 -B proof/VELDO-0156/extract_baseline.py [--codex PATH]            # write
     python3 -B proof/VELDO-0156/extract_baseline.py --check [--codex PATH]    # compare, exit 1 on a change
 
-Every anchor is the exact text of 0.154.0 and must occur in the binary.
+The default binary is the qualified one of the engines record (.veldo/runtime/engines.json) and the version
+written is the one the binary's own package names. Every anchor is exact text and must occur in the binary,
+except the login status messages: those a binary no longer prints are left out of its table (0.166.0 dropped
+the API key's), one it prints that the list does not hold is added after the list, and the table needs the
+not-logged-in and the ChatGPT messages.
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
+import re
 import sys
 
 HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent.parent
 OUT = HERE / 'codex-baseline.json'
-DEFAULT_CODEX = Path.home() / ('.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/'
-                               'codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex')
-VERSION = '0.154.0'
+_SPEC = importlib.util.spec_from_file_location('v156_qualify', str(ROOT / '.veldo' / 'qualify.py'))
+Q = importlib.util.module_from_spec(_SPEC)
+_SPEC.loader.exec_module(Q)
 
 OPTIONS = {
     '--ignore-user-config': 'ignore_user_configIGNORE_USER_CONFIGDo not load `$CODEX_HOME/config.toml`; auth still uses '
@@ -59,6 +66,9 @@ LOGIN_STATUS = ['Not logged in\n', 'Logged in using ChatGPT\n', 'Logged in using
                 'Logged in using access token\n', 'Logged in using personal access token\n',
                 'Logged in using Amazon Bedrock API key\n', 'Logged in using Amazon Bedrock AWS access keys\n',
                 'Logged in using workload identity\n']
+LOGIN_REQUIRED = ['Not logged in\n', 'Logged in using ChatGPT\n']
+# A login status message the list does not hold: a line of its own, or followed by a value after ' - '.
+LOGIN_OTHER = re.compile(rb'Logged in using [A-Za-z0-9 ()/._-]{1,80}?(?:\n| - )')
 REFUSAL = 'ChatGPT login is required, but an API key is currently being used. Logging out.'
 GATES = {
     'user_config': {'where': 'the profile config.toml', 'kept_out_by': ['ignore_user_config']},
@@ -102,12 +112,19 @@ def extract(path):
         if not count:
             raise Moved('%s: not in the binary: %s' % (what, anchor[:80]))
         return {'text': anchor, 'count': count}
-    return {'binary': str(path), 'version': VERSION, 'sha256': _digest(path),
+
+    def login_status():
+        for message in LOGIN_REQUIRED:
+            found(message, 'login status')
+        known = [message for message in LOGIN_STATUS if message.encode() in data]
+        other = sorted({m.group().decode() for m in LOGIN_OTHER.finditer(data)} - set(LOGIN_STATUS))
+        return [found(message, 'login status') for message in known + other]
+    return {'binary': str(path), 'version': Q.codex_version(path)[0], 'sha256': _digest(path),
             'options': {name: found(anchor, name) for name, anchor in OPTIONS.items()},
             'configuration': {key: dict({k: v for k, v in entry.items() if k != 'anchors'},
                                         anchors=[found(a, key) for a in entry['anchors']])
                               for key, entry in CONFIGURATION.items()},
-            'login_status': [found(message, 'login status') for message in LOGIN_STATUS],
+            'login_status': login_status(),
             'engine_refusal': found(REFUSAL, 'engine refusal'),
             'hook_events': found(HOOK_EVENTS, 'hook events'),
             'features': {name: dict({k: v for k, v in entry.items() if k != 'anchors'},
@@ -132,7 +149,7 @@ def extract(path):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
-    parser.add_argument('--codex', default=str(DEFAULT_CODEX))
+    parser.add_argument('--codex', default=str(Q.binary('codex')))
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args(argv)
     try:
@@ -146,8 +163,10 @@ def main(argv=None):
         print('codex-baseline.json %s' % ('matches the binary' if same else 'differs from the binary'))
         return 0 if same else 1
     OUT.write_text(text)
-    print('wrote %s (%d options, %d configuration keys, %d login messages)'
-          % (OUT, len(table['options']), len(table['configuration']), len(table['login_status'])))
+    absent = [m for m in LOGIN_STATUS if m not in [e['text'] for e in table['login_status']]]
+    print('wrote %s (%s %s: %d options, %d configuration keys, %d login messages%s)'
+          % (OUT, 'codex', table['version'], len(table['options']), len(table['configuration']),
+             len(table['login_status']), '; not in this binary: %r' % absent if absent else ''))
     return 0
 
 

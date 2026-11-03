@@ -34,7 +34,8 @@ def install(root, base, mods):
     vendor.write_text(fake)
     vendor.chmod(0o755)
     manifest = package / 'package.json'
-    manifest.write_text(json.dumps({'name': codex.PACKAGE, 'version': '0.154.0'}))
+    engines = json.loads((mods / 'runtime/engines.json').read_text())
+    manifest.write_text(json.dumps({'name': codex.PACKAGE, 'version': engines['codex']['version']}))
     qualification = codex.qualification(str(vendor))
     (mods / 'runtime/codex-qualification.json').write_text(json.dumps(qualification))
     shim = package / 'bin/codex.js'
@@ -44,5 +45,8 @@ def install(root, base, mods):
     path = base / 'path'
     path.mkdir()
     (path / 'claude').symlink_to(source)
+    # VELDO-0230 AC4: setup takes the Claude Code copy the engines record beside the modules names.
+    engines['claude_code'].update(binary=str(source), sha256=claude._file_digest(source), version=version)
+    (mods / 'runtime/engines.json').write_text(json.dumps(engines, indent=1, sort_keys=True) + '\n')
     (path / 'codex').symlink_to(shim)
     return dict(fake=fake, path=path, version=version, source=source, vendor=vendor, manifest=manifest)

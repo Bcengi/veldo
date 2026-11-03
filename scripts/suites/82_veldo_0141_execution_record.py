@@ -30,6 +30,12 @@ run's own init and tool lines and typical real paths through the production reda
 runs, nothing logs in and no credential exists (every value is assembled at run time). Each row is reported once.
 """
 
+# VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
+ENGINES_RECORD = __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+CLAUDE_VERSION = ENGINES_RECORD['claude_code']['version']
+CODEX_VERSION = ENGINES_RECORD['codex']['version']
+CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
+
 
 def _v141_suite():
     import contextlib
@@ -59,7 +65,7 @@ def _v141_suite():
     OPTIONS = json.loads((TREE / 'proof' / 'VELDO-0060' / 'cli-options.json').read_text())['claude_code']
     SWITCHES = json.loads((TREE / 'proof' / 'VELDO-0155' / 'claude-baseline.json').read_text())['switches']
     CODEX_ITEMS = json.loads((TREE / 'proof' / 'VELDO-0061' / 'codex-exec.json').read_text())['item']
-    VERSION = '2.1.281'
+    VERSION = CLAUDE_VERSION
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -451,7 +457,7 @@ err.close()
             # VELDO-0165: the version is qualified with the session names read from the pinned binary.
             test_record['versions'][VERSION]['session_environment'] = E.session_environment(versions / VERSION)
         if hasattr(E, 'qualified_tools'):
-            # VELDO-0173: the full tool registry and its classification, read from the pinned 2.1.281 bytes.
+            # VELDO-0173: the full tool registry and its classification, read from the pinned qualified bytes.
             tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
             test_record['versions'][VERSION].update(tool_registry=tools173['tool_registry'],
                                                     tool_classification=tools173['tool_classification'])
@@ -479,7 +485,7 @@ def login():
         return None
 if argv[:2] == ['login', 'status']:
     if login() == 'chatgpt':
-        # The 0.154.0 binary prints its login status on stderr.
+        # The qualified Codex binary prints its login status on stderr.
         print(TABLE['logged_in'], file=sys.stderr)
         sys.exit(0)
     sys.exit(1)
@@ -539,7 +545,7 @@ err.close()
         package = base / 'packages' / 'codex'
         CODEX_BIN = package / 'vendor' / 'x86_64-unknown-linux-musl' / 'bin' / 'codex'
         CODEX_BIN.parent.mkdir(parents=True)
-        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
+        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         CODEX_BIN.write_text(fake_codex)
         CODEX_BIN.chmod(0o755)
         codex_record_path = base / 'codex-qualification.json'
@@ -1001,7 +1007,7 @@ err.close()
                   '--verbose' in argv and all(w and w in argv and w in OPTIONS['options'] for w in wanted)
                   and all(w in ((getattr(E, 'BASELINE', None) or {}).get('stream_options') or []) for w in wanted))
             shipped = json.loads((ROOT / 'engine' / 'runtime' / 'claude-qualification.json').read_text())
-            check('record/stream-options', 'the shipped 2.1.281 record qualifies the baseline with them',
+            check('record/stream-options', 'the shipped record qualifies the baseline with them',
                   ((shipped.get('versions') or {}).get(VERSION) or {}).get('baseline') == getattr(E, 'BASELINE', None)
                   and all(w in (((shipped['versions'][VERSION]).get('baseline') or {}).get('stream_options') or [])
                           for w in wanted))
@@ -1286,11 +1292,11 @@ err.close()
                         return value
             typical = [cwd + '/src',
                        '/home/dmitry/projects/veldo-worktrees/build-veldo-0141/.veldo/control_launch.py',
-                       '/var/lib/veldo/factory/engines/claude_code/2.1.281/%s/claude' % hashlib.sha256(
+                       ('/var/lib/veldo/factory/engines/claude_code/' + CLAUDE_VERSION + '/%s/claude') % hashlib.sha256(
                            cwd.encode()).hexdigest(),
                        STREAM['codex']['binary'],
                        '%s/state/clones/%s/work' % (runtime, named('clone-', 16)),
-                       '/var/lib/veldo/factory/engines/claude_code/2.1.281/%s/claude' % named('sha256-', 32)]
+                       ('/var/lib/veldo/factory/engines/claude_code/' + CLAUDE_VERSION + '/%s/claude') % named('sha256-', 32)]
             lines_of = ['cd %s && python3 %s' % (typical[0], typical[1]),
                         json.dumps({'type': 'tool_use', 'input': {'command': 'ls ' + typical[2], 'cwd': typical[3]}})]
             kept_typical = [redacted(t) for t in typical + lines_of]

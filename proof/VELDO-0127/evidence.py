@@ -51,7 +51,9 @@ def problems(root, engine, record, handoff):
             (m, p) for m in ('always', 'deferred') for p in (False, True)} or len(runs) != 4:
         return bad + ['both roles need baseline and marker runs']
     qualification = json.loads((Path(root) / '.veldo/runtime' / (engine + '-qualification.json')).read_text())
-    pinned = qualification['versions']['2.1.281']['sha256'] if engine == 'claude' else qualification['sha256']
+    engines = json.loads((Path(root) / '.veldo/runtime/engines.json').read_text())
+    pinned = (qualification['versions'][engines['claude_code']['version']]['sha256'] if engine == 'claude'
+              else qualification['sha256'])
     for run in runs:
         if run.get('executable_digest') != pinned or not run.get('completed'):
             bad.append('worker did not complete on the qualified real executable')

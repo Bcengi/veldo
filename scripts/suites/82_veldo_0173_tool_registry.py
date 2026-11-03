@@ -7,6 +7,12 @@ tools it offers in its init event. The reported-identity wrapper runs locally, s
 manager, model, real profile or network is used. Every row reports once.
 """
 
+# VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
+ENGINES_RECORD = __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+CLAUDE_VERSION = ENGINES_RECORD['claude_code']['version']
+CODEX_VERSION = ENGINES_RECORD['codex']['version']
+CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
+
 def _v173_suite():
     import hashlib
     import importlib.util
@@ -72,7 +78,7 @@ def _v173_suite():
     # cloud routines and self-hosted runners.
     OUTSIDE = ('RemoteTrigger', 'SendMessage', 'PushNotification', 'Artifact', 'ArtifactComments', 'ArtifactData',
                'ArtifactCheck', 'AppifactRepl', 'ClaudeDesign', 'DesignSync', 'Projects', 'ShareOnboardingGuide')
-    VERSION = '2.1.281'
+    VERSION = CLAUDE_VERSION
 
     started = time.monotonic()
     fast = fast_temp()
@@ -259,7 +265,7 @@ kept = split(named)
 offered = [t for t in REGISTRY if t in kept] if narrowed and [k.lower() for k in kept] != ['default'] else list(REGISTRY)
 offered = [t for t in offered if t not in set(split(denied))]
 own['init'] = complete_event({'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'tools': offered,
-               'claude_code_version': '2.1.281', 'cwd': str(Path.cwd()), 'mcp_servers': [],
+               'claude_code_version': __import__('os').path.basename(__import__('sys').argv[0]), 'cwd': str(Path.cwd()), 'mcp_servers': [],
                'model': 'fixture-model', 'permissionMode': 'default', 'slash_commands': [],
                'output_style': 'default', 'skills': [], 'plugins': [],
                'uuid': 'fixture-init', 'session_id': 'fixture-session'})
@@ -472,7 +478,7 @@ sys.exit(payload.get('code', 0))
 
         # AC1 and AC2: the shipped record carries the registry the pinned bytes hold and its classification.
         extractor = load('v173_extractor', EXTRACTOR if EXTRACTOR.is_file() else TREE / 'proof/VELDO-0173/extract_tools.py')
-        pinned_binary = Path('/home/dmitry/.local/share/claude/versions/2.1.281')
+        pinned_binary = load('v173_qualify', ROOT / '.veldo/qualify.py').binary('claude_code')
         fresh, error = attempt(lambda: extractor.extract(pinned_binary, TREE / 'proof/VELDO-0062/cli-formats.json'))
         fresh = fresh or {}
         data = pinned_binary.read_bytes() if pinned_binary.is_file() else b''

@@ -1,5 +1,11 @@
 """VELDO-0166: the production Metering writer and profile helper, using generated local fixtures."""
 
+# VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
+ENGINES_RECORD = __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+CLAUDE_VERSION = ENGINES_RECORD['claude_code']['version']
+CODEX_VERSION = ENGINES_RECORD['codex']['version']
+CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
+
 
 def _v166_suite():
     import contextlib
@@ -120,7 +126,7 @@ def _v166_suite():
                   and meter.receipts == ['sha256:' + hashlib.sha256(raw).hexdigest()] * 2)
 
             qualified = json.loads((ROOT / 'engine/runtime/claude-qualification.json').read_text())
-            names = qualified['versions']['2.1.281']['rate_limit_windows']
+            names = qualified['versions'][CLAUDE_VERSION]['rate_limit_windows']
             event = json.loads(raw)
             info = event['rate_limit_info']
             info['unifiedWindows'] = {name: dict(utilization=(i + 1) / 10, resetsAt=1790960400 + i)

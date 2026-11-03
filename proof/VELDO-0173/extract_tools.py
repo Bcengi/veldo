@@ -20,33 +20,49 @@ of proof/VELDO-0062/cli-formats.json: a registry tool on that list is in_run, ev
 is outward, each with its reason, which quotes the tool's own definition. An in-run tool this build does
 not register (REPL, whose registry slot is compiled out) keeps its in_run row, marked unregistered.
 
-    python3 -B proof/VELDO-0173/extract_tools.py          # writes claude-tools.json beside this file
-    python3 -B proof/VELDO-0173/extract_tools.py --check  # compares a fresh extraction with it
+The default binary is the one the engines record names, and the version recorded is that binary's (both
+through .veldo/qualify.py). Minified names are read as patterns, never as text of one build.
+
+    python3 -B proof/VELDO-0173/extract_tools.py [--claude PATH]          # writes claude-tools.json beside this file
+    python3 -B proof/VELDO-0173/extract_tools.py --check [--claude PATH]  # compares a fresh extraction with it
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import re
 import struct
+import sys
 
 HERE = Path(__file__).resolve().parent
-PINNED = ('2.1.281', Path('/home/dmitry/.local/share/claude/versions/2.1.281'))
+ROOT = HERE.parents[1]
 FORMATS = HERE.parent / 'VELDO-0062' / 'cli-formats.json'
 OUTPUT = HERE / 'claude-tools.json'
 TRAILER = b'\n---- Bun! ----\n'
 # The registry's own export: the object that names getAllBaseTools, getTools and assembleToolPool.
 REGISTRY_ANCHOR = 'getAllBaseTools:'
-# The REPL tool's getter in this build, and the test that makes it the REPL slot of the registry.
-REPL_SLOT = 'function mr(){return null}'
-REPL_USE = 'let _=mr();if(_!==null&&Qk()&&!r?.skipReplFilter)'
 IDENT = r'[A-Za-z_$][\w$]*'
+# The test that makes a getter the REPL slot of the registry, and that getter compiled out of a build.
+REPL_USE = re.compile(r'let (' + IDENT + r')=(' + IDENT + r')\(\);if\(\1!==null&&' + IDENT + r'\(\)&&!' + IDENT
+                      + r'\?\.skipReplFilter\)')
+REPL_SLOT = r'function %s\(\)\{return null\}'
 REQUIRE = re.compile(r'import\.meta\.require\("([^"]+)"\)\.(' + IDENT + r')$')
 HINT_KEYS = ('searchHint', 'description', 'subject', 'label')
 
 
 class Moved(Exception):
     """A form of this binary the extractor does not read."""
+
+
+def _qualify():
+    spec = importlib.util.spec_from_file_location('veldo_qualify', ROOT / '.veldo' / 'qualify.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+Q = _qualify()
 
 
 def modules(data):
@@ -173,6 +189,22 @@ def items(text, start, end):
         if a < b:
             trimmed.append((a, b))
     return trimmed
+
+
+def _statement_end(text, at):
+    """The end of the statement that starts at `at` (a top-level ; or the } that closes its block)."""
+    pos = at
+    while pos < len(text):
+        ch = text[pos]
+        if ch in '"\'`':
+            pos = _skip_quoted(text, pos)
+        elif ch in '([{':
+            pos = closing(text, pos)
+        elif ch in ';}':
+            break
+        else:
+            pos += 1
+    return pos
 
 
 def _value_end(text, at):
@@ -452,16 +484,19 @@ class Registry:
         text = self.graph.text(path)
         function = re.search(r'\{' + REGISTRY_ANCHOR + '(' + IDENT + r'),getTools:', text).group(1)
         start = text.index('function %s(){' % function)
-        head = re.match(r'function ' + re.escape(function) + r'\(\)\{(?:let (.*?);)?return\[', text[start:], re.S)
-        if head is None:
-            raise Moved('the registry function does not return an array literal')
-        local = {}
-        if head.group(1):
-            first = start + head.start(1)
-            for x, y in items(text, first, start + head.end(1)):
-                name, _, _ = text[x:y].partition('=')
-                local[name] = (x + len(name) + 1, y)
-        array = start + head.end() - 1
+        # Its statements: `let` bindings the array reads, plain assignments that yield nothing, then
+        # `return[...]`; any other statement is a form this extractor does not read.
+        local, pos = {}, start + len('function %s(){' % function)
+        while not text.startswith('return[', pos):
+            end = _statement_end(text, pos)
+            if text.startswith('let ', pos):
+                for x, y in items(text, pos + 4, end):
+                    name, _, _ = text[x:y].partition('=')
+                    local[name] = (x + len(name) + 1, y)
+            elif not re.fullmatch(r'[\w$.]+=[\w$.]+', text[pos:end]) or text[end] != ';':
+                raise Moved('the registry function does not return an array literal')
+            pos = end + 1
+        array = pos + len('return')
         end = closing(text, array)
         tools = []
         for x, y in items(text, array + 1, end - 1):
@@ -491,18 +526,23 @@ def classify(tools, in_run, unregistered):
     return rows
 
 
-def extract(path=PINNED[1], formats=FORMATS):
+def extract(path=None, formats=FORMATS):
+    path = Path(path) if path else Q.binary('claude_code')
     data = Path(path).read_bytes()
     registry = Registry(data)
     source, tools = registry.read()
     in_run = json.loads(Path(formats).read_text())['claude_code']['tool_forms']['in_run']['tools']
     home = registry.graph.text(source['module'])
-    unregistered = {}
-    if home.count(REPL_SLOT) == 1 and home.count(REPL_USE) == 1 and 'REPL' not in {t['name'] for t in tools}:
-        unregistered['REPL'] = REPL_SLOT
+    unregistered, uses = {}, {}
+    found = list(REPL_USE.finditer(home))
+    if len(found) == 1 and 'REPL' not in {t['name'] for t in tools}:
+        slots = list(re.finditer(REPL_SLOT % re.escape(found[0].group(2)), home))
+        if len(slots) == 1:
+            unregistered['REPL'] = slots[0].group(0)
+            uses['REPL'] = found[0].group(0)
     classification = classify(tools, in_run, unregistered)
     return {
-        'schema': 'veldo.proof-tools/v1', 'spec_id': 'VELDO-0173', 'engine': 'claude_code', 'version': PINNED[0],
+        'schema': 'veldo.proof-tools/v1', 'spec_id': 'VELDO-0173', 'engine': 'claude_code', 'version': Q.claude_version(path),
         'sha256': 'sha256:' + hashlib.sha256(data).hexdigest(),
         'method': ('the Bun standalone module graph of the .bun section; the array getAllBaseTools returns, each item '
                    'resolved through local bindings, imports, lazy requires, arrays, getters and factory calls to the '
@@ -511,7 +551,7 @@ def extract(path=PINNED[1], formats=FORMATS):
         'registry': tools,
         'compiled_out': registry.compiled_out,
         'unregistered_in_run': {n: {'slot': s, 'offset': registry.graph.offset(source['module'], home.index(s)),
-                                    'use': REPL_USE} for n, s in unregistered.items()},
+                                    'use': uses[n]} for n, s in unregistered.items()},
         'in_run_source': 'proof/VELDO-0062/cli-formats.json claude_code.tool_forms.in_run.tools',
         'in_run': list(in_run),
         # What the qualification record carries (VELDO-0173 AC2), exactly.
@@ -523,17 +563,21 @@ def extract(path=PINNED[1], formats=FORMATS):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
-    parser.add_argument('--claude', type=Path, default=PINNED[1])
+    parser.add_argument('--claude', type=Path, default=None, help="the Claude Code binary (default: the engines record's)")
     args = parser.parse_args()
     record = extract(args.claude)
     text = json.dumps(record, indent=1, sort_keys=True) + '\n'
-    if args.check:
-        assert OUTPUT.read_text() == text, 'the tool inventory changed'
-    else:
-        OUTPUT.write_text(text)
     print(len(record['registry']), 'registered tools,', len(record['compiled_out']), 'compiled-out slots,',
           record['sha256'])
+    if args.check:
+        if not OUTPUT.is_file() or OUTPUT.read_text() != text:
+            print('claude-tools.json differs from the binary: the tool inventory changed')
+            return 1
+        print('claude-tools.json matches the binary')
+    else:
+        OUTPUT.write_text(text)
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

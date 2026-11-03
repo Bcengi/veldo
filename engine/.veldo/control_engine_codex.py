@@ -574,10 +574,14 @@ def qualification(executable, flags=FLAGS, *, catalog=False):
     if catalog:
         bundled, listing = bundled_catalog(executable), feature_listing(executable)
         # VELDO-0230 AC3: a feature on by default that the classification does not name is off at launch,
-        # and named here.
+        # and named here (None for a listing the launch refuses as malformed).
+        handoff = _capability_handoff()
+        try:
+            unclassified = handoff.codex_unclassified(listing)
+        except handoff.Refused:
+            unclassified = None
         record.update(feature_listing=listing, model_catalog=bundled, model_catalog_digest=catalog_digest(bundled),
-                      model_tool_modes=catalog_modes(bundled),
-                      unclassified_default_on=_capability_handoff().codex_unclassified(listing))
+                      model_tool_modes=catalog_modes(bundled), unclassified_default_on=unclassified)
     return record
 
 

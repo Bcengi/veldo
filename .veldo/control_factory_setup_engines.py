@@ -23,7 +23,11 @@ def qualified_claude(Refused, directory=None):
         named = json.loads(record.read_text())['claude_code']['binary']
     except (OSError, ValueError, KeyError, TypeError):
         raise Refused('missing_evidence:engine_source:claude_code') from None
-    path = Path(os.path.expanduser(str(named)))
+    named = str(named)
+    if named == '~' or named.startswith('~/'):
+        import pwd
+        named = pwd.getpwuid(os.getuid()).pw_dir + named[1:]
+    path = Path(named)
     if not path.is_absolute() or not path.is_file():
         raise Refused('missing_evidence:engine_source:claude_code')
     return path

@@ -58,15 +58,26 @@ def engines(path=None):
     return record
 
 
+def expand(path):
+    """A record path with its leading `~` as this account's home directory (its passwd entry, never $HOME,
+    which an engine's environment points at a temporary profile)."""
+    path = str(path)
+    if path == '~' or path.startswith('~/'):
+        import pwd
+        return Path(pwd.getpwuid(os.getuid()).pw_dir + path[1:])
+    return Path(path)
+
+
 def binary(engine, record=None):
     """The qualified binary of `engine` ('claude_code' or 'codex') as an absolute path, `~` expanded."""
     record = engines() if record is None else record
-    return Path(os.path.expanduser(record[engine]['binary']))
+    return expand(record[engine]['binary'])
 
 
 def home_form(path):
     """A path under the home directory written as ~/..., so the record reads the same for every account."""
-    path, home = Path(path), Path.home()
+    import pwd
+    path, home = Path(path), Path(pwd.getpwuid(os.getuid()).pw_dir)
     try:
         return '~/' + str(path.relative_to(home))
     except ValueError:
@@ -128,7 +139,7 @@ def installed_claude(named=None):
     the copy the `claude` on PATH resolves to."""
     if named:
         if VERSION.fullmatch(named):
-            return Path(os.path.expanduser(str(CLAUDE_VERSIONS / named)))
+            return expand(str(CLAUDE_VERSIONS / named))
         return Path(named).resolve()
     link = shutil.which('claude')
     if not link:

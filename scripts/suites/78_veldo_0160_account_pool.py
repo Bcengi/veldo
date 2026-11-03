@@ -13,7 +13,7 @@ Runner and receiver processes and the trusted wrapper that execs the engine. The
 `claude` and `codex` executables this suite writes: each records the environment it was started with,
 then prints the stream lines its packet scripts (waiting where the script says, on a file this suite
 creates) and exits with the scripted code. Every line is built in a shape the installed CLIs print
-(Claude Code 2.1.281's stream JSON with its usage-limit message, Codex 0.154.0's exec JSON with its
+(the qualified Claude Code's stream JSON with its usage-limit message, Codex 0.154.0's exec JSON with its
 usage-limit message and MCP tool-call item), and the two format rows check every line against
 proof/VELDO-0062/cli-formats.json, the table extract_formats.py reads out of the real binaries. The
 re-run-or-ask decision reads fixture records in the form the specification's Notes give, whose engine
@@ -21,6 +21,12 @@ payloads are lines of the same formats. No real engine runs, nothing logs in and
 Worker launches go through the wrapper without a containment group (`identity: reported`), so the
 systemd user manager is never touched. Each row is reported once.
 """
+
+# VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
+ENGINES_RECORD = __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+CLAUDE_VERSION = ENGINES_RECORD['claude_code']['version']
+CODEX_VERSION = ENGINES_RECORD['codex']['version']
+CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
 
 
 def _v160_suite():
@@ -242,7 +248,7 @@ def _v160_suite():
 import json, os, sys, time
 from pathlib import Path
 if sys.argv[1:3] == ['login', 'status']:
-    # VELDO-0156: the receiver's check before acceptance, on a ChatGPT login; the 0.154.0 binary prints its
+    # VELDO-0156: the receiver's check before acceptance, on a ChatGPT login; the qualified Codex binary prints its
     # login status on stderr.
     sys.stderr.write('Logged in using ChatGPT' + chr(10))
     sys.exit(0)
@@ -253,7 +259,7 @@ own = {'engine': ENGINE, 'pid': os.getpid(), 'dispatch': dispatch, 'started': ti
 (markers / ('%%d.tmp' %% os.getpid())).write_text(json.dumps(own))
 (markers / ('%%d.tmp' %% os.getpid())).rename(markers / ('%%d.json' %% os.getpid()))
 def stream_input():
-    # VELDO-0155: stream JSON input (--input-format stream-json) as the 2.1.281 binary reads it: the initialize
+    # VELDO-0155: stream JSON input (--input-format stream-json) as the qualified Claude Code binary reads it: the initialize
     # control request is answered with the login (the binary's Kfe(), a claude.ai subscription here), the user
     # message's content is the prompt; without it the whole input is the prompt.
     at = sys.argv.index('--input-format') if '--input-format' in sys.argv else -1
@@ -301,23 +307,23 @@ sys.exit(payload.get('code', 0))
         # production pin copies it under the factory state root.
         versions = base / 'versions'
         versions.mkdir()
-        (versions / '2.1.281').write_text(fake_engine('claude'))
-        (versions / '2.1.281').chmod(0o755)
+        (versions / CLAUDE_VERSION).write_text(fake_engine('claude'))
+        (versions / CLAUDE_VERSION).chmod(0o755)
         # VELDO-0155: the version is qualified with stream JSON input (the fake answers the initialize handshake
         # with a subscription login) and, where the engine module has one, the everything-off baseline.
-        claude_record = {'schema': 'veldo.engine_qualification/v1', 'engine': 'claude_code', 'versions': {'2.1.281': {
-            'sha256': 'sha256:' + hashlib.sha256((versions / '2.1.281').read_bytes()).hexdigest(),
+        claude_record = {'schema': 'veldo.engine_qualification/v1', 'engine': 'claude_code', 'versions': {CLAUDE_VERSION: {
+            'sha256': 'sha256:' + hashlib.sha256((versions / CLAUDE_VERSION).read_bytes()).hexdigest(),
             'flags': ['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json'],
             'environment': {'DISABLE_AUTOUPDATER': '1'}}}}
         CLAUDE_ENGINE = getattr(L, 'ENGINES', {}).get('claude_code')
         if getattr(CLAUDE_ENGINE, 'BASELINE', None) is not None:
-            claude_record['versions']['2.1.281']['baseline'] = CLAUDE_ENGINE.BASELINE
+            claude_record['versions'][CLAUDE_VERSION]['baseline'] = CLAUDE_ENGINE.BASELINE
             if hasattr(CLAUDE_ENGINE, 'session_environment'):
-                claude_record['versions']['2.1.281']['session_environment'] = CLAUDE_ENGINE.session_environment(versions / '2.1.281')
+                claude_record['versions'][CLAUDE_VERSION]['session_environment'] = CLAUDE_ENGINE.session_environment(versions / CLAUDE_VERSION)
         if hasattr(CLAUDE_ENGINE, 'qualified_tools'):
-            # VELDO-0173: the full tool registry and its classification, read from the pinned 2.1.281 bytes.
+            # VELDO-0173: the full tool registry and its classification, read from the pinned qualified bytes.
             tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
-            claude_record['versions']['2.1.281'].update(tool_registry=tools173['tool_registry'],
+            claude_record['versions'][CLAUDE_VERSION].update(tool_registry=tools173['tool_registry'],
                                                         tool_classification=tools173['tool_classification'])
         (mods / 'runtime').mkdir()
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(claude_record))
@@ -325,13 +331,13 @@ sys.exit(payload.get('code', 0))
         factory.mkdir(mode=0o700)
         pin = getattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'pin', None)
         if pin is not None:
-            pin('2.1.281', versions=str(versions), state_root=str(factory))
+            pin(CLAUDE_VERSION, versions=str(versions), state_root=str(factory))
         # VELDO-0061: a Codex adapter launches a pinned vendor binary inside its package, with the qualified
         # flags, checked against a qualification record the production writer makes.
         package = engines / 'codex-package'
         vendored = package / 'vendor' / 'x86_64-unknown-linux-musl' / 'bin' / 'codex'
         vendored.parent.mkdir(parents=True)
-        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
+        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         vendored.write_text(fake_engine('codex'))
         vendored.chmod(0o755)
         CODEX_ENGINE = getattr(L, 'ENGINES', {}).get('codex')
@@ -353,7 +359,7 @@ sys.exit(payload.get('code', 0))
             'host': HOST, 'receipts': str(base / 'receipts'), 'state_root': str(factory),
             'adapters': {
                 'claude': {'identity': 'reported', 'engine': 'claude_code', 'environment': {'TZ': 'UTC'},
-                           'executable': {'version': '2.1.281'}, 'argv': wrapper},
+                           'executable': {'version': CLAUDE_VERSION}, 'argv': wrapper},
                 'codex': {'identity': 'reported', 'engine': 'codex', 'environment': {'TZ': 'UTC'},
                           'executable': str(vendored), 'qualification': str(codex_qualification),
                           'argv': wrapper + [str(vendored)] + list(getattr(CODEX_ENGINE, 'FLAGS', ()))}}}))
@@ -455,7 +461,7 @@ sys.exit(payload.get('code', 0))
 
         @live_step
         def c_init():
-            return {'line': {'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'claude_code_version': '2.1.281',
+            return {'line': {'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'claude_code_version': CLAUDE_VERSION,
                              'cwd': '/work', 'tools': ['Read', 'Bash'],
                              'mcp_servers': [], 'model': 'configured-model',
                              'permissionMode': 'default', 'slash_commands': [], 'output_style': 'default', 'skills': [],

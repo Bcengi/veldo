@@ -1,5 +1,11 @@
 """VELDO-0129 installed journeys, real Runner and authorities, recorded engine formats."""
 
+# VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
+ENGINES_RECORD = __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+CLAUDE_VERSION = ENGINES_RECORD['claude_code']['version']
+CODEX_VERSION = ENGINES_RECORD['codex']['version']
+CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
+
 def _v129_suite():
     import contextlib
     import hashlib
@@ -230,7 +236,7 @@ from pathlib import Path
 markers, protected = Path(@@MARKERS@@), Path(@@PRIVATE@@)
 engine = 'codex' if 'codex' in sys.argv[0] else 'claude_code'
 if sys.argv[1:3] == ['login', 'status']:
-    # The 0.154.0 binary prints its login status on stderr.
+    # The qualified Codex binary prints its login status on stderr.
     print(@@STATUS@@, file=sys.stderr)
     sys.exit(0)
 printed = []
@@ -323,7 +329,7 @@ if engine == 'claude_code':
     # The binary's built-in tools, as the live init listed them.
     emit(complete_event({'type': 'system', 'subtype': 'init', 'cwd': str(Path.cwd()), 'session_id': session, 'tools': ['Read', 'Bash'],
                          'mcp_servers': [], 'model': 'configured-model', 'permissionMode': 'default',
-                         'slash_commands': [], 'apiKeySource': 'none', 'claude_code_version': '2.1.281',
+                         'slash_commands': [], 'apiKeySource': 'none', 'claude_code_version': __import__('os').path.basename(__import__('sys').argv[0]),
                          'output_style': 'default', 'agents': [], 'skills': [], 'plugins': [], 'uuid': str(uuid.uuid4())}))
     emit(complete_event({'type': 'assistant', 'parent_tool_use_id': None, 'uuid': str(uuid.uuid4()), 'session_id': session,
                          'message': {'id': 'msg_' + uuid.uuid4().hex[:12], 'type': 'message', 'role': 'assistant',
@@ -367,7 +373,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
         factory = state / 'factory'
         versions = base / 'versions'
         versions.mkdir()
-        version = '2.1.281'
+        version = CLAUDE_VERSION
         (versions / version).write_text(fake)
         (versions / version).chmod(0o755)
         E = L.ENGINES['claude_code']
@@ -379,7 +385,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
             # VELDO-0165: the version's extracted session names, read from the fake's own bytes.
             record['versions'][version]['session_environment'] = E.session_environment(versions / version)
         if hasattr(E, 'qualified_tools'):
-            # VELDO-0173: the full tool registry and its classification, read from the pinned 2.1.281 bytes.
+            # VELDO-0173: the full tool registry and its classification, read from the pinned qualified bytes.
             tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
             record['versions'][version].update(tool_registry=tools173['tool_registry'],
                                                tool_classification=tools173['tool_classification'])
@@ -388,7 +394,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
         E.pin(version, versions=str(versions), state_root=str(factory))
         package = factory / 'engines/codex'
         package.mkdir(parents=True)
-        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0'}))
+        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_VERSION}))
         binary = package / 'codex'
         binary.write_text(fake)
         binary.chmod(0o555)

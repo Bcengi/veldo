@@ -109,12 +109,18 @@ def _v127_feature_defaults():
                       str((error, exact, delivered)))
             # The real qualification writer reads an installed binary's feature
             # output; only that external output gains the future feature here.
+            # VELDO-0230 AC3: a newer binary never blocks. The feature the classification does not know is
+            # named in the qualification record and is off at launch, which proceeds with the tools it had.
+            _, _, before, _ = launch([])
             fixture['stdout'] += 'future_role_tool stable true\n'
             listing.write_text(json.dumps(fixture))
-            f.codex_qualification.write_text(json.dumps(X.qualification(str(f.vendored), catalog=True)))
-            _, error, tools, args = launch([])
-            check('defaults/unknown', error == 'configuration_stop:codex_unknown_default_feature:future_role_tool'
-                  and tools is None and not args, str((error, tools, bool(args))))
+            requalified = X.qualification(str(f.vendored), catalog=True)
+            f.codex_qualification.write_text(json.dumps(requalified))
+            flags, error, tools, args = launch([])
+            check('defaults/unknown', error is None and flags.get('future_role_tool') is False
+                  and requalified.get('unclassified_default_on') == ['future_role_tool']
+                  and tools is not None and set(tools) == set(before or []) and bool(args),
+                  str((error, flags.get('future_role_tool'), requalified.get('unclassified_default_on'), tools)))
         except Exception as error:
             for row in rows:
                 check(row, False, 'raised ' + type(error).__name__ + ': ' + str(error)[:160])

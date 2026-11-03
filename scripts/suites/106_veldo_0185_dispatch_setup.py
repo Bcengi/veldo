@@ -14,6 +14,12 @@ by the installed engine. The worker runs contained under this host's real user m
 linux-systemd profile). No real key, login, token or credential is read, and none is printed.
 """
 
+# VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
+ENGINES_RECORD = __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+CLAUDE_VERSION = ENGINES_RECORD['claude_code']['version']
+CODEX_VERSION = ENGINES_RECORD['codex']['version']
+CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
+
 
 def _v185_suite():
     import importlib.util
@@ -167,7 +173,7 @@ if 'codex' not in Path(sys.argv[0]).name:
         event = complete_event({'type': 'system', 'subtype': 'init', 'cwd': str(Path.cwd()), 'session_id': session,
                                 'tools': tools, 'mcp_servers': [], 'model': 'configured-model',
                                 'permissionMode': 'default', 'slash_commands': [], 'apiKeySource': 'none',
-                                'claude_code_version': '2.1.281', 'output_style': 'default', 'agents': [],
+                                'claude_code_version': __import__('os').path.basename(__import__('sys').argv[0]), 'output_style': 'default', 'agents': [],
                                 'skills': [], 'plugins': [], 'uuid': str(uuid.uuid4())})
         if bound:
             event['plugins'] = []

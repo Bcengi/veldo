@@ -31,6 +31,12 @@ what it loaded, and its runtime directory as it found it, then prints the exec e
 model turn. No real engine runs, nothing logs in, no credential exists. Each row is reported once.
 """
 
+# VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
+ENGINES_RECORD = __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+CLAUDE_VERSION = ENGINES_RECORD['claude_code']['version']
+CODEX_VERSION = ENGINES_RECORD['codex']['version']
+CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
+
 
 def _v156_suite():
     import contextlib
@@ -398,7 +404,7 @@ out.close()
         package = base / 'packages' / 'codex'
         CODEX_BIN = package / 'vendor' / 'x86_64-unknown-linux-musl' / 'bin' / 'codex'
         CODEX_BIN.parent.mkdir(parents=True)
-        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
+        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         CODEX_BIN.write_text(fake)
         CODEX_BIN.chmod(0o755)
         record_path = base / 'codex-qualification.json'
@@ -607,7 +613,7 @@ out.close()
                   reported(normal_launch).get('files') == ['config.toml'])
             shipped = json.loads((ROOT / 'engine' / 'runtime' / 'codex-qualification.json').read_text())
             base_line = shipped.get('baseline') or {}
-            check('baseline/qualified', 'the shipped 0.154.0 record qualifies the binary with the module\'s baseline, '
+            check('baseline/qualified', 'the shipped record qualifies the binary with the module\'s baseline, '
                   'every option and key in it the binary\'s own [%s]' % base_line,
                   base_line == getattr(X, 'BASELINE', None) and base_line
                   and set(base_line.get('options') or []) <= set(TABLE['options']) | set(TABLE.get('features') or {})
@@ -615,7 +621,7 @@ out.close()
                   == {k: v['value'] for k, v in generated.items()})
             check('baseline/qualified', 'a binary whose record does not list the baseline is refused by name before '
                   'acceptance, nothing spawned [%s]' % unqualified_record.get('refusal'),
-                  unqualified_record.get('refusal') == 'missing_evidence:engine_baseline:0.154.0'
+                  unqualified_record.get('refusal') == 'missing_evidence:engine_baseline:' + CODEX_VERSION
                   and history(unqualified_launch.dispatch_id) == ['prepared', 'refused']
                   and not spawned(unqualified_launch.dispatch_id))
 

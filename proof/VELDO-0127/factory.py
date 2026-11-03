@@ -19,6 +19,9 @@ def load(name, path):
 
 
 def factory(ROOT, base, PRODUCTION, fake_engine=None, live=None, deadline_seconds=90):
+    # VELDO-0230: the qualified versions are the engines record's, never typed here.
+    CLAUDE_VERSION, CODEX_VERSION, CODEX_PACKAGE_VERSION = (lambda r: (r['claude_code']['version'], r['codex']['version'], r['codex']['package_version']))(
+        __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text()))
     connections = []
     mods = base / 'installed' / '.veldo'
     mods.mkdir(parents=True)
@@ -192,26 +195,26 @@ for raw in sys.stdin:
     versions = base / 'versions'
     versions.mkdir()
     shipped = json.loads((ROOT / '.veldo/runtime/claude-qualification.json').read_text())
-    entry = shipped['versions']['2.1.281']
+    entry = shipped['versions'][CLAUDE_VERSION]
     if live:
         versions = Path(live['claude']).parent
     else:
-        (versions / '2.1.281').write_text(fake_engine('claude'))
-        (versions / '2.1.281').chmod(0o700)
-        entry = dict(entry, sha256='sha256:' + hashlib.sha256((versions / '2.1.281').read_bytes()).hexdigest(),
-                     session_environment=E.session_environment(versions / '2.1.281'))
+        (versions / CLAUDE_VERSION).write_text(fake_engine('claude'))
+        (versions / CLAUDE_VERSION).chmod(0o700)
+        entry = dict(entry, sha256='sha256:' + hashlib.sha256((versions / CLAUDE_VERSION).read_bytes()).hexdigest(),
+                     session_environment=E.session_environment(versions / CLAUDE_VERSION))
     (mods / 'runtime').mkdir()
-    (mods / 'runtime/claude-qualification.json').write_text(json.dumps(dict(shipped, versions={'2.1.281': entry})))
+    (mods / 'runtime/claude-qualification.json').write_text(json.dumps(dict(shipped, versions={CLAUDE_VERSION: entry})))
     state = base / 'factory'
     state.mkdir(mode=0o700)
-    E.pin('2.1.281', versions=str(versions), state_root=str(state))
+    E.pin(CLAUDE_VERSION, versions=str(versions), state_root=str(state))
     if live:
         vendored = Path(live['codex'])
     else:
         package = base / 'package'
         vendored = package / 'vendor/x86_64-unknown-linux-musl/bin/codex'
         vendored.parent.mkdir(parents=True)
-        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
+        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         vendored.write_text(fake_engine('codex'))
         vendored.chmod(0o700)
     codex_qualification = base / 'codex-qualification.json'
@@ -237,7 +240,7 @@ for raw in sys.stdin:
         'workspace': str(base), 'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
         'host': HOST, 'state_root': str(state), 'profile':profile, 'adapters': {
             'claude': {'engine': 'claude_code', 'environment': {'TZ': 'UTC'},
-                       'executable': {'version': '2.1.281'}, 'argv': wrapper},
+                       'executable': {'version': CLAUDE_VERSION}, 'argv': wrapper},
             'codex': {'engine': 'codex', 'environment': {'TZ': 'UTC'},
                       'executable': str(vendored), 'qualification': str(codex_qualification),
                       'argv': wrapper + [str(vendored)] + list(X.FLAGS)}}}))

@@ -24,6 +24,12 @@ drives the installed fake once through VELDO-0172's conform_fake and reports its
 engine runs, nothing logs in and no credential exists. Each row is reported once.
 """
 
+# VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
+ENGINES_RECORD = __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+CLAUDE_VERSION = ENGINES_RECORD['claude_code']['version']
+CODEX_VERSION = ENGINES_RECORD['codex']['version']
+CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
+
 
 def _v148_suite():
     import contextlib
@@ -725,7 +731,7 @@ sys.exit(chosen['code'])
         package = base / 'bin' / 'codex-package'
         vendored = package / 'vendor' / 'x86_64-unknown-linux-musl' / 'bin' / 'codex'
         vendored.parent.mkdir(parents=True)
-        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': '0.154.0-linux-x64'}))
+        (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         vendored.write_text(fake.replace('Path(MARKERS)', 'Path(%r)' % str(markers))
                             .replace('Path(SCRIPTS)', 'Path(%r)' % str(scripts))
                             .replace('FAST_UNIT', repr(C)).replace('BEAT_READY', repr(str(beat_ready))))

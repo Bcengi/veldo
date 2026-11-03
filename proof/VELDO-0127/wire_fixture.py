@@ -7,8 +7,6 @@ import sys
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[2]
-BINARY = Path('/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/'
-              'codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex')
 
 
 def load(name, path):
@@ -16,6 +14,10 @@ def load(name, path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+# VELDO-0230: the qualified Codex binary, the engines record's (written by .veldo/qualify.py).
+BINARY = load('wire_qualify', ROOT / '.veldo/qualify.py').binary('codex')
 
 
 def forward(args, config, diagnostic=None):

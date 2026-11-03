@@ -28,6 +28,12 @@ environment makes), waits, marks its first model turn and prints the turn. No re
 logs in, no credential exists (every token and key is assembled at run time). Each row is reported once.
 """
 
+# VELDO-0230: the qualified versions are the engines record's (python3 .veldo/qualify.py writes it), never typed.
+ENGINES_RECORD = __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+CLAUDE_VERSION = ENGINES_RECORD['claude_code']['version']
+CODEX_VERSION = ENGINES_RECORD['codex']['version']
+CODEX_PACKAGE_VERSION = ENGINES_RECORD['codex']['package_version']
+
 
 def _v213_prompt_write(check, launch):
     """An engine answers inside write(), so the ordering check needs no scheduler."""
@@ -125,7 +131,7 @@ def _v155_suite():
     TABLE = json.loads((TREE / 'proof' / 'VELDO-0155' / 'claude-baseline.json').read_text())
     FORMATS = json.loads((TREE / 'proof' / 'VELDO-0062' / 'cli-formats.json').read_text())['claude_code']
     OPTIONS = json.loads((TREE / 'proof' / 'VELDO-0060' / 'cli-options.json').read_text())['claude_code']
-    VERSION = '2.1.281'
+    VERSION = CLAUDE_VERSION
     INPUT = TABLE['input_protocol']
     FLAGS = ['--print', '--output-format', 'stream-json', '--verbose'] + list(INPUT['flags'])
 
@@ -851,7 +857,7 @@ out.close()
             named = (set((entry.get('baseline') or {}).get('options') or [])
                      | set((entry.get('baseline') or {}).get('stream_options') or [])
                      | set(((entry.get('baseline') or {}).get('environment') or {})))
-            check('baseline/qualified', 'the shipped 2.1.281 record qualifies the version with the module\'s baseline, '
+            check('baseline/qualified', 'the shipped record qualifies the version with the module\'s baseline, '
                   'every switch in it one the binary\'s own table reads [%s]' % sorted(named),
                   entry.get('baseline') == getattr(E, 'BASELINE', None) and entry.get('baseline') is not None
                   # VELDO-0165: LANG and TERM are the configured locale and terminal, set after the wrapper's strip,
