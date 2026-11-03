@@ -1,0 +1,79 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0230",
+ "commit": "4e7932a8b55e8bba83e4ad79d3cd17a137f9091e",
+ "tree": "5ec3a89388ec74883838ab63df34e481e74da575",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-03T22:02:09.927568+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0230/selftest-changed-suites.txt",
+     "detail": "Suite 125 census/clean passes over 792 governed files; census/planted-version and census/planted-digest name a planted 0.154.0-style version and a digest; mutants census230-version-unread and census230-digest-unread were each killed by their row."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0230/README.md",
+     "detail": "NOT RUN: the full gate waited two hours on the host gate lock (held by another session gate) and was stopped before starting."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0230/ac2a-qualify-output.txt",
+     "detail": "(a) python3 .veldo/qualify.py --codex <0.154.0> --claude 2.1.281 left git status empty: every written file byte-identical; suite 126 repeats it in scratch."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0230/ac2b-suites.txt",
+     "detail": "(b) Codex 0.166.0 and Claude Code 2.1.317 qualified by the one command; listed suites pass except 88, 89, 90 (0.166.0 offers MCP resource readers to a Code Mode model with no server: owner decision) and 78_0160 tool-forms rows (reader tables vs the new binary); eight adapter-pin mutants killed (ac2b-pin-mutations.txt)."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0230/README.md",
+     "detail": "NOT RUN: the full gate waited two hours on the host gate lock (held by another session gate) and was stopped before starting."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0230/selftest-changed-suites.txt",
+     "detail": "Suite 88 defaults/unknown: a fake binary listing an extra default-on feature launches with it off and the record names it; suite 125 newer/claude-tool: an unknown registry tool is outward, switched off and listed; mutants role230-unknown-default-left-on, role230-unknown-default-unlisted and qualify230-new-tools-unlisted killed. On 0.166.0, 20 such features were turned off and listed."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0230/README.md",
+     "detail": "NOT RUN: the full gate waited two hours on the host gate lock (held by another session gate) and was stopped before starting."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0230/selftest-changed-suites.txt",
+     "detail": "Suite 125 setup/engines-record: with claude on PATH at an unqualified 9.9.9 setup takes the engines record copy, and without the record refuses by name; mutant setup230-claude-from-path killed."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0230/README.md",
+     "detail": "NOT RUN: the full gate waited two hours on the host gate lock (held by another session gate) and was stopped before starting."
+    }
+   ]
+  }
+ ]
+}
