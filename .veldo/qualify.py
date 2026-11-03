@@ -18,9 +18,14 @@ tool modes read from the bundled catalog; the Claude Code record by `claude_reco
 tables. On the binaries already qualified it rewrites every file with the bytes it holds.
 
 A NEWER BINARY NEVER BLOCKS (AC3). A Codex feature the classification (control_agent_config_handoff
-CODEX_FEATURES) does not name is off at launch and listed by name in the record (`unclassified_features`)
+CODEX_FEATURES) does not name is off at launch unless its evaluation grants it, and listed by name in the record (`unclassified_default_on`)
 and in this command's output; a Claude Code tool not on the in-run list is outward (the extractor's
-classification), and a tool the replaced record did not hold is listed in the output.
+classification). EVALUATED AND USED IF USEFUL (Telegram 38878): every new item a binary brings (a Codex feature
+on by default the classification does not name or a feature, option, reader or grant the replaced binary did not
+have; a Claude Code tool, credential or environment name, or option the replaced binary did not have) is listed in
+the record (`new_capabilities`) and in the output with its decision from runtime/capability-decisions.json:
+granted with its reason, off with the written rule it breaks, or not applicable; one with no decision there is
+unevaluated and not granted. A granted Codex feature stays on at launch; nothing new ever blocks one.
 Standard library only.
 """
 import argparse
@@ -379,6 +384,54 @@ def fixtures(root, executable, written):
         written.append(FIXTURES + '/' + name)
 
 
+DECISIONS = '.veldo/runtime/capability-decisions.json'
+UNEVALUATED = {'decision': 'unevaluated', 'reason': 'no evaluation in runtime/capability-decisions.json: not granted '
+               'until one is written (the evaluation is part of this upgrade)'}
+
+
+def decided(decisions, engine, kind, names, default=None):
+    """VELDO-0230 AC3: [{kind, name, decision, reason, rule?}] for each new item, its evaluation from the decisions
+    record, else `default` (an item a written rule already decides), else unevaluated (not granted)."""
+    table = (decisions.get(engine) or {}).get(kind) or {}
+    return [dict(kind=kind, name=name, **(table.get(name) or default or UNEVALUATED)) for name in sorted(names)]
+
+
+def previous_tables(root):
+    """What the replaced qualification read, before the extractors overwrite it: {name: set}."""
+    def read(path, pick):
+        try:
+            return set(pick(json.loads((Path(root) / path).read_text())))
+        except (OSError, ValueError, KeyError, TypeError):
+            return None
+    credentials = lambda engine: lambda t: [n for table in t[engine]['credential_tables'] for n in table['names']]
+    return {'codex_features': read('.veldo/runtime/codex-qualification.json',
+                                   lambda r: [line.split()[0] for line in r['feature_listing'].splitlines() if line.strip()]),
+            'codex_options': read('proof/VELDO-0156/codex-baseline.json', lambda t: t['options']),
+            'codex_environment': read('proof/VELDO-0062/cli-formats.json', credentials('codex')),
+            'claude_tools': read('.veldo/runtime/claude-qualification.json',
+                                 lambda r: next(iter(r['versions'].values()))['tool_registry']),
+            'claude_options': read('proof/VELDO-0060/cli-options.json', lambda t: t['claude_code']['options']),
+            'claude_environment': read('proof/VELDO-0062/cli-formats.json', credentials('claude_code'))}
+
+
+def previous_new(root, engine):
+    """The (kind, name) pairs the replaced record listed as new, with the digest it was qualified at."""
+    try:
+        record = json.loads((Path(root) / '.veldo/runtime' / (engine + '-qualification.json')).read_text())
+        entry = record if engine == 'codex' else next(iter(record['versions'].values()))
+        return entry['sha256'], {(i['kind'], i['name']) for i in entry.get('new_capabilities') or ()}
+    except (OSError, ValueError, KeyError, StopIteration, TypeError):
+        return None, set()
+
+
+def newer(current, before, carried, kind, same):
+    """The names of `kind` that are new: against the replaced binary's table, or, re-qualifying the same binary,
+    the names the record already listed (so the same binary writes the same bytes)."""
+    if same:
+        return {name for k, name in carried if k == kind}
+    return set(current) - before if before is not None else set()
+
+
 def new_tools(entry, known):
     """VELDO-0230 AC3: the registry tools of a qualified Claude Code entry that the replaced record's
     classification did not hold, each with the class the new classification gives it."""
@@ -408,6 +461,12 @@ def main(argv=None):
                                     ['versions'].values()))['tool_classification'])
     except (OSError, ValueError, KeyError, StopIteration):
         known_tools = set()
+    before = previous_tables(root)
+    codex_before, claude_before = previous_new(root, 'codex'), previous_new(root, 'claude_code')
+    try:
+        decisions = json.loads((root / DECISIONS).read_text())
+    except (OSError, ValueError):
+        decisions = {}
     record = engines_record(codex, claude)
     write(root, 'engines.json', text(record), written)
     for script, reads, tables in EXTRACTORS:
@@ -421,20 +480,65 @@ def main(argv=None):
         written += [str(Path(script).parent / table) for table in tables]
     X = load('qualify_codex', root / '.veldo/control_engine_codex.py')
     codex_record = X.qualification(str(codex), catalog=True)
+    # VELDO-0230 AC3: every new item the binary brings, with its evaluation (the features before the loopback
+    # captures, since a granted feature stays on at launch; the readers and grants those captures find, after).
+    same = codex_before[0] == codex_record['sha256']
+    listing = {line.split()[0]: line.split()[-1] == 'true' for line in codex_record['feature_listing'].splitlines()
+               if line.strip()}
+    unclassified = set(codex_record['unclassified_default_on'] or ())
+    fresh = newer(listing, before['codex_features'], codex_before[1], 'features', same) - unclassified
+    options = json.loads((root / 'proof/VELDO-0156/codex-baseline.json').read_text())['options']
+    codex_new = decided(decisions, 'codex', 'features', unclassified) + decided(
+        decisions, 'codex', 'features', fresh, {'decision': 'not_applicable', 'reason': (
+            'off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off')})
+    codex_new += decided(decisions, 'codex', 'options', newer(options, before['codex_options'], codex_before[1],
+                                                              'options', same), {
+        'decision': 'not_applicable', 'reason': 'Veldo passes only its qualified flags and baseline options'})
+    codex_record['new_capabilities'] = codex_new
     write(root, 'codex-qualification.json', text(codex_record), written)
     claude_qualification = claude_record(root, claude)
+    entry = claude_qualification['versions'][record['claude_code']['version']]
+    same = claude_before[0] == entry['sha256']
+    cli = json.loads((root / 'proof/VELDO-0060/cli-options.json').read_text())['claude_code']['options']
+    tables = json.loads((root / 'proof/VELDO-0062/cli-formats.json').read_text())['claude_code']['credential_tables']
+    names = {}
+    for table in tables:
+        for name in table['names']:
+            names.setdefault(name, ((table.get('exceptions') or {}).get(name) or {}).get('decision', table['decision']))
+    entry['new_capabilities'] = (
+        decided(decisions, 'claude_code', 'tools', newer(entry['tool_registry'], before['claude_tools'],
+                                                         claude_before[1], 'tools', same))
+        + decided(decisions, 'claude_code', 'environment', newer(names, before['claude_environment'],
+                                                                 claude_before[1], 'environment', same))
+        + decided(decisions, 'claude_code', 'options', newer(cli, before['claude_options'], claude_before[1],
+                                                             'options', same), {
+            'decision': 'not_applicable', 'reason': 'Veldo passes only its qualified flags and baseline options'}))
     write(root, 'claude-qualification.json', text(claude_qualification), written)
     fixtures(root, codex, written)
-    entry = claude_qualification['versions'][record['claude_code']['version']]
+    codex_record = json.loads((root / '.veldo/runtime/codex-qualification.json').read_text())
+    found = decided(decisions, 'codex', 'tools_without_server', set().union(
+        *codex_record['mcp_resource_rule']['offered_without_server'].values())) + decided(
+        decisions, 'codex', 'grants', codex_record['undelivered_grants'])
+    if found:
+        codex_record['new_capabilities'] += found
+        write(root, 'codex-qualification.json', text(codex_record), [])
     print('qualified codex %s (%s) %s' % (record['codex']['version'], record['codex']['binary'], record['codex']['sha256']))
     print('qualified claude_code %s (%s) %s' % (record['claude_code']['version'], record['claude_code']['binary'],
                                                record['claude_code']['sha256']))
     if previous:
         print('replaced codex %s, claude_code %s' % (previous['codex']['version'], previous['claude_code']['version']))
-    print('codex features on by default the classification does not name, turned off: %s'
+    print('codex features on by default the classification does not name: %s'
           % (', '.join(codex_record['unclassified_default_on']) or 'none'))
     print('claude_code tools the replaced classification did not hold: %s'
           % (', '.join('%s (%s)' % pair for pair in new_tools(entry, known_tools)) or 'none'))
+    # VELDO-0230 AC3: every new item and its decision (runtime/capability-decisions.json); also in each record.
+    for engine, items in (('codex', codex_record['new_capabilities']), ('claude_code', entry['new_capabilities'])):
+        for item in items:
+            print('new %s %s %s: %s%s (%s)' % (engine, item['kind'], item['name'], item['decision'],
+                                              ' by ' + item['rule'] if item.get('rule') else '', item['reason']))
+        print('new %s items: %d, %s' % (engine, len(items), ', '.join(
+            '%d %s' % (n, d) for d, n in sorted(__import__('collections').Counter(i['decision'] for i in items).items()))
+            or 'none'))
     print('claude_code built-in plugins and skills turned off in a role-bound run: %s; %s'
           % (', '.join(entry['engine_plugins']) or 'none', ', '.join(entry['engine_skills']) or 'none'))
     for line in written:

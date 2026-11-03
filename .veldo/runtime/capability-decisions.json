@@ -1,0 +1,258 @@
+{
+ "claude_code": {
+  "environment": {
+   "ALLUSERSPROFILE": {
+    "decision": "granted",
+    "effect": "keep",
+    "reason": "a home name the worker's tools need, as APPDATA and PROGRAMDATA"
+   },
+   "BUN_TLS_REFUSE_DISTRUSTED_KEYS": {
+    "decision": "granted",
+    "effect": "keep",
+    "reason": "TLS hardening of the runtime, as NODE_TLS_REJECT_UNAUTHORIZED"
+   },
+   "CCR_AGENT_PROXY_TOKEN_FILE_DESCRIPTOR": {
+    "decision": "off",
+    "effect": "strip",
+    "reason": "a token handed through a file descriptor to an agent proxy; stripped and refused when configured",
+    "rule": "VELDO-0062 AC1"
+   },
+   "CLAUDE_CODE_DISABLE_HTTPS_AGENT_KEEPING": {
+    "decision": "granted",
+    "effect": "setting",
+    "reason": "a Claude Code connection setting, not a login, as CLAUDE_CODE_CERT_STORE: off the inherited environment, passed when the adapter configures it"
+   },
+   "CLAUDE_CODE_DISABLE_LOOPED_CROSS_CERT_DROP": {
+    "decision": "granted",
+    "effect": "setting",
+    "reason": "a Claude Code connection setting, not a login, as CLAUDE_CODE_CERT_STORE"
+   },
+   "CLAUDE_CODE_DISABLE_SELF_NAMED_CERT_DROP": {
+    "decision": "granted",
+    "effect": "setting",
+    "reason": "a Claude Code connection setting, not a login, as CLAUDE_CODE_CERT_STORE"
+   },
+   "CLAUDE_CODE_REMOTE_TOOLS_FORWARD": {
+    "decision": "off",
+    "effect": "strip",
+    "reason": "the switch that now routes a file tool or Bash to another machine (_host); stripped and refused when configured, so the routing stays off",
+    "rule": "VELDO-0160 AC3"
+   },
+   "INPUT_CLAUDE_CODE_SESSIONS_OAUTH_TOKEN": {
+    "decision": "off",
+    "effect": "strip",
+    "reason": "a session OAuth token: a login other than the account's subscription; stripped and refused when configured",
+    "rule": "VELDO-0062 AC1"
+   },
+   "NPM_CONFIG_HTTPS_PROXY": {
+    "decision": "granted",
+    "effect": "keep",
+    "reason": "the general proxy npm uses, as HTTPS_PROXY"
+   },
+   "NPM_CONFIG_HTTP_PROXY": {
+    "decision": "granted",
+    "effect": "keep",
+    "reason": "the general proxy npm uses, as HTTP_PROXY"
+   },
+   "NPM_CONFIG_PROXY": {
+    "decision": "granted",
+    "effect": "keep",
+    "reason": "the general proxy npm uses, as HTTPS_PROXY"
+   },
+   "SSL_CERT_DIR": {
+    "decision": "granted",
+    "effect": "keep",
+    "reason": "the CA directory the worker's tools verify TLS with, as NODE_EXTRA_CA_CERTS"
+   },
+   "SSL_CERT_FILE": {
+    "decision": "granted",
+    "effect": "keep",
+    "reason": "the CA bundle the worker's tools verify TLS with, as NODE_EXTRA_CA_CERTS"
+   }
+  },
+  "options": {
+   "--allow-other-models": {
+    "decision": "not_applicable",
+    "reason": "widens model selection; Veldo passes the role's model and only its qualified flags"
+   },
+   "--client-data-url": {
+    "decision": "not_applicable",
+    "reason": "a client data URL for a hosted client; never passed"
+   },
+   "--desktop": {
+    "decision": "not_applicable",
+    "reason": "the desktop app mode; never passed"
+   },
+   "--fast-mode": {
+    "decision": "off",
+    "reason": "the faster output mode draws on extra usage the run's reservation does not meter",
+    "rule": "VELDO-0062 AC2"
+   },
+   "--host-auth-is-org-sign-in": {
+    "decision": "off",
+    "reason": "marks a host-provided login as an organization sign-in",
+    "rule": "VELDO-0062 AC1"
+   },
+   "--include-unsupported-models": {
+    "decision": "not_applicable",
+    "reason": "lists unsupported models in the picker; Veldo passes the role's model"
+   }
+  },
+  "tools": {
+   "GetTask": {
+    "decision": "not_applicable",
+    "reason": "not callable: the binary answers that GetTask is not a tool you can call (a background result arrives by itself)"
+   },
+   "OfferChromeSetup": {
+    "decision": "off",
+    "reason": "shows the person a setup card for Claude in Chrome and blocks until they answer, to use their own signed-in browser, accounts and cookies",
+    "rule": "VELDO-0160 AC3"
+   },
+   "PublishPlugin": {
+    "decision": "off",
+    "reason": "publishes a plugin folder of this machine to the organization's library on claude.ai",
+    "rule": "VELDO-0160 AC3"
+   },
+   "ReadWidgetContext": {
+    "decision": "not_applicable",
+    "reason": "reads the state an MCP App view drawn in the conversation shared; a print-mode run draws no view"
+   },
+   "SendToProject": {
+    "decision": "off",
+    "reason": "creates or updates a Claude Project on claude.ai with this session's brief and repository",
+    "rule": "VELDO-0160 AC3"
+   },
+   "SendToProjectContext": {
+    "decision": "off",
+    "reason": "the context companion of SendToProject, sent to claude.ai",
+    "rule": "VELDO-0160 AC3"
+   },
+   "WrapUp": {
+    "decision": "not_applicable",
+    "reason": "fills the desktop app's next-step box under a closing message; a print-mode run has no app to draw it"
+   }
+  }
+ },
+ "codex": {
+  "features": {
+   "api_key_cyber_access_programs": {
+    "decision": "not_applicable",
+    "reason": "access programs of an API-key login; Veldo runs only the ChatGPT login (forced_login_method chatgpt); on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "api_key_model_discovery": {
+    "decision": "not_applicable",
+    "reason": "remote model discovery for an API-key login; Veldo runs only the ChatGPT login and the bundled catalog; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "bedrock_setup_wizard": {
+    "decision": "not_applicable",
+    "reason": "the TUI wizard that sets up the Bedrock provider; codex exec has no TUI and Veldo's provider is the subscription; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "browser_annotation_api": {
+    "decision": "not_applicable",
+    "reason": "annotations of the desktop app's in-app browser, which codex exec does not have (the browser tool sources stay ungranted); on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "cli_daybreak": {
+    "decision": "not_applicable",
+    "reason": "the TUI's Daybreak account-eligibility check (tui/src/app_server_session); codex exec does not run it; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "code_mode_interrupt": {
+    "decision": "granted",
+    "reason": "a running Code Mode cell can be interrupted, so a stopped or timed-out run ends its cell; no tool; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "daemon_auto_start": {
+    "decision": "off",
+    "reason": "starts the local app-server daemon, a process that outlives the run",
+    "rule": "VELDO-0040 AC1/AC3"
+   },
+   "guardian_reuse_parent_compaction": {
+    "decision": "granted",
+    "reason": "the approval guardian reuses the parent's compacted context, fewer tokens per assessment; no tool; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "in_app_voice": {
+    "decision": "not_applicable",
+    "reason": "voice input of the desktop app; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "incremental_tools": {
+    "decision": "off",
+    "reason": "sends later tool-list updates (\"previously declared tools remain available\"), so tools can be added after the first request the launch comparison reads",
+    "rule": "VELDO-0127 AC4"
+   },
+   "instant_interrupt": {
+    "decision": "granted",
+    "reason": "an interrupt takes effect at once, so a stop ends the turn sooner; no tool; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "mcp_oauth_refresh_coordination": {
+    "decision": "not_applicable",
+    "reason": "coordinates OAuth refresh of MCP servers across processes; Veldo delivers MCP credentials itself (VELDO-0158) and the run's CODEX_HOME holds no OAuth store; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "plugin_discovery_prefetch": {
+    "decision": "off",
+    "reason": "prefetches the plugin marketplace over the network; plugins are no source of a Veldo run",
+    "rule": "VELDO-0156 AC1"
+   },
+   "prediction_preserve_parent_tools": {
+    "decision": "not_applicable",
+    "reason": "the app server's prediction mode keeps the parent thread's tools; codex exec has no prediction thread; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "realtime_conversation": {
+    "decision": "not_applicable",
+    "reason": "realtime voice conversations of the TUI and app; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "reasoning_effort_override": {
+    "decision": "granted",
+    "reason": "a reasoning effort set for the run applies over the model default; no tool; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "system_proxy_fallback": {
+    "decision": "granted",
+    "reason": "a failed OAuth token exchange retries through the host's system proxy, as the kept proxy variables already allow; keeps the subscription login refreshing; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "ultrafast_mode": {
+    "decision": "granted",
+    "reason": "the faster service mode, the same class as fast_mode, which Veldo already leaves on; no tool; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   },
+   "worktrees": {
+    "decision": "off",
+    "reason": "creates managed git worktrees outside the run's clone",
+    "rule": "VELDO-0042 AC1"
+   },
+   "write_stdin_approval": {
+    "decision": "not_applicable",
+    "reason": "asks approval before writing to a running exec session; a Veldo run never asks for approval (codex exec's policy is never); on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
+   }
+  },
+  "grants": {
+   "request_user_input_async": {
+    "decision": "off",
+    "reason": "on this binary the asynchronous user message reaches the model only with tools.experimental_request_user_input on, which also delivers the synchronous request_user_input that no role lists; the run launches without it",
+    "rule": "VELDO-0127 AC4"
+   }
+  },
+  "options": {},
+  "tools_without_server": {
+   "list_mcp_resource_templates": {
+    "decision": "not_applicable",
+    "reason": "offered to a Code Mode model with no MCP server selected; with no server there is nothing to list or read. Cannot be switched off (each non-tool feature forced off leaves it); accepted on the wire for a run without a server, never granted; with a selected server the three are its grant as before (Telegram 29400/29401 amended by 38878)"
+   },
+   "list_mcp_resources": {
+    "decision": "not_applicable",
+    "reason": "offered to a Code Mode model with no MCP server selected; with no server there is nothing to list or read. Cannot be switched off (each non-tool feature forced off leaves it); accepted on the wire for a run without a server, never granted; with a selected server the three are its grant as before (Telegram 29400/29401 amended by 38878)"
+   },
+   "read_mcp_resource": {
+    "decision": "not_applicable",
+    "reason": "offered to a Code Mode model with no MCP server selected; with no server there is nothing to list or read. Cannot be switched off (each non-tool feature forced off leaves it); accepted on the wire for a run without a server, never granted; with a selected server the three are its grant as before (Telegram 29400/29401 amended by 38878)"
+   }
+  }
+ },
+ "note": "VELDO-0230 AC3 (Telegram 38878): the evaluation of every new capability a newer agent CLI brings. Each is granted when useful and safe, off only when it breaks a named written rule (rules), or not applicable when it does nothing in Veldo's setup, each with its reason. python3 .veldo/qualify.py copies the decision of every new item it finds into the qualification record and its output; an item with no decision here is listed as unevaluated and is not granted. Nothing new ever blocks a launch. Evidence: proof/VELDO-0230/new-capabilities-0.166-2.1.317.md.",
+ "rules": {
+  "VELDO-0040 AC1/AC3": "isolation: a worker and every descendant run in the run's own contained group, and stop ends the whole group; nothing outlives the run",
+  "VELDO-0042 AC1": "isolation: each run works in its own isolated clone and writes nowhere else",
+  "VELDO-0062 AC1": "credential handling: each invocation authenticates only with the subscription login of the account its dispatch recorded",
+  "VELDO-0062 AC2": "usage: each invocation checks and reserves its usage allowance before launch",
+  "VELDO-0127 AC4": "capabilities: nothing loads unless the role lists it; the tools at launch equal the role's, compared on the wire",
+  "VELDO-0156 AC1": "profile sources: every Codex profile source is off; the account profile supplies only the login, no plugin or skill source",
+  "VELDO-0160 AC3": "no unreviewed network or file access: a call whose effect leaves the run's clone and host session is outward and asks the owner"
+ },
+ "schema": "veldo.capability_decisions/v1",
+ "spec_id": "VELDO-0230"
+}

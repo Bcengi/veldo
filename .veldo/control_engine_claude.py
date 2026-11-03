@@ -266,10 +266,17 @@ CREDENTIALS = frozenset((
     'INPUT_ANTHROPIC_IDENTITY_TOKEN_FILE', 'INPUT_CLAUDE_CODE_ARTIFACTS_API_TOKEN',
     'INPUT_CLAUDE_CODE_MEMORY_API_TOKEN', 'INPUT_CLAUDE_CODE_OAUTH_REFRESH_TOKEN',
     'INPUT_CLAUDE_CODE_OAUTH_TOKEN', 'INPUT_CLAUDE_CODE_SLACK_TAG_TOKEN', 'USE_LOCAL_OAUTH',
-    'USE_STAGING_OAUTH', '_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL'))
+    'USE_STAGING_OAUTH', '_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL',
+    # VELDO-0230 AC3, the evaluation of a newer Claude Code's names (runtime/capability-decisions.json, off by
+    # VELDO-0062 AC1 and VELDO-0160 AC3): a session OAuth token, an agent proxy's token by file descriptor, and the
+    # switch that routes a file tool or Bash to another machine.
+    'INPUT_CLAUDE_CODE_SESSIONS_OAUTH_TOKEN', 'CCR_AGENT_PROXY_TOKEN_FILE_DESCRIPTOR', 'CLAUDE_CODE_REMOTE_TOOLS_FORWARD'))
 SETTINGS = frozenset((
     'API_FORCE_IDLE_TIMEOUT', 'CLAUDE_CODE_CERT_STORE', 'CLAUDE_CODE_ENABLE_PROXY_AUTH_HELPER',
-    'CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS', 'CLAUDE_CODE_PROXY_RESOLVES_HOSTS'))
+    'CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS', 'CLAUDE_CODE_PROXY_RESOLVES_HOSTS',
+    # VELDO-0230 AC3: a newer Claude Code's connection settings (runtime/capability-decisions.json).
+    'CLAUDE_CODE_DISABLE_HTTPS_AGENT_KEEPING', 'CLAUDE_CODE_DISABLE_LOOPED_CROSS_CERT_DROP',
+    'CLAUDE_CODE_DISABLE_SELF_NAMED_CERT_DROP'))
 TOKEN_FIELDS = ('input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens')
 MODEL_TOKEN_FIELDS = ('inputTokens', 'outputTokens', 'cacheReadInputTokens', 'cacheCreationInputTokens')
 # VELDO-0160: the usage-limit message of the binary's rate-limit result, and its names of the windows

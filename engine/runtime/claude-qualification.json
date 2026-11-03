@@ -86,6 +86,7 @@
     "source": "proof/VELDO-0185/login-status.json: read from the 2.1.281 bytes and its answers in a fresh empty profile; exit 0 when loggedIn, 1 otherwise",
     "subscription": "claude.ai"
    },
+   "new_capabilities": [],
    "pinned": "<state root>/engines/claude_code/2.1.281",
    "rate_limit_windows": [
     "five_hour",

@@ -582,11 +582,25 @@ CLAUDE_SETTINGS = ('CLAUDE_CODE_PROXY_RESOLVES_HOSTS', 'CLAUDE_CODE_ENABLE_PROXY
                    'CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS', 'API_FORCE_IDLE_TIMEOUT', 'CLAUDE_CODE_CERT_STORE')
 
 
+def _evaluated_environment():
+    """VELDO-0230 AC3: the evaluated environment names of a newer Claude Code (runtime/capability-decisions.json):
+    {name: (keep or setting or strip, reason)}."""
+    try:
+        record = json.loads((Path(__file__).resolve().parents[2] / '.veldo/runtime/capability-decisions.json').read_text())
+    except (OSError, ValueError):
+        return {}
+    return {name: (entry.get('effect'), entry.get('reason', ''))
+            for name, entry in ((record.get('claude_code') or {}).get('environment') or {}).items()}
+
+
 def _sensitive_exceptions(names):
     """The names of Claude Code's sensitive-variable set that are not a login, each with why."""
     found = {}
+    evaluated = _evaluated_environment()
     for name in names:
-        if name in KEEP_PROXY:
+        if evaluated.get(name, ('',))[0] in ('keep', 'setting'):
+            found[name] = {'decision': evaluated[name][0], 'reason': 'VELDO-0230 evaluation: ' + evaluated[name][1]}
+        elif name in KEEP_PROXY:
             found[name] = {'decision': 'keep', 'reason': 'general proxy: the worker\'s tools reach the network through it'}
         elif name in KEEP_RUNTIME:
             found[name] = {'decision': 'keep', 'reason': 'CA and runtime: the worker\'s tools verify TLS and run node with it'}

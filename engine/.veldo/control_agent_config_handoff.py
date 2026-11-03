@@ -356,17 +356,31 @@ def codex_unclassified(listing):
     return sorted(f for f, on in codex_defaults(listing).items() if on and f not in known)
 
 
-def codex_features(listing, grants):
+def codex_granted(record=None):
+    """VELDO-0230 AC3 (Telegram 38878): the features the qualification record lists as new whose evaluation
+    (runtime/capability-decisions.json, copied there by .veldo/qualify.py) grants them: left at their default."""
+    try:
+        record = X.load_qualification() if record is None else record
+    except Refused:
+        return frozenset()
+    return frozenset(item['name'] for item in record.get('new_capabilities') or ()
+                     if isinstance(item, dict) and item.get('kind') == 'features' and item.get('decision') == 'granted')
+
+
+def codex_features(listing, grants, granted=frozenset()):
     """Control every listed feature, including login-dependent tool sources.
 
     The complete features-list output belongs to the digest-bound qualification. A feature the
     classification does not name is potentially a tool source: it is off, whatever its default
-    (VELDO-0230 AC3: a newer binary never blocks the launch).
+    (VELDO-0230 AC3: a newer binary never blocks the launch), unless its evaluation grants it
+    (`granted`: on by default, it stays so; the wire comparison still binds every tool).
     """
     defaults = codex_defaults(listing)
     configuration = {}
     for feature, enabled in defaults.items():
         if feature in CODEX_FEATURES_NON_TOOLS:
+            continue
+        if feature in granted and feature not in CODEX_FEATURE_GRANTS and feature not in CODEX_FEATURES_UNGRANTED:
             continue
         key = 'features.' + feature
         if feature in CODEX_FEATURE_GRANTS:
@@ -384,7 +398,7 @@ def codex(configuration, capability, inventory, config, *, catalog=None, feature
     configuration.update(revision['settings'])
     if feature_listing is None:
         feature_listing = X.load_qualification().get('feature_listing', '')
-    configuration.update(codex_features(feature_listing, set(revision['native_tools'])))
+    configuration.update(codex_features(feature_listing, set(revision['native_tools']), codex_granted()))
     for name, feature in CODEX_NATIVE.items():
         configuration['features.' + feature] = name in revision['native_tools']
     configuration['tools.update_plan'] = {'enabled': 'update_plan' in revision['native_tools']}

@@ -1105,6 +1105,7 @@
    "update_plan"
   ]
  },
+ "new_capabilities": [],
  "package": "@openai/codex",
  "package_version": "0.154.0-linux-x64",
  "rate_limit_windows": [
