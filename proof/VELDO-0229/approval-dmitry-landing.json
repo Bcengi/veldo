@@ -1,0 +1,17 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0229-LANDING",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0229",
+    "commit": "67684c5dac8d7b372aa11f6a0da10fa934ce7ff0",
+    "paths": [
+      "scripts/gate_unconfined.json"
+    ]
+  },
+  "basis": "Dmitry approved landing of VELDO-0229 (the web UI rebuilt on Nuxt UI) at 67684c5d over Telegram on 2026-11-03T07:38Z (message 38559, 'approve Veldo 0229 67684c5d'), asked in 38556 (copy line 38557). The ask disclosed the one protected path changed against main: scripts/gate_unconfined.json, the list of suites allowed to run outside the sandbox, which gains suite 124 (the second half of the split factory UI suite). The canonical gate was GREEN at 67684c5d (gate 0229d). WHAT IT DOES NOT COVER: any other protected path or commit.",
+  "recorded_at": "2026-11-03T07:40:00Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-12-03T00:00:00Z"
+}
