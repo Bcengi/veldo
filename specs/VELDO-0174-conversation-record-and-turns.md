@@ -41,6 +41,7 @@ footprint:
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0174_*.py"
+  - "scripts/suites/106_veldo_0185_dispatch_setup.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -248,3 +249,8 @@ is named `missing_authority:project` and leaves the conversation record unchange
 Message text delivery and session continuity remain with the conversation intake and history work
 in VELDO-0175 and VELDO-0176. VELDO-0174 currently hands the receiver the durable intake command reference and turn
 identity. Those later features are not claimed as evidence for this ticket.
+
+2026-11-03: gate 0174b (c6790fd6) was red on one surviving mutant, v185-work-not-installed: since this ticket
+starts the factory loop for the conversations receiver alone, suite 106's row loop/configured stayed true
+with no work installed. The row now also requires the enrolled repository's line among the loop's lines;
+suite 106 passes, and with the mutant applied by hand the row goes false. Footprint gains suite 106.

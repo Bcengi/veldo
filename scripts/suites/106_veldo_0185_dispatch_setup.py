@@ -486,9 +486,14 @@ else:
             try:
                 status = h['service_send'](root, {'operation': 'inspect', 'entity_ids': []})
                 loop = ((status or {}).get('result') or {}).get('loop') or {}
-                check('loop/configured', 'the running service\'s loop is available and configured, with no refusal [%s]'
-                      % {k: loop.get(k) for k in ('available', 'configured', 'refusal')},
-                      loop.get('available') is True and loop.get('configured') is True and not loop.get('refusal'))
+                # VELDO-0174 starts the loop for the conversations receiver alone, so configured no longer
+                # means the work line is installed: the enrolled repository's line must be among the loop's.
+                check('loop/configured', 'the running service\'s loop is available and configured, with no refusal, '
+                      'and holds the enrolled repository\'s line [%s]'
+                      % dict({k: loop.get(k) for k in ('available', 'configured', 'refusal')},
+                             lines=sorted(loop.get('lines') or {})),
+                      loop.get('available') is True and loop.get('configured') is True and not loop.get('refusal')
+                      and repository in (loop.get('lines') or {}))
                 if loop.get('configured') is True:
                     journey(h, main, ids, L, RES)
                 else:

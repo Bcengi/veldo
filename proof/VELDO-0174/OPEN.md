@@ -24,3 +24,10 @@ was authored.
 - Not covered: a setup re-run whose dispatch step adds adapters to project receivers that held none does not
   add them to the conversation receiver (control_factory_setup_dispatch covers the installation's project
   receivers only). A fresh setup with dispatch gives the conversation receiver its adapters at install.
+
+## 2026-11-03: suite 106 row loop/configured strengthened
+
+Gate 0174b at c6790fd6: every stage green except mutation, where v185-work-not-installed survived on its
+named row loop/configured (the conversations receiver alone starts the loop, so the loop reports configured
+with no work installed). The row now also checks the enrolled repository's line is held by the loop.
+Suite 106: 20 of 20 passed; with work=None applied by hand: loop/configured false (lines []).
