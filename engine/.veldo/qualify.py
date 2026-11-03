@@ -233,7 +233,7 @@ def claude_builtins(executable, baseline):
         argv = ([str(executable)] + CLAUDE_POLICY['flags'] + options[:2]
                 + [baseline['settings_option'], json.dumps(settings), baseline['mcp_option'],
                    json.dumps(baseline['mcp_config'])] + options[2:])
-        env = dict(baseline['environment'], PATH='/usr/bin:/bin', HOME=str(root / 'home'),
+        env = dict(baseline['environment'], PATH='/usr/bin:/bin', HOME=str(root / 'home'), TMPDIR=temp,
                    CLAUDE_CONFIG_DIR=str(root / 'profile'), **CLAUDE_POLICY['environment'])
         probe = {'type': 'user', 'message': {'role': 'user', 'content': []}, 'parent_tool_use_id': None,
                  'shouldQuery': False}
@@ -281,7 +281,10 @@ def fixture_text(record):
 def normalized(record):
     """A loopback capture with what changes from run to run (temporary directories, thread, session and
     installation ids) replaced by placeholders, so the same binary writes the same bytes."""
+    import tempfile
     raw = json.dumps(record)
+    if tempfile.gettempdir() != '/tmp':
+        raw = raw.replace(tempfile.gettempdir().rstrip('/') + '/', '/tmp/')
     raw = re.sub(r'/tmp/((?:v127|veldo)-[a-z-]*?-)[A-Za-z0-9_]{8}', r'/tmp/\1<temp>', raw)
     raw = re.sub(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', '<id>', raw)
     raw = re.sub(r'(_at_unix_ms\\?\\?\\?"\s*:\s*)[0-9]+', r'\g<1>0', raw)

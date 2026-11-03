@@ -185,8 +185,12 @@ def main(argv=None):
     if Path(args.codex).read_bytes().count(BUNDLED_MARKER.encode()) < 1:
         sys.stderr.write('moved: the bundled marker is not in the binary\n')
         return 1
+    # VELDO-0230: an ephemeral loopback port, so concurrent captures (the qualify command run by two gate rows or
+    # mutation controls at once) never collide; the port is not part of the capture.
+    global PORT
+    server = http.server.HTTPServer(('127.0.0.1', 0), Endpoint)
+    PORT = server.server_address[1]
     deny_network(PORT)
-    server = http.server.HTTPServer(('127.0.0.1', PORT), Endpoint)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         table = observe(args.codex)

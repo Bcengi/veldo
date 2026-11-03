@@ -1724,7 +1724,7 @@
    "requires": [
     "125_veldo_0230_engine_census"
    ],
-   "regions": "Five rows (VELDO-0230): census/clean, no engine module, suite, mutation, extractor or fixture builder holds a literal agent version, digest, binary path, model catalog, tool registry or feature list (scripts/engine_census.py over the checkout); census/planted-version and census/planted-digest, the qualified Codex version and the qualified Claude Code digest planted in a suite's source are named; newer/claude-tool, a registry tool the classification does not know is outward, qualifies, is switched off at launch and is listed by the qualify command; setup/engines-record, setup takes the Claude Code copy the engines record names whatever claude on PATH points at, and refuses by name without the record.",
+   "regions": "Seven rows (VELDO-0230): census/clean, no engine module, suite, support module, mutation, extractor or fixture builder holds a literal agent version, digest, binary path, model catalog or model name, tool registry, feature list or built-in setting (scripts/engine_census.py over the checkout); census/planted-version and census/planted-digest, the qualified Codex version and the qualified Claude Code digest planted in a suite's source are named; census/planted-model and census/planted-builtin, one catalog model name, one built-in plugin name and a two-name tuple of the built-in skills planted in a suite's source are named; newer/claude-tool, a registry tool the classification does not know is outward, qualifies, is switched off at launch and is listed by the qualify command; setup/engines-record, setup takes the Claude Code copy the engines record names whatever claude on PATH points at, and refuses by name without the record.",
    "requires_note": "Only ROOT and expect. Reads the checkout's governed Python files, its runtime records and the VELDO-0173 tool table; hashes the qualified Claude Code binary and binds the qualified Codex through a scratch copy of .veldo with a fake PATH. Writes only temporary files."
   },
   {
@@ -1733,7 +1733,7 @@
    "requires": [
     "126_veldo_0230_qualify_reproduces"
    ],
-   "regions": "Two rows (VELDO-0230 AC2): qualify/reproduces, python3 .veldo/qualify.py run in scratch against the Codex and Claude Code binaries the engines record names succeeds and every file it writes is byte-identical to the checkout's; qualify/covers, the files it writes are the engines record and both qualification records in every runtime copy, every extractor's table and the VELDO-0127 fixtures.",
+   "regions": "Two rows (VELDO-0230 AC2): qualify/reproduces, python3 .veldo/qualify.py run in scratch against the Codex and Claude Code binaries the engines record names succeeds and every file it writes is byte-identical to the checkout's; qualify/covers, the files it writes include the engines record and both qualification records in both runtimes, the VELDO-0127 fixtures and every table the readers of the binaries write (the suite's own list, the two VELDO-0156 captures among them).",
    "requires_note": "Only ROOT and expect. Copies .veldo, engine/runtime, packs and the extractor and VELDO-0127 proof directories into scratch and runs the copy's qualify command there; runs the qualified binaries offline in empty profiles (extractor reads, features list, bundled catalog, loopback capture, Claude Code init probe). Writes only temporary files."
   }
  ],

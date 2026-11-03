@@ -17,6 +17,21 @@
     "reason": "a token handed through a file descriptor to an agent proxy; stripped and refused when configured",
     "rule": "VELDO-0062 AC1"
    },
+   "CLAUDE_CODE_3P_PROBE_WROTE_HAIKU_DEFAULT": {
+    "decision": "granted",
+    "effect": "model",
+    "reason": "model configuration, as model_config's other names: off the inherited environment, passed when the adapter configures it (a configured model is a capability, not a login)"
+   },
+   "CLAUDE_CODE_3P_SEEDED_OPUS_DEFAULT": {
+    "decision": "granted",
+    "effect": "model",
+    "reason": "model configuration, as model_config's other names: off the inherited environment, passed when the adapter configures it (a configured model is a capability, not a login)"
+   },
+   "CLAUDE_CODE_3P_SEEDED_SONNET_DEFAULT": {
+    "decision": "granted",
+    "effect": "model",
+    "reason": "model configuration, as model_config's other names: off the inherited environment, passed when the adapter configures it (a configured model is a capability, not a login)"
+   },
    "CLAUDE_CODE_DISABLE_HTTPS_AGENT_KEEPING": {
     "decision": "granted",
     "effect": "setting",
@@ -32,11 +47,28 @@
     "effect": "setting",
     "reason": "a Claude Code connection setting, not a login, as CLAUDE_CODE_CERT_STORE"
    },
+   "CLAUDE_CODE_GB_BASE_URL": {
+    "decision": "off",
+    "effect": "strip",
+    "reason": "an endpoint override of the feature-flag service; stripped and refused when configured, as the other endpoint overrides",
+    "rule": "VELDO-0062 AC1"
+   },
    "CLAUDE_CODE_REMOTE_TOOLS_FORWARD": {
     "decision": "off",
     "effect": "strip",
     "reason": "the switch that now routes a file tool or Bash to another machine (_host); stripped and refused when configured, so the routing stays off",
     "rule": "VELDO-0160 AC3"
+   },
+   "CLAUDE_CODE_SESSIONS_OAUTH_TOKEN": {
+    "decision": "off",
+    "effect": "strip",
+    "reason": "a session OAuth token: a login other than the account's subscription; stripped and refused when configured",
+    "rule": "VELDO-0062 AC1"
+   },
+   "CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL": {
+    "decision": "granted",
+    "effect": "model",
+    "reason": "model configuration, as model_config's other names: off the inherited environment, passed when the adapter configures it (a configured model is a capability, not a login)"
    },
    "INPUT_CLAUDE_CODE_SESSIONS_OAUTH_TOKEN": {
     "decision": "off",

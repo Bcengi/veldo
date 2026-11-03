@@ -268,9 +268,10 @@ CREDENTIALS = frozenset((
     'INPUT_CLAUDE_CODE_OAUTH_TOKEN', 'INPUT_CLAUDE_CODE_SLACK_TAG_TOKEN', 'USE_LOCAL_OAUTH',
     'USE_STAGING_OAUTH', '_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL',
     # VELDO-0230 AC3, the evaluation of a newer Claude Code's names (runtime/capability-decisions.json, off by
-    # VELDO-0062 AC1 and VELDO-0160 AC3): a session OAuth token, an agent proxy's token by file descriptor, and the
-    # switch that routes a file tool or Bash to another machine.
-    'INPUT_CLAUDE_CODE_SESSIONS_OAUTH_TOKEN', 'CCR_AGENT_PROXY_TOKEN_FILE_DESCRIPTOR', 'CLAUDE_CODE_REMOTE_TOOLS_FORWARD'))
+    # VELDO-0062 AC1 and VELDO-0160 AC3): the session OAuth tokens, an agent proxy's token by file descriptor, the
+    # feature-flag endpoint override, and the switch that routes a file tool or Bash to another machine.
+    'INPUT_CLAUDE_CODE_SESSIONS_OAUTH_TOKEN', 'CLAUDE_CODE_SESSIONS_OAUTH_TOKEN', 'CCR_AGENT_PROXY_TOKEN_FILE_DESCRIPTOR',
+    'CLAUDE_CODE_GB_BASE_URL', 'CLAUDE_CODE_REMOTE_TOOLS_FORWARD'))
 SETTINGS = frozenset((
     'API_FORCE_IDLE_TIMEOUT', 'CLAUDE_CODE_CERT_STORE', 'CLAUDE_CODE_ENABLE_PROXY_AUTH_HELPER',
     'CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS', 'CLAUDE_CODE_PROXY_RESOLVES_HOSTS',

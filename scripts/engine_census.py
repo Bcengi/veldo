@@ -12,12 +12,17 @@ comments are prose, not values) or collection literal that holds one:
 - a digest: either binary's sha256 or the bundled model catalog's (its first 16 hex digits suffice);
 - a binary path: either binary as the engines record writes it, or expanded;
 - a model catalog: a collection literal naming three or more of the bundled catalog's model slugs;
+- a model name: a string naming one of the bundled catalog's model slugs (VELDO-0230 fix round 1: a single slug
+  breaks the day a catalog drops it; read it from the catalog fixture);
+- a built-in setting: a string naming one of the qualified Claude Code's built-in plugins, or a collection literal
+  naming two or more of its built-in plugins and skills (the names its generated settings turn off, which the
+  record holds);
 - a tool registry: a collection literal naming half or more of the Claude Code registry's tools;
 - a feature list: a collection literal naming half or more of the features `codex features list` lists, or a
   string holding three or more of its lines.
 
 GOVERNED: the engine modules (.veldo/*.py, engine/.veldo/*.py, packs/*/.veldo/**/*.py), the suites
-(scripts/suites/*.py), the mutations (scripts/check_teeth_mutations.py), every extractor
+(scripts/suites/*.py and their support modules), the mutations (scripts/check_teeth_mutations.py), every extractor
 (proof/**/extract_*.py) and every other proof script a suite or the mutation checker loads (a proof file
 whose VELDO id and file name the same suite or checker source names). The generated files themselves are
 JSON and are not read as code. Prints one line per finding; exit 1 when there is any.
@@ -52,6 +57,8 @@ def qualified(root):
     listing = [line for line in (codex.get('feature_listing') or '').splitlines() if line.strip()]
     return {'versions': sorted(versions), 'digests': sorted(d.split(':', 1)[-1][:16] for d in digests if d),
             'paths': sorted(paths), 'slugs': {m['slug'] for m in (codex.get('model_catalog') or {}).get('models', [])},
+            'plugins': set(entry.get('engine_plugins') or ()),
+            'builtins': set(entry.get('engine_plugins') or ()) | set(entry.get('engine_skills') or ()),
             'tools': set(entry.get('tool_registry') or ()), 'features': {line.split()[0] for line in listing},
             'lines': set(listing)}
 
@@ -63,7 +70,7 @@ def governed(root):
                              cwd=root, capture_output=True, text=True, check=True).stdout.split('\0')
     tracked = sorted(p for p in tracked if p)
     files = [p for p in tracked if re.fullmatch(r'(?:\.veldo|engine/\.veldo)/[^/]+\.py', p)
-             or re.fullmatch(r'packs/[^/]+/\.veldo/.+\.py', p) or re.fullmatch(r'scripts/suites/[^/]+\.py', p)
+             or re.fullmatch(r'packs/[^/]+/\.veldo/.+\.py', p) or re.fullmatch(r'scripts/suites/(?:support/)?[^/]+\.py', p)
              or p == 'scripts/check_teeth_mutations.py']
     loaders = [(root / p).read_text(errors='replace') for p in files if p.startswith('scripts/')]
     for path in tracked:
@@ -98,6 +105,8 @@ def findings(source, known, path='<source>'):
     tree = ast.parse(source)
     skip = _docstrings(tree)
     version = re.compile(r'(?<![\w.])(?:%s)(?![\w]|\.\d)' % '|'.join(re.escape(v) for v in known['versions']))
+    slugs = sorted(known.get('slugs') or (), key=len, reverse=True)
+    model = re.compile(r'(?<![\w.-])(?:%s)(?![\w-]|\.\d)' % '|'.join(re.escape(v) for v in slugs)) if slugs else None
     found = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Constant) and isinstance(node.value, str) and id(node) not in skip:
@@ -105,6 +114,11 @@ def findings(source, known, path='<source>'):
             hit = version.search(value)
             if hit:
                 found.append((path, node.lineno, 'version', hit.group(0)))
+            hit = model.search(value) if model else None
+            if hit:
+                found.append((path, node.lineno, 'model_name', hit.group(0)))
+            if value in (known.get('plugins') or ()):
+                found.append((path, node.lineno, 'builtin_setting', value))
             for digest in known['digests']:
                 if digest in value:
                     found.append((path, node.lineno, 'digest', digest))
@@ -118,6 +132,8 @@ def findings(source, known, path='<source>'):
             names = _names(node)
             if len(names & known['slugs']) >= 3:
                 found.append((path, node.lineno, 'model_catalog', ', '.join(sorted(names & known['slugs']))))
+            if len(names & (known.get('builtins') or set())) >= 2:
+                found.append((path, node.lineno, 'builtin_setting', ', '.join(sorted(names & known['builtins']))))
             if known['tools'] and len(names & known['tools']) * 2 >= len(known['tools']):
                 found.append((path, node.lineno, 'tool_registry', '%d registry tools' % len(names & known['tools'])))
             if known['features'] and len(names & known['features']) * 2 >= len(known['features']):

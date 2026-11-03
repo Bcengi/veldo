@@ -58,7 +58,7 @@ def _v230_reproduce_suite():
                                '--claude', str(claude), '--root', str(tree)],
                               capture_output=True, text=True, timeout=1500, stdin=subprocess.DEVNULL,
                               env={'PATH': os.environ.get('PATH', '/usr/bin:/bin'), 'HOME': os.environ.get('HOME', '/'),
-                                   'LANG': 'C.UTF-8'})
+                                   'LANG': 'C.UTF-8', 'TMPDIR': tempfile.gettempdir()})
         written = [line[len('wrote '):] for line in done.stdout.splitlines() if line.startswith('wrote ')]
         check('qualify/reproduces', 'the command qualifies the engines record\'s binaries [exit %s %s]'
               % (done.returncode, done.stderr.strip().splitlines()[-1:] if done.stderr.strip() else ''),

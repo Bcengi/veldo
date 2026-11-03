@@ -7,7 +7,8 @@ Only shared ROOT and expect are consumed. census/clean runs scripts/engine_censu
 engine module, suite, mutation, extractor or fixture builder holds a literal agent version, digest, binary
 path, model catalog, tool registry or feature list. census/planted-version and census/planted-digest plant the
 qualified Codex version, and the qualified Claude Code digest, as a literal in a copy of a suite's source and
-require the census to name it (AC1's falsifier). newer/claude-tool reads the shipped Claude Code entry with one
+require the census to name it (AC1's falsifier); census/planted-model and census/planted-builtin plant one
+catalog model name, a built-in plugin name and a two-name tuple of the built-in skills. newer/claude-tool reads the shipped Claude Code entry with one
 registry tool its classification does not know: the VELDO-0173 extractor's classification makes it outward,
 the record qualifies (no refusal), the launch options switch it off and the qualify command lists it by name
 (AC3). setup/engines-record points `claude` on PATH at a newer, unqualified version and requires factory
@@ -33,8 +34,8 @@ def _v230_census_suite():
         'control_factory_setup_engines.py': ROOT / ".veldo" / "control_factory_setup_engines.py",
         'control_engine_claude.py': ROOT / ".veldo" / "control_engine_claude.py",
     }
-    ROWS = ('census/clean', 'census/planted-version', 'census/planted-digest', 'newer/claude-tool',
-            'setup/engines-record')
+    ROWS = ('census/clean', 'census/planted-version', 'census/planted-digest', 'census/planted-model',
+            'census/planted-builtin', 'newer/claude-tool', 'setup/engines-record')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -73,8 +74,24 @@ def _v230_census_suite():
         hits = census.findings(planted, known, 'planted.py')
         check('census/planted-digest', 'the qualified Claude Code digest planted in a suite is named [%s]' % hits,
               any(h[2] == 'digest' for h in hits))
+        # VELDO-0230 fix round 1: one model name, and the qualified Claude Code's built-in settings (a plugin name;
+        # a two-name tuple of its built-in plugins and skills), each planted alone.
+        slug = sorted(known['slugs'])[0]
+        hits = census.findings(source + '\nPLANTED = {"model": %r}\n' % slug, known, 'planted.py')
+        check('census/planted-model', 'one catalog model name planted in a suite is named [%s]' % hits,
+              any(h[2] == 'model_name' and h[3] == slug for h in hits))
+        entry = json.loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json').read_text())['versions'][
+            engines['claude_code']['version']]
+        pair = tuple(sorted(entry['engine_skills'])[:2]) if len(entry['engine_skills']) > 1 else (
+            entry['engine_skills'][0], entry['engine_plugins'][0])
+        hits = census.findings(source + '\nPLANTED = %r\n' % (pair,), known, 'planted.py')
+        single = census.findings(source + '\nPLANTED = %r\n' % entry['engine_plugins'][0], known, 'planted.py')
+        check('census/planted-builtin', 'a two-name tuple of the built-in skills, and one built-in plugin name, '
+              'planted in a suite are named [%s, %s]' % (hits, single),
+              any(h[2] == 'builtin_setting' for h in hits) and any(h[2] == 'builtin_setting' for h in single))
     except Exception as error:
-        for row in ('census/clean', 'census/planted-version', 'census/planted-digest'):
+        for row in ('census/clean', 'census/planted-version', 'census/planted-digest', 'census/planted-model',
+                    'census/planted-builtin'):
             check(row, 'raised ' + type(error).__name__ + ': ' + str(error)[:200], False)
 
     try:

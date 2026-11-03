@@ -12048,6 +12048,13 @@ def cases():
     add(230, 'census230-digest-unread', census230, 'engine_census.py',
         "            for digest in known['digests']:\n", "            for digest in ():\n", ['census/planted-digest'])
     result[-1]['dir'] = 'scripts'
+    add(230, 'census230-model-unread', census230, 'engine_census.py',
+        "            hit = model.search(value) if model else None\n", "            hit = None\n", ['census/planted-model'])
+    result[-1]['dir'] = 'scripts'
+    add(230, 'census230-builtin-unread', census230, 'engine_census.py',
+        "            if len(names & (known.get('builtins') or set())) >= 2:\n",
+        "            if False:\n", ['census/planted-builtin'])
+    result[-1]['dir'] = 'scripts'
     add(230, 'qualify230-new-tools-unlisted', census230, 'qualify.py',
         "    return [(name, entry['tool_classification'][name]['class'])",
         "    return [] and [(name, entry['tool_classification'][name]['class'])", ['newer/claude-tool'])
