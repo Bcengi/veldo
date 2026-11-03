@@ -153,7 +153,7 @@ print(json.dumps({'type':'turn.completed','usage':{'input_tokens':2,'cached_inpu
         HELPER = load('served188_accounts', mods / 'accounts.py')
         RS = load('served188_readset', mods / 'control_readset.py')
         CG = load('served188_config', mods / 'control_agent_config.py')
-        cfg = dict(role='served-engine', engine='codex', native_tools=[], mcp=[], skills=[], instructions=[], settings={'model': 'gpt-5.5'})
+        cfg = dict(role='served-engine', engine='codex', native_tools=[], mcp=[], skills=[], instructions=[], settings={'model': next(m['slug'] for m in json.loads((ROOT / 'proof/VELDO-0127/catalog-fixture.json').read_text())['models'] if m.get('tool_mode') is None)})
         saved = f['configurations'].save(cfg, principal='steward', base=0, command_id=next_id('cfg'))
         team = f['team']()
         for role in team['roles'].values():

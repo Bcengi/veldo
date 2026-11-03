@@ -37,6 +37,9 @@ def run(ROOT, TREE, PRODUCTION, models):
         base = Path(temp)
         fault = base / 'fault'
         catalog = TREE / 'proof/VELDO-0127/catalog-fixture.json'
+        supported = {m['slug']: set(m.get('experimental_supported_tools') or ())
+                     for m in json.loads(catalog.read_text())['models']}
+        experimental = {'clock': 'clock', 'request_user_input_async': 'send_user_message_async'}
         try:
             f = factory.factory(ROOT, base, PRODUCTION, lambda _: wire.engine_source(catalog, fault))
             L, X, C = f.L, f.X, f.config_api
@@ -95,7 +98,8 @@ def run(ROOT, TREE, PRODUCTION, models):
                     accepted, save_error = attempt(lambda: f.save(d))
                     # Independent pinned-model support expectation, never computed
                     # from the production refusal under test.
-                    unsupported = ((tool in ('clock', 'request_user_input_async') and model != 'gpt-6-astra')
+                    # VELDO-0230: a model's support is the qualified catalog's own experimental list.
+                    unsupported = ((tool in experimental and experimental[tool] not in supported.get(model, ()))
                                    or tool == 'tool_search')
                     if unsupported:
                         check(row, accepted is None and save_error ==

@@ -608,6 +608,13 @@ out.close()
                   normal_record.get('state') == 'exited' and argv[:1] == [str(CODEX_BIN)] and argv[1:] == expected
                   and len(options) == 4 and 'hooks' not in effective
                   and (effective.get('skills') or {}).get('include_instructions') is False)
+            # VELDO-0230 AC2: the three captures this suite reads are of the qualified binary, never an older one.
+            captured = {name: table.get('sha256') for name, table in (('codex-baseline.json', TABLE),
+                                                                      ('codex-rendered.json', RENDERED),
+                                                                      ('codex-mentions.json', MENTIONS))}
+            check('baseline/qualified', 'every capture this suite compares against is of the binary the engines '
+                  'record qualifies (%s) [%s]' % (ENGINES_RECORD['codex']['sha256'], captured),
+                  set(captured.values()) == {ENGINES_RECORD['codex']['sha256']})
             check('baseline/qualified', 'the generated configuration is kept in the run\'s own configuration directory, '
                   'as passed [%s]' % reported(normal_launch).get('files'),
                   reported(normal_launch).get('files') == ['config.toml'])

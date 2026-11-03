@@ -7,6 +7,12 @@ _V127_MODES = [(m['slug'], m.get('tool_mode')) for m in __import__('json').loads
     (ROOT / 'proof' / 'VELDO-0127' / 'catalog-fixture.json').read_text())['models']]
 CODE_MODE_MODELS = [slug for slug, mode in _V127_MODES if mode == 'code_mode_only'][:4]
 FIXTURE_MODELS = (CODE_MODE_MODELS[0], next(slug for slug, mode in _V127_MODES if mode is None))
+CODE_MODEL, DIRECT_MODEL = FIXTURE_MODELS
+# The catalog's first model supporting both experimental tools a role may be granted (clock and the asynchronous
+# user message), else the first Code Mode model.
+EXPERIMENTAL_MODEL = next((m['slug'] for m in __import__('json').loads(
+    (ROOT / 'proof' / 'VELDO-0127' / 'catalog-fixture.json').read_text())['models']
+    if {'send_user_message_async', 'clock'} <= set(m.get('experimental_supported_tools') or ())), CODE_MODEL)
 def _v127_suite():
     import copy
     import importlib.util
@@ -143,12 +149,12 @@ if engine == 'claude':
     plugin = value('plugin-dir')
     skills = ['veldo-role:' + p.parent.name for p in Path(plugin).glob('skills/*/SKILL.md')] if plugin else []
     overrides = settings.get('skillOverrides') or {}
-    engine_skills = ([] if settings.get('disableBundledSkills') else ['deep-research', 'code-review']) + [
-        n for n in ('design', 'doctor') if overrides.get(n) != 'off']
+    engine_skills = ([] if settings.get('disableBundledSkills') else V230_BUNDLED_SKILLS) + [
+        n for n in V230_BUILTIN_SKILLS if overrides.get(n) != 'off']
     skills = [] if no_skills else skills + engine_skills
     commands = [] if no_skills else ['clear', 'compact', 'init']
     plugins = [{'name':'veldo-role','path':plugin,'source':'veldo-role@inline'}] if plugin else []
-    plugins += [{'name':n.split('@')[0],'path':'builtin','source':n} for n in ('agents-md@builtin', 'telemetry@builtin')
+    plugins += [{'name':n.split('@')[0],'path':'builtin','source':n} for n in V230_BUILTIN_PLUGINS
                 if (settings.get('enabledPlugins') or {}).get(n) is not False]
     init = complete_event({'type':'system','subtype':'init','tools':tools,'apiKeySource':'none',
                           'mcp_servers':[{'name':n,'status':'connected'} for n in servers],
@@ -226,6 +232,14 @@ else:
 for step in (packet.get('payload') or {}).get('script',[]):
     if 'line' in step: emit(step['line'])
 '''
+    # VELDO-0230: the qualified Claude Code's own built-in plugins and skills (its record, which qualify.py reads
+    # from the binary's init event) and its bundled skills (the VELDO-0155 table read from its bytes).
+    claude_entry = json.loads((ROOT / '.veldo/runtime/claude-qualification.json').read_text())['versions'][
+        json.loads((ROOT / '.veldo/runtime/engines.json').read_text())['claude_code']['version']]
+    bundled = json.loads((TREE / 'proof/VELDO-0155/claude-baseline.json').read_text())['bundled_skills']
+    fake = (fake.replace('V230_BUNDLED_SKILLS', repr(list(bundled)))
+            .replace('V230_BUILTIN_SKILLS', repr(tuple(claude_entry['engine_skills'])))
+            .replace('V230_BUILTIN_PLUGINS', repr(tuple(claude_entry['engine_plugins']))))
     fake = ff.embed(fake.replace('PYTHON', sys.executable))
     def fake_engine(name):
         return fake.replace('WIRE_FIXTURE', repr(str(TREE / 'proof/VELDO-0127/wire_fixture.py'))).replace('CATALOG_FIXTURE', repr(str(TREE / 'proof/VELDO-0127/catalog-fixture.json'))).replace('MARKERS', repr(str(markers))).replace('ENGINE', repr(name))
@@ -293,7 +307,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
             for engine in ('claude','codex'):
                 if engine == 'codex':
                     direct_role = f.role(engine)
-                    direct_role['settings']['model'] = 'gpt-5.5'
+                    direct_role['settings']['model'] = DIRECT_MODEL
                     f.save(direct_role)
                     accepted = C.bind(f.writer, f.DOMAIN, f.REPOSITORY,
                                       {'role': 'codex', 'revision': 1})['role_revision']
@@ -327,7 +341,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 contract = record.get('contract') or {}
                 bound = ((contract.get('capability') or {}).get('configuration') or {}).get('role_revision', {})
                 check('handoff/' + engine, 'dispatch records accepted revision and model',
-                      bound.get('digest') and bound.get('settings') == {'model':'fixture-model' if engine == 'claude' else 'gpt-5.5'})
+                      bound.get('digest') and bound.get('settings') == {'model':'fixture-model' if engine == 'claude' else DIRECT_MODEL})
                 reports = [m.get('credentials') for m in (work.messages if work else []) if m.get('event') == 'credentials']
                 check('handoff/' + engine, 'only selected catalog credential source reaches this run',
                       bool(reports) and reports[0].get('credentials') == ['jira'])
@@ -410,7 +424,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                           good is None and compare(aliases, granted) is None)
                     cfg = own.get('configuration', {})
                     check('handoff/codex', 'generated settings, native features and filtered MCP list match',
-                          own.get('mcp_tools') == {'jira':['jira_search']} and cfg.get('model') == 'gpt-5.5'
+                          own.get('mcp_tools') == {'jira':['jira_search']} and cfg.get('model') == DIRECT_MODEL
                           and cfg.get('features',{}).get('shell_tool') is True
                           and cfg.get('features',{}).get('multi_agent') is False)
                     listings = [m.get('listing') for m in (work.messages if work else []) if m.get('event') == 'capability_listing']
@@ -423,8 +437,10 @@ for step in (packet.get('payload') or {}).get('script',[]):
                           and Path(cfg.get('model_catalog_json', '/nonexistent')).name == 'model-catalog.json')
                     check('launch/instructions', 'Codex gets both sources through developer instructions',
                           'project role instruction' in cfg.get('developer_instructions',''))
-            for mode, model in [('code', 'gpt-6-astra'), ('direct', 'gpt-5.5')]:
-                body = json.loads((TREE / ('proof/VELDO-0127/request-' + mode + '.json')).read_text())
+            for mode, model in [('code', CODE_MODEL), ('direct', DIRECT_MODEL)]:
+                # The qualified binary's own request with the jira server selected (qualify.py's loopback capture).
+                body = json.loads((TREE / ('proof/VELDO-0127/resources-' + model + '-selected.json')).read_text())[
+                    'requests'][0]['body']
                 wanted = L.HANDOFF.expected({'revision':dict(bound, settings={'model':model}), 'skills':[]},
                                             {'jira':{'tools':['jira_search']}})
                 facts, _ = attempt(lambda: evidence.wire_observation(body, wanted, L.HANDOFF))
@@ -496,7 +512,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 check('wire/normalization', model + ': runner and nested declarations expose every grant',
                       obs is not None and obs.get('missing') == [] and obs.get('unexpected') == []
                       and set(obs.get('actual', [])) == {'exec','wait','exec_command','write_stdin','update_plan','mcp__jira__jira_search', *resources})
-                if model == 'gpt-6-astra':
+                if model == CODE_MODEL:
                     granted_wire = wanted
                     check('review/codex-tools', 'Code Mode equality includes runner and nested declarations',
                           compare(own.get('wire', {}), granted_wire) is None)
@@ -512,16 +528,16 @@ for step in (packet.get('payload') or {}).get('script',[]):
                            ['sub_agents','apply_patch','clock','request_user_input_async','tool_search']):
                 name = 'grants-' + '-'.join(grants)
                 definition = f.role('codex', name)
-                definition['settings']['model'] = 'gpt-6-astra'
+                definition['settings']['model'] = EXPERIMENTAL_MODEL
                 definition['native_tools'] += [{'name':n, 'load':'always'} for n in grants]
                 _, save_error = attempt(lambda: f.save(definition))
                 _, rec, own, _ = run('codex', name, {'role':name}) if save_error is None else (None, {}, {}, None)
                 if 'tool_search' in grants:
                     check('catalog/grants', name + ': undeliverable search grant is refused at save',
-                          save_error == 'unsupported_configuration:codex_tool:gpt-6-astra:tool_search')
+                          save_error == 'unsupported_configuration:codex_tool:' + EXPERIMENTAL_MODEL + ':tool_search')
                     continue
                 entry = next(iter(own.get('model_catalog', {}).get('models', [])), {})
-                original = next((m for m in catalog.get('models', []) if m['slug'] == 'gpt-6-astra'), {})
+                original = next((m for m in catalog.get('models', []) if m['slug'] == EXPERIMENTAL_MODEL), {})
                 wanted_entry = copy.deepcopy(original)
                 if 'sub_agents' not in grants: wanted_entry.pop('multi_agent_version', None)
                 if 'apply_patch' not in grants: wanted_entry['apply_patch_tool_type'] = None
@@ -638,14 +654,14 @@ for step in (packet.get('payload') or {}).get('script',[]):
             live = load('v127_live_driver', driver_copy)
             live.HERE = TREE / 'proof/VELDO-0127'
             capture_role = f.role('codex', 'codex-always')
-            capture_role['settings']['model'] = 'gpt-6-astra'
+            capture_role['settings']['model'] = CODE_MODEL
             f.save(capture_role)
             direct, error = attempt(lambda: live.capture(f, 'codex', 'always', False, evidence))
             check('review/codex-capture', 'lead driver records the loopback tools beside its production run (capture error=%s)' % error,
                   direct is not None and bool(direct.get('wire_tools'))
                   and direct.get('wire_tools') == [evidence.wire_observation(r['body'], direct['expected'], L.HANDOFF)
                                                  for r in direct.get('wire_capture', {}).get('requests', [])]
-                  and direct['configuration']['model'] == direct['revision']['settings']['model'] == 'gpt-6-astra'
+                  and direct['configuration']['model'] == direct['revision']['settings']['model'] == CODE_MODEL
                   and direct.get('model_catalog', {}).get('models', [{}])[0].get('tool_mode') == 'code_mode_only')
             select_model = getattr(live, 'codex_model', None)
             accepted_models = []
@@ -656,7 +672,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 except SystemExit:
                     accepted_models.append(False)
             check('review/codex-capture', 'lead accepts Code Mode models without substitution and rejects unknown models',
-                  select_model is not None and select_model('gpt-5.5', L.HANDOFF.X) == 'gpt-5.5' and all(accepted_models))
+                  select_model is not None and select_model(DIRECT_MODEL, L.HANDOFF.X) == DIRECT_MODEL and all(accepted_models))
             try:
                 if select_model: select_model('unknown-model', L.HANDOFF.X)
                 unknown_refused = False

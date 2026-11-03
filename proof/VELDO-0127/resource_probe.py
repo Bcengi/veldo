@@ -26,7 +26,9 @@ def main(binary):
     source = json.loads((HERE / 'codex-live.json').read_text())['runs'][0]
     reports = []
     with tempfile.TemporaryDirectory(prefix='v127-resource-probe-') as temp:
-        for model in ('gpt-6-astra', 'gpt-5.5'):
+        # VELDO-0230: the qualified catalog's first Code Mode model and its first direct one, never typed names.
+        modes = [(m['slug'], m.get('tool_mode')) for m in qualified['model_catalog']['models']]
+        for model in (next(s for s, mode in modes if mode == 'code_mode_only'), next(s for s, mode in modes if mode is None)):
             for selected in (True, False):
                 revision = copy.deepcopy(source['revision'])
                 revision['settings']['model'] = model

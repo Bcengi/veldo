@@ -43,6 +43,8 @@ def _v127_feature_listing():
         listing = base / 'features-fixture.json'
         listing.write_text(json.dumps(fixture))
         defaults = {line.split()[0] for line in fixture['stdout'].splitlines() if line.split()[-1] == 'true'}
+        # VELDO-0230: the qualified catalog's first Code Mode model, never a typed name.
+        code_model = next(m['slug'] for m in json.loads(catalog.read_text())['models'] if m.get('tool_mode') == 'code_mode_only')
         try:
             f = factory.factory(ROOT, base, PRODUCTION, lambda _: wire.engine_source(catalog, fault))
             L, X, C = f.L, f.X, f.config_api
@@ -51,7 +53,7 @@ def _v127_feature_listing():
                 serial[0] += 1
                 d = f.role('codex', 'features-' + str(serial[0]))
                 d.update(skills=[], instructions=[], mcp=[])
-                d['settings']['model'] = 'gpt-6-astra'
+                d['settings']['model'] = code_model
                 d['native_tools'] = [{'name': n, 'load': 'always'} for n in grants]
                 f.save(d)
                 binding = C.bind(f.writer, f.DOMAIN, f.REPOSITORY, {'role': d['role']})

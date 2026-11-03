@@ -60,10 +60,17 @@ def _v127_feature_profile():
             f = factory.factory(ROOT, base, PRODUCTION, lambda _: wire.engine_source(catalog, fault))
             L, X, C = f.L, f.X, f.config_api
             rich = ['shell', 'clock', 'view_image', 'sub_agents', 'apply_patch']
-            cases = [(recorded['stdout'], [], 'gpt-6-astra'),
-                     (recorded['stdout'], ['shell'], 'gpt-6-astra'),
-                     (recorded['stdout'], rich, 'gpt-6-astra'),
-                     (recorded['stdout'], ['shell', 'view_image', 'sub_agents', 'apply_patch'], 'gpt-5.5')]
+            # VELDO-0230: the qualified catalog's models, never typed names: its first Code Mode model, its first
+            # Code Mode model supporting the clock (for the rich grant), and its first direct model.
+            models = json.loads(catalog.read_text())['models']
+            code_model = next(m['slug'] for m in models if m.get('tool_mode') == 'code_mode_only')
+            clock_model = next((m['slug'] for m in models if m.get('tool_mode') == 'code_mode_only'
+                                and 'clock' in (m.get('experimental_supported_tools') or ())), code_model)
+            direct_model = next(m['slug'] for m in models if m.get('tool_mode') is None)
+            cases = [(recorded['stdout'], [], code_model),
+                     (recorded['stdout'], ['shell'], code_model),
+                     (recorded['stdout'], rich, clock_model),
+                     (recorded['stdout'], ['shell', 'view_image', 'sub_agents', 'apply_patch'], direct_model)]
             for number, (listing, grants, model) in enumerate(cases):
                 listing_path.write_text(json.dumps(dict(recorded, stdout=listing)))
                 # Records, revisions and generated files all come from real writers.

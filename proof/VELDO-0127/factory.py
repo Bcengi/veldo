@@ -22,6 +22,9 @@ def factory(ROOT, base, PRODUCTION, fake_engine=None, live=None, deadline_second
     # VELDO-0230: the qualified versions are the engines record's, never typed here.
     CLAUDE_VERSION, CODEX_VERSION, CODEX_PACKAGE_VERSION = (lambda r: (r['claude_code']['version'], r['codex']['version'], r['codex']['package_version']))(
         __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text()))
+    # VELDO-0230: a Codex role runs the qualified catalog's first direct model, never a typed name.
+    DIRECT_MODEL = next(m['slug'] for m in json.loads((ROOT / 'proof/VELDO-0127/catalog-fixture.json').read_text())['models']
+                        if m.get('tool_mode') is None)
     connections = []
     mods = base / 'installed' / '.veldo'
     mods.mkdir(parents=True)
@@ -262,7 +265,7 @@ for raw in sys.stdin:
                     skills=[{'skill': 'inspect', 'revision': 1, 'load': 'always'}],
                     instructions=[{'source': 'factory', 'path': 'listed.md', 'load': 'always'},
                                   {'source': 'project', 'path': 'project.md', 'load': 'always'}],
-                    settings={'model': 'fixture-model' if engine == 'claude' else 'gpt-5.5'} if not live else {'model': live[engine + '_model']})
+                    settings={'model': 'fixture-model' if engine == 'claude' else DIRECT_MODEL} if not live else {'model': live[engine + '_model']})
     def save(definition, base_revision=0, principal='owner'):
         serial[0] += 1
         return configurations.save(definition, principal=principal, base=base_revision,

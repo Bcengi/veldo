@@ -80,7 +80,7 @@ else:
     init = {'type':'system','subtype':'init','apiKeySource':'none','tools':tools,
             'mcp_servers':[{'name':n,'status':'connected'} for n in mcp],
             'plugins':[{'name':'veldo-role'}] if skills else [], 'skills':names, 'slash_commands':names,
-            'claude_code_version':'2.1.281','model':'fixture-model','session_id':'fixture-session',
+            'claude_code_version':V174_CLAUDE_VERSION,'model':'fixture-model','session_id':'fixture-session',
             'cwd':os.getcwd()}
     while True:
         raw = sys.stdin.readline()
@@ -125,13 +125,15 @@ def engines(root, f, CS):
     state = f['root'] / 'state'; state.mkdir(exist_ok=True)
     L = load('v174_runtime_launch', mods / 'control_launch.py')
     adapters = {}
+    # VELDO-0230: the qualified versions are the engines record's, never typed.
+    engines = json.loads((root / '.veldo/runtime/engines.json').read_text())
     for provider in ('claude_code','codex'):
-        source = FAKE.replace('PYTHON',sys.executable).replace('PROVIDER',repr(provider)).replace('MARKER_PATH',repr(str(markers)))
+        source = FAKE.replace('V174_CLAUDE_VERSION',repr(engines['claude_code']['version'])).replace('PYTHON',sys.executable).replace('PROVIDER',repr(provider)).replace('MARKER_PATH',repr(str(markers)))
         source = formats.embed(source)
         module = L.ENGINES[provider]
         wrapper = [sys.executable, '-B', str(mods / 'control_launch.py'), 'exec']
         if provider == 'claude_code':
-            version = '2.1.281'; versions = f['root'] / 'versions'; versions.mkdir()
+            version = engines['claude_code']['version']; versions = f['root'] / 'versions'; versions.mkdir()
             executable = versions / version; executable.write_text(source); executable.chmod(0o755)
             shipped = json.loads((root / '.veldo/runtime/claude-qualification.json').read_text())['versions'][version]
             entry = dict(shipped, sha256='sha256:'+hashlib.sha256(executable.read_bytes()).hexdigest(),
@@ -143,10 +145,10 @@ def engines(root, f, CS):
         else:
             package = f['root'] / 'package'
             executable = package / 'vendor/x86_64-unknown-linux-musl/bin/codex'; executable.parent.mkdir(parents=True)
-            (package / 'package.json').write_text(json.dumps({'name':'@openai/codex','version':'0.154.0-linux-x64'}))
+            (package / 'package.json').write_text(json.dumps({'name':'@openai/codex','version':engines['codex']['package_version']}))
             executable.write_text(source); executable.chmod(0o755)
             qualified = module.qualification(str(executable))
-            catalog = {'models':[{'slug':'gpt-5.5','experimental_supported_tools':[],
+            catalog = {'models':[{'slug':'fixture-codex-model','experimental_supported_tools':[],
                                   'apply_patch_tool_type':None,'supports_search_tool':False}]}
             qualified.update(feature_listing='shell_tool stable true\n',model_catalog=catalog,
                              model_catalog_digest=module.catalog_digest(catalog))
@@ -165,7 +167,7 @@ def engines(root, f, CS):
     for name, revision in f['revisions'].items():
         revision['native_tools'] = [{'name':'Read' if revision['engine']=='claude_code' else 'update_plan','load':'always'}]
         revision['skills'] = [{'skill':'conversation-help','revision':1,'load':'always'}]
-        if revision['engine']=='codex': revision['settings']={'model':'gpt-5.5'}
+        if revision['engine']=='codex': revision['settings']={'model':'fixture-codex-model'}
         revision['digest']=CS.CV.CFG.digest({k:v for k,v in revision.items() if k!='digest'})
         authority.fixture('configuration:'+name,'agent_configuration',revision)
     return path, markers, mods

@@ -8,7 +8,7 @@ VELDO-0127 fixtures) into scratch, runs the copy's `python3 .veldo/qualify.py` w
 binaries the engines record names, and requires: the command succeeds; it reports every file it wrote; each
 written file is byte-identical to the checkout's; and the written set covers both qualification records and the
 engines record in every runtime copy, every extractor's table and the VELDO-0127 fixtures. Runs the qualified
-binaries offline (extractor reads, `features list`, `debug models --bundled`, the loopback capture and the
+binaries offline (extractor reads, the VELDO-0156 prompt rendering and loopback request, `features list`, `debug models --bundled`, the loopback capture and the
 Claude Code init probe in empty profiles); writes only temporary files.
 """
 
@@ -76,9 +76,18 @@ def _v230_reproduce_suite():
                   '.veldo/runtime/claude-qualification.json', 'engine/runtime/claude-qualification.json',
                   'proof/VELDO-0127/catalog-fixture.json', 'proof/VELDO-0127/features-fixture.json',
                   'proof/VELDO-0127/resource-qualification.json'}
-        tables = {str(Path(script).parent / table) for script, _, names in qualify.EXTRACTORS for table in names}
-        check('qualify/covers', 'it ran every extractor in write mode [%s]' % sorted(tables - set(written)),
-              tables <= set(written) and len(qualify.EXTRACTORS) == 9 and len(tables) == 10)
+        # The suite's own list of every table the binaries' readers write (never the command's own list, so
+        # a command that stops running one reds this row).
+        tables = {'proof/VELDO-0060/cli-options.json', 'proof/VELDO-0061/codex-exec.json',
+                  'proof/VELDO-0062/cli-formats.json', 'proof/VELDO-0141/stream-formats.json',
+                  'proof/VELDO-0155/claude-baseline.json', 'proof/VELDO-0156/codex-baseline.json',
+                  'proof/VELDO-0156/codex-rendered.json', 'proof/VELDO-0156/codex-mentions.json',
+                  'proof/VELDO-0165/claude-environment.json', 'proof/VELDO-0165/codex-environment.json',
+                  'proof/VELDO-0173/claude-tools.json', 'proof/VELDO-0185/login-status.json'}
+        check('qualify/covers', 'it wrote the engines record and both qualification records in both runtimes and '
+              'the VELDO-0127 fixtures [missing %s]' % sorted(wanted - set(written)), wanted <= set(written))
+        check('qualify/covers', 'it ran every reader of the binaries in write mode [missing %s]'
+              % sorted(tables - set(written)), tables <= set(written))
     except Exception as error:
         for row in ROWS:
             check(row, 'raised ' + type(error).__name__ + ': ' + str(error)[:200], False)

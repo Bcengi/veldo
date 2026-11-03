@@ -9748,7 +9748,9 @@ def cases():
     add(127, 'role127-catalog-granted-experiments-lost', catalog_suite, 'control_agent_config_handoff.py',
         "if experimental.get(n, n) in grants]", "if False]", ['catalog/grants'])
     add(127, 'role127-search-unsupported-accepted', '87_veldo_0127_codex_delivery.py', 'control_agent_config.py',
-        "    if 'tool_search' in grants:", "    if False:", ['delivery/gpt-5.5/tool_search'])
+        "    if 'tool_search' in grants:", "    if False:", ['delivery/' + next(
+            m['slug'] for m in json.loads((ROOT / 'proof/VELDO-0127/catalog-fixture.json').read_text())['models']
+            if m.get('tool_mode') is None) + '/tool_search'])
     add(127, 'role127-catalog-reasoning-altered', catalog_suite, 'control_agent_config_handoff.py',
         "    selected = copy.deepcopy(entry)",
         "    selected = dict(copy.deepcopy(entry), default_reasoning_level='corrupted')", ['catalog/fields'])
@@ -9988,26 +9990,34 @@ def cases():
 
     # VELDO-0186: installed runtime assets and qualified factory engine pins.
     delivery127 = '87_veldo_0127_codex_delivery.py'
+    # VELDO-0230: the rows are named by the qualified catalog's models, never typed names: its first Code Mode
+    # model, its first model that supports the clock, and its first direct model that supports neither
+    # experimental tool.
+    models127 = json.loads((ROOT / 'proof/VELDO-0127/catalog-fixture.json').read_text())['models']
+    code127 = next(m['slug'] for m in models127 if m.get('tool_mode') == 'code_mode_only')
+    clock127 = next((m['slug'] for m in models127 if 'clock' in (m.get('experimental_supported_tools') or ())), code127)
+    plain127 = next(m['slug'] for m in models127 if m.get('tool_mode') is None and not set(
+        m.get('experimental_supported_tools') or ()) & {'clock', 'send_user_message_async'})
     add(127, 'role127-delivery-sleep-disabled', delivery127, 'control_agent_config_handoff.py',
         "    configuration['features.goals'] = False",
         "    configuration['features.sleep_tool'] = {'enabled': False}\n"
-        "    configuration['features.goals'] = False", ['delivery/gpt-6-astra/clock'], [])
+        "    configuration['features.goals'] = False", ['delivery/' + clock127 + '/clock'], [])
     add(127, 'role127-delivery-web-dropped', delivery127, 'control_agent_config_handoff.py',
         "    configuration['web_search'] = 'live' if 'web_search' in revision['native_tools'] else 'disabled'",
-        "    configuration['web_search'] = 'disabled'", ['delivery/gpt-6-astra/web_search'], [])
+        "    configuration['web_search'] = 'disabled'", ['delivery/' + code127 + '/web_search'], [])
     add(127, 'role127-delivery-comparison-skipped', delivery127, 'control_launch.py',
         "                tools = HANDOFF.codex_check_launch(self.binding, extra, environment, run['config'])",
-        "                tools = []", ['stop/gpt-6-astra/missing', 'stop/gpt-6-astra/extra', 'stop/gpt-6-astra/mcp'], [])
+        "                tools = []", ['stop/' + code127 + '/missing', 'stop/' + code127 + '/extra', 'stop/' + code127 + '/mcp'], [])
     add(127, 'role127-delivery-unsupported-accepted', delivery127, 'control_agent_config.py',
-        "        codex_grants(definition)", "        pass", ['delivery/gpt-5.5/clock',
-        'delivery/gpt-5.5/request_user_input_async', 'save/gpt-5.5/search-mcp'], [])
+        "        codex_grants(definition)", "        pass", ['delivery/' + plain127 + '/clock',
+        'delivery/' + plain127 + '/request_user_input_async', 'save/' + plain127 + '/search-mcp'], [])
     add(127, 'role127-delivery-mcp-dropped', delivery127, 'control_agent_config_handoff.py',
         "configuration['mcp_servers'][server]['enabled_tools'] = entry['tools']",
-        "configuration['mcp_servers'][server]['enabled_tools'] = []", ['delivery/gpt-6-astra/jira'], [])
+        "configuration['mcp_servers'][server]['enabled_tools'] = []", ['delivery/' + code127 + '/jira'], [])
     add(127, 'role127-delivery-default-tool', delivery127, 'control_agent_config_handoff.py',
         "configuration['features.' + feature] = name in revision['native_tools']",
         "configuration['features.' + feature] = name == 'view_image' or name in revision['native_tools']",
-        ['delivery/gpt-6-astra/none'], [])
+        ['delivery/' + code127 + '/none'], [])
 
     defaults127 = '88_veldo_0127_feature_defaults.py'
     mapped127 = ['mapped/' + n for n in ('shell', 'clock', 'view_image', 'multi_agent', 'sub_agents')]
@@ -12041,6 +12051,9 @@ def cases():
     add(230, 'qualify230-new-tools-unlisted', census230, 'qualify.py',
         "    return [(name, entry['tool_classification'][name]['class'])",
         "    return [] and [(name, entry['tool_classification'][name]['class'])", ['newer/claude-tool'])
+    add(230, 'qualify230-claude-record-unwritten', '126_veldo_0230_qualify_reproduces.py', 'qualify.py',
+        "    write(root, 'claude-qualification.json', text(claude_qualification), written)\n",
+        "    pass  # defect: the Claude Code record is not written\n", ['qualify/covers'])
     add(230, 'setup230-claude-from-path', census230, 'control_factory_setup_engines.py',
         "    paths = {'claude_code': qualified_claude(Refused)}\n",
         "    paths = {'claude_code': Path(shutil.which('claude')).resolve()}\n", ['setup/engines-record'])

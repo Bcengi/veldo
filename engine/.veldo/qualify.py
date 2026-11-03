@@ -173,6 +173,9 @@ EXTRACTORS = (('proof/VELDO-0062/extract_formats.py', ('claude', 'codex'), ('cli
               ('proof/VELDO-0141/extract_stream.py', ('claude', 'codex'), ('stream-formats.json',)),
               ('proof/VELDO-0155/extract_baseline.py', ('claude',), ('claude-baseline.json',)),
               ('proof/VELDO-0156/extract_baseline.py', ('codex',), ('codex-baseline.json',)),
+              # The binary's own offline prompt rendering and its loopback model request (suite 81 reads both).
+              ('proof/VELDO-0156/render_offline.py', ('codex',), ('codex-rendered.json',)),
+              ('proof/VELDO-0156/capture_mentions.py', ('codex',), ('codex-mentions.json',)),
               ('proof/VELDO-0165/extract_environment.py', ('claude', 'codex'),
                ('claude-environment.json', 'codex-environment.json')),
               ('proof/VELDO-0173/extract_tools.py', ('claude',), ('claude-tools.json',)),
