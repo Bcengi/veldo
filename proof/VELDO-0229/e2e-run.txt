@@ -1,0 +1,75 @@
+VELDO-0229 browser tests (engine/ui, npx playwright test, system Chrome, the factory harness over the production build), run 2026-11-01 22:32 to 22:40 EST under the gate lock.
+stats: expected 71 unexpected 0 skipped 1 flaky 0
+
+passed      1.0s  decisions.spec.ts  inbox and exact presentation: the question, choices and rationale as the receipt holds them
+passed      0.7s  decisions.spec.ts  ranked inbox: most urgent deadline first, then risk, with how soon each is due and an urgency lamp
+passed      1.4s  decisions.spec.ts  inline answer: bound to the presentation shown, settled once, and Telegram after it settles nothing
+passed      1.3s  decisions.spec.ts  answered in Telegram first: the UI answer is refused as already settled, beside the action
+passed      1.5s  decisions.spec.ts  stale answer: the presentation changed after it was shown, and the answer is refused beside the action
+passed      1.3s  decisions.spec.ts  snapshot binding: a refresh that brings a new version never changes what is being answered
+passed      1.1s  decisions.spec.ts  answer as a member outside the project's scope: refused as out of scope beside the action
+passed      1.0s  decisions.spec.ts  a member the request was not presented to: the answer is refused by name beside the action
+passed      0.9s  decisions.spec.ts  the answer needs a choice and a rationale before anything is sent
+passed     11.6s  factory.spec.ts  ac1/screens-360: every screen row and state at 360px
+passed     19.5s  factory.spec.ts  ac1/screens-390: every screen row and state at 390px
+passed     20.0s  factory.spec.ts  ac1/screens-1280: every screen row and state at 1280px
+passed     11.5s  factory.spec.ts  ac1/screens-1440: every screen row and state at 1440px
+passed      2.3s  factory.spec.ts  ac2/live: assignment, step and tool call, stop, gate and review, and completion reach the open screens
+passed      1.2s  factory.spec.ts  ac2/completion-receipt: a unit built but not landed is never shown complete
+passed      1.0s  factory.spec.ts  ac2/message-intake: a message from the projects screen reaches the common intake
+passed      1.6s  factory.spec.ts  ac2/decision-settlement: an inline answer settles once; a stale presentation is refused beside the action
+passed      1.8s  factory.spec.ts  ac2/refusals: an answer from a member outside the project's scope is refused beside the action; a workflow outside the scope shows none
+passed      2.7s  factory.spec.ts  ac2/api-only: every request is a published route of this origin and nothing is kept in storage or the URL
+passed      1.5s  factory.spec.ts  ac3/keyboard-desktop: the owner's task path by keyboard only
+passed      2.2s  factory.spec.ts  ac3/touch-phone: the owner's task path by touch on a phone
+passed      2.5s  factory.spec.ts  ac3/stale-save: a workflow save from an older version is refused beside Save and the current version loads
+passed      1.6s  factory.spec.ts  ac1/repositories: the read-only identities and repositories, a table on a desktop and cards on a phone
+passed      1.5s  factory.spec.ts  ac1/every-configuration: every stored role revision and skill is listed, a role no team names too
+passed      1.8s  factory.spec.ts  ac1/whole-catalog: every catalog server and every credential record by label, set at and set by
+passed      1.7s  factory.spec.ts  ac1/usage-provider: each account names its provider and usage breaks down by provider
+passed      1.6s  factory.spec.ts  ac1/worker-capability: each worker shows its capability, and the missing cap command is named
+passed      1.1s  factory.spec.ts  ac2/metadata-only: the catalog and repositories reads serve metadata, never a credential reference or value
+passed      4.3s  factory.spec.ts  ac2/priority-save: Save priority order sends each rank at its version; stale and unauthorized saves are refused beside Save
+passed      3.7s  factory.spec.ts  ac2/worker-stop: Stop records the owner's stop request on the dispatch; stale and unauthorized stops are refused beside the card
+passed      3.3s  factory.spec.ts  ac2/worker-cap: Save cap sets the account's run cap at its version; stale and unauthorized caps are refused beside the control
+passed     29.3s  layout.spec.ts  every screen and state at 360px, light and dark
+passed     29.1s  layout.spec.ts  every screen and state at 390px, light and dark
+passed     30.9s  layout.spec.ts  every screen and state at 1280px, light and dark
+passed     30.6s  layout.spec.ts  every screen and state at 1440px, light and dark
+passed      0.9s  layout.spec.ts  phone decisions: the inline answer action is visible, unclipped and works at 360px
+passed      1.4s  layout.spec.ts  keyboard only on desktop: sign in, open a decision and answer it without a pointer
+passed      1.8s  layout.spec.ts  touch on phone: open a run and a decision from the bottom bar and answer by tapping
+passed      4.2s  layout.spec.ts  served assets: every response is this origin and every asset is a file of the build
+passed      1.8s  layout.spec.ts  phone terminal: the record gets the screen, the headline unclipped, the strip on one line and the controls in one bar
+passed      1.7s  layout.spec.ts  desktop decisions: the most urgent decision is open, and the list scrolls on its own
+passed      1.2s  layout.spec.ts  theme: one preference across the sidebar and the account switch, navigation and reload
+passed      0.9s  layout.spec.ts  primary action: contrast at rest and on hover, and a visible keyboard focus, light
+passed      0.9s  layout.spec.ts  primary action: contrast at rest and on hover, and a visible keyboard focus, dark
+passed      4.2s  layout.spec.ts  no request leaves the origin and no built asset names the Iconify API or a font CDN
+passed      2.1s  roles.spec.ts  role/revisions: a role with every field and load mode is saved, edited and saved again as new revisions
+passed      2.2s  roles.spec.ts  role/stale-save: a save edited from an older revision is refused beside the save action and stores nothing
+passed      2.5s  roles.spec.ts  role/widths: the role form opens from the shell at 360px and 1280px with no primary action clipped
+passed      1.9s  roles.spec.ts  team/owner-save: the owner adds, changes and removes roles and his save is current once read back
+passed      4.0s  roles.spec.ts  team/authoritative: another member's proposal shows pending, appears in Decisions, and is current only after the owner answers
+passed      7.7s  roles.spec.ts  team/refusals: no configuration, an incomplete roster and a stale team version are named beside the save at 360px
+passed      1.2s  roles.spec.ts  team/default-team: the same form saves the default team bound to the revision it was edited from
+passed      1.7s  roles.spec.ts  team/default-stale-save: a default team save edited from an older revision is refused and stores nothing
+passed      2.6s  roles.spec.ts  team/widths: the team form and the default team open from the shell at 360px and 1280px with no primary action clipped
+passed      1.0s  run.spec.ts  full detail: an ended run shows every kept line, tool calls, output, edits and errors
+passed      4.3s  run.spec.ts  live: lines appear as the worker prints them, and a dropped connection resumes from its cursor
+passed      0.8s  run.spec.ts  follow mode: scrolling up stops following; jumping to the latest resumes it
+passed      1.0s  run.spec.ts  station strip: the unit is lit at its station beside the record
+passed      2.0s  run.spec.ts  run header: the run's state, elapsed time, engine and model, host and station, with the dispatch id as a copyable detail
+passed      0.7s  run.spec.ts  compact gutter: each line's sequence, its time since the first line and an inline kind tag on the content's row
+skipped     0.0s  screens.spec.ts  section 7 screenshots from the production build, seeded demonstration data
+passed      3.3s  servers.spec.ts  [mcp/define-desktop] at 1280px the owner defines a stdio server and the Atlassian http server; each save and edit is a new catalog revision holding every field the form sent
+passed      3.1s  servers.spec.ts  [mcp/define-phone] at 360px the owner defines a stdio server and an http server; each save and edit is a new catalog revision holding every field the form sent
+passed      1.8s  servers.spec.ts  [mcp/stale-save] a save edited from an older revision shows the stale refusal beside the save action and stores nothing
+passed      1.5s  servers.spec.ts  [mcp/phone-actions] at 360px no primary action of the server form or the credential field is clipped
+passed      1.7s  servers.spec.ts  [cred/metadata-only] the Atlassian credential is set, replaced and deleted through the field; after each the form shows only its label, set at and set by
+passed      2.0s  servers.spec.ts  [cred/no-value-kept] a typed value appears only in the body of the one request to the credential route, and nowhere after it is sent; reopening shows an empty field
+passed      1.4s  signin.spec.ts  enroll-then-sign-in: a fresh passkey signs in only after the host approves it
+passed      2.2s  signin.spec.ts  unauthenticated access: no screen shows factory data before a passkey session
+passed      1.4s  signin.spec.ts  a session that ends while a screen is open shows the named refusal and drops the data
+passed      2.4s  signin.spec.ts  a member outside a project sees its named refusal and none of its data
+passed      5.5s  signin.spec.ts  route trace: every request each screen makes is a published API route or a built asset

@@ -2,38 +2,42 @@
  * Colors are six-digit hex: Monaco's themes read them and append an alpha byte. */
 :root {
   color-scheme: light;
-  --ink: #0e1a2e;
-  --ink-muted: #4a5772;
-  --paper: #f2f5fa;
+  /* The neutral look of the owner's style direction (VELDO-0229, Telegram 38255): white page and panels, thin
+   * neutral borders, the main action solid inverted (near-black on light), no colored surfaces and no shadows.
+   * Status keeps its colors (38234): green running, amber waiting, red failures, each with its text. */
+  --ink: #171717;
+  --ink-muted: #636363;
+  --paper: #ffffff;
   --paper-raised: #ffffff;
-  --paper-sunken: #e7ecf4;
-  --rule: #d5dce8;
-  --rule-strong: #7d8ba3;
-  --cobalt: #2349d4;
-  --cobalt-hover: #1b3bb0;
-  --cobalt-ink: #ffffff;
-  --cobalt-text: #2349d4;
-  --cobalt-wash: #e3e9fb;
-  --board: #0e1a2e;
-  --board-ink: #ffffff;
-  --board-muted: #9fb0d0;
-  --board-rule: #23314d;
+  --paper-sunken: #fafafa;
+  --rule: #e5e5e5;
+  --rule-strong: #8f8f8f;
+  --accent: #171717;
+  --accent-hover: #404040;
+  --accent-ink: #ffffff;
+  --accent-text: #171717;
+  --accent-wash: #f2f2f2;
+  --board: #ffffff;
+  --board-ink: #171717;
+  --board-muted: #636363;
+  --board-rule: #e5e5e5;
   --amber: #f2a900;
-  --amber-ink: #0e1a2e;
+  --amber-ink: #171717;
   --amber-text: #8a5a00;
-  --amber-wash: #fbf0d6;
+  --amber-wash: #fdf3dc;
   --live: #23a15c;
   --live-text: #1d7a47;
+  --live-wash: #e1f5e9;
   --stop: #d63b2a;
   --stop-text: #b42b1c;
   --stop-wash: #fbe6e2;
-  --focus: #2349d4;
-  --lamp-off: #c5cedc;
-  --lamp-glow: 0 0 0 3px color-mix(in srgb, var(--lamp) 26%, transparent), 0 0 12px 1px color-mix(in srgb, var(--lamp) 50%, transparent);
+  --focus: #171717;
+  --lamp-off: #d4d4d4;
+  --lamp-glow: none;
   --diff-insert: #d2f0dc;
   --diff-remove: #f9dad5;
-  --shadow-float: 0 -6px 18px -8px color-mix(in srgb, var(--ink) 30%, transparent);
-
+  --shadow-float: none;
+  --shadow-panel: none;
   --font-text: 'IBM Plex Sans Variable', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
@@ -54,8 +58,11 @@
   --space-7: 48px;
 
   --radius-control: 6px;
-  --radius-panel: 10px;
-  --rail: 248px;
+  --radius-panel: 8px;
+  --rail: 240px;
+  --rail-collapsed: 52px;
+  --topbar: 50px;
+  --panel-gap: 16px;
   --gutter: 16px;
   --bottombar: 64px;
   --measure: 68ch;
@@ -64,40 +71,44 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --ink: #e4eaf5;
-  --ink-muted: #9ba8c2;
-  --paper: #0d1626;
-  --paper-raised: #15213a;
-  --paper-sunken: #0a1120;
-  --rule: #23314d;
-  --rule-strong: #5a6e94;
-  --cobalt: #2f5ae6;
-  --cobalt-hover: #3d66ee;
-  --cobalt-ink: #ffffff;
-  --cobalt-text: #8eacff;
-  --cobalt-wash: #1a2b52;
-  --board: #142a5c;
-  --board-ink: #ffffff;
-  --board-muted: #c9d4ea;
-  --board-rule: #2a4380;
+  /* Near-black page with panels barely lighter, thin dark borders, the main action solid inverted (near-white). */
+  --ink: #f5f5f5;
+  --ink-muted: #a3a3a3;
+  --paper: #171717;
+  --paper-raised: #1c1c1c;
+  --paper-sunken: #121212;
+  --rule: #2b2b2b;
+  --rule-strong: #737373;
+  --accent: #f5f5f5;
+  --accent-hover: #d4d4d4;
+  --accent-ink: #171717;
+  --accent-text: #f5f5f5;
+  --accent-wash: #2b2b2b;
+  --board: #1c1c1c;
+  --board-ink: #f5f5f5;
+  --board-muted: #a3a3a3;
+  --board-rule: #2b2b2b;
   --amber: #f2b52e;
-  --amber-ink: #0e1a2e;
+  --amber-ink: #171717;
   --amber-text: #f5c04a;
-  --amber-wash: #33291a;
+  --amber-wash: #2f2716;
   --live: #3cc27a;
   --live-text: #6fd39a;
+  --live-wash: #15301f;
   --stop: #f0705c;
   --stop-text: #ff8f7d;
   --stop-wash: #3a1d1d;
-  --focus: #8eacff;
-  --lamp-off: #2e3d5c;
+  --focus: #e5e5e5;
+  --lamp-off: #474747;
   --diff-insert: #173d2a;
   --diff-remove: #4a2222;
-  --shadow-float: 0 -6px 18px -8px #000000;
+  --shadow-float: none;
+  --shadow-panel: none;
 }
 
 @media (min-width: 768px) {
   :root {
-    --gutter: 32px;
+    --gutter: 20px;
+    --panel-gap: 18px;
   }
 }

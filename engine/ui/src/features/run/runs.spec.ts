@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { item, read } from '@/test/builders'
-import { runRows } from './runs'
+import { runRows, runsSummary, type RunRow } from './runs'
 
 describe('runRows', () => {
   it('takes the dispatch from the entity id, which the read model never redacts', () => {
@@ -20,5 +20,20 @@ describe('runRows', () => {
     expect(rows.map((r) => r.unit)).toEqual(['B', 'A'])
     expect(rows[0]!.unitState).toBe('RUNNING')
     expect(rows[1]!.unitState).toBeNull()
+  })
+})
+
+describe('runsSummary', () => {
+  const row = (dispatch: string, project: string, host: string): RunRow => ({
+    dispatch, unit: dispatch, station: '', project, state: 'running', host, platform: '', unitState: null,
+  })
+
+  it('counts the rows shown and their distinct projects and hosts, skipping blanks', () => {
+    const rows = [row('a', 'p1', 'h1'), row('b', 'p1', 'h2'), row('c', 'p2', 'h2'), row('d', '', '')]
+    expect(runsSummary(rows)).toEqual({ runs: 4, projects: 2, hosts: 2 })
+  })
+
+  it('is all zeros for no rows', () => {
+    expect(runsSummary([])).toEqual({ runs: 0, projects: 0, hosts: 0 })
   })
 })

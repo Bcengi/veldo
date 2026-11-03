@@ -5,9 +5,13 @@ and are listed here too when another area may reuse them (the run terminal is re
 conversation screens of VELDO-0179). Each has its own page; read it before using or changing the
 component, and update it in the same commit.
 
-Every control is Veldo's own, built on the native element (a `button`, an `input`, a `textarea`), so
-keyboard, form and screen reader behavior are the browser's. There is no component library: PrimeVue
-was dropped (it has free and paid tiers, PLAN-0019 C16), and nothing here may need one.
+Shared buttons, cards, badges and the account avatar are Nuxt UI's (VELDO-0229, the owner's choice):
+`UApp` at the root, `UButton` under `VButton`, `UCard` for panels, `UBadge` for status and counts,
+`UAvatar` in the sidebar and on the You screen, `USwitch` for the sidebar's appearance switch. They are
+imported explicitly from `@nuxt/ui/components/<Name>.vue` and themed from Veldo's tokens
+(`src/styles/theme.css`; the card's corners and padding in `vite.config.ts`). The text fields, radios and
+the account screen's switch stay Veldo's own on native elements, so keyboard, form and screen reader
+behavior are the browser's. PrimeVue stays denied (free and paid tiers, PLAN-0019 C16).
 
 ## Controls
 
@@ -41,7 +45,7 @@ was dropped (it has free and paid tiers, PLAN-0019 C16), and nothing here may ne
 | `useAsync` | `composables/useAsync.ts` | [../patterns/api-layer.md#screen-state](../patterns/api-layer.md#screen-state) |
 | `useRecordFollower` | `features/run/useRecordFollower.ts` | [../patterns/api-layer.md#live-streams](../patterns/api-layer.md#live-streams) |
 | `useNow` | `composables/useNow.ts` | The time, ticking at a chosen interval (elapsed time, "due in") |
-| `useTheme` | `composables/useTheme.ts` | [../design/colors.md](../design/colors.md) |
+| `useTheme` | `composables/useTheme.ts` | [../design/colors.md](../design/colors.md): the one theme preference, driving `data-theme` and Nuxt UI's class |
 | `useMedia`, `useDesktop` | `composables/useMedia.ts` | [../design/layout.md](../design/layout.md) |
 
 ## Rule

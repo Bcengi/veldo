@@ -1,0 +1,44 @@
+/* Nuxt UI's theme variables, compiled from Veldo's tokens (VELDO-0229). Nuxt UI would build these at run time
+ * and write them into a <style> element, which the content security policy refuses; its color plugin is
+ * replaced by src/ui/nuxt-ui-colors.ts and the variables live here instead. Light is the default and dark
+ * follows the one theme preference (data-theme and the dark class, both set by useTheme()). Unlayered, so they
+ * outrank Nuxt UI's own defaults in its theme layer. */
+:root {
+  --ui-radius: 0.25rem;
+  /* Telegram 38255: Nuxt UI's primary is the neutral inverted action (near-black on light, near-white on dark). */
+  --ui-primary: var(--accent);
+  --ui-secondary: var(--ink-muted);
+  --ui-success: var(--live-text);
+  --ui-info: var(--accent-text);
+  --ui-warning: var(--amber-text);
+  --ui-error: var(--stop-text);
+
+  --ui-color-neutral-50: #fafafa;
+  --ui-color-neutral-100: #f5f5f5;
+  --ui-color-neutral-200: #e5e5e5;
+  --ui-color-neutral-300: #d4d4d4;
+  --ui-color-neutral-400: #a3a3a3;
+  --ui-color-neutral-500: #737373;
+  --ui-color-neutral-600: #525252;
+  --ui-color-neutral-700: #404040;
+  --ui-color-neutral-800: #262626;
+  --ui-color-neutral-900: #171717;
+  --ui-color-neutral-950: #0a0a0a;
+
+  --ui-header-height: var(--topbar);
+  --ui-text-dimmed: var(--ink-muted);
+  --ui-text-muted: var(--ink-muted);
+  --ui-text-toned: var(--ink-muted);
+  --ui-text: var(--ink);
+  --ui-text-highlighted: var(--ink);
+  --ui-text-inverted: var(--paper-raised);
+  --ui-bg: var(--paper-raised);
+  --ui-bg-muted: var(--paper);
+  --ui-bg-elevated: var(--accent-wash);
+  --ui-bg-accented: var(--rule);
+  --ui-bg-inverted: var(--ink);
+  --ui-border: var(--rule);
+  --ui-border-muted: var(--rule);
+  --ui-border-accented: var(--rule-strong);
+  --ui-border-inverted: var(--ink);
+}

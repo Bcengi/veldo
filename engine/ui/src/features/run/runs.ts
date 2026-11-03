@@ -68,3 +68,13 @@ export function runRows(workers: ReadAnswer, work: ReadAnswer | null): RunRow[] 
     .map((item) => runRow(item, units))
     .sort((a, b) => (ORDER[a.state] ?? 9) - (ORDER[b.state] ?? 9) || a.unit.localeCompare(b.unit) || a.dispatch.localeCompare(b.dispatch))
 }
+
+/** The runs screen's header summary, computed from the rows it shows: how many runs, and how many distinct
+ * projects and hosts they ran for and on (a row without a project or host adds nothing to that count). */
+export function runsSummary(rows: RunRow[]): { runs: number; projects: number; hosts: number } {
+  return {
+    runs: rows.length,
+    projects: new Set(rows.map((r) => r.project).filter(Boolean)).size,
+    hosts: new Set(rows.map((r) => r.host).filter(Boolean)).size,
+  }
+}

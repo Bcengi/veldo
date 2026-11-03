@@ -57,7 +57,7 @@ onMounted(() => void store.refresh())
       :back="!wide && requestId ? { to: { name: 'decisions' }, label: 'Decisions' } : undefined"
     >
       <template #aside>
-        <VButton label="Refresh" variant="quiet" size="small" :pending="store.state === 'loading'" pending-label="Refreshing" @click="store.refresh()" />
+        <VButton label="Refresh" variant="secondary" size="small" :pending="store.state === 'loading'" pending-label="Refreshing" @click="store.refresh()" />
       </template>
       <p v-if="showList && store.pending.length" class="screen-meta-text">
         {{ store.waiting }} waiting on you, most urgent first<span v-if="store.freshness && store.freshness !== 'live'"> (as last read, {{ store.freshness }})</span>

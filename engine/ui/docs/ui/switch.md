@@ -1,7 +1,7 @@
 # VSwitch
 
 An on and off switch: a native checkbox with `role="switch"`, laid over a 36 by 22 px track, so it is
-focusable, toggled with Space and read as a switch. On is a cobalt track with a white handle.
+focusable, toggled with Space and read as a switch. On is the inverted accent track (near-black on light, near-white on dark) with a contrasting handle.
 
 ## Props
 

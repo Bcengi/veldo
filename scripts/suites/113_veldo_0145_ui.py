@@ -401,6 +401,17 @@ def _v145_suite():
         chinese['packages']['node_modules/element-plus'] = {'version': '2.9.0', 'license': 'MIT'}
         check('ui/dependency-policy', 'a Chinese-origin UI library is refused',
               judge is not None and any('element-plus' in p and 'denied' in p for p in judge(chinese, policy, package)))
+        # VELDO-0229: a package that declares no license is refused unless the policy records its license and evidence.
+        undeclared = copy.deepcopy(lock)
+        undeclared['packages']['node_modules/unlicensed-probe'] = {'version': '1.0.0'}
+        bare = judge(undeclared, policy, package) if judge else []
+        vouched_policy = copy.deepcopy(policy)
+        vouched_policy.setdefault('licenses', {}).setdefault('recorded', {})['unlicensed-probe@1.0.0'] = {
+            'license': 'MIT', 'evidence': 'probe'}
+        vouched = judge(undeclared, vouched_policy, package) if judge else []
+        check('ui/dependency-policy', 'a package that declares no license is refused unless its license is recorded',
+              judge is not None and any('unlicensed-probe@1.0.0: license None' in p for p in bare)
+              and not any('unlicensed-probe' in p for p in vouched))
         loose = dict(package, dependencies=dict(package.get('dependencies', {}), vue='^' + package.get('dependencies', {}).get('vue', '3')))
         check('ui/dependency-policy', 'a direct dependency without an exact version is refused',
               judge is not None and any('vue' in p and 'exact' in p for p in judge(lock, policy, loose)))

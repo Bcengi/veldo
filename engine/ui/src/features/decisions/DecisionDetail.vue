@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { sendAnswer, type AnswerResult } from '@/api/decisions'
 import { ApiRefusal } from '@/api/refusal'
+import UBadge from '@nuxt/ui/components/Badge.vue'
 import RefusalNotice from '@/components/RefusalNotice.vue'
 import VButton from '@/components/VButton.vue'
 import VRadio from '@/components/VRadio.vue'
@@ -131,10 +132,20 @@ async function loadCurrent() {
     <header class="decision-head">
       <p v-if="due || shown?.risk" class="decision-due">
         <span v-if="due" class="decision-when" :class="`is-${urgency}`" data-testid="decision-due">{{ due }}</span>
-        <span v-if="risk !== 'unknown'" class="inbox-risk" :class="`risk-${risk}`">{{ risk.charAt(0).toUpperCase() + risk.slice(1) }} risk</span>
+        <UBadge
+          v-if="risk !== 'unknown'"
+          class="inbox-risk status-badge"
+          :class="`risk-${risk}`"
+          :color="risk === 'high' ? 'error' : risk === 'medium' ? 'warning' : 'neutral'"
+          variant="subtle"
+          :label="`${risk.charAt(0).toUpperCase() + risk.slice(1)} risk`"
+        />
       </p>
       <h2 class="decision-question" data-testid="question">{{ shown?.question || props.decision.brief }}</h2>
-      <p v-if="shown?.risk" class="decision-risk" data-testid="risk">{{ shown.risk }}</p>
+      <section v-if="shown?.risk" class="decision-risk-box" aria-label="Risk">
+        <p class="eyebrow" aria-hidden="true">Risk</p>
+        <p class="decision-risk" data-testid="risk">{{ shown.risk }}</p>
+      </section>
     </header>
 
     <p v-if="!shown" class="decision-unpresented" data-testid="unpresented">

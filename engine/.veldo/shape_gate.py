@@ -369,12 +369,14 @@ def prose_enforcement_findings(rule_id, root):
     return []
 
 
-def footprint_findings(changed, root, V, arch):
+def footprint_findings(changed, root, V, arch, evidence=None):
     """Footprint versus diff (the O3 half deferred from W3). When the change set names
     EXACTLY ONE spec that declares a footprint, every changed source path must be covered
     by that spec's footprint globs. Stands down for zero or more than one footprinted spec
     (green safe, no corpus re-sweep). Reuses the one glob compiler arch._glob_re and the one
-    parser (V.parse_yamlish), so it introduces no second glob or parser implementation."""
+    parser (V.parse_yamlish), so it introduces no second glob or parser implementation.
+    evidence is every path of the change, proof included; None reads it from git. A caller that
+    names its own change set passes that set, so the branch it happens to run on never joins in."""
     specs = []
     for rel in sorted(changed):
         if rel.startswith("specs/") and rel.endswith(".md") and (Path(root) / rel).is_file():
@@ -384,7 +386,8 @@ def footprint_findings(changed, root, V, arch):
                 specs.append((rel, fp))
     # A change that carries a spec's proof names that spec too: a batch whose specs are already
     # on the trunk lands each one's proof, so it is a multi-spec change, not the one spec it edits.
-    proofs = {p.split("/")[1] for p in _changed_paths(root) if p.startswith("proof/") and p.count("/") >= 2}
+    evidence = _changed_paths(root) if evidence is None else evidence
+    proofs = {p.split("/")[1] for p in evidence if p.startswith("proof/") and p.count("/") >= 2}
     for spec_id in sorted(proofs):
         for path in sorted((Path(root) / "specs").glob(spec_id + "-*.md")):
             rel = "specs/" + path.name
@@ -432,7 +435,8 @@ def run(root=None, changed=None):
     if load.contract is None:
         return True, [], []
     arch, contract = load.arch, load.contract
-    if changed is None:
+    named = changed is not None
+    if not named:
         changed = changed_source_paths(root)
     problems, notes = [], []
 
@@ -471,7 +475,7 @@ def run(root=None, changed=None):
                 notes.append("%s %s (review lane): reviewer guidance, not gate-enforced" % (block[:-1], r["id"]))
 
     # Footprint versus diff (the O3 half deferred from W3).
-    problems.extend(footprint_findings(changed, root, V, arch))
+    problems.extend(footprint_findings(changed, root, V, arch, set(changed) if named else None))
     return False, problems, notes
 
 

@@ -5,5 +5,4 @@
 carries the name. Add an icon by adding its paths to `Icon.vue`; keep the 1.75 stroke and round joins.
 No icon font.
 
-`Wordmark` is "Veldo" in Plex Sans semibold beside a lit cobalt lamp (white on the sign-in screen's
-cobalt field). `size="lg"` on the sign-in screen.
+`Wordmark` is "Veldo" in Plex Sans semibold beside a lit "here" lamp (the ink color). `size="lg"` on the sign-in screen.

@@ -46,6 +46,13 @@ action visible and unclipped, no overlapping controls, primary targets at least 
 keyboard-only completion on desktop; axe finds no violation; no request leaves the route table; no
 content security policy violation is reported.
 
+**The theme, focus and origin checks (VELDO-0229).** `e2e/layout.spec.ts` also proves the one theme
+preference (the sidebar's "Dark appearance" switch and the You screen's switch agree, and the choice
+survives navigation and reload), the primary action's contrast at rest and on hover and its solid
+keyboard focus outline in both themes, and that no request leaves the origin and no built asset names
+the Iconify API or a font CDN. `e2e/screens.spec.ts` takes the proof's screenshots on request
+(`VELDO_SCREENS_0229=1`), labeled as seeded demonstration data; it is skipped otherwise.
+
 ## The factory harness
 
 `e2e/harness.py` builds a real factory in a temporary directory: a real SQLite store and membership

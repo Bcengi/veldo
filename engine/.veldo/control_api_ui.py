@@ -134,6 +134,9 @@ def dependency_problems(lock, policy, package):
     not what the dependency policy admits, by name; [] when they are."""
     problems = []
     allowed = set((policy.get('licenses') or {}).get('allowed') or ())
+    # A package whose published manifest declares no license at all is admitted only when the policy records,
+    # for that exact name and version, an allowed license and the evidence it was read from (VELDO-0229).
+    recorded = (policy.get('licenses') or {}).get('recorded') or {}
     decided = {d.get('name') for d in policy.get('owner_decisions') or () if isinstance(d, dict)}
     deny = [d for d in policy.get('deny') or () if isinstance(d, dict) and isinstance(d.get('name'), str)]
     packages = (lock or {}).get('packages') if isinstance(lock, dict) else None
@@ -145,7 +148,10 @@ def dependency_problems(lock, policy, package):
         name = path.rsplit('node_modules/', 1)[-1]
         meta = meta if isinstance(meta, dict) else {}
         version, license_ = meta.get('version'), meta.get('license')
-        if license_ not in allowed:
+        noted = recorded.get('%s@%s' % (name, version)) if isinstance(recorded, dict) else None
+        vouched = (license_ is None and isinstance(noted, dict) and noted.get('license') in allowed
+                   and bool(noted.get('evidence')))
+        if license_ not in allowed and not vouched:
             problems.append('%s@%s: license %s is not allowed' % (name, version, license_))
         for rule in deny:
             if not fnmatch.fnmatchcase(name, rule['name']):

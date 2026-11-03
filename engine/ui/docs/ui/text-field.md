@@ -1,6 +1,6 @@
 # VTextField and VTextArea
 
-Native `input` and `textarea`, bound with `v-model` (`defineModel`), 44 px tall, cobalt focus.
+Native `input` and `textarea`, bound with `v-model` (`defineModel`), 44 px tall, the focus ring on focus.
 `inheritAttrs` is off and every attribute (`id`, `type`, `placeholder`, `maxlength`, `autocomplete`,
 `data-testid`, listeners) goes to the native element.
 

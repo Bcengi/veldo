@@ -1,4 +1,4 @@
-import { readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import AxeBuilder from '@axe-core/playwright'
 import type { Page, Route } from '@playwright/test'
@@ -578,5 +578,129 @@ test('desktop decisions: the most urgent decision is open, and the list scrolls 
   expect(await list.evaluate((e) => e.scrollHeight > e.clientHeight)).toBe(true)
   await list.evaluate((e) => e.scrollTo({ top: e.scrollHeight }))
   await expect(page.getByRole('heading', { level: 1, name: 'Decisions' })).toBeInViewport()
+  await context.close()
+})
+
+// VELDO-0229 (Telegram 38234 and 38235, sections 4 to 6): the one theme preference, keyboard focus and the primary
+// action's contrast on Nuxt UI's controls, and nothing requested from another origin (no Iconify, no font CDN).
+
+test('theme: one preference across the sidebar and the account switch, navigation and reload', async ({ browser, factory }) => {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 860 } })
+  const page = await context.newPage()
+  const watch = await guard(page)
+  await signIn(page, factory)
+  await page.evaluate(() => localStorage.setItem('veldo.theme', 'light'))
+  await page.reload()
+  const theme = () =>
+    page.evaluate(() => ({ attr: document.documentElement.dataset.theme, dark: document.documentElement.classList.contains('dark') }))
+  const appearance = page.getByRole('switch', { name: 'Dark appearance' })
+  await expect(appearance).toHaveAttribute('aria-checked', 'false')
+  expect(await theme()).toEqual({ attr: 'light', dark: false })
+  // Telegram 38255: an icon rail by default; the top bar's panel toggle expands it to the labeled sidebar.
+  const rail = page.locator('nav.rail')
+  expect((await rail.boundingBox())!.width).toBeLessThanOrEqual(64)
+  // Collapsed, the switch's label is for screen readers only (a 1px clipped box).
+  expect(await page.getByText('Dark appearance').evaluate((e) => e.getBoundingClientRect().width)).toBeLessThanOrEqual(1)
+  await page.getByRole('button', { name: 'Expand sidebar' }).click()
+  await expect(page.getByRole('button', { name: 'Collapse sidebar' })).toHaveAttribute('aria-expanded', 'true')
+  await expect.poll(async () => (await rail.boundingBox())!.width).toBeGreaterThanOrEqual(220)
+  expect(await page.getByText('Dark appearance').evaluate((e) => e.getBoundingClientRect().width)).toBeGreaterThan(40)
+  await page.getByText('Dark appearance').click()
+  await expect(appearance).toHaveAttribute('aria-checked', 'true')
+  expect(await theme()).toEqual({ attr: 'dark', dark: true })
+  // Navigation keeps it.
+  await page.locator('.rail [data-nav="runs"]').click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Runs' })).toBeVisible()
+  expect(await theme()).toEqual({ attr: 'dark', dark: true })
+  // A reload keeps it.
+  await page.reload()
+  await expect(page.getByRole('heading', { level: 1, name: 'Runs' })).toBeVisible()
+  expect(await theme()).toEqual({ attr: 'dark', dark: true })
+  // The account screen's switch is the same preference, both ways.
+  await page.locator('.rail [data-nav="you"]').click()
+  const account = page.getByLabel('Dark theme')
+  await expect(account).toBeChecked()
+  await account.click()
+  await expect(account).not.toBeChecked()
+  expect(await theme()).toEqual({ attr: 'light', dark: false })
+  await expect(appearance).toHaveAttribute('aria-checked', 'false')
+  expect(await watch.violations()).toEqual([])
+  await context.close()
+})
+
+/** WCAG contrast of two computed colors (rgb() or color(srgb ...)). */
+function contrastOf(a: string, b: string): number {
+  const parse = (c: string) => {
+    const srgb = c.match(/color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)/)
+    if (srgb) return [1, 2, 3].map((i) => Number(srgb[i]))
+    const rgb = c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+    if (!rgb) throw new Error(`unreadable color ${c}`)
+    return [1, 2, 3].map((i) => Number(rgb[i]) / 255)
+  }
+  const lum = (c: string) => {
+    const [r, g, b] = parse(c).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
+    return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!
+  }
+  const [x, y] = [lum(a), lum(b)]
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05)
+}
+
+for (const theme of ['light', 'dark'] as Theme[]) {
+  test(`primary action: contrast at rest and on hover, and a visible keyboard focus, ${theme}`, async ({ browser, factory }) => {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 860 } })
+    const page = await context.newPage()
+    const watch = await guard(page)
+    await page.goto(factory.origin + '/sign-in')
+    await setTheme(page, theme)
+    await page.reload()
+    const button = page.getByTestId('sign-in')
+    await expect(button).toBeVisible()
+    expect(await button.getAttribute('data-slot'), 'the primary action is a Nuxt UI button').toBe('base')
+    const colors = () => button.evaluate((e) => ({ fg: getComputedStyle(e).color, bg: getComputedStyle(e).backgroundColor }))
+    const rest = await colors()
+    expect(contrastOf(rest.fg, rest.bg), `at rest ${JSON.stringify(rest)}`).toBeGreaterThanOrEqual(4.5)
+    await button.hover()
+    await page.waitForTimeout(250)
+    const hover = await colors()
+    expect(hover.bg, 'hover changes the fill').not.toBe(rest.bg)
+    expect(contrastOf(hover.fg, hover.bg), `on hover ${JSON.stringify(hover)}`).toBeGreaterThanOrEqual(4.5)
+    // Keyboard focus: tab to the action; its outline is solid, at least 2px, and not transparent.
+    await page.mouse.move(0, 0)
+    await page.locator('h1').focus()
+    for (let n = 0; n < 6 && !(await button.evaluate((e) => e === document.activeElement)); n += 1) await page.keyboard.press('Tab')
+    expect(await button.evaluate((e) => e === document.activeElement && e.matches(':focus-visible'))).toBe(true)
+    // Nuxt UI's buttons transition their colors, the outline's included: read it once settled.
+    await page.waitForTimeout(300)
+    const ring = await button.evaluate((e) => {
+      const s = getComputedStyle(e)
+      return { style: s.outlineStyle, width: parseFloat(s.outlineWidth), color: s.outlineColor, page: getComputedStyle(document.body).backgroundColor }
+    })
+    expect(ring.style, JSON.stringify(ring)).toBe('solid')
+    expect(ring.width).toBeGreaterThanOrEqual(2)
+    expect(contrastOf(ring.color, ring.page), `focus ring against the page ${JSON.stringify(ring)}`).toBeGreaterThanOrEqual(3)
+    expect(await watch.violations()).toEqual([])
+    await context.close()
+  })
+}
+
+test('no request leaves the origin and no built asset names the Iconify API or a font CDN', async ({ browser, factory }) => {
+  const dist = process.env.VELDO_UI_DIST ?? path.join(UI, 'dist')
+  const assets = readdirSync(path.join(dist, 'assets')).filter((f) => /\.(js|css)$/.test(f))
+  const named = assets.filter((f) => /api\.iconify\.design|api\.simplesvg\.com|api\.unisvg\.com|fonts\.googleapis|fonts\.bunny|fonts\.gstatic/.test(readFileSync(path.join(dist, 'assets', f), 'utf8')))
+  expect(named).toEqual([])
+  const context = await browser.newContext({ viewport: { width: 1280, height: 860 } })
+  const page = await context.newPage()
+  const watch = await guard(page)
+  await signIn(page, factory)
+  const ids = await factory.state()
+  for (const where of ['/', '/runs', '/runs/' + ids.dispatches.done, '/decisions', '/you']) {
+    await page.goto(factory.origin + where)
+    await page.waitForLoadState('networkidle')
+  }
+  // Icons are drawn (the sidebar's), from the bundle.
+  expect(await page.locator('.rail-icon').first().evaluate((e) => e.tagName.toLowerCase())).toBe('svg')
+  const foreign = watch.requests.filter((r) => !r.url.startsWith(factory.origin) && !r.url.startsWith('data:'))
+  expect(foreign).toEqual([])
+  expect(await watch.violations()).toEqual([])
   await context.close()
 })

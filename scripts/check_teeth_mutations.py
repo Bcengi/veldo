@@ -11877,7 +11877,8 @@ def cases():
     # VELDO-0131: the factory screens. Each mutant is one UI source module of engine/ui (or its lockfile); suite 120
     # builds the UI with it laid over a scratch copy, applies the dependency policy and runs the browser tests
     # against the factory harness. The ac1/screens rows are suites 121 (360 and 390 px) and 122 (1280 and 1440 px),
-    # which build and run the same way, so a mutant whose rows are screens rows names that suite.
+    # and the fix-round read rows and work commands are suite 124 (VELDO-0229), which build and run the same way, so
+    # a mutant whose rows are one of those suites' rows names that suite.
     def ui131(name, directory, module, old, new, rows, also=(), suite='120_veldo_0131_factory_ui.py'):
         add(131, name, suite, module, old, new, rows, also)
         result[-1]['dir'] = directory
@@ -11920,45 +11921,53 @@ def cases():
     ui131('ui131-identities-dropped', 'engine/ui/src/features/repositories', 'repositories.ts',
           "  return [...(answer?.identities ?? [])].sort(",
           "  return [...(answer?.identities ?? [])].filter(() => false).sort(",
-          ['ac1/repositories'])
+          ['ac1/repositories'],
+          suite='124_veldo_0131_factory_reads_commands.py')
     # AC1, configuration row (F3): only the configurations a team names are listed again.
     ui131('ui131-configurations-team-named-only', 'engine/ui/src/features/configuration', 'configuration.ts',
           "  for (const item of answer?.items.agent_configuration ?? []) {\n",
           "  for (const item of (answer?.items.agent_configuration ?? []).filter(() => false)) {  // defect: unlisted\n",
-          ['ac1/every-configuration'])
+          ['ac1/every-configuration'],
+          suite='124_veldo_0131_factory_reads_commands.py')
     # AC1, MCP row (F4): the catalog lists only its first server.
     ui131('ui131-catalog-first-server-only', 'engine/ui/src/features/catalog', 'catalog.ts',
           "    .sort((a, b) => a.id.localeCompare(b.id))\n}\n\n/** The keystore reference",
           "    .sort((a, b) => a.id.localeCompare(b.id))\n    .slice(0, 1)  // defect: not the whole catalog\n}\n\n"
           "/** The keystore reference",
-          ['ac1/whole-catalog'])
+          ['ac1/whole-catalog'],
+          suite='124_veldo_0131_factory_reads_commands.py')
     # AC1, MCP row (F4): a credential's record (label, set at, set by) is not read.
     ui131('ui131-credential-metadata-dropped', 'engine/ui/src/features/catalog', 'catalog.ts',
           "  return (answer?.items.credential ?? [])\n",
           "  return (answer?.items.credential ?? []).filter(() => false)  // defect: the credential records are not listed\n",
-          ['ac1/whole-catalog'])
+          ['ac1/whole-catalog'],
+          suite='124_veldo_0131_factory_reads_commands.py')
     # AC1, usage row (F4): the account records are not read, so no provider shows.
     ui131('ui131-provider-unread', 'engine/ui/src/features/usage', 'usage.ts',
           "  for (const item of spend?.items.account ?? []) {\n",
           "  for (const item of (spend?.items.account ?? []).filter(() => false)) {  // defect: providers unread\n",
-          ['ac1/usage-provider'])
+          ['ac1/usage-provider'],
+          suite='124_veldo_0131_factory_reads_commands.py')
     # AC1, workers row (F2): a worker's capability is not shown.
     ui131('ui131-capability-dropped', 'engine/ui/src/features/workers', 'workers.ts',
           "    capability: capabilityOf(contract),\n",
           "    capability: '',  // defect: the capability is not shown\n",
-          ['ac1/worker-capability'])
+          ['ac1/worker-capability'],
+          suite='124_veldo_0131_factory_reads_commands.py')
     # AC2, workers row (F5): Stop reports a stop that was never sent (local optimism).
     ui131('ui131-stop-shown-unsent', 'engine/ui/src/api', 'actions.ts',
           "  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.worker_stop, { dispatch, dispatch_version: version })\n",
           "  void send; void contractRoute; void dispatch; void version\n"
           "  return Promise.resolve<ActionResult<Record<string, unknown>>>({ sent: true, answer: { outcome: 'stopped' } })  // defect\n",
-          ['ac2/worker-stop'])
+          ['ac2/worker-stop'],
+          suite='124_veldo_0131_factory_reads_commands.py')
     # AC2, backlog row (F5): Save priority order reports ranks that were never sent.
     ui131('ui131-priority-shown-unsent', 'engine/ui/src/api', 'actions.ts',
           "  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.owner_priority, { item, item_version: itemVersion, rank })\n",
           "  void contractRoute; void item; void itemVersion; void rank\n"
           "  return Promise.resolve<ActionResult<Record<string, unknown>>>({ sent: true, answer: { outcome: 'reprioritized' } })  // defect\n",
-          ['ac2/priority-save'])
+          ['ac2/priority-save'],
+          suite='124_veldo_0131_factory_reads_commands.py')
     # AC2, absent secrets: the repositories read serves an identity's credential references.
     add(131, 'api131-identity-credentials-served', '120_veldo_0131_factory_ui.py', 'control_api_models.py',
         "IDENTITY_METADATA = ('id', 'label', 'author_name', 'author_email', 'remote_host', 'remote_owner', 'projects_root',\n",
@@ -11971,7 +11980,8 @@ def cases():
           "  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.worker_cap, { account, account_version: accountVersion, concurrency })\n",
           "  void contractRoute; void account; void accountVersion\n"
           "  return Promise.resolve<ActionResult<Record<string, unknown>>>({ sent: true, answer: { outcome: 'capped', concurrency } })  // defect\n",
-          ['ac2/worker-cap'])
+          ['ac2/worker-cap'],
+          suite='124_veldo_0131_factory_reads_commands.py')
     # Backlog priority through the API edge: the edge's signature stands for a command the assertion does not derive.
     add(131, 'backlog131-edge-command-underived', '73_veldo_0078_backlog.py', 'control_backlog.py',
         "                or command.get('operation') != 'reprioritize' or assertions.domain_request(a) != command):\n",

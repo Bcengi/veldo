@@ -1,9 +1,10 @@
 {
   "schema": "veldo.ui_dependency_policy/v1",
-  "about": "Every package the UI may install (VELDO-0145 and VELDO-0131, applying VELDO-0131 AC4). Direct packages are listed with their exact registry version (taken on 2026-10-28 with npm view), license, origin and tier; every package of package-lock.json must carry an allowed license and match no denied name. The VELDO-0145 suite applies this file with control_api_ui.dependency_problems.",
+  "about": "Every package the UI may install (VELDO-0145 and VELDO-0131, applying VELDO-0131 AC4; VELDO-0229 adds Nuxt UI). Direct packages are listed with their exact registry version (taken on 2026-10-28 with npm view), license, origin and tier; every package of package-lock.json must carry an allowed license and match no denied name. The VELDO-0145 suite applies this file with control_api_ui.dependency_problems.",
   "licenses": {
     "allowed": [
       "(MPL-2.0 OR Apache-2.0)",
+      "0BSD",
       "Apache-2.0",
       "BSD-2-Clause",
       "BSD-3-Clause",
@@ -14,7 +15,14 @@
       "MIT-0",
       "MPL-2.0",
       "OFL-1.1"
-    ]
+    ],
+    "recorded": {
+      "vaul-vue@0.4.1": {
+        "license": "MIT",
+        "evidence": "The published package declares no license field; its repository github.com/unovue/vaul-vue (moved from Elliot-Alexander/vaul-vue, the repository the package names) carries the MIT LICENSE (GitHub license API, checked 2026-11-01 for VELDO-0229). A Nuxt UI dependency (its drawer), approved under the owner's dependency rule (Telegram 28929)."
+      }
+    },
+    "why_0BSD": "0BSD (tslib, a Nuxt UI dependency through its floating and table packages) is a public-domain-equivalent permissive license; admitted for VELDO-0229 under the owner's dependency rule (Telegram 28929)."
   },
   "deny": [
     {
@@ -136,11 +144,7 @@
     },
     {
       "name": "@vue-flow/*",
-      "reason": "not admitted (VELDO-0131, 2026-11-01): it requires @vueuse/core, whose creator and leading maintainers are of Chinese origin"
-    },
-    {
-      "name": "@vueuse/*",
-      "reason": "Chinese-origin library (creator and leading maintainers; checked 2026-11-01 for VELDO-0131)"
+      "reason": "not admitted (VELDO-0131, 2026-11-01): the workflow canvas is Veldo's own SVG control"
     }
   ],
   "owner_decisions": [],
@@ -174,6 +178,22 @@
       "origin": "Fontsource packaging of IBM Plex Mono (IBM, United States; drawn with Bold Monday, Netherlands)",
       "tier": "free, no paid tier",
       "why": "The record in the run terminal and the ids a person copies (dispatch ids, digests, fingerprints)",
+      "kind": "runtime"
+    },
+    "@iconify-json/lucide": {
+      "version": "1.2.150",
+      "license": "ISC",
+      "origin": "Iconify (Vjacheslav Trushkin) packaging of Lucide (community, github.com/lucide-icons/lucide)",
+      "tier": "free, no paid tier",
+      "why": "The local icon collection Nuxt UI's icons are bundled from at build time, so no icon is ever fetched from the Iconify API (VELDO-0229)",
+      "kind": "build and test"
+    },
+    "@nuxt/ui": {
+      "version": "4.12.0",
+      "license": "MIT",
+      "origin": "NuxtLabs (France; part of Vercel, United States, since 2025); github.com/nuxt/ui",
+      "tier": "free, no paid tier: Nuxt UI Pro was merged into the free MIT library in version 4",
+      "why": "The component library the owner chose (Telegram 38228, 38229 and 38234): UApp, UButton, UCard, UBadge, UAvatar, USwitch, through its Vite and Vue plugins (VELDO-0229). Its own dependencies (reka-ui, @vueuse/*, tailwind-variants and others) are approved by the owner's dependency rule (Telegram 28929), pinned by the lockfile",
       "kind": "runtime"
     },
     "@playwright/test": {

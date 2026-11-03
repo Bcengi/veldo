@@ -78,7 +78,7 @@
   .configure-check {
     width: 20px;
     height: 20px;
-    accent-color: var(--cobalt);
+    accent-color: var(--accent);
   }
   .configure-grid {
     display: grid;

@@ -22,7 +22,8 @@ The VELDO-0145 Python suite (`scripts/suites/113_veldo_0145_ui.py`, row `ui/depe
 `control_api_ui.dependency_problems` to `package-lock.json`, `package.json` and `dependency-policy.json`,
 and fails when:
 
-- a package in the lockfile has a license outside the allow list,
+- a package in the lockfile has a license outside the allow list (a package that declares none passes
+  only with a `licenses.recorded` entry for its exact version naming an allowed license and its evidence),
 - a package matches the deny list (Chinese-origin UI libraries, packages with free and paid tiers),
   unless an owner decision names it,
 - a direct dependency is missing from the policy or its version differs,
@@ -31,12 +32,25 @@ and fails when:
 
 ## Notes on choices
 
-- **No component library.** PrimeVue was dropped (owner decision, VELDO-0145 round 2): only five of
-  its components were used, unstyled, and its vendor runs free and paid tiers (version 5 under the
-  commercial PrimeUI License, paid add-ons around version 4), which PLAN-0019 C16 forbids. The deny
-  list now refuses `primevue` and `@primevue/*` at every version. The five controls are Veldo's own
-  (`VButton`, `VTextField`, `VTextArea`, `VRadio`, `VSwitch`, see `docs/ui/`), built on native
-  elements.
+- **Nuxt UI 4.12.0** (MIT, NuxtLabs; VELDO-0229). The owner chose it (Telegram 38228, 38229 and 38234),
+  superseding the earlier rule of no component library. It runs through its Vite plugin and Vue plugin in
+  this Vue and Vite app, with no Nuxt framework. Its own dependencies (reka-ui, `@vueuse/*`,
+  tailwind-variants, `@iconify/vue` and the rest) are approved by the owner's dependency rule (Telegram
+  28929: dependencies of software we pick are approved automatically, pinned exactly and recorded), so
+  `@vueuse/*` is no longer on the deny list. Two of them needed a policy entry: `tslib` is 0BSD
+  (public-domain equivalent, added to the allowed licenses), and `vaul-vue` 0.4.1 publishes no license
+  field, so its MIT license is recorded with its evidence under `licenses.recorded` (the check admits a
+  package without a declared license only through such a record, for that exact version).
+- **Two Nuxt UI internals replaced at build time** for the content security policy (`vite.config.ts`):
+  its runtime color plugin, which writes a `<style>` element through unhead even with color mode off, by
+  `src/ui/nuxt-ui-colors.ts`, which installs nothing (the variables are compiled into
+  `src/styles/theme.css`); and `@iconify/vue`, by `src/ui/iconify-offline.ts` over Iconify's offline
+  build, which has no API client, so a missing icon renders nothing and is never fetched.
+- **@iconify-json/lucide 1.2.150** (ISC): the local icon collection the build bundles the icons in
+  `src/ui/icons.ts` from (and Nuxt UI's own, such as its loading indicator).
+- **PrimeVue stays denied.** It was dropped (owner decision, VELDO-0145 round 2): its vendor runs free
+  and paid tiers (version 5 under the commercial PrimeUI License, paid add-ons around version 4), which
+  PLAN-0019 C16 forbids. The deny list refuses `primevue` and `@primevue/*` at every version.
 - **IBM Plex Sans and Mono** (Fontsource packages 5.3.0, OFL-1.1, IBM, United States) replace Big
   Shoulders and Atkinson Hyperlegible (owner, Telegram 37382 and 37384).
 - **monaco-editor** is loaded only on the run screen, only when an edit is on screen, and with only
@@ -48,6 +62,5 @@ and fails when:
   Veldo's code, not a copy of the original.
 - **@tanstack/vue-table 9.3.1 and chart.js 4.6.1** (VELDO-0131, registry and origin checked 2026-11-01; evidence
   in proof/VELDO-0131/dependencies.md). Chart.js is used directly, without a wrapper.
-- **Vue Flow is not admitted** (VELDO-0131): it cannot be installed without `@vueuse/core`, whose creator and
-  leading maintainers are of Chinese origin; the deny list refuses `@vue-flow/*` and `@vueuse/*`, and the
-  workflow canvas is Veldo's own SVG control. `shadcn`, `shadcn-vue` and `recharts` are denied by name.
+- **Vue Flow is not admitted** (VELDO-0131): the deny list refuses `@vue-flow/*`, and the workflow canvas
+  is Veldo's own SVG control. `@vueuse/*` was denied with it until VELDO-0229 (see Nuxt UI above). `shadcn`, `shadcn-vue` and `recharts` are denied by name.

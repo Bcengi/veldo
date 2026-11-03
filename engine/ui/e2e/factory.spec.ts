@@ -8,7 +8,9 @@ import { expect, guard, routeOf, signIn, test, type FactoryUi } from './factory-
  * VELDO-0131: the factory screens on phone and desktop. Each test's title begins with its row name (the Python
  * suites read the rows from the JSON report: scripts/suites/121_veldo_0131_factory_screens_narrow.py runs
  * ac1/screens-360 and ac1/screens-390, scripts/suites/122_veldo_0131_factory_screens_wide.py runs ac1/screens-1280
- * and ac1/screens-1440, and scripts/suites/120_veldo_0131_factory_ui.py runs every other test).
+ * and ac1/screens-1440, scripts/suites/124_veldo_0131_factory_reads_commands.py runs ac1/repositories,
+ * ac1/every-configuration, ac1/whole-catalog, ac1/usage-provider, ac1/worker-capability, ac2/priority-save,
+ * ac2/worker-stop and ac2/worker-cap, and scripts/suites/120_veldo_0131_factory_ui.py runs every other test).
  *
  * ac1/screens-<width>: every screen row at 360, 390, 1280 and 1440 px in its loading, empty, error and populated
  *   states (and the live run, the decision and the sheets): no page-wide overflow, no overlapping controls, the

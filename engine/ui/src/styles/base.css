@@ -1,5 +1,7 @@
 @layer base {
   html {
+    /* On a phone the bottom bar is pinned over the page: scrolling an element into view keeps it above the bar. */
+    scroll-padding-bottom: calc(var(--bottombar) + env(safe-area-inset-bottom));
     font-family: var(--font-text);
     font-size: 100%;
     line-height: 1.5;
@@ -10,6 +12,8 @@
   }
   body {
     margin: 0;
+    color: var(--ink);
+    background: var(--paper);
     min-height: 100dvh;
     overflow-x: hidden;
   }
@@ -23,7 +27,7 @@
     margin: 0;
   }
   a {
-    color: var(--cobalt-text);
+    color: var(--accent-text);
     text-underline-offset: 0.18em;
   }
   code,
@@ -37,7 +41,7 @@
     outline-offset: 2px;
   }
   ::selection {
-    background: color-mix(in srgb, var(--cobalt) 28%, transparent);
+    background: color-mix(in srgb, var(--accent) 28%, transparent);
   }
   @media (prefers-reduced-motion: reduce) {
     *,

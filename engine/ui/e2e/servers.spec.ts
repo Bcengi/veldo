@@ -399,7 +399,8 @@ test.describe('MCP server form (VELDO-0159)', () => {
     await once(second, before)
 
     // Reopening the form shows an empty field; nothing typed is kept for it.
-    await page.getByRole('link', { name: 'You', exact: true }).first().click()
+    // The You screen: the sidebar's account link (VELDO-0229, the avatar footer) or the phone's bottom bar entry.
+    await page.getByRole('link', { name: /^(Signed in as|You$)/ }).filter({ visible: true }).first().click()
     await expect(page.getByTestId('you-servers')).toBeVisible()
     await page.getByTestId('you-servers').click()
     const reopened = page.locator(`[data-testid="credential"][data-credential="${id}"]`)

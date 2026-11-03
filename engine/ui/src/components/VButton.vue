@@ -1,5 +1,12 @@
 <script setup lang="ts">
-/** Veldo's button: a native button with a pending state that keeps its place and names what is happening. */
+import { computed } from 'vue'
+import UButton from '@nuxt/ui/components/Button.vue'
+
+/** Veldo's button, built on Nuxt UI's UButton (VELDO-0229). Its interface is unchanged: the label, the progressive
+ * pending label that keeps the button's place and names what is happening, disabled, variant, size, block, the
+ * button type, every passed attribute (data-testid, aria-*) and the click event. Pending disables the button and
+ * marks it busy; Nuxt UI's own loading indicator (a bundled icon) shows while it is. */
+defineOptions({ inheritAttrs: false })
 const props = withDefaults(
   defineProps<{
     label: string
@@ -14,20 +21,39 @@ const props = withDefaults(
   }>(),
   { pendingLabel: undefined, pending: false, disabled: false, variant: 'primary', size: 'normal', type: 'button', block: false },
 )
-defineEmits<{ click: [event: MouseEvent] }>()
+const emit = defineEmits<{ click: [event: MouseEvent] }>()
+
+/** Veldo's variants on Nuxt UI's colors and variants, in the neutral look of Telegram 38255: the main action solid
+ * inverted (near-black on light, near-white on dark) with a hover that keeps its contrast, the rest bordered
+ * neutral, danger bordered red, quiet a plain neutral text button. The focus outline is solid instead of Nuxt UI's
+ * translucent ring. */
+const LOOK = {
+  primary: { color: 'primary', variant: 'solid', class: 'text-(color:--accent-ink) hover:bg-(color:--accent-hover) active:bg-(color:--accent-hover)' },
+  secondary: { color: 'neutral', variant: 'outline', class: '' },
+  danger: { color: 'error', variant: 'outline', class: '' },
+  quiet: { color: 'neutral', variant: 'ghost', class: 'text-(color:--ink) hover:bg-(color:--accent-wash) active:bg-(color:--accent-wash)' },
+} as const
+const look = computed(() => LOOK[props.variant])
+const shown = computed(() => (props.pending ? (props.pendingLabel ?? props.label) : props.label))
 </script>
 
 <template>
-  <button
+  <UButton
+    v-bind="$attrs"
     :type="props.type"
-    class="vbtn"
-    :class="[`vbtn-${props.variant}`, { 'vbtn-small': props.size === 'small', 'vbtn-block': props.block, 'is-pending': props.pending }]"
-    :disabled="props.disabled || props.pending"
+    :label="shown"
+    :color="look.color"
+    :variant="look.variant"
+    :size="props.size === 'small' ? 'md' : 'lg'"
+    :block="props.block"
+    :loading="props.pending"
+    :disabled="props.disabled"
     :aria-busy="props.pending ? 'true' : undefined"
-    @click="$emit('click', $event)"
+    class="vbtn font-medium justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(color:--focus)"
+    :class="[`vbtn-${props.variant}`, look.class, { 'vbtn-small': props.size === 'small', 'vbtn-block': props.block, 'is-pending': props.pending }]"
+    :ui="{ label: 'vbtn-label' }"
+    @click="(event: MouseEvent) => emit('click', event)"
   >
-    <span v-if="props.pending" class="vbtn-spinner" aria-hidden="true" />
-    <slot name="icon" />
-    <span class="vbtn-label">{{ props.pending ? (props.pendingLabel ?? props.label) : props.label }}</span>
-  </button>
+    <template v-if="$slots.icon" #leading><slot name="icon" /></template>
+  </UButton>
 </template>
