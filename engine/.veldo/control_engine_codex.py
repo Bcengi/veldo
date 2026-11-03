@@ -116,8 +116,8 @@ each, the flags of the qualified configuration and the environment the engine is
 
 PINNED EXECUTABLE. The adapter launches the vendor binary inside its npm package (the `executable` its
 configuration names), never the package manager's `codex` link, a Node shim the next install replaces.
-`qualification(executable)` writes the record of one installed binary (runtime/codex-qualification.json
-for Codex 0.154.0 on Linux x64): its package, version, package-relative path, digest and flags, the
+`qualification(executable)` writes the record of one installed binary (runtime/codex-qualification.json,
+written by .veldo/qualify.py for the Codex the engines record names): its package, version, package-relative path, digest and flags, the
 terminal protocol and usage it is read with. `bind(adapter, state_root)` checks the configured executable
 against that record before anything is accepted or spawned: an absolute path, no link on the way to it,
 inside a package of the recorded name and version at the recorded relative path, with the recorded
@@ -431,8 +431,20 @@ NATIVE_TOOL_MAPPING['multi_agent'] = NATIVE_TOOL_MAPPING['sub_agents']
 # Selecting an MCP server grants its resource readers (owner Telegram 29400/29401).
 # This mapping key is conditional on the selected server set, not a native role tool.
 NATIVE_TOOL_MAPPING['mcp_server'] = ['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource']
-# Pinned 0.154.0 debug models under an empty profile; absent tool_mode is JSON null.
-MODEL_TOOL_MODES = {'gpt-6-astra': 'code_mode_only', 'gpt-5.6-sol': 'code_mode_only', 'gpt-5.6-terra': 'code_mode_only', 'gpt-5.6-luna': 'code_mode_only', 'gpt-daybreak-blue-latest': 'code_mode_only', 'gpt-daybreak-red-latest': 'code_mode_only', 'gpt-5.5': None, 'gpt-5.4': None, 'gpt-5.4-mini': None, 'gpt-5.2': None, 'codex-auto-review': 'code_mode_only'}
+# VELDO-0230: the model tool modes are the qualified binary's own, read from its bundled catalog (`debug models
+# --bundled` under an empty profile; an absent tool_mode is JSON null), never a table in this module.
+
+
+def catalog_modes(catalog):
+    """{slug: tool_mode} of every model in a bundled catalog."""
+    return {m['slug']: m.get('tool_mode') for m in catalog['models']}
+
+
+def model_tool_modes(record=None):
+    """The installed qualification's model tool modes (`record` a path or a loaded record)."""
+    record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
+    modes = record.get('model_tool_modes')
+    return modes if isinstance(modes, dict) else {}
 
 
 ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
@@ -552,7 +564,7 @@ def qualification(executable, flags=FLAGS, *, catalog=False):
             'version': version.split('-', 1)[0], 'executable': str(Path(executable).relative_to(root)),
             'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
             'baseline': BASELINE, 'session_environment': session_environment(executable),
-            'native_tool_mapping': NATIVE_TOOL_MAPPING, 'model_tool_modes': MODEL_TOOL_MODES,
+            'native_tool_mapping': NATIVE_TOOL_MAPPING, 'model_tool_modes': {},
             'mcp_resource_rule': {'when': 'nonempty_mcp_servers', 'mapping': 'mcp_server', 'otherwise': []},
             'terminal_protocol': {'stream': 'stdout, one JSON event per line', 'events': sorted(EVENTS),
                                   'terminal': 'turn.completed', 'failed': 'turn.failed', 'item_kinds': list(ITEM_KINDS)},
@@ -560,10 +572,12 @@ def qualification(executable, flags=FLAGS, *, catalog=False):
             'usage_units': ['invocations', 'wall_seconds', 'tokens', 'messages'],
             'rate_limit_windows': sorted({LIMIT_WINDOW} | {window for _, window in EXHAUSTED})}
     if catalog:
-        bundled = bundled_catalog(executable)
-        record.update(feature_listing=feature_listing(executable),
-                      model_catalog=bundled, model_catalog_digest=catalog_digest(bundled),
-                      model_tool_modes={m['slug']: m.get('tool_mode') for m in bundled['models']})
+        bundled, listing = bundled_catalog(executable), feature_listing(executable)
+        # VELDO-0230 AC3: a feature on by default that the classification does not name is off at launch,
+        # and named here.
+        record.update(feature_listing=listing, model_catalog=bundled, model_catalog_digest=catalog_digest(bundled),
+                      model_tool_modes=catalog_modes(bundled),
+                      unclassified_default_on=_capability_handoff().codex_unclassified(listing))
     return record
 
 
@@ -729,7 +743,8 @@ def qualified_baseline(bound, record=None):
     record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
     if not isinstance(record.get('session_environment'), list):
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))
-    if record.get('model_tool_modes') != MODEL_TOOL_MODES:
+    modes, catalog = record.get('model_tool_modes'), record.get('model_catalog')
+    if not isinstance(modes, dict) or (isinstance(catalog, dict) and modes != catalog_modes(catalog)):
         raise Refused('missing_evidence:codex_model_tool_modes')
     if record.get('baseline') != BASELINE:
         raise Refused('missing_evidence:engine_baseline:%s' % record.get('version'))

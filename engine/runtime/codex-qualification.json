@@ -1228,6 +1228,7 @@
   "stream": "stdout, one JSON event per line",
   "terminal": "turn.completed"
  },
+ "unclassified_default_on": [],
  "usage_units": [
   "invocations",
   "wall_seconds",

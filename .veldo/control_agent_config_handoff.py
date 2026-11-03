@@ -218,25 +218,28 @@ def difference(event, wanted, builtin=()):
     return None
 
 
-# What Claude Code 2.1.281 loads of its own beyond the qualified baseline, read from its init event with
-# nothing listed: its built-in plugins (on in every run), and, once `--disable-slash-commands` gives way to a
-# role's skills, its bundled skills (the disableBundledSkills setting removes them) and the built-in skills
-# that setting leaves (skillOverrides "off" hides each from the model and from typing). A role-bound run turns
-# every one off in its generated settings; one a later version adds reaches the init comparison and stops it.
-CLAUDE_ENGINE_PLUGINS = ('agents-md@builtin', 'telemetry@builtin')
-CLAUDE_ENGINE_SKILLS = ('design', 'doctor')
+# What Claude Code loads of its own beyond the qualified baseline, read from its init event with nothing
+# listed (VELDO-0230: by .veldo/qualify.py into the version's record, `engine_plugins` and `engine_skills`):
+# its built-in plugins (on in every run), and, once `--disable-slash-commands` gives way to a role's skills,
+# the built-in skills the disableBundledSkills setting leaves (skillOverrides "off" hides each from the model
+# and from typing; the setting removes the bundled ones). A role-bound run turns every one off in its
+# generated settings; one a later version adds reaches the init comparison and stops it until requalified.
 SETTINGS_FILE = 'settings.json'
 
 
-def claude(extra, capability, inventory, config):
+def claude(extra, capability, inventory, config, *, engine):
+    """`engine` is the version's qualification entry, whose `engine_plugins` and `engine_skills` are turned off."""
     revision = capability['revision']
     wanted = expected(capability, inventory)
     extra['expected'] = wanted
     if SETTINGS_FILE not in extra['files']:
         raise Refused('missing_evidence:engine_settings')
+    plugins, skills = engine.get('engine_plugins'), engine.get('engine_skills')
+    if not all(isinstance(names, list) and all(isinstance(n, str) for n in names) for names in (plugins, skills)):
+        raise Refused('missing_evidence:engine_settings')
     settings = json.loads(extra['files'][SETTINGS_FILE])
-    settings.update(enabledPlugins={name: False for name in CLAUDE_ENGINE_PLUGINS}, disableBundledSkills=True,
-                    skillOverrides={name: 'off' for name in CLAUDE_ENGINE_SKILLS})
+    settings.update(enabledPlugins={name: False for name in plugins}, disableBundledSkills=True,
+                    skillOverrides={name: 'off' for name in skills})
     extra['files'][SETTINGS_FILE] = (json.dumps(settings, sort_keys=True) + '\n').encode()
     extra['argv'] += [OPTION + 'debug-file', str(config / 'role-debug.log')]
     if capability['instructions']:
@@ -286,34 +289,33 @@ def codex_model(bound, revision):
     return dict(copy.deepcopy(catalog), models=[selected])
 
 
-def codex_features(listing, grants):
-    """Control every listed feature, including login-dependent tool sources.
+# The classification of Codex features (VELDO-0127): the features that deliver a grant, the tool sources no
+# role is granted, and the defaults that change protocol, UI, transport or execution implementation without
+# registering another tool (Code Mode's runner is model-selected). Veldo's own policy, not the binary's list.
+CODEX_FEATURE_GRANTS = {
+    'shell_tool': {'shell'}, 'unified_exec': {'shell'}, 'unified_exec_tty': {'shell'},
+    'view_image': {'view_image'}, 'multi_agent': {'multi_agent', 'sub_agents'},
+    'sleep_tool': {'clock'},
+}
+CODEX_FEATURES_UNGRANTED = {
+    'apps', 'browser_use', 'browser_use_external', 'browser_use_full_cdp_access',
+    'computer_use', 'goals', 'hooks', 'image_generation', 'in_app_browser',
+    'in_app_local_automation', 'mentions_v2', 'plugins', 'remote_plugin',
+    'skill_mcp_dependency_install', 'skill_search', 'tool_suggest', 'workspace_dependencies',
+}
+CODEX_FEATURES_NON_TOOLS = {
+    'auth_elicitation', 'code_mode_host', 'collaboration_modes', 'compaction_image_budget',
+    'content_item_kinds', 'enable_request_compression', 'fast_mode', 'guardian_approval',
+    'in_app_chat', 'in_app_dictation', 'in_app_updates', 'item_ids', 'personality',
+    'plugin_sharing', 'remote_compaction_v2', 'resize_all_images', 'shell_snapshot',
+    'sqlite', 'steer', 'terminal_resize_reflow', 'tool_call_mcp_elicitation',
+    'tool_search_always_defer_mcp_tools', 'tui_app_server', 'unbounded_connection_retries',
+    'unified_exec_zsh_fork',
+}
 
-    The complete features-list output belongs to the digest-bound qualification.
-    An unknown enabled feature is potentially a tool source and refuses launch.
-    """
-    mapped = {
-        'shell_tool': {'shell'}, 'unified_exec': {'shell'}, 'unified_exec_tty': {'shell'},
-        'view_image': {'view_image'}, 'multi_agent': {'multi_agent', 'sub_agents'},
-        'sleep_tool': {'clock'},
-    }
-    ungranted = {
-        'apps', 'browser_use', 'browser_use_external', 'browser_use_full_cdp_access',
-        'computer_use', 'goals', 'hooks', 'image_generation', 'in_app_browser',
-        'in_app_local_automation', 'mentions_v2', 'plugins', 'remote_plugin',
-        'skill_mcp_dependency_install', 'skill_search', 'tool_suggest', 'workspace_dependencies',
-    }
-    # These defaults change protocol, UI, transport or execution implementation;
-    # they do not register another tool. Code Mode's runner is model-selected.
-    non_tools = {
-        'auth_elicitation', 'code_mode_host', 'collaboration_modes', 'compaction_image_budget',
-        'content_item_kinds', 'enable_request_compression', 'fast_mode', 'guardian_approval',
-        'in_app_chat', 'in_app_dictation', 'in_app_updates', 'item_ids', 'personality',
-        'plugin_sharing', 'remote_compaction_v2', 'resize_all_images', 'shell_snapshot',
-        'sqlite', 'steer', 'terminal_resize_reflow', 'tool_call_mcp_elicitation',
-        'tool_search_always_defer_mcp_tools', 'tui_app_server', 'unbounded_connection_retries',
-        'unified_exec_zsh_fork',
-    }
+
+def codex_defaults(listing):
+    """{feature: on by default} of a `features list` output; a malformed listing is refused."""
     defaults = {}
     if not isinstance(listing, str) or not listing.strip():
         raise Refused('configuration_stop:codex_feature_listing')
@@ -322,15 +324,31 @@ def codex_features(listing, grants):
         if not match or match[1] in defaults:
             raise Refused('configuration_stop:codex_feature_listing')
         defaults[match[1]] = match[3] == 'true'
+    return defaults
+
+
+def codex_unclassified(listing):
+    """VELDO-0230 AC3: the features on by default that the classification does not name, sorted. Each is
+    turned off at launch (codex_features) and listed in the qualification record and the qualify output."""
+    known = set(CODEX_FEATURE_GRANTS) | CODEX_FEATURES_UNGRANTED | CODEX_FEATURES_NON_TOOLS
+    return sorted(f for f, on in codex_defaults(listing).items() if on and f not in known)
+
+
+def codex_features(listing, grants):
+    """Control every listed feature, including login-dependent tool sources.
+
+    The complete features-list output belongs to the digest-bound qualification. A feature the
+    classification does not name is potentially a tool source: it is off, whatever its default
+    (VELDO-0230 AC3: a newer binary never blocks the launch).
+    """
+    defaults = codex_defaults(listing)
     configuration = {}
     for feature, enabled in defaults.items():
-        if feature in non_tools:
+        if feature in CODEX_FEATURES_NON_TOOLS:
             continue
         key = 'features.' + feature
-        if feature in mapped:
-            configuration[key] = bool(mapped[feature].intersection(grants))
-        elif enabled and feature not in ungranted:
-            raise Refused('configuration_stop:codex_unknown_default_feature:' + feature)
+        if feature in CODEX_FEATURE_GRANTS:
+            configuration[key] = bool(CODEX_FEATURE_GRANTS[feature].intersection(grants))
         else:
             configuration[key] = False
         if '.' in feature:
@@ -417,12 +435,14 @@ def codex_tool_names(tools, namespace=''):
     return sorted(names)
 
 
-def codex_expected_tools(wanted, body):
+def codex_expected_tools(wanted, body, modes=None):
     names = [codex_name(n) for name in wanted['tools'] for n in X.NATIVE_TOOL_MAPPING.get(name, [name])]
     if wanted.get('mcp_servers'):
         names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])
-    # Runner presence is determined by the accepted model, not by an untrusted tool list.
-    if X.MODEL_TOOL_MODES.get(wanted.get('model')) == 'code_mode_only':
+    # Runner presence is determined by the accepted model, not by an untrusted tool list: the qualified
+    # binary's model tool modes (the bound record's, else the installed one's).
+    modes = X.model_tool_modes() if modes is None else modes
+    if modes.get(wanted.get('model')) == 'code_mode_only':
         names.extend(['exec', 'wait'])
     return sorted(set(names))
 

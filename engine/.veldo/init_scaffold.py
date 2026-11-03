@@ -483,6 +483,9 @@ _RUNTIME_ASSETS += [("runtime/claude-qualification.json", ".veldo/runtime/claude
 # VELDO-0061: the qualification record of the pinned Codex executable, which control_engine_codex.py
 # reads beside itself before a Codex engine is accepted or spawned.
 _RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-qualification.json")]
+# VELDO-0230: the engines record (the qualified Codex and Claude Code: version, binary path, digest), written by
+# qualify.py and read by factory setup for the Claude Code copy it pins.
+_RUNTIME_ASSETS += [("runtime/engines.json", ".veldo/runtime/engines.json")]
 
 # VELDO-0145: the factory UI. The API serves its page from a `ui` directory beside its own installed module
 # (control_api_ui.directory), so the built UI (the templates' ui/dist, built by `npm ci && npm run build` in

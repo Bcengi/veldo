@@ -1456,7 +1456,8 @@ def baseline(bound, run, environment=None, record=None, servers=()):
     if run.get('capability'):
         helper = _capability_handoff()
         try:
-            return helper.claude(extra, run['capability'], helper.inventory(run['capability'], servers), config)
+            return helper.claude(extra, run['capability'], helper.inventory(run['capability'], servers), config,
+                                 engine=qualified(bound['version'], record))
         except helper.Refused as error:
             raise Refused(error.code) from None
     return extra

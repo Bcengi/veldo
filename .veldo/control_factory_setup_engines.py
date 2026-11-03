@@ -15,15 +15,29 @@ def organ(name, directory=None):
     return module
 
 
+def qualified_claude(Refused, directory=None):
+    """VELDO-0230 AC4: the Claude Code copy the engines record beside the modules names (runtime/engines.json,
+    written by qualify.py), never whatever `claude` on PATH resolves to."""
+    record = Path(directory or Path(__file__).parent) / 'runtime' / 'engines.json'
+    try:
+        named = json.loads(record.read_text())['claude_code']['binary']
+    except (OSError, ValueError, KeyError, TypeError):
+        raise Refused('missing_evidence:engine_source:claude_code') from None
+    path = Path(os.path.expanduser(str(named)))
+    if not path.is_absolute() or not path.is_file():
+        raise Refused('missing_evidence:engine_source:claude_code')
+    return path
+
+
 def check(Refused):
-    """Locate the installed versioned Claude file and Codex package through PATH, before any write."""
+    """Locate the qualified versioned Claude file (the engines record's) and the Codex package through PATH,
+    before any write."""
     claude, codex = organ('control_engine_claude'), organ('control_engine_codex')
-    paths = {}
-    for engine, command in (('claude_code', 'claude'), ('codex', 'codex')):
-        found = shutil.which(command)
-        if found is None:
-            raise Refused('missing_evidence:engine_source:' + engine)
-        paths[engine] = Path(found).resolve()
+    paths = {'claude_code': qualified_claude(Refused)}
+    found = shutil.which('codex')
+    if found is None:
+        raise Refused('missing_evidence:engine_source:codex')
+    paths['codex'] = Path(found).resolve()
     version = paths['claude_code'].name
     if not claude.VERSION_TEXT.fullmatch(version):
         raise Refused('missing_evidence:engine_version:claude_code')

@@ -34,7 +34,7 @@ import threading
 HERE = Path(__file__).resolve().parent
 OUT = HERE / 'codex-mentions.json'
 sys.path.insert(0, str(HERE))
-from extract_baseline import DEFAULT_CODEX, VERSION, _digest  # noqa: E402
+from extract_baseline import Q, _digest  # noqa: E402
 
 PORT = 18656
 # Where each planted skill goes, relative to the scratch root: ch is CODEX_HOME, home is HOME, clone is the
@@ -163,7 +163,7 @@ def capture(codex, extra, plant=True, preinstalled=False):
 def observe(codex):
     shipped = PREVIOUS + BUNDLED_OFF
     return {
-        'binary': str(codex), 'version': VERSION, 'sha256': _digest(codex),
+        'binary': str(codex), 'version': Q.codex_version(codex)[0], 'sha256': _digest(codex),
         'commands': ['codex exec --json -c check_for_update_on_startup=false [arguments] -c model_provider=<loopback> '
                      '--skip-git-repo-check < {"payload": {"task": "work the unit with $<each skill> and $imagegen"}}'],
         'places': PLACES,
@@ -179,7 +179,7 @@ def observe(codex):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
-    parser.add_argument('--codex', default=str(DEFAULT_CODEX))
+    parser.add_argument('--codex', default=str(Q.binary('codex')))
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args(argv)
     if Path(args.codex).read_bytes().count(BUNDLED_MARKER.encode()) < 1:

@@ -45,6 +45,14 @@
      "CODEX"
     ]
    },
+   "engine_plugins": [
+    "agents-md@builtin",
+    "telemetry@builtin"
+   ],
+   "engine_skills": [
+    "design",
+    "doctor"
+   ],
    "environment": {
     "DISABLE_AUTOUPDATER": "1"
    },

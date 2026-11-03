@@ -147,3 +147,237 @@ def engines_record(codex, claude):
         'codex': {'version': version, 'package_version': package_version, 'binary': home_form(codex),
                   'sha256': digest(codex)},
     }
+
+
+# THE WRITERS.
+
+ROOT = HERE.parent
+# The runtime copies every record is written to: this module's own, the engine canon's, and a composed pack's.
+RUNTIMES = ('.veldo/runtime', 'engine/runtime', 'packs/*/runtime')
+# Every extractor in write mode, in dependency order (VELDO-0061's and VELDO-0173's read VELDO-0062's table),
+# each with the engines it reads.
+EXTRACTORS = (('proof/VELDO-0062/extract_formats.py', ('claude', 'codex')),
+              ('proof/VELDO-0061/extract_items.py', ('codex',)),
+              ('proof/VELDO-0060/extract_cli.py', ('claude',)),
+              ('proof/VELDO-0141/extract_stream.py', ('claude', 'codex')),
+              ('proof/VELDO-0155/extract_baseline.py', ('claude',)),
+              ('proof/VELDO-0156/extract_baseline.py', ('codex',)),
+              ('proof/VELDO-0165/extract_environment.py', ('claude', 'codex')),
+              ('proof/VELDO-0173/extract_tools.py', ('claude',)),
+              ('proof/VELDO-0185/extract_login_status.py', ('claude',)))
+FIXTURES = 'proof/VELDO-0127'
+CLAUDE_NOTE = "The Claude Code configuration VELDO-0060 qualifies on Linux. Every value is read from the installed binary: its digest and stream formats from proof/VELDO-0062/cli-formats.json, its command line from proof/VELDO-0060/cli-options.json. A version not listed here, or a pinned copy whose digest differs, is refused before anything is spawned; upgrading is a deliberate requalification that adds a version. VELDO-0155: the version is qualified with the everything-off baseline read from the same binary (proof/VELDO-0155/claude-baseline.json); a record without it refuses every launch of the version. VELDO-0155 AC3: the version is also qualified with stream JSON input (--input-format stream-json, which the binary accepts only with stream JSON output in print mode), so the prompt waits for the login check; a record without it refuses every launch of the version. VELDO-0141: the baseline also carries the stream options --include-partial-messages and --forward-subagent-text (read from the same bytes, proof/VELDO-0155/claude-baseline.json), so partial messages and a subagent's text reach the stream the execution record keeps; a record without them refuses every launch of the version. VELDO-0173: the version is also qualified with the binary's full tool registry (tool_registry, every tool it registers) and the classification of every registry tool as in_run or outward with its reason (tool_classification), both read from the same bytes (proof/VELDO-0173/claude-tools.json); a record missing either, or leaving a registry tool unclassified, refuses every launch of the version. VELDO-0185: the version is also qualified with its own login status command (login_status: auth status --json, whose answer names loggedIn and authMethod, claude.ai for the subscription, proof/VELDO-0185/login-status.json), which setup and the launch receiver run for each account before work; a record without it reads every such account as not qualified."
+# The Claude Code configuration Veldo runs every qualified version with (VELDO-0060, VELDO-0155 AC3): its
+# policy, not the binary's tables; the binary's own values are read in claude_record.
+CLAUDE_POLICY = {
+    'authentication': {'init_api_key_source': 'none', 'mode': 'subscription', 'profile_variable': 'CLAUDE_CONFIG_DIR'},
+    'environment': {'DISABLE_AUTOUPDATER': '1'},
+    'flags': ['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json'],
+    'host_kind': 'linux',
+    'input': 'stream JSON input (VELDO-0155 AC3): the initialize control request first, then the dispatch packet '
+             'as the user message only once the answer names a subscription login',
+    'live_usage': None,
+    'usage_units': ['invocations', 'wall_seconds', 'tokens', 'messages'],
+}
+
+
+def text(record):
+    return json.dumps(record, indent=1, sort_keys=True) + '\n'
+
+
+def runtimes(root):
+    found = []
+    for pattern in RUNTIMES:
+        found += [path for path in sorted(Path(root).glob(pattern)) if path.is_dir()]
+    return found
+
+
+def write(root, name, content, written):
+    for directory in runtimes(root):
+        (directory / name).write_text(content)
+        written.append(str((directory / name).relative_to(root)))
+
+
+def claude_builtins(executable, baseline):
+    """VELDO-0127's reading of what Claude Code loads of its own beyond the baseline: the init event of one
+    probe (the empty user message that queries nothing, answered before any model request, so no login is
+    needed), run in a fresh empty profile with the baseline's environment and settings, the bundled skills
+    removed and skills listed. ({plugins}, {skills}): its built-in plugins and the skills left."""
+    import tempfile
+    with tempfile.TemporaryDirectory(prefix='veldo-qualify-claude-') as temp:
+        root = Path(temp)
+        for name in ('home', 'profile', 'work'):
+            (root / name).mkdir()
+        settings = dict(baseline['settings'], disableBundledSkills=True)
+        options = [o for o in baseline['options'] if o != '--disable-slash-commands']
+        argv = ([str(executable)] + CLAUDE_POLICY['flags'] + options[:2]
+                + [baseline['settings_option'], json.dumps(settings), baseline['mcp_option'],
+                   json.dumps(baseline['mcp_config'])] + options[2:])
+        env = dict(baseline['environment'], PATH='/usr/bin:/bin', HOME=str(root / 'home'),
+                   CLAUDE_CONFIG_DIR=str(root / 'profile'), **CLAUDE_POLICY['environment'])
+        probe = {'type': 'user', 'message': {'role': 'user', 'content': []}, 'parent_tool_use_id': None,
+                 'shouldQuery': False}
+        done = subprocess.run(argv, input=json.dumps(probe) + '\n', capture_output=True, text=True, timeout=120,
+                              cwd=root / 'work', env=env)
+    for line in done.stdout.splitlines():
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(event, dict) and event.get('type') == 'system' and event.get('subtype') == 'init':
+            return (sorted(p['source'] for p in event.get('plugins') or []), sorted(event.get('skills') or []))
+    raise SystemExit('qualify: %s printed no init event to the probe' % executable)
+
+
+def claude_record(root, executable):
+    """The Claude Code qualification record of one binary (VELDO-0230's writer), from the tables the
+    extractors just wrote and this module's policy: one version, the one the engines record names."""
+    C = load('qualify_claude', HERE / 'control_engine_claude.py')
+    proof = Path(root) / 'proof'
+    version = claude_version(executable)
+    formats = json.loads((proof / 'VELDO-0062/cli-formats.json').read_text())['claude_code']['events']
+    tools = json.loads((proof / 'VELDO-0173/claude-tools.json').read_text())
+    login = json.loads((proof / 'VELDO-0185/login-status.json').read_text())['record']
+    plugins, skills = claude_builtins(executable, C.BASELINE)
+    entry = dict(json.loads(json.dumps(CLAUDE_POLICY)), baseline=C.BASELINE, engine_plugins=plugins,
+                 engine_skills=skills, login_status=login, pinned='<state root>/engines/claude_code/' + version,
+                 rate_limit_windows=formats['rate_limit_event']['fields']['rate_limit_info']['fields']['rateLimitType']['values'],
+                 session_environment=C.session_environment(executable), sha256=digest(executable),
+                 source=home_form(executable),
+                 terminal_protocol={'error_subtypes': formats['result/error']['fields']['subtype']['values'],
+                                    'output': 'stream-json', 'success_subtype': 'success', 'terminal_event': 'result'},
+                 tool_classification=tools['tool_classification'], tool_registry=tools['tool_registry'])
+    return {'engine': 'claude_code', 'note': CLAUDE_NOTE, 'schema': C.QUALIFICATION_SCHEMA, 'spec_id': 'VELDO-0060',
+            'versions': {version: entry}}
+
+
+def fixture_text(record):
+    """VELDO-0127's fixture form: sorted keys, one-space indent, a doubled hyphen written as escapes."""
+    return text(record).replace('-' * 2, '\\u002d' * 2)
+
+
+def normalized(record):
+    """A loopback capture with what changes from run to run (temporary directories, thread, session and
+    installation ids) replaced by placeholders, so the same binary writes the same bytes."""
+    raw = json.dumps(record)
+    raw = re.sub(r'/tmp/((?:v127|veldo)-[a-z-]*?-)[A-Za-z0-9_]{8}', r'/tmp/\1<temp>', raw)
+    raw = re.sub(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', '<id>', raw)
+    raw = re.sub(r'(_at_unix_ms\\?\\?\\?"\s*:\s*)[0-9]+', r'\g<1>0', raw)
+    return json.loads(raw)
+
+
+def fixture_models(catalog):
+    """The catalog's first Code Mode model and its first direct one, the two VELDO-0127's captures run."""
+    modes = [(m['slug'], m.get('tool_mode')) for m in catalog['models']]
+    return (next(s for s, mode in modes if mode == 'code_mode_only'), next(s for s, mode in modes if mode is None))
+
+
+def fixtures(root, executable, written):
+    """The VELDO-0127 fixtures the role suites read: the bundled catalog, the features listing and the real
+    binary's loopback request with and without a selected MCP server for each of the two models."""
+    import copy
+    import tempfile
+    here = Path(root) / FIXTURES
+    H = load('qualify_handoff', Path(root) / '.veldo/control_agent_config_handoff.py')
+    LB = load('qualify_loopback', here / 'loopback.py')
+    E = load('qualify_evidence', here / 'evidence.py')
+    qualified = H.X.load_qualification()
+    outputs = {'catalog-fixture.json': fixture_text(qualified['model_catalog'])}
+    outputs['features-fixture.json'] = text(normalized(LB.capture(executable, {}, features=True)))
+    source = json.loads((here / 'codex-live.json').read_text())['runs'][0]
+    cases = []
+    with tempfile.TemporaryDirectory(prefix='v127-resource-probe-') as temp:
+        for model in fixture_models(qualified['model_catalog']):
+            for selected in (True, False):
+                revision = copy.deepcopy(source['revision'])
+                revision['settings']['model'] = model
+                if not selected:
+                    revision['mcp'] = []
+                capability = {'revision': revision, 'skills': [],
+                              'instructions': source['configuration']['developer_instructions']}
+                inventory = {'jira': {'tools': ['jira_search']}} if selected else {}
+                cfg = H.X.generated()
+                cfg['mcp_servers'] = {'jira': {'enabled_tools': ['jira_search']}} if selected else {}
+                catalog = H.codex_model(qualified, revision)
+                H.codex(cfg, capability, inventory, Path(temp), catalog=catalog)
+                wanted = H.expected(capability, inventory)
+                result = LB.capture(executable, cfg, catalog=catalog)
+                observations = [E.wire_observation(r['body'], wanted, H) for r in result['requests']]
+                result.update(expected=wanted, observations=observations, model_catalog=catalog,
+                              production=E.production(Path(root)), selected_server=selected,
+                              owner_decision='Telegram 29400/29401, 2026-09-28')
+                name = 'resources-' + model + ('-selected' if selected else '-none') + '.json'
+                outputs[name] = text(normalized(result))
+                cases.append({'model': model, 'selected_server': selected, 'record': name,
+                              'returncode': result['returncode'], 'observations': normalized(observations),
+                              'exact_equality': result['returncode'] == 0 and bool(observations) and all(
+                                  o['stop'] is None and o['actual'] == o['expected'] for o in observations)})
+    outputs['resource-qualification.json'] = json.dumps({
+        'owner_decision': 'Telegram 29400/29401, 2026-09-28', 'binary_sha256': qualified['sha256'], 'cases': cases,
+        'rule': 'Exactly three resource readers with a selected MCP server; none without one.',
+        'network': '127.0.0.1 stand-in; empty temporary HOME and CODEX_HOME; Landlock TCP restriction'},
+        indent=1) + '\n'
+    for name, content in outputs.items():
+        (here / name).write_text(content)
+        written.append(FIXTURES + '/' + name)
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description='Qualify the installed or named Codex and Claude Code.')
+    parser.add_argument('--codex', help='the Codex vendor binary (default: the one the codex on PATH runs)')
+    parser.add_argument('--claude', help='a Claude Code version or path (default: the claude on PATH)')
+    parser.add_argument('--root', default=str(ROOT), help='the repository to write (default: this one)')
+    args = parser.parse_args(argv)
+    root = Path(args.root).resolve()
+    codex = Path(args.codex).resolve() if args.codex else installed_codex()
+    claude = installed_claude(args.claude)
+    for path in (codex, claude):
+        if not path.is_file():
+            raise SystemExit('qualify: no such binary: %s' % path)
+    written = []
+    try:
+        previous = engines(root / '.veldo/runtime/engines.json')
+    except (OSError, ValueError):
+        previous = None
+    try:
+        known_tools = set(next(iter(json.loads((root / '.veldo/runtime/claude-qualification.json').read_text())
+                                    ['versions'].values()))['tool_classification'])
+    except (OSError, ValueError, KeyError, StopIteration):
+        known_tools = set()
+    record = engines_record(codex, claude)
+    write(root, 'engines.json', text(record), written)
+    for script, reads in EXTRACTORS:
+        argv = [sys.executable, '-B', str(root / script)]
+        argv += ['--claude', str(claude)] if 'claude' in reads else []
+        argv += ['--codex', str(codex)] if 'codex' in reads else []
+        done = subprocess.run(argv, cwd=root, capture_output=True, text=True)
+        if done.returncode:
+            sys.stderr.write(done.stdout + done.stderr)
+            raise SystemExit('qualify: %s failed on these binaries (exit %d)' % (script, done.returncode))
+        written.append(script + ': ' + done.stdout.strip().splitlines()[-1] if done.stdout.strip() else script)
+    X = load('qualify_codex', root / '.veldo/control_engine_codex.py')
+    codex_record = X.qualification(str(codex), catalog=True)
+    write(root, 'codex-qualification.json', text(codex_record), written)
+    claude_qualification = claude_record(root, claude)
+    write(root, 'claude-qualification.json', text(claude_qualification), written)
+    fixtures(root, codex, written)
+    entry = claude_qualification['versions'][record['claude_code']['version']]
+    print('qualified codex %s (%s) %s' % (record['codex']['version'], record['codex']['binary'], record['codex']['sha256']))
+    print('qualified claude_code %s (%s) %s' % (record['claude_code']['version'], record['claude_code']['binary'],
+                                               record['claude_code']['sha256']))
+    if previous:
+        print('replaced codex %s, claude_code %s' % (previous['codex']['version'], previous['claude_code']['version']))
+    print('codex features on by default the classification does not name, turned off: %s'
+          % (', '.join(codex_record['unclassified_default_on']) or 'none'))
+    new_tools = sorted(set(entry['tool_registry']) - known_tools) if known_tools else []
+    print('claude_code tools the replaced classification did not hold, outward: %s'
+          % (', '.join('%s (%s)' % (n, entry['tool_classification'][n]['class']) for n in new_tools) or 'none'))
+    print('claude_code built-in plugins and skills turned off in a role-bound run: %s; %s'
+          % (', '.join(entry['engine_plugins']) or 'none', ', '.join(entry['engine_skills']) or 'none'))
+    for line in written:
+        print('wrote ' + line)
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
