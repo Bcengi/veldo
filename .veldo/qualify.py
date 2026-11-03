@@ -166,16 +166,17 @@ ROOT = HERE.parent
 # The runtime copies every record is written to: this module's own, the engine canon's, and a composed pack's.
 RUNTIMES = ('.veldo/runtime', 'engine/runtime', 'packs/*/runtime')
 # Every extractor in write mode, in dependency order (VELDO-0061's and VELDO-0173's read VELDO-0062's table),
-# each with the engines it reads.
-EXTRACTORS = (('proof/VELDO-0062/extract_formats.py', ('claude', 'codex')),
-              ('proof/VELDO-0061/extract_items.py', ('codex',)),
-              ('proof/VELDO-0060/extract_cli.py', ('claude',)),
-              ('proof/VELDO-0141/extract_stream.py', ('claude', 'codex')),
-              ('proof/VELDO-0155/extract_baseline.py', ('claude',)),
-              ('proof/VELDO-0156/extract_baseline.py', ('codex',)),
-              ('proof/VELDO-0165/extract_environment.py', ('claude', 'codex')),
-              ('proof/VELDO-0173/extract_tools.py', ('claude',)),
-              ('proof/VELDO-0185/extract_login_status.py', ('claude',)))
+# each with the engines it reads and the tables it writes beside itself.
+EXTRACTORS = (('proof/VELDO-0062/extract_formats.py', ('claude', 'codex'), ('cli-formats.json',)),
+              ('proof/VELDO-0061/extract_items.py', ('codex',), ('codex-exec.json',)),
+              ('proof/VELDO-0060/extract_cli.py', ('claude',), ('cli-options.json',)),
+              ('proof/VELDO-0141/extract_stream.py', ('claude', 'codex'), ('stream-formats.json',)),
+              ('proof/VELDO-0155/extract_baseline.py', ('claude',), ('claude-baseline.json',)),
+              ('proof/VELDO-0156/extract_baseline.py', ('codex',), ('codex-baseline.json',)),
+              ('proof/VELDO-0165/extract_environment.py', ('claude', 'codex'),
+               ('claude-environment.json', 'codex-environment.json')),
+              ('proof/VELDO-0173/extract_tools.py', ('claude',), ('claude-tools.json',)),
+              ('proof/VELDO-0185/extract_login_status.py', ('claude',), ('login-status.json',)))
 FIXTURES = 'proof/VELDO-0127'
 CLAUDE_NOTE = "The Claude Code configuration VELDO-0060 qualifies on Linux. Every value is read from the installed binary: its digest and stream formats from proof/VELDO-0062/cli-formats.json, its command line from proof/VELDO-0060/cli-options.json. A version not listed here, or a pinned copy whose digest differs, is refused before anything is spawned; upgrading is a deliberate requalification that adds a version. VELDO-0155: the version is qualified with the everything-off baseline read from the same binary (proof/VELDO-0155/claude-baseline.json); a record without it refuses every launch of the version. VELDO-0155 AC3: the version is also qualified with stream JSON input (--input-format stream-json, which the binary accepts only with stream JSON output in print mode), so the prompt waits for the login check; a record without it refuses every launch of the version. VELDO-0141: the baseline also carries the stream options --include-partial-messages and --forward-subagent-text (read from the same bytes, proof/VELDO-0155/claude-baseline.json), so partial messages and a subagent's text reach the stream the execution record keeps; a record without them refuses every launch of the version. VELDO-0173: the version is also qualified with the binary's full tool registry (tool_registry, every tool it registers) and the classification of every registry tool as in_run or outward with its reason (tool_classification), both read from the same bytes (proof/VELDO-0173/claude-tools.json); a record missing either, or leaving a registry tool unclassified, refuses every launch of the version. VELDO-0185: the version is also qualified with its own login status command (login_status: auth status --json, whose answer names loggedIn and authMethod, claude.ai for the subscription, proof/VELDO-0185/login-status.json), which setup and the launch receiver run for each account before work; a record without it reads every such account as not qualified."
 # The Claude Code configuration Veldo runs every qualified version with (VELDO-0060, VELDO-0155 AC3): its
@@ -364,7 +365,7 @@ def main(argv=None):
         known_tools = set()
     record = engines_record(codex, claude)
     write(root, 'engines.json', text(record), written)
-    for script, reads in EXTRACTORS:
+    for script, reads, tables in EXTRACTORS:
         argv = [sys.executable, '-B', str(root / script)]
         argv += ['--claude', str(claude)] if 'claude' in reads else []
         argv += ['--codex', str(codex)] if 'codex' in reads else []
@@ -372,7 +373,7 @@ def main(argv=None):
         if done.returncode:
             sys.stderr.write(done.stdout + done.stderr)
             raise SystemExit('qualify: %s failed on these binaries (exit %d)' % (script, done.returncode))
-        written.append(script + ': ' + done.stdout.strip().splitlines()[-1] if done.stdout.strip() else script)
+        written += [str(Path(script).parent / table) for table in tables]
     X = load('qualify_codex', root / '.veldo/control_engine_codex.py')
     codex_record = X.qualification(str(codex), catalog=True)
     write(root, 'codex-qualification.json', text(codex_record), written)
