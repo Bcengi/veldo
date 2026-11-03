@@ -309,9 +309,9 @@
  "owner_decision": "Telegram 29400/29401, 2026-09-28; 38878, 2026-11-03",
  "production": {
   "control_agent_config.py": "cb38a3a0bcd862334ec138d87b59f16e17646b368ae195865fd2f8374c5f63ee",
-  "control_agent_config_handoff.py": "7d77a40984cd4bab04d866e9d1e98196449158cc8693c6eea17985c561618418",
+  "control_agent_config_handoff.py": "3bf69b6b644c24100371de3a946732136c58666c28914935c7ea0013f5e8e314",
   "control_engine_claude.py": "9ccab663fd2876383083fc79e3c5dbd955e74b72fe5e59eb981de852c25027b9",
-  "control_engine_codex.py": "4ebd72731464574b5a3863807c35ec67c4aa50f99e6d93378b25ed00962bb0c7",
+  "control_engine_codex.py": "ab74086733af8e5e89cb9263d486ac9100e4e78cd0c775442c538421a698e837",
   "control_launch.py": "69eff0e9fed9b20f57f6fb83be3224b135faf2f91c8bba970b0e63f76a3abac6"
  },
  "requests": [

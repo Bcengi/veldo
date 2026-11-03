@@ -319,6 +319,25 @@ def fixtures(root, executable, written):
                 H.codex(cfg, capability, inventory, Path(temp), catalog=catalog)
                 captured.append((model, selected, capability, inventory, catalog,
                                  LB.capture(executable, cfg, catalog=catalog)))
+        # VELDO-0230: each experimental grant the catalog lists, on the first model listing it, with nothing else
+        # granted: a grant whose tools do not reach the request under Veldo's switches is undelivered.
+        undelivered = []
+        for grant, experimental in (('clock', 'clock'), ('request_user_input_async', 'send_user_message_async')):
+            model = next((m['slug'] for m in qualified['model_catalog']['models']
+                          if experimental in (m.get('experimental_supported_tools') or ())), None)
+            if model is None:
+                continue
+            revision = copy.deepcopy(source['revision'])
+            revision['settings']['model'], revision['mcp'], revision['native_tools'] = model, [], [grant]
+            capability = {'revision': revision, 'skills': [], 'instructions': ''}
+            cfg = H.X.generated()
+            cfg['mcp_servers'] = {}
+            catalog = H.codex_model(qualified, revision)
+            H.codex(cfg, capability, {}, Path(temp), catalog=catalog)
+            result = LB.capture(executable, cfg, catalog=catalog)
+            sent = set().union(*[H.codex_tool_names(H.codex_request_tools(r['body'])) for r in result['requests']])
+            if not {H.codex_name(n) for n in qualified['native_tool_mapping'].get(grant, [grant])} <= sent:
+                undelivered.append(grant)
     # VELDO-0230: the resource readers the binary offers with no server selected, by the model's tool mode, read
     # from its own request; recorded in the Codex record (offered, never granted) before the comparison below.
     readers = set(qualified['native_tool_mapping']['mcp_server'])
@@ -330,8 +349,10 @@ def fixtures(root, executable, written):
                 if found:
                     mode = qualified['model_tool_modes'].get(model) or 'direct'
                     offered[mode] = sorted(set(offered.get(mode, [])) | found)
-    if qualified['mcp_resource_rule'].get('offered_without_server') != offered:
+    if (qualified['mcp_resource_rule'].get('offered_without_server') != offered
+            or qualified.get('undelivered_grants') != sorted(undelivered)):
         qualified['mcp_resource_rule']['offered_without_server'] = offered
+        qualified['undelivered_grants'] = sorted(undelivered)
         write(root, 'codex-qualification.json', text(qualified), [])
     cases = []
     for model, selected, capability, inventory, catalog, result in captured:

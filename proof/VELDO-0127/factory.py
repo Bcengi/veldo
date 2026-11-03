@@ -227,6 +227,9 @@ for raw in sys.stdin:
     shipped_rule = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text()).get('mcp_resource_rule') or {}
     if 'offered_without_server' in shipped_rule and isinstance(codex_record.get('mcp_resource_rule'), dict):
         codex_record['mcp_resource_rule']['offered_without_server'] = shipped_rule['offered_without_server']
+    # Likewise the grants it does not deliver under Veldo's switches.
+    codex_record['undelivered_grants'] = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text()).get(
+        'undelivered_grants', [])
     codex_qualification.write_text(json.dumps(codex_record))
     shutil.copyfile(codex_qualification, mods / 'runtime/codex-qualification.json')
     config = base / 'receiver.json'

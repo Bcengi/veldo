@@ -458,7 +458,11 @@ def codex_tool_names(tools, namespace=''):
 
 
 def codex_expected_tools(wanted, body, modes=None):
-    names = [codex_name(n) for name in wanted['tools'] for n in X.NATIVE_TOOL_MAPPING.get(name, [name])]
+    # VELDO-0230: a grant the qualified binary does not deliver under these switches is recorded as such and
+    # left out, so the launch proceeds without it.
+    undelivered = set(X.undelivered_grants())
+    names = [codex_name(n) for name in wanted['tools'] if name not in undelivered
+             for n in X.NATIVE_TOOL_MAPPING.get(name, [name])]
     if wanted.get('mcp_servers'):
         names.extend(X.NATIVE_TOOL_MAPPING['mcp_server'])
     # Runner presence is determined by the accepted model, not by an untrusted tool list: the qualified

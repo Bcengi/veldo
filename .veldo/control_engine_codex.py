@@ -460,6 +460,15 @@ def offered_without_server(record=None):
     return offered if isinstance(offered, dict) else {}
 
 
+def undelivered_grants(record=None):
+    """VELDO-0230: the native grants the qualified binary does not deliver under Veldo's switches although its
+    catalog lists them for the model (.veldo/qualify.py probes each on loopback). A launch proceeds without
+    them, never stopped for them (runtime/capability-decisions.json names the rule that keeps each off)."""
+    record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
+    found = record.get('undelivered_grants')
+    return found if isinstance(found, list) else []
+
+
 ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
 # The stop causes the receiver records (control_launch): an invocation stopped for one is never complete.
 STOPS = ('requested', 'usage_cap', 'heartbeat_missing', 'paid_api')
@@ -577,7 +586,7 @@ def qualification(executable, flags=FLAGS, *, catalog=False):
             'version': version.split('-', 1)[0], 'executable': str(Path(executable).relative_to(root)),
             'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
             'baseline': BASELINE, 'session_environment': session_environment(executable),
-            'native_tool_mapping': NATIVE_TOOL_MAPPING, 'model_tool_modes': {},
+            'native_tool_mapping': NATIVE_TOOL_MAPPING, 'model_tool_modes': {}, 'undelivered_grants': [],
             'mcp_resource_rule': {'when': 'nonempty_mcp_servers', 'mapping': 'mcp_server', 'otherwise': [],
                                   'offered_without_server': {}},
             'terminal_protocol': {'stream': 'stdout, one JSON event per line', 'events': sorted(EVENTS),
