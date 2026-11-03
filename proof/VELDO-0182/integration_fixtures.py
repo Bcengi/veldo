@@ -683,9 +683,9 @@ sys.exit(payload.get('code', 0))
             tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
             claude_record['versions'][CLAUDE_VERSION].update(tool_registry=tools173['tool_registry'],
                                                         tool_classification=tools173['tool_classification'])
-            # VELDO-0230: the built-in plugins and skills a role-bound run turns off, the shipped record's.
+            # VELDO-0230: the shipped record's built-in plugins, skills and window names.
             claude_record['versions'][CLAUDE_VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
-                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills')})
+                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
         (mods / 'runtime').mkdir()
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(claude_record))
         factory = base / 'factory'

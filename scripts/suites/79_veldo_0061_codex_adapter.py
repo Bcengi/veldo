@@ -548,7 +548,7 @@ sys.exit(payload.get('code', 0))
         def get_run(name):
             return runs[name][1]
         # VELDO-0230: the qualified binary's own usage-limit message with its no-reset phrase.
-        LIMIT = FORMATS['usage_limit']['message'] + FORMATS['usage_limit']['retry_later'][0]
+        LIMIT = (FORMATS['usage_limit']['message'] + '.{}').replace('{}', FORMATS['usage_limit']['retry_later'][0])
         runs, ended = {}, {}
         try:
             # Phase 1: every independent launch, submitted one after another, then each waited for.
