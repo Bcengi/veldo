@@ -39,6 +39,7 @@ footprint:
   - "proof/VELDO-0162/setup_assets.py"
   - "proof/VELDO-0182/integration_fixtures.py"
   - "proof/VELDO-0186/fixtures.py"
+  - "proof/VELDO-0172/fake_templates.json"
   - "proof/VELDO-0188/round2/served_scenario.py"
   - "proof/VELDO-0060/extract_cli.py"
   - "proof/VELDO-0060/cli-options.json"

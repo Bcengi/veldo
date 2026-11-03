@@ -1,0 +1,29 @@
+qualified codex 0.166.0 (~/projects/veldo-worktrees/veldo-0230/.scratch-0230/codex-0.166.0/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex) sha256:b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8
+qualified claude_code 2.1.317 (~/.local/share/claude/versions/2.1.317) sha256:eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0
+replaced codex 0.154.0, claude_code 2.1.281
+codex features on by default the classification does not name, turned off: api_key_cyber_access_programs, api_key_model_discovery, bedrock_setup_wizard, browser_annotation_api, cli_daybreak, code_mode_interrupt, daemon_auto_start, guardian_reuse_parent_compaction, in_app_voice, incremental_tools, instant_interrupt, mcp_oauth_refresh_coordination, plugin_discovery_prefetch, prediction_preserve_parent_tools, realtime_conversation, reasoning_effort_override, system_proxy_fallback, ultrafast_mode, worktrees, write_stdin_approval
+claude_code tools the replaced classification did not hold: GetTask (outward), OfferChromeSetup (outward), PublishPlugin (outward), ReadWidgetContext (outward), SendToProject (outward), SendToProjectContext (outward), WrapUp (outward)
+claude_code built-in plugins and skills turned off in a role-bound run: cc-plugin-agents-md@builtin, cc-plugin-plugin-authoring@builtin, cc-plugin-privacy@builtin, cc-plugin-telemetry@builtin; design, doctor, plugin-authoring
+wrote .veldo/runtime/engines.json
+wrote engine/runtime/engines.json
+wrote proof/VELDO-0062/cli-formats.json
+wrote proof/VELDO-0061/codex-exec.json
+wrote proof/VELDO-0060/cli-options.json
+wrote proof/VELDO-0141/stream-formats.json
+wrote proof/VELDO-0155/claude-baseline.json
+wrote proof/VELDO-0156/codex-baseline.json
+wrote proof/VELDO-0165/claude-environment.json
+wrote proof/VELDO-0165/codex-environment.json
+wrote proof/VELDO-0173/claude-tools.json
+wrote proof/VELDO-0185/login-status.json
+wrote .veldo/runtime/codex-qualification.json
+wrote engine/runtime/codex-qualification.json
+wrote .veldo/runtime/claude-qualification.json
+wrote engine/runtime/claude-qualification.json
+wrote proof/VELDO-0127/catalog-fixture.json
+wrote proof/VELDO-0127/features-fixture.json
+wrote proof/VELDO-0127/resources-gpt-6-astra-selected.json
+wrote proof/VELDO-0127/resources-gpt-6-astra-none.json
+wrote proof/VELDO-0127/resources-gpt-5.5-selected.json
+wrote proof/VELDO-0127/resources-gpt-5.5-none.json
+wrote proof/VELDO-0127/resource-qualification.json

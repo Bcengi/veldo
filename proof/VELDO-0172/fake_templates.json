@@ -320,7 +320,7 @@
    "model": "claude-opus-5-5[1m]",
    "output_style": "fixture",
    "per_turn_effort_active": true,
-   "permissionMode": "fixture",
+   "permissionMode": "default",
    "plugins": [
     {
      "name": "fixture",
