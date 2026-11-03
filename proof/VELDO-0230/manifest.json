@@ -75,5 +75,18 @@
     }
    ]
   }
- ]
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite <each changed suite> (proof/VELDO-0230/selftest-changed-suites.txt; suite 86 live/claude and live/codex red: stale live captures)"
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "flock -x on the host gate lock waited two hours behind another session gate and was stopped before verify.sh started."
+  }
+ ],
+ "rollback": "Revert the change: the literals return to the modules, suites and extractors, and the Claude record is again written by hand."
 }
