@@ -410,6 +410,9 @@ sys.exit(payload.get('code', 0))
             record173 = json.loads((mods / 'runtime' / 'claude-qualification.json').read_text())
             record173['versions'][CLAUDE_VERSION].update(tool_registry=tools173['tool_registry'],
                                                     tool_classification=tools173['tool_classification'])
+            # VELDO-0230: the built-in plugins and skills a role-bound run turns off, the shipped record's.
+            record173['versions'][CLAUDE_VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
+                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills')})
             (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(record173))
         pin = getattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'pin', None)
         if pin is not None:

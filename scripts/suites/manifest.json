@@ -1708,6 +1708,15 @@
    "resources": {
     "systemd_user_manager": 1
    }
+  },
+  {
+   "name": "125_veldo_0230_engine_census",
+   "file": "125_veldo_0230_engine_census.py",
+   "requires": [
+    "125_veldo_0230_engine_census"
+   ],
+   "regions": "Five rows (VELDO-0230): census/clean, no engine module, suite, mutation, extractor or fixture builder holds a literal agent version, digest, binary path, model catalog, tool registry or feature list (scripts/engine_census.py over the checkout); census/planted-version and census/planted-digest, the qualified Codex version and the qualified Claude Code digest planted in a suite's source are named; newer/claude-tool, a registry tool the classification does not know is outward, qualifies, is switched off at launch and is listed by the qualify command; setup/engines-record, setup takes the Claude Code copy the engines record names whatever claude on PATH points at, and refuses by name without the record.",
+   "requires_note": "Only ROOT and expect. Reads the checkout's governed Python files, its runtime records and the VELDO-0173 tool table; hashes the qualified Claude Code binary and binds the qualified Codex through a scratch copy of .veldo with a fake PATH. Writes only temporary files."
   }
  ],
  "resource_capacities": {

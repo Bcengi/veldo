@@ -169,7 +169,7 @@ def diagnose(path, label, work, record, page):
 
 
 def codex_model(model, engine):
-    modes = engine.MODEL_TOOL_MODES
+    modes = engine.model_tool_modes()
     if model not in modes:
         raise SystemExit('A qualified codex-model is required: ' + model)
     return model

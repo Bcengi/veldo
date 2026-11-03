@@ -580,6 +580,9 @@ err.close()
             tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
             test_record['versions'][VERSION].update(tool_registry=tools173['tool_registry'],
                                                     tool_classification=tools173['tool_classification'])
+            # VELDO-0230: the built-in plugins and skills a role-bound run turns off, the shipped record's.
+            test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
+                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills')})
         (mods / 'runtime').mkdir(exist_ok=True)
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(test_record, indent=1))
         factory = state / 'factory'

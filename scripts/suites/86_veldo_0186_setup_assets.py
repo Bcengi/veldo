@@ -122,7 +122,7 @@ def _v186_suite():
         installed = Path(report.get('home', home / 'absent')) / 'bin'
         config_path = installed.parent / 'config/service.json'
         config = json.loads(config_path.read_text()) if config_path.is_file() else {}
-        expected = ['runtime/claude-qualification.json', 'runtime/codex-qualification.json',
+        expected = ['runtime/claude-qualification.json', 'runtime/codex-qualification.json', 'runtime/engines.json',
                     'runtime/langgraph-records.json', 'runtime/future.json', 'runtime/nested/future.json']
         for name in expected:
             target = installed / name
@@ -216,29 +216,32 @@ def _v186_suite():
               and not list(Path(neg_args[0]).iterdir()))
         (mods / 'runtime/future.json').write_text('{"future": true}\n')
 
-        link = engines['path'] / 'claude'
+        # VELDO-0230 AC4: setup takes the Claude Code copy the engines record names, so each refusal names
+        # that copy, whatever `claude` on PATH points at.
+        def point_claude(target):
+            named = mods / 'runtime' / 'engines.json'
+            record = json.loads(named.read_text())
+            record['claude_code']['binary'] = str(target)
+            named.write_text(json.dumps(record, indent=1, sort_keys=True) + '\n')
+
         unversioned = engines['source'].with_name('cli.js')
         unversioned.write_bytes(engines['source'].read_bytes())
         unversioned.chmod(0o755)
-        link.unlink()
-        link.symlink_to(unversioned)
+        point_claude(unversioned)
         _home, neg_args, neg_kwargs = fresh()
         _result, error = attempt(lambda: F.setup(*neg_args, **neg_kwargs))
         check('engines/version', 'non-versioned Claude target names the missing version: ' + str(error),
               error == 'missing_evidence:engine_version:claude_code' and not list(Path(neg_args[0]).iterdir()))
-        link.unlink()
-        link.symlink_to(engines['source'])
+        point_claude(engines['source'])
 
         # Each refusal passes through the factory writer with fresh valid inputs.
         for engine in ('claude_code', 'codex'):
             manifest = json.loads(engines['manifest'].read_text())
             if engine == 'claude_code':
-                link = engines['path'] / 'claude'
                 unknown = engines['source'].with_name('9.9.9')
                 unknown.write_bytes(engines['source'].read_bytes())
                 unknown.chmod(0o755)
-                link.unlink()
-                link.symlink_to(unknown)
+                point_claude(unknown)
             else:
                 engines['manifest'].write_text(json.dumps(dict(manifest, version='9.9.9')))
             _home, neg_args, neg_kwargs = fresh()
@@ -246,8 +249,7 @@ def _v186_suite():
             check('engines/unlisted', engine + ' unknown version refused before writing: ' + str(error),
                   error == 'missing_evidence:engine_baseline:9.9.9' and not list(Path(neg_args[0]).iterdir()))
             if engine == 'claude_code':
-                link.unlink()
-                link.symlink_to(engines['source'])
+                point_claude(engines['source'])
             else:
                 engines['manifest'].write_text(json.dumps(manifest))
             source = engines['source'] if engine == 'claude_code' else engines['vendor']

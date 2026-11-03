@@ -37,6 +37,9 @@ def install(root, base, mods):
     engines = json.loads((mods / 'runtime/engines.json').read_text())
     manifest.write_text(json.dumps({'name': codex.PACKAGE, 'version': engines['codex']['version']}))
     qualification = codex.qualification(str(vendor))
+    # VELDO-0230: the qualified binary's model tool modes (its bundled catalog's), as the shipped record holds them.
+    qualification['model_tool_modes'] = json.loads((root / '.veldo/runtime/codex-qualification.json').read_text())[
+        'model_tool_modes']
     (mods / 'runtime/codex-qualification.json').write_text(json.dumps(qualification))
     shim = package / 'bin/codex.js'
     shim.parent.mkdir()

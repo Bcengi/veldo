@@ -299,7 +299,8 @@ sys.exit(payload.get('code', 0))
                  'flags': ['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json'],
                  'environment': {'DISABLE_AUTOUPDATER': '1'}, 'baseline': E.BASELINE,
                  'session_environment': E.session_environment(versions / VERSION)}
-        for key in ('tool_registry', 'tool_classification'):
+        # VELDO-0230: and its built-in plugins and skills, which a role-bound run turns off.
+        for key in ('tool_registry', 'tool_classification', 'engine_plugins', 'engine_skills'):
             if key in shipped_entry:
                 entry[key] = shipped_entry[key]
         record_path = mods / 'runtime' / 'claude-qualification.json'

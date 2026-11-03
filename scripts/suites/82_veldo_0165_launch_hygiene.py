@@ -303,6 +303,9 @@ sys.exit(payload.get('code', 0))
             tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
             claude_record['versions'][CLAUDE_VERSION].update(tool_registry=tools173['tool_registry'],
                                                         tool_classification=tools173['tool_classification'])
+            # VELDO-0230: the built-in plugins and skills a role-bound run turns off, the shipped record's.
+            claude_record['versions'][CLAUDE_VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
+                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills')})
         (mods / 'runtime').mkdir()
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(claude_record))
         factory = base / 'factory'
@@ -575,6 +578,8 @@ sys.exit(payload.get('code', 0))
             path.write_text(json.dumps(original_record))
 
         extractor = load('v165_extractor', EXTRACTOR if EXTRACTOR.is_file() else TREE / 'proof/VELDO-0165/extract_environment.py')
+        # VELDO-0230: the qualified binaries are the engines record's.
+        QUALIFY165 = load('v165_qualify', ROOT / '.veldo' / 'qualify.py')
 
         def outside_scan(binary):
             """Session-family names by GNU binutils: `strings -a -n 6 -t d` through a grep for the prefixes,
@@ -611,7 +616,7 @@ sys.exit(payload.get('code', 0))
             evidence = json.loads((TREE / 'proof' / 'VELDO-0165' / (engine + '-environment.json')).read_text())
             shipped = json.loads((ROOT / '.veldo' / 'runtime' / (engine + '-qualification.json')).read_text())
             entry = shipped['versions'][version] if engine == 'claude' else shipped
-            extracted, extraction_error = attempt(lambda: extractor.extract(engine, extractor.PINNED[engine][1]))
+            extracted, extraction_error = attempt(lambda: extractor.extract(engine, QUALIFY165.binary({'claude': 'claude_code', 'codex': 'codex'}[engine], ENGINES_RECORD)))
             check('evidence/completeness', engine + ': rerun byte extraction equals inventory and covers child structures',
                   extraction_error is None and extracted == evidence
                   and all(n.startswith(('CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX')) or n in L.EXEC_STRIPPED
@@ -626,7 +631,7 @@ sys.exit(payload.get('code', 0))
                       set(children) - {'OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE'}
                       <= set((extracted or {}).get('parent_session_names', [])))
             # An outside implementation over the same bytes: GNU strings and readelf, never the extractor.
-            outside, outside_error = attempt(lambda: outside_scan(extractor.PINNED[engine][1]))
+            outside, outside_error = attempt(lambda: outside_scan(QUALIFY165.binary({'claude': 'claude_code', 'codex': 'codex'}[engine], ENGINES_RECORD)))
             required = {'claude': {'CLAUDE_CODE_DISABLE_CLAUDE_MDS'},
                         'codex': {'CODEX_THREAD_ID', 'CODEX_SANDBOX', 'CODEX_SESSION_ID'}}[engine]
             names_now = set((extracted or {}).get('session_names') or [])
@@ -658,8 +663,8 @@ sys.exit(payload.get('code', 0))
         check('fixture/mcp-control', 'SDK gate is supported by binary bytes and reacts to inherited override',
               done.returncode == 0 and len(control) == 1
               and control[0]['init']['tools'] == ['Read', 'Bash', 'read', 'write']
-              and 'e.config.type==="sdk"&&a.CLAUDE_AGENT_SDK_MCP_NO_PREFIX' in
-              json.loads((TREE / 'proof' / 'VELDO-0165' / 'claude-environment.json').read_text())['mcp_naming']['text'])
+              and re.search(r'[\w$]+\.config\.type==="sdk"&&[\w$]+\.CLAUDE_AGENT_SDK_MCP_NO_PREFIX',
+                            json.loads((TREE / 'proof' / 'VELDO-0165' / 'claude-environment.json').read_text())['mcp_naming']['text']))
 
         # Every line any fake printed, its handshake answer and init among them, is an event of the binaries'
         # own table, every field known, every required one present, each value of its type.

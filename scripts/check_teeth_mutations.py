@@ -11961,6 +11961,22 @@ def cases():
         "            if False:  # defect: the member's scope is not judged\n",
         ['accounts/owner-cap'])
 
+    # VELDO-0230: upgrading an agent CLI is one command. The census names a planted version or digest, a
+    # newer Claude Code tool is listed by the qualify command, and setup takes the engines record's copy.
+    census230 = '125_veldo_0230_engine_census.py'
+    add(230, 'census230-version-unread', census230, 'engine_census.py',
+        "            hit = version.search(value)\n", "            hit = None\n", ['census/planted-version'])
+    result[-1]['dir'] = 'scripts'
+    add(230, 'census230-digest-unread', census230, 'engine_census.py',
+        "            for digest in known['digests']:\n", "            for digest in ():\n", ['census/planted-digest'])
+    result[-1]['dir'] = 'scripts'
+    add(230, 'qualify230-new-tools-unlisted', census230, 'qualify.py',
+        "    return [(name, entry['tool_classification'][name]['class'])",
+        "    return [] and [(name, entry['tool_classification'][name]['class'])", ['newer/claude-tool'])
+    add(230, 'setup230-claude-from-path', census230, 'control_factory_setup_engines.py',
+        "    paths = {'claude_code': qualified_claude(Refused)}\n",
+        "    paths = {'claude_code': Path(shutil.which('claude')).resolve()}\n", ['setup/engines-record'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

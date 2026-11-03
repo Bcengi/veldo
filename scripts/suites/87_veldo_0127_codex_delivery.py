@@ -20,7 +20,8 @@ def _v127_delivery():
     started = time.monotonic()
     delivery = load('v127_delivery_cases', ROOT / "proof/VELDO-0127" / "delivery_fixture.py")
     engine = load('v127_delivery_models', PRODUCTION['control_engine_codex.py'])
-    models = list(engine.MODEL_TOOL_MODES)
+    # VELDO-0230: the qualified binary's models, from its record's bundled catalog.
+    models = list(engine.model_tool_modes(ROOT / '.veldo' / 'runtime' / 'codex-qualification.json'))
     # Two disjoint factories, including SQLite connections and fault files. Each
     # still launches every singleton grant and retains its actual wire evidence.
     with ThreadPoolExecutor(max_workers=2) as pool:

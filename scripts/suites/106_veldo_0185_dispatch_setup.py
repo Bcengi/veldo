@@ -98,7 +98,8 @@ def _v185_suite():
 
     def code_mode():
         """The qualified catalog's code-mode models, whose runs the binary also gives its runner tools."""
-        modes = load('v185_codex_modes', PRODUCTION['control_engine_codex.py']).MODEL_TOOL_MODES
+        modes = load('v185_codex_modes', PRODUCTION['control_engine_codex.py']).model_tool_modes(
+            ROOT / '.veldo' / 'runtime' / 'codex-qualification.json')
         return sorted(slug for slug, mode in modes.items() if mode == 'code_mode_only')
 
     def newest_model():

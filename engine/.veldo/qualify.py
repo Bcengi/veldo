@@ -333,6 +333,13 @@ def fixtures(root, executable, written):
         written.append(FIXTURES + '/' + name)
 
 
+def new_tools(entry, known):
+    """VELDO-0230 AC3: the registry tools of a qualified Claude Code entry that the replaced record's
+    classification did not hold, each with the class the new classification gives it."""
+    return [(name, entry['tool_classification'][name]['class'])
+            for name in sorted(set(entry['tool_registry']) - set(known))] if known else []
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Qualify the installed or named Codex and Claude Code.')
     parser.add_argument('--codex', help='the Codex vendor binary (default: the one the codex on PATH runs)')
@@ -380,9 +387,8 @@ def main(argv=None):
         print('replaced codex %s, claude_code %s' % (previous['codex']['version'], previous['claude_code']['version']))
     print('codex features on by default the classification does not name, turned off: %s'
           % (', '.join(codex_record['unclassified_default_on']) or 'none'))
-    new_tools = sorted(set(entry['tool_registry']) - known_tools) if known_tools else []
-    print('claude_code tools the replaced classification did not hold, outward: %s'
-          % (', '.join('%s (%s)' % (n, entry['tool_classification'][n]['class']) for n in new_tools) or 'none'))
+    print('claude_code tools the replaced classification did not hold: %s'
+          % (', '.join('%s (%s)' % pair for pair in new_tools(entry, known_tools)) or 'none'))
     print('claude_code built-in plugins and skills turned off in a role-bound run: %s; %s'
           % (', '.join(entry['engine_plugins']) or 'none', ', '.join(entry['engine_skills']) or 'none'))
     for line in written:
