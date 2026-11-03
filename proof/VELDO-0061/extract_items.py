@@ -11,8 +11,11 @@ executed, no model runs, nothing logs in and no profile, credential or configura
     python3 -B proof/VELDO-0061/extract_items.py [--codex PATH]           # write codex-exec.json
     python3 -B proof/VELDO-0061/extract_items.py --check [--codex PATH]   # exit 1 when it moved
 
-The anchors are the exact text of Codex 0.154.0's exec literals. A version that moved one fails by name
-rather than yielding a guessed table.
+The default binary is the qualified one the engines record names (through extract_formats). Each run is
+read in exec's literal run (extract_formats.codex_exec_run): between the literals one build placed around it,
+or, in a build that dropped those (exec's struct names), as the run itself, or name by name, inside exec's
+literal run; the collab kind's tag, which the linker may place outside it, is then the literal once in the
+binary. A build that moved one beyond that fails by name rather than yielding a guessed table.
 
 WHAT THE BYTES SHOW AND WHAT THEY DO NOT. A Rust binary keeps each literal once, so a long name that only
 exec uses sits in exec's own run and a short common one (`text`, `tool`, `path`, `kind`) is merged with the
@@ -34,7 +37,7 @@ spec = importlib.util.spec_from_file_location('v61_formats', HERE.parent / 'VELD
 FORMATS = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(FORMATS)
 
-# The exec crate's literal runs, each with the literal it must follow and the one it must precede.
+# The exec crate's literal runs, each with the literal one build placed before it and the one after it.
 RUNS = {
     # The ThreadItem kinds (serde tag `type`, snake_case), between the collab agent states and exec's span name.
     'kinds': (b'errorednot_found', b'agent_messagereasoningcommand_executionfile_changemcp_tool_callweb_searchtodo_list',
@@ -82,14 +85,39 @@ def _pieces(run, names):
     return names
 
 
+# The names packed in each run, for a build that no longer packs them together.
+NAMES = {'kinds': KINDS[:7], 'collab': ['collab_tool_call'],
+         'collab_fields': ['receiver_thread_ids', 'prompt', 'agents_states', 'status'],
+         'command': ['aggregated_output', 'exit_code', 'message'], 'status': ['in_progress', 'completed', 'failed'],
+         'id': ['id'], 'fields': ['items', 'query', 'action', 'changes', 'server', 'arguments', 'result'],
+         'change_kinds': ['add', 'delete', 'update'],
+         'agent_states': ['pending_init', 'running', 'interrupted', 'errored', 'not_found'],
+         'collab_tools': ['spawn_agent', 'send_input', 'close_agent'], 'mcp_result': ['content_meta', 'structured_content']}
+
+
+def _locate(raw, start, end, name):
+    """The offset of the run `name` in exec's literal run [start, end)."""
+    before, run, after = RUNS[name]
+    if b''.join(n.encode() for n in NAMES[name]) != run:
+        raise FORMATS.Moved('codex exec item run is not its names: %r' % run)
+    at = raw.find(before + run + after, start, end)
+    if at >= 0:
+        return at + len(before)
+    at = raw.find(run, start, end)
+    if at >= 0:
+        return at
+    places = [raw.find(n.encode(), start, end) for n in NAMES[name]]
+    if all(place >= 0 for place in places):
+        return places[0]
+    if name == 'collab' and raw.count(run) == 1:
+        return raw.find(run)
+    raise FORMATS.Moved('codex exec item literals moved: ' + name)
+
+
 def items(path):
     raw = Path(path).read_bytes()
-    offsets = {}
-    for name, (before, run, after) in RUNS.items():
-        at = raw.find(before + run + after)
-        if at < 0:
-            raise FORMATS.Moved('codex exec item literals moved: ' + name)
-        offsets[name] = at + len(before)
+    start, end = FORMATS.codex_exec_run(raw)
+    offsets = {name: _locate(raw, start, end, name) for name in RUNS}
     kinds = _pieces(RUNS['kinds'][1], KINDS[:7]) + _pieces(RUNS['collab'][1], ['collab_tool_call'])
     status = _pieces(RUNS['status'][1], ['in_progress', 'completed', 'failed'])
     change = _pieces(RUNS['change_kinds'][1], ['add', 'delete', 'update'])

@@ -13,25 +13,239 @@ Writes proof/VELDO-0062/cli-formats.json. With --check it writes nothing and exi
 extraction differs from the committed table: after a CLI update that is the signal to regenerate the
 table, and the suite's fixture rows then say which fake line no longer matches.
 
-The anchors below are the exact text each table starts from in these versions (Claude Code 2.1.281,
-Codex 0.154.0). A version that moved one fails here by name rather than yielding a guessed table.
+The default binaries are the qualified ones the engines record names (.veldo/runtime/engines.json, read
+through .veldo/qualify.py); --claude and --codex name others. The Claude Code anchors below are minified
+source text as one build wrote it: a name the minifier chose matches any name (the same one wherever it
+repeats, and a name another anchor already bound stays that name), while strings, property names, keys and
+punctuation are exact. A few anchors carry a gap (`<any>`, a short stretch of code; `<items>`, list
+entries; `<field>`, one object member) where a later build inserts code that does not change what the
+anchor shows. The Codex anchors are literal runs of the Rust binary. A build that moved one fails here by
+name rather than yielding a guessed table.
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import re
 import sys
 
 HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
 OUT = HERE / 'cli-formats.json'
-DEFAULT_CLAUDE = Path.home() / '.local/share/claude/versions/2.1.281'
-DEFAULT_CODEX = Path('/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/'
-                     '@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex')
+_qualify = importlib.util.spec_from_file_location('v62_qualify', ROOT / '.veldo' / 'qualify.py')
+Q = importlib.util.module_from_spec(_qualify)
+_qualify.loader.exec_module(Q)
+DEFAULT_CLAUDE = Q.binary('claude_code')
+DEFAULT_CODEX = Q.binary('codex')
 
 
 class Moved(Exception):
     pass
+
+
+# ---------------------------------------------------------------- minified anchors
+
+JS_WORDS = frozenset(
+    'var let const function return if else new typeof void async await yield of in for while do continue break case '
+    'switch try catch finally this null undefined true false instanceof delete throw get set class extends super '
+    'Set Map Intl Date Object Array JSON Promise String Number Boolean Math Error RegExp Symbol process'.split())
+JS_NAME = re.compile(r'[A-Za-z_$][\w$]*')
+REGEX_BEFORE = set('(,=:[!&|?{};')
+# The gaps an anchor may carry: a short stretch of code, one simple object member, and entries of a list literal.
+GAPS = {'<any>': r'[^;]{0,400}?', '<field>': r'(?:[A-Za-z_$][\w$]*:[\w$.?()]{1,60},)?',
+        '<items>': r'(?:(?:"[^"\\]*"|\.\.\.[A-Za-z_$][\w$]*),)*?'}
+
+
+class Anchor:
+    """A minified source anchor as a pattern: each name the minifier chose (not a keyword, a global, a property
+    after `.`, an object key or a method name) matches any name, the same one wherever it repeats and another than
+    the anchor's other names; a name in
+    `bound` matches only the name it is bound to. Strings, regular expressions and punctuation are exact, and a
+    string written @"..." is that string or a name bound to it (a hoisted constant)."""
+
+    def __init__(self, source, bound=()):
+        self.source, self.bound = source, dict(bound)
+        self.groups, self.hoisted, self.pieces, self.names = {}, [], [], set()
+        self._parts, self._literal = [], []
+        self._scan(source, 0, len(source))
+        self._flush()
+        self.regex = re.compile(''.join(self._parts), re.DOTALL)
+        self.key = max(self.pieces, key=len) if self.pieces else ''
+        self.slack = 4000 + (20000 if '<items>' in source else 0)
+
+    def _flush(self):
+        if self._literal:
+            text = ''.join(self._literal)
+            self._parts.append(re.escape(text))
+            self.pieces.append(text)
+            self._literal = []
+
+    def _name(self, name):
+        self._flush()
+        self.names.add(name)
+        if name in self.bound:
+            self._parts.append(r'(?<![\w$])%s(?![\w$])' % re.escape(self.bound[name]))
+        elif name in self.groups:
+            self._parts.append('(?P=%s)' % self.groups[name])
+        else:
+            # Two names of one anchor are two names of the build.
+            others = ''.join(r'(?!(?P=%s)(?![\w$]))' % group for group in self.groups.values())
+            others += ''.join(r'(?!%s(?![\w$]))' % re.escape(value) for value in self.bound.values())
+            self.groups[name] = 'n%d' % len(self.groups)
+            self._parts.append(r'(?<![\w$])%s(?P<%s>[A-Za-z_$][\w$]*)(?![\w$])' % (others, self.groups[name]))
+
+    def _string(self, s, i, end):
+        j = i + 1
+        while j < end and s[j] != s[i]:
+            j += 2 if s[j] == '\\' else 1
+        return j + 1
+
+    def _scan(self, s, i, end):
+        prev = ''
+        while i < end:
+            c = s[i]
+            gap = next((g for g in GAPS if s.startswith(g, i)), None)
+            if gap:
+                self._flush()
+                self._parts.append(GAPS[gap])
+                i, prev = i + len(gap), ','
+                continue
+            if c == '@' and i + 1 < end and s[i + 1] == '"':
+                j = self._string(s, i + 1, end)
+                self._flush()
+                group = 'h%d' % len(self.hoisted)
+                self.hoisted.append((group, s[i + 1:j]))
+                self._parts.append(r'(?:%s|(?<![\w$])(?P<%s>[A-Za-z_$][\w$]*)(?![\w$.(]))' % (re.escape(s[i + 1:j]), group))
+                i, prev = j, '"'
+                continue
+            if c in '"\'':
+                j = self._string(s, i, end)
+                self._literal.append(s[i:j])
+                i, prev = j, c
+                continue
+            if c == '`':
+                self._literal.append(c)
+                j = i + 1
+                while j < end and s[j] != '`':
+                    if s[j] == '\\':
+                        self._literal.append(s[j:j + 2])
+                        j += 2
+                    elif s.startswith('${', j):
+                        self._literal.append('${')
+                        depth, k = 1, j + 2
+                        while k < end and depth:
+                            depth += {'{': 1, '}': -1}.get(s[k], 0)
+                            k += 1
+                        self._scan(s, j + 2, k - 1)
+                        self._literal.append('}')
+                        j = k
+                    else:
+                        self._literal.append(s[j])
+                        j += 1
+                self._literal.append('`')
+                i, prev = j + 1, '`'
+                continue
+            if c == '/' and prev in REGEX_BEFORE and i + 1 < end and s[i + 1] not in '/*':
+                j, klass = i + 1, False
+                while j < end and (s[j] != '/' or klass):
+                    if s[j] == '\\':
+                        j += 1
+                    elif s[j] in '[]':
+                        klass = s[j] == '['
+                    j += 1
+                j += 1
+                while j < end and s[j].isalpha():
+                    j += 1
+                self._literal.append(s[i:j])
+                i, prev = j, '/'
+                continue
+            m = None if c.isdigit() else JS_NAME.match(s, i)
+            if m:
+                name, after, before = m.group(0), m.end(), s[:i].rstrip()
+                dotted = s[:i].endswith('.') and not s[:i].endswith('...')
+                key = (before == '' or before.endswith(('{', ','))) and s.startswith(':', after)
+                method = (before.endswith(('{', ',', 'get', 'async')) and re.match(r'\([\w$,]*\)\{', s[after:]))
+                if name in JS_WORDS or dotted or key or method:
+                    self._literal.append(name)
+                else:
+                    self._name(name)
+                i, prev = after, 'a'
+                continue
+            if c.isdigit():
+                number = re.match(r'\d[\w.]*', s[i:]).group(0)
+                self._literal.append(number)
+                i, prev = i + len(number), '0'
+                continue
+            self._literal.append(c)
+            prev = prev if c.isspace() else c
+            i += 1
+
+    def matches(self, text):
+        """Every match in `text` (each hoisted constant bound to its string), found around the occurrences of the
+        anchor's longest exact piece."""
+        found, seen = [], set()
+        candidates = self.regex.finditer(text) if len(self.key) < 4 else self._near(text)
+        for m in candidates:
+            if m.start() in seen:
+                continue
+            seen.add(m.start())
+            if all(m.group(g) is None or re.search(r'(?<![\w$.])%s=%s' % (re.escape(m.group(g)), re.escape(value)), text)
+                   for g, value in self.hoisted):
+                found.append(m)
+        return sorted(found, key=lambda m: m.start())
+
+    def _near(self, text):
+        at = text.find(self.key)
+        while at >= 0:
+            for m in self.regex.finditer(text, max(0, at - len(self.source) - self.slack),
+                                         at + len(self.key) + len(self.source) + self.slack):
+                if m.start() <= at < m.end():
+                    yield m
+            at = text.find(self.key, at + 1)
+
+    def name(self, m, name):
+        """The name the match gives the anchor's `name`."""
+        return self.bound[name] if name in self.bound else m.group(self.groups[name])
+
+
+_ANCHORS = {}
+
+
+def anchor(source, bound=()):
+    key = (source, tuple(sorted(dict(bound).items())))
+    if key not in _ANCHORS:
+        _ANCHORS[key] = Anchor(source, bound)
+    return _ANCHORS[key]
+
+
+_SITES = {}
+
+
+def uses(source, bound):
+    """The entries of `bound` naming a name the anchor `source` uses."""
+    names = anchor(source).names
+    return {k: v for k, v in bound.items() if k in names}
+
+
+def sites(text, source, bound=()):
+    """The matches of the anchor `source` in `text` (cached per text)."""
+    a = anchor(source, bound)
+    key = (text, source, tuple(sorted(a.bound.items())))
+    if key not in _SITES:
+        _SITES[key] = a.matches(text)
+    return _SITES[key]
+
+
+def site(text, source, what, count=1, bound=()):
+    """The first match of the anchor `source`, which must match exactly `count` times; with its names: (match,
+    {name in the anchor: name in the binary})."""
+    found = sites(text, source, bound)
+    if len(found) != count:
+        raise Moved('%s: anchor found %d times' % (what, len(found)))
+    a = anchor(source, bound)
+    names = dict(a.bound, **{name: found[0].group(group) for name, group in a.groups.items()})
+    return found[0], names
 
 
 def _digest(path):
@@ -44,11 +258,42 @@ def _digest(path):
 
 # ---------------------------------------------------------------- Claude Code: the embedded zod schema
 
-# The minified zod helpers of this build, each confirmed by a use only that helper fits.
-ZOD = {'d': 'object', 'z': 'enum', 'R': 'literal', 'k': 'number', 'o': 'string', 'O': 'boolean', 'ae': 'any',
-       'C': 'array', 'me': 'record', 'Fe': 'union', '_': 'string', 'Mf': 'any'}
-ZOD_CONFIRM = ('num_turns:k().int()', 'session_id:o()', 'type:R("assistant")', 'is_error:O()',
-               'modelUsage:me(o(),', 'status:z(["allowed","allowed_warning","rejected"])')
+# The minified zod helpers of a build, each read from a use in the SDK message schemas that only that helper fits:
+# (anchor, {name in the anchor: kind}); every match of an anchor must name the same helper, and a name read once
+# stays bound in the anchors after it. `lazy` is the wrapper of a lazily built schema (`NAME=lazy(()=>BODY)`); the
+# uuid helper reads as a string and the null helper as any.
+ZOD_HELPERS = (
+    ('var mK=f(()=>d({type:R("system"),subtype:R("init"),agents:C(o()).optional(),apiKeySource:vq(),'
+     'startup_timing:me(o(),ae()).optional()',
+     {'f': 'lazy', 'd': 'object', 'R': 'literal', 'C': 'array', 'o': 'string', 'me': 'record', 'ae': 'any'}),
+    ('num_turns:k().int()', {'k': 'number'}),
+    ('agentProgressSummaries:O().optional(),forwardSubagentText:O().optional()', {'O': 'boolean'}),
+    ('status:z(["allowed","allowed_warning","rejected"]),resetsAt:k().int()', {'z': 'enum'}),
+    ('d({type:R("control_response"),response:Fe([', {'Fe': 'union'}),
+    ('d({type:R("assistant"),message:eK(),parent_tool_use_id:o().nullable(),error:$o().optional(),uuid:_(),',
+     {'_': 'string'}),
+    ('f(()=>Fe([R("compacting"),R("requesting"),Mf()]))', {'Mf': 'any'}),
+)
+
+
+def zod_helpers(text):
+    """({helper name: kind}, the lazy wrapper's name, {each helper's name in the anchors: its name in this build})."""
+    bound = {}
+    for source, kinds in ZOD_HELPERS:
+        found = sites(text, source, bound)
+        a = anchor(source, bound)
+        names = {(name, a.name(m, name)) for m in found for name in kinds}
+        if not found or len(names) != len(kinds):
+            raise Moved('zod helper use moved: ' + source[:60])
+        bound.update(names)
+    zod, lazy = {}, bound['f']
+    for source, kinds in ZOD_HELPERS:
+        for name, kind in kinds.items():
+            if kind != 'lazy':
+                if zod.get(bound[name], kind) != kind:
+                    raise Moved('zod helper %s read as both %s and %s' % (bound[name], zod[bound[name]], kind))
+                zod[bound[name]] = kind
+    return zod, lazy, bound
 SPACE = re.compile(r'\s*')
 TOKEN = re.compile(r'\s*(?:(?P<str>"(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\'|`(?:[^`\\]|\\.)*`)|(?P<num>-?\d+(?:\.\d+)?)'
                    r'|(?P<id>[A-Za-z_$][A-Za-z0-9_$]*)|(?P<arrow>=>)|(?P<p>[()\[\]{},.:!?+\-*/<>=&|]))')
@@ -57,9 +302,11 @@ TOKEN = re.compile(r'\s*(?:(?P<str>"(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\'|`(?:[^
 class Js:
     """A tokenizer and a recursive reader of zod expressions over the binary's text."""
 
-    def __init__(self, text):
+    def __init__(self, text, helpers=None):
+        """`helpers`: zod_helpers of the build, read from `text` (the whole binary) when not given."""
         self.text = text
         self.cache = {}
+        self.zod, self.lazy, self.helpers = zod_helpers(text) if helpers is None else helpers
 
     def _sites(self, name, suffix):
         key = (name, suffix)
@@ -110,8 +357,8 @@ class Js:
             at = m.end()
 
     def definition(self, name, near):
-        """The body of `name=f(()=>BODY)` or `name=d(...)` nearest `near` (minified names repeat)."""
-        best = self.nearest(name, r'=(f\(\(\)=>)?(?=[A-Za-z_$])', near)
+        """The body of `name=LAZY(()=>BODY)` or `name=OBJECT(...)` nearest `near` (minified names repeat)."""
+        best = self.nearest(name, r'=(%s\(\(\)=>)?(?=[A-Za-z_$])' % re.escape(self.lazy), near)
         if best is None:
             raise Moved('no definition of ' + name)
         return best.end(), bool(best.group(1))
@@ -166,6 +413,13 @@ class Reader:
                 return schema, at
             kind, method, end = next(self.js.tokens(end))
             kind, value, end2 = next(self.js.tokens(end))
+            if value != '(' and method == 'shape' and value == '.':
+                # OBJECT.shape.FIELD: the schema of that object's field.
+                kind, field, end = next(self.js.tokens(end2))
+                inner = (schema.get('fields') or {}).get(field)
+                schema = dict(inner, via=field) if inner else {'type': 'any', 'via': field}
+                at = end
+                continue
             if value != '(':
                 return schema, at
             spans, end = self.arguments(end2, depth, method)
@@ -177,10 +431,13 @@ class Reader:
                 schema['optional'] = schema['nullable'] = True
             elif method == 'int':
                 schema['int'] = True
+            elif method == 'extend' and schema.get('type') == 'object' and spans \
+                    and self.js.text[SPACE.match(self.js.text, spans[0]).end()] == '{':
+                schema['fields'] = dict(schema.get('fields') or {}, **self.fields(spans[0], depth))
             at = end
 
     def build(self, name, spans, at, depth):
-        kind = ZOD.get(name)
+        kind = self.js.zod.get(name)
         if kind == 'object':
             return {'type': 'object', 'fields': self.fields(spans[0], depth)}
         if kind == 'enum':
@@ -191,7 +448,10 @@ class Reader:
                 m = self.js.array(ref, at)
                 return {'type': 'enum', 'values': m, 'ref': ref} if m is not None else {'type': 'string', 'ref': ref}
             body = self.js.text[start:self.js.text.index(']', start) + 1]
-            return {'type': 'enum', 'values': json.loads(body)}
+            try:
+                return {'type': 'enum', 'values': json.loads(body)}
+            except ValueError:
+                raise Moved('an unread enum at %d: %r' % (start, body[:120]))
         if kind == 'literal':
             kind_, value, end = next(self.js.tokens(spans[0]))
             if kind_ == 'str':
@@ -217,7 +477,7 @@ class Reader:
                 kind_, value, end = next(self.js.tokens(pos))
                 pos = end if value == ',' else pos
             return {'type': 'union', 'anyOf': found}
-        if name == 'f':
+        if name == self.js.lazy:
             return {'type': 'any'}
         # A reference to another definition: resolve it while depth remains.
         if depth <= 0 or name in self.seen:
@@ -255,7 +515,7 @@ class Reader:
 
 
 CLAUDE_EVENTS = {
-    # event name: the exact text its zod object starts with in this build.
+    # event name: the text its zod object starts with (the zod helpers bound to this build's names).
     'system/init': 'd({type:R("system"),subtype:R("init"),',
     'assistant': 'd({type:R("assistant"),message:',
     'result/success': 'd({type:R("result"),subtype:R("success"),',
@@ -263,12 +523,14 @@ CLAUDE_EVENTS = {
     'rate_limit_event': 'd({type:R("rate_limit_event"),',
 }
 
-# Claude Code's credential and provider tables, each by the exact text of its first entries, with the
+# Claude Code's credential and provider tables, each by its first entries (a later build may insert entries where an
+# anchor has `<items>`; the first list that matches is the table), with the
 # decision this work takes for it. `strip`: every name it lists never reaches the engine. `keep`: its
 # names are not a model login of either CLI once the provider switches are stripped (general cloud or
 # tool secrets a worker's own tools use), so only those a strip prefix already covers are removed.
 CLAUDE_TABLES = [
-    ('auth_credentials', '["ANTHROPIC_API_KEY","ANTHROPIC_AUTH_TOKEN","CLAUDE_CODE_OAUTH_TOKEN","AWS_BEARER_TOKEN_BEDROCK"',
+    ('auth_credentials', '["ANTHROPIC_API_KEY",<items>"ANTHROPIC_AUTH_TOKEN",<items>"CLAUDE_CODE_OAUTH_TOKEN",<items>'
+                         '"AWS_BEARER_TOKEN_BEDROCK"',
      'strip', 'the credential variables a first-party or provider login reads'),
     ('provider_selection', '["CLAUDE_CODE_USE_BEDROCK","CLAUDE_CODE_USE_VERTEX","CLAUDE_CODE_USE_FOUNDRY","CLAUDE_CODE_USE_ANTHROPIC_AWS"',
      'strip', 'the switches that move Claude Code off the subscription to another provider, with their companions'),
@@ -277,9 +539,9 @@ CLAUDE_TABLES = [
     ('aws_bearer', '["AWS_BEARER_TOKEN_BEDROCK","ANTHROPIC_AWS_API_KEY"]', 'strip', 'the AWS-hosted provider keys'),
     ('skip_provider_auth', '["CLAUDE_CODE_SKIP_BEDROCK_AUTH","CLAUDE_CODE_SKIP_VERTEX_AUTH"', 'strip',
      'the switches that skip a provider login'),
-    ('anthropic_secrets', '["ANTHROPIC_API_KEY","ANTHROPIC_AUTH_TOKEN","ANTHROPIC_CUSTOM_HEADERS","CLAUDE_CODE_OAUTH_TOKEN",'
-     '"CLAUDE_CODE_OAUTH_REFRESH_TOKEN"', 'strip', "Claude Code's own list of Anthropic secrets (with their INPUT_ forms)"),
-    ('session_tokens', 'new Set(["CLAUDE_CODE_SESSION_ACCESS_TOKEN","CLAUDE_CODE_OAUTH_TOKEN"])', 'strip',
+    ('anthropic_secrets', '["ANTHROPIC_API_KEY",<items>"ANTHROPIC_AUTH_TOKEN",<items>"ANTHROPIC_CUSTOM_HEADERS",<items>'
+     '"CLAUDE_CODE_OAUTH_TOKEN",<items>"CLAUDE_CODE_OAUTH_REFRESH_TOKEN"', 'strip', "Claude Code's own list of Anthropic secrets (with their INPUT_ forms)"),
+    ('session_tokens', 'new Set(["CLAUDE_CODE_SESSION_ACCESS_TOKEN",<items>"CLAUDE_CODE_OAUTH_TOKEN"', 'strip',
      'the session tokens a hosted or claimed session authenticates with'),
     ('claimed_session_tokens', 'new Set(["CLAUDE_CODE_OAUTH_TOKEN","CLAUDE_CODE_SESSION_ACCESS_TOKEN","CLAUDE_CODE_HOST_SESSION_ID"])',
      'strip', 'the tokens a claimed spare session is handed'),
@@ -287,7 +549,7 @@ CLAUDE_TABLES = [
     ('bedrock_wizard', 'new Set(["AWS_BEARER_TOKEN_BEDROCK","AWS_SECRET_ACCESS_KEY","AWS_SESSION_TOKEN"])', 'keep',
      'the Bedrock setup wizard\'s AWS credentials: AWS_BEARER_TOKEN_BEDROCK is stripped by auth_credentials; the general '
      'AWS keys are the worker\'s tools\' own cloud login and reach no model once the CLAUDE_CODE_USE_ switches are gone'),
-    ('tool_secret_scrub', '["ANTHROPIC_API_KEY","CLAUDE_CODE_OAUTH_TOKEN","CLAUDE_CODE_ARTIFACTS_API_TOKEN"', 'keep',
+    ('tool_secret_scrub', '["ANTHROPIC_API_KEY",<items>"CLAUDE_CODE_OAUTH_TOKEN",<items>"CLAUDE_CODE_ARTIFACTS_API_TOKEN"', 'keep',
      'the secrets Claude Code scrubs from its own tool children (package registries, CI, cloud, webhooks): tool '
      'credentials, not a model login'),
 ]
@@ -330,15 +592,15 @@ def _sensitive_exceptions(names):
 
 
 CLAUDE_LISTS = [
-    ('sensitive_env', 'var ji=new Set(["HTTPS_PROXY"', 'strip',
+    ('sensitive_env', 'var ji=new Set([<items>"CLAUDE_CODE_PROXY_RESOLVES_HOSTS","CLAUDE_CODE_ENABLE_PROXY_AUTH_HELPER"', 'strip',
      'the variables Claude Code refuses to take from a settings file: its logins, the credential and settings '
      'redirects (CLAUDE_SECURESTORAGE_CONFIG_DIR, CLAUDE_CODE_HOST_CREDS_FILE, the managed and remote settings paths, '
      'the OAuth, bridge and federation overrides), the endpoints and provider switches', _sensitive_exceptions),
     ('fd_tokens', 'Q0t=["CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR"', 'strip',
      'the credentials handed to Claude Code through a file descriptor', None),
-    ('session_secrets', 'Z0t=["CLAUDE_CODE_OAUTH_TOKEN",...Q0t', 'strip',
+    ('session_secrets', 'Z0t=["CLAUDE_CODE_OAUTH_TOKEN",<items>...Q0t', 'strip',
      'the OAuth, bridge, trusted-device and background-session tokens and auth paths', None),
-    ('host_creds_env', 'Spo=new Set([...YU,...hW.filter(', 'strip',
+    ('host_creds_env', 'Spo=new Set([...YU,...hW.filter((e)=>e!=="_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL"', 'strip',
      'the variables a CLAUDE_CODE_HOST_CREDS_FILE may set when Claude Code copies it into its environment at start-up',
      None),
     ('model_config', 'z4e=["ANTHROPIC_MODEL"', 'model',
@@ -350,8 +612,9 @@ CLAUDE_LISTS = [
      'the names Claude Code itself says look like a secret and are not (its token thresholds and usage settings); '
      'a name here that a strip list also names is stripped', None),
 ]
-# The one filtered spread these lists use, as the binary writes it: Spo takes hW without the first-party
-# assumption, the artifact names and the memory API names (Ame is Xo.includes).
+# The one filtered spread these lists use: Spo takes hW without the first-party assumption, the artifact names and the
+# memory API names (Ame is Xo.includes). A list anchor's names are bound by the lists read before it (the fd_tokens
+# list's name in session_secrets).
 HOST_CREDS_FILTER = ('...hW.filter((e)=>e!=="_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL"&&!e.startsWith("CLAUDE_CODE_ARTIFACT")'
                      '&&!Ame(e))')
 AME = 'function Ame(e){return Xo.includes(e)}'
@@ -390,11 +653,12 @@ def _js_list(js, at, seen=()):
             continue
         if re.fullmatch(r'"[A-Za-z0-9_]+"', item):
             names.append(item[1:-1])
-        elif item == HOST_CREDS_FILTER:
-            if text.count(AME) != 1:
-                raise Moved('the memory-name test of the host credentials filter moved')
-            memory = _js_list(js, _definition(js, 'Xo', text.index(AME)), seen)
-            names += [n for n in _js_list(js, _definition(js, 'hW', at), seen)
+        elif anchor(HOST_CREDS_FILTER).regex.fullmatch(item):
+            m = anchor(HOST_CREDS_FILTER).regex.fullmatch(item)
+            hw, ame = (anchor(HOST_CREDS_FILTER).name(m, n) for n in ('hW', 'Ame'))
+            test, names_of = site(text, AME, 'the memory-name test of the host credentials filter', bound={'Ame': ame})
+            memory = _js_list(js, _definition(js, names_of['Xo'], test.start()), seen)
+            names += [n for n in _js_list(js, _definition(js, hw, at), seen)
                       if n != '_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL' and not n.startswith('CLAUDE_CODE_ARTIFACT')
                       and n not in memory]
         elif re.fullmatch(r'\.\.\.[A-Za-z_$][A-Za-z0-9_$]*', item):
@@ -417,18 +681,22 @@ def _definition(js, name, near):
 
 # VELDO-0160: Claude Code's rate-limit result. The usage-limit message its API error message and its
 # result carry (the template, the reset piece, the binary's names of the windows), the time formats and
-# the zone it states the reset in, and a 429 message that is not the account's limit. Each piece by the
-# exact text of this build.
+# the zone it states the reset in, and a 429 message that is not the account's limit. Each piece by its minified
+# text; the window names are the map the builder's weekly name reads (`names_use`), and the zone suffix calls the
+# zone function (`zone_suffix`). A later build may pass the formatter a zone of its own (`<any>`).
 CLAUDE_LIMIT = {
+    'builder': 'function _h(e,n,r,s){let g=s?.progressSavedSuffix?',
     'template': 'return`You\'ve hit your ${e}${n}${g}`}',
     'progress': 'g=s?.progressSavedSuffix?" \\xB7 progress saved":""',
     'resets': 'M=_?` \\xB7 resets ${_}`:""',
+    'names_use': 'return e==="pro"||e==="enterprise"?Ide.seven_day:Ide.seven_day_sonnet}',
     'names': 'var Ide={',
-    'within_day': 'o.toLocaleTimeString("en-US",{hour:"numeric",minute:c===0?void 0:"2-digit",hour12:!0})'
-                  '.replace(/[ \\u202f]([AP]M)/i,(u,i)=>i.toLowerCase())+(t?` (${a0r()})`:"")',
+    'within_day': 'o.toLocaleTimeString("en-US",{hour:"numeric",minute:c===0?void 0:"2-digit",hour12:!0<any>})'
+                  '.replace(/[ \\u202f]([AP]M)/i,(u,i)=>i.toLowerCase())',
     'beyond_day': 'let u={month:"short",day:"numeric",hour:r?"numeric":void 0,minute:!r||c===0?void 0:"2-digit",'
-                  'hour12:r?!0:void 0};if(o.getFullYear()!==s.getFullYear())u.year="numeric";return o.toLocaleString("en-US",u)',
+                  'hour12:r?!0:void 0<any>};if(<any>)u.year="numeric";return o.toLocaleString("en-US",u)',
     'zone': 'function a0r(){if(!g)g=Intl.DateTimeFormat().resolvedOptions().timeZone;return g}',
+    'zone_suffix': '` (${<any>a0r()})`',
     'not_account': 'q$n="Server is temporarily limiting requests (not your usage limit)"',
 }
 
@@ -438,6 +706,7 @@ CLAUDE_LIMIT = {
 # makes (the out-of-credits reset and progress pieces, and the admin suffix, are appended to the first and
 # the last two). Each must lie in that branch, after its opening test and before the template's own returns.
 CLAUDE_REJECTED_BRANCH = 'if(e.overageStatus==="rejected"){'
+CLAUDE_REJECTED_END = 'return _h("limit",_e,n,'
 CLAUDE_REJECTED = (
     ('return`You\'re out of usage credits${_e}${ve}`', ["You're out of usage credits"]),
     ('return s?"Your org is out of usage \\xB7 add funds to continue":"Your org is out of usage \\xB7 contact your admin"',
@@ -455,25 +724,35 @@ CLAUDE_ADMIN_SUFFIX = 'function kke(){let e=EKe();return e?` \\xB7 run ${e} to a
 def claude_rejected(text):
     """(the rejected-status texts that are not "You've hit your ...", each checked in the builder's branch,
     the ones the admin suffix follows)."""
-    if text.count(CLAUDE_REJECTED_BRANCH) != 1 or text.count(CLAUDE_ADMIN_SUFFIX) != 1:
+    if len(sites(text, CLAUDE_REJECTED_BRANCH)) != 1 or len(sites(text, CLAUDE_ADMIN_SUFFIX)) != 1:
         raise Moved('claude rejected-status branch moved')
-    branch = text.index(CLAUDE_REJECTED_BRANCH)
-    end = text.find('return _h("limit",_e,n,', branch)
+    branch = sites(text, CLAUDE_REJECTED_BRANCH)[0].start()
+    _, names = site(text, CLAUDE_ADMIN_SUFFIX, 'claude rejected-status branch')
+    _, builder = site(text, CLAUDE_LIMIT['builder'], 'claude usage-limit piece builder')
+    bound = {'kke': names['kke'], '_h': builder['_h']}
+    ends = [m.start() for m in sites(text, CLAUDE_REJECTED_END, bound) if m.start() > branch]
+    end = ends[0] if ends else -1
     found, suffixed = [], []
-    for anchor, texts in CLAUDE_REJECTED:
-        if text.count(anchor) != 1 or not branch < text.index(anchor) < end:
-            raise Moved('claude rejected-status text moved: ' + anchor[:40])
+    for source, texts in CLAUDE_REJECTED:
+        matches = sites(text, source, uses(source, bound))
+        if len(matches) != 1 or not branch < matches[0].start() < end:
+            raise Moved('claude rejected-status text moved: ' + source[:40])
         found += texts
-        suffixed += texts if anchor.endswith('${kke()}`') else []
+        suffixed += texts if source.endswith('${kke()}`') else []
     return found, suffixed
 
 
 def claude_limit(text):
-    for key, anchor in CLAUDE_LIMIT.items():
-        if anchor not in text:
+    bound, binds = {}, {'builder': '_h', 'names_use': 'Ide', 'zone': 'a0r'}
+    for key, source in CLAUDE_LIMIT.items():
+        found = sites(text, source, uses(source, bound))
+        if not found or (key in ('builder', 'names_use', 'names', 'zone') and len(found) != 1):
             raise Moved('claude usage-limit piece moved: ' + key)
-    at = text.index(CLAUDE_LIMIT['names'])
-    block = text[at + len(CLAUDE_LIMIT['names']) - 1:text.index('}', at) + 1]
+        if key in binds:
+            bound[binds[key]] = anchor(source, uses(source, bound)).name(found[0], binds[key])
+    m = sites(text, CLAUDE_LIMIT['names'], {'Ide': bound['Ide']})[0]
+    at = m.start()
+    block = text[m.end() - 1:text.index('}', at) + 1]
     names = dict(re.findall(r'([a-z_]+):"([^"]+)"', block))
     if 'five_hour' not in names or 'seven_day' not in names:
         raise Moved('claude usage-limit names moved')
@@ -496,13 +775,15 @@ def claude_limit(text):
                       "engine's resolved IANA time zone"}
 
 
-# VELDO-0160: the forms a tool call can take in Claude Code's stream, each by the exact text of the table
-# it is read from in this build, so the re-run-or-ask decision counts any other form as an unknown call.
+# VELDO-0160: the forms a tool call can take in Claude Code's stream, each by the minified text of the table
+# it is read from (the zod helpers bound to the build's names; the message union by the assistant message's
+# schema, `assistant`, the stdout union by the message union), so the re-run-or-ask decision counts any other form as an unknown call.
 # `messages`: the SDK message union (each member's type and subtype); `response_blocks` and `request_blocks`:
 # the content block unions of an assistant message and of a user message (the modelled members, then the
 # type tags the binary lists); `stream_events`: the streaming events a stream_event carries, as its schema
 # names them; `builtin_tools`: the binary's own list of its built-in tool names.
 CLAUDE_FORMS = {
+    'assistant': 'Qo=f(()=>d({type:R("assistant"),message:',
     'messages': 'nn=f(()=>Fe([Qo(),sr(),oK(),_K(),',
     'response_blocks': 'yq=f(()=>Fe([Aq(),Rq(),NR(),zR(),...bR.map(AR)])',
     'request_blocks': 'fq=f(()=>Fe([Js(),Lo(),yR(),wR(),mq(),Tq(),NR(),zR(),...tq.map(AR)])',
@@ -511,7 +792,7 @@ CLAUDE_FORMS = {
     'stream_events': 'tK=f(()=>ae().describe("One Anthropic Messages API streaming event (message_start, content_block_start, '
                      'content_block_delta, content_block_stop, message_delta, message_stop) as defined',
     'builtin_tools': 'dT.BUILTIN_TOOL_NAMES=[',
-    'stdout': 'TRr=f(()=>Fe([nn(),',
+    'stdout': 'TRr=f(()=>Fe([nn(),<any>]).describe("Everything the CLI writes to its output stream',
     'agent_tool': 'name:mt,searchHint:"delegate work to a subagent",aliases:[',
     'agent_names': ',Omo="Launch a new agent to handle complex, multi-step tasks",',
     'task_progress': 'last_tool_name:e.lastToolName,summary:e.summary,workflow_progress:e.workflowProgress})',
@@ -519,32 +800,40 @@ CLAUDE_FORMS = {
 }
 FORMS_WINDOW = 400000
 # The frames the binary emits carrying a tool's name outside the schema it declares for them, each by the
-# exact text of its emitters and how many there are: the REPL tool's `repl_call` on a tool_progress (its
-# inner tool's name), and the workflow agents' progress entries a task_progress carries.
+# text of its emitters and how many there are: the REPL tool's `repl_call` on a tool_progress (its inner tool's
+# name; a build without the REPL progress kind `repl_tool_call` has none), and the workflow agents' progress
+# entries a task_progress carries.
 CLAUDE_EMITTED = {'repl_call': ('repl_call:{inner_tool_name:', 2)}
-# How a task counts its own calls, each by the exact text of this build and how many times it occurs: the tracker
+CLAUDE_REPL_PROGRESS = 'repl_tool_call'
+# How a task counts its own calls, each by its minified text and how many times it occurs (a later build adds
+# fields where an anchor has `<any>`): the tracker
 # raises its count by one for each tool_use block of the task's own assistant messages (`rise`); an agent's
 # task_progress carries that count (`progress`) under the task's tool_use_id (`progress_frame`); its end
 # notification carries it as usage too (`notification_frame`, `notification_count`); the sub-agent's forwarded
 # assistant and user messages carry the task's id as parent_tool_use_id (`forwarded`); and an agent a sub-agent
-# starts reaches the stream only when forwardSubagentText is set (`nested_gate`, `nested_option`).
+# starts reaches the stream only when forwardSubagentText is set (`nested_gate`, whose condition is either the
+# option itself, `nested_option`, or a test of it, `nested_test`, that a later build extends to the consumer's
+# forwardNestedSubagentToolCalls capability for its tool calls).
 CLAUDE_TASKS = {
     'rise': ('for(let h of n.message.content){if(h.type!=="tool_use")continue;if(e.toolUseCount++', 1),
     'progress': ('totalTokens:T.tokenCount,toolUses:T.toolUseCount,lastToolName:_})', 1),
-    'progress_frame': ('type:"system",subtype:"task_progress",task_id:e.taskId,tool_use_id:e.toolUseId,'
+    'progress_frame': ('type:"system",subtype:"task_progress",task_id:e.taskId,<field>tool_use_id:e.toolUseId,'
                        'description:e.description,subagent_type:e.subagentType,usage:{total_tokens:e.totalTokens,'
                        'tool_uses:e.toolUses,', 1),
-    'notification_frame': ('type:"system",subtype:"task_notification",task_id:e,tool_use_id:r?.toolUseId,status:n,', 1),
+    'notification_frame': ('type:"system",subtype:"task_notification",task_id:e,<field>tool_use_id:r?.toolUseId,status:n,', 1),
     'notification_count': ('usage:{total_tokens:N?.tokenCount??0,tool_uses:N?.toolUseCount??0,', 1),
-    'forwarded': ('parent_tool_use_id:e.parentToolUseID,session_id:Y(),uuid:g.uuid', 2),
-    'nested_gate': ('if(Sne(T)){if(Kt)p(pqt(T));return}', 1),
-    'nested_option': ('Kt=e.options.forwardSubagentText', 1),
+    'forwarded': ('parent_tool_use_id:e.parentToolUseID,<field>session_id:Y(),uuid:g.uuid', 2),
+    'nested_gate': ('if(Sne(T)){if(<any>)p(pqt(T));return}', 1),
 }
+CLAUDE_NESTED_OPTION = 'Kt=e.options.forwardSubagentText'
+CLAUDE_NESTED_TEST = ('function T2e(e,n){if(e.options.forwardSubagentText)return!0;'
+                      'if(e.session.surfaceCapabilities.sdkForwardNestedSubagentToolCalls()!==!0)return!1;')
 
 
 # VELDO-0160, the lead's structural rule: every construct through which a Claude Code run can do work its stream
 # may not show (a tool that runs an agent, a skill, code or a workflow, a task's frames, a sub-agent's forwarded
-# messages, a forked skill's result), each by the exact text of this build and how many times it occurs. A tool
+# messages, a forked skill's result), each by its minified text and how many times it occurs (a binding by its
+# variable and name; the separator after it is the build's). A tool
 # is its name's binding and its definition (the binding's variable as its name); the Agent tool and its alias are
 # builtin_renamed's. `forwarded`: the progress kinds whose messages the CLI forwards under their task's id;
 # `workflow_task`: the task type of a workflow; `skill_forked`: the Skill tool's result when it forked an agent.
@@ -589,7 +878,8 @@ CLAUDE_NESTED = {
 # background companions (TaskStop, aliased KillShell and KillBash, which kills a background task; Monitor, which runs a
 # command through Bash's permission check or reads a WebSocket); the read-only web fetch and search; and rule 2's
 # constructs (the Agent tool unless remote, the Skill, REPL and Workflow tools, CronCreate unless durable, which the
-# remote_agent rule asks for). The binary has no LS tool: no binding names one.
+# remote_agent rule asks for). The binary has no LS tool: no binding names one. A tool whose definition a build drops
+# while keeping its name (REPL without its progress emitter) leaves the allowlist (fail closed).
 CLAUDE_IN_RUN = (
     ('Read', 'reads a local file', 'var lt="Read",',
      'name:lt,ruleContentField:"file_path",searchHint:"read files, images, PDFs, notebooks",remoteExecution:{supported:!0,'),
@@ -611,11 +901,11 @@ CLAUDE_IN_RUN = (
      'name:Be,enablesCodeExecution:!0,ruleContentField:"command",searchHint:"execute shell commands",'
      'remoteExecution:{supported:!0,'),
     ('TaskStop', 'kills a background task (Bash\'s companion)', 'var Om="TaskStop",',
-     'name:Om,searchHint:"kill a running background task",aliases:["KillShell","KillBash"],'),
+     'name:Om,searchHint:"kill a running background task",aliases:['),
     ('Monitor', 'streams a background command or a WebSocket (Bash\'s companion)', 'var Za="Monitor";',
      'name:Za,enablesCodeExecution:!0,maxResultSizeChars:1e4,shouldDefer:!0,userFacingName(){return"Monitor"},'),
     ('WebFetch', 'fetches a URL', 'var Wr="WebFetch",',
-     'name:Wr,ruleContentField:"url",searchHint:"fetch and extract content from a URL",'),
+     'name:Wr,ruleContentField:@"url",searchHint:"fetch and extract content from a URL",'),
     ('WebSearch', 'searches the web', 'var eI="WebSearch";', 'name:eI,searchHint:"search the web for current information",'),
     ('Agent', 'a local agent (rule 2), unless remote', 'var mt="Agent",', 'name:mt,searchHint:"delegate work to a subagent",aliases:['),
     ('Skill', 'a skill (rule 2)', 'var go="Skill",', 'name:go,searchHint:"invoke a slash-command skill"'),
@@ -633,22 +923,22 @@ CLAUDE_IN_RUN = (
 # (`remote_task`), and every task but an observer agent is reported by a task_started naming its type
 # (`task_started`, `task_type`, `observer`). The file tools and Bash take a `_host` naming another machine
 # (`host_field`, `host_request`, `host_local`, `host_local_test`), routed there only when the remote-tools gate is on
-# (`host_route`), and this build's gate is off (`host_gate`, `host_gate_value`). A workflow task's progress gives its
+# (`host_route`), and the gate's value (`host_gate`, then the body of the function it calls) is compiled off (`!1`)
+# or, in a later build, an environment switch (`ENV.NAME===!0`), which routed names. A workflow task's progress gives its
 # current agent's label as its last tool (`workflow_label`), not a tool: its agents' own last tools are named beside it.
 CLAUDE_IN_RUN_CONDITIONS = {
     'skill_input': ('var Ee=f(()=>d({skill:o().describe("The name of a skill from the available-skills list. '
                    'Do not guess names."),args:o().optional().describe("Optional arguments for the skill")})),', 1),
-    'skill_schema': ('name:go,searchHint:"invoke a slash-command skill",isEnabled(){return H7t()},'
-                    'backgrounding:"never",maxResultSizeChars:1e5,get inputSchema(){return Ee()}', 1),
+    'skill_schema': ('name:go,searchHint:"invoke a slash-command skill",<any>get inputSchema(){return Ee()}', 1),
     'skill_context': ('function P9t(e,n,r){return e.getContext?.(n,r)??e.context??"inline"}', 1),
-    'skill_fork': ('if(u?.type==="prompt"&&P9t(u,s||"",n)==="fork"&&!S)try{return await Me(u,p,s,n,r,g,l,a)}', 1),
+    'skill_fork': ('if(u?.type==="prompt"&&P9t(u,s||"",n)==="fork"&&!S)', 1),
     'agent_input': ('isolation:z(["worktree","remote"]).optional().describe(\'Isolation mode. "worktree" creates a '
                     'temporary git worktree so the agent works on an isolated copy of the repo. "remote" launches the '
                     'agent in a remote cloud environment', 1),
     'agent_resolved': ('function an(n){let{agent:e,isolation:h,restricted:g}=n,p=h??e.isolation;', 1),
     'agent_file': ('let Pe=["worktree","remote"],Le=r.isolation,De;', 1),
     'remote_task': ('var Kbe={name:"RemoteAgentTask",type:"remote_agent",', 1),
-    'task_started': ('subtype:"task_started",task_id:e.id,owned_by_subagent:zt(e),tool_use_id:e.toolUseId,', 1),
+    'task_started': ('subtype:"task_started",task_id:e.id,<field>owned_by_subagent:zt(e),tool_use_id:e.toolUseId,', 1),
     'task_type': ('task_type:e.type,workflow_name:', 1),
     'observer': ('function fu(e){return e.type==="local_agent"&&"isObserver"in e&&e.isObserver===!0}', 1),
     'host_field': ('var Jr="_host",', 1),
@@ -658,39 +948,81 @@ CLAUDE_IN_RUN_CONDITIONS = {
     'host_local_test': ('function VE(e){return Ki.some((r)=>r===e)}', 1),
     'host_route': ('if(!$j(e).supported||!Ih())return{kind:"local",input:n};', 1),
     'host_gate': ('async function eY(){return Ih()&&await Nd()}function SG(){return Ih()&&_s()}function Ih(){return cNn()}', 1),
-    'host_gate_value': ('function cNn(){return!1}', 1),
     'workflow_label': ('toolUses:xe.totalToolCalls,lastToolName:bt?.label,summary:h,workflowProgress:', 1),
 }
 # The task types of the allowlisted tools, from the binary's task table (`name:"...Task",type:"..."`): an agent, a
 # teammate an agent starts, a background shell or command, a workflow, a Monitor's WebSocket.
 CLAUDE_IN_RUN_TASKS = ('in_process_teammate', 'local_agent', 'local_bash', 'local_workflow', 'monitor_ws')
+# The allowlisted tools a build may drop, each with the text whose absence shows it dropped them.
+CLAUDE_IN_RUN_OPTIONAL = {'REPL': CLAUDE_REPL_PROGRESS}
 
 
-def _in_run(text, renamed):
+def _binding(text, name, binding, definition, what, js, bound=()):
+    """(the match of a tool's definition, its variable): the definition (its name's variable read from it) and the
+    binding of that variable to `name`, each found once."""
+    m, names = site(text, definition, '%s %s' % (what, name), bound=uses(definition, dict(bound)))
+    head = re.match(r'var ([A-Za-z_$][\w$]*)="([^"]*)"', binding)
+    variable = re.match(r'(?:name|tool_name):([A-Za-z_$][\w$]*),', m.group(0))
+    if head is None or head.group(2) != name or variable is None:
+        raise Moved('%s %s: its definition does not name its binding' % (what, name))
+    found = sites(text, binding.rstrip(',;'), {head.group(1): variable.group(1)})
+    if len(found) != 1 or text[found[0].end()] not in ',;':
+        raise Moved('%s %s: anchor %r found %d times' % (what, name, binding, len(found)))
+    return m, variable.group(1)
+
+
+def _aliases(js, at):
+    """The aliases a tool definition starting at `at` lists (string entries and spread lists)."""
+    text = js.text
+    listed = re.match(r'name:[\w$]+,(?:[^{}]*?,)?aliases:\[([^\]]*)\]', text[at:at + 400])
+    if not listed:
+        return []
+    found = []
+    for item in listed.group(1).split(','):
+        if item.startswith('"'):
+            found.append(json.loads(item))
+        elif item.startswith('...'):
+            found += _js_list(js, _definition(js, item[3:], at))
+    return found
+
+
+def _remote_support(text, at):
+    """Whether the tool definition starting at `at` declares remote execution: supported outright, or by a getter."""
+    window = text[at:at + 1500]
+    return 'remoteExecution:{supported:!0' in window or 'get remoteExecution(){' in window
+
+
+def _in_run(text, renamed, helpers):
     """The allowlist (VELDO-0160, the lead's decision), each tool checked against this build's text: {tools, aliases,
     agent, host, task_types}."""
-    tools, aliases, remote = [], {}, []
+    tools, aliases, remote, bound = [], {}, [], {}
+    js = Js(text, helpers)
     for name, _, binding, definition in CLAUDE_IN_RUN:
-        for anchor in (binding, definition):
-            if text.count(anchor) != 1:
-                raise Moved('claude in-run tool %s: anchor %r found %d times' % (name, anchor, text.count(anchor)))
-        variable = re.match(r'var ([A-Za-z_$][\w$]*)="([^"]*)"', binding)
-        if variable is None or variable.group(2) != name or not re.match(
-                r'(?:name|tool_name):' + re.escape(variable.group(1)) + ',', definition):
-            raise Moved('claude in-run tool %s: its definition does not name its binding' % name)
-        at = text.index(definition)
-        listed = re.match(r'name:[\w$]+,(?:[^{}]*?,)?aliases:\[([^\]]*)\]', text[at:at + 400])
-        named = [json.loads(alias) for alias in listed.group(1).split(',') if alias.startswith('"')] if listed else []
+        if name in CLAUDE_IN_RUN_OPTIONAL and CLAUDE_IN_RUN_OPTIONAL[name] not in text \
+                and not sites(text, definition):
+            continue
+        m, variable = _binding(text, name, binding, definition, 'claude in-run tool', js)
+        if name == 'Skill':
+            bound['go'] = variable
+        at = m.start()
+        named = _aliases(js, at)
         if name == renamed[0]['name']:
             named = list(renamed[0]['aliases'])
         tools.append(name)
         if named:
             aliases[name] = sorted(named)
-        if 'remoteExecution:{supported:!0' in definition:
+        if _remote_support(text, at):
             remote.append(name)
-    for key, (anchor, sites) in CLAUDE_IN_RUN_CONDITIONS.items():
-        if text.count(anchor) != sites:
-            raise Moved('claude in-run condition %s: anchor found %d times' % (key, text.count(anchor)))
+    values = {}
+    for key, (source, count) in CLAUDE_IN_RUN_CONDITIONS.items():
+        found = sites(text, source, uses(source, bound))
+        if len(found) != count:
+            raise Moved('claude in-run condition %s: anchor found %d times' % (key, len(found)))
+        a = anchor(source, uses(source, bound))
+        for own in ('Ee', 'P9t', 'Jr', 'VE', 'Ki', 'cNn', 'Ih'):
+            if own in a.groups and own not in bound:
+                bound[own] = a.name(found[0], own)
+        values[key] = found[0].group(0)
     table = dict((kind, name) for name, kind in re.findall(r'name:"([A-Za-z]+Task)",type:"([a-z_]+)"', text))
     if 'remote_agent' not in table or not set(CLAUDE_IN_RUN_TASKS) <= set(table):
         raise Moved('claude task table moved')
@@ -705,22 +1037,36 @@ def _in_run(text, renamed):
             raise Moved('claude built-in agent %s sets an isolation' % m.group(1))
         value = m.group(1)
         if not value.startswith('"'):
-            bound = re.search(r'(?:var |,|;)%s="([^"]+)"' % re.escape(value), text)
-            if bound is None:
+            # Minified names repeat (each chunk names its own): the binding nearest the definition.
+            bound_to = min(re.finditer(r'(?:var |,|;)%s="([^"]+)"' % re.escape(value), text),
+                           key=lambda b: abs(b.start() - m.start()), default=None)
+            if bound_to is None:
                 raise Moved('claude built-in agent type %s unbound' % value)
-            value = json.dumps(bound.group(1))
+            value = json.dumps(bound_to.group(1))
         builtin.append(json.loads(value))
     if not {'general-purpose', 'Explore', 'Plan'} <= set(builtin):
         raise Moved('claude built-in agents moved')
+    near = sites(text, CLAUDE_IN_RUN_CONDITIONS['host_gate'][0], uses(CLAUDE_IN_RUN_CONDITIONS['host_gate'][0], bound))
+    gate = min(re.finditer(r'function %s\(\)\{return([^{}]*)\}' % re.escape(bound['cNn']), text),
+               key=lambda m: abs(m.start() - near[0].start()), default=None)
+    switch = re.fullmatch(r'\s*[\w$]+\.([A-Z][A-Z0-9_]*)===!0', gate.group(1)) if gate else None
+    if gate is None or (gate.group(1) != '!1' and switch is None):
+        raise Moved('claude in-run condition host_gate_value: the remote-tools gate moved')
+    routed = False if switch is None else switch.group(1)
+    gate_text = ('which this build compiles off (routed false)' if switch is None else
+                 'which this build turns on when the environment sets %s (routed names it)' % routed)
+    constructs = ', '.join(name for name in ('Agent', 'Skill', 'REPL', 'Workflow', 'CronCreate') if name in tools)
+    isolation = values['agent_input']
+    local = json.loads(values['host_local'][values['host_local'].index('['):values['host_local'].rindex(']') + 1])
     return {'tools': sorted(tools), 'aliases': aliases,
             'skill': {'tool': 'Skill', 'field': 'context', 'inline': 'inline', 'parent': 'parent_tool_use_id',
                       'input_fields': ['args', 'skill'], 'input_fork_field': None,
                       'context_source': 'skill definition: getContext(args, toolUseContext) or context'},
             'agent': {'tools': sorted([renamed[0]['name']] + list(renamed[0]['aliases'])), 'field': 'isolation',
-                      'values': json.loads(CLAUDE_IN_RUN_CONDITIONS['agent_input'][0][len('isolation:z('):].split(')')[0]),
+                      'values': json.loads(isolation[isolation.index('(') + 1:].split(')')[0]),
                       'outside': 'remote', 'type_field': 'subagent_type', 'builtin_types': sorted(set(builtin))},
-            'host': {'field': '_host', 'local': ['', 'container', 'this-machine'], 'tools': sorted(remote),
-                     'routed': False},
+            'host': {'field': '_host', 'local': [''] + local, 'tools': sorted(remote),
+                     'routed': routed},
             'workflow_last_tool': 'label',
             'task_types': {'field': 'task_type', 'in_run': sorted(CLAUDE_IN_RUN_TASKS),
                            'table': sorted(table)},
@@ -728,11 +1074,11 @@ def _in_run(text, renamed):
                       "binding and the tool's definition, with its aliases): the file tools, Glob and Grep, the "
                       "notebook edit, the session checklist, the deferred-tool loader, Bash and its background "
                       "companions (TaskStop, Monitor), the read-only web fetch and search, and rule 2's constructs "
-                      "(Agent, Skill, REPL, Workflow, CronCreate); the Agent tool is remote when its input's isolation "
+                      "(" + constructs + "); the Agent tool is remote when its input's isolation "
                       "is remote or, with none given, when the agent definition its subagent_type names says so (no "
                       "built-in definition sets isolation; builtin_types), and a remote agent is a task of type "
                       "remote_agent; the file tools and Bash take a _host naming another machine, routed there only "
-                      "when the remote-tools gate is on, which this build compiles off (routed false); the task types "
+                      "when the remote-tools gate is on, " + gate_text + "; the task types "
                       "of the allowlisted tools, from the binary's task table. Skill's input schema is only skill "
                       "and optional args, with no fork field; its definition supplies context (getContext or context, "
                       "default inline). A sub-agent's Skill therefore asks regardless of input; an explicit context "
@@ -756,16 +1102,33 @@ def _tags(schema):
     raise Moved('a stream message subtype that is not a literal or an enum')
 
 
-def _union_members(window, at, anchor):
-    """The member names of the union `NAME=f(()=>Fe([A(),B(),...` at `at` in `window`."""
-    start = at + anchor.index('Fe([') + 4
+def _union_members(window, at, matched):
+    """The member names of the union `NAME=LAZY(()=>UNION([A(),B(),...` matched as `matched` at `at` in `window`."""
+    start = at + matched.index('([') + 2
     return re.findall(r'([A-Za-z_$][\w$]*)\(\)', window[start:window.index(']', start)])
+
+
+# The names one form anchor binds for the anchors after it.
+FORMS_BINDS = {'assistant': 'Qo', 'messages': 'nn', 'tagged': 'bR'}
+
+
+def _forms(text, helpers):
+    """{key: (match, {name in the anchor: name in the build})} of every CLAUDE_FORMS anchor, each found once."""
+    key = ('forms', text)
+    if key not in _SITES:
+        bound, found = dict(helpers[2]), {}
+        for name, source in CLAUDE_FORMS.items():
+            found[name] = site(text, source, 'claude tool-call form table %s' % name, bound=uses(source, bound))
+            if name in FORMS_BINDS:
+                bound[FORMS_BINDS[name]] = found[name][1][FORMS_BINDS[name]]
+        _SITES[key] = found
+    return _SITES[key]
 
 
 def _lazy(js, name, near):
     """The body of the lazy schema `name=f(()=>BODY` nearest `near` (a minified name is also bound to other
     values, which `Js.definition` could pick)."""
-    best = js.nearest(name, r'=f\(\(\)=>', near)
+    best = js.nearest(name, r'=%s\(\(\)=>' % re.escape(js.lazy), near)
     if best is None:
         raise Moved('no lazy schema ' + name)
     return best.end()
@@ -807,15 +1170,13 @@ def _tag(kind, sub):
     return kind if sub is None else kind + '/' + sub
 
 
-def _builtin_renamed(text, builtin):
+def _builtin_renamed(text, builtin, helpers):
     """[{name, aliases}]: a tool whose alias is on BUILTIN_TOOL_NAMES under a current name the list omits (the
     Agent tool, once `Task`), its names bound in the statement that also binds its own description."""
-    for key in ('agent_tool', 'agent_names'):
-        if text.count(CLAUDE_FORMS[key]) != 1:
-            raise Moved('claude %s: anchor found %d times' % (key, text.count(CLAUDE_FORMS[key])))
-    at = text.index(CLAUDE_FORMS['agent_tool'])
+    forms = _forms(text, helpers)
+    at = forms['agent_tool'][0].start()
     m = re.compile(r'name:([A-Za-z_$][\w$]*),searchHint:"[^"]*",aliases:\[([^\]]*)\]').match(text, at)
-    names = text.index(CLAUDE_FORMS['agent_names'])
+    names = forms['agent_names'][0].start()
     start, end = text.rindex('var ', 0, names), text.index(';', names)
     bound = dict(re.findall(r'(?:var |,)([A-Za-z_$][\w$]*)="([^"]*)"', text[start:end]))
     if m is None or m.group(1) not in bound or not text[start:names].startswith('var %s="' % m.group(1)):
@@ -827,34 +1188,55 @@ def _builtin_renamed(text, builtin):
     return [{'name': name, 'aliases': aliases}]
 
 
-def _emitted(text):
-    """The fields a frame carries that name a tool though its declared schema omits them, read from the
-    emitters' own text: {tag: [dotted path]}."""
-    anchor, sites = CLAUDE_EMITTED['repl_call']
+def _repl_emitters(text):
+    """The keys of the REPL tool's repl_call, the same in each of its emitters, or None when the build has no REPL
+    progress kind (and so no emitter)."""
+    source, count = CLAUDE_EMITTED['repl_call']
+    found = sites(text, source)
+    if not found and CLAUDE_REPL_PROGRESS not in text:
+        return None
     keys = set()
-    for m in re.finditer(re.escape(anchor), text):
+    for m in found:
         body = text[m.start() + len('repl_call:{'):text.index('}', m.start())]
         keys.add(tuple(re.findall(r'([a-z_]+):', body)))
-    if text.count(anchor) != sites or len(keys) != 1 or 'inner_tool_name' not in next(iter(keys)):
+    if len(found) != count or len(keys) != 1 or 'inner_tool_name' not in next(iter(keys)):
         raise Moved('claude repl_call emitters moved')
-    for key in ('task_progress', 'workflow_agent'):
-        if text.count(CLAUDE_FORMS[key]) != 1:
-            raise Moved('claude %s: anchor found %d times' % (key, text.count(CLAUDE_FORMS[key])))
-    at = text.index(CLAUDE_FORMS['workflow_agent'])
+    return next(iter(keys))
+
+
+def _emitted(text, helpers):
+    """The fields a frame carries that name a tool though its declared schema omits them, read from the
+    emitters' own text: {tag: [dotted path]}."""
+    keys = _repl_emitters(text)
+    at = _forms(text, helpers)['workflow_agent'][0].start()
     if 'type:"workflow_agent"' not in text[at - 400:at]:
         raise Moved('claude workflow agent progress moved')
-    return {'tool_progress': ['repl_call.' + key for key in next(iter(keys)) if 'tool' in key],
-            'system/task_progress': ['workflow_progress.lastToolName']}
+    emitted = {'system/task_progress': ['workflow_progress.lastToolName']}
+    if keys is not None:
+        emitted['tool_progress'] = ['repl_call.' + key for key in keys if 'tool' in key]
+    return emitted
 
 
 def _task_counts(text, fields):
     """How a task's count of its own calls reaches the stream: the frames whose schema carries the count and the
     task's id, the field of a sub-agent's message naming its task, each checked against the emitters' text."""
-    for key, (anchor, sites) in CLAUDE_TASKS.items():
-        if text.count(anchor) != sites:
-            raise Moved('claude task counts %s: anchor found %d times' % (key, text.count(anchor)))
-    at = text.index(CLAUDE_TASKS['notification_frame'][0])
-    if 'usage:r?.usage' not in text[at:at + 300]:
+    found = {}
+    for key, (source, count) in CLAUDE_TASKS.items():
+        bound = {'Sne': _forwarded_test(text)} if key == 'nested_gate' else {}
+        found[key] = site(text, source, 'claude task counts %s' % key, count, bound)
+    gate = found['nested_gate'][0].group(0)
+    condition = gate[gate.index('{if(') + 4:gate.rindex(')' + found['nested_gate'][1]['p'] + '(')]
+    nested_calls = None
+    if JS_NAME.fullmatch(condition):
+        site(text, CLAUDE_NESTED_OPTION, 'claude task counts nested_option', bound={'Kt': condition})
+    else:
+        test = re.fullmatch(r'([A-Za-z_$][\w$]*)\([\w$,]*\)', condition)
+        if test is None:
+            raise Moved('claude task counts nested_gate: an unread condition %r' % condition)
+        site(text, CLAUDE_NESTED_TEST, 'claude task counts nested_test', bound={'T2e': test.group(1)})
+        nested_calls = 'forwardNestedSubagentToolCalls'
+    at = found['notification_frame'][0].start()
+    if not re.search(r'usage:[\w$]+\?\.usage', text[at:at + 300]):
         raise Moved('claude task notification usage moved')
     frames = sorted(tag for tag, paths in fields.items() if 'usage.tool_uses' in paths and 'tool_use_id' in paths)
     if frames != ['system/task_notification', 'system/task_progress'] \
@@ -863,11 +1245,13 @@ def _task_counts(text, fields):
         raise Moved('claude task count fields moved')
     return {'frames': frames, 'count': 'usage.tool_uses', 'task': 'tool_use_id', 'parent': 'parent_tool_use_id',
             'counts': 'tool_use', 'nested_forwarded_only_with': 'forwardSubagentText',
+            **({'nested_tool_calls_forwarded_with': nested_calls} if nested_calls else {}),
             'source': "the frames whose schema carries a task's count of its calls (usage.tool_uses) and its id "
                       "(tool_use_id), the count the tracker raises by one for each tool_use block of the task's "
                       "own assistant messages (an agent's task_progress and its end notification carry it), the "
                       "task's id as the parent_tool_use_id of the sub-agent's forwarded messages, and the gate that "
-                      "drops the messages of an agent a sub-agent starts unless forwardSubagentText is set"}
+                      "drops the messages of an agent a sub-agent starts unless forwardSubagentText is set"
+                      + (" (its tool calls also when the consumer declares %s)" % nested_calls if nested_calls else "")}
 
 
 def _tops(schema):
@@ -877,38 +1261,45 @@ def _tops(schema):
     return [(_tag(kind, sub), set(schema.get('fields') or {})) for kind, sub in _tags(schema)]
 
 
-def _nested(text, renamed, tops):
+def _forwarded_test(text):
+    """The name of the test whose progress kinds the CLI forwards (Sne)."""
+    return site(text, CLAUDE_NESTED['forwarded'][0], 'claude nested work forwarded')[1]['Sne']
+
+
+def _nested(text, renamed, tops, helpers):
     """The constructs through which a run can do work its stream may not show (VELDO-0160), each checked against
     this build's text: {tools: {class: [names]}, task_frames, workflow, repl, forwarded, fork}."""
-    for key, (anchor, sites) in CLAUDE_NESTED.items():
-        if text.count(anchor) != sites:
-            raise Moved('claude nested work %s: anchor found %d times' % (key, text.count(anchor)))
+    bound = dict(helpers[2], Sne=_forwarded_test(text))
+    for key, (source, count) in CLAUDE_NESTED.items():
+        site(text, source, 'claude nested work %s' % key, count, uses(source, bound))
     tools = {'agent': [renamed[0]['name']] + list(renamed[0]['aliases'])}
+    js = Js(text, helpers)
+    repl = _repl_emitters(text)
     for construct, name, binding, definition in CLAUDE_NESTED_TOOLS:
-        for anchor in (binding, definition):
-            if text.count(anchor) != 1:
-                raise Moved('claude nested tool %s: anchor %r found %d times' % (name, anchor, text.count(anchor)))
-        variable = re.match(r'var ([A-Za-z_$][\w$]*)="([^"]*)"', binding)
-        if variable is None or variable.group(2) != name or not re.match(
-                r'(?:name|tool_name):' + re.escape(variable.group(1)) + ',', definition):
-            raise Moved('claude nested tool %s: its definition does not name its binding' % name)
-        aliases = re.search(r'aliases:\[([^\]]*)\]', definition)
+        if construct == 'repl' and repl is None:
+            # The build keeps the name and drops the emitter: the tool still runs code the stream does not show.
+            head = re.match(r'var ([A-Za-z_$][\w$]*)="([^"]*)"', binding)
+            if not [m for m in sites(text, binding.rstrip(',;')) if text[m.end()] in ',;']:
+                raise Moved('claude nested tool %s: no binding' % name)
+            tools.setdefault(construct, []).append(head.group(2))
+            continue
+        m, _ = _binding(text, name, binding, definition, 'claude nested tool', js)
         tools.setdefault(construct, []).append(name)
-        tools[construct] += [json.loads(alias) for alias in aliases.group(1).split(',')] if aliases else []
-    at = text.index(CLAUDE_NESTED['forwarded'][0])
-    kinds = re.findall(r'e\.data\.type==="([a-z_]+)"', text[at:text.index('}', at)])
+        tools[construct] += _aliases(js, m.start()) if m.group(0).startswith('name:') else []
+    at = site(text, CLAUDE_NESTED['forwarded'][0], 'claude nested work forwarded')[0].start()
+    kinds = re.findall(r'[\w$]+\.data\.type==="([a-z_]+)"', text[at:text.index('}', at)])
     frames = sorted(tag for tag, keys in tops if 'task_id' in keys and tag.startswith('system/'))
-    if 'system/task_started' not in frames or not kinds or text.count(CLAUDE_FORMS['task_progress']) != 1 \
+    if 'system/task_started' not in frames or not kinds \
             or not any(tag == 'system/task_started' and 'workflow_name' in keys for tag, keys in tops):
         raise Moved('claude task frames moved')
-    for key, (anchor, sites) in CLAUDE_REMOTE.items():
-        if text.count(anchor) != sites:
-            raise Moved('claude remote agent %s: anchor found %d times' % (key, text.count(anchor)))
+    _forms(text, helpers)
+    for key, (source, count) in CLAUDE_REMOTE.items():
+        site(text, source, 'claude remote agent %s' % key, count)
     return {'tools': {key: sorted(set(value)) for key, value in sorted(tools.items())},
             'task_frames': sorted(set(frames)),
             'workflow': {'system/task_progress': 'workflow_progress', 'system/task_started': 'workflow_name',
                          'task_type': 'local_workflow'},
-            'repl': {'tool_progress': 'repl_call'},
+            'repl': {'tool_progress': 'repl_call'} if repl is not None else {},
             'forwarded': {'field': 'parent_tool_use_id', 'progress': kinds},
             'fork': {'field': 'tool_use_result', 'status': 'forked'},
             'remote_agent': {'tools': ['RemoteTrigger'],
@@ -925,13 +1316,15 @@ def _nested(text, renamed, tops):
                       "persists the prompt to .claude/scheduled_tasks.json to fire after the run)"}
 
 
-def claude_frames(text):
+def claude_frames(text, helpers):
     """The StdoutMessage members outside the SDK message union, each (type, subtype, provably tool-free)."""
-    at = text.index(CLAUDE_FORMS['stdout'])
+    forms = _forms(text, helpers)
+    m, names = forms['stdout']
+    at = m.start()
     window = text[at - FORMS_WINDOW:at + FORMS_WINDOW]
-    js = Js(window)
-    members = _union_members(window, FORMS_WINDOW, CLAUDE_FORMS['stdout'])
-    if members[0] != 'nn':
+    js = Js(window, helpers)
+    members = _union_members(window, FORMS_WINDOW, m.group(0))
+    if members[0] != names['nn']:
         raise Moved('claude stdout union moved')
     found = []
     for name in members[1:]:
@@ -940,19 +1333,15 @@ def claude_frames(text):
     return sorted(found, key=lambda tag: (tag[0], tag[1] or ''))
 
 
-def claude_forms(text):
-    for key, anchor in CLAUDE_FORMS.items():
-        if key in ('agent_tool', 'agent_names', 'task_progress', 'workflow_agent'):
-            continue  # read, with their counts, by _builtin_renamed and _emitted
-        if text.count(anchor) != 1:
-            raise Moved('claude tool-call form table %s: anchor found %d times' % (key, text.count(anchor)))
+def claude_forms(text, helpers):
+    forms = _forms(text, helpers)
     found, fields, tops = {}, {}, []
     for key in ('messages', 'response_blocks', 'request_blocks'):
-        at = text.index(CLAUDE_FORMS[key])
+        at = forms[key][0].start()
         window = text[at - FORMS_WINDOW:at + FORMS_WINDOW]
-        js = Js(window)
+        js = Js(window, helpers)
         tags = []
-        for name in _union_members(window, FORMS_WINDOW, CLAUDE_FORMS[key]):
+        for name in _union_members(window, FORMS_WINDOW, forms[key][0].group(0)):
             body, _ = js.definition(name, FORMS_WINDOW)
             tags += _tags(Reader(js, depth=1).parse(body)[0])
             if key == 'messages':
@@ -961,23 +1350,24 @@ def claude_forms(text):
                     fields.setdefault(_tag(kind, sub), set()).update(_tool_paths(schema))
                 tops += _tops(schema)
         found[key] = tags
-    tagged = json.loads(text[text.index(CLAUDE_FORMS['tagged']) + 3:].split(']', 1)[0] + ']')
+    tagged = json.loads(text[text.index('[', forms['tagged'][0].start()):].split(']', 1)[0] + ']')
     found['messages'] = sorted({(kind, sub) for kind, sub in found['messages']}, key=lambda tag: (tag[0], tag[1] or ''))
     found['response_blocks'] = [kind for kind, _ in found['response_blocks']] + tagged
     found['request_blocks'] = [kind for kind, _ in found['request_blocks']] + tagged + ['mid_conv_system']
-    at = text.index(CLAUDE_FORMS['stream_events']) + len('tK=f(()=>ae().describe("One Anthropic Messages API streaming event (')
+    head = 'streaming event ('
+    at = text.index(head, forms['stream_events'][0].start()) + len(head)
     stream_events = text[at:text.index(')', at)].split(', ')
-    at = text.index(CLAUDE_FORMS['builtin_tools']) + len(CLAUDE_FORMS['builtin_tools']) - 1
+    at = forms['builtin_tools'][0].end() - 1
     builtin = json.loads(text[at:text.index(']', at) + 1])
     return {'messages': [[kind, sub] for kind, sub in found['messages']],
             'response_blocks': found['response_blocks'], 'request_blocks': found['request_blocks'],
             'stream_events': stream_events, 'builtin_tools': builtin,
-            'builtin_renamed': _builtin_renamed(text, builtin),
+            'builtin_renamed': _builtin_renamed(text, builtin, helpers),
             'tool_fields': {tag: sorted(paths) for tag, paths in sorted(fields.items()) if paths},
-            'emitted_tool_fields': _emitted(text), 'frames': claude_frames(text),
+            'emitted_tool_fields': _emitted(text, helpers), 'frames': claude_frames(text, helpers),
             'task_counts': _task_counts(text, {tag: sorted(paths) for tag, paths in fields.items()}),
-            'nested_work': _nested(text, _builtin_renamed(text, builtin), tops),
-            'in_run': _in_run(text, _builtin_renamed(text, builtin)),
+            'nested_work': _nested(text, _builtin_renamed(text, builtin, helpers), tops, helpers),
+            'in_run': _in_run(text, _builtin_renamed(text, builtin, helpers), helpers),
             'source': "the SDK message union of the stream (each member's type and subtype), the content block "
                       "unions of an assistant and of a user message (the modelled blocks, then the type tags "
                       "the binary lists), the streaming events the stream_event schema names, and the binary's "
@@ -1006,7 +1396,7 @@ def claude_forms(text):
 # one, and a worker whose inbox gate is off, which runs --bare, or whose bind fails prints none.
 CLAUDE_EMITTERS = (
     ('system/init', 'g={type:"system",subtype:"init",cwd:e.cwd,', 'g', ('system/init',)),
-    ('initialize', 'Pe={commands:Zq(e),agents:r.map((de)=>({name:de.agentType,', 'Pe',
+    ('initialize', 'Pe={commands:Zq(<any>),agents:r.map((de)=>({name:de.agentType,', 'Pe',
      ('control_response', 'response', 'response')),
 )
 
@@ -1085,10 +1475,10 @@ def _literal_presence(body, found, condition=None):
 def claude_emitters(text):
     """Which fields each emitter writes always and which only under a condition, read from its own text."""
     emitters = {}
-    for event, anchor, variable, path in CLAUDE_EMITTERS:
-        if text.count(anchor) != 1:
-            raise Moved('%s emitter: anchor found %d times' % (event, text.count(anchor)))
-        at = text.index(anchor) + len(variable) + 1
+    for event, source, name, path in CLAUDE_EMITTERS:
+        head, names = site(text, source, '%s emitter' % event)
+        variable = names[name]
+        at = head.start() + len(variable) + 1
         end = _closing(text, at)
         found = {}
         _literal_presence(text[at + 1:end - 1], found)
@@ -1120,7 +1510,7 @@ def claude_emitters(text):
                     found[m.group(1)] = guard if guard is not None else _maybe_undefined(value)
         if not found:
             raise Moved('%s emitter: no fields read' % event)
-        emitters[event] = {'anchor': anchor, 'offset': text.index(anchor), 'path': list(path),
+        emitters[event] = {'anchor': head.group(0), 'offset': head.start(), 'path': list(path),
                            'always': sorted(k for k, v in found.items() if v is None),
                            'conditional': {k: v for k, v in sorted(found.items()) if v is not None}}
     return emitters
@@ -1129,49 +1519,57 @@ def claude_emitters(text):
 def claude(path):
     raw = Path(path).read_bytes()
     text = raw.decode('latin-1')
-    for confirm in ZOD_CONFIRM:
-        if confirm not in text:
-            raise Moved('zod helper use moved: ' + confirm)
-    js = Js(text)
+    _SITES.clear()
+    helpers = zod_helpers(text)
+    js = Js(text, helpers)
     events = {}
-    for name, anchor in CLAUDE_EVENTS.items():
-        if text.count(anchor) != 1:
-            raise Moved('%s: anchor found %d times' % (name, text.count(anchor)))
-        schema, _ = Reader(js, depth=4).parse(text.index(anchor))
+    for name, source in CLAUDE_EVENTS.items():
+        m, _ = site(text, source, name, bound=helpers[2])
+        schema, _ = Reader(js, depth=4).parse(m.start())
         events[name] = schema
     # The initialize success answer is a control response. Its generic payload is a record;
-    # the account emitter names the optional fields absent from this subscription capture.
+    # the account emitter (in the initialize emitter's object) names the optional fields absent from this
+    # subscription capture.
     control_anchor = 'd({type:R("control_response"),response:Fe([_Y(),mY()])})'
     account_anchor = ('account:{email:ie?.email,organization:ie?.organization,subscriptionType:ie?.subscription,'
                       'tokenSource:ie?.tokenSource,apiKeySource:ie?.apiKeySource,apiProvider:He()}')
-    for anchor in (control_anchor, account_anchor):
-        if text.count(anchor) != 1:
-            raise Moved('initialize answer anchor moved')
-    control, _ = Reader(js, depth=4).parse(text.index(control_anchor))
+    emitters = claude_emitters(text)
+    control_at, _ = site(text, control_anchor, 'initialize answer anchor', bound=helpers[2])
+    start = emitters['initialize']['offset']
+    accounts = [m for m in sites(text, account_anchor) if start < m.start() < start + 4000]
+    if len(accounts) != 1:
+        raise Moved('initialize answer anchor moved')
+    found = accounts[0]
+    ie, he = (anchor(account_anchor).name(found, n) for n in ('ie', 'He'))
+    control, _ = Reader(js, depth=4).parse(control_at.start())
     success = control['fields']['response']['anyOf'][0]
     control['fields']['response'] = success
-    account = {name: {'type': 'string', 'optional': expression.startswith('ie?.')}
-               for name, expression in re.findall(r'(\w+):(ie\?\.\w+|He\(\))', account_anchor)}
+    account = {name: {'type': 'string', 'optional': expression.startswith(ie + '?.')}
+               for name, expression in re.findall(r'(\w+):(%s\?\.\w+|%s\(\))' % (re.escape(ie), re.escape(he)),
+                                                  found.group(0))}
     success['fields']['response'] = {'type': 'object', 'optional': True,
                                      'fields': {'account': {'type': 'object', 'fields': account}},
                                      'source': 'initialize success payload; account emitter in the binary',
-                                     'anchor': account_anchor}
+                                     'anchor': found.group(0)}
     events['control_response'] = control
     tables = []
-    for name, anchor, decision, reason in CLAUDE_TABLES:
-        at = text.find(anchor)
-        if at < 0:
+    for name, source, decision, reason in CLAUDE_TABLES:
+        found = sites(text, source)
+        if not found:
             raise Moved('credential table moved: ' + name)
+        at = found[0].start()
         m = ENV_ARRAY.match(text, at)
         names = re.findall(r'"([A-Z0-9_]+)"', m.group(1))
         tail = text[m.end():m.end() + 80]
-        if name == 'anthropic_secrets' and '.flatMap((e)=>[e,`INPUT_${e}`])' in tail:
+        if name == 'anthropic_secrets' and re.search(r'\.flatMap\(\(([\w$]+)\)=>\[\1,`INPUT_\$\{\1\}`\]\)', tail):
             names = names + ['INPUT_' + n for n in names]
         tables.append({'name': name, 'decision': decision, 'reason': reason, 'offset': at, 'names': names})
-    for name, anchor, decision, reason, exceptions in CLAUDE_LISTS:
-        if text.count(anchor) != 1:
-            raise Moved('%s: anchor found %d times' % (name, text.count(anchor)))
-        at = text.index(anchor)
+    bound = {}
+    for name, source, decision, reason, exceptions in CLAUDE_LISTS:
+        m, names_of = site(text, source, name, bound=uses(source, bound))
+        own = JS_NAME.match(source.split('var ', 1)[-1]).group(0)
+        bound[own] = names_of[own]
+        at = m.start()
         names = list(dict.fromkeys(_js_list(js, at)))
         if len(names) < 2 or not all(re.fullmatch(r'[A-Z_][A-Z0-9_]*', n) for n in names):
             raise Moved('%s: not a list of variable names' % name)
@@ -1193,26 +1591,43 @@ def claude(path):
             raise Moved('usage note moved: ' + name)
         note = text[at:text.index('"', at)]
         notes[name] = note.replace('\\u2014', '-').replace('\\u2013', '-')[:1000]
-    version = Path(path).resolve().name
+    version = Q.claude_version(path)
     return {'binary': str(Path(path).resolve()), 'version': version, 'sha256': _digest(path),
             'source': 'the zod schema of the SDK stream messages embedded in the binary (print mode, stream JSON)',
-            'events': events, 'emitters': claude_emitters(text), 'notes': notes, 'credential_tables': tables,
+            'events': events, 'emitters': emitters, 'notes': notes, 'credential_tables': tables,
             'usage_limit': claude_limit(text),
-            'tool_forms': claude_forms(text)}
+            'tool_forms': claude_forms(text, helpers)}
 
 
 # ---------------------------------------------------------------- Codex: the Rust binary's literals
 
-CODEX_EXEC_RUN = (b'ItemCompletedEventThreadStartedEventthread_idTurnCompletedEventusagein_progresscompletedfailed'
-                  b'aggregated_outputexit_codemessagecontent_metastructured_contentinput_tokenscached_input_tokens'
-                  b'cache_write_input_tokensoutput_tokensreasoning_output_tokens')
-CODEX_TAGS_RUN = (b'ThreadEventThreadStartedthread.startedTurnStartedturn.startedTurnCompletedturn.completedTurnFailed'
-                  b'turn.failedItemStarteditem.startedItemUpdateditem.updatedItemCompleteditem.completederror')
-# VELDO-0160: exec's ThreadItem for an MCP tool call (type tag `mcp_tool_call`), by the literal runs
-# of its type names, its field names and its status values.
-CODEX_ITEM_RUNS = (b'item.completederroritemsqueryactionchangesserverargumentsresult',
-                   b'agent_messagereasoningcommand_executionfile_changemcp_tool_callweb_searchtodo_list',
-                   b'usagein_progresscompletedfailed')
+# exec's literal run: the run of printable literals holding exec's event tags in their order (a build may place each
+# tag after its variant's name, as one build did), up to exec's span name. Each name below must lie in it: the event
+# tags, the event and usage field names (CODEX_EXEC_NAMES), and the MCP tool call's type, field and status names
+# (VELDO-0160, CODEX_ITEM_NAMES).
+CODEX_EXEC_TAGS = ('thread.started', 'turn.started', 'turn.completed', 'turn.failed', 'item.started', 'item.updated',
+                   'item.completed', 'error')
+CODEX_EXEC_END = b'codex.exec'
+CODEX_EXEC_NAMES = ('thread_id', 'usage', 'in_progress', 'completed', 'failed', 'aggregated_output', 'exit_code',
+                    'message', 'content_meta', 'structured_content', 'input_tokens', 'cached_input_tokens',
+                    'cache_write_input_tokens', 'output_tokens', 'reasoning_output_tokens')
+CODEX_ITEM_NAMES = ('mcp_tool_call', 'server', 'arguments', 'result', 'in_progress', 'completed', 'failed')
+
+
+def codex_exec_run(raw):
+    """(start, end) of exec's literal run."""
+    tags = rb'(?:[A-Z][A-Za-z]*)?'.join(re.escape(tag.encode()) for tag in CODEX_EXEC_TAGS)
+    found = list(re.finditer(tags, raw))
+    if len(found) != 1:
+        raise Moved('codex exec event literals moved')
+    at = found[0].start()
+    start = at
+    while start > 0 and 0x20 <= raw[start - 1] < 0x7f:
+        start -= 1
+    end = raw.find(CODEX_EXEC_END, found[0].end())
+    if end < 0 or any(not 0x20 <= byte < 0x7f for byte in raw[at:end]):
+        raise Moved('codex exec event literals moved')
+    return start, end + len(CODEX_EXEC_END)
 # VELDO-0160: the item types, by the literal run that lists them. `exec`: exec's ThreadItem (what `codex
 # exec --json` prints), whose `error` item tag is the literal at the head of its field run; `thread`: the
 # core's ThreadItem, the types a thread records, of which exec prints only its own.
@@ -1231,6 +1646,8 @@ CODEX_THREAD_ITEMS = (b'user_messagefunction_call_outputhook_promptagent_message
 
 # exec's own sub-agent call item, `collab_tool_call` (its agents' calls are not in exec's stream), whose tag is
 # a literal placed after exec's event struct names rather than in the item run.
+# Its tag is that literal beside exec's struct names when the build keeps them; a build that drops the names keeps the
+# literal once in the binary, where the linker placed it.
 CODEX_EXEC_COLLAB = (b'ItemUpdatedEventThreadErrorEventcollab_tool_call', 'collab_tool_call')
 # VELDO-0160, the lead's structural rule: the items through which a Codex run does work in another agent's thread,
 # whose calls its stream does not show, each by the struct literal naming the other thread: exec's own sub-agent
@@ -1246,15 +1663,17 @@ CODEX_NESTED = {'collab': ((b'CollabAgentToolCallItemreceiver_thread_ids', 'coll
 # enum lists: its variant literals, placed between exec's usage field run and its item id field before its
 # ThreadEvent name, each an agent thread of this process (`Spawn a sub-agent for a well-scoped task.`). A tag the
 # run does not hold (a collab tool exec may name elsewhere) is not listed and asks.
-CODEX_IN_RUN_COLLAB = (b'reasoning_output_tokensspawn_agentsend_inputclose_agentidThreadEvent',
-                       ('spawn_agent', 'send_input', 'close_agent'))
+CODEX_IN_RUN_COLLAB = (b'reasoning_output_tokensspawn_agentsend_inputclose_agent', ('spawn_agent', 'send_input', 'close_agent'))
 CODEX_IN_RUN_SPAWN = b'Spawn a sub-agent for a well-scoped task.'
 # The enum's `wait` variant is not in that run: the compiler keeps one copy of a short literal, and exec's `wait` is
 # the one its other uses share. exec's serializer for the enum names every variant: a switch on the variant (lea rcx
 # to its jump table, movsxd, add, jmp rax) whose cases each load one variant's literal (lea rdx) and its length (mov
-# ecx, here or at the case it jumps to). The wait variant only waits: the core's wait tool waits on agent ids from
+# ecx, here or at the case it jumps to); a build that writes the JSON string inline opens it with its quote first, then
+# loads the literal (lea rsi) and its length (mov edx). The wait variant only waits: the core's wait tool waits on agent ids from
 # spawn_agent, or for a mailbox update from a live agent of the current root thread tree, the run's own agents.
 CODEX_COLLAB_SWITCH = re.compile(rb'\x48\x8d\x0d(.{4})\x48\x63\x04\x81\x48\x01\xc8\xff\xe0', re.DOTALL)
+CODEX_CASE_LOAD = re.compile(rb'(?:\x48\x8b\x1e\x48\x8b\x73\x10\x48\x39\x33\x0f\x84.{4}\x48\x8b\x43\x08'
+                             rb'\xc6\x04\x30\x22\x48\xff\xc6\x48\x89\x73\x10)?\x48\x8d[\x15\x35].{4}', re.DOTALL)
 CODEX_COLLAB_WAIT = (b'Agent ids to wait on. Pass multiple ids to wait for whichever finishes first.',
                      b'Live agents visible in the current root thread tree.')
 CODEX_COLLAB_WAITS = ('wait',)
@@ -1296,14 +1715,16 @@ def _switch_cases(raw, segments, at, virtual):
     while len(cases) < 64:
         target = table + _rel32(raw, table_at + 4 * len(cases))
         case = _file_offset(segments, target)
-        if not start <= target < start + 256 or case is None or raw[case:case + 3] != b'\x48\x8d\x15':
+        load = CODEX_CASE_LOAD.match(raw, case) if case is not None else None
+        if not start <= target < start + 512 or load is None:
             break
-        literal = target + 7 + _rel32(raw, case + 3)
-        after = case + 7
+        lea = load.end() - 7
+        literal = target + (lea - case) + 7 + _rel32(raw, lea + 3)
+        after = lea + 7
         if raw[after] == 0xeb:
             after = after + 2 + int.from_bytes(raw[after + 1:after + 2], 'little', signed=True)
         literal_at = _file_offset(segments, literal)
-        if raw[after] != 0xb9 or literal_at is None:
+        if raw[after] not in (0xb9, 0xba) or literal_at is None:
             return None
         length = int.from_bytes(raw[after + 1:after + 5], 'little')
         text = raw[literal_at:literal_at + length]
@@ -1340,8 +1761,9 @@ def codex_collab_tools(raw, tools):
 
 def codex_in_run(raw, exec_items):
     run, tools = CODEX_IN_RUN_COLLAB
-    if raw.count(run) != 1 or ('reasoning_output_tokens' + ''.join(tools) + 'idThreadEvent').encode() != run \
-            or raw.count(CODEX_IN_RUN_SPAWN) != 1 or 'collab_tool_call' not in exec_items:
+    start, end = codex_exec_run(raw)
+    if raw.count(run) != 1 or ('reasoning_output_tokens' + ''.join(tools)).encode() != run \
+            or not start <= raw.find(run) < end or CODEX_IN_RUN_SPAWN not in raw or 'collab_tool_call' not in exec_items:
         raise Moved('codex collab tools moved')
     return {'items': sorted(exec_items),
             'collab': {'item': 'collab_tool_call', 'field': 'tool', 'tools': codex_collab_tools(raw, tools)},
@@ -1358,7 +1780,8 @@ def codex_forms(raw):
     head, run, names = CODEX_EXEC_ITEMS
     if head not in raw or run not in raw or ''.join(names).encode() != run:
         raise Moved('codex exec item types moved')
-    if raw.count(CODEX_EXEC_COLLAB[0]) != 1 or not CODEX_EXEC_COLLAB[0].endswith(CODEX_EXEC_COLLAB[1].encode()):
+    tag = CODEX_EXEC_COLLAB[1].encode()
+    if not CODEX_EXEC_COLLAB[0].endswith(tag) or (raw.count(CODEX_EXEC_COLLAB[0]) != 1 and raw.count(tag) != 1):
         raise Moved('codex exec collab_tool_call moved')
     thread, thread_names = CODEX_THREAD_ITEMS
     if thread not in raw or ''.join(thread_names).encode() != thread:
@@ -1381,6 +1804,8 @@ def codex_forms(raw):
                       "unknown"}
 
 
+# The usage-limit message, its apostrophe straight or typographic as the build writes it (one form per build).
+CODEX_LIMIT_MESSAGE = re.compile(rb"You(?:'|\xe2\x80\x99)ve hit your usage limit")
 CODEX_LIMIT = {
     'message': b"You've hit your usage limit",
     'retry_at': (b' Try again at ', b' or try again at '),
@@ -1389,7 +1814,7 @@ CODEX_LIMIT = {
     'suffixes': b'stndrdth',
 }
 # Each Codex credential table as (name, the literal before it, its packed names, the literal after it,
-# decision, reason): the three pieces must be adjacent in the binary.
+# decision, reason): the three pieces adjacent in the binary, or the packed names once in it.
 CODEX_TABLES = [
     ('auth_env', b'auth.json', b'OPENAI_API_KEYCODEX_API_KEYCODEX_ACCESS_TOKEN', b'no Codex credentials were found',
      'strip', 'the auth variables Codex reads instead of its stored login'),
@@ -1449,6 +1874,10 @@ CODEX_TABLES += [
 # workspace messages. Each message is classified: an exhaustion is a window the account's CLI reported
 # exhausted (its id, and whether the message states its reset), anything else is not an allowance
 # statement. A message this list does not classify fails the extraction by name.
+# The fixed messages: the run from the first message below to the last, read message by message; text between two
+# messages this list names is the build's own messages (split where a sentence ends and the next begins), and a
+# message the build dropped is not in its table. The literals around the run (CODEX_ERROR_FIXED's first two) are
+# what one build placed there.
 CODEX_ERROR_FIXED = (b'LandlockRulesetLandlockPathFdTokioJoinEnvVar', b'request_id', (
     'turn aborted. Something went wrong? Hit `/feedback` to report the issue.',
     'shared rollout token budget exhausted',
@@ -1467,12 +1896,13 @@ CODEX_ERROR_FIXED = (b'LandlockRulesetLandlockPathFdTokioJoinEnvVar', b'request_
     'internal error; agent loop died unexpectedly',
     'codex-linux-sandbox was required but not provided'))
 CODEX_ERROR_TEMPLATES = (b'protocol/src/models.rs', b'\x00&sandbox denied exec error', b'\x00\x19invalid --profile value')
+# The workspace messages, one run, followed by the usage-limit template that offers Pro (its length prefix the build's).
 CODEX_ERROR_WORKSPACE = (b'<empty>', b"\x80\x96\x00You've hit your usage limit. Upgrade to Pro", (
     'Your workspace is out of credits. Add credits to continue.',
     'Your workspace is out of credits. Ask your workspace owner to refill in order to continue.',
     'You hit your spend cap set in your workspace. Increase your spend cap to continue.',
     'You hit your spend cap set by the owner of your workspace. Ask an owner to increase your spend cap to continue.'))
-CODEX_ERROR_PRO = b"\x80\x96\x00You've hit your usage limit. Upgrade to Pro"
+CODEX_ERROR_PRO = re.compile(rb"\x80..You(?:'|\xe2\x80\x99)ve hit your usage limit\. Upgrade to Pro", re.DOTALL)
 CODEX_EXHAUSTION = {
     'Your workspace is out of credits. Add credits to continue.': 'workspace_credits',
     'Your workspace is out of credits. Ask your workspace owner to refill in order to continue.': 'workspace_credits',
@@ -1488,6 +1918,9 @@ CODEX_NOT_EXHAUSTION = {
     'agent thread limit reached': "Codex's own cap on concurrent agent threads",
     'exceeded retry limit, last status: {}{}': 'a request that failed its retries; it states no allowance',
     'Selected model is at capacity. Please try a different model.': 'the service is busy; transient',
+    'Policy-restricted capacity is unavailable. Please try again later.':
+        'the service has no capacity for a policy-restricted request; transient',
+    'Flex capacity unavailable.': 'the flex service tier has no capacity; transient',
 }
 ALLOWANCE_WORDS = re.compile(r'limit|credit|quota|spend|plan|billing|budget|capacity', re.I)
 
@@ -1517,8 +1950,16 @@ def _templates(block):
     return [''.join('{}' if piece is None else piece for piece in template) for template in found if template]
 
 
-def _classify(message):
-    if message.startswith("You've hit your usage limit"):
+def codex_limit_message(raw):
+    """The usage-limit message as this build writes it."""
+    forms = {m.group(0) for m in CODEX_LIMIT_MESSAGE.finditer(raw)}
+    if len(forms) != 1:
+        raise Moved('codex usage-limit literal moved: %r' % CODEX_LIMIT['message'])
+    return forms.pop().decode()
+
+
+def _classify(message, limit):
+    if message.startswith(limit):
         return {'window': 'usage_limit', 'reset': 'stated or none (its retry phrase)'}
     if message in CODEX_EXHAUSTION:
         return {'window': CODEX_EXHAUSTION[message], 'reset': 'none: blocked until observed otherwise'}
@@ -1529,13 +1970,36 @@ def _classify(message):
     return {'window': None, 'reason': 'a local, request or transient error; it states no allowance'}
 
 
+def _fixed(raw):
+    """(offset, the fixed messages in the build's order)."""
+    known = [m.encode() for m in CODEX_ERROR_FIXED[2]]
+    if raw.count(known[0]) != 1:
+        raise Moved('codex error table: the fixed messages moved')
+    start = raw.index(known[0])
+    end = raw.find(known[-1], start)
+    if end < 0 or end - start > 8192:
+        raise Moved('codex error table: the fixed messages moved')
+    block, at, gap, found = raw[start:end + len(known[-1])], 0, b'', []
+
+    def flush(gap):
+        found.extend(re.split(r'(?<=[.!?])(?=[A-Z])', gap.decode()) if gap else [])
+    while at < len(block):
+        message = next((m for m in known if block.startswith(m, at)), None)
+        if message is None:
+            gap, at = gap + block[at:at + 1], at + 1
+            continue
+        flush(gap)
+        gap, at = b'', at + len(message)
+        found.append(message.decode())
+    flush(gap)
+    return start, found
+
+
 def codex_errors(raw):
     entries = []
-    before, after, messages = CODEX_ERROR_FIXED
-    run = before + ''.join(messages).encode() + after
-    if raw.count(run) != 1:
-        raise Moved('codex error table: the fixed messages moved')
-    entries += [('fixed', m, raw.index(run) + len(before)) for m in messages]
+    limit = codex_limit_message(raw)
+    start, messages = _fixed(raw)
+    entries += [('fixed', m, start) for m in messages]
     anchor, start, end = CODEX_ERROR_TEMPLATES
     at = raw.find(anchor)
     first = raw.find(start, at)
@@ -1543,26 +2007,47 @@ def codex_errors(raw):
     if at < 0 or first < 0 or last < 0 or last - first > 4096:
         raise Moved('codex error table: the templates moved')
     entries += [('template', m, first) for m in _templates(raw[first + 1:last + 1])]
-    before, after, messages = CODEX_ERROR_WORKSPACE
-    run = before + ''.join(messages).encode() + after
-    if raw.count(run) != 1:
+    _, _, messages = CODEX_ERROR_WORKSPACE
+    run = ''.join(messages).encode()
+    pro = CODEX_ERROR_PRO.match(raw, raw.find(run) + len(run))
+    if raw.count(run) != 1 or pro is None:
         raise Moved('codex error table: the workspace messages moved')
-    entries += [('workspace', m, raw.index(run) + len(before)) for m in messages]
-    pro = raw.find(CODEX_ERROR_PRO)
+    entries += [('workspace', m, raw.index(run)) for m in messages]
+    pro = pro.start()
     entries += [('template', m, pro) for m in _templates(raw[pro:raw.index(b'\xc0\x00', pro) + 2])]
     table = []
     for source, message, offset in entries:
-        table.append(dict({'message': message, 'source': source, 'offset': offset}, **_classify(message)))
+        table.append(dict({'message': message, 'source': source, 'offset': offset}, **_classify(message, limit)))
     if not any(e['window'] == 'usage_limit' for e in table) or len({e['message'] for e in table}) != len(table):
         raise Moved('codex error table: incomplete or repeated')
     return table
 
 
 # What the binary says about where exec's turn usage comes from: the thread token usage it reports is a
-# thread total and a last-turn figure; the strings do not say which one turn.completed copies.
-CODEX_USAGE_SOURCE = (b'exec/src/event_processor_with_jsonl_output.rs', b'thread/tokenUsage/updated',
+# thread total and a last-turn figure; the strings do not say which one turn.completed copies. Exec's own source
+# file (its JSON event processor, or exec's lib where a build folded it in), the notification, the app-server's
+# ThreadTokenUsage and the core's TokenUsageInfo, whose fields are its literal run before its struct name (the
+# known ones first and last, any other between) and last_token_usage (a literal the compiler shares).
+CODEX_USAGE_SOURCE = (re.compile(rb'exec/src/(?:event_processor_with_jsonl_output|lib)\.rs'), b'thread/tokenUsage/updated',
                       b'totalmodelContextWindowstruct ThreadTokenUsage with 3 elements',
-                      b'struct TokenUsageInfo with 3 elements', b'last_token_usage')
+                      re.compile(rb'elements(total_token_usage[a-z_]*model_context_window)struct TokenUsageInfo with '
+                                 rb'([0-9]+) elements'), b'last_token_usage')
+
+
+def codex_usage_source(raw):
+    """The core's TokenUsageInfo field names, each piece of the usage source checked."""
+    info = None
+    for piece in CODEX_USAGE_SOURCE:
+        found = piece.search(raw) if hasattr(piece, 'search') else (piece if piece in raw else None)
+        if found is None:
+            raise Moved('codex usage source moved: %r' % getattr(piece, 'pattern', piece))
+        info = found if piece is CODEX_USAGE_SOURCE[3] else info
+    run = info.group(1).decode()
+    middle = run[len('total_token_usage'):-len('model_context_window')]
+    fields = ['total_token_usage', 'last_token_usage'] + ([middle] if middle else []) + ['model_context_window']
+    if len(fields) != int(info.group(2)) or not re.fullmatch(r'[a-z_]*', middle):
+        raise Moved('codex usage source moved: TokenUsageInfo')
+    return fields
 
 
 ENV_NAME_START = re.compile(rb'(?<=[A-Z0-9])(?=(?:OPENAI|CODEX|AWS|AZURE|GOOGLE|NODE)_)')
@@ -1574,37 +2059,40 @@ def _split(run):
 
 def codex(path):
     raw = Path(path).read_bytes()
-    for run in (CODEX_EXEC_RUN, CODEX_TAGS_RUN):
-        if run not in raw:
-            raise Moved('codex exec event literals moved')
-    limit = {}
+    start, end = codex_exec_run(raw)
+    for name in CODEX_EXEC_NAMES:
+        if raw.find(name.encode(), start, end) < 0:
+            raise Moved('codex exec event literals moved: ' + name)
+    message = codex_limit_message(raw)
     for key, value in CODEX_LIMIT.items():
         for piece in (value if isinstance(value, tuple) else (value,)):
-            if piece not in raw:
+            if key != 'message' and piece not in raw:
                 raise Moved('codex usage-limit literal moved: %r' % piece)
-    limit = {'message': CODEX_LIMIT['message'].decode(),
+    limit = {'message': message,
              'retry_at': [p.decode() for p in CODEX_LIMIT['retry_at']],
              'retry_later': [p.decode() for p in CODEX_LIMIT['retry_later']],
              'formats': ['%-I:%M %p', '%b %-d{suffix}, %Y %-I:%M %p'],
              'suffixes': ['st', 'nd', 'rd', 'th'],
              'source': "protocol error Display: the message, then ' Try again at <local time>.' (same day: %-I:%M %p; "
                        "else %b %-d<suffix>, %Y %-I:%M %p) or ' Try again later.' with no reset"}
-    for run in CODEX_ITEM_RUNS:
-        if run not in raw:
-            raise Moved('codex exec item literals moved: %r' % run[:40])
+    for name in CODEX_ITEM_NAMES:
+        if raw.find(name.encode(), start, end) < 0:
+            raise Moved('codex exec item literals moved: ' + name)
     items = {'mcp_tool_call': {'type': 'object', 'fields': {
         'id': {'type': 'string'}, 'type': {'type': 'literal', 'value': 'mcp_tool_call'},
         'server': {'type': 'string'}, 'tool': {'type': 'string'}, 'arguments': {'type': 'any'},
         'result': {'type': 'any', 'optional': True, 'nullable': True},
         'error': {'type': 'any', 'optional': True, 'nullable': True},
         'status': {'type': 'enum', 'values': ['in_progress', 'completed', 'failed']}}}}
-    for piece in CODEX_USAGE_SOURCE:
-        if piece not in raw:
-            raise Moved('codex usage source moved: %r' % piece)
+    usage_fields = codex_usage_source(raw)
     tables = []
     for name, before, run, after, decision, reason in CODEX_TABLES:
+        # The run between its neighbours, or, where a build moved the neighbours, the run itself when it is once in
+        # the binary.
         at = raw.find(before + run + after)
-        if at < 0:
+        if at < 0 and raw.count(run) == 1:
+            at = raw.find(run) - len(before)
+        if at < -len(before):
             raise Moved('codex credential table moved: ' + name)
         tables.append({'name': name, 'decision': decision, 'reason': reason, 'offset': at + len(before),
                        'names': _split(run)})
@@ -1625,12 +2113,7 @@ def codex(path):
     events = {name: {'type': 'object', 'fields': dict({'type': {'type': 'literal', 'value': name}}, **fields)}
               for name, fields in events.items()}
     package = Path(path).resolve()
-    version = None
-    for parent in package.parents:
-        manifest = parent / 'package.json'
-        if manifest.is_file() and parent.name == 'codex':
-            version = json.loads(manifest.read_text()).get('version')
-            break
+    version = Q.codex_version(path)[0]
     return {'binary': str(package), 'version': version, 'sha256': _digest(path),
             'source': "the serde names of codex-exec's ThreadEvent (tag 'type') and its payload structs, packed in the "
                       "binary's literals; the strings show field names, not which are always present, so every usage "
@@ -1645,7 +2128,7 @@ def codex(path):
             'notes': {'turn.completed.usage': (
                 "exec's turn usage is read from the thread token usage its event processor receives "
                 "(thread/tokenUsage/updated, a ThreadTokenUsage of total, last and modelContextWindow; the core's "
-                "TokenUsageInfo of total_token_usage, last_token_usage and model_context_window): a thread total "
+                "TokenUsageInfo of " + ', '.join(usage_fields[:-1]) + ' and ' + usage_fields[-1] + "): a thread total "
                 "and a last-turn figure. The strings do not say which one turn.completed copies, so a resumed "
                 "thread is never subtracted: the sum of the invocation's own completed turns never counts less "
                 "than the CLI recorded under either reading")}}
