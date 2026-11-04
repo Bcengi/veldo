@@ -20,3 +20,9 @@ VELDO-0230 fix round 3: suites, each with python3 scripts/selftest.py --suite NA
   126_veldo_0230_qualify_reproduces                2 passed   92.51s 
 
 86 live/claude and live/codex: the live captures bind the digest of control_agent_config_handoff.py, which this round edits (stale before it as well); the lead retakes them.
+
+== worktree at b20ea29c (the final code), the suites that load evidence.py or qualify
+  86_veldo_0127_agent_configuration               26 passed   38.58s SELFTEST FAIL: VELDO-0127 live/claude SELFTEST FAIL: VELDO-0127 live/codex 
+  90_veldo_0127_feature_profile                    2 passed   11.66s 
+  125_veldo_0230_engine_census                     7 passed    6.85s 
+  126_veldo_0230_qualify_reproduces                2 passed   68.92s 
