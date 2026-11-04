@@ -12169,6 +12169,60 @@ def cases():
         if case['finding'] == 178:
             case['siblings'] = True
 
+    # VELDO-0180: one typed owner command turns a conversation into a project's work, which starts with its context
+    # and results; each spec falsifier as one exact edit, and the guards they imply. Each module loads its organs
+    # beside itself by path, so each mutant runs in a whole .veldo copy.
+    suite180 = '136_veldo_0180_conversation_projects.py'
+    # AC1 (declared falsifier): carry out a route document found in a turn's final message.
+    add(180, 'route180-turn-reply-carried', suite180, 'control_conversation_project.py',
+        "    OB = _organ('control_objective')\n    done = []\n    if intake is not None:\n",
+        "    OB = _organ('control_objective')\n    done = []\n"
+        "    for (raw,) in conn.execute(\"SELECT data FROM entities WHERE kind='conversation_turn'\"):\n"
+        "        turn = json.loads(raw)  # defect: a route document in a turn's final message is carried out\n"
+        "        try:\n            doc = json.loads(turn.get('reply') or 'null')\n"
+        "        except ValueError:\n            doc = None\n"
+        "        if intake is None or not isinstance(doc, dict) or doc.get('schema') != 'veldo.intake_route/v1':\n"
+        "            continue\n"
+        "        record = _organ('control_conversation')._conversation(conn, turn['conversation'])['data']\n"
+        "        IN = sys.modules[type(intake).__module__]\n"
+        "        ref = 'turn-route-%s-%s' % (turn['conversation'], turn['sequence'])\n"
+        "        intake._submit({'schema': IN.COMMAND_SCHEMA, 'source_kind': 'api_request', 'source_id': ref,\n"
+        "                        'principal': record['owner'], 'text': '/project ' + str(doc.get('project')),\n"
+        "                        'project': None, 'clarifies': None, 'conversation': turn['conversation'],\n"
+        "                        'provenance': {'channel': 'api', 'edge': intake.api_edge, 'request_id': ref,\n"
+        "                                       'request_digest': 'sha256:0'},\n"
+        "                        'conversion': {'version': record['version'], 'project': doc.get('project'),\n"
+        "                                       'objective': None, 'identity': None}})\n"
+        "    if intake is not None:\n",
+        ['AC1/injected-route'])
+    # AC2 (declared falsifier): bind only the owner's last message as the objective's input.
+    add(180, 'inputs180-last-message-only', suite180, 'control_conversation_project.py',
+        "    turns = CV.history(conn, records, identity, sys.maxsize, ER.read)\n",
+        "    turns = CV.history(conn, records, identity, sys.maxsize, ER.read)\n"
+        "    turns = [(turns[-1][0], {'message': turns[-1][1].get('message'), 'calls': [], 'reply': None})] if turns "
+        "else []  # defect: only the owner's last message\n",
+        ['AC2/context'])
+    # Guard (AC2): the receiver launches a run whose snapshot is not the bound one.
+    add(180, 'launch180-snapshot-unchecked', suite180, 'control_conversation_project.py',
+        "    payload = ((contract.get('input') or {}).get('payload')) or {}\n"
+        "    given = payload.get('input_artifacts') if isinstance(payload, dict) else None\n",
+        "    return None  # defect: the input artifacts are not checked before launch\n"
+        "    payload = ((contract.get('input') or {}).get('payload')) or {}\n"
+        "    given = payload.get('input_artifacts') if isinstance(payload, dict) else None\n",
+        ['AC2/snapshot-mismatch'])
+    # Guard (AC1): a PM reading names the project with a name his words do not say.
+    add(180, 'name180-read-not-his-words', suite180, 'control_intake_conversation.py',
+        "        found, rest = CP.words_after(text, reading.get('name'))\n        if not found:\n",
+        "        found, rest = CP.words_after(text, reading.get('name'))\n"
+        "        if False:  # defect: the name is taken from the PM's reading, not his words\n",
+        ['AC1/name-from-command'],
+        also=[("                    or not CP.words_after(source['command']['text'], (params.get('document') or {})"
+               ".get('name'))[0]):\n",
+               "                    or False):  # defect: the name is taken from the PM's reading\n")])
+    for case in result:
+        if case['finding'] == 180:
+            case['siblings'] = True
+
     # VELDO-0179: the UI's conversation screens. Each mutant is one UI source module of engine/ui; suites 134 (AC1, AC2)
     # and 135 (AC3) build the UI with it laid over a scratch copy and run the browser tests against the conversation
     # harness. Each spec falsifier as one exact edit.
