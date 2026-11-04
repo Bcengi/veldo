@@ -33,10 +33,11 @@ def _v175_routes_suite():
         'control_conversation.py': ROOT / ".veldo" / "control_conversation.py",
         'control_conversation_channel.py': ROOT / ".veldo" / "control_conversation_channel.py",
         'control_workflow_cycle_pm.py': ROOT / ".veldo" / "control_workflow_cycle_pm.py",
+        'control_clone.py': ROOT / ".veldo" / "control_clone.py",
     }
     ROWS = ('AC2/new-conversation', 'AC2/open-conversation', 'AC2/project-routes', 'AC2/unclear-offers',
             'AC2/route-input', 'AC2/conversation-refused', 'AC2/observability',
-            'AC4/slash-role', 'AC4/slash-attach', 'AC4/slash-close', 'AC4/plain-words', 'AC4/plain-none-is-a-turn',
+            'AC4/slash-role', 'AC4/slash-attach', 'AC4/attach-initial-branch', 'AC4/slash-close', 'AC4/plain-words', 'AC4/plain-none-is-a-turn',
             'AC4/reads-only-his-words', 'AC4/other-member', 'AC4/no-reply', 'AC4/unknown-name', 'AC4/observability')
     rows = {name: [] for name in ROWS}
 
@@ -130,10 +131,16 @@ def _v175_routes_suite():
             # THE FACTORY PM's RUN, as suite 93 runs it: the factory pass, the PM's coordination dispatch on the
             # line's Runner, a fake Claude Code whose final message is the document this suite supplies.
             GP = load('v175p_git', mods / 'git_process.py')
+            # The project's branch has the name a fresh repository starts on (master here): the attach clone, a fresh
+            # repository, must still take it (VELDO-0177's clone, fixed in VELDO-0175).
+            fresh = base / 'fresh-init'
+            GP.run(['git', 'init', '-q', str(fresh)], check=True, capture_output=True)
+            initial = GP.run(['git', '-C', str(fresh), 'symbolic-ref', '--short', 'HEAD'], check=True,
+                             capture_output=True, text=True).stdout.strip()
             source = base / 'source'
             source.mkdir()
             (source / 'README').write_text('Fixture accepted source.\n')
-            for args in (('init', '-q', '-b', 'trunk'), ('add', 'README'), ('commit', '-qm', 'Fixture source')):
+            for args in (('init', '-q', '-b', initial), ('add', 'README'), ('commit', '-qm', 'Fixture source')):
                 GP.run(['git', '-C', str(source), *args], check=True, capture_output=True,
                        identity=('Fixture', 'fixture@example.invalid'))
             commit = GP.run(['git', '-C', str(source), 'rev-parse', 'HEAD'], check=True, capture_output=True,
@@ -377,6 +384,16 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                   attach.get('outcome') == 'command' and after.get('project') == 'bcengi' and clone
                   and Path(clone, 'README').is_file() and len(lines) == 1 and 'bcengi' in lines[0][1]
                   and lines[0][2] == attach_msg['message_id'])
+            cloned = GP.run(['git', '-C', str(clone), 'symbolic-ref', '--short', 'HEAD'], capture_output=True,
+                            text=True).stdout.strip() if clone else None
+            at = GP.run(['git', '-C', str(clone), 'rev-parse', 'HEAD'], capture_output=True,
+                        text=True).stdout.strip() if clone else None
+            print('  VELDO-0175 attach clone:', initial, cloned, at == commit)
+            check('AC4/attach-initial-branch', 'a project whose branch is named %r, the name a fresh repository '
+                  'starts on, clones cleanly on that branch at its commit [%s %s]' % (initial, cloned, attach.get('reason')),
+                  initial == 'master' and cloned == initial and at == commit
+                  and GP.run(['git', '-C', str(clone), 'status', '--porcelain'], capture_output=True,
+                             text=True).stdout == '')
 
             # AC4: anyone else's command is refused by name with one line and nothing changed. Telegram lets him
             # reply only in his own chat, so the message he replies to is a conversation note sent there.

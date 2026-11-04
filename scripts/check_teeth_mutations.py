@@ -12180,6 +12180,24 @@ def cases():
         "        if command['source_kind'] != 'telegram_message':\n",
         "        if True:  # defect: every reply to a conversation message is its next turn\n",
         ['AC4/slash-role'])
+    # Fix round 1: the UI's conversation field on the route, the owner's words to the engine, the service's
+    # Telegram feed to intake, and the attach clone of a branch named as a fresh repository's initial branch.
+    add(175, 'route175-field-dropped', replies175, 'control_api_assertion.py',
+        "        if p.get('conversation') is not None:\n",
+        "        if False:  # defect: the route's conversation field never reaches intake\n",
+        ['AC1/api-field'])
+    add(175, 'text175-command-id-only', replies175, 'control_service.py',
+        "                payload['message'] = message\n",
+        "                pass  # defect: the engine receives only the intake command id\n",
+        ['AC1/engine-text'])
+    add(175, 'feed175-not-handed', replies175, 'control_service.py',
+        "            self.channel.intake = self.telegram_intake\n",
+        "            pass  # defect: no production caller hands an acquired message to intake\n",
+        ['AC1/service-feed'])
+    add(175, 'clone175-into-initial-branch', routes175, 'control_clone.py',
+        "             '%s:%s' % (commit, held), code='stale_input:commit_unavailable')\n",
+        "             '%s:refs/heads/%s' % (commit, branch), code='stale_input:commit_unavailable')  # defect: into it\n",
+        ['AC4/attach-initial-branch'])
     # Registered after the dependency loop above: each module loads its organs beside itself by path (intake its
     # renderer, project and routes, as every intake case), so each mutant runs in a whole .veldo copy.
     for case in result:

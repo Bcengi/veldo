@@ -1726,6 +1726,9 @@ class Service:
         """One channel pass (control_service_channel.Channel.tick), logged when it did something or its
         outcome changed. A fault is an unknown outcome in the log, never the end of the service."""
         before = self.watermark()
+        if getattr(self.channel, 'intake', None) is None:
+            # VELDO-0175: the pass hands the Telegram messages it acquires to this service's intake.
+            self.channel.intake = self.telegram_intake
         try:
             summary = self.channel.tick()
         except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never success
@@ -3470,9 +3473,6 @@ def serve(config_path):
             # adoption could not reach a running service is taken on.
             service.take_on()
             service.channel, service.channel_refusal = CH.open_channel(config.get('channel_ingress'))
-            if service.channel is not None:
-                # VELDO-0175: the channel pass hands acquired Telegram messages to intake.
-                service.channel.intake = service.telegram_intake
             service.api, service.api_refusal = SA.open_api(config.get('api_service'), service.channel, lock,
                                                            os.path.dirname(config['observations']))
             authority = CC.Authority(config['store_uuid'], config['domain_uuid'], config['store_path'], E,

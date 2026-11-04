@@ -9,7 +9,12 @@ shapes), the production VELDO-0066 Acquirer and VELDO-0065 presentation edge, th
 its conversations (control_intake_conversation), API requests the API edge signs with its real key, VELDO-0174's
 conversation Line with real receiver subprocesses over fake pinned engines (support/v174_journey.py, the fake's
 reply from this suite's scenario), and the production delivery (control_conversation_channel.Replies, the channel's
-`replies`). The factory PM's route and reading are applied with the documents a PM run returns
+`replies`). The UI's message goes through the production HTTP route (control_api.ControlApi, messages.send, its
+signed assertion and control_api_assertion.domain_request) to a stand-in of the API authority that hands the derived
+request, signed by the API edge, to intake as ApiAuthority does (the passkey sign-in, credential store and edge
+signer are suite 71's). The running service's feed is the production control_service.Service (its channel_pass and
+telegram_intake) over the production control_service_channel.Channel pass and VELDO-0138's Ingress, with a gate
+stand-in that admits (activation is suite 64's) and a settlement stand-in that settles nothing. The factory PM's route and reading are applied with the documents a PM run returns
 (control_intake.route and read, as the PM cycle applies them); suite 132 runs the PM itself. No real Telegram
 service, token, engine, login or network beyond loopback. Writes only temporary fixtures.
 """
@@ -40,9 +45,12 @@ def _v175_replies_suite():
         'control_conversation.py': ROOT / ".veldo" / "control_conversation.py",
         'control_conversation_channel.py': ROOT / ".veldo" / "control_conversation_channel.py",
         'control_service_channel.py': ROOT / ".veldo" / "control_service_channel.py",
+        'control_service.py': ROOT / ".veldo" / "control_service.py",
+        'control_api.py': ROOT / ".veldo" / "control_api.py",
+        'control_api_assertion.py': ROOT / ".veldo" / "control_api_assertion.py",
     }
-    ROWS = ('AC1/reply-continues', 'AC1/api-field', 'AC1/foreign-refused', 'AC1/closed-refused', 'AC1/no-route',
-            'AC1/observability',
+    ROWS = ('AC1/reply-continues', 'AC1/api-field', 'AC1/api-route', 'AC1/engine-text', 'AC1/service-feed',
+            'AC1/foreign-refused', 'AC1/closed-refused', 'AC1/no-route', 'AC1/observability',
             'AC3/reply-kept', 'AC3/parts-sent', 'AC3/reply-to-the-last-part', 'AC3/status-line',
             'AC3/api-not-sent', 'AC3/channel-pass', 'AC3/observability')
     rows = {name: [] for name in ROWS}
@@ -175,6 +183,68 @@ else:
             return intake.receive('api_request', {'request': body,
                                                   'signature': authority.sign_as('api-edge', S.canonical_bytes(body))})
 
+        # The UI's route: the production ControlApi's messages.send, its assertion and domain request; the stand-in
+        # authority hands the derived request, signed by the API edge, to intake as ApiAuthority.apply does.
+        API = load('v175r_api', mods / 'control_api.py')
+        AS = API.AS
+        routed_requests = []
+
+        class RouteAuthority:
+            def inspect(self, identities):
+                found = {}
+                for identity in identities:
+                    if identity.startswith('api-credential:'):
+                        found[identity] = {'kind': 'api_credential', 'version': 1, 'data': {
+                            'credential_id': 'v175-passkey', 'principal': 'owner', 'effective_at': 0, 'revoked_at': None}}
+                    else:
+                        row = authority.conn.execute('SELECT kind, version, data FROM entities WHERE id=?',
+                                                     (identity,)).fetchone()
+                        if row:
+                            found[identity] = {'kind': row[0], 'version': row[1], 'data': json.loads(row[2])}
+                return {'entities': found}
+
+            def apply(self, packet):
+                a = packet['assertion']
+                problems = AS.shape_problems(a)
+                if problems:
+                    return {'ok': False, 'reason': 'invalid_input:assertion', 'taxonomy': 'invalid_input'}
+                derived = AS.domain_request(a)
+                routed_requests.append(derived)
+                done = intake.receive('api_request', {'request': derived, 'signature': authority.sign_as(
+                    'api-edge', S.canonical_bytes(derived))})
+                if done.get('outcome') == 'refused':
+                    return {'ok': False, 'reason': done.get('reason'), 'taxonomy': IN.taxonomy(done.get('reason'))}
+                return {'ok': True, 'result': done}
+
+        host = 'veldo.v175.test'
+        ui = API.ControlApi({'origin': 'https://' + host, 'rp_id': host, 'host': host,
+                             'domain': authority.ids['domain_uuid'], 'ids': authority.ids, 'edge': 'api-edge',
+                             'state_dir': str(f['root'] / 'api-state')}, RouteAuthority(),
+                            lambda assertion: ('edge-signature', 'domain-signature'))
+        ui_cookie, ui_session = ui.sessions.create('owner', 'v175-passkey')
+
+        def ui_post(text, conversation=None):
+            body = {'text': text}
+            if conversation is not None:
+                body['conversation'] = conversation
+            headers = {'Host': host, 'Origin': 'https://' + host, 'Sec-Fetch-Site': 'same-origin',
+                       'Content-Type': 'application/json', 'Cookie': '%s=%s' % (API.COOKIE, ui_cookie),
+                       API.TOKEN_HEADER: ui_session['token']}
+            status, _headers, value = ui.handle('POST', '/api/v1/domains/%s/messages' % authority.ids['domain_uuid'],
+                                                headers, json.dumps(body).encode())
+            return status, value, (routed_requests[-1] if routed_requests else {})
+
+        def engine_got(conversation, turn):
+            """The message the fake engine's input carried for one turn ('<absent>' when the payload had none)."""
+            for path in markers.glob('*.json'):
+                try:
+                    payload = (json.loads(path.read_text()).get('packet') or {}).get('payload') or {}
+                except (ValueError, AttributeError):
+                    continue
+                if payload.get('conversation') == conversation and payload.get('turn') == turn:
+                    return payload.get('message', '<absent>')
+            return None
+
         def sent_to(chat):
             """Every message the bot sent to `chat`, in order: (message id, text, reply to)."""
             return sorted([(m['message_id'], m['text'], (m.get('reply_to_message') or {}).get('message_id'))
@@ -293,19 +363,35 @@ else:
               nth(talk, 2).get('outcome') == 'completed' and len(after_two) == 4
               and after_two[3][2] == follow_update['message']['message_id'])
 
-        # AC1: an API message naming the conversation is its next turn at once.
-        posted = post('one more thing from the UI', conversation=talk)
+        # AC1: a UI message naming the conversation, through the HTTP route, is its next turn at once.
+        status, answered, derived = ui_post('one more thing from the UI', conversation=talk)
         turns = conversations.turns(talk)
         third = turns[2] if len(turns) > 2 else {}
-        check('AC1/api-field', 'a message with the conversation field becomes its next turn at intake [%s]'
-              % posted.get('outcome'), posted.get('outcome') == 'turn' and posted.get('sequence') == 3
-              and third.get('intake_command') == IN.source_key('api_request', 'v175-api-%d' % serial[0])
+        check('AC1/api-field', 'a UI message with the conversation field, sent through messages.send, becomes its '
+              'next turn at intake [%s %s]' % (status, answered), status == 200 and answered.get('outcome') == 'turn'
+              and derived.get('conversation') == talk and len(turns) == 3
+              and third.get('intake_command') == IN.source_key('api_request', derived.get('request_id'))
               and third.get('state') == 'waiting')
+        # The route without the field: the request (and its digest) is the one it was before the field existed.
+        before_route = len(proposals('AWAITING_ROUTE'))
+        status_plain, answered_plain, plain = ui_post('a new thing, no conversation')
+        legacy = {k: plain.get(k) for k in IN.API_FIELDS}
+        check('AC1/api-route', 'the route without the field derives exactly the request it derived before, with its '
+              'digest, and the message goes to the factory PM [%s %s]' % (status_plain, answered_plain),
+              status_plain == 200 and answered_plain.get('outcome') == 'inbox' and set(plain) == set(IN.API_FIELDS)
+              and S.digest_of(plain) == S.digest_of(legacy) and len(proposals('AWAITING_ROUTE')) == before_route + 1
+              and len(conversations.turns(talk)) == 3)
         settle(talk, 3)
         delivered_three = replies.deliver()
         check('AC3/api-not-sent', 'an API turn\'s reply is kept on its record and nothing is sent to Telegram',
               (nth(talk, 3).get('reply') or '').startswith('Turn 3 of') and delivered_three == []
               and len(sent_to(owner_chat)) == 4)
+        # The engine receives the owner's words: his Telegram follow-up (turn 2) and his UI message (turn 3).
+        got_two, got_three = engine_got(talk, 2), engine_got(talk, 3)
+        check('AC1/engine-text', 'the engine\'s input carries exactly the text he sent on Telegram [%r]' % (got_two,),
+              got_two == 'and what about the day before?')
+        check('AC1/engine-text', 'the engine\'s input carries exactly the text he sent from the UI [%r]' % (got_three,),
+              got_three == 'one more thing from the UI')
 
         # AC3: a reply to the last part of turn 1 continues the conversation too.
         last, _ = telegram(owner, 'thanks, go on', reply_to=parts_one[2][0] if len(parts_one) > 2 else None)
@@ -396,6 +482,63 @@ else:
               [p.get('outcome') for p in passed] == ['sent']
               and sent_to(owner_chat)[-1][2] == start_update['message']['message_id']
               and SC.Channel.replies(channel) == [])
+
+        # AC1 from the running service: his reply to the channel conversation's reply is acquired from the loopback
+        # Bot API by the service's channel pass and handed to intake there; no suite call takes it.
+        IG = load('v175r_ingress', mods / 'control_channel_ingress.py')
+        signers = f['root'] / 'enrollment-signers'
+        signers.write_text('')
+        service_config = {'domain_uuid': authority.ids['domain_uuid'], 'store_uuid': authority.ids['store_uuid'],
+                          'repositories': {}, 'principal': 'authority', 'authority_generation': 1,
+                          'enrollment_signers': str(signers), 'observations': str(f['root'] / 'observations.jsonl'),
+                          'journal_key': str(authority.keyfile['authority']), 'store_path': str(authority.db),
+                          'state_root': str(f['root'] / 'state')}
+        gate = SimpleNamespace(admit=lambda *a: None, current=lambda: None, exchanges=[])
+        ingress = IG.Ingress(gate, acquirer, SimpleNamespace(api_edge='api-edge', run=lambda: []),
+                             presenter=presenter, inbox=inbox, conn=authority.conn)
+
+        def running():
+            """A started authority service with its channel (control_service.serve's construction of both parts)."""
+            started = CS.Service(service_config, authority.conn)
+            channel_now = CS.CH.Channel.__new__(CS.CH.Channel)
+            channel_now.__dict__.update(clock=time.time, config={}, ingress=ingress, passes=0, last=None, run=None,
+                                        requests=[], reporter=None, replier=None, intake=None, requester=None)
+            started.channel = channel_now
+            return started
+
+        served = running()
+        on_channel = [m for m in sent_to(owner_chat) if m[2] == start_update['message']['message_id']]
+        channel_turns = len(conversations.turns('channel'))
+        reply_update = H.deliver(api, 'bot175', owner, 'and the channel follow-up', on_channel[-1][0] if on_channel else None)
+        first_pass = served.channel_pass()
+        fed = intake.proposal(next((r.get('proposal_id') for r in [intake.source('telegram_message', IN.telegram_source_id(
+            bot['id'], owner_chat, reply_update['message']['message_id']))] if r), None)) or {}
+        print('  VELDO-0175 service feed:', first_pass.get('taken'), fed.get('state'))
+        check('AC1/service-feed', 'the service\'s channel pass hands his reply to intake, bound to the conversation '
+              '[%s]' % first_pass.get('taken'), [t.get('outcome') for t in first_pass.get('taken') or []] == ['reading']
+              and (first_pass.get('taken') or [{}])[0].get('conversation') == 'channel'
+              and fed.get('conversation') == 'channel')
+        read_fed = none_reading(fed.get('proposal_id')) if fed.get('proposal_id') else {}
+        channel_now_turns = conversations.turns('channel')
+        check('AC1/service-feed', 'it is the conversation\'s next turn, made from his message as he wrote it',
+              read_fed.get('outcome') == 'turn' and len(channel_now_turns) == channel_turns + 1
+              and (intake._data(channel_now_turns[-1].get('intake_command'), IN.SOURCE_KIND) or {}).get('text')
+              == 'and the channel follow-up')
+        again_pass = served.channel_pass()
+        restarted = running()
+        restart_pass = restarted.channel_pass()
+        check('AC1/service-feed', 'a later pass and a restarted service\'s first pass take nothing again '
+              '[%s %s]' % (again_pass.get('taken'), restart_pass.get('taken')),
+              again_pass.get('taken') == [] and restart_pass.get('taken') == []
+              and len(conversations.turns('channel')) == channel_turns + 1)
+        # A message acquired by a pass that ended before intake took it is taken by the next service's first pass.
+        H.deliver(api, 'bot175', owner, 'and one more, acquired before a restart',
+                  on_channel[-1][0] if on_channel else None)
+        acquirer.acquire()
+        caught = running().channel_pass()
+        check('AC1/service-feed', 'a message acquired before a restart is taken once by the restarted service '
+              '[%s]' % caught.get('taken'), [t.get('outcome') for t in caught.get('taken') or []] == ['reading']
+              and (caught.get('taken') or [{}])[0].get('conversation') == 'channel')
 
         # Observability: how each message was decided and each part sent, with ids, never text.
         events = intake.observations
