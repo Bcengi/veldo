@@ -89,3 +89,77 @@ Open, attributed and not fixed:
   (offline, empty profiles, loopback). Its result differs with identical code (green on main, red at the
   spec-only 8da5d061), and another session was upgrading those binaries meanwhile. I ran it during the sweep and
   bisect and did not run it again. Left for the lead.
+
+# Round 2 (the two items left open above, by the lead's rulings)
+
+Every suite run below is `python3 scripts/selftest.py --suite <name>` alone; every mutation case is
+`python3 scripts/check_gate_mutations.py --case <name>` alone (the gate's driver, so suites on
+gate_unconfined.json run in its unconfined leg), each under `systemd-run --user --scope -p MemoryMax=10G
+-p MemorySwapMax=0`. scripts/verify.sh and suite 126 were not run. No requirement was added.
+
+## 1. 82_veldo_0172_live_formats fake/census
+
+Suites 129_0177 and 130_0183 build their fakes through VELDO-0171's installed-host fixture, as 106 does. Each
+fake is now built with fake_formats.embed and prints each CLI's stream (initialize answer, init, assistant,
+result; thread, turn, agent message, turn completed) only when called with the read-back's fixture argument
+(`--veldo-0172-format-readback`, passed by the suite's own `readback_args`). Every other call behaves as
+before: login status as before, 130's extraction as before, anything else still exits 2, so "setup launches
+no run" is as strict as it was. Each teardown calls compare_formats.conform_fake(locals(), '<short name>')
+in a `finally` over the installed fake (h['engines186']['fake']), keeps a `format/fake-lines` row and reports
+`VELDO-0172 fake/capture:<short name>` (4173f6b0, e71321cb).
+
+Suite 132_0175 drives its PM run on a Claude Code fake of its own, as suite 93 does. The fake now requires the
+initialize request (as 93's does), and the suite's outer `finally` reads it back with conform_fake before the
+fake's directory is removed (Claude Code only: the suite builds no Codex executable, so `fake_engine('codex')`
+gives none), with the same two rows (660e34e5).
+
+82_0172: 4 passed, census 23 suites, no problem. 129: 6 passed; 130_0183: 19 passed; 132: 21 passed.
+
+## 2. 84_veldo_0169_project_handouts census/writers
+
+The lead's ruling, as built (9c91ef66):
+
+- The census reads a `transition` reached through a binding of control_conversation (`CV = _organ(...)`,
+  resolved from the syntax tree) as that organ's. The organ now declares PROJECT_OPERATIONS = (ATTACH, POINT).
+- Project handouts. Attach (clones a project) and VELDO-0180's pointing (moves work into a project) now ask the
+  Gate's one project check: control_eligibility.Gate.project_named_problems, the same _project_problems for
+  a project named directly, through control_conversation.project_problems, inside the organ's write
+  transaction after the owner's authority. A new project's conversion must find exactly that the project is
+  not in the store yet (else stale_subject:project_exists). Intake's conversion plan
+  (Conversing._point_plan, moved from Routes._point_conversation so the census can resolve its CV) asks the
+  check first and refuses an existing project that fails it. The census requires the check before every
+  organ return a project operation reaches and before every project-operation call or parameters build
+  outside the organ.
+- Conversation-scoped. A call or registration whose operations are all other organ operations is classified
+  conversation-scoped, citing VELDO-0174 and VELDO-0181. It is not an unchecked exemption: the census verifies
+  that `_member` (VELDO-0174's owner and service gate) runs before every organ return an owner operation
+  reaches, and an unresolved operation is refused. A registration counts only under the organ's own OPERATION
+  and is classified by the builds of the class or function that registers it.
+- Memory and host. control_memory_kb.call looks up only FUNCTIONS (a fixed table of the kb functions, refusing
+  any other name), and servers_main reads only KB_INPUTS (refusing a TOOLS field outside it). Their getattr
+  calls now resolve and are recorded memory-scoped and host-scoped with the reason. The census's
+  NON_PROJECT_SCOPES table only labels resolved accesses, and an entry with no resolved access is refused as
+  stale.
+- Rows: census/writers now finds each class (the two handouts at the organ, intake's pointing handout, four
+  conversation-scoped writers, the memory and host records) and checks that every conversation writer is
+  classified. census/planted adds eight falsifiers: the pointing without the check (intake and organ), an
+  attach without it, the owner gate dropped, an unresolved operation, a POINT build beside a registration, a
+  registration under another key, and kb's free getattr. Each is refused at its own site.
+
+84_0169: 27 passed (census: 7 handouts, 4 conversation-scoped, 1 memory, 1 host, no failure).
+
+## 3. Reruns
+
+Suites, each alone, all green: 82_0172 4, 84_0169 27, 106 20, 123 38, 128 15, 129 6, 130_0176 17,
+130_0183 19, 131_0175 16, 131_0184 16, 132 21, 133 16, 136 21, 137 19, 138 13, 68_0126 18, 68_0134 27,
+68_0136 7, 68_0137 2. Also, for the modules changed: 86_0189 34, 93_0152 24, 71_0076 32, 60_0052 54,
+83_0154 14, 50 4, 51 25, 52 12, 86_0168 26, 125 7, 53_0123 14.
+
+Mutation cases, each alone through the gate's driver, all `passed` (baseline and no-op green, mutant
+rejected): 0175 9/9, 0177 7/7, 0180 4/4, 0181 6/6, 0183 7/7, 0187 3/3. Also, because their suites or modules
+changed: 0169 22/22, 0172 9/9, 0174 8/8. Note: check_teeth_mutations.py run directly gives
+`invalid_baseline` for the 0187 cases, because it confines suite 138, which is on gate_unconfined.json. Through
+check_gate_mutations.py they pass. One batch was moved to the background by the harness at its 600 s limit
+and stopped at once. The case it was running (setup183-no-servers-step) was rerun alone and passed.
+
+Open: nothing from these two items. 126 remains with the lead.
