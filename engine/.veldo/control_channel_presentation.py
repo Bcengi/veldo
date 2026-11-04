@@ -78,6 +78,21 @@ import urllib.error
 import urllib.request
 
 
+def _decisions():
+    """VELDO-0181: the conversation decisions organ, loaded beside this module on first use."""
+    global _DECISIONS
+    if _DECISIONS is None:
+        spec = importlib.util.spec_from_file_location('presentation_conversation_decisions',
+                                                      Path(__file__).with_name('control_conversation_decisions.py'))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _DECISIONS = module
+    return _DECISIONS
+
+
+_DECISIONS = None
+
+
 def _renderer_module(name):
     spec = importlib.util.spec_from_file_location(name, Path(__file__).with_name(name + '.py'))
     module = importlib.util.module_from_spec(spec)
@@ -172,7 +187,12 @@ REFUSALS = {'unknown_renderer_version': 'missing_evidence', 'invalid_input': 'in
 # The one place an offered choice becomes a ruling of authority_contract.RULINGS (and the one
 # acknowledgement word); a decision whose choices do not all map here is not presented.
 CHOICE_RULINGS = {'accept': 'approve', 'approve': 'approve', 'reject': 'reject',
-                  'return_for_elaboration': 'return_for_elaboration', 'acknowledged': 'acknowledged'}
+                  'return_for_elaboration': 'return_for_elaboration', 'acknowledged': 'acknowledged',
+                  # VELDO-0181: the choices of the questions a conversation raises (control_conversation_decisions):
+                  # re-run or stop a turn stopped at its account limit, move or wait when its engine is at its limit.
+                  'rerun': 'approve', 'stop': 'reject', 'move': 'approve', 'wait': 'reject'}
+# VELDO-0181: a question a conversation raises is a request at the conversation's decision coordinate.
+CONVERSATION_REQUEST = 'assignment:conversation:'
 # A pick (VELDO-0143 round 7): an approving choice that also names what the owner picks, `accept` and one or
 # more values, each a word of letters, digits, '_', '.' or '-' (a configured identity, a visibility), separated by
 # one space. Its ruling is approve; the requester reads what each value binds from the recorded choice.
@@ -831,7 +851,7 @@ class Presenter:
         """(refusal, bindings, versions): what a presentation of `request` must bind now, from
         current authority only: the pending assignment, its framing at this request version, the
         owner's membership and the owner's enrolled chat."""
-        brief = self.inbox.brief(request)
+        brief = self.inbox_of(request).brief(request)
         if not brief.get('valid') or brief.get('category') != 'pending':
             return 'stale_subject', None, {}
         c = brief['content']
@@ -910,12 +930,12 @@ class Presenter:
         if (not isinstance(command, dict) or not isinstance(signature, str) or not signature.isascii()
                 or principal != content['requested_by'] or command.get('principal') != principal
                 or command.get('operation') != 'frame' or not _is_str(command.get('alias'))
-                or self.inbox_request(command['alias']) != request
+                or self.inbox_request(command['alias'], request) != request
                 or command.get('request_version') != data.get('request_version')
                 or (command.get('risk_statement', '') if data.get('renderer_version') == TEXT.VERSION
                     else _words(command.get('risk_statement', ''))) != data.get('risk_statement')
                 or command.get('command_id') != data.get('command_id')
-                or any(command.get(k) != v for k, v in self.ids.items())
+                or any(command.get(k) != v for k, v in self.coordinates(request).items())
                 or not isinstance(data.get('expected_versions'), dict)):
             return False
         written = None
@@ -1041,8 +1061,25 @@ class Presenter:
             return self._observe('frame', request, {}, 'refused', 'unavailable_service')
         return self._observe('frame', request, versions, 'accepted', None)
 
-    def inbox_request(self, alias):
-        return 'assignment:%s:%s' % (self.ids['repository_uuid'], alias)
+    def inbox_request(self, alias, request=None):
+        """The request `alias` names at this presenter's coordinate, or at the coordinate of `request` when it is a
+        question a conversation raised (VELDO-0181)."""
+        return 'assignment:%s:%s' % (self.coordinates(request)['repository_uuid'], alias)
+
+    def inbox_of(self, request):
+        """The inbox that reads `request`: this presenter's, or a conversation's decision coordinate's (VELDO-0181)."""
+        if isinstance(request, str) and request.startswith(CONVERSATION_REQUEST):
+            return _decisions().inbox_for(self.inbox, request)
+        return self.inbox
+
+    def coordinates(self, request=None):
+        """The authority coordinates a request was opened at: this presenter's, or for a question a conversation raised
+        (VELDO-0181) its conversation's decision coordinate in the same domain and store."""
+        if isinstance(request, str) and request.startswith(CONVERSATION_REQUEST):
+            where = _decisions().coordinate_of(request)
+            if where is not None:
+                return dict(self.ids, repository_uuid=where)
+        return dict(self.ids)
 
     # publication
 
@@ -1204,8 +1241,20 @@ class Presenter:
 
     def publish(self):
         """Present every pending inbox entry whose current presentation is not the one current
-        authority requires; return one result per pending entry."""
-        return [self.present(e['id']) for e in self.inbox.index()['entries'] if e['category'] == 'pending']
+        authority requires; return one result per pending entry. VELDO-0181: every pending question a
+        conversation raised is presented too, and once published it is kept in its conversation."""
+        results = [self.present(e['id']) for e in self.inbox.index()['entries'] if e['category'] == 'pending']
+        if self.ids['repository_uuid'].startswith('conversation:'):
+            return results
+        CD = _decisions()
+        for request in CD.pending(self.conn, self.inbox):
+            results.append(self.present(request))
+            try:
+                CD.presented(self, request, observe=self.observations.append)
+            except Exception as error:  # noqa: BLE001 - the presentation stands; the trace is named and retried
+                self.observations.append({'operation': 'conversation_decision', 'request_id': request,
+                                          'outcome': 'refused', 'reason': getattr(error, 'code', type(error).__name__)})
+        return results
 
     # answers
 
