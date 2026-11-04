@@ -17,7 +17,9 @@ unclear, intake opens its question through `open_question` at the message's own 
 (`conversation:route:<proposal>`, `route_identity`), the choices `route_choices` offers (each a pick: a project, a
 new project, a new conversation, one of his open conversations), and presents it at once; its reply is settlement's,
 never intake's and never a turn (a reply that is exactly one choice's short form, `route_short`, answers it with no
-reason typed, as he answered it before; one two choices share is refused ambiguous_choice), and intake applies the settled choice (`ruling`) to the proposal as his reply answer
+reason typed, as he answered it before; one two choices share is refused ambiguous_choice; any other reply settles it
+once as before VELDO-0181: as the project a ticket key in it decides, `route_keyed`, or else as `CLARIFY`, a
+clarification carrying his words), and intake applies the settled choice (`ruling`) to the proposal as his reply answer
 was applied before: a project resolves it, anything else clarifies it for the PM (control_intake.route_answers).
 
 A PRESENTATION IN A CONVERSATION IS NOT ONE OF ITS TURNS. Once a conversation request is published, `presented` keeps
@@ -72,6 +74,8 @@ RISK = {
 }
 # The unclear route question's decision coordinate is the message's own, beside the conversations'.
 ROUTE_PREFIX = 'route:'
+# The unclear route question's choice a reply naming no option settles as: a clarification carrying his words.
+CLARIFY = 'accept clarification'
 OWNER_REFUSAL = 'missing_authority:conversation_owner'
 OUTPUT_REFUSAL = 'invalid_input:turn_output:authority'
 SENT_KIND = 'decision'
@@ -125,6 +129,8 @@ def route_choices(projects, conversations):
         found['accept conversation ' + entry['id']] = {
             'route': 'open_conversation', 'conversation': entry['id'],
             'label': 'conversation %s%s' % (entry['id'], ' (%s)' % entry['opening'] if entry.get('opening') else '')}
+    # A reply naming no option clarifies the message for the PM in his own words, as a clarifying reply did.
+    found[CLARIFY] = {'route': 'clarification', 'label': 'your own words for the factory PM'}
     return found
 
 
@@ -141,6 +147,23 @@ def route_shorts(typed, choices, fold):
     """The offered unclear route choices whose short form `typed` is, folded as the presenter folds a choice (`fold`):
     one is his answer, two or more are ambiguous."""
     return [c for c in choices if route_short(c) is not None and fold(route_short(c)) == fold(typed)]
+
+
+def route_keyed(conn, text, choices):
+    """The offered project choice a ticket key in his reply decides (VELDO-0152's rule: the key's prefix listed by
+    exactly one of the offered projects, control_intake.keyed_projects over each project record's prefixes), as a
+    one-element list; [] when no key decides exactly one project."""
+    if not isinstance(text, str):
+        return []
+    IN = _organ('control_intake')
+    lead = 'accept project '
+    names = [c[len(lead):] for c in choices if isinstance(c, str) and c.startswith(lead)]
+    prefixes = {}
+    for name in names:
+        row = conn.execute('SELECT kind, data FROM entities WHERE id=?', (IN.PJ.project_id(name),)).fetchone()
+        prefixes[name] = IN.PJ.ticket_key_prefixes(json.loads(row[1])) if row and row[0] == IN.PJ.KIND else []
+    named, _shared = IN.keyed_projects(text, names, prefixes)
+    return [lead + named[0]] if len(named) == 1 else []
 
 
 def is_request(request):

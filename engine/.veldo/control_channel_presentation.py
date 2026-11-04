@@ -1277,6 +1277,14 @@ class Presenter:
             short = self._route_shorts(receipt, typed)
             if len(short) == 1:
                 choice, rationale = short[0], rationale if _words(rationale) else typed
+            elif not short and self._is_route(receipt):
+                # Any other reply still answers it once, as before it was a request: the project a ticket key in it
+                # decides (VELDO-0152), else a clarification for the PM; either way his whole reply is the reason.
+                CD = _decisions()
+                keyed = CD.route_keyed(self.conn, message.get('text'), receipt['choices'])
+                fallback = [CD.CLARIFY] if CD.CLARIFY in receipt['choices'] else []
+                if keyed or fallback:
+                    choice, rationale = (keyed or fallback)[0], message.get('text') or ''
         choice = typed.strip() if choice is None else choice
         return dict(self.ids, schema=ANSWER_SCHEMA, channel=CHANNEL,
                     assertion_kind=self.assignment.KINDS.get(receipt['request']['kind']),
@@ -1293,10 +1301,14 @@ class Presenter:
     def _route_shorts(self, receipt, typed):
         """The unclear route choices whose short form `typed` is (control_conversation_decisions.route_shorts);
         none for any other request."""
-        CD = _decisions()
-        if not _is_str(typed) or CD.kind_of(self.conn, receipt['request_id']) != CD.ROUTE:
+        if not _is_str(typed) or not self._is_route(receipt):
             return []
-        return CD.route_shorts(typed, receipt['choices'], _fold)
+        return _decisions().route_shorts(typed, receipt['choices'], _fold)
+
+    def _is_route(self, receipt):
+        """Whether the presented request is an unclear route question (VELDO-0181)."""
+        CD = _decisions()
+        return CD.kind_of(self.conn, receipt['request_id']) == CD.ROUTE
 
     @staticmethod
     def _how(receipt, what):

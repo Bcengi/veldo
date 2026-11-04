@@ -26,7 +26,9 @@ requester's signed terms and framing (control_conversation_decisions.open_questi
 presented at once on the chat he wrote from; it is in the decisions screen with every other request. His reply to that
 presentation, or his inline answer in the UI, settles it once; `route_answers` then applies the settled choice through
 this same command, as his reply answer was applied before: a project resolves the proposal to that project's
-objective, any other choice clarifies it and returns it to the PM. A reply to the presentation is settlement's, so it
+objective, any other choice clarifies it and returns it to the PM. A reply matching no option still answers it once,
+as before: a ticket key whose prefix decides a project picks that project, anything else is a clarification carrying
+his words. A reply to the presentation is settlement's, so it
 is never intake's message and never a conversation's turn. An API message's question is answered in its response, as
 before.
 """
@@ -132,7 +134,8 @@ class Routes:
                    'budget': {'invocations': 1},
                    'brief': 'Which project is this for? Pick a project, or talk it over in a conversation. '
                             + '; '.join(lines) + '. Reply with just a project\'s name, new project, new conversation '
-                            'or a conversation id, or with a choice and your reason.',
+                            'or a conversation id, or with a choice and your reason; any other reply tells the factory '
+                            'PM more in your own words.',
                    'choices': list(question['choices']),
                    'subject': {'kind': CD.ROUTE, 'ref': qid, 'digest': 'sha256:' + hashlib.sha256(json.dumps(
                        question, sort_keys=True, separators=(',', ':')).encode()).hexdigest()}}
@@ -216,7 +219,9 @@ class Routes:
         sid = settled.get('settlement_id')
         record = (self._entity(sid) or {}).get('data') or {}
         reads = [qid, pid, request, sid, data['principal']]
-        text = '%s: %s' % (option['label'], record.get('rationale'))
+        # A clarification is his own words, as a clarifying reply was; any other choice names what he picked.
+        text = (record.get('rationale') if option.get('route') == 'clarification'
+                else '%s: %s' % (option['label'], record.get('rationale')))
         data['clarifications'] = list(data.get('clarifications') or []) + [{'source': sid, 'text': text}]
         changes = {}
         project = option.get('project')
