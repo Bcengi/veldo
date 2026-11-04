@@ -1,0 +1,46 @@
+Fix round 3: suites run alone at 77661c64 (python3 scripts/selftest.py with the suite option, each in a systemd-run scope); exit 2 is the PARTIAL run's own code.
+
+  130_veldo_0183_memory_servers                   17 passed   28.45s
+selftest (PARTIAL, 1 of 192 suites): 43 passed, 0 failed in 28.45s
+  128_veldo_0177_conversation_workspace           15 passed    3.98s
+selftest (PARTIAL, 1 of 192 suites): 41 passed, 0 failed in 3.98s
+  129_veldo_0177_assistant_setup                   4 passed    5.04s
+selftest (PARTIAL, 1 of 192 suites): 30 passed, 0 failed in 5.04s
+  123_veldo_0174_conversations                    38 passed   10.78s
+selftest (PARTIAL, 1 of 192 suites): 64 passed, 0 failed in 10.78s
+  127_veldo_0231_run_flags                        17 passed   34.15s
+selftest (PARTIAL, 1 of 192 suites): 43 passed, 0 failed in 34.15s
+  105_veldo_0182_memory                          127 passed   83.89s
+selftest (PARTIAL, 1 of 192 suites): 153 passed, 0 failed in 83.89s
+
+Suite 130's own lines (the setup row and its rerun):
+  VELDO-0183 setup: 0 set_up None
+  VELDO-0183 setup with memory: 0 set_up None
+  VELDO-0183 setup rerun: 0 already_set_up already_done 38 38
+
+Fix round 2: suite 130 run alone at 59af0aa5 (python3 scripts/selftest.py with the suite option); exit 2 is the
+PARTIAL run's own code. Its red run before the fix is in round2-real-layout.txt. The other suites below are fix round
+1's; round 2 changed only control_memory_kb, the fixture kb package and suite 130.
+
+  130_veldo_0183_memory_servers                   17 passed   27.95s
+selftest (PARTIAL, 1 of 192 suites): 43 passed, 0 failed in 27.95s
+
+Fix round 1: suites run alone at 46f88f3d (python3 scripts/selftest.py with the suite option, each in a systemd-run scope); exit 2 is the PARTIAL run's own code.
+
+  130_veldo_0183_memory_servers                   17 passed   28.39s
+selftest (PARTIAL, 1 of 192 suites): 43 passed, 0 failed in 28.39s
+  128_veldo_0177_conversation_workspace           15 passed    3.27s
+selftest (PARTIAL, 1 of 192 suites): 41 passed, 0 failed in 3.27s
+  129_veldo_0177_assistant_setup                   4 passed    4.36s
+selftest (PARTIAL, 1 of 192 suites): 30 passed, 0 failed in 4.36s
+  123_veldo_0174_conversations                    38 passed   11.98s
+selftest (PARTIAL, 1 of 192 suites): 64 passed, 0 failed in 11.98s
+  127_veldo_0231_run_flags                        17 passed   34.10s
+selftest (PARTIAL, 1 of 192 suites): 43 passed, 0 failed in 34.10s
+  105_veldo_0182_memory                          127 passed   86.66s
+selftest (PARTIAL, 1 of 192 suites): 153 passed, 0 failed in 86.66s
+
+Suite 130's own lines (the setup row and its rerun):
+  VELDO-0183 setup: 0 set_up None
+  VELDO-0183 setup with memory: 0 set_up None
+  VELDO-0183 setup rerun: 0 already_set_up already_done 38 38

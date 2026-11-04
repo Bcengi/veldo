@@ -12397,6 +12397,64 @@ def cases():
             case['siblings'] = True
             if case['module'] == 'control_intake.py':
                 case['companions'] = list(RENDERER_COMPANIONS) + ['control_project.py', 'control_intake_routes.py']
+    # VELDO-0183: the owner's memory servers as catalog servers over one store; each spec falsifier as one exact edit,
+    # and the guard the one-opener claim implies.
+    suite183 = '130_veldo_0183_memory_servers.py'
+    add(183, 'roles183-no-claude-mem', suite183, 'control_memory_servers.py',
+        "            for server, _ in SERVERS]\n",
+        "            for server, _ in SERVERS if server != 'claude-mem']  # defect: the roles lack claude-mem\n",
+        ['AC1/init'])
+    add(183, 'catalog183-paid-api-accepted', suite183, 'control_mcp_catalog.py',
+        "    return next((name for name in named if name in paid), None)\n",
+        "    return None  # defect: a paid-API key is accepted as a server's credential\n", ['AC2/paid-api'])
+    add(183, 'servers183-ava-opens-store', suite183, 'control_memory_servers.py',
+        "        found[server] = base\n",
+        "        if server == 'ava-memory':  # defect: mcp_server.py opens the store itself, as .mcp.json does today\n"
+        "            base.update(command=parts[part]['interpreter'],\n"
+        "                        arguments=[str(Path(parts[part]['code']) / 'mcp_server.py')])\n"
+        "        found[server] = base\n", ['AC4/one-opener'])
+    add(183, 'servers183-check-opens-store', suite183, 'control_memory_servers.py',
+        "        result = CHECK.check(root, definition, part, phase, Served(root) if served else None)\n",
+        "        result = CHECK.check(root, definition, part, phase, None)  # defect: the check opens a served store itself\n",
+        ['AC4/one-opener'])
+    add(183, 'store183-open-unchecked', suite183, 'control_memory_store.py',
+        "    others = holders(data, {os.getpid()})\n",
+        "    others = set()  # defect: a store another process holds open is opened anyway\n", ['AC4/open-refused'])
+    add(183, 'kb183-guessed-name', suite183, 'control_memory_kb.py',
+        "    'stats': ('kb.store', 'get_stats', {}, []),\n",
+        "    'stats': ('kb.store', 'stats', {}, []),  # defect: a name memory_kb's cli.py does not call\n",
+        ['AC1/real-layout'])
+    add(183, 'setup183-no-servers-step', suite183, 'control_factory_setup.py',
+        "    if memory_plan is not None and dispatch is not None:\n        with step('memory_servers'):\n",
+        "    if False:  # defect: setup leaves the servers step to a separate command\n        with step('memory_servers'):\n",
+        ['AC1/setup-step'])
+
+    # VELDO-0184: the file memory handed to every run whose role lists it; each spec falsifier as one exact edit, and
+    # the guards the claims imply.
+    suite184 = '131_veldo_0184_file_memory.py'
+    add(184, 'memory184-directory-unset', suite184, 'control_engine_claude.py',
+        "    settings[FILE_MEMORY['settings']['directory']] = handed['directory']\n",
+        "    pass  # defect: autoMemoryDirectory left unset\n", ['AC1/memory-path'])
+    add(184, 'memory184-no-writable-root', suite184, 'control_engine_codex.py',
+        "    configuration['sandbox_workspace_write'] = sandbox\n",
+        "    pass  # defect: the index handed in the instructions without the writable root\n", ['AC2/write'])
+    add(184, 'memory184-no-index-digest', suite184, 'control_memory_file.py',
+        "    return {LAUNCH_LINE: {'directory': handoff['directory'], 'form': form, 'index': INDEX, 'index_digest': digest,\n",
+        "    return {LAUNCH_LINE: {'directory': handoff['directory'], 'form': form, 'index': INDEX,  # defect: no digest\n",
+        ['AC3/loaded-at-launch'])
+    add(184, 'memory184-paths-unchecked', suite184, 'control_engine_claude.py',
+        "            if self.memory is not None and self.stop is None:\n",
+        "            if False:  # defect: the init event's memory paths are not checked\n", ['AC1/mismatch-stop'])
+    add(184, 'memory184-form-unqualified', suite184, 'control_engine_claude.py',
+        "    if entry.get('file_memory') != FILE_MEMORY or BASELINE['settings_option'] != FILE_MEMORY['settings_option']:\n",
+        "    if False:  # defect: a version without the qualified form launches a run that lists the item\n",
+        ['AC1/qualified'])
+    add(184, 'memory184-codex-memories-on', suite184, 'control_engine_codex.py',
+        "    configuration.update(FILE_MEMORY['configuration'])\n",
+        "    pass  # defect: Codex's own memory feature left as the profile has it\n", ['AC2/configuration'])
+    add(184, 'memory184-absent-unnamed', suite184, 'control_launch.py',
+        "        if not refusal or refusal.startswith('invalid_input:memory:file_memory:'):\n",
+        "        if not refusal:  # defect: a missing directory is refused under another name\n", ['AC1/absent'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

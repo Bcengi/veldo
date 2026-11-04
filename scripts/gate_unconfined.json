@@ -55,6 +55,7 @@
     {"suite": "134_veldo_0179_conversation_screens", "reason": "system Chrome and the npm registry: the conversation screens are built from the UI's locked dependencies (npm ci needs the registry and the network) and driven in a real browser (Playwright, /opt/google/chrome) against the conversation harness"},
     {"suite": "135_veldo_0179_conversation_layout", "reason": "system Chrome and the npm registry: the conversation screens are built from the UI's locked dependencies (npm ci needs the registry and the network) and driven in a real browser (Playwright, /opt/google/chrome) at four widths against the conversation harness"},
     {"suite": "128_veldo_0177_conversation_workspace", "reason": "systemd user manager: each conversation turn runs contained in its own transient scope under the run's own slice"},
-    {"suite": "129_veldo_0177_assistant_setup", "reason": "systemd user manager: factory setup installs and starts user services on this host (VELDO-0171's fixture)"}
+    {"suite": "129_veldo_0177_assistant_setup", "reason": "systemd user manager: factory setup installs and starts user services on this host (VELDO-0171's fixture)"},
+    {"suite": "130_veldo_0183_memory_servers", "reason": "systemd user manager: factory setup installs and starts user services on this host (VELDO-0171's fixture), and the memory store servers as user units"}
   ]
 }

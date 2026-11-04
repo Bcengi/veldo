@@ -1,0 +1,15 @@
+Fix round 2: row AC1/real-layout red at 971bb78c (fixture kb with the real signatures, the extended row, control_memory_kb unchanged from 3207103e), then green at 59af0aa5 (control_memory_kb's inputs and calls are cli.py's).
+Each run: python3 scripts/selftest.py with the suite option naming 130_veldo_0183_memory_servers, alone; exit 1 red, exit 2 (the PARTIAL run's own code) green.
+
+== red at 971bb78c
+  selector    --suite 130_veldo_0183_memory_servers
+  running     1 of 192 suites: 130_veldo_0183_memory_servers
+  VELDO-0183 detail: AC1/real-layout each memory-kb tool calls its function as memory_kb's cli.py does, every argument bound by name to the real signature [wrong: [('search', {'query': 'q', 'collection': 'files', 'n': 3, 'classifications': 'BP,personal'}, "KeyError: 'unknown input: classifications, n'"), ('search', {'query': 'q'}, [['kb.store.search_all', {'query': 'q'}]]), ('search', {'query': 'q', 'n': 2, 'classifications': 'BP'}, "KeyError: 'unknown input: classifications, n'"), ('index-file', {'path': '/x/a.md', 'classification': 'personal'}, "KeyError: 'unknown input: classification'"), ('index-file', {'path': '/x/a.md'}, [['kb.indexers.file.index_file', {'file_path': '/x/a.md'}]]), ('index-dir', {'path': '/x', 'pattern': '*.txt'}, "KeyError: 'unknown input: pattern'"), ('index-dir', {'path': '/x'}, [['kb.indexers.file.index_directory', {'dir_path': '/x'}]]), ('index-telegram', {'message': 'm'}, 'ValueError: missing input: chat_id'), ('list', {'collection': 'files'}, [['kb.store.list_documents', {'collection': 'files'}]])]]; each memory-kb tool's input is the cli's arguments for its subcommand [{'search': [{'query': 'string', 'collection': 'string', 'n_results': 'integer'}, ['query']], 'index-file': [{'path': 'string', 'collection': 'string'}, ['path']], 'index-dir': [{'path': 'string', 'collection': 'string'}, ['path']], 'index-telegram': [{'message': 'string', 'chat_id': 'string', 'classification': 'string'}, ['message', 'chat_id']], 'stats': [{}, []], 'list': [{'collection': 'string', 'limit': 'integer'}, ['collection']], 'delete': [{'collection': 'string', 'doc_id': 'string'}, ['collection', 'doc_id']], 'clear': [{'collection': 'string'}, ['collection']]}]
+  SELFTEST FAIL: VELDO-0183 AC1/real-layout
+  SELFTEST FAIL: VELDO-0183 AC2/tools-work
+  130_veldo_0183_memory_servers                   15 passed   28.92s
+selftest (PARTIAL, 1 of 192 suites): 41 passed, 2 failed in 28.92s
+
+== green at 59af0aa5
+  130_veldo_0183_memory_servers                   17 passed   27.95s
+selftest (PARTIAL, 1 of 192 suites): 43 passed, 0 failed in 27.95s

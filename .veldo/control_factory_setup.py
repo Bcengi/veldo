@@ -712,6 +712,9 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     with step('tailscale_serve'):
         if transport['serve'] == 'free':
             _api(lambda: API.serve(cli, transport['name'], port))
+    if memory_plan is not None and dispatch is not None:
+        with step('memory_servers'):
+            details['memory_servers'] = memory_servers(plan, runner)
     return {'schema': SCHEMA, 'outcome': 'set_up', 'state_root': root, 'store': plan['store'], 'authority_ids': ids,
             'owner': owner, 'owner_key_digest': 'sha256:' + __import__('hashlib').sha256(owner_public.encode()).hexdigest(),
             'genesis': {'command_id': genesis.get('command_id'), 'principal': genesis.get('principal'),
@@ -989,6 +992,15 @@ def _api(call):
         if type(exc).__name__ == 'Refused' and isinstance(getattr(exc, 'code', None), str):
             raise Refused(exc.code, getattr(exc, 'detail', '')) from None
         raise
+
+
+def memory_servers(plan, runner):
+    """VELDO-0183: the memory servers step (`veldo memory servers`) at the end of setup and its rerun, when a
+    memory plan and a dispatch plan both exist: the four catalog records, the assistant roles' selections, the
+    store servers and the assistant's entries. Idempotent; its report without the step's own events."""
+    report = _memory(lambda: organ('control_memory_servers').setup_servers(
+        plan['root'], plan['owner_key'], runner=runner, unit_dir=plan['unit_dir'], install_root=plan['install_root']))
+    return {k: v for k, v in report.items() if k != 'events'}
 
 
 def _memory(call):
@@ -1492,6 +1504,11 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     finally:
         if lock is not None and lock != -1:
             os.close(lock)
+    if memory_plan is not None and plan['dispatch'] is not None:
+        # VELDO-0183: the servers step takes the store's lock itself; while the service holds it, the step waits
+        # for the owner's `veldo memory servers` with the service stopped.
+        outcomes.append(memory_servers(plan, runner) if not running else
+                        {'step': 'memory_servers', 'outcome': 'deferred', 'reason': 'service_running'})
     wrote = any(o['outcome'] == 'done' for o in outcomes)
     return {'schema': SCHEMA, 'outcome': 'set_up' if wrote else 'already_set_up', 'state_root': root,
             'store': plan['store'], 'authority_ids': ids, 'owner': owner, 'host_trust': plan['host_trust'],

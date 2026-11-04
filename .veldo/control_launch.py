@@ -240,6 +240,8 @@ ER = _organ('control_execution_record')
 CFG = _organ('control_agent_config')
 HANDOFF = _organ('control_agent_config_handoff')
 DL = _organ('control_credential_delivery')
+# VELDO-0184: the file memory directory handed to every run whose role lists it.
+FM = _organ('control_memory_file')
 # VELDO-0062: the account records (the instance the reservations module reads windows through), the
 # invocation seam and each subscription engine's login and usage reports.
 ACC = D.RES.ACC
@@ -1142,6 +1144,7 @@ class Receiver:
         self.host = config.get('host') or socket.gethostname()
         self.login = None
         self.memory = None
+        self.file_memory = None
         self.metering = None
         self.binding = None
         self.token = None
@@ -1431,6 +1434,28 @@ class Receiver:
             reader.close()
         return None if decision['eligible'] else '; '.join(decision['refusals'])
 
+    def _file_memory(self, contract, adapter):
+        """VELDO-0184: for a run whose bound role revision lists the file memory, the memory record's directory with
+        its index, and the engine version's qualified form, checked before acceptance; None when it may run (or does
+        not list it), else the named refusal: a directory absent at launch (invalid_input:memory:file:absent), an
+        engine whose qualification lacks the form (missing_evidence:engine_baseline:<version>)."""
+        revision = (contract['capability'].get('configuration') or {}).get('role_revision')
+        if not FM.listed(revision):
+            return None
+        try:
+            handed = FM.handed(self.memory, revision)
+        except FM.Refused as error:
+            return error.code
+        module = (self.login or {}).get('engine')
+        if module is None or self.binding is None or not hasattr(module, 'file_memory_form'):
+            return 'unsupported_configuration:file_memory:' + str(contract['capability']['adapter'])
+        try:
+            form = module.file_memory_form(self.binding)
+        except module.Refused as error:
+            return error.code
+        self.file_memory = dict(handed, form=form, engine=module.PROVIDER)
+        return None
+
     def _qualify(self, adapter):
         """This host's worker profile, qualified before acceptance for a local adapter: an absent, invalid
         or unenforceable profile is refused by name and nothing is spawned. Another host's worker
@@ -1468,6 +1493,7 @@ class Receiver:
         if not refusal:
             refusal = self._bind(adapter, dispatch_id)
         self.memory = None
+        self.file_memory = None
         if not refusal:
             memory = _organ('control_memory')
             reader = S.open_store(self.config['store'], mode='r')
@@ -1477,6 +1503,8 @@ class Receiver:
                 refusal = error.code
             finally:
                 reader.close()
+        if not refusal or refusal.startswith('invalid_input:memory:file_memory:'):
+            refusal = self._file_memory(contract, adapter) or (refusal or None)
         if not refusal:
             refusal = self._conversation_start(contract)
 
@@ -1849,8 +1877,22 @@ class Receiver:
         run = dict(self._run_directories(dispatch_id), revision=self.binding.get('revision'),
                    capability=self.binding.get('capability'))
         engine = self.login['engine']
+        handed = None
+        if getattr(self, 'file_memory', None) is not None:
+            # VELDO-0184: the index as the run loads it, read now; its digest is the launch line's.
+            try:
+                index, digest = FM.loaded(self.file_memory)
+            except FM.Refused as error:
+                raise DL.Undeliverable(error.code, None, 'file_memory') from None
+            self.file_memory['index_digest'] = digest
+            handed = run['file_memory'] = {'directory': self.file_memory['directory'], 'index': index,
+                                           'layout': FM.LAYOUT % self.file_memory['directory']}
         try:
             extra = engine.baseline(self.binding, run, environment, servers=self.credentials or ())
+            if handed is not None and engine.PROVIDER == 'claude_code' and self.metering:
+                # VELDO-0184 AC1: the init event's memory paths are checked before the prompt is released.
+                self.metering.login_guard.memory = handed['directory']
+                self.metering.terminal.hold_prompt()
             self.binding['expected'] = extra.get('expected')
             if extra.get('expected') and engine.PROVIDER == 'claude_code' and self.metering:
                 self.metering.login_guard.expected = extra['expected']
@@ -1886,6 +1928,10 @@ class Receiver:
         own = {n: environment[n] for n in self.binding['configured_environment'] if n in environment}
         own.update(self.binding['environment'])
         own.update(extra['environment'])
+        # VELDO-0184 AC1: a run handed the file memory carries no switch that turns it off, from any source.
+        for name in extra.get('unset_environment') or ():
+            own.pop(name, None)
+            environment.pop(name, None)
         profile_name, profile_directory = ACC.profile(self.login['record'], self.host)
         own[profile_name] = profile_directory
         if token is not None:
@@ -1909,12 +1955,14 @@ class Receiver:
             'dispatch_id': dispatch_id,
             'executable': {k: self.binding[k] for k in ('engine', 'version', 'sha256')},
             'strip_prefixes': list(SESSION_PREFIXES),
-            'options': list(extra['argv']), 'environment': sorted(extra['environment']),
+            'options': self._reported_options(extra['argv']), 'environment': sorted(extra['environment']),
             'files': sorted(extra['files']), 'run': {k: run[k] for k in ('root', 'config', 'runtime')},
             'token': token is not None,
             # VELDO-0173: the launch tool set and the registry tools switched off, by name only.
             'tools': extra.get('tools'),
             'capabilities': extra.get('expected'),
+            # VELDO-0184: the file memory the run was handed, by directory and form; never its content.
+            'file_memory': extra.get('file_memory'),
             'removed': sorted((set(n for n in os.environ if n not in environment)
                               | set(n for n in environment if n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)))
                               - set(own))}})
@@ -1922,6 +1970,15 @@ class Receiver:
             # VELDO-0158: each launch's catalog revisions, resolved credential ids and the route each took.
             self.emit({'event': 'credentials', 'credentials': DL.report(dispatch_id, self.credentials, extra['routes'])})
         return argv, environment
+
+    def _reported_options(self, argv):
+        """The baseline options as reported: a run handed the file memory carries its index in Codex's developer
+        instructions, whose value is reported by digest only (VELDO-0184: never memory content)."""
+        if getattr(self, 'file_memory', None) is None:
+            return list(argv)
+        prefix = 'developer_instructions='
+        return [('%s<sha256:%s>' % (prefix, hashlib.sha256(a[len(prefix):].encode()).hexdigest())
+                 if a.startswith(prefix) else a) for a in argv]
 
     def _invoke(self, contract, acceptance, adapter):
         """Spawn the worker. For a subscription engine the invocation is first checked and reserved
@@ -2009,9 +2066,17 @@ class Receiver:
         environment.pop('VELDO_MEMORY', None)
         if self.memory is not None:
             environment['VELDO_MEMORY'] = json.dumps(self.memory, sort_keys=True)
+            receipt = dict(self.memory)
+            if getattr(self, 'file_memory', None) is not None and 'index_digest' in self.file_memory:
+                receipt['file_memory'] = self._file_memory_line()['file_memory']
             _organ('control_memory').record_launch(
-                self.config.get('state_root') or str(Path(self.config['store']).parent.parent), dispatch_id, self.memory)
+                self.config.get('state_root') or str(Path(self.config['store']).parent.parent), dispatch_id, receipt)
             self.emit(dict(event='memory', dispatch_id=dispatch_id, **self.memory))
+        if getattr(self, 'file_memory', None) is not None and 'index_digest' in self.file_memory:
+            # VELDO-0184 observability: the handoff, bound to the memory revision and the qualification; counted
+            # per engine.
+            self.emit(dict(event='file_memory', dispatch_id=dispatch_id, **self._file_memory_line()['file_memory'],
+                           metrics={'file_memory_runs': {self.file_memory['engine']: 1}}))
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment = _organ('control_git_identity').environment(environment)
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
@@ -2029,6 +2094,11 @@ class Receiver:
         return subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, env=environment, cwd=cwd,
                                 start_new_session=True, close_fds=True)
+
+    def _file_memory_line(self):
+        """The execution record's launch line of a run handed the file memory (VELDO-0184 AC3)."""
+        return FM.launch_line(self.file_memory, self.file_memory['form'], self.file_memory['index_digest'],
+                              self.binding)
 
     def _resolve_credentials(self, adapter):
         """VELDO-0158 AC1, AC2: the catalog servers the dispatch configuration selects, with their credentials
@@ -2309,7 +2379,14 @@ class Receiver:
             # VELDO-0155, VELDO-0156: a login that is not a subscription stops it by name, and the held prompt
             # goes to the engine only once its login is confirmed and nothing has stopped it.
             if metering is not None and metering.guarded(chunk):
-                begin('configuration_stop' if metering.login_stop.startswith('configuration_stop:') else 'paid_api')
+                if metering.login_stop == FM.MISMATCH:
+                    # VELDO-0184 AC1: the binary loaded memory from somewhere other than the handed directory.
+                    self.emit({'event': 'file_memory_stopped', 'dispatch_id': contract['dispatch_id'],
+                               'refusal': FM.MISMATCH, 'handed': (getattr(self, 'file_memory', None) or {}).get('directory'),
+                               'memory_paths': getattr(metering.login_guard, 'memory_paths', None),
+                               'metrics': {'file_memory_mismatch_stops': 1}})
+                begin('configuration_stop' if metering.login_stop.startswith(('configuration_stop:', 'binding_mismatch:'))
+                      else 'paid_api')
             if metering is not None and metering.feed(chunk):
                 begin('usage_cap')
             # VELDO-0176 AC1: an engine that reports another session than the held one it was placed to resume is
@@ -2337,6 +2414,9 @@ class Receiver:
                 recorder.line('wrapper', json.dumps({'turn_input': {
                     'message': given.get('message') if given.get('message') is not None else given.get('intake_command'),
                     'turn': given.get('turn'), 'notice': given.get('notice'), 'start': self.start}}).encode())
+            # VELDO-0184 AC3: the file memory's launch line: the directory, the form and the index's digest as loaded.
+            if getattr(self, 'file_memory', None) is not None and 'index_digest' in self.file_memory:
+                recorder.line('wrapper', json.dumps(self._file_memory_line(), sort_keys=True).encode())
             recorder.feed('engine', carry)
             recorder.batch()
         take(carry)

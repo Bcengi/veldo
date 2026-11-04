@@ -56,6 +56,18 @@
    "environment": {
     "DISABLE_AUTOUPDATER": "1"
    },
+   "file_memory": {
+    "init_field": "memory_paths",
+    "settings": {
+     "directory": "autoMemoryDirectory",
+     "enabled": "autoMemoryEnabled"
+    },
+    "settings_option": "--settings",
+    "source": "flagSettings",
+    "unset_environment": [
+     "CLAUDE_CODE_DISABLE_AUTO_MEMORY"
+    ]
+   },
    "flags": [
     "--print",
     "--output-format",

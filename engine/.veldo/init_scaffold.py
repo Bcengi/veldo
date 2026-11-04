@@ -187,6 +187,9 @@ _FILES = [
     # VELDO-0141: every run's execution record, which control_launch.py writes and the API authority reads;
     # a runtime asset, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_execution_record.py",
+    # VELDO-0184: the file memory handed to every run whose role lists it, which control_launch.py and
+    # control_agent_config.py load; a runtime asset, no validator import, not REQUIRED_SUBSTRATE.
+    ".veldo/control_memory_file.py",
     ".veldo/control_launch_work.py",
     ".veldo/dispatch.py",
     ".veldo/work.py",
@@ -316,6 +319,10 @@ _FILES = [
     ".veldo/control_memory_adapter.py",
     ".veldo/control_memory_check.py",
     ".veldo/control_factory_setup_memory.py",
+    # VELDO-0183: the memory servers step, the store server each ChromaDB part's unit runs, and memory_kb's tools.
+    ".veldo/control_memory_servers.py",
+    ".veldo/control_memory_store.py",
+    ".veldo/control_memory_kb.py",
     # VELDO-0171: its API steps (the api edge, the API configurations and unit, Tailscale Serve) and
     # veldo factory passkey. An owner command too, so not REQUIRED_SUBSTRATE.
     ".veldo/control_factory_setup_api.py",
