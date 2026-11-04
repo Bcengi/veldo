@@ -111,3 +111,41 @@ Row observability: the store servers' journal lines carry each start and lock wi
 with its server, tool, catalog revision and memory record revision; no memory content or credential appears in them;
 the servers step observes each catalog revision with the memory record revision it read. Catalog refusals carry the
 paid-API name.
+
+## Fix round 1 (the build's open items)
+
+Commits: e5efd9f9 (memory_kb's real layout, the fixture, setup running the servers step, rows AC1/real-layout and
+AC1/setup-step), eb925fc9 (mutation cases kb183-guessed-name and setup183-no-servers-step), 46f88f3d (suite 130 on
+the gate's unconfined list, protected), and the proof commit after them. Suite 130 now has seventeen rows.
+
+- memory_kb (OPEN item 3): control_memory_kb's tools call what memory_kb's cli.py calls, as the lead read it:
+  kb.store.search (kb.store.search_all when no collection is named), get_stats, list_documents(collection, limit),
+  delete(collection, doc_id); kb.indexers.file.index_file and index_directory;
+  kb.indexers.telegram.index_conversation(message, metadata={"chat_id": ...}, classification=...); and `clear` as
+  delete_collection on chromadb.PersistentClient(path=kb.config.DB_PATH), opened once in the store server. The
+  fixture kb package has exactly that layout (and a chromadb stand-in sharing one system per path, as chromadb
+  does); the guessed kb.indexer module and kb.store stats, delete_document and clear_collection are gone. Row
+  AC1/real-layout fails when a tool maps to a function outside that layout (targets() against the lead's list), when
+  one does not resolve in the fixture, or when the fixture carries a guessed name. Case kb183-guessed-name (stats to
+  kb.store.stats) turns it red. AC2/tools-work now calls every memory_kb tool, both search branches, delete and
+  clear (and finds nothing after clear).
+- ava-memory (OPEN item 3): the fixture's mcp_server.py is FastMCP `ava-memory` with memory_search(query, limit=10,
+  category=""), memory_add(text, category="general", source=""), memory_add_smart(text), memory_stats(),
+  memory_delete(memory_id), memory_get_all(limit=50); AC1/real-layout checks those signatures, and AC2/tools-work
+  calls all six. Smart add maps the text to memory_add's text unchanged.
+- Setup (OPEN item 2): `veldo factory setup` runs the servers step (control_factory_setup.memory_servers, the same
+  setup_servers `veldo memory servers` runs) after its api_unit and tailscale_serve steps, and its rerun at its end,
+  when a memory plan and a dispatch plan both exist; the rerun reports it deferred while the authority service holds
+  the store's lock. Row AC1/setup-step runs factory setup with the memory manifest (this fixture's stores, the
+  claude-mem part from VELDO-0182's fixture, with its bun, uvx and uv cache stand-ins on PATH as suite 105 runs
+  them) and finds the four records, both role revisions selecting all four and both store servers started, with no
+  separate command; the rerun reports the step already_done and the journal head unchanged. Case
+  setup183-no-servers-step turns it red. The main journey still runs `veldo memory servers` on a host laid down
+  without the memory option.
+- Unconfined list (OPEN item 1): scripts/gate_unconfined.json names 130_veldo_0183_memory_servers beside 129.
+  mutation-driver-confined.txt (the confined-leg baseline failure that motivated it) is removed.
+
+Evidence: suites.txt (130, 128, 129, 123, 127 and VELDO-0182's 105, each alone, green), falsifiers.txt (six cases
+applied to .veldo, each restored byte for byte), mutation-<case>.txt (each of the six cases run alone by
+scripts/check_gate_mutations.py honouring the committed list: baseline and no-op green, mutant red on its row). The
+full gate was not run.

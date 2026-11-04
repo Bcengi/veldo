@@ -5,18 +5,22 @@
   VELDO-0183 AC1 assistant init servers: {'ava-memory': 'connected', 'knowledge-graph': 'connected', 'memory-kb': 'connected'} extra [] missing []
   VELDO-0183 AC1 assistant_codex init servers: {'ava-memory': 'connected', 'knowledge-graph': 'connected', 'memory-kb': 'connected'} extra [] missing []
   VELDO-0183 AC2 refusals: invalid_input:mcp_server:paid_api:ANTHROPIC_API_KEY invalid_input:mcp_server:paid_api:ANTHROPIC_API_KEY invalid_input:mcp_server:paid_api:OPENAI_API_KEY
-  VELDO-0183 AC2 smart add: ry\": \"The owner prefers short replies\"}"}], [{"type": "text", "text": "{\"id\": \"1a0ce4b5eb674c15a618f3735347bee8\", \"memory\": \"The build runs at night\"}"}]], "facts": 2, "extraction": {"account": "claude-a", "engine": "claude_code", "run": "memory-extract-86980f36c6824ecd81bc14df6a581bdf"}} {'account': 'claude-a', 'engine': 'claude_code', 'run': 'memory-extract-86980f36c6824ecd81bc14df6a581bdf'} claude-a
-  VELDO-0183 AC3 conversation B: ['[{"id": "f7cad0dd1812428eafa5f2eb3d5a3e3d", "memory": "Rule from conversation A:', '[{"id": 2, "type": "Decision", "name": "Conversation A decision", "description":', '[{"id": "7f20fcce87320d7da4105c3f33a11f17", "text": "Last week session summary: ']
+  VELDO-0183 AC2 smart add: ry\": \"The owner prefers short replies\"}"}], [{"type": "text", "text": "{\"id\": \"7710c564de5040e3bdfa478531e5cf75\", \"memory\": \"The build runs at night\"}"}]], "facts": 2, "extraction": {"account": "claude-a", "engine": "claude_code", "run": "memory-extract-944421d8ac544ed2b52510287d033505"}} {'account': 'claude-a', 'engine': 'claude_code', 'run': 'memory-extract-944421d8ac544ed2b52510287d033505'} claude-a
+  VELDO-0183 AC3 conversation B: ['[{"id": "d8a0229ff7094247b06993888e4d3f67", "memory": "Rule from conversation A:', '[{"id": 2, "type": "Decision", "name": "Conversation A decision", "description":', '[{"id": "6036b6f10d1f846f7d94f294f028b988", "text": "Last week session summary: ']
   VELDO-0183 AC3 own copy: ['[]', '[]']
-  VELDO-0183 store servers: {'ava_memory': 846229, 'memory_kb': 846246}
+  VELDO-0183 store servers: {'ava_memory': 3743578, 'memory_kb': 3743761}
   VELDO-0183 AC4 writers: {'kb/bridge': 200, 'kb/assistant': 200, 'ava/bridge': 200, 'ava/assistant': 200, 'kb/command': 200} []
   VELDO-0183 AC4 ava_memory found: {'by_id': 400, 'by_search': 400, 'total': 400}
   VELDO-0183 AC4 memory_kb found: {'by_id': 600, 'by_search': 600, 'total': 600}
+  VELDO-0183 setup with memory: 0 set_up None
+  VELDO-0183 setup rerun: 0 already_set_up already_done 38 38
   VELDO-0183 detail: AC1/role-selections assistant selects all four, every tool, always, at their saved revisions [[{'load': 'always', 'revision': 1, 'server': 'ava-memory', 'tools': 'all'}, {'load': 'always', 'revision': 1, 'server': 'knowledge-graph', 'tools': 'all'}, {'load': 'always', 'revision': 1, 'server': 'memory-kb', 'tools': 'all'}]]; assistant_codex selects all four, every tool, always, at their saved revisions [[{'load': 'always', 'revision': 1, 'server': 'ava-memory', 'tools': 'all'}, {'load': 'always', 'revision': 1, 'server': 'knowledge-graph', 'tools': 'all'}, {'load': 'always', 'revision': 1, 'server': 'memory-kb', 'tools': 'all'}]]
   SELFTEST FAIL: VELDO-0183 AC1/role-selections
   VELDO-0183 detail: AC1/init assistant: the init event lists the four servers, each connected [{'ava-memory': 'connected', 'knowledge-graph': 'connected', 'memory-kb': 'connected'}]; assistant: every tool each server registers is offered, as the role revision expects [None None]; assistant_codex: the init event lists the four servers, each connected [{'ava-memory': 'connected', 'knowledge-graph': 'connected', 'memory-kb': 'connected'}]; assistant_codex: every tool each server registers is offered, as the role revision expects [None None]
   SELFTEST FAIL: VELDO-0183 AC1/init
-  130_veldo_0183_memory_servers                   13 passed   21.35s
+  VELDO-0183 detail: AC1/setup-step assistant's new revision from setup selects all four, every tool, always [2]; assistant_codex's new revision from setup selects all four, every tool, always [2]
+  SELFTEST FAIL: VELDO-0183 AC1/setup-step
+  130_veldo_0183_memory_servers                   14 passed   28.41s
 restored: True
 == catalog183-paid-api-accepted: control_mcp_catalog.py, 1 edit(s) (rows AC2/paid-api)
    'return next((name for name in named if name in paid), None)' -> "return None  # defect: a paid-API key is accepted as a server's credential"
@@ -25,18 +29,20 @@ restored: True
   VELDO-0183 AC1 assistant init servers: {'ava-memory': 'connected', 'claude-mem': 'connected', 'knowledge-graph': 'connected', 'memory-kb': 'connected'} extra [] missing []
   VELDO-0183 AC1 assistant_codex init servers: {'ava-memory': 'connected', 'claude-mem': 'connected', 'knowledge-graph': 'connected', 'memory-kb': 'connected'} extra [] missing []
   VELDO-0183 AC2 refusals: None stale_version None
-  VELDO-0183 AC2 smart add: ry\": \"The owner prefers short replies\"}"}], [{"type": "text", "text": "{\"id\": \"84674f66ad4545d78008e7db78dd9717\", \"memory\": \"The build runs at night\"}"}]], "facts": 2, "extraction": {"account": "claude-a", "engine": "claude_code", "run": "memory-extract-d090f71180144a3b97f1160daef8fcbb"}} {'account': 'claude-a', 'engine': 'claude_code', 'run': 'memory-extract-d090f71180144a3b97f1160daef8fcbb'} claude-a
-  VELDO-0183 AC3 conversation B: ['[{"id": "d526482f00ff497e8d19df647596a090", "memory": "Rule from conversation A:', '[{"id": 2, "type": "Decision", "name": "Conversation A decision", "description":', '[{"id": "0be627051b1e3f6fa2b7d80944020832", "text": "Last week session summary: ']
+  VELDO-0183 AC2 smart add: ry\": \"The owner prefers short replies\"}"}], [{"type": "text", "text": "{\"id\": \"898f427d439446c8b2569b61f96f863f\", \"memory\": \"The build runs at night\"}"}]], "facts": 2, "extraction": {"account": "claude-a", "engine": "claude_code", "run": "memory-extract-fecbfae0ed3a4216aba17ed3df95c445"}} {'account': 'claude-a', 'engine': 'claude_code', 'run': 'memory-extract-fecbfae0ed3a4216aba17ed3df95c445'} claude-a
+  VELDO-0183 AC3 conversation B: ['[{"id": "df0c330f650c4ca18b1966fe03720334", "memory": "Rule from conversation A:', '[{"id": 2, "type": "Decision", "name": "Conversation A decision", "description":', '[{"id": "69452a14a43cbeafd180be67741ae44c", "text": "Last week session summary: ']
   VELDO-0183 AC3 own copy: ['[]', '[]']
-  VELDO-0183 store servers: {'ava_memory': 851284, 'memory_kb': 851316}
-  VELDO-0183 AC4 writers: {'kb/assistant': 200, 'kb/bridge': 200, 'ava/bridge': 200, 'ava/assistant': 200, 'kb/command': 200} []
+  VELDO-0183 store servers: {'ava_memory': 3776604, 'memory_kb': 3776814}
+  VELDO-0183 AC4 writers: {'kb/bridge': 200, 'kb/assistant': 200, 'ava/bridge': 200, 'ava/assistant': 200, 'kb/command': 200} []
   VELDO-0183 AC4 ava_memory found: {'by_id': 400, 'by_search': 400, 'total': 400}
   VELDO-0183 AC4 memory_kb found: {'by_id': 600, 'by_search': 600, 'total': 600}
+  VELDO-0183 setup with memory: 0 set_up None
+  VELDO-0183 setup rerun: 0 already_set_up already_done 38 38
   VELDO-0183 detail: AC2/paid-api ava-memory with ANTHROPIC_API_KEY as its credential is refused by name, no revision saved; a reference to the saved ANTHROPIC_API_KEY credential under another name is refused too; for every catalog record, not only memory: OPENAI_API_KEY in another server refused; each refusal is observed by name
   SELFTEST FAIL: VELDO-0183 AC2/paid-api
   VELDO-0183 detail: AC4/assistant-entries a second run leaves entries that name the bridge alone and saves nothing [done]
   SELFTEST FAIL: VELDO-0183 AC4/assistant-entries
-  130_veldo_0183_memory_servers                   13 passed   21.41s
+  130_veldo_0183_memory_servers                   15 passed   28.43s
 restored: True
 == servers183-ava-opens-store: control_memory_servers.py, 1 edit(s) (rows AC4/one-opener)
    'found[server] = base' -> "if server == 'ava-memory':  # defect: mcp_server.py opens the store itself, as .mcp.json does today\n            base.update(command=parts[part]['interpreter'],\n                        arguments=[str(Path(parts[part]['code']) / 'mcp_server.py')])\n        found[server] = base"
@@ -46,25 +52,27 @@ restored: True
   VELDO-0183 AC1 assistant_codex init servers: {'ava-memory': 'connected', 'claude-mem': 'connected', 'knowledge-graph': 'connected', 'memory-kb': 'connected'} extra [] missing []
   VELDO-0183 AC2 refusals: invalid_input:mcp_server:paid_api:ANTHROPIC_API_KEY invalid_input:mcp_server:paid_api:ANTHROPIC_API_KEY invalid_input:mcp_server:paid_api:OPENAI_API_KEY
   VELDO-0183 AC2 smart add: KeyError: 'ANTHROPIC_API_KEY' {} []
-  VELDO-0183 AC3 conversation B: ['[{"id": "d39658fe760446b8b9b3b45bea538761", "memory": "Rule from conversation A:', '[{"id": 2, "type": "Decision", "name": "Conversation A decision", "description":', '[{"id": "d54d07eaeb4d6a74f6a43389d11d3c94", "text": "Last week session summary: ']
+  VELDO-0183 AC3 conversation B: ['[{"id": "dfc3976e691142a7b7a885e7938c0d70", "memory": "Rule from conversation A:', '[{"id": 2, "type": "Decision", "name": "Conversation A decision", "description":', '[{"id": "7a23d9eeed50d07c87d8e29b047c9fc1", "text": "Last week session summary: ']
   VELDO-0183 AC3 own copy: ['[]', '[]']
-  VELDO-0183 store servers: {'ava_memory': 860447, 'memory_kb': 860526}
-  VELDO-0183 AC4 writers: {'ava/bridge': 200, 'ava/assistant': 200, 'kb/assistant': 200, 'kb/bridge': 200, 'kb/command': 200} []
+  VELDO-0183 store servers: {'ava_memory': 3811442, 'memory_kb': 3811709}
+  VELDO-0183 AC4 writers: {'ava/bridge': 200, 'ava/assistant': 200, 'kb/bridge': 200, 'kb/assistant': 200, 'kb/command': 200} []
   VELDO-0183 AC4 ava_memory found: {'by_id': 200, 'by_search': 200, 'total': 400}
   VELDO-0183 AC4 memory_kb found: {'by_id': 600, 'by_search': 600, 'total': 600}
-  VELDO-0183 detail: AC1/catalog-records ava-memory is the bridge to the mem0_memory store server [['/dev/shm/b171-zwwf4l19/stores/mem0_memory/mcp_server.py']]
+  VELDO-0183 setup with memory: 0 set_up None
+  VELDO-0183 setup rerun: 0 already_set_up already_done 38 38
+  VELDO-0183 detail: AC1/catalog-records ava-memory is the bridge to the mem0_memory store server [['/dev/shm/b171-vhx5g8wm/stores/mem0_memory/mcp_server.py']]
   SELFTEST FAIL: VELDO-0183 AC1/catalog-records
   VELDO-0183 detail: AC2/smart-add memory_add_smart saved both extracted memories [['[]', '[]']]; its extraction is a run on a registered Claude Code subscription account [[]]; Claude Code ran in that account's profile and no paid-API key reached it [[]]
   SELFTEST FAIL: VELDO-0183 AC2/smart-add
   VELDO-0183 detail: AC2/tools-work ava-memory memory_add_smart answers without error [KeyError: 'ANTHROPIC_API_KEY']
   SELFTEST FAIL: VELDO-0183 AC2/tools-work
-  VELDO-0183 detail: AC4/one-opener ava_memory: its files were held open by exactly its store server throughout [114 samples, others [861588]]
+  VELDO-0183 detail: AC4/one-opener ava_memory: its files were held open by exactly its store server throughout [107 samples, others [3815534]]
   SELFTEST FAIL: VELDO-0183 AC4/one-opener
   VELDO-0183 detail: AC4/all-written ava_memory: all 400 memories found by id and by search from a fresh process [{'by_id': 200, 'by_search': 200, 'total': 400}]
   SELFTEST FAIL: VELDO-0183 AC4/all-written
   VELDO-0183 detail: observability each catalog call is logged with its server, catalog and memory record revisions
   SELFTEST FAIL: VELDO-0183 observability
-  130_veldo_0183_memory_servers                    9 passed   20.39s
+  130_veldo_0183_memory_servers                   11 passed   27.90s
 restored: True
 == store183-open-unchecked: control_memory_store.py, 1 edit(s) (rows AC4/open-refused)
    'others = holders(data, {os.getpid()})' -> 'others = set()  # defect: a store another process holds open is opened anyway'
@@ -73,14 +81,58 @@ restored: True
   VELDO-0183 AC1 assistant init servers: {'ava-memory': 'connected', 'claude-mem': 'connected', 'knowledge-graph': 'connected', 'memory-kb': 'connected'} extra [] missing []
   VELDO-0183 AC1 assistant_codex init servers: {'ava-memory': 'connected', 'claude-mem': 'connected', 'knowledge-graph': 'connected', 'memory-kb': 'connected'} extra [] missing []
   VELDO-0183 AC2 refusals: invalid_input:mcp_server:paid_api:ANTHROPIC_API_KEY invalid_input:mcp_server:paid_api:ANTHROPIC_API_KEY invalid_input:mcp_server:paid_api:OPENAI_API_KEY
-  VELDO-0183 AC2 smart add: ry\": \"The owner prefers short replies\"}"}], [{"type": "text", "text": "{\"id\": \"e60ed70edb3f4172b71250d8aa859860\", \"memory\": \"The build runs at night\"}"}]], "facts": 2, "extraction": {"account": "claude-a", "engine": "claude_code", "run": "memory-extract-900b5b95f95e444a96e160665bdb4cb5"}} {'account': 'claude-a', 'engine': 'claude_code', 'run': 'memory-extract-900b5b95f95e444a96e160665bdb4cb5'} claude-a
-  VELDO-0183 AC3 conversation B: ['[{"id": "20d46801a91d4c5a849465653666f208", "memory": "Rule from conversation A:', '[{"id": 2, "type": "Decision", "name": "Conversation A decision", "description":', '[{"id": "b2f39c5b8ae2fa2d3373ff4d2edf188e", "text": "Last week session summary: ']
+  VELDO-0183 AC2 smart add: ry\": \"The owner prefers short replies\"}"}], [{"type": "text", "text": "{\"id\": \"3cd801b9e69245288adb8eba732e765d\", \"memory\": \"The build runs at night\"}"}]], "facts": 2, "extraction": {"account": "claude-a", "engine": "claude_code", "run": "memory-extract-3ff504d4093141199497ca6e8f6d27ab"}} {'account': 'claude-a', 'engine': 'claude_code', 'run': 'memory-extract-3ff504d4093141199497ca6e8f6d27ab'} claude-a
+  VELDO-0183 AC3 conversation B: ['[{"id": "5a40cfcd49c643118e64947c5e753fd5", "memory": "Rule from conversation A:', '[{"id": 2, "type": "Decision", "name": "Conversation A decision", "description":', '[{"id": "cdb8a8da129f3a7a362f8cf8fa19cc8d", "text": "Last week session summary: ']
   VELDO-0183 AC3 own copy: ['[]', '[]']
-  VELDO-0183 store servers: {'ava_memory': 867975, 'memory_kb': 868011}
-  VELDO-0183 AC4 writers: {'kb/bridge': 200, 'ava/assistant': 200, 'kb/assistant': 200, 'ava/bridge': 200, 'kb/command': 200} []
+  VELDO-0183 store servers: {'ava_memory': 3847370, 'memory_kb': 3847569}
+  VELDO-0183 AC4 writers: {'kb/assistant': 200, 'kb/bridge': 200, 'ava/assistant': 200, 'ava/bridge': 200, 'kb/command': 200} []
   VELDO-0183 AC4 ava_memory found: {'by_id': 400, 'by_search': 400, 'total': 400}
   VELDO-0183 AC4 memory_kb found: {'by_id': 600, 'by_search': 600, 'total': 600}
+  VELDO-0183 setup with memory: 0 set_up None
+  VELDO-0183 setup rerun: 0 already_set_up already_done 38 38
   VELDO-0183 detail: AC4/open-refused a store another process holds open is refused by name before it is opened []
   SELFTEST FAIL: VELDO-0183 AC4/open-refused
-  130_veldo_0183_memory_servers                   14 passed   40.37s
+  130_veldo_0183_memory_servers                   16 passed   47.93s
+restored: True
+== kb183-guessed-name: control_memory_kb.py, 1 edit(s) (rows AC1/real-layout)
+   "'stats': ('kb.store', 'get_stats', {}, [])," -> "'stats': ('kb.store', 'stats', {}, []),  # defect: a name memory_kb's cli.py does not call"
+  VELDO-0183 setup: 0 set_up None
+  VELDO-0183 servers step: done {'ava-memory': 1, 'knowledge-graph': 1, 'claude-mem': 1, 'memory-kb': 1} ['configuration:assistant:2', 'configuration:assistant_codex:2', 'default_team:3']
+  VELDO-0183 AC1 assistant init servers: {'ava-memory': 'connected', 'claude-mem': 'connected', 'knowledge-graph': 'connected', 'memory-kb': 'connected'} extra [] missing []
+  VELDO-0183 AC1 assistant_codex init servers: {'ava-memory': 'connected', 'claude-mem': 'connected', 'knowledge-graph': 'connected', 'memory-kb': 'connected'} extra [] missing []
+  VELDO-0183 AC2 refusals: invalid_input:mcp_server:paid_api:ANTHROPIC_API_KEY invalid_input:mcp_server:paid_api:ANTHROPIC_API_KEY invalid_input:mcp_server:paid_api:OPENAI_API_KEY
+  VELDO-0183 AC2 smart add: ry\": \"The owner prefers short replies\"}"}], [{"type": "text", "text": "{\"id\": \"59a4a61814894141ac503108c2ecb85f\", \"memory\": \"The build runs at night\"}"}]], "facts": 2, "extraction": {"account": "claude-a", "engine": "claude_code", "run": "memory-extract-f76292a883df4390af7a99e178d2d6c4"}} {'account': 'claude-a', 'engine': 'claude_code', 'run': 'memory-extract-f76292a883df4390af7a99e178d2d6c4'} claude-a
+  VELDO-0183 AC3 conversation B: ['[{"id": "2a351b80868b461d89b291426d9483d7", "memory": "Rule from conversation A:', '[{"id": 2, "type": "Decision", "name": "Conversation A decision", "description":', '[{"id": "f18af006f7a0f1de5f0edc17586180e3", "text": "Last week session summary: ']
+  VELDO-0183 AC3 own copy: ['[]', '[]']
+  VELDO-0183 store servers: {'ava_memory': 3909123, 'memory_kb': 3909349}
+  VELDO-0183 AC4 writers: {'kb/bridge': 200, 'kb/assistant': 200, 'ava/assistant': 200, 'ava/bridge': 200, 'kb/command': 200} []
+  VELDO-0183 AC4 ava_memory found: {'by_id': 400, 'by_search': 400, 'total': 400}
+  VELDO-0183 AC4 memory_kb found: {'by_id': 600, 'by_search': 600, 'total': 600}
+  VELDO-0183 setup with memory: 0 set_up None
+  VELDO-0183 setup rerun: 0 already_set_up already_done 38 38
+  VELDO-0183 detail: AC1/real-layout every memory-kb tool maps to a function memory_kb's cli.py calls [not real: [('stats', 'kb.store', 'stats')]; missing: [('stats', 'kb.store', 'get_stats')]]; each function a memory-kb tool reaches resolves in the fixture kb package, built to the real layout [{'chromadb.PersistentClient.delete_collection': ['self', 'name'], 'kb.store.delete': ['collection', 'doc_id'], 'kb.indexers.file.index_directory': ['path', 'collection'], 'kb.indexers.file.index_file': ['path', 'collection'], 'kb.indexers.telegram.index_conversation': ['message', 'metadata', 'classification'], 'kb.store.list_documents': ['collection', 'limit'], 'kb.store.search': ['collection', 'query', 'n_results', 'classifications'], 'kb.store.search_all': ['query', 'n_results', 'classifications'], 'kb.store.stats': "missing: module 'kb.store' has no attribute 'stats'", 'guessed_names_present': []}]
+  SELFTEST FAIL: VELDO-0183 AC1/real-layout
+  VELDO-0183 detail: AC2/tools-work memory-kb stats answers without error [AttributeError: module 'kb.store' has no attribute 'stats']
+  SELFTEST FAIL: VELDO-0183 AC2/tools-work
+  130_veldo_0183_memory_servers                   15 passed   27.91s
+restored: True
+== setup183-no-servers-step: control_factory_setup.py, 1 edit(s) (rows AC1/setup-step)
+   "if memory_plan is not None and dispatch is not None:\n        with step('memory_servers'):" -> "if False:  # defect: setup leaves the servers step to a separate command\n        with step('memory_servers'):"
+  VELDO-0183 setup: 0 set_up None
+  VELDO-0183 servers step: done {'ava-memory': 1, 'knowledge-graph': 1, 'claude-mem': 1, 'memory-kb': 1} ['configuration:assistant:2', 'configuration:assistant_codex:2', 'default_team:3']
+  VELDO-0183 AC1 assistant init servers: {'ava-memory': 'connected', 'claude-mem': 'connected', 'knowledge-graph': 'connected', 'memory-kb': 'connected'} extra [] missing []
+  VELDO-0183 AC1 assistant_codex init servers: {'ava-memory': 'connected', 'claude-mem': 'connected', 'knowledge-graph': 'connected', 'memory-kb': 'connected'} extra [] missing []
+  VELDO-0183 AC2 refusals: invalid_input:mcp_server:paid_api:ANTHROPIC_API_KEY invalid_input:mcp_server:paid_api:ANTHROPIC_API_KEY invalid_input:mcp_server:paid_api:OPENAI_API_KEY
+  VELDO-0183 AC2 smart add: ry\": \"The owner prefers short replies\"}"}], [{"type": "text", "text": "{\"id\": \"45d4ac78a8f04835a20eab9e97062df8\", \"memory\": \"The build runs at night\"}"}]], "facts": 2, "extraction": {"account": "claude-a", "engine": "claude_code", "run": "memory-extract-9f71b1eb80d74004bd4624de0507e532"}} {'account': 'claude-a', 'engine': 'claude_code', 'run': 'memory-extract-9f71b1eb80d74004bd4624de0507e532'} claude-a
+  VELDO-0183 AC3 conversation B: ['[{"id": "2a4adcdc00b74139b7c4e074a6503913", "memory": "Rule from conversation A:', '[{"id": 2, "type": "Decision", "name": "Conversation A decision", "description":', '[{"id": "e1b069ca4157cbbf3986f388530ace66", "text": "Last week session summary: ']
+  VELDO-0183 AC3 own copy: ['[]', '[]']
+  VELDO-0183 store servers: {'ava_memory': 3946747, 'memory_kb': 3946945}
+  VELDO-0183 AC4 writers: {'kb/bridge': 200, 'kb/assistant': 200, 'ava/assistant': 200, 'ava/bridge': 200, 'kb/command': 200} []
+  VELDO-0183 AC4 ava_memory found: {'by_id': 400, 'by_search': 400, 'total': 400}
+  VELDO-0183 AC4 memory_kb found: {'by_id': 600, 'by_search': 600, 'total': 600}
+  VELDO-0183 setup with memory: 0 set_up None
+  VELDO-0183 setup rerun: 0 set_up done 31 38
+  VELDO-0183 detail: AC1/setup-step factory setup with the memory manifest ran the servers step [0 None {'outcome': None, 'catalog_saved': None, 'roles': None}]; the four catalog records are saved by setup itself [[]]; assistant's new revision from setup selects all four, every tool, always [1]; assistant_codex's new revision from setup selects all four, every tool, always [1]; setup started both store servers; the rerun runs the same step and saves nothing [0 set_up done, journal 31 to 38]
+  SELFTEST FAIL: VELDO-0183 AC1/setup-step
+  130_veldo_0183_memory_servers                   16 passed   27.39s
 restored: True
