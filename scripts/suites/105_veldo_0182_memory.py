@@ -123,7 +123,8 @@ def _v182_suite():
                     lossy=json.loads(json.dumps(manifest))
                     empty=state/'empty';empty.mkdir();(empty/'MEMORY.md').write_text('empty')
                     lossy['parts']['file_memory']['data']=str(empty)
-                    original=F._apply
+                    # The checks live in _stored since VELDO-0187 (_apply adds the claude-mem feed setting).
+                    original=F._stored
                     if mutated:
                         import inspect,textwrap
                         code=textwrap.dedent(inspect.getsource(original))
@@ -131,7 +132,7 @@ def _v182_suite():
                         late="    for part in M.PARTS:\n        checks.append(CHECK.check(plan['root'], definition, part, 'after'))\n"
                         assert code.count(block)==1
                         code=code.replace(block,'').replace('    return dict(report, revision=',late+'    return dict(report, revision=')
-                        ns={};exec(compile(code,F.__file__,'exec'),F.__dict__,ns);F._apply=ns['_apply']
+                        ns={};exec(compile(code,F.__file__,'exec'),F.__dict__,ns);F._stored=ns['_stored']
                     attempts=[];original_check=F.CHECK.check
                     def observe(*args):
                         attempts.append((args[2],args[3]))
@@ -151,7 +152,7 @@ def _v182_suite():
                             check('switch/original-setup',accepted and apply(F.prepare(manifest,auth.conn))['outcome']=='already_done')
                             check('metrics/check-refusal',report_of(lambda: apply(F.prepare(lossy,auth.conn,revise=True)))['metrics']==dict(memory_steps_refused=1,memory_checks_refused=1))
                     finally:
-                        F.CHECK.check=original_check;F._apply=original
+                        F.CHECK.check=original_check;F._stored=original
                 finally:auth.conn.close()
             switch_case()
             switch_case(mutated=True)
