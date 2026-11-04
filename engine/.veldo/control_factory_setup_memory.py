@@ -2,6 +2,7 @@
 import json
 import os
 from pathlib import Path
+import sys
 import uuid
 import importlib.util
 
@@ -89,11 +90,63 @@ def _apply(plan, memory, ids, S, conn, journal, owner_sign, send=None):
                 metrics=dict(memory_steps_done=1, memory_revisions=1, memory_checks_passed=len(checks)))
 
 
+def servers_main(args):
+    """VELDO-0183: `bridge`, `kb`, `extract` and `servers`."""
+    MS = organ('control_memory_servers')
+    root = os.path.realpath(args.state_root)
+    if args.action == 'bridge':
+        return MS.bridge(root, args.part, args.server or args.part.replace('_', '-'), args.catalog_revision,
+                         args.memory_revision)
+    try:
+        if args.action == 'kb':
+            KB = organ('control_memory_kb')
+            fields = KB.TOOLS[args.subcommand][2]
+            arguments = {k: getattr(args, k) for k in fields if getattr(args, k, None) is not None}
+            if 'path' in arguments:
+                arguments['path'] = os.path.abspath(arguments['path'])
+            result = MS.kb(root, args.subcommand, arguments)
+            print(json.dumps(result, sort_keys=True))
+            return 1 if result.get('isError') else 0
+        if args.action == 'extract':
+            request = json.loads(sys.stdin.read())
+            result = MS.extract(root, request['text'])
+        else:
+            result = MS.setup_servers(root, args.owner_key, unit_dir=args.unit_dir)
+        print(json.dumps(result, sort_keys=True))
+        return 0
+    except (M.Refused, OSError, ValueError, KeyError) as error:
+        print(json.dumps(dict(outcome='refused', reason=getattr(error, 'code', 'invalid_input:memory'),
+                              detail=getattr(error, 'detail', ''))))
+        return 1
+
+
 def main(argv=None):
     import argparse
     F = organ('control_factory_setup')
     parser = argparse.ArgumentParser(prog='veldo memory')
     subs = parser.add_subparsers(dest='action', required=True)
+    # VELDO-0183: the store servers' bridge, memory_kb's command line through its store server, the subscription
+    # extraction behind ava-memory's smart add, and the servers step.
+    bridge = subs.add_parser('bridge')
+    bridge.add_argument('part', choices=organ('control_memory_servers').STORES)
+    bridge.add_argument('--server')
+    bridge.add_argument('--catalog-revision', type=int)
+    bridge.add_argument('--memory-revision', type=int)
+    kb = subs.add_parser('kb')
+    tools = kb.add_subparsers(dest='subcommand', required=True)
+    for name, (_module, _function, fields, required) in organ('control_memory_kb').TOOLS.items():
+        tool = tools.add_parser(name)
+        for field, kind in fields.items():
+            if field in required:
+                tool.add_argument(field, type=int if kind == 'integer' else str)
+            else:
+                tool.add_argument('--' + field.replace('_', '-'), dest=field, type=int if kind == 'integer' else str)
+    extract = subs.add_parser('extract')
+    servers = subs.add_parser('servers')
+    servers.add_argument('--owner-key', required=True)
+    servers.add_argument('--unit-dir')
+    for p in (bridge, kb, extract, servers):
+        p.add_argument('--state-root', required=True)
     check = subs.add_parser('check')
     check.add_argument('part', choices=M.PARTS)
     check.add_argument('phase', choices=('before', 'after'))
@@ -103,6 +156,8 @@ def main(argv=None):
     for p in (check, revise):
         p.add_argument('--state-root', required=True)
     args = parser.parse_args(argv)
+    if args.action in ('bridge', 'kb', 'extract', 'servers'):
+        return servers_main(args)
     conn, lock = None, None
     try:
         root = os.path.realpath(args.state_root)
@@ -144,3 +199,8 @@ def main(argv=None):
             conn.close()
         if lock is not None:
             os.close(lock)
+
+
+if __name__ == '__main__':
+    # VELDO-0183: the catalog bridge runs this module by its path (`veldo memory bridge <part>`).
+    sys.exit(main())

@@ -124,6 +124,30 @@ def credential_position(d):
     return None
 
 
+_PAID = []
+
+
+def paid_api_names():
+    """VELDO-0183 AC2: every name the receiver strips from an engine's environment as a paid-API switch or login
+    (VELDO-0155, VELDO-0156, VELDO-0165): each engine module's CREDENTIALS and SETTINGS, the set control_launch
+    strips (STRIPPED). Read from the engine modules themselves, so a name they add is refused here too."""
+    if not _PAID:
+        names = set()
+        for engine in ('control_engine_claude', 'control_engine_codex'):
+            module = organ(engine)
+            names |= set(module.CREDENTIALS) | set(module.SETTINGS)
+        _PAID.append(frozenset(names))
+    return _PAID[0]
+
+
+def paid_api(definition, credentials=()):
+    """The first paid-API or login name a definition hands its server: an environment or header name, or the name
+    of a saved credential one of its references points at. None when it names none."""
+    paid = paid_api_names()
+    named = [name for field in ('environment', 'headers') for name in sorted(definition[field])] + list(credentials)
+    return next((name for name in named if name in paid), None)
+
+
 def validate(definition):
     if not isinstance(definition, dict) or set(definition) != set(FIELDS):
         raise Refused('invalid_input:server_definition')
@@ -149,6 +173,10 @@ def validate(definition):
                     valid = valid and (reference(item) if kind == 'reference' else isinstance(item, str))
     if not valid:
         raise Refused('invalid_input:server_definition')
+    # VELDO-0183 AC2: no catalog server is handed a paid model API credential or switch, for every record.
+    name = paid_api(d)
+    if name:
+        raise Refused('invalid_input:mcp_server:paid_api:' + name, 'environment')
     field = credential_position(d)
     if field:
         raise Refused('invalid_input:server_credential_position', field)
@@ -175,15 +203,19 @@ def transition(conn, params, before):
             ref = item.get('reference')
             if ref is None:
                 continue
-            recorded = False
+            recorded = None
             for row in conn.execute("SELECT id, data FROM entities WHERE kind='credential'"):
                 credential = json.loads(row[1])
                 digest = hashlib.sha256((domain + '/' + credential['id']).encode()).hexdigest()
                 if (not credential.get('deleted') and row[0] == 'credential:' + digest
                         and credential.get('reference') == ref == 'keychain:veldo/' + digest):
-                    recorded = True
-            if not recorded:
+                    recorded = credential['id']
+            if recorded is None:
                 raise Refused('invalid_input:server_credential_reference', field)
+            # VELDO-0183 AC2: a reference to a saved credential named as a paid-API key is refused by that name.
+            name = paid_api(dict(environment={}, headers={}), [recorded])
+            if name:
+                raise Refused('invalid_input:mcp_server:paid_api:' + name, field)
     hid = head_id(domain, d['id'])
     head = entity(conn, hid)
     current = head['data']['revision'] if head else 0
