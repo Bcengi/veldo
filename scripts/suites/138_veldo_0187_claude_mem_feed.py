@@ -447,8 +447,8 @@ for raw in sys.stdin:
         states = [s['state'] for s in first.get('claude_mem_states') or []]
         check('AC3/pending', 'the worker was started while turn 2 ran, and turn 1\'s feed was sent, before turn 2\'s',
               running == 'dispatched' and numbers == [1, 2]
-              and max(i for i, r in enumerate(received) if 'credentials.txt' in json.dumps(r['body']))
-              < min(i for i, r in enumerate(received) if 'cat vault.txt' in json.dumps(r['body'])))
+              and max((i for i, r in enumerate(received) if 'credentials.txt' in json.dumps(r['body'])), default=10 ** 6)
+              < min((i for i, r in enumerate(received) if 'cat vault.txt' in json.dumps(r['body'])), default=-1))
         check('AC3/pending', 'the turn record shows pending, then captured; nothing stays pending',
               [s for n, s in enumerate(states) if n == 0 or states[n - 1] != s] == ['pending', 'captured']
               and any(s.get('reason') == FEED.UNAVAILABLE for s in first.get('claude_mem_states') or [])

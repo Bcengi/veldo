@@ -1,0 +1,5 @@
+Case: feed187-dropped
+run: python3 scripts/check_gate_mutations.py with the case option naming feed187-dropped, alone, at b6849b26 plus this case's registration, with scripts/gate_unconfined.json carrying a temporary uncommitted entry for 138_veldo_0187_claude_mem_feed (see OPEN.md); exit 0
+   mutation: unconfined leg ran 1 case, 1 rejected: 138_veldo_0187_claude_mem_feed (1)
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=17.616s
+feed187-dropped                               passed base=[] noop=[] mutant_targets={'AC3/pending': [False]}

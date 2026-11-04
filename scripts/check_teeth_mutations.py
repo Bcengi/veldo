@@ -12456,6 +12456,29 @@ def cases():
     add(184, 'memory184-absent-unnamed', suite184, 'control_launch.py',
         "        if not refusal or refusal.startswith('invalid_input:memory:file_memory:'):\n",
         "        if not refusal:  # defect: a missing directory is refused under another name\n", ['AC1/absent'])
+    # VELDO-0187: every conversation turn fed to claude-mem's worker from its redacted execution record; each spec
+    # falsifier as one exact edit: fed whatever the installed version, built from the held session, and a feed the
+    # worker did not take dropped.
+    suite187 = '138_veldo_0187_claude_mem_feed.py'
+    add(187, 'feed187-any-version', suite187, 'control_memory_feed.py',
+        "    entry = record['versions'].get(version)\n",
+        "    entry = record['versions'].get(version) or next(iter(record['versions'].values()), None)  # defect: fed whatever the version\n",
+        ['AC1/unqualified'])
+    add(187, 'feed187-held-session', suite187, 'control_conversation.py',
+        '        state = feed.turn(record, sequence, dispatch_id, turn_from_record(lines) if lines is not None else None,\n',
+        "        held = Path((_turn(self.conn, identity, sequence)['data'].get('session') or {}).get('capture') or '/none')\n"
+        '        state = feed.turn(record, sequence, dispatch_id, dict(turn_from_record(lines), calls=[{  # defect: the held session\n'
+        "            'name': 'session', 'input': None, 'result': held.read_text() if held.is_file() else None}])\n"
+        '            if lines is not None else None,\n',
+        ['AC2/redaction'])
+    add(187, 'feed187-dropped', suite187, 'control_memory_feed.py',
+        "                    self.observe(dict(base, kind=request['kind'], digest=request['digest'], capture='pending',\n"
+        '                                      reason=UNAVAILABLE))\n',
+        "                    self.observe(dict(base, kind=request['kind'], digest=request['digest'], capture='pending',\n"
+        '                                      reason=UNAVAILABLE))\n'
+        '                    path.unlink()  # defect: a feed the worker did not take is dropped\n'
+        '                    break\n',
+        ['AC3/pending'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
