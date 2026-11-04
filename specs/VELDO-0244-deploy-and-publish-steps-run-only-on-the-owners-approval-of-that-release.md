@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0244
 title: Deploy and publish step types run a named command or a catalog server tool with keystore credentials only after the owner approves that exact release, then check it, plus a default deploy definition
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -122,3 +122,5 @@ rules are the same.
 
 2026-11-04: new draft under owner Telegram 39067 (an owner-approved deploy step per release, NG2) and
 39069 to 39071 (process as workflow). Narrows the parked VELDO-0086. Standalone.
+
+2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0247
 title: A Check step routes the work by a plain rule over declared fields with a required otherwise path, parallel branches from one step run at the same time and a Join step waits for all of them, every fan-out is bounded, and no branch can go around the owner's approval
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -201,3 +201,5 @@ fan-out to its join is one block) and the two in-branch refusals, so later outwa
 2026-11-04: new draft under owner Telegram 39079 (conditional steps, parallel branches and a join, every
 loop and fan-out bounded; agreed), on the canvas design of VELDO-0246 and the process-as-workflow drafts
 VELDO-0241 to VELDO-0245 (Telegram 39069 to 39071). Standalone; no plan work item.
+
+2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.

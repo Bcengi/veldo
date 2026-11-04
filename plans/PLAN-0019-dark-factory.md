@@ -2129,3 +2129,5 @@ a workflow step after the owner approves that exact release (Cloud Run, a storag
 pipeline, a social channel through its catalog server); every other deployment, customer charging, telecom
 operations and another operator's integration stay excluded. Draft VELDO-0244, narrowing the parked
 VELDO-0086. No work item, edge, release or other text changes.
+
+2026-11-04: the NG2 and NG3 amendments approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092).

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0245
 title: A schedule step runs the next step at the time the owner approved, and a default social post definition proves a new kind of work is a definition, not code
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -112,3 +112,5 @@ Standalone.
 2026-11-04: the lead made the schedule step reuse VELDO-0240's schedule store, timer, once-only and missed
 records, list and cancel (a one-time schedule of kind workflow_step), so Veldo has one scheduler, not two.
 Acceptance criteria otherwise unchanged.
+
+2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.

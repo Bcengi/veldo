@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0242
 title: Document step types, render pages to PNG and PDF with the project's own command, review the rendered pages, deliver the approved files to the owner, and a default document definition
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -119,3 +119,5 @@ ordinary review station with a different input, so the independent-reviewer rule
 
 2026-11-04: new draft under owner Telegram 39067 (non-software projects, NG3) and 39069 to 39071 (process
 as workflow). Supersedes the fixed document-project design of parity ticket T7. Standalone.
+
+2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.

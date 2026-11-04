@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0241
 title: A unit's process is a versioned workflow revision chosen per project or per kind of work, today's code process ships as the default definition unchanged, and no definition can skip the owner's approval
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -145,3 +145,5 @@ VELDO-0148 bind today; a definition chooses where the approval sits, never what 
 2026-11-04: new draft under owner Telegram 39069 to 39071 (agreed: a unit's process is a workflow per kind
 of work) and 39067 (NG2 and NG3 lifted, recorded in PLAN-0019 the same day). Standalone; no plan work item.
 The parity report's tickets T7, T9 and T16 become step types in VELDO-0242 to VELDO-0245 on top of this.
+
+2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.

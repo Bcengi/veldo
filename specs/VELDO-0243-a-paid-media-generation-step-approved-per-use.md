@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0243
 title: A generate-media step makes an image or video through a catalog server, and because it is paid each use is the owner's approval with the cost shown and the spend checklist recorded, plus a default media definition
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -119,3 +119,5 @@ settlement apply unchanged; the media step only adds the rule that it must sit d
 
 2026-11-04: new draft under owner Telegram 39067 (paid image and video, each use approved) and 39069 to
 39071 (process as workflow). Standalone.
+
+2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
