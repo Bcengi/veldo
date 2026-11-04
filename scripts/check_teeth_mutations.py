@@ -12271,6 +12271,12 @@ def cases():
         "            if len(short) == 1:\n",
         "            if False:  # defect: a bare short form never answers the unclear route question\n",
         ['AC1/unclear-bare-project'])
+    # Guard (AC1, the unclear route question answered as before): his reply matching no option and naming no ticket
+    # key no longer clarifies the message for the PM; it is refused unmatched_choice and settles nothing.
+    add(181, 'free181-clarification-dropped', suite181, 'control_channel_presentation.py',
+        "                fallback = [CD.CLARIFY] if CD.CLARIFY in receipt['choices'] else []\n",
+        "                fallback = []  # defect: a free-text reply never clarifies the unclear route question\n",
+        ['AC1/unclear-free-text'])
     for case in result:
         if case['finding'] == 181:
             case['siblings'] = True
