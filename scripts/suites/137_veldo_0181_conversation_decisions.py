@@ -50,7 +50,7 @@ def _v181_suite():
     ROWS = ('AC1/rerun-presented', 'AC1/turn-waits', 'AC1/no-presentation-hint', 'AC1/settles-by-reply',
             'AC1/move-presented', 'AC1/settled-once-across', 'AC1/unclear-presented', 'AC1/unclear-settles-by-reply',
             'AC1/unclear-settles-by-ui', 'AC1/unclear-settled-once', 'AC1/unclear-never-a-turn', 'AC1/unclear-bare-project',
-            'AC1/unclear-bare-ambiguous', 'AC1/observability',
+            'AC1/unclear-bare-ambiguous', 'AC1/unclear-ticket-key', 'AC1/unclear-free-text', 'AC1/observability',
             'AC2/other-member', 'AC2/no-authority-from-output', 'AC2/observability')
     rows = {name: [] for name in ROWS}
 
@@ -764,6 +764,69 @@ else:
               (settled_records(ar) if ar else ['?']) == [] and a_applied == []
               and (intake.question(aq.get('question_id')) or {}).get('state') == 'open'
               and (intake.proposal(apid) or {}).get('state') == 'AWAITING_PROJECT')
+
+        # A REPLY MATCHING NO OPTION STILL ANSWERS IT ONCE, as before VELDO-0181: a reply naming a ticket key whose
+        # prefix decides a project (VELDO-0152, control_intake.keyed_projects) settles as that project's choice and
+        # routes exactly as the bare project name does; any other reply settles as a clarification carrying his words,
+        # back to the PM as a clarifying reply was. Neither is a turn, opens a conversation or is intake's message.
+        authority.fixture('project:activation-repository', 'project',
+                          dict(json.loads(authority.conn.execute('SELECT data FROM entities WHERE id=?', (
+                              'project:activation-repository',)).fetchone()[0]), ticket_key_prefixes=['ACT']))
+        turns_now = {c: len(conversations.turns(c)) for c in (rerun_id, out_id, move_id)}
+        opened_now = authority.conn.execute('SELECT COUNT(*) FROM entities WHERE kind=?', (CV.KIND,)).fetchone()[0]
+
+        def not_a_turn(update):
+            return ({c: len(conversations.turns(c)) for c in turns_now} == turns_now
+                    and authority.conn.execute('SELECT COUNT(*) FROM entities WHERE kind=?', (CV.KIND,)).fetchone()[0]
+                    == opened_now
+                    and intake.source('telegram_message', IN.telegram_source_id(
+                        bot['id'], owner_chat, update['message']['message_id'])) is None)
+
+        key_text = 'the release one, see ACT-12'
+        kpid, kq, kr, k_update, k_told, k_applied = answered_by(key_text)
+        k_settled = settled_records(kr) if kr else []
+        k_again, k_again_update, _woke = telegram(owner, 'and ACT-13 too',
+                                                  reply_to=((presenter.current(kr) if kr else None) or {}).get(
+                                                      'message_ids', [None])[-1])
+        print('  VELDO-0181 ticket key reply:', [r.get('outcome') for r in k_applied], routing(kpid), len(k_settled),
+              len(k_told))
+        check('AC1/unclear-ticket-key', 'his reply naming a ticket key whose prefix decides a project settles it once, '
+              'from Telegram, as that project\'s choice with his reply as its reason, nothing told back',
+              len(k_settled) == 1 and k_settled[0].get('choice') == full_choice
+              and k_settled[0].get('originating_channel') == 'telegram_chat'
+              and k_settled[0].get('rationale') == key_text and k_told == [])
+        check('AC1/unclear-ticket-key', 'it routes the message exactly as the bare project name does %s' % (routing(kpid),),
+              [r.get('outcome') for r in k_applied] == ['resolved'] and routing(kpid) == routing(bpid)
+              and (intake.question(kq.get('question_id')) or {}).get('choice') == full_choice)
+        check('AC1/unclear-ticket-key', 'a second reply settles and routes nothing again; neither reply is a turn, opens '
+              'a conversation or is intake\'s message',
+              len(settled_records(kr) if kr else []) == 1 and route_answers() == [] and routing(kpid) == routing(bpid)
+              and not_a_turn(k_update) and not_a_turn(k_again_update))
+        free_text = 'not those: the invoices one from Monday'
+        cpid, cq, cr, c_update, c_told, c_applied = answered_by(free_text)
+        c_settled = settled_records(cr) if cr else []
+        c_held = intake.proposal(cpid) or {}
+        c_option = ((cq.get('choices') or {}).get(c_settled[0].get('choice')) or {}) if c_settled else {}
+        c_again, c_again_update, _woke = telegram(owner, 'or the March one',
+                                                  reply_to=((presenter.current(cr) if cr else None) or {}).get(
+                                                      'message_ids', [None])[-1])
+        print('  VELDO-0181 free text reply:', [r.get('outcome') for r in c_applied], c_held.get('state'),
+              [c.get('text') for c in c_held.get('clarifications') or []], len(c_settled), len(c_told))
+        check('AC1/unclear-free-text', 'his reply matching no option settles it once, from Telegram, as a clarification '
+              'with his words as its reason, nothing told back',
+              len(c_settled) == 1 and c_settled[0].get('originating_channel') == 'telegram_chat'
+              and c_option.get('route') == 'clarification' and 'project' not in c_option
+              and c_settled[0].get('rationale') == free_text and c_told == [])
+        check('AC1/unclear-free-text', 'it is routed to the PM as a clarifying reply was: the same proposal clarified '
+              'with his raw words, back to AWAITING_ROUTE, the question answered',
+              [r.get('outcome') for r in c_applied] == ['clarification'] and c_held.get('state') == 'AWAITING_ROUTE'
+              and [c.get('text') for c in c_held.get('clarifications') or []] == [free_text]
+              and (intake.question(cq.get('question_id')) or {}).get('state') == 'answered')
+        check('AC1/unclear-free-text', 'a second reply settles and routes nothing again; neither reply is a turn, opens '
+              'a conversation or is intake\'s message',
+              len(settled_records(cr) if cr else []) == 1 and route_answers() == []
+              and len((intake.proposal(cpid) or {}).get('clarifications') or []) == 1
+              and not_a_turn(c_update) and not_a_turn(c_again_update))
     except Exception as error:  # noqa: BLE001
         import traceback
         traceback.print_exc()

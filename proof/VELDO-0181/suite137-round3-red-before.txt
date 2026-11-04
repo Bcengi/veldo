@@ -1,0 +1,21 @@
+VELDO-0181 fix round 3: suite 137 with the two new rows (AC1/unclear-ticket-key, AC1/unclear-free-text) before the change, at b81cea8b plus the rows only (python3 scripts/selftest.py --suite 137_veldo_0181_conversation_decisions, transient user scope MemoryMax=8G MemorySwapMax=0). Both red (each reply refused unmatched_choice and told once, nothing settled), the other seventeen green.
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  VELDO-0181 re-run question: assignment:conversation:c-1a988d9fef5b1ea94e0c:conversation-rerun-7b0796c756bddc1e581538e7 ask ['published'] []
+  VELDO-0181 turn output: completed ['answer', 'approval', 'role', 'route'] ['protocol', 'reply', 'tool_result']
+  VELDO-0181 reply: not_taken ['settled'] [None]
+  VELDO-0181 move question: assignment:conversation:c-57092b8d0fb88ad043ec:conversation-limit-ec6a18fe936db54a9737c6b7 published
+  VELDO-0181 move answer: settled None refused request_closed
+  VELDO-0181 unclear question: applied assignment:conversation:route:ca730cc5c06552786b12b96a:unclear-route-3b1eb00a2c132dbdc89c0cdb published
+  VELDO-0181 unclear reply: not_taken ['clarification'] AWAITING_ROUTE
+  VELDO-0181 unclear UI answer: settled refused request_closed ['clarification']
+  VELDO-0181 other member: ['missing_authority:conversation_owner', 'missing_authority:conversation_owner', 'missing_authority:conversation_owner', 'missing_authority:conversation_owner'] ['missing_authority:conversation_owner', 'missing_authority:conversation_owner', 'missing_authority:conversation_owner']
+  VELDO-0181 bare project reply: ['resolved'] ['resolved'] ('ROUTED', '<pid>:answered', 'existing_project', 'activation-repository', 'The principal answered the offered project question.', 'PROPOSED', 'activation-repository', 'objective') ('ROUTED', '<pid>:answered', 'existing_project', 'activation-repository', 'The principal answered the offered project question.', 'PROPOSED', 'activation-repository', 'objective') 1 0
+  VELDO-0181 ambiguous bare reply: ['ambiguous_choice'] ['That reply could be more than one choice. Reply to the presentation with one of: accept new project | accept project new-project, then a colon and your reason, for example "accept new project: <your reason>".'] []
+  VELDO-0181 ticket key reply: [] ('AWAITING_PROJECT', '', 'unclear', None, 'Fixture PM: no project or conversation is clear.', None, None, None) 0 1
+  VELDO-0181 free text reply: [] AWAITING_PROJECT [] 0 1
+  VELDO-0181 detail: AC1/unclear-ticket-key his reply naming a ticket key whose prefix decides a project settles it once, from Telegram, as that project's choice with his reply as its reason, nothing told back; it routes the message exactly as the bare project name does ('AWAITING_PROJECT', '', 'unclear', None, 'Fixture PM: no project or conversation is clear.', None, None, None); a second reply settles and routes nothing again; neither reply is a turn, opens a conversation or is intake's message
+  SELFTEST FAIL: VELDO-0181 AC1/unclear-ticket-key
+  VELDO-0181 detail: AC1/unclear-free-text his reply matching no option settles it once, from Telegram, as a clarification with his words as its reason, nothing told back; it is routed to the PM as a clarifying reply was: the same proposal clarified with his raw words, back to AWAITING_ROUTE, the question answered; a second reply settles and routes nothing again; neither reply is a turn, opens a conversation or is intake's message
+  SELFTEST FAIL: VELDO-0181 AC1/unclear-free-text
+  137_veldo_0181_conversation_decisions           17 passed    6.29s
+selftest (PARTIAL, 1 of 199 suites): 43 passed, 2 failed in 6.29s
