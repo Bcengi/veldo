@@ -168,6 +168,15 @@ ACTIONS = (
     Action('agent_configuration_edit', 'configurations.save', 'save_capability_configuration',
            'control_agent_config', 'SAVE', 'VELDO-0162'),
     Action('default_team_edit', 'teams.default_save', 'save_default_team', 'control_team_routes', 'SAVE', 'VELDO-0162'),
+    # VELDO-0178: the owner's conversation commands, each VELDO-0174's typed conversation command.
+    Action('conversation_open', 'conversations.open', 'open_conversation', 'control_conversation', 'OPERATION',
+           'VELDO-0174'),
+    Action('conversation_close', 'conversations.close', 'close_conversation', 'control_conversation', 'OPERATION',
+           'VELDO-0174'),
+    Action('conversation_role', 'conversations.set_role', 'change_conversation_role', 'control_conversation',
+           'OPERATION', 'VELDO-0174'),
+    Action('conversation_attach', 'conversations.attach_project', 'attach_conversation_project',
+           'control_conversation', 'OPERATION', 'VELDO-0177'),
 )
 
 GAPS = (

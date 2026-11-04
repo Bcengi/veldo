@@ -603,6 +603,12 @@ def _v130_checks(base):
                                           principal='runner', signer='authority', sign=journal_sign),
             accounts=AUTH.AA.Accounts(S, conn, principal='owner', signer='authority', sign=journal_sign))
         phase2.update(work_writers)
+    # VELDO-0178: the owner's conversation commands, on the same connection (suite 133 judges them).
+    if here and 'conversations' in _v130_inspect.signature(AUTH.ApiAuthority).parameters:
+        CVN = _v130_load('v130_conversations', organs / 'control_conversation.py')
+        phase2.update(conversations=CVN.Conversations(S, conn, domain=ids['domain_uuid'], principal='authority',
+                                                      signer='authority', sign=journal_sign,
+                                                      state_root=str(base / 'conversations')))
     # Phase 3: the judge runs only in the process holding the authority's lock beside the store; this
     # fixture is that authority for its own store, so it takes the lock as the service would.
     lock_held = _v130_os.open(str(base / 'authority' / 'authority.lock'), _v130_os.O_RDWR | _v130_os.O_CREAT, 0o600)
@@ -1225,6 +1231,13 @@ def _v130_checks(base):
             bodies.update({'backlog.reprioritize': {'item': 'backlog:none', 'item_version': 1, 'rank': 2},
                            'workers.stop': {'dispatch': 'dispatch/none/x', 'dispatch_version': 1},
                            'workers.cap': {'account': 'none', 'account_version': 1, 'concurrency': 2}})
+        # VELDO-0178: the owner's conversation commands (suite 133 judges them; here they meet every route check).
+        if 'open_conversation' in getattr(AS, 'OPERATIONS', {}):
+            bodies.update({'conversations.open': {'role': 'assistant'},
+                           'conversations.close': {'conversation': 'c-none', 'version': 1},
+                           'conversations.set_role': {'conversation': 'c-none', 'version': 1, 'role': 'assistant'},
+                           'conversations.attach_project': {'conversation': 'c-none', 'version': 1,
+                                                            'project': 'project-a'}})
 
         def path_of(route, domain=DOMAIN):
             return route.path.replace('{domain}', domain)
@@ -1262,9 +1275,10 @@ def _v130_checks(base):
             table = list(getattr(API, 'ROUTES', ()))
             check(RF, 'the route table and the registered handlers agree [observed %s]' % api[0].route_problems(),
                   table and api[0].route_problems() == [])
-            check(RF, 'the table publishes the auth, messages, decisions, reads, configuration, work and events families',
-                  sorted({r.family for r in table}) == ['auth', 'configuration', 'decisions', 'events', 'messages', 'reads',
-                                                        'work'])
+            check(RF, 'the table publishes the auth, messages, decisions, reads, configuration, work, conversations and '
+                  'events families',
+                  sorted({r.family for r in table}) == ['auth', 'configuration', 'conversations', 'decisions', 'events',
+                                                        'messages', 'reads', 'work'])
             for route in [r for r in table if r.session]:
                 body = bodies.get(route.name) if route.method == 'POST' else None
                 before = journal_count()
