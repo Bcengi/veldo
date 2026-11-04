@@ -398,9 +398,8 @@
     "reason": "voice input of the desktop app; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03)"
    },
    "incremental_tools": {
-    "decision": "off",
-    "reason": "sends later tool-list updates (\"previously declared tools remain available\"), so tools can be added after the first request the launch comparison reads",
-    "rule": "VELDO-0127 AC4"
+    "decision": "granted",
+    "reason": "a later request declares only the tools that changed (an additional_tools item after \"This is an incremental tools update. Previously declared tools remain available...\"), so later requests are smaller; the wire comparison reads every request of a run and the tools declared by then, so a tool the role does not list is refused wherever it is first declared (VELDO-0127 AC4; owner Telegram 38895-38896; loopback capture of 2026-11-03, proof/VELDO-0230/fix3-incremental-capture.json)"
    },
    "instant_interrupt": {
     "decision": "granted",
