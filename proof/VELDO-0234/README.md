@@ -61,6 +61,21 @@ Before: `before-change.txt` (suite and stand-in in place, engine unchanged: 10 o
   runtime_assets and template keys, which VELDO-0189's upgrade owns; here it reported nothing done) and SQLite's own
   -wal and -shm beside the store, which change under any reader; the store is compared by its full `iterdump`.
 
+## Fix round 1 (review F1, 2026-11-04)
+
+The review found rerun/pre-change-host red at the branch tip: once VELDO-0235 changed an installed engine module, the
+re-run on the 043c2ef6 host performs VELDO-0189's engine upgrade, which appends to its step log
+`<home>/state/engine-upgrade.jsonl`, and the row compared that file byte for byte. The row now leaves only that one
+file, by name, out of the byte-for-byte set and checks it on its own: its earlier bytes are kept, what it gained
+parses as one upgrade run from `begin` to `done`, no line names a file written other than the service record, and the
+report's engine_upgrade step is done. Every other file, the store's dump, the service record apart from its engine
+keys, the journal head and the Serve status stay asserted as before.
+
+- Before: `fix1-before.txt` (at d18d1d4c: 35 passed, 1 failed, rerun/pre-change-host on engine-upgrade.jsonl).
+- After: `fix1-after.txt` (36 passed; the step log gained begin, staged, prepared, exchanged, record, restart,
+  removed_previous, done).
+- `scripts/gate_unconfined.json` gains suite 127's entry (OPEN.md A), for the owner's approval at landing.
+
 ## Falsifiers (finding 234), each applied, shown red, restored
 
 `falsifiers.py` runs each case through the teeth driver's own worker (`check_teeth_mutations.py --worker`, the driver's

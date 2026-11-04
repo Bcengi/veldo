@@ -383,21 +383,27 @@ def _v234_suite():
         service_json = str(home0 / 'config' / 'service.json')
         engine_keys = ('closure', 'runtime_assets', 'template')
         store0 = root / 'authority' / 'control.sqlite3'
+        # VELDO-0189's step log: the upgrade appends to it whenever the engine changes, so it is checked by name
+        # below (only upgrade lines appended) rather than byte for byte.
+        step_log = home0 / 'state' / 'engine-upgrade.jsonl'
 
         def held_files():
             # The installed engine (bin/) and the service record's engine keys are VELDO-0189's upgrade's to replace
             # whenever the engine changes, and SQLite's own -wal and -shm beside the store change under any reader;
-            # the store is compared by its full dump, every other file byte for byte.
+            # the store is compared by its full dump, the upgrade's step log by its own check, every other file
+            # byte for byte.
             found = {k: v for k, v in snapshot(root, args[3], args[4], args[2].parent, binding0).items()
                      if not k.startswith(bin0 + '/') and k != bin0 and k != service_json
-                     and not k.startswith(str(store0) + '-')}
+                     and k != str(step_log) and not k.startswith(str(store0) + '-')}
             record = json.loads(Path(service_json).read_text())
             dump = h['read_store'](store0, lambda c: list(c.iterdump()))
             return found, ({k: v for k, v in record.items() if k not in engine_keys}, dump)
         ts.clear()
+        log_before = step_log.read_bytes() if step_log.exists() else b''
         (before, record_before), head, served = held_files(), journal(store0), status()
         code, rerun = h['setup'](*args)
         (after, record_after) = held_files()
+        log_after = step_log.read_bytes() if step_log.exists() else b''
         changed, added, removed = changes(before, after)
         check(PC, 'the re-run without the option is accepted [%s %s, done: %s]'
               % (rerun.get('outcome'), rerun.get('reason'), [k for k, v in steps_of(rerun).items() if v == 'done']),
@@ -409,6 +415,20 @@ def _v234_suite():
         check(PC, 'every file outside the installed engine is byte for byte the same, the store\'s dump too, and the '
               'service record apart from its engine keys [%s]' % (changed + added + removed)[:4],
               not (changed or added or removed) and record_after == record_before)
+        try:
+            appended = [json.loads(line) for line in log_after[len(log_before):].decode().splitlines() if line.strip()]
+        except ValueError:
+            appended = None
+        points = [e.get('point') for e in appended or []]
+        upgraded = steps_of(rerun).get('engine_upgrade')
+        # The step log is the upgrade's own: unchanged when no upgrade ran; otherwise its earlier bytes are kept, and
+        # what it gained is one upgrade run from begin to done whose only file write is the service record.
+        check(PC, 'the upgrade\'s step log %s only gained one engine upgrade\'s lines, writing no file but the '
+              'service record [%s, upgrade %s]' % (step_log.name, points, upgraded),
+              log_after.startswith(log_before) and appended is not None
+              and (not appended or (points[0] == 'begin' and points[-1] == 'done'
+                                    and all(e.get('path') in (None, service_json) for e in appended)
+                                    and upgraded == 'done')))
         check(PC, 'the journal head and the Serve status are unchanged and no Serve write ran [%s]'
               % [c for c in ts.invocations() if c not in READS],
               journal(store0) == head and status() == served and all(c in READS for c in ts.invocations()))
