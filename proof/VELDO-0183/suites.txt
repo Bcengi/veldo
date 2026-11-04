@@ -1,0 +1,24 @@
+Suites run alone at 681d41da (python3 scripts/selftest.py with the suite option, each in a systemd-run scope); exit 2 is the PARTIAL run's own code.
+
+  130_veldo_0183_memory_servers                   15 passed   25.02s
+selftest (PARTIAL, 1 of 192 suites): 41 passed, 0 failed in 25.02s
+  82_veldo_0144_mcp_catalog                       29 passed   32.39s
+selftest (PARTIAL, 1 of 192 suites): 55 passed, 0 failed in 32.39s
+  105_veldo_0182_memory                          127 passed   85.19s
+selftest (PARTIAL, 1 of 192 suites): 153 passed, 0 failed in 85.19s
+  129_veldo_0177_assistant_setup                   4 passed    3.88s
+selftest (PARTIAL, 1 of 192 suites): 30 passed, 0 failed in 3.88s
+  127_veldo_0231_run_flags                        17 passed   34.22s
+selftest (PARTIAL, 1 of 192 suites): 43 passed, 0 failed in 34.22s
+  123_veldo_0174_conversations                    38 passed   11.57s
+selftest (PARTIAL, 1 of 192 suites): 64 passed, 0 failed in 11.57s
+  128_veldo_0177_conversation_workspace           15 passed    3.21s
+selftest (PARTIAL, 1 of 192 suites): 41 passed, 0 failed in 3.21s
+  SELFTEST FAIL: VELDO-0127 live/claude
+  SELFTEST FAIL: VELDO-0127 live/codex
+  86_veldo_0127_agent_configuration               26 passed   41.91s
+selftest (PARTIAL, 1 of 192 suites): 52 passed, 2 failed in 41.91s
+  85_veldo_0158_credential_delivery               23 passed    5.33s
+selftest (PARTIAL, 1 of 192 suites): 49 passed, 0 failed in 5.33s
+
+86: the two live rows (live/claude, live/codex) are the stale captures the lead retakes; every other row passes.
