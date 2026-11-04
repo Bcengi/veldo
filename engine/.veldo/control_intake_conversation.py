@@ -149,10 +149,11 @@ class Conversing:
             raise self.route_refused('invalid_input:conversation:unknown', str(identity))
         if row['data'].get('owner') != principal:
             raise self.route_refused('missing_authority:conversation_owner', str(identity))
-        if row['data'].get('status') != 'open':
+        decision = self.conversation_decision(command)
+        # A typed command's own close must not refuse the record of it: the command itself refuses a closed one.
+        if row['data'].get('status') != 'open' and decision != 'command':
             raise self.route_refused('stale_subject:conversation_closed', str(identity))
         decided_by = 'reply' if command['source_kind'] == 'telegram_message' else 'field'
-        decision = self.conversation_decision(command)
         changes = {}
         if decision == 'turn':
             turn = self._turn_changes(identity, principal, key, source['content_digest'], read, changes)
@@ -222,8 +223,12 @@ class Conversing:
             else:
                 record = conversations.close(identity, version, owner=principal, command_id=command_id)
                 line = 'Conversation %s is closed.' % identity
-        except CV.Refused as error:
-            raise self.route_refused(error.code, error.detail) from None
+        except self.route_refused:
+            raise
+        except Exception as error:  # noqa: BLE001 - the service's own refusal (its module's class), by its name
+            if not isinstance(getattr(error, 'code', None), str):
+                raise
+            raise self.route_refused(error.code, getattr(error, 'detail', '')) from None
         return line, {'command': kind, 'name': name, 'version': record.get('version'), 'role': record.get('role'),
                       'status': record.get('status'), 'project': record.get('project')}
 

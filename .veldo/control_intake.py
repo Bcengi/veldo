@@ -526,6 +526,10 @@ class Intake(RT.Routes, CI.Conversing):
             return self._event('submit', 'refused', error.code, accepted_versions=expected, **about)
         except sqlite3.Error:
             return self._event('submit', 'refused', 'unavailable_service', accepted_versions=expected, **about)
+        except Exception as error:  # noqa: BLE001 - another intake's transition on this connection refused by name
+            if not isinstance(getattr(error, 'code', None), str):
+                raise
+            return self._event('submit', 'refused', error.code, accepted_versions=expected, **about)
         done = self._event('submit', result['outcome'], None, accepted_versions=expected, project=result.get('project'),
                            decision=result.get('decision'), command=command, **dict(about, **{k: result[k] for k in ('proposal_id', 'question_id', 'question')
                                                              if k in result}))
