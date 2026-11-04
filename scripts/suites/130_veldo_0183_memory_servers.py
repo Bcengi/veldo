@@ -961,7 +961,9 @@ print(json.dumps(dict(by_id=len(by_id), by_search=len(by_search), total=len(want
         os.environ['UV_CACHE_DIR'] = str(F182.uv_cache(base / 'owner-uv-v183s'))
         try:
             def run(label):
-                return watched(label, {part: manifest['parts'][part]['data'] for part in MS_STORES}, base / 'stores-setup',
+                # The raw manifest names code directories; each store lies under its data directory.
+                return watched(label, {part: str(Path(manifest['parts'][part]['code']) / 'data') for part in MS_STORES},
+                               base / 'stores-setup',
                                lambda: h['setup'](root, workspace, base / 'trust-v183s' / 'host.json',
                                                   base / 'install-v183s', units, manager,
                                                   **{'--memory': str(manifest_path)}))
