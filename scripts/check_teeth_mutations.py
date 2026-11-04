@@ -12134,6 +12134,36 @@ def cases():
         also=[("    head = kind is not None and set(ASSISTANTS) <= set(((saved or {}).get('team') or {}).get('roles') or {})\n",
                "    head = False  # defect: the default team step always runs\n")])
 
+    # VELDO-0178: the owner's conversations through the API, and a turn's execution record served to the conversation's
+    # owner alone; each spec falsifier as one exact edit, and the guard it implies on the event feed. The judge and the
+    # reader scope load their organs beside themselves by path, so each mutant runs in a whole .veldo copy.
+    suite178 = '133_veldo_0178_conversation_api.py'
+    add(178, 'read178-domain-membership', suite178, 'control_api_authority.py',
+        "            if record.get('owner') != principal:\n"
+        "                self._observe_conversations(principal, conversation, 'refused', OWNER_REFUSAL)\n",
+        "            if False:  # defect: a conversation read is scoped by domain membership\n"
+        "                self._observe_conversations(principal, conversation, 'refused', OWNER_REFUSAL)\n",
+        ['AC1/other-member'],
+        also=[("                    if record.get('owner') != principal:\n                        continue\n",
+               "                    if False:  # defect: every member's conversations are listed\n"
+               "                        continue\n")])
+    add(178, 'record178-project-alone', suite178, 'control_api_authority.py',
+        "        if contract.get('subject_kind') == 'conversation':\n            owner = SCOPE.conversation_owner(",
+        "        if False:  # defect: a turn's record is decided by project alone\n"
+        "            owner = SCOPE.conversation_owner(",
+        ['AC2/other-member'],
+        also=[("        if project is None:\n            return 'unauthorized:out_of_scope'\n",
+               "        if project is None:\n            return None  # defect: a run with no project is readable by every"
+               " member\n")])
+    add(178, 'feed178-conversation-by-scope', suite178, 'control_api_models_scope.py',
+        "        if owned is not None:\n            return None if owned else OWNER\n",
+        "        if False:  # defect: a conversation's records follow the reader's project scope\n"
+        "            return None if owned else OWNER\n",
+        ['AC1/events'])
+    for case in result:
+        if case['finding'] == 178:
+            case['siblings'] = True
+
     # VELDO-0176: the factory keeps each conversation's engine session and history; each spec falsifier as one exact
     # edit.
     suite176 = '130_veldo_0176_conversation_history.py'

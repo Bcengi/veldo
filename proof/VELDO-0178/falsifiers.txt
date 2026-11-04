@@ -1,0 +1,40 @@
+launch header diff applied: True
+== read178-domain-membership: control_api_authority.py, 2 edit(s) (rows AC1/other-member)
+   "if record.get('owner') != principal:\n                self._observe_conversations(principal, conversation, 'refused', OWNER_REFUSAL)" -> "if False:  # defect: a conversation read is scoped by domain membership\n                self._observe_conversations(principal, conversation, 'refused', OWNER_REFUSAL)"
+   "if record.get('owner') != principal:\n                        continue" -> "if False:  # defect: every member's conversations are listed\n                        continue"
+  VELDO-0178 opened: 200 None c-3f6eacd802f0ecc402b7 200 c-129d543943a0479d1777
+  VELDO-0178 midway: True dispatch/c-3f6eacd802f0ecc402b7/9dce0211e33d457e86441c85156319fd
+  VELDO-0178 ended: True completed 7 ended
+  VELDO-0178 detail: AC1/list and only his own
+  SELFTEST FAIL: VELDO-0178 AC1/list
+  VELDO-0178 detail: AC1/other-member the colleague's list holds only his own conversation [['c-3f6eacd802f0ecc402b7', 'c-129d543943a0479d1777']]; the served conversation is refused to him by name, with nothing of it [200 None]
+  SELFTEST FAIL: VELDO-0178 AC1/other-member
+  VELDO-0178 detail: AC1/observability each call is observed with its principal, route, conversation and outcome; calls are counted by route and outcome [{'conversations.open': {'accepted': 2}, 'messages.send': {'accepted': 1, 'refused': 1}, 'conversations.read': {'accepted': 4, 'refused': 1}, 'conversations.set_role': {'accepted': 1, 'refused': 1}, 'conversations.attach_project': {'accepted': 1}, 'conversations.close': {'refused': 3, 'accepted': 1}}]
+  SELFTEST FAIL: VELDO-0178 AC1/observability
+  133_veldo_0178_conversation_api                 13 passed    3.13s
+restored: True
+== record178-project-alone: control_api_authority.py, 2 edit(s) (rows AC2/other-member)
+   "if contract.get('subject_kind') == 'conversation':\n            owner = SCOPE.conversation_owner(" -> "if False:  # defect: a turn's record is decided by project alone\n            owner = SCOPE.conversation_owner("
+   "if project is None:\n            return 'unauthorized:out_of_scope'" -> 'if project is None:\n            return None  # defect: a run with no project is readable by every member'
+  VELDO-0178 opened: 200 None c-bf68be21b4a61948e147 200 c-9f08ec26da036e5088a8
+  VELDO-0178 midway: True dispatch/c-bf68be21b4a61948e147/8556d7211a0f487da9e5a625712fb8ea
+  VELDO-0178 ended: True completed 8 ended
+  VELDO-0178 detail: AC2/other-member the colleague is refused the running turn's record by name [200 None]; and its live stream [200 None]; after the run the colleague is still refused by name, with no line [200 None]
+  SELFTEST FAIL: VELDO-0178 AC2/other-member
+  VELDO-0178 detail: AC2/neither a run with no project and no conversation is refused to every member, universal scope included [['missing_evidence:unknown_run', 'missing_evidence:unknown_run']]
+  SELFTEST FAIL: VELDO-0178 AC2/neither
+  VELDO-0178 detail: AC2/observability each turn record read is observed with its dispatch, conversation and turn; reads refused for scope are counted [{'turn_records': 11}]
+  SELFTEST FAIL: VELDO-0178 AC2/observability
+  133_veldo_0178_conversation_api                 13 passed    3.11s
+restored: True
+== feed178-conversation-by-scope: control_api_models_scope.py, 1 edit(s) (rows AC1/events)
+   'if owned is not None:\n            return None if owned else OWNER' -> "if False:  # defect: a conversation's records follow the reader's project scope\n            return None if owned else OWNER"
+  VELDO-0178 opened: 200 None c-225c540fa0a2fd3dcc0f 200 c-da5281a41c19bb16e4e6
+  VELDO-0178 midway: True dispatch/c-225c540fa0a2fd3dcc0f/dd0f41db0134480696d9999bdb32202e
+  VELDO-0178 ended: True completed 9 ended
+  VELDO-0178 detail: AC1/other-member the turn's dispatch is in the owner's workers read and not in his
+  SELFTEST FAIL: VELDO-0178 AC1/other-member
+  VELDO-0178 detail: AC1/events his feed carries the conversation opened, changed and closed, each by its command [0]; and its turn waiting, started and ended with its reply kept [[]]; the close reached his open stream live; the colleague's stream got nothing of it; the colleague's feed has nothing of the owner's conversation, its turn or its dispatch, and his own conversation's opening [['conversation', 'conversation_turn']]
+  SELFTEST FAIL: VELDO-0178 AC1/events
+  133_veldo_0178_conversation_api                 14 passed    3.12s
+restored: True
