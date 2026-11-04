@@ -18,19 +18,24 @@ Standard library only, besides the kb package and chromadb.
 import importlib
 
 # Each subcommand: the module and attribute its cli.py calls, the tool's input (name -> JSON type) and the
-# required inputs. The tool names are the subcommands' own. `search` with no collection is the cli's other branch,
+# required inputs. The tool names are the subcommands' own and the inputs its arguments: `search`'s n and its
+# classifications (comma separated, split into a list), `index-telegram`'s chat_id (its --passphrase is no input:
+# the record's JARVIS_PASSPHRASE reference covers it). `search` with no collection is the cli's other branch,
 # kb.store.search_all over every collection (EVERY).
 TOOLS = {
-    'search': ('kb.store', 'search', {'query': 'string', 'collection': 'string', 'n_results': 'integer'}, ['query']),
-    'index-file': ('kb.indexers.file', 'index_file', {'path': 'string', 'collection': 'string'}, ['path']),
-    'index-dir': ('kb.indexers.file', 'index_directory', {'path': 'string', 'collection': 'string'}, ['path']),
+    'search': ('kb.store', 'search', {'query': 'string', 'collection': 'string', 'n': 'integer',
+                                      'classifications': 'string'}, ['query']),
+    'index-file': ('kb.indexers.file', 'index_file', {'path': 'string', 'classification': 'string'}, ['path']),
+    'index-dir': ('kb.indexers.file', 'index_directory', {'path': 'string', 'pattern': 'string'}, ['path']),
     'index-telegram': ('kb.indexers.telegram', 'index_conversation',
-                       {'message': 'string', 'chat_id': 'string', 'classification': 'string'}, ['message', 'chat_id']),
+                       {'message': 'string', 'chat_id': 'string', 'classification': 'string'}, ['message']),
     'stats': ('kb.store', 'get_stats', {}, []),
     'list': ('kb.store', 'list_documents', {'collection': 'string', 'limit': 'integer'}, ['collection']),
     'delete': ('kb.store', 'delete', {'collection': 'string', 'doc_id': 'string'}, ['collection', 'doc_id']),
     'clear': ('chromadb', 'PersistentClient.delete_collection', {'collection': 'string'}, ['collection']),
 }
+# cli.py's defaults for the optional arguments it always passes.
+DEFAULTS = {'n': 5, 'classification': 'BP', 'pattern': '*.md', 'chat_id': '', 'limit': 20}
 EVERY = ('kb.store', 'search_all')
 LEFT_OUT = ('setup-passphrase',)
 _client = []
@@ -72,20 +77,24 @@ def call(name, arguments):
     if name == 'clear':
         return client().delete_collection(name=arguments['collection'])
     store = importlib.import_module(module)
+    given = dict(DEFAULTS, **{k: v for k, v in arguments.items() if v is not None})
     if name == 'search':
-        extra = {'n_results': int(arguments['n_results'])} if 'n_results' in arguments else {}
-        if arguments.get('collection'):
-            return store.search(arguments['collection'], arguments['query'], **extra)
-        return getattr(importlib.import_module(EVERY[0]), EVERY[1])(arguments['query'], **extra)
+        listed = [c.strip() for c in given['classifications'].split(',') if c.strip()] \
+            if given.get('classifications') else None
+        if given.get('collection'):
+            return store.search(given['collection'], given['query'], n_results=int(given['n']), classifications=listed)
+        return getattr(importlib.import_module(EVERY[0]), EVERY[1])(given['query'], n_results=int(given['n']),
+                                                                    classifications=listed)
     target = getattr(store, attribute)
-    if name in ('index-file', 'index-dir'):
-        extra = {'collection': arguments['collection']} if arguments.get('collection') else {}
-        return target(arguments['path'], **extra)
+    if name == 'index-file':
+        return target(given['path'], classification=given['classification'])
+    if name == 'index-dir':
+        return target(given['path'], pattern=given['pattern'])
     if name == 'index-telegram':
-        extra = {'classification': arguments['classification']} if 'classification' in arguments else {}
-        return target(arguments['message'], metadata={'chat_id': arguments['chat_id']}, **extra)
+        return target(given['message'], metadata={'chat_id': given['chat_id'] or ''},
+                      classification=given['classification'])
     if name == 'list':
-        return target(arguments['collection'], *([int(arguments['limit'])] if 'limit' in arguments else []))
+        return target(given['collection'], limit=int(given['limit']))
     if name == 'delete':
-        return target(arguments['collection'], arguments['doc_id'])
+        return target(given['collection'], given['doc_id'])
     return target()
