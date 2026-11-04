@@ -12223,6 +12223,42 @@ def cases():
         if case['finding'] == 180:
             case['siblings'] = True
 
+    # VELDO-0181: a conversation's decisions go through the existing decision flow, only its owner drives it, and nothing
+    # a turn produces carries authority; each spec falsifier as one exact edit, and the guard it implies. Each module
+    # loads its organs beside itself by path, so each mutant runs in a whole .veldo copy.
+    suite181 = '137_veldo_0181_conversation_decisions.py'
+    # AC1 (declared falsifier): a reply to a decision presentation sent in a conversation is taken as its next turn.
+    add(181, 'reply181-presentation-as-turn', suite181, 'control_channel_presentation.py',
+        "            if data.get('outcome') == 'published' and data.get('chat_id') == chat and message in (data.get('message_ids') or []):\n",
+        "            if (data.get('outcome') == 'published' and data.get('chat_id') == chat and message in (data.get('message_ids') or [])\n"
+        "                    and not str(data.get('request_id')).startswith(CONVERSATION_REQUEST)):  # defect: a reply in a"
+        " conversation is its next turn\n",
+        ['AC1/settles-by-reply'])
+    # AC2 (declared falsifier): an answer document found in a turn's final message is accepted.
+    add(181, 'output181-answer-accepted', suite181, 'control_conversation.py',
+        "        for entry in refused:\n            self.observe(CD.refused_event(identity, sequence, dispatch_id, entry))\n",
+        "        for doc in CD._objects(reply or ''):  # defect: an answer document in the final message is accepted\n"
+        "            if CD.document_kind(doc) != 'answer':\n                continue\n"
+        "            asked = [json.loads(raw) for (raw,) in self.conn.execute(\n"
+        "                \"SELECT data FROM entities WHERE kind='conversation_turn'\").fetchall()]\n"
+        "            for waiting in asked:\n"
+        "                for question in waiting.get('questions') or []:\n"
+        "                    if question.get('answer') is None and doc.get('choice') in (question.get('choices') or []):\n"
+        "                        self.note(waiting['conversation'], waiting['sequence'],\n"
+        "                                  dict(question, answer=doc.get('choice')))\n"
+        "        for entry in refused:\n            self.observe(CD.refused_event(identity, sequence, dispatch_id, entry))\n",
+        ['AC2/no-authority-from-output'])
+    # Guard (AC1): the presenter publishes only its own inbox, so a conversation's question is never shown.
+    add(181, 'publish181-own-inbox-only', suite181, 'control_channel_presentation.py',
+        "        if self.ids['repository_uuid'].startswith('conversation:'):\n            return results\n"
+        "        CD = _decisions()\n        for request in CD.pending(self.conn, self.inbox):\n",
+        "        if True:  # defect: a conversation's questions are never presented\n            return results\n"
+        "        CD = _decisions()\n        for request in CD.pending(self.conn, self.inbox):\n",
+        ['AC1/rerun-presented'])
+    for case in result:
+        if case['finding'] == 181:
+            case['siblings'] = True
+
     # VELDO-0179: the UI's conversation screens. Each mutant is one UI source module of engine/ui; suites 134 (AC1, AC2)
     # and 135 (AC3) build the UI with it laid over a scratch copy and run the browser tests against the conversation
     # harness. Each spec falsifier as one exact edit.
