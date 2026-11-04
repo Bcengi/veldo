@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0238
 title: Files travel both ways in a conversation, on Telegram and the UI - a turn sends files from its workspace to the owner, and files the owner sends land in the turn's workspace and its record, redacted and size-capped
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -140,3 +140,5 @@ stays the project attach of VELDO-0177 AC3.
 - 2026-11-04: drafted from the Veldo parity report, ticket T5, under the owner's decisions to move the work
   to Veldo (Telegram 39047, 39049) and that Veldo runs non-software projects (Telegram 39067, lifting
   PLAN-0019 NG3). Not implemented; the owner approves it before it is claimed.
+
+2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.

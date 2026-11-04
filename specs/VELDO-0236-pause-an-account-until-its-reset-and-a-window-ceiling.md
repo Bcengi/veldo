@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0236
 title: The owner pauses an account until its window resets, resumes it, or sets a ceiling on one of its usage windows, from Telegram or the UI, and every pause and ceiling carries its reset, ends by itself and is recorded in the journal
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -152,3 +152,5 @@ rules the factory sets by itself.
 - 2026-11-04: drafted from the Veldo parity report, ticket T2, under the owner's decisions to move the
   factory work to Veldo on all accounts (Telegram 39047, 39049) and that accounts are paused only until
   their reset (Telegram 39058). Not implemented; the owner approves it before it is claimed.
+
+2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.

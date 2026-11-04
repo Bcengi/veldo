@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0237
 title: A capability decision grants Codex image generation to the assistant_codex role only, and a live capture proves the generated image lands in the turn's workspace
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -121,3 +121,5 @@ draft); granting the feature to any project role.
   factory work to Veldo (Telegram 39047, 39049) and that text and code work stays on the subscriptions
   while paid image and video APIs are separate spend-gated exceptions (Telegram 39067). Not implemented;
   the owner approves it before it is claimed.
+
+2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.

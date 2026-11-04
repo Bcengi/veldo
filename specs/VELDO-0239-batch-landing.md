@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0239
 title: Batch landing - several reviewed units of a project are assembled onto trunk in one candidate, colliding migrations are renumbered by the project's own hook, the candidate is gated once with every red inventoried, and all land together on one owner approval
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -152,3 +152,5 @@ flow; batches across projects; any change to a project's verify.sh or to the gat
 - 2026-11-04: drafted from the Veldo parity report, ticket T8, under the owner's decisions to move the work
   to Veldo with local landing for core (Telegram 39047, 39049) and his approval of VELDO-0235 (Telegram
   39065). Not implemented; the owner approves it before it is claimed.
+
+2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.

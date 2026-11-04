@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0240
 title: Owner-approved standing schedules - a scheduled conversation turn or a scheduled batch gate runs at the times the owner approved, and every schedule is listed, cancellable and recorded
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -141,3 +141,5 @@ occurrences, and the host's own crontab jobs, which stay as they are.
 - 2026-11-04: drafted from the Veldo parity report, ticket T9, under the owner's decisions to move the work
   to Veldo (Telegram 39047, 39049) and that Veldo runs non-software projects (Telegram 39067). Not
   implemented; the owner approves it before it is claimed.
+
+2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
