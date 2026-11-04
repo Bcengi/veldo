@@ -1,6 +1,6 @@
 # VELDO-0179: open items for the lead
 
-1. scripts/gate_unconfined.json: add `134_veldo_0179_conversation_screens` and `135_veldo_0179_conversation_layout`.
+1. RESOLVED by the lead (footprint widened, entries added): scripts/gate_unconfined.json: add `134_veldo_0179_conversation_screens` and `135_veldo_0179_conversation_layout`.
    Both are browser suites (system Chrome through Playwright, the checkout's engine/ui/node_modules) like suites 118
    to 124. In the confined leg the worker's copy has no node_modules and npm ci cannot complete, so the gate's driver
    refuses the baseline as invalid_baseline (mutation-confined-leg.txt). Until they are on the list the four finding
