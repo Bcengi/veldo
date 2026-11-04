@@ -262,8 +262,9 @@ def owner_authenticated(store, packet):
 
 
 def save_catalog(store, definition, python, factory, root, memory_revision, prefix, observe):
-    """Each catalog record not yet saved as wanted, by the owner's signed command; {server: revision}."""
-    MC = organ('control_mcp_catalog', factory)
+    """Each catalog record not yet saved as wanted, by the owner's signed command, through the installed engine's
+    catalog writer (the code the store binds its records to); {server: revision}."""
+    MC = organ('control_mcp_catalog', store.bin)
     domain, repository = store.ids['domain_uuid'], store.ids['repository_uuid']
     catalog = MC.Catalog(store.S, store.conn, domain=domain, repository=repository, signer=store.principal,
                          sign=store.sign, generation=store.generation, observe=observe)
@@ -334,10 +335,12 @@ def save_roles(store, revisions, prefix, observe):
     return saved
 
 
-def setup_servers(root, owner_key, *, runner=None, unit_dir=None, python=None, factory=None, host=None,
-                  observe=None):
-    """The servers step: catalog records and role selections under the store's lock, then the store servers'
-    units, then the assistant's entries. Returns its report; refused by name."""
+def setup_servers(root, owner_key, *, runner=None, unit_dir=None, install_root=None, python=None, factory=None,
+                  host=None, observe=None):
+    """The servers step: catalog records and role selections under the store's lock, written by the installed
+    engine's writers (as setup's store steps write), then the store servers' units, then the assistant's entries.
+    `factory` is the engine directory the bridge and store servers run from (this module's own). Returns its
+    report; refused by name."""
     root = os.path.realpath(str(root))
     factory = str(Path(factory or Path(__file__).parent).resolve())
     python = python or sys.executable
@@ -356,6 +359,11 @@ def setup_servers(root, owner_key, *, runner=None, unit_dir=None, python=None, f
     runner = runner or CS.Systemctl()
     unit_dir = str(unit_dir or CS.default_unit_dir())
     laid = json.loads((Path(root) / 'host' / 'ingress.json').read_text())
+    CC, CE = organ('control_client', factory), organ('control_enrollment', factory)
+    installed = os.path.join(str(install_root or CS.default_install_root()),
+                             CC.service_id(CE.read_binding(laid['workspace'])), 'bin')
+    if not os.path.isfile(os.path.join(installed, 'control_mcp_catalog.py')):
+        raise Refused('missing_evidence:memory_servers:installation', installed)
     lock = F.take_lock(root)
     if lock is None:
         raise Refused('invalid_input:state_root:service_running:memory_servers')
@@ -371,7 +379,7 @@ def setup_servers(root, owner_key, *, runner=None, unit_dir=None, python=None, f
             reader.close()
         definition, memory_revision = handed['definition'], handed['revision']
         owner = record['owner']
-        store = D.Store(factory, str(Path(root) / 'host' / 'ingress.json'), owner, ACT.ssh_signer(owner_key), lock)
+        store = D.Store(installed, str(Path(root) / 'host' / 'ingress.json'), owner, ACT.ssh_signer(owner_key), lock)
         prefix = 'memory-servers-%s' % uuid.uuid4().hex[:8]
         revisions, catalog_saved = save_catalog(store, definition, python, factory, root, memory_revision, prefix, note)
         roles_saved = save_roles(store, revisions, prefix, note)

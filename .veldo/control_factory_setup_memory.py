@@ -111,7 +111,7 @@ def servers_main(args):
             request = json.loads(sys.stdin.read())
             result = MS.extract(root, request['text'])
         else:
-            result = MS.setup_servers(root, args.owner_key, unit_dir=args.unit_dir)
+            result = MS.setup_servers(root, args.owner_key, unit_dir=args.unit_dir, install_root=args.install_root)
         print(json.dumps(result, sort_keys=True))
         return 0
     except (M.Refused, OSError, ValueError, KeyError) as error:
@@ -122,7 +122,6 @@ def servers_main(args):
 
 def main(argv=None):
     import argparse
-    F = organ('control_factory_setup')
     parser = argparse.ArgumentParser(prog='veldo memory')
     subs = parser.add_subparsers(dest='action', required=True)
     # VELDO-0183: the store servers' bridge, memory_kb's command line through its store server, the subscription
@@ -145,6 +144,7 @@ def main(argv=None):
     servers = subs.add_parser('servers')
     servers.add_argument('--owner-key', required=True)
     servers.add_argument('--unit-dir')
+    servers.add_argument('--install-root')
     for p in (bridge, kb, extract, servers):
         p.add_argument('--state-root', required=True)
     check = subs.add_parser('check')
@@ -158,6 +158,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.action in ('bridge', 'kb', 'extract', 'servers'):
         return servers_main(args)
+    F = organ('control_factory_setup')
     conn, lock = None, None
     try:
         root = os.path.realpath(args.state_root)

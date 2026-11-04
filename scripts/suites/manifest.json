@@ -1768,6 +1768,18 @@
    "resources": {
     "systemd_user_manager": 1
    }
+  },
+  {
+   "name": "130_veldo_0183_memory_servers",
+   "file": "130_veldo_0183_memory_servers.py",
+   "requires": [
+    "130_veldo_0183_memory_servers"
+   ],
+   "regions": "Fifteen rows (VELDO-0183): the servers step saves the ava-memory, knowledge-graph, claude-mem and memory-kb catalog records over the memory record (the two ChromaDB parts as the bridge to their store servers, memory-kb's passphrase a credential reference) and a new revision of each assistant role selecting all four, every tool, always, named by a new default team revision; a turn's init event on each engine lists the four connected with every tool (AC1); a catalog save naming a paid-API switch or login refused by name for every record, and ava-memory's smart add extracted by Claude Code on a pooled subscription account recorded as a run, with every memory tool answering (AC2); every memory call kept in the turn's execution record, redacted, and a write in one conversation found by another on another account, by the assistant's servers and by veldo memory kb, while a conversation handed its own copy finds nothing (AC3); one store server per ChromaDB store as a user unit started inside VELDO-0182's check, a second opener refused conflict:memory_store_open, the assistant's entries rewritten to the bridge with the previous bytes kept, and 400 and 600 concurrent writes all found while each store's files stay held by its server alone (AC4); the store servers' lines name parts, sockets and revisions only.",
+   "requires_note": "Only shared ROOT and expect. VELDO-0171's installed-host fixture (reused through proof/VELDO-0185/fixture.py as suite 129 reuses it) with the real setup module, its user manager stand-in (which runs each store unit's ExecStart and waits for READY=1), Tailscale stand-in and loopback Bot API; proof/VELDO-0183/fixtures.py's synthetic memory stores; one generated fake engine for login status and the subscription extraction; a generated fake turn engine; a fake keystore. No real engine, login, paid API, keyring, memory store or memory server. Writes only temporary fixtures.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   }
  ],
  "resource_capacities": {

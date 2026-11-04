@@ -29,6 +29,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import queue
 import socket
 import struct
 import subprocess
@@ -208,30 +209,38 @@ def listen(path):
 
 
 class Server:
+    """Connections are read on threads of their own; every tool runs on the one thread that imported the part's
+    code (the part's own objects, a SQLite connection among them, may be bound to it), one call at a time."""
+
     def __init__(self, part, tools):
-        self.part, self.tools, self.one = part, tools, threading.Lock()
+        self.part, self.tools, self.calls = part, tools, queue.Queue()
         self.counts = {}
 
     def answer(self, request):
+        """Called on a connection's thread: the call is queued for the tools' thread and waited for."""
+        done, box = threading.Event(), []
+        self.calls.put((request, box, done))
+        done.wait()
+        return box[0]
+
+    def run(self, request):
         op = request.get('op')
         if op == 'list':
-            with self.one:
-                return dict(tools=self.tools.list())
+            return dict(tools=self.tools.list())
         if op != 'call' or not isinstance(request.get('name'), str):
             return dict(error='invalid_input:memory_store:request')
         about = request.get('about') if isinstance(request.get('about'), dict) else {}
         given = {k: v for k, v in (request.get('credentials') or {}).items() if k in CREDENTIALS and isinstance(v, str)}
         name, outcome = request['name'], 'ok'
-        with self.one:
-            os.environ.update(given)
-            try:
-                result = dict(content=self.tools.call(name, request.get('arguments') or {}), isError=False)
-            except Exception as error:  # noqa: BLE001 - a tool's own failure is its answer, as MCP gives it
-                result = dict(content=[dict(type='text', text='%s: %s' % (type(error).__name__, error))], isError=True)
-                outcome = 'error'
-            finally:
-                for key in given:
-                    os.environ.pop(key, None)
+        os.environ.update(given)
+        try:
+            result = dict(content=self.tools.call(name, request.get('arguments') or {}), isError=False)
+        except Exception as error:  # noqa: BLE001 - a tool's own failure is its answer, as MCP gives it
+            result = dict(content=[dict(type='text', text='%s: %s' % (type(error).__name__, error))], isError=True)
+            outcome = 'error'
+        finally:
+            for key in given:
+                os.environ.pop(key, None)
         key = '%s/%s' % (about.get('server') or self.part, name)
         self.counts[key] = self.counts.get(key, 0) + 1
         log('memory_call', part=self.part, server=about.get('server'), tool=name, outcome=outcome,
@@ -255,10 +264,20 @@ class Server:
                 stream.write((json.dumps(answer) + '\n').encode())
                 stream.flush()
 
-    def serve(self, server):
+    def accept(self, server):
         while True:
             conn, _ = server.accept()
             threading.Thread(target=self.handle, args=(conn,), daemon=True).start()
+
+    def serve(self, server):
+        threading.Thread(target=self.accept, args=(server,), daemon=True).start()
+        while True:
+            request, box, done = self.calls.get()
+            try:
+                box.append(self.run(request))
+            except Exception as error:  # noqa: BLE001 - listing failed: the request is answered, never dropped
+                box.append(dict(error='unavailable_service:memory_store:%s:%s' % (self.part, type(error).__name__)))
+            done.set()
 
 
 def main(argv=None):

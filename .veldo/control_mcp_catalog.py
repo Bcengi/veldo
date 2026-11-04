@@ -133,8 +133,7 @@ def paid_api_names():
     strips (STRIPPED). Read from the engine modules themselves, so a name they add is refused here too."""
     if not _PAID:
         names = set()
-        for engine in ('control_engine_claude', 'control_engine_codex'):
-            module = organ(engine)
+        for module in (organ('control_engine_claude'), organ('control_engine_codex')):
             names |= set(module.CREDENTIALS) | set(module.SETTINGS)
         _PAID.append(frozenset(names))
     return _PAID[0]
