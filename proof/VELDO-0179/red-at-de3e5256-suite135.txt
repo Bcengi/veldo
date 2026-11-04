@@ -1,0 +1,36 @@
+Red record: suite 135 at the base de3e5256 (no conversation screens), with this change's tests laid over it
+(harness, browser specs, suites 134 and 135, manifest and requires from 92648d3e; suite 134 with its tightened unit row).
+Command: python3 scripts/selftest.py --suite <suite> in a transient user scope (MemoryMax=8G, MemorySwapMax=0).
+
+Running as unit: run-ra841fcc558eb4dada2a578fecb4680bd.scope; invocation ID: 9a1732e905344ebf8a072ac4f5d53fe3
+==============================================================================
+PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
+==============================================================================
+  selector    --suite 135_veldo_0179_conversation_layout
+  running     1 of 197 suites: 135_veldo_0179_conversation_layout
+  why these   the named suites plus their measured prerequisite closure
+              (scripts/suites/requires.json). No fragment runs alone: every
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  cannot      emit the aggregate summary line, write .veldo/last_verify, or
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  exit        never 0, even when nothing fails.
+  done means  `bash scripts/verify.sh` green, and nothing else.
+==============================================================================
+  VELDO-0179 ac3/served-assets detail: the build has the conversation screens' assets ([])
+  SELFTEST FAIL: VELDO-0179 ac3/served-assets: the build has the conversation screens' assets ([])
+  VELDO-0179 ac3/screens-360 detail: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  SELFTEST FAIL: VELDO-0179 ac3/screens-360: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  VELDO-0179 ac3/screens-390 detail: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  SELFTEST FAIL: VELDO-0179 ac3/screens-390: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  VELDO-0179 ac3/screens-1280 detail: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  SELFTEST FAIL: VELDO-0179 ac3/screens-1280: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  VELDO-0179 ac3/screens-1440 detail: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  SELFTEST FAIL: VELDO-0179 ac3/screens-1440: its browser test ran and passed [['failed']; TimeoutError: locator.click: Timeout 10000ms exceeded. | Call log: |   - waiting for getByTestId('conversation-new')]
+  VELDO-0179 ac3/keyboard-desktop detail: its browser test ran and passed [['failed']; Expected: visible | Timeout: 10000ms | Error: element(s) not found | Call log: |   - Expect "toBeVisible" getByTestId('conversations-screen') with timeout 10000ms |   - waiting for getByTestId('conversations-screen')]
+  SELFTEST FAIL: VELDO-0179 ac3/keyboard-desktop: its browser test ran and passed [['failed']; Expected: visible | Timeout: 10000ms | Error: element(s) not found | Call log: |   - Expect "toBeVisible" getByTestId('conversations-screen') with timeout 10000ms |   - waiting for getByTestId('conversations-screen')]
+  VELDO-0179 ac3/touch-phone detail: its browser test ran and passed [['failed']; TimeoutError: locator.boundingBox: Timeout 10000ms exceeded. | Call log: |   - waiting for locator('[data-testid="you-conversations"]').first()]
+  SELFTEST FAIL: VELDO-0179 ac3/touch-phone: its browser test ran and passed [['failed']; TimeoutError: locator.boundingBox: Timeout 10000ms exceeded. | Call log: |   - waiting for locator('[data-testid="you-conversations"]').first()]
+VELDO-0179 suite seconds: 118.885
+  135_veldo_0179_conversation_layout               2 passed  118.89s
+selftest (PARTIAL, 1 of 197 suites): 28 passed, 7 failed in 118.89s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

@@ -137,9 +137,12 @@ def _v179_conversation_screens():
             unit = {}
         failed = [a.get('fullName') for f in unit.get('testResults') or [] for a in f.get('assertionResults') or []
                   if a.get('status') != 'passed']
-        check('unit/conversations', 'the conversation screens\' unit specs pass [%s passed, failed %s; %s]'
-              % (unit.get('numPassedTests'), failed[:4], '' if code == 0 else tail(out, 6)),
-              code == 0 and unit.get('numPassedTests', 0) > 0 and unit.get('numFailedTests', 1) == 0 and not failed)
+        mine = [a for f in unit.get('testResults') or [] if 'features/conversations/' in (f.get('name') or '')
+                for a in f.get('assertionResults') or [] if a.get('status') == 'passed']
+        check('unit/conversations', 'the conversation screens\' unit specs pass [%s passed, %d of them the conversation '
+              'screens\', failed %s; %s]' % (unit.get('numPassedTests'), len(mine), failed[:4],
+                                             '' if code == 0 else tail(out, 6)),
+              code == 0 and len(mine) > 0 and unit.get('numFailedTests', 1) == 0 and not failed)
 
         e2e = base / 'e2e.json'
         # The spec's tests, each title beginning with its row name and a colon.
