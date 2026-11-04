@@ -12112,6 +12112,11 @@ def cases():
     add(177, 'ws177-receiver-unchecked', suite177, 'control_conversation.py',
         "    if own is None or (contract.get('source') or {}).get('workspace') != own:\n",
         "    if False:  # defect: the turn's working directory is not checked\n", ['AC1/workspace-refused'])
+    add(177, 'attach177-reads-first', suite177, 'control_conversation.py',
+        "        if authorized:\n            try:\n                repository, path = project_source(",
+        "        if current is not None and _text(project) and type(version) is int"
+        " and version == current.get('version'):  # defect: the repository is read before authority\n"
+        "            try:\n                repository, path = project_source(", ['AC3/scope'])
     add(177, 'tools177-no-role-revision', suite177, 'control_launch.py',
         "            bound = {'role_revision': accepted,\n",
         "            bound = {  # defect: no role revision bound\n", ['AC2/offered-tools'])
