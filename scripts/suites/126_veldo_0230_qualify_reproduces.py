@@ -75,7 +75,7 @@ def _v230_reproduce_suite():
                   '.veldo/runtime/codex-qualification.json', 'engine/runtime/codex-qualification.json',
                   '.veldo/runtime/claude-qualification.json', 'engine/runtime/claude-qualification.json',
                   'proof/VELDO-0127/catalog-fixture.json', 'proof/VELDO-0127/features-fixture.json',
-                  'proof/VELDO-0127/resource-qualification.json'}
+                  'proof/VELDO-0127/resource-qualification.json', 'proof/VELDO-0127/fixture-models.json'}
         # The suite's own list of every table the binaries' readers write (never the command's own list, so
         # a command that stops running one reds this row).
         tables = {'proof/VELDO-0060/cli-options.json', 'proof/VELDO-0061/codex-exec.json',

@@ -31,7 +31,9 @@ import re
 import sys
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[1]
+# VELDO-0230: the repository whose engines record and qualify command this reads: beside this file, else (a
+# mutation checker's copy of it, kept elsewhere) the working directory's.
+ROOT = next((root for root in (HERE.parents[1], Path.cwd()) if (root / '.veldo' / 'qualify.py').is_file()), HERE.parents[1])
 OUT = HERE / 'cli-formats.json'
 _qualify = importlib.util.spec_from_file_location('v62_qualify', ROOT / '.veldo' / 'qualify.py')
 Q = importlib.util.module_from_spec(_qualify)
@@ -586,7 +588,7 @@ def _evaluated_environment():
     """VELDO-0230 AC3: the evaluated environment names of a newer Claude Code (runtime/capability-decisions.json):
     {name: (keep or setting or strip, reason)}."""
     try:
-        record = json.loads((Path(__file__).resolve().parents[2] / '.veldo/runtime/capability-decisions.json').read_text())
+        record = json.loads((ROOT / '.veldo/runtime/capability-decisions.json').read_text())
     except (OSError, ValueError):
         return {}
     return {name: (entry.get('effect'), entry.get('reason', ''))

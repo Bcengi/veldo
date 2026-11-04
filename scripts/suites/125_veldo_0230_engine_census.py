@@ -60,12 +60,12 @@ def _v230_census_suite():
         check('census/clean', 'no governed file holds an agent literal [%s]'
               % '; '.join('%s:%d %s %s' % f for f in found[:5]), found == [])
         check('census/clean', 'the census governs the engine modules, suites, mutations and extractors',
-              {'.veldo/control_engine_codex.py', 'scripts/suites/79_veldo_0061_codex_adapter.py',
+              {'.veldo/control_engine_codex.py', 'scripts/suites/125_veldo_0230_engine_census.py',
                'scripts/check_teeth_mutations.py', 'proof/VELDO-0062/extract_formats.py',
                'proof/VELDO-0127/wire_fixture.py'} <= set(census.governed(ROOT)))
 
         known = census.qualified(ROOT)
-        source = (ROOT / 'scripts' / 'suites' / '79_veldo_0061_codex_adapter.py').read_text()
+        source = Path(globals().get('__suite_file__', str(ROOT / 'scripts' / 'suites' / '125_veldo_0230_engine_census.py'))).read_text()
         planted = source + '\nPLANTED = %r\n' % engines['codex']['version']
         hits = census.findings(planted, known, 'planted.py')
         check('census/planted-version', 'the qualified Codex version planted in a suite is named [%s]' % hits,

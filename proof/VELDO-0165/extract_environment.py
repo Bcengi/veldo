@@ -24,7 +24,9 @@ import re
 import struct
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parent.parent
+# VELDO-0230: the repository whose engines record and qualify command this reads: beside this file, else (a
+# mutation checker's copy of it, kept elsewhere) the working directory's.
+ROOT = next((root for root in (HERE.parents[1], Path.cwd()) if (root / '.veldo' / 'qualify.py').is_file()), HERE.parents[1])
 _SPEC = importlib.util.spec_from_file_location('v165_qualify', str(ROOT / '.veldo' / 'qualify.py'))
 Q = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(Q)

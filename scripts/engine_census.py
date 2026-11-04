@@ -34,7 +34,6 @@ import json
 import os
 from pathlib import Path
 import re
-import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -66,7 +65,11 @@ def qualified(root):
 def governed(root):
     """The governed Python files, repository-relative."""
     root = Path(root)
-    tracked = subprocess.run(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '*.py'],
+    # Git through the repository's own boundary module (scripts/check_git_boundary.py).
+    spec = __import__('importlib.util').util.spec_from_file_location('census_git_process', root / '.veldo' / 'git_process.py')
+    _git_process = __import__('importlib.util').util.module_from_spec(spec)
+    spec.loader.exec_module(_git_process)
+    tracked = _git_process.run(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '*.py'],
                              cwd=root, capture_output=True, text=True, check=True).stdout.split('\0')
     tracked = sorted(p for p in tracked if p)
     files = [p for p in tracked if re.fullmatch(r'(?:\.veldo|engine/\.veldo)/[^/]+\.py', p)

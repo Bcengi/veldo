@@ -308,6 +308,16 @@ def fixtures(root, executable, written):
     E = load('qualify_evidence', here / 'evidence.py')
     qualified = H.X.load_qualification()
     outputs = {'catalog-fixture.json': fixture_text(qualified['model_catalog'])}
+    # The catalog's models the mutation registry names its rows by (a plain table it reads by key): the first
+    # Code Mode model, the first that supports the clock, the first direct model, and the first direct model
+    # that supports neither experimental tool.
+    models = qualified['model_catalog']['models']
+    code = next(m['slug'] for m in models if m.get('tool_mode') == 'code_mode_only')
+    outputs['fixture-models.json'] = text({
+        'code': code, 'direct': next(m['slug'] for m in models if m.get('tool_mode') is None),
+        'clock': next((m['slug'] for m in models if 'clock' in (m.get('experimental_supported_tools') or ())), code),
+        'plain': next(m['slug'] for m in models if m.get('tool_mode') is None and not set(
+            m.get('experimental_supported_tools') or ()) & {'clock', 'send_user_message_async'})})
     outputs['features-fixture.json'] = text(normalized(LB.capture(executable, {}, features=True)))
     source = json.loads((here / 'codex-live.json').read_text())['runs'][0]
     captured = []

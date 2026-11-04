@@ -1,0 +1,6 @@
+{
+ "clock": "gpt-6-astra",
+ "code": "gpt-6-astra",
+ "direct": "gpt-5.5",
+ "plain": "gpt-5.5"
+}

@@ -25,6 +25,7 @@ wrote engine/runtime/codex-qualification.json
 wrote .veldo/runtime/claude-qualification.json
 wrote engine/runtime/claude-qualification.json
 wrote proof/VELDO-0127/catalog-fixture.json
+wrote proof/VELDO-0127/fixture-models.json
 wrote proof/VELDO-0127/features-fixture.json
 wrote proof/VELDO-0127/resources-gpt-6-astra-selected.json
 wrote proof/VELDO-0127/resources-gpt-6-astra-none.json

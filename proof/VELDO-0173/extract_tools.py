@@ -36,7 +36,9 @@ import struct
 import sys
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[1]
+# VELDO-0230: the repository whose engines record and qualify command this reads: beside this file, else (a
+# mutation checker's copy of it, kept elsewhere) the working directory's.
+ROOT = next((root for root in (HERE.parents[1], Path.cwd()) if (root / '.veldo' / 'qualify.py').is_file()), HERE.parents[1])
 FORMATS = HERE.parent / 'VELDO-0062' / 'cli-formats.json'
 OUTPUT = HERE / 'claude-tools.json'
 TRAILER = b'\n---- Bun! ----\n'

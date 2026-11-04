@@ -9748,9 +9748,8 @@ def cases():
     add(127, 'role127-catalog-granted-experiments-lost', catalog_suite, 'control_agent_config_handoff.py',
         "if experimental.get(n, n) in grants]", "if False]", ['catalog/grants'])
     add(127, 'role127-search-unsupported-accepted', '87_veldo_0127_codex_delivery.py', 'control_agent_config.py',
-        "    if 'tool_search' in grants:", "    if False:", ['delivery/' + next(
-            m['slug'] for m in json.loads((ROOT / 'proof/VELDO-0127/catalog-fixture.json').read_text())['models']
-            if m.get('tool_mode') is None) + '/tool_search'])
+        "    if 'tool_search' in grants:", "    if False:", ['delivery/' + json.loads(
+            (ROOT / 'proof/VELDO-0127/fixture-models.json').read_text())['direct'] + '/tool_search'])
     add(127, 'role127-catalog-reasoning-altered', catalog_suite, 'control_agent_config_handoff.py',
         "    selected = copy.deepcopy(entry)",
         "    selected = dict(copy.deepcopy(entry), default_reasoning_level='corrupted')", ['catalog/fields'])
@@ -9993,11 +9992,11 @@ def cases():
     # VELDO-0230: the rows are named by the qualified catalog's models, never typed names: its first Code Mode
     # model, its first model that supports the clock, and its first direct model that supports neither
     # experimental tool.
-    models127 = json.loads((ROOT / 'proof/VELDO-0127/catalog-fixture.json').read_text())['models']
-    code127 = next(m['slug'] for m in models127 if m.get('tool_mode') == 'code_mode_only')
-    clock127 = next((m['slug'] for m in models127 if 'clock' in (m.get('experimental_supported_tools') or ())), code127)
-    plain127 = next(m['slug'] for m in models127 if m.get('tool_mode') is None and not set(
-        m.get('experimental_supported_tools') or ()) & {'clock', 'send_user_message_async'})
+    # (proof/VELDO-0127/fixture-models.json, which qualify.py writes from the catalog: VELDO-0153's registry audit
+    # evaluates these registrations statically.)
+    code127 = json.loads((ROOT / 'proof/VELDO-0127/fixture-models.json').read_text())['code']
+    clock127 = json.loads((ROOT / 'proof/VELDO-0127/fixture-models.json').read_text())['clock']
+    plain127 = json.loads((ROOT / 'proof/VELDO-0127/fixture-models.json').read_text())['plain']
     add(127, 'role127-delivery-sleep-disabled', delivery127, 'control_agent_config_handoff.py',
         "    configuration['features.goals'] = False",
         "    configuration['features.sleep_tool'] = {'enabled': False}\n"
