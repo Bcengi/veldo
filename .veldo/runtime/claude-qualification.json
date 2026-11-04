@@ -957,6 +957,7 @@
      "NotebookEdit",
      "REPL",
      "Read",
+     "SendUserMessage",
      "Skill",
      "TaskStop",
      "TodoWrite",
@@ -1558,8 +1559,8 @@
      "reason": "not on VELDO-0160's in-run list; its definition's searchHint: deliver files (screenshots, reports, artifacts) to the user"
     },
     "SendUserMessage": {
-     "class": "outward",
-     "reason": "not on VELDO-0160's in-run list; its definition's searchHint: send a message to the user \\u2014 your primary visible output channel"
+     "class": "in_run",
+     "reason": "on VELDO-0160's in-run list; its definition's searchHint: send a message to the user \\u2014 your primary visible output channel"
     },
     "ShareOnboardingGuide": {
      "class": "outward",

@@ -25,6 +25,9 @@ MODES = ('always', 'when assigned')
 CODEX_CAPABILITIES = {'shell', 'update_plan', 'apply_patch', 'view_image', 'multi_agent', 'sub_agents',
                       'web_search', 'tool_search', 'clock', 'request_user_input_async'}
 FIELDS = {'role', 'engine', 'native_tools', 'mcp', 'skills', 'instructions', 'settings'}
+# VELDO-0231 AC3: the tools that wait for an answer, which no role may list: nobody answers in an unattended run.
+WAIT_QUESTION_TOOLS = {'claude_code': ('AskUserQuestion',), 'codex': ('request_user_input',)}
+WAIT_QUESTION = 'invalid_input:agent_native_tools:wait_question'
 
 
 def digest(value):
@@ -68,6 +71,8 @@ def validate(definition, kind=KINDS[0]):
         for item in items:
             if not isinstance(item, dict) or set(item) != keys or item['load'] not in MODES:
                 raise Refused('invalid_input:agent_' + field)
+            if field == 'native_tools' and item['name'] in WAIT_QUESTION_TOOLS.get(definition['engine'], ()):
+                raise Refused(WAIT_QUESTION)
             name = (item.get('source'), item[key]) if field == 'instructions' else item[key]
             if name in seen:
                 raise Refused('invalid_input:agent_' + field)
@@ -107,6 +112,10 @@ def codex_grants(definition):
     # delivers the complete grant, so refuse it until the binary is qualified.
     if 'tool_search' in grants:
         raise Refused('unsupported_configuration:codex_tool:' + model + ':tool_search')
+    # VELDO-0231 AC2, AC3: the asynchronous flag holds only where its call reaches the stream the receiver reads and
+    # the binary answers the synchronous question its switch also delivers at once, with no answers.
+    if 'request_user_input_async' in grants and engine.flag_grant() is not None:
+        raise Refused('unsupported_configuration:codex_tool:' + model + ':request_user_input_async')
 
 
 def read(conn, domain, repository, role, revision=None, kind=KINDS[0]):

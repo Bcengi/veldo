@@ -940,6 +940,11 @@ CLAUDE_IN_RUN = (
      'name:Ed,aliases:["RunWorkflow"],searchHint:"orchestrate subagents'),
     ('CronCreate', 'a prompt in this session (rule 2), unless durable', 'var iy="CronCreate",',
      'name:iy,searchHint:"schedule a recurring or one-shot prompt",'),
+    # VELDO-0231 (owner Telegram 38897-38901): in a print-mode run its message goes only into the stream the
+    # receiver reads, where it is the agent's flag to the lead.
+    ('SendUserMessage', 'a message into the run\'s own stream, the flag the receiver reads (VELDO-0231)',
+     'var Qy="SendUserMessage",',
+     'name:Qy,aliases:[c0t],searchHint:"send a message to the user \\u2014 your primary visible output channel",'),
 )
 # How an allowlisted call can still act outside the run, each by the exact text of this build (once each). The Agent
 # tool runs remote when its input's `isolation` is "remote" (`agent_input`) or, with none given, when the agent

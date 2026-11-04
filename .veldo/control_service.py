@@ -2795,6 +2795,9 @@ class FactoryLoop:
         conversation_path = conversation_receiver(service.config)
         self.conversation = ConversationLine(self, conversation_path) if conversation_path else None
         self.wakes, self.ended, self.timer = [], [], None
+        # VELDO-0231: the clock flags are written with (the rate window's), and what this loop delivered.
+        self.clock = time.time
+        self.flag_counts = {'delivered': 0, 'held_back': 0, 'undelivered': 0, 'faults': 0}
         self.passes, self.last = 0, None
         self.counts = {'offered': 0, 'conversation_offered': 0, 'refused': 0, 'waiting': 0,
                        'asked': 0, 'released': 0, 'faults': 0, 'lands': 0}
@@ -2981,18 +2984,66 @@ class FactoryLoop:
         return found
 
     def readable(self, held):
-        """The poll set found a launch pipe readable: what it holds is taken, and a run's end wakes a pass."""
+        """The poll set found a launch pipe readable: what it holds is taken, each flag it carries is delivered at
+        once (VELDO-0231), and a run's end wakes a pass."""
         line, launch = held
         try:
             ended = launch.pump()
         except OSError:
             launch.ended = launch.lost = ended = True
+        self.deliver(line, launch)
         if ended:
             self.saw_end(line, launch)
 
     def saw_end(self, line, launch):
+        self.deliver(line, launch)
         self.ended.append((line, launch))
         self.wake('run_end', launch.dispatch_id)
+
+    def deliver(self, line, launch):
+        """VELDO-0231 AC1, AC4: each flag the launch pipe carried, written at once through flag_conversation into the
+        lead's conversation (the run's own for a conversation turn, else the open one attached to its project), with
+        the service's clock; a question's outcome is logged. Logged (kind `flag`) without the text: the dispatch,
+        engine, means, length, conversation, the run's flag count and held back count. Wakes no pass; makes no
+        network call and starts no process. A flag that cannot be written is a fault by name, never the loop's end."""
+        taken, launch.flags = list(getattr(launch, 'flags', None) or ()), []
+        for message in taken:
+            about = {'kind': 'flag', 'at': self.clock(), 'domain_uuid': self.service.domain,
+                     'dispatch_id': launch.dispatch_id, 'engine': message.get('engine'), 'means': message.get('means')}
+            if message.get('event') == 'question':
+                with contextlib.suppress(OSError):
+                    self.service._log(dict(about, operation='question', outcome=message.get('outcome'),
+                                           sequence=message.get('sequence')))
+                continue
+            conversation = project = None
+            if line is self.conversation:
+                turn = line._turn_for(launch.dispatch_id)
+                conversation = turn['conversation'] if turn else None
+            else:
+                project = getattr(line, 'project', None) or ((launch.contract or {}).get('reservation') or {}).get('project')
+            text = message.get('text') if isinstance(message.get('text'), str) else ''
+            try:
+                result = self.service.conversations().flag(
+                    launch.dispatch_id, engine=str(message.get('engine')), means=str(message.get('means')), text=text,
+                    at=self.clock(), read_at=message.get('read_at'), sequence=message.get('sequence'),
+                    account=message.get('account'), synchronous=bool(message.get('synchronous')),
+                    conversation=conversation, project=project)
+            except Exception as error:  # noqa: BLE001 - one flag that cannot be written never ends the loop
+                code = str(getattr(error, 'code', None) or 'unknown_outcome:' + type(error).__name__)
+                self.flag_counts['faults'] += 1
+                with contextlib.suppress(OSError):
+                    self.service._log(dict(about, operation='flag', outcome='refused', refusal=code,
+                                           length=len(text)))
+                continue
+            outcome = result['outcome']
+            self.flag_counts[{'delivered': 'delivered', CV.RATE_LIMITED: 'held_back',
+                              CV.UNDELIVERED: 'undelivered'}.get(outcome, 'faults')] += 1
+            with contextlib.suppress(OSError):
+                self.service._log(dict(about, operation='flag', outcome=outcome, length=len(text),
+                                       synchronous=bool(message.get('synchronous')),
+                                       conversation=result['conversation'], sequence=message.get('sequence'),
+                                       account=message.get('account'), flags=result['summary']['read'],
+                                       held_back=result['summary']['held_back']))
 
     def due(self, now):
         return self.timer is not None and now >= self.timer

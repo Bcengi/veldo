@@ -369,6 +369,49 @@ IN_RUN_SKILL = {'tool': 'Skill', 'field': 'context', 'inline': 'inline', 'parent
 IN_RUN_TASKS = {'field': 'task_type',
                 'in_run': ('in_process_teammate', 'local_agent', 'local_bash', 'local_workflow', 'monitor_ws')}
 
+# VELDO-0231: a running agent's flag to the lead. SendUserMessage (on VELDO-0160's in-run list: in a print-mode run
+# its message goes only into the stream the receiver reads) is the flag, its `message` the text; any attachments it
+# names are not carried. AskUserQuestion is a question that waits for an answer: no role lists it
+# (control_agent_config refuses it by name), its call asks under rule A, and its text is also delivered as a flag.
+# The marked line is a line of an assistant message's own text block that begins with FLAG_MARK, never a tool
+# result, a file or the prompt.
+FLAG_MARK = 'VELDO-FLAG:'
+FLAG_TOOL = 'SendUserMessage'
+QUESTION_TOOL = 'AskUserQuestion'
+MARKED_LINE = 'marked_line'
+
+
+def marked_lines(text):
+    """The flags of a message text: each line that begins with FLAG_MARK, after the mark."""
+    if not isinstance(text, str):
+        return []
+    return [line[len(FLAG_MARK):].strip() for line in text.splitlines() if line.startswith(FLAG_MARK)]
+
+
+def flags(event, means=None):
+    """The flags of one stream-json event: [{means, text, synchronous}], read only from an assistant message's
+    content (its text blocks, a SendUserMessage call's message, an AskUserQuestion call's questions)."""
+    message = event.get('message') if isinstance(event, dict) and event.get('type') == 'assistant' else None
+    content = message.get('content') if isinstance(message, dict) else None
+    found = []
+    for block in content if isinstance(content, list) else ():
+        if not isinstance(block, dict):
+            continue
+        if block.get('type') == 'text':
+            found += [{'means': MARKED_LINE, 'text': t, 'synchronous': False} for t in marked_lines(block.get('text'))]
+        elif block.get('type') == 'tool_use' and isinstance(block.get('input'), dict):
+            if block.get('name') == FLAG_TOOL and isinstance(block['input'].get('message'), str):
+                found.append({'means': FLAG_TOOL, 'text': block['input']['message'], 'synchronous': False})
+            elif block.get('name') == QUESTION_TOOL:
+                questions = block['input'].get('questions')
+                texts = [q.get('question') for q in questions if isinstance(q, dict)] \
+                    if isinstance(questions, list) else []
+                texts = [t for t in texts if isinstance(t, str)]
+                found.append({'means': QUESTION_TOOL, 'text': '\n'.join(texts) or json.dumps(block['input']),
+                              'synchronous': True})
+    return found
+
+
 # STREAM TABLES (VELDO-0230 AC2). The reader's tables that follow the qualified binary are not literals here: python3
 # .veldo/qualify.py writes them, from the binary's own (cli-formats.json tool_forms), into the qualified version's
 # record (`stream_forms` in runtime/claude-qualification.json beside this module), and `stream_tables` reads them from

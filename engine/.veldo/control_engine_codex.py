@@ -428,7 +428,10 @@ QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
 NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'], 'update_plan': ['update_plan'],
     'sub_agents': ['collaboration.' + n for n in ('followup_task', 'interrupt_agent', 'list_agents',
                                                'send_message', 'spawn_agent', 'wait_agent')],
-    'request_user_input_async': ['request_user_input_async'], 'clock': ['clock__curr_time', 'clock.sleep']}
+    # VELDO-0231 AC2: the switch that delivers the asynchronous call (tools.experimental_request_user_input) also
+    # delivers the synchronous one on this binary, so the grant's mapping names both and the wire set equals the role's.
+    'request_user_input_async': ['request_user_input_async', 'request_user_input'],
+    'clock': ['clock__curr_time', 'clock.sleep']}
 NATIVE_TOOL_MAPPING['multi_agent'] = NATIVE_TOOL_MAPPING['sub_agents']
 # Selecting an MCP server grants its resource readers (owner Telegram 29400/29401).
 # This mapping key is conditional on the selected server set, not a native role tool.
@@ -467,6 +470,99 @@ def undelivered_grants(record=None):
     record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
     found = record.get('undelivered_grants')
     return found if isinstance(found, list) else []
+
+
+# VELDO-0231: a running agent's flag to the lead. The marked line is a line of the agent's own message text (an
+# agent_message item, never a tool result, a file or the prompt) that begins with FLAG_MARK. The asynchronous call
+# (request_user_input_async) is a flag, the synchronous one (request_user_input) a question that waits for an
+# answer: each is read in the form the qualify command's loopback probe found it in the exec JSON stream
+# (`flag_means` in the qualification record: the event type, the item type, and the path to the text, `$json`
+# reading a JSON-encoded string). A binary on which the asynchronous call does not reach the stream has the
+# marked line as its means, with that reason, and the grant does not hold on it (flag_grant): never a grant the
+# receiver cannot read; nor does it hold unless the binary answers the synchronous question at once, with no
+# answers, when its input is closed after the prompt.
+FLAG_MARK = 'VELDO-FLAG:'
+FLAG_TOOL = 'request_user_input_async'
+QUESTION_TOOL = 'request_user_input'
+MARKED_LINE = 'marked_line'
+UNPROBED = {'means': MARKED_LINE, 'forms': {}, 'question': None,
+            'reason': 'not probed: the qualify command records the forms from the binary\'s loopback run'}
+# The longest the binary may take to answer a synchronous question for the asynchronous grant to hold.
+IMMEDIATE_SECONDS = 5
+
+
+def marked_lines(text):
+    """The flags of a message text: each line that begins with FLAG_MARK, after the mark."""
+    if not isinstance(text, str):
+        return []
+    return [line[len(FLAG_MARK):].strip() for line in text.splitlines() if line.startswith(FLAG_MARK)]
+
+
+def flag_means(record=None):
+    """The qualified binary's flag means (`flag_means`, the qualify probe's), else UNPROBED."""
+    try:
+        record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
+    except Refused:
+        return dict(UNPROBED)
+    found = record.get('flag_means')
+    return found if isinstance(found, dict) and isinstance(found.get('forms'), dict) else dict(UNPROBED)
+
+
+def flag_grant(record=None):
+    """None when request_user_input_async holds on the qualified binary, else why not (VELDO-0231 AC2, AC3): its
+    asynchronous call reaches the stream in a recorded form, and the binary answered the synchronous question
+    at once with no answers."""
+    means = flag_means(record)
+    question = means.get('question') or {}
+    if means.get('means') != FLAG_TOOL or not isinstance(means['forms'].get(FLAG_TOOL), dict):
+        return means.get('reason') or 'the asynchronous call does not reach the exec JSON stream'
+    if question.get('immediate') is not True or question.get('answers') is not False:
+        return 'the binary does not answer a synchronous question at once with no answers'
+    return None
+
+
+def _follow(value, path):
+    for step in path:
+        if step == '$json':
+            try:
+                value = json.loads(value)
+            except (TypeError, ValueError):
+                return None
+        elif isinstance(value, dict) and isinstance(step, str):
+            value = value.get(step)
+        elif isinstance(value, list) and isinstance(step, int) and -len(value) <= step < len(value):
+            value = value[step]
+        else:
+            return None
+    return value
+
+
+def _form_text(event, form):
+    if not isinstance(form, dict) or event.get('type') != form.get('type'):
+        return None
+    item = event.get('item')
+    if form.get('item_type') is not None and (not isinstance(item, dict) or item.get('type') != form['item_type']):
+        return None
+    texts = [_follow(event, path) for path in form.get('text') or ()]
+    texts = [t for t in texts if isinstance(t, str) and t]
+    return '\n'.join(texts) if texts else None
+
+
+def flags(event, means=None):
+    """The flags of one exec JSON event: [{means, text, synchronous}]. Marked lines only from an agent_message
+    item's own text; a call only in the form the qualification recorded for it."""
+    if not isinstance(event, dict):
+        return []
+    found = []
+    item = event.get('item')
+    if event.get('type') == 'item.completed' and isinstance(item, dict) and item.get('type') == 'agent_message':
+        found += [{'means': MARKED_LINE, 'text': t, 'synchronous': False} for t in marked_lines(item.get('text'))]
+    forms = (means if means is not None else flag_means()).get('forms') or {}
+    for tool, synchronous in ((FLAG_TOOL, False), (QUESTION_TOOL, True)):
+        text = _form_text(event, forms.get(tool))
+        if text is not None:
+            found.append({'means': tool, 'text': text, 'synchronous': synchronous})
+    return found
 
 
 ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
@@ -587,6 +683,7 @@ def qualification(executable, flags=FLAGS, *, catalog=False):
             'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
             'baseline': BASELINE, 'session_environment': session_environment(executable),
             'native_tool_mapping': NATIVE_TOOL_MAPPING, 'model_tool_modes': {}, 'undelivered_grants': [],
+            'flag_means': dict(UNPROBED),
             'mcp_resource_rule': {'when': 'nonempty_mcp_servers', 'mapping': 'mcp_server', 'otherwise': [],
                                   'offered_without_server': {}},
             'terminal_protocol': {'stream': 'stdout, one JSON event per line', 'events': sorted(EVENTS),

@@ -300,6 +300,102 @@ def fixture_models(catalog):
     return (next(s for s, mode in modes if mode == 'code_mode_only'), next(s for s, mode in modes if mode is None))
 
 
+# VELDO-0231: the token the flag probe's model call carries, and how long one probe run may take.
+FLAG_TOKEN = 'veldo-flag-probe-0231'
+PROBE_SECONDS = 45
+
+
+def token_path(value, token, path=()):
+    """The path to the first string in `value` holding `token` (`$json` entering a JSON-encoded string), or None."""
+    if isinstance(value, dict):
+        items = value.items()
+    elif isinstance(value, list):
+        items = enumerate(value)
+    elif isinstance(value, str) and token in value:
+        if value.strip() == token:
+            return list(path)
+        try:
+            inner = json.loads(value)
+        except ValueError:
+            return list(path)
+        found = token_path(inner, token, ())
+        return list(path) + ['$json'] + found if found is not None else list(path)
+    else:
+        return None
+    for key, item in items:
+        found = token_path(item, token, path + (key,))
+        if found is not None:
+            return found
+    return None
+
+
+def stream_form(stdout, token):
+    """The form of the first exec JSON event that carries `token`: {type, item_type, text: [path]}, or None."""
+    for line in (stdout or '').splitlines():
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue
+        path = token_path(event, token) if isinstance(event, dict) else None
+        if path is not None:
+            item = event.get('item')
+            return {'type': event.get('type'), 'item_type': item.get('type') if isinstance(item, dict) else None,
+                    'text': [path]}
+    return None
+
+
+def flag_probe(executable, qualified, H, LB, source, temp):
+    """VELDO-0231 AC2, AC3: on loopback, with the input closed after the prompt as Veldo launches it, the model calls
+    request_user_input_async and, in a second run, request_user_input, each carrying FLAG_TOKEN. Records the form
+    in which each call reaches the exec JSON stream, and for the synchronous one the binary's own answer (the call's
+    output in its next request), how long it took, whether it was immediate and whether it gave answers. The means
+    is the asynchronous call only where its form was found; else the marked line, with that reason."""
+    import copy
+    X = H.X
+    models = qualified['model_catalog']['models']
+    supporting = [m for m in models if 'send_user_message_async' in (m.get('experimental_supported_tools') or ())]
+    model = next((m['slug'] for m in supporting if m.get('tool_mode') is None),
+                 supporting[0]['slug'] if supporting else None)
+    if model is None:
+        return dict(X.UNPROBED, reason='no model of the bundled catalog supports the asynchronous call')
+    revision = copy.deepcopy(source['revision'])
+    revision['settings']['model'], revision['mcp'], revision['native_tools'] = model, [], ['request_user_input_async']
+    capability = {'revision': revision, 'skills': [], 'instructions': ''}
+    forms, question = {}, None
+    for tool in (X.FLAG_TOOL, X.QUESTION_TOOL):
+        cfg = X.generated()
+        cfg['mcp_servers'] = {}
+        catalog = H.codex_model(qualified, revision)
+        H.codex(cfg, capability, {}, temp, catalog=catalog, probe=True)
+        result = LB.capture(executable, cfg, catalog=catalog, call=(tool, FLAG_TOKEN), timeout=PROBE_SECONDS)
+        forms[tool] = stream_form(result.get('stdout'), FLAG_TOKEN)
+        if tool == X.QUESTION_TOOL:
+            requests = result.get('requests') or []
+            answered = requests[0].get('answered_at') if requests else None
+            output, seconds = None, None
+            for request in requests[1:]:
+                outputs = [i for i in request['body'].get('input') or () if isinstance(i, dict)
+                           and i.get('type') == 'function_call_output' and i.get('call_id') == 'call_loopback']
+                if outputs:
+                    output = outputs[0].get('output')
+                    seconds = round(request['arrived'] - answered, 3) if answered is not None else None
+                    break
+            text_output = output if isinstance(output, str) else json.dumps(output)
+            try:
+                parsed = json.loads(text_output) if output is not None else None
+            except ValueError:
+                parsed = None
+            answers = bool(parsed.get('answers')) if isinstance(parsed, dict) else output is None or bool(text_output)
+            question = {'answer': output, 'seconds': seconds, 'answers': answers,
+                        'immediate': seconds is not None and seconds <= X.IMMEDIATE_SECONDS,
+                        'returncode': result.get('returncode')}
+    if forms[X.FLAG_TOOL] is None:
+        return {'means': X.MARKED_LINE, 'forms': forms, 'question': question,
+                'reason': 'the asynchronous call does not reach the exec JSON stream on this binary'}
+    return {'means': X.FLAG_TOOL, 'forms': forms, 'question': question,
+            'reason': 'the asynchronous call reaches the exec JSON stream in the recorded form'}
+
+
 def fixtures(root, executable, written):
     """The VELDO-0127 fixtures the role suites read: the bundled catalog, the features listing and the real
     binary's loopback request with and without a selected MCP server for each of the two models."""
@@ -340,6 +436,12 @@ def fixtures(root, executable, written):
                 H.codex(cfg, capability, inventory, Path(temp), catalog=catalog)
                 captured.append((model, selected, capability, inventory, catalog,
                                  LB.capture(executable, cfg, catalog=catalog)))
+        # VELDO-0231: the forms in which the flag calls reach the exec JSON stream, and the binary's own answer to a
+        # synchronous question, written before the grant probe below (the handoff reads them).
+        means = flag_probe(executable, qualified, H, LB, source, Path(temp))
+        if qualified.get('flag_means') != means:
+            qualified['flag_means'] = means
+            write(root, 'codex-qualification.json', text(qualified), [])
         # VELDO-0230: each experimental grant the catalog lists, on the first model listing it, with nothing else
         # granted: a grant whose tools do not reach the request under Veldo's switches is undelivered.
         undelivered = []
@@ -354,7 +456,7 @@ def fixtures(root, executable, written):
             cfg = H.X.generated()
             cfg['mcp_servers'] = {}
             catalog = H.codex_model(qualified, revision)
-            H.codex(cfg, capability, {}, Path(temp), catalog=catalog)
+            H.codex(cfg, capability, {}, Path(temp), catalog=catalog, probe=True)
             result = LB.capture(executable, cfg, catalog=catalog)
             sent = set().union(*[H.codex_tool_names(H.codex_request_tools(r['body'])) for r in result['requests']])
             if not {H.codex_name(n) for n in qualified['native_tool_mapping'].get(grant, [grant])} <= sent:

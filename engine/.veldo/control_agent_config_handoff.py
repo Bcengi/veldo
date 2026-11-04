@@ -27,6 +27,22 @@ _git_spec.loader.exec_module(_git_process)
 OPTION = '-' * 2
 CODEX_NATIVE = {'shell': 'shell_tool', 'apply_patch': 'apply_patch_freeform',
                 'view_image': 'view_image', 'multi_agent': 'multi_agent'}
+# VELDO-0231: the role tools that flag the lead without stopping, by engine, and the one fixed text added to the
+# instructions of a role that holds one (AC3).
+FLAG_TOOLS = {'claude_code': 'SendUserMessage', 'codex': 'request_user_input_async'}
+FLAG_INSTRUCTIONS = (
+    'Nobody answers questions in this run: never ask a question and wait for its answer. Continue on your own '
+    'judgment. When the lead must know something now (you are blocked, a check needs a lock it cannot get, you '
+    'found something the brief did not expect), flag it and go on working: call your flag tool (SendUserMessage or '
+    'request_user_input_async) when your tools include it, otherwise write a line of your message that begins '
+    'with VELDO-FLAG: followed by what the lead must know.')
+
+
+def flag_instructions(revision, instructions):
+    """VELDO-0231 AC3: a role that holds a flag means gets FLAG_INSTRUCTIONS after its own instructions."""
+    if FLAG_TOOLS.get(revision.get('engine')) not in revision.get('native_tools', ()):
+        return instructions
+    return (instructions + '\n\n' if instructions else '') + FLAG_INSTRUCTIONS
 
 
 def selected(revision, field):
@@ -264,8 +280,9 @@ def claude(extra, capability, inventory, config, *, engine):
                     skillOverrides={name: 'off' for name in skills})
     extra['files'][SETTINGS_FILE] = (json.dumps(settings, sort_keys=True) + '\n').encode()
     extra['argv'] += [OPTION + 'debug-file', str(config / 'role-debug.log')]
-    if capability['instructions']:
-        extra['files']['role-instructions.md'] = capability['instructions'].encode()
+    instructions = flag_instructions(revision, capability['instructions'])
+    if instructions:
+        extra['files']['role-instructions.md'] = instructions.encode()
         extra['argv'] += [OPTION + 'append-system-prompt-file', str(config / 'role-instructions.md')]
     # `--disable-slash-commands` also withdraws the Skill tool, so a role granting it, or listing a skill, runs
     # without it; the generated settings above keep the engine's own skills off either way.
@@ -393,7 +410,8 @@ def codex_features(listing, grants, granted=frozenset()):
     return configuration
 
 
-def codex(configuration, capability, inventory, config, *, catalog=None, feature_listing=None):
+def codex(configuration, capability, inventory, config, *, catalog=None, feature_listing=None, probe=False):
+    """`probe` (VELDO-0231): the qualify command's loopback probe of the flag calls, run before the grant can hold."""
     revision = capability['revision']
     configuration.update(revision['settings'])
     if feature_listing is None:
@@ -402,13 +420,17 @@ def codex(configuration, capability, inventory, config, *, catalog=None, feature
     for name, feature in CODEX_NATIVE.items():
         configuration['features.' + feature] = name in revision['native_tools']
     configuration['tools.update_plan'] = {'enabled': 'update_plan' in revision['native_tools']}
-    configuration['tools.experimental_request_user_input'] = {'enabled': False}
+    # VELDO-0231 AC2: on only for a role that lists the asynchronous flag, where it holds on the qualified binary.
+    flagging = 'request_user_input_async' in revision['native_tools']
+    if flagging and not probe and X.flag_grant() is not None:
+        raise Refused('unsupported_configuration:codex_tool:request_user_input_async')
+    configuration['tools.experimental_request_user_input'] = {'enabled': flagging}
     configuration['features.goals'] = False
     agents = bool(set(revision['native_tools']) & {'multi_agent', 'sub_agents'})
     configuration['features.multi_agent'] = agents
     configuration['features.multi_agent_v2'] = {'enabled': agents}
     configuration['web_search'] = 'live' if 'web_search' in revision['native_tools'] else 'disabled'
-    configuration['developer_instructions'] = capability['instructions']
+    configuration['developer_instructions'] = flag_instructions(revision, capability['instructions'])
     for server, entry in inventory.items():
         configuration['mcp_servers'][server]['enabled_tools'] = entry['tools']
         configuration['mcp_servers'][server]['required'] = True

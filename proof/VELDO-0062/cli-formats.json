@@ -4066,6 +4066,7 @@
      "NotebookEdit",
      "REPL",
      "Read",
+     "SendUserMessage",
      "Skill",
      "TaskStop",
      "TodoWrite",
