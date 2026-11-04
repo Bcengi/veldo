@@ -485,11 +485,15 @@ class _Step:
 def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust=None, install_root=None,
           unit_dir=None, profile=None, writable=None, runner=None, origin=TELEGRAM_ORIGIN, clock=time.time,
           tailscale=None, api_port=None, git_identities=None, workspace_identity=None, accounts_root=None,
-          memory=None):
+          memory=None, https_port=None):
     """Lay the factory down, or complete one laid down with these same arguments (rerun). Returns what
     was laid down; refused by name, writing nothing, when a check fails. `tailscale` is the list of
-    system paths the Tailscale CLI is looked for at (TAILSCALE_PATHS), `api_port` the API's loopback port."""
+    system paths the Tailscale CLI is looked for at (TAILSCALE_PATHS), `api_port` the API's loopback port,
+    `https_port` the tailnet HTTPS port Serve maps to it (VELDO-0234: 443, 8443 or 10000; 443 when not
+    given on a fresh host, the port it was laid down with on a re-run)."""
     EL, API = organ('control_eligibility'), organ('control_factory_setup_api')
+    # VELDO-0234: the option is judged before anything else, so a value Serve does not offer writes nothing.
+    requested = _api(lambda: API.https_port_option(https_port))
     options = dict(host_trust=host_trust or EL.host_trust_path(), install_root=install_root, unit_dir=unit_dir,
                    profile=profile, writable=writable, origin=origin, accounts_root=accounts_root)
     port = API.PORT if api_port is None else api_port
@@ -497,7 +501,8 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     if state_root_problems(state_root) == ['invalid_input:state_root:holds_store']:
         return rerun(state_root, owner, owner_key, workspace, chat, token_file, runner=runner, clock=clock,
                      tailscale=tailscale, port=port, git_identities=git_identities,
-                     workspace_identity=workspace_identity, memory=memory, **options)
+                     workspace_identity=workspace_identity, memory=memory, https_port=requested, **options)
+    https_port = API.HTTPS_PORT if requested is None else requested
     plan = check(state_root, owner, owner_key, workspace, chat, token_file, **options)
     identity_options(git_identities, workspace_identity)
     memory_plan = _memory(lambda: organ('control_factory_setup_memory').prepare(memory))
@@ -505,7 +510,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         _memory(lambda: organ('control_memory_check').preflight(memory_plan['definition']))
     # Tailscale is read, with read-only commands, after every other check and before the first write.
     cli = _api(lambda: API.Tailscale(tailscale))
-    transport = _api(lambda: API.transport(cli, port))
+    transport = _api(lambda: API.transport(cli, port, https_port))
     claims, K, E, CE = organ('control_claim'), organ('control_keys'), organ('control_channel_enrollment'), organ('control_enrollment')
     IN, CS, ACT = organ('control_channel_ingress'), organ('control_service'), organ('control_channel_activation')
     S, CM, AC = claims.S, claims.CM, claims.AC
@@ -662,7 +667,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         with step('records_directory'):
             organ('control_factory_setup_records').directory(root, _differs, write=True)
         with step('api_service_configuration'):
-            api_service = _private(api_files['service_config'], api_service_text(plan, ids, transport['name']))
+            api_service = _private(api_files['service_config'], api_service_text(plan, ids, transport['name'], https_port))
         dispatch = plan['dispatch']
         work = None
         if dispatch is None:
@@ -706,12 +711,13 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     api_files = paths(root, keys, installed['home'], plan['unit_dir'], installed['unit'])
     python = json.loads(Path(installed['config']).read_text())['python']
     with step('api_process_configuration'):
-        _private(api_files['process_config'], api_process_text(plan, ids, api_files, transport['name'], port))
+        _private(api_files['process_config'], api_process_text(plan, ids, api_files, transport['name'], port,
+                                                               https_port))
     with step('api_unit'):
         install_api_unit(api_files, installed['unit'], python, runner)
     with step('tailscale_serve'):
         if transport['serve'] == 'free':
-            _api(lambda: API.serve(cli, transport['name'], port))
+            _api(lambda: API.serve(cli, transport['name'], port, https_port))
     return {'schema': SCHEMA, 'outcome': 'set_up', 'state_root': root, 'store': plan['store'], 'authority_ids': ids,
             'owner': owner, 'owner_key_digest': 'sha256:' + __import__('hashlib').sha256(owner_public.encode()).hexdigest(),
             'genesis': {'command_id': genesis.get('command_id'), 'principal': genesis.get('principal'),
@@ -730,7 +736,8 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             + [details[name] for name in ('account_login', 'dispatch') if name in details]
             + [{'step': 'api_start', 'outcome': 'deferred'}],
             'dispatch': dispatch_report(dispatch, details),
-            'api': api_report(transport['name'], port, api_files, through_service=False, workspace=plan['workspace']),
+            'api': api_report(transport['name'], port, api_files, through_service=False, workspace=plan['workspace'],
+                              https_port=https_port, transport=transport),
             'next': 'start it explicitly: systemctl --user start %s (the API unit %s starts with it), then veldo channel '
                     'qualify' % (installed['unit'], api_files['unit'])}
 
@@ -1042,19 +1049,21 @@ def paths(root, keys, home, unit_dir, unit):
     return found
 
 
-def api_service_text(plan, ids, name):
+def api_service_text(plan, ids, name, https_port=None):
     API = organ('control_factory_setup_api')
     return API.text(dict(API.service_config(plan['store'], ids, {'principal': JOURNAL_PRINCIPAL,
                                                             'key': os.path.join(plan['keys'], JOURNAL_KEY)},
-                                       API_EDGE, plan['workspace'], name),
+                                       API_EDGE, plan['workspace'], name,
+                                       API.HTTPS_PORT if https_port is None else https_port),
                          records=os.path.join(plan['root'], 'records')))
 
 
-def api_process_text(plan, ids, api, name, port):
+def api_process_text(plan, ids, api, name, port, https_port=None):
     API, E = organ('control_factory_setup_api'), organ('control_channel_enrollment')
     return API.text(API.process_config(ids, plan['workspace'], plan['host_trust'],
                                        os.path.join(plan['root'], HOST_DIR, 'signer.json'), E.edge_key_id(API.CHANNEL),
-                                       api['connection_key'], API_EDGE, api['state_dir'], name, port))
+                                       api['connection_key'], API_EDGE, api['state_dir'], name, port,
+                                       API.HTTPS_PORT if https_port is None else https_port))
 
 
 def enroll_api_edge(plan, ids, S, conn, journal, owner_sign, envelope, next_id, projection):
@@ -1128,10 +1137,18 @@ def install_api_unit(api, authority_unit, python, runner, states=None):
     return wrote
 
 
-def api_report(name, port, api, through_service, workspace):
+def api_report(name, port, api, through_service, workspace, https_port=None, transport=None):
     """The API's part of setup's answer; `ui` names the UI directory the API configuration names and whether a
-    built UI is there now (VELDO-0227)."""
-    return {'tailnet_name': name, 'origin': 'https://' + name, 'listen': '%s:%d' % ('127.0.0.1', port), 'port': port,
+    built UI is there now (VELDO-0227). VELDO-0234: `https_port` is the tailnet HTTPS port used, `origin` the
+    origin written for it, and `serve` that port's Serve mapping as done or already done with the other
+    ports' mappings setup found and left alone."""
+    API = organ('control_factory_setup_api')
+    https_port = API.HTTPS_PORT if https_port is None else https_port
+    transport = transport or {}
+    return {'tailnet_name': name, 'origin': API.origin_of(name, https_port), 'https_port': https_port,
+            'serve': {'https_port': https_port, 'mapping': 'done' if transport.get('serve') == 'free' else 'already_done',
+                      'left_alone': list(transport.get('others') or [])},
+            'listen': '%s:%d' % ('127.0.0.1', port), 'port': port,
             'unit': api.get('unit'), 'unit_path': api.get('unit_path'), 'service_config': api.get('service_config'),
             'process_config': api.get('process_config'), 'store_write_through_service': through_service,
             'ui': organ('control_factory_setup_api').ui_report(workspace)}
@@ -1142,9 +1159,20 @@ BASE_STEPS = ('directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollmen
               'requester_enrollment', 'host_trust', 'workspace_enrollment', 'ingress_configuration', 'service_install')
 
 
+def rerun_https_port(laid, requested, holds):
+    """The tailnet HTTPS port a re-run uses (VELDO-0234): the one the host was laid down with, read from its API
+    service configuration's origin; a host without one takes the option, 443 when not given. An option naming
+    another port than the laid one is refused as invalid_input:state_root:holds_https_port."""
+    if laid is None:
+        return organ('control_factory_setup_api').HTTPS_PORT if requested is None else requested
+    if requested is not None and requested != laid:
+        holds('https_port')
+    return laid
+
+
 def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust, install_root, unit_dir, profile,
           writable, origin, runner, clock, tailscale, port, git_identities=None, workspace_identity=None,
-          accounts_root=None, memory=None):
+          accounts_root=None, memory=None, https_port=None):
     """A run over a state root laid down before. Accepted only when EVERY argument equals what the store and
     the installation were laid down with (else invalid_input:state_root:holds_<argument>). Every check runs
     before the first write: an earlier step is reported already done, a missing one is run, and an existing
@@ -1199,6 +1227,8 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         holds('host_trust')
     if (laid.get('bot_api') or {}).get('origin') != plan['origin']:
         holds('origin')
+    # VELDO-0234: the tailnet HTTPS port this host was laid down with; another one is refused, writing nothing.
+    https_port = rerun_https_port(API.laid_https_port(os.path.join(host, API.SERVICE_CONFIG)), https_port, holds)
     authority_unit, home = CC.service_unit(binding), os.path.join(plan['install_root'], CC.service_id(binding))
     try:
         installed = json.loads(Path(home, 'config', 'service.json').read_text())
@@ -1255,11 +1285,11 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         _memory(lambda: organ('control_memory_check').preflight(memory_plan['definition']))
     # Tailscale, read-only, after every argument check and before the first write.
     cli = _api(lambda: API.Tailscale(tailscale))
-    transport = _api(lambda: API.transport(cli, port))
+    transport = _api(lambda: API.transport(cli, port, https_port))
     name = transport['name']
     api = paths(root, keys, home, unit_dir, authority_unit)
     edge = API.edge_state(state, api['key'], api['connection_key'], now, _differs)
-    service_text = api_service_text(plan, ids, name)
+    service_text = api_service_text(plan, ids, name, https_port)
     unit_body = _api(lambda: API.unit_text(authority_unit, installed.get('python') or '', api['executable'],
                                            api['process_config']))
     # VELDO-0189: the installed engine against the current one, from the installation's record, read only
@@ -1275,7 +1305,8 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     states = {'service_config': record_plan['api_states']['service_config'],
               'installed_service_config': record_plan['api_states']['installed_service_config'],
               # VELDO-0227: a configuration laid down before setup named the UI gains that key and nothing else.
-              'process_config': API.process_config_state(api['process_config'], api_process_text(plan, ids, api, name, port),
+              'process_config': API.process_config_state(api['process_config'],
+                                                         api_process_text(plan, ids, api, name, port, https_port),
                                                          0o600, _differs),
               # An API unit the upgrade renders again from the current template is judged as that rendering.
               'unit': ('equal' if engine['state'] != 'current' and os.path.lexists(api['unit_path'])
@@ -1423,9 +1454,9 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                              0o600)
         mark('api_service_install', added or states['installed_service_config'] == 'absent')
         if states['process_config'] == 'absent':
-            API.write_new(api['process_config'], api_process_text(plan, ids, api, name, port), 0o600)
+            API.write_new(api['process_config'], api_process_text(plan, ids, api, name, port, https_port), 0o600)
         elif states['process_config'] == 'upgrade':
-            API.replace_file(api['process_config'], api_process_text(plan, ids, api, name, port), 0o600)
+            API.replace_file(api['process_config'], api_process_text(plan, ids, api, name, port, https_port), 0o600)
         mark('api_process_configuration', states['process_config'] != 'equal')
         mark('api_unit', install_api_unit(api, authority_unit, installed.get('python') or '', runner, states))
         configured = False
@@ -1470,7 +1501,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             next_step = ('the service reads its work configuration and engine adapters on restart: systemctl --user '
                          'restart %s' % authority_unit)
         if transport['serve'] == 'free':
-            _api(lambda: API.serve(cli, name, port))
+            _api(lambda: API.serve(cli, name, port, https_port))
         mark('tailscale_serve', transport['serve'] == 'free')
         if memory_plan is not None:
             memory_conn = None
@@ -1500,7 +1531,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'started': started, 'service_running': running, 'steps': outcomes,
             'pins_made': upgraded.get('pins_made', 0), 'engines': upgraded.get('engines', {}),
             'engines_record': upgraded.get('engines_record'),
-            'api': api_report(name, port, api, through, plan['workspace']), 'next': next_step or upgraded.get('next'),
+            'api': api_report(name, port, api, through, plan['workspace'], https_port, transport), 'next': next_step or upgraded.get('next'),
             'dispatch': dispatch_report(plan['dispatch'], {o['step']: o for o in outcomes})}
 
 
@@ -1634,6 +1665,8 @@ def main(argv=None, **overrides):
     parser.add_argument('--token-file', required=True, help='this account\'s own 0600 bot token file; named, never copied')
     parser.add_argument('--git-identities', help='JSON identity records containing only keystore references')
     parser.add_argument('--workspace-identity', help='the explicit identity id for this repository')
+    parser.add_argument('--https-port', help='the tailnet HTTPS port Serve maps to the API: 443 (the default), 8443 '
+                        'or 10000; a re-run keeps the port the factory was laid down with')
     try:
         args = parser.parse_args(argv)
     except SystemExit as exc:
@@ -1651,6 +1684,8 @@ def main(argv=None, **overrides):
             overrides.update(git_identities=identities, workspace_identity=args.workspace_identity)
         elif args.workspace_identity is not None:
             overrides['workspace_identity'] = args.workspace_identity
+        if args.https_port is not None:
+            overrides['https_port'] = args.https_port
         report = setup(args.state_root, args.owner, args.owner_key, args.workspace, args.chat, args.token_file,
                        memory=args.memory, **overrides)
     except Refused as exc:

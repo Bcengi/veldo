@@ -15,7 +15,8 @@ alone, an absent one is written, and an existing one that would differ is refuse
                         it, the command goes to the running service over its socket, and setup then
                         republishes the key projection from a read-only view of the store;
   api_service_configuration   host/api-service.json, veldo.api_service/v1, its rp_id the host's tailnet name
-                        and its origin https://<that name>;
+                        and its origin https://<that name> (https://<that name>:<port> on a tailnet HTTPS
+                        port other than 443, VELDO-0234);
   api_service_install   the installation's copy (VELDO-0047's api_service option on a fresh host; on a host
                         laid down before, its config/api-service.json and service.json naming it);
   api_process_configuration   the 0600 veldo.api_process/v1 of the API process, listening on loopback only,
@@ -28,8 +29,19 @@ alone, an absent one is written, and an existing one that would differ is refuse
   api_start             the API unit started when the authority already runs with an installation that
                         already named the API configuration; otherwise nothing is restarted and the one
                         restart command is named;
-  tailscale_serve       `tailscale serve --bg` mapping the tailnet name's HTTPS to the loopback port, never
-                        Funnel, read back from the Serve status.
+  tailscale_serve       `tailscale serve --bg` mapping the tailnet name's HTTPS port to the loopback port,
+                        never Funnel, read back from the Serve status.
+
+THE TAILNET HTTPS PORT (VELDO-0234). Setup's --https-port is one of the HTTPS ports Tailscale Serve offers
+(HTTPS_PORTS: 443, 8443, 10000), 443 by default; any other value is refused as invalid_input:https_port
+before anything is written. Only that port's Serve entries are read (the Web key <name>:<port>, the TCP key
+<port> and AllowFunnel for <name>:<port>) and only that port is mapped; a mapping of any other port, such
+as an HTTPS root that serves another app, is neither refused nor changed, and is named in the report as
+left alone. On a port other than 443 the origin is https://<name>:<port> and the Host header the API
+requires is <name>:<port>, as a browser sends them; the WebAuthn relying party id stays <name>, a host
+name. On 443 both are the bare name, byte for byte what VELDO-0171 writes. A re-run keeps the port the
+host was laid down with (read from the origin of host/api-service.json; a host without one reads as the
+option, 443 by default) and refuses another as invalid_input:state_root:holds_https_port.
 
 TAILSCALE. The CLI is resolved from a fixed list of system paths, never PATH. Before anything is written
 setup reads, with read-only commands only: `status --json` (a running backend and this node's DNS name,
@@ -38,7 +50,8 @@ may be configured by without root), `serve --help` (whether it lists `--bg`, the
 and `serve status --json`. It refuses by name a missing or logged-out Tailscale (unavailable_service:tailscale),
 no operator setting (unavailable_service:tailscale:operator), a tailnet name without an HTTPS certificate
 domain (unavailable_service:tailscale:https), no `--bg` (unavailable_service:tailscale:persistence) and a
-Serve mapping of the name's HTTPS that names another target or is funneled (invalid_input:tailscale_serve:occupied).
+Serve mapping of the name's chosen HTTPS port that names another target or is funneled
+(invalid_input:tailscale_serve:occupied, naming the port).
 
 THE PASSKEY COMMAND. `veldo factory passkey --state-root DIR --owner NAME --owner-key FILE` lists the API's
 pending registrations with each one's label, fingerprint and principal (control_api_credentials.describe);
@@ -74,6 +87,8 @@ TAILSCALE_PATHS = ('/usr/bin/tailscale', '/usr/sbin/tailscale', '/usr/local/bin/
 PORT = 8171
 LOOPBACK = '127.0.0.1'
 HTTPS_PORT = 443
+# VELDO-0234: the HTTPS ports Tailscale Serve offers; setup's --https-port is one of them.
+HTTPS_PORTS = (443, 8443, 10000)
 CHANNEL = 'api'
 CONNECTION_KEY = 'api-auth'
 STATE_DIR = 'api'
@@ -160,24 +175,73 @@ def target(port):
     return 'http://%s:%d' % (LOOPBACK, port)
 
 
-def serve_state(served, name, port):
-    """'ours' when the name's HTTPS already maps to the API's loopback port, 'free' when it maps nothing;
-    any other mapping of it, or one Funnel publishes, is refused as occupied."""
+def https_port_option(value):
+    """Setup's --https-port: None when not given, else one of HTTPS_PORTS as an int; any other value is
+    refused as invalid_input:https_port (VELDO-0234)."""
+    if value is None:
+        return None
+    text = str(value).strip()
+    if isinstance(value, bool) or not text.isdigit() or int(text) not in HTTPS_PORTS:
+        raise Refused('invalid_input:https_port', 'the tailnet HTTPS port is one of %s'
+                      % ', '.join(str(p) for p in HTTPS_PORTS))
+    return int(text)
+
+
+def authority_of(name, https_port=HTTPS_PORT):
+    """The Host a browser sends for the name on that HTTPS port: the bare name on 443, <name>:<port> otherwise."""
+    return name if https_port == HTTPS_PORT else '%s:%d' % (name, https_port)
+
+
+def origin_of(name, https_port=HTTPS_PORT):
+    """The API's origin: https://<name> on 443, https://<name>:<port> on any other HTTPS port."""
+    return 'https://' + authority_of(name, https_port)
+
+
+def laid_https_port(path):
+    """The HTTPS port a host was laid down with, from the origin of its api-service.json; None without one."""
+    try:
+        origin = json.loads(Path(path).read_text()).get('origin')
+    except (OSError, ValueError, AttributeError):
+        return None
+    if not isinstance(origin, str) or not origin.startswith('https://'):
+        return None
+    authority = origin[len('https://'):]
+    shown = authority.rpartition(':')[2] if ':' in authority else str(HTTPS_PORT)
+    return int(shown) if shown.isdigit() else None
+
+
+def serve_state(served, name, port, https_port=HTTPS_PORT):
+    """'ours' when the name's chosen HTTPS port already maps to the API's loopback port, 'free' when it maps
+    nothing; any other mapping of it, or one Funnel publishes, is refused as occupied naming the port. Only
+    that port's entries are read: a mapping of another port is not this step's (VELDO-0234)."""
     served = served if isinstance(served, dict) else {}
-    key = '%s:%d' % (name, HTTPS_PORT)
+    chosen = https_port
+    key = '%s:%d' % (name, chosen)
     web = (served.get('Web') or {}).get(key)
-    tcp = (served.get('TCP') or {}).get(str(HTTPS_PORT))
+    tcp = (served.get('TCP') or {}).get(str(chosen))
     funnel = bool((served.get('AllowFunnel') or {}).get(key))
     if web is None and tcp is None and not funnel:
         return 'free'
     if (not funnel and tcp == {'HTTPS': True}
             and web == {'Handlers': {'/': {'Proxy': target(port)}}}):
         return 'ours'
-    raise Refused('invalid_input:tailscale_serve:occupied', 'the tailnet name\'s HTTPS already maps elsewhere')
+    raise Refused('invalid_input:tailscale_serve:occupied',
+                  'the tailnet name\'s HTTPS port %d already maps elsewhere' % chosen)
 
 
-def transport(cli, port):
-    """Every Tailscale precondition, read-only: {'name', 'serve'} or Refused naming the first problem."""
+def other_mappings(served, name, https_port=HTTPS_PORT):
+    """The Serve mappings of other ports setup found and leaves alone: their Web keys and TCP ports, sorted."""
+    served = served if isinstance(served, dict) else {}
+    mine = ('%s:%d' % (name, https_port), str(https_port))
+    found = set(served.get('Web') or {}) | set(served.get('TCP') or {}) | set(served.get('AllowFunnel') or {})
+    shown = {k for k in found if k not in mine}
+    # A TCP port whose Web key is listed is the same mapping; name each once, by its Web key.
+    shown -= {k for k in shown if k.isdigit() and any(w.endswith(':' + k) for w in shown)}
+    return sorted(shown)
+
+
+def transport(cli, port, https_port=HTTPS_PORT):
+    """Every Tailscale precondition, read-only: {'name', 'serve', 'others'} or Refused naming the first problem."""
     status = cli.json(['status', '--json'])
     own = status.get('Self') if isinstance(status.get('Self'), dict) else {}
     name = str(own.get('DNSName') or '').rstrip('.').lower()
@@ -192,15 +256,17 @@ def transport(cli, port):
     _code, out, err = cli.run(['serve', '--help'])
     if '--bg' not in (out + '\n' + err).replace('=', ' ').split():
         raise Refused('unavailable_service:tailscale:persistence', 'this Serve cannot keep a mapping in the background')
-    return {'name': name, 'serve': serve_state(cli.json(['serve', 'status', '--json']), name, port)}
+    served = cli.json(['serve', 'status', '--json'])
+    return {'name': name, 'serve': serve_state(served, name, port, https_port),
+            'others': other_mappings(served, name, https_port)}
 
 
-def serve(cli, name, port):
-    """Map the name's HTTPS to the loopback port in the background, then read the mapping back."""
-    code, _out, _err = cli.run(['serve', '--bg', '--https=%d' % HTTPS_PORT, target(port)])
+def serve(cli, name, port, https_port=HTTPS_PORT):
+    """Map the name's chosen HTTPS port to the loopback port in the background, then read the mapping back."""
+    code, _out, _err = cli.run(['serve', '--bg', '--https=%d' % https_port, target(port)])
     if code:
         raise Refused('unavailable_service:tailscale', 'tailscale serve --bg exited %d' % code)
-    if serve_state(cli.json(['serve', 'status', '--json']), name, port) != 'ours':
+    if serve_state(cli.json(['serve', 'status', '--json']), name, port, https_port) != 'ours':
         raise Refused('unavailable_service:tailscale', 'the Serve status does not show the mapping')
 
 
@@ -270,25 +336,27 @@ def ui_report(workspace):
     return {'directory': directory, 'state': UI_PRESENT if present else UI_ABSENT % workspace}
 
 
-def service_config(store, ids, journal, api_edge, workspace, name):
+def service_config(store, ids, journal, api_edge, workspace, name, https_port=HTTPS_PORT):
     """The veldo.api_service/v1 the authority service constructs the API's judge from: this authority's
     store, identities and journal, the ingress's api edge, the served repository as the one intake project
     and workflow repository, the served clone as the event publication's destination, and the tailnet name
-    as relying party and origin."""
+    as relying party and, with the tailnet HTTPS port on any port but 443, as origin (VELDO-0234)."""
     return {'schema': 'veldo.api_service/v1', 'store_path': store, 'authority_ids': dict(ids),
             'authority_generation': 1, 'journal': dict(journal), 'api_edge': api_edge,
             'domain': ids['domain_uuid'], 'projects': [ids['repository_uuid']], 'rp_id': name,
-            'origin': 'https://' + name, 'workflows_repository': ids['repository_uuid'],
+            'origin': origin_of(name, https_port), 'workflows_repository': ids['repository_uuid'],
             'publication_root': workspace}
 
 
-def process_config(ids, workspace, host_trust, signer_config, key_id, connection_key, api_edge, state_dir, name, port):
+def process_config(ids, workspace, host_trust, signer_config, key_id, connection_key, api_edge, state_dir, name, port,
+                   https_port=HTTPS_PORT):
     """The 0600 veldo.api_process/v1 the API process is constructed from (control_client_api.open_api); its
     API's `ui` is the workspace's factory UI directory, the only place the installed API learns it (VELDO-0227)."""
     return {'schema': 'veldo.api_process/v1', 'workspace': workspace, 'host_trust': host_trust,
             'signer': {'config': signer_config, 'edge_key_id': key_id, 'connection_key': connection_key},
             'listen': {'host': LOOPBACK, 'port': port},
-            'api': {'origin': 'https://' + name, 'rp_id': name, 'host': name, 'domain': ids['domain_uuid'],
+            'api': {'origin': origin_of(name, https_port), 'rp_id': name, 'host': authority_of(name, https_port),
+                    'domain': ids['domain_uuid'],
                     'ids': dict(ids), 'edge': api_edge, 'state_dir': state_dir, 'ui': ui_directory(workspace)}}
 
 
