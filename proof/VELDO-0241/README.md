@@ -2,7 +2,7 @@
 
 A unit's process is a versioned workflow revision; today's code process ships as the default definition `code`;
 no definition can reach an outward step without the owner's approval. The full gate is not run here (the lead
-runs it under the gate lock); every result below is a single-suite run, `python3 scripts/selftest.py --suite NAME`,
+runs it under the gate lock); every result below is a single-suite run of scripts/selftest.py with its suite selector,
 which is PARTIAL by construction and is not a green gate.
 
 ## What was built
@@ -27,11 +27,14 @@ which is PARTIAL by construction and is not a green gate.
 
 ## Acceptance criteria
 
-| AC | Rows (suite 127) | Falsifier | Red |
-|----|------------------|-----------|-----|
-| AC1 | default/shipped, default/equivalence (22 unit states, the Line of f6b081a4 read from Git as oracle), default/unbound-runs-code | v241-code-review-before-build: review and build swapped in code.json | default/equivalence false |
-| AC2 | approval/code-saves, approval/removed, approval/side-edge, approval/build-after, approval/build-after-land, approval/later-outward-kinds | v241-approval-skipped-accepted: the reachability refusal disabled | approval/side-edge false |
-| AC3 | binding/owner-binds, binding/refusals, binding/kind-of-work, binding/pinned-revision | v241-station-reads-head: the pinned definition read at the head | binding/pinned-revision false |
+- AC1. Rows: default/shipped, default/equivalence (22 unit states, the Line of f6b081a4 read from Git as the
+  oracle), default/unbound-runs-code. Falsifier v241-code-review-before-build (review and build swapped in
+  code.json): default/equivalence red.
+- AC2. Rows: approval/code-saves, approval/removed, approval/side-edge, approval/build-after,
+  approval/build-after-land, approval/later-outward-kinds. Falsifier v241-approval-skipped-accepted (the
+  reachability refusal disabled): approval/side-edge red.
+- AC3. Rows: binding/owner-binds, binding/refusals, binding/kind-of-work, binding/pinned-revision. Falsifier
+  v241-station-reads-head (the pinned definition read at the head): binding/pinned-revision red.
 
 Restored green: the unmutated suite 127, 44 passed, 0 failed (`suite-127_veldo_0241_unit_workflows.txt`).
 Red before the implementation: `red-before-127.txt` (the module did not exist).
