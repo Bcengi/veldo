@@ -66,12 +66,26 @@ non_goals:
     text: >
       No customer charging, production deployment, telecom operations, or integration with another
       operator.
+      Amended 2026-11-04 by owner Telegram 39067 (yes to decision 2 of 39063, an owner-approved deploy
+      step per release). Ruling applied: a project may deploy or publish only through a deploy or publish
+      step of its workflow, a named command run with keystore credentials after the project owner
+      approves that exact release, then checked (Cloud Run, a storage bucket, the webflow-ops pipeline,
+      a post to a social channel through its catalog server). Every deployment or publication without
+      that per-release approval, customer charging, telecom operations and integration with another
+      operator remain excluded.
   - id: NG3
     text: >
       Amended 2026-09-22 by owner Telegram 28857: "we definitly will need some form of UI, otherwise we'll be flying blind"
       Ruling applied: the prohibition on a new management console
       is removed. Veldo's own phone and desktop UI is in Release 1. Unverified Jira board
       changes, modifications to published prose and client-engagement material remain excluded.
+      Amended 2026-11-04 by owner Telegram 39067 (yes to decision 1 of 39063, Veldo runs non-software
+      projects). Ruling applied: the owner's own projects may be non-software work (decks, financial
+      models, plans, documents, images and video, social posts), built, reviewed, gated and landed or
+      delivered on his approval like any project. Paid image and video generation is allowed only as a
+      spend-gated exception, each use approved by the owner (decision 3 of 39063); text and code work
+      stays on the subscriptions. Other people's published prose and client-engagement material remain
+      excluded.
 
 constraints:
   - id: C1
@@ -2102,3 +2116,16 @@ VELDO-0036's writer, from the project budgets, team role budgets and account rec
 controls, at setup and at each pass of the running service, which VELDO-0185 AC4's dispatch needs on a
 fresh host (its third blocker, of 2026-10-04). W145 (VELDO-0185) and W44 (VELDO-0059) depend on it. The
 graph stays acyclic and stage-ordered.
+
+2026-11-04: NG3 amended under owner Telegram 39067 (decision 1 of 39063): Veldo runs the owner's own
+non-software projects (decks, financial models, plans, documents, images and video, social posts); paid
+image and video generation is a spend-gated exception approved per use (decision 3); other people's
+published prose and client-engagement material stay excluded. Owner Telegram 39069 to 39071 make a unit's
+process a versioned workflow per kind of work; drafts VELDO-0241 to VELDO-0245 carry it, standalone. No
+work item, edge, release or other text changes.
+
+2026-11-04: NG2 amended under owner Telegram 39067 (decision 2 of 39063): deploy and publish run only as
+a workflow step after the owner approves that exact release (Cloud Run, a storage bucket, the webflow-ops
+pipeline, a social channel through its catalog server); every other deployment, customer charging, telecom
+operations and another operator's integration stay excluded. Draft VELDO-0244, narrowing the parked
+VELDO-0086. No work item, edge, release or other text changes.
