@@ -12169,6 +12169,44 @@ def cases():
         if case['finding'] == 178:
             case['siblings'] = True
 
+    # VELDO-0179: the UI's conversation screens. Each mutant is one UI source module of engine/ui; suites 134 (AC1, AC2)
+    # and 135 (AC3) build the UI with it laid over a scratch copy and run the browser tests against the conversation
+    # harness. Each spec falsifier as one exact edit.
+    def ui179(name, directory, module, old, new, rows, also=(), suite='134_veldo_0179_conversation_screens.py'):
+        add(179, name, suite, module, old, new, rows, also)
+        result[-1]['dir'] = directory
+
+    # AC1 (declared falsifier 1): replies rendered as HTML.
+    ui179('ui179-reply-as-html', 'engine/ui/src/views', 'ConversationView.vue',
+          '<p v-if="turn.reply !== null" class="conv-text" data-testid="turn-reply">{{ turn.reply }}</p>',
+          '<p v-if="turn.reply !== null" class="conv-text" data-testid="turn-reply" v-html="turn.reply" />'
+          '<!-- defect: the reply is rendered as markup -->',
+          ['ac1/as-written'])
+    # AC1 (declared falsifier 2): the role control's refusal shown as a generic failure.
+    ui179('ui179-role-refusal-generic', 'engine/ui/src/views', 'ConversationView.vue',
+          '<RefusalNotice v-if="refusals.role" :refusal="refusals.role" compact data-testid="role-refusal" />',
+          '<p v-if="refusals.role" class="factory-meta" role="alert" data-testid="role-refusal">Something went wrong.'
+          ' Try again.</p><!-- defect: the refusal is shown as a generic failure -->',
+          ['ac1/stale-version'])
+    # AC2 (declared falsifier): the turn's reply shown in place of its record.
+    ui179('ui179-turn-reply-not-record', 'engine/ui/src/views', 'ConversationTurnView.vue',
+          '<RunTerminal v-else :dispatch="dispatch" :follower="follower" />',
+          '<div v-else data-testid="terminal" :data-state="marker === \'ended\' ? \'ended\' : \'live\'">'
+          '<p class="conv-text">{{ turn.reply ?? \'\' }}</p><RunTerminal v-if="false" :dispatch="dispatch"'
+          ' :follower="follower" /></div><!-- defect: the reply is shown in place of the record -->',
+          ['ac2/terminal'])
+    # AC3 (declared falsifier): the send action hidden at 360px width.
+    ui179('ui179-send-hidden-360', 'engine/ui/src/views', 'ConversationView.vue',
+          ':disabled="closed || !text.trim()" data-testid="message-send" />',
+          ':disabled="closed || !text.trim()" data-testid="message-send" v-show="!hideAt360" />',
+          ['ac3/screens-360'],
+          also=[("const route = useRoute()\n",
+                 "const route = useRoute()\n"
+                 "const hideAt360 = useMedia('(max-width: 360px)')  // defect: Send is hidden on a 360px phone\n"),
+                ("import { useLiveRead } from '@/composables/useLiveRead'\n",
+                 "import { useLiveRead } from '@/composables/useLiveRead'\nimport { useMedia } from '@/composables/useMedia'\n")],
+          suite='135_veldo_0179_conversation_layout.py')
+
     # VELDO-0176: the factory keeps each conversation's engine session and history; each spec falsifier as one exact
     # edit.
     suite176 = '130_veldo_0176_conversation_history.py'
