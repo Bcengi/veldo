@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0246
 title: The owner builds, edits and watches each kind of work's workflow on one canvas, and the canvas never lets an approval go
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -260,3 +260,5 @@ owner's OK before any build.
 2026-11-04: conditions and parallel work (Telegram 39079, "But what if steps are conditional, not just next
 next?"): the Check step and its condition editor, parallel steps and Join, capped loops, AC5 and AC6 (every
 path to an outgoing step passes the approval, refused at save with the path shown); screens e and f added.
+
+2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
