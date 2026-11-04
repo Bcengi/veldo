@@ -1,0 +1,7 @@
+--- a/.veldo/control_intake_conversation.py
++++ b/.veldo/control_intake_conversation.py
+@@ -290,2 +290,2 @@
+-                self._owned_open(held['conversation'], held['principal'])
+-                if reading['command'] != 'none':
++                if reading['command'] != 'none':
++                    self._owned_open(held['conversation'], held['principal'])  # defect: only a command reading
