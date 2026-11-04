@@ -1271,6 +1271,12 @@ class Presenter:
             raise Refused('unknown_presentation', 'the reply addresses no published presentation')
         typed, rationale = split_reply(message.get('text'))
         choice = offered_choice(typed, receipt['choices'])
+        if choice is None:
+            # VELDO-0181: the unclear route question also takes exactly one choice's short form (his project's bare
+            # name, as he answered it before it was a request); his reply is its reason unless he typed one.
+            short = self._route_shorts(receipt, typed)
+            if len(short) == 1:
+                choice, rationale = short[0], rationale if _words(rationale) else typed
         choice = typed.strip() if choice is None else choice
         return dict(self.ids, schema=ANSWER_SCHEMA, channel=CHANNEL,
                     assertion_kind=self.assignment.KINDS.get(receipt['request']['kind']),
@@ -1283,6 +1289,14 @@ class Presenter:
                     attribution={'platform_message_id': message.get('message_id'), 'sender_id': sender.get('id'),
                                  'platform_timestamp': message.get('date'), 'chat_id': chat.get('id'),
                                  'reply_to_message_id': reply.get('message_id')})
+
+    def _route_shorts(self, receipt, typed):
+        """The unclear route choices whose short form `typed` is (control_conversation_decisions.route_shorts);
+        none for any other request."""
+        CD = _decisions()
+        if not _is_str(typed) or CD.kind_of(self.conn, receipt['request_id']) != CD.ROUTE:
+            return []
+        return CD.route_shorts(typed, receipt['choices'], _fold)
 
     @staticmethod
     def _how(receipt, what):
@@ -1588,6 +1602,11 @@ class Presenter:
         # The assertion is what authority_contract.settle reads: its kind, ruling and scope must be
         # the ones this request and its offered choice give, spelled in the contract vocabulary.
         if a.get('choice') not in receipt['choices']:
+            shared = self._route_shorts(receipt, a.get('choice'))
+            if len(shared) > 1:
+                self._tell(ev, receipt, self._how(dict(receipt, choices=shared), 'That reply could be more than one '
+                                                  'choice.'))
+                raise Refused('ambiguous_choice', 'the reply is the short form of more than one offered choice')
             self._tell(ev, receipt, self._how(receipt, 'That reply did not match a choice.'))
             raise Refused('unmatched_choice', 'the reply names no offered choice')
         if (a.get('ruling') != ruling_of(a.get('choice'))

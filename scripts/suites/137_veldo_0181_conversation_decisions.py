@@ -49,7 +49,8 @@ def _v181_suite():
     }
     ROWS = ('AC1/rerun-presented', 'AC1/turn-waits', 'AC1/no-presentation-hint', 'AC1/settles-by-reply',
             'AC1/move-presented', 'AC1/settled-once-across', 'AC1/unclear-presented', 'AC1/unclear-settles-by-reply',
-            'AC1/unclear-settles-by-ui', 'AC1/unclear-settled-once', 'AC1/unclear-never-a-turn', 'AC1/observability',
+            'AC1/unclear-settles-by-ui', 'AC1/unclear-settled-once', 'AC1/unclear-never-a-turn', 'AC1/unclear-bare-project',
+            'AC1/unclear-bare-ambiguous', 'AC1/observability',
             'AC2/other-member', 'AC2/no-authority-from-output', 'AC2/observability')
     rows = {name: [] for name in ROWS}
 
@@ -686,6 +687,83 @@ else:
               len(refused_events) == len(refused) and all(e.get('refusal') == CD.OUTPUT_REFUSAL for e in refused_events)
               and 'summary you asked for' not in json.dumps(refused_events) and 'injected-181' not in json.dumps(
                   refused_events))
+
+        # THE UNCLEAR ROUTE QUESTION ANSWERED BY ITS SHORT FORM: before VELDO-0181 he answered it by replying the
+        # project's name; his reply that is exactly one option's short form (a bare project name, "new project", "new
+        # conversation" or a conversation id, case and spacing folded) settles it with no reason typed, and routes the
+        # message exactly as the full form does; a short form two options share is refused by name, nothing settled.
+        # His scope (and the edge's, which carries his answer) widened to two projects of his.
+        def membership_of(who):
+            return json.loads(authority.conn.execute('SELECT data FROM entities WHERE id=?', (who,)).fetchone()[0])
+
+        mine = ['activation-repository', 'new-project']
+        for name in mine:
+            authority.fixture('project:' + name, 'project', {'name': name, 'owner': 'owner', 'state': 'ACTIVE',
+                                                             'ticket_key_prefixes': []})
+        for who in ('owner', 'telegram-edge'):
+            authority.fixture(who, 'membership', dict(membership_of(who), scope=list(mine)))
+        intake.projects = ['factory'] + mine
+        # His delegation to the Telegram edge for answers in that scope (each question is its own request, version 1).
+        authority.admin('owner', 'grant_delegation', {
+            'id': authority.next_id('delegation-owner'), 'principal': 'owner', 'channel': 'telegram_chat',
+            'assertion_kinds': ['decision_answer'], 'authority_scope': list(mine), 'request_version': 1,
+            'presentation_version': 1, 'expires_at': time.time() + 1800, 'edge_key_id': 'edge-telegram'})
+        full_choice = 'accept project activation-repository'
+
+        def answered_by(text):
+            pid, _update, _routed, question = unclear('the thing for ' + text.split(':')[0][:12])
+            request = question.get('request')
+            shown = (presenter.current(request) if request else None) or {}
+            _got, update, _woke = telegram(owner, text, reply_to=(shown.get('message_ids') or [None])[-1])
+            told = [m for m in sent_to(owner_chat) if m[2] == update['message']['message_id']]
+            return pid, question, request, update, told, route_answers()
+
+        def routing(pid):
+            held = intake.proposal(pid) or {}
+            target = intake.proposal(held.get('resolved_to')) or {} if held.get('resolved_to') else {}
+            return (held.get('state'), str(held.get('resolved_to') or '').replace(str(pid), '<pid>'),
+                    (held.get('route') or {}).get('route'), (held.get('route') or {}).get('project'),
+                    (held.get('route') or {}).get('reason'), target.get('state'), target.get('project'),
+                    target.get('proposal'))
+
+        fpid, fq, fr, _fu, _ft, f_applied = answered_by(full_choice + ': that one')
+        bpid, bq, br, b_update, b_told, b_applied = answered_by('  Activation Repository ')
+        b_settled = settled_records(br) if br else []
+        print('  VELDO-0181 bare project reply:', [r.get('outcome') for r in f_applied],
+              [r.get('outcome') for r in b_applied], routing(fpid), routing(bpid), len(b_settled), len(b_told))
+        check('AC1/unclear-bare-project', 'the question offers his projects, the bare name among its short forms',
+              full_choice in (bq.get('choices') or {}) and 'accept project new-project' in (bq.get('choices') or {}))
+        check('AC1/unclear-bare-project', 'his bare project-name reply to the presentation settles it once, from '
+              'Telegram, with the full choice it names and his reply as its reason, nothing told back',
+              len(b_settled) == 1 and b_settled[0].get('choice') == full_choice
+              and b_settled[0].get('originating_channel') == 'telegram_chat'
+              and b_settled[0].get('rationale') == 'Activation Repository' and b_told == [])
+        check('AC1/unclear-bare-project', 'the settled choice routes the message exactly as the full form does: the '
+              'same state, objective, route and project %s' % (routing(bpid),),
+              [r.get('outcome') for r in f_applied] == ['resolved'] == [r.get('outcome') for r in b_applied]
+              and routing(fpid) == routing(bpid) and routing(bpid)[0] == 'ROUTED'
+              and routing(bpid)[6] == 'activation-repository'
+              and (intake.question(bq.get('question_id')) or {}).get('choice') == full_choice)
+        again_bare, again_update, _woke = telegram(owner, 'activation-repository',
+                                                   reply_to=((presenter.current(br) if br else None) or {}).get(
+                                                       'message_ids', [None])[-1])
+        check('AC1/unclear-bare-project', 'a second bare reply settles and routes nothing again',
+              len(settled_records(br) if br else []) == 1 and route_answers() == []
+              and routing(bpid) == routing(fpid))
+        apid, aq, ar, a_update, a_told, a_applied = answered_by('New Project')
+        a_refusals = [e.get('reason') for e in presenter.observations
+                      if e.get('operation') == 'answer' and e.get('request_id') == ar]
+        print('  VELDO-0181 ambiguous bare reply:', a_refusals, [m[1] for m in a_told], a_applied)
+        check('AC1/unclear-bare-ambiguous', 'a bare reply that is the short form of two options (a new project, and '
+              'his project new-project) is refused by name, ambiguous_choice',
+              a_refusals == ['ambiguous_choice'])
+        check('AC1/unclear-bare-ambiguous', 'he is told once, naming both choices it could be',
+              len(a_told) == 1 and 'accept new project' in a_told[0][1]
+              and 'accept project new-project' in a_told[0][1])
+        check('AC1/unclear-bare-ambiguous', 'nothing is settled or routed: the question open, the message awaiting it',
+              (settled_records(ar) if ar else ['?']) == [] and a_applied == []
+              and (intake.question(aq.get('question_id')) or {}).get('state') == 'open'
+              and (intake.proposal(apid) or {}).get('state') == 'AWAITING_PROJECT')
     except Exception as error:  # noqa: BLE001
         import traceback
         traceback.print_exc()

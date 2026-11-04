@@ -16,7 +16,8 @@ THE UNCLEAR ROUTE QUESTION (VELDO-0175 AC2) is the same kind of request. When th
 unclear, intake opens its question through `open_question` at the message's own decision coordinate
 (`conversation:route:<proposal>`, `route_identity`), the choices `route_choices` offers (each a pick: a project, a
 new project, a new conversation, one of his open conversations), and presents it at once; its reply is settlement's,
-never intake's and never a turn, and intake applies the settled choice (`ruling`) to the proposal as his reply answer
+never intake's and never a turn (a reply that is exactly one choice's short form, `route_short`, answers it with no
+reason typed, as he answered it before; one two choices share is refused ambiguous_choice), and intake applies the settled choice (`ruling`) to the proposal as his reply answer
 was applied before: a project resolves it, anything else clarifies it for the PM (control_intake.route_answers).
 
 A PRESENTATION IN A CONVERSATION IS NOT ONE OF ITS TURNS. Once a conversation request is published, `presented` keeps
@@ -125,6 +126,21 @@ def route_choices(projects, conversations):
             'route': 'open_conversation', 'conversation': entry['id'],
             'label': 'conversation %s%s' % (entry['id'], ' (%s)' % entry['opening'] if entry.get('opening') else '')}
     return found
+
+
+def route_short(choice):
+    """The short form of one unclear route choice, as he answered the question before it was a request: a project's
+    bare name, `new project`, `new conversation`, or a conversation's id."""
+    for lead in ('accept project ', 'accept conversation ', 'accept '):
+        if isinstance(choice, str) and choice.startswith(lead):
+            return choice[len(lead):]
+    return None
+
+
+def route_shorts(typed, choices, fold):
+    """The offered unclear route choices whose short form `typed` is, folded as the presenter folds a choice (`fold`):
+    one is his answer, two or more are ambiguous."""
+    return [c for c in choices if route_short(c) is not None and fold(route_short(c)) == fold(typed)]
 
 
 def is_request(request):

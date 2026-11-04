@@ -1,0 +1,21 @@
+VELDO-0181 fix round 2: suite 137 alone (python3 scripts/selftest.py --suite 137_veldo_0181_conversation_decisions) with the two new rows and before the bare form is built (presenter unchanged): both new rows red, every other row green. The full form control in AC1/unclear-bare-project resolves; the bare replies are refused unmatched_choice.
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  /tmp/tmpzum1yhxw: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpzum1yhxw/proof4.json: criterion AC1 passed without evidence
+  VELDO-0181 re-run question: assignment:conversation:c-1a988d9fef5b1ea94e0c:conversation-rerun-d0a75294072d6d17ed599d3c ask ['published'] []
+  VELDO-0181 turn output: completed ['answer', 'approval', 'role', 'route'] ['protocol', 'reply', 'tool_result']
+  VELDO-0181 reply: not_taken ['settled'] [None]
+  VELDO-0181 move question: assignment:conversation:c-57092b8d0fb88ad043ec:conversation-limit-ec6a18fe936db54a9737c6b7 published
+  VELDO-0181 move answer: settled None refused request_closed
+  VELDO-0181 unclear question: applied assignment:conversation:route:ca730cc5c06552786b12b96a:unclear-route-3b1eb00a2c132dbdc89c0cdb published
+  VELDO-0181 unclear reply: not_taken ['clarification'] AWAITING_ROUTE
+  VELDO-0181 unclear UI answer: settled refused request_closed ['clarification']
+  VELDO-0181 other member: ['missing_authority:conversation_owner', 'missing_authority:conversation_owner', 'missing_authority:conversation_owner', 'missing_authority:conversation_owner'] ['missing_authority:conversation_owner', 'missing_authority:conversation_owner', 'missing_authority:conversation_owner']
+  VELDO-0181 bare project reply: ['resolved'] [] ('ROUTED', '<pid>:answered', 'existing_project', 'activation-repository', 'The principal answered the offered project question.', 'PROPOSED', 'activation-repository', 'objective') ('AWAITING_PROJECT', '', 'unclear', None, 'Fixture PM: no project or conversation is clear.', None, None, None) 0 1
+  VELDO-0181 ambiguous bare reply: ['unmatched_choice'] ['That reply did not match a choice. Reply to the presentation with one of: accept conversation c-1a988d9fef5b1ea94e0c | accept conversation c-2d377109894ecb89dfcc | accept conversation c-57092b8d0fb88ad043ec | accept new conversation | accept new project | accept project activation-repository | accept project new-project, then a colon and your reason, for example "accept conversation c-1a988d9fef5b1ea94e0c: <your reason>".'] []
+  VELDO-0181 detail: AC1/unclear-bare-project his bare project-name reply to the presentation settles it once, from Telegram, with the full choice it names and his reply as its reason, nothing told back; the settled choice routes the message exactly as the full form does: the same state, objective, route and project ('AWAITING_PROJECT', '', 'unclear', None, 'Fixture PM: no project or conversation is clear.', None, None, None); a second bare reply settles and routes nothing again
+  SELFTEST FAIL: VELDO-0181 AC1/unclear-bare-project
+  VELDO-0181 detail: AC1/unclear-bare-ambiguous a bare reply that is the short form of two options (a new project, and his project new-project) is refused by name, ambiguous_choice
+  SELFTEST FAIL: VELDO-0181 AC1/unclear-bare-ambiguous
+  137_veldo_0181_conversation_decisions           15 passed    5.27s
+selftest (PARTIAL, 1 of 199 suites): 41 passed, 2 failed in 5.27s

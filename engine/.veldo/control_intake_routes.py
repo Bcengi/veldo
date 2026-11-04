@@ -131,7 +131,8 @@ class Routes:
                                              time.gmtime(self.clock() + ASK_SECONDS)),
                    'budget': {'invocations': 1},
                    'brief': 'Which project is this for? Pick a project, or talk it over in a conversation. '
-                            + '; '.join(lines) + '.',
+                            + '; '.join(lines) + '. Reply with just a project\'s name, new project, new conversation '
+                            'or a conversation id, or with a choice and your reason.',
                    'choices': list(question['choices']),
                    'subject': {'kind': CD.ROUTE, 'ref': qid, 'digest': 'sha256:' + hashlib.sha256(json.dumps(
                        question, sort_keys=True, separators=(',', ':')).encode()).hexdigest()}}
