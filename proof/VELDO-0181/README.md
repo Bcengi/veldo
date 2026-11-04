@@ -15,7 +15,12 @@ Fix round 2 (the lead's ruling on OPEN.md item 10): his reply to the unclear rou
 exactly one choice's short form settles it again with no reason typed, as he answered it before (14e20cb3; mutation case
 ade18d20; receipts c9d21c56). See "Round 2" below.
 
-Test: suite 137 (`scripts/suites/137_veldo_0181_conversation_decisions.py`, 17 rows (15 before round 2, 11 before round 1), registered in manifest.json and
+Fix round 3 (the review's side observation 2): his reply to the unclear route question's presentation that matches no
+option's short or full form still answers it once, as before this ticket: a ticket key whose prefix decides a project
+picks that project, anything else clarifies the message for the PM in his own words (d32d39c9 rows, ed06f588 change,
+eb43816c mutation case, b67b8472 row confinement). See "Round 3" below.
+
+Test: suite 137 (`scripts/suites/137_veldo_0181_conversation_decisions.py`, 19 rows (17 before round 3, 15 before round 2, 11 before round 1), registered in manifest.json and
 requires.json). A real signed authority (VELDO-0073's support) with the channel edge and the owner's delegation, a
 loopback Bot API, the production Ingress (a gate stand-in that admits) over the production Acquirer with the edge's real
 signer, the presenter and settlement, the production intake with its conversations, the production FactoryLoop's
@@ -37,8 +42,11 @@ Evidence files:
 - `suite137-round2-red-before.txt`: round 2, suite 137 with the two new rows before the bare form was built: both red
   (the bare replies refused unmatched_choice; the full form control resolves), the other fifteen green.
 - `suites-round2.txt`: round 2, every suite the lead named, each alone.
+- `suite137-round3-red-before.txt`: round 3, suite 137 with the two new rows before the change: both red (each reply
+  refused unmatched_choice and told once, nothing settled), the other seventeen green.
+- `suites-round3.txt`: round 3, every suite the lead named, each alone.
 - `suite68-0136.diff`: the uncommitted change to suite 68_veldo_0136_hints (OPEN.md item 9).
-- `mutation-*.txt`, `mutations-summary.txt`: each of the five cases (four before round 2) run alone through `scripts/check_gate_mutations.py`
+- `mutation-*.txt`, `mutations-summary.txt`: each of the six cases (five before round 3, four before round 2) run alone through `scripts/check_gate_mutations.py`
   with its case option: baseline and no-op green, the mutant killed at its row, confined leg.
 - `control_service.diff`, `OPEN.md`: the change outside the footprint, and readings to review.
 
@@ -163,6 +171,49 @@ unmatched_choice), green after (17/17, `suites-round2.txt`).
 Guard (`bare181-short-form-dropped`: a bare short form never answers the question): AC1/unclear-bare-project red.
 Killed. The existing cases kill as before; `reply181-presentation-as-turn` and `route181-applied-twice` also fail the
 two new rows.
+
+## Round 3: a reply matching no option still answers the unclear route question once
+
+Before this ticket a reply naming a ticket key resolved the message to the project its key prefix decides (VELDO-0152),
+and a reply naming no project clarified the proposal for the PM; rounds 1 and 2 refused both unmatched_choice. Now his
+reply to the presentation that is neither a full choice nor any choice's short form settles the request once, through
+the same VELDO-0068 settlement; no new requirement.
+
+- `control_conversation_decisions.route_keyed(conn, text, choices)`: the offered project choice a ticket key in his
+  whole reply decides, by intake's own function (`control_intake.keyed_projects`) over each offered project record's
+  `ticket_key_prefixes` (`control_project.ticket_key_prefixes`): one project or none (no key, a prefix two projects
+  list, keys naming two projects).
+- `route_choices` also offers `accept clarification` (`CLARIFY`; option route `clarification`, label `your own words
+  for the factory PM`), the choice a reply naming no option settles as. It is a pick like the others (ruling approve),
+  presented and answerable from the UI with his words as the reason.
+- `Presenter.canonical_answer`: on an unclear route question, when the reply matches no full choice and no short form,
+  it becomes the keyed project's choice if `route_keyed` decides one, else `accept clarification`; either way his whole
+  reply text is the reason. A short form two choices share is still refused `ambiguous_choice` by name (it never
+  reaches this step). Every other request is untouched: a reply naming no choice is still refused unmatched_choice.
+- `Intake._answer_plan`: a settled `accept clarification` adds his words as the clarification text (the settlement's
+  reason, his raw reply with runs of whitespace collapsed as settlement records every reason), returns the proposal to
+  AWAITING_ROUTE for the PM and answers the question, as a clarifying reply did. A keyed project choice resolves exactly
+  as the bare name and full form do. The brief adds that any other reply tells the factory PM more in his own words.
+
+Test rows (suite 137; `activation-repository` now lists ticket key prefix `ACT`): AC1/unclear-ticket-key (his reply
+`the release one, see ACT-12` settles once from Telegram as `accept project activation-repository`, his reply as its
+reason, nothing told back; it routes exactly as the full form and the bare name do; a second reply `and ACT-13 too`
+settles and routes nothing; neither reply is a turn, opens a conversation or is intake's message) and
+AC1/unclear-free-text (his reply `not those: the invoices one from Monday` settles once from Telegram as the
+clarification choice, his reply as its reason, nothing told back; the proposal is AWAITING_ROUTE with exactly his words
+as its one clarification, the question answered; a second reply settles and routes nothing; neither is a turn, opens a
+conversation or is intake's message). Red before (`suite137-round3-red-before.txt`), green after (19/19,
+`suites-round3.txt`).
+
+Guard (`free181-clarification-dropped`: a reply naming no option and no ticket key never clarifies; it is refused
+unmatched_choice): AC1/unclear-free-text red. Killed. `route181-applied-twice` also fails the two new rows; the
+existing cases kill as before.
+
+## Suites run, round 3 (each alone, `suites-round3.txt`)
+
+137 (19/19), 130 (17/17), 131 (16/16), 132 (19/19), 136 (21/21), 68_veldo_0126 (18/18), 68_veldo_0136_hints (7/7),
+69_veldo_0133 (33/33), 93 (24/24): green. The six 0181 mutation cases, each alone (`mutations-summary.txt`,
+`mutation-*.txt`): see that file for each case's baseline, no-op and mutant. The full gate was not run.
 
 ## Suites run, round 2 (each alone, `suites-round2.txt`)
 

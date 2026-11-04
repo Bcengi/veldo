@@ -20,6 +20,18 @@ The original text of items 1 to 3 follows the new items, for the record.
   settled (14e20cb3, mutation case bare181-short-form-dropped ade18d20, receipts c9d21c56). README, "Round 2". The rest of
   item 10 stands.
 
+## Fix round 3: the review's side observation 2 resolved
+
+- A reply to the unclear route question's presentation naming a ticket key, or naming no option at all, answers it
+  once again, as before this ticket: the ticket key's project (VELDO-0152's rule, `control_intake.keyed_projects`)
+  routes exactly as the bare name; anything else settles as `accept clarification` carrying his words and returns the
+  proposal to the PM as a clarifying reply did (README, "Round 3"). This changes two readings of item 10: a clarifying
+  reply's text is his raw words again (only the clarification choice; a non-project pick still records `label: reason`),
+  and the question offers one more choice, `accept clarification`. A reply naming a project in free text with no key
+  (68's old `project-b please`) is a clarification for the PM, not a resolution; the PM reads it.
+- Reading for the lead: the clarification is a presented choice because settlement only settles an offered choice; the
+  UI's decisions screen therefore also offers it (his words as the reason). Rule if it should be Telegram-only.
+
 ## 9. One suite outside the widened footprint, NOT committed: scripts/suites/68_veldo_0136_hints.py
 
 The footprint names `68_veldo_0126_*`; suite 68_veldo_0136_hints (VELDO-0136) also pins the old ask (an unclear route
