@@ -12124,7 +12124,7 @@ def cases():
         "                # defect: the local landing pushes too\n"
         "                origin = self._git(self.clone, 'config', '--get', 'remote.origin.url').stdout.strip()\n"
         "                identity = _organ('control_git_identity').resolve(self.conn, self.domain, self.repository)\n"
-        "                self._git(self.clone, 'push', '-q', origin, payload['commit'] + ':' + self.ref, profile='identity',\n"
+        "                self._git(self.clone, 'push', '-q', origin, '+' + payload['commit'] + ':' + self.ref, profile='identity',\n"
         "                          push_identity=identity, remote_url=origin)\n",
         ['local/lands'])
     # AC3 (declared falsifier): the destination is left out of the bound subject, so a grant made before the

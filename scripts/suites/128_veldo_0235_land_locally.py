@@ -598,11 +598,16 @@ def _v235_suite():
         asked_brief = brief_of(waiting)
         check(BC, 'the owner is asked again, the brief naming the destination [%s]' % asked_brief[-100:],
               'Destination: land locally on main, nothing pushed.' in asked_brief)
-        granted = station.grant(SWITCH, station.record(waiting['dispatch_id']), owner='olga', basis={'answer': 'grant'})
+        try:
+            granted = station.grant(SWITCH, station.record(waiting.get('dispatch_id')), owner='olga',
+                                    basis={'answer': 'grant'})
+        except LS.Refused as error:
+            granted = []
+            check(BC, 'the owner\'s grant is recorded [%s]' % error.code, False)
         fresh = (row(granted[0]) or {}).get('data') or {} if granted else {}
         check(BC, 'his grant binds the destination [%s]' % (fresh.get('subject') or {}).get('destination'),
               (fresh.get('subject') or {}).get('destination') == 'land_locally')
-        relanded = land(SWITCH, follows=waiting['dispatch_id'])
+        relanded = land(SWITCH, follows=waiting.get('dispatch_id'))
         check(BC, 'the land after his grant lands locally [%s %s]' % (relanded.get('state'), relanded.get('refusal')),
               relanded.get('state') == 'landed' and relanded.get('destination') == 'land_locally'
               and local_tip() == candidate_of(relanded) and snapshot(bare) == bare_before)

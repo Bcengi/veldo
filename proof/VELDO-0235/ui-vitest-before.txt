@@ -4,14 +4,14 @@ Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 
  RUN  v5.0.5 /tmp/v235-ui/ui
 
- ❯ src/features/projects/projects.spec.ts (4 tests | 1 failed) 10ms
-   ❯ projects (4)
-     × names each project's landing destination in words, land and push when the record names none (VELDO-0235) 3ms
+ > src/features/projects/projects.spec.ts (4 tests | 1 failed) 10ms
+   > projects (4)
+     x names each project's landing destination in words, land and push when the record names none (VELDO-0235) 3ms
 
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+------- Failed Tests 1 -------
 
  FAIL  src/features/projects/projects.spec.ts > projects > names each project's landing destination in words, land and push when the record names none (VELDO-0235)
-AssertionError: expected [ [ undefined, undefined ], …(1) ] to deeply equal [ [ 'land_and_push', …(1) ], …(1) ]
+AssertionError: expected [ [ undefined, undefined ], ?(1) ] to deeply equal [ [ 'land_and_push', ?(1) ], ?(1) ]
 
 - Expected
 + Received
@@ -31,15 +31,15 @@ AssertionError: expected [ [ undefined, undefined ], …(1) ] to deeply equal [ 
     ],
   ]
 
- ❯ src/features/projects/projects.spec.ts:28:80
-     26|   it('names each project\'s landing destination in words, land and pus…
-     27|     const local = { items: { project: [item('project:c', 'project', { …
-     28|     expect(projectsOf(answer).map((p) => [p.destination, p.destination…
+ > src/features/projects/projects.spec.ts:28:80
+     26|   it('names each project\'s landing destination in words, land and pus?
+     27|     const local = { items: { project: [item('project:c', 'project', { ?
+     28|     expect(projectsOf(answer).map((p) => [p.destination, p.destination?
        |                                                                                ^
-     29|       ['land_and_push', 'land and push to its remote'], ['land_and_pus…
-     30|     expect(projectsOf(local).map((p) => [p.destination, p.destinationW…
+     29|       ['land_and_push', 'land and push to its remote'], ['land_and_pus?
+     30|     expect(projectsOf(local).map((p) => [p.destination, p.destinationW?
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+------------------------[1/1]-
 
 
  Test Files  1 failed (1)
