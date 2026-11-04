@@ -12,7 +12,7 @@ work: W137
 plan_revision: 4
 depends_on: [VELDO-0040, VELDO-0042, VELDO-0127, VELDO-0158, VELDO-0162, VELDO-0165, VELDO-0171, VELDO-0173, VELDO-0174, VELDO-0185]
 placement: [contracts, fleet, distribution]
-protected_paths: []
+protected_paths: ["scripts/gate_unconfined.json"]
 footprint:
   - "engine/.veldo/control_conversation*.py"
   - ".veldo/control_conversation*.py"
@@ -37,6 +37,9 @@ footprint:
   - "specs/VELDO-0177-conversation-workspace-and-tools.md"
   - "specs/index.md"
   - "proof/VELDO-0177/*"
+  - "scripts/suites/123_veldo_0174_conversations.py"
+  - "scripts/suites/106_veldo_0185_dispatch_setup.py"
+  - "scripts/gate_unconfined.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -159,3 +162,10 @@ signed commands. AC3's attach comes from the API or Telegram's `/attach`. depend
 VELDO-0185. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+2026-11-04: footprint widened by the lead after the build (proof/VELDO-0177/OPEN.md): suite 123's
+own-directory row and suite 106's fresh/team and rerun/over-earlier-host rows assert what AC1 and AC2
+change on purpose (the turn's working directory is the conversation's workspace; setup adds the two
+assistant roles), and the two new suites 128 and 129 need the systemd user manager, so they join the
+gate's unconfined list, scripts/gate_unconfined.json, a protected file that needs the owner's approval
+at landing. Acceptance criteria are unchanged.
