@@ -59,7 +59,8 @@ OPERATIONS = {
     'save_mcp_server': {'parameters': ('definition', 'base'), 'boundary': 'command_acceptance'},
     'set_mcp_credential': {'parameters': ('id', 'label', 'base', 'value_digest'), 'boundary': 'command_acceptance'},
     'delete_mcp_credential': {'parameters': ('id', 'base'), 'boundary': 'command_acceptance'},
-    'send_message': {'parameters': ('text', 'project', 'clarifies'), 'boundary': 'proposal_commit'},
+    'send_message': {'parameters': ('text', 'project', 'clarifies', 'conversation'), 'optional': ('conversation',),
+                     'boundary': 'proposal_commit'},
     'answer_decision': {'parameters': ('request_id', 'request_version', 'presentation_id', 'presentation_digest',
                                        'presentation_version', 'choice', 'rationale'),
                         'boundary': 'decision_settlement'},
@@ -109,7 +110,9 @@ def shape_problems(a):
     spec = OPERATIONS.get(a['operation'])
     if spec is None:
         problems.append('the operation is one of %s' % ', '.join(sorted(OPERATIONS)))
-    elif not isinstance(a['parameters'], dict) or set(a['parameters']) != set(spec['parameters']):
+    elif (not isinstance(a['parameters'], dict) or not set(a['parameters']) <= set(spec['parameters'])
+          or set(spec['parameters']) - set(spec.get('optional', ())) - set(a['parameters'])):
+        # VELDO-0175: an operation's optional parameters (send_message's conversation) may be absent.
         problems.append('the parameters are exactly %s' % ', '.join(spec['parameters']))
     if not isinstance(a['expected_versions'], dict):
         problems.append('the expected versions are a mapping')
@@ -142,8 +145,12 @@ def domain_request(a):
                     priority={'rank': p['rank']}, principal=a['principal'], command_id=a['request_id'],
                     nonce=a['request_id'])
     if a['operation'] == 'send_message':
-        return {'schema': IN.API_SCHEMA, 'domain': a['domain'], 'request_id': a['request_id'], 'edge': a['edge'],
-                'principal': a['principal'], 'text': p['text'], 'project': p['project'], 'clarifies': p['clarifies']}
+        request = {'schema': IN.API_SCHEMA, 'domain': a['domain'], 'request_id': a['request_id'], 'edge': a['edge'],
+                   'principal': a['principal'], 'text': p['text'], 'project': p['project'], 'clarifies': p['clarifies']}
+        if p.get('conversation') is not None:
+            # VELDO-0175 AC1: a message naming its conversation; an absent field keeps the request (and its digest).
+            request['conversation'] = p['conversation']
+        return request
     if a['operation'] == 'answer_decision':
         return dict({f: a[f] for f in IDS}, schema=ST.API_SCHEMA, edge=a['edge'], answer_id=a['request_id'],
                     principal=a['principal'], request_id=p['request_id'], request_version=p['request_version'],

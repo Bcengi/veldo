@@ -169,7 +169,7 @@ ROUTES = (
     Route('auth.revoke_credential', 'POST', '/api/v1/auth/credentials/revoke', 'auth', True, ('credential_id',), (),
           'revoke_credential'),
     Route('messages.send', 'POST', '/api/v1/domains/{domain}/messages', 'messages', True, ('text',),
-          ('project', 'clarifies'), 'send_message'),
+          ('project', 'clarifies', 'conversation'), 'send_message'),
     Route('decisions.answer', 'POST', '/api/v1/domains/{domain}/decisions/answer', 'decisions', True,
           ('request_id', 'request_version', 'presentation_id', 'presentation_digest', 'presentation_version', 'choice',
            'rationale'), (), 'answer_decision'),
