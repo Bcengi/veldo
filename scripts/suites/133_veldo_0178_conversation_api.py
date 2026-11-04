@@ -326,6 +326,25 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
         def ids_in(events):
             return {e['id'] for event in events for e in event['entities']}
 
+        READS = ('objectives', 'work', 'workers', 'runs', 'decisions', 'proof', 'spend', 'configuration')
+
+        def colleague_leaks(conversation, dispatch, source):
+            """Every id the colleague is served, on his whole event feed and on every read model, that carries the
+            owner's conversation id or the turn's dispatch id, or is the turn's intake source (review-2026-11-04
+            finding 1), with where it was served."""
+            marks = [m for m in (conversation, dispatch) if isinstance(m, str) and m]
+            def leaked(identity):
+                return isinstance(identity, str) and (identity == source or any(m in identity for m in marks))
+            found = sorted('events:' + i for i in ids_in(events_of('colleague')[0]) if leaked(i))
+            for name in READS:
+                status, answer = call('GET', name, who='colleague')
+                if status != 200:
+                    found.append('%s:status-%s' % (name, status))
+                    continue
+                found += sorted('%s:%s' % (name, item.get('id')) for items in (answer.get('items') or {}).values()
+                                for item in items if leaked(item.get('id')))
+            return found
+
         def drain_hints():
             delivered = []
             while True:
@@ -395,6 +414,8 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
         turn = (conversations.turns(talk) or [{}])[0] if talk else {}
         dispatch_id = turn.get('dispatch_id')
         print('  VELDO-0178 midway:', midway, dispatch_id)
+        # Finding 1: while the turn runs, nothing of it is served the colleague on his feed or any read model.
+        leaks_running = colleague_leaks(talk, dispatch_id, turn.get('intake_command'))
 
         def lines_until(who, want, seconds=20):
             """runs.record read by `who` from cursor 0 until `want(answer)` holds or `seconds` pass."""
@@ -623,6 +644,13 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
               'and his own conversation\'s opening [%s]' % sorted(k for k in their_kinds if 'conversation' in k),
               not ({conversation_entity, turn_entity, 'dispatch:' + str(dispatch_id)} & ids_in(theirs_events))
               and CV.conversation_id(theirs or '') in ids_in(theirs_events))
+        # Finding 1: once the turn has ended (its run index released, its reservations retired) and the conversation
+        # closed, still no id of it anywhere he reads.
+        leaks_ended = colleague_leaks(talk, dispatch_id, turn.get('intake_command'))
+        check('AC1/events', 'no id carrying the owner\'s conversation or its turn\'s dispatch, nor the turn\'s intake '
+              'source, on the colleague\'s feed or any read model, while the turn ran %s or after it ended %s'
+              % (leaks_running, leaks_ended), bool(talk and dispatch_id and turn.get('intake_command'))
+              and not leaks_running and not leaks_ended)
 
         # AC1/observability: each conversation route call with its principal, route, conversation id, outcome and
         # the request id its command carries; counted by route and outcome; never a message's text.
