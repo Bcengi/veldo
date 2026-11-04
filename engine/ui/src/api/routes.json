@@ -27,7 +27,7 @@
     "repositories.read": {"method": "GET", "path": "/api/v1/domains/{domain}/repositories", "required": [], "optional": []},
     "runs.record": {"method": "GET", "path": "/api/v1/domains/{domain}/runs/record", "required": ["dispatch"], "optional": ["after"]},
     "runs.record_stream": {"method": "GET", "path": "/api/v1/domains/{domain}/runs/record/stream", "required": ["dispatch"], "optional": ["after"]},
-    "messages.send": {"method": "POST", "path": "/api/v1/domains/{domain}/messages", "required": ["text"], "optional": ["project", "clarifies"]},
+    "messages.send": {"method": "POST", "path": "/api/v1/domains/{domain}/messages", "required": ["text"], "optional": ["project", "clarifies", "conversation"]},
     "reads.contract": {"method": "GET", "path": "/api/v1/domains/{domain}/contract", "required": [], "optional": []},
     "reads.objectives": {"method": "GET", "path": "/api/v1/domains/{domain}/objectives", "required": [], "optional": []},
     "reads.proof": {"method": "GET", "path": "/api/v1/domains/{domain}/proof", "required": [], "optional": []},

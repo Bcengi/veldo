@@ -45,6 +45,7 @@ footprint:
   - "engine/.veldo/control_clone.py"
   - ".veldo/control_clone.py"
   - "scripts/mutation_case_inputs.json"
+  - "engine/ui/src/api/routes.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -221,3 +222,7 @@ reading as the one PM step; a reply still takes no route run, no proposal and no
 conversation is no longer the sender's open one settles it READ by its named refusal with one line, so it never
 blocks the PM's routing. Suite 113_veldo_0145_ui's ui/route-trace needs engine/ui/src/api/routes.json, outside the
 footprint (proof/VELDO-0175/OPEN.md item 6). Acceptance criteria unchanged.
+
+2026-11-04: footprint widened by the lead after fix round 2 (proof/VELDO-0175/OPEN.md item 6): the UI's published
+route table, engine/ui/src/api/routes.json, lists messages.send's new optional conversation field, so VELDO-0145's
+route trace matches the API again. Acceptance criteria are unchanged.
