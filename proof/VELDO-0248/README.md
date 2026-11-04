@@ -13,7 +13,7 @@ only; neither is an AC2 stop:
 - **License basis only (no approval needed, per AC2):** jsonpatch (registry license "Modified BSD License",
   now license expression BSD-3-Clause) and tenacity ("Apache 2.0", now license expression Apache-2.0). The
   SPDX expression is unchanged for both.
-- **langsmith (named exception) publishes from a renamed repository in the same organisation:** the
+- **langsmith (named exception) publishes from a new repository in the same organization (the old one is archived with the vendor's own "moved" notice):** the
   registry source and the PEP 740 publisher moved from `langchain-ai/langsmith-sdk` (workflow release.yml)
   to `langchain-ai/langsmith-python` (workflow publish-pypi.yml). The owner (github.com/langchain-ai,
   LangChain, United States) is unchanged, so the origin and the approval are carried as they were.
