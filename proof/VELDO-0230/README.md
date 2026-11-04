@@ -146,6 +146,36 @@ Results:
    -code-mode-hides-missing-grants, -delivery-comparison-skipped) are each killed by their rows, baseline and no-op
    green.
 
+## Fix round 4: gate reds at c62fae13 (log veldo-gate-0230d)
+
+1. Unit, confined leg: suite 123 failed 5 rows. Its fake Codex record (`scripts/suites/support/v174_journey.py`
+   `engines`) took `qualification()` without a catalog (`model_tool_modes: {}`) and then added a catalog by hand,
+   so `qualified_baseline` refused it (`missing_evidence:codex_model_tool_modes`) because `{}` did not match
+   `catalog_modes(catalog)`. The fault was in the fixture, not in production. The fixture now derives the modes with
+   `catalog_modes` (300cb48e). The same pattern of modes set apart from their catalog: the VELDO-0186 and VELDO-0162
+   fake records copied the shipped modes without the catalog, a shape qualify never writes. They now carry the shipped
+   catalog with its digest and derive the modes from it. `proof/VELDO-0127/loopback.py` used its own comprehension
+   and now calls `catalog_modes` (4e7be56e). No other hand-written `model_tool_modes` remains.
+2. Integration, confined leg (first use, 1800s floor): this is a consequence of item 1 and nothing was changed for
+   it. `gate_legs.py` records a unit leg's time only when the leg passes. The leg-time store of this checkout
+   (`~/.cache/veldo/gate-leg-seconds`, authority veldo-0230, declaration dbcab869) holds the unconfined leg alone,
+   because the confined unit leg has not passed here, so `check_first_use.py` fell back to its floor. The nested
+   confined run needs about 2300-2450s: in gate log 0174e the unit confined leg also failed, but an earlier passing
+   measurement was handed (budget 4176s), and the run passed in 2454s. In 0174d and 0174f it took 2284s and 2450s.
+   Once the unit confined leg passes, its time (about 2530s) is handed in the same gate run, which gives a budget of
+   about 5000s.
+3. Mutation, `role127-model-modes-omitted`: the case runs in the unconfined leg. Under the mutant the qualified modes
+   are empty, so suite 86's call to `live.codex_model(DIRECT_MODEL, ...)` raised the lead driver's `SystemExit`
+   ("A qualified codex-model is required"). That call sat outside any `try` (`attempt` catches `Exception` only), so
+   the worker exited 1 after `review/codex-mode` had already failed. On main the lookup read a module table that the
+   mutant did not touch. The call now catches `SystemExit` like its sibling calls (6da06727). The mutant is killed:
+   baseline and no-op are green, and `review/codex-mode` is among its failed rows (`fix4-mutation.txt`, before and
+   after through `check_gate_mutations.py --case`).
+
+Results (`fix4-suites.txt`): suite 123 was red at the old fixture (the same 5 rows and the same refusal) and passes
+38 of 38 after the fix. Suite 86 passes 28 of 28. The users of the changed fixtures (86_0186, 73, 85_0171, 103, 106,
+95, 87_0170, 74, 86_0189, 94, 71, 119) all pass. The full gate was not run in this round.
+
 ## AC2 runs
 
 (a) Qualified binaries (Codex 0.154.0 global, Claude Code 2.1.281 copy): `python3 .veldo/qualify.py --codex

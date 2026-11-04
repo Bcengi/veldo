@@ -1,0 +1,38 @@
+# VELDO-0230 fix round 4: suites (python3 scripts/selftest.py --suite <name>, each PARTIAL by design)
+## 123_veldo_0174_conversations at c62fae13's fixture (red before)
+  VELDO-0174 launch refusals: [('claude-live', None), ('codex-live', 'missing_evidence:codex_model_tool_modes')]
+  SELFTEST FAIL: VELDO-0174 AC2/charged-windows
+  SELFTEST FAIL: VELDO-0174 AC2/own-directory
+  SELFTEST FAIL: VELDO-0174 AC2/role-skills
+  SELFTEST FAIL: VELDO-0174 AC2/role-tools
+  SELFTEST FAIL: VELDO-0174 AC4/no-work-line
+  123_veldo_0174_conversations                    33 passed   19.96s
+## after
+  123_veldo_0174_conversations                    38 passed   10.87s
+selftest (PARTIAL, 1 of 188 suites): 64 passed, 0 failed in 10.87s
+  86_veldo_0127_agent_configuration               28 passed   41.57s
+selftest (PARTIAL, 1 of 188 suites): 54 passed, 0 failed in 41.57s
+  86_veldo_0186_setup_assets                      11 passed   16.35s
+selftest (PARTIAL, 1 of 188 suites): 37 passed, 0 failed in 16.35s
+  73_veldo_0139_factory_setup                     17 passed   26.85s
+selftest (PARTIAL, 1 of 188 suites): 43 passed, 0 failed in 26.85s
+  85_veldo_0171_setup_api                         18 passed   10.38s
+selftest (PARTIAL, 1 of 188 suites): 44 passed, 0 failed in 10.38s
+  103_veldo_0142_git_identities                   23 passed   21.24s
+selftest (PARTIAL, 1 of 188 suites): 49 passed, 0 failed in 21.24s
+  106_veldo_0185_dispatch_setup                   20 passed   12.92s
+selftest (PARTIAL, 1 of 188 suites): 46 passed, 0 failed in 12.92s
+  95_veldo_0203_owner_revisions                   36 passed    5.88s
+selftest (PARTIAL, 1 of 188 suites): 62 passed, 0 failed in 5.88s
+  87_veldo_0170_receiver_trust                    12 passed    7.66s
+selftest (PARTIAL, 1 of 188 suites): 38 passed, 0 failed in 7.66s
+  74_veldo_0140_standing_delegation                9 passed   12.29s
+selftest (PARTIAL, 1 of 188 suites): 35 passed, 0 failed in 12.29s
+  86_veldo_0189_engine_upgrade                    34 passed   62.04s
+selftest (PARTIAL, 1 of 188 suites): 60 passed, 0 failed in 62.04s
+  94_veldo_0162_configuration_routes              26 passed    9.25s
+selftest (PARTIAL, 1 of 188 suites): 52 passed, 0 failed in 9.25s
+  71_veldo_0130_api                               45 passed   24.28s
+selftest (PARTIAL, 1 of 188 suites): 71 passed, 0 failed in 24.28s
+  119_veldo_0163_role_team_form                   10 passed   46.37s
+selftest (PARTIAL, 1 of 188 suites): 36 passed, 0 failed in 46.37s

@@ -1,0 +1,10 @@
+# python3 scripts/check_gate_mutations.py --case role127-model-modes-omitted (the suite-86 case runs in the unconfined leg, as in the gate)
+## before, at c62fae13
+status: failed | detail: driver_error: check_teeth_mutations.py:role127-model-modes-omitted: worker exit 1
+invalid: mutant unconfined driver_error | stderr tail: A qualified codex-model is required: gpt-5.5
+mutations: failed registered=1 executed=1 reused=0 rejected=0 workers=3 elapsed=77.286s
+## after, at 6da06727
+status: passed | detail: None
+baseline failed rows: [] | noop failed rows: []
+mutant failed rows: ['VELDO-0127 handoff/codex', 'VELDO-0127 launch/unlisted', 'VELDO-0127 launch/instructions', 'VELDO-0127 live/codex', 'VELDO-0127 review/skill-commit', 'VELDO-0127 review/codex-tools', 'VELDO-0127 review/codex-mode', 'VELDO-0127 review/codex-capture', 'VELDO-0127 catalog/fields', 'VELDO-0127 catalog/grants', 'VELDO-0127 catalog/integrity', 'VELDO-0127 wire/normalization', 'VELDO-0127 wire/resources', 'VELDO-0127 wire/no-server', 'VELDO-0127 wire/later-requests'] | case rows: ['review/codex-mode']
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=75.863s
