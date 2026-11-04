@@ -100,7 +100,11 @@ def run(ROOT, TREE, PRODUCTION, models):
                     # from the production refusal under test.
                     # VELDO-0230: a model's support is the qualified catalog's own experimental list.
                     unsupported = ((tool in experimental and experimental[tool] not in supported.get(model, ()))
-                                   or tool == 'tool_search')
+                                   or tool == 'tool_search'
+                                   # VELDO-0231: the asynchronous flag holds only where the qualified binary's
+                                   # flag probe (its record's flag_means) shows it.
+                                   or (tool == 'request_user_input_async' and hasattr(X, 'flag_grant')
+                                       and X.flag_grant(str(f.codex_qualification)) is not None))
                     if unsupported:
                         check(row, accepted is None and save_error ==
                               'unsupported_configuration:codex_tool:' + model + ':' + tool, str(save_error))
