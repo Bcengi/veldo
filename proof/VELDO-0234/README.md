@@ -75,6 +75,7 @@ keys, the journal head and the Serve status stay asserted as before.
 - After: `fix1-after.txt` (36 passed; the step log gained begin, staged, prepared, exchanged, record, restart,
   removed_previous, done).
 - `scripts/gate_unconfined.json` gains suite 127's entry (OPEN.md A), for the owner's approval at landing.
+- Suites 127, 128, 70, 86_0148, 107 and 108 at the fix tip: `fix1-suites.txt`, all green.
 
 ## Falsifiers (finding 234), each applied, shown red, restored
 

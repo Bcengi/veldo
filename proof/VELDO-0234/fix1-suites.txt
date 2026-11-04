@@ -1,0 +1,37 @@
+# Fix round 1, 2026-11-04, at ad3ac157: each suite run alone as scripts/verify.sh's unit stage runs one
+# (python3 scripts/selftest.py --suite NAME; exit 2 is selftest's PARTIAL marker for a one-suite run, 0 failed)
+
+| Suite | Result |
+| --- | --- |
+| 127_veldo_0234_https_port | selftest (PARTIAL, 1 of 190 suites): 36 passed, 0 failed |
+| 128_veldo_0235_land_locally | selftest (PARTIAL, 1 of 190 suites): 35 passed, 0 failed |
+| 70_veldo_0057_landing | selftest (PARTIAL, 1 of 190 suites): 57 passed, 0 failed |
+| 86_veldo_0148_re_land | selftest (PARTIAL, 1 of 190 suites): 52 passed, 0 failed |
+| 107_veldo_0153_identity_push | selftest (PARTIAL, 1 of 190 suites): 146 passed, 0 failed |
+| 108_veldo_0153_executor_profile | selftest (PARTIAL, 1 of 190 suites): 32 passed, 0 failed |
+
+UI (VELDO-0235 F2), each file alone from the locked dependencies: src/features/projects/projects.spec.ts 5 of 5,
+src/features/projects/ProjectsView.spec.ts 2 of 2, vue-tsc clean (fix1-ui-vitest-after.txt in proof/VELDO-0235).
+scripts/verify.sh was not run (the lead runs the gate).
+
+## 127_veldo_0234_https_port
+VELDO-0234 suite seconds: 8.899
+  127_veldo_0234_https_port                       10 passed    8.91s
+selftest (PARTIAL, 1 of 190 suites): 36 passed, 0 failed in 8.91s
+## 128_veldo_0235_land_locally
+VELDO-0235 suite seconds: 13.842
+  128_veldo_0235_land_locally                      9 passed   13.85s
+selftest (PARTIAL, 1 of 190 suites): 35 passed, 0 failed in 13.85s
+## 70_veldo_0057_landing
+  70_veldo_0057_landing                           31 passed   13.89s
+selftest (PARTIAL, 1 of 190 suites): 57 passed, 0 failed in 13.89s
+## 86_veldo_0148_re_land
+VELDO-0148 suite seconds: 68.219
+  86_veldo_0148_re_land                           26 passed   68.24s
+selftest (PARTIAL, 1 of 190 suites): 52 passed, 0 failed in 68.24s
+## 107_veldo_0153_identity_push
+  107_veldo_0153_identity_push                   120 passed    5.13s
+selftest (PARTIAL, 1 of 190 suites): 146 passed, 0 failed in 5.13s
+## 108_veldo_0153_executor_profile
+  108_veldo_0153_executor_profile                  6 passed    0.09s
+selftest (PARTIAL, 1 of 190 suites): 32 passed, 0 failed in 0.09s
