@@ -12160,6 +12160,11 @@ def cases():
         "        if False:  # defect: a conversation's records follow the reader's project scope\n"
         "            return None if owned else OWNER\n",
         ['AC1/events'])
+    # Review-2026-11-04 finding 1: a turn's released dispatch index decided again by the dispatch id its release clears.
+    add(178, 'index178-released-by-dispatch-id', suite178, 'control_api_models_scope.py',
+        "        if data.get('station') == 'turn' and data.get('repository') is None:\n",
+        "        if False:  # defect: a released turn index is decided by its cleared dispatch id\n",
+        ['AC1/events'])
     for case in result:
         if case['finding'] == 178:
             case['siblings'] = True
