@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0235
 title: Each project has a landing destination, land and push or land locally, so a repository that never pushes can run through the factory
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -129,3 +129,5 @@ Pushing a locally landed commit later, other remotes or hosts than VELDO-0153 al
 
 - 2026-11-04: drafted from the owner's decision (Telegram 39047) on the factory cutover research, gap 5.
   Not implemented; the owner approves it before it is claimed.
+
+2026-11-04: approved by the owner, Telegram 39065 ("Yes approve all four"), with VELDO-0232, VELDO-0234, VELDO-0235 and core VELDO-3340. Status ready.
