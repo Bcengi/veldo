@@ -7,6 +7,11 @@ decisions live in runtime/capability-decisions.json (engine/runtime and .veldo/r
 command copies each into the record (`new_capabilities`) and its output. Granted means used: a granted Codex feature
 stays on at launch. Off is kept only for a named written rule. Nothing new blocks a launch.
 
+Fix round 3 (owner Telegram 38895-38896, 2026-11-04): `incremental_tools` was off only because the comparison was
+taken to read a run's first request alone; it is granted, and the comparison reads every request of a run with
+the tools the run has declared by then (README, fix round 3). Codex 0.166.0 is now 66 items: 7 granted, 55 not
+applicable, 4 off (daemon_auto_start, plugin_discovery_prefetch, worktrees, request_user_input_async).
+
 Evidence for the Codex features: each was turned on alone over the everything-off launch configuration and run against
 the loopback stand-in for a Code Mode model and a direct one (scratch probe, proof/VELDO-0230/ac2b-feature-probe.json):
 none adds or removes a tool and none changes the model request beyond its run ids. What a feature does is read from
@@ -19,7 +24,7 @@ the reason says what exec does with it.
 - VELDO-0042 AC1: isolation: each run works in its own isolated clone and writes nowhere else
 - VELDO-0062 AC1: credential handling: each invocation authenticates only with the subscription login of the account its dispatch recorded
 - VELDO-0062 AC2: usage: each invocation checks and reserves its usage allowance before launch
-- VELDO-0127 AC4: capabilities: nothing loads unless the role lists it; the tools at launch equal the role's, compared on the wire
+- VELDO-0127 AC4: capabilities: nothing loads unless the role lists it; the tools at launch equal the role's, compared on the wire (at every request of a run, with what the run has declared by then: fix round 3)
 - VELDO-0156 AC1: profile sources: every Codex profile source is off; the account profile supplies only the login, no plugin or skill source
 - VELDO-0160 AC3: no unreviewed network or file access: a call whose effect leaves the run's clone and host session is outward and asks the owner
 
@@ -36,7 +41,7 @@ the reason says what exec does with it.
 | features `daemon_auto_start` | Starts the local app-server daemon. | No. | A process that outlives the run. | off (VELDO-0040 AC1/AC3): starts the local app-server daemon, a process that outlives the run |
 | features `guardian_reuse_parent_compaction` | Approval guardian reuses the parent compacted context. | Yes: fewer tokens per assessment. | None found: no tool, identical request. | granted: the approval guardian reuses the parent's compacted context, fewer tokens per assessment; no tool; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03) |
 | features `in_app_voice` | Desktop app voice input. | No. | None in exec. | not_applicable: voice input of the desktop app; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03) |
-| features `incremental_tools` | Sends later tool-list updates during a session. | Little: smaller later requests. | Tools could be added after the first request the launch comparison reads. | off (VELDO-0127 AC4): sends later tool-list updates ("previously declared tools remain available"), so tools can be added after the first request the launch comparison reads |
+| features `incremental_tools` | Sends later tool-list updates during a session: only what changed. | Yes: smaller later requests. | A tool declared after the first request; the comparison now reads every request (fix round 3). | granted: a later request declares only the tools that changed (an additional_tools item after "This is an incremental tools update. Previously declared tools remain available..."), so later requests are smaller; the wire comparison reads every request of a run and the tools declared by then, so a tool the role does not list is refused wherever it is first declared (VELDO-0127 AC4; owner Telegram 38895-38896; loopback capture of 2026-11-03, proof/VELDO-0230/fix3-incremental-capture.json) |
 | features `instant_interrupt` | An interrupt takes effect at once. | Yes: a stop ends the turn sooner. | None found: no tool, identical request. | granted: an interrupt takes effect at once, so a stop ends the turn sooner; no tool; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03) |
 | features `mcp_oauth_refresh_coordination` | Coordinates MCP OAuth refresh across processes. | No: Veldo delivers MCP credentials itself; no OAuth store. | None in Veldo setup. | not_applicable: coordinates OAuth refresh of MCP servers across processes; Veldo delivers MCP credentials itself (VELDO-0158) and the run's CODEX_HOME holds no OAuth store; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03) |
 | features `plugin_discovery_prefetch` | Prefetches the plugin marketplace over the network. | No: plugins are no source of a run. | Unreviewed network fetch; plugin source. | off (VELDO-0156 AC1): prefetches the plugin marketplace over the network; plugins are no source of a Veldo run |

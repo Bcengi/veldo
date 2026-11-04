@@ -88,6 +88,64 @@ Not changed: RESPONSE_BLOCKS, REQUEST_BLOCKS, STREAM_EVENTS, BUILTIN_TOOLS, BUIL
 IN_RUN_ALIASES, IN_RUN_AGENT, IN_RUN_SKILL and IN_RUN_TASKS are still module literals, equal in 2.1.281 and 2.1.317;
 a later binary that changes one of them reds format/tool-forms until it follows the same path.
 
+## Fix round 3: incremental_tools granted, the wire comparison reads every request of a run
+
+Owner direction (Telegram 38895-38896, 2026-11-04): Codex 0.166's `incremental_tools` is useful (later requests carry
+only the tools that changed); it was off only because VELDO-0127 AC4's comparison was taken to read a run's first
+request. AC3: granted, and the comparison made complete. AC4's text is unchanged.
+
+The format, from the binary and a loopback capture (`fix3_incremental.py`, `fix3-incremental-capture.json`, Codex
+0.166.0, a Code Mode model, two turns of one session): an incremental update is a developer message ("This is an
+incremental tools update. Previously declared tools remain available for direct calls unless explicitly marked
+unavailable. If a tool is redefined here, its latest definition replaces the earlier one.") followed by a new
+`additional_tools` input item holding only what changed (here the runner `exec` redeclared with goals' tools); the
+first declaration stays in the history. A removal is a redeclaration with fewer nested tools. With the feature off
+the later request carries one full replacement item instead. A direct model redeclares its full top-level `tools`
+either way. A tool search's `tool_search_output` (the same capture, direct model) also declares definitions mid-run.
+
+Changed:
+- control_agent_config_handoff.py (both copies): `codex_run_tools(bodies)` is the tools declared at each request of a
+  run, the union of that request's declarations and every earlier one's (a later request declaring nothing keeps the
+  set; an unreadable one, an empty run or a first request declaring nothing is refused by name).
+  `codex_run_tool_difference(bodies, wanted)` refuses `codex_unexpected_tool` wherever an unlisted tool is first
+  declared, else `codex_missing_tool`; `codex_tool_difference(body)` is a run of one request. A request's declarations
+  now include `tool_search_output` (DECLARING_ITEMS). The launch check (`codex_check_launch`) compares the run of its
+  observed requests; its endpoint keeps each request's tools and declaring items only (`codex_declarations`).
+- proof/VELDO-0127/evidence.py: `wire_observations(bodies)` (each request with what the run declared by then;
+  `wire_observation` is a run of one), used by `problems`, qualify, live.py and loopback.py. Suite 90 compares the
+  run of every captured request, not its first.
+- runtime/capability-decisions.json (both copies): `incremental_tools` granted with its reason; it stays on at launch
+  (not written into the features table). The evaluation file's row and its rule list are updated.
+
+What this does not change, stated plainly: the production launch check observes the worker on a loopback endpoint
+that refuses the first request, so it sees one request, as before; the real run's later requests go to the provider
+and are not on a wire Veldo reads, with the feature on or off (a tool set that changes mid-run reaches the model in
+both modes; only the spelling differs). The comparison is complete for every request it is given: the launch
+observation, the live and loopback captures, qualify's captures and the suites. Before this round each request of a
+capture was compared alone with every declaring item in its history, so a full-history update adding an unlisted tool
+was already refused there; what was missed was a tool search result, a request carrying only its new items, and suite
+90's first-request read.
+
+Results:
+
+1. Red before, green after (`fix3-red-at-fafc91e4.txt`): suite 86's new row wire/later-requests, on the modules at
+   fafc91e4, fails for an unlisted tool search result (both models), an unlisted update or search result in a request
+   carrying only its new items, a partial within-role update carrying only its new items (refused there as missing),
+   a request with nothing new, and an empty run; at this round's commits it passes, with the full-history unlisted
+   update, the within-role updates, and the launch check over the same runs (`fix3-suites.txt`).
+2. AC2 (a): `qualify --codex <0.154.0> --claude 2.1.281` left every file byte-identical (`fix3-ac2a-qualify-output.txt`)
+   after the VELDO-0127 fixtures were regenerated once (3ff6de4f; they bind the handoff module's digest, observations
+   unchanged).
+3. AC2 (b), scratch worktree, `qualify --codex <0.166.0> --claude 2.1.317` (`fix3-ac2b-qualify-output.txt`): 66 Codex
+   items, 7 granted (incremental_tools among them), 55 not applicable, 4 off; incremental_tools is left at its default,
+   on. There suites 86 offline rows, 87_0127, 90 and 126 pass.
+4. Suites 75, 79, 81, 86 offline rows, 87_0127, 88, 89, 90, 125 and 126 pass in the worktree (`fix3-suites.txt`).
+5. Mutants (`fix3_mutants.py`, `fix3-mutations.txt`): five new anchors (role127-run-each-request-alone,
+   -run-first-request-only, -search-result-unread, -launch-first-observation-only, -evidence-each-request-alone) and
+   the five whose code moved (role127-wire-extra-ignored, -wire-missing-ignored, -owner-tools-hidden,
+   -code-mode-hides-missing-grants, -delivery-comparison-skipped) are each killed by their rows, baseline and no-op
+   green.
+
 ## AC2 runs
 
 (a) Qualified binaries (Codex 0.154.0 global, Claude Code 2.1.281 copy): `python3 .veldo/qualify.py --codex

@@ -1,0 +1,22 @@
+VELDO-0230 fix round 3: suites, each with python3 scripts/selftest.py --suite NAME (exit 2 is selftest's PARTIAL marker for one suite).
+
+== worktree, the qualified binaries (Codex 0.154.0, Claude Code 2.1.281), at 3ff6de4f (2a52a08e changes evidence.py's wire_observation into a run of one request and adds the mutation anchors; suite 86 reran there green in the mutant baseline below)
+  75_veldo_0062_accounts                          24 passed   34.95s 
+  75_veldo_0150_own_message_acceptance            13 passed    1.97s 
+  79_veldo_0061_codex_adapter                     21 passed   13.99s 
+  81_veldo_0156_codex_baseline                    22 passed    3.22s 
+  86_veldo_0127_agent_configuration               26 passed   39.43s SELFTEST FAIL: VELDO-0127 live/claude SELFTEST FAIL: VELDO-0127 live/codex 
+  87_veldo_0127_codex_delivery                   176 passed   52.78s 
+  88_veldo_0127_feature_defaults                  25 passed    9.26s 
+  89_veldo_0127_feature_listing                   11 passed    4.63s 
+  90_veldo_0127_feature_profile                    2 passed   12.29s 
+  125_veldo_0230_engine_census                     7 passed    7.13s 
+  126_veldo_0230_qualify_reproduces                2 passed   69.95s 
+
+== scratch git worktree at 2a52a08e, qualified with Codex 0.166.0 and Claude Code 2.1.317 (fix3-ac2b-qualify-output.txt; incremental_tools granted and left on)
+  86_veldo_0127_agent_configuration               26 passed   39.58s SELFTEST FAIL: VELDO-0127 live/claude SELFTEST FAIL: VELDO-0127 live/codex 
+  87_veldo_0127_codex_delivery                   192 passed   58.58s 
+  90_veldo_0127_feature_profile                    2 passed   12.25s 
+  126_veldo_0230_qualify_reproduces                2 passed   92.51s 
+
+86 live/claude and live/codex: the live captures bind the digest of control_agent_config_handoff.py, which this round edits (stale before it as well); the lead retakes them.
