@@ -1,5 +1,50 @@
 # VELDO-0181 open items for the lead
 
+## Fix round 1: items 1 to 3 resolved by the lead's rulings
+
+- Item 1 (the service change): committed as it was in the working tree, both copies (ce1b9bdd).
+- Item 2 (suite 130): strict reading kept. Suite 130's `answer` helper answers through settlement (a presenter over a
+  loopback Bot API, `Settlement.api_answer`), no assertion weakened; 17/17 (d23eb058).
+- Item 3 (the unclear route question): built as a VELDO-0068 request (ac3df2d0), suites 68_veldo_0126, 69_veldo_0133
+  and 93 updated where they pinned the old ask (cb7bc0b1); 132 needed no change. README, "Round 1".
+
+The original text of items 1 to 3 follows the new items, for the record.
+
+## 9. One suite outside the widened footprint, NOT committed: scripts/suites/68_veldo_0136_hints.py
+
+The footprint names `68_veldo_0126_*`; suite 68_veldo_0136_hints (VELDO-0136) also pins the old ask (an unclear route
+sends `question['prompt']` as a reply; his reply `project-b` to it resolves; that reply is `unknown_presentation`).
+With item 3 two of its rows are red. The change is `suite68-0136.diff`, in the working tree only: the journal signer
+`authority` a service member with its key, each member its own independence group (settlement reads it), the edge's
+fixture scope widened to `project-a, project-b` (an answer to a request in his widened scope needs an edge scope that
+covers it), a settlement, and the two rows answer by replying `accept project project-b: that one` to the presentation,
+then settlement and `route_answers` (outcome `resolved`, nothing sent back, no hint). 7/7 with it. Widen the footprint
+and commit it, or rule otherwise.
+
+## 10. Readings in the unclear route question
+
+- Scope: the request's scope is the sender's membership scope (as `ConversationLine.question` does), not `factory`: a
+  sender without factory scope can write unclear messages, and the presenter refuses a request outside his scope. The
+  edge (and his delegation) must cover that scope for a Telegram answer.
+- Choices are picks (`accept project <name>`, `accept new project`, `accept new conversation`, `accept conversation
+  <id>`), so their ruling is approve and no new global choice word is added. He answers `accept project shop: <reason>`
+  where he used to reply `shop`. Two project names that fold alike (`a-b`, `a_b`) make the request `ambiguous_choice`:
+  it is not presented and the ask event names that refusal; the message waits AWAITING_PROJECT.
+- An API message's unclear question is unchanged (answered in the API response): AC1's set says presented on the chat
+  he wrote from, and an API message has none. Rule whether AC1 also wants it as a request.
+- Routing: a project choice resolves the proposal as an answering reply did (same state, route and resolves), but the
+  objective's id is `<proposal>:answered` and its sources do not gain the reply (the settlement id is the
+  clarification's source). Any other choice is a clarification, as a reply naming no project was; its text is the
+  option label and his rationale (`a new conversation: <reason>`), not his raw message. The question is marked
+  answered in both cases (a clarifying reply used to leave it open), which is what makes it applied once.
+- Who applies it: `ProjectCycles.pass_once` calls `intake.route_answers()` on the factory line. Suites 137 and 93 call
+  `route_answers` directly, as they apply the PM's route documents; no suite drives it through `pass_once`.
+
+## 11. Suite 68_veldo_0126 answers through the UI
+
+Its fixture has no edge delegation for `multi`, so the presenter refuses his Telegram answer `not_authorized`; the row
+answers through `Settlement.api_answer`, the other surface AC1 names. The Telegram reply path is suite 137's (and 68_0136's).
+
 ## 1. One change outside the footprint: engine/.veldo/control_service.py (and its .veldo copy)
 
 Path: `engine/.veldo/control_service.py` and the synced `.veldo/control_service.py`, class `ConversationLine`, methods

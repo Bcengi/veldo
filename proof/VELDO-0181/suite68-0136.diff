@@ -1,0 +1,89 @@
+diff --git a/scripts/suites/68_veldo_0136_hints.py b/scripts/suites/68_veldo_0136_hints.py
+index f5ab9b4a..06504284 100644
+--- a/scripts/suites/68_veldo_0136_hints.py
++++ b/scripts/suites/68_veldo_0136_hints.py
+@@ -149,10 +149,14 @@ def _v136_checks(base):
+     members = {'owner': dict(principal_type='person', roles=['project_owner'], scope=['project-a', 'factory']),
+                'owner3': dict(person), 'stranger': dict(person),
+                'pm': dict(principal_type='service', roles=[], scope=['project-a']),
+-               'telegram-edge': dict(principal_type='service', roles=[], scope=['project-a'])}
++               # VELDO-0181: the edge serves both projects, so it carries his answer to a question in his widened scope.
++               'telegram-edge': dict(principal_type='service', roles=[], scope=['project-a', 'project-b']),
++               # VELDO-0181: the journal signer requests the unclear question's decision, as the service does.
++               'authority': dict(principal_type='service', roles=[], scope=['*'])}
+     for who, data in members.items():
+-        fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None))
+-    for who in ('pm', 'owner', 'owner3', 'stranger'):
++        # VELDO-0181: each its own independence group, as enrollment records it; settling an answer reads it.
++        fixture(who, 'membership', dict(data, revoked_at=None, expires_at=None, independence_group=who))
++    for who in ('pm', 'owner', 'owner3', 'stranger', 'authority'):
+         fixture('key-' + who, 'verification_key', dict(principal=who, public_key=public[who], effective_at=0))
+     fixture(AUTHC.CHANNELS['telegram_chat']['edge_key_id'], 'verification_key',
+             dict(principal='telegram-edge', public_key=public['telegram-edge'], effective_at=0))
+@@ -192,7 +196,12 @@ def _v136_checks(base):
+     # scope covers one of them unless a row widens it.
+     intake = None if IN is None else IN.Intake(
+         S, CM, AUTHC, acquirer, conn, domain='hint-intake', projects=('project-a', 'project-b'), api_edge='api-edge',
+-        journal_signer='authority', sign=journal_sign, asker=V.TelegramPresentationEdge(P, url, 'sandbox-bot'))
++        journal_signer='authority', sign=journal_sign, asker=V.TelegramPresentationEdge(P, url, 'sandbox-bot'),
++        request_sign=lambda m: sign_as('authority', m))
++    # VELDO-0181: settlement settles his answer to the unclear question's presentation.
++    ST = _v136_load('v136_settlement', ROOT / '.veldo' / 'control_request_settlement.py')
++    settlement = ST.Settlement(S, CM, inbox, presenter, conn, 'authority', journal_sign, assignment=I, presentation=V,
++                               api_edge='api-edge')
+     neighbor152 = __import__('runpy').run_path(str(Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py'))
+     neighbor152['factory'](intake, ids, 'owner', sign_as)
+     taken = {}
+@@ -453,7 +462,8 @@ def _v136_checks(base):
+             return taken.get(update['update_id']) or {}
+ 
+         def widen(scope):
+-            fixture('owner', 'membership', dict(members['owner'], scope=scope, revoked_at=None, expires_at=None))
++            fixture('owner', 'membership', dict(members['owner'], scope=scope, revoked_at=None, expires_at=None,
++                                                independence_group='owner'))
+ 
+         # New work while a request waits: one reply, saying it was taken as new work, not as an answer.
+         new = 'hint/new-work-one-reply'
+@@ -540,14 +550,18 @@ def _v136_checks(base):
+                 neighbor152['unclear'](intake, took)
+                 question = intake.question(intake.proposal(took['proposal_id'])['question_id']) or {}
+                 asked = sent_since(mark)
+-                check(two, 'unclear route sends its own reply with every choice', len(asked) == 1
++                # VELDO-0181: the question is its decision request's presentation, one message with every choice.
++                check(two, 'unclear route sends its own message with every choice', len(asked) == 1
+                       and question.get('candidates') == ['project-a', 'project-b', 'a new project']
+-                      and asked[0]['text'] == question['prompt']
+-                      and (question.get('delivery') or {}).get('message_id') == asked[0]['message_id'])
++                      and all(c in asked[0]['text'] for c in ('accept project project-a', 'accept project project-b',
++                                                              'accept new project'))
++                      and (question.get('delivery') or {}).get('message_ids') == [asked[0]['message_id']])
+                 mark = len(api['sent'])
+-                reply = say(owner_user, 'project-b', reply_to=asked[0]['message_id'] if asked else None)
++                reply = say(owner_user, 'accept project project-b: that one',
++                            reply_to=asked[0]['message_id'] if asked else None)
+                 acquire()
+-                resolved = intake_of(reply)
++                settlement.run()
++                resolved = (intake.route_answers() or [{}])[0]
+                 check(two, 'his Reply resolves and sends nothing back', resolved.get('outcome') == 'resolved'
+                       and (intake.proposal(resolved.get('proposal_id')) or {}).get('project') == 'project-b'
+                       and sent_since(mark) == [])
+@@ -570,11 +584,15 @@ def _v136_checks(base):
+                       and 'press Reply' not in asked[0]['text'])
+                 d1, rd1 = open_framed('REPLY-1')
+                 mark = len(api['sent'])
+-                answer = say(owner_user, 'project-b', reply_to=asked[0]['message_id'] if asked else None)
++                answer = say(owner_user, 'accept project project-b: that one',
++                             reply_to=asked[0]['message_id'] if asked else None)
+                 got = acquire()
++                settlement.run()
++                routed = intake.route_answers()
++                # VELDO-0181: his Reply to the question's presentation is its answer, settled and applied.
+                 check(replies, 'his Reply to intake\'s question, while a request waits, resolves it and gets no hint',
+-                      got.get(answer['update_id']) == ('refused', 'unknown_presentation')
+-                      and intake_of(answer).get('outcome') == 'resolved' and sent_since(mark) == []
++                      got.get(answer['update_id']) == ('answered', None)
++                      and [r.get('outcome') for r in routed] == ['resolved'] and sent_since(mark) == []
+                       and hint_of(answer) is None and entity('presentation-hinted:%s:1:owner' % d1) is None)
+                 d2, rd2 = open_framed('REPLY-2')
+                 mark = len(api['sent'])

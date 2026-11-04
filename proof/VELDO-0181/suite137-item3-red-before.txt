@@ -1,0 +1,21 @@
+VELDO-0181 fix round 1, OPEN item 3: suite 137 as committed at cb7bc0b1 (15 rows) run alone with the item 3 code set aside (engine/.veldo and .veldo control_conversation_decisions, control_intake, control_intake_routes and control_workflow_cycle_pm as at d23eb058), restored afterwards: the five new unclear-question rows red, the other ten green. Green after: suites-round1.txt.
+  VELDO-0181 re-run question: assignment:conversation:c-1a988d9fef5b1ea94e0c:conversation-rerun-6a1139793d24756c83b54c36 ask ['published'] []
+  VELDO-0181 turn output: completed ['answer', 'approval', 'role', 'route'] ['protocol', 'reply', 'tool_result']
+  VELDO-0181 reply: not_taken ['settled'] [None]
+  VELDO-0181 move question: assignment:conversation:c-57092b8d0fb88ad043ec:conversation-limit-ec6a18fe936db54a9737c6b7 published
+  VELDO-0181 move answer: settled None refused request_closed
+  VELDO-0181 unclear question: applied None None
+  VELDO-0181 unclear reply: inbox [] AWAITING_PROJECT
+  VELDO-0181 unclear UI answer: refused refused missing_evidence []
+  VELDO-0181 other member: ['missing_authority:conversation_owner', 'missing_authority:conversation_owner', 'missing_authority:conversation_owner', 'missing_authority:conversation_owner'] ['missing_authority:conversation_owner', 'missing_authority:conversation_owner', 'missing_authority:conversation_owner']
+  VELDO-0181 detail: AC1/unclear-presented routed unclear, its question is a request with the requester's signed terms (about the question) and framing, offering each route as a choice; a versioned presentation is published on the chat he wrote from, with its choices, and the question records where it was shown; the decisions screen serves it (a request in the owner's scope), and it is logged presented with its kind and request, never its text
+  SELFTEST FAIL: VELDO-0181 AC1/unclear-presented
+  VELDO-0181 detail: AC1/unclear-settles-by-reply his reply to the presentation settles it once, from Telegram, with his choice; the settled choice routes the message as his reply answer did: the same proposal clarified with his answer and back to the PM, the question answered
+  SELFTEST FAIL: VELDO-0181 AC1/unclear-settles-by-reply
+  VELDO-0181 detail: AC1/unclear-settles-by-ui his inline answer in the UI settles it once, from the API, and the settled choice routes the message (clarified with his answer, back to the PM)
+  SELFTEST FAIL: VELDO-0181 AC1/unclear-settles-by-ui
+  VELDO-0181 detail: AC1/unclear-settled-once a second reply to it is told once and settles and routes nothing again; across the UI and Telegram: a second UI answer is refused and a later reply is told once; one settlement, one routing
+  SELFTEST FAIL: VELDO-0181 AC1/unclear-settled-once
+  VELDO-0181 detail: AC1/unclear-never-a-turn no reply to it is a turn or intake's message: no turn added, no conversation opened, nothing intake took [inbox,inbox,inbox]
+  SELFTEST FAIL: VELDO-0181 AC1/unclear-never-a-turn
+  137_veldo_0181_conversation_decisions           10 passed    3.67s
