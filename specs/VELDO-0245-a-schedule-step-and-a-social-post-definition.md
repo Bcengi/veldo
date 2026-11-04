@@ -7,7 +7,7 @@ risk: high
 owner: dmitry
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0068, VELDO-0132, VELDO-0154, VELDO-0241, VELDO-0243, VELDO-0244]
+depends_on: [VELDO-0068, VELDO-0132, VELDO-0154, VELDO-0240, VELDO-0241, VELDO-0243, VELDO-0244]
 placement: [contracts, engine, loop]
 protected_paths: []
 footprint:
@@ -43,12 +43,12 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: the schedule step holds the unit until the approved time, then the next step runs once. Set:
-      the time is part of the approval's subject, so a changed time needs a new approval; the service's
-      pass sets its wake for the earliest due schedule, as it does for an account reset (VELDO-0154), and
-      survives a restart from the store; nothing runs before the time; at the time the next node is offered
-      exactly once; a due time the service was down for is recorded missed and put to the owner. Each
-      pending schedule is listed and cancellable by the owner, through the standing schedules list of
-      VELDO-0240 when that spec lands with this number, never a second list.
+      the time is part of the approval's subject, so a changed time needs a new approval; the hold is a
+      one-time schedule in the VELDO-0240 schedule store, of a kind this spec adds (workflow_step, target
+      the unit and node, approved by the workflow's approval step rather than a /schedule command), so it
+      uses VELDO-0240's timer, its once-only start record, its missed record and its list and cancel, and
+      there is no second store, timer or list; nothing runs before the time; at the time the next node is
+      offered exactly once; a due time the service was down for is recorded missed and put to the owner.
     falsified_by: >
       Offer the publish node when the approval settles instead of at the approved time; the hold-until row
       must fail.
@@ -108,3 +108,7 @@ both, and the approval names the time.
 2026-11-04: new draft under owner Telegram 39069 to 39071 (process as workflow; social posts configured,
 not hardcoded) and 39067 (NG2 and NG3). Reconciled with writer A's T9 by reuse, not duplication.
 Standalone.
+
+2026-11-04: the lead made the schedule step reuse VELDO-0240's schedule store, timer, once-only and missed
+records, list and cancel (a one-time schedule of kind workflow_step), so Veldo has one scheduler, not two.
+Acceptance criteria otherwise unchanged.
