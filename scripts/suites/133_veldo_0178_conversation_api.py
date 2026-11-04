@@ -262,9 +262,13 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
                                      repository=ids['repository_uuid'], root=str(base / 'publication'))
         api = []
         judged = []
+        # The pre-change judge takes no conversations: then each row fails by its own assertions (the red record).
+        import inspect
+        held = {'conversations': conversations} if 'conversations' in inspect.signature(
+            AUTH.ApiAuthority).parameters else {}
         judge = AUTH.ApiAuthority(S, CM, authority.conn, ids=ids, domain=domain, edge=EDGE, intake=intake,
                                   settlement=None, credentials=None, publication=publication, authority_lock=lock,
-                                  records=records, conversations=conversations, observe=judged.append,
+                                  records=records, observe=judged.append, **held,
                                   notify=lambda hint: api[0].deliver(hint) if api else None)
 
         def signer(assertion):
@@ -345,8 +349,9 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
         check('AC1/routes', 'messages.send carries the conversation field',
               'conversation' in table['messages.send'].optional)
         check('AC1/routes', 'each command route sends VELDO-0174\'s typed command',
-              [table[n].operation for n in ('conversations.open', 'conversations.close', 'conversations.set_role',
-                                            'conversations.attach_project')]
+              [getattr(table.get(n), 'operation', None) for n in ('conversations.open', 'conversations.close',
+                                                                  'conversations.set_role',
+                                                                  'conversations.attach_project')]
               == [CV.OPEN, CV.CLOSE, CV.ROLE, CV.ATTACH]
               and all(judge.commands().get(op) == CV.OPERATION for op in (CV.OPEN, CV.CLOSE, CV.ROLE, CV.ATTACH)))
 
@@ -356,6 +361,11 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
         theirs_opened = call('POST', 'conversations/open', {'role': 'assistant'}, who='colleague')
         theirs = (theirs_opened[1] or {}).get('conversation')
         print('  VELDO-0178 opened:', opened[0], refusal(opened), talk, theirs_opened[0], theirs)
+        if opened[0] != 200:
+            # A tree without the route (the red record): the conversation is opened by the conversation authority
+            # itself, so the turn still runs and the record rows judge that tree's record scope.
+            talk = 'c-v178-direct'
+            conversations.open(talk, owner='owner', intake_digest='sha256:v178-direct', command_id='v178-direct')
         open_row = authority.conn.execute('SELECT data FROM entities WHERE id=?', (CV.conversation_id(talk),)).fetchone() \
             if talk else None
         open_record = json.loads(open_row[0]) if open_row else {}
@@ -629,7 +639,7 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
         check('AC1/observability', 'each accepted command call joins the journal command it sent',
               all(e['request_id'] in joined for e in conv_calls
                   if e['outcome'] == 'accepted' and e['route'] != 'conversations.read' and e['route'] != 'messages.send'))
-        metrics = ui.conversation_metrics()
+        metrics = getattr(ui, 'conversation_metrics', dict)()
         check('AC1/observability', 'calls are counted by route and outcome [%s]' % metrics,
               metrics.get('conversations.close', {}).get('refused') == 3
               and metrics.get('conversations.close', {}).get('accepted') == 1

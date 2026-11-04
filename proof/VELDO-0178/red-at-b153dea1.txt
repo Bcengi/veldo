@@ -1,0 +1,36 @@
+Suite 133 against the base's modules (b153dea1: the eight .veldo modules this change touches checked out from the base, the suite as committed; restored after). 14 of 16 rows red; AC1/message-field (VELDO-0175's field) and AC2/neither (the base refused a run with no project to every member already) hold at the base.
+command: python3 scripts/selftest.py --suite 133_veldo_0178_conversation_api
+  VELDO-0178 api edge: {'outcome': 'accepted', 'refusal': None}
+  VELDO-0178 opened: 404 missing_evidence:route None 404 None
+  VELDO-0178 midway: True dispatch/c-v178-direct/7b2e10224d354c009c635af01e9e778a
+  VELDO-0178 ended: True completed 8 None
+  VELDO-0178 detail: AC1/routes the published table carries the five conversation routes with their exact fields; each command route sends VELDO-0174's typed command
+  SELFTEST FAIL: VELDO-0178 AC1/routes
+  VELDO-0178 detail: AC1/list the owner lists his conversation with its id, status, role, turn count and last activity [404 missing_evidence:route]; and only his own
+  SELFTEST FAIL: VELDO-0178 AC1/list
+  VELDO-0178 detail: AC1/serve one conversation is served with every turn's sequence, message, reply, outcome, dispatch id and account [404 missing_evidence:route]; with the conversation's id, status, role and version
+  SELFTEST FAIL: VELDO-0178 AC1/serve
+  VELDO-0178 detail: AC1/other-member the colleague's list holds only his own conversation [[]]; the served conversation is refused to him by name, with nothing of it [404 missing_evidence:route]; the turn's dispatch is in the owner's workers read and not in his; his commands on it are refused by name [missing_evidence:route missing_evidence:route]
+  SELFTEST FAIL: VELDO-0178 AC1/other-member
+  VELDO-0178 detail: AC1/commands conversations.open sends the open command as the session's member [404 missing_evidence:route]; set_role and attach_project send VELDO-0174's commands on his versions [404 missing_evidence:route 404 missing_evidence:route]; conversations.close closes it on its version [404 missing_evidence:route]
+  SELFTEST FAIL: VELDO-0178 AC1/commands
+  VELDO-0178 detail: AC1/stale-and-unknown a command on a stale version is refused stale_version [404 missing_evidence:route]; an unknown conversation is refused invalid_input:conversation:unknown [404 missing_evidence:route missing_evidence:route]; no refused command wrote anything
+  SELFTEST FAIL: VELDO-0178 AC1/stale-and-unknown
+  VELDO-0178 detail: AC1/events his feed carries the conversation opened, changed and closed, each by its command [0]; and its turn waiting, started and ended with its reply kept [[]]; the close reached his open stream live; the colleague's stream got nothing of it; the colleague's feed has nothing of the owner's conversation, its turn or its dispatch, and his own conversation's opening [['conversation', 'conversation_turn']]
+  SELFTEST FAIL: VELDO-0178 AC1/events
+  VELDO-0178 detail: AC1/observability each call is observed with its principal, route, conversation and outcome; calls are counted by route and outcome [{}]
+  SELFTEST FAIL: VELDO-0178 AC1/observability
+  VELDO-0178 detail: AC2/record-kept every line the engine printed is kept, in order, nothing dropped [0 of 8]; the tool call and the error line are kept as printed; the resolved credential value is replaced before the scanner, as a project run's is
+  SELFTEST FAIL: VELDO-0178 AC2/record-kept
+  VELDO-0178 detail: AC2/header the record's header names the conversation id and the turn sequence [{'unit': 'c-v178-direct', 'station': 'turn', 'conversation': None, 'turn': None}]
+  SELFTEST FAIL: VELDO-0178 AC2/header
+  VELDO-0178 detail: AC2/owner-live the owner reads the running turn's record from cursor 0 [403 unauthorized:out_of_scope]; the served run names its conversation and turn; the owner follows it live on runs.record_stream [403]; the receiver's hints fill the owner's stream to the last line, then it closes as ended [0 frames, None]
+  SELFTEST FAIL: VELDO-0178 AC2/owner-live
+  VELDO-0178 detail: AC2/after-end after the run the owner reads the rest from his cursor, with its committed count [403 unauthorized:out_of_scope]
+  SELFTEST FAIL: VELDO-0178 AC2/after-end
+  VELDO-0178 detail: AC2/other-member the colleague is refused the running turn's record by name [403 unauthorized:out_of_scope]; and its live stream [403 unauthorized:out_of_scope]; after the run the colleague is still refused by name, with no line [403 unauthorized:out_of_scope]
+  SELFTEST FAIL: VELDO-0178 AC2/other-member
+  VELDO-0178 detail: AC2/observability each turn record read is observed with its dispatch, conversation and turn; reads refused for scope are counted [{}]
+  SELFTEST FAIL: VELDO-0178 AC2/observability
+  133_veldo_0178_conversation_api                  2 passed    3.10s
+selftest (PARTIAL, 1 of 195 suites): 28 passed, 14 failed in 3.10s
