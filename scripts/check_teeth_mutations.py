@@ -12114,7 +12114,7 @@ def cases():
         '            if False:  # defect: the individual quota is an ordinary failure\n', ['stream/limit'])
     add(232, 'agy232-missing-result-complete', agy232, 'control_engine_antigravity.py',
         "        if self.result is None or not self.after_result:\n            return 'missing_result'\n",
-        "        if False:  # defect: a zero exit without its result completes\n            return 'missing_result'\n", ['stream/missing-result'])
+        "        if self.result is None or not self.after_result:\n            return 'complete' if termination.get('returncode') == 0 else 'missing_result'  # defect\n", ['stream/missing-result'])
     add(232, 'agy232-adapter-key-accepted', agy232, 'control_launch.py',
         "        configured = ACC.refused(adapter.get('environment') or {}, engine_credentials(module))\n",
         "        configured = ACC.refused(adapter.get('environment') or {}, CREDENTIALS)  # defect: Antigravity's list unread\n", ['accounts/credential-refused'])

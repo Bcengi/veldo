@@ -54,9 +54,10 @@ def _v232_suite():
         rows[row].append((label, bool(condition)))
 
     def attempt(fn):
+        """(value, error): a refusal, or the qualify command's SystemExit, is data for the row, never a raise."""
         try:
             return fn(), None
-        except Exception as error:  # noqa: BLE001
+        except (Exception, SystemExit) as error:  # noqa: BLE001
             return None, error
 
     def code(error):
@@ -669,7 +670,7 @@ sys.exit(payload.get('code', 0))
               and A.nested_work(step(6, 'planner_response', subagent_info={'conversation_id': 'c', 'log_uri': 'u'})['line'])
               == [('subagent', 'subagent_info')])
 
-    except Exception as error:  # noqa: BLE001
+    except (Exception, SystemExit) as error:  # noqa: BLE001
         import traceback
         for row in ROWS:
             check(row, 'raised ' + type(error).__name__ + ': ' + str(error)[:200]
