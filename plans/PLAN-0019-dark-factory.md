@@ -69,7 +69,7 @@ non_goals:
       Amended 2026-11-04 by owner Telegram 39067 (yes to decision 2 of 39063, an owner-approved deploy
       step per release). Ruling applied: a project may deploy or publish only through a deploy or publish
       step of its workflow, a named command run with keystore credentials after the project owner
-      approves that exact release, then checked (Cloud Run, a storage bucket, the webflow-ops pipeline,
+      approves that exact release, then checked (a container service, a storage bucket, a content pipeline,
       a post to a social channel through its catalog server). Every deployment or publication without
       that per-release approval, customer charging, telecom operations and integration with another
       operator remain excluded.
@@ -2125,7 +2125,7 @@ process a versioned workflow per kind of work; drafts VELDO-0241 to VELDO-0245 c
 work item, edge, release or other text changes.
 
 2026-11-04: NG2 amended under owner Telegram 39067 (decision 2 of 39063): deploy and publish run only as
-a workflow step after the owner approves that exact release (Cloud Run, a storage bucket, the webflow-ops
+a workflow step after the owner approves that exact release (a container service, a storage bucket, a content
 pipeline, a social channel through its catalog server); every other deployment, customer charging, telecom
 operations and another operator's integration stay excluded. Draft VELDO-0244, narrowing the parked
 VELDO-0086. No work item, edge, release or other text changes.

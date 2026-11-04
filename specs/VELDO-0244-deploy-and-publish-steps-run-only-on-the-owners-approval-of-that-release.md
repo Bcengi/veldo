@@ -54,9 +54,9 @@ acceptance_criteria:
       the landed commit, the digests of the artifacts the step will ship and the named target; the approval
       (VELDO-0068) is bound to all three and is consumed by one run; a new commit, a changed artifact or
       another target needs a new approval. Rows for the four covered targets as fixture commands and a
-      fixture catalog server: a Cloud Run deploy, a storage bucket upload, a webflow-ops pipeline run (the
-      pipeline is the only writer to the CMS; the step never writes it directly) and a post to a social
-      channel through its catalog server.
+      fixture catalog server: a container service deploy, a storage bucket upload, a content pipeline run (the
+      pipeline is the only writer to its content store; the step never writes it directly) and a post to a
+      social channel through its catalog server.
     falsified_by: >
       Run the deploy under an approval bound to the previous commit; the exact-release row must fail.
   - id: AC2
@@ -100,8 +100,8 @@ the owner's approval; the rest of VELDO-0086 stays parked.
 ## Out of scope
 
 Automatic rollback, canary or staged rollout, deploying another person's project, customer charging,
-telecom operations and integration with another operator (still excluded by NG2). Writing the Webflow
-PRICES collections by any path other than the webflow-ops pipeline.
+telecom operations and integration with another operator (still excluded by NG2). Writing a content store
+by any path other than the pipeline the project names as its only writer.
 
 ## What the reviewer judges
 
