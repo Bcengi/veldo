@@ -1,0 +1,5 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1300 +1300 @@
+-            self.placed = conversation.place(self.held_session, profile)
++            self.placed = None  # defect: the held session is not placed in the chosen account's profile

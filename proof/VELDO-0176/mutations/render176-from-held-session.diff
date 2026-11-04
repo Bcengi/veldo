@@ -1,0 +1,6 @@
+--- a/.veldo/control_launch.py
++++ b/.veldo/control_launch.py
+@@ -1279 +1279,2 @@
+-            turns = conversation.history(reader, ER.directory(self.config), contract['unit'], sequence, ER.read)
++            held = conversation.held_session(reader, contract['unit'], 'claude_code')  # defect: from the session
++            turns = [(0, {'message': None, 'calls': [], 'reply': Path(held['capture']).read_text()})] if held else []

@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -2871 +2871 @@
+-        asked = next((q for q in (turn.get('questions') or []) if q.get('ref') == aid), None)
++        asked = {'ref': aid, 'answer': 'move', 'about': MOVE_KIND}  # defect: moved with no question

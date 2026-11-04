@@ -480,8 +480,8 @@ else:
         conversations.open('waiting', owner='owner', role='assistant', intake_digest='sha256:waiting')
         say(f, 'waiting', 'one')
         J.pass_(factory)
-        F.drive(factory, lambda: any(q.get('about') == f['CS'].MOVE_KIND
-                                     for q in (turns(f, 'waiting')[0].get('questions') or [])), 60)
+        F.drive(factory, lambda: turns(f, 'waiting')[0].get('state') == 'ended' or any(
+            q.get('about') == f['CS'].MOVE_KIND for q in (turns(f, 'waiting')[0].get('questions') or [])), 60)
         waiting = turns(f, 'waiting')[0]
         question = next((q for q in waiting.get('questions') or [] if q.get('about') == f['CS'].MOVE_KIND), {})
         codex_before = [r for r in observed(markers).values() if r.get('engine') == 'codex']
@@ -510,8 +510,8 @@ else:
         # The other conversation: asked, then moved by his answer, and its first Codex turn starts from the history.
         say(f, 'moving', 'three')
         J.pass_(factory)
-        F.drive(factory, lambda: any(q.get('about') == f['CS'].MOVE_KIND
-                                     for q in (turns(f, 'moving')[2].get('questions') or [])), 60)
+        F.drive(factory, lambda: turns(f, 'moving')[2].get('state') == 'ended' or any(
+            q.get('about') == f['CS'].MOVE_KIND for q in (turns(f, 'moving')[2].get('questions') or [])), 60)
         asked = next((q for q in turns(f, 'moving')[2].get('questions') or [] if q.get('about') == f['CS'].MOVE_KIND), {})
         check('AC2/ask', 'the second conversation is asked too, and no Codex turn runs without a settled answer',
               asked and not [r for r in observed(markers).values() if r.get('engine') == 'codex']
