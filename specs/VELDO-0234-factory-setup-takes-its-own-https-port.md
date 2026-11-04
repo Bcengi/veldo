@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0234
 title: Factory setup can put the API on its own tailnet HTTPS port, so a host whose HTTPS root serves another app keeps it
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -126,3 +126,5 @@ an installation already set up (that is a new setup).
 
 - 2026-11-04: drafted from the owner's decision (Telegram 39047) on the factory cutover research, gap 1.
   Not implemented; the owner approves it before it is claimed.
+
+2026-11-04: approved by the owner, Telegram 39065 ("Yes approve all four"), with VELDO-0232, VELDO-0234, VELDO-0235 and core VELDO-3340. Status ready.
