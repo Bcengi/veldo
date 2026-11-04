@@ -264,6 +264,7 @@ def claude_record(root, executable):
     login = json.loads((proof / 'VELDO-0185/login-status.json').read_text())['record']
     plugins, skills = claude_builtins(executable, C.BASELINE)
     entry = dict(json.loads(json.dumps(CLAUDE_POLICY)), baseline=C.BASELINE, engine_plugins=plugins,
+                 resume=C.RESUME, history_bound=C.HISTORY_BOUND,
                  engine_skills=skills, limit_names=usage['names'], login_status=login,
                  pinned='<state root>/engines/claude_code/' + version,
                  rate_limit_windows=formats['rate_limit_event']['fields']['rate_limit_info']['fields']['rateLimitType']['values'],

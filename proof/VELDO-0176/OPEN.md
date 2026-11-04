@@ -1,6 +1,6 @@
 # VELDO-0176 open items
 
-## 1. Outside the footprint: .veldo/qualify.py (and its synced copy engine/.veldo/qualify.py)
+## 1. RESOLVED by the lead (footprint widened, qualify.py writes resume and history_bound): .veldo/qualify.py (and its synced copy engine/.veldo/qualify.py)
 
 AC1 records the resume option, and AC3 the input bound, in each engine's qualification record for the pinned
 version. Both records are in the footprint and now carry them. The Codex record is written by
