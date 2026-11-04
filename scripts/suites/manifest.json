@@ -1744,6 +1744,18 @@
    ],
    "regions": "Seventeen rows (VELDO-0231): a running agent's flag reaches the lead's conversation within 2 seconds of the engine writing it while the run goes on (AC1), the run's own conversation or its project's most recently opened attached one, else kept undelivered:no_conversation; each engine's means granted with its reason and the Codex launch set equal to the role's with both tools the switch delivers, the qualify command's loopback flag probe, the marked line read only from the agent's own message text (AC2); wait-for-answer tools refused at save, the fixed flag instructions, a synchronous question answered at once by the binary or stopped by name within the receiver's question window (AC3); the per-run rate window and cap with the held back count kept in the store, and no socket or process for a flag (AC4).",
    "requires_note": "Only ROOT, expect and fast_temp. A real signed SQLite authority (VELDO-0073's support), the production conversation authority, VELDO-0174's conversation Line with real receiver subprocesses over fake pinned engines (support/v231_fake_engines.py over v174_journey.py) and the service loop's poll over the launch pipes; the qualify flag probe over fake Codex binaries on loopback. No real engine, login, user unit or network beyond loopback. Writes only temporary fixtures."
+  },
+  {
+   "name": "128_veldo_0177_conversation_workspace",
+   "file": "128_veldo_0177_conversation_workspace.py",
+   "requires": [
+    "128_veldo_0177_conversation_workspace"
+   ],
+   "regions": "Fifteen rows (VELDO-0177): the open command makes each conversation's workspace, two conversations' turns run at once each in its own workspace, worker group and credential file naming none of the other's, contained in this run's worker slice with its role's server credential only, redacted from its record, behind VELDO-0165's strip, VELDO-0173's switch-off and VELDO-0155's baseline, and a contract naming another conversation's workspace refused binding_mismatch:conversation_workspace before spawn (AC1); the init event's tools and servers exactly the role revision's setup defines, the Codex launch's workspace-write sandbox with network access and live search, and a turn that edits a file, runs a command and fetches a loopback page (AC2); attach_project takes an isolated clone at the trunk commit with its history under projects/<project>, another owner's or an unscoped project refused missing_authority:project, a turn reads git log and commits in the clone and its push changes nothing, and attaching again takes a new clone beside the old one (AC3).",
+   "requires_note": "Only ROOT, expect and fast_temp. A real signed SQLite authority (VELDO-0073's support), the production conversation authority, VELDO-0174's conversation Line with real receiver subprocesses over fake pinned engines generated from VELDO-0174's (support/v174_journey.py), run locally and contained by the owner's systemd user manager in a slice of the run's own, stopped at its end; a generated fake secret-tool first on PATH; a loopback HTTP page; fixture Git repositories. No real engine, login, keyring or network beyond loopback. Writes only temporary fixtures.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   }
  ],
  "resource_capacities": {

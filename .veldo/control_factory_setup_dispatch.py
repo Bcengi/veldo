@@ -128,7 +128,10 @@ def assistant_definition(role, engines, models, Refused):
         E = organ('control_engine_claude')
         version = (engines.get('claude_code') or {}).get('version')
         try:
-            tools = E.qualified_tools(version, E.qualified(version))['in_run']
+            # The in-run tools the binary registers: a classified tool it does not register (REPL on 2.1.281) is no
+            # tool a run can be offered, and the receiver refuses a role naming one (unavailable_service:native_tools).
+            qualified = E.qualified_tools(version, E.qualified(version))
+            tools = sorted(set(qualified['in_run']) & set(qualified['registry']))
         except E.Refused as error:
             raise Refused(error.code, 'the pinned Claude Code version names no in-run tools') from None
     else:
