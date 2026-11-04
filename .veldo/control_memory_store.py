@@ -16,6 +16,10 @@ text is extracted by Claude Code on one of the owner's subscription accounts thr
 extract`, a run recorded on its account), and each extracted fact is added through the part's own `memory_add`. The
 server's environment keeps only the names a process needs to run, so no paid-API key reaches the part's code.
 
+VELDO-0182's check around a switch reads the store through this server while it runs (`check` and `copy`): its
+adapter's reader over the store this process already holds open, and its safety copy taken by this process, so no
+second process or client opens the store.
+
 Logs one JSON line per event on standard error (the unit's journal): the start and lock with the part and socket,
 and each call's server, tool, catalog revision, memory record revision and run; never memory content or a
 credential. Standard library only, besides the part's own code.
@@ -166,6 +170,57 @@ class KB:
         return [dict(type='text', text=json.dumps(self.module.call(name, arguments), default=str))]
 
 
+class Inspector:
+    """VELDO-0182's check, read inside this server: its adapter's reader (control_memory_adapter.inspect) over the
+    store this process holds open, and its safety copy (control_memory_check.copy_data) taken by this process. The
+    sampled rows go back over the socket only, as they come back over the adapter's pipe; never to the journal."""
+
+    def __init__(self, part, data, factory, root):
+        self.part, self.data, self.factory = part, data, factory
+        self.copies = os.path.realpath(os.path.join(root, 'memory', 'copies'))
+        self.loaded = {}
+
+    def module(self, name):
+        if name not in self.loaded:
+            spec = importlib.util.spec_from_file_location('memory_store_' + name, str(Path(self.factory) / (name + '.py')))
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            self.loaded[name] = module
+        return self.loaded[name]
+
+    def check(self, operation, sample):
+        if operation not in ('before', 'after') or not isinstance(sample, list):
+            return dict(error='invalid_input:memory_store:check')
+        adapter = self.module('control_memory_adapter')
+        # The adapter's memory_kb reader points kb.store's _get_collection at existing collections only; the
+        # server's own tools get theirs back afterwards.
+        kb = importlib.import_module('kb.store') if self.part == 'memory_kb' else None
+        kept = kb._get_collection if kb else None
+        try:
+            # The part's code may print diagnostics, which may carry content: never to the journal.
+            with open(os.devnull, 'w') as quiet, contextlib.redirect_stdout(quiet), contextlib.redirect_stderr(quiet):
+                return adapter.inspect(dict(part=self.part, entry=dict(data=self.data), operation=operation,
+                                            sample=sample))
+        except Exception as error:  # noqa: BLE001 - the check's refusal names it, as the adapter's pipe does
+            cause = str(error) if isinstance(error, adapter.Unavailable) else type(error).__name__
+            return dict(error='unavailable_service:memory_store:%s:check' % self.part, cause=cause)
+        finally:
+            if kb:
+                kb._get_collection = kept
+
+    def copy(self, target):
+        target = str(target or '')
+        if (not os.path.isabs(target) or os.path.lexists(target)
+                or os.path.dirname(os.path.dirname(os.path.realpath(target))) != self.copies):
+            return dict(error='invalid_input:memory_store:copy')
+        CHECK = self.module('control_memory_check')
+        try:
+            CHECK.copy_data(self.data, Path(target), self.part)
+        except CHECK.M.Refused as error:
+            return dict(error=error.code)
+        return dict(copied=True)
+
+
 def extractor(python, factory, root):
     """`veldo memory extract`: the text on its standard input, the facts and the run on its output."""
     def extract(text):
@@ -212,8 +267,8 @@ class Server:
     """Connections are read on threads of their own; every tool runs on the one thread that imported the part's
     code (the part's own objects, a SQLite connection among them, may be bound to it), one call at a time."""
 
-    def __init__(self, part, tools):
-        self.part, self.tools, self.calls = part, tools, queue.Queue()
+    def __init__(self, part, tools, inspector=None):
+        self.part, self.tools, self.calls, self.inspector = part, tools, queue.Queue(), inspector
         self.counts = {}
 
     def answer(self, request):
@@ -227,6 +282,12 @@ class Server:
         op = request.get('op')
         if op == 'list':
             return dict(tools=self.tools.list())
+        if op in ('check', 'copy') and self.inspector:
+            answer = (self.inspector.check(request.get('operation'), request.get('sample'))
+                      if op == 'check' else self.inspector.copy(request.get('target')))
+            log('memory_check', part=self.part, op=op, operation=request.get('operation'),
+                outcome=answer.get('error') or 'ok')
+            return answer
         if op != 'call' or not isinstance(request.get('name'), str):
             return dict(error='invalid_input:memory_store:request')
         about = request.get('about') if isinstance(request.get('about'), dict) else {}
@@ -305,7 +366,7 @@ def main(argv=None):
     log('memory_store_start', part=args.part, socket=args.socket, lock=lock, pid=os.getpid())
     notify(b'READY=1')
     try:
-        Server(args.part, tools).serve(server)
+        Server(args.part, tools, Inspector(args.part, args.data, factory, args.state_root)).serve(server)
     finally:
         os.close(fd)
     return 0

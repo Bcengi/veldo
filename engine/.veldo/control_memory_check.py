@@ -204,7 +204,10 @@ def probe(part, entry, operation, sample=None, scratch=None):
     return answer
 
 
-def check(root, definition, part, phase):
+def check(root, definition, part, phase, served=None):
+    """`served`, given while the part's store server holds its store open (VELDO-0183 AC4), takes the copy and the
+    probe inside that server, so no second process opens the store; without it the check is unchanged."""
+    reader, copier = (served.probe, served.copy) if served else (probe, copy_data)
     if part not in M.PARTS or phase not in ('before', 'after'):
         raise M.Refused('invalid_input:memory:check')
     entry = definition['parts'][part]
@@ -222,13 +225,13 @@ def check(root, definition, part, phase):
                 staging = Path(tempfile.mkdtemp(prefix='copy-', dir=copies))
                 try:
                     try:
-                        copy_data(entry['data'], staging / part, part)
+                        copier(entry['data'], staging / part, part)
                     except M.Refused as error:
                         raise M.Refused(error.code, detail) from None
                     (staging / part).rename(target)
                 finally:
                     shutil.rmtree(staging)
-            result = probe(part, entry, 'before', scratch=directory)
+            result = reader(part, entry, 'before', scratch=directory)
             saved = dict(result, source=entry['data'])
             tmpfd, temporary = tempfile.mkstemp(dir=copies)
             with os.fdopen(tmpfd, 'w') as out:
@@ -237,7 +240,7 @@ def check(root, definition, part, phase):
             sample_size = len(result['sample'])
         else:
             saved = json.loads(evidence.read_text())
-            result = probe(part, entry, 'after', saved['sample'], scratch=directory)
+            result = reader(part, entry, 'after', saved['sample'], scratch=directory)
             if result['count'] < saved['count'] or not result['found']:
                 raise M.Refused('missing_evidence:memory:%s:lost' % part, detail)
             sample_size = len(saved['sample'])

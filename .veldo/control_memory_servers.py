@@ -14,7 +14,8 @@ the authority service: the part's interpreter in the part's code directory, the 
 Conversations reach it through the catalog bridge, the owner's assistant through the same bridge written into its
 MCP configuration (the previous bytes kept), and `veldo memory kb` through the same socket. The first start of each
 store server and the rewrite of the assistant's entries each run VELDO-0182 AC4's check around them, so a switch
-that loses memories stops by name. The knowledge graph needs no server: SQLite's own locks admit one writer at a
+that loses memories stops by name; a check that runs while a store server is up reads the store through that server
+(its `check` and `copy`), never by opening it again. The knowledge graph needs no server: SQLite's own locks admit one writer at a
 time. claude-mem's store is written only by its own worker (VELDO-0187).
 
 NO PAID API (AC2). The catalog refuses a record naming a paid-API switch or login (control_mcp_catalog); ava-memory's
@@ -162,7 +163,8 @@ def write_private(path, data, mode=0o600):
 
 
 def start_stores(definition, root, python, factory, runner, unit_dir, check, observe):
-    """Each store server's unit, written and started; its first start inside the check (`before`, `after`)."""
+    """Each store server's unit, written and started; its first start inside the check (`before` with no server up,
+    `after` read through the server just started)."""
     report = []
     for part in STORES:
         unit = unit_name(part)
@@ -172,7 +174,7 @@ def start_stores(definition, root, python, factory, runner, unit_dir, check, obs
         if not first and Path(path).read_text() != text:
             raise Refused('invalid_input:state_root:differs:memory_store_unit', path)
         if first:
-            check(part, 'before')
+            check(part, 'before', served=False)
             os.makedirs(unit_dir, mode=0o755, exist_ok=True)
             write_private(path, text.encode(), 0o644)
             runner.run(['daemon-reload'])
@@ -181,7 +183,7 @@ def start_stores(definition, root, python, factory, runner, unit_dir, check, obs
         if code:
             raise Refused('unavailable_service:memory_store:' + part, (err or '').strip()[:200])
         if first:
-            check(part, 'after')
+            check(part, 'after', served=True)
         event = dict(point='memory_store_server', part=part, unit=unit, socket=socket_path(root, part),
                      lock=os.path.join(store_data(definition, part), 'veldo-store.lock'),
                      outcome='started' if first else 'already_installed')
@@ -207,8 +209,8 @@ def assistant_entries(python, factory, root):
 
 def rewrite_assistant(definition, root, python, factory, check, observe):
     """The ava-memory and memory-kb entries of the assistant's MCP configuration pointed at the bridge, the previous
-    bytes kept for the rollback, each rewritten part inside the check; entries that already name the bridge are
-    left alone."""
+    bytes kept for the rollback, each rewritten part inside the check, read through its store server (up since
+    start_stores); entries that already name the bridge are left alone."""
     path = definition['assistant_mcp']
     raw = Path(path).read_bytes()
     try:
@@ -225,7 +227,7 @@ def rewrite_assistant(definition, root, python, factory, check, observe):
         observe(event)
         return event
     for server in changed:
-        check(BRIDGED[server], 'before')
+        check(BRIDGED[server], 'before', served=True)
     kept_dir = Path(root) / 'memory' / 'assistant-mcp'
     kept_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
     kept = kept_dir / ('previous-%s.json' % hashlib.sha256(raw).hexdigest()[:16])
@@ -235,7 +237,7 @@ def rewrite_assistant(definition, root, python, factory, check, observe):
         servers[server] = dict(servers.get(server) or {}, **wanted[server])
     write_private(path, (json.dumps(config, indent=2) + '\n').encode(), os.stat(path).st_mode & 0o777)
     for server in changed:
-        check(BRIDGED[server], 'after')
+        check(BRIDGED[server], 'after', served=True)
     event = dict(point='assistant_mcp', path=path, outcome='done', servers=changed, previous=str(kept))
     observe(event)
     return event
@@ -388,9 +390,11 @@ def setup_servers(root, owner_key, *, runner=None, unit_dir=None, install_root=N
             store.close()
         os.close(lock)
 
-    def check(part, phase):
-        note(dict(point='memory_check', **{k: v for k, v in CHECK.check(root, definition, part, phase).items()
-                                           if k in ('part', 'phase', 'outcome', 'count', 'sample_size', 'copy')}))
+    def check(part, phase, served):
+        result = CHECK.check(root, definition, part, phase, Served(root) if served else None)
+        note(dict(point='memory_check', served=served, **{k: v for k, v in result.items()
+                                                          if k in ('part', 'phase', 'outcome', 'count', 'sample_size',
+                                                                   'copy')}))
 
     stores = start_stores(definition, root, python, factory, runner, unit_dir, check, note)
     assistant = rewrite_assistant(definition, root, python, factory, check, note)
@@ -429,7 +433,7 @@ class Client:
             raise Refused('unavailable_service:memory_store:' + self.part)
         answer = json.loads(line)
         if 'error' in answer:
-            raise Refused(answer['error'])
+            raise Refused(answer['error'], answer.get('cause') or '')
         return answer
 
     def list(self):
@@ -443,6 +447,33 @@ class Client:
         with contextlib.suppress(OSError):
             self.stream.close()
             self.sock.close()
+
+
+class Served:
+    """VELDO-0182's check's reads of a store its store server holds open, made by that server (AC4): the probe is
+    the adapter's reader run inside it, the copy taken by it. A refusal comes back as the reason the check could
+    not run, so the check refuses by name as when its own reader fails."""
+
+    def __init__(self, root):
+        self.root = root
+
+    def ask(self, part, request):
+        client = None
+        try:
+            client = Client(self.root, part)
+            return client.request(request)
+        except Refused as error:
+            raise ValueError('adapter unavailable', ':'.join(filter(None, (error.code, error.detail)))) from None
+        finally:
+            if client is not None:
+                client.close()
+
+    def probe(self, part, entry, operation, sample=None, scratch=None):
+        answer = self.ask(part, dict(op='check', operation=operation, sample=sample or []))
+        return {k: answer[k] for k in ('count', 'sample', 'found') if k in answer}
+
+    def copy(self, source, target, part):
+        self.ask(part, dict(op='copy', target=str(target)))
 
 
 def bridge(root, part, server, catalog_revision=None, memory_revision=None, stdin=None, stdout=None):
