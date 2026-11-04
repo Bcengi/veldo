@@ -561,8 +561,14 @@ sys.exit(payload.get('code', 0))
                 if explicit == 'heartbeat_missing':
                     worker.heartbeat = types.SimpleNamespace(fd=14, due=lambda: 0, expired=lambda now: True,
                                                              lapse=lambda now: None, summary=lambda: {})
+                # The unbound run's values Receiver.__init__ sets for what _reap reads beyond containment: no bound
+                # engine (so no flag reader, VELDO-0231), no file memory (VELDO-0184), no held session or history
+                # rendering (VELDO-0176).
                 receiver = types.SimpleNamespace(metering=meter, recorder=None, control=None,
-                                                 _graces=lambda: (1, 1), _stop_asked=lambda: explicit == 'requested')
+                                                 _graces=lambda: (1, 1), _stop_asked=lambda: explicit == 'requested',
+                                                 login=None, binding=None, run=None, file_memory=None, flags=None,
+                                                 flag_means=None, held_session=None, rendering=None, start=None,
+                                                 resume_refusal=None, committed=None)
                 # Let the real deadline/heartbeat check run while the adapter is still alive.
                 events = iter(([], [(13, 1)])) if explicit in ('deadline', 'heartbeat_missing', 'runtime_cap') else iter(([(13, 1)],))
                 waits = []
@@ -606,6 +612,11 @@ sys.exit(payload.get('code', 0))
                         receiver.dispatches = types.SimpleNamespace(exit=lambda *args, **kwargs:
                             recorded.append(dict(at=clock[0], calls=len(calls))))
                         receiver._conclude_exit = lambda: L.Receiver._conclude_exit(receiver)
+                        # VELDO-0176: the finish captures a conversation turn's session; this run is no conversation turn,
+                        # so the real capture only unplaces what was never placed.
+                        receiver.placed = None
+                        receiver._unplace = lambda: L.Receiver._unplace(receiver)
+                        receiver._capture = lambda contract: L.Receiver._capture(receiver, contract)
                         L.Receiver._finish(receiver, termination, contract, None, None, False)
                 return dict(termination=termination, supervision=receiver.supervision,
                             inferred=stops[0].cause, calls=len(calls), elapsed=clock[0], reads=reads, waits=waits,
