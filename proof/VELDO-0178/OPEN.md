@@ -1,6 +1,6 @@
 # VELDO-0178: open items
 
-## 1. AC2's header binding needs one path outside the footprint: `engine/.veldo/control_launch.py` (and its synced copy `.veldo/control_launch.py`)
+## 1. RESOLVED by the lead (footprint widened, header change applied): AC2 header binding, formerly outside the footprint: `engine/.veldo/control_launch.py` (and its synced copy `.veldo/control_launch.py`)
 
 AC2 requires that "the record's header naming the conversation id and turn sequence". The record's header line is
 written by `control_execution_record.Recorder` (inside the footprint) from the `header` mapping the launch receiver

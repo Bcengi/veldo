@@ -34,6 +34,8 @@ footprint:
   - "specs/VELDO-0178-conversation-api-and-turn-records.md"
   - "specs/index.md"
   - "proof/VELDO-0178/*"
+  - "engine/.veldo/control_launch.py"
+  - ".veldo/control_launch.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -129,3 +131,8 @@ project only on the owner's typed command; the commands' version is VELDO-0174 A
 Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+2026-11-04: footprint widened by the lead after the build (proof/VELDO-0178/OPEN.md item 1): the launch receiver
+builds the execution record's header, so naming a conversation turn's id and sequence there (AC2) needs
+control_launch.py and its engine copy; the lead applied the builder's two-line change. Acceptance criteria are
+unchanged.
