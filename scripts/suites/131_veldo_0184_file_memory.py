@@ -12,7 +12,8 @@ unless CLAUDE_CODE_DISABLE_AUTO_MEMORY or `autoMemoryEnabled` false, in the flag
 else the account profile's projects/<cwd>/memory, named in its init event's `memory_paths` with a trailing
 separator, the index loaded into its context. The fake Codex keeps its workspace-write sandbox: a write outside the
 working directory and the configured writable roots is refused. Fake engines only: no real engine, login, memory
-store or paid API. Writes only temporary fixtures.
+store or paid API. Writes only temporary fixtures. AC1/replay saves a role listing the item through VELDO-0203's
+owner revision writer on its own temporary authority and replays the identical signed save.
 """
 
 
@@ -41,8 +42,9 @@ def _v184_suite():
         'control_engine_codex.py': ROOT / ".veldo" / "control_engine_codex.py",
         'control_agent_config.py': ROOT / ".veldo" / "control_agent_config.py",
         'control_memory_servers.py': ROOT / ".veldo" / "control_memory_servers.py",
+        'control_owner_revisions.py': ROOT / ".veldo" / "control_owner_revisions.py",
     }
-    ROWS = ('AC1/role-item', 'AC1/settings', 'AC1/memory-path', 'AC1/without', 'AC1/qualified', 'AC1/mismatch-stop',
+    ROWS = ('AC1/role-item', 'AC1/replay', 'AC1/settings', 'AC1/memory-path', 'AC1/without', 'AC1/qualified', 'AC1/mismatch-stop',
             'AC1/absent', 'AC2/configuration', 'AC2/write', 'AC2/later-read', 'AC2/qualified',
             'AC3/loaded-at-launch', 'AC3/tool-lines', 'AC3/no-content', 'AC3/observability')
     rows = {name: [] for name in ROWS}
@@ -323,6 +325,64 @@ if ENGINE != 'codex':
         source = (mods / 'control_memory_servers.py').read_text()
         check('AC1/role-item', 'setup saves a new role revision when only the item is missing (its skip compares it)',
               "accepted.get('file_memory') == wanted['file_memory']" in source)
+
+        # ---- AC1: the owner's identical signed save of a role listing the item, replayed (VELDO-0203's writer) ----
+        # Its own authority, whose steward is the self-enrolled factory owner, under the store's lock; the team
+        # writer is not reached by a configuration save.
+        OR = load('v184_owner_revisions', mods / 'control_owner_revisions.py')
+        replay_authority = H.build(base / 'replay-authority', mods, 23199, 'http://127.0.0.1:1', 'fixture',
+                                   scope='activation-repository')
+        replay_lock = os.open(str(Path(replay_authority.db).parent / 'authority.lock'), os.O_RDWR | os.O_CREAT, 0o600)
+        try:
+            import fcntl
+            import types
+            fcntl.flock(replay_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            ra = replay_authority
+            owner_writer = OR.OwnerRevisions(
+                ra.S, ra.CM, ra.conn, ids=ra.ids, authority_lock=replay_lock,
+                configurations=CFG.Configurations(ra.S, ra.conn, domain=ra.ids['domain_uuid'],
+                                                  repository=ra.ids['repository_uuid'], signer='authority',
+                                                  sign=ra.journal_sign),
+                team_routes=types.SimpleNamespace(conn=ra.conn))
+
+            def owner_save(definition, command_id):
+                command = dict(command_id=command_id, operation='save_capability_configuration', target='authority',
+                               parameters=dict(definition=definition, base=0))
+                state = ra.CM.authority_state(ra.S, ra.conn)
+                envelope = dict(ra.ids, schema=ra.AC.ENVELOPE_SCHEMA, principal='steward', command_id=command_id,
+                                command_digest=ra.AC.canonical_command_digest(command), nonce=command_id,
+                                request_revision=1, expires_at=time.time() + 600,
+                                membership_version=state['membership_version'],
+                                delegation_version=state['delegation_version'])
+                return dict(command=command, envelope=envelope,
+                            signature=ra.sign_as('steward', ra.AC.canonical_envelope_bytes(envelope)))
+
+            alone = dict(role='assistant_replay_plain', engine='claude_code', native_tools=[], mcp=[], skills=[],
+                         instructions=[], settings={})
+            listing = dict(alone, role='assistant_replay', file_memory={'load': 'always'})
+            signed = owner_save(listing, 'v184-replay-listing')
+            first_save = owner_writer.apply(json.loads(json.dumps(signed)))
+            head = ra.S.export_journal(ra.conn)[-1]['seq']
+            again = owner_writer.apply(json.loads(json.dumps(signed)))
+            check('AC1/replay', 'the owner\'s signed save of a role listing the item is saved with it [%s]'
+                  % first_save.get('reason'), first_save.get('ok') and first_save['result'].get('replayed') is False
+                  and first_save['result'].get('file_memory') == {'load': 'always'})
+            check('AC1/replay', 'the identical signed save again reads as replayed, the same revision, nothing written '
+                  '[%s]' % again.get('reason'), again.get('ok') and again['result'].get('replayed') is True
+                  and again['result'].get('revision') == 1 and again['result'].get('file_memory') == {'load': 'always'}
+                  and ra.S.export_journal(ra.conn)[-1]['seq'] == head)
+            changed = owner_save(dict(listing, file_memory={'load': 'when assigned'}), 'v184-replay-listing')
+            check('AC1/replay', 'the same command id with another item is still a content conflict',
+                  owner_writer.apply(changed).get('reason') == 'stale_subject:owner_command:command_content_conflict')
+            plain_signed = owner_save(alone, 'v184-replay-plain')
+            plain_first = owner_writer.apply(json.loads(json.dumps(plain_signed)))
+            plain_again = owner_writer.apply(json.loads(json.dumps(plain_signed)))
+            check('AC1/replay', 'a save without the item replays as before, its read naming no item',
+                  plain_first.get('ok') and plain_again.get('ok') and plain_again['result'].get('replayed') is True
+                  and 'file_memory' not in plain_again['result'])
+        finally:
+            os.close(replay_lock)
+            replay_authority.conn.close()
 
         # ---- AC1: two accounts at once with the item, one role without ------------------------------------------
         before = index.read_bytes()
