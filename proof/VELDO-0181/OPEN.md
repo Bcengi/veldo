@@ -10,6 +10,16 @@
 
 The original text of items 1 to 3 follows the new items, for the record.
 
+## Fix round 2: item 10's answer form resolved by the lead's ruling
+
+- Item 10, second reading: he no longer has to type `accept project shop: <reason>`. His reply to the presentation
+  that is exactly one choice's short form (a bare project name, `new project`, `new conversation`, a conversation id;
+  case and spacing folded as the presenter folds a choice) settles it with no reason typed, his reply's words recorded
+  as the reason (settlement records one for every answer). The full form keeps working; a reply matching no option is
+  refused unmatched_choice as before; a short form two choices share is refused `ambiguous_choice` by name, nothing
+  settled (14e20cb3, mutation case bare181-short-form-dropped ade18d20, receipts c9d21c56). README, "Round 2". The rest of
+  item 10 stands.
+
 ## 9. One suite outside the widened footprint, NOT committed: scripts/suites/68_veldo_0136_hints.py
 
 The footprint names `68_veldo_0126_*`; suite 68_veldo_0136_hints (VELDO-0136) also pins the old ask (an unclear route
@@ -27,8 +37,8 @@ and commit it, or rule otherwise.
   sender without factory scope can write unclear messages, and the presenter refuses a request outside his scope. The
   edge (and his delegation) must cover that scope for a Telegram answer.
 - Choices are picks (`accept project <name>`, `accept new project`, `accept new conversation`, `accept conversation
-  <id>`), so their ruling is approve and no new global choice word is added. He answers `accept project shop: <reason>`
-  where he used to reply `shop`. Two project names that fold alike (`a-b`, `a_b`) make the request `ambiguous_choice`:
+  <id>`), so their ruling is approve and no new global choice word is added. (Round 2: he replies `shop` again, or the
+  full `accept project shop: <reason>`.) Two project names that fold alike (`a-b`, `a_b`) make the request `ambiguous_choice`:
   it is not presented and the ask event names that refusal; the message waits AWAITING_PROJECT.
 - An API message's unclear question is unchanged (answered in the API response): AC1's set says presented on the chat
   he wrote from, and an API message has none. Rule whether AC1 also wants it as a request.

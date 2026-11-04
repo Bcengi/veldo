@@ -1,0 +1,19 @@
+VELDO-0181 fix round 2: each suite run alone (python3 scripts/selftest.py --suite NAME) at c9d21c56, in a transient user scope with MemoryMax=8G and MemorySwapMax=0.
+  137_veldo_0181_conversation_decisions           17 passed    5.34s
+selftest (PARTIAL, 1 of 199 suites): 43 passed, 0 failed in 5.34s
+  130_veldo_0176_conversation_history             17 passed   13.93s
+selftest (PARTIAL, 1 of 199 suites): 43 passed, 0 failed in 13.93s
+  131_veldo_0175_conversation_replies             16 passed    3.53s
+selftest (PARTIAL, 1 of 199 suites): 42 passed, 0 failed in 3.53s
+  132_veldo_0175_conversation_routes              19 passed   20.40s
+selftest (PARTIAL, 1 of 199 suites): 45 passed, 0 failed in 20.40s
+  136_veldo_0180_conversation_projects            21 passed    3.29s
+selftest (PARTIAL, 1 of 199 suites): 47 passed, 0 failed in 3.29s
+  68_veldo_0126_intake                            18 passed    1.72s
+selftest (PARTIAL, 1 of 199 suites): 44 passed, 0 failed in 1.72s
+  68_veldo_0136_hints                              7 passed    4.68s
+selftest (PARTIAL, 1 of 199 suites): 33 passed, 0 failed in 4.68s
+  69_veldo_0133_dispositions                      33 passed    5.06s
+selftest (PARTIAL, 1 of 199 suites): 59 passed, 0 failed in 5.06s
+  93_veldo_0152_intake_routes                     24 passed   49.68s
+selftest (PARTIAL, 1 of 199 suites): 50 passed, 0 failed in 49.68s

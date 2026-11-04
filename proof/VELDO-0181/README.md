@@ -11,7 +11,11 @@ request (ac3df2d0, cb7bc0b1). One change is outside the widened footprint and is
 `scripts/suites/68_veldo_0136_hints.py` (`suite68-0136.diff`, OPEN.md item 9). The round 1 runs (`suites-round1.txt`,
 `mutation-*.txt`) were taken with it in the working tree.
 
-Test: suite 137 (`scripts/suites/137_veldo_0181_conversation_decisions.py`, 15 rows (11 before round 1), registered in manifest.json and
+Fix round 2 (the lead's ruling on OPEN.md item 10): his reply to the unclear route question's presentation that is
+exactly one choice's short form settles it again with no reason typed, as he answered it before (14e20cb3; mutation case
+ade18d20; receipts c9d21c56). See "Round 2" below.
+
+Test: suite 137 (`scripts/suites/137_veldo_0181_conversation_decisions.py`, 17 rows (15 before round 2, 11 before round 1), registered in manifest.json and
 requires.json). A real signed authority (VELDO-0073's support) with the channel edge and the owner's delegation, a
 loopback Bot API, the production Ingress (a gate stand-in that admits) over the production Acquirer with the edge's real
 signer, the presenter and settlement, the production intake with its conversations, the production FactoryLoop's
@@ -30,8 +34,11 @@ Evidence files:
 - `suite137-item3-red-before.txt`: round 1, suite 137 with the item 3 code set aside: the five new unclear-question
   rows red, the other ten green.
 - `suites-round1.txt`: round 1, every suite the lead named, each alone.
+- `suite137-round2-red-before.txt`: round 2, suite 137 with the two new rows before the bare form was built: both red
+  (the bare replies refused unmatched_choice; the full form control resolves), the other fifteen green.
+- `suites-round2.txt`: round 2, every suite the lead named, each alone.
 - `suite68-0136.diff`: the uncommitted change to suite 68_veldo_0136_hints (OPEN.md item 9).
-- `mutation-*.txt`, `mutations-summary.txt`: each of the four cases (three before round 1) run alone through `scripts/check_gate_mutations.py`
+- `mutation-*.txt`, `mutations-summary.txt`: each of the five cases (four before round 2) run alone through `scripts/check_gate_mutations.py`
   with its case option: baseline and no-op green, the mutant killed at its row, confined leg.
 - `control_service.diff`, `OPEN.md`: the change outside the footprint, and readings to review.
 
@@ -120,6 +127,48 @@ kind and no text). Green.
 Falsifier (`output181-answer-accepted`: accept an answer document found in a turn's final message as his answer to the
 pending question it names by choice): AC2/no-authority-from-output fails on the settled request (`[pending, rerun]`: the
 question answered by the output). Killed. OPEN.md item 6 says why the mutant answers on the conversation record.
+
+## Round 2: the bare short form answers the unclear route question
+
+Before this ticket he answered the unclear route question by replying the project's name (`shop`); round 1 made him
+type `accept project shop: <reason>`. Now his reply to its presentation that is exactly one choice's short form also
+answers it, with no reason typed; everything else is as round 1 built it (the VELDO-0068 request, its one settlement,
+the routing by `route_answers`).
+
+- `control_conversation_decisions.route_short`: a choice's short form: `accept project <name>` is `<name>`,
+  `accept new project` is `new project`, `accept new conversation` is `new conversation`, `accept conversation <id>` is
+  `<id>`. `route_shorts(typed, choices, fold)`: the choices whose short form the reply is, folded as the presenter folds
+  a choice (case, width, spaces, underscores and hyphens).
+- `control_channel_presentation.Presenter.canonical_answer`: when the typed choice matches no offered choice and the
+  request is an unclear route question (`kind_of` is `unclear_route`), a reply that is the short form of exactly one
+  choice becomes that full choice; its reason is his reason if he typed one, else his reply's own words (settlement
+  records a reason for every answer). The edge signs that canonical answer, which `answer` and settlement then decide
+  unchanged. The full form keeps working; a reply matching no option is refused unmatched_choice and told, as before.
+- `Presenter._answer`: a reply that is the short form of two or more choices (his project `new-project` and
+  `accept new project` both shorten to `new project`) is refused `ambiguous_choice`, told once naming those choices,
+  nothing settled. Full choices that fold alike still make the request `ambiguous_choice` and unpresented, as before.
+- `control_intake_routes._present_question`: the brief also says he may reply with just a project's name, new project,
+  new conversation or a conversation id. Every other request is untouched (no short forms outside the route question).
+
+Test rows (suite 137; his scope, the edge's and a delegation widened to two projects of his, `activation-repository`
+and `new-project`): AC1/unclear-bare-project (the question offers both projects; a second message is answered by his
+reply `  Activation Repository ` and settles once from Telegram with `accept project activation-repository`, his reply
+as its reason, nothing told back; it routes exactly as a first message answered with the full form: the same state
+ROUTED, objective `<pid>:answered` PROPOSED for that project, route and reason, the question's choice; a second bare
+reply settles and routes nothing again) and AC1/unclear-bare-ambiguous (his reply `New Project` is refused
+`ambiguous_choice`, told once naming `accept new project` and `accept project new-project`; nothing settled or routed,
+the question open, the message AWAITING_PROJECT). Red before (`suite137-round2-red-before.txt`: both refused
+unmatched_choice), green after (17/17, `suites-round2.txt`).
+
+Guard (`bare181-short-form-dropped`: a bare short form never answers the question): AC1/unclear-bare-project red.
+Killed. The existing cases kill as before; `reply181-presentation-as-turn` and `route181-applied-twice` also fail the
+two new rows.
+
+## Suites run, round 2 (each alone, `suites-round2.txt`)
+
+137 (17/17), 130 (17/17), 131 (16/16), 132 (19/19), 136 (21/21), 68_veldo_0126 (18/18), 68_veldo_0136_hints (7/7),
+69_veldo_0133 (33/33), 93 (24/24): green. The five 0181 mutation cases, each alone: baseline and no-op green, the mutant
+killed (`mutations-summary.txt`, `mutation-*.txt`). The full gate was not run.
 
 ## Suites run, round 1 (each alone, `suites-round1.txt`)
 
