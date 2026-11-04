@@ -1,0 +1,39 @@
+  selector    --suite 127_veldo_0231_run_flags
+  running     1 of 189 suites: 127_veldo_0231_run_flags
+  File "/tmp/v231-red-8da5d061/scripts/suites/127_veldo_0231_run_flags.py", line 94, in _v231_suite
+  VELDO-0231 detail: AC1/at-once journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC1/at-once
+  VELDO-0231 detail: AC1/run-goes-on journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC1/run-goes-on
+  VELDO-0231 detail: AC1/lead-conversation journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC1/lead-conversation
+  VELDO-0231 detail: AC1/observability journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC1/observability
+  VELDO-0231 detail: AC2/codex-launch journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC2/codex-launch
+  VELDO-0231 detail: AC2/decisions journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC2/decisions
+  VELDO-0231 detail: AC2/switch journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC2/switch
+  VELDO-0231 detail: AC2/probe journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC2/probe
+  VELDO-0231 detail: AC2/marked-line journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC2/marked-line
+  VELDO-0231 detail: AC3/save-refused journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC3/save-refused
+  VELDO-0231 detail: AC3/instructions journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC3/instructions
+  VELDO-0231 detail: AC3/probe-answer journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC3/probe-answer
+  VELDO-0231 detail: AC3/answered journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC3/answered
+  VELDO-0231 detail: AC3/blocking journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC3/blocking
+  VELDO-0231 detail: AC4/flood journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC4/flood
+  VELDO-0231 detail: AC4/per-run-cap journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC4/per-run-cap
+  VELDO-0231 detail: AC4/nothing-outward journey completes: AttributeError: 'Conversations' object has no attribute 'flag'
+  SELFTEST FAIL: VELDO-0231 AC4/nothing-outward
+  127_veldo_0231_run_flags                         0 passed    0.47s
+selftest (PARTIAL, 1 of 189 suites): 26 passed, 17 failed in 0.47s

@@ -1,0 +1,5 @@
+case: flag231-delivered-at-end
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=117.466s
+baseline: rows 43, failed [], targets {'AC1/at-once': [True]}
+noop: rows 43, failed [], targets {'AC1/at-once': [True]}
+mutant: rows 43, failed ['VELDO-0231 AC1/at-once'], targets {'AC1/at-once': [False]}
