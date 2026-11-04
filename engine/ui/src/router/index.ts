@@ -43,6 +43,15 @@ export const routes: RouteRecordRaw[] = [
   { path: '/repositories', name: 'repositories', component: () => import('@/views/RepositoriesView.vue'), meta: { session: true, title: 'Repositories and identities' } },
   { path: '/catalog', name: 'catalog', component: () => import('@/views/CatalogView.vue'), meta: { session: true, title: 'MCP catalog' } },
   { path: '/workflows/:workflow?', name: 'workflow', component: () => import('@/views/WorkflowView.vue'), meta: { session: true, title: 'Workflows' } },
+  // VELDO-0179: the owner's conversations, one conversation, and one turn's live terminal.
+  { path: '/conversations', name: 'conversations', component: () => import('@/views/ConversationsView.vue'), meta: { session: true, title: 'Conversations' } },
+  { path: '/conversations/:conversation', name: 'conversation', component: () => import('@/views/ConversationView.vue'), meta: { session: true, title: 'Conversation' } },
+  {
+    path: '/conversations/:conversation/turns/:sequence(\\d+)',
+    name: 'conversation-turn',
+    component: () => import('@/views/ConversationTurnView.vue'),
+    meta: { session: true, title: 'Turn' },
+  },
   { path: '/you', name: 'you', component: () => import('@/views/YouView.vue'), meta: { session: true, title: 'You' } },
   { path: '/:rest(.*)*', name: 'not-found', component: () => import('@/views/NotFoundView.vue'), meta: { title: 'Not found' } },
 ]

@@ -38,6 +38,11 @@
     "backlog.reprioritize": {"method": "POST", "path": "/api/v1/domains/{domain}/backlog/reprioritize", "required": ["item", "item_version", "rank"], "optional": []},
     "workers.stop": {"method": "POST", "path": "/api/v1/domains/{domain}/workers/stop", "required": ["dispatch", "dispatch_version"], "optional": []},
     "workers.cap": {"method": "POST", "path": "/api/v1/domains/{domain}/workers/cap", "required": ["account", "account_version", "concurrency"], "optional": []},
+    "conversations.read": {"method": "GET", "path": "/api/v1/domains/{domain}/conversations", "required": [], "optional": ["conversation"]},
+    "conversations.open": {"method": "POST", "path": "/api/v1/domains/{domain}/conversations/open", "required": [], "optional": ["role"]},
+    "conversations.close": {"method": "POST", "path": "/api/v1/domains/{domain}/conversations/close", "required": ["conversation", "version"], "optional": []},
+    "conversations.set_role": {"method": "POST", "path": "/api/v1/domains/{domain}/conversations/role", "required": ["conversation", "version", "role"], "optional": []},
+    "conversations.attach_project": {"method": "POST", "path": "/api/v1/domains/{domain}/conversations/attach", "required": ["conversation", "version", "project"], "optional": []},
     "events.read": {"method": "GET", "path": "/api/v1/domains/{domain}/events", "required": [], "optional": ["after"]},
     "events.stream": {"method": "GET", "path": "/api/v1/domains/{domain}/events/stream", "required": [], "optional": ["after"]}
   }
