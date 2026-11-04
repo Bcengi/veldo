@@ -81,6 +81,7 @@
   "optional_read_roots": [
     "~/.nvm/versions/node",
     "~/.local/share/claude",
+    "~/.local/share/codex-versions",
     "~/.local/share/veldo/langgraph",
     "~/.rustup",
     "~/.cargo/bin"

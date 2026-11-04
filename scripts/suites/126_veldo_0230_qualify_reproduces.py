@@ -27,7 +27,7 @@ def _v230_reproduce_suite():
     PRODUCTION = {
         'qualify.py': ROOT / ".veldo" / "qualify.py",
     }
-    ROWS = ('qualify/reproduces', 'qualify/covers', 'qualify/builtin-plugins')
+    ROWS = ('qualify/reproduces', 'qualify/covers', 'qualify/builtin-plugins', 'qualify/gate-reads')
     rows = {name: [] for name in ROWS}
     COPIED = ('.veldo', 'engine/runtime', 'packs', 'proof/VELDO-0060', 'proof/VELDO-0061', 'proof/VELDO-0062',
               'proof/VELDO-0127', 'proof/VELDO-0141', 'proof/VELDO-0155', 'proof/VELDO-0156', 'proof/VELDO-0165',
@@ -88,7 +88,25 @@ def _v230_reproduce_suite():
         finally:
             shutil.rmtree(scratch, ignore_errors=True)
 
+    def gate_reads_row():
+        """AC2/AC3: the gate's confinement (the gate profile and the mutation workers) can read every binary the
+        engines record names, so a suite that runs the qualified binary compares against it, not against a
+        PermissionError. Read roots are the sandbox configuration's optional_read_roots; '~' is the account home."""
+        import pwd
+        row = 'qualify/gate-reads'
+        home = Path(pwd.getpwuid(os.getuid()).pw_dir)
+        engines = json.loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
+        for config in ('scripts/agent_sandbox.json', 'engine/scripts/agent_sandbox.json'):
+            roots = [Path(str(r).replace('~', str(home), 1)) if str(r).startswith('~') else Path(r)
+                     for r in json.loads((ROOT / config).read_text()).get('optional_read_roots', [])]
+            for engine in ('codex', 'claude_code'):
+                named = engines[engine]['binary']
+                path = Path(named.replace('~', str(home), 1)) if named.startswith('~') else Path(named)
+                check(row, '%s lists a read root above the qualified %s binary %s' % (config, engine, named),
+                      any(path == r or r in path.parents for r in roots))
+
     builtin_plugins_row()
+    gate_reads_row()
     temp = tempfile.mkdtemp(prefix='v230-qualify-')
     try:
         tree = Path(temp) / 'tree'
