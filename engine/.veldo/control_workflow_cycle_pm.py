@@ -695,7 +695,7 @@ def _cycles(line, store, membership, assignment, ids, signature, allocations, re
                 api_edge=ingress.settlement.api_edge, journal_signer=service.principal, sign=service.sign,
                 asker=ingress.presenter.edge, authority_generation=service.generation,
                 # VELDO-0175: the service's conversations, for the typed commands and the new-conversation route.
-                conversations=service.conversations() if callable(getattr(service, 'conversations', None)) else None)
+                conversations=getattr(service, 'conversations', None))
             # VELDO-0143: the factory's new-project decisions, the one owner of the PM's new-project document
             # (built before from_line took the registrations, R4-6).
             if callable(getattr(service, 'new_projects', None)):

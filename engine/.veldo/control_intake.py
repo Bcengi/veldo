@@ -194,7 +194,8 @@ class Intake(RT.Routes, CI.Conversing):
     this intake serves, or a callable returning them, called each time they are judged, so a transition judges
     against the projects current when it runs (store_projects, VELDO-0143 R4-3). `api_edge` is the service principal the authenticated API signs as. `sign`
     signs journal records as `journal_signer`. `conversations` is this service's control_conversation
-    Conversations (VELDO-0175: the typed commands and the new-conversation route send through it), or None."""
+    Conversations (VELDO-0175: the typed commands and the new-conversation route send through it), a callable
+    returning it (called when first needed), or None."""
 
     _proposal_id = staticmethod(proposal_id)
     CI = CI
@@ -284,7 +285,7 @@ class Intake(RT.Routes, CI.Conversing):
         proposals = self._all(PROPOSAL_KIND)
         return dict(self.counts, refused_by_reason=refused,
                     routes={r: sum(e['operation'] == 'route' and e.get('route', {}).get('route') == r and not e['refusal']
-                                   for e in self.observations) for r in RT.ROUTES},
+                                   for e in self.observations) for r in RT.ALL_ROUTES},
                     decisions={r: sum(e['operation'] == 'submit' and not e.get('repeated') and
                                       (e.get('decision') or {}).get('decided_by') == r for e in self.observations)
                                for r in ('request', 'ticket_key', None)},
@@ -292,9 +293,9 @@ class Intake(RT.Routes, CI.Conversing):
                              'new_project': sum(p.get('state') == 'NEW_PROJECT' for p in proposals),
                              'proposed': sum(1 for p in proposals if p.get('state') == 'PROPOSED'),
                              'awaiting_project': sum(1 for p in proposals if p.get('state') == 'AWAITING_PROJECT'),
-                             'open_questions': sum(1 for q in self._all(QUESTION_KIND) if q.get('state') == 'open'),
-                             'awaiting_reading': sum(p.get('state') == CI.AWAITING_READING for p in proposals)},
-                    conversations=self.conversation_metrics())
+                             'open_questions': sum(1 for q in self._all(QUESTION_KIND) if q.get('state') == 'open')},
+                    conversations=dict(self.conversation_metrics(),
+                                       awaiting_reading=sum(p.get('state') == CI.AWAITING_READING for p in proposals)))
 
     # the entry
 

@@ -112,6 +112,17 @@ class Conversing:
     """The conversation half of the intake (VELDO-0175). Needs `self.conversations` (control_conversation
     Conversations of this service) for commands and new conversations."""
 
+    def _conversations(self):
+        """This service's Conversations, built when first needed; None when this intake has none."""
+        held = getattr(self, 'conversations', None)
+        if callable(held) and not hasattr(held, 'read'):
+            try:
+                held = held()
+            except Exception:  # noqa: BLE001 - an intake without conversations refuses their commands by name
+                held = None
+            self.conversations = held
+        return held
+
     # -- deciding ------------------------------------------------------------------------------------------------
 
     def _replied_conversation(self, bot, chat, message):
@@ -180,7 +191,7 @@ class Conversing:
     def _steer(self, identity, principal, kind, name, command_key):
         """Send the owner's command on the conversation's current version, with the name as given; (what changed as
         one line, detail). Refused by name: invalid_input:conversation_command:<reason>, or the command's own."""
-        conversations = getattr(self, 'conversations', None)
+        conversations = self._conversations()
         if conversations is None:
             raise self.route_refused('unsupported_configuration:conversations')
         current = conversations.read(identity)
@@ -357,7 +368,7 @@ class Conversing:
         source = self._data(source_key, 'intake_source')
         reads.append(source_key)
         if doc['route'] == 'new_conversation':
-            conversations = getattr(self, 'conversations', None)
+            conversations = self._conversations()
             if conversations is None:
                 raise self.route_refused('unsupported_configuration:conversations')
             identity = conversation_key(pid)

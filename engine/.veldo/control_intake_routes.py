@@ -20,7 +20,10 @@ import json
 
 ROUTE = 'intake_route'
 SCHEMA = 'veldo.intake_route/v1'
-ROUTES = ('new_project', 'existing_project', 'new_conversation', 'open_conversation', 'unclear')
+# VELDO-0152's three project routes, and VELDO-0175's two conversation routes beside them: five in all.
+ROUTES = ('new_project', 'existing_project', 'unclear')
+CONVERSATION_ROUTES = ('new_conversation', 'open_conversation')
+ALL_ROUTES = ROUTES + CONVERSATION_ROUTES
 # The extra field each route's document carries.
 ROUTE_FIELDS = {'existing_project': 'project', 'open_conversation': 'conversation'}
 
@@ -103,7 +106,7 @@ class Routes:
         doc, pid = params.get('document'), params.get('proposal_id')
         fail = self.route_refused
         if (not isinstance(doc, dict) or doc.get('schema') != SCHEMA
-                or doc.get('route') not in ROUTES or doc.get('proposal_id') != pid
+                or doc.get('route') not in ALL_ROUTES or doc.get('proposal_id') != pid
                 or not isinstance(doc.get('reason'), str) or not doc['reason'].strip()
                 or set(doc) != ({'schema', 'proposal_id', 'route', 'reason'}
                                 | ({ROUTE_FIELDS[doc['route']]} if doc.get('route') in ROUTE_FIELDS else set()))
