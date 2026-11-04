@@ -119,6 +119,8 @@ def _organ(name):
 
 EC = _organ('entity_contract')
 EL = _organ('control_eligibility')
+# VELDO-0241: the unit workflow revisions a project's binding names.
+WU = _organ('control_workflow_unit')
 
 SCHEMA = 'veldo.project/v1'
 KIND = 'project'
@@ -126,7 +128,12 @@ ID_PREFIX = 'project:'
 OPERATION = 'project_operation'
 OWNER = 'VELDO-0076 project lifecycle'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
-OPERATIONS = ('activate', 'pause', 'resume', 'cancel', 'complete')
+OPERATIONS = ('activate', 'pause', 'resume', 'cancel', 'complete', 'bind_workflow')
+# VELDO-0241: the owner's binding of a kind of work (`default` when the command names none) to an accepted unit
+# workflow revision: the command's fields, and the record fields it writes (`workflows`, and the change log).
+BIND = 'bind_workflow'
+BIND_FIELDS = ('kind_of_work', 'workflow', 'version')
+_KIND_OF_WORK = re.compile(r'^[a-z][a-z0-9_-]{0,62}$')
 # VELDO-0149: the two paths an activation comes by, and the activation request a settled answer answers:
 # a VELDO-0068 request of this touchpoint whose terms target the project under this target kind.
 ACTIVATION_PATHS = ('signed_command', 'settled_answer', 'new_project')
@@ -157,7 +164,8 @@ TAXONOMY = {'invalid_input': 'invalid_input', 'missing_field': 'invalid_input', 
             'stale_subject': 'stale_subject', 'stale_version': 'stale_subject', 'invalid_transition': 'stale_subject',
             'open_obligation': 'missing_evidence', 'unavailable_service': 'unavailable_service',
             'unsettled': 'missing_evidence', 'stale_answer': 'stale_subject', 'not_approved': 'missing_authority',
-            'no_settled_decision': 'missing_evidence', 'not_ready': 'stale_subject'}
+            'no_settled_decision': 'missing_evidence', 'not_ready': 'stale_subject',
+            'missing_workflow': 'missing_evidence'}
 _NAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$')
 
 # The optional prefixes of a project's ticket keys (VELDO-0152): `BCG` for `BCG-123`.
@@ -433,6 +441,13 @@ class Projects:
                 params['disposition'] = command['disposition']
             if op == 'resume':
                 self._activation_evidence(data, state, name, now)
+            if op == BIND:
+                kind = command.get('kind_of_work', WU.DEFAULT_KIND)
+                if not _is_str(kind) or not _KIND_OF_WORK.match(kind):
+                    raise Refused('invalid_input:kind_of_work', 'a kind of work is a lowercase identifier')
+                if not _is_str(command.get('workflow')) or type(command.get('version')) is not int:
+                    raise Refused('missing_field:workflow', 'a binding names a workflow and its version')
+                params.update(kind_of_work=kind, workflow=command['workflow'], version=command['version'])
         versions = {eid: entities.get(eid, {}).get('version', 0) for eid in (pid, principal, key['key_id'])}
         observation['accepted_versions'] = versions
         stored = dict(command_id=command['command_id'], principal=principal, operation=OPERATION, parameters=params,
@@ -441,6 +456,8 @@ class Projects:
         record = read(self.store, self.conn, name)
         result = {'ok': True, 'reason': op, 'project_id': pid, 'project': record, 'receipt': receipt,
                   'stops': [], 'obligations': []}
+        if op == BIND:
+            observation['binding'] = dict(((record or {}).get('workflow_bindings') or [{}])[-1])
         if op in ('pause', 'cancel') and not receipt.get('replayed'):
             # The ordinary host stop of every running dispatch the committed record names.
             reason = 'project_%s:%s' % ('paused' if op == 'pause' else 'canceled', name)
@@ -698,6 +715,8 @@ class Projects:
         if current is None or current.get('kind') != KIND:
             raise Refused('no_such_project', pid)
         data = json.loads(json.dumps(current['data']))
+        if op == BIND:
+            return {pid: {'kind': KIND, 'data': self._bind(conn, data, params, entry)}}
         source = data.get('state')
         target = {'pause': 'PAUSED', 'resume': 'ACTIVE', 'cancel': 'CANCELED', 'complete': 'COMPLETED'}[op]
         if op == 'resume':
@@ -716,6 +735,26 @@ class Projects:
         data['history'] = list(data.get('history') or []) + [dict(entry, source=source, target=target, **{
             k: params[k] for k in ('reason', 'disposition') if k in params})]
         return {pid: {'kind': KIND, 'data': data}}
+
+    def _bind(self, conn, data, params, entry):
+        """VELDO-0241: the project's binding of one kind of work to an accepted unit workflow revision of its
+        execution repository, read on the transaction's connection (missing_workflow otherwise), and the change's
+        record: the kind of work, the old and the new revision, the owner and his command id. The lifecycle state is
+        not touched."""
+        try:
+            found, _definition = WU.bound_revision(self.store, conn, self.ids['domain_uuid'],
+                                                   data.get('execution_repository'), params['workflow'],
+                                                   params['version'])
+        except WU.Refused as error:
+            raise Refused(error.code, error.detail) from None
+        kind = params['kind_of_work']
+        workflows = dict(data.get('workflows') or {})
+        new = {'workflow': found['id'], 'version': found['version'], 'digest': found['digest']}
+        old, workflows[kind] = workflows.get(kind), new
+        data['workflows'] = workflows
+        data['workflow_bindings'] = list(data.get('workflow_bindings') or []) + [
+            dict(entry, project=data.get('name'), kind_of_work=kind, old=old, new=new)]
+        return data
 
     @staticmethod
     def _edge(source, target, evidence):

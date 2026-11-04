@@ -87,6 +87,25 @@ STEP_KINDS = {
                    'input': 'worker_result', 'terminal': False},
     'result_handling': {'ports': (), 'config': {}, 'input': 'accepted_result', 'terminal': True},
 }
+# VELDO-0241: THE UNIT'S STATION KINDS, the steps a unit's process (control_workflow_unit) is made of. `station`
+# marks a kind the Line runs for a unit; `outward` a step that sends something out of the factory (land here;
+# deliver, publish and deploy register the same way), which the save check (approval_problems) lets a definition
+# reach only through an owner_approval node naming it; `changes_subject` a step that changes what was approved.
+# An owner_approval node names its outward node in `approves`; it settles through the owner's ordinary decision
+# bound to the exact subject (VELDO-0068, VELDO-0057), and only its `granted` port passes on to that node.
+APPROVAL = 'owner_approval'
+GRANTED = 'granted'
+LAND_PORTS = ('landed', 'trunk_moved', 'conflict', 'awaiting_approval', 'unknown', 'failed')
+STEP_KINDS.update({
+    'build': {'ports': ('done',), 'config': {}, 'input': None, 'terminal': False, 'station': True,
+              'changes_subject': True},
+    'review': {'ports': ('done',), 'config': {}, 'input': None, 'terminal': False, 'station': True},
+    'gate': {'ports': ('passed',), 'config': {}, 'input': None, 'terminal': False, 'station': True},
+    APPROVAL: {'ports': (GRANTED, 'stopped'), 'config': {'approves': (None, True)}, 'input': None, 'terminal': False,
+               'station': True},
+    'land': {'ports': LAND_PORTS, 'config': {}, 'input': None, 'terminal': False, 'station': True, 'outward': True},
+    'end': {'ports': (), 'config': {}, 'input': None, 'terminal': True, 'station': True},
+})
 LAYOUT_FIELDS = ('nodes', 'transitions', 'viewport')
 IDENTIFIER = re.compile(r'[a-z][a-z0-9_-]{0,62}\Z')
 # Node names the runner and this service keep for themselves.
@@ -257,6 +276,12 @@ def _node_problems(nodes, declared):
         for field, (reference, _) in kind['config'].items():
             if field not in config:
                 continue
+            if reference is None:
+                # A plain field naming a node of this definition (owner_approval's `approves`).
+                if not _identifier(config[field]) or config[field] not in nodes \
+                        or not (step_kind(nodes[config[field]]) or {}).get('outward'):
+                    problems.append('unsupported_configuration:invalid_config:%s:%s' % (name, field))
+                continue
             keys = config[field] if field == 'tools' else [config[field]]
             if type(keys) is not list or not all(type(key) is str for key in keys) or len(set(keys)) != len(keys):
                 problems.append('unsupported_configuration:invalid_config:%s:%s' % (name, field))
@@ -339,6 +364,48 @@ def _ring(nodes, edges):
     return None
 
 
+def approval_problems(nodes, edges, entry):
+    """VELDO-0241 AC2: every outward node is reached only through an owner_approval node that names it, on
+    every path from the entry, and no subject-changing step lies between that approval and the outward node.
+    An approval naming the node passes on to it only through its `granted` port; every other port is an
+    ordinary edge. Problems: invalid_input:missing_owner_approval:<outward node> when some path from the entry
+    reaches it without such an approval granting, invalid_input:approval_not_last:<approval node> when a path
+    from that approval's grant reaches the node through a subject-changing step with no later approval naming it
+    (a path that passes the node and comes back to it counts: a re-build after a land needs a new approval)."""
+    problems = []
+    kinds = {name: step_kind(node) or {} for name, node in nodes.items()}
+    for target in sorted(name for name in nodes if kinds[name].get('outward')):
+        approvals = {name for name, node in nodes.items() if node.get('kind') == APPROVAL
+                     and (node.get('config') or {}).get('approves') == target}
+        reached, todo = {entry}, [entry]
+        while todo and target not in reached:
+            here = todo.pop()
+            for edge in edges:
+                if edge['from'] != here or edge['to'] in reached or (here in approvals and edge['port'] == GRANTED):
+                    continue
+                reached.add(edge['to'])
+                if edge['to'] != target:
+                    todo.append(edge['to'])
+        if target in reached:
+            problems.append('invalid_input:missing_owner_approval:%s' % target)
+        for approval in sorted(approvals):
+            seen = set()
+            todo = [(edge['to'], False) for edge in edges if edge['from'] == approval and edge['port'] == GRANTED]
+            while todo:
+                here, changed = todo.pop()
+                changed = changed or bool(kinds.get(here, {}).get('changes_subject'))
+                if (here, changed) in seen:
+                    continue
+                seen.add((here, changed))
+                if here == target and changed:
+                    problems.append('invalid_input:approval_not_last:%s' % approval)
+                    break
+                if here in approvals:
+                    continue
+                todo.extend((edge['to'], changed) for edge in edges if edge['from'] == here)
+    return problems
+
+
 def definition_problems(definition, resolve=None):
     """Every problem with a workflow definition, by name; [] when it is valid. `resolve(kind, ref)`
     (optional) answers whether a declared configuration reference names an accepted record."""
@@ -382,6 +449,7 @@ def definition_problems(definition, resolve=None):
                     reached.add(edge['to'])
                     todo.append(edge['to'])
         problems += ['unsupported_configuration:unreachable_node:%s' % name for name in sorted(set(nodes) - reached)]
+        problems += approval_problems(nodes, edges, entry)
     ring = _ring(nodes, edges)
     if ring is not None:
         problems.append('unsupported_configuration:unbounded_cycle:%s' % '->'.join(ring))
@@ -543,6 +611,8 @@ class Workflows:
         self.observe = observe or (lambda event: None)
         self.clock = clock or time.time
         self.counts = {'accepted': 0, 'refused': 0}
+        # VELDO-0241: refused saves by each problem they named.
+        self.refusals = {}
         store.declare_owners(conn, OWNER, kinds={REVISION_KIND: (SAVE,), HEAD_KIND: (SAVE,)}, module=__file__)
         conn.command_registry[SAVE] = {'transaction_transition': _save_transition, 'writes': WRITES}
 
@@ -553,6 +623,8 @@ class Workflows:
     def _refused(self, event, error):
         self.counts['refused'] += 1
         codes = list(getattr(error, 'codes', None) or [error.code])
+        for code in codes:
+            self.refusals[code] = self.refusals.get(code, 0) + 1
         self.observe(dict(event, outcome='refused', refusal=error.code, refusals=codes, taxonomy=taxonomy(error.code)))
 
     def save(self, document, *, principal, base):

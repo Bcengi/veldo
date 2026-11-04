@@ -9654,24 +9654,29 @@ def cases():
               "                differences.append([f for f in SUBJECT_FIELDS if f != 'tree' and bound.get(f) != exact[f]])"
               "  # defect: the old tree's grant publishes the re-merged tree\n", ['grant/fresh-request'])
     # The loop's next-station rule: nothing offered after the trunk moved; a conflict re-landed rather than rebuilt;
-    # the rebuild never reviewed; a clean landing rebuilt; a land's end waking no pass.
+    # the rebuild never reviewed; a clean landing rebuilt; a land's end waking no pass. VELDO-0241: the rule is the
+    # unit's bound revision walked by the Line (station_step), so each defect is anchored on the walk's step for it.
     reland148('reland148-loop-offers-nothing', 'control_service.py',
-              "        if last['state'] == LS.TRUNK_MOVED:\n            return self.reland(unit, last, report)\n",
-              "        if last['state'] == LS.TRUNK_MOVED:\n            return None  # defect: no land is offered after the trunk moved\n",
+              "            if arrived == LS.TRUNK_MOVED:\n"
+              "                return 'stop', self.reland(unit, last, report, workflow=workflow)\n",
+              "            if arrived == LS.TRUNK_MOVED:\n"
+              "                return 'stop', None  # defect: no land is offered after the trunk moved\n",
               ['reland/stale-subject'])
     reland148('reland148-conflict-relanded', 'control_service.py',
-              "            return self.rebuild(unit, last, latest, report)\n        return None\n",
-              "            return self.reland(unit, last, report)  # defect: a conflicting re-merge is re-landed\n        return None\n",
+              "        if build is None and state['anchor'] is not None:\n",
+              "        if build is None and state['anchor'] is not None:\n"
+              "            return 'stop', self.reland(unit, last, report)  # defect: a conflicting re-merge is re-landed\n",
               ['reland/conflict-rebuild'])
     reland148('reland148-rebuild-not-reviewed', 'control_service.py',
-              "        if review is not None and follows(review) == build['dispatch_id']:\n"
-              "            return None if review['state'] in L.D.HOLDING else self.limited(review, report)\n",
-              "        if True:\n            return None  # defect: the rebuilt unit is never reviewed again\n",
+              "        if state['anchor'] is not None and self.follows(review) != state['anchor']:\n"
+              "            review = None\n",
+              "        if state['anchor'] is not None:\n"
+              "            return 'stop', None  # defect: the rebuilt unit is never reviewed again\n",
               ['reland/conflict-rebuild'])
     reland148('reland148-landed-rebuilt', 'control_service.py',
-              "            return self.rebuild(unit, last, latest, report)\n        return None\n",
-              "            return self.rebuild(unit, last, latest, report)\n"
-              "        return self.rebuild(unit, last, latest, report)  # defect: a clean landing is built and reviewed again\n",
+              "        state['port'] = last['state']\n        return 'port', last['state']\n",
+              "        state['port'] = LS.CONFLICT if last['state'] == LS.LANDED else last['state']"
+              "  # defect: a clean landing is built and reviewed again\n        return 'port', state['port']\n",
               ['reland/review-kept'])
     reland148('reland148-end-wakes-nothing', 'control_service.py',
               "            self.loop.wake('run_end', record['dispatch_id'])\n",
@@ -9710,8 +9715,8 @@ def cases():
               ['grant/mixed-approvals'],
               also=[('                                     approvals=replacements)\n', "                                     approvals=list(data.get('approvals_required') or []))\n")])
     reland148('grant148-mixed-question-restored', 'control_service.py',
-              "        if last['state'] == LS.AWAITING:\n",
-              "        if (last['state'] == LS.FAILED and set(last.get('refusals') or []) ==\n                {'binding_mismatch:approval/owner/tree', 'missing_authority:approval/security'}):\n            return self.grant(unit, dict(last, subject=dict(last.get('candidate') or {}, approvals=['owner'])), report)\n        if last['state'] == LS.AWAITING:\n",
+              "        taken = WU.transition(state['definition'], node, last['state'])\n",
+              "        if (last['state'] == LS.FAILED and set(last.get('refusals') or []) ==\n                {'binding_mismatch:approval/owner/tree', 'missing_authority:approval/security'}):\n            return 'stop', self.grant(unit, dict(last, subject=dict(last.get('candidate') or {}, approvals=['owner'])), report)\n        taken = WU.transition(state['definition'], node, last['state'])\n",
               ['grant/mixed-approvals'])
     reland148('grant148-proof-mismatch-replaceable', 'control_landing.py',
               "            if replacements and set(codes) == {'binding_mismatch:approval/%s/tree' % name for name in replacements}:\n",
@@ -10453,6 +10458,28 @@ def cases():
                 'control_project.py', 'control_intake_routes.py']))
             # control_project also loads eligibility and its transitive organs beside itself.
             case['siblings'] = True
+
+    # VELDO-0241: each criterion's declared falsifier, against the suite 127 row it names.
+    def unit_workflow(name, module, old, new, row):
+        add(241, name, '127_veldo_0241_unit_workflows.py', module, old, new, [row])
+
+    # AC1, declared: review and build swapped in the shipped `code` definition.
+    unit_workflow('v241-code-review-before-build', 'workflows/code.json',
+                  '  "build": {\n   "kind": "build",\n',
+                  '  "build": {\n   "kind": "review",\n', 'default/equivalence')
+    # AC2, declared: a land reachable by a path that skips the owner_approval node is accepted.
+    unit_workflow('v241-approval-skipped-accepted', 'control_workflow.py',
+                  "        if target in reached:\n            problems.append('invalid_input:missing_owner_approval:%s' % target)\n",
+                  "        if False:  # defect: a path around the owner's approval is accepted\n"
+                  "            problems.append('invalid_input:missing_owner_approval:%s' % target)\n",
+                  'approval/side-edge')
+    # AC3, declared: each station reads the workflow's head instead of the unit's recorded revision.
+    unit_workflow('v241-station-reads-head', 'control_workflow_unit.py',
+                  "    current, definition = bound_revision(store, conn, domain, repository, found['id'], found['version'])\n"
+                  "    if current['digest'] != found['digest']:\n",
+                  "    current, definition = bound_revision(store, conn, domain, repository, found['id'],"
+                  " WF.head_version(conn, domain, repository, found['id']))  # defect: the head, not the recorded revision\n"
+                  "    if False:\n", 'binding/pinned-revision')
 
     # VELDO-0203: owner signatures, exact revision identity and the service lock.
     add(203, 'v203-base-from-head', '95_veldo_0203_owner_revisions.py', 'control_owner_revisions.py',

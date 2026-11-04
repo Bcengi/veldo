@@ -319,8 +319,7 @@ def _v241_suite():
                     compared[key] = {'old': old, 'new': new}
                     if canon(old) != canon(new):
                         differing.append(key)
-                observed['equivalence'] = {'differing': differing,
-                                           'first': {k: compared[k] for k in differing[:3]}}
+                observed['equivalence'] = {'differing': differing, 'compared': compared}
                 check('default/equivalence', lambda: baseline.returncode == 0 and len(compared) == 22 and not differing
                       and any(c['old']['calls'] for c in compared.values()))
 
@@ -354,9 +353,9 @@ def _v241_suite():
 
                 removed = code('removed')
                 del removed['nodes']['approval']
-                removed['transitions'] = [t for t in removed['transitions']
-                                          if t['from'] != 'approval' and t['to'] != 'approval']
                 next(t for t in removed['transitions'] if t['id'] == 'gated')['to'] = 'land'
+                next(t for t in removed['transitions'] if t['id'] == 're-approval')['to'] = 'land'
+                removed['transitions'] = [t for t in removed['transitions'] if t['from'] != 'approval']
                 refused('removed', removed, 'invalid_input:missing_owner_approval:land')
                 side = code('side-edge')
                 next(t for t in side['transitions'] if t['id'] == 'stopped')['to'] = 'land'
@@ -449,7 +448,7 @@ def _v241_suite():
                 }
                 observed['binding_refusals'] = refusals
                 check('binding/refusals', lambda: refusals == {
-                    'not_owner': 'not_owner', 'agent': 'not_authorized:not_a_person', 'absent': 'missing_workflow',
+                    'not_owner': 'not_owner', 'agent': 'not_authorized', 'absent': 'missing_workflow',
                     'not_a_unit_workflow': 'missing_workflow:not_a_unit_workflow', 'stale': 'stale_subject'}
                       and (version(), journal_seq()) == before and 'ok' in cycle1
                       and PJ.taxonomy('missing_workflow') == 'missing_evidence')
