@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0250
 title: Before Veldo is published, every piece of the owner's personal setup moves to his installation, the owner becomes an installation setting, a gate check refuses its return, and the public repository starts from a fresh history
-status: draft
+status: ready
 risk: "critical - it moves bytes toward a public repository. A personal value that reaches a public push is permanent, and the same change rewires how the owner's running factory finds its owner, accounts, channels and records, so a wrong cutover stops his factory."
 owner: dmitry
 human_approval: required
@@ -292,3 +292,5 @@ and the owner's approval.
 
 2026-11-04: drafted from the owner's decisions in Telegram 39098, 39100 and 39104, with the measured
 inventory in proof/VELDO-0250/inventory.json.
+
+2026-11-04: approved by the owner, Telegram 39113 ("Yes", to 39112), with the lead's sequencing: it runs after the tickets in flight land, as the last step before publication. Status ready.
