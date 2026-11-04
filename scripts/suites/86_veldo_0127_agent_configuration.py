@@ -776,8 +776,13 @@ for step in (packet.get('payload') or {}).get('script',[]):
                     accepted_models.append(True)
                 except SystemExit:
                     accepted_models.append(False)
+            # The lead's refusal is SystemExit: caught here so a refused model fails this row, never the suite.
+            try:
+                direct_selected = select_model(DIRECT_MODEL, L.HANDOFF.X) if select_model else None
+            except SystemExit:
+                direct_selected = None
             check('review/codex-capture', 'lead accepts Code Mode models without substitution and rejects unknown models',
-                  select_model is not None and select_model(DIRECT_MODEL, L.HANDOFF.X) == DIRECT_MODEL and all(accepted_models))
+                  select_model is not None and direct_selected == DIRECT_MODEL and all(accepted_models))
             try:
                 if select_model: select_model('unknown-model', L.HANDOFF.X)
                 unknown_refused = False
