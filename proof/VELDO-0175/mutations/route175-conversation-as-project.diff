@@ -1,0 +1,5 @@
+--- a/.veldo/control_intake_routes.py
++++ b/.veldo/control_intake_routes.py
+@@ -143 +143 @@
+-        if doc['route'] == 'new_project':
++        if doc['route'] in ('new_project', 'new_conversation'):  # defect: a new conversation as a project
