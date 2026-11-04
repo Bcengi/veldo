@@ -38,13 +38,13 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
 Traceback (most recent call last):
-  File "/home/dmitry/projects/veldo-worktrees/veldo-0241/scripts/selftest.py", line 256, in <module>
+  File "<checkout>/scripts/selftest.py", line 256, in <module>
     exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
-  File "/home/dmitry/projects/veldo-worktrees/veldo-0241/scripts/suites/127_veldo_0241_unit_workflows.py", line 513, in <module>
+  File "<checkout>/scripts/suites/127_veldo_0241_unit_workflows.py", line 513, in <module>
     _v241_suite()
-  File "/home/dmitry/projects/veldo-worktrees/veldo-0241/scripts/suites/127_veldo_0241_unit_workflows.py", line 86, in _v241_suite
+  File "<checkout>/scripts/suites/127_veldo_0241_unit_workflows.py", line 86, in _v241_suite
     shutil.copyfile(source, mods / name)
   File "/usr/lib/python3.12/shutil.py", line 260, in copyfile
     with open(src, 'rb') as fsrc:
          ^^^^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: '/home/dmitry/projects/veldo-worktrees/veldo-0241/.veldo/control_workflow_unit.py'
+FileNotFoundError: [Errno 2] No such file or directory: '<checkout>/.veldo/control_workflow_unit.py'
