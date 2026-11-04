@@ -40,8 +40,9 @@ def _v183_suite():
         'control_memory_kb.py': ROOT / ".veldo" / "control_memory_kb.py",
         'control_mcp_catalog.py': ROOT / ".veldo" / "control_mcp_catalog.py",
         'control_factory_setup_memory.py': ROOT / ".veldo" / "control_factory_setup_memory.py",
+        'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
     }
-    ROWS = ('AC1/catalog-records', 'AC1/role-selections', 'AC1/init',
+    ROWS = ('AC1/catalog-records', 'AC1/role-selections', 'AC1/init', 'AC1/real-layout', 'AC1/setup-step',
             'AC2/paid-api', 'AC2/smart-add', 'AC2/tools-work',
             'AC3/record', 'AC3/cross-conversation', 'AC3/own-copy-falsifier',
             'AC4/store-units', 'AC4/open-refused', 'AC4/assistant-entries', 'AC4/one-opener', 'AC4/all-written',
@@ -271,6 +272,70 @@ for proc, _, _ in servers.values():
         check('AC1/catalog-records', 'memory-kb\'s tools are its subcommands but setup-passphrase',
               sorted(t['name'] for t in KBM.tools()) == sorted(['search', 'index-file', 'index-dir', 'index-telegram',
                                                                 'stats', 'list', 'delete', 'clear']))
+        # The module layout memory_kb's cli.py imports and ava-memory's mcp_server.py tools, as the lead read them
+        # from the owner's code. Every function a memory-kb tool reaches must be one of these, and the fixture is
+        # built to exactly this layout, so a tool mapped to a function the real code does not have fails here.
+        REAL_KB = {('search', 'kb.store', 'search'), ('search', 'kb.store', 'search_all'),
+                   ('index-file', 'kb.indexers.file', 'index_file'),
+                   ('index-dir', 'kb.indexers.file', 'index_directory'),
+                   ('index-telegram', 'kb.indexers.telegram', 'index_conversation'),
+                   ('stats', 'kb.store', 'get_stats'), ('list', 'kb.store', 'list_documents'),
+                   ('delete', 'kb.store', 'delete'), ('clear', 'chromadb', 'PersistentClient.delete_collection')}
+        REAL_SIGNATURES = {'kb.store.list_documents': ['collection', 'limit'], 'kb.store.delete': ['collection', 'doc_id'],
+                           'kb.indexers.telegram.index_conversation': ['message', 'metadata', 'classification']}
+        REAL_AVA = {'memory_search': "(query, limit=10, category='')",
+                    'memory_add': "(text, category='general', source='')", 'memory_add_smart': '(text)',
+                    'memory_stats': '()', 'memory_delete': '(memory_id)', 'memory_get_all': '(limit=50)'}
+        mapped = set(KBM.targets())
+        check('AC1/real-layout', 'every memory-kb tool maps to a function memory_kb\'s cli.py calls [not real: %s; '
+              'missing: %s]' % (sorted(mapped - REAL_KB), sorted(REAL_KB - mapped)), mapped == REAL_KB)
+        probe = base / 'layout-probe.py'
+        probe.write_text(r'''import importlib, inspect, json, os, sys
+code, part = sys.argv[1], sys.argv[2]
+sys.path.insert(0, code); os.chdir(code)
+out = {}
+if part == 'memory_kb':
+    for tool, module, attribute in json.loads(sys.argv[3]):
+        try:
+            target = importlib.import_module(module)
+            for name in attribute.split('.'):
+                target = getattr(target, name)
+            out['%s.%s' % (module, attribute)] = list(inspect.signature(target).parameters)
+        except Exception as error:
+            out['%s.%s' % (module, attribute)] = 'missing: %s' % error
+    gone = []
+    for module, attribute in (('kb.indexer', None), ('kb.store', 'stats'), ('kb.store', 'delete_document'),
+                              ('kb.store', 'clear_collection')):
+        try:
+            found = importlib.import_module(module)
+            if attribute is None or hasattr(found, attribute):
+                gone.append('%s.%s' % (module, attribute))
+        except ImportError:
+            pass
+    out['guessed_names_present'] = gone
+else:
+    import mcp_server
+    out = {name: str(inspect.signature(fn)) for name, (fn, _) in mcp_server.mcp._tools.items()}
+    out['server_name'] = mcp_server.mcp.name
+print(json.dumps(out))
+''')
+        layout = {}
+        for part in ('memory_kb', 'ava_memory'):
+            done = subprocess.run([definition['parts'][part]['interpreter'], '-B', str(probe),
+                                   definition['parts'][part]['code'], part, json.dumps(sorted(KBM.targets()))],
+                                  capture_output=True, text=True, timeout=120)
+            layout[part] = json.loads(done.stdout or '{}')
+        kb_layout = layout['memory_kb']
+        check('AC1/real-layout', 'each function a memory-kb tool reaches resolves in the fixture kb package, built to '
+              'the real layout [%s]' % kb_layout,
+              len([k for k in kb_layout if k != 'guessed_names_present']) == len(REAL_KB)
+              and not [v for v in kb_layout.values() if isinstance(v, str)]
+              and all(kb_layout.get(k, [])[:len(v)] == v for k, v in REAL_SIGNATURES.items()))
+        check('AC1/real-layout', 'the fixture carries none of the guessed names the real code does not have [%s]'
+              % kb_layout.get('guessed_names_present'), kb_layout.get('guessed_names_present') == [])
+        check('AC1/real-layout', 'the fixture ava-memory is FastMCP ava-memory with mcp_server.py\'s six tools and '
+              'their signatures [%s]' % layout['ava_memory'],
+              layout['ava_memory'] == dict(REAL_AVA, server_name='ava-memory'))
         for role, engine in (('assistant', 'claude_code'), ('assistant_codex', 'codex')):
             revision = bound.get(role) or {}
             memory = [m for m in revision.get('mcp') or [] if m['server'] in FOUR]
@@ -401,21 +466,27 @@ for proc, _, _ in servers.values():
         notes = base / 'notes'
         notes.mkdir()
         (notes / 'a.md').write_text('Directory note alpha')
-        telegram = base / 'telegram.txt'
-        telegram.write_text('Telegram thread about the garden')
         calls_a = [
-            ['ava-memory', 'memory_add', {'content': 'Rule from conversation A: tests before merge'}],
-            ['ava-memory', 'memory_add_smart', {'content': 'The owner prefers short replies. The build runs at night.'}],
+            ['ava-memory', 'memory_add', {'text': 'Rule from conversation A: tests before merge'}],
+            ['ava-memory', 'memory_add_smart', {'text': 'The owner prefers short replies. The build runs at night.'}],
             ['ava-memory', 'memory_search', {'query': 'tests before merge'}],
+            ['ava-memory', 'memory_stats', {}],
+            ['ava-memory', 'memory_get_all', {'limit': 5}],
+            ['ava-memory', 'memory_delete', {'memory_id': 'seed-memory'}],
             ['knowledge-graph', 'kg_add_entity', {'type': 'Decision', 'name': 'Conversation A decision',
                                                   'description': 'Graph fact from conversation A'}],
             ['knowledge-graph', 'kg_search', {'query': 'Graph fact from conversation A'}],
             ['memory-kb', 'index-file', {'path': str(doc)}],
-            ['memory-kb', 'index-dir', {'path': str(notes)}],
-            ['memory-kb', 'index-telegram', {'path': str(telegram)}],
+            ['memory-kb', 'index-dir', {'path': str(notes), 'collection': 'research'}],
+            ['memory-kb', 'index-telegram', {'message': 'Telegram thread about the garden', 'chat_id': '5590171',
+                                             'classification': 'personal'}],
             ['memory-kb', 'search', {'query': 'deploy moved to Fridays'}],
+            ['memory-kb', 'search', {'query': 'Directory note alpha', 'collection': 'research'}],
             ['memory-kb', 'stats', {}],
-            ['memory-kb', 'list', {'collection': 'files'}],
+            ['memory-kb', 'list', {'collection': 'files', 'limit': 50}],
+            ['memory-kb', 'delete', {'collection': 'files', 'doc_id': 'seed-document'}],
+            ['memory-kb', 'clear', {'collection': 'research'}],
+            ['memory-kb', 'search', {'query': 'Directory note alpha', 'collection': 'research'}],
             ['claude-mem', 'search', {'query': 'flaky build'}],
             ['claude-mem', 'get_observations', {'ids': '1'}],
         ]
@@ -434,6 +505,11 @@ for proc, _, _ in servers.values():
             check('AC2/tools-work', '%s %s answers without error [%s]' % (server, tool, text[:120]),
                   not result['is_error'])
         check('AC2/tools-work', 'every call was answered', len(a['results']) == len(calls_a))
+        searched = [n for n, c in enumerate(calls_a) if c[:2] == ['memory-kb', 'search'] and c[2].get('collection')]
+        check('AC2/tools-work', 'memory_kb search in one collection found the directory note, and after clear '
+              'nothing [%s]' % [a['texts'][n][:80] for n in searched if n < len(a['texts'])],
+              len(searched) == 2 and len(a['texts']) == len(calls_a) and 'Directory note alpha' in a['texts'][searched[0]]
+              and json.loads(a['texts'][searched[1]] or 'null') == [])
         smart = a['texts'][1] if len(a['texts']) > 1 else ''
         extraction = {}
         with contextlib.suppress(ValueError, IndexError, KeyError, TypeError):
@@ -652,10 +728,10 @@ for proc, _, _ in servers.values():
         entries = json.loads(Path(manifest['assistant_mcp']).read_text())['mcpServers']
         writers = [
             threading.Thread(target=session, args=('ava/bridge', ava['command'], ava['arguments'], 'memory_add',
-                                                   [{'content': 'ava bridge memory %03d' % i} for i in range(COUNT)])),
+                                                   [{'text': 'ava bridge memory %03d' % i} for i in range(COUNT)])),
             threading.Thread(target=session, args=('ava/assistant', entries['ava-memory']['command'],
                                                    entries['ava-memory']['args'], 'memory_add',
-                                                   [{'content': 'ava assistant memory %03d' % i} for i in range(COUNT)])),
+                                                   [{'text': 'ava assistant memory %03d' % i} for i in range(COUNT)])),
             threading.Thread(target=session, args=('kb/bridge', mkb['command'], mkb['arguments'], 'index-file',
                                                    [{'path': str(files / 'bridge' / ('%03d.md' % i))} for i in range(COUNT)])),
             threading.Thread(target=session, args=('kb/assistant', entries['memory-kb']['command'],
@@ -694,9 +770,9 @@ if part == 'ava_memory':
     by_id = [i for i, text in wanted if (store.get(i) or {}).get('memory') == text]
     by_search = [i for i, text in wanted if any(r['id'] == i for r in store.search(text, limit=10))]
 else:
-    from kb import store, search
-    by_id = [i for i, text in wanted if store._collection('files').index.get(i, {}).get('text') == text]
-    by_search = [i for i, text in wanted if any(r['id'] == i for r in search.search(text, collections=['files'], n_results=10))]
+    from kb import store
+    by_id = [i for i, text in wanted if store._get_collection('files').get(ids=[i])['documents'] == [text]]
+    by_search = [i for i, text in wanted if any(r['id'] == i for r in store.search('files', text, n_results=10))]
 print(json.dumps(dict(by_id=len(by_id), by_search=len(by_search), total=len(wanted))))
 ''')
         wanted_mem = [[r['id'], r['memory']] for name in ('ava/bridge', 'ava/assistant') for r in results.get(name, [])]
@@ -729,6 +805,88 @@ print(json.dumps(dict(by_id=len(by_id), by_search=len(by_search), total=len(want
         check('observability', 'the servers step observed each catalog revision with the memory record revision',
               {e['server'] for e in events if e.get('point') == 'memory_catalog_revision'} == set(FOUR)
               and all(e['memory_revision'] == memory_revision for e in events if e.get('point') == 'memory_catalog_revision'))
+
+        setup_step(h, profiles, host)
+
+    def setup_step(h, profiles, host):
+        """AC1's setup: `veldo factory setup` with the memory manifest, on VELDO-0182's claude-mem worker fixture (its
+        preflight's probe, as VELDO-0182's suite runs it), lays the four records and both role revisions down with no
+        separate command, and its rerun saves nothing."""
+        base, CEN, mods = h['base'], h['CEN'], h['mods']
+        AR = load('v183s_accounts', mods / 'accounts.py')
+        F182 = load('v183s_fixtures182', here / 'proof/VELDO-0182/fixtures.py')
+        root, workspace = h['fresh_root']('state-v183s'), h['clone']('clone-v183s')
+        registry = os.path.join(CEN.git_common_dir(str(workspace)), 'veldo')
+        for name, provider in ACCOUNTS:
+            AR.account_add(name, config_dir=str(profiles[name]), root=registry, provider=provider)
+        manifest = FIX.build(base / 'stores-setup', host)
+        manifest['parts']['claude_mem'] = F182.build(base / 'stores-182', host)['parts']['claude_mem']
+        manifest_path = base / 'memory-setup.json'
+        manifest_path.write_text(json.dumps(manifest))
+        units = base / 'units-v183s'
+        manager = h['Manager'](units)
+        h['managers'].append(manager)
+        bun_dir = F182.bun(base / 'bun-v183s')
+        saved_path, saved_uv = os.environ['PATH'], {n: os.environ.pop(n) for n in list(os.environ) if n.startswith('UV_')}
+        os.environ['PATH'] = str(bun_dir) + os.pathsep + saved_path
+        os.environ['UV_CACHE_DIR'] = str(F182.uv_cache(base / 'owner-uv-v183s'))
+        try:
+            def run():
+                return h['setup'](root, workspace, base / 'trust-v183s' / 'host.json', base / 'install-v183s', units,
+                                  manager, **{'--memory': str(manifest_path)})
+            code, report = run()
+            print('  VELDO-0183 setup with memory:', code, report.get('outcome'), report.get('reason'))
+            first = next((s for s in report.get('steps') or [] if s.get('step') == 'memory_servers'), {})
+            check('AC1/setup-step', 'factory setup with the memory manifest ran the servers step [%s %s %s]'
+                  % (code, report.get('reason'), {k: first.get(k) for k in ('outcome', 'catalog_saved', 'roles')}),
+                  code == 0 and report.get('outcome') == 'set_up' and first.get('outcome') == 'done')
+            if code != 0:
+                return
+            store_path = Path(report['store'])
+            installed = Path(report['home']) / 'bin'
+            MC = load('v183s_catalog', installed / 'control_mcp_catalog.py')
+            CONV = load('v183s_conversation', mods / 'control_conversation.py')
+            domain = json.loads((Path(report['state_root']) / 'host' / 'ingress.json').read_text())['authority_ids'][
+                'domain_uuid']
+
+            def read():
+                conn = sqlite3.connect('file:%s?mode=ro' % store_path, uri=True, timeout=30)
+                try:
+                    heads = {server: (MC.entity(conn, MC.head_id(domain, server)) or {}).get('data') for server in FOUR}
+                    bound = {}
+                    for role in ('assistant', 'assistant_codex'):
+                        with contextlib.suppress(Exception):
+                            bound[role] = CONV.role_at(conn, role)[1]
+                    return heads, bound, conn.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0]
+                finally:
+                    conn.close()
+            heads, bound, journal = read()
+            check('AC1/setup-step', 'the four catalog records are saved by setup itself [%s]'
+                  % sorted(s for s, r in heads.items() if r), all(heads.values()))
+            for role in ('assistant', 'assistant_codex'):
+                revision = bound.get(role) or {}
+                check('AC1/setup-step', '%s\'s new revision from setup selects all four, every tool, always [%s]'
+                      % (role, revision.get('revision')),
+                      revision.get('revision', 0) >= 2 and revision.get('previous')
+                      and sorted(m['server'] for m in revision.get('mcp') or [] if m['server'] in FOUR) == sorted(FOUR)
+                      and all(m['tools'] == 'all' and m['load'] == 'always'
+                              for m in revision.get('mcp') or [] if m['server'] in FOUR))
+            check('AC1/setup-step', 'setup started both store servers', sorted(
+                s.get('part') for s in first.get('stores') or [] if s.get('outcome') == 'started') == sorted(MS_STORES))
+            code2, again = run()
+            second = next((s for s in again.get('steps') or [] if s.get('step') == 'memory_servers'), {})
+            heads2, bound2, journal2 = read()
+            print('  VELDO-0183 setup rerun:', code2, again.get('outcome'), second.get('outcome'), journal, journal2)
+            check('AC1/setup-step', 'the rerun runs the same step and saves nothing [%s %s %s, journal %s to %s]'
+                  % (code2, again.get('outcome'), second.get('outcome'), journal, journal2),
+                  code2 == 0 and second.get('outcome') == 'already_done' and not second.get('catalog_saved')
+                  and not second.get('roles') and journal2 == journal and heads2 == heads and bound2 == bound)
+        finally:
+            os.environ['PATH'] = saved_path
+            os.environ.pop('UV_CACHE_DIR', None)
+            os.environ.update(saved_uv)
+
+    MS_STORES = ('ava_memory', 'memory_kb')
 
     def teardown(h):
         pass

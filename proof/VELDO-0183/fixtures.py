@@ -120,7 +120,48 @@ class Collection:
         self.index = {}
         self.persist()
         return count
+
+    def count(self):
+        return len(self.index)
+
+    def get(self, ids=None, limit=None, offset=0, include=None):
+        rows = [(i, r) for i, r in self.index.items() if ids is None or i in ids]
+        rows = rows[offset:offset + limit if limit else None]
+        return dict(ids=[i for i, _ in rows], documents=[r['text'] for _, r in rows],
+                    metadatas=[r['metadata'] for _, r in rows])
+
+
+# As chromadb shares one system among the clients of one path in a process: the collections opened per path.
+_SYSTEMS = {}
+
+
+class PersistentClient:
+    def __init__(self, path):
+        self.path = os.path.realpath(str(path))
+        self.open = _SYSTEMS.setdefault(self.path, {})
+
+    def list_collections(self):
+        return sorted(set(self.open) | {p.name[len('index-'):-len('.json')]
+                                        for p in Path(self.path).glob('index-*.json')})
+
+    def get_collection(self, name, embedding_function=None):
+        if name not in self.list_collections():
+            raise ValueError('Collection %s does not exist.' % name)
+        return self.get_or_create_collection(name)
+
+    def get_or_create_collection(self, name, embedding_function=None, metadata=None):
+        if name not in self.open:
+            self.open[name] = Collection(self.path, name)
+        return self.open[name]
+
+    def delete_collection(self, name):
+        collection = self.get_collection(name)
+        collection.clear()
+        collection.path.unlink()
+        self.open.pop(name, None)
 '''
+
+CHROMADB = 'from chroma import PersistentClient\n'
 
 MEM0_STORE = r'''import os
 from pathlib import Path
@@ -133,10 +174,10 @@ class MemoryStore:
     def __init__(self):
         self.collection = Collection(DATA_DIR / 'chromadb', 'ava_memory')
 
-    def add(self, content, category='general'):
-        return dict(id=self.collection.add(content, metadata=dict(category=category)), memory=content)
+    def add(self, text, category='general', source=''):
+        return dict(id=self.collection.add(text, metadata=dict(category=category, source=source)), memory=text)
 
-    def add_smart(self, content):
+    def add_smart(self, text):
         # The captured add_smart extracts with the Anthropic API; this stand-in fails the same way without its key.
         key = os.environ['ANTHROPIC_API_KEY']
         raise RuntimeError('a paid API was called')
@@ -150,7 +191,13 @@ class MemoryStore:
 
     def search(self, query, limit=10, category=None):
         return [dict(id=i, memory=r['text'], score=1.0) for i, r in self.collection.index.items()
-                if query in r['text']][:limit]
+                if query in r['text'] and (not category or r['metadata'].get('category') == category)][:limit]
+
+    def delete(self, memory_id):
+        return dict(deleted=self.collection.delete(memory_id), id=memory_id)
+
+    def stats(self):
+        return dict(total=len(self.collection.index))
 
 
 _store = None
@@ -163,6 +210,7 @@ def get_store():
     return _store
 '''
 
+# mcp_server.py's six tools with the captured signatures (the lead's reading of the owner's code).
 MEM0_SERVER = r'''import json
 from mcp.server.fastmcp import FastMCP
 from memory_store import get_store
@@ -171,27 +219,39 @@ mcp = FastMCP('ava-memory')
 
 
 @mcp.tool()
-def memory_search(query, limit=10):
+def memory_search(query, limit=10, category=""):
     """Search the memories."""
-    return get_store().search(query, limit=limit)
+    return get_store().search(query, limit=limit, category=category or None)
 
 
 @mcp.tool()
-def memory_add(content, category='general'):
+def memory_add(text, category="general", source=""):
     """Add one memory."""
-    return get_store().add(content, category=category)
+    return get_store().add(text, category=category, source=source)
 
 
 @mcp.tool()
-def memory_add_smart(content):
+def memory_add_smart(text):
     """Extract the facts of a text and add each."""
-    return get_store().add_smart(content)
+    return get_store().add_smart(text)
 
 
 @mcp.tool()
-def memory_get(memory_id):
-    """One memory by id."""
-    return get_store().get(memory_id)
+def memory_stats():
+    """How many memories."""
+    return get_store().stats()
+
+
+@mcp.tool()
+def memory_delete(memory_id):
+    """Delete one memory by id."""
+    return get_store().delete(memory_id)
+
+
+@mcp.tool()
+def memory_get_all(limit=50):
+    """Every memory, up to limit."""
+    return get_store().get_all(limit=limit)
 
 
 if __name__ == '__main__':
@@ -279,86 +339,71 @@ DB_PATH = str(Path(__file__).resolve().parents[1] / 'data' / 'chromadb')
 COLLECTIONS = ['conversations', 'confluence', 'jira', 'emails', 'files', 'research', 'recipes']
 '''
 
+# memory_kb's kb package in the module layout its cli.py imports (the lead's reading of the owner's code): kb.store
+# search, search_all, get_stats, list_documents, delete; kb.indexers.file index_file, index_directory;
+# kb.indexers.telegram index_conversation; and chromadb.PersistentClient for clear. kb.store's _get_client,
+# _get_collection and _decrypt_results and kb/search.py are the ones VELDO-0182's check reads (its capture).
 KB_STORE = r'''import hashlib
-from chroma import Collection
+import chromadb
 from kb.config import DB_PATH, COLLECTIONS
-
-_open = {}
-
-
-def _collection(name):
-    if name not in _open:
-        _open[name] = Collection(DB_PATH, name)
-    return _open[name]
-
-
-_get_collection = _collection
-
-
-class _View:
-    def __init__(self, name):
-        self.name = name
-
-    def count(self):
-        return len(_collection(self.name).index)
-
-    def get(self, ids=None, limit=None, offset=0, include=None):
-        rows = [(i, r) for i, r in _collection(self.name).index.items() if ids is None or i in ids]
-        rows = rows[offset:offset + limit if limit else None]
-        return dict(ids=[i for i, _ in rows], documents=[r['text'] for _, r in rows],
-                    metadatas=[r['metadata'] for _, r in rows])
-
-
-class _Client:
-    def list_collections(self):
-        return list(COLLECTIONS)
-
-    def get_collection(self, name, embedding_function=None):
-        return _View(name)
 
 
 def _get_client():
-    return _Client()
+    return chromadb.PersistentClient(path=DB_PATH)
+
+
+def _get_collection(name):
+    return _get_client().get_or_create_collection(name)
 
 
 def _decrypt_results(results):
     return results
 
 
-def add_document(collection, text, source):
+def add_document(collection, text, source, metadata=None):
     identity = hashlib.sha256((collection + '/' + source).encode()).hexdigest()[:32]
-    return _collection(collection).add(text, identity, dict(source=source))
+    return _get_collection(collection).add(text, identity, dict(metadata or {}, source=source))
 
 
-def stats():
-    return {name: len(_collection(name).index) for name in COLLECTIONS}
+def search(collection, query, n_results=5, classifications=None):
+    if collection not in _get_client().list_collections():
+        return []
+    return [dict(id=i, text=r['text'], collection=collection, distance=0)
+            for i, r in _get_collection(collection).index.items() if query in r['text']][:n_results]
+
+
+def search_all(query, n_results=5, classifications=None):
+    found = []
+    for name in COLLECTIONS:
+        found += search(name, query, n_results, classifications)
+    return found[:n_results]
+
+
+def get_stats():
+    existing = _get_client().list_collections()
+    return {name: (_get_collection(name).count() if name in existing else 0) for name in COLLECTIONS}
 
 
 def list_documents(collection, limit=20):
-    return [dict(id=i, source=r['metadata'].get('source')) for i, r in _collection(collection).index.items()][:limit]
+    return [dict(id=i, source=r['metadata'].get('source')) for i, r in _get_collection(collection).index.items()][:limit]
 
 
-def delete_document(collection, doc_id):
-    return _collection(collection).delete(doc_id)
-
-
-def clear_collection(collection):
-    return _collection(collection).clear()
+def delete(collection, doc_id):
+    return _get_collection(collection).delete(doc_id)
 '''
 
-KB_SEARCH = r'''from kb import store
+KB_SEARCH = r'''from kb.store import search as store_search
 from kb.config import COLLECTIONS
 
 
 def search(query, collections=None, n_results=5, classifications=None):
     found = []
     for name in collections or COLLECTIONS:
-        found += [dict(id=i, text=r['text'], collection=name, distance=0)
-                  for i, r in store._collection(name).index.items() if query in r['text']]
+        found += store_search(name, query, n_results, classifications)
     return found[:n_results]
 '''
 
-KB_INDEXER = r'''from pathlib import Path
+KB_INDEX_FILE = r'''from pathlib import Path
 from kb import store
 
 
@@ -368,10 +413,16 @@ def index_file(path, collection='files'):
 
 def index_directory(path, collection='files'):
     return [i for p in sorted(Path(path).rglob('*')) if p.is_file() for i in index_file(p, collection)]
+'''
+
+KB_INDEX_TELEGRAM = r'''import hashlib
+from kb import store
 
 
-def index_telegram(path):
-    return index_file(path, 'conversations')
+def index_conversation(message, metadata=None, classification=None):
+    metadata = dict(metadata or {}, classification=classification or 'personal')
+    source = 'telegram:%s:%s' % (metadata.get('chat_id'), hashlib.sha256(message.encode()).hexdigest()[:16])
+    return [store.add_document('conversations', message, source, metadata)]
 '''
 
 KB_CRYPTO = r'''import os
@@ -476,11 +527,16 @@ def build(root, host=None):
     (kb / 'data' / 'chromadb').mkdir(parents=True)
     _seed(kb / 'data' / 'chromadb', 'files', 'seed-document', 'Synthetic session summary seed')
     (kb / 'chroma.py').write_text(CHROMA)
+    (kb / 'chromadb').mkdir()
+    (kb / 'chromadb' / '__init__.py').write_text(CHROMADB)
     (kb / 'kb' / '__init__.py').write_text('')
     (kb / 'kb' / 'config.py').write_text(KB_CONFIG)
     (kb / 'kb' / 'store.py').write_text(KB_STORE)
     (kb / 'kb' / 'search.py').write_text(KB_SEARCH)
-    (kb / 'kb' / 'indexer.py').write_text(KB_INDEXER)
+    (kb / 'kb' / 'indexers').mkdir()
+    (kb / 'kb' / 'indexers' / '__init__.py').write_text('')
+    (kb / 'kb' / 'indexers' / 'file.py').write_text(KB_INDEX_FILE)
+    (kb / 'kb' / 'indexers' / 'telegram.py').write_text(KB_INDEX_TELEGRAM)
     (kb / 'kb' / 'crypto.py').write_text(KB_CRYPTO)
     (kb / 'kb' / 'embeddings.py').write_text('def get_embedding_function():\n    return None\n')
     plugin = root / 'claude-mem'
