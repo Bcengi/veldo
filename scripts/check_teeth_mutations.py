@@ -12265,6 +12265,12 @@ def cases():
                "                or data.get('state') != 'AWAITING_PROJECT' or data.get('question_id') != qid):\n",
                "        if (question.get('request') != request or not isinstance(request, str)  # defect: applied again\n"
                "                or data.get('question_id') != qid):\n")])
+    # Guard (AC1, the unclear route question answered as before): his reply that is exactly one choice's short form
+    # (a bare project name) no longer answers it, so he must type the full choice and a reason again.
+    add(181, 'bare181-short-form-dropped', suite181, 'control_channel_presentation.py',
+        "            if len(short) == 1:\n",
+        "            if False:  # defect: a bare short form never answers the unclear route question\n",
+        ['AC1/unclear-bare-project'])
     for case in result:
         if case['finding'] == 181:
             case['siblings'] = True
