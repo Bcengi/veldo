@@ -92,3 +92,71 @@ plugins (agents-md, plugin-authoring, privacy, telemetry) and never named cc-plu
 - A built-in plugin enabled from policy only, added by a later binary and evaluated anything but granted,
   is still turned off only in name and stops the run at the init comparison; its decision should be granted
   or the plugin named as a blocker in the evaluation.
+
+## Round 2: the canonical gate at 344c5b9c
+
+Producer: a Claude implementation agent (not an independent reviewer). Gate log:
+veldo-gate-upgrade0166a.log (221 SELFTEST FAIL lines, mutation driver_error, first use CANNOT ANSWER,
+security). Three causes, of which one explains everything but the earlier-engine rows.
+
+### 1. The gate's confinement could not read the qualified Codex binary
+
+Groups: every VELDO-0127 delivery/<model>/*, stop/<model>/*, mapped/*, explicit/*, listing/* and defaults/*
+row (218 lines, all in the unit.confined leg; the same suites pass unconfined), VELDO-0165
+evidence/completeness and evidence/outside-scan, the mutation baseline
+90_veldo_0127_feature_profile.py:control_agent_config_handoff.py (worker exit 1), and the integration
+first use check (its last line was "PermissionError: [Errno 13] Permission denied:
+'/home/dmitry/.local/share/codex-versions/0.166.0/.../bin/codex'").
+
+Cause: qualify recorded the Codex binary at ~/.local/share/codex-versions/0.166.0/... (engines.json). The
+VELDO-0127 wire fixture, the 0165 extraction rows and the first use run execute that binary (qualify.binary).
+The gate profile and the mutation workers (scripts/mutation_sandbox.py) grant read only to the configuration's
+optional_read_roots: ~/.nvm/versions/node held 0.154.0, but ~/.local/share/codex-versions was not listed, so
+inside the domain every forwarded run failed with EACCES and the comparison stopped with
+configuration_stop:codex_observation. Confirmed by `ls` of the binary through scripts/gate_candidate.py
+(Permission denied) and by reproducing 87_veldo_0127 confined (180 failed). No model classification was
+missing: every model of the 0.166.0 catalog has its tool mode in the record.
+
+Fix: ~/.local/share/codex-versions added to optional_read_roots in scripts/agent_sandbox.json and its canon
+engine/scripts/agent_sandbox.json (protected paths, floor high: this needs the high-floor review). New suite
+126 row qualify/gate-reads: every binary the engines record names lies beneath a read root of both sandbox
+configurations, so the next upgrade to a binary the gate cannot read is red in that row by name instead of
+in 200 downstream rows. Red before the fix (codex binary named), green after (126: 4 rows pass). Confined
+after the fix: 87_0127 (218 passed), 88_0127, 89_0127, 90_0127, 82_0165 all 0 failed.
+
+### 2. Earlier-engine rows fed the earlier engine the new catalog
+
+Groups: VELDO-0167 upgrade-restart-answer, VELDO-0185 rerun/over-earlier-host, VELDO-0227
+ui/upgrade-pre-change (each "refused missing_evidence:codex_model_tool_modes").
+
+Cause: these rows lay a host with a historical .veldo (f1e1abb9, 294e1933, 1aee02d4) and overwrite its runtime
+with the fixture's current Codex record. Those engines predate VELDO-0230 and hold the model tool modes as a
+table of the 0.154.0 catalog, compared for equality with the record; the 0.166.0 record's modes differ, so the
+earlier setup refused before laying anything.
+
+Fix: the rows keep the fixture record (its generated digests) but take the catalog readings
+(feature_listing, model_catalog, model_catalog_digest, model_tool_modes, native_tool_mapping) from the earlier
+engine's own shipped record, the ones that host was qualified with. The rows no longer depend on which binary
+is qualified now. 91_0167, 106_0185, 117_0227 green alone.
+
+### 3. Security: recorded, not dispositioned here
+
+5 outstanding reachable-history pattern findings, all on the conversation-chain branches, not this upgrade:
+engine/ui/e2e/conversation_harness.py:131@cfa9be45 and :130@39a3b4a0;
+scripts/suites/133_veldo_0178_conversation_api.py:179@781a8368, @355853e4, @1321b5b1. They belong to the
+conversation batch.
+
+### Results
+
+- Qualify (the command in the task) after the fixes rewrote nothing (git status clean).
+- Every suite once, one single-suite selftest invocation each (the full run does not fit this session's 10 minute
+  foreground limit), inside a systemd user scope with MemoryMax=10G and MemorySwapMax=0: 186 of 188 green,
+  33747 rows passed in total. 86_veldo_0127 passes 28 of 28, live/claude and live/codex included: the lead's
+  captures remain valid (no module they bind changed). Two red, both environmental:
+  101_veldo_0208_landing_reuse (sandbox/unavailable-refuses-before-exec, sandbox/old-abi-refuses-before-exec,
+  "incomplete file-read trace") fails identically at 344c5b9c in a scratch worktree: this agent session runs
+  in a nested sandbox without ptrace, and the gate runs those rows unconfined (it passed in the lead's gate).
+  104_veldo_0210_mutation_workers failed on a 120s worker deadline at load average 33 and passed alone at load
+  4 (33 passed).
+- Mutation driver: scripts/check_teeth_mutations.py on the two suite 90 cases, role127-profile-mixed-feature-table
+  and role127-profile-cli-table-wiped: passed, 2 executed, 2 rejected (baseline green, both mutants killed).
