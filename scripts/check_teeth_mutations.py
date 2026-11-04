@@ -12386,9 +12386,10 @@ def cases():
     # Fix round 2: a reading of a conversation closed (or gone) after the reply was held settles it READ.
     add(175, 'reading175-closed-stuck', routes175, 'control_intake_conversation.py',
         "                self._owned_open(held['conversation'], held['principal'])\n"
-        "                if reading['command'] != 'none':\n",
+        "                if reading['command'] == CP.KIND:\n",
         "                if reading['command'] != 'none':\n"
-        "                    self._owned_open(held['conversation'], held['principal'])  # defect: only a command reading\n",
+        "                    self._owned_open(held['conversation'], held['principal'])  # defect: only a command reading\n"
+        "                if reading['command'] == CP.KIND:\n",
         ['AC1/closed-before-reading'])
     # Registered after the dependency loop above: each module loads its organs beside itself by path (intake its
     # renderer, project and routes, as every intake case), so each mutant runs in a whole .veldo copy.

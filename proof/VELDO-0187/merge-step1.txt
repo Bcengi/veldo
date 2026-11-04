@@ -1,0 +1,105 @@
+Step 1: merge of VELDO-0184's head (f747c7a6) into VELDO-0181's head (1f416231), merge commit 62ec80e3.
+Each suite run alone: python3 scripts/selftest.py with the suite option, in a systemd-run scope; exit 2 is the PARTIAL run's own green code.
+
+106_veldo_0185_dispatch_setup: selftest (PARTIAL, 1 of 201 suites): 46 passed, 0 failed in 12.46s
+113_veldo_0145_ui: selftest (PARTIAL, 1 of 201 suites): 33 passed, 0 failed in 3.94s
+123_veldo_0174_conversations: selftest (PARTIAL, 1 of 201 suites): 64 passed, 0 failed in 11.26s
+125_veldo_0230_engine_census: selftest (PARTIAL, 1 of 201 suites): 33 passed, 0 failed in 7.10s
+127_veldo_0231_run_flags: selftest (PARTIAL, 1 of 201 suites): 43 passed, 0 failed in 34.00s
+128_veldo_0177_conversation_workspace: selftest (PARTIAL, 1 of 201 suites): 41 passed, 0 failed in 3.08s
+129_veldo_0177_assistant_setup: selftest (PARTIAL, 1 of 201 suites): 30 passed, 0 failed in 3.38s
+130_veldo_0176_conversation_history: selftest (PARTIAL, 1 of 201 suites): 43 passed, 0 failed in 13.65s
+130_veldo_0183_memory_servers: selftest (PARTIAL, 1 of 201 suites): 43 passed, 0 failed in 26.39s
+131_veldo_0175_conversation_replies: selftest (PARTIAL, 1 of 201 suites): 42 passed, 0 failed in 3.27s
+131_veldo_0184_file_memory: selftest (PARTIAL, 1 of 201 suites): 42 passed, 0 failed in 43.76s
+132_veldo_0175_conversation_routes: selftest (PARTIAL, 1 of 201 suites): 45 passed, 0 failed in 19.29s
+133_veldo_0178_conversation_api: selftest (PARTIAL, 1 of 201 suites): 42 passed, 0 failed in 3.10s
+134_veldo_0179_conversation_screens: selftest (PARTIAL, 1 of 201 suites): 33 passed, 0 failed in 48.16s
+135_veldo_0179_conversation_layout: selftest (PARTIAL, 1 of 201 suites): 35 passed, 0 failed in 86.43s
+136_veldo_0180_conversation_projects: selftest (PARTIAL, 1 of 201 suites): 47 passed, 0 failed in 3.13s
+137_veldo_0181_conversation_decisions: selftest (PARTIAL, 1 of 201 suites): 45 passed, 0 failed in 6.15s
+68_veldo_0126_intake: selftest (PARTIAL, 1 of 201 suites): 44 passed, 0 failed in 1.72s
+68_veldo_0134_acceptance: selftest (PARTIAL, 1 of 201 suites): 53 passed, 0 failed in 1.77s
+68_veldo_0136_hints: selftest (PARTIAL, 1 of 201 suites): 33 passed, 0 failed in 4.77s
+68_veldo_0137_policy_revision: selftest (PARTIAL, 1 of 201 suites): 28 passed, 0 failed in 0.20s
+69_veldo_0058_gate_output: selftest (PARTIAL, 1 of 201 suites): 42 passed, 0 failed in 36.45s
+69_veldo_0068_settlement: selftest (PARTIAL, 1 of 201 suites): 34 passed, 0 failed in 6.75s
+69_veldo_0133_dispositions: selftest (PARTIAL, 1 of 201 suites): 59 passed, 0 failed in 5.00s
+71_veldo_0130_api: selftest (PARTIAL, 1 of 201 suites): 71 passed, 0 failed in 26.00s
+71_veldo_0138_channel_service: selftest (PARTIAL, 1 of 201 suites): 39 passed, 0 failed in 32.61s
+80_veldo_0155_claude_baseline: selftest (PARTIAL, 1 of 201 suites): 45 passed, 0 failed in 14.21s
+86_veldo_0127_agent_configuration: selftest (PARTIAL, 1 of 201 suites): 52 passed, 2 failed in 36.75s
+  SELFTEST FAIL: VELDO-0127 live/claude
+  SELFTEST FAIL: VELDO-0127 live/codex
+86_veldo_0148_re_land: selftest (PARTIAL, 1 of 201 suites): 52 passed, 0 failed in 62.75s
+86_veldo_0168_text: selftest (PARTIAL, 1 of 201 suites): 50 passed, 2 failed in 3.62s
+  SELFTEST FAIL: VELDO-0168 intake/delivery
+  SELFTEST FAIL: VELDO-0168 inventory/sends-and-assets
+86_veldo_0186_setup_assets: selftest (PARTIAL, 1 of 201 suites): 37 passed, 0 failed in 15.90s
+86_veldo_0189_engine_upgrade: selftest (PARTIAL, 1 of 201 suites): 59 passed, 1 failed in 60.53s
+  SELFTEST FAIL: VELDO-0189 ownership/restore-reported
+93_veldo_0152_intake_routes: selftest (PARTIAL, 1 of 201 suites): 50 passed, 0 failed in 49.93s
+95_veldo_0203_owner_revisions: selftest (PARTIAL, 1 of 201 suites): 62 passed, 0 failed in 6.42s
+
+Mutation cases of 0175, 0176, 0177, 0178, 0179, 0180, 0181, 0183, 0184, each alone through scripts/check_gate_mutations.py with the case option:
+ask176-moved-unasked                          passed base=[] noop=[] mutant_targets={'AC2/ask': [False]}
+attach177-reads-first                         passed base=[] noop=[] mutant_targets={'AC3/scope': [False]}
+bare181-short-form-dropped                    passed base=[] noop=[] mutant_targets={'AC1/unclear-bare-project': [False]}
+catalog183-paid-api-accepted                  passed base=[] noop=[] mutant_targets={'AC2/paid-api': [False]}
+clone175-into-initial-branch                  passed base=[] noop=[] mutant_targets={'AC4/attach-initial-branch': [False]}
+clone177-push-remote                          passed base=[] noop=[] mutant_targets={'AC3/no-publication': [False]}
+command175-taken-as-turn                      passed base=[] noop=[] mutant_targets={'AC4/slash-role': [False]}
+feed175-not-handed                            passed base=[] noop=[] mutant_targets={'AC1/service-feed': [False]}
+feed178-conversation-by-scope                 passed base=[] noop=[] mutant_targets={'AC1/events': [False]}
+free181-clarification-dropped                 passed base=[] noop=[] mutant_targets={'AC1/unclear-free-text': [False]}
+index178-released-by-dispatch-id              passed base=[] noop=[] mutant_targets={'AC1/events': [False]}
+inputs180-last-message-only                   passed base=[] noop=[] mutant_targets={'AC2/context': [False]}
+kb183-guessed-name                            passed base=[] noop=[] mutant_targets={'AC1/real-layout': [False]}
+launch180-snapshot-unchecked                  passed base=[] noop=[] mutant_targets={'AC2/snapshot-mismatch': [False]}
+limit176-capture-discarded                    passed base=[] noop=[] mutant_targets={'AC2/continues-after-a-limit': [False]}
+memory184-absent-unnamed                      passed base=[] noop=[] mutant_targets={'AC1/absent': [False]}
+memory184-codex-memories-on                   passed base=[] noop=[] mutant_targets={'AC2/configuration': [False]}
+memory184-directory-unset                     passed base=[] noop=[] mutant_targets={'AC1/memory-path': [False]}
+memory184-form-unqualified                    passed base=[] noop=[] mutant_targets={'AC1/qualified': [False]}
+memory184-no-index-digest                     passed base=[] noop=[] mutant_targets={'AC3/loaded-at-launch': [False]}
+memory184-no-writable-root                    passed base=[] noop=[] mutant_targets={'AC2/write': [False]}
+memory184-paths-unchecked                     passed base=[] noop=[] mutant_targets={'AC1/mismatch-stop': [False]}
+name180-read-not-his-words                    passed base=[] noop=[] mutant_targets={'AC1/name-from-command': [False]}
+output181-answer-accepted                     passed base=[] noop=[] mutant_targets={'AC2/no-authority-from-output': [False]}
+parts175-first-only                           passed base=[] noop=[] mutant_targets={'AC3/reply-to-the-last-part': [False]}
+publish181-own-inbox-only                     passed base=[] noop=[] mutant_targets={'AC1/rerun-presented': [False]}
+read178-domain-membership                     passed base=[] noop=[] mutant_targets={'AC1/other-member': [False]}
+reading175-closed-stuck                       passed base=[] noop=[] mutant_targets={'AC1/closed-before-reading': [False]}
+record178-project-alone                       passed base=[] noop=[] mutant_targets={'AC2/other-member': [False]}
+render176-from-held-session                   passed base=[] noop=[] mutant_targets={'AC3/redaction': [False]}
+render176-long-refused                        passed base=[] noop=[] mutant_targets={'AC3/long-history': [False]}
+reply175-proposals-only                       passed base=[] noop=[] mutant_targets={'AC1/reply-continues': [False]}
+reply181-presentation-as-turn                 passed base=[] noop=[] mutant_targets={'AC1/settles-by-reply': [False]}
+resume176-not-placed                          passed base=[] noop=[] mutant_targets={'AC1/any-account': [False]}
+roles183-no-claude-mem                        passed base=[] noop=[] mutant_targets={'AC1/init': [False]}
+route175-conversation-as-project              passed base=[] noop=[] mutant_targets={'AC2/new-conversation': [False]}
+route175-field-dropped                        passed base=[] noop=[] mutant_targets={'AC1/api-field': [False]}
+route180-turn-reply-carried                   passed base=[] noop=[] mutant_targets={'AC1/injected-route': [False]}
+route181-applied-twice                        passed base=[] noop=[] mutant_targets={'AC1/unclear-settled-once': [False]}
+servers183-ava-opens-store                    passed base=[] noop=[] mutant_targets={'AC4/one-opener': [False]}
+servers183-check-opens-store                  passed base=[] noop=[] mutant_targets={'AC4/one-opener': [False]}
+setup177-no-assistants                        passed base=[] noop=[] mutant_targets={'AC2/setup-saves': [False]}
+setup177-saves-again                          passed base=[] noop=[] mutant_targets={'AC2/rerun-saves-nothing': [False]}
+setup183-no-servers-step                      passed base=[] noop=[] mutant_targets={'AC1/setup-step': [False]}
+store183-open-unchecked                       passed base=[] noop=[] mutant_targets={'AC4/open-refused': [False]}
+text175-command-id-only                       passed base=[] noop=[] mutant_targets={'AC1/engine-text': [False]}
+tools177-no-role-revision                     passed base=[] noop=[] mutant_targets={'AC2/offered-tools': [False]}
+ui179-reply-as-html                           passed base=[] noop=[] mutant_targets={'ac1/as-written': [False]}
+ui179-role-refusal-generic                    passed base=[] noop=[] mutant_targets={'ac1/stale-version': [False]}
+ui179-send-hidden-360                         passed base=[] noop=[] mutant_targets={'ac3/screens-360': [False]}
+ui179-turn-reply-not-record                   passed base=[] noop=[] mutant_targets={'ac2/terminal': [False]}
+
+Reds, none caused by the merge:
+- 86_veldo_0127_agent_configuration live/claude, live/codex: the two stale live rows, expected.
+- 86_veldo_0168_text intake/delivery and inventory/sends-and-assets, 86_veldo_0189_engine_upgrade
+  ownership/restore-reported: red alone at VELDO-0181's head 1f416231 before the merge (same rows, same
+  counts) and green at VELDO-0184's head f747c7a6; the 0168 inventory delta names the conversation channel's
+  send sites the conversation chain added. Not touched here (outside this merge and VELDO-0187's footprint).
+- Mutation case reading175-closed-stuck: its anchor was already absent at 1f416231 (VELDO-0180 put the
+  conversion branch between the two anchored lines). Re-anchored on the current lines with the same defect
+  (the open-conversation check runs only for a command reading); killed alone as listed above.
