@@ -4,6 +4,11 @@ The authority owns scheduling and receipts. LangGraph owns only the bounded step
 trace. Reasoning is a coordination dispatch on the ordinary Runner. Returned
 commands are applied in order by their registered owners; the first refusal stops
 the document. A cycle never writes the entities owned by those commands.
+
+VELDO-0175: the factory PM's route input lists the sender's open conversations with their first message's
+opening words beside his projects, and its routes include a new conversation and an open one. A Telegram reply
+to a conversation message that is no typed command is read here first: the PM reads only the owner's own words
+and returns one reading document (a role change, a project attach, a close, or none), which intake applies.
 """
 import copy
 import hashlib
@@ -30,6 +35,8 @@ CY = organ('control_workflow_cycle')
 IR = organ('control_intake_routes')
 # VELDO-0143: a message the factory PM routed as a new project, read again for its one proposal.
 NP = organ('control_project_proposal')
+# VELDO-0175: the conversations at intake, for the route input and the PM's reading of a conversation reply.
+CI = organ('control_intake_conversation')
 SCHEMA = 'veldo.pm_cycle/v1'
 DOCUMENT = 'veldo.pm_proposals/v1'
 KIND = 'pm_cycle'
@@ -223,6 +230,7 @@ class ProjectCycles:
             'entities': {'project': '$project', 'team': '$team'}, 'collections': {
                 'objectives': {'kind': 'objective', 'where': {'project': '$name'}, 'references': ['proposal_id']},
                 'inbox': {'kind': 'intake_proposal', 'where': {'project': '$name', 'state': 'AWAITING_ROUTE'}},
+                'readings': {'kind': 'intake_proposal', 'where': {'project': '$name', 'state': CI.AWAITING_READING}},
                 'new_projects': {'kind': 'intake_proposal', 'where': {'project': '$name', 'state': NP.NEW_PROJECT_STATE}},
                 'new_project_decisions': {'kind': NP.KIND, 'where': {'state': 'correcting'}},
                 'decisions': {'kind': 'assignment', 'where': {}},
@@ -255,7 +263,8 @@ class ProjectCycles:
             data = json.loads(raw)
             relevant = (identity in ('project:' + project, 'team:' + project)
                         or kind == 'accepted_revision' and data.get('repository_uuid') == self.repository
-                        or kind == 'intake_proposal' and data.get('project') == project and data.get('state') == 'AWAITING_ROUTE'
+                        or kind == 'intake_proposal' and data.get('project') == project
+                        and data.get('state') in ('AWAITING_ROUTE', CI.AWAITING_READING)
                         or identity in waiting
                         or kind == 'objective' and data.get('project') == project
                         or kind == 'assignment' and project in data.get('scope', []) and data.get('answer')
@@ -334,12 +343,17 @@ class ProjectCycles:
             if answer['outcome'] != 'suspended' or record['resume']['position'] != 'coordinate':
                 raise Refused('invalid_response:coordinate')
             record['trace'] = ['intake']
-            inbox = snap['data']['inputs'].get('collection/inbox', []) if project == 'factory' else []
+            # VELDO-0175: a conversation reply the owner waits on is read before any message is routed.
+            readings = snap['data']['inputs'].get('collection/readings', []) if project == 'factory' else []
+            if readings:
+                chosen = readings[0]
+                record['reading_subject'] = dict(id=chosen['value']['data']['proposal_id'], version=chosen['version'])
+            inbox = snap['data']['inputs'].get('collection/inbox', []) if project == 'factory' and not readings else []
             if inbox:
                 selected = inbox[0]
                 record['route_subject'] = dict(id=selected['value']['data']['proposal_id'], version=selected['version'])
             # VELDO-0143: with no message to route, the oldest new-project message the PM still has to read.
-            waiting = NP.pending(self.conn) if project == 'factory' and not inbox else []
+            waiting = NP.pending(self.conn) if project == 'factory' and not inbox and not readings else []
             if waiting:
                 record['new_project_subject'] = dict(waiting[0])
             payload = {'operation': 'coordinate', 'snapshot': snap['data'], 'workflow': record['workflow'],
@@ -351,10 +365,23 @@ class ProjectCycles:
                 proposal = selected['value']['data']
                 payload = dict(operation='route', proposal_id=proposal['proposal_id'], text=proposal['text'],
                     clarifications=proposal['clarifications'], hints=proposal['hints'],
-                    projects=proposal['context']['projects'], output_schema=IR.SCHEMA,
+                    projects=proposal['context']['projects'],
+                    conversations=CI.open_conversations(self.conn, proposal['principal']), output_schema=IR.SCHEMA,
                     instruction='Return exactly one route document with schema, proposal_id, route and a nonempty reason. '
-                                'Route is new_project, existing_project or unclear. Only existing_project includes project, '
-                                'the id of one listed project.')
+                                'Route is new_project, existing_project, new_conversation, open_conversation or unclear. '
+                                'Only existing_project includes project, the id of one listed project; only '
+                                'open_conversation includes conversation, the id of one listed conversation. '
+                                'new_conversation is for a question or a talk, not a piece of project work.')
+            if readings:
+                proposal = chosen['value']['data']
+                payload = dict(operation='read_command', proposal_id=proposal['proposal_id'], text=proposal['text'],
+                    **CI.reading_inputs(self.conn, proposal['principal']), output_schema=CI.READING_SCHEMA,
+                    instruction='The owner replied to a message of one of his conversations. Read only his words and '
+                                'return exactly one reading document with schema, proposal_id, command, name and a '
+                                'nonempty reason. command is role when he asks to change the conversation\'s role '
+                                '(name: one listed role), attach when he asks to attach one of his projects (name: one '
+                                'listed project), close when he asks to close it (name null), and none for anything '
+                                'else (name null): then his message is the conversation\'s next turn.')
             if waiting:
                 subject = waiting[0]
                 proposal = row(self.conn, subject['proposal_id'])['data']
@@ -384,6 +411,18 @@ class ProjectCycles:
         return self.save(record)
 
     def apply(self, record, value):
+        if record.get('reading_subject'):
+            intake = self.services.get('intake')
+            if intake is None:
+                raise Refused('unavailable_service:proposal_owner:intake')
+            subject = record['reading_subject']
+            result = intake.read(value, dispatch=record['dispatch'], proposal_id=subject['id'], version=subject['version'])
+            record['proposals'] = [dict(name=subject['id'], type='reading', result=result)]
+            self.save(record)
+            if not result.get('ok'):
+                raise Refused('proposal_refused:' + subject['id'], str(result.get('reason')))
+            record.update(document=value, state='proposed')
+            return record
         if record.get('new_project_subject'):
             decisions = self.services.get('new_projects')
             if decisions is None:
@@ -525,7 +564,7 @@ class ProjectCycles:
         try:
             if not organ('control_dispatch').completed(dispatched):
                 raise Refused('missing_evidence:pm_result')
-            subject = record.get('route_subject') or record.get('new_project_subject')
+            subject = record.get('route_subject') or record.get('new_project_subject') or record.get('reading_subject')
             value = self.returned_document(dispatched, route=bool(subject))
             if not subject:
                 document(value)
@@ -654,7 +693,9 @@ def _cycles(line, store, membership, assignment, ids, signature, allocations, re
             services['intake'] = intake_module.Intake(store, membership, modules['AC'], ingress.acquirer, service.conn,
                 domain=service.domain, projects=lambda: intake_module.store_projects(service.conn),
                 api_edge=ingress.settlement.api_edge, journal_signer=service.principal, sign=service.sign,
-                asker=ingress.presenter.edge, authority_generation=service.generation)
+                asker=ingress.presenter.edge, authority_generation=service.generation,
+                # VELDO-0175: the service's conversations, for the typed commands and the new-conversation route.
+                conversations=service.conversations() if callable(getattr(service, 'conversations', None)) else None)
             # VELDO-0143: the factory's new-project decisions, the one owner of the PM's new-project document
             # (built before from_line took the registrations, R4-6).
             if callable(getattr(service, 'new_projects', None)):

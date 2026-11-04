@@ -80,6 +80,12 @@ since is stored. A pass the gate refuses (not activated, stopped) and a qualific
 and store nothing, so what was committed while the edge was stopped is reported once he activates it
 again, and a restart neither repeats nor drops a report.
 
+THE CONVERSATION REPLIES (VELDO-0175). On every pass the gate wakes, after the reports, the channel sends what
+every conversation turn whose message came from Telegram still has to send (control_conversation_channel.Replies):
+its reply in parts, the first a reply to his message, or one status line for a turn that ended with no result
+text, each recorded with its bot, chat and message id so a reply to any of them continues the conversation. A part
+already recorded is never sent again; a refused send is tried on the next pass.
+
 A RESTART keeps the edge exactly as the owner left it, because the service holds no state of its own
 about it: the record in the store decides every exchange.
 
@@ -111,6 +117,7 @@ I = _organ('control_assignment')
 V = _organ('control_channel_presentation')
 A = _organ('control_signer_answers')
 TR = _organ('control_telegram_report')
+CC = _organ('control_conversation_channel')
 
 CHANNEL = ACT.CHANNEL
 AUTHORIZE = ACT.AUTHORIZE
@@ -200,6 +207,7 @@ class Channel:
         self.passes, self.last, self.run = 0, None, None
         self.requests = []
         self.reporter = None
+        self.replier = None
         key = requester_key(self.config)
         self.requester = None
         if key and os.path.isfile(key):
@@ -420,21 +428,24 @@ class Channel:
         woke = ing.wake({'source': 'authority_service', 'pass': self.passes})
         self.passes += 1
         published, recorded = [], None
-        told, reported = [], []
+        told, reported, replied = [], [], []
         if woke.get('outcome') == 'woken':
             published = [r.get('outcome') for r in ing.presenter.publish()]
             told = self.tell_unsigned(woke.get('acquired') or []) + self.tell_renewal(record)
             if self.run is not None:
                 recorded = self._qualification(woke)
+            replied = self.replies()
             reported = self.report(record)
         sent = sum(1 for outcome in published if outcome == 'published')
         summary = {'outcome': woke.get('outcome'), 'reason': woke.get('reason'),
                    'state': (record or {}).get('state'), 'acquired': len(woke.get('acquired', [])),
-                   'settled': len(woke.get('settled', [])), 'published': sent, 'told': told, 'reported': reported}
+                   'settled': len(woke.get('settled', [])), 'published': sent, 'told': told, 'reported': reported,
+                   'replied': replied}
         if recorded:
             summary['qualification'] = recorded
         previous = self.last or {}
         summary['notable'] = bool(summary['acquired'] or summary['settled'] or sent or recorded or told or reported
+                                  or replied
                                   or any(previous.get(k) != summary[k] for k in ('outcome', 'reason', 'state')))
         self.last = {k: v for k, v in summary.items() if k != 'notable'}
         self._trim()
@@ -456,6 +467,22 @@ class Channel:
         except Exception as exc:  # noqa: BLE001 - the pass goes on; the refusal is reported by name
             return [{'report_id': None, 'event': None, 'outcome': 'refused', 'reason': _code(exc)}]
         return [{k: r.get(k) for k in ('report_id', 'event', 'outcome', 'reason')} for r in results]
+
+    # -- the conversation replies (VELDO-0175) ----------------------------------------------------
+
+    def replies(self):
+        """Send and record what every Telegram conversation turn still has to send. Returns one
+        {conversation, sequence, kind, part, parts, outcome} per message tried this pass."""
+        ing = self.ingress
+        try:
+            if self.replier is None:
+                presenter = ing.presenter
+                self.replier = CC.Replies(presenter.store, ing.conn, presenter.journal_signer, presenter.sign,
+                                          presenter.edge, presenter.authority_generation, clock=self.clock)
+            return [{k: r.get(k) for k in ('conversation', 'sequence', 'kind', 'part', 'parts', 'outcome', 'reason')}
+                    for r in self.replier.deliver()]
+        except Exception as exc:  # noqa: BLE001 - the pass goes on; the refusal is reported by name
+            return [{'conversation': None, 'outcome': 'refused', 'reason': _code(exc)}]
 
     # -- no silent refusal of the owner's answers (VELDO-0140) ------------------------------------
 

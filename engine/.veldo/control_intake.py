@@ -11,6 +11,11 @@ read in the transaction. The owning commands write proposals and questions only,
 never admission, priority or executable units. Repeated source identities preserve
 the original result. The owner receives the existing taken-as-work hint for an
 inbox proposal, and questions are delivered on the original channel.
+
+VELDO-0175: a Telegram reply to any message the factory sent in a conversation, or an API message whose
+`conversation` field names one, is that conversation's (control_intake_conversation): the next turn, a typed
+command, or a reply the factory PM reads for one; it is resolved before the proposal and question records.
+The PM's routes include a new conversation and an open one of the sender's.
 """
 import hashlib
 import importlib.util
@@ -31,6 +36,7 @@ def _renderer_module(name):
 TEXT = _renderer_module('control_channel_presentation_text')
 PJ = _renderer_module('control_project')
 RT = _renderer_module('control_intake_routes')
+CI = _renderer_module('control_intake_conversation')
 
 COMMAND_SCHEMA = 'veldo.intake_command/v1'
 API_SCHEMA = 'veldo.intake_api_request/v1'
@@ -44,7 +50,11 @@ OWNER = 'VELDO-0126 intake'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
 COMMAND_FIELDS = ('schema', 'source_kind', 'source_id', 'principal', 'text', 'project', 'clarifies', 'provenance')
 API_FIELDS = ('schema', 'domain', 'request_id', 'edge', 'principal', 'text', 'project', 'clarifies')
-PROPOSAL_STATES = ('PROPOSED', 'AWAITING_ROUTE', 'NEW_PROJECT', 'ROUTED', 'AWAITING_PROJECT', 'RESOLVED')
+# VELDO-0175: the optional field naming a conversation, beside project and clarifies (absent means none, so a
+# command or request without it keeps the content digest it had).
+CONVERSATION_FIELD = 'conversation'
+PROPOSAL_STATES = ('PROPOSED', 'AWAITING_ROUTE', 'NEW_PROJECT', 'ROUTED', 'AWAITING_PROJECT', 'RESOLVED',
+                   CI.AWAITING_READING, CI.READ)
 TICKET_KEY = re.compile(r'(?<![A-Za-z0-9_-])([A-Za-z][A-Za-z0-9_]*)-[0-9]+(?![A-Za-z0-9_-])')
 # The attribution's own reasons for a message it attributed to a person but that is no presentation
 # answer: it replies to nothing, or to a message that is not a presentation.
@@ -116,7 +126,7 @@ def telegram_source_id(bot, chat, message):
 
 def content_digest(command):
     """The content under a source identity: everything the command asks for, without provenance."""
-    return digest({k: command[k] for k in COMMAND_FIELDS if k != 'provenance'})
+    return digest({k: command[k] for k in COMMAND_FIELDS + (CONVERSATION_FIELD,) if k != 'provenance' and k in command})
 
 
 def named_projects(text, candidates):
@@ -146,7 +156,8 @@ def _identifier(value):
 
 def command_problem(command):
     """Why a normalized intake command is malformed, or None."""
-    if not isinstance(command, dict) or set(command) != set(COMMAND_FIELDS) or command['schema'] != COMMAND_SCHEMA:
+    if (not isinstance(command, dict) or set(command) - {CONVERSATION_FIELD} != set(COMMAND_FIELDS)
+            or command['schema'] != COMMAND_SCHEMA):
         return 'invalid_input:command'
     if command['source_kind'] not in SOURCE_KINDS:
         return 'unsupported_source'
@@ -159,6 +170,8 @@ def command_problem(command):
         return 'invalid_input:project'
     if command['clarifies'] is not None and not _identifier(command['clarifies']):
         return 'invalid_input:clarifies'
+    if CONVERSATION_FIELD in command and not _identifier(command[CONVERSATION_FIELD]):
+        return 'invalid_input:conversation'
     if not isinstance(command['provenance'], dict):
         return 'invalid_input:provenance'
     return None
@@ -171,7 +184,7 @@ def store_projects(conn):
     return sorted(json.loads(raw)['name'] for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='project'"))
 
 
-class Intake(RT.Routes):
+class Intake(RT.Routes, CI.Conversing):
     """The intake of one domain over a real control store connection.
 
     `store`, `membership` and `contract` are the control_store, control_membership and
@@ -180,10 +193,14 @@ class Intake(RT.Routes):
     TelegramPresentationEdge for the bot the Acquirer serves, or None. `projects` are the projects
     this intake serves, or a callable returning them, called each time they are judged, so a transition judges
     against the projects current when it runs (store_projects, VELDO-0143 R4-3). `api_edge` is the service principal the authenticated API signs as. `sign`
-    signs journal records as `journal_signer`."""
+    signs journal records as `journal_signer`. `conversations` is this service's control_conversation
+    Conversations (VELDO-0175: the typed commands and the new-conversation route send through it), or None."""
+
+    _proposal_id = staticmethod(proposal_id)
+    CI = CI
 
     def __init__(self, store, membership, contract, acquirer, conn, *, domain, projects, api_edge, journal_signer,
-                 sign, asker=None, authority_generation=1, clock=time.time, observe=None):
+                 sign, asker=None, authority_generation=1, clock=time.time, observe=None, conversations=None):
         if not _identifier(domain) or not _identifier(api_edge) or not _identifier(journal_signer):
             raise Refused('invalid_input', 'domain, API edge and journal signer are named')
         if not callable(projects) and (not projects or not all(_identifier(p) for p in projects)
@@ -193,6 +210,7 @@ class Intake(RT.Routes):
         self.domain, self.projects, self.api_edge = domain, projects, api_edge
         self.journal_signer, self.sign, self.generation = journal_signer, sign, authority_generation
         self.asker, self.clock = asker, clock
+        self.conversations = conversations
         self.observe = observe or (lambda event: None)
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
@@ -243,7 +261,8 @@ class Intake(RT.Routes):
 
     def _event(self, operation, outcome, reason=None, **fields):
         accepted = reason is None
-        self.counts['accepted' if accepted else 'refused'] += 1
+        if operation != 'conversation':  # VELDO-0175: a conversation event describes an operation already counted
+            self.counts['accepted' if accepted else 'refused'] += 1
         event = dict({'schema': SOURCE_SCHEMA, 'operation': operation, 'domain': self.domain, 'outcome': outcome,
                       'refusal': reason, 'taxonomy': None if accepted else taxonomy(reason)}, **fields)
         self.observations.append(event)
@@ -273,7 +292,9 @@ class Intake(RT.Routes):
                              'new_project': sum(p.get('state') == 'NEW_PROJECT' for p in proposals),
                              'proposed': sum(1 for p in proposals if p.get('state') == 'PROPOSED'),
                              'awaiting_project': sum(1 for p in proposals if p.get('state') == 'AWAITING_PROJECT'),
-                             'open_questions': sum(1 for q in self._all(QUESTION_KIND) if q.get('state') == 'open')})
+                             'open_questions': sum(1 for q in self._all(QUESTION_KIND) if q.get('state') == 'open'),
+                             'awaiting_reading': sum(p.get('state') == CI.AWAITING_READING for p in proposals)},
+                    conversations=self.conversation_metrics())
 
     # the entry
 
@@ -296,8 +317,11 @@ class Intake(RT.Routes):
             # proposal (including a factory inbox proposal) gets the new-work note here; a message
             # intake did not take gets the plain hint. The PM's later unclear-route question is a
             # separate reply (VELDO-0152); a clarification or a resolution gets no hint.
+            # VELDO-0175: a conversation refusal is answered with its own one line, never the hint as well.
+            told = result.get('told')
             if not result.get('repeated') and result.get('outcome') in ('proposed', 'inbox', 'refused'):
-                self._hint(payload, 'proposed' if result['outcome'] in ('proposed', 'inbox') else None)
+                if not told:
+                    self._hint(payload, 'proposed' if result['outcome'] in ('proposed', 'inbox') else None)
         return result
 
     def take_telegram(self):
@@ -330,16 +354,24 @@ class Intake(RT.Routes):
         if type(text) is not str:
             raise Refused('invalid_input:text', 'the message carries no text')
         bot, chat = record['bot_id'], fields['chat_id']
-        clarifies = None
+        clarifies = conversation = None
         if fields.get('reply_to_message_id') is not None:
-            clarifies = self._replied_proposal(bot, chat, fields['reply_to_message_id'])
-        return {'schema': COMMAND_SCHEMA, 'source_kind': 'telegram_message',
-                'source_id': telegram_source_id(bot, chat, fields['message_id']), 'principal': known['principal'],
-                'text': text, 'project': None, 'clarifies': clarifies,
-                'provenance': {'channel': 'telegram_chat', 'bot_id': bot, 'chat_id': chat, 'message_id': fields['message_id'],
-                               'update_id': fields['update_id'], 'date': fields['date'],
-                               'evidence_id': record['evidence_id'], 'evidence_digest': record['source_digest'],
-                               'reply_to_message_id': fields.get('reply_to_message_id')}}
+            # VELDO-0175 AC1: a reply to a message the factory sent in a conversation is that conversation's,
+            # resolved before the proposal and question records.
+            conversation = self._replied_conversation(bot, chat, fields['reply_to_message_id'])
+            if conversation is None:
+                clarifies = self._replied_proposal(bot, chat, fields['reply_to_message_id'])
+        command = {'schema': COMMAND_SCHEMA, 'source_kind': 'telegram_message',
+                   'source_id': telegram_source_id(bot, chat, fields['message_id']), 'principal': known['principal'],
+                   'text': text, 'project': None, 'clarifies': clarifies,
+                   'provenance': {'channel': 'telegram_chat', 'bot_id': bot, 'chat_id': chat,
+                                  'message_id': fields['message_id'], 'update_id': fields['update_id'],
+                                  'date': fields['date'], 'evidence_id': record['evidence_id'],
+                                  'evidence_digest': record['source_digest'],
+                                  'reply_to_message_id': fields.get('reply_to_message_id')}}
+        if conversation is not None:
+            command[CONVERSATION_FIELD] = conversation
+        return command
 
     def _replied_proposal(self, bot, chat, message):
         """The proposal a Telegram reply clarifies: the one its replied message was taken into, or the
@@ -357,7 +389,8 @@ class Intake(RT.Routes):
     def _api(self, packet):
         request = packet.get('request') if isinstance(packet, dict) else None
         signature = packet.get('signature') if isinstance(packet, dict) else None
-        if not isinstance(request, dict) or set(request) != set(API_FIELDS) or request['schema'] != API_SCHEMA:
+        if (not isinstance(request, dict) or set(request) - {CONVERSATION_FIELD} != set(API_FIELDS)
+                or request['schema'] != API_SCHEMA):
             raise Refused('invalid_input:request', 'an API intake request carries exactly its fields')
         if request['domain'] != self.domain:
             raise Refused('unauthorized:domain', 'the request names another domain')
@@ -369,11 +402,15 @@ class Intake(RT.Routes):
             raise Refused('unauthenticated:signature', 'the signature is not the API edge\'s')
         if not _identifier(request['request_id']):
             raise Refused('invalid_input:request_id', 'a request id is printable ASCII, at most %d' % ID_LIMIT)
-        return {'schema': COMMAND_SCHEMA, 'source_kind': 'api_request', 'source_id': request['request_id'],
-                'principal': request['principal'], 'text': request['text'], 'project': request['project'],
-                'clarifies': request['clarifies'],
-                'provenance': {'channel': 'api', 'edge': request['edge'], 'request_id': request['request_id'],
-                               'request_digest': digest(request)}}
+        command = {'schema': COMMAND_SCHEMA, 'source_kind': 'api_request', 'source_id': request['request_id'],
+                   'principal': request['principal'], 'text': request['text'], 'project': request['project'],
+                   'clarifies': request['clarifies'],
+                   'provenance': {'channel': 'api', 'edge': request['edge'], 'request_id': request['request_id'],
+                                  'request_digest': digest(request)}}
+        # VELDO-0175 AC1: the optional field naming the conversation the message continues.
+        if request.get(CONVERSATION_FIELD) is not None:
+            command[CONVERSATION_FIELD] = request[CONVERSATION_FIELD]
+        return command
 
     def _edge_verifies(self, request, signature):
         """The request is signed by the API edge's active key in the store's keyring, and the edge is
@@ -461,14 +498,20 @@ class Intake(RT.Routes):
             return self._event('submit', 'refused', problem, **about)
         key = source_key(command['source_kind'], command['source_id'])
         about.update(source=key, trace=dict(command['provenance']))
+        steered = None
         try:
             changes, reads, result = self._plan(command, self._entity)
+            if result['outcome'] == 'command':
+                # VELDO-0175 AC4: the owner's typed command, sent before its source is recorded; never a turn.
+                steered = self._steer(result['conversation'], command['principal'], *CI.typed_command(command['text']),
+                                      key)
         except _Repeated as repeat:
             done = repeat.record['result']
             return self._event('submit', done['outcome'], None, repeated=True, command=repeat.record['command'],
-                               **dict(about, **{k: done[k] for k in ('proposal_id', 'question_id', 'question') if k in done}))
+                               **dict(about, **{k: done[k] for k in ('proposal_id', 'question_id', 'question',
+                                                                     'conversation', 'sequence') if k in done}))
         except Refused as error:
-            return self._event('submit', 'refused', error.code, **about)
+            return self._conversation_refused(command, error.code, about)
         expected = {eid: (self._entity(eid) or {}).get('version', 0) for eid in sorted(set(changes) | set(reads))}
         params = {'command': command, 'content_digest': content_digest(command)}
         cid = 'intake:' + _hex(key, params['content_digest'])
@@ -485,6 +528,42 @@ class Intake(RT.Routes):
         done = self._event('submit', result['outcome'], None, accepted_versions=expected, project=result.get('project'),
                            decision=result.get('decision'), command=command, **dict(about, **{k: result[k] for k in ('proposal_id', 'question_id', 'question')
                                                              if k in result}))
+        if command.get(CONVERSATION_FIELD) is not None:
+            done = self._conversation_done(command, result, steered, done)
+        return done
+
+    def _conversation_refused(self, command, code, about):
+        """A refusal by name; a conversation message's is answered with one line on Telegram (VELDO-0175)."""
+        conversation = command.get(CONVERSATION_FIELD) if isinstance(command, dict) else None
+        typed = CI.typed_command(command.get('text')) if isinstance(command, dict) else None
+        if conversation is None and not typed:
+            return self._event('submit', 'refused', code, **about)
+        result = self._event('submit', 'refused', code, **about)
+        self._event('conversation', 'refused', code, conversation=conversation,
+                    command=typed[0] if typed else None, source=about.get('source'),
+                    reply_to=(command.get('provenance') or {}).get('reply_to_message_id'))
+        where = self._where(command)
+        if where and CI.refused_told(code):
+            told = self._tell(where, self.refusal_line(code), kind='refusal', conversation=conversation)
+            result['told'] = told.get('outcome')
+        return result
+
+    def _conversation_done(self, command, result, steered, done):
+        """How a conversation message was decided, logged with its conversation and turn or command (never its
+        text); a command is answered with one line naming what changed."""
+        done.update({k: result[k] for k in ('conversation', 'sequence') if k in result})
+        typed = CI.typed_command(command['text']) if result['outcome'] == 'command' else None
+        self._event('conversation', result['outcome'], None, decided_by=result.get('decided_by'),
+                    conversation=result.get('conversation'), sequence=result.get('sequence'),
+                    command=typed[0] if typed else None, proposal_id=result.get('proposal_id'),
+                    source=source_key(command['source_kind'], command['source_id']),
+                    reply_to=(command.get('provenance') or {}).get('reply_to_message_id'))
+        if steered is not None:
+            line, detail = steered
+            done['changed'] = detail
+            told = self._tell(self._where(command), line, kind='answer', conversation=result['conversation'],
+                              ref=detail['command'])
+            done['told'] = told.get('outcome')
         return done
 
     def _record_transition(self, conn, params, before):
@@ -518,6 +597,20 @@ class Intake(RT.Routes):
             why = self._member_when_sent(principal, command['provenance'].get('date'))
             if why:
                 raise Refused('unauthorized:' + why, principal)
+        if command.get(CONVERSATION_FIELD) is not None:
+            # VELDO-0175: a message naming a conversation is decided by it alone, never by a project or a route.
+            conversation_source = {'schema': SOURCE_SCHEMA, 'source_id': key, 'source_kind': command['source_kind'],
+                                   'source_ref': command['source_id'], 'principal': principal, 'text': text,
+                                   'content_digest': content_digest(command), 'command': command,
+                                   'context': {'domain': self.domain, 'conversation': command[CONVERSATION_FIELD]}}
+            reads = [principal]
+            changes, result = self._conversation_plan(command, key, conversation_source, read, reads)
+            conversation_source.update(proposal_id=result.get('proposal_id'), question_id=None, result=dict(result))
+            changes[key] = {'kind': SOURCE_KIND, 'data': conversation_source}
+            return changes, reads, result
+        if command['source_kind'] == 'telegram_message' and CI.typed_command(text) is not None:
+            # VELDO-0175 AC4: a typed conversation command that replies to no conversation message.
+            raise Refused('invalid_input:conversation_command:no_conversation')
         member = read(principal)
         scope = member['data'].get('scope') if member is not None and member['kind'] == 'membership' else None
         served = self.projects

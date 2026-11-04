@@ -176,6 +176,9 @@ _FILES = [
     # VELDO-0174: repository-free conversations, their ordered turns and shared account reservations;
     # loaded by the authority service and launch receiver.
     ".veldo/control_conversation.py",
+    # VELDO-0175: every conversation reply sent where the owner wrote and every sent message recorded; loaded by
+    # the authority service's channel and by intake.
+    ".veldo/control_conversation_channel.py",
     ".veldo/control_launch.py",
     # VELDO-0141: every run's execution record, which control_launch.py writes and the API authority reads;
     # a runtime asset, no validator import, not REQUIRED_SUBSTRATE.
@@ -241,6 +244,8 @@ _FILES = [
     # VELDO-0126: the one Telegram and API message intake for proposed work; no validator loads it.
     ".veldo/control_intake.py",
     ".veldo/control_intake_routes.py",
+    # VELDO-0175: conversations at intake: replies, the conversation field, typed commands and the PM's routes.
+    ".veldo/control_intake_conversation.py",
     ".veldo/control_replay.py",
     # VELDO-0024 (PLAN-0019 W9): the signed replica publisher, the store's publication cursor's
     # only client; loaded by the suite, the status reader and the authority process above it.

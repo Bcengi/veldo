@@ -6,6 +6,13 @@ VELDO-0143: once a new project is active, resolve_new_project moves the NEW_PROJ
 proposal its settled decision started from into it, in route (b)'s form, as the project's
 first objective proposal; the inbox proposal is retired ROUTED, pointing at it. The same
 intake_route command carries it, re-planned inside the transaction.
+
+VELDO-0175 AC2: five routes: a new project, an existing project, a new conversation, an open conversation named
+by id, and unclear. A new-conversation route opens a conversation with the message as turn 1; an open-conversation
+route makes it that conversation's next turn; both retire the inbox proposal ROUTED, pointing at the conversation.
+A route naming a conversation that is not an open one of the sender's is refused (invalid_input:route:conversation).
+The unclear question also offers a new conversation and the sender's open conversations. The same command carries
+the PM's reading of a conversation reply (control_intake_conversation.read).
 """
 import copy
 import hashlib
@@ -13,7 +20,9 @@ import json
 
 ROUTE = 'intake_route'
 SCHEMA = 'veldo.intake_route/v1'
-ROUTES = ('new_project', 'existing_project', 'unclear')
+ROUTES = ('new_project', 'existing_project', 'new_conversation', 'open_conversation', 'unclear')
+# The extra field each route's document carries.
+ROUTE_FIELDS = {'existing_project': 'project', 'open_conversation': 'conversation'}
 
 
 class Routes:
@@ -32,13 +41,19 @@ class Routes:
             return dict(self._event('route', 'refused', error.code, **about), ok=False)
         held = self.proposal(proposal_id)
         self._event('route', 'applied', route=held['route'], accepted_versions=expected, **about)
+        if document['route'] == 'new_conversation':
+            self._made_conversation(held)
+        if document['route'] in ('new_conversation', 'open_conversation'):
+            self._event('conversation', 'turn', None, decided_by='route', conversation=held.get('conversation'),
+                        sequence=(held.get('turn') or {}).get('sequence'), **about)
         question = self.question(held.get('question_id'))
         if document['route'] == 'unclear' and question:
             source = self._data(held['sources'][0], 'intake_source')
             if source['source_kind'] == 'telegram_message':
                 self._ask(question['question_id'], source['command'])
         return dict(ok=True, outcome='applied', proposal_id=held.get('resolved_to') or proposal_id,
-                    route=held['route'])
+                    route=held['route'], **({'conversation': held['conversation'], 'turn': held.get('turn')}
+                                            if held.get('conversation') else {}))
 
     def resolve_new_project(self, proposal_id, *, project, decision):
         """VELDO-0143: the NEW_PROJECT inbox proposal `proposal_id` moves to the active `project` its settled
@@ -83,14 +98,15 @@ class Routes:
     def _route_plan(self, params):
         if isinstance(params, dict) and 'resolve' in params:
             return self._resolve_plan(params['resolve'] if isinstance(params['resolve'], dict) else {})
+        if isinstance(params, dict) and 'reading' in params:
+            return self._reading_plan(params['reading'] if isinstance(params['reading'], dict) else {})
         doc, pid = params.get('document'), params.get('proposal_id')
         fail = self.route_refused
         if (not isinstance(doc, dict) or doc.get('schema') != SCHEMA
                 or doc.get('route') not in ROUTES or doc.get('proposal_id') != pid
                 or not isinstance(doc.get('reason'), str) or not doc['reason'].strip()
-                or set(doc) != ({'schema', 'proposal_id', 'route', 'reason', 'project'}
-                                if doc.get('route') == 'existing_project' else
-                                {'schema', 'proposal_id', 'route', 'reason'})
+                or set(doc) != ({'schema', 'proposal_id', 'route', 'reason'}
+                                | ({ROUTE_FIELDS[doc['route']]} if doc.get('route') in ROUTE_FIELDS else set()))
                 or not isinstance(params.get('dispatch'), str) or not params['dispatch']):
             raise fail('invalid_input:route')
         held = self._entity(pid)
@@ -123,6 +139,8 @@ class Routes:
         changes = {}
         if doc['route'] == 'new_project':
             data['state'] = 'NEW_PROJECT'
+        elif doc['route'] in ('new_conversation', 'open_conversation'):
+            self._conversation_route(doc, data, pid, principal, changes, reads)
         elif doc['route'] == 'existing_project':
             target = pid + ':routed'
             objective = dict(data, proposal_id=target, proposal='objective', state='PROPOSED', project=chosen,
@@ -134,9 +152,14 @@ class Routes:
             source = self._data(data['sources'][0], 'intake_source')
             reads.append(data['sources'][0])
             options = candidates + ['a new project']
+            # VELDO-0175 AC2: the question also offers a new conversation and the sender's open conversations.
+            conversations = [self.CI.NEW_CONVERSATION] + [
+                'conversation %s%s' % (c['id'], ' (%s)' % c['opening'] if c.get('opening') else '')
+                for c in self.CI.open_conversations(self.conn, principal)]
             question = dict(schema='veldo.intake_question/v1', question_id=qid, proposal_id=pid,
-                principal=principal, asks='project', candidates=options,
-                prompt='Which project is this for? Reply to this message with one of: %s.' % ', '.join(options),
+                principal=principal, asks='project', candidates=options, conversations=conversations,
+                prompt='Which project is this for? Reply to this message with one of: %s. Or, to talk it over: %s.'
+                       % (', '.join(options), ', '.join(conversations)),
                 state='open', asked_on=source['source_kind'], answered_by=None, project=None,
                 delivery=({'channel': 'api', 'request_id': source['source_ref']}
                           if source['source_kind'] == 'api_request' else None))
