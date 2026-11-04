@@ -1959,7 +1959,8 @@ sys.exit(payload.get('code', 0))
                   'lead\'s tools and their aliases, with no LS tool in this build [%s]' % listed,
                   set(listed) <= {'Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'KillBash', 'KillShell', 'Monitor',
                                   'NotebookEdit', 'REPL', 'Read', 'RunWorkflow', 'Skill', 'Task', 'TaskStop', 'TodoWrite',
-                                  'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write'}
+                                  'ToolSearch', 'WebFetch', 'WebSearch', 'SendUserMessage', 'Workflow',
+                                  'Write'}
                   and {'Agent', 'Bash', 'Edit', 'Read', 'Skill', 'Task', 'Write'} <= set(listed)
                   and engine is not None and sorted(getattr(engine, 'IN_RUN', ())) == listed)
             for name in listed:
