@@ -59,3 +59,28 @@ change does not touch) on this host's kernel. Its installed-pack row failed whil
   footprint, so with no binding the Line runs the shipped `code` as version 0 and nothing saves it at setup.
 - Assumption: a first land is started by the landing path, as today; the Line waits at gate, approval and land
   until a land dispatch exists.
+
+## Fix round 1 (review-2026-11-04.md, F1)
+
+The save check (`approval_problems`, engine and `.veldo` copies identical) is now one reachability over the
+product of node and state, the state being nothing approved, approved by A, or changed after A's grant. It is
+complete over every path, cycles and back edges included. The edge out of the last approval before an outward
+node must be the `granted` port of an approval naming that node; any other port, or any port of an approval naming
+another node, leaves nothing approved (missing_owner_approval). A step kind not registered with
+`changes_subject: False` (review, gate, owner_approval, land and end are) turns an approval into a changed one
+(approval_not_last). No requirement was added.
+
+New rows in suite 127, red before the fix (`red-before-f1.txt`, 46 passed, 4 failed) and green after:
+
+- approval/second-approval-stopped: the review's counterexample (A granted, build, B stopped to land). Red, green.
+- approval/declined-edge: an approval with a non-granted `declined` port (registered for the row) to land. Red, green.
+- approval/unproven-step-after: a kind with no subject-preserving mark between the grant and land. Red, green.
+- approval/loop-before-build: land's conflict back edge to before a build whose way on to land is a second
+  approval's stopped port. Red, green.
+- approval/granted-control: granted, preserving steps, land; and the two-approval shape that re-grants. Accepted
+  before and after (a control cannot be red before: the old check already accepted it).
+
+After the fix (single-suite runs, PARTIAL by construction, exit 2): 127 50 passed 0 failed, 59 47/0, 65 42/0,
+70 57/0 (`suite-*-f1.txt`). Falsifiers (`falsifiers-f1.jsonl`): v241-approval-skipped-accepted, re-anchored on
+`if missing:`, still red on approval/side-edge (and on the three new refusal rows that expect
+missing_owner_approval); v241-code-review-before-build and v241-station-reads-head unmoved and red.
