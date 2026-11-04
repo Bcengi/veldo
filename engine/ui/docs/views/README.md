@@ -11,6 +11,7 @@ refusals it shows.
 | Runs | `/runs` | [runs.md](runs.md) |
 | Run | `/runs/<dispatch>` | [run.md](run.md) |
 | Decisions | `/decisions`, `/decisions/<request>` | [decisions.md](decisions.md) |
+| Conversations | `/conversations`, `/conversations/<id>`, `/conversations/<id>/turns/<n>` | [conversations.md](conversations.md) |
 | You | `/you` | [shell.md](shell.md#you) |
 | MCP server form | `/servers`, `/servers/<id>` | [servers.md](servers.md) |
 | Roles | `/roles`, `/roles/<role>` | [roles.md](roles.md) |
