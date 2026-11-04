@@ -41,6 +41,7 @@ footprint:
   - ".veldo/control_workflow_cycle*.py"
   - "scripts/suites/130_veldo_0176_conversation_history.py"
   - "scripts/suites/68_veldo_0126_*.py"
+  - "scripts/suites/68_veldo_0136_hints.py"
   - "scripts/suites/69_*.py"
   - "scripts/suites/93_*.py"
   - "scripts/suites/132_veldo_0175_conversation_routes.py"
@@ -156,3 +157,6 @@ wait-or-move question through the inbox and now answers through settlement, the 
 unclear route question (VELDO-0175 AC2) among the decisions presented through VELDO-0065 and settled by VELDO-0068,
 so the project, intake and PM cycle modules that ask it and the suites that pin how it is asked (68, 69, 93, 132)
 join. Acceptance criteria are unchanged.
+
+2026-11-04: footprint widened by the lead after fix round 1 (proof/VELDO-0181/OPEN.md item 9): suite 68_veldo_0136_hints
+also pins the old way the unclear route question is asked and answered. Acceptance criteria are unchanged.
