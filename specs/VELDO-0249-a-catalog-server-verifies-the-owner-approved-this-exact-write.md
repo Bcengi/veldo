@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0249
 title: An outside catalog server can verify that the owner approved this exact write, through a signed, single-use, short-lived approval token bound to the call and handed only to the run that makes it
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -226,3 +226,5 @@ strings.
 image and video as spend-gated exceptions, each use approved). The connectors plan
 (myday research/veldo-connectors-plan-2026-11-04.md) names this prerequisite P-A and holds every connector's
 commit tools refused until it lands. Standalone.
+
+2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
