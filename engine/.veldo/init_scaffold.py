@@ -179,6 +179,9 @@ _FILES = [
     # VELDO-0175: every conversation reply sent where the owner wrote and every sent message recorded; loaded by
     # the authority service's channel and by intake.
     ".veldo/control_conversation_channel.py",
+    # VELDO-0180: a conversation made a project's work by the owner's typed command; loaded by intake, the PM
+    # cycles and the launch receiver.
+    ".veldo/control_conversation_project.py",
     ".veldo/control_launch.py",
     # VELDO-0141: every run's execution record, which control_launch.py writes and the API authority reads;
     # a runtime asset, no validator import, not REQUIRED_SUBSTRATE.

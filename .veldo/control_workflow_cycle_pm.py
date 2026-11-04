@@ -9,6 +9,12 @@ VELDO-0175: the factory PM's route input lists the sender's open conversations w
 opening words beside his projects, and its routes include a new conversation and an open one. A Telegram reply
 to a conversation message that is no typed command is read here first: the PM reads only the owner's own words
 and returns one reading document (a role change, a project attach, a close, or none), which intake applies.
+
+VELDO-0180: the reading also names the owner's words meaning "make this a project called <name>" (command
+`project`, the name as his words give it), which intake carries out as his conversion command. Each pass first
+carries on the owner's routed conversions (control_conversation_project.follow_up) from what intake recorded of his
+command alone: on the factory line a new project's VELDO-0143 proposal from the command's own document, and on the
+line of an existing project the objective its PM proposes and his command accepts.
 """
 import copy
 import hashlib
@@ -380,8 +386,10 @@ class ProjectCycles:
                                 'return exactly one reading document with schema, proposal_id, command, name and a '
                                 'nonempty reason. command is role when he asks to change the conversation\'s role '
                                 '(name: one listed role), attach when he asks to attach one of his projects (name: one '
-                                'listed project), close when he asks to close it (name null), and none for anything '
-                                'else (name null): then his message is the conversation\'s next turn.')
+                                'listed project), close when he asks to close it (name null), project when he asks '
+                                'to make this conversation a project (name: the project name exactly as his words give '
+                                'it), and none for anything else (name null): then his message is the conversation\'s '
+                                'next turn.')
             if waiting:
                 subject = waiting[0]
                 proposal = row(self.conn, subject['proposal_id'])['data']
@@ -582,9 +590,35 @@ class ProjectCycles:
         self.counts['refused' if record['state'] == 'refused' else 'accepted'] += 1
         return self.save(record)
 
+    def conversions(self):
+        """VELDO-0180: the owner's routed conversions carried on: on the factory line, a new project's proposal from
+        his command's own document; on this line, an existing project's objective proposed by its PM (the accepted
+        team's PM worker, signed by command_sign) and accepted by his command."""
+        CP = organ('control_conversation_project')
+
+        def served(project):
+            data = (row(self.conn, 'project:' + project) or {}).get('data') or {}
+            return data.get('execution_repository') == self.repository
+
+        def manager(project):
+            team = CT.read(self.store, self.conn, project) or {}
+            workers = (((team.get('team') or {}).get('roles') or {}).get('project_manager') or {}).get('workers') or []
+            return workers[0] if served(project) and workers else None
+        factory = getattr(self, 'factory_line', lambda: False)()
+        return CP.follow_up(self.conn, new_projects=self.services.get('new_projects') if factory else None,
+                            objectives=self.services.get('objectives'), pm=manager, pm_sign=self.command_sign,
+                            ids=lambda project: (dict(self.services['objectives'].ids)
+                                                 if served(project) and 'objectives' in self.services else None),
+                            observe=self.observe)
+
     def pass_once(self, automatic_units=()):
         """Called by the factory pass. One active cycle and one coalesced follow-up."""
         emitted = []
+        try:
+            self.conversions()
+        except Exception as error:  # noqa: BLE001 - named in the observations, never the pass's end
+            self.observe(dict(operation='conversion_follow_up',
+                              refusal=getattr(error, 'code', 'unknown_outcome:' + type(error).__name__)))
         projects = [json.loads(r[0]) for r in self.conn.execute("SELECT data FROM entities WHERE kind='project'")]
         for project in projects:
             name = project['name']
@@ -680,6 +714,14 @@ def _cycles(line, store, membership, assignment, ids, signature, allocations, re
                      inbox=inbox, assignment=assignment, requester=service.principal, request_sign=signature,
                      authority_generation=service.generation)
     services = {'inbox': inbox, 'backlog': backlog, 'teams': teams}
+    # VELDO-0180: the objectives of this line's repository, for a conversion into an existing project.
+    try:
+        services['objectives'] = organ('control_objective').Objectives(store, membership, service.conn, ids,
+                                                                        service.principal, service.sign,
+                                                                        authority_generation=service.generation)
+    except Exception as error:  # noqa: BLE001 - a line without it carries no existing-project conversion on
+        getattr(service, '_log', lambda event: None)(dict(kind='pm_cycles', operation='objectives',
+                                                          refusal=getattr(error, 'code', type(error).__name__)))
     publisher = organ('control_document').Publisher(allocations, line.workspace, service.verify,
                                                     service.config['host_identity'])
     services['decomposition'] = organ('control_decomposition').Decomposition(backlog, allocations, publisher)

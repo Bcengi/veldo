@@ -53,6 +53,8 @@ API_FIELDS = ('schema', 'domain', 'request_id', 'edge', 'principal', 'text', 'pr
 # VELDO-0175: the optional field naming a conversation, beside project and clarifies (absent means none, so a
 # command or request without it keeps the content digest it had).
 CONVERSATION_FIELD = 'conversation'
+# VELDO-0180: conversations.make_project's conversion field, beside the conversation it names (absent otherwise).
+CONVERSION_FIELD = CI.CONVERSION_FIELD
 PROPOSAL_STATES = ('PROPOSED', 'AWAITING_ROUTE', 'NEW_PROJECT', 'ROUTED', 'AWAITING_PROJECT', 'RESOLVED',
                    CI.AWAITING_READING, CI.READ)
 TICKET_KEY = re.compile(r'(?<![A-Za-z0-9_-])([A-Za-z][A-Za-z0-9_]*)-[0-9]+(?![A-Za-z0-9_-])')
@@ -156,7 +158,7 @@ def _identifier(value):
 
 def command_problem(command):
     """Why a normalized intake command is malformed, or None."""
-    if (not isinstance(command, dict) or set(command) - {CONVERSATION_FIELD} != set(COMMAND_FIELDS)
+    if (not isinstance(command, dict) or set(command) - {CONVERSATION_FIELD, CONVERSION_FIELD} != set(COMMAND_FIELDS)
             or command['schema'] != COMMAND_SCHEMA):
         return 'invalid_input:command'
     if command['source_kind'] not in SOURCE_KINDS:
@@ -172,6 +174,9 @@ def command_problem(command):
         return 'invalid_input:clarifies'
     if CONVERSATION_FIELD in command and not _identifier(command[CONVERSATION_FIELD]):
         return 'invalid_input:conversation'
+    if CONVERSION_FIELD in command and (CONVERSATION_FIELD not in command
+                                        or not isinstance(command[CONVERSION_FIELD], dict)):
+        return 'invalid_input:conversion'
     if not isinstance(command['provenance'], dict):
         return 'invalid_input:provenance'
     return None
@@ -295,7 +300,9 @@ class Intake(RT.Routes, CI.Conversing):
                              'awaiting_project': sum(1 for p in proposals if p.get('state') == 'AWAITING_PROJECT'),
                              'open_questions': sum(1 for q in self._all(QUESTION_KIND) if q.get('state') == 'open')},
                     conversations=dict(self.conversation_metrics(),
-                                       awaiting_reading=sum(p.get('state') == CI.AWAITING_READING for p in proposals)))
+                                       awaiting_reading=sum(p.get('state') == CI.AWAITING_READING for p in proposals)),
+                    # VELDO-0180: conversions by route and command route, and conversion commands refused.
+                    conversions=CI.CP.metrics(self.observations))
 
     # the entry
 
@@ -421,7 +428,7 @@ class Intake(RT.Routes, CI.Conversing):
     def _api(self, packet):
         request = packet.get('request') if isinstance(packet, dict) else None
         signature = packet.get('signature') if isinstance(packet, dict) else None
-        if (not isinstance(request, dict) or set(request) - {CONVERSATION_FIELD} != set(API_FIELDS)
+        if (not isinstance(request, dict) or set(request) - {CONVERSATION_FIELD, CONVERSION_FIELD} != set(API_FIELDS)
                 or request['schema'] != API_SCHEMA):
             raise Refused('invalid_input:request', 'an API intake request carries exactly its fields')
         if request['domain'] != self.domain:
@@ -442,6 +449,9 @@ class Intake(RT.Routes, CI.Conversing):
         # VELDO-0175 AC1: the optional field naming the conversation the message continues.
         if request.get(CONVERSATION_FIELD) is not None:
             command[CONVERSATION_FIELD] = request[CONVERSATION_FIELD]
+            # VELDO-0180: conversations.make_project's conversion of the conversation it names.
+            if request.get(CONVERSION_FIELD) is not None:
+                command[CONVERSION_FIELD] = request[CONVERSION_FIELD]
         return command
 
     def _edge_verifies(self, request, signature):
@@ -566,6 +576,12 @@ class Intake(RT.Routes, CI.Conversing):
                                                              if k in result}))
         if command.get(CONVERSATION_FIELD) is not None:
             done = self._conversation_done(command, result, steered, done)
+        if result['outcome'] == CI.CP.SOURCE_OUTCOME:
+            # VELDO-0180: the command recorded, intake's routing command carries out the factory's route document.
+            converted = self._converted(result['proposal_id'], self._where(command))
+            done.update({k: converted[k] for k in ('route', 'project', 'routed_to') if k in converted})
+            if not converted.get('ok'):
+                done.update(outcome='refused', reason=converted.get('reason'))
         return done
 
     def _conversation_refused(self, command, code, about):
@@ -575,6 +591,14 @@ class Intake(RT.Routes, CI.Conversing):
         if conversation is None and not typed:
             return self._event('submit', 'refused', code, **about)
         result = self._event('submit', 'refused', code, **about)
+        if (typed and typed[0] == CI.CP.KIND) or command.get(CONVERSION_FIELD) is not None:
+            # VELDO-0180: a conversion command refused, by name; nothing was recorded.
+            event = {'kind': 'conversation_project', 'operation': 'convert', 'outcome': 'refused', 'refusal': None,
+                     'reason': code,
+                     'conversation': conversation, 'principal': command.get('principal'), 'command': about.get('source'),
+                     'command_route': 'telegram' if command.get('source_kind') == 'telegram_message' else 'api'}
+            self.observations.append(event)
+            self.observe(dict(event, domain=self.domain))
         self._event('conversation', 'refused', code, conversation=conversation,
                     command=typed[0] if typed else None, source=about.get('source'),
                     reply_to=(command.get('provenance') or {}).get('reply_to_message_id'))

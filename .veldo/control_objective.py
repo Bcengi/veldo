@@ -91,6 +91,11 @@ Each transition appends one entry to the record's `history` and never changes an
 project that is not ACTIVE, amend, accept, accept_message, propose_feature and assess refuse
 project_not_active:<state>.
 
+VELDO-0180: an objective proposed from a conversion's proposal (the owner's typed command made a conversation the
+project's work) binds, from that intake proposal alone, the conversation id and the digests and stored paths of the
+conversation's rendering and workspace snapshot (`conversation`); its proposing source, for accept_message, is the
+owner's command intake recorded the conversion from.
+
 STATED LIMITS. One project per objective and one acceptor, the project's owner (objectives spanning
 projects and additional owners are Release 3). Units of a stopped feature are not reached here: a
 feature this service writes is never admitted by it, so no unit exists under it unless a later admission
@@ -276,6 +281,10 @@ def proposing_source(conn, proposal_id):
         if (data.get('proposal_id') == proposal_id and isinstance(data.get('result'), dict)
                 and data['result'].get('outcome') in PROPOSING_OUTCOMES):
             found.append((key, data))
+    if not found:
+        # VELDO-0180: an objective proposal a conversion route moved here is proposed by the owner's typed command.
+        converted = _organ('control_conversation_project').conversion_source(conn, proposal_id)
+        found = [converted] if converted and proposal['data'].get('resolves') else []
     return found[0] if len(found) == 1 else None
 
 
@@ -588,6 +597,10 @@ class Objectives:
                     accepted_revision=None, acceptance=None, features=[], assessment=None, cancellation=None,
                     continues=continues, provenance={'source': 'propose', 'created_by': entry['by'], 'created_at': entry['at']},
                     history=[dict(entry, source=None, target='PROPOSED', revision=1)])
+        conversion = _organ('control_conversation_project').conversion_of(found)
+        if conversion is not None and isinstance(conversion.get('inputs'), dict):
+            # VELDO-0180: the conversation's history and workspace snapshot, bound by digest from the intake proposal.
+            data['conversation'] = json.loads(json.dumps(conversion['inputs']))
         return {oid: {'kind': KIND, 'data': data}}
 
     def _amend(self, conn, command, params, data, project, entry):

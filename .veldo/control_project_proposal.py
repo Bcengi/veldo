@@ -88,6 +88,12 @@ THE RECORD. states: presenting, presented, correcting, settled, rejected, failed
 history entry and never changes an earlier one. Observations name the intake proposal, the decision, the
 project, the identity and the request, never the message text, a token or a signature.
 
+VELDO-0180: A CONVERSION. A new project the owner's typed command made of a conversation (control_conversation_project)
+is proposed from the factory's document of that command, never from a PM run's, and the factory PM never reads it
+(pending). The command is his own typed message (the intake source of the conversion), so it is its own answer and
+nothing is presented exactly when the command names the identity, the repository shown is private and the proposal
+names the command's project and identity (nothing_asked); with no identity the proposal is presented once.
+
 Standard library only; every organ is loaded as a sibling by path.
 """
 import hashlib
@@ -489,6 +495,10 @@ def intake_source(conn, intake_proposal):
         data = row['data'] if row is not None and row['kind'] == INTAKE_SOURCE else {}
         if data.get('proposal_id') == intake_proposal and (data.get('result') or {}).get('outcome') == 'inbox':
             found.append((key, data))
+    if not found:
+        # VELDO-0180: a conversion proposal's message is the owner's typed command it was recorded from.
+        converted = organ('control_conversation_project').conversion_source(conn, intake_proposal)
+        found = [converted] if converted and not proposal['data'].get('resolves') else []
     if len(found) != 1:
         return None
     key, data = found[0]
@@ -685,6 +695,20 @@ def nothing_asked(conn, intake, proposal, owner):
     source = found[1] if found else {}
     if not owner or source.get('principal') != owner or (intake or {}).get('principal') != owner:
         reasons.append('not_the_owners_message')
+    conversion = organ('control_conversation_project').conversion_of(intake)
+    if conversion is not None:
+        # VELDO-0180: his typed command is structured: its project and identity are its own fields, not read words.
+        if conversion.get('owner') != owner:
+            reasons.append('not_the_owners_message')
+        if not isinstance(proposal, dict) or not proposal.get('identity'):
+            reasons.append('identity_not_named')
+        elif proposal['identity'] != conversion.get('identity'):
+            reasons.append('identity_not_in_message')
+        if not isinstance(proposal, dict) or visibility_of(proposal) != 'private':
+            reasons.append('visibility_not_private')
+        if not isinstance(proposal, dict) or proposal.get('project') != conversion.get('project'):
+            reasons.append('project_not_in_message')
+        return reasons
     text = (intake or {}).get('text')
     # VELDO-0143 round 7: an identity read from his words binds only where nothing in them could mean otherwise;
     # any doubt presents it, and the identity is picked.
@@ -856,6 +880,9 @@ def pending(conn):
                                           (INTAKE_PROPOSAL,)):
         data = json.loads(raw)
         if data.get('project') != FACTORY_PROJECT or data.get('state') != NEW_PROJECT_STATE:
+            continue
+        if organ('control_conversation_project').conversion_of(data) is not None and eid not in decided:
+            # VELDO-0180: a conversion's new project is proposed from his command's own document, never by the PM.
             continue
         record = decided.get(eid)
         if record is None:

@@ -177,6 +177,9 @@ ACTIONS = (
            'OPERATION', 'VELDO-0174'),
     Action('conversation_attach', 'conversations.attach_project', 'attach_conversation_project',
            'control_conversation', 'OPERATION', 'VELDO-0177'),
+    # VELDO-0180: the owner's typed command making a conversation a project's work, recorded by intake.
+    Action('conversation_make_project', 'conversations.make_project', 'make_conversation_project', 'control_intake',
+           'RECORD', 'VELDO-0180'),
 )
 
 GAPS = (

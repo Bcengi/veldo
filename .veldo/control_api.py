@@ -86,6 +86,9 @@ A conversation of anyone else is refused missing_authority:conversation_owner, w
 execution record is served on the record routes above to the conversation's owner alone. Each conversation route
 call is observed with its principal, route, conversation id, outcome and the API request id its command carries,
 and counted by route and outcome (`conversation_metrics`); never a message's text.
+VELDO-0180: `conversations.make_project` (the conversation, the version he saw, a project name, optionally the
+objective in his words and a Git identity) is the owner's typed command making the conversation a project's work: an
+intake request the edge signs, as messages.send is, carrying the command as its `conversion` field.
 
 ACTIONS (AC4). The UI action contract is control_api_models.ACTIONS: each action with a route is a POST
 here whose operation the authority executes as the named existing command (a workflow save is VELDO-0132's
@@ -222,6 +225,9 @@ ROUTES = (
           ('conversation', 'version', 'role'), (), 'change_conversation_role'),
     Route('conversations.attach_project', 'POST', '/api/v1/domains/{domain}/conversations/attach', 'conversations',
           True, ('conversation', 'version', 'project'), (), 'attach_conversation_project'),
+    # VELDO-0180: the owner's typed command making a conversation a new or existing project's work.
+    Route('conversations.make_project', 'POST', '/api/v1/domains/{domain}/conversations/project', 'conversations',
+          True, ('conversation', 'version', 'project'), ('objective', 'identity'), 'make_conversation_project'),
     Route('events.read', 'GET', '/api/v1/domains/{domain}/events', 'events', True, (), ('after',), None),
     Route('events.stream', 'GET', '/api/v1/domains/{domain}/events/stream', 'events', True, (), ('after',), None),
     # VELDO-0141: one run's execution record, read from a cursor and followed live.
@@ -490,7 +496,8 @@ class ControlApi:
         self.handlers.update({'backlog.reprioritize': self._write, 'workers.stop': self._write, 'workers.cap': self._write})
         self.handlers.update({'conversations.read': self._conversations_read, 'conversations.open': self._write,
                               'conversations.close': self._write, 'conversations.set_role': self._write,
-                              'conversations.attach_project': self._write})
+                              'conversations.attach_project': self._write,
+                              'conversations.make_project': self._write})
         # VELDO-0178: conversation route calls by route and outcome.
         self.conversation_counts = {}
         self.handlers.update({m.route: self._read for m in MO.READ_MODELS})
@@ -807,7 +814,8 @@ class ControlApi:
             expected = {'dispatch:' + str(parameters['dispatch']): parameters['dispatch_version']}
         elif route.operation == 'set_account_cap':
             expected = {'account:' + str(parameters['account']): parameters['account_version']}
-        elif route.operation in ('close_conversation', 'change_conversation_role', 'attach_conversation_project'):
+        elif route.operation in ('close_conversation', 'change_conversation_role', 'attach_conversation_project',
+                                 'make_conversation_project'):
             expected = {'conversation:' + str(parameters['conversation']): parameters['version']}
         target = {'save_capability_configuration': 'agent_configuration', 'propose_team': str(parameters.get('project')),
                   'save_default_team': 'default_team', 'send_message': self.domain, 'answer_decision': str(parameters.get('request_id')),
@@ -819,7 +827,8 @@ class ControlApi:
                   'open_conversation': 'conversation',
                   'close_conversation': 'conversation:' + str(parameters.get('conversation')),
                   'change_conversation_role': 'conversation:' + str(parameters.get('conversation')),
-                  'attach_conversation_project': 'conversation:' + str(parameters.get('conversation'))}[route.operation]
+                  'attach_conversation_project': 'conversation:' + str(parameters.get('conversation')),
+                  'make_conversation_project': 'conversation:' + str(parameters.get('conversation'))}[route.operation]
         assertion = dict(self.ids, schema=AS.SCHEMA, domain=self.domain, channel=AS.CHANNEL, edge=self.edge,
                          edge_key_id=AC.edge_channel(AS.CHANNEL)['edge_key_id'], request_id=request_id,
                          principal=session['principal'], credential_id=session['credential_id'],
@@ -854,7 +863,7 @@ class ControlApi:
                 'settlement', 'ruling', 'workflow', 'version', 'revision', 'entity_digest', 'definition_digest',
                 'layout_digest', 'server', 'id', 'reference', 'seq', 'role', 'digest', 'team_id', 'owner_request',
                 'team_application', 'set_at', 'set_by', 'rank', 'dispatch', 'state', 'stop', 'account', 'concurrency',
-                'conversation', 'status')
+                'conversation', 'status', 'route', 'routed_to')
         return 200, dict({k: result[k] for k in keep if k in result}, api_request_id=request_id)
 
     @staticmethod

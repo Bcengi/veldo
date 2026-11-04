@@ -22,6 +22,15 @@ turn 1; an open conversation of the sender's, named by id, takes it as its next 
 proposal ROUTED, pointing at the conversation. A route naming a conversation that is not an open one of the
 sender's is refused by name (invalid_input:route:conversation) and changes nothing.
 
+VELDO-0180: the owner's typed command makes the conversation a project's work: on Telegram `/project <name>
+[objective]` in reply to one of its messages, or his own words the PM reads as the `project` command (its name a whole
+word of his message, the objective his words after it); in the API the `conversion` field of
+`conversations.make_project`. Intake records the command as a conversion proposal of the factory (state CONVERTING,
+never read by the factory PM) with the conversation's inputs bound (control_conversation_project), and intake's
+routing command carries out the route document the factory builds from the command alone. From anyone but the owner
+it is refused missing_authority:conversation_owner, with no name invalid_input:conversation_command:project_name;
+an out-of-scope route by VELDO-0152 AC4's names; each before anything is recorded.
+
 Observations name the conversation, its turn or command and how the message was decided, never its text.
 """
 import copy
@@ -41,15 +50,20 @@ def _organ(name):
 
 CV = _organ('control_conversation')
 CC = _organ('control_conversation_channel')
+CP = _organ('control_conversation_project')
 READING_SCHEMA = 'veldo.conversation_reading/v1'
-COMMANDS = {'/role': 'role', '/attach': 'attach', '/close': 'close'}
-READ_COMMANDS = ('role', 'attach', 'close', 'none')
+COMMANDS = {'/role': 'role', '/attach': 'attach', '/close': 'close', CP.COMMAND: CP.KIND}
+READ_COMMANDS = ('role', 'attach', 'close', CP.KIND, 'none')
+# VELDO-0180: the API's conversion field (conversations.make_project) beside the conversation it names.
+CONVERSION_FIELD = 'conversion'
+CONVERSION_FIELDS = ('version', 'project', 'objective', 'identity')
 AWAITING_READING, READ = 'AWAITING_READING', 'READ'
 OPENING_WORDS = 12
 NEW_CONVERSATION = 'a new conversation'
 # The refusals a conversation message is answered with: one line on the channel it came on.
 TOLD = ('missing_authority:conversation_owner', 'stale_subject:conversation_closed',
-        'invalid_input:conversation_command', 'invalid_input:conversation:unknown')
+        'invalid_input:conversation_command', 'invalid_input:conversation:unknown', 'unauthorized:project',
+        'invalid_input:factory_project', 'stale_version')
 
 
 def typed_command(text):
@@ -136,8 +150,12 @@ class Conversing:
         """How a message naming a conversation is decided: `turn` (an API message), `command` (a Telegram reply that
         starts with a typed command) or `reading` (any other Telegram reply, read by the factory PM)."""
         if command['source_kind'] != 'telegram_message':
-            return 'turn'
-        return 'command' if typed_command(command['text']) is not None else 'reading'
+            # VELDO-0180: conversations.make_project carries the conversion field; any other API message is a turn.
+            return 'conversion' if command.get(CONVERSION_FIELD) is not None else 'turn'
+        typed = typed_command(command['text'])
+        if typed is not None and typed[0] == CP.KIND:
+            return 'conversion'
+        return 'command' if typed is not None else 'reading'
 
     def _conversation_plan(self, command, key, source, read, reads):
         """(changes, result) of a message naming a conversation, owned and open, or refused by name."""
@@ -159,6 +177,8 @@ class Conversing:
             turn = self._turn_changes(identity, principal, key, source['content_digest'], read, changes)
             result = {'outcome': 'turn', 'conversation': identity, 'sequence': turn['sequence'],
                       'decided_by': decided_by}
+        elif decision == 'conversion':
+            result = self._conversion_plan(command, key, source, row, changes)
         elif decision == 'reading':
             pid = self._proposal_id(key)
             changes[pid] = {'kind': 'intake_proposal', 'data': {
@@ -186,6 +206,125 @@ class Conversing:
             raise self.route_refused(error.code, error.detail) from None
         changes.update(planned)
         return next(item['data'] for item in planned.values() if item['kind'] == CV.TURN_KIND)
+
+    # -- the owner's command making the conversation a project's work (VELDO-0180) ------------------------------
+
+    def _conversion(self, row, principal, version, name, objective, identity, command_key, command_route):
+        """The conversion block of the owner's command on conversation `row`: its route (a project the store records
+        by name or id, else a new project of that name), project, objective (his words, else the conversation's first
+        message), identity and the conversation's bound inputs. Refused by name before anything is recorded."""
+        NP = CP._organ('control_project_proposal')
+        record = row['data']
+        if record.get('owner') != principal:
+            raise self.route_refused(CP.OWNER_REFUSAL)
+        if not (isinstance(name, str) and name.strip()):
+            raise self.route_refused(CP.NAME_REFUSAL)
+        if record.get('status') != 'open':
+            raise self.route_refused('stale_subject:conversation_closed')
+        if type(version) is not int or version != record.get('version'):
+            raise self.route_refused('stale_version')
+        route, project = CP.route_of(self.conn, name)
+        if route == 'existing_project':
+            member = self._entity(principal)
+            scope = member['data'].get('scope') if member and member['kind'] == 'membership' else None
+            if project == 'factory':
+                raise self.route_refused('invalid_input:factory_project')
+            if project not in self.projects or not self.CM.scope_covers(scope, project):
+                raise self.route_refused('unauthorized:project', project)
+        elif not NP._NAME.match(project):
+            raise self.route_refused(CP.NAME_REFUSAL, project)
+        objective = objective if isinstance(objective, str) and objective.strip() else CP.first_message(
+            self.conn, record['id'])
+        if not (isinstance(objective, str) and objective.strip()):
+            raise self.route_refused('invalid_input:conversation_command:objective')
+        cache = self.__dict__.setdefault('_conversion_inputs', {})
+        if command_key not in cache:
+            conversations = self._conversations()
+            if conversations is None:
+                raise self.route_refused('unsupported_configuration:conversations')
+            cache[command_key] = CP.bind(self.conn, conversations.records, conversations.state_root, record, project)
+        return {'conversation': record['id'], 'version': record.get('version'), 'command': command_key,
+                'command_route': command_route, 'route': route, 'project': project, 'objective': objective.strip(),
+                'identity': identity, 'owner': principal, 'inputs': cache[command_key]}
+
+    def _telegram_identity(self, text):
+        """The one configured Git identity his command names as a whole word (VELDO-0143's word rule), else None."""
+        NP = CP._organ('control_project_proposal')
+        named = NP.identities_named(text or '', NP.GI.records(self.conn, self.domain))
+        return named[0] if len(named) == 1 else None
+
+    def _conversion_plan(self, command, key, source, row, changes):
+        """VELDO-0180: the owner's command recorded as the factory's conversion proposal, routed after it commits."""
+        if command['source_kind'] == 'telegram_message':
+            name, objective = CP.parse(command['text'])
+            given = {'version': row['data'].get('version'), 'project': name, 'objective': objective,
+                     'identity': self._telegram_identity(objective)}
+        else:
+            given = command.get(CONVERSION_FIELD)
+            if not isinstance(given, dict) or set(given) - set(CONVERSION_FIELDS):
+                raise self.route_refused('invalid_input:conversion')
+        conversion = self._conversion(row, command['principal'], given.get('version'), given.get('project'),
+                                      given.get('objective'), given.get('identity'), key,
+                                      'telegram' if command['source_kind'] == 'telegram_message' else 'api')
+        pid = self._proposal_id(key)
+        changes[pid] = {'kind': 'intake_proposal', 'data': self._conversion_proposal(
+            pid, command['principal'], command['text'], [key], source['context'], conversion)}
+        return {'outcome': CP.SOURCE_OUTCOME, 'proposal_id': pid, 'conversation': conversion['conversation'],
+                'route': conversion['route'], 'project': conversion['project'], 'decided_by': 'command'}
+
+    def _conversion_proposal(self, pid, principal, text, sources, context, conversion):
+        return {'schema': 'veldo.intake_proposal/v1', 'proposal_id': pid, 'proposal': 'conversion',
+                'state': CP.CONVERTING, 'domain': self.domain, 'project': 'factory',
+                'conversation': conversion['conversation'], 'principal': principal, 'text': text,
+                'sources': list(sources), 'clarifications': [], 'question_id': None, 'resolves': None,
+                'resolved_to': None, 'hints': [], 'context': context,
+                'decision': {'decided_by': CP.DECIDED_BY, 'conversation': conversion['conversation']}, 'route': None,
+                'conversion': conversion}
+
+    def _converted(self, proposal_id, where):
+        """After the conversion proposal committed: intake's routing command carries out the route document the
+        factory built from the command alone; the owner is told one line on Telegram."""
+        held = self.proposal(proposal_id) or {}
+        conversion = CP.conversion_of(held) or {}
+        about = {'kind': 'conversation_project', 'operation': 'convert', 'proposal_id': proposal_id,
+                 'conversation': conversion.get('conversation'), 'command': conversion.get('command'),
+                 'command_route': conversion.get('command_route'), 'route': conversion.get('route'),
+                 'project': conversion.get('project'),
+                 'rendering_digest': ((conversion.get('inputs') or {}).get('rendering') or {}).get('digest'),
+                 'snapshot_digest': ((conversion.get('inputs') or {}).get('snapshot') or {}).get('digest')}
+        routed = self.route(CP.document(proposal_id, conversion), dispatch=conversion.get('command'),
+                            proposal_id=proposal_id)
+        if not routed.get('ok'):
+            event = dict(about, outcome='refused', refusal=None, reason=routed.get('reason'))
+            self.observations.append(event)
+            self.observe(dict(event, domain=self.domain))
+            if where and refused_told(str(routed.get('reason'))):
+                self._tell(where, self.refusal_line(routed.get('reason')), kind='refusal',
+                           conversation=conversion.get('conversation'))
+            return dict(routed, outcome='refused')
+        moved = routed.get('proposal_id')
+        event = dict(about, outcome='converted', refusal=None, routed_to=moved)
+        self.observations.append(event)
+        self.observe(dict(event, domain=self.domain))
+        if where:
+            line = ('Conversation %s is now the work of %s project %s; it stays open.'
+                    % (conversion['conversation'], 'the new' if conversion['route'] == 'new_project' else 'your',
+                       conversion['project']))
+            self._tell(where, line, kind='answer', conversation=conversion['conversation'], ref=CP.KIND)
+        return dict(ok=True, outcome='converted', proposal_id=proposal_id, routed_to=moved,
+                    route=conversion['route'], project=conversion['project'],
+                    conversation=conversion['conversation'])
+
+    def _conversion_reading(self, held, reading, source):
+        """VELDO-0180: the PM read his own words as the project command: the name must be a whole word of his
+        message (else invalid_input:conversation_command:project_name), the objective his words after it."""
+        text = source['command']['text']
+        found, rest = CP.words_after(text, reading.get('name'))
+        if not found:
+            raise self.route_refused(CP.NAME_REFUSAL)
+        row = self._owned_open(held['conversation'], held['principal'])
+        return self._conversion(row, held['principal'], row['data'].get('version'), reading['name'], rest,
+                                self._telegram_identity(rest), held['sources'][0], 'telegram')
 
     # -- the typed commands (AC4) -------------------------------------------------------------------------------
 
@@ -288,7 +427,10 @@ class Conversing:
                 # Every reading, `none` included: a conversation no longer his open one (closed after the reply
                 # was held, or gone) settles the held message READ by its named refusal, told once, no turn.
                 self._owned_open(held['conversation'], held['principal'])
-                if reading['command'] != 'none':
+                if reading['command'] == CP.KIND:
+                    outcome = 'conversion'
+                    detail = {'conversion': self._conversion_reading(held, reading, source)}
+                elif reading['command'] != 'none':
                     outcome = 'command'
                     line, detail = self._steer(held['conversation'], held['principal'], reading['command'],
                                                reading.get('name'), held['sources'][0])
@@ -310,6 +452,11 @@ class Conversing:
         except (self.route_refused, self.store.StoreRefused) as error:
             return dict(self._event('reading', 'refused', error.code, **about), ok=False)
         done = self.proposal(proposal_id)
+        if outcome == 'conversion':
+            converted = self._converted(proposal_id, where)
+            outcome = 'conversion' if converted.get('ok') else 'refused'
+            detail = dict(detail, routed=converted.get('routed_to'), refusal=None if converted.get('ok')
+                          else converted.get('reason'))
         if outcome == 'command' and line:
             self._tell(where, line, kind='answer', conversation=held['conversation'], ref=reading['command'])
         self._event('conversation', outcome, None, decided_by='reading', conversation=held['conversation'],
@@ -327,7 +474,7 @@ class Conversing:
                 or document.get('proposal_id') != proposal_id or document.get('command') not in READ_COMMANDS
                 or not isinstance(document.get('reason'), str) or not document['reason'].strip()
                 or set(document) - {'schema', 'proposal_id', 'command', 'name', 'reason'}
-                or (document['command'] in ('role', 'attach')
+                or (document['command'] in ('role', 'attach', CP.KIND)
                     and not (isinstance(document.get('name'), str) and document['name'].strip()))
                 or (document['command'] in ('close', 'none') and document.get('name') is not None)):
             raise fail('invalid_input:reading')
@@ -357,6 +504,18 @@ class Conversing:
         reads, changes = [pid, data['sources'][0]], {}
         data.update(state=READ, reading=dict(reading, dispatch=params.get('dispatch'), outcome=params.get('outcome'),
                                              detail=params.get('detail') or {}))
+        if params.get('outcome') == 'conversion':
+            # VELDO-0180: his words read as the project command: this held message is the conversion proposal.
+            conversion = (params.get('detail') or {}).get('conversion')
+            row = self._owned_open(data['conversation'], data['principal'])
+            source = self._data(data['sources'][0], 'intake_source')
+            if (not isinstance(conversion, dict) or conversion.get('conversation') != data['conversation']
+                    or conversion.get('command') != data['sources'][0] or conversion.get('owner') != data['principal']
+                    or conversion.get('version') != row['data'].get('version')
+                    or not CP.words_after(source['command']['text'], (params.get('document') or {}).get('name'))[0]):
+                raise fail('invalid_input:reading')
+            data.update(self._conversion_proposal(pid, data['principal'], data['text'], data['sources'],
+                                                  data.get('context'), conversion), reading=data['reading'])
         if params.get('outcome') == 'turn':
             row = self._owned_open(data['conversation'], data['principal'])
             source = self._data(data['sources'][0], 'intake_source')

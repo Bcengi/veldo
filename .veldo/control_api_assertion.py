@@ -76,6 +76,9 @@ OPERATIONS = {
     'change_conversation_role': {'parameters': ('conversation', 'version', 'role'), 'boundary': 'command_acceptance'},
     'attach_conversation_project': {'parameters': ('conversation', 'version', 'project'),
                                     'boundary': 'command_acceptance'},
+    # VELDO-0180: the owner's typed command making a conversation a project's work, an intake request.
+    'make_conversation_project': {'parameters': ('conversation', 'version', 'project', 'objective', 'identity'),
+                                  'optional': ('objective', 'identity'), 'boundary': 'proposal_commit'},
 }
 
 CALL = 'api_call'
@@ -159,6 +162,15 @@ def domain_request(a):
             # VELDO-0175 AC1: a message naming its conversation; an absent field keeps the request (and its digest).
             request['conversation'] = p['conversation']
         return request
+    if a['operation'] == 'make_conversation_project':
+        # VELDO-0180: his command as an intake request naming the conversation, its conversion field the command.
+        objective = p.get('objective') if isinstance(p.get('objective'), str) and p['objective'].strip() else None
+        return {'schema': IN.API_SCHEMA, 'domain': a['domain'], 'request_id': a['request_id'], 'edge': a['edge'],
+                'principal': a['principal'], 'text': ' '.join(['/project', str(p['project'])] + ([objective] if objective
+                                                                                            else [])),
+                'project': None, 'clarifies': None, 'conversation': p['conversation'],
+                'conversion': {'version': p['version'], 'project': p['project'], 'objective': objective,
+                               'identity': p.get('identity')}}
     if a['operation'] == 'answer_decision':
         return dict({f: a[f] for f in IDS}, schema=ST.API_SCHEMA, edge=a['edge'], answer_id=a['request_id'],
                     principal=a['principal'], request_id=p['request_id'], request_version=p['request_version'],

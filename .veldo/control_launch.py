@@ -195,6 +195,13 @@ from the kernel that nothing of the run is left and commits the reservation serv
 
 WHAT IT IS NOT. No recovery of an unknown dispatch, leadership fencing or crash-safe retirement
 (Release 2), and no model API. Standard library only.
+
+CONVERSATION INPUTS (VELDO-0180 AC2). A project's PM run, and the first build run of a unit under an objective
+the owner made a conversation into, carry the conversation's rendering and workspace snapshot as input artifacts
+(`input_artifacts`: name, objective, conversation, stored path, bound digest), added at preparation from the
+objective's binding (control_conversation_project.run_inputs). Before acceptance the receiver checks each against
+the objective's binding now and its file's digest, refusing binding_mismatch:conversation_snapshot with nothing
+spawned. The source stays the trunk commit: a bundle is only an input the builder may apply.
 """
 import contextlib
 import copy
@@ -634,6 +641,12 @@ class Runner:
             data = json.loads(row[0]) if row else {}
             claim = {'entity': entity, 'holder': data.get('holder'), 'generation': data.get('generation')}
         dispatch_id = 'dispatch/%s/%s' % (unit, uuid.uuid4().hex)
+        # VELDO-0180 AC2: a project's PM run, and the first build run of a unit under an objective a conversation was
+        # made into, receive the conversation's rendering and workspace snapshot as input artifacts, by bound digest.
+        given = _organ('control_conversation_project').run_inputs(
+            self.dispatches.conn, station, unit, project, self.dispatches.attempts(unit, station) + 1)
+        if given:
+            payload = dict(payload or {}, input_artifacts=given)
         account = self.account
         if hasattr(account, 'reserve'):
             # VELDO-0160: an account pool (control_account_pool.Pool) chooses the account inside the slot's
@@ -1381,6 +1394,22 @@ class Receiver:
                 return problem
             finally:
                 reader.close()
+        # VELDO-0180 AC2: the conversation inputs a project run receives, checked against their bound digests before
+        # anything is accepted or spawned (binding_mismatch:conversation_snapshot).
+        reader = S.open_store(self.config['store'], mode='r')
+        try:
+            problem = _organ('control_conversation_project').launch_problem(reader, contract)
+        finally:
+            reader.close()
+        given = ((contract.get('input') or {}).get('payload') or {}).get('input_artifacts')
+        if given:
+            self.emit({'event': 'conversation_inputs', 'dispatch_id': contract['dispatch_id'], 'unit': contract['unit'],
+                       'station': contract['station'], 'refusal': problem,
+                       'inputs': [{k: a.get(k) for k in ('name', 'objective', 'conversation', 'digest')}
+                                  for a in given if isinstance(a, dict)],
+                       'metrics': {'conversation_input_refusals': int(problem is not None)}})
+        if problem:
+            return problem
         EL = _organ('control_eligibility')
         try:
             settlements = self._settlement_trust(EL)

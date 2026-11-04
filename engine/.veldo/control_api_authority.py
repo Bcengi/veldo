@@ -619,7 +619,8 @@ class ApiAuthority:
         if person.get('principal_type') not in AC.BOUNDARIES[boundary] or person.get('principal_type') != 'person':
             raise Refused('unauthorized:boundary', 'the member is not admitted at %s' % boundary)
         derived = AS.domain_request(a)
-        if a['operation'] == 'send_message':
+        if a['operation'] in ('send_message', 'make_conversation_project'):
+            # VELDO-0180: the conversion command is an intake request too, the edge's signature over it.
             return self.intake.receive('api_request', {'request': derived, 'signature': packet.get('domain_signature')})
         if a['operation'] == 'answer_decision':
             # VELDO-0145 AC3: a member whose scope does not cover the request's projects (for example a scope
@@ -795,7 +796,7 @@ class ApiAuthority:
 
     def commands(self):
         """Each operation and the store command it executes, for the route-to-command comparison."""
-        return {'send_message': AS.IN.RECORD, 'answer_decision': AS.ST.API, 'revoke_credential': CR.REVOKE,
+        return {'send_message': AS.IN.RECORD, 'make_conversation_project': AS.IN.RECORD, 'answer_decision': AS.ST.API, 'revoke_credential': CR.REVOKE,
                 'save_workflow': WF.SAVE, MC.SAVE: MC.SAVE, CV.SET: CV.SET, CV.DELETE: CV.DELETE,
                 'save_capability_configuration': 'save_agent_configuration', 'propose_team': 'team_operation',
                 'save_default_team': 'save_default_team_revision', 'reprioritize_backlog': BL.OPERATION,
