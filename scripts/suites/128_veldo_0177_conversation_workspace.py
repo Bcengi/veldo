@@ -555,10 +555,13 @@ for raw in sys.stdin:
                           {'name': 'fixture-project', 'owner': 'owner', 'execution_repository': repository_uuid})
         authority.fixture('project:foreign-project', 'project',
                           {'name': 'foreign-project', 'owner': 'steward', 'execution_repository': repository_uuid})
+        # Another owner's project whose execution repository is bound nowhere here (VELDO-0177 fix round 2, F1).
+        authority.fixture('project:foreign-unbound', 'project',
+                          {'name': 'foreign-unbound', 'owner': 'steward', 'execution_repository': 'never-bound-here'})
         owner_roles = CV._row(authority.conn, 'owner')['data']['roles']
         authority.admin('steward', 'change_roles', {'principal': 'owner', 'roles': owner_roles,
                                                     'scope': ['activation-repository', 'fixture-project',
-                                                              'foreign-project']})
+                                                              'foreign-project', 'foreign-unbound']})
         service = CS.Service(J.service_config(f, CS), authority.conn)
         service._conversations = conversations
 
@@ -593,6 +596,28 @@ for raw in sys.stdin:
         check('AC3/scope', 'a project outside the owner\'s own is refused by name, and nothing is cloned [%s]'
               % foreign.get('reason'), foreign == {'ok': False, 'reason': 'missing_authority:project'}
               and not (Path(CV.workspace_of(record)) / 'projects' / 'foreign-project').exists()
+              and conversations.read('attached')['version'] == 2)
+        # Observed, not inferred from the refusal: every repository lookup and trunk read the attach makes is
+        # recorded while another owner's project with an unbound repository is attached.
+        reads, real_source, real_bound = [], CV.project_source, CV.S.bound_repository
+
+        def source_seen(conn, domain_, project):
+            reads.append(('project_source', project))
+            return real_source(conn, domain_, project)
+
+        def bound_seen(conn, domain_, repository):
+            reads.append(('bound_repository', repository))
+            return real_bound(conn, domain_, repository)
+        CV.project_source, CV.S.bound_repository = source_seen, bound_seen
+        try:
+            unbound = owner_command(CV.ATTACH, {'conversation': 'attached', 'version': 2,
+                                                'project': 'foreign-unbound'})
+        finally:
+            CV.project_source, CV.S.bound_repository = real_source, real_bound
+        check('AC3/scope', 'another owner\'s project with an unbound repository is refused by name, its repository '
+              'never read [%s %s]' % (unbound.get('reason'), reads),
+              unbound == {'ok': False, 'reason': 'missing_authority:project'} and reads == []
+              and not (Path(CV.workspace_of(record)) / 'projects' / 'foreign-unbound').exists()
               and conversations.read('attached')['version'] == 2)
         authority.admin('steward', 'change_roles', {'principal': 'owner', 'roles': owner_roles,
                                                     'scope': ['activation-repository']})
