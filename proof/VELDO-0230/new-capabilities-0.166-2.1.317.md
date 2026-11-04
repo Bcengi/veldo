@@ -102,12 +102,16 @@ Suite 78_0160 compares the Claude Code stream reader's own tables with the binar
 | 14 system messages (`file_attachments_missing`, `inherited_asks_settled`, `instruction_size_warning`, `permission_check_status`, `session_title_changed`, `session_writes_lost`, `ui_focus`, `ui_invalidate`, `ui_log`, `ui_panes`, `ui_placed`, `ui_scroll`, `ui_status`, `ui_toast`) | Status and UI frames of the stream | The reader knows them as messages | None: no tool call in their schema | granted: read as known messages |
 | frame `system/session_metadata` | Session metadata outside the message union | The reader takes it as tool-free | None: its schema carries no tool call | granted: tool-free frame |
 | tool fields `assistant tool_use_meta.tool_name`, `result process_turn_states.tool`, `.agent_tool`, `tool_schema_build_detail(.tools)` | A display copy of a block's tool name; diagnostic state of an error result | The reader reads them as free | None: no call of their own | granted: free fields |
+| tool fields `system/permission_check_status tool_use_id`, `user tool_result_meta.built_in_tool`, `user tool_states` (fix round 2: the extractor lists them; round 1 had not) | The id of a call waiting on its permission check; the built-in tool whose run made a result block (display metadata); the MCP App view states a remote client sends with a prompt | The reader reads them as free | None: no call of their own (the call is its tool_use block) | granted: free fields |
+| `_host` tools gain `TaskStop` | TaskStop takes a `_host` too | The reader checks its `_host` as the other tools' | None: more calls checked | the binary's own table (no decision needed) |
 | `REPL` leaves the in-run tools; the nested REPL inner call is gone | The binary no longer has the REPL tool | Nothing to do | None | not_applicable: absent from this build |
 | `_host` routing now behind `CLAUDE_CODE_REMOTE_TOOLS_FORWARD` (was off in the build) | Routes a file tool or Bash to another machine | No | Work outside the run's host | off (VELDO-0160 AC3): the switch is stripped from the inherited environment and refused when configured (control_engine_claude CREDENTIALS) |
 
-Applied: the switch. Open: the reader's tables (MESSAGES, TOOL_FREE_FRAMES, TOOL_FIELDS, NESTED, IN_RUN_TOOLS,
-IN_RUN_HOST) are module literals equal to 2.1.281's and pinned by mutation anchors; suite 78_0160 requires them equal
-to the installed binary's, so they cannot hold both versions' forms. Making them follow the qualified binary (read from
-the generated table, as the other references now are) is its own change; until it lands, 78_0160 format/tool-forms and
-decision/outward-tool-asks stay red on 2.1.317 and green on 2.1.281.
-
+Applied (fix round 2): the reader's tables (MESSAGES, TOOL_FREE_FRAMES, TOOL_FIELDS, NESTED, IN_RUN_TOOLS and IN_RUN,
+IN_RUN_HOST) are no longer module literals. `python3 .veldo/qualify.py` writes them from the binary's own into the
+qualified version's record (`stream_forms` in runtime/claude-qualification.json), and the reader reads them from there.
+The decisions above are in runtime/capability-decisions.json (claude_code `messages`, `frames`, `tool_fields`,
+`routing`); a new message or frame with no decision granting it is listed as unevaluated and left out (an unknown call,
+never tool-free), and a field is read `ask` (any value is an unknown call). Qualifying 2.1.317 lists 71 Claude Code items
+(53 granted, 7 not applicable, 11 off), none unevaluated, and suite 78_0160 passes there
+(proof/VELDO-0230/fix2-*.txt).

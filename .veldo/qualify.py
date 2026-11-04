@@ -15,14 +15,17 @@ binaries (EXTRACTORS: the tables the engine modules and the suites compare again
 VELDO-0127 fixtures from the Codex binary (FIXTURES), and writes the Codex and the Claude Code qualification
 records to every runtime copy (RUNTIMES): the Codex record by control_engine_codex.qualification, its model
 tool modes read from the bundled catalog; the Claude Code record by `claude_record`, from the extracted
-tables. On the binaries already qualified it rewrites every file with the bytes it holds.
+tables, with the stream reader's tables (`stream_forms`, read by control_engine_claude: its known messages,
+tool-free frames, fields naming a tool, nested-work and in-run tables, `stream_forms` below). On the binaries
+already qualified it rewrites every file with the bytes it holds.
 
 A NEWER BINARY NEVER BLOCKS (AC3). A Codex feature the classification (control_agent_config_handoff
 CODEX_FEATURES) does not name is off at launch unless its evaluation grants it, and listed by name in the record (`unclassified_default_on`)
 and in this command's output; a Claude Code tool not on the in-run list is outward (the extractor's
 classification). EVALUATED AND USED IF USEFUL (Telegram 38878): every new item a binary brings (a Codex feature
 on by default the classification does not name or a feature, option, reader or grant the replaced binary did not
-have; a Claude Code tool, credential or environment name, or option the replaced binary did not have) is listed in
+have; a Claude Code tool, credential or environment name, option, stream message, tool-free frame, field naming a
+tool, or `_host` routing switch the replaced binary or record did not have) is listed in
 the record (`new_capabilities`) and in the output with its decision from runtime/capability-decisions.json:
 granted with its reason, off with the written rule it breaks, or not applicable; one with no decision there is
 unevaluated and not granted. A granted Codex feature stays on at launch; nothing new ever blocks one.
