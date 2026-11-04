@@ -51,6 +51,8 @@
     {"suite": "120_veldo_0131_factory_ui", "reason": "system Chrome and the npm registry: the factory screens are built from the UI's locked dependencies (npm ci needs the registry and the network) and driven in a real browser (Playwright, /opt/google/chrome) against the factory harness"},
     {"suite": "121_veldo_0131_factory_screens_narrow", "reason": "system Chrome and the npm registry: the factory screens are built from the UI's locked dependencies (npm ci needs the registry and the network) and driven in a real browser (Playwright, /opt/google/chrome) against the factory harness"},
     {"suite": "122_veldo_0131_factory_screens_wide", "reason": "system Chrome and the npm registry: the factory screens are built from the UI's locked dependencies (npm ci needs the registry and the network) and driven in a real browser (Playwright, /opt/google/chrome) against the factory harness"},
-    {"suite": "124_veldo_0131_factory_reads_commands", "reason": "system Chrome and the npm registry: the factory screens are built from the UI's locked dependencies (npm ci needs the registry and the network) and driven in a real browser (Playwright, /opt/google/chrome) against the factory harness"}
+    {"suite": "124_veldo_0131_factory_reads_commands", "reason": "system Chrome and the npm registry: the factory screens are built from the UI's locked dependencies (npm ci needs the registry and the network) and driven in a real browser (Playwright, /opt/google/chrome) against the factory harness"},
+    {"suite": "128_veldo_0177_conversation_workspace", "reason": "systemd user manager: each conversation turn runs contained in its own transient scope under the run's own slice"},
+    {"suite": "129_veldo_0177_assistant_setup", "reason": "systemd user manager: factory setup installs and starts user services on this host (VELDO-0171's fixture)"}
   ]
 }
