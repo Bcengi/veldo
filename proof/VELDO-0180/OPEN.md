@@ -1,6 +1,6 @@
 # VELDO-0180: open items for the lead
 
-## 1. Outside the footprint: suite 71's write-route bodies (`scripts/suites/71_veldo_0130_api.py`)
+## 1. RESOLVED by the lead (footprint widened, body added, suite 71 45/45): suite 71's write-route bodies (`scripts/suites/71_veldo_0130_api.py`)
 
 Suite 71 sends a sample body to every write route of the published ROUTES table and requires its table of bodies to
 equal the routes. AC1 adds `conversations.make_project` to ROUTES, so suite 71 raises KeyError in two rows

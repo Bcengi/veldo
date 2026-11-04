@@ -37,6 +37,7 @@ footprint:
   - "specs/VELDO-0180-conversation-into-a-project.md"
   - "specs/index.md"
   - "proof/VELDO-0180/*"
+  - "scripts/suites/71_veldo_0130_api.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -157,3 +158,7 @@ routes table the command joins. Filed: a new project gets no Line without a rein
 Line at run time for every project the store records. Criteria unchanged. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+2026-11-04: footprint widened by the lead after the build (proof/VELDO-0180/OPEN.md item 1): suite 71 sends a sample
+body to every published write route, so the new conversations.make_project route needs its body there. Acceptance
+criteria are unchanged.

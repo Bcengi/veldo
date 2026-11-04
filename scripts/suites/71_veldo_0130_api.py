@@ -1238,6 +1238,9 @@ def _v130_checks(base):
                            'conversations.set_role': {'conversation': 'c-none', 'version': 1, 'role': 'assistant'},
                            'conversations.attach_project': {'conversation': 'c-none', 'version': 1,
                                                             'project': 'project-a'}})
+        # VELDO-0180: the owner's typed command making a conversation a project's work (suite 136 judges it).
+        if 'make_conversation_project' in getattr(AS, 'OPERATIONS', {}):
+            bodies['conversations.make_project'] = {'conversation': 'c-none', 'version': 1, 'project': 'project-a'}
 
         def path_of(route, domain=DOMAIN):
             return route.path.replace('{domain}', domain)
