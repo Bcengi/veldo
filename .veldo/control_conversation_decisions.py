@@ -12,6 +12,13 @@ wrote from; settlement settles each once, from his Telegram reply to that presen
 UI (control_request_settlement.run and api_answer), and the turn it concerns waits until it settles (the service reads
 only the settled answer).
 
+THE UNCLEAR ROUTE QUESTION (VELDO-0175 AC2) is the same kind of request. When the factory PM routes a Telegram message
+unclear, intake opens its question through `open_question` at the message's own decision coordinate
+(`conversation:route:<proposal>`, `route_identity`), the choices `route_choices` offers (each a pick: a project, a
+new project, a new conversation, one of his open conversations), and presents it at once; its reply is settlement's,
+never intake's and never a turn, and intake applies the settled choice (`ruling`) to the proposal as his reply answer
+was applied before: a project resolves it, anything else clarifies it for the PM (control_intake.route_answers).
+
 A PRESENTATION IN A CONVERSATION IS NOT ONE OF ITS TURNS. Once a conversation request is published, `presented` keeps
 each of its Telegram messages as a message the factory sent in that conversation (VELDO-0175's record, kind
 `decision`, never a turn's reply) and notes the presentation on the turn's question: the trace from the decision to
@@ -53,11 +60,17 @@ TOUCHPOINT = 'decision_disposition'
 # The decisions a conversation raises, by the kind of what they are about (the terms target's kind).
 RERUN, ENGINE_LIMIT, ROUTE, PROJECT = 'account_limit_rerun', 'conversation_engine_limit', 'unclear_route', 'new_project'
 KINDS = (RERUN, ENGINE_LIMIT)
+# What open_question opens: a turn's two questions and the unclear route question of a message on its way in.
+OPENED = KINDS + (ROUTE,)
 RISK = {
     RERUN: 'A re-run may repeat what the stopped run already wrote outside its clone; stopping ends the turn.',
     ENGINE_LIMIT: 'Moving changes the conversation to your assistant role on the other engine; waiting changes '
                   'nothing until the reset.',
+    ROUTE: 'Your choice routes this message: a project makes it that project\'s proposal; anything else is read '
+           'again by the factory PM with your answer.',
 }
+# The unclear route question's decision coordinate is the message's own, beside the conversations'.
+ROUTE_PREFIX = 'route:'
 OWNER_REFUSAL = 'missing_authority:conversation_owner'
 OUTPUT_REFUSAL = 'invalid_input:turn_output:authority'
 SENT_KIND = 'decision'
@@ -90,6 +103,28 @@ def _digest(value):
 
 def coordinate(identity):
     return PREFIX + str(identity)
+
+
+def route_identity(proposal_id):
+    """The decision coordinate identity of the unclear route question of one inbox proposal."""
+    return ROUTE_PREFIX + hashlib.sha256(str(proposal_id).encode()).hexdigest()[:24]
+
+
+def route_choices(projects, conversations):
+    """{choice: option} the unclear route question offers, in order: each project (`accept project <name>`), a new
+    project, a new conversation and each of his open conversations (`accept conversation <id>`). Each choice is a pick
+    (control_channel_presentation), so its ruling is approve; the option is what the settled choice routes to.
+    `conversations` are open_conversations' entries."""
+    found = {}
+    for name in projects:
+        found['accept project ' + name] = {'route': 'project', 'project': name, 'label': name}
+    found['accept new project'] = {'route': 'new_project', 'label': 'a new project'}
+    found['accept new conversation'] = {'route': 'new_conversation', 'label': 'a new conversation'}
+    for entry in conversations:
+        found['accept conversation ' + entry['id']] = {
+            'route': 'open_conversation', 'conversation': entry['id'],
+            'label': 'conversation %s%s' % (entry['id'], ' (%s)' % entry['opening'] if entry.get('opening') else '')}
+    return found
 
 
 def is_request(request):
@@ -165,7 +200,7 @@ def open_question(store, membership, claims, contract, assignment, conn, *, doma
     request = assignment.assignment_id(where, alias)
     subject = content.get('subject') or {}
     kind = subject.get('kind')
-    if kind not in KINDS or not all(_text(subject.get(k)) for k in ('ref', 'digest')):
+    if kind not in OPENED or not all(_text(subject.get(k)) for k in ('ref', 'digest')):
         return {'ok': False, 'reason': 'invalid_input:conversation_question'}, request
 
     def signed(**fields):
@@ -205,6 +240,17 @@ def open_question(store, membership, claims, contract, assignment, conn, *, doma
             if framed.get('outcome') != 'accepted':
                 return {'ok': False, 'reason': 'unavailable_service:framing:' + str(framed.get('reason'))}, request
     return opened, request
+
+
+def open_presented(presenter, *, identity, alias, content, principal, command_sign):
+    """open_question with the parts of the presenter that will present it (its inbox's store, membership, claims and
+    contract, its assignment module and connection)."""
+    inbox = presenter.inbox
+    return open_question(inbox.store, inbox.membership, inbox.claims, inbox.contract, presenter.assignment,
+                         presenter.conn, domain=inbox.ids['domain_uuid'], store_uuid=inbox.ids['store_uuid'],
+                         identity=identity, alias=alias, content=content, principal=principal,
+                         journal_sign=presenter.sign, command_sign=command_sign,
+                         generation=presenter.authority_generation)
 
 
 def ruling(conn, request):
@@ -335,6 +381,8 @@ def trace(conn, request):
     item = (_row(conn, request) or {}).get('data') or {}
     settled = item.get('settlement') if isinstance(item.get('settlement'), dict) else None
     settlement = (_row(conn, settled['settlement_id']) or {}).get('data') if settled else None
+    if isinstance(identity, str) and identity.startswith(ROUTE_PREFIX):
+        identity = None  # the unclear route question is a message's, before any conversation
     return {'schema': SCHEMA, 'request': request, 'kind': kind_of(conn, request), 'conversation': identity,
             'turn': (turn or {}).get('sequence'), 'state': item.get('state'),
             'presentation': (receipt or {}).get('presentation_id'),

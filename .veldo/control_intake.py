@@ -16,6 +16,10 @@ VELDO-0175: a Telegram reply to any message the factory sent in a conversation, 
 `conversation` field names one, is that conversation's (control_intake_conversation): the next turn, a typed
 command, or a reply the factory PM reads for one; it is resolved before the proposal and question records.
 The PM's routes include a new conversation and an open one of the sender's.
+
+VELDO-0181: a Telegram message's unclear question is a decision request presented on the chat he wrote from and
+settled once by his reply to it or his answer in the UI; its settled choice resolves or clarifies the proposal as an
+answering reply did (control_intake_routes.route_answers). An API message's question is answered as before.
 """
 import hashlib
 import importlib.util
@@ -206,7 +210,8 @@ class Intake(RT.Routes, CI.Conversing):
     CI = CI
 
     def __init__(self, store, membership, contract, acquirer, conn, *, domain, projects, api_edge, journal_signer,
-                 sign, asker=None, authority_generation=1, clock=time.time, observe=None, conversations=None):
+                 sign, asker=None, authority_generation=1, clock=time.time, observe=None, conversations=None,
+                 request_sign=None):
         if not _identifier(domain) or not _identifier(api_edge) or not _identifier(journal_signer):
             raise Refused('invalid_input', 'domain, API edge and journal signer are named')
         if not callable(projects) and (not projects or not all(_identifier(p) for p in projects)
@@ -217,6 +222,8 @@ class Intake(RT.Routes, CI.Conversing):
         self.journal_signer, self.sign, self.generation = journal_signer, sign, authority_generation
         self.asker, self.clock = asker, clock
         self.conversations = conversations
+        # VELDO-0181: signs the unclear question's decision request as the journal signer (the command namespace).
+        self.request_sign = request_sign
         self.observe = observe or (lambda event: None)
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
@@ -808,32 +815,7 @@ class Intake(RT.Routes, CI.Conversing):
         except Exception:  # noqa: BLE001 - a hint never undoes or blocks what intake recorded
             return {}
 
-    # asking on Telegram
-
-    def _ask(self, qid, command):
-        """Send an inbox proposal's question to the owner's chat as a reply to the message, and record
-        where the platform put it. VELDO-0152 decides the new-work hint at receipt; this later
-        unclear-route question is its own reply. A failed send leaves it open and undelivered, by name."""
-        where, question = command['provenance'], self.question(qid)
-        if self.asker is None:
-            return self._event('ask', 'refused', 'unavailable_service', question_id=qid)
-        prompt = render_prompt(question['prompt'])
-        try:
-            sent = self.asker.send(where['chat_id'], prompt, reply_to=where['message_id'])
-        except Exception as error:  # noqa: BLE001 - a failed send is named, never raised past the intake
-            return self._event('ask', 'refused', getattr(error, 'code', 'unknown_outcome'), question_id=qid)
-        delivery = {'channel': 'telegram_chat', 'bot_id': where['bot_id'], 'chat_id': sent['chat_id'],
-                    'message_id': sent['message_id'], 'date': sent['date']}
-        row = self._entity(qid)
-        cid = 'intake-asked:' + _hex(qid, delivery)
-        try:
-            self.store.execute(self.conn, dict(command_id=cid, principal=self.journal_signer, operation=ASKED,
-                                               parameters={'question_id': qid, 'delivery': delivery},
-                                               expected_versions={qid: row['version']}, artifact_digests=[], nonce=cid),
-                               self.journal_signer, self.sign, self.generation)
-        except (Refused, self.store.StoreRefused, sqlite3.Error):
-            return self._event('ask', 'unknown_outcome', 'unknown_outcome', question_id=qid)
-        return self._event('ask', 'asked', None, question_id=qid, delivery=delivery)
+    # where the unclear question was shown (VELDO-0181: its decision request's presentation, control_intake_routes)
 
     def _asked_transition(self, conn, params, before):
         qid, delivery = params.get('question_id'), params.get('delivery')

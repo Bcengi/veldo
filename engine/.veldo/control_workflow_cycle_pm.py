@@ -620,6 +620,14 @@ class ProjectCycles:
         except Exception as error:  # noqa: BLE001 - named in the observations, never the pass's end
             self.observe(dict(operation='conversion_follow_up',
                               refusal=getattr(error, 'code', 'unknown_outcome:' + type(error).__name__)))
+        # VELDO-0181: an unclear question his settled answer decided routes its message, on the factory line.
+        intake = self.services.get('intake')
+        if intake is not None and getattr(self, 'factory_line', lambda: False)() and hasattr(intake, 'route_answers'):
+            try:
+                intake.route_answers()
+            except Exception as error:  # noqa: BLE001 - named in the observations, never the pass's end
+                self.observe(dict(operation='route_answers',
+                                  refusal=getattr(error, 'code', 'unknown_outcome:' + type(error).__name__)))
         projects = [json.loads(r[0]) for r in self.conn.execute("SELECT data FROM entities WHERE kind='project'")]
         for project in projects:
             name = project['name']
@@ -738,7 +746,9 @@ def _cycles(line, store, membership, assignment, ids, signature, allocations, re
                 api_edge=ingress.settlement.api_edge, journal_signer=service.principal, sign=service.sign,
                 asker=ingress.presenter.edge, authority_generation=service.generation,
                 # VELDO-0175: the service's conversations, for the typed commands and the new-conversation route.
-                conversations=getattr(service, 'conversations', None))
+                conversations=getattr(service, 'conversations', None),
+                # VELDO-0181: the unclear question's decision request, signed as the service.
+                request_sign=signature)
             # VELDO-0143: the factory's new-project decisions, the one owner of the PM's new-project document
             # (built before from_line took the registrations, R4-6).
             if callable(getattr(service, 'new_projects', None)):

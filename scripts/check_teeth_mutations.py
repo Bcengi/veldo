@@ -12255,6 +12255,16 @@ def cases():
         "        if True:  # defect: a conversation's questions are never presented\n            return results\n"
         "        CD = _decisions()\n        for request in CD.pending(self.conn, self.inbox):\n",
         ['AC1/rerun-presented'])
+    # Guard (AC1, the unclear route question settled once): a settled question's choice is applied again on every
+    # pass, so one settlement routes the message twice.
+    add(181, 'route181-applied-twice', suite181, 'control_intake_routes.py',
+        "            if question.get('state') != 'open' or not question.get('request'):\n",
+        "            if not question.get('request'):  # defect: a settled question is applied again\n",
+        ['AC1/unclear-settled-once'],
+        also=[("        if (question.get('state') != 'open' or question.get('request') != request or not isinstance(request, str)\n"
+               "                or data.get('state') != 'AWAITING_PROJECT' or data.get('question_id') != qid):\n",
+               "        if (question.get('request') != request or not isinstance(request, str)  # defect: applied again\n"
+               "                or data.get('question_id') != qid):\n")])
     for case in result:
         if case['finding'] == 181:
             case['siblings'] = True

@@ -48,7 +48,8 @@ def _v181_suite():
         'control_service.py': ROOT / ".veldo" / "control_service.py",
     }
     ROWS = ('AC1/rerun-presented', 'AC1/turn-waits', 'AC1/no-presentation-hint', 'AC1/settles-by-reply',
-            'AC1/move-presented', 'AC1/settled-once-across', 'AC1/unclear-route', 'AC1/observability',
+            'AC1/move-presented', 'AC1/settled-once-across', 'AC1/unclear-presented', 'AC1/unclear-settles-by-reply',
+            'AC1/unclear-settles-by-ui', 'AC1/unclear-settled-once', 'AC1/unclear-never-a-turn', 'AC1/observability',
             'AC2/other-member', 'AC2/no-authority-from-output', 'AC2/observability')
     rows = {name: [] for name in ROWS}
 
@@ -187,10 +188,15 @@ else:
                                'authority', authority.journal_sign, 'telegram-edge', signer)
         gate = SimpleNamespace(admit=lambda method, origin: None, counts={})
         ingress = CI.Ingress(gate, acquirer, settlement, presenter=presenter, inbox=inbox, conn=authority.conn)
-        intake = IN.Intake(S, CM, AC, acquirer, authority.conn, domain=authority.ids['domain_uuid'],
-                           projects=['factory'], api_edge='api-edge', journal_signer='authority',
-                           sign=authority.journal_sign, asker=presenter.edge, conversations=conversations,
-                           observe=events.append)
+        made = dict(domain=authority.ids['domain_uuid'], projects=['factory'], api_edge='api-edge',
+                    journal_signer='authority', sign=authority.journal_sign, asker=presenter.edge,
+                    conversations=conversations, observe=events.append)
+        try:
+            # The requester's signer of the unclear question's decision request (as the PM cycle passes it).
+            intake = IN.Intake(S, CM, AC, acquirer, authority.conn,
+                               request_sign=lambda body: authority.sign_as('authority', body), **made)
+        except TypeError:  # an intake that takes no request signer (the base), so its rows show what it does
+            intake = IN.Intake(S, CM, AC, acquirer, authority.conn, **made)
         replies = CC.Replies(S, authority.conn, 'authority', authority.journal_sign, presenter.edge,
                              observe=events.append)
         bot_messages = api['bots']['bot181']['messages']
@@ -495,23 +501,118 @@ else:
               'question records it', (conversations.read(move_id) or {}).get('role') == 'assistant'
               and question_of(move_id, 1, CS.MOVE_KIND).get('answer') == 'wait')
 
-        # THE UNCLEAR ROUTE QUESTION (VELDO-0175 AC2): his reply to it answers it, never a turn.
+        # THE UNCLEAR ROUTE QUESTION (VELDO-0175 AC2): a decision request presented on the chat he wrote from, settled
+        # once by his reply to it or his inline UI answer; the settled choice routes the message as his reply answer
+        # did (the PM cycle applies it: intake.route_answers); a reply to it is never a turn.
         turns_before = {c: len(conversations.turns(c)) for c in (rerun_id, out_id, move_id)}
-        vague, vague_update, _woke = telegram(owner, 'that thing from before')
-        vpid = vague.get('proposal_id')
-        asked = intake.route(dict(schema=IN.RT.SCHEMA, proposal_id=vpid, route='unclear',
-                                  reason='Fixture PM: no project or conversation is clear.'),
-                             dispatch='fixture-pm-unclear', proposal_id=vpid) if vpid else {}
-        question = next((q for q in intake._all(IN.QUESTION_KIND) if q.get('proposal_id') == vpid), {})
-        delivered_at = (question.get('delivery') or {}).get('message_id')
-        clarified, _cu, _woke = telegram(owner, 'the factory project', reply_to=delivered_at)
-        check('AC1/unclear-route', 'the unclear question is asked as a reply on the chat he wrote from [%s]'
-              % asked.get('outcome'), delivered_at is not None
-              and (question.get('delivery') or {}).get('chat_id') == owner_chat)
-        check('AC1/unclear-route', 'his reply to it answers that question (it clarifies the proposal) and is no turn '
-              '[%s]' % clarified.get('outcome'),
-              clarified.get('proposal_id') == vpid and clarified.get('conversation') is None
-              and {c: len(conversations.turns(c)) for c in turns_before} == turns_before)
+        opened_before = authority.conn.execute('SELECT COUNT(*) FROM entities WHERE kind=?', (CV.KIND,)).fetchone()[0]
+
+        def route_answers():
+            """The PM cycle's step applying his settled unclear questions (none where intake has no such step)."""
+            return intake.route_answers() if hasattr(intake, 'route_answers') else []
+
+        def unclear(text):
+            got, update, _woke = telegram(owner, text)
+            pid = got.get('proposal_id')
+            routed = intake.route(dict(schema=IN.RT.SCHEMA, proposal_id=pid, route='unclear',
+                                       reason='Fixture PM: no project or conversation is clear.'),
+                                  dispatch='fixture-pm-unclear-' + str(pid)[-8:], proposal_id=pid) if pid else {}
+            return pid, update, routed, next((q for q in intake._all(IN.QUESTION_KIND) if q.get('proposal_id') == pid), {})
+
+        vpid, vague_update, asked, uq = unclear('that thing from before')
+        ur = uq.get('request')
+        ureceipt = (presenter.current(ur) if ur else None) or {}
+        uitem = CD.inbox_for(inbox, ur).read(ur) if ur else None
+        pick = 'accept conversation ' + str(rerun_id)
+        print('  VELDO-0181 unclear question:', asked.get('outcome'), ur, ureceipt.get('outcome'))
+        check('AC1/unclear-presented', 'routed unclear, its question is a request with the requester\'s signed terms '
+              '(about the question) and framing, offering each route as a choice',
+              asked.get('outcome') == 'applied' and CD.is_request(ur) and CD.kind_of(authority.conn, ur) == CD.ROUTE
+              and uitem is not None and uitem['data'].get('owner') == 'owner'
+              and (uitem['data'].get('subject') or {}).get('kind') == ST.SUBJECT_KIND
+              and {pick, 'accept new conversation', 'accept new project'} <= set(uitem['data'].get('choices') or [])
+              and presenter._entity(V.framing_id(ur)) is not None)
+        shown_route = [m for m in sent_to(owner_chat) if m[0] in (ureceipt.get('message_ids') or [])]
+        check('AC1/unclear-presented', 'a versioned presentation is published on the chat he wrote from, with its choices, '
+              'and the question records where it was shown',
+              ureceipt.get('outcome') == 'published' and ureceipt.get('chat_id') == owner_chat
+              and vague_update['message']['chat']['id'] == owner_chat and ureceipt.get('request_version') == 1
+              and ureceipt.get('presentation_version') == 1 and shown_route and pick in shown_route[0][1]
+              and (uq.get('delivery') or {}).get('request_id') == ur
+              and (uq.get('delivery') or {}).get('presentation_id') == ureceipt.get('presentation_id'))
+        check('AC1/unclear-presented', 'the decisions screen serves it (a request in the owner\'s scope), and it is logged '
+              'presented with its kind and request, never its text',
+              decisions_model is not None and uitem is not None and CM.scope_covers(scope, uitem['data']['scope'])
+              and any(e.get('operation') == 'ask' and (e.get('decision') or {}).get('outcome') == 'presented'
+                      and e['decision'].get('request') == ur and e['decision'].get('kind') == CD.ROUTE
+                      and e['decision'].get('presentation') == ureceipt.get('presentation_id') for e in events)
+              and 'thing from before' not in json.dumps([e for e in events if e.get('request') == ur
+                                                         or (e.get('decision') or {}).get('request') == ur]))
+        reply_to = (ureceipt.get('message_ids') or [None])[-1]
+        by_reply, by_reply_update, _woke = telegram(owner, pick + ': the release notes one', reply_to=reply_to)
+        applied = route_answers()
+        held = intake.proposal(vpid) or {}
+        u_settled = settled_records(ur)
+        print('  VELDO-0181 unclear reply:', by_reply.get('outcome'), [r.get('outcome') for r in applied],
+              held.get('state'))
+        check('AC1/unclear-settles-by-reply', 'his reply to the presentation settles it once, from Telegram, with his '
+              'choice', len(u_settled) == 1 and u_settled[0].get('choice') == pick
+              and u_settled[0].get('originating_channel') == 'telegram_chat'
+              and u_settled[0].get('presentation_id') == ureceipt.get('presentation_id'))
+        check('AC1/unclear-settles-by-reply', 'the settled choice routes the message as his reply answer did: the same '
+              'proposal clarified with his answer and back to the PM, the question answered',
+              [r.get('outcome') for r in applied] == ['clarification'] and held.get('state') == 'AWAITING_ROUTE'
+              and [c.get('text') for c in held.get('clarifications') or []] == [
+                  ((uq.get('choices') or {}).get(pick) or {}).get('label', '?') + ': the release notes one']
+              and ((uq.get('choices') or {}).get(pick) or {}).get('conversation') == rerun_id
+              and (intake.question(uq.get('question_id')) or {}).get('state') == 'answered'
+              and (intake.question(uq.get('question_id')) or {}).get('choice') == pick)
+        again_r, again_r_update, _woke = telegram(owner, 'accept new conversation: no, a new one', reply_to=reply_to)
+        told_r = [m for m in sent_to(owner_chat) if m[2] == again_r_update['message']['message_id']]
+        check('AC1/unclear-settled-once', 'a second reply to it is told once and settles and routes nothing again',
+              len(settled_records(ur)) == 1 and len(told_r) == 1 and route_answers() == []
+              and len((intake.proposal(vpid) or {}).get('clarifications') or []) == 1)
+        # His inline answer in the UI, to a second unclear message.
+        wpid, _w_update, _w_routed, wq = unclear('the other one, you know')
+        wr = wq.get('request')
+        wreceipt = (presenter.current(wr) if wr else None) or {}
+        body = dict(authority.ids, schema=ST.API_SCHEMA, edge='api-edge', answer_id='v181-ui-route-1', principal='owner',
+                    request_id=wr, request_version=1, presentation_id=wreceipt.get('presentation_id'),
+                    presentation_digest=wreceipt.get('brief_digest'),
+                    presentation_version=wreceipt.get('presentation_version'), choice='accept new conversation',
+                    rationale='Let us talk it over.')
+        second = dict(body, answer_id='v181-ui-route-2', choice='accept new project')
+        ui_route = settlement.api_answer({'answer': body, 'signature': authority.sign_as('api-edge', S.canonical_bytes(body))})
+        ui_route_again = settlement.api_answer({'answer': second,
+                                                'signature': authority.sign_as('api-edge', S.canonical_bytes(second))})
+        late_r, late_r_update, _woke = telegram(owner, 'accept new project: a project after all',
+                                                reply_to=(wreceipt.get('message_ids') or [None])[-1])
+        w_applied = route_answers()
+        w_held = intake.proposal(wpid) or {}
+        told_w = [m for m in sent_to(owner_chat) if m[2] == late_r_update['message']['message_id']]
+        print('  VELDO-0181 unclear UI answer:', ui_route.get('outcome'), ui_route_again.get('outcome'),
+              ui_route_again.get('reason'), [r.get('outcome') for r in w_applied])
+        check('AC1/unclear-settles-by-ui', 'his inline answer in the UI settles it once, from the API, and the settled '
+              'choice routes the message (clarified with his answer, back to the PM)',
+              ui_route.get('outcome') == 'settled' and len(settled_records(wr)) == 1
+              and settled_records(wr)[0].get('choice') == 'accept new conversation'
+              and settled_records(wr)[0].get('originating_channel') == 'api'
+              and [r.get('outcome') for r in w_applied] == ['clarification'] and w_held.get('state') == 'AWAITING_ROUTE'
+              and [c.get('text') for c in w_held.get('clarifications') or []] == ['a new conversation: Let us talk it over.'])
+        check('AC1/unclear-settled-once', 'across the UI and Telegram: a second UI answer is refused and a later reply is '
+              'told once; one settlement, one routing',
+              ui_route_again.get('outcome') == 'refused' and len(settled_records(wr)) == 1 and len(told_w) == 1
+              and route_answers() == [] and len(w_held.get('clarifications') or []) == 1)
+        replies_taken = [intake.source('telegram_message', IN.telegram_source_id(bot['id'], owner_chat,
+                                                                                 u['message']['message_id']))
+                         for u in (by_reply_update, again_r_update, late_r_update)]
+        check('AC1/unclear-never-a-turn', 'no reply to it is a turn or intake\'s message: no turn added, no '
+              'conversation opened, nothing intake took [%s]' % ','.join(str(r.get('outcome')) for r in
+                                                                         (by_reply, again_r, late_r)),
+              {c: len(conversations.turns(c)) for c in turns_before} == turns_before
+              and authority.conn.execute('SELECT COUNT(*) FROM entities WHERE kind=?', (CV.KIND,)).fetchone()[0]
+              == opened_before and replies_taken == [None, None, None]
+              and all(r.get('outcome') == 'not_taken' for r in (by_reply, again_r, late_r)))
 
         # AC1 observability: each decision with its kind, request, presentation and settlement; counted by kind and
         # settlement; joined to its turn, presentation receipt and answer; never message text.
