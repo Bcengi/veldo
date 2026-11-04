@@ -121,7 +121,7 @@ def loopback(host):
 
 # QUALIFICATION: read from the version's own hook code.
 
-FETCH = re.compile(r'fetch\(\s*`[^`]*?(/api/[A-Za-z0-9_/\-]+)`\s*,\s*\{\s*method:\s*[\'"]([A-Z]+)[\'"]')
+FETCH = re.compile(r'fetch\(\s*`[^`]*?(/api/[A-Za-z0-9_/\-]+)`\s*,\s*\{\s*method[:]\s*[\'"]([A-Z]+)[\'"]')
 BODY = re.compile(r'JSON\.stringify\(\{([^{}]*)\}\)')
 HOST_DEFAULT = re.compile(r'(CLAUDE_MEM_WORKER_HOST)\s*\|\|\s*[\'"]([^\'"]+)[\'"]')
 PORT_DEFAULT = re.compile(r'(CLAUDE_MEM_WORKER_PORT)\s*\|\|\s*[\'"]?([0-9]+)')
