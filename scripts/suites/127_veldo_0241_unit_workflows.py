@@ -396,6 +396,84 @@ def _v241_suite():
                 check('approval/later-outward-kinds', lambda: 'invalid_input:missing_owner_approval:deliver'
                       in result.get('codes', []) and journal_seq() == before and accepted == [])
 
+            # AC2 over every path: the edge out of the last approval before an outward step is its granted one, and
+            # nothing that is not proven subject-preserving lies between that edge and the step (fix round 1, F1).
+            with region('approval/second-approval-stopped', 'approval/declined-edge', 'approval/unproven-step-after',
+                        'approval/loop-before-build', 'approval/granted-control'):
+                def graph(workflow_id, kinds, edges, configs=None):
+                    """A definition from {node: kind} and [(from, port, to[, max])]; land's ports all end."""
+                    body = {'schema': WU.CODE['schema'], 'id': workflow_id, 'entry': 'build', 'terminal': ['done'],
+                            'nodes': {name: {'kind': kind, 'config': dict((configs or {}).get(name, {}))}
+                                      for name, kind in kinds.items()},
+                            'transitions': [], 'references': {}, 'budget': {'steps': 64}}
+                    edges = list(edges) + [('land', port, 'done') for port in WF.LAND_PORTS
+                                           if not any(e[0] == 'land' and e[1] == port for e in edges)]
+                    for index, edge in enumerate(edges):
+                        item = {'id': 't%d' % index, 'from': edge[0], 'port': edge[1], 'to': edge[2]}
+                        if len(edge) > 3:
+                            item['max'] = edge[3]
+                        body['transitions'].append(item)
+                    return body
+
+                two = {'build': 'build', 'review': 'review', 'gate': 'gate', 'appa': 'owner_approval',
+                       'b2': 'build', 'appb': 'owner_approval', 'land': 'land', 'done': 'end'}
+                names = {'appa': {'approves': 'land'}, 'appb': {'approves': 'land'}}
+                head = [('build', 'done', 'review'), ('review', 'done', 'gate'), ('gate', 'passed', 'appa'),
+                        ('appa', 'granted', 'b2'), ('appa', 'stopped', 'done'), ('b2', 'done', 'appb')]
+                # The review's counterexample: A granted, a build, then B whose stopped port goes to land.
+                refused('second-approval-stopped',
+                        graph('second-stopped', two, head + [('appb', 'stopped', 'land'), ('appb', 'granted', 'land')],
+                              names), 'invalid_input:missing_owner_approval:land')
+                # A declined outcome (an approval kind with a third, non-granted port) never passes the approval.
+                approval_ports = WF.STEP_KINDS[WF.APPROVAL]['ports']
+                WF.STEP_KINDS[WF.APPROVAL]['ports'] = approval_ports + ('declined',)
+                try:
+                    refused('declined-edge',
+                            graph('declined', two, head + [('appa', 'declined', 'done'), ('appb', 'granted', 'land'),
+                                                           ('appb', 'stopped', 'done'), ('appb', 'declined', 'land')],
+                                  names), 'invalid_input:missing_owner_approval:land')
+                finally:
+                    WF.STEP_KINDS[WF.APPROVAL]['ports'] = approval_ports
+                # A step kind not registered as subject-preserving, after the grant and before land.
+                WF.STEP_KINDS['edit'] = {'ports': ('done',), 'config': {}, 'input': None, 'terminal': False,
+                                         'station': True}
+                try:
+                    edited = code('unproven-after')
+                    edited['nodes']['edit'] = {'kind': 'edit', 'config': {}}
+                    next(t for t in edited['transitions'] if t['id'] == 'approved')['to'] = 'edit'
+                    edited['transitions'].append({'id': 'edited', 'from': 'edit', 'port': 'done', 'to': 'land'})
+                    refused('unproven-step-after', edited, 'invalid_input:approval_not_last:approval')
+                finally:
+                    del WF.STEP_KINDS['edit']
+                # A back edge from after the grant (land's conflict) to before a build, whose only way on to land is
+                # a second approval's stopped port.
+                loop = code('loop-build')
+                loop['nodes'].update({'prep': {'kind': 'review', 'config': {}}, 'fix': {'kind': 'build', 'config': {}},
+                                      'recheck': {'kind': 'owner_approval', 'config': {'approves': 'land'}}})
+                next(t for t in loop['transitions'] if t['id'] == 're-build')['to'] = 'prep'
+                loop['transitions'] += [
+                    {'id': 'prepared', 'from': 'prep', 'port': 'done', 'to': 'fix'},
+                    {'id': 'fixed', 'from': 'fix', 'port': 'done', 'to': 'recheck'},
+                    {'id': 'rechecked', 'from': 'recheck', 'port': 'granted', 'to': 'land'},
+                    {'id': 'recheck-stopped', 'from': 'recheck', 'port': 'stopped', 'to': 'land'}]
+                refused('loop-before-build', loop, 'invalid_input:missing_owner_approval:land')
+                # The accepted control: granted, then subject-preserving steps, then the outward step; and the
+                # two-approval shape whose second approval grants to land and stops to the end.
+                control = code('granted-control')
+                control['nodes']['recheck'] = {'kind': 'review', 'config': {}}
+                next(t for t in control['transitions'] if t['id'] == 'approved')['to'] = 'recheck'
+                control['transitions'].append({'id': 'rechecked', 'from': 'recheck', 'port': 'done', 'to': 'land'})
+                regranted = graph('regranted', two, head + [('appb', 'granted', 'land'), ('appb', 'stopped', 'done')],
+                                  names)
+                controls = {'control': WF.definition_problems(control), 'regranted': WF.definition_problems(regranted),
+                            'loop-regranted': WF.definition_problems(dict(loop, transitions=[
+                                dict(t, to='done') if t['id'] == 'recheck-stopped' else t
+                                for t in loop['transitions']]))}
+                saved_control = attempt(workflows.save, {'definition': control}, principal='owner', base=0)
+                observed['f1_controls'] = {'problems': controls, 'saved': saved_control}
+                check('approval/granted-control', lambda: all(v == [] for v in controls.values())
+                      and saved_control['ok']['version'] == 1)
+
             # AC3: the project owner binds a kind of work to an accepted revision by his signed command.
             with region('binding/owner-binds', 'binding/refusals', 'binding/kind-of-work', 'binding/pinned-revision'):
                 flow1 = attempt(workflows.save, {'definition': code('flow')}, principal='owner', base=0)['ok']
