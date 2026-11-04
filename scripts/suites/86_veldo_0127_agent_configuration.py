@@ -37,7 +37,8 @@ def _v127_suite():
             'launch/push', 'launch/unlisted', 'launch/instructions', 'live/claude', 'live/codex', 'format/fake-lines',
             'review/skill-commit', 'review/skill-git-boundary', 'review/probe-terminal', 'review/init-bound', 'review/slash-collision',
             'review/marker-debug', 'review/codex-tools', 'review/codex-mode', 'review/codex-capture',
-            'catalog/fields', 'catalog/grants', 'catalog/integrity', 'wire/normalization', 'wire/resources', 'wire/no-server')
+            'catalog/fields', 'catalog/grants', 'catalog/integrity', 'wire/normalization', 'wire/resources', 'wire/no-server',
+            'wire/later-requests')
     rows = {name: [] for name in ROWS}
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -446,6 +447,99 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 facts, _ = attempt(lambda: evidence.wire_observation(body, wanted, L.HANDOFF))
                 check('wire/resources', mode + ': retained binary request equals grants including configured-server readers',
                       facts is not None and facts.get('missing') == [] and facts.get('unexpected') == [] and facts.get('stop') is None)
+            # VELDO-0230 fix round 3 (Telegram 38895-38896): incremental_tools is granted, so the comparison reads every
+            # request of a run with the tools declared by then. The later forms are Codex 0.166.0's own on loopback
+            # (proof/VELDO-0230/fix3-incremental-capture.json): the developer message that introduces an incremental
+            # tools update with its additional_tools item (a Code Mode model's runner redeclared with goals' tools,
+            # which no role is granted), and the tool_search_output a search loads an MCP definition with. A run's
+            # first request is the qualified binary's own (resources-<model>-selected.json). Without a run comparison
+            # (before fix round 3) each request was compared alone, as the launch check and the evidence did.
+            sessions = json.loads((TREE / 'proof/VELDO-0230/fix3-incremental-capture.json').read_text())['sessions']
+            later = sessions['adds goals, incremental_tools default']['requests'][1]['input']
+            notice = next(i for i in later if i.get('type') == 'message' and not i.get('dropped'))
+            update = [i for i in later if i.get('type') == 'additional_tools'][-1]
+            searched = next(i for i in sessions['tool search loads an MCP definition, direct model']['requests'][1]['input']
+                            if i.get('type') == 'tool_search_output')
+            run_compare = getattr(L.HANDOFF, 'codex_run_tool_difference', None) or (
+                lambda bodies, w: next((d for d in (L.HANDOFF.codex_tool_difference(b, w) for b in bodies) if d), None))
+            run_observe = getattr(evidence, 'wire_observations', None) or (
+                lambda bodies, w, h: [evidence.wire_observation(b, w, h) for b in bodies])
+            unexpected = 'configuration_stop:codex_unexpected_tool'
+            def declared_before(body):
+                # The observation endpoint before fix round 3: a request's tools, else nothing.
+                tools, _ = attempt(lambda: L.HANDOFF.codex_request_tools(body))
+                return {'tools': tools} if tools else {}
+            declarations = getattr(L.HANDOFF, 'codex_declarations', declared_before)
+            for mode, model in [('code', CODE_MODEL), ('direct', DIRECT_MODEL)]:
+                first = json.loads((TREE / ('proof/VELDO-0127/resources-' + model + '-selected.json')).read_text())[
+                    'requests'][0]['body']
+                wanted = L.HANDOFF.expected({'revision':dict(bound, settings={'model':model}), 'skills':[]},
+                                            {'jira':{'tools':['jira_search']}})
+                def after(items, history=True):
+                    # A later request: the whole history and its new items, or only its new items.
+                    body = copy.deepcopy(first) if history else {}
+                    body['input'] = (copy.deepcopy(first['input']) if history else []) + copy.deepcopy(items)
+                    return body
+                own = (copy.deepcopy(next(i for i in first['input'] if i.get('type') == 'additional_tools'))
+                       if mode == 'code' else {'type': 'additional_tools', 'role': 'developer',
+                                               'tools': copy.deepcopy(first['tools'])})
+                own['id'] = update['id']
+                runs = {'unlisted update': [first, after([notice, update])],
+                        'unlisted update alone': [first, after([notice, update], False)],
+                        'unlisted search result': [first, after([searched])]} if mode == 'code' else {
+                        'unlisted search result': [first, after([searched])],
+                        'unlisted search result alone': [first, after([searched], False)]}
+                for name, bodies in runs.items():
+                    stop, _ = attempt(lambda: run_compare(bodies, wanted))
+                    observed, _ = attempt(lambda: run_observe(bodies, wanted, L.HANDOFF))
+                    check('wire/later-requests', mode + ': ' + name + ' in a later request is refused, the first accepted',
+                          stop == unexpected and run_compare(bodies[:1], wanted) is None and observed is not None
+                          and observed[0]['stop'] is None and observed[-1]['stop'] == unexpected
+                          and bool(observed[-1]['unexpected']) and observed[-1]['missing'] == [])
+                    added, _ = attempt(lambda: set(L.HANDOFF.codex_tool_names(L.HANDOFF.codex_request_tools(
+                        {'input': bodies[-1]['input'][-1:]}))))
+                    check('wire/later-requests', mode + ': ' + name + ' names exactly the tools it adds',
+                          observed is not None and bool(added) and observed[-1]['unexpected']
+                          == sorted(added - set(L.HANDOFF.codex_expected_tools(wanted, {}))))
+                    # The production launch check reads every observed request, as the observation endpoint keeps it.
+                    observations = [declarations(b) for b in bodies]
+                    original = L.HANDOFF.codex_observe
+                    L.HANDOFF.codex_observe = lambda *a: observations
+                    try:
+                        _, launch_stop = attempt(lambda: L.HANDOFF.codex_check_launch(None, {'expected': wanted}, {}, None))
+                    finally:
+                        L.HANDOFF.codex_observe = original
+                    check('wire/later-requests', mode + ': ' + name + ': the launch check refuses the run',
+                          launch_stop == unexpected)
+                within = {'update within the role': [first, after([notice, own])],
+                          'update within the role alone': [first, after([notice, own], False)],
+                          'request with nothing new': [first, after([], False)]}
+                if mode == 'code':
+                    # As the captured update redeclares only the runner, one that redeclares only `wait`, a role tool.
+                    part = copy.deepcopy(own)
+                    part['tools'] = [dict(n, tools=[t for t in n['tools'] if t.get('name') == 'wait'])
+                                     for n in part['tools'] if n.get('type') == 'namespace' and n.get('name') == 'functions']
+                    within['partial update within the role alone'] = [first, after([notice, part], False)]
+                    within['partial update within the role'] = [first, after([notice, part])]
+                for name, bodies in within.items():
+                    stop, _ = attempt(lambda: run_compare(bodies, wanted))
+                    observed, _ = attempt(lambda: run_observe(bodies, wanted, L.HANDOFF))
+                    observations, _ = attempt(lambda: [declarations(b) for b in bodies])
+                    original = L.HANDOFF.codex_observe
+                    L.HANDOFF.codex_observe = lambda *a: observations
+                    try:
+                        tools, launch_stop = attempt(lambda: L.HANDOFF.codex_check_launch(None, {'expected': wanted}, {}, None))
+                    finally:
+                        L.HANDOFF.codex_observe = original
+                    check('wire/later-requests', mode + ': ' + name + ' passes at every request and at launch',
+                          stop is None and observed is not None and all(o['stop'] is None and o['unexpected'] == []
+                          and o['missing'] == [] for o in observed) and launch_stop is None
+                          and set(tools or []) == set(L.HANDOFF.codex_expected_tools(wanted, {})))
+                # An unreadable later request is never taken for one that declares nothing.
+                empty, _ = attempt(lambda: run_compare([], wanted))
+                unreadable, _ = attempt(lambda: run_compare([first, {}], wanted))
+                check('wire/later-requests', mode + ': an empty run and an unreadable later request are refused by name',
+                      empty == unreadable == 'missing_evidence:codex_request_tools')
             qualified = json.loads((base / 'codex-qualification.json').read_text())
             # VELDO-0230 (Telegram 38878): without a server, none is granted; the readers the qualified binary
             # offers a model of its tool mode anyway (nothing to list or read) are recorded and accepted, no other.

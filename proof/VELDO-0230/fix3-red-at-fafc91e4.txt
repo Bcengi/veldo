@@ -1,0 +1,29 @@
+VELDO-0230 fix round 3: suite 86 with the fix3 rows (wire/later-requests) run against the modules at fafc91e4 (before the run comparison),
+in a scratch git worktree at fafc91e4 with only the new suite file and proof/VELDO-0230/fix3-incremental-capture.json copied in:
+python3 scripts/selftest.py --suite 86_veldo_0127_agent_configuration (live/claude and live/codex are stale at fafc91e4 as well).
+
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  /tmp/tmp3n4i7vmu: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp3n4i7vmu/proof4.json: criterion AC1 passed without evidence
+  VELDO-0127 live/claude detail: missing or stale live capture
+  SELFTEST FAIL: VELDO-0127 live/claude
+  VELDO-0127 live/codex detail: missing or stale live capture
+  SELFTEST FAIL: VELDO-0127 live/codex
+  VELDO-0127 wire/later-requests detail: code: unlisted update alone in a later request is refused, the first accepted
+  VELDO-0127 wire/later-requests detail: code: unlisted search result in a later request is refused, the first accepted
+  VELDO-0127 wire/later-requests detail: code: unlisted search result names exactly the tools it adds
+  VELDO-0127 wire/later-requests detail: code: unlisted search result: the launch check refuses the run
+  VELDO-0127 wire/later-requests detail: code: request with nothing new passes at every request and at launch
+  VELDO-0127 wire/later-requests detail: code: partial update within the role alone passes at every request and at launch
+  VELDO-0127 wire/later-requests detail: code: an empty run and an unreadable later request are refused by name
+  VELDO-0127 wire/later-requests detail: direct: unlisted search result in a later request is refused, the first accepted
+  VELDO-0127 wire/later-requests detail: direct: unlisted search result names exactly the tools it adds
+  VELDO-0127 wire/later-requests detail: direct: unlisted search result: the launch check refuses the run
+  VELDO-0127 wire/later-requests detail: direct: unlisted search result alone in a later request is refused, the first accepted
+  VELDO-0127 wire/later-requests detail: direct: unlisted search result alone names exactly the tools it adds
+  VELDO-0127 wire/later-requests detail: direct: unlisted search result alone: the launch check refuses the run
+  VELDO-0127 wire/later-requests detail: direct: request with nothing new passes at every request and at launch
+  VELDO-0127 wire/later-requests detail: direct: an empty run and an unreadable later request are refused by name
+  SELFTEST FAIL: VELDO-0127 wire/later-requests
+  86_veldo_0127_agent_configuration               25 passed   39.80s
+selftest (PARTIAL, 1 of 188 suites): 51 passed, 3 failed in 39.80s
