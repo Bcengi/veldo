@@ -12150,6 +12150,10 @@ def cases():
         "            base.update(command=parts[part]['interpreter'],\n"
         "                        arguments=[str(Path(parts[part]['code']) / 'mcp_server.py')])\n"
         "        found[server] = base\n", ['AC4/one-opener'])
+    add(183, 'servers183-check-opens-store', suite183, 'control_memory_servers.py',
+        "        result = CHECK.check(root, definition, part, phase, Served(root) if served else None)\n",
+        "        result = CHECK.check(root, definition, part, phase, None)  # defect: the check opens a served store itself\n",
+        ['AC4/one-opener'])
     add(183, 'store183-open-unchecked', suite183, 'control_memory_store.py',
         "    others = holders(data, {os.getpid()})\n",
         "    others = set()  # defect: a store another process holds open is opened anyway\n", ['AC4/open-refused'])
