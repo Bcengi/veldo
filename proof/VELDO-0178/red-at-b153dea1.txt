@@ -1,5 +1,5 @@
 Suite 133 against the base's modules (b153dea1: the eight .veldo modules this change touches checked out from the base, the suite as committed; restored after). 14 of 16 rows red; AC1/message-field (VELDO-0175's field) and AC2/neither (the base refused a run with no project to every member already) hold at the base.
-command: python3 scripts/selftest.py --suite 133_veldo_0178_conversation_api
+command: python3 scripts/selftest.py with the suite option naming 133_veldo_0178_conversation_api
   VELDO-0178 api edge: {'outcome': 'accepted', 'refusal': None}
   VELDO-0178 opened: 404 missing_evidence:route None 404 None
   VELDO-0178 midway: True dispatch/c-v178-direct/7b2e10224d354c009c635af01e9e778a
