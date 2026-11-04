@@ -894,6 +894,7 @@ class Launch:
         self.lost = False
         # VELDO-0231: the flag and question events read from the launch pipe and not yet taken by the service.
         self.flags = []
+        self.session = None
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -967,6 +968,9 @@ class Launch:
             self.heartbeat = message['heartbeat']
         if message.get('event') in ('flag', 'question'):
             self.flags.append(message)
+        if message.get('event') == 'conversation_session':
+            # VELDO-0176: the capture the receiver took after the turn's engine ended, for the turn record.
+            self.session = message
         if message.get('event') == 'artifact' and isinstance(message.get('artifact'), dict):
             # The engine's artifact report {path, digest, verdict, complete} (THE ENGINE PROTOCOL).
             self.artifact = message['artifact']
@@ -1146,6 +1150,16 @@ class Receiver:
         # VELDO-0231: the run's flag reader and the bound engine's flag means.
         self.flags = None
         self.flag_means = None
+        # VELDO-0176: a conversation turn's record, the held session it resumes (checked against its turn record),
+        # where it was placed in the account profile, the history rendering it starts from instead, how it started,
+        # and the refusal of an engine that reported another session.
+        self.conversation_record = None
+        self.held_session = None
+        self.history_wanted = False
+        self.placed = None
+        self.rendering = None
+        self.start = None
+        self.resume_refusal = None
 
     def _unstage_skills(self):
         """The role skills staged into the clone's discovery directory are links into the run's own configuration:
@@ -1216,6 +1230,122 @@ class Receiver:
                 'credentials': credentials, 'attached': list(self.attached),
                 'metrics': {'turns_by_role_revision': {'%s:%s' % (revision.get('role'), revision.get('revision')): 1}}}
 
+    def _held(self, conversation, reader, contract):
+        """VELDO-0176 AC1, AC3: the held session the turn resumes (the payload's `resume` and `held`), read back from
+        its turn record and its capture, whose digest must be the one the record binds; else the turn is refused by
+        name (binding_mismatch:conversation_session) before anything is accepted, and never started from a rendering
+        instead. A turn the payload asks to start from the history (`history`) is rendered once the engine is bound."""
+        payload = (contract.get('input') or {}).get('payload') or {}
+        self.held_session, self.history_wanted = None, bool(payload.get('history'))
+        if not payload.get('resume'):
+            return None
+        held = payload.get('held') if isinstance(payload.get('held'), dict) else {}
+        try:
+            if held.get('session_id') != payload['resume']:
+                raise conversation.Refused(conversation.SESSION_MISMATCH, 'the resumed session is not the held one')
+            self.held_session = conversation.checked_capture(reader, contract['unit'], held)
+        except conversation.Refused as error:
+            self.emit({'event': 'conversation_session_refused', 'dispatch_id': contract['dispatch_id'],
+                       'conversation': contract['unit'], 'turn': contract['source'].get('turn'),
+                       'session_id': held.get('session_id'), 'refusal': error.code,
+                       'metrics': {'session_mismatch': 1}})
+            return error.code
+        return None
+
+    def _conversation_start(self, contract):
+        """VELDO-0176: once the engine is bound, the resume option it is qualified with for a held session, or the
+        history rendering for a turn that starts from it (the newest whole turns that fit the bound its qualification
+        records); None when it may run, else the named refusal."""
+        module = (self.login or {}).get('engine')
+        if contract.get('subject_kind') != 'conversation' or module is None:
+            return None
+        sequence = contract['source'].get('turn')
+        if self.held_session is not None:
+            problem = module.resume_problem(self.binding)
+            if problem:
+                return problem
+            self.start = {'mode': 'resumed', 'session_id': self.held_session['session_id'],
+                          'held_turn': self.held_session.get('turn'), 'digest': self.held_session['digest']}
+            return None
+        if not self.history_wanted:
+            self.start = {'mode': 'fresh'}
+            return None
+        bound = module.history_bound(self.binding)
+        if bound is None:
+            return 'missing_evidence:engine_history_bound:%s' % (self.binding or {}).get('version')
+        conversation = _organ('control_conversation')
+        reader = S.open_store(self.config['store'], mode='r')
+        try:
+            turns = conversation.history(reader, ER.directory(self.config), contract['unit'], sequence, ER.read)
+        finally:
+            reader.close()
+        self.rendering = conversation.render(turns, bound)
+        self.start = {'mode': 'rendered', 'turns': len(self.rendering['turns']), 'left_out': self.rendering['left_out'],
+                      'digest': self.rendering['digest'], 'characters': self.rendering['characters'], 'bound': bound}
+        self.emit({'event': 'conversation_history', 'dispatch_id': contract['dispatch_id'],
+                   'conversation': contract['unit'], 'turn': sequence, 'engine': module.PROVIDER,
+                   'turns': len(self.rendering['turns']), 'left_out': self.rendering['left_out'],
+                   'digest': self.rendering['digest'], 'characters': self.rendering['characters'], 'bound': bound,
+                   'metrics': {'turns_rendered': 1, 'turns_rendered_shortened': int(self.rendering['left_out'] > 0)}})
+        return None
+
+    def _place(self, dispatch_id):
+        """VELDO-0176 AC1: the checked held session at its relative place in the chosen account's profile, just
+        before the spawn; the engine's resume options. Refused by name (Placement) with nothing spawned."""
+        if self.held_session is None:
+            return []
+        conversation = _organ('control_conversation')
+        profile = ACC.profile(self.login['record'], self.host)[1]
+        try:
+            self.placed = conversation.place(self.held_session, profile)
+        except (conversation.Refused, OSError) as error:
+            raise Placement(getattr(error, 'code', conversation.SESSION_MISMATCH)) from None
+        self.emit({'event': 'conversation_session_placed', 'dispatch_id': dispatch_id,
+                   'conversation': self.contract['unit'], 'turn': self.contract['source'].get('turn'),
+                   'engine': self.held_session['engine'], 'session_id': self.held_session['session_id'],
+                   'account': self.login['account'], 'digest': self.held_session['digest']})
+        return self.login['engine'].resume_argv(self.binding, self.held_session['session_id'])
+
+    def _unplace(self):
+        placed, self.placed = self.placed, None
+        if placed is not None:
+            with contextlib.suppress(OSError):
+                os.unlink(placed)
+
+    def _capture(self, contract):
+        """VELDO-0176 AC1: after the engine ended, the session it wrote in the account profile kept under the
+        conversation's directory, bound later to the turn record by its digest, and removed from the profile. An
+        engine that reported another session than the held one keeps nothing: its session is removed, and the held
+        one stays the turn's. Reported to the runner (the launch pipe), never session content."""
+        if contract.get('subject_kind') != 'conversation' or self.login is None or self.metering is None:
+            self._unplace()
+            return
+        conversation = _organ('control_conversation')
+        module = self.login['engine']
+        reported = (self.metering.meter.session() or {}).get('id')
+        profile = ACC.profile(self.login['record'], self.host)[1]
+        found = module.session_file(profile, self.conversation_directory, reported) if reported else None
+        session = None
+        try:
+            if found and self.resume_refusal is None and self.conversation_record is not None:
+                session = conversation.capture(self.conversation_record, module.PROVIDER, profile, found, reported,
+                                               contract['dispatch_id'], self.login['account'])
+            elif found:
+                os.unlink(found)
+        except OSError as error:
+            self.emit({'event': 'conversation_session_capture_failed', 'dispatch_id': contract['dispatch_id'],
+                       'error': type(error).__name__})
+        if self.placed is not None and os.path.exists(self.placed) and self.placed != found:
+            self._unplace()
+        self.placed = None
+        self.emit({'event': 'conversation_session', 'dispatch_id': contract['dispatch_id'],
+                   'conversation': contract['unit'], 'turn': contract['source'].get('turn'),
+                   'engine': module.PROVIDER, 'account': self.login['account'], 'reported': reported,
+                   'resumed': (self.held_session or {}).get('session_id'), 'refusal': self.resume_refusal,
+                   'session': session, 'start': self.start,
+                   'metrics': {'captures': int(session is not None),
+                               'resume_mismatch': int(self.resume_refusal is not None)}})
+
     def _settlement_trust(self, EL):
         """VELDO-0069: the decision settlement signers this receiver's Gate verifies with, derived as the
         production construction of the front door's Gate derives them (control_eligibility.enrolled_gate):
@@ -1244,6 +1374,8 @@ class Receiver:
                     record = conversation._conversation(reader, contract.get('unit'))
                     self.attached = [{k: a.get(k) for k in ('project', 'commit', 'clone')}
                                      for a in (record['data'].get('attachments') or [])]
+                    self.conversation_record = record['data']
+                    problem = self._held(conversation, reader, contract)
                 return problem
             finally:
                 reader.close()
@@ -1314,6 +1446,8 @@ class Receiver:
                 refusal = error.code
             finally:
                 reader.close()
+        if not refusal:
+            refusal = self._conversation_start(contract)
 
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
@@ -1324,6 +1458,7 @@ class Receiver:
                        'metrics': {'host_trust_required': int(refusal == 'host_trust_required:receiver_configuration'),
                                    'turn_kind_refusals': int(refusal == 'binding_mismatch:conversation_receiver'),
                                    'workspace_refusals': int(refusal == 'binding_mismatch:conversation_workspace'),
+                                   'session_refusals': int(refusal == 'binding_mismatch:conversation_session'),
                                    'engine_baseline_refused': int(refusal.startswith('missing_evidence:engine_baseline:'))}})
             return
         me = dict(process_identity(os.getpid()), principal=self.config['principal'])
@@ -1345,6 +1480,13 @@ class Receiver:
             worker = self._invoke(contract, acceptance, adapter)
         except Unfunded as error:
             # Checked and refused before anything was spawned: nothing ran, nothing was reserved.
+            self._unplace()
+            self.dispatches.refuse(dispatch_id, contract_digest, error.code, now=time.time(), expected_state='accepted')
+            self.emit({'event': 'refused', 'refusal': error.code})
+            return
+        except Placement as error:
+            # VELDO-0176: the held session could not be placed: nothing spawned, refused by name.
+            self._not_executed()
             self.dispatches.refuse(dispatch_id, contract_digest, error.code, now=time.time(), expected_state='accepted')
             self.emit({'event': 'refused', 'refusal': error.code})
             return
@@ -1423,6 +1565,8 @@ class Receiver:
             self.metering.settle(termination, (self.supervision or {}).get('cause'))
             if self.metering.report is not None:
                 self.emit({'event': 'artifact', 'artifact': self.metering.report})
+        # VELDO-0176 AC1: the session the engine wrote, captured out of the account profile before the end is told.
+        self._capture(contract)
         self._remove_run()
         if remote and termination['deadline_stop']:
             # Stopping the local transport at the deadline does not show the remote engine ended: its
@@ -1784,6 +1928,7 @@ class Receiver:
         """A reserved invocation whose engine never started: the receiver attests it (VELDO-0036), and the run's
         own directories go."""
         self._remove_run()
+        self._unplace()
         metering, self.metering = self.metering, None
         if metering is not None:
             metering.settle(None, None)
@@ -1828,6 +1973,8 @@ class Receiver:
             environment[ENGINE_PATH], environment[ENGINE_DIGEST] = self.binding['path'], self.binding['sha256']
             argv, environment = self._baseline(dispatch_id, argv, environment,
                                                adapter.get('identity', 'local') == 'reported')
+            # VELDO-0176 AC1: the held session placed in this account's profile, and the engine's resume option.
+            argv = argv + self._place(dispatch_id)
         environment.pop('VELDO_MEMORY', None)
         if self.memory is not None:
             environment['VELDO_MEMORY'] = json.dumps(self.memory, sort_keys=True)
@@ -2048,6 +2195,9 @@ class Receiver:
         packet = {'dispatch_id': contract['dispatch_id'], 'unit': contract['unit'], 'station': contract['station'],
                   'source': contract['source'], 'payload': contract['input']['payload'],
                   'configuration': contract['capability']['configuration']}
+        if self.rendering is not None:
+            # VELDO-0176 AC3: the first input of a fresh session on this engine carries the conversation's history.
+            packet['history'] = self.rendering['text']
         metering = self.metering
         # THE ENGINE PROTOCOL's Guard (VELDO-0155 AC3): what is written first, and whether the input then closes;
         # a held prompt is written only once the Guard releases it, and nothing more once the run stops.
@@ -2131,6 +2281,13 @@ class Receiver:
                 begin('configuration_stop' if metering.login_stop.startswith('configuration_stop:') else 'paid_api')
             if metering is not None and metering.feed(chunk):
                 begin('usage_cap')
+            # VELDO-0176 AC1: an engine that reports another session than the held one it was placed to resume is
+            # stopped by name.
+            if metering is not None and self.held_session is not None and self.resume_refusal is None:
+                reported = (metering.meter.session() or {}).get('id')
+                if reported and reported != self.held_session['session_id']:
+                    self.resume_refusal = 'binding_mismatch:conversation_resume'
+                    begin('conversation_resume')
             if login is not None and cause is None and code is None:
                 prompt = login.release()
                 if prompt is not None:
@@ -2143,6 +2300,12 @@ class Receiver:
             if (self.binding or {}).get('expected') is not None:
                 recorder.line('wrapper', json.dumps({'role_capabilities': self.binding['expected'],
                                                      'role_revision_digest': self.binding['revision']['digest']}).encode())
+            if contract.get('subject_kind') == 'conversation':
+                # VELDO-0176 AC3: the turn's input as its record keeps it (redacted), what a later rendering reads.
+                given = contract['input']['payload'] or {}
+                recorder.line('wrapper', json.dumps({'turn_input': {
+                    'message': given.get('message') if given.get('message') is not None else given.get('intake_command'),
+                    'turn': given.get('turn'), 'notice': given.get('notice'), 'start': self.start}}).encode())
             recorder.feed('engine', carry)
             recorder.batch()
         take(carry)
@@ -2422,6 +2585,14 @@ class Flags:
         return True
 
 
+class Placement(Exception):
+    """VELDO-0176: a held session that could not be placed in the account profile; nothing was spawned."""
+
+    def __init__(self, code):
+        super().__init__(code)
+        self.code = code
+
+
 class Unfunded(Exception):
     """An invocation checked and refused before launch (VELDO-0062); `code` names why."""
 
@@ -2602,7 +2773,7 @@ class Metering:
                 outcome = 'timeout'
             elif cause in ('paid_api', 'configuration_stop'):
                 outcome = 'cancelled'
-            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):
+            elif cause in ('requested', 'usage_cap', 'heartbeat_missing', 'conversation_resume'):
                 outcome = 'cancelled'
             else:
                 outcome = 'completed' if termination.get('returncode') == 0 else 'failed'

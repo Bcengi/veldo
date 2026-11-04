@@ -1362,7 +1362,57 @@ def bind(adapter, state_root, record=None):
         raise Refused('missing_evidence:engine_input_protocol:%s' % version,
                       'the version is not qualified with stream JSON input')
     return {'engine': PROVIDER, 'version': version, 'path': str(path), 'sha256': entry['sha256'],
-            'flags': list(entry['flags']), 'baseline': base, 'tools': tools}
+            'flags': list(entry['flags']), 'baseline': base, 'tools': tools,
+            # VELDO-0176: the resume option and the input bound qualified on this version, when its record has them.
+            'resume': entry.get('resume'), 'history_bound': entry.get('history_bound')}
+
+
+# VELDO-0176: a conversation's held session. The 2.1.281 binary keeps a session's transcript as
+# <profile>/projects/<the working directory, each character outside [a-zA-Z0-9] replaced by '-'>/<session id>.jsonl
+# (its projects directory, joined to the configuration directory CLAUDE_CONFIG_DIR names) and resumes the session a
+# `--resume <session id>` names (`-r, --resume [value]`, "Resume a conversation by session ID"), both read from its
+# bytes (proof/VELDO-0176/engine-resume-evidence.txt); the qualification record names both for the pinned version.
+PROJECTS_DIRECTORY = 'projects'
+SESSION_SUFFIX = '.jsonl'
+RESUME = {'option': '--resume', 'evidence': 'proof/VELDO-0176/engine-resume-evidence.txt',
+          'transcripts': 'projects/<working directory, each character outside [a-zA-Z0-9] as ->/<session id>.jsonl'}
+# The characters of history a first input carries (VELDO-0176 AC3): 400000 characters is about 100000 tokens, half
+# of the 200000 token context window of the subscription's models, leaving the rest to the turn.
+HISTORY_BOUND = {'characters': 400000, 'basis': 'about half of the subscription models\' 200000 token context window'}
+
+
+def project_directory_name(cwd):
+    return re.sub(r'[^a-zA-Z0-9]', '-', str(cwd))
+
+
+def resume_problem(bound):
+    """None when the bound version is qualified with the resume option, else its named refusal."""
+    resume = (bound or {}).get('resume')
+    if not isinstance(resume, dict) or not isinstance(resume.get('option'), str) or not resume['option']:
+        return 'missing_evidence:engine_resume:%s' % (bound or {}).get('version')
+    return None
+
+
+def resume_argv(bound, session_id):
+    """The options that resume `session_id`, after the qualified flags and the baseline."""
+    problem = resume_problem(bound)
+    if problem:
+        raise Refused(problem)
+    return [bound['resume']['option'], str(session_id)]
+
+
+def session_file(profile, cwd, session_id):
+    """The transcript of `session_id` this binary wrote under the profile for the working directory, or None."""
+    if not isinstance(session_id, str) or not re.fullmatch(r'[A-Za-z0-9._-]+', session_id) or not cwd:
+        return None
+    path = os.path.join(str(profile), PROJECTS_DIRECTORY, project_directory_name(cwd), session_id + SESSION_SUFFIX)
+    return path if os.path.isfile(path) and not os.path.islink(path) else None
+
+
+def history_bound(bound):
+    """The characters of history a first input carries on this version (VELDO-0176 AC3), or None."""
+    value = ((bound or {}).get('history_bound') or {}).get('characters')
+    return value if isinstance(value, int) and not isinstance(value, bool) and value > 0 else None
 
 
 def command(bound, adapter):

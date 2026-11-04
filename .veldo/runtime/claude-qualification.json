@@ -64,6 +64,10 @@
     "--input-format",
     "stream-json"
    ],
+   "history_bound": {
+    "basis": "about half of the subscription models' 200000 token context window",
+    "characters": 400000
+   },
    "host_kind": "linux",
    "input": "stream JSON input (VELDO-0155 AC3): the initialize control request first, then the dispatch packet as the user message only once the answer names a subscription login",
    "limit_names": {
@@ -96,6 +100,11 @@
     "seven_day_overage_included",
     "overage"
    ],
+   "resume": {
+    "evidence": "proof/VELDO-0176/engine-resume-evidence.txt",
+    "option": "--resume",
+    "transcripts": "projects/<working directory, each character outside [a-zA-Z0-9] as ->/<session id>.jsonl"
+   },
    "session_environment": [
     "AI_AGENT",
     "CLAUDE",

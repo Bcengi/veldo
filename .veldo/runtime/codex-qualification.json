@@ -46,6 +46,10 @@
   "-c",
   "check_for_update_on_startup=false"
  ],
+ "history_bound": {
+  "basis": "about half of the catalog models' 272000 token context window",
+  "characters": 500000
+ },
  "mcp_resource_rule": {
   "mapping": "mcp_server",
   "offered_without_server": {},
@@ -1122,6 +1126,15 @@
   "workspace_credits",
   "workspace_spend_cap"
  ],
+ "resume": {
+  "argv": [
+   "resume",
+   "{session}",
+   "-"
+  ],
+  "evidence": "proof/VELDO-0176/engine-resume-evidence.txt",
+  "sessions": "sessions/YYYY/MM/DD/rollout-<timestamp>-<thread id>.jsonl"
+ },
  "schema": "veldo.engine_qualification/v1",
  "session_environment": [
   "CLAUDE",

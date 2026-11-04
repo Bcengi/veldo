@@ -13,6 +13,20 @@ covers takes a fresh isolated clone of the project's repository at its trunk com
 the workspace's `projects/<project>` directory (control_clone.conversation_clone): no remote, no Git identity, no
 publication credential.  Attaching again takes a new clone beside the old one.
 
+VELDO-0176: the factory keeps each conversation's engine session itself.  After each turn the receiver captures the
+session state the engine wrote in the account profile (Claude Code's transcript of the session the result event
+names, under the profile's projects directory for the workspace; Codex's rollout file of the thread under the
+profile's sessions directory), keeps it under the conversation's `sessions` directory at mode 0600, removes it from
+the profile and reports it; the turn record binds its digest (`session`).  The next turn on the same engine resumes
+the newest held session of that engine on whichever account the pool picks: the receiver checks the capture against
+its turn record (binding_mismatch:conversation_session, never replaced by a rendering), places it at the same
+relative place in that account's profile and launches with the engine's qualified resume option; an engine that
+reports another session is stopped by name (binding_mismatch:conversation_resume).  A turn stopped at its account's
+limit returns to waiting with its capture (`limited`), and is dispatched again under a new dispatch identity.  The
+first turn on an engine that holds no session starts from `render`: the earlier turns as their redacted execution
+records keep them, the newest whole turns that fit the engine's qualified input bound, after one line naming how
+many were left out.
+
 Conversation worker reservations use the shared subscription-account records and
 the same account-pool selection order.  Their context names the conversation as the
 unit and deliberately carries no project or repository.  They are visible to the
@@ -55,6 +69,8 @@ MESSAGE = 'send_conversation_message'
 DISPATCH = 'dispatch_conversation_turn'
 END = 'end_conversation_turn'
 DEFER = 'wait_conversation_turn'
+# VELDO-0176 AC2: a question the factory asked about a turn, or a notice it gave the owner, kept on the turn record.
+NOTE = 'note_conversation_turn'
 OWNER_OPERATIONS = (OPEN, CLOSE, ROLE, ATTACH, MESSAGE)
 STATUSES = ('open', 'closed')
 TURN_STATES = ('waiting', 'dispatched', 'ended')
@@ -72,12 +88,22 @@ FLAG_WINDOW = 60
 FLAG_LIMIT = 20
 RATE_LIMITED = 'rate_limited:run_flag'
 UNDELIVERED = 'undelivered:no_conversation'
-OPERATIONS = OWNER_OPERATIONS + (DISPATCH, DEFER, END, FLAG)
+OPERATIONS = OWNER_OPERATIONS + (DISPATCH, DEFER, END, FLAG, NOTE)
 # VELDO-0177: the workspace under the conversation's directory, the attached projects' clones under it, and the
 # receiver's refusal of a turn launched anywhere else.
 WORKSPACE = 'workspace'
 PROJECTS = 'projects'
 WORKSPACE_MISMATCH = 'binding_mismatch:conversation_workspace'
+# VELDO-0176: the held sessions under the conversation's directory, the refusals by name, the turn a limit stopped.
+SESSIONS = 'sessions'
+SESSION_MISMATCH = 'binding_mismatch:conversation_session'
+RESUME_MISMATCH = 'binding_mismatch:conversation_resume'
+LIMITED = 'account_limit'
+SESSION_FIELDS = ('engine', 'session_id', 'relative', 'capture', 'digest', 'account', 'dispatch_id')
+LIMIT_NOTICE = ('The previous run of this turn stopped at an account limit; continue from where it stopped.')
+LEFT_OUT = 'Earlier turns left out of this history: %d.'
+# VELDO-0176 AC2: the owner's assistant role on the other engine (VELDO-0177 AC2), for the wait-or-move question.
+OTHER_ROLE = {'claude_code': 'assistant_codex', 'codex': 'assistant'}
 
 
 class Refused(Exception):
@@ -378,21 +404,82 @@ def transition(conn, params, before):
         turn.update(state='dispatched', dispatch_id=dispatch_id, role_revision=role_revision,
                     account=params.get('account'), receiver=params.get('receiver'), dispatched_at=now)
         return {tid: {'kind': TURN_KIND, 'data': turn}}
+    if operation == NOTE:
+        note = params.get('note')
+        if not isinstance(note, dict) or note.get('kind') not in ('question', 'notice') or not _text(note.get('ref')):
+            raise Refused('invalid_input:conversation_note')
+        key = 'questions' if note['kind'] == 'question' else 'notices'
+        kept = turn.setdefault(key, [])
+        same = next((item for item in kept if item.get('ref') == note['ref']), None)
+        if same is None:
+            kept.append(dict(note, at=now))
+        else:
+            same.update(note)
+        return {tid: {'kind': TURN_KIND, 'data': turn}}
+    # VELDO-0176: the capture this dispatch produced, bound to the turn by its digest, and how the turn started.
+    session = _session_param(record, params.get('session'))
+    started = params.get('start')
+    if started is not None and not isinstance(started, dict):
+        raise Refused('invalid_input:conversation_start')
     if operation == DEFER:
         if turn.get('state') != 'dispatched' or turn.get('dispatch_id') != params.get('dispatch_id'):
             raise Refused('stale_subject:conversation_turn')
         prior = _row(conn, 'dispatch:' + str(turn.get('dispatch_id')))
-        if not prior or prior.get('kind') != 'dispatch' or prior['data'].get('state') != 'refused':
+        limited = params.get('refusal') == LIMITED
+        # VELDO-0176 AC2: a run that exited at its account's limit returns its turn to waiting, to run again under a
+        # new dispatch identity; any other deferral follows a dispatch its receiver refused.
+        allowed = ('exited',) if limited else ('refused',)
+        if not prior or prior.get('kind') != 'dispatch' or prior['data'].get('state') not in allowed:
             raise Refused('stale_subject:conversation_turn_active')
         turn.update(state='waiting', last_refusal=params.get('refusal'))
+        if limited:
+            limit = params.get('limit') if isinstance(params.get('limit'), dict) else {}
+            turn['limited'] = {'dispatch_id': turn['dispatch_id'], 'account': turn.get('account'),
+                               'window': limit.get('window'), 'reset_at': limit.get('reset_at'),
+                               'decision': params.get('decision'), 'question': params.get('question'), 'at': now}
+            turn.setdefault('limits', []).append(dict(turn['limited']))
+        _bind_session(turn, session, started)
         return {tid: {'kind': TURN_KIND, 'data': turn}}
-    if turn.get('state') != 'dispatched' or turn.get('dispatch_id') != params.get('dispatch_id'):
+    stopped_waiting = (turn.get('state') == 'waiting' and isinstance(turn.get('limited'), dict)
+                       and turn['limited'].get('dispatch_id') == params.get('dispatch_id'))
+    if not stopped_waiting and (turn.get('state') != 'dispatched'
+                                or turn.get('dispatch_id') != params.get('dispatch_id')):
         raise Refused('stale_subject:conversation_turn')
     outcome = params.get('outcome')
     if not _text(outcome):
         raise Refused('invalid_input:conversation_outcome')
     turn.update(state='ended', outcome=outcome, ended_at=now)
+    _bind_session(turn, session, started)
     return {tid: {'kind': TURN_KIND, 'data': turn}}
+
+
+def sessions_of(record):
+    """VELDO-0176 AC1: where a conversation's held sessions are kept, `sessions` under its directory."""
+    directory = (record or {}).get('directory')
+    return os.path.join(directory, SESSIONS) if _text(directory) and os.path.isabs(directory) else None
+
+
+def _session_param(record, value):
+    """The capture a turn's dispatch reports, checked by shape: its engine, the session id the engine reported, the
+    place relative to the account profile, the capture under this conversation's sessions directory and its digest."""
+    if value is None:
+        return None
+    root = sessions_of(record)
+    if (not isinstance(value, dict) or not all(_text(value.get(k)) for k in SESSION_FIELDS) or root is None
+            or os.path.isabs(value['relative']) or '..' in Path(value['relative']).parts
+            or os.path.dirname(os.path.normpath(value['capture'])) != os.path.join(root, value['engine'])
+            or not value['digest'].startswith('sha256:') or len(value['digest']) != 71):
+        raise Refused('invalid_input:conversation_session')
+    return {k: value[k] for k in SESSION_FIELDS}
+
+
+def _bind_session(turn, session, started):
+    """The turn keeps the newest capture of its dispatches (the one its next turn resumes) and every earlier one."""
+    if session is not None:
+        turn['session'] = dict(session)
+        turn.setdefault('captures', []).append(dict(session))
+    if started is not None:
+        turn.setdefault('starts', []).append(copy.deepcopy(started))
 
 
 class Conversations:
@@ -564,14 +651,44 @@ class Conversations:
                   'role_revision': role_revision, 'account': account, 'receiver': receiver}, now=now)
         return _turn(self.conn, identity, sequence)['data']
 
-    def ended(self, identity, sequence, dispatch_id, outcome, *, now=None):
-        self._run(END, identity, {'sequence': sequence, 'dispatch_id': dispatch_id, 'outcome': outcome}, now=now)
+    def ended(self, identity, sequence, dispatch_id, outcome, *, session=None, start=None, now=None):
+        fields = {'sequence': sequence, 'dispatch_id': dispatch_id, 'outcome': outcome}
+        fields.update({k: v for k, v in (('session', session), ('start', start)) if v is not None})
+        self._run(END, identity, fields, now=now)
+        self._session_event(identity, sequence, dispatch_id, session, start)
         return _turn(self.conn, identity, sequence)['data']
 
-    def deferred(self, identity, sequence, dispatch_id, refusal, *, now=None):
-        self._run(DEFER, identity, {'sequence': sequence, 'dispatch_id': dispatch_id,
-                                   'refusal': refusal}, now=now)
+    def deferred(self, identity, sequence, dispatch_id, refusal, *, session=None, start=None, limit=None,
+                 decision=None, question=None, now=None):
+        fields = {'sequence': sequence, 'dispatch_id': dispatch_id, 'refusal': refusal}
+        fields.update({k: v for k, v in (('session', session), ('start', start), ('limit', limit),
+                                         ('decision', decision), ('question', question)) if v is not None})
+        self._run(DEFER, identity, fields, now=now)
+        self._session_event(identity, sequence, dispatch_id, session, start)
         return _turn(self.conn, identity, sequence)['data']
+
+    def _session_event(self, identity, sequence, dispatch_id, session, start):
+        """VELDO-0176 observability: the capture a turn's dispatch produced, as bound to its record (ids and digest,
+        never session content), and how the dispatch started."""
+        if session is not None:
+            self.observe({'schema': SCHEMA, 'operation': 'session_capture', 'conversation': identity,
+                          'sequence': sequence, 'dispatch_id': dispatch_id, 'engine': session['engine'],
+                          'session_id': session['session_id'], 'account': session['account'],
+                          'digest': session['digest'], 'outcome': 'bound'})
+        if start is not None:
+            self.observe(dict({'schema': SCHEMA, 'operation': 'turn_start', 'conversation': identity,
+                               'sequence': sequence, 'dispatch_id': dispatch_id}, **start))
+
+    def note(self, identity, sequence, note, *, now=None):
+        """VELDO-0176 AC2: a question about a turn (its ref, choices and, once settled, the answer) or a notice the
+        owner was given, kept on the turn record."""
+        self._run(NOTE, identity, {'sequence': sequence, 'note': note}, now=now)
+        self.observe(dict({'schema': SCHEMA, 'operation': 'turn_' + note.get('kind', 'note'), 'conversation': identity,
+                           'sequence': sequence}, **{k: note.get(k) for k in ('ref', 'answer', 'reason')}))
+        return _turn(self.conn, identity, sequence)['data']
+
+    def held(self, identity, engine):
+        return held_session(self.conn, identity, engine)
 
     def flag(self, dispatch_id, *, engine, means, text, at, read_at=None, sequence=None, account=None,
              synchronous=False, conversation=None, project=None):
@@ -657,7 +774,21 @@ class Conversations:
             if type(turn.get('role_revision')) is int:
                 key = str(turn['role_revision'])
                 by_revision[key] = by_revision.get(key, 0) + 1
-        return {'open': sum(c.get('status') == 'open' for c in conversations),
+        # VELDO-0176 metrics: turns resumed from a held session, started from a rendering and from a shortened one,
+        # captures, engine questions by answer, and turns stopped by a held session whose digest differs.
+        starts = [start for turn in turns for start in turn.get('starts') or []]
+        answers = {}
+        for turn in turns:
+            for asked in turn.get('questions') or []:
+                key = asked.get('answer') or 'unanswered'
+                answers[key] = answers.get(key, 0) + 1
+        sessions = {'resumed': sum(s.get('mode') == 'resumed' for s in starts),
+                    'rendered': sum(s.get('mode') == 'rendered' for s in starts),
+                    'rendered_shortened': sum(s.get('mode') == 'rendered' and bool(s.get('left_out')) for s in starts),
+                    'captures': sum(len(turn.get('captures') or []) for turn in turns),
+                    'questions': answers, 'session_mismatch': outcomes.get(SESSION_MISMATCH, 0),
+                    'resume_mismatch': outcomes.get(RESUME_MISMATCH, 0)}
+        return {'sessions': sessions, 'open': sum(c.get('status') == 'open' for c in conversations),
                 'waiting': sum(t.get('state') == 'waiting' for t in turns), 'outcomes': outcomes,
                 'turns_by_role_revision': by_revision, 'workspace_refusals': outcomes.get(WORKSPACE_MISMATCH, 0),
                 'project_attaches': sum(len(c.get('attachments') or []) for c in conversations)}
@@ -682,3 +813,201 @@ def receiver_check(conn, contract):
     if own is None or (contract.get('source') or {}).get('workspace') != own:
         return WORKSPACE_MISMATCH
     return None
+
+
+# ---- VELDO-0176: held sessions and the history rendering -------------------------------------------------------------
+
+def held_session(conn, identity, engine):
+    """The newest capture of `engine` a turn of this conversation holds, with that turn's sequence; None for none.
+    A role on the same engine resumes it; the other engine's held session is kept, so a change back resumes it."""
+    found = []
+    for (data,) in conn.execute('SELECT data FROM entities WHERE kind=?', (TURN_KIND,)):
+        turn = json.loads(data)
+        session = turn.get('session')
+        if turn.get('conversation') == identity and isinstance(session, dict) and session.get('engine') == engine:
+            found.append((turn['sequence'], session))
+    if not found:
+        return None
+    sequence, session = max(found, key=lambda item: item[0])
+    return dict(session, turn=sequence)
+
+
+def file_digest(path):
+    digest = hashlib.sha256()
+    with open(path, 'rb') as handle:
+        for block in iter(lambda: handle.read(1 << 20), b''):
+            digest.update(block)
+    return 'sha256:' + digest.hexdigest()
+
+
+def checked_capture(conn, identity, held):
+    """VELDO-0176 AC1, AC3: the held session named by the dispatch (`held`: its turn, session id and digest), read
+    back from the turn record and its capture file; refused by name (binding_mismatch:conversation_session) when the
+    turn record names another session or digest, or the capture is missing, a link, or its digest differs."""
+    turn = _turn(conn, identity, (held or {}).get('turn'))
+    session = ((turn or {}).get('data') or {}).get('session') or {}
+    if (not session or any(session.get(k) != held.get(k) for k in ('engine', 'session_id', 'digest', 'relative'))
+            or session.get('capture') != held.get('capture')):
+        raise Refused(SESSION_MISMATCH, 'the held session is not the one the turn record binds')
+    try:
+        info = os.lstat(session['capture'])
+        if not (info.st_mode & 0o170000 == 0o100000) or file_digest(session['capture']) != session['digest']:
+            raise Refused(SESSION_MISMATCH, 'the held session differs from its turn record')
+    except OSError:
+        raise Refused(SESSION_MISMATCH, 'the held session is missing') from None
+    return session
+
+
+def _write_private(path, data):
+    os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)
+    temporary = path + '.tmp-' + os.urandom(6).hex()
+    fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(fd, 'wb') as handle:
+        handle.write(data)
+    os.replace(temporary, path)
+
+
+def place(session, profile):
+    """VELDO-0176 AC1: the checked capture at the same relative place in the chosen account's profile, mode 0600;
+    returns the placed path. The capture was read and checked by digest, and what is placed is those bytes."""
+    with open(session['capture'], 'rb') as handle:
+        data = handle.read()
+    if 'sha256:' + hashlib.sha256(data).hexdigest() != session['digest']:
+        raise Refused(SESSION_MISMATCH, 'the held session changed while it was placed')
+    target = os.path.join(profile, session['relative'])
+    if os.path.commonpath([os.path.realpath(profile), os.path.realpath(os.path.dirname(target))]) != \
+            os.path.realpath(profile):
+        raise Refused(SESSION_MISMATCH, 'the held session would leave the account profile')
+    _write_private(target, data)
+    return target
+
+
+def capture(record, engine, profile, found, session_id, dispatch_id, account):
+    """VELDO-0176 AC1: the session file the engine wrote in the account profile (`found`, the engine module's
+    session_file) kept under the conversation's sessions directory at mode 0600 and removed from the profile.
+    Returns the session as the turn record binds it."""
+    root = sessions_of(record)
+    with open(found, 'rb') as handle:
+        data = handle.read()
+    name = hashlib.sha256(str(dispatch_id).encode()).hexdigest()[:32] + '.jsonl'
+    target = os.path.join(root, engine, name)
+    os.makedirs(root, mode=0o700, exist_ok=True)
+    os.chmod(root, 0o700)
+    _write_private(target, data)
+    os.unlink(found)
+    return {'engine': engine, 'session_id': session_id, 'relative': os.path.relpath(found, profile),
+            'capture': target, 'digest': 'sha256:' + hashlib.sha256(data).hexdigest(), 'account': account,
+            'dispatch_id': dispatch_id}
+
+
+def _text_of(value):
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list):
+        return '\n'.join(_text_of(item.get('text') if isinstance(item, dict) and 'text' in item else item)
+                         for item in value)
+    return json.dumps(value, sort_keys=True)
+
+
+def turn_from_record(lines):
+    """One earlier turn as its execution record keeps it after redaction (VELDO-0141 AC4): the owner's message from
+    the receiver's input line, each tool call with its input and result, and the reply; read from the record's
+    redacted payloads only, never from a held session."""
+    message, calls, replies, results = None, [], [], {}
+    for line in lines:
+        try:
+            event = json.loads(line.get('payload') or 'null')
+        except ValueError:
+            event = None
+        if not isinstance(event, dict):
+            continue
+        if line.get('stream') == 'wrapper' and isinstance(event.get('turn_input'), dict):
+            message = message if message is not None else event['turn_input'].get('message')
+            continue
+        if line.get('stream') != 'engine':
+            continue
+        kind = event.get('type')
+        content = (event.get('message') or {}).get('content') if isinstance(event.get('message'), dict) else None
+        if kind == 'assistant' and isinstance(content, list):
+            for block in content:
+                if isinstance(block, dict) and block.get('type') == 'tool_use':
+                    calls.append({'id': block.get('id'), 'name': block.get('name'), 'input': block.get('input'),
+                                  'result': None})
+                elif isinstance(block, dict) and block.get('type') == 'text' and _text(block.get('text')):
+                    replies.append(block['text'])
+        elif kind == 'user' and isinstance(content, list):
+            for block in content:
+                if isinstance(block, dict) and block.get('type') == 'tool_result':
+                    results[block.get('tool_use_id')] = _text_of(block.get('content'))
+        elif kind == 'result' and _text(event.get('result')):
+            replies.append(event['result'])
+        elif kind == 'item.completed' and isinstance(event.get('item'), dict):
+            item = event['item']
+            if item.get('type') == 'agent_message' and _text(item.get('text')):
+                replies.append(item['text'])
+            elif item.get('type') not in ('reasoning', 'agent_message'):
+                name = item.get('tool') or item.get('type')
+                given = item.get('command') if 'command' in item else item.get('arguments', item.get('changes'))
+                result = item.get('aggregated_output') if 'aggregated_output' in item else item.get('result')
+                calls.append({'id': item.get('id'), 'name': name, 'input': given, 'result': _text_of(result)})
+    for call in calls:
+        if call['id'] in results:
+            call['result'] = results[call['id']]
+    return {'message': message, 'calls': calls, 'reply': replies[-1] if replies else None}
+
+
+def _turn_text(sequence, turn):
+    parts = ['Turn %d' % sequence, 'Owner: %s' % (turn.get('message') if turn.get('message') is not None
+                                                   else '(not in the record)')]
+    for call in turn.get('calls') or []:
+        parts.append('Tool call: %s %s' % (call.get('name'), json.dumps(call.get('input'), sort_keys=True)))
+        parts.append('Tool result: %s' % (call.get('result') if call.get('result') is not None else '(none)'))
+    parts.append('Reply: %s' % (turn.get('reply') if turn.get('reply') is not None else '(none)'))
+    return '\n'.join(parts) + '\n'
+
+
+def render(turns, bound):
+    """VELDO-0176 AC3: the history a fresh session on the other engine starts from: `turns` ((sequence, turn) in
+    order, each as turn_from_record reads it) as the newest whole turns that fit `bound` characters, after one line
+    naming how many earlier turns were left out. A turn is never cut; a history beyond the bound is shortened, never
+    refused. Returns {text, turns, left_out, digest, characters}."""
+    texts = [(sequence, _turn_text(sequence, turn)) for sequence, turn in turns]
+    kept = []
+    for sequence, text in reversed(texts):
+        header = LEFT_OUT % (len(texts) - len(kept) - 1) + '\n'
+        if len(header) + sum(len(t) for _s, t in kept) + len(text) > bound:
+            break
+        kept.insert(0, (sequence, text))
+    left_out = len(texts) - len(kept)
+    text = LEFT_OUT % left_out + '\n' + ''.join(t for _s, t in kept)
+    return {'text': text, 'turns': [sequence for sequence, _t in kept], 'left_out': left_out,
+            'digest': 'sha256:' + hashlib.sha256(text.encode()).hexdigest(), 'characters': len(text)}
+
+
+def history(conn, records, identity, before, read):
+    """VELDO-0176 AC3: each earlier turn of the conversation (sequence below `before`), in order, read from the
+    execution records of its dispatches as their exits committed them (`read`, control_execution_record.read)."""
+    found = []
+    turns = sorted((json.loads(d) for (d,) in conn.execute('SELECT data FROM entities WHERE kind=?', (TURN_KIND,))),
+                   key=lambda t: t.get('sequence', 0))
+    for turn in turns:
+        if turn.get('conversation') != identity or turn.get('sequence', 0) >= before:
+            continue
+        lines = []
+        for attempt in turn.get('attempts') or []:
+            row = _row(conn, 'dispatch:' + str(attempt.get('dispatch_id')))
+            committed = ((row or {}).get('data') or {}).get('execution_record')
+            if not row or committed is None:
+                continue
+            after = 0
+            while True:
+                try:
+                    page = read(records, attempt['dispatch_id'], after, 4096, committed=committed)
+                except Exception:  # noqa: BLE001 - a record that cannot be read leaves that attempt out, by name
+                    break
+                lines += page['lines']
+                after += len(page['lines'])
+                if not page['lines'] or after >= page['total']:
+                    break
+        found.append((turn['sequence'], turn_from_record(lines)))
+    return found

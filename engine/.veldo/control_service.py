@@ -302,6 +302,12 @@ ASK_CHOICES = ('rerun', 'stop')
 # VELDO-0185 AC4: a login the Line cannot read here (Line.login_now), left to the pool and the receiver's check.
 UNCHECKED = 'unchecked:'
 ASK_SECONDS = 7 * 86400
+# VELDO-0176 AC2: the owner's question when every account of a conversation's engine is at its limit, and the notice
+# of a turn that was running at a restart.
+MOVE_KIND = 'conversation_engine_limit'
+MOVE_CHOICES = ('wait', 'move')
+RESTART_KIND = 'conversation_restart'
+RESTART_CHOICES = ('acknowledged',)
 # VELDO-0148: the question a land awaiting a fresh grant for its re-merged tree raises.
 GRANT_KIND = 'land_approval'
 GRANT_CHOICES = ('grant', 'stop')
@@ -2658,7 +2664,26 @@ class ConversationLine:
                 self.conversations.ended(identity, turn['sequence'], dispatch_id, outcome)
                 recovered.append({'conversation': identity, 'turn': turn['sequence'],
                                   'dispatch_id': dispatch_id, 'outcome': outcome})
+                if outcome == 'outcome_unknown':
+                    self.told(identity, turn['sequence'], dispatch_id, recovered[-1])
         return recovered
+
+    def told(self, identity, sequence, dispatch_id, entry):
+        """VELDO-0176 AC2: the owner is told, through the decision flow, that a turn was running at a restart: its
+        outcome is unknown, the last capture stays and his next message resumes from it."""
+        alias = 'conversation-restart-' + hashlib.sha256(dispatch_id.encode()).hexdigest()[:24]
+        brief = ('Turn %d of conversation %s was running when the factory restarted; its outcome is unknown. The '
+                 'conversation keeps its last capture, and your next message resumes from it.' % (sequence, identity))
+        try:
+            opened, aid = self.question(identity, alias, brief, RESTART_CHOICES,
+                                        {'kind': RESTART_KIND, 'ref': dispatch_id, 'digest': S.digest_of(entry)},
+                                        kind='acknowledgement')
+            self.conversations.note(identity, sequence, {'kind': 'notice', 'ref': aid, 'reason': 'outcome_unknown',
+                                                         'told': opened.get('ok') is True})
+        except Exception as error:  # noqa: BLE001 - telling the owner never stops recovery
+            entry['told'] = getattr(error, 'code', type(error).__name__)
+            return
+        entry['told'] = aid
 
     def run(self, report, ended):
         """Settle ended turns, then offer at most the first waiting turn of each conversation."""
@@ -2676,9 +2701,17 @@ class ConversationLine:
                        ('completed' if L.D.completed(record) else
                         'outcome_unknown' if record.get('state') == 'unknown' else
                         record.get('state') or 'outcome_unknown'))
+            # VELDO-0176: the capture the receiver took, bound to the turn record; an engine that reported another
+            # session than the held one ends its turn by that name.
+            reported = getattr(launch, 'session', None) or {}
+            session, start = reported.get('session'), reported.get('start')
+            if reported.get('refusal'):
+                outcome = reported['refusal']
             try:
+                if not reported.get('refusal') and self.limited(record, turn, session, start, report):
+                    continue
                 ended_turn = self.conversations.ended(turn['conversation'], turn['sequence'],
-                                                      launch.dispatch_id, outcome)
+                                                      launch.dispatch_id, outcome, session=session, start=start)
             except CV.Refused as error:
                 report['faults'].append({'conversation': turn['conversation'], 'turn': turn['sequence'],
                                          'reason': error.code})
@@ -2703,12 +2736,187 @@ class ConversationLine:
             self.active_refusals.discard(key)
             self.offer(turn, report)
 
-    def offer(self, turn, report):
+    def invocation(self, dispatch_id):
+        """The VELDO-0036 invocation record of the dispatch's run (its receiver's Metering), or None."""
+        entity = L.D.RES.entity('invocation', [self.service.domain, 'invocation/' + dispatch_id])
+        row = self.service.conn.execute('SELECT data FROM entities WHERE id=?', (entity,)).fetchone()
+        return json.loads(row[0]) if row else None
+
+    def decide(self, record):
+        """VELDO-0160's re-run-or-ask decision over the run's committed execution record, as Line.decide makes it."""
+        committed = record.get('execution_record')
+        if committed is None:
+            raise LIM.Refused('missing_evidence:execution_record', record['dispatch_id'])
+        records, lines, after = L.ER.directory(self.receiver), [], 0
+        while True:
+            page = L.ER.read(records, record['dispatch_id'], after, 4096, committed=committed)
+            lines += page['lines']
+            after += len(page['lines'])
+            if not page['lines'] or after >= page['total']:
+                break
+        form = [{'sequence': line.get('seq'), 'received_at': line.get('at'), 'stream': line.get('stream'),
+                 'redacted': line.get('redacted'), 'payload': line.get('payload')} for line in lines]
+        servers, marks = catalog_marks(record)
+        engine = ((self.receiver.get('adapters') or {}).get(record['contract']['capability']['adapter']) or {}).get('engine')
+        return LIM.decide(form, servers, marks, engine)
+
+    def limited(self, record, turn, session, start, report):
+        """VELDO-0176 AC2 over VELDO-0154 AC3: a turn whose run ended `account_limit` keeps its capture (AC1) and,
+        under VELDO-0160 AC3's decision, returns to waiting to run again under a new dispatch identity on another
+        account, resuming that capture; when the decision asks, the owner is asked first (re-run or stop) and nothing
+        runs before his answer. False for any other end."""
+        if record.get('state') != 'exited':
+            return False
+        invocation = self.invocation(record['dispatch_id']) or {}
+        if invocation.get('outcome') != L.ACC.LIMIT_OUTCOME:
+            return False
+        identity, sequence = turn['conversation'], turn['sequence']
+        entry = {'kind': 'conversation', 'conversation': identity, 'turn': sequence, 'dispatch_id': record['dispatch_id'],
+                 'account': record['contract']['reservation']['account'], 'limit': invocation.get('limit')}
+        try:
+            decision = self.decide(record)
+        except (LIM.Refused, L.ER.Refused) as error:
+            report['decisions'].append(dict(entry, decision=None, refusal=error.code))
+            return False
+        report['decisions'].append(dict(entry, decision=decision['decision'], basis=decision.get('basis'),
+                                        calls=decision['calls']))
+        question = None
+        if decision['decision'] != LIM.RERUN:
+            calls = ', '.join('line %s %s (%s)' % (c.get('sequence'), '/'.join(str(p) for p in (
+                c.get('server'), c.get('tool')) if p) or c.get('form') or 'unreadable', c.get('reason'))
+                for c in decision['calls'])
+            brief = ('Turn %d of conversation %s stopped at the limit of account %s. Its execution record shows calls '
+                     'that may already have written: %s. Re-run it on another account, or stop the turn?'
+                     % (sequence, identity, entry['account'], calls))
+            alias = 'conversation-rerun-' + hashlib.sha256(record['dispatch_id'].encode()).hexdigest()[:24]
+            opened, question = self.question(identity, alias, brief, ASK_CHOICES,
+                                             {'kind': ASK_KIND, 'ref': record['dispatch_id'],
+                                              'digest': S.digest_of(decision)})
+            report['asked'].append(dict(entry, calls=decision['calls'], outcome=opened.get('ok') is True,
+                                        refusal=None if opened.get('ok') else opened.get('reason')))
+        self.conversations.deferred(identity, sequence, record['dispatch_id'], CV.LIMITED, session=session,
+                                    start=start, limit=invocation.get('limit'), decision=decision['decision'],
+                                    question=question)
+        if question is not None:
+            self.conversations.note(identity, sequence, {'kind': 'question', 'ref': question, 'about': ASK_KIND,
+                                                         'choices': list(ASK_CHOICES), 'answer': None})
+        report['ended'].append({'conversation': identity, 'turn': sequence, 'dispatch_id': record['dispatch_id'],
+                                'outcome': CV.LIMITED, 'decision': decision['decision']})
+        return True
+
+    def coordinate(self, identity):
+        """The decision flow's coordinate of a conversation's questions (it has no repository)."""
+        return CV.conversation_id(identity)
+
+    def question(self, identity, alias, brief, choices, subject, kind='decision'):
+        """((the inbox's answer), assignment id): one ordinary decision request (VELDO-0064, presented by VELDO-0065
+        and settled once by VELDO-0068) to the conversation's owner, signed as the service's principal, over the
+        owner's own scope; opened once per alias."""
+        conversation = self.conversations.read(identity) or {}
+        owner = conversation.get('owner')
+        coordinate = self.coordinate(identity)
+        inbox = self.service.inbox(coordinate)
+        aid = I.assignment_id(coordinate, alias)
+        if inbox.read(aid) is not None:
+            return {'ok': True, 'reason': 'exists'}, aid
+        row = self.service.conn.execute('SELECT kind, data FROM entities WHERE id=?', (owner,)).fetchone() if owner else None
+        scope = (json.loads(row[1]) if row and row[0] == 'membership' else {}).get('scope')
+        scope = [scope] if isinstance(scope, str) else (list(scope) if isinstance(scope, list) and scope else ['*'])
+        now = time.time()
+        content = {'kind': kind, 'owner': owner, 'scope': scope,
+                   'deadline': time.strftime(I.DEADLINE_FORMAT, time.gmtime(now + ASK_SECONDS)),
+                   'budget': {'invocations': 1}, 'brief': brief, 'choices': list(choices), 'subject': subject}
+        command = {'operation': 'open', 'alias': alias, 'principal': self.service.principal, 'command_id': alias,
+                   'nonce': alias, 'domain_uuid': self.service.domain, 'repository_uuid': coordinate,
+                   'store_uuid': self.service.store, 'assignment': content}
+        try:
+            signature = SIG.sign_bytes(self.service.config['journal_key'], S.canonical_bytes(command),
+                                       AC.SIGNATURE_NAMESPACE)
+        except SIG.K.Refused:
+            return {'ok': False, 'reason': 'unavailable_service:signing'}, aid
+        return inbox.apply({'command': command, 'signature': signature}), aid
+
+    def answer(self, identity, aid):
+        """The owner's settled ruling on a conversation question, or None while it waits (not admitted)."""
+        inbox = self.service.inbox(self.coordinate(identity))
+        item = inbox.read(aid)
+        if item is None or not inbox.admit(aid)['admitted']:
+            return None
+        return (((item.get('data') or {}).get('answer')) or {}).get('ruling')
+
+    def all_limited(self, engine):
+        """VELDO-0176 AC2: whether every active account of `engine` is at its limit now."""
+        now = time.time()
+        accounts = [a for a in L.D.RES.POOL.accounts(self.service.conn)
+                    if a.get('provider') == engine and a.get('status') == 'active']
+        return bool(accounts) and all(L.ACC.blocking(a, now) for a in accounts)
+
+    def engine_limit(self, turn, conversation, engine, code, entry, report):
+        """VELDO-0176 AC2: every account of the conversation's engine is at its limit: the owner is asked, once for the
+        turn, whether to wait for the reset the question names or move the conversation to his assistant role on the
+        other engine. `wait` leaves the turn waiting for that reset (the loop's reset wake); `move` sends his
+        set_conversation_role and the turn runs there (AC3). Nothing moves before his answer. True when the turn was
+        moved and may be offered again now."""
+        identity, sequence = turn['conversation'], turn['sequence']
+        other = CV.OTHER_ROLE.get(engine)
+        try:
+            other_engine = CV.role_at(self.service.conn, other)[1]['engine'] if other else None
+        except CV.Refused:
+            other_engine = None
+        if other_engine is None or other_engine == engine or not self.all_limited(engine):
+            return False
+        until = code.split(':', 1)[1] if code.startswith('no_account_until:') else ''
+        alias = 'conversation-limit-' + hashlib.sha256(('%s/%d/%s' % (identity, sequence, engine)).encode()).hexdigest()[:24]
+        aid = I.assignment_id(self.coordinate(identity), alias)
+        asked = next((q for q in (turn.get('questions') or []) if q.get('ref') == aid), None)
+        if asked is None:
+            shown = time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(int(until))) if until.isdigit() else 'not reported'
+            brief = ('Every %s account is at its limit; the next reset is %s. Wait for that reset, or move conversation '
+                     '%s to your assistant role on %s (%s)? Nothing moves before your answer.'
+                     % (engine, shown, identity, other_engine, other))
+            opened, aid = self.question(identity, alias, brief, MOVE_CHOICES,
+                                        {'kind': MOVE_KIND, 'ref': '%s/%d' % (identity, sequence),
+                                         'digest': S.digest_of({'engine': engine, 'until': until, 'role': other})})
+            self.conversations.note(identity, sequence, {'kind': 'question', 'ref': aid, 'about': MOVE_KIND,
+                                                         'choices': list(MOVE_CHOICES), 'answer': None,
+                                                         'engine': engine, 'until': until, 'role': other})
+            report['asked'].append(dict(entry, about=MOVE_KIND, outcome=opened.get('ok') is True, until=until,
+                                        refusal=None if opened.get('ok') else opened.get('reason')))
+            return False
+        ruling = asked.get('answer') or self.answer(identity, aid)
+        if ruling is None:
+            report['awaiting'].append(dict(entry, about=MOVE_KIND, assignment_id=aid))
+            return False
+        if asked.get('answer') is None:
+            self.conversations.note(identity, sequence, dict(asked, answer=ruling))
+        if ruling != 'move' or conversation.get('role') == other:
+            return False
+        # His answer is his role change: the owner's set_conversation_role, on the version he was asked at.
+        self.conversations.change_role(identity, conversation['version'], other, owner=conversation['owner'],
+                                       command_id='conversation-move/' + aid)
+        report.setdefault('moved', []).append(dict(entry, role=other, assignment_id=aid))
+        return True
+
+    def offer(self, turn, report, moved=False):
         identity, sequence = turn['conversation'], turn['sequence']
         conversation = self.conversations.read(identity)
         entry = {'kind': 'conversation', 'conversation': identity, 'turn': sequence, 'station': 'turn'}
         contract = launch = None
         excluded = []
+        limited = turn.get('limited') if isinstance(turn.get('limited'), dict) else None
+        if limited and limited.get('decision') not in (None, LIM.RERUN) and limited.get('question'):
+            # VELDO-0160's ask: the owner's answer first; his `stop` ends the turn as its run ended.
+            ruling = self.answer(identity, limited['question'])
+            if ruling is None:
+                report['awaiting'].append(dict(entry, about=ASK_KIND, assignment_id=limited['question']))
+                return None
+            if ruling != ASK_CHOICES[0]:
+                with contextlib.suppress(CV.Refused):
+                    self.conversations.note(identity, sequence, {'kind': 'question', 'ref': limited['question'],
+                                                                 'about': ASK_KIND, 'answer': ruling})
+                    self.conversations.ended(identity, sequence, limited['dispatch_id'], CV.LIMITED)
+                report['stopped'].append(dict(entry, ruling=ruling))
+                return None
         try:
             role, revision, team_revision = CV.role_at(self.service.conn, conversation['role'])
             engine = revision['engine']
@@ -2722,6 +2930,16 @@ class ConversationLine:
             payload = {'conversation': identity, 'turn': sequence, 'owner': conversation['owner'],
                        'intake_command': turn['intake_command'], 'team_revision': team_revision,
                        'directory': conversation['directory']}
+            # VELDO-0176: the held session of this engine the turn resumes (AC1), else, after earlier turns, the
+            # history it starts from (AC3); and, after a limit, the input saying where the previous run stopped (AC2).
+            held = CV.held_session(self.service.conn, identity, engine)
+            if held is not None:
+                payload['resume'] = held['session_id']
+                payload['held'] = {k: held[k] for k in ('turn', 'engine', 'session_id', 'digest', 'relative', 'capture')}
+            elif any(t['sequence'] < sequence for t in self.conversations.turns(identity)):
+                payload['history'] = True
+            if limited:
+                payload['notice'] = CV.LIMIT_NOTICE
             while True:
                 contract = self.runner.prepare_conversation(
                     identity, sequence, intake_digest=turn['intake_digest'], payload=payload, adapter=adapter,
@@ -2752,6 +2970,13 @@ class ConversationLine:
             if code.startswith('no_account'):
                 until = code.split(':', 1)[1] if code.startswith('no_account_until:') else ''
                 report['waiting'].append(dict(entry, refusal=code, until=int(until) if until.isdigit() else None))
+                try:
+                    current = next((t for t in self.conversations.turns(identity) if t['sequence'] == sequence), turn)
+                    engine_now = CV.role_at(self.service.conn, conversation['role'])[1]['engine']
+                    if not moved and self.engine_limit(current, conversation, engine_now, code, entry, report):
+                        return self.offer(current, report, moved=True)
+                except CV.Refused as error:
+                    report['refused'].append(dict(entry, refusals=[error.code]))
             else:
                 report['refused'].append(dict(entry, refusals=[code]))
             return None
@@ -2764,7 +2989,9 @@ class ConversationLine:
             record = self.runner.wait(launch, timeout=0) or {}
             outcome = record.get('refusal') or record.get('reason') or record.get('state') or 'outcome_unknown'
             with contextlib.suppress(CV.Refused):
-                self.conversations.ended(identity, sequence, contract['dispatch_id'], outcome)
+                reported = getattr(launch, 'session', None) or {}
+                self.conversations.ended(identity, sequence, contract['dispatch_id'], outcome,
+                                         session=reported.get('session'), start=reported.get('start'))
         elif launch.pump(read=False):
             self.loop.saw_end(self, launch)
         return launch
