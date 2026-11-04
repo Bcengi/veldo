@@ -1703,7 +1703,7 @@ class Receiver:
                    capability=self.binding.get('capability'))
         engine = self.login['engine']
         handed = None
-        if self.file_memory is not None:
+        if getattr(self, 'file_memory', None) is not None:
             # VELDO-0184: the index as the run loads it, read now; its digest is the launch line's.
             try:
                 index, digest = FM.loaded(self.file_memory)
@@ -1799,7 +1799,7 @@ class Receiver:
     def _reported_options(self, argv):
         """The baseline options as reported: a run handed the file memory carries its index in Codex's developer
         instructions, whose value is reported by digest only (VELDO-0184: never memory content)."""
-        if self.file_memory is None:
+        if getattr(self, 'file_memory', None) is None:
             return list(argv)
         prefix = 'developer_instructions='
         return [('%s<sha256:%s>' % (prefix, hashlib.sha256(a[len(prefix):].encode()).hexdigest())
@@ -1889,12 +1889,12 @@ class Receiver:
         if self.memory is not None:
             environment['VELDO_MEMORY'] = json.dumps(self.memory, sort_keys=True)
             receipt = dict(self.memory)
-            if self.file_memory is not None and 'index_digest' in self.file_memory:
+            if getattr(self, 'file_memory', None) is not None and 'index_digest' in self.file_memory:
                 receipt['file_memory'] = self._file_memory_line()['file_memory']
             _organ('control_memory').record_launch(
                 self.config.get('state_root') or str(Path(self.config['store']).parent.parent), dispatch_id, receipt)
             self.emit(dict(event='memory', dispatch_id=dispatch_id, **self.memory))
-        if self.file_memory is not None and 'index_digest' in self.file_memory:
+        if getattr(self, 'file_memory', None) is not None and 'index_digest' in self.file_memory:
             # VELDO-0184 observability: the handoff, bound to the memory revision and the qualification; counted
             # per engine.
             self.emit(dict(event='file_memory', dispatch_id=dispatch_id, **self._file_memory_line()['file_memory'],
@@ -2201,7 +2201,7 @@ class Receiver:
                 if metering.login_stop == FM.MISMATCH:
                     # VELDO-0184 AC1: the binary loaded memory from somewhere other than the handed directory.
                     self.emit({'event': 'file_memory_stopped', 'dispatch_id': contract['dispatch_id'],
-                               'refusal': FM.MISMATCH, 'handed': (self.file_memory or {}).get('directory'),
+                               'refusal': FM.MISMATCH, 'handed': (getattr(self, 'file_memory', None) or {}).get('directory'),
                                'memory_paths': getattr(metering.login_guard, 'memory_paths', None),
                                'metrics': {'file_memory_mismatch_stops': 1}})
                 begin('configuration_stop' if metering.login_stop.startswith(('configuration_stop:', 'binding_mismatch:'))
@@ -2221,7 +2221,7 @@ class Receiver:
                 recorder.line('wrapper', json.dumps({'role_capabilities': self.binding['expected'],
                                                      'role_revision_digest': self.binding['revision']['digest']}).encode())
             # VELDO-0184 AC3: the file memory's launch line: the directory, the form and the index's digest as loaded.
-            if self.file_memory is not None and 'index_digest' in self.file_memory:
+            if getattr(self, 'file_memory', None) is not None and 'index_digest' in self.file_memory:
                 recorder.line('wrapper', json.dumps(self._file_memory_line(), sort_keys=True).encode())
             recorder.feed('engine', carry)
             recorder.batch()

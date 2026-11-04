@@ -7,7 +7,7 @@ Only ROOT, expect and fast_temp are consumed. A real signed SQLite authority (VE
 conversation authority and VELDO-0174's conversation Line with real receiver subprocesses (support/v174_journey.py)
 over fake pinned engines generated here from VELDO-0174's, as another host's adapters (no worker group, so no user
 manager). The memory record is VELDO-0182's fixture manifest (proof/VELDO-0182/fixtures.py) in a temporary directory.
-The fake Claude Code applies auto memory as the 2.1.281 bytes do (proof/VELDO-0184/engine-memory-forms.json): on
+The fake Claude Code applies auto memory as the pinned binary's bytes do (proof/VELDO-0184/engine-memory-forms.json): on
 unless CLAUDE_CODE_DISABLE_AUTO_MEMORY or `autoMemoryEnabled` false, in the flag settings' `autoMemoryDirectory`
 else the account profile's projects/<cwd>/memory, named in its init event's `memory_paths` with a trailing
 separator, the index loaded into its context. The fake Codex keeps its workspace-write sandbox: a write outside the
@@ -68,7 +68,7 @@ def _v184_suite():
     fixtures = []
     lock = factory = None
 
-    # THE FAKE ENGINES: VELDO-0174's, with auto memory as the 2.1.281 binary applies it (Claude Code), the
+    # THE FAKE ENGINES: VELDO-0174's, with auto memory as the pinned binary applies it (Claude Code), the
     # workspace-write sandbox (Codex), and the memory scenario in the markers directory after the release.
     LITERALS = "# MemoriesToml generate_memories use_memories SandboxWorkspaceWrite writable_roots developer_instructions\n"
     INIT_END = "            'cwd':os.getcwd()}\n"
@@ -431,14 +431,14 @@ if ENGINE != 'codex':
         engines = json.loads((ROOT / '.veldo/runtime/engines.json').read_text())
         forms_path = ROOT / 'proof/VELDO-0184/engine-memory-forms.json'
         forms = json.loads(forms_path.read_text()) if forms_path.exists() else {}
-        check('AC1/qualified', 'the pinned 2.1.281 record lists the form, read from its bytes (every literal found)',
+        check('AC1/qualified', 'the pinned Claude Code record lists the form, read from its bytes (every literal found)',
               shipped['versions'][engines['claude_code']['version']].get('file_memory') == getattr(C, 'FILE_MEMORY', 'absent')
               and version.get('file_memory') == getattr(C, 'FILE_MEMORY', 'absent')
               and (forms.get('claude_code') or {}).get('sha256') == engines['claude_code']['sha256']
               and (forms.get('claude_code') or {}).get('file_memory') == getattr(C, 'FILE_MEMORY', 'absent')
               and all(r.get('offset') is not None for r in (forms.get('claude_code') or {}).get('found') or [None]))
         shipped_codex = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text())
-        check('AC2/qualified', 'the pinned 0.154.0 record lists the form, read from its bytes (every literal found)',
+        check('AC2/qualified', 'the pinned Codex record lists the form, read from its bytes (every literal found)',
               shipped_codex.get('file_memory') == getattr(X, 'FILE_MEMORY', 'absent') and shipped_codex['version'] == engines['codex']['version']
               and (forms.get('codex') or {}).get('sha256') == engines['codex']['sha256']
               and (forms.get('codex') or {}).get('file_memory') == getattr(X, 'FILE_MEMORY', 'absent')
