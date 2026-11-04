@@ -10,7 +10,9 @@ stand-in (which runs each unit's ExecStart and waits for its READY=1), Tailscale
 owner's memory is proof/VELDO-0183/fixtures.py's synthetic stores under scratch: a FastMCP stand-in, a
 Chroma-like store that loses writes when two processes open it, the knowledge graph's WAL SQLite and a claude-mem
 search server. The engines are one generated fake: it answers each engine's login status and, for the subscription
-extraction behind smart add, prints facts as Claude Code's JSON output prints a result. Conversation turns are a
+extraction behind smart add, prints facts as Claude Code's JSON output prints a result. Only VELDO-0172's read-back at
+teardown passes it the fixture argument that makes it print each CLI's stream (compare_formats.conform_fake); any other
+call of it still exits 2. Conversation turns are a
 generated fake engine that starts the MCP servers its configuration names, prints an init event and each tool call
 in Claude Code's stream JSON shapes; its output is kept by the real execution record (VELDO-0141). Credentials go to
 a fake keystore. No real engine, login, paid API, keyring, memory store or memory server is read or started.
@@ -46,7 +48,7 @@ def _v183_suite():
             'AC2/paid-api', 'AC2/smart-add', 'AC2/tools-work',
             'AC3/record', 'AC3/cross-conversation', 'AC3/own-copy-falsifier',
             'AC4/store-units', 'AC4/open-refused', 'AC4/assistant-entries', 'AC4/one-opener', 'AC4/all-written',
-            'observability')
+            'observability', 'format/fake-lines')
     rows = {name: [] for name in ROWS}
     FOUR = ('ava-memory', 'knowledge-graph', 'claude-mem', 'memory-kb')
 
@@ -100,12 +102,40 @@ def _v183_suite():
     here = Path(__suite_file__).resolve().parents[2]
     helper = load('v183_setup_fixture', here / 'proof/VELDO-0185/fixture.py')
     FIX = load('v183_fixtures', here / 'proof/VELDO-0183/fixtures.py')
+    conform_formats = load('v183_conform', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    fake_formats = load('v183_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
     # One generated executable serves both engines (Codex when its path names codex): each login status, and Claude
     # Code's print mode with JSON output for the extraction, which notes its profile and whether a paid-API key
-    # reached it, then answers each sentence of its input as one fact.
-    fake = r'''#!@@PYTHON@@ -B
-import json, os, sys
+    # reached it, then answers each sentence of its input as one fact. Only VELDO-0172's teardown read-back passes it
+    # READBACK first, and only then does it print each CLI's stream.
+    READBACK = '--veldo-0172-format-readback'
+    fake = fake_formats.embed(r'''#!@@PYTHON@@ -B
+import json, os, sys, uuid
 from pathlib import Path
+def emit(event):
+    print(json.dumps(complete_event(event)), flush=True)
+if sys.argv[1:2] == [@@READBACK@@]:
+    session = str(uuid.uuid4())
+    if 'codex' not in Path(sys.argv[0]).name:
+        opening = json.loads(sys.stdin.readline())
+        if opening.get('type') != 'control_request':
+            sys.exit(3)
+        emit({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': opening['request_id'],
+              'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})
+        sys.stdin.readline()
+        emit({'type': 'system', 'subtype': 'init', 'cwd': str(Path.cwd()), 'session_id': session, 'tools': ['Read'],
+              'mcp_servers': [], 'model': 'configured-model', 'uuid': str(uuid.uuid4())})
+        emit({'type': 'assistant', 'session_id': session, 'message': {'content': [{'type': 'text', 'text': 'done'}],
+              'usage': {'input_tokens': 2, 'output_tokens': 3}}})
+        emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'done', 'session_id': session,
+              'usage': {'input_tokens': 2, 'output_tokens': 4}})
+    else:
+        sys.stdin.read()
+        emit({'type': 'thread.started', 'thread_id': session})
+        emit({'type': 'turn.started'})
+        emit({'type': 'item.completed', 'item': {'id': 'answer', 'type': 'agent_message', 'text': 'done'}})
+        emit({'type': 'turn.completed', 'usage': {'input_tokens': 2, 'output_tokens': 4}})
+    sys.exit(0)
 if sys.argv[1:3] == ['auth', 'status']:
     logged = (Path(os.environ.get('CLAUDE_CONFIG_DIR') or '/nonexistent') / '.credentials.json').is_file()
     sys.stdout.write(json.dumps({'loggedIn': logged, 'authMethod': 'claude.ai' if logged else 'none',
@@ -124,7 +154,8 @@ if '-p' in sys.argv and 'json' in sys.argv:
     sys.stdout.write(json.dumps({'type': 'result', 'subtype': 'success', 'result': json.dumps({'facts': facts})}))
     sys.exit(0)
 sys.exit(2)
-'''.replace('@@PYTHON@@', sys.executable)
+'''.replace('@@PYTHON@@', sys.executable).replace('@@READBACK@@', repr(READBACK)))
+    fake_capture = (['teardown not reached'], [])
     ACCOUNTS = (('claude-a', 'claude_code'), ('claude-b', 'claude_code'), ('codex-a', 'codex'))
     # A conversation turn: starts each server its MCP configuration names as Claude Code starts a stdio server,
     # prints the init event listing them with every tool each registers, then each planned call as a tool use and
@@ -1022,7 +1053,18 @@ print(json.dumps(dict(by_id=len(by_id), by_search=len(by_search), total=len(want
     MS_STORES = ('ava_memory', 'memory_kb')
 
     def teardown(h):
-        pass
+        nonlocal fake_capture
+        base, fake = h['base'], h['engines186']['fake']
+        L = load('v183_format_launch', h['mods'] / 'control_launch.py')
+
+        def readback_args(engine, base):
+            return [READBACK]
+        try:
+            pass
+        finally:
+            fake_capture = conform_formats.conform_fake(locals(), '0183_memory_servers')
+            check('format/fake-lines', 'the generated CLI lines conform to the capture %s' % (fake_capture[0][:4],),
+                  not fake_capture[0] and bool(fake_capture[1]))
 
     try:
         helper.run(ROOT, PRODUCTION, exercise, teardown, fake)
@@ -1031,6 +1073,9 @@ print(json.dumps(dict(by_id=len(by_id), by_search=len(by_search), total=len(want
         traceback.print_exc()
         for row in rows:
             check(row, 'ran to its end (raised ' + type(error).__name__ + ': ' + str(error)[:250] + ')', False)
+    for line in conform_formats.describe('0183_memory_servers', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0183_memory_servers', bool(fake_capture[1]) and not fake_capture[0])
     for row in ROWS:
         failed = [label for label, ok in rows[row] if not ok] or ([] if rows[row] else ['journey did not reach row'])
         if failed:
