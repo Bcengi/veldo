@@ -1285,6 +1285,9 @@ class Service:
         # The factory loop (VELDO-0154): set by serve() when the installation names a work configuration.
         self.loop, self.loop_refusal = None, None
         self._conversations = None
+        # VELDO-0175: the intake the channel pass hands acquired Telegram messages to, built when the factory
+        # project exists; whether its first feed (every kept message not yet decided) has run.
+        self._telegram_intake, self._telegram_caught_up = None, False
         # VELDO-0161: this serving process, as a record of taking a repository on names it; the receiver
         # configurations installed with it (an adopted repository's is written beside them, never over one);
         # each repository whose taking on faulted, with the monotonic time it may be judged again; and the
@@ -1506,6 +1509,34 @@ class Service:
                 observe=lambda event: self._log(dict(event, kind='conversation', at=time.time(),
                                                      domain_uuid=self.domain)))
         return self._conversations
+
+    def telegram_intake(self, evidence_ids):
+        """VELDO-0175: the channel pass's feed of acquired Telegram messages to intake (Channel.take), so an ordinary
+        message of the owner reaches intake from the running service: a reply to a conversation message becomes
+        its turn, a reading or a command (AC1, AC4), anything else an inbox proposal for the factory PM. Nothing is
+        taken until the factory project exists. The first feed reads every kept message intake has not decided
+        (one acquired before a restart included); later feeds read the pass's acquisitions. Intake decides each
+        message once (Intake.take_acquired); answers and activation's exchanges keep their own paths."""
+        if self.channel is None or self.conn.execute("SELECT 1 FROM entities WHERE id='project:factory'").fetchone() is None:
+            return []
+        if self._telegram_intake is None:
+            IN = _organ('control_intake')
+            ingress = self.channel.ingress
+
+            def observe(event):
+                # How each conversation message was decided, with its ids; never a message's text.
+                if event.get('operation') == 'conversation':
+                    self._log(dict(event, kind='intake', at=time.time(), domain_uuid=self.domain))
+            self._telegram_intake = IN.Intake(
+                S, CM, AC, ingress.acquirer, self.conn, domain=self.domain, projects=lambda: IN.store_projects(self.conn),
+                api_edge=ingress.settlement.api_edge, journal_signer=self.principal, sign=self.sign,
+                asker=ingress.presenter.edge, authority_generation=self.generation, observe=observe,
+                conversations=self.conversations())
+        intake = self._telegram_intake
+        taken = intake.take_acquired(None if not self._telegram_caught_up else evidence_ids)
+        self._telegram_caught_up = True
+        del intake.observations[:-CH.OBSERVATION_LIMIT]
+        return taken
 
     def conversation_command(self, packet, command, repository, observation):
         """Admit a signed owner command and execute it as durable conversation authority data."""
@@ -2897,6 +2928,18 @@ class ConversationLine:
         report.setdefault('moved', []).append(dict(entry, role=other, assignment_id=aid))
         return True
 
+    def message(self, turn):
+        """The text of the intake message a turn was made from, or None for a turn intake did not make: the turn's
+        intake source record, read only when its content digest is the one the turn is bound to."""
+        row = self.service.conn.execute('SELECT kind, data FROM entities WHERE id=?',
+                                        (str(turn.get('intake_command')),)).fetchone()
+        if not row or row[0] != 'intake_source':
+            return None
+        source = json.loads(row[1])
+        if source.get('content_digest') != turn.get('intake_digest') or not isinstance(source.get('text'), str):
+            return None
+        return source['text']
+
     def offer(self, turn, report, moved=False):
         identity, sequence = turn['conversation'], turn['sequence']
         conversation = self.conversations.read(identity)
@@ -2930,6 +2973,11 @@ class ConversationLine:
             payload = {'conversation': identity, 'turn': sequence, 'owner': conversation['owner'],
                        'intake_command': turn['intake_command'], 'team_revision': team_revision,
                        'directory': conversation['directory']}
+            # VELDO-0175: the owner's words, as the turn's intake source record keeps them, so the engine's prompt and
+            # the launch's turn_input line carry the text he wrote, not only the id of the message it came in.
+            message = self.message(turn)
+            if message is not None:
+                payload['message'] = message
             # VELDO-0176: the held session of this engine the turn resumes (AC1), else, after earlier turns, the
             # history it starts from (AC3); and, after a limit, the input saying where the previous run stopped (AC2).
             held = CV.held_session(self.service.conn, identity, engine)
@@ -3422,6 +3470,9 @@ def serve(config_path):
             # adoption could not reach a running service is taken on.
             service.take_on()
             service.channel, service.channel_refusal = CH.open_channel(config.get('channel_ingress'))
+            if service.channel is not None:
+                # VELDO-0175: the channel pass hands acquired Telegram messages to intake.
+                service.channel.intake = service.telegram_intake
             service.api, service.api_refusal = SA.open_api(config.get('api_service'), service.channel, lock,
                                                            os.path.dirname(config['observations']))
             authority = CC.Authority(config['store_uuid'], config['domain_uuid'], config['store_path'], E,

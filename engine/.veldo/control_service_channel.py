@@ -208,6 +208,8 @@ class Channel:
         self.requests = []
         self.reporter = None
         self.replier = None
+        # VELDO-0175: the service's intake feed (Service.telegram_intake), set by the service that runs this channel.
+        self.intake = None
         key = requester_key(self.config)
         self.requester = None
         if key and os.path.isfile(key):
@@ -428,10 +430,11 @@ class Channel:
         woke = ing.wake({'source': 'authority_service', 'pass': self.passes})
         self.passes += 1
         published, recorded = [], None
-        told, reported, replied = [], [], []
+        told, reported, replied, taken = [], [], [], []
         if woke.get('outcome') == 'woken':
             published = [r.get('outcome') for r in ing.presenter.publish()]
             told = self.tell_unsigned(woke.get('acquired') or []) + self.tell_renewal(record)
+            taken = self.take(woke.get('acquired') or [])
             if self.run is not None:
                 recorded = self._qualification(woke)
             replied = self.replies()
@@ -440,12 +443,12 @@ class Channel:
         summary = {'outcome': woke.get('outcome'), 'reason': woke.get('reason'),
                    'state': (record or {}).get('state'), 'acquired': len(woke.get('acquired', [])),
                    'settled': len(woke.get('settled', [])), 'published': sent, 'told': told, 'reported': reported,
-                   'replied': replied}
+                   'replied': replied, 'taken': taken}
         if recorded:
             summary['qualification'] = recorded
         previous = self.last or {}
         summary['notable'] = bool(summary['acquired'] or summary['settled'] or sent or recorded or told or reported
-                                  or replied
+                                  or replied or taken
                                   or any(previous.get(k) != summary[k] for k in ('outcome', 'reason', 'state')))
         self.last = {k: v for k, v in summary.items() if k != 'notable'}
         self._trim()
@@ -467,6 +470,21 @@ class Channel:
         except Exception as exc:  # noqa: BLE001 - the pass goes on; the refusal is reported by name
             return [{'report_id': None, 'event': None, 'outcome': 'refused', 'reason': _code(exc)}]
         return [{k: r.get(k) for k in ('report_id', 'event', 'outcome', 'reason')} for r in results]
+
+    # -- the owner's messages to intake (VELDO-0175) -----------------------------------------------
+
+    def take(self, acquired):
+        """Hand this pass's acquired updates to the service's intake feed, which takes each ordinary message of a
+        person once (an answer stays settlement's, activation's exchanges stay the run's). Returns one
+        {evidence_id, outcome, reason, conversation, sequence} per message intake took or refused this pass."""
+        if self.intake is None:
+            return []
+        try:
+            results = self.intake([row.get('evidence_id') for row in acquired if row.get('evidence_id')])
+        except Exception as exc:  # noqa: BLE001 - the pass goes on; the refusal is reported by name
+            return [{'evidence_id': None, 'outcome': 'refused', 'reason': _code(exc)}]
+        return [{k: r.get(k) for k in ('evidence_id', 'outcome', 'reason', 'conversation', 'sequence')}
+                for r in results]
 
     # -- the conversation replies (VELDO-0175) ----------------------------------------------------
 

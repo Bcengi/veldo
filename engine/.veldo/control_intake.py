@@ -333,6 +333,37 @@ class Intake(RT.Routes, CI.Conversing):
         return [self.receive('telegram_message', r['evidence_id'])
                 for r in sorted(rows, key=lambda r: (r.get('bot_id') or 0, r.get('update_id') or 0))]
 
+    def decided(self, record):
+        """VELDO-0175: whether intake already decided one kept Telegram message: its source is recorded, its one
+        hint decision is kept, or a conversation line answering it is recorded. A message that names no bot, chat
+        and message id is never intake's."""
+        fields = record.get('fields') or {}
+        bot, chat, message = record.get('bot_id'), fields.get('chat_id'), fields.get('message_id')
+        if not all(type(v) is int for v in (bot, chat, message)):
+            return True
+        if self._entity(source_key('telegram_message', telegram_source_id(bot, chat, message))) is not None:
+            return True
+        presenter = getattr(self.acquirer, 'presenter', None)
+        if presenter is not None and hasattr(presenter, 'hint_decided') and presenter.hint_decided(chat, message):
+            return True
+        return self._entity(CI.CV.answer_id(bot, chat, message)) is not None
+
+    def take_acquired(self, evidence_ids=None):
+        """VELDO-0175: the service's feed of acquired Telegram messages. Each kept message of a person that the
+        Acquirer refused as replying to no presentation (an ordinary message, ORDINARY) and that intake has not
+        decided yet is received, in update order: `evidence_ids` names one pass's acquisitions; None reads every
+        kept message (the first pass of a service, so one acquired before a restart is not lost). A presentation
+        answer, an activation's exchange and an unknown sender's update are not intake's and are never handed on;
+        a message intake decided is never received again."""
+        if evidence_ids is None:
+            rows = self._all(EVIDENCE_KIND)
+        else:
+            rows = [self.acquirer.evidence(e) for e in dict.fromkeys(evidence_ids) if type(e) is str]
+        rows = [r for r in rows if isinstance(r, dict) and r.get('outcome') == 'refused'
+                and r.get('reason') in ORDINARY and r.get('principal') is not None and not self.decided(r)]
+        return [dict(self.receive('telegram_message', r['evidence_id']), evidence_id=r['evidence_id'])
+                for r in sorted(rows, key=lambda r: (r.get('bot_id') or 0, r.get('update_id') or 0))]
+
     # the two adapters
 
     def _telegram(self, evidence):
