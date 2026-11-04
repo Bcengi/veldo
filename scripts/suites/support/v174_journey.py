@@ -150,8 +150,10 @@ def engines(root, f, CS):
             qualified = module.qualification(str(executable))
             catalog = {'models':[{'slug':'fixture-codex-model','experimental_supported_tools':[],
                                   'apply_patch_tool_type':None,'supports_search_tool':False}]}
+            # VELDO-0230: the model tool modes follow the record's catalog, by the writer's own rule.
             qualified.update(feature_listing='shell_tool stable true\n',model_catalog=catalog,
-                             model_catalog_digest=module.catalog_digest(catalog))
+                             model_catalog_digest=module.catalog_digest(catalog),
+                             model_tool_modes=module.catalog_modes(catalog))
             qualification = mods / 'runtime/codex-qualification.json'; qualification.write_text(json.dumps(qualified))
             adapters[provider] = {'engine':provider,'identity':'reported','executable':str(executable),
                 'qualification':str(qualification),'argv':wrapper+[str(executable)]+list(module.FLAGS)}
