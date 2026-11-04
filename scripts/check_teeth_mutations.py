@@ -12176,7 +12176,7 @@ def cases():
     # AC1 (declared falsifier): carry out a route document found in a turn's final message.
     add(180, 'route180-turn-reply-carried', suite180, 'control_conversation_project.py',
         "    OB = _organ('control_objective')\n    done = []\n    if intake is not None:\n",
-        "    OB = _organ('control_objective')\n    done = []\n"
+        "    OB = _organ('control_objective')\n    done = []\n    from types import SimpleNamespace\n"
         "    for (raw,) in conn.execute(\"SELECT data FROM entities WHERE kind='conversation_turn'\"):\n"
         "        turn = json.loads(raw)  # defect: a route document in a turn's final message is carried out\n"
         "        try:\n            doc = json.loads(turn.get('reply') or 'null')\n"
@@ -12184,7 +12184,7 @@ def cases():
         "        if intake is None or not isinstance(doc, dict) or doc.get('schema') != 'veldo.intake_route/v1':\n"
         "            continue\n"
         "        record = _organ('control_conversation')._conversation(conn, turn['conversation'])['data']\n"
-        "        IN = sys.modules[type(intake).__module__]\n"
+        "        IN = SimpleNamespace(**type(intake).__init__.__globals__)\n"
         "        ref = 'turn-route-%s-%s' % (turn['conversation'], turn['sequence'])\n"
         "        intake._submit({'schema': IN.COMMAND_SCHEMA, 'source_kind': 'api_request', 'source_id': ref,\n"
         "                        'principal': record['owner'], 'text': '/project ' + str(doc.get('project')),\n"
