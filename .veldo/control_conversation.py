@@ -87,6 +87,9 @@ DEFER = 'wait_conversation_turn'
 NOTE = 'note_conversation_turn'
 # VELDO-0180: the conversation points at the project its owner's typed command made it the work of.
 POINT = 'record_conversation_project'
+# VELDO-0187: a turn's claude-mem capture state (pending, captured, not captured with its reason).
+CAPTURE = 'capture_conversation_turn'
+CAPTURE_STATES = ('pending', 'captured', 'not_captured')
 OWNER_OPERATIONS = (OPEN, CLOSE, ROLE, ATTACH, MESSAGE)
 STATUSES = ('open', 'closed')
 TURN_STATES = ('waiting', 'dispatched', 'ended')
@@ -111,7 +114,7 @@ ANSWER_KIND = 'conversation_answer'
 SENT_SCHEMA = 'veldo.conversation_message/v1'
 # VELDO-0181: `decision`, a presentation of a question the conversation raised, sent in it but never its turn's reply.
 SENT_KINDS = ('reply', 'status', 'answer', 'refusal', 'decision')
-OPERATIONS = OWNER_OPERATIONS + (DISPATCH, DEFER, END, FLAG, NOTE, SENT, POINT)
+OPERATIONS = OWNER_OPERATIONS + (DISPATCH, DEFER, END, FLAG, NOTE, SENT, POINT, CAPTURE)
 # VELDO-0177: the workspace under the conversation's directory, the attached projects' clones under it, and the
 # receiver's refusal of a turn launched anywhere else.
 WORKSPACE = 'workspace'
@@ -511,6 +514,17 @@ def transition(conn, params, before):
         turn.update(state='dispatched', dispatch_id=dispatch_id, role_revision=role_revision,
                     account=params.get('account'), receiver=params.get('receiver'), dispatched_at=now)
         return {tid: {'kind': TURN_KIND, 'data': turn}}
+    if operation == CAPTURE:
+        # VELDO-0187: the turn's claude-mem capture state, each change kept in order (`claude_mem_states`).
+        state = params.get('capture')
+        if (turn.get('state') != 'ended' or not isinstance(state, dict) or state.get('state') not in CAPTURE_STATES
+                or not (state.get('reason') is None or _text(state.get('reason')))):
+            raise Refused('invalid_input:conversation_capture')
+        kept = {k: state.get(k) for k in ('state', 'reason', 'session', 'requests', 'late') if k in state}
+        turn['claude_mem'] = dict(kept, at=now)
+        turn.setdefault('claude_mem_states', []).append({'state': kept['state'], 'reason': kept.get('reason'),
+                                                         'at': now})
+        return {tid: {'kind': TURN_KIND, 'data': turn}}
     if operation == NOTE:
         note = params.get('note')
         if not isinstance(note, dict) or note.get('kind') not in ('question', 'notice') or not _text(note.get('ref')):
@@ -794,7 +808,54 @@ class Conversations:
         for entry in refused:
             self.observe(CD.refused_event(identity, sequence, dispatch_id, entry))
         self._session_event(identity, sequence, dispatch_id, session, start)
+        self.feed_turn(identity, sequence, dispatch_id, lines)
         return _turn(self.conn, identity, sequence)['data']
+
+    def _feed(self):
+        FEED = _organ('control_memory_feed')
+        return FEED, FEED.Feed(self.state_root, observe=self.observe, opener=getattr(self, 'feed_opener', None))
+
+    def _captured(self, identity, sequence, state):
+        try:
+            self._run(CAPTURE, identity, {'sequence': sequence, 'capture': state})
+        except Refused:
+            pass
+
+    def feed_turn(self, identity, sequence, dispatch_id, lines):
+        """VELDO-0187: the ended turn's claude-mem feed, built from its redacted execution record (`lines`, never the
+        held session), kept pending under the conversation's directory and sent after every earlier pending feed."""
+        FEED, feed = self._feed()
+        record = self.read(identity)
+        if record is None or feed.setting() is None:
+            return None
+        dispatch = _row(self.conn, 'dispatch:' + str(dispatch_id))
+        committed = ((dispatch or {}).get('data') or {}).get('execution_record')
+        state = feed.turn(record, sequence, dispatch_id, turn_from_record(lines) if lines is not None else None,
+                          committed)
+        if state is None:
+            return None
+        self._captured(identity, sequence, state)
+        if state['state'] == 'pending':
+            self.feed_pending(identity)
+        return state
+
+    def feed_pending(self, identity=None):
+        """VELDO-0187 AC3: send every pending claude-mem feed (one conversation's, or every conversation's), in turn
+        order; each turn whose capture state changed is recorded."""
+        FEED, feed = self._feed()
+        if feed.setting() is None:
+            return []
+        changed = []
+        for (data,) in self.conn.execute('SELECT data FROM entities WHERE kind=? ORDER BY id', (KIND,)):
+            record = json.loads(data)
+            if identity is not None and record.get('id') != identity:
+                continue
+            if not record.get('directory') or not feed.pending(record['directory']):
+                continue
+            for sequence, state in feed.flush(record):
+                self._captured(record['id'], sequence, state)
+                changed.append((record['id'], sequence, state['state']))
+        return changed
 
     def deferred(self, identity, sequence, dispatch_id, refusal, *, session=None, start=None, limit=None,
                  decision=None, question=None, now=None):
@@ -957,7 +1018,10 @@ class Conversations:
                     'captures': sum(len(turn.get('captures') or []) for turn in turns),
                     'questions': answers, 'session_mismatch': outcomes.get(SESSION_MISMATCH, 0),
                     'resume_mismatch': outcomes.get(RESUME_MISMATCH, 0)}
-        return {'sessions': sessions, 'open': sum(c.get('status') == 'open' for c in conversations),
+        # VELDO-0187 metrics: turns captured, pending and not captured by reason, requests by kind, feeds sent late.
+        claude_mem = _organ('control_memory_feed').metrics(turns)
+        return {'sessions': sessions, 'claude_mem': claude_mem,
+                'open': sum(c.get('status') == 'open' for c in conversations),
                 'waiting': sum(t.get('state') == 'waiting' for t in turns), 'outcomes': outcomes,
                 'turns_by_role_revision': by_revision, 'workspace_refusals': outcomes.get(WORKSPACE_MISMATCH, 0),
                 'project_attaches': sum(len(c.get('attachments') or []) for c in conversations)}

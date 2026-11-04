@@ -2724,6 +2724,11 @@ class ConversationLine:
     def run(self, report, ended):
         """Settle ended turns, then offer at most the first waiting turn of each conversation."""
         self.activate()
+        # VELDO-0187 AC3: every claude-mem feed a worker did not take is sent, in turn order, on the next pass.
+        try:
+            self.conversations.feed_pending()
+        except (CV.Refused, OSError, ValueError) as error:
+            report['faults'].append({'kind': 'claude_mem_feed', 'reason': getattr(error, 'code', type(error).__name__)})
         report['released'].extend({'dispatch_id': identity} for identity in self.runner.release_orphans())
         for launch in ended:
             record = self.runner.wait(launch, timeout=0) or {}

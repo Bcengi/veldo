@@ -47,9 +47,25 @@ def apply(plan, memory, ids, S, conn, journal, owner_sign, send=None):
         raise
 
 
+def claude_mem_feed(root, definition):
+    """VELDO-0187 AC1: the installed claude-mem version, read from the memory record's claude-mem part, and this
+    host's feed setting under the state root (control_memory_feed.setup): qualified, or refused by name."""
+    setting = organ('control_memory_feed').setup(root, definition)
+    if setting is None:
+        return None
+    return dict(version=setting['version'], state=setting['state'], refusal=setting['refusal'],
+                qualification=setting['qualification_digest'])
+
+
 def _apply(plan, memory, ids, S, conn, journal, owner_sign, send=None):
     if memory is None:
         return None
+    report = _stored(plan, memory, ids, S, conn, journal, owner_sign, send)
+    report['claude_mem_feed'] = claude_mem_feed(plan['root'], memory['definition'])
+    return report
+
+
+def _stored(plan, memory, ids, S, conn, journal, owner_sign, send=None):
     definition, previous = memory['definition'], memory['previous']
     report = dict(step='memory', outcome=memory['outcome'], parts={
         part: dict(entry, digest=M.digest(entry)) for part, entry in definition['parts'].items()},

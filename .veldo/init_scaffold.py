@@ -190,6 +190,9 @@ _FILES = [
     # VELDO-0184: the file memory handed to every run whose role lists it, which control_launch.py and
     # control_agent_config.py load; a runtime asset, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_memory_file.py",
+    # VELDO-0187: each conversation turn fed to claude-mem's worker from its redacted record, which
+    # control_conversation.py loads at each turn's end and setup's memory step for the feed setting.
+    ".veldo/control_memory_feed.py",
     ".veldo/control_launch_work.py",
     ".veldo/dispatch.py",
     ".veldo/work.py",
@@ -505,6 +508,9 @@ _RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-q
 # VELDO-0230: the engines record (the qualified Codex and Claude Code: version, binary path, digest), written by
 # qualify.py and read by factory setup for the Claude Code copy it pins.
 _RUNTIME_ASSETS += [("runtime/engines.json", ".veldo/runtime/engines.json")]
+# VELDO-0187: the claude-mem qualification record (each qualified version's hook digests, the requests its hooks send
+# its worker and the worker's loopback address), read by control_memory_feed.py beside it.
+_RUNTIME_ASSETS += [("runtime/claude-mem-qualification.json", ".veldo/runtime/claude-mem-qualification.json")]
 
 # VELDO-0145: the factory UI. The API serves its page from a `ui` directory beside its own installed module
 # (control_api_ui.directory), so the built UI (the templates' ui/dist, built by `npm ci && npm run build` in

@@ -1,0 +1,6 @@
+{
+ "note": "Each claude-mem version VELDO-0187 qualifies, read from that version's own hook code by control_memory_feed.qualify (python3 control_memory_feed.py qualify <plugin directory>). A version not listed here gets no feed: every conversation turn is recorded not captured as missing_evidence:claude_mem_version:<version>.",
+ "schema": "veldo.claude_mem_qualification/v1",
+ "spec_id": "VELDO-0187",
+ "versions": {}
+}
