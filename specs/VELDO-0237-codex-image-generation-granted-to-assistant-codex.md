@@ -100,7 +100,7 @@ and proves where the image goes.
 - runtime/capability-decisions.json is the record of each Codex feature's decision (VELDO-0230 AC3).
 - assistant_codex is saved by setup with the workspace-write sandbox, network and web search (VELDO-0177
   AC2); each turn runs in its conversation's own workspace (VELDO-0177 AC1).
-- Parity report research/veldo-parity-2026-11-04.md (myday), kind 19 gap 1, ticket T3.
+- The owner's parity report (kept in the owner's installation), kind 19 gap 1, ticket T3.
 
 ## Out of scope
 

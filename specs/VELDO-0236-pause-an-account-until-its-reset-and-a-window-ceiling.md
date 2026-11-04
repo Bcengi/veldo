@@ -133,7 +133,7 @@ ceiling caps one window until that window resets.
 - control_account_pool selects among accounts at each dispatch and names why each was passed over
   (VELDO-0160); the loop already sets a timer for the earliest account reset a waiting unit needs
   (VELDO-0154 AC1).
-- Parity report research/veldo-parity-2026-11-04.md (myday), kind 12 and ticket T2.
+- The owner's parity report (kept in the owner's installation), kind 12 and ticket T2.
 
 ## Out of scope
 

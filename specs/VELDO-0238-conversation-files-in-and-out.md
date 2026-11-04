@@ -121,7 +121,7 @@ record, redacted and size-capped.
   are sent as written (VELDO-0168).
 - VELDO-0242 (a separate draft) delivers approved rendered files to the owner through an installed file
   delivery; this spec is that delivery for conversations.
-- Parity report research/veldo-parity-2026-11-04.md (myday), kinds 16 to 19, 24 and 31, ticket T5.
+- The owner's parity report (kept in the owner's installation), kinds 16 to 19, 24 and 31, ticket T5.
 
 ## Out of scope
 

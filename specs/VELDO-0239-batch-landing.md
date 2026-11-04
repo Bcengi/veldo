@@ -133,7 +133,7 @@ every red, land on one approval.
 - The gate runs the project's own verify.sh in candidate mode on a declared stage graph, under the host lock
   (VELDO-0058, VELDO-0216, VELDO-0220).
 - A project lands by push or locally (VELDO-0235).
-- Parity report research/veldo-parity-2026-11-04.md (myday), kinds 2 and 14, ticket T8.
+- The owner's parity report (kept in the owner's installation), kinds 2 and 14, ticket T8.
 
 ## Out of scope
 

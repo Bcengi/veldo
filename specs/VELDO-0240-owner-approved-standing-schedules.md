@@ -122,7 +122,7 @@ each listed, cancellable and recorded.
 - A conversation turn is appended and run in order (VELDO-0174); decisions a turn raises go through the
   owner's decision flow and carry no authority (VELDO-0181).
 - A batch gate is VELDO-0239. VELDO-0245 (a separate draft) lists its own schedule steps through this list.
-- Parity report research/veldo-parity-2026-11-04.md (myday), kinds 2, 21 and 33, ticket T9.
+- The owner's parity report (kept in the owner's installation), kinds 2, 21 and 33, ticket T9.
 
 ## Out of scope
 
