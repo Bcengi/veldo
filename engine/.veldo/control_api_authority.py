@@ -796,7 +796,8 @@ class ApiAuthority:
 
     def commands(self):
         """Each operation and the store command it executes, for the route-to-command comparison."""
-        return {'send_message': AS.IN.RECORD, 'make_conversation_project': AS.IN.RECORD, 'answer_decision': AS.ST.API, 'revoke_credential': CR.REVOKE,
+        return {'send_message': AS.IN.RECORD, 'make_conversation_project': AS.IN.RECORD,
+                'answer_decision': AS.ST.API, 'revoke_credential': CR.REVOKE,
                 'save_workflow': WF.SAVE, MC.SAVE: MC.SAVE, CV.SET: CV.SET, CV.DELETE: CV.DELETE,
                 'save_capability_configuration': 'save_agent_configuration', 'propose_team': 'team_operation',
                 'save_default_team': 'save_default_team_revision', 'reprioritize_backlog': BL.OPERATION,

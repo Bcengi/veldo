@@ -41,7 +41,8 @@ import tempfile
 
 
 def _organ(name):
-    spec = importlib.util.spec_from_file_location('conversation_project_' + name, Path(__file__).with_name(name + '.py'))
+    spec = importlib.util.spec_from_file_location('conversation_project_' + name,
+                                                  Path(__file__).with_name(name + '.py'))
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -339,7 +340,8 @@ def launch_problem(conn, contract):
         binding = data.get('conversation') if isinstance(data.get('conversation'), dict) else {}
         bound = {HISTORY: binding.get('rendering'), SNAPSHOT: binding.get('snapshot')}.get(artifact.get('name')) or {}
         if (binding.get('conversation') != artifact.get('conversation') or bound.get('digest') != artifact.get('digest')
-                or bound.get('path') != artifact.get('path') or file_digest(artifact.get('path')) != bound.get('digest')):
+                or bound.get('path') != artifact.get('path')
+                or file_digest(artifact.get('path')) != bound.get('digest')):
             return SNAPSHOT_MISMATCH
     return None
 

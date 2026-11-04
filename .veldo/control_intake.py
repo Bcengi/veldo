@@ -595,7 +595,8 @@ class Intake(RT.Routes, CI.Conversing):
             # VELDO-0180: a conversion command refused, by name; nothing was recorded.
             event = {'kind': 'conversation_project', 'operation': 'convert', 'outcome': 'refused', 'refusal': None,
                      'reason': code,
-                     'conversation': conversation, 'principal': command.get('principal'), 'command': about.get('source'),
+                     'conversation': conversation, 'principal': command.get('principal'),
+                     'command': about.get('source'),
                      'command_route': 'telegram' if command.get('source_kind') == 'telegram_message' else 'api'}
             self.observations.append(event)
             self.observe(dict(event, domain=self.domain))

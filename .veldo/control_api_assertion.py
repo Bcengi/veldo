@@ -166,8 +166,8 @@ def domain_request(a):
         # VELDO-0180: his command as an intake request naming the conversation, its conversion field the command.
         objective = p.get('objective') if isinstance(p.get('objective'), str) and p['objective'].strip() else None
         return {'schema': IN.API_SCHEMA, 'domain': a['domain'], 'request_id': a['request_id'], 'edge': a['edge'],
-                'principal': a['principal'], 'text': ' '.join(['/project', str(p['project'])] + ([objective] if objective
-                                                                                            else [])),
+                'principal': a['principal'],
+                'text': ' '.join(['/project', str(p['project'])] + ([objective] if objective else [])),
                 'project': None, 'clarifies': None, 'conversation': p['conversation'],
                 'conversion': {'version': p['version'], 'project': p['project'], 'objective': objective,
                                'identity': p.get('identity')}}
