@@ -69,7 +69,7 @@ plugins (agents-md, plugin-authoring, privacy, telemetry) and never named cc-plu
 
 1. Red before, green after (`upgrade-0166-red-green.txt`). On the modules at 91255fda,
    qualify/builtin-plugins fails: discovery finds only the probe's plugin. At ad7e54e4, suite 126 passes 3 of 3.
-2. Qualify, `python3 .veldo/qualify.py --codex <0.166.0 vendor binary> --claude 2.1.317`: 10 new
+2. Qualify, the command in the task (Codex 0.166.0 vendor binary, Claude Code 2.1.317): 10 new
    claude_code plugins (1 granted, 5 off, 4 not applicable, none unevaluated)
    (`upgrade-0166-qualify-output.txt`). The second run left git status clean, and its output was identical
    apart from the `wrote` lines.
