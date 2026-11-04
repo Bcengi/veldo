@@ -134,3 +134,7 @@ wait-or-move question among the decisions a conversation raises. depends_on adds
 draft.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+2026-11-04: built on agent/claude/veldo-0181 (suite 137, three mutation cases); one change outside the footprint
+(control_service.py, ConversationLine.question and answer) and readings for review in proof/VELDO-0181/OPEN.md. Status
+unchanged: review runs in a fresh context.

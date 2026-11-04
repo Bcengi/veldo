@@ -1,0 +1,6 @@
+reply181-presentation-as-turn: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC1/settles-by-reply', 'VELDO-0181 AC1/settled-once-across', 'VELDO-0181 AC1/observability'], legs ['confined']
+reply181-presentation-as-turn status passed rejected 1 []
+output181-answer-accepted: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC2/no-authority-from-output'], legs ['confined']
+output181-answer-accepted status passed rejected 1 []
+publish181-own-inbox-only: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC1/rerun-presented', 'VELDO-0181 AC1/no-presentation-hint', 'VELDO-0181 AC1/settles-by-reply', 'VELDO-0181 AC1/move-presented', 'VELDO-0181 AC1/settled-once-across', 'VELDO-0181 AC1/observability'], legs ['confined']
+publish181-own-inbox-only status passed rejected 1 []

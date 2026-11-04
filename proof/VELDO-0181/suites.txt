@@ -1,0 +1,87 @@
+== 137_veldo_0181_conversation_decisions
+  137_veldo_0181_conversation_decisions           11 passed    3.77s
+selftest (PARTIAL, 1 of 199 suites): 37 passed, 0 failed in 3.77s
+== 123_veldo_0174_conversations
+  123_veldo_0174_conversations                    38 passed   11.19s
+selftest (PARTIAL, 1 of 199 suites): 64 passed, 0 failed in 11.19s
+== 127_veldo_0231_run_flags
+  127_veldo_0231_run_flags                        17 passed   34.13s
+selftest (PARTIAL, 1 of 199 suites): 43 passed, 0 failed in 34.13s
+== 131_veldo_0175_conversation_replies
+  131_veldo_0175_conversation_replies             16 passed    3.60s
+selftest (PARTIAL, 1 of 199 suites): 42 passed, 0 failed in 3.60s
+== 132_veldo_0175_conversation_routes
+  VELDO-0175 detail: cycle proposal_refused:intake_proposal:08f0281313562c3d9d9d02d18c36bad2 [{'name': 'intake_proposal:08f0281313562c3d9d9d02d18c36bad2', 'result': {'ok': False, 'outcome': 'refused', 'proposal_id': 'intake_proposal:08f0281313562c3d9d9d02d18c36bad2', 'reason': 'invalid_input:route:conversation'}, 'type': 'route'}]
+  VELDO-0175 detail: cycle proposal_refused:intake_proposal:bc49bc33fe870b2597be089d75418e5a [{'name': 'intake_proposal:bc49bc33fe870b2597be089d75418e5a', 'result': {'ok': False, 'outcome': 'refused', 'proposal_id': 'intake_proposal:bc49bc33fe870b2597be089d75418e5a', 'reason': 'invalid_input:route:conversation'}, 'type': 'route'}]
+  VELDO-0175 detail: cycle proposal_refused:intake_proposal:0d20217279a15feb23be01838f8564eb [{'name': 'intake_proposal:0d20217279a15feb23be01838f8564eb', 'result': {'ok': False, 'outcome': 'refused', 'proposal_id': 'intake_proposal:0d20217279a15feb23be01838f8564eb', 'reason': 'invalid_input:route:conversation'}, 'type': 'route'}]
+  132_veldo_0175_conversation_routes              19 passed   26.12s
+selftest (PARTIAL, 1 of 199 suites): 45 passed, 0 failed in 26.12s
+== 68_veldo_0136_hints
+  68_veldo_0136_hints                              7 passed    4.76s
+selftest (PARTIAL, 1 of 199 suites): 33 passed, 0 failed in 4.76s
+== 128_veldo_0177_conversation_workspace
+  128_veldo_0177_conversation_workspace           15 passed    3.18s
+selftest (PARTIAL, 1 of 199 suites): 41 passed, 0 failed in 3.18s
+== 129_veldo_0177_assistant_setup
+  129_veldo_0177_assistant_setup                   4 passed    3.90s
+selftest (PARTIAL, 1 of 199 suites): 30 passed, 0 failed in 3.90s
+== 130_veldo_0176_conversation_history
+  SELFTEST FAIL: VELDO-0176 AC2/wait
+  SELFTEST FAIL: VELDO-0176 AC2/move
+  SELFTEST FAIL: VELDO-0176 AC3/redaction
+  SELFTEST FAIL: VELDO-0176 AC3/change-back
+  SELFTEST FAIL: VELDO-0176 AC3/observability
+  130_veldo_0176_conversation_history             12 passed   53.78s
+selftest (PARTIAL, 1 of 199 suites): 38 passed, 5 failed in 53.78s
+== 133_veldo_0178_conversation_api
+  133_veldo_0178_conversation_api                 16 passed    3.99s
+selftest (PARTIAL, 1 of 199 suites): 42 passed, 0 failed in 3.99s
+== 136_veldo_0180_conversation_projects
+  136_veldo_0180_conversation_projects            21 passed    6.04s
+selftest (PARTIAL, 1 of 199 suites): 47 passed, 0 failed in 6.04s
+== 71_veldo_0130_api
+  71_veldo_0130_api                               45 passed   24.25s
+selftest (PARTIAL, 1 of 199 suites): 71 passed, 0 failed in 24.25s
+== 78_veldo_0160_account_pool
+  78_veldo_0160_account_pool                      34 passed   27.50s
+selftest (PARTIAL, 1 of 199 suites): 60 passed, 0 failed in 27.50s
+== 62_veldo_0065_presentations
+  62_veldo_0065_presentations                     42 passed   11.05s
+selftest (PARTIAL, 1 of 199 suites): 68 passed, 0 failed in 11.05s
+== 69_veldo_0068_settlement
+  69_veldo_0068_settlement                         8 passed    6.14s
+selftest (PARTIAL, 1 of 199 suites): 34 passed, 0 failed in 6.14s
+== 63_veldo_0066_attribution
+  63_veldo_0066_attribution                        5 passed    2.15s
+selftest (PARTIAL, 1 of 199 suites): 31 passed, 0 failed in 2.15s
+== 86_veldo_0127_agent_configuration
+  SELFTEST FAIL: VELDO-0127 live/claude
+  SELFTEST FAIL: VELDO-0127 live/codex
+  86_veldo_0127_agent_configuration               26 passed   39.49s
+selftest (PARTIAL, 1 of 199 suites): 52 passed, 2 failed in 39.49s
+== 83_veldo_0154_factory_loop
+  SELFTEST FAIL: VELDO-0154 loop/owner-stop-asked-on-wake
+  83_veldo_0154_factory_loop                      13 passed   46.62s
+selftest (PARTIAL, 1 of 199 suites): 39 passed, 1 failed in 46.62s
+== 70_veldo_0073_activation
+  70_veldo_0073_activation                        11 passed    3.60s
+selftest (PARTIAL, 1 of 199 suites): 37 passed, 0 failed in 3.60s
+== 110_veldo_0143_new_project
+  110_veldo_0143_new_project                     109 passed   37.21s
+selftest (PARTIAL, 1 of 199 suites): 135 passed, 0 failed in 37.21s
+== 93_veldo_0152_intake_routes
+  93_veldo_0152_intake_routes                     24 passed   49.48s
+selftest (PARTIAL, 1 of 199 suites): 50 passed, 0 failed in 49.48s
+
+Notes:
+- All runs above are single suites (python3 scripts/selftest.py --suite <name>), each in a transient user scope with
+  MemoryMax=8G and MemorySwapMax=0, on this branch with proof/VELDO-0181/control_service.diff applied in the working
+  tree (OPEN.md item 1).
+- 130_veldo_0176_conversation_history: AC2/wait, AC2/move, AC3/redaction, AC3/change-back and AC3/observability red.
+  Caused by this change: the suite answers the wait-or-move question with an owner-signed VELDO-0064 inbox answer, which
+  is neither his reply to a presentation nor his UI answer, and the service now reads only the VELDO-0068 settlement
+  (OPEN.md item 2). The three AC3 rows follow from the move that never happens.
+- 86_veldo_0127_agent_configuration: live/claude and live/codex red, the two stale live captures the lead retakes.
+- 83_veldo_0154_factory_loop: loop/owner-stop-asked-on-wake red, and red at the base aa1c989b as well (run in an
+  export of the base: "it raised Refused: invalid_input: a dispatch, its version and the request are named"); not
+  this change.
