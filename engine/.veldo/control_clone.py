@@ -821,8 +821,13 @@ def conversation_clone(source, commit, work):
     try:
         _git('init', '-q', '--template=', work)
         os.chmod(work, 0o700)
+        # VELDO-0175: fetched into a ref no source branch can be, then the branch made: a fetch into the branch
+        # itself is refused when it has the fresh repository's initial branch name (its unborn HEAD names it).
+        held = 'refs/veldo-clone/' + commit
         _git('-C', work, 'fetch', '-q', '--no-tags', '--no-write-fetch-head', str(source),
-             '%s:refs/heads/%s' % (commit, branch), code='stale_input:commit_unavailable')
+             '%s:%s' % (commit, held), code='stale_input:commit_unavailable')
+        _git('-C', work, 'update-ref', 'refs/heads/' + branch, commit)
+        _git('-C', work, 'update-ref', '-d', held)
         _git('-C', work, 'symbolic-ref', 'HEAD', 'refs/heads/' + branch)
         _git('-C', work, 'reset', '-q', '--hard', commit)
         seen = _git('-C', work, 'rev-parse', '--verify', '-q', 'HEAD^{commit}', check=False).stdout.strip()
