@@ -48,3 +48,12 @@ stopped completes it. Not exercised by a row.
   `<state root>/memory/extractions/`.
 - The fixture's FastMCP stand-in has list_tools and call_tool as the mcp package's FastMCP does; the store server
   also accepts call_tool's (content, structured) pair and dict answers of newer mcp releases.
+
+## 5. The check inside the store server (fix round 3)
+
+A check that runs while a store server is up runs VELDO-0182's adapter inside that server, over its own process's
+objects: ava_memory's reader calls memory_store.get_store(), and memory_kb's calls kb.store._get_client() and
+get_collection on it. In the fixture get_store returns one store per process and chromadb shares one system per path
+in a process, so the reader uses the store the server's tools use. Not established here: that the owner's
+memory_store.get_store caches its store. If it built a new store per call, the reader would make another client in
+the same process (chromadb would still share its system per path), never a second process.

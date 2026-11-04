@@ -90,8 +90,8 @@ service. It takes an exclusive lock on veldo-store.lock in the part's data direc
 a 0600 Unix socket in a 0700 directory under the state root, checking the peer's uid, every call on the one thread that
 imported them. The first start of each store server, and the rewrite of the assistant's ava-memory and memory-kb
 entries to the bridge (previous bytes kept under memory/assistant-mcp, entries that already name the bridge left
-alone), each run VELDO-0182's `before` and `after` check around them. `veldo memory kb <subcommand>` reaches the same
-socket.
+alone), each run VELDO-0182's `before` and `after` check around them; a check that runs while a store server is up
+reads the store through that server (fix round 3). `veldo memory kb <subcommand>` reaches the same socket.
 
 Test rows: AC4/store-units, AC4/open-refused (a second store server on the same store refused naming the running
 server's pid; a store another process holds open refused naming it, no socket made), AC4/assistant-entries (bridge
@@ -171,3 +171,38 @@ memory-kb tool's call to them and checks the tools' inputs; AC2/tools-work's cal
 Evidence: round2-real-layout.txt (the row red at 971bb78c, green at 59af0aa5), suites.txt (suite 130 alone, green),
 mutation-<case>.txt (the six cases rerun alone through scripts/check_gate_mutations.py honouring the committed list:
 baseline and no-op green, mutant red on its row). falsifiers.txt is fix round 1's. The full gate was not run.
+
+## Fix round 3 (review 2026-11-04, finding 1: the check opened a served store)
+
+Commits: 3aac9321 and 7b67f6af (the extended row and the fixture's open record), b0af7b3c (the fix), 77661c64
+(mutation case servers183-check-opens-store), and the proof commit after them.
+
+- The finding: setup's own memory check ran VELDO-0182's adapter in a new process over the live store after the
+  store server had started (start_stores' `after`, rewrite_assistant's `before` and `after`), a second opener of a
+  store its store server holds.
+- The fix: the store server answers two more requests on its socket, `check` and `copy`
+  (control_memory_store.Inspector): `check` runs VELDO-0182's own reader, control_memory_adapter.inspect, on the
+  server's tools thread over the store the server already holds open (kb.store's _get_collection, which the
+  adapter's memory_kb reader repoints, is restored after), and `copy` runs VELDO-0182's copy_data in the server,
+  into a staging directory under the state root's memory/copies only. Sampled rows go back over the socket only;
+  the journal line names the part, request and outcome. control_memory_check.check takes an optional `served`
+  reader; the servers step passes control_memory_servers.Served (the socket's `check` and `copy`) for every check
+  that runs while a store server is up (start_stores' `after`, both of rewrite_assistant's) and none for the
+  `before` at a first start, which runs before the server starts. Without `served` the check is unchanged, so
+  VELDO-0182's check where no store server exists is the same code path. The `memory_check` events carry `served`.
+- The row: AC4/one-opener now also samples /proc for each store throughout the main journey's servers step and its
+  rerun and throughout `veldo factory setup` with the memory manifest and its rerun (row AC1/setup-step's runs), and
+  requires no sample with two processes holding a store's files. The fixture's Chroma stand-in records each open of
+  a store with the other pids then holding its files (fixtures.OPENS, opens.jsonl beside the fixture stores), and
+  the row requires no open in those windows beside another holder, so a second opener is caught at the moment it
+  opens, not only when a sample lands on it. The writers' sampling is unchanged.
+- Red then green: round3-one-opener.txt. At 7b67f6af (production as at 83588ab4) only AC4/one-opener is red: in
+  both windows each store shows three opens beside its store server (the `after` check and the rewrite's two) and
+  samples with two holders; at b0af7b3c the suite is green, seventeen rows.
+- Mutation case servers183-check-opens-store passes no `served` reader, bringing the second opener back: mutant
+  red on AC4/one-opener only, baseline and no-op green.
+
+Evidence: round3-one-opener.txt, suites.txt (130, 128, 129, 123, 127 and 105, each alone at 77661c64, green),
+mutation-<case>.txt (the seven cases, each run alone by scripts/check_gate_mutations.py honouring the committed list
+at 77661c64: baseline and no-op green, mutant red on its row). falsifiers.txt is fix round 1's. OPEN.md item 5. The
+full gate was not run.
