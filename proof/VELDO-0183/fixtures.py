@@ -84,15 +84,42 @@ class FastMCP:
             sys.stdout.flush()
 '''
 
-# A Chroma-like persisted collection: SQLite held open for life, the index loaded once and written back whole.
+# A Chroma-like persisted collection: SQLite held open for life, the index loaded once and written back whole. Each
+# open is recorded with the other processes then holding the store's files, in opens.jsonl beside the fixture's
+# stores (OPENS), so a second opener of a store a store server holds is seen at the moment it opens.
+OPENS = 'opens.jsonl'
 CHROMA = r'''import json, os, sqlite3, uuid
 from pathlib import Path
+
+
+def holders(directory):
+    directory = os.path.realpath(str(directory)) + os.sep
+    found = set()
+    for entry in os.listdir('/proc'):
+        if not entry.isdigit():
+            continue
+        try:
+            for fd in os.listdir('/proc/%s/fd' % entry):
+                try:
+                    if os.readlink('/proc/%s/fd/%s' % (entry, fd)).startswith(directory):
+                        found.add(int(entry))
+                        break
+                except OSError:
+                    continue
+        except OSError:
+            continue
+    return found
 
 
 class Collection:
     def __init__(self, directory, name):
         self.directory, self.name = Path(directory), name
         self.db = sqlite3.connect(str(self.directory / 'chroma.sqlite3'), timeout=60)
+        # The store is the data directory above chromadb (mem0_memory's, whose lock is there) or chromadb itself.
+        store = self.directory.resolve().parent
+        others = sorted(holders(store) - {os.getpid()})
+        with open(str(store.parents[1] / 'opens.jsonl'), 'a') as out:
+            out.write(json.dumps(dict(pid=os.getpid(), store=str(self.directory.resolve()), others=others)) + '\n')
         self.db.execute('CREATE TABLE IF NOT EXISTS rows(id TEXT, collection TEXT, text TEXT)')
         self.path = self.directory / ('index-%s.json' % name)
         self.index = json.loads(self.path.read_text()) if self.path.is_file() else {}
@@ -563,6 +590,12 @@ def build(root, host=None):
         memory_kb=dict(code=str(kb), interpreter=str(interpreter)),
         claude_mem=dict(code=str(plugin), data=str(data),
                         command=[str(interpreter), '-B', str(plugin / 'search.py'), str(data)])))
+
+
+def opens(root):
+    """Every open of a fixture store under `root` so far, each with the other pids then holding its files."""
+    path = Path(root) / OPENS
+    return [json.loads(line) for line in path.read_text().splitlines()] if path.is_file() else []
 
 
 def holders(directory, exclude=()):

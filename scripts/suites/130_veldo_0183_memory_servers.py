@@ -53,6 +53,37 @@ def _v183_suite():
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
 
+    def watched(label, stores, opened, run):
+        """`run` with each store's holders sampled from /proc throughout, and each open of a fixture store under
+        `opened` recorded at that moment with the other pids then holding its files (FIX.opens): AC4/one-opener over
+        the servers step, where no store a store server holds may be opened by a second process."""
+        sampled = {part: [] for part in stores}
+        stop = threading.Event()
+
+        def sample():
+            while not stop.is_set():
+                for part, data in stores.items():
+                    sampled[part].append(FIX.holders(data))
+                time.sleep(0.01)
+        before = len(FIX.opens(opened))
+        sampler = threading.Thread(target=sample)
+        sampler.start()
+        try:
+            return run()
+        finally:
+            stop.set()
+            sampler.join()
+            seen = FIX.opens(opened)[before:]
+            for part, data in stores.items():
+                shared = [sorted(s) for s in sampled[part] if len(s) > 1]
+                prefix = os.path.realpath(data) + os.sep
+                beside = [(o['pid'], o['others']) for o in seen if (o['store'] + os.sep).startswith(prefix) and o['others']]
+                check('AC4/one-opener', '%s, %s: never held by two processes [%d samples, %d by two or more %s; %d opens, '
+                      '%d beside another holder %s]' % (label, part, len(sampled[part]), len(shared), shared[:2],
+                                                        len([o for o in seen if (o['store'] + os.sep).startswith(prefix)]),
+                                                        len(beside), beside[:2]),
+                      sampled[part] and not shared and not beside)
+
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
         module = importlib.util.module_from_spec(spec)
@@ -222,9 +253,10 @@ for proc, _, _ in servers.values():
 
         # THE SERVERS STEP, as `veldo memory servers` runs it: with the host's user manager stand-in and unit dir.
         events = []
-        step = MS.setup_servers(root, str(owner_key), runner=manager, unit_dir=str(units),
-                                install_root=str(base / 'install-v183'), python=sys.executable, factory=str(mods),
-                                host=host, observe=events.append)
+        stores = {part: MS.store_data(definition, part) for part in MS.STORES}
+        step = watched('servers step', stores, base / 'stores', lambda: MS.setup_servers(
+            root, str(owner_key), runner=manager, unit_dir=str(units), install_root=str(base / 'install-v183'),
+            python=sys.executable, factory=str(mods), host=host, observe=events.append))
         print('  VELDO-0183 servers step:', step['outcome'], step['catalog'], step['roles'])
         conn = sqlite3.connect('file:%s?mode=ro' % store_path, uri=True, timeout=30)
         try:
@@ -763,9 +795,9 @@ print(json.dumps(out))
         check('AC4/assistant-entries', 'the rewrite ran inside the check for each part [%s]' % phases,
               phases[-4:] == [('ava_memory', 'before'), ('memory_kb', 'before'), ('ava_memory', 'after'),
                               ('memory_kb', 'after')])
-        again = MS.setup_servers(root, str(owner_key), runner=manager, unit_dir=str(units),
-                                 install_root=str(base / 'install-v183'), python=sys.executable, factory=str(mods),
-                                 host=host)
+        again = watched('servers step rerun', stores, base / 'stores', lambda: MS.setup_servers(
+            root, str(owner_key), runner=manager, unit_dir=str(units), install_root=str(base / 'install-v183'),
+            python=sys.executable, factory=str(mods), host=host))
         check('AC4/assistant-entries', 'a second run leaves entries that name the bridge alone and saves nothing [%s]'
               % again['outcome'],
               again['outcome'] == 'already_done' and again['assistant_mcp']['outcome'] == 'already_done'
@@ -928,10 +960,12 @@ print(json.dumps(dict(by_id=len(by_id), by_search=len(by_search), total=len(want
         os.environ['PATH'] = str(bun_dir) + os.pathsep + saved_path
         os.environ['UV_CACHE_DIR'] = str(F182.uv_cache(base / 'owner-uv-v183s'))
         try:
-            def run():
-                return h['setup'](root, workspace, base / 'trust-v183s' / 'host.json', base / 'install-v183s', units,
-                                  manager, **{'--memory': str(manifest_path)})
-            code, report = run()
+            def run(label):
+                return watched(label, {part: manifest['parts'][part]['data'] for part in MS_STORES}, base / 'stores-setup',
+                               lambda: h['setup'](root, workspace, base / 'trust-v183s' / 'host.json',
+                                                  base / 'install-v183s', units, manager,
+                                                  **{'--memory': str(manifest_path)}))
+            code, report = run('factory setup')
             print('  VELDO-0183 setup with memory:', code, report.get('outcome'), report.get('reason'))
             first = next((s for s in report.get('steps') or [] if s.get('step') == 'memory_servers'), {})
             check('AC1/setup-step', 'factory setup with the memory manifest ran the servers step [%s %s %s]'
@@ -970,7 +1004,7 @@ print(json.dumps(dict(by_id=len(by_id), by_search=len(by_search), total=len(want
                               for m in revision.get('mcp') or [] if m['server'] in FOUR))
             check('AC1/setup-step', 'setup started both store servers', sorted(
                 s.get('part') for s in first.get('stores') or [] if s.get('outcome') == 'started') == sorted(MS_STORES))
-            code2, again = run()
+            code2, again = run('factory setup rerun')
             second = next((s for s in again.get('steps') or [] if s.get('step') == 'memory_servers'), {})
             heads2, bound2, journal2 = read()
             print('  VELDO-0183 setup rerun:', code2, again.get('outcome'), second.get('outcome'), journal, journal2)
