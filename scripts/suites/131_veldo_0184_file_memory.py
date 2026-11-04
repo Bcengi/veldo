@@ -43,6 +43,7 @@ def _v184_suite():
         'control_agent_config.py': ROOT / ".veldo" / "control_agent_config.py",
         'control_memory_servers.py': ROOT / ".veldo" / "control_memory_servers.py",
         'control_owner_revisions.py': ROOT / ".veldo" / "control_owner_revisions.py",
+        'qualify.py': ROOT / ".veldo" / "qualify.py",
     }
     ROWS = ('AC1/role-item', 'AC1/replay', 'AC1/settings', 'AC1/memory-path', 'AC1/without', 'AC1/qualified', 'AC1/mismatch-stop',
             'AC1/absent', 'AC2/configuration', 'AC2/write', 'AC2/later-read', 'AC2/qualified',
@@ -497,6 +498,42 @@ if ENGINE != 'codex':
               and (forms.get('claude_code') or {}).get('sha256') == engines['claude_code']['sha256']
               and (forms.get('claude_code') or {}).get('file_memory') == getattr(C, 'FILE_MEMORY', 'absent')
               and all(r.get('offset') is not None for r in (forms.get('claude_code') or {}).get('found') or [None]))
+        # The one upgrade command's Claude Code record (qualify.py's claude_record) over a bundle made of the extracted
+        # code, its other readers stood in: the form when every pattern is found, else left out with why.
+        Q = load('v184_qualify', mods / 'qualify.py')
+        real_load = Q.load
+
+        def qualify_load(name, path):
+            module = real_load(name, path)
+            if name == 'qualify_claude':
+                module.session_environment = lambda executable: {}
+            return module
+        Q.load, Q.claude_version = qualify_load, lambda executable: '9.9.9'
+        Q.claude_builtins, Q.home_form = (lambda executable, baseline: ([], [])), (lambda executable: str(executable))
+        bundle = base / 'claude-bundle'
+        code = ';'.join(r.get('excerpt') or '' for r in (forms.get('claude_code') or {}).get('found') or [])
+        bundle.write_bytes(code.encode())
+        renamed = base / 'claude-bundle-renamed'
+        renamed.write_bytes(code.replace('autoMemoryDirectory', 'memoryDirectory').encode())
+        records = {}
+        for name, path in (('carried', bundle), ('renamed', renamed)):
+            try:
+                records[name] = Q.claude_record(ROOT, path)['versions']['9.9.9']
+            except Exception as error:  # noqa: BLE001
+                records[name] = {'error': repr(error)}
+        carried, lacking = records['carried'], records['renamed']
+        check('AC1/qualified', 'the qualify command\'s Claude Code record lists the form when the bytes carry every '
+              'pattern [%s]' % sorted(set(carried) - {'baseline', 'tool_registry', 'tool_classification'})[:6],
+              carried.get('file_memory') == getattr(C, 'FILE_MEMORY', 'absent')
+              and 'file_memory_unqualified' not in carried)
+        check('AC1/qualified', 'and leaves it out, naming the patterns not found, when they are not [%s]'
+              % lacking.get('file_memory_unqualified'), 'file_memory' not in lacking
+              and (lacking.get('file_memory_unqualified') or {}).get('missing_patterns')
+              == ['directory_source', 'settings_schema'])
+        pinned_binary = Path(os.path.expanduser(engines['claude_code']['binary']))
+        check('AC1/qualified', 'the pinned binary carries every pattern (read, not run) [%s]'
+              % (C.file_memory_missing(pinned_binary) if hasattr(C, 'file_memory_missing') else 'absent'),
+              pinned_binary.is_file() and hasattr(C, 'file_memory_missing') and C.file_memory_missing(pinned_binary) == [])
         shipped_codex = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text())
         check('AC2/qualified', 'the pinned Codex record lists the form, read from its bytes (every literal found)',
               shipped_codex.get('file_memory') == getattr(X, 'FILE_MEMORY', 'absent') and shipped_codex['version'] == engines['codex']['version']

@@ -24,6 +24,8 @@ CLAUDE = [
     ('the environment switch: CLAUDE_CODE_DISABLE_AUTO_MEMORY turns auto memory off, unset leaves the setting',
      b'let e=process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY;if(Oe(e))return"off"', 30, 80),
     ('autoMemoryEnabled read from the merged settings, flagSettings among them', b'function Uy(){if(PT("autoMemoryEnabled")', 0, 160),
+    ('autoMemoryEnabled from the merged settings, on when no source sets it',
+     b'function pD(){let e=Ke();if(e.autoMemoryEnabled!==void 0)return e.autoMemoryEnabled;return!0}', 0, 0),
     ('the init event memory paths: auto, and team when team memory is on', b'n={auto:Qs()},fR())n.team=PS()', 30, 20),
     ('the init event field', b'if(e.memoryPaths)g.memory_paths={...e.memoryPaths}', 0, 0),
     ('the settings schema entry', b'autoMemoryDirectory:o().optional().describe(', 0, 120),
@@ -73,6 +75,9 @@ def main():
             carried = load(module).file_memory_carried(str(path))
             if not carried:
                 missing.append('codex: FILE_MEMORY_LITERALS')
+        else:
+            # The patterns qualify.py reads the form by (these literals with the minified names left open).
+            missing += ['claude_code: FILE_MEMORY_PATTERNS ' + name for name in load(module).file_memory_missing(str(path))]
         out[engine] = {'version': engines[engine]['version'], 'sha256': digest, 'file_memory': form, 'found': rows}
     (Path(__file__).with_name('engine-memory-forms.json')).write_text(json.dumps(out, indent=1, sort_keys=True) + '\n')
     if missing:

@@ -1417,6 +1417,29 @@ FILE_MEMORY = {
     'init_field': 'memory_paths',
 }
 FILE_MEMORY_FORM = 'claude_code:flagSettings:autoMemoryDirectory'
+# The byte patterns FILE_MEMORY is read from (VELDO-0184 AC1, proof/VELDO-0184/engine-memory-forms.json): each the
+# extractor's 2.1.281 literal with the bundle's minified names (`~`) left open, so a later bundle carrying the same
+# code under other names is read the same way. Every pattern must be found for a version's record to list the form.
+_NAME = rb'[\w$]+'
+FILE_MEMORY_PATTERNS = tuple((what, re.compile(pattern.replace(b'~', _NAME))) for what, pattern in (
+    ('directory_source', rb'let (~)=~\(~\)\?\.autoMemoryDirectory;if\(\1!=null\)return\{dir:\1,source:~\}'),
+    ('directory_reported', rb'let (~)=~\(~\)\.replace\(/\[/\\\\\]\+\$/,""\);if\(~\(\1\)\)return;'
+                           rb'return\(\1\+~\)\.normalize\("NFC"\)'),
+    ('environment_switch', rb'let (~)=process\.env\.CLAUDE_CODE_DISABLE_AUTO_MEMORY;if\(~\(\1\)\)return"off"'),
+    ('enabled_setting', rb'function ~\(\)\{let (~)=~\(\);if\(\1\.autoMemoryEnabled!==void 0\)return \1\.autoMemoryEnabled;'
+                        rb'return!0\}'),
+    ('init_paths', rb'(~)=\{auto:~\(\)\},~\(\)\)\1\.team=~\(\)'),
+    ('init_field', rb'if\((~)\.memoryPaths\)~\.memory_paths=\{\.\.\.\1\.memoryPaths\}'),
+    ('settings_schema', rb'autoMemoryDirectory:(?:\(\)=>)?~\(\)\.optional\(\)\.describe\('),
+))
+
+
+def file_memory_missing(executable):
+    """The FILE_MEMORY_PATTERNS the binary's bytes lack, by name (none: the version carries the form)."""
+    data = Path(executable).read_bytes()
+    return [what for what, pattern in FILE_MEMORY_PATTERNS if pattern.search(data) is None]
+
+
 MEMORY_MISMATCH = 'binding_mismatch:engine_memory'
 # The init event's apiKeySource of a run on no API key (the binary's M_ source "none"): a claude.ai
 # subscription login and a subscription token (CLAUDE_CODE_OAUTH_TOKEN) alike report it.

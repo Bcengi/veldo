@@ -272,6 +272,14 @@ def claude_record(root, executable):
                  terminal_protocol={'error_subtypes': formats['result/error']['fields']['subtype']['values'],
                                     'output': 'stream-json', 'success_subtype': 'success', 'terminal_event': 'result'},
                  tool_classification=tools['tool_classification'], tool_registry=tools['tool_registry'])
+    # VELDO-0184 AC1: the file memory form, listed only when the binary's bytes carry every pattern it is read from;
+    # else left out with the patterns not found, so a run whose role lists the item is refused by name.
+    missing = C.file_memory_missing(executable)
+    if missing:
+        entry['file_memory_unqualified'] = {'missing_patterns': missing,
+                                            'reason': 'the binary lacks the auto-memory code the form is read from'}
+    else:
+        entry['file_memory'] = json.loads(json.dumps(C.FILE_MEMORY))
     return {'engine': 'claude_code', 'note': CLAUDE_NOTE, 'schema': C.QUALIFICATION_SCHEMA, 'spec_id': 'VELDO-0060',
             'versions': {version: entry}}
 

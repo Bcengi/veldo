@@ -38,6 +38,12 @@
     "shows": "autoMemoryEnabled read from the merged settings, flagSettings among them"
    },
    {
+    "excerpt": "function pD(){let e=Ke();if(e.autoMemoryEnabled!==void 0)return e.autoMemoryEnabled;return!0}",
+    "literal": "function pD(){let e=Ke();if(e.autoMemoryEnabled!==void 0)return e.autoMemoryEnabled;return!0}",
+    "offset": 195935556,
+    "shows": "autoMemoryEnabled from the merged settings, on when no source sets it"
+   },
+   {
     "excerpt": "dt(){let e=Un(),n;if(Va()){if(n={auto:Qs()},fR())n.team=PS()}let r;r=import.meta",
     "literal": "n={auto:Qs()},fR())n.team=PS()",
     "offset": 208881764,
