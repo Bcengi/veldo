@@ -212,8 +212,12 @@ existing cases kill as before.
 ## Suites run, round 3 (each alone, `suites-round3.txt`)
 
 137 (19/19), 130 (17/17), 131 (16/16), 132 (19/19), 136 (21/21), 68_veldo_0126 (18/18), 68_veldo_0136_hints (7/7),
-69_veldo_0133 (33/33), 93 (24/24): green. The six 0181 mutation cases, each alone (`mutations-summary.txt`,
-`mutation-*.txt`): see that file for each case's baseline, no-op and mutant. The full gate was not run.
+69_veldo_0133 (33/33), 93 (24/24): green; 137 rerun 19/19 after b67b8472. The six 0181 mutation cases, each alone at
+91b48584 (`mutations-summary.txt`, last block; `mutation-*.txt`): baseline and no-op green, each mutant killed at its
+rows, status passed. The first round 3 pass at eb43816c is kept above it: `reply181-presentation-as-turn` hit its 120 s
+worker deadline (mutation_budget_exceeded) while an unrelated load test held the load average near 36 on 20 cores; at
+91b48584 its mutant took 77 s (71 s in round 2; about 60 s of it is the suite's existing 60 s drive wait, which the
+mutant always exhausts; the two new rows add about 10 s). The full gate was not run.
 
 ## Suites run, round 2 (each alone, `suites-round2.txt`)
 

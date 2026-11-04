@@ -9,3 +9,29 @@ route181-applied-twice: baseline failed [], noop failed [], mutant failed ['VELD
 route181-applied-twice status passed rejected 1 invalid []
 bare181-short-form-dropped: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC1/unclear-bare-project']
 bare181-short-form-dropped status passed rejected 1 invalid []
+
+VELDO-0181 fix round 3, at eb43816c: each case run alone (python3 scripts/check_gate_mutations.py --case NAME) in a transient user scope (MemoryMax=8G, MemorySwapMax=0). Full receipts: mutation-NAME.txt.
+output181-answer-accepted: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC2/no-authority-from-output']
+output181-answer-accepted status passed rejected 1 invalid []
+publish181-own-inbox-only: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC1/rerun-presented', 'VELDO-0181 AC1/no-presentation-hint', 'VELDO-0181 AC1/settles-by-reply', 'VELDO-0181 AC1/move-presented', 'VELDO-0181 AC1/settled-once-across', 'VELDO-0181 AC1/observability']
+publish181-own-inbox-only status passed rejected 1 invalid []
+route181-applied-twice: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC1/unclear-settles-by-ui', 'VELDO-0181 AC1/unclear-settled-once', 'VELDO-0181 AC1/unclear-bare-project', 'VELDO-0181 AC1/unclear-bare-ambiguous', 'VELDO-0181 AC1/unclear-ticket-key', 'VELDO-0181 AC1/unclear-free-text']
+route181-applied-twice status passed rejected 1 invalid []
+bare181-short-form-dropped: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC1/unclear-bare-project', 'VELDO-0181 AC1/unclear-ticket-key']
+bare181-short-form-dropped status passed rejected 1 invalid []
+free181-clarification-dropped: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC1/unclear-free-text']
+free181-clarification-dropped status passed rejected 1 invalid []
+
+VELDO-0181 fix round 3 rerun, at 91b48584 (after b67b8472), load average about 25 on 20 cores from an unrelated process: each case run alone, as above. These supersede the round 3 lines above; full receipts: mutation-NAME.txt.
+output181-answer-accepted: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC2/no-authority-from-output']
+output181-answer-accepted status passed rejected 1 invalid [] seconds {'noop': 16.9, 'baseline': 17.0, 'mutant': 16.3}
+publish181-own-inbox-only: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC1/rerun-presented', 'VELDO-0181 AC1/no-presentation-hint', 'VELDO-0181 AC1/settles-by-reply', 'VELDO-0181 AC1/move-presented', 'VELDO-0181 AC1/settled-once-across', 'VELDO-0181 AC1/observability']
+publish181-own-inbox-only status passed rejected 1 invalid [] seconds {'noop': 16.8, 'baseline': 17.0, 'mutant': 74.4}
+route181-applied-twice: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC1/unclear-settles-by-ui', 'VELDO-0181 AC1/unclear-settled-once', 'VELDO-0181 AC1/unclear-bare-project', 'VELDO-0181 AC1/unclear-bare-ambiguous', 'VELDO-0181 AC1/unclear-ticket-key', 'VELDO-0181 AC1/unclear-free-text']
+route181-applied-twice status passed rejected 1 invalid [] seconds {'baseline': 15.0, 'noop': 15.1, 'mutant': 16.4}
+bare181-short-form-dropped: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC1/unclear-bare-project']
+bare181-short-form-dropped status passed rejected 1 invalid [] seconds {'noop': 16.1, 'baseline': 16.2, 'mutant': 16.4}
+free181-clarification-dropped: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC1/unclear-free-text']
+free181-clarification-dropped status passed rejected 1 invalid [] seconds {'noop': 16.1, 'baseline': 16.1, 'mutant': 15.3}
+reply181-presentation-as-turn: baseline failed [], noop failed [], mutant failed ['VELDO-0181 AC1/settles-by-reply', 'VELDO-0181 AC1/settled-once-across', 'VELDO-0181 AC1/unclear-settles-by-reply', 'VELDO-0181 AC1/unclear-settled-once', 'VELDO-0181 AC1/unclear-never-a-turn', 'VELDO-0181 AC1/unclear-bare-project', 'VELDO-0181 AC1/unclear-bare-ambiguous', 'VELDO-0181 AC1/unclear-ticket-key', 'VELDO-0181 AC1/unclear-free-text', 'VELDO-0181 AC1/observability']
+reply181-presentation-as-turn status passed rejected 1 invalid [] seconds {'noop': 16.0, 'baseline': 16.4, 'mutant': 77.3}
