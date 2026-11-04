@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0230",
- "commit": "4e7932a8b55e8bba83e4ad79d3cd17a137f9091e",
- "tree": "5ec3a89388ec74883838ab63df34e481e74da575",
+ "commit": "412a79d44f2420b89d343a2fdae060390a2dc171",
+ "tree": "772e6d1449a931f2f6d269eef28d4ab4cda7fa79",
  "producer": "Claude implementation agent; not an independent reviewer",
- "produced_at": "2026-11-03T22:02:09.927568+00:00",
+ "produced_at": "2026-11-04T02:31:26.826570+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -12,13 +12,13 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "proof/VELDO-0230/selftest-changed-suites.txt",
-     "detail": "Suite 125 census/clean passes over 792 governed files; census/planted-version and census/planted-digest name a planted 0.154.0-style version and a digest; mutants census230-version-unread and census230-digest-unread were each killed by their row."
+     "ref": "scripts/suites/125_veldo_0230_engine_census.py",
+     "detail": "Seven rows pass: census/clean over 808 governed files (suites support modules included); planted version, digest, single model name and built-in settings each named; mutants census230-version-unread, -digest-unread, -model-unread, -builtin-unread killed. Suite 86 fake built-ins from the record; model names from the catalog fixture."
     },
     {
      "type": "integration",
-     "ref": "proof/VELDO-0230/README.md",
-     "detail": "NOT RUN: the full gate waited two hours on the host gate lock (held by another session gate) and was stopped before starting."
+     "ref": "proof/VELDO-0230/gate.log",
+     "detail": "Full gate at 4ebd96db: RED. Rows of this change it found (VELDO-0153 registry audit, git boundary in the census, suite 125 reading suite 79, extractor mutants unable to find the repository) are fixed at 412a79d4 and their suites pass by hand; the full gate was not re-run (one run asked). Still red by cause outside the code: suite 86 live/claude and live/codex (lead-only retake), contracts and shape (the agent sandbox refuses a standard descriptor inside the repository, which the prescribed log path proof/VELDO-0230/gate.log is), first use (a nested run exceeded its 1800 s budget)."
     }
    ]
   },
@@ -29,17 +29,17 @@
     {
      "type": "integration",
      "ref": "proof/VELDO-0230/ac2a-qualify-output.txt",
-     "detail": "(a) python3 .veldo/qualify.py --codex <0.154.0> --claude 2.1.281 left git status empty: every written file byte-identical; suite 126 repeats it in scratch."
+     "detail": "(a) qualify on Codex 0.154.0 and Claude Code 2.1.281 at the final commit: git status empty, every written file byte-identical, the two VELDO-0156 captures included. Suite 126 qualify/covers checks its own list of every table and record; mutant qualify230-claude-record-unwritten killed."
     },
     {
      "type": "integration",
      "ref": "proof/VELDO-0230/ac2b-suites.txt",
-     "detail": "(b) Codex 0.166.0 and Claude Code 2.1.317 qualified by the one command; listed suites pass except 88, 89, 90 (0.166.0 offers MCP resource readers to a Code Mode model with no server: owner decision) and 78_0160 tool-forms rows (reader tables vs the new binary); eight adapter-pin mutants killed (ac2b-pin-mutations.txt)."
+     "detail": "(b) private-prefix Codex 0.166.0 and Claude Code 2.1.317 qualified into a scratch worktree: 75, 79, 81, 82_0165, 82_0173, 85_0158, 85_0171, 86 offline rows, 87_0127, 87_0170, 88, 89, 90, 125, 126 pass; 78_0160 format/tool-forms and decision/outward-tool-asks red (reader tables, open); eight pin mutants killed (ac2b-pin-mutations.txt)."
     },
     {
      "type": "integration",
-     "ref": "proof/VELDO-0230/README.md",
-     "detail": "NOT RUN: the full gate waited two hours on the host gate lock (held by another session gate) and was stopped before starting."
+     "ref": "proof/VELDO-0230/gate.log",
+     "detail": "Full gate at 4ebd96db: RED. Rows of this change it found (VELDO-0153 registry audit, git boundary in the census, suite 125 reading suite 79, extractor mutants unable to find the repository) are fixed at 412a79d4 and their suites pass by hand; the full gate was not re-run (one run asked). Still red by cause outside the code: suite 86 live/claude and live/codex (lead-only retake), contracts and shape (the agent sandbox refuses a standard descriptor inside the repository, which the prescribed log path proof/VELDO-0230/gate.log is), first use (a nested run exceeded its 1800 s budget)."
     }
    ]
   },
@@ -49,13 +49,18 @@
    "evidence": [
     {
      "type": "unit",
-     "ref": "proof/VELDO-0230/selftest-changed-suites.txt",
-     "detail": "Suite 88 defaults/unknown: a fake binary listing an extra default-on feature launches with it off and the record names it; suite 125 newer/claude-tool: an unknown registry tool is outward, switched off and listed; mutants role230-unknown-default-left-on, role230-unknown-default-unlisted and qualify230-new-tools-unlisted killed. On 0.166.0, 20 such features were turned off and listed."
+     "ref": "scripts/suites/88_veldo_0127_feature_defaults.py",
+     "detail": "defaults/unknown: an unknown default-on feature is off and listed, a granted one stays on, the launch proceeds; mutant qualify230-granted-feature-off killed."
     },
     {
      "type": "integration",
-     "ref": "proof/VELDO-0230/README.md",
-     "detail": "NOT RUN: the full gate waited two hours on the host gate lock (held by another session gate) and was stopped before starting."
+     "ref": "proof/VELDO-0230/new-capabilities-0.166-2.1.317.md",
+     "detail": "Every new item of 0.166.0 and 2.1.317 evaluated (runtime/capability-decisions.json); the records and ac2b-qualify-output.txt carry each decision: Codex 66 (6 granted, 55 not applicable, 5 off), Claude Code 31 (14 granted, 7 not applicable, 10 off), none unevaluated."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0230/gate.log",
+     "detail": "Full gate at 4ebd96db: RED. Rows of this change it found (VELDO-0153 registry audit, git boundary in the census, suite 125 reading suite 79, extractor mutants unable to find the repository) are fixed at 412a79d4 and their suites pass by hand; the full gate was not re-run (one run asked). Still red by cause outside the code: suite 86 live/claude and live/codex (lead-only retake), contracts and shape (the agent sandbox refuses a standard descriptor inside the repository, which the prescribed log path proof/VELDO-0230/gate.log is), first use (a nested run exceeded its 1800 s budget)."
     }
    ]
   },
@@ -70,8 +75,8 @@
     },
     {
      "type": "integration",
-     "ref": "proof/VELDO-0230/README.md",
-     "detail": "NOT RUN: the full gate waited two hours on the host gate lock (held by another session gate) and was stopped before starting."
+     "ref": "proof/VELDO-0230/gate.log",
+     "detail": "Full gate at 4ebd96db: RED. Rows of this change it found (VELDO-0153 registry audit, git boundary in the census, suite 125 reading suite 79, extractor mutants unable to find the repository) are fixed at 412a79d4 and their suites pass by hand; the full gate was not re-run (one run asked). Still red by cause outside the code: suite 86 live/claude and live/codex (lead-only retake), contracts and shape (the agent sandbox refuses a standard descriptor inside the repository, which the prescribed log path proof/VELDO-0230/gate.log is), first use (a nested run exceeded its 1800 s budget)."
     }
    ]
   }
