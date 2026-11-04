@@ -4,7 +4,8 @@
 confinement, because suites 127 and 85 run factory setup against this host's systemd user manager and suite 127 is
 not (yet) on the owner's protected unconfined list (scripts/gate_unconfined.json); see OPEN.md.
 
-For every case: the baseline (unmutated production copy) with every target row green, the mutant (the driver's
+For every case: the baseline (unmutated production copy) with every target row green, the no-op (the driver's
+materialize of an unchanged copy, the suite's anchor pointed at it) green, the mutant (the driver's
 own materialize, its exact replacement) with at least one target row red, then the baseline again (green
 restored). Writes falsifiers.json beside this file. Usage: python3 proof/VELDO-0234/falsifiers.py
 """
@@ -58,14 +59,20 @@ def main():
                       'old': case['old'], 'new': case['new'], 'source_sha256': made['old_digest'],
                       'mutant_sha256': made['new_digest'], 'replacement_count': made['replacement_count']}
             record['baseline'] = run(case)
+            with tempfile.TemporaryDirectory(prefix='v234-noop-') as same:
+                noop = T.materialize(case, 'noop', same)
+                record['noop_sha256'] = noop['new_digest']
+                record['noop'] = run(case, noop['mutant'])
             record['mutant'] = run(case, made['mutant'])
             record['restored'] = run(case)
         record['verdict'] = ('red_under_mutant_green_restored'
-                             if green(record['baseline']) and red(record['mutant']) and green(record['restored'])
+                             if green(record['baseline']) and green(record['noop']) and red(record['mutant'])
+                             and green(record['restored']) and record['noop_sha256'] == record['source_sha256']
                              else 'not_proven')
         records.append(record)
-        print('%s: baseline %s, mutant %s %s, restored %s -> %s' % (
+        print('%s: baseline %s, no-op %s, mutant %s %s, restored %s -> %s' % (
             case['name'], 'green' if green(record['baseline']) else 'NOT GREEN',
+            'green' if green(record['noop']) else 'NOT GREEN',
             'red' if red(record['mutant']) else 'NOT RED', record['mutant'].get('failed_rows'),
             'green' if green(record['restored']) else 'NOT GREEN', record['verdict']), flush=True)
     receipt = {'schema': 'veldo.falsifier_receipt/v1', 'spec': 'VELDO-0234', 'commit': commit,

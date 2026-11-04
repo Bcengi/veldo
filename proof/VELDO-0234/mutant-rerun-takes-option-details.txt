@@ -1,0 +1,2 @@
+  VELDO-0234 rerun/other-port detail: a re-run with --https-port 443 is refused as invalid_input:state_root:holds_https_port, writing nothing [invalid_input:tailscale_serve:occupied []]
+  VELDO-0234 rerun/other-port detail: a re-run with --https-port 10000 is refused as invalid_input:state_root:holds_https_port, writing nothing [invalid_input:state_root:differs:/dev/shm/b171-lbqodod1/state-own/host/api-service.json []]
