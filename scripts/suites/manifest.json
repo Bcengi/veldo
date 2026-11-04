@@ -1828,6 +1828,15 @@
    "resources": {
     "ui_browser": 1
    }
+  },
+  {
+   "name": "136_veldo_0180_conversation_projects",
+   "file": "136_veldo_0180_conversation_projects.py",
+   "requires": [
+    "136_veldo_0180_conversation_projects"
+   ],
+   "regions": "Twenty-one rows (VELDO-0180 AC1, AC2): two real turns of a conversation with an attached clone; the owner's /project reply naming his project recorded as a conversion and routed by intake's routing command with the factory's route document (its conversation as its source), the objective proposed by the project's PM and accepted by his command; conversations.make_project through the production HTTP route naming a new project and its identity, settled by VELDO-0143 with nothing asked; his plain words read by the PM as the project command, asked once with no identity; refusals by name (not the owner, no name, out of scope, factory, stale version) making nothing; a turn's own route document and created claim making nothing; the objective binding the full rendering and a workspace snapshot with the clone's bundle, both stored by digest; the project's PM run and its unit's first build run receiving both and the receiver refusing a changed snapshot binding_mismatch:conversation_snapshot before launch; logged and counted, never content.",
+   "requires_note": "Only ROOT, expect and fast_temp. A real signed SQLite authority (VELDO-0073's support), a loopback Bot API stand-in, the production Acquirer, presentation edge, settlement and intake with its conversations, API requests signed by the API edge's real key and the production ControlApi route, VELDO-0174's conversation Line and project line with real receivers over fake pinned engines (support/v174_journey.py), the production NewProjects and Objectives. No real Telegram service, token, engine, login or network beyond loopback; no systemd user manager. Writes only temporary fixtures."
   }
  ],
  "resource_capacities": {
