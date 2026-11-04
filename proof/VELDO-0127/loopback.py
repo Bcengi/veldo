@@ -22,8 +22,40 @@ def load(name, path):
     return module
 
 
-def capture(binary, configuration, *, models=False, catalog=None, features=False):
-    """Only transport and temporary MCP/skill paths differ from the generated role input."""
+def fill(schema, token):
+    """VELDO-0231: arguments that satisfy a declared parameter schema, every free string the probe's token."""
+    if not isinstance(schema, dict):
+        return token
+    kind = schema.get('type')
+    if isinstance(schema.get('enum'), list) and schema['enum']:
+        return schema['enum'][0]
+    if kind == 'object' or 'properties' in schema:
+        properties = schema.get('properties') or {}
+        names = schema.get('required') or list(properties)
+        return {name: fill(properties.get(name), token) for name in names}
+    if kind == 'array':
+        return [fill(schema.get('items'), token)]
+    if kind in ('integer', 'number'):
+        return 1
+    if kind == 'boolean':
+        return False
+    return token
+
+
+def call_item(body, tool, token):
+    """VELDO-0231: the model's call of `tool` (its schema as this request declares it), arguments from `fill`."""
+    declared = [t for t in body.get('tools') or () if isinstance(t, dict) and t.get('name') == tool]
+    schema = (declared[0].get('parameters') if declared else None) or {'type': 'object', 'properties': {
+        'message': {'type': 'string'}}}
+    return {'type': 'function_call', 'id': 'fc_loopback', 'call_id': 'call_loopback', 'name': tool,
+            'status': 'completed', 'arguments': json.dumps(fill(schema, token))}
+
+
+def capture(binary, configuration, *, models=False, catalog=None, features=False, call=None, timeout=45):
+    """Only transport and temporary MCP/skill paths differ from the generated role input. `call` (VELDO-0231):
+    (tool, token): the first model response calls that tool with the token in every free string; the requests
+    record when each arrived and when the call was answered (`answered_at`)."""
+    import time
     X = load('loopback_codex', ROOT / '.veldo/control_engine_codex.py')
     sys.path.insert(0, str(ROOT / 'proof/VELDO-0156'))
     from capture_mentions import deny_network
@@ -39,6 +71,8 @@ def capture(binary, configuration, *, models=False, catalog=None, features=False
         def do_POST(self):
             body = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
             requests.append({'path': self.path, 'body': body})
+            if call is not None:
+                requests[-1]['arrived'] = time.monotonic()
             self.send_response(200)
             self.send_header('Content-Type', 'text/event-stream')
             self.end_headers()
@@ -48,6 +82,19 @@ def capture(binary, configuration, *, models=False, catalog=None, features=False
                     {'id': 'loopback', 'object': 'chat.completion.chunk', 'choices': [
                     {'index': 0, 'delta': {}, 'finish_reason': 'stop'}]}]
                 wire = ''.join('data: ' + json.dumps(c) + '\n\n' for c in chunks) + 'data: [DONE]\n\n'
+            elif call is not None and len(requests) == 1:
+                item = call_item(body, *call)
+                response = {'id': 'response_loopback_call', 'object': 'response', 'status': 'completed',
+                            'output': [item], 'usage': {'input_tokens': 1, 'output_tokens': 1, 'total_tokens': 2}}
+                chunks = [{'type': 'response.created', 'response': dict(response, status='in_progress', output=[])},
+                          {'type': 'response.output_item.added', 'output_index': 0, 'item': item},
+                          {'type': 'response.output_item.done', 'output_index': 0, 'item': item},
+                          {'type': 'response.completed', 'response': response}]
+                wire = ''.join('event: ' + c['type'] + '\ndata: ' + json.dumps(c) + '\n\n' for c in chunks)
+                self.wfile.write(wire.encode())
+                self.wfile.flush()
+                requests[-1]['answered_at'] = time.monotonic()
+                return
             else:
                 item = {'type': 'message', 'id': 'message_loopback', 'role': 'assistant', 'status': 'completed',
                         'content': [{'type': 'output_text', 'text': 'ready', 'annotations': []}]}
@@ -122,8 +169,9 @@ def capture(binary, configuration, *, models=False, catalog=None, features=False
         if features:
             args = [str(binary), 'features', 'list']
         try:
-            done = subprocess.run(args, input='Reply ready without tools.', text=True, capture_output=True,
-                                  cwd=clone, env=env, timeout=45, preexec_fn=lambda: deny_network(port))
+            prompt = 'Reply ready without tools.' if call is None else 'Call %s once, then reply ready.' % call[0]
+            done = subprocess.run(args, input=prompt, text=True, capture_output=True,
+                                  cwd=clone, env=env, timeout=timeout, preexec_fn=lambda: deny_network(port))
             result = {'returncode': done.returncode, 'stdout': done.stdout, 'stderr': done.stderr}
             if models and done.returncode == 0:
                 catalog = json.loads(result.pop('stdout'))
@@ -131,6 +179,9 @@ def capture(binary, configuration, *, models=False, catalog=None, features=False
                 result['catalog_sha256'] = hashlib.sha256(done.stdout.encode()).hexdigest()
         except subprocess.TimeoutExpired as error:
             result = {'returncode': None, 'refusal': 'loopback_timeout', 'stderr': str(error)}
+            if call is not None:
+                output = error.stdout or ''
+                result['stdout'] = output.decode(errors='replace') if isinstance(output, bytes) else output
         finally:
             server.shutdown()
             thread.join()
