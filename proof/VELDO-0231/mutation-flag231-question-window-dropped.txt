@@ -1,0 +1,5 @@
+case: flag231-question-window-dropped
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=128.250s
+baseline: rows 43, failed [], targets {'AC3/blocking': [True]}
+noop: rows 43, failed [], targets {'AC3/blocking': [True]}
+mutant: rows 43, failed ['VELDO-0231 AC3/blocking'], targets {'AC3/blocking': [False]}

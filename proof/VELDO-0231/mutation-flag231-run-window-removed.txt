@@ -1,0 +1,5 @@
+case: flag231-run-window-removed
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=115.349s
+baseline: rows 43, failed [], targets {'AC4/flood': [True]}
+noop: rows 43, failed [], targets {'AC4/flood': [True]}
+mutant: rows 43, failed ['VELDO-0231 AC4/flood', 'VELDO-0231 AC4/per-run-cap'], targets {'AC4/flood': [False]}
