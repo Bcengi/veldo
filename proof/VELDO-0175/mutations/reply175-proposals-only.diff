@@ -1,5 +1,5 @@
 --- a/.veldo/control_intake.py
 +++ b/.veldo/control_intake.py
-@@ -362 +362 @@
+@@ -393 +393 @@
 -            conversation = self._replied_conversation(bot, chat, fields['reply_to_message_id'])
 +            conversation = None  # defect: a reply resolves only against proposals and questions

@@ -1,18 +1,12 @@
 # VELDO-0175 open items
 
-## 1. The `conversation` field on the HTTP route `messages.send` (AC1): outside the footprint
+## 1. The `conversation` field on the HTTP route `messages.send` (AC1): resolved in fix round 1
 
-Intake accepts the field (`control_intake._api`, `API_FIELDS` plus the optional `conversation`), and suite 131
-posts with it as the API edge signs requests to intake. The HTTP route cannot carry it from inside the footprint:
-the signed API assertion fixes each operation's exact parameters, and a route that sent the extra parameter would
-be refused for every message (`invalid_input:parameters`). So `engine/.veldo/control_api.py` is unchanged. The
-extra paths, with the edits:
-
-- `engine/.veldo/control_api_assertion.py` (and its `.veldo` copy): `OPERATIONS['send_message']['parameters']`
-  gains `'conversation'`, and `domain_request` for `send_message` adds `conversation=p['conversation']` to the
-  intake request when it is not None (an absent field keeps the request, and its digest, as today).
-- `engine/.veldo/control_api.py` (in the footprint, changed only together with the above): the `messages.send`
-  route's optional fields become `('project', 'clarifies', 'conversation')`.
+`control_api_assertion.OPERATIONS['send_message']` names `conversation` as an optional parameter (an assertion
+without it keeps its exact shape, so an edge or caller that signs the three parameters is unchanged), and
+`domain_request` passes it to intake only when it is not None: an absent field derives the same request, and the
+same digest, as before. `control_api`'s `messages.send` route carries it beside `project` and `clarifies`. Suite 131
+sends the UI's message through the production `ControlApi` route (AC1/api-field, AC1/api-route).
 
 ## 2. A reading of AC1 against AC4 for the reviewer to judge
 
@@ -26,34 +20,40 @@ the conversation (the UI) becomes the next turn at intake with no PM run at all.
 the reading, the change is one line (`conversation_decision` returning `turn` for a non-command reply) and AC4's
 plain-words commands then need another carrier.
 
-## 3. Found outside the footprint (not changed)
+## 3. Found outside the footprint: resolved in fix round 1 (the lead widened the footprint)
 
-- VELDO-0177 `engine/.veldo/control_clone.py` `conversation_clone`: the attach clone fails
-  (`stale_input:commit_unavailable`, git: "refusing to fetch into branch ... checked out") when the project's branch
-  has the same name as the fresh repository's initial branch (`git init`'s default, for example `master`). Suite 128's
-  fixtures do not hit it; suite 132 names its fixture repository's branch `trunk`. A fix: initialize the clone with
-  `git init -b <a name no source branch can have>` or fetch into `FETCH_HEAD` and create the branch after.
-- No production caller hands ordinary Telegram messages to intake: `Intake.take_telegram` and
-  `receive('telegram_message', ...)` are called only by suites (the service's API intake takes API requests; the
-  channel pass acquires and settles answers). This predates this build, and wiring it is not in VELDO-0175's
-  criteria, so nothing was added; until it is, AC1's and AC4's Telegram paths run wherever intake is driven. The
-  delivery (AC3) is wired: `Channel.tick` runs `replies` on every woken pass.
-- The turn payload the conversation line sends the engine (`control_service.ConversationLine.offer`) names the
-  turn's intake command id, not the owner's text; for an intake-made turn that id is the message's intake source key
-  (the text is in that source record). Reading the text into the payload is VELDO-0174's line, not this build's.
+- VELDO-0177's attach clone (`control_clone.conversation_clone`) now fetches the commit into a held ref
+  (`refs/veldo-clone/<commit>`, a name no source branch can have), makes the branch after and deletes the held ref,
+  so a project whose branch has the fresh repository's initial branch name (`master`) clones cleanly. Suite 132's
+  fixture source is back on that name (the one a fresh `git init` starts on, `master` here) and its row
+  AC4/attach-initial-branch checks the clone's branch and commit.
+- The running service hands acquired Telegram messages to intake: `Service.channel_pass` sets the channel's
+  `intake` feed to `Service.telegram_intake`, and `Channel.tick` hands each woken pass's acquisitions to it
+  (`Channel.take`). The service builds one intake on its own connection, as the PM cycle does, once the factory
+  project exists; the first feed of a service reads every kept message intake has not decided (one acquired before a
+  restart included), later feeds read the pass's acquisitions. `Intake.take_acquired` receives only ordinary
+  messages of a person (refused by the Acquirer as replying to no presentation) that intake has not decided (no
+  source record, no hint decision, no recorded answer line), so presentation answers, the activation run's exchanges
+  and unknown senders keep their paths, and no message is received twice across passes or restarts. A plain reply
+  still waits for the PM's one reading (item 2 below); suite 131 applies that reading as the PM cycle does.
+- The turn payload now carries the owner's words: `ConversationLine.offer` puts the text of the turn's intake source
+  record (read only when its content digest is the one the turn is bound to) in `payload['message']`, which the
+  engine's input and the launch's `turn_input` line carry. A turn intake did not make keeps no `message`, as before.
 
-## 4. Mutation-case input declarations (reuse only)
+## 4. Mutation-case input declarations: resolved in fix round 1
 
-Seventeen declared cases in `scripts/mutation_case_inputs.json` (not in the footprint) freeze input sets that
-include `control_intake.py`, `control_workflow_cycle_pm.py` or `control_service_channel.py`, which now load
-`control_intake_conversation.py`, `control_conversation_channel.py` and `control_conversation.py` beside them. A
-declared case run now (`question-not-sent`) passes fresh (`unreviewed_declaration`), so nothing is red; the
-declarations want those three files added for reuse (`scripts/propose_case_inputs.py`). The cases:
-enrolled-discovery-ignores-ancestors, projection-notice-beside-presentation, receiver-gate-untrusted,
-authority-service-not-installed, question-not-sent, disposition-every-question-to-project-owner,
-message-speaker-is-edge, member-authorizes-owner-edge, report-completion-handler-omitted, account-codex-old-tables,
-limit-unreported, api171-policy-omitted, receiver148-placement-wait-unbounded, role127-delivery-comparison-skipped,
-text168-legacy-chunker-changed, records-receiver-service-ignored, v204-scaffold-absent.
+The seventeen declarations in `scripts/mutation_case_inputs.json` that read `control_intake.py`,
+`control_workflow_cycle_pm.py` or `control_service_channel.py` now also name `control_intake_conversation.py`,
+`control_conversation_channel.py` and `control_conversation.py`. Each case was traced with
+`scripts/propose_case_inputs.py --case` (baseline, no-op and mutant, output in a temporary file); only those three
+paths were added to each declaration, which stays unreviewed. Fifteen traces name all three modules. Two did not complete: the proposer's tracer
+refused `role127-delivery-comparison-skipped` and `account-codex-old-tables` three times each (`incomplete
+file-read trace`, a thread ended inside a traced call); their declarations already name all three loaders, each of
+which loads the new modules at import (`control_intake.py` loads `control_intake_conversation.py`, which loads the
+other two; `control_service_channel.py` loads `control_conversation_channel.py`), so the same three were added. The
+proposer also stops on `Path('/proc/1/root').exists()` (permission denied) inside the user scope; it was run
+unchanged through a wrapper that answers such a path as present and not a file (the proposer is not in the
+footprint). The declared case `question-not-sent` still runs fresh and green (`unreviewed_declaration`).
 
 ## 5. Gate notes
 
