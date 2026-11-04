@@ -1,0 +1,16 @@
+# python3 -B scripts/selftest.py --suite NAME on the 1.2.19 runtime (lock fb75e741), 2026-11-04. Exit 2 is the PARTIAL-run code; 0 failed in each.
+32_veldo_0019_combined_graph: selftest (PARTIAL, 1 of 188 suites): 51 passed, 0 failed in 0.03s
+59_veldo_0043_graph: selftest (PARTIAL, 1 of 188 suites): 47 passed, 0 failed in 10.91s
+62_veldo_0045_runtime: selftest (PARTIAL, 1 of 188 suites): 47 passed, 0 failed in 12.98s
+65_veldo_0132_workflow: selftest (PARTIAL, 1 of 188 suites): 42 passed, 0 failed in 16.83s
+71_veldo_0130_api: selftest (PARTIAL, 1 of 188 suites): 71 passed, 0 failed in 23.28s
+73_veldo_0078_backlog: selftest (PARTIAL, 1 of 188 suites): 47 passed, 0 failed in 6.84s
+82_veldo_0085_decomposition: selftest (PARTIAL, 1 of 188 suites): 41 passed, 0 failed in 4.17s
+92_veldo_0088_pm_cycles: selftest (PARTIAL, 1 of 188 suites): 56 passed, 0 failed in 56.27s
+93_veldo_0152_intake_routes: selftest (PARTIAL, 1 of 188 suites): 50 passed, 0 failed in 46.63s
+96_veldo_0204_reservation_policies: selftest (PARTIAL, 1 of 188 suites): 46 passed, 0 failed in 16.80s
+110_veldo_0143_new_project: selftest (PARTIAL, 1 of 188 suites): 135 passed, 0 failed in 35.86s
+113_veldo_0145_ui: selftest (PARTIAL, 1 of 188 suites): 33 passed, 0 failed in 4.53s
+# python3 -B scripts/check_teeth_mutations.py --finding N --jobs 2
+finding 45: mutations: passed registered=23 executed=23 reused=0 rejected=23 workers=29 elapsed=201.007s
+finding 43: mutations: passed registered=61 executed=61 reused=0 rejected=61 workers=69 elapsed=422.105s

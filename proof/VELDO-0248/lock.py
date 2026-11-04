@@ -51,6 +51,12 @@ def _load(name, path):
     return module
 
 
+def base_records():
+    """The 1.2.12 records at the base commit: the registry license fields of the reviewed closure."""
+    return json.loads(subprocess.run(['git', '-C', str(ROOT), 'show', BASE + ':engine/runtime/langgraph-records.json'],
+                                     capture_output=True, text=True, check=True).stdout)
+
+
 def resolve(scratch, root):
     report = scratch / 'pip-report.json'
     if not report.is_file():
@@ -84,9 +90,8 @@ def main(scratch, root):
     versions = {canonicalize_name(i['metadata']['name']): i['metadata']['version'] for i in resolved}
     reviewed = json.loads(REVIEWED.read_text())
     old = {c['name']: c for c in reviewed['closure']}
-    base_records = json.loads(subprocess.run(['git', '-C', str(ROOT), 'show', BASE + ':engine/runtime/langgraph-records.json'],
-                                             capture_output=True, text=True, check=True).stdout)
-    old_records = {p['name']: p for p in base_records['packages']}
+    base = base_records()
+    old_records = {p['name']: p for p in base['packages']}
 
     closure, stops, moved, licenses, wheels, sources = [], [], [], [], [], []
     for item in resolved:
@@ -156,8 +161,8 @@ def main(scratch, root):
     names = {i['metadata']['name'] for i in resolved}
     diff = {
         'schema': 'veldo.closure-diff/v1',
-        'base': {'closure': 'proof/VELDO-0043/dependency-closure.json', 'root': base_records['root'],
-                 'read': base_records['read'], 'registry_license_fields': 'engine/runtime/langgraph-records.json at ' + BASE},
+        'base': {'closure': 'proof/VELDO-0043/dependency-closure.json', 'root': base['root'],
+                 'read': base['read'], 'registry_license_fields': 'engine/runtime/langgraph-records.json at ' + BASE},
         'new': {'closure': 'proof/VELDO-0248/dependency-closure.json', 'root': root,
                 'read': datetime.date.today().isoformat()},
         'packages': len(resolved),
