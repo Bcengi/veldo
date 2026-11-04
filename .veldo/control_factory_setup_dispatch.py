@@ -57,8 +57,12 @@ WALKTHROUGH = {'project_manager': 'claude_code', 'elaboration': 'claude_code', '
 # The default team's workers: the enrolled PM, and one agent identity per other role.
 WORKERS = {'project_manager': 'pm', 'elaboration': 'elaborator', 'implementation': 'builder',
            'independent_review': 'reviewer'}
+# VELDO-0177 AC2: the worker identity of each assistant role, enrolled as every other default team worker is, so the
+# owner's application of the default team to a project staffs them (VELDO-0185 R4).
+ASSISTANT_WORKERS = {'assistant': 'assistant', 'assistant_codex': 'assistant-codex'}
 # The workers the principals step enrolls: every one but the PM, whom setup's project_manager_enrollment enrolls.
-TEAM_WORKERS = tuple(worker for role, worker in WORKERS.items() if role != 'project_manager')
+TEAM_WORKERS = (tuple(worker for role, worker in WORKERS.items() if role != 'project_manager')
+                + tuple(ASSISTANT_WORKERS.values()))
 PERMISSIONS = {'project_manager': ['objective', 'feature', 'backlog_item', 'decision_request', 'finding'],
                'elaboration': ['feature', 'backlog_item', 'finding'], 'implementation': ['finding'],
                'independent_review': ['finding']}
@@ -145,7 +149,8 @@ def assistant_definition(role, engines, models, Refused):
 
 def assistant_role(role, revision):
     """VELDO-0177 AC2: an assistant's default team role, a specialist naming its capability revision."""
-    return dict(kind='specialist', capability_configuration={'role': role, 'revision': revision}, workers=[role],
+    return dict(kind='specialist', capability_configuration={'role': role, 'revision': revision},
+                workers=[ASSISTANT_WORKERS[role]],
                 responsibilities=['converse'], expertise=['general'], proposal_permissions=[],
                 engines=[ASSISTANTS[role]], budget=dict(ROLE_BUDGET), independence={'distinct_from': []})
 

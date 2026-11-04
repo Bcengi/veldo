@@ -1756,6 +1756,18 @@
    "resources": {
     "systemd_user_manager": 1
    }
+  },
+  {
+   "name": "129_veldo_0177_assistant_setup",
+   "file": "129_veldo_0177_assistant_setup.py",
+   "requires": [
+    "129_veldo_0177_assistant_setup"
+   ],
+   "regions": "Four rows (VELDO-0177 AC2): a fresh factory setup saves `assistant` on Claude Code (the pinned version's in-run tools with WebSearch and WebFetch) and `assistant_codex` on Codex (its workspace-write sandbox with network access and web search), all always, one capability configuration revision each and one save_default_team revision adding both roles to VELDO-0185's team, each the owner's signed command; their workers enrolled; a second setup run saves nothing and changes no file.",
+   "requires_note": "Only shared ROOT and expect. VELDO-0171's installed-host fixture (reused through proof/VELDO-0185/fixture.py as suite 106 reuses it) with the real setup module, its user manager stand-in, Tailscale stand-in and loopback Bot API; one generated fake engine answering each engine's login status. Writes only temporary fixtures.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   }
  ],
  "resource_capacities": {
