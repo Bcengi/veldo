@@ -1,0 +1,11 @@
+Case: memory184-no-index-digest
+run: python3 scripts/check_gate_mutations.py with the case option naming memory184-no-index-digest, alone, at 0b3b30f6; exit 0
+stage: status=passed registered=1 executed=1 workers=3 elapsed=105.5s
+module control_memory_file.py, rows ['AC3/loaded-at-launch'], replacement count 1
+old: "    return {LAUNCH_LINE: {'directory': handoff['directory'], 'form': form, 'index': INDEX, 'index_digest': digest,\n"
+new: "    return {LAUNCH_LINE: {'directory': handoff['directory'], 'form': form, 'index': INDEX,  # defect: no digest\n"
+baseline: 41 assertions, failed rows [], target rows {'AC3/loaded-at-launch': [True]}
+noop: 41 assertions, failed rows [], target rows {'AC3/loaded-at-launch': [True]}
+mutant: 41 assertions, failed rows ['VELDO-0184 AC3/loaded-at-launch', 'VELDO-0184 AC3/observability'], target rows {'AC3/loaded-at-launch': [False]}
+invalid results: []
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=105.474s

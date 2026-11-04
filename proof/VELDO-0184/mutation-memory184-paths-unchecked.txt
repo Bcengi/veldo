@@ -1,0 +1,11 @@
+Case: memory184-paths-unchecked
+run: python3 scripts/check_gate_mutations.py with the case option naming memory184-paths-unchecked, alone, at 0b3b30f6; exit 0
+stage: status=passed registered=1 executed=1 workers=3 elapsed=104.0s
+module control_engine_claude.py, rows ['AC1/mismatch-stop'], replacement count 1
+old: "            if self.memory is not None and self.stop is None:\n"
+new: "            if False:  # defect: the init event's memory paths are not checked\n"
+baseline: 41 assertions, failed rows [], target rows {'AC1/mismatch-stop': [True]}
+noop: 41 assertions, failed rows [], target rows {'AC1/mismatch-stop': [True]}
+mutant: 41 assertions, failed rows ['VELDO-0184 AC1/mismatch-stop', 'VELDO-0184 AC3/observability'], target rows {'AC1/mismatch-stop': [False]}
+invalid results: []
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=104.039s
