@@ -237,7 +237,9 @@ DL = _organ('control_credential_delivery')
 # invocation seam and each subscription engine's login and usage reports.
 ACC = D.RES.ACC
 RTM = _organ('control_reservation_runtime')
-ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('control_engine_codex')}
+ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('control_engine_codex'),
+           # VELDO-0232: Antigravity's CLI, the third engine on the same protocol.
+           'antigravity': _organ('control_engine_antigravity')}
 # VELDO-0185 AC4: the refusal of a dispatch on an account its engine reports not logged in to its subscription.
 ACCOUNT_LOGIN = D.RES.POOL.ACCOUNT_LOGIN
 # Every name either binary's lists make a login: none reaches any engine, whichever it is, and an
@@ -329,6 +331,10 @@ FACTORY_PREFIX = 'VELDO_'
 DELIVERY_PREFIX = 'VELDO_MCP_'
 TOKEN_VARIABLE = 'CLAUDE_CODE_OAUTH_TOKEN'
 SESSION_PREFIXES = ('CLAUDE', 'CLAUDECODE', 'AI_AGENT', 'CODEX')
+# VELDO-0232 AC2: the names a parent Antigravity session sets, stripped by the wrapper for every engine as well
+# (control_engine_antigravity.BASELINE's strip prefixes are both tuples).
+PARENT_PREFIXES = ('ANTIGRAVITY', 'AGY', 'JETSKI')
+WRAPPER_PREFIXES = SESSION_PREFIXES + PARENT_PREFIXES
 ENGINE_OVERRIDES = 'VELDO_ENGINE_ENVIRONMENT'
 
 
@@ -354,7 +360,7 @@ def engine_environment(environment):
     if runtime is None:
         return environment
     for name in list(environment):
-        if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES):
+        if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES) or name.startswith(PARENT_PREFIXES):
             environment.pop(name, None)
     handed = environment.pop('VELDO_MEMORY', None)
     environment.update({name: value for name, value in
@@ -1287,6 +1293,8 @@ class Receiver:
                                    expected_state='prepared')
             self.emit({'event': 'refused', 'refusal': refusal,
                        'dispatch_id': dispatch_id, 'repository': self.config.get('repository'),
+                       # VELDO-0232: each refusal names the account the dispatch recorded, never a credential.
+                       'account': (contract.get('reservation') or {}).get('account'),
                        'configuration': getattr(self, 'configuration_path', None),
                        'metrics': {'host_trust_required': int(refusal == 'host_trust_required:receiver_configuration'),
                                    'turn_kind_refusals': int(refusal == 'binding_mismatch:conversation_receiver'),
@@ -1695,7 +1703,7 @@ class Receiver:
         self.emit({'event': 'baseline', 'baseline': {
             'dispatch_id': dispatch_id,
             'executable': {k: self.binding[k] for k in ('engine', 'version', 'sha256')},
-            'strip_prefixes': list(SESSION_PREFIXES),
+            'strip_prefixes': list(WRAPPER_PREFIXES),
             'options': list(extra['argv']), 'environment': sorted(extra['environment']),
             'files': sorted(extra['files']), 'run': {k: run[k] for k in ('root', 'config', 'runtime')},
             'token': token is not None,
@@ -1703,7 +1711,7 @@ class Receiver:
             'tools': extra.get('tools'),
             'capabilities': extra.get('expected'),
             'removed': sorted((set(n for n in os.environ if n not in environment)
-                              | set(n for n in environment if n in EXEC_STRIPPED or n.startswith(SESSION_PREFIXES)))
+                              | set(n for n in environment if n in EXEC_STRIPPED or n.startswith(WRAPPER_PREFIXES)))
                               - set(own))}})
         if self.credentials:
             # VELDO-0158: each launch's catalog revisions, resolved credential ids and the route each took.
@@ -2328,6 +2336,11 @@ class Metering:
         if receiver.binding.get('expected') and self.engine.PROVIDER == 'claude_code':
             self.login_guard.expected = receiver.binding['expected']
             self.terminal.hold_prompt()
+        # VELDO-0232: an engine whose readers take the qualified tables (the stream vocabulary, the limit texts, the
+        # run's launch tool set) is given the binding once, the same for its meter, terminal and guard.
+        for part in (self.meter, self.terminal, self.login_guard):
+            if hasattr(part, 'bind'):
+                part.bind(receiver.binding)
         self.login_stop = None
         self.context_pending = b''
         self.first_turn_context = None
@@ -2341,6 +2354,9 @@ class Metering:
         stop = self.login_guard.feed(chunk)
         if stop and self.login_stop is None:
             self.login_stop = stop
+            # VELDO-0232: each stop the stream causes is logged by its name, with the dispatch and the account.
+            self.receiver.emit({'event': 'engine_stop', 'engine': self.engine.PROVIDER, 'stop': stop,
+                                'dispatch_id': self.dispatch_id, 'account': self.account})
             return True
         return False
 

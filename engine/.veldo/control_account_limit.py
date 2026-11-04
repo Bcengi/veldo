@@ -121,7 +121,8 @@ def _organ(name):
     return module
 
 
-ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('control_engine_codex')}
+ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('control_engine_codex'),
+           'antigravity': _organ('control_engine_antigravity')}
 
 
 class Refused(Exception):

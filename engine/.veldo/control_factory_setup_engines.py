@@ -33,6 +33,37 @@ def qualified_claude(Refused, directory=None):
     return path
 
 
+def qualified_antigravity(Refused, directory=None):
+    """VELDO-0232: {version, source} of the Antigravity binary the engines record names (its pinned copy, or the
+    source the qualify command read when no state root was named) when it is the installed qualification's, else
+    {skipped: <reason>}: Antigravity is an optional engine on a host, so setup pins it and gives the service its
+    adapter only when the qualified binary is there, and says why not otherwise. None when the engines record
+    names no Antigravity."""
+    record = Path(directory or Path(__file__).parent) / 'runtime' / 'engines.json'
+    try:
+        named = json.loads(record.read_text()).get('antigravity')
+    except (OSError, ValueError, AttributeError):
+        raise Refused('missing_evidence:engine_source:antigravity') from None
+    if named is None:
+        return None
+    source = str(named.get('binary') or '')
+    if source == '~' or source.startswith('~/'):
+        import pwd
+        source = pwd.getpwuid(os.getuid()).pw_dir + source[1:]
+    A = organ('control_engine_antigravity', directory)
+    try:
+        qualified = A.load_qualification()
+    except A.Refused as error:
+        return {'skipped': error.code}
+    if not os.path.isabs(source) or not os.path.isfile(source):
+        return {'skipped': 'missing_evidence:engine_source:antigravity'}
+    if named.get('version') != qualified['version']:
+        return {'skipped': 'stale_subject:engine_version'}
+    if A._file_digest(source) != qualified['sha256']:
+        return {'skipped': 'stale_subject:engine_digest'}
+    return {'version': qualified['version'], 'source': source}
+
+
 def check(Refused):
     """Locate the qualified versioned Claude file (the engines record's) and the Codex package through PATH,
     before any write."""
@@ -65,8 +96,24 @@ def check(Refused):
     except (claude.Refused, codex.Refused) as error:
         code = 'binding_mismatch:engine_digest' if error.code == 'stale_subject:engine_digest' else error.code
         raise Refused(code) from None
-    return {'claude_code': {'version': version, 'versions': str(paths['claude_code'].parent)},
-            'codex': {'executable': vendor, 'sha256': bound['sha256']}}
+    found = {'claude_code': {'version': version, 'versions': str(paths['claude_code'].parent)},
+             'codex': {'executable': vendor, 'sha256': bound['sha256']}}
+    antigravity = qualified_antigravity(Refused)
+    if antigravity is not None:
+        found['antigravity'] = antigravity
+    return found
+
+
+def pin_antigravity(state_root, directory, plan, Refused):
+    """VELDO-0232: the Antigravity copy pinned under the state root, bound; None when the plan names none."""
+    if not (plan.get('antigravity') or {}).get('version'):
+        return None
+    A = organ('control_engine_antigravity', directory)
+    try:
+        return A.pin(plan['antigravity']['version'], source=plan['antigravity']['source'], state_root=str(state_root))
+    except A.Refused as error:
+        raise Refused('binding_mismatch:engine_digest' if error.code == 'stale_subject:engine_digest'
+                      else error.code) from None
 
 
 def install(state_root, directory, plan, Refused):
@@ -79,8 +126,8 @@ def install(state_root, directory, plan, Refused):
     except (claude.Refused, codex.Refused) as error:
         code = 'binding_mismatch:engine_digest' if error.code == 'stale_subject:engine_digest' else error.code
         raise Refused(code) from None
-    return {bound['engine']: {key: bound[key] for key in ('version', 'path', 'sha256')}
-            for bound in (pinned, vendor)}
+    bound = [pinned, vendor, pin_antigravity(state_root, directory, plan, Refused)]
+    return {b['engine']: {key: b[key] for key in ('version', 'path', 'sha256')} for b in bound if b}
 
 
 def count_pins(state_root, engines):
@@ -101,12 +148,21 @@ def ensure(state_root, directory, plan, Refused, observe):
         engines = {'claude_code': {'version': version, 'path': str(target),
                                   'sha256': claude.qualified(version)['sha256']},
                    'codex': {key: vendor[key] for key in ('version', 'path', 'sha256')}}
+        bound = pin_antigravity(state_root, directory, plan, Refused)
+        if bound is not None:
+            engines['antigravity'] = {key: bound[key] for key in ('version', 'path', 'sha256')}
         try:
             recorded = json.loads(record_path.read_text())
         except (OSError, ValueError):
             recorded = None
         else:
-            if recorded != engines:
+            # VELDO-0232: a state root set up before Antigravity was qualified gains its entry; anything else differing
+            # is refused by name.
+            earlier = {k: v for k, v in engines.items() if k != 'antigravity'}
+            if 'antigravity' in engines and isinstance(recorded, dict) and 'antigravity' not in recorded \
+                    and recorded == earlier:
+                recorded = None
+            elif recorded != engines:
                 raise Refused('invalid_input:state_root:differs:' + str(record_path))
         report = {'pins_made': 0, 'engines_record': None, 'engines': engines}
         if os.path.lexists(target) and recorded is not None:

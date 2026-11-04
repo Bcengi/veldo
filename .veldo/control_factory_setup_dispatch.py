@@ -120,6 +120,10 @@ def adapters(engines, present):
         vendor = engines['codex']['executable']
         found['codex'] = {'engine': 'codex', 'executable': vendor,
                           'argv': [vendor] + list(organ('control_engine_codex').FLAGS), 'account_login': True}
+    if 'antigravity' in present and (engines.get('antigravity') or {}).get('version'):
+        # VELDO-0232: the pinned Antigravity copy by its qualified version, like Claude Code's.
+        found['antigravity'] = {'engine': 'antigravity', 'executable': {'version': engines['antigravity']['version']},
+                                'argv': [], 'account_login': True}
     return found
 
 
@@ -128,7 +132,11 @@ def adapters(engines, present):
 # independent reviewer reads and runs checks, and edits nothing.
 NATIVE_TOOLS = {'claude_code': {'independent_review': ('Bash', 'Glob', 'Grep', 'Read'),
                                 None: ('Bash', 'Edit', 'Glob', 'Grep', 'Read', 'Write')},
-                'codex': {'independent_review': ('shell', 'update_plan'), None: ('apply_patch', 'shell', 'update_plan')}}
+                'codex': {'independent_review': ('shell', 'update_plan'), None: ('apply_patch', 'shell', 'update_plan')},
+                # VELDO-0232: the in-run registry tools of the qualified Antigravity (control_engine_antigravity).
+                'antigravity': {'independent_review': ('find', 'grep_search', 'list_dir', 'run_command', 'view_file'),
+                                None: ('file_edit', 'find', 'grep_search', 'list_dir', 'run_command', 'view_file',
+                                       'write_to_file')}}
 
 
 def definition(role, engine, models):

@@ -83,9 +83,14 @@ def _helper():
 
 # Each provider's login profile variable, from the one place it is named (accounts.PROFILE_ENV).
 PROFILES = dict(_helper().PROFILE_ENV)
+# VELDO-0232: the variables that name only a login. HOME, Antigravity's login folder (it has no variable of its own,
+# limit L6), is every process's home: never stripped from another engine's environment and never refused when an
+# adapter configures it; an Antigravity run's HOME is its account folder, set last like every profile.
+SHARED_HOME = 'HOME'
+LOGIN_VARIABLES = frozenset(v for v in PROFILES.values() if v != SHARED_HOME)
 # The provider families whose every variable is stripped from an engine's inherited environment, and
 # the one whose every variable is a provider switch, refused when an adapter configures it.
-STRIP_PREFIXES = ('ANTHROPIC_', 'OPENAI_', 'CODEX_', 'CLAUDE_CODE_USE_')
+STRIP_PREFIXES = ('ANTHROPIC_', 'OPENAI_', 'CODEX_', 'CLAUDE_CODE_USE_', 'AGY_LLM_GATEWAY_')
 REFUSED_PREFIXES = ('CLAUDE_CODE_USE_',)
 STATUSES = ('active', 'paused', 'disabled')
 # None means this window was reported without a status (VELDO-0166).
@@ -179,14 +184,14 @@ def profile(record, host):
 def strips(name, named):
     """Whether an inherited variable `name` never reaches an engine: a provider profile variable, a name
     in a provider family, or one the binaries' lists (`named`, their logins and settings) name."""
-    return name in PROFILES.values() or name.startswith(STRIP_PREFIXES) or name in named
+    return name in LOGIN_VARIABLES or name.startswith(STRIP_PREFIXES) or name in named
 
 
 def refused(configured, credentials):
     """The names of an adapter's configured environment that are a login, a credential or settings
     redirect or a paid-API switch: a profile variable, a provider switch, or one of `credentials`."""
     return sorted(name for name in configured
-                  if name in PROFILES.values() or name.startswith(REFUSED_PREFIXES) or name in credentials)
+                  if name in LOGIN_VARIABLES or name.startswith(REFUSED_PREFIXES) or name in credentials)
 
 
 def classify(outcome, limit):

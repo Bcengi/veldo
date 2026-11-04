@@ -25,6 +25,7 @@ MODES = ('always', 'when assigned')
 CODEX_CAPABILITIES = {'shell', 'update_plan', 'apply_patch', 'view_image', 'multi_agent', 'sub_agents',
                       'web_search', 'tool_search', 'clock', 'request_user_input_async'}
 FIELDS = {'role', 'engine', 'native_tools', 'mcp', 'skills', 'instructions', 'settings'}
+ENGINES = ('claude_code', 'codex', 'antigravity')
 
 
 def digest(value):
@@ -54,7 +55,7 @@ def validate(definition, kind=KINDS[0]):
             raise Refused('invalid_input:agent_skill')
         return
     if (set(definition) != FIELDS or not MC.identifier(definition['role'])
-            or definition['engine'] not in ('claude_code', 'codex')
+            or definition['engine'] not in ENGINES
             or not isinstance(definition['settings'], dict)):
         raise Refused('invalid_input:agent_configuration')
     for field, keys, key in (('native_tools', {'name', 'load'}, 'name'),
@@ -86,6 +87,22 @@ def validate(definition, kind=KINDS[0]):
                 raise Refused('invalid_input:agent_' + field)
     if definition['engine'] == 'codex':
         codex_grants(definition)
+    if definition['engine'] == 'antigravity':
+        antigravity_grants(definition)
+
+
+def antigravity_grants(definition):
+    """VELDO-0232: an Antigravity role selects no MCP server (limit L1: the binary reads servers only from the
+    account folder, shared by every run of the account), and its native tools are the qualified registry's."""
+    if definition['mcp']:
+        raise Refused('invalid_input:agent_mcp_servers:antigravity')
+    engine = organ('control_engine_antigravity')
+    try:
+        registry = set(engine.load_qualification()['tool_registry'])
+    except engine.Refused as error:
+        raise Refused(error.code) from None
+    if {i['name'] for i in definition['native_tools']} - registry:
+        raise Refused('invalid_input:agent_native_tools')
 
 
 def codex_grants(definition):

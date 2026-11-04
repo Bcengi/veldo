@@ -9,6 +9,7 @@ when the CLI emits nothing. Retirement uses the supervisor's actual observations
 ADAPTERS = {
     'claude_code': ('initial', 'retry', 'follow_on'),
     'codex': ('initial', 'retry', 'follow_on'),
+    'antigravity': ('initial', 'retry', 'follow_on'),
 }
 
 

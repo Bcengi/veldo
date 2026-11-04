@@ -57,9 +57,13 @@ SCHEMA = "veldo.accounts/v1"
 ADDED_COUNTS = {"created": 0, "existing": 0}
 # Each provider's login profile variable (VELDO-0062): THE ONE PLACE it is named. control_accounts,
 # the launch receiver and fleet.py read it from here. And each provider's one-time login command.
-PROFILE_ENV = {"claude_code": "CLAUDE_CONFIG_DIR", "codex": "CODEX_HOME"}
+# VELDO-0232: Antigravity's CLI has no configuration directory variable; it keeps .gemini under HOME, so its
+# account is one folder (~/.agy-accounts/<name> today) that is the engine's HOME, and its login is the binary run
+# interactively there.
+PROFILE_ENV = {"claude_code": "CLAUDE_CONFIG_DIR", "codex": "CODEX_HOME", "antigravity": "HOME"}
 CONFIG_DIR_ENV = PROFILE_ENV["claude_code"]
-LOGIN_COMMAND = {"claude_code": "claude   # then /login as this account", "codex": "codex login"}
+LOGIN_COMMAND = {"claude_code": "claude   # then /login as this account", "codex": "codex login",
+                 "antigravity": "agy   # interactively, then sign in with the Google subscription account"}
 
 
 class AccountError(Exception):

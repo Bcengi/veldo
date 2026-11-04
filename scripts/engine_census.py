@@ -8,9 +8,10 @@ binary path, model catalog, tool registry or feature list: each reads the engine
 from those generated files and finds, in every governed Python file, each string constant (docstrings and
 comments are prose, not values) or collection literal that holds one:
 
-- a version: the qualified Codex version, its package version, or the qualified Claude Code version;
-- a digest: either binary's sha256 or the bundled model catalog's (its first 16 hex digits suffice);
-- a binary path: either binary as the engines record writes it, or expanded;
+- a version: the qualified Codex version, its package version, the qualified Claude Code version, or the qualified
+  Antigravity version (VELDO-0232);
+- a digest: any qualified binary's sha256 or the bundled model catalog's (its first 16 hex digits suffice);
+- a binary path: any qualified binary as the engines record writes it, or expanded;
 - a model catalog: a collection literal naming three or more of the bundled catalog's model slugs;
 - a model name: a string naming one of the bundled catalog's model slugs (VELDO-0230 fix round 1: a single slug
   breaks the day a catalog drops it; read it from the catalog fixture);
@@ -48,8 +49,12 @@ def qualified(root):
     entry = claude['versions'][engines['claude_code']['version']]
     versions = {engines['codex']['version'], engines['codex']['package_version'], engines['claude_code']['version']}
     digests = {engines['codex']['sha256'], engines['claude_code']['sha256'], codex.get('model_catalog_digest') or ''}
+    # VELDO-0232: the qualified Antigravity's version, digest and binary path too, when the engines record names it.
+    if isinstance(engines.get('antigravity'), dict):
+        versions.add(engines['antigravity']['version'])
+        digests.add(engines['antigravity']['sha256'])
     paths = set()
-    for name in ('codex', 'claude_code'):
+    for name in ('codex', 'claude_code') + (('antigravity',) if isinstance(engines.get('antigravity'), dict) else ()):
         named = engines[name]['binary']
         home = __import__('pwd').getpwuid(os.getuid()).pw_dir
         paths |= {named, home + named[1:] if named.startswith('~/') else named}

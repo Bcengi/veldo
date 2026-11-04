@@ -1,10 +1,23 @@
 """VELDO-0230: upgrading an agent CLI is one command.
 
-    python3 .veldo/qualify.py [--codex <vendor binary>] [--claude <version or path>] [--root <repository>]
+    python3 .veldo/qualify.py [--codex <vendor binary>] [--claude <version or path>]
+                              [--antigravity <version or path>] [--state-root <factory state root>] [--root <repository>]
 
 With no argument it qualifies what is installed: the vendor binary inside the npm package the `codex` on
 PATH runs, and the versioned executable the `claude` on PATH resolves to. `--claude 2.1.281` names the
 installer's copy ~/.local/share/claude/versions/2.1.281; a path names any copy.
+
+ANTIGRAVITY (VELDO-0232 AC1). `--antigravity` names a version (the pinned copy <state root>/engines/antigravity/
+<version>) or a path; with none it qualifies the binary the `agy` on PATH resolves to. The committed extractor
+(proof/VELDO-0232/extract_agy.py) reads the binary's bytes and help (no prompt, no model call) and
+control_engine_antigravity.qualification writes the record (runtime/antigravity-qualification.json). The binary's
+own updater replaces ~/.local/bin/agy in place, so the command copies it under the factory state root (`--state-
+root`, else VELDO_STATE_ROOT) at engines/antigravity/<version>, mode 0555, its digest checked, and the engines
+record names that copy (the source when no state root is named; setup pins it then). Every new item (a registry
+tool, step type, event type, finished reason, option, subcommand or credential name the replaced record did not
+have) is listed in the record (`new_capabilities`) and in the output with its decision; a step type, event type or
+finished reason not granted stays out of the reader's vocabulary, a tool not granted is outward, and nothing new
+stops a launch.
 
 THE ENGINES RECORD (runtime/engines.json, beside this module, byte-identical in every runtime copy) names the
 qualified Codex and Claude Code: version, binary path and digest. It is the one place a version lives: every
@@ -155,9 +168,38 @@ def installed_claude(named=None):
     return Path(os.path.realpath(link))
 
 
-def engines_record(codex, claude):
+def installed_antigravity(named=None, state_root=None):
+    """The Antigravity binary: a version names the pinned copy under the state root, a path names itself, nothing
+    names what the `agy` on PATH resolves to."""
+    if named:
+        if VERSION.fullmatch(named):
+            if not state_root:
+                raise SystemExit('qualify: --antigravity %s names a pinned copy; name the --state-root' % named)
+            return Path(state_root) / 'engines' / 'antigravity' / named
+        return Path(named).resolve()
+    link = shutil.which('agy')
+    if not link:
+        raise SystemExit('qualify: no agy on PATH; name a version or a path with --antigravity')
+    return Path(os.path.realpath(link))
+
+
+def antigravity_version(executable):
+    """What an Antigravity binary's `--version` prints, run in an empty HOME."""
+    import tempfile
+    with tempfile.TemporaryDirectory(prefix='veldo-qualify-agy-') as home:
+        done = subprocess.run([str(executable), '--version'], capture_output=True, text=True, timeout=60, cwd=home,
+                              stdin=subprocess.DEVNULL, env={'PATH': '/usr/bin:/bin', 'HOME': home, 'LANG': 'C.UTF-8',
+                                                             'AGY_CLI_DISABLE_AUTO_UPDATE': '1'})
+    found = VERSION.search(done.stdout)
+    if not found:
+        raise SystemExit('qualify: %s prints no version' % executable)
+    return found.group(0)
+
+
+def engines_record(codex, claude, antigravity=None):
+    """`antigravity` is {version, binary, sha256} of the qualified Antigravity copy, or None."""
     version, package_version = codex_version(codex)
-    return {
+    return dict({
         'schema': SCHEMA,
         'spec_id': 'VELDO-0230',
         'note': 'The qualified agent CLIs, written by python3 .veldo/qualify.py and read by every extractor, '
@@ -165,7 +207,7 @@ def engines_record(codex, claude):
         'claude_code': {'version': claude_version(claude), 'binary': home_form(claude), 'sha256': digest(claude)},
         'codex': {'version': version, 'package_version': package_version, 'binary': home_form(codex),
                   'sha256': digest(codex)},
-    }
+    }, **({'antigravity': antigravity} if antigravity else {}))
 
 
 # THE WRITERS.
@@ -187,7 +229,8 @@ EXTRACTORS = (('proof/VELDO-0062/extract_formats.py', ('claude', 'codex'), ('cli
               ('proof/VELDO-0165/extract_environment.py', ('claude', 'codex'),
                ('claude-environment.json', 'codex-environment.json')),
               ('proof/VELDO-0173/extract_tools.py', ('claude',), ('claude-tools.json',)),
-              ('proof/VELDO-0185/extract_login_status.py', ('claude',), ('login-status.json',)))
+              ('proof/VELDO-0185/extract_login_status.py', ('claude',), ('login-status.json',)),
+              ('proof/VELDO-0232/extract_agy.py', ('antigravity',), ('agy-tables.json',)))
 FIXTURES = 'proof/VELDO-0127'
 CLAUDE_NOTE = "The Claude Code configuration VELDO-0060 qualifies on Linux. Every value is read from the installed binary: its digest and stream formats from proof/VELDO-0062/cli-formats.json, its command line from proof/VELDO-0060/cli-options.json. A version not listed here, or a pinned copy whose digest differs, is refused before anything is spawned; upgrading is a deliberate requalification that adds a version. VELDO-0155: the version is qualified with the everything-off baseline read from the same binary (proof/VELDO-0155/claude-baseline.json); a record without it refuses every launch of the version. VELDO-0155 AC3: the version is also qualified with stream JSON input (--input-format stream-json, which the binary accepts only with stream JSON output in print mode), so the prompt waits for the login check; a record without it refuses every launch of the version. VELDO-0141: the baseline also carries the stream options --include-partial-messages and --forward-subagent-text (read from the same bytes, proof/VELDO-0155/claude-baseline.json), so partial messages and a subagent's text reach the stream the execution record keeps; a record without them refuses every launch of the version. VELDO-0173: the version is also qualified with the binary's full tool registry (tool_registry, every tool it registers) and the classification of every registry tool as in_run or outward with its reason (tool_classification), both read from the same bytes (proof/VELDO-0173/claude-tools.json); a record missing either, or leaving a registry tool unclassified, refuses every launch of the version. VELDO-0185: the version is also qualified with its own login status command (login_status: auth status --json, whose answer names loggedIn and authMethod, claude.ai for the subscription, proof/VELDO-0185/login-status.json), which setup and the launch receiver run for each account before work; a record without it reads every such account as not qualified."
 # The Claude Code configuration Veldo runs every qualified version with (VELDO-0060, VELDO-0155 AC3): its
@@ -523,16 +566,72 @@ def new_tools(entry, known):
             for name in sorted(set(entry['tool_registry']) - set(known))] if known else []
 
 
+# VELDO-0232: the kinds of new item an Antigravity binary brings, each with the table it is read from and the
+# decision an item of it takes when the decisions record has none (None: unevaluated, not granted).
+ANTIGRAVITY_KINDS = (
+    ('tools', lambda t: t['tool_registry'], None),
+    ('step_types', lambda t: t['stream']['step_types'], None),
+    ('events', lambda t: t['stream']['events'], None),
+    ('finished_reasons', lambda t: t['stream']['finished_reasons'], None),
+    ('credentials', lambda t: [n for n, held in t['credentials'].items() if held], {
+        'decision': 'not_applicable', 'reason': 'a credential never reaches the engine; an adapter naming one is '
+                                                 'refused (control_engine_antigravity.CREDENTIALS is the strip list)'}),
+    ('options', lambda t: t['options'], {
+        'decision': 'not_applicable', 'reason': 'Veldo passes only its qualified flags and baseline options'}),
+    ('subcommands', lambda t: t['subcommands'], {
+        'decision': 'not_applicable', 'reason': 'Veldo runs no subcommand of the binary'}))
+
+
+def antigravity_previous(root):
+    """(sha256, {kind: names}, {(kind, name)}): what the replaced Antigravity record held and listed as new."""
+    try:
+        record = json.loads((Path(root) / '.veldo/runtime/antigravity-qualification.json').read_text())
+        tables = record['tables']
+    except (OSError, ValueError, KeyError, TypeError):
+        return None, None, set()
+    held = {kind: set(pick(tables)) for kind, pick, _ in ANTIGRAVITY_KINDS}
+    return record.get('sha256'), held, {(i['kind'], i['name']) for i in record.get('new_capabilities') or ()}
+
+
+def antigravity_record(root, executable, version, decisions):
+    """VELDO-0232 AC1: the Antigravity record of one binary, from the extractor's tables just written, with every
+    new item and its decision; a step type, event type or finished reason not granted is left out of the stream
+    vocabulary the reader is given (one the replaced record held keeps its reading)."""
+    A = load('qualify_antigravity', Path(root) / '.veldo/control_engine_antigravity.py')
+    tables = json.loads((Path(root) / 'proof/VELDO-0232/agy-tables.json').read_text())
+    if tables.get('version') != version:
+        raise SystemExit('qualify: the extractor read %s, the binary prints %s' % (tables.get('version'), version))
+    sha, before, carried = antigravity_previous(root)
+    same = sha == digest(executable)
+    table = decisions.get('antigravity') or {}
+    items, fresh = [], {}
+    for kind, pick, default in ANTIGRAVITY_KINDS:
+        fresh[kind] = newer(pick(tables), before[kind] if before else None, carried, kind, same)
+        items += decided(decisions, 'antigravity', kind, fresh[kind], default)
+    record = A.qualification(tables, version=version, sha256=digest(executable), source=home_form(executable),
+                             decisions=table)
+    for kind in ('step_types', 'events', 'finished_reasons'):
+        granted = {n for n in fresh[kind] if ((table.get(kind) or {}).get(n) or {}).get('decision') == 'granted'}
+        record['stream'][kind] = [n for n in record['stream'][kind] if n not in fresh[kind] or n in granted]
+    record['tables'] = tables
+    record['new_capabilities'] = items
+    return record
+
+
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='Qualify the installed or named Codex and Claude Code.')
+    parser = argparse.ArgumentParser(description='Qualify the installed or named Codex, Claude Code and Antigravity.')
     parser.add_argument('--codex', help='the Codex vendor binary (default: the one the codex on PATH runs)')
     parser.add_argument('--claude', help='a Claude Code version or path (default: the claude on PATH)')
+    parser.add_argument('--antigravity', help='an Antigravity version (its pinned copy) or path (default: the agy on PATH)')
+    parser.add_argument('--state-root', default=os.environ.get('VELDO_STATE_ROOT'),
+                        help='the factory state root the Antigravity copy is pinned under (default: VELDO_STATE_ROOT)')
     parser.add_argument('--root', default=str(ROOT), help='the repository to write (default: this one)')
     args = parser.parse_args(argv)
     root = Path(args.root).resolve()
     codex = Path(args.codex).resolve() if args.codex else installed_codex()
     claude = installed_claude(args.claude)
-    for path in (codex, claude):
+    antigravity = installed_antigravity(args.antigravity, args.state_root)
+    for path in (codex, claude, antigravity):
         if not path.is_file():
             raise SystemExit('qualify: no such binary: %s' % path)
     written = []
@@ -552,12 +651,16 @@ def main(argv=None):
         decisions = json.loads((root / DECISIONS).read_text())
     except (OSError, ValueError):
         decisions = {}
-    record = engines_record(codex, claude)
+    agy_version = antigravity_version(antigravity)
+    pinned = (Path(args.state_root).resolve() / 'engines' / 'antigravity' / agy_version) if args.state_root else None
+    record = engines_record(codex, claude, {'version': agy_version, 'binary': home_form(pinned or antigravity),
+                                            'sha256': digest(antigravity)})
     write(root, 'engines.json', text(record), written)
     for script, reads, tables in EXTRACTORS:
         argv = [sys.executable, '-B', str(root / script)]
         argv += ['--claude', str(claude)] if 'claude' in reads else []
         argv += ['--codex', str(codex)] if 'codex' in reads else []
+        argv += ['--antigravity', str(antigravity)] if 'antigravity' in reads else []
         done = subprocess.run(argv, cwd=root, capture_output=True, text=True)
         if done.returncode:
             sys.stderr.write(done.stdout + done.stderr)
@@ -609,17 +712,32 @@ def main(argv=None):
     if found:
         codex_record['new_capabilities'] += found
         write(root, 'codex-qualification.json', text(codex_record), [])
+    # VELDO-0232 AC1: the Antigravity record, then its pinned copy under the factory state root.
+    agy = antigravity_record(root, antigravity, agy_version, decisions)
+    write(root, 'antigravity-qualification.json', text(agy), written)
+    if pinned is not None:
+        A = load('qualify_antigravity_pin', root / '.veldo/control_engine_antigravity.py')
+        try:
+            A.pin(agy_version, source=antigravity, state_root=str(pinned.parent.parent.parent), record=agy)
+        except A.Refused as error:
+            raise SystemExit('qualify: the Antigravity copy was not pinned: %s' % error.code)
     print('qualified codex %s (%s) %s' % (record['codex']['version'], record['codex']['binary'], record['codex']['sha256']))
     print('qualified claude_code %s (%s) %s' % (record['claude_code']['version'], record['claude_code']['binary'],
                                                record['claude_code']['sha256']))
+    print('qualified antigravity %s (%s) %s' % (record['antigravity']['version'], record['antigravity']['binary'],
+                                               record['antigravity']['sha256']))
+    print('pinned antigravity %s' % (pinned if pinned is not None else 'none (name --state-root; setup pins it)'))
     if previous:
-        print('replaced codex %s, claude_code %s' % (previous['codex']['version'], previous['claude_code']['version']))
+        print('replaced codex %s, claude_code %s, antigravity %s' % (
+            previous['codex']['version'], previous['claude_code']['version'],
+            (previous.get('antigravity') or {}).get('version', 'none')))
     print('codex features on by default the classification does not name: %s'
           % (', '.join(codex_record['unclassified_default_on']) or 'none'))
     print('claude_code tools the replaced classification did not hold: %s'
           % (', '.join('%s (%s)' % pair for pair in new_tools(entry, known_tools)) or 'none'))
     # VELDO-0230 AC3: every new item and its decision (runtime/capability-decisions.json); also in each record.
-    for engine, items in (('codex', codex_record['new_capabilities']), ('claude_code', entry['new_capabilities'])):
+    for engine, items in (('codex', codex_record['new_capabilities']), ('claude_code', entry['new_capabilities']),
+                          ('antigravity', agy['new_capabilities'])):
         for item in items:
             print('new %s %s %s: %s%s (%s)' % (engine, item['kind'], item['name'], item['decision'],
                                               ' by ' + item['rule'] if item.get('rule') else '', item['reason']))
