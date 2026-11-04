@@ -8,7 +8,9 @@ proof/VELDO-0185/fixture.py as suite 106 reuses it, lays a host down with the re
 command surface, into scratch, with that fixture's user manager stand-in, Tailscale stand-in and loopback Bot API. The
 host's account registry is accounts.py's own file under the workspace's Git common directory (one Claude Code and one
 Codex account, both logged in by a marker in their profiles). The engines are one generated fake that answers each
-engine's login status and nothing else: setup launches no run. No real key, login, token or credential is read.
+engine's login status and nothing else: setup launches no run. Its VELDO-0172 read-back at teardown alone passes the
+fake the fixture argument that makes it print each CLI's stream (compare_formats.conform_fake), so any other call of
+it still exits 2. No real key, login, token or credential is read.
 """
 
 
@@ -27,7 +29,8 @@ def _v177_setup_suite():
         'control_factory_setup_dispatch.py': ROOT / ".veldo" / "control_factory_setup_dispatch.py",
         'control_agent_config_handoff.py': ROOT / ".veldo" / "control_agent_config_handoff.py",
     }
-    ROWS = ('AC2/setup-saves', 'AC2/owner-signed', 'AC2/rerun-saves-nothing', 'AC2/workers-enrolled')
+    ROWS = ('AC2/setup-saves', 'AC2/owner-signed', 'AC2/rerun-saves-nothing', 'AC2/workers-enrolled',
+            'format/fake-lines')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -41,11 +44,39 @@ def _v177_setup_suite():
 
     here = Path(__suite_file__).resolve().parents[2]
     helper = load('v177_setup_fixture', here / 'proof/VELDO-0185/fixture.py')
+    conform_formats = load('v177_conform', ROOT / 'proof/VELDO-0172/compare_formats.py')
+    fake_formats = load('v177_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
     # One generated executable serves both engines: it is Codex when its path names codex. It answers each engine's
-    # own login status from a marker in the account's profile; setup runs nothing else of it.
-    fake = r'''#!@@PYTHON@@ -B
-import json, os, sys
+    # own login status from a marker in the account's profile; setup runs nothing else of it. Only VELDO-0172's
+    # teardown read-back passes it READBACK first, and only then does it print each CLI's stream (VELDO-0172).
+    READBACK = '--veldo-0172-format-readback'
+    fake = fake_formats.embed(r'''#!@@PYTHON@@ -B
+import json, os, sys, uuid
 from pathlib import Path
+def emit(event):
+    print(json.dumps(complete_event(event)), flush=True)
+if sys.argv[1:2] == [@@READBACK@@]:
+    session = str(uuid.uuid4())
+    if 'codex' not in Path(sys.argv[0]).name:
+        opening = json.loads(sys.stdin.readline())
+        if opening.get('type') != 'control_request':
+            sys.exit(3)
+        emit({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': opening['request_id'],
+              'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})
+        sys.stdin.readline()
+        emit({'type': 'system', 'subtype': 'init', 'cwd': str(Path.cwd()), 'session_id': session, 'tools': ['Read'],
+              'mcp_servers': [], 'model': 'configured-model', 'uuid': str(uuid.uuid4())})
+        emit({'type': 'assistant', 'session_id': session, 'message': {'content': [{'type': 'text', 'text': 'done'}],
+              'usage': {'input_tokens': 2, 'output_tokens': 3}}})
+        emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'done', 'session_id': session,
+              'usage': {'input_tokens': 2, 'output_tokens': 4}})
+    else:
+        sys.stdin.read()
+        emit({'type': 'thread.started', 'thread_id': session})
+        emit({'type': 'turn.started'})
+        emit({'type': 'item.completed', 'item': {'id': 'answer', 'type': 'agent_message', 'text': 'done'}})
+        emit({'type': 'turn.completed', 'usage': {'input_tokens': 2, 'output_tokens': 4}})
+    sys.exit(0)
 if sys.argv[1:3] == ['auth', 'status']:
     logged = (Path(os.environ.get('CLAUDE_CONFIG_DIR') or '/nonexistent') / '.credentials.json').is_file()
     sys.stdout.write(json.dumps({'loggedIn': logged, 'authMethod': 'claude.ai' if logged else 'none',
@@ -56,7 +87,8 @@ if sys.argv[1:3] == ['login', 'status']:
     sys.stderr.write(('Logged in using ChatGPT' if logged else 'Not logged in') + chr(10))
     sys.exit(0 if logged else 1)
 sys.exit(2)
-'''.replace('@@PYTHON@@', sys.executable)
+'''.replace('@@PYTHON@@', sys.executable).replace('@@READBACK@@', repr(READBACK)))
+    fake_capture = (['teardown not reached'], [])
     ACCOUNTS = (('claude-a', 'claude_code'), ('codex-a', 'codex'))
 
     def exercise(h):
@@ -169,7 +201,18 @@ sys.exit(2)
               h['changes'](before, after) == ([], [], []))
 
     def teardown(h):
-        pass
+        nonlocal fake_capture
+        base, fake = h['base'], h['engines186']['fake']
+        L = load('v177_format_launch', h['mods'] / 'control_launch.py')
+
+        def readback_args(engine, base):
+            return [READBACK]
+        try:
+            pass
+        finally:
+            fake_capture = conform_formats.conform_fake(locals(), '0177_assistant_setup')
+            check('format/fake-lines', 'the generated CLI lines conform to the capture %s' % (fake_capture[0][:4],),
+                  not fake_capture[0] and bool(fake_capture[1]))
 
     try:
         helper.run(ROOT, PRODUCTION, exercise, teardown, fake)
@@ -178,6 +221,9 @@ sys.exit(2)
         traceback.print_exc()
         for row in rows:
             check(row, 'ran to its end (raised ' + type(error).__name__ + ': ' + str(error)[:250] + ')', False)
+    for line in conform_formats.describe('0177_assistant_setup', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0177_assistant_setup', bool(fake_capture[1]) and not fake_capture[0])
     for row in ROWS:
         failed = [label for label, ok in rows[row] if not ok] or ([] if rows[row] else ['journey did not reach row'])
         if failed:
