@@ -120,7 +120,8 @@ if cfg.get('tools', {}).get('experimental_request_user_input', {}).get('enabled'
               'header':{'type':'string'}},'required':['question','header']}}},'required':['questions']}}]
 def ask(items):
     body = {'model':'probe','tools':tools,'input':items,'stream':True}
-    request = urllib.request.Request(base + '/responses', json.dumps(body).encode(), {'Content-Type':'application/json'})
+    request = urllib.request.Request(base + '/responses', json.dumps(body).encode(),
+                                     {'Content-Type':'application/json'})
     done = []
     with urllib.request.urlopen(request, timeout=30) as response:
         for raw in response.read().decode().splitlines():
