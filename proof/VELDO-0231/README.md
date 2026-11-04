@@ -123,3 +123,25 @@ Suite 87: its delivery fixture expects the same. Suite 123: 38 of 38. Suite 78_0
 
 237851d1 production, b62a4cf4 loopback and suite 86, c204f6de suite 127, then the mutation cases, suite fixes, the
 delivery fixture and this proof.
+
+## Fix round 1: qualify reproduces (VELDO-0230 AC2)
+
+Suite 126 was red: qualify/reproduces on both Codex records and the five VELDO-0127 resource files (the row
+prints the first six). Run into a scratch copy of the tree and diffed against the checkout, two causes:
+
+- The Codex record still carried the UNPROBED flag means: the shipped files were never regenerated after the
+  probe landed. And the probe recorded `seconds`, the measured time from the loopback's call to the binary's
+  answer (0.014 in one run), a per-run value. The probe now records what it established: the forms (none reach
+  the stream on this binary, so the means is the marked line and the grant does not hold), the answer, whether it
+  was immediate, whether it gave answers, and `within_seconds`, the bound it answered within (5), never the
+  measured time. Suite 127's AC3/probe-answer row requires `within_seconds` and no `seconds`.
+- The resource fixtures were stale, not per-run: this ticket added request_user_input to the grant's mapping
+  and changed the production modules whose digests they record. Regenerated, not normalized.
+
+The one command (the branch's binaries: Codex musl x86_64 under node v22.22.0, Claude Code 2.1.281) was run
+twice in the checkout: the first rewrote the seven files (commit c45f89df), the second left the tree byte-clean
+(`git status` empty; the command still reports all 26 files it writes).
+
+After: suite 126 28 of 28; suite 127 43 of 43; suite 86 52 of 54, red only live/claude and live/codex (stale
+captures the lead retakes); suite 88 51 of 51. The four mutation cases run alone: each baseline and no-op green,
+each mutant red on its target row.
