@@ -7,7 +7,7 @@ each by the owner's signed command: `ava-memory` and `memory-kb`, the factory's 
 command from the manifest. memory-kb names memory_kb's JARVIS_PASSPHRASE as its credential reference when the owner
 has saved that credential (VELDO-0158 delivers and redacts it). Each record is added to the `assistant` and
 `assistant_codex` roles (VELDO-0177 AC2) as an `always` selection of all its tools, in a new role revision, and the
-default team names the new revisions.
+default team names the new revisions. The same revision lists the file memory item `always` (VELDO-0184 AC1).
 
 ONE OPENER PER STORE (AC4). One store server per ChromaDB part (control_memory_store.py) runs as a user unit beside
 the authority service: the part's interpreter in the part's code directory, the only process that opens the store.
@@ -56,6 +56,8 @@ SERVERS = (('ava-memory', 'ava_memory'), ('knowledge-graph', 'knowledge_graph'),
 STORES = ('ava_memory', 'memory_kb')
 BRIDGED = {'ava-memory': 'ava_memory', 'memory-kb': 'memory_kb'}
 ROLES = ('assistant', 'assistant_codex')
+# VELDO-0184 AC1: the assistant roles list the file memory, always.
+FILE_MEMORY_ITEM = {'load': 'always'}
 PASSPHRASE = 'JARVIS_PASSPHRASE'
 MODULE = 'control_factory_setup_memory.py'
 EXTRACTIONS = 'extractions'
@@ -128,8 +130,9 @@ def selected(revision, revisions):
     """A role definition's fields with the memory servers selected at `revisions`; its other selections kept."""
     names = {server for server, _ in SERVERS}
     mcp = [item for item in revision['mcp'] if item['server'] not in names] + selections(revisions)
+    # VELDO-0184 AC1: and the file memory item, always, in the same new revision.
     return dict({k: revision[k] for k in ('role', 'engine', 'native_tools', 'skills', 'instructions', 'settings')},
-                mcp=mcp)
+                mcp=mcp, file_memory=dict(FILE_MEMORY_ITEM))
 
 
 # ---------------------------------------------------------------------------------------------
@@ -317,7 +320,7 @@ def save_roles(store, revisions, prefix, observe):
         named = roles[role]['capability_configuration']['revision']
         accepted = CG.read(store.conn, domain, repository, role, named)
         wanted = selected(accepted, revisions)
-        if accepted['mcp'] == wanted['mcp']:
+        if accepted['mcp'] == wanted['mcp'] and accepted.get('file_memory') == wanted['file_memory']:
             continue
         latest = CG.read(store.conn, domain, repository, role)['revision']
         answer = writer.apply(store.packet('save_capability_configuration', dict(definition=wanted, base=latest),
@@ -327,7 +330,7 @@ def save_roles(store, revisions, prefix, observe):
         roles[role] = dict(roles[role], capability_configuration={'role': role, 'revision': answer['result']['revision']})
         saved.append('configuration:%s:%d' % (role, answer['result']['revision']))
         observe(dict(point='memory_role_revision', role=role, revision=answer['result']['revision'],
-                     servers=[s for s, _ in SERVERS]))
+                     servers=[s for s, _ in SERVERS], file_memory=wanted['file_memory']['load']))
     if saved:
         answer = writer.apply(store.packet('save_default_team', dict(team=dict(team, roles=roles), base=base),
                                            '%s-memory-team-%d' % (prefix, base + 1)))
