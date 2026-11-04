@@ -159,7 +159,7 @@ def fake_source(J):
     return source
 
 
-def fixture(ROOT, base, H, CV, tag, index, production, providers=('claude_code', 'codex')):
+def fixture(ROOT, base, H, load, tag, index, production, providers=('claude_code', 'codex')):
     """A real signed authority (VELDO-0073's support) over a copy of the modules (with the production copies the
     suite names, which the mutation driver substitutes), with the default team's roles for each engine; as suite
     123's fixture."""
@@ -169,6 +169,7 @@ def fixture(ROOT, base, H, CV, tag, index, production, providers=('claude_code',
     shutil.copytree(ROOT / '.veldo', mods, ignore=shutil.ignore_patterns('__pycache__'))
     for name, path in production.items():
         shutil.copyfile(path, mods / name)
+    CFG = load('v231_fixture_config_' + tag, mods / 'control_agent_config.py')
     authority = H.build(root / 'authority', mods, 23100 + index, 'http://127.0.0.1:1', 'fixture',
                         scope='activation-repository')
     authority.admin('steward', 'enroll_principal', {
@@ -183,7 +184,7 @@ def fixture(ROOT, base, H, CV, tag, index, production, providers=('claude_code',
         role_name = 'assistant' if number == 1 else 'assistant_' + provider
         saved = {'role': role_name, 'engine': provider, 'native_tools': [], 'mcp': [], 'skills': [],
                  'instructions': [], 'settings': {}, 'revision': 1, 'previous': None}
-        saved['digest'] = CV.CFG.digest(saved)
+        saved['digest'] = CFG.digest(saved)
         authority.fixture('configuration:' + role_name, 'agent_configuration', saved)
         revisions[role_name] = saved
         roles[role_name] = {
