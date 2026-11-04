@@ -217,7 +217,15 @@ def restart(h, check, here):
     with tarfile.open(fileobj=io.BytesIO(data)) as archive:
         archive.extractall(directory, filter='data')
     old = h['load']('v167_before_records', directory / '.veldo/control_factory_setup.py')
+    codex = directory / '.veldo/runtime/codex-qualification.json'
+    own = json.loads(codex.read_text()) if codex.is_file() else {}
     shutil.copytree(h['mods'] / 'runtime', directory / '.veldo/runtime', dirs_exist_ok=True)
+    # The earlier engine keeps its own bundled catalog readings, the ones that host was qualified with, so the
+    # row survives every later qualify of a newer binary (VELDO-0230 AC2).
+    record = json.loads(codex.read_text())
+    record.update({k: own[k] for k in ('feature_listing', 'model_catalog', 'model_catalog_digest',
+                                       'model_tool_modes', 'native_tool_mapping') if k in own})
+    codex.write_text(json.dumps(record))
     isolated = SimpleNamespace(main=lambda *args, **kw: old.main(*args, **dict(
         kw, tailscale=[h['ts'].path], api_port=h['port'])))
     args = host(h, 'restart')
