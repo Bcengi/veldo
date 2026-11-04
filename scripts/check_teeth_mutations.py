@@ -12180,6 +12180,13 @@ def cases():
         "        if command['source_kind'] != 'telegram_message':\n",
         "        if True:  # defect: every reply to a conversation message is its next turn\n",
         ['AC4/slash-role'])
+    # Registered after the dependency loop above: each module loads its organs beside itself by path (intake its
+    # renderer, project and routes, as every intake case), so each mutant runs in a whole .veldo copy.
+    for case in result:
+        if case['finding'] == 175:
+            case['siblings'] = True
+            if case['module'] == 'control_intake.py':
+                case['companions'] = list(RENDERER_COMPANIONS) + ['control_project.py', 'control_intake_routes.py']
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
