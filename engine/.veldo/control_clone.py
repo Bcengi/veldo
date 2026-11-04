@@ -794,6 +794,46 @@ class Clones(EP.EnvProvisioner):
         return dict(self.counts, pending=pending, identities=GI.metrics(self.observations))
 
 
+# VELDO-0177 AC3: a conversation's clone of an attached project.
+
+def trunk_commit(source):
+    """The commit a project's bound repository is at now (its checked out trunk, as a project run reads HEAD)."""
+    commit = _git('-C', source, 'rev-parse', '--verify', '-q', 'HEAD^{commit}',
+                  code='missing_evidence:project_repository').stdout.strip()
+    if not _hex(commit):
+        raise Refused('missing_evidence:project_repository', 'the trunk does not resolve to a commit')
+    return commit
+
+
+def conversation_clone(source, commit, work):
+    """An isolated clone (as `Clones` makes one, VELDO-0042) of the repository at `source` at `commit`, at the new
+    path `work`: a new repository (`git init` with no template), the commit and its whole history fetched into its own
+    object store (no alternate, no hardlink, no worktree link), checked out on the trunk branch the source names. It
+    has no remote, so nothing is pushed anywhere by name, no Git identity of the project (VELDO-0142, VELDO-0153) and
+    no credential; a change reaches the project only as VELDO-0180 carries it. Returns {work, commit, branch}."""
+    work = Path(work)
+    if not _hex(commit) or os.path.lexists(work):
+        raise Refused('invalid_input:conversation_clone', 'a new path and an exact commit')
+    work.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    branch = _git('-C', source, 'symbolic-ref', '-q', '--short', 'HEAD', check=False).stdout.strip() or 'trunk'
+    if _git('check-ref-format', '--branch', branch, check=False).returncode:
+        branch = 'trunk'
+    try:
+        _git('init', '-q', '--template=', work)
+        os.chmod(work, 0o700)
+        _git('-C', work, 'fetch', '-q', '--no-tags', '--no-write-fetch-head', str(source),
+             '%s:refs/heads/%s' % (commit, branch), code='stale_input:commit_unavailable')
+        _git('-C', work, 'symbolic-ref', 'HEAD', 'refs/heads/' + branch)
+        _git('-C', work, 'reset', '-q', '--hard', commit)
+        seen = _git('-C', work, 'rev-parse', '--verify', '-q', 'HEAD^{commit}', check=False).stdout.strip()
+        if seen != commit or _git('-C', work, 'remote').stdout.strip():
+            raise Refused('stale_input:commit_unavailable', 'the clone is not at the named commit')
+    except BaseException:
+        shutil.rmtree(work, ignore_errors=True)
+        raise
+    return {'work': str(work), 'commit': commit, 'branch': branch}
+
+
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     try:

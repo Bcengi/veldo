@@ -705,6 +705,9 @@ class Runner:
             decision = {'decision_id': 'conversation/%s/%d' % (conversation, sequence), 'station': 'turn',
                         'unit': conversation, 'domain_uuid': self.dispatches.domain, 'watermark': sequence,
                         'inputs': {'conversation': conversation, 'turn': sequence}}
+            # VELDO-0177 AC1: the turn's working directory is its own conversation's workspace, read from the record.
+            CVM = _organ('control_conversation')
+            workspace = CVM.workspace_of((CVM._conversation(self.dispatches.conn, conversation) or {}).get('data'))
             accepted = copy.deepcopy(role_revision)
             accepted['native_tools'] = [item['name'] for item in role_revision['native_tools']
                                         if item['load'] == 'always']
@@ -714,7 +717,8 @@ class Runner:
             contract = {'schema': D.SCHEMA, 'subject_kind': 'conversation', 'dispatch_id': dispatch_id,
                         'domain': self.dispatches.domain, 'repository': None, 'unit': conversation, 'station': 'turn',
                         'attempt': self.dispatches.attempts(conversation, 'turn') + 1,
-                        'source': {'conversation': conversation, 'turn': sequence, 'intake_digest': intake_digest},
+                        'source': {'conversation': conversation, 'turn': sequence, 'intake_digest': intake_digest,
+                                   'workspace': workspace},
                         'input': {'decision': decision, 'context': {'owner': payload.get('owner')},
                                   'payload': payload, 'payload_digest': D.digest(payload)},
                         'capability': {'adapter': adapter, 'configuration': bound,
@@ -1126,6 +1130,8 @@ class Receiver:
         self.token = None
         self.run = None
         self.conversation_directory = None
+        # VELDO-0177: the clones of the projects attached to a conversation turn's conversation, for its turn event.
+        self.attached = []
         # VELDO-0158: the selected MCP servers with their credentials resolved just before the spawn, and the
         # values delivered into the engine environment, by name.
         self.credentials = None
@@ -1195,6 +1201,21 @@ class Receiver:
             self._unstage_skills()
             shutil.rmtree(run, ignore_errors=True)
 
+    def _turn_event(self, contract, group):
+        """VELDO-0177 observability: a conversation turn's workspace, worker group, role revision, tool and server
+        names and credential references (ids, never a value), joined to its conversation and each attached clone."""
+        configuration = contract['capability'].get('configuration') or {}
+        revision = configuration.get('role_revision') or {}
+        credentials = DL.report(contract['dispatch_id'], self.credentials)['credentials'] if self.credentials else []
+        return {'event': 'conversation_turn', 'dispatch_id': contract['dispatch_id'], 'conversation': contract['unit'],
+                'turn': contract['source'].get('turn'), 'workspace': self.conversation_directory,
+                'group': group.report() if group else None,
+                'role_revision': {k: revision.get(k) for k in ('role', 'revision', 'digest')},
+                'tools': list(revision.get('native_tools') or []),
+                'servers': [item.get('server') for item in configuration.get('mcp') or []],
+                'credentials': credentials, 'attached': list(self.attached),
+                'metrics': {'turns_by_role_revision': {'%s:%s' % (revision.get('role'), revision.get('revision')): 1}}}
+
     def _settlement_trust(self, EL):
         """VELDO-0069: the decision settlement signers this receiver's Gate verifies with, derived as the
         production construction of the front door's Gate derives them (control_eligibility.enrolled_gate):
@@ -1216,8 +1237,13 @@ class Receiver:
             reader = S.open_store(self.config['store'], mode='r')
             try:
                 problem = conversation.receiver_check(reader, contract)
-                record = conversation._conversation(reader, contract.get('unit'))
-                self.conversation_directory = ((record or {}).get('data') or {}).get('directory')
+                # VELDO-0177 AC1: the engine's working directory is the workspace the contract names, which the
+                # check has just found to be this conversation's own; nothing else is ever a turn's directory.
+                self.conversation_directory = None if problem else contract['source']['workspace']
+                if problem is None:
+                    record = conversation._conversation(reader, contract.get('unit'))
+                    self.attached = [{k: a.get(k) for k in ('project', 'commit', 'clone')}
+                                     for a in (record['data'].get('attachments') or [])]
                 return problem
             finally:
                 reader.close()
@@ -1297,6 +1323,7 @@ class Receiver:
                        'configuration': getattr(self, 'configuration_path', None),
                        'metrics': {'host_trust_required': int(refusal == 'host_trust_required:receiver_configuration'),
                                    'turn_kind_refusals': int(refusal == 'binding_mismatch:conversation_receiver'),
+                                   'workspace_refusals': int(refusal == 'binding_mismatch:conversation_workspace'),
                                    'engine_baseline_refused': int(refusal.startswith('missing_evidence:engine_baseline:'))}})
             return
         me = dict(process_identity(os.getpid()), principal=self.config['principal'])
@@ -1376,6 +1403,8 @@ class Receiver:
         graces = dict(zip(('stop_grace_seconds', 'kill_grace_seconds'), self._graces())) if group else None
         self.emit({'event': 'running', 'process': process, 'ends_by': ends_by, 'heartbeat': beat, 'graces': graces,
                    'group': group.report() if group else None})
+        if contract.get('subject_kind') == 'conversation':
+            self.emit(self._turn_event(contract, group))
         # Set per dispatch before reaping, so the cleanup below never reads a stale or missing group
         # when the reap itself raises.
         self._exit_group = None

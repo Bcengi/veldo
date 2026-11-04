@@ -6,6 +6,13 @@ turns.  The installed service changes a waiting turn to dispatched only after a
 VELDO-0039 conversation dispatch has been prepared.  The receiver then rechecks the
 same record before accepting the launch.
 
+VELDO-0177: each conversation has its own workspace, `workspace` under its directory, made by the open command;
+it is the engine's working directory for every turn, and the receiver refuses a turn whose contract names any other
+(binding_mismatch:conversation_workspace) before anything is spawned.  An attach of a project the owner's scope
+covers takes a fresh isolated clone of the project's repository at its trunk commit, with its whole history, under
+the workspace's `projects/<project>` directory (control_clone.conversation_clone): no remote, no Git identity, no
+publication credential.  Attaching again takes a new clone beside the old one.
+
 Conversation worker reservations use the shared subscription-account records and
 the same account-pool selection order.  Their context names the conversation as the
 unit and deliberately carries no project or repository.  They are visible to the
@@ -66,6 +73,11 @@ FLAG_LIMIT = 20
 RATE_LIMITED = 'rate_limited:run_flag'
 UNDELIVERED = 'undelivered:no_conversation'
 OPERATIONS = OWNER_OPERATIONS + (DISPATCH, DEFER, END, FLAG)
+# VELDO-0177: the workspace under the conversation's directory, the attached projects' clones under it, and the
+# receiver's refusal of a turn launched anywhere else.
+WORKSPACE = 'workspace'
+PROJECTS = 'projects'
+WORKSPACE_MISMATCH = 'binding_mismatch:conversation_workspace'
 
 
 class Refused(Exception):
@@ -96,6 +108,31 @@ def flag_summary_id(dispatch_id):
 
 def flag_id(dispatch_id, number):
     return 'conversation-flag:%s:%d' % (dispatch_id, number)
+
+
+def workspace_of(record):
+    """VELDO-0177 AC1: a conversation's own workspace, `workspace` under its directory; None without a directory."""
+    directory = (record or {}).get('directory')
+    return os.path.join(directory, WORKSPACE) if _text(directory) and os.path.isabs(directory) else None
+
+
+def clone_path(record, project, number):
+    """VELDO-0177 AC3: where the `number`th attach of `project` puts its clone: under the workspace's
+    projects/<project> directory, one directory per attach, so attaching again takes a new clone beside the old."""
+    return os.path.join(workspace_of(record), PROJECTS, project, str(number))
+
+
+def project_source(conn, domain, project):
+    """VELDO-0177 AC3: (repository uuid, bound path) of a project's execution repository, (None, None) for a project
+    that names none; refused by name when it names one this store has no readable binding for."""
+    row = _row(conn, 'project:' + project) if _text(project) else None
+    repository = ((row or {}).get('data') or {}).get('execution_repository') if row and row['kind'] == 'project' else None
+    if not _text(repository):
+        return None, None
+    path = S.bound_repository(conn, domain, repository)
+    if not path or not os.path.isdir(path):
+        raise Refused('missing_evidence:project_repository', str(project))
+    return repository, path
 
 
 def lead_conversation(conn, conversation=None, project=None):
@@ -269,6 +306,17 @@ def transition(conn, params, before):
             if not CM.scope_covers(member.get('scope'), [project]):
                 raise Refused('missing_authority:project')
             record['project'] = project
+            # VELDO-0177 AC3: the clone this attach takes, at the trunk commit read for it, beside every earlier one.
+            repository = target['data'].get('execution_repository')
+            if _text(repository):
+                commit, path = params.get('commit'), params.get('clone')
+                earlier = [a for a in record.get('attachments') or [] if a.get('project') == project]
+                expected = clone_path(record, project, len(earlier) + 1) if workspace_of(record) else None
+                if (not isinstance(commit, str) or len(commit) not in (40, 64)
+                        or any(c not in '0123456789abcdef' for c in commit) or path != expected):
+                    raise Refused('invalid_input:conversation_attach')
+                record.setdefault('attachments', []).append(
+                    {'project': project, 'repository': repository, 'commit': commit, 'clone': path, 'at': now})
         record['version'] += 1
         return {cid: {'kind': KIND, 'data': record}}
     if operation == MESSAGE:
@@ -420,8 +468,13 @@ class Conversations:
         directory = os.path.join(self.state_root, 'conversations', safe)
         record, _receipt = self._run(OPEN, identity, {'role': role, 'intake_digest': intake_digest,
             'directory': directory, 'command_id': command_id}, principal=owner, now=now)
-        os.makedirs(directory, mode=0o700, exist_ok=True)
-        os.chmod(directory, 0o700)
+        # VELDO-0177 AC1: the conversation's own workspace under its directory, the engine's working directory.
+        workspace = workspace_of(record)
+        for path in (record['directory'], workspace):
+            os.makedirs(path, mode=0o700, exist_ok=True)
+            os.chmod(path, 0o700)
+        self.observe({'schema': SCHEMA, 'operation': 'conversation_workspace', 'conversation': identity,
+                      'workspace': workspace, 'outcome': 'made'})
         return record
 
     def close(self, identity, version, *, owner, command_id=None, now=None):
@@ -450,8 +503,42 @@ class Conversations:
         return record
 
     def attach_project(self, identity, version, project, *, owner, command_id=None, now=None):
-        record, _receipt = self._run(ATTACH, identity, {'version': version, 'project': project,
-                                     'command_id': command_id}, principal=owner, now=now)
+        """attach_project (VELDO-0177 AC3): the owner's command on the current version; for a project with an
+        execution repository, its trunk commit is read first, the record names that commit and the new clone's
+        path, and the clone is taken there once the command commits (a replay takes none)."""
+        fields = {'version': version, 'project': project, 'command_id': command_id}
+        current = self.read(identity)
+        source = None
+        if current is not None and _text(project) and type(version) is int and version == current.get('version'):
+            try:
+                repository, path = project_source(self.conn, self.domain, project)
+            except Refused as error:
+                self.observe({'schema': SCHEMA, 'operation': ATTACH, 'conversation': identity, 'project': project,
+                              'outcome': 'refused', 'refusal': error.code})
+                raise
+            if path is not None and workspace_of(current):
+                CL = _organ('control_clone')
+                try:
+                    fields['commit'] = CL.trunk_commit(path)
+                except CL.Refused as error:
+                    raise Refused(error.code, error.detail) from None
+                earlier = [a for a in current.get('attachments') or [] if a.get('project') == project]
+                fields['clone'] = clone_path(current, project, len(earlier) + 1)
+                source = path
+        record, receipt = self._run(ATTACH, identity, fields, principal=owner, now=now)
+        attached = [a for a in record.get('attachments') or [] if a.get('project') == project]
+        if source is not None and not receipt.get('replayed') and attached and attached[-1]['clone'] == fields['clone']:
+            CL = _organ('control_clone')
+            try:
+                CL.conversation_clone(source, fields['commit'], fields['clone'])
+            except CL.Refused as error:
+                self.observe({'schema': SCHEMA, 'operation': 'project_attach', 'conversation': identity,
+                              'project': project, 'commit': fields['commit'], 'clone': fields['clone'],
+                              'outcome': 'refused', 'refusal': error.code})
+                raise Refused(error.code, error.detail) from None
+            self.observe({'schema': SCHEMA, 'operation': 'project_attach', 'conversation': identity,
+                          'project': project, 'commit': fields['commit'], 'clone': fields['clone'],
+                          'outcome': 'cloned'})
         return record
 
     def dispatched(self, identity, sequence, dispatch_id, role_revision, account, receiver, *, now=None):
@@ -545,8 +632,17 @@ class Conversations:
         for turn in turns:
             if turn.get('outcome'):
                 outcomes[turn['outcome']] = outcomes.get(turn['outcome'], 0) + 1
+        # VELDO-0177 metrics: turns by the role revision they launched with, turns refused for a workspace mismatch,
+        # and project attaches.
+        by_revision = {}
+        for turn in turns:
+            if type(turn.get('role_revision')) is int:
+                key = str(turn['role_revision'])
+                by_revision[key] = by_revision.get(key, 0) + 1
         return {'open': sum(c.get('status') == 'open' for c in conversations),
-                'waiting': sum(t.get('state') == 'waiting' for t in turns), 'outcomes': outcomes}
+                'waiting': sum(t.get('state') == 'waiting' for t in turns), 'outcomes': outcomes,
+                'turns_by_role_revision': by_revision, 'workspace_refusals': outcomes.get(WORKSPACE_MISMATCH, 0),
+                'project_attaches': sum(len(c.get('attachments') or []) for c in conversations)}
 
 
 def receiver_check(conn, contract):
@@ -563,4 +659,8 @@ def receiver_check(conn, contract):
     if (turn is None or turn['data'].get('state') != 'dispatched'
             or turn['data'].get('dispatch_id') != contract.get('dispatch_id')):
         return 'stale_subject:conversation_turn_active'
+    # VELDO-0177 AC1: the working directory the contract names is this conversation's own workspace, or nothing runs.
+    own = workspace_of(record['data'])
+    if own is None or (contract.get('source') or {}).get('workspace') != own:
+        return WORKSPACE_MISMATCH
     return None
