@@ -250,6 +250,19 @@ def role_at(conn, name):
     return copy.deepcopy(role), copy.deepcopy(revision), saved['revision']
 
 
+def attach_authority(conn, member, record, project):
+    """VELDO-0177 AC3: the project an attach names, refused by name unless it is the conversation owner's own and in
+    the owner's scope; the same checks the transition applies, run before anything of its repository is read."""
+    target = _row(conn, 'project:' + project) if _text(project) else None
+    if not target or target['kind'] != 'project':
+        raise Refused('invalid_input:conversation_project')
+    if target['data'].get('owner') != record.get('owner'):
+        raise Refused('missing_authority:project')
+    if not CM.scope_covers(member.get('scope'), [project]):
+        raise Refused('missing_authority:project')
+    return target
+
+
 def transition(conn, params, before):
     operation, now = params.get('operation'), time.time()
     identity, principal = params.get('conversation'), params.get('principal')
@@ -298,13 +311,7 @@ def transition(conn, params, before):
             record['role'] = role
         else:
             project = params.get('project')
-            target = _row(conn, 'project:' + project) if _text(project) else None
-            if not target or target['kind'] != 'project':
-                raise Refused('invalid_input:conversation_project')
-            if target['data'].get('owner') != record.get('owner'):
-                raise Refused('missing_authority:project')
-            if not CM.scope_covers(member.get('scope'), [project]):
-                raise Refused('missing_authority:project')
+            target = attach_authority(conn, member, record, project)
             record['project'] = project
             # VELDO-0177 AC3: the clone this attach takes, at the trunk commit read for it, beside every earlier one.
             repository = target['data'].get('execution_repository')
@@ -505,11 +512,22 @@ class Conversations:
     def attach_project(self, identity, version, project, *, owner, command_id=None, now=None):
         """attach_project (VELDO-0177 AC3): the owner's command on the current version; for a project with an
         execution repository, its trunk commit is read first, the record names that commit and the new clone's
-        path, and the clone is taken there once the command commits (a replay takes none)."""
+        path, and the clone is taken there once the command commits (a replay takes none).  Nothing of the
+        repository is read unless the owner, version, open and project checks pass first; otherwise the command
+        runs without it and the transition refuses it by the same name."""
         fields = {'version': version, 'project': project, 'command_id': command_id}
         current = self.read(identity)
-        source = None
+        source, authorized = None, False
         if current is not None and _text(project) and type(version) is int and version == current.get('version'):
+            try:
+                member = _member(self.conn, owner, time.time(), owner=True)
+                if current.get('owner') != owner or current.get('status') != 'open':
+                    raise Refused('missing_authority:conversation_owner')
+                attach_authority(self.conn, member, current, project)
+                authorized = True
+            except Refused:
+                pass
+        if authorized:
             try:
                 repository, path = project_source(self.conn, self.domain, project)
             except Refused as error:
