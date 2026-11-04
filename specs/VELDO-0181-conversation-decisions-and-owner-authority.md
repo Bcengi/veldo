@@ -33,6 +33,17 @@ footprint:
   - "specs/VELDO-0181-conversation-decisions-and-owner-authority.md"
   - "specs/index.md"
   - "proof/VELDO-0181/*"
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
+  - "engine/.veldo/control_project*.py"
+  - ".veldo/control_project*.py"
+  - "engine/.veldo/control_workflow_cycle*.py"
+  - ".veldo/control_workflow_cycle*.py"
+  - "scripts/suites/130_veldo_0176_conversation_history.py"
+  - "scripts/suites/68_veldo_0126_*.py"
+  - "scripts/suites/69_*.py"
+  - "scripts/suites/93_*.py"
+  - "scripts/suites/132_veldo_0175_conversation_routes.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -138,3 +149,10 @@ draft.
 2026-11-04: built on agent/claude/veldo-0181 (suite 137, three mutation cases); one change outside the footprint
 (control_service.py, ConversationLine.question and answer) and readings for review in proof/VELDO-0181/OPEN.md. Status
 unchanged: review runs in a fresh context.
+
+2026-11-04: footprint widened by the lead after the build (proof/VELDO-0181/OPEN.md items 1 to 3). The service's
+ConversationLine opens and reads the two conversation questions, so control_service.py joins; suite 130 answers the
+wait-or-move question through the inbox and now answers through settlement, the one surface AC1 names; AC1 lists the
+unclear route question (VELDO-0175 AC2) among the decisions presented through VELDO-0065 and settled by VELDO-0068,
+so the project, intake and PM cycle modules that ask it and the suites that pin how it is asked (68, 69, 93, 132)
+join. Acceptance criteria are unchanged.
