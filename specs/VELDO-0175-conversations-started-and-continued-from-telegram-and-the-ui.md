@@ -38,6 +38,13 @@ footprint:
   - "specs/VELDO-0175-conversations-started-and-continued-from-telegram-and-the-ui.md"
   - "specs/index.md"
   - "proof/VELDO-0175/*"
+  - "engine/.veldo/control_api_assertion.py"
+  - ".veldo/control_api_assertion.py"
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
+  - "engine/.veldo/control_clone.py"
+  - ".veldo/control_clone.py"
+  - "scripts/mutation_case_inputs.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -188,3 +195,12 @@ since the role change and the project attach had only an API route; depends_on a
 VELDO-0177, whose commands they send. Still a draft.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+2026-11-04: footprint widened by the lead after the build (proof/VELDO-0175/OPEN.md). control_api_assertion.py
+so messages.send can carry the conversation field AC1 names; control_service.py because a conversation turn's
+payload names only the intake command id, so the engine never receives the owner's words, and because no
+production caller hands an acquired Telegram message to intake, so AC1 and AC4 would hold only where a suite
+drives intake (both are real defects in what this specification promises, fixed here); control_clone.py
+because VELDO-0177's attach clone fails when the project's branch has the fresh repository's initial branch
+name; scripts/mutation_case_inputs.json for the new modules' reuse declarations. Acceptance criteria are
+unchanged.
