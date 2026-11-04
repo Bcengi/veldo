@@ -326,11 +326,21 @@ else:
             _kind, saved = entity(store, TR.default_id(1))
             team = (saved or {}).get('team') or {}
             engines = {role: spec.get('engines') for role, spec in (team.get('roles') or {}).items()}
-            check('fresh/team', 'the default team is at revision 1, saved by the owner, with the four required roles on '
+            check('fresh/team', 'the default team\'s revision 1 is saved by the owner, with the four required roles on '
                   'the walkthrough\'s engines [%s]' % engines,
-                  (head or {}).get('revision') == 1 and (saved or {}).get('saved_by') == owner
+                  (saved or {}).get('saved_by') == owner
                   and engines == {'project_manager': ['claude_code'], 'elaboration': ['claude_code'],
                                   'implementation': ['claude_code'], 'independent_review': ['codex']})
+            # VELDO-0177 AC2: setup's second team save adds the two assistant roles on top of revision 1.
+            _kind, second = entity(store, TR.default_id(2))
+            second_roles = ((second or {}).get('team') or {}).get('roles') or {}
+            check('fresh/team', 'the default team is at revision 2, saved by the owner, revision 1\'s roles unchanged and '
+                  'the assistant roles added on their engines [%s]' % {r: v.get('engines') for r, v in second_roles.items()},
+                  (head or {}).get('revision') == 2 and (second or {}).get('saved_by') == owner
+                  and {r: v for r, v in second_roles.items() if r in engines} == team.get('roles')
+                  and set(second_roles) == set(engines) | {'assistant', 'assistant_codex'}
+                  and second_roles['assistant'].get('engines') == ['claude_code']
+                  and second_roles['assistant_codex'].get('engines') == ['codex'])
             conn = sqlite3.connect('file:%s?mode=ro' % store, uri=True)
             try:
                 configurations = {role: CG.read(conn, ids['domain_uuid'], repository, role, 1) for role in CT.REQUIRED_ROLES}
@@ -345,10 +355,13 @@ else:
                   and all(c.get('engine') == engines[r][0] and c.get('revision') == 1 for r, c in configurations.items())
                   and all(team['roles'][r]['capability_configuration'] == {'role': r, 'revision': 1} for r in CT.REQUIRED_ROLES))
             records = journal(store)
-            owner_saves = [r for r in records if r['command_id'].endswith(('-default-team',)) or '-configuration-' in r['command_id']]
-            check('fresh/team', 'five owner revisions in the journal, each signed by the owner\'s command, its nonce its '
+            # VELDO-0177 AC2: the four required configurations and the first team save, then the two assistant
+            # configurations and the second team save (`-assistant-team`): eight owner revisions.
+            owner_saves = [r for r in records if r['command_id'].endswith(('-default-team', '-assistant-team'))
+                           or '-configuration-' in r['command_id']]
+            check('fresh/team', 'eight owner revisions in the journal, each signed by the owner\'s command, its nonce its '
                   'command id [%s]' % [(r['command_id'], r['principal']) for r in owner_saves],
-                  len(owner_saves) == 5 and all(r['principal'] == owner and r['nonce'] == r['command_id'] for r in owner_saves))
+                  len(owner_saves) == 8 and all(r['principal'] == owner and r['nonce'] == r['command_id'] for r in owner_saves))
             _kind, project = entity(store, 'project:factory')
             # VELDO-0143: the factory project runs on a small repository of its own, under the state root, that holds
             # only its team configuration, never on the workspace's.
@@ -915,7 +928,7 @@ else:
             return
         added = journal(store)[len(head):]
         ours = re.compile(r'setup-enroll_principal-[0-9a-f]{8}-[0-9a-f]{12}|setup-[0-9a-f]{8}-[0-9a-f]{8}-'
-                          r'(factory-project|default-team|configuration-[a-z_]+)|register/[a-z0-9.-]+|reservation-policy/.+')
+                          r'(factory-project|default-team|assistant-team|configuration-[a-z_]+)|register/[a-z0-9.-]+|reservation-policy/.+')
         foreign = [r['command_id'] for r in added if not ours.fullmatch(r['command_id'])]
         check(row, 'every journal record it added is one of these steps [%s]' % foreign, added and not foreign)
         _kind, member = entity(store, 'launch-receiver')
