@@ -1,40 +1,28 @@
 # VELDO-0177: open items
 
-## The two new suites need the gate's unconfined leg (protected path, owner approval)
+## Resolved in fix round 1 (the lead widened the footprint, specification History 2026-11-04)
 
-Suites 128 and 129 need the systemd user manager: 128 runs each turn contained in a transient scope (AC1 asks for the
-worker group), and 129 runs VELDO-0171's installed-host fixture, as suite 106 does. Inside the gate's confinement
-setup refuses `unavailable_service:profile:user_manager`, so every row of both is red there (seen in the confined
-mutation workers). They must be added to `scripts/gate_unconfined.json` (VELDO-0208), a protected file that is not
-in this specification's footprint, e.g.:
-
-    {"suite": "128_veldo_0177_conversation_workspace", "reason": "systemd user manager: each conversation turn runs
-     contained in its own transient scope under the run's own slice"},
-    {"suite": "129_veldo_0177_assistant_setup", "reason": "systemd user manager: factory setup installs and starts
-     user services on this host (VELDO-0171's fixture)"}
-
-The mutation evidence was taken with those two entries added to the working copy's list, uncommitted, through
-`scripts/check_gate_mutations.py` with its case option (the stage that honours the list; `check_teeth_mutations.py`
-always runs confined and rejects the baseline), and the list restored byte for byte after (`git diff` empty).
-
-## Suites outside the footprint that this change turns red, and why
-
-The change is inside the footprint. Two existing suites assert what VELDO-0177 changes on purpose; each needs a
-one-place edit that is not in this specification's footprint, so it is left to the lead.
-
-1. `scripts/suites/123_veldo_0174_conversations.py`, row `AC2/own-directory` (around line 605): it asserts the engine's
-   working directory equals the conversation record's `directory`. VELDO-0177 AC1 makes the working directory the
-   workspace the open command creates under that directory (`<directory>/workspace`). The row should compare with
-   `CV.workspace_of(cv.read(i))`. Every other row of suite 123 passes (`suites.txt`). The record keeps no
-   `workspace` key (it is derived from `directory`), so the row `AC1/versioned-mutations`, which forbids one, still
-   passes.
-2. `scripts/suites/106_veldo_0185_dispatch_setup.py`, two rows red at the final code (`suites.txt`), 18 pass:
-   - `fresh/team` asserts the default team's head is revision 1 and that setup made five owner revisions.
-     VELDO-0177 AC2 adds one capability configuration revision for each assistant role and one `save_default_team`
-     revision adding both, so the head is revision 2 and setup makes eight.
-   - `rerun/over-earlier-host` asserts a re-run over a host an earlier engine laid down adds only its listed steps'
-     records; it now also adds `<prefix>-assistant-team`, the intended upgrade (an earlier host's team gains both
-     assistant roles on its next setup run). That step's name belongs in the row's list.
+1. The gate's unconfined leg (protected path, owner approval at landing). Suites 128 and 129 need the systemd user
+   manager: 128 runs each turn contained in a transient scope (AC1 asks for the worker group), and 129 runs
+   VELDO-0171's installed-host fixture, as suite 106 does. Inside the gate's confinement setup refuses
+   `unavailable_service:profile:user_manager`. Both are now in `scripts/gate_unconfined.json` (1ea19243) with the
+   reasons proposed here: 128 "systemd user manager: each conversation turn runs contained in its own transient
+   scope under the run's own slice", 129 "systemd user manager: factory setup installs and starts user services on
+   this host (VELDO-0171's fixture)". RESOLVED. The six mutation cases were rerun through
+   `scripts/check_gate_mutations.py` with its case option honouring the committed list (sha256:3c0f8582...), each
+   killed (`mutation-*.txt`). The file stays protected: its owner approval is still needed at landing.
+2. Suite 123 row `AC2/own-directory` (723aa945) compares each engine's working directory with
+   `CV.workspace_of(cv.read(i))`, the conversation's workspace (VELDO-0177 AC1). RESOLVED: 38 of 38. The record
+   keeps no `workspace` key, so `AC1/versioned-mutations` still passes.
+3. Suite 106 (0d708673). RESOLVED: 20 of 20.
+   - `fresh/team`: revision 1 is still checked to be the owner's with the four required roles on the walkthrough's
+     engines, and the configurations check is unchanged; a new check asserts the head is revision 2, saved by the
+     owner, with revision 1's roles unchanged and `assistant` (claude_code) and `assistant_codex` (codex) added. The
+     owner revision filter now also matches the second team save (`-assistant-team`), and the count is exactly
+     eight: four required configurations, the first team save, two assistant configurations, the second team save.
+   - `rerun/over-earlier-host`: the added-records pattern accepts `setup-<id>-<id>-assistant-team`, the intended
+     upgrade (an earlier host's team gains both assistant roles on its next setup run). Every other assertion is as
+     before.
    The principals step also enrolls the two assistant workers (`assistant`, `assistant-codex`); no 106 row lists
    enrolled workers exactly.
 

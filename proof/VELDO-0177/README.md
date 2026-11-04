@@ -18,14 +18,14 @@ Evidence files:
 - `red-at-1c0f9d67.txt`: both suites against the base's modules. 128: 0 of 15 (the suite's helpers do not exist
   before the change, so the red is at the fixture, also with only the new setup module copied in); 129: 1 of 4 (the
   re-run row holds trivially: nothing is saved either time).
-- `suites.txt`: suites 128 (15 of 15), 129 (4 of 4), 123 (37, `AC2/own-directory` red, see OPEN.md), 127 (17 of
-  17), 86 (26, the two stale live rows red) and 106 (18, two rows red, see OPEN.md) at 391fc52c.
+- `suites.txt`: at 0d708673 (fix round 1), suites 128 (15 of 15), 129 (4 of 4), 123 (38 of 38), 127 (17 of 17)
+  and 106 (20 of 20); suite 86 at 391fc52c (26, the two stale live rows red, as at the base).
 - `falsify.py`, `falsifiers.txt`: each spec falsifier and guard (the finding 177 mutation cases) applied to the
   checkout's module, its suite run, the module restored byte for byte (`restored: True` each).
-- `mutation-*.txt`: each registered case run alone through `scripts/check_gate_mutations.py` with its case option, in the
-  unconfined leg (see OPEN.md for why that driver and the uncommitted list entry): baseline and no-op green, the
-  mutant killed by its row, every one.
-- `OPEN.md`: what is left to the lead, and decisions to review.
+- `mutation-*.txt`: each registered case run alone through `scripts/check_gate_mutations.py` with its case option, at
+  0d708673, in the unconfined leg the committed `scripts/gate_unconfined.json` now names suites 128 and 129 for
+  (see OPEN.md): baseline and no-op green, the mutant killed by its row, every one.
+- `OPEN.md`: the items resolved in fix round 1, and decisions to review.
 
 ## AC1: each conversation's turns run in its own workspace, through the same Runner, containment and guards
 
@@ -121,3 +121,7 @@ names the project).
 - d6df2a3a suite 129; the assistant workers enrolled
 - 391fc52c the six mutation cases, red before, falsifiers
 - then this proof (README, OPEN, suites, mutation evidence)
+- fix round 1, in the footprint the lead widened: 1ea19243 suites 128 and 129 in the gate's unconfined list
+  (protected, owner approval at landing); 723aa945 suite 123 `AC2/own-directory` against the workspace; 0d708673
+  suite 106 `fresh/team` (head revision 2, eight owner saves) and `rerun/over-earlier-host` (the assistant-team
+  step); then this evidence
