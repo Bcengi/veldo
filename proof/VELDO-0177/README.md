@@ -18,13 +18,19 @@ Evidence files:
 - `red-at-1c0f9d67.txt`: both suites against the base's modules. 128: 0 of 15 (the suite's helpers do not exist
   before the change, so the red is at the fixture, also with only the new setup module copied in); 129: 1 of 4 (the
   re-run row holds trivially: nothing is saved either time).
-- `suites.txt`: at 0d708673 (fix round 1), suites 128 (15 of 15), 129 (4 of 4), 123 (38 of 38), 127 (17 of 17)
-  and 106 (20 of 20); suite 86 at 391fc52c (26, the two stale live rows red, as at the base).
+- `suites.txt`: at 46fa5a94 (fix round 2), suites 128 (15 of 15), 129 (4 of 4), 123 (38 of 38), 106 (20 of 20)
+  and 127 (17 of 17); suite 86 was last run at 391fc52c (26, the two stale live rows red, as at the base) and not
+  rerun.
+- `f1-red-green.txt` (fix round 2, review F1): the new suite 128 AC3/scope check red at 7818b2fd (the production
+  module before the fix: refused `missing_evidence:project_repository`, `project_source` and `bound_repository`
+  called for the foreign project) and green from 655c9a09.
 - `falsify.py`, `falsifiers.txt`: each spec falsifier and guard (the finding 177 mutation cases) applied to the
   checkout's module, its suite run, the module restored byte for byte (`restored: True` each).
-- `mutation-*.txt`: each registered case run alone through `scripts/check_gate_mutations.py` with its case option, at
-  0d708673, in the unconfined leg the committed `scripts/gate_unconfined.json` now names suites 128 and 129 for
-  (see OPEN.md): baseline and no-op green, the mutant killed by its row, every one.
+- `mutation-*.txt`: each of the seven registered VELDO-0177 cases run alone through `scripts/check_gate_mutations.py`
+  with its case option, at 5ff18406 (fix round 2), in the unconfined leg the committed `scripts/gate_unconfined.json`
+  names suites 128 and 129 for (see OPEN.md): baseline and no-op green, the mutant killed by its row, every one.
+  `mutation-v174-*.txt`: the two VELDO-0174 attach falsifiers whose anchors moved (indentation only) into
+  `attach_authority`, run the same way at 46fa5a94 (suite 123, confined leg), both killed.
 - `OPEN.md`: the items resolved in fix round 1, and decisions to review.
 
 ## AC1: each conversation's turns run in its own workspace, through the same Runner, containment and guards
@@ -109,6 +115,18 @@ commits, and runs `git push origin HEAD:refs/heads/conversation-change`: the pus
 refs are unchanged. A second attach after a new trunk commit takes a second clone beside the first at the new commit;
 the first keeps the turn's commit. The turn's `conversation_turn` event names the clone.
 
+Fix round 2 (review F1): `attach_project` reads nothing of the project's repository (`project_source`,
+`trunk_commit`) unless the owner, version, open, project-owner and scope checks pass first. Those project checks
+are one function, `attach_authority`, which the transition also calls. When a check fails, the command runs
+without the repository fields, and the transition refuses it by the same name as before. Every refusal for an
+attach that passes authority is unchanged. AC3/scope has one more check: another owner's project
+(`foreign-unbound`, in the owner's scope) whose execution repository is bound nowhere here is refused
+`missing_authority:project`. While it is attached, every `project_source` and `bound_repository` call is recorded,
+and the record is empty. No clone is made and the version is unchanged. Before the fix it was refused
+`missing_evidence:project_repository`, with both reads recorded (`f1-red-green.txt`). None of the six existing
+cases edits `attach_project`. A seventh, `attach177-reads-first`, puts the read back ahead of the checks (the
+pre-fix ordering) and is killed by AC3/scope.
+
 Falsifier (`clone177-push-remote`: the clone gets the project's push remote): the push succeeds; AC3/no-publication
 red ("its push failed and the fixture remote's refs are unchanged [0]"), and AC3/attach-clone (the clone's config
 names the project).
@@ -125,3 +143,6 @@ names the project).
   (protected, owner approval at landing); 723aa945 suite 123 `AC2/own-directory` against the workspace; 0d708673
   suite 106 `fresh/team` (head revision 2, eight owner saves) and `rerun/over-earlier-host` (the assistant-team
   step); then this evidence
+- fix round 2 (review 2026-11-04, F1): 7818b2fd the suite 128 AC3/scope check (red); 655c9a09 the authority checks
+  before the repository read; 5ff18406 mutation case `attach177-reads-first`; 46fa5a94 the two VELDO-0174 anchors
+  follow the checks into `attach_authority`; then this evidence

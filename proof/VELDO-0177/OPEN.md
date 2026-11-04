@@ -26,6 +26,17 @@
    The principals step also enrolls the two assistant workers (`assistant`, `assistant-codex`); no 106 row lists
    enrolled workers exactly.
 
+## Resolved in fix round 2 (review 2026-11-04, F1)
+
+4. An attach of another owner's or an out-of-scope project read its repository before authority, and was refused
+   `missing_evidence:project_repository` when that repository was not bound here. RESOLVED (655c9a09): the
+   owner, version, open, project-owner and scope checks run first, and the project checks are the transition's
+   own `attach_authority`. Suite 128 AC3/scope proves it by observation: no repository read is recorded, and the
+   refusal is `missing_authority:project`. It was red before the fix. A new mutation case,
+   `attach177-reads-first`, is killed. The VELDO-0174 falsifiers `v174-attach-outside-current-scope` and
+   `v174-attach-another-owners-project` had to have their anchors re-indented (now at function level), and both
+   are still killed. A reviewer should confirm this edit to another spec's registration is acceptable.
+
 ## Decisions a reviewer should see
 
 - AC2's falsifier is worded "the offered-tools row must fail on WebFetch missing from the init event". On the pinned
