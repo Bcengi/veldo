@@ -149,3 +149,25 @@ Evidence: suites.txt (130, 128, 129, 123, 127 and VELDO-0182's 105, each alone, 
 applied to .veldo, each restored byte for byte), mutation-<case>.txt (each of the six cases run alone by
 scripts/check_gate_mutations.py honouring the committed list: baseline and no-op green, mutant red on its row). The
 full gate was not run.
+
+## Fix round 2 (memory_kb argument shapes)
+
+Commits: 971bb78c (the fixture kb package's functions take the real signatures; row AC1/real-layout binds each
+memory-kb tool's call to them and checks the tools' inputs; AC2/tools-work's calls use the real inputs), 59af0aa5
+(control_memory_kb), and the proof commit after them.
+
+- control_memory_kb's tool inputs are cli.py's arguments: search query, collection, n, classifications; index-file
+  path, classification; index-dir path, pattern; index-telegram message, chat_id (optional), classification; stats
+  none; list collection, limit; delete collection, doc_id; clear collection. Each call passes cli.py's defaults
+  (n 5, classification "BP", pattern "*.md", chat_id "", limit 20) as cli.py does. No tool takes the passphrase.
+- Row AC1/real-layout checks the fixture's functions' full signatures against the lead's reading, then runs
+  fourteen tool calls (both search branches, each optional argument given and omitted) with each kb function
+  replaced by a recorder that binds the call to that function's own signature: the bound arguments must equal
+  cli.py's, by name. A wrong parameter name, a missing argument or an omitted default fails it. A third check
+  compares each tool's input schema with cli.py's arguments.
+- AC2/tools-work now indexes the directory into memory_kb's own collection, searches one collection with n and
+  classifications, searches every collection, and clears `conversations` (the telegram thread is gone after).
+
+Evidence: round2-real-layout.txt (the row red at 971bb78c, green at 59af0aa5), suites.txt (suite 130 alone, green),
+mutation-<case>.txt (the six cases rerun alone through scripts/check_gate_mutations.py honouring the committed list:
+baseline and no-op green, mutant red on its row). falsifiers.txt is fix round 1's. The full gate was not run.

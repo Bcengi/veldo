@@ -1,3 +1,10 @@
+Fix round 2: suite 130 run alone at 59af0aa5 (python3 scripts/selftest.py with the suite option); exit 2 is the
+PARTIAL run's own code. Its red run before the fix is in round2-real-layout.txt. The other suites below are fix round
+1's; round 2 changed only control_memory_kb, the fixture kb package and suite 130.
+
+  130_veldo_0183_memory_servers                   17 passed   27.95s
+selftest (PARTIAL, 1 of 192 suites): 43 passed, 0 failed in 27.95s
+
 Fix round 1: suites run alone at 46f88f3d (python3 scripts/selftest.py with the suite option, each in a systemd-run scope); exit 2 is the PARTIAL run's own code.
 
   130_veldo_0183_memory_servers                   17 passed   28.39s

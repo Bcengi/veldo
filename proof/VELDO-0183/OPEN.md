@@ -1,23 +1,19 @@
 # VELDO-0183: open items for the lead
 
-Fix round 1 closed the build's items 1 to 3 (see README, "Fix round 1"). What stays open:
+Fix round 1 closed the build's items 1 to 3 (see README, "Fix round 1"); fix round 2 closed item 1 below. What stays open:
 
-## 1. memory_kb argument shapes the lead's reading did not give (assumed, named here)
+## 1. memory_kb argument shapes: resolved (fix round 2)
 
-The module paths and function names are now the ones memory_kb's cli.py imports, and suite 130 row
-AC1/real-layout fails on any other. The lead gave the call shapes of list_documents(collection, limit),
-delete(collection, doc_id) and index_conversation(message, metadata={"chat_id": ...}, classification=...). These
-argument shapes are still this build's assumption; check them against cli.py before the first conversation:
-
-- `search` with a collection calls kb.store.search(collection, query), the order VELDO-0182's capture of kb/search.py
-  shows it wrapping; without one, kb.store.search_all(query). `n_results=` is passed by keyword only when the tool
-  input names it.
-- `index-file` and `index-dir` call index_file(path) and index_directory(path), with `collection=` by keyword only
-  when the tool input names one.
-- `index-telegram` passes `classification=` only when the tool input names it, so the function's own default holds.
-- `stats` calls get_stats() with no argument; `list` passes limit only when given.
-
-A wrong shape answers that one tool with the function's own TypeError; nothing else is affected.
+The lead read the real signatures and cli.py's calls from the owner's code. Each memory-kb tool's input is now its
+subcommand's arguments and each call passes them as cli.py does: search(collection, query, n_results=n,
+classifications=list or None) or search_all(query, ...), n default 5, classifications split on commas;
+index_file(path, classification=..., default "BP"); index_directory(path, pattern=..., default "*.md"), neither
+taking a collection; index_conversation(message, metadata={"chat_id": chat_id or ""}, classification=..., default
+"BP"), chat_id optional; get_stats(); list_documents(collection, limit=..., default 20); delete(collection, doc_id);
+clear as delete_collection on the store server's one client. The fixture kb package has exactly those signatures.
+Row AC1/real-layout now binds each tool's call to the fixture function's signature by name (inspect.signature
+bind), so a wrong parameter name, a missing argument or an omitted default fails it, as does a tool input other
+than cli.py's arguments; red before the fix and green after (round2-real-layout.txt).
 
 ## 2. `clear` and the store server's client
 
