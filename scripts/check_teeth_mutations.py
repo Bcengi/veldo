@@ -9920,6 +9920,24 @@ def cases():
     add(127, 'role127-wire-missing-ignored', suite127, 'control_agent_config_handoff.py',
         "        return 'configuration_stop:codex_missing_tool'",
         "        return None", ['review/codex-tools'])
+    # VELDO-0230 fix round 3 (Telegram 38895-38896): incremental_tools is granted, so the comparison reads every
+    # request of a run with what the run has declared by then, in the launch check and in the evidence.
+    add(127, 'role127-run-each-request-alone', suite127, 'control_agent_config_handoff.py',
+        "            declared = declared | set(codex_tool_names(codex_request_tools(body)))",
+        "            declared = set(codex_tool_names(codex_request_tools(body)))", ['wire/later-requests'])
+    add(127, 'role127-run-first-request-only', suite127, 'control_agent_config_handoff.py',
+        "        declared = codex_run_tools(bodies)",
+        "        declared = codex_run_tools(bodies[:1])", ['wire/later-requests'])
+    add(127, 'role127-search-result-unread', suite127, 'control_agent_config_handoff.py',
+        "DECLARING_ITEMS = ('additional_tools', 'tool_search_output')",
+        "DECLARING_ITEMS = ('additional_tools',)", ['wire/later-requests'])
+    add(127, 'role127-launch-first-observation-only', suite127, 'control_agent_config_handoff.py',
+        "    stop = codex_run_tool_difference(observations, extra['expected'])",
+        "    stop = codex_run_tool_difference(observations[:1], extra['expected'])", ['wire/later-requests'])
+    add(127, 'role127-evidence-each-request-alone', '86_veldo_0127_agent_configuration.py', 'proof/VELDO-0127/evidence.py',
+        "            actual = (handoff.codex_run_tools(bodies[:i + 1])[-1] if i",
+        "            actual = (handoff.codex_tool_names(handoff.codex_request_tools(body)) if i", ['wire/later-requests'])
+    result[-1]['dir'] = '.'
     add(127, 'role127-probe-capture-omitted', suite127, 'proof/VELDO-0127/live.py',
         "'probe':document.get('probe')", "'probe':None", ['review/probe-terminal'])
     result[-1]['dir'] = '.'

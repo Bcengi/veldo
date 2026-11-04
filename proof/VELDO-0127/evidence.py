@@ -29,35 +29,26 @@ def debug_problems(run, control):
 
 def wire_observation(body, expected, handoff):
     """Keep normalized runner, nested and direct definitions, and every mismatch by name."""
-    mapping = handoff.X.NATIVE_TOOL_MAPPING
-    wanted = handoff.codex_expected_tools(expected, body)
-    try:
-        actual = handoff.codex_tool_names(handoff.codex_request_tools(body))
-    except handoff.Refused:
-        actual = []
-    return {'native_tool_mapping': mapping, 'actual': actual, 'expected': sorted(wanted),
-            'unexpected': sorted(set(actual) - set(wanted)),
-            'missing': sorted(set(wanted) - set(actual)),
-            'stop': handoff.codex_tool_difference(body, expected)}
+    return wire_observations([body], expected, handoff)[0]
 
 
 def wire_observations(bodies, expected, handoff):
     """VELDO-0230 fix round 3: one observation per request of a run, each of what the run has declared by then
-    (handoff.codex_run_tools: a later incremental tools update declares only what changed). For a run of one
-    request it is that request's wire_observation."""
+    (handoff.codex_run_tools: a later incremental tools update declares only what changed); the first is that
+    request's own definitions as its wire spells them."""
     mapping = handoff.X.NATIVE_TOOL_MAPPING
     observations = []
     for i, body in enumerate(bodies):
         wanted = handoff.codex_expected_tools(expected, body)
         try:
-            actual = handoff.codex_run_tools(bodies[:i + 1])[-1] if i else handoff.codex_tool_names(
-                handoff.codex_request_tools(body))
+            actual = (handoff.codex_run_tools(bodies[:i + 1])[-1] if i
+                      else handoff.codex_tool_names(handoff.codex_request_tools(body)))
         except handoff.Refused:
             actual = []
         observations.append({'native_tool_mapping': mapping, 'actual': actual, 'expected': sorted(wanted),
-                             'unexpected': sorted(set(actual) - set(wanted)),
-                             'missing': sorted(set(wanted) - set(actual)),
-                             'stop': handoff.codex_run_tool_difference(bodies[:i + 1], expected)})
+            'unexpected': sorted(set(actual) - set(wanted)),
+            'missing': sorted(set(wanted) - set(actual)),
+            'stop': handoff.codex_run_tool_difference(bodies[:i + 1], expected)})
     return observations
 
 
