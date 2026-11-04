@@ -1,0 +1,31 @@
+Neighbour suites run at the final code (e26ef089 and later):
+  75_veldo_0062_accounts                          24 passed   35.93s
+selftest (PARTIAL, 1 of 190 suites): 50 passed, 0 failed in 35.93s
+  78_veldo_0160_account_pool                      34 passed   26.95s
+selftest (PARTIAL, 1 of 190 suites): 60 passed, 0 failed in 26.95s
+  78_veldo_0060_claude_adapter                    35 passed   22.53s
+selftest (PARTIAL, 1 of 190 suites): 61 passed, 0 failed in 22.53s
+  79_veldo_0061_codex_adapter                     21 passed   13.88s
+selftest (PARTIAL, 1 of 190 suites): 47 passed, 0 failed in 13.88s
+  82_veldo_0165_launch_hygiene                    23 passed   12.48s
+selftest (PARTIAL, 1 of 190 suites): 49 passed, 0 failed in 12.48s
+  82_veldo_0141_execution_record                  40 passed   20.81s
+selftest (PARTIAL, 1 of 190 suites): 66 passed, 0 failed in 20.81s
+  82_veldo_0129_worker_wiring                     29 passed   32.34s
+selftest (PARTIAL, 1 of 190 suites): 55 passed, 0 failed in 32.34s
+  106_veldo_0185_dispatch_setup                   20 passed   12.37s
+selftest (PARTIAL, 1 of 190 suites): 46 passed, 0 failed in 12.37s
+  85_veldo_0171_setup_api                         18 passed    9.82s
+selftest (PARTIAL, 1 of 190 suites): 44 passed, 0 failed in 9.82s
+  86_veldo_0186_setup_assets                      11 passed   15.54s
+selftest (PARTIAL, 1 of 190 suites): 37 passed, 0 failed in 15.54s
+  125_veldo_0230_engine_census                     7 passed    7.08s
+selftest (PARTIAL, 1 of 190 suites): 33 passed, 0 failed in 7.08s
+
+Run earlier on this branch, before the last control_launch change (the engine module loaded where installed; no behaviour change where it is):
+  80_veldo_0155_claude_baseline 19 passed; 81_veldo_0156_codex_baseline 22 passed; 82_veldo_0173_tool_registry 11 passed;
+  82_veldo_0172_live_formats 4 passed; 83_veldo_0166_usage_windows 19 passed; 86_veldo_0189_engine_upgrade 34 passed;
+  87_veldo_0127_codex_delivery 176 passed; 88_veldo_0127_feature_defaults 25 passed; 91_veldo_0167_setup_records 9 passed;
+  06_capabilities_manifest_honesty_veldo 262 passed;
+  86_veldo_0127_agent_configuration 26 passed, 2 failed: live/claude and live/codex (the VELDO-0127 live captures bind the
+  digests of control_launch.py and control_agent_config.py, which this change edits; OPEN.md item 2).

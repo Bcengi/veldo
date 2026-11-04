@@ -1,0 +1,3 @@
+  SELFTEST FAIL: VELDO-0232 stream/live-forms: the fakes print forms the recorded real run does not [["('init', None, ('conversation_id', 'cwd', 'model', 'session_id', 'tools', 'type'))", "('result', None, ('conversation_id', 'finished_reason', 'result', 'type', 'usage'))", "('result', None, ('conversation_id', 'result', 'type', 'usage'))"]]
+  128_veldo_0232_live_forms                        0 passed    0.00s
+selftest (PARTIAL, 1 of 190 suites): 26 passed, 1 failed in 0.00s

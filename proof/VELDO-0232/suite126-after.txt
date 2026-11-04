@@ -1,0 +1,3 @@
+  SELFTEST FAIL: VELDO-0230 qualify/reproduces: every file it wrote is byte-identical to the checkout's [['proof/VELDO-0127/resources-gpt-6-astra-selected.json', 'proof/VELDO-0127/resources-gpt-6-astra-none.json', 'proof/VELDO-0127/resources-gpt-5.5-selected.json', 'proof/VELDO-0127/resources-gpt-5.5-none.json']]
+  126_veldo_0230_qualify_reproduces                1 passed   71.00s
+selftest (PARTIAL, 1 of 190 suites): 27 passed, 1 failed in 71.00s
