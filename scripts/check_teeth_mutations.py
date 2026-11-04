@@ -12088,6 +12088,20 @@ def cases():
     add(230, 'setup230-claude-from-path', census230, 'control_factory_setup_engines.py',
         "    paths = {'claude_code': qualified_claude(Refused)}\n",
         "    paths = {'claude_code': Path(shutil.which('claude')).resolve()}\n", ['setup/engines-record'])
+    # VELDO-0231: a running agent flags the lead without stopping; each spec falsifier as one exact edit.
+    suite231 = '127_veldo_0231_run_flags.py'
+    add(231, 'flag231-delivered-at-end', suite231, 'control_service.py',
+        "            launch.ended = launch.lost = ended = True\n        self.deliver(line, launch)\n",
+        "            launch.ended = launch.lost = ended = True\n", ['AC1/at-once'])
+    add(231, 'flag231-question-unmapped', suite231, 'control_engine_codex.py',
+        "    'request_user_input_async': ['request_user_input_async', 'request_user_input'],\n",
+        "    'request_user_input_async': ['request_user_input_async'],\n", ['AC2/codex-launch'])
+    add(231, 'flag231-question-window-dropped', suite231, 'control_launch.py',
+        "                if cause is None and code is None and flags is not None and flags.expired(now):\n",
+        "                if False:  # defect: no question window\n", ['AC3/blocking'])
+    add(231, 'flag231-run-window-removed', suite231, 'control_conversation.py',
+        "    if written and (written >= FLAG_LIMIT or at - summary['last_at'] < FLAG_WINDOW):\n",
+        "    if False:  # defect: no per-run window\n", ['AC4/flood'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

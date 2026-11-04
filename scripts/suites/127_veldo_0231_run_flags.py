@@ -63,11 +63,17 @@ def _v231_suite():
     MEANS = F.MEANS
     base = Path(tempfile.mkdtemp(prefix='v231-', dir=fast_temp()))
     fixtures = []
-    lock = None
+    lock = factory = None
+
+    def stop_all(loop):
+        """Every run still going is asked to stop, and its end is read, so none outlives the suite."""
+        running = list(loop.conversation.runner.launches.values())
+        for launch in running:
+            launch.stop('requested')
+        F.drive(loop, lambda: all(launch.ended for launch in running), 20)
     try:
         # The fixture's modules: the production copies the suite names (mutation-substituted) beside the rest.
-        f = F.fixture(ROOT, base, H, load('v231_cv_seed', PRODUCTION['control_conversation.py']), 'flags', 0,
-                      PRODUCTION)
+        f = F.fixture(ROOT, base, H, load, 'flags', 0, PRODUCTION)
         fixtures.append(f)
         mods = f['root'] / 'modules'
         CV = load('v231_conversation', mods / 'control_conversation.py')
@@ -330,6 +336,9 @@ def _v231_suite():
                   and e.get('outcome') == 'configuration_stop:wait_question' for e in launch_events))
         check('AC3/blocking', 'its question flag was delivered', any(
             c['result']['flag'] and c['result']['flag']['synchronous'] for c in block_asked))
+        if not blocking_end:
+            # A run the window did not stop holds the account: stopped here so the rows after it still run.
+            stop_all(factory)
 
         # AC4: a run that flags in a loop: 500 flags in 5 seconds, on the service's own clock.
         factory.clock = time.time
@@ -425,6 +434,8 @@ def _v231_suite():
         for row in ROWS:
             check(row, 'journey completes: %s: %s' % (type(error).__name__, str(error)[:300]), False)
     finally:
+        if factory is not None:
+            stop_all(factory)
         if lock is not None:
             close = getattr(lock, 'close', None)
             if close:
