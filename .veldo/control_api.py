@@ -78,6 +78,15 @@ woken by the launch receiver's record hint (control_execution_record.HINT_SCHEMA
 the event stream closes (signed_out, session_expired, revoked). Lines are served as the receiver kept them,
 already redacted; this process never holds an unredacted line. Nothing is polled.
 
+CONVERSATIONS (VELDO-0178). `conversations.read` serves the session member's own conversations (id, status, role,
+version, turn count, last activity), or one of his with every turn's sequence, message, reply, outcome, dispatch id
+and account, through the authority's `conversations`; `conversations.open`, `.close`, `.set_role` and
+`.attach_project` send VELDO-0174's typed commands through the edge, each but the open on the version the owner saw.
+A conversation of anyone else is refused missing_authority:conversation_owner, whatever the member's scope. A turn's
+execution record is served on the record routes above to the conversation's owner alone. Each conversation route
+call is observed with its principal, route, conversation id, outcome and the API request id its command carries,
+and counted by route and outcome (`conversation_metrics`); never a message's text.
+
 ACTIONS (AC4). The UI action contract is control_api_models.ACTIONS: each action with a route is a POST
 here whose operation the authority executes as the named existing command (a workflow save is VELDO-0132's
 Workflows.save); this process holds no store connection and writes nothing but through the edge.
@@ -202,6 +211,17 @@ ROUTES = (
           ('dispatch', 'dispatch_version'), (), 'stop_worker'),
     Route('workers.cap', 'POST', '/api/v1/domains/{domain}/workers/cap', 'work', True,
           ('account', 'account_version', 'concurrency'), (), 'set_account_cap'),
+    # VELDO-0178: the owner's conversations, their turns and replies, and his conversation commands.
+    Route('conversations.read', 'GET', '/api/v1/domains/{domain}/conversations', 'conversations', True, (),
+          ('conversation',), None),
+    Route('conversations.open', 'POST', '/api/v1/domains/{domain}/conversations/open', 'conversations', True, (),
+          ('role',), 'open_conversation'),
+    Route('conversations.close', 'POST', '/api/v1/domains/{domain}/conversations/close', 'conversations', True,
+          ('conversation', 'version'), (), 'close_conversation'),
+    Route('conversations.set_role', 'POST', '/api/v1/domains/{domain}/conversations/role', 'conversations', True,
+          ('conversation', 'version', 'role'), (), 'change_conversation_role'),
+    Route('conversations.attach_project', 'POST', '/api/v1/domains/{domain}/conversations/attach', 'conversations',
+          True, ('conversation', 'version', 'project'), (), 'attach_conversation_project'),
     Route('events.read', 'GET', '/api/v1/domains/{domain}/events', 'events', True, (), ('after',), None),
     Route('events.stream', 'GET', '/api/v1/domains/{domain}/events/stream', 'events', True, (), ('after',), None),
     # VELDO-0141: one run's execution record, read from a cursor and followed live.
@@ -468,6 +488,11 @@ class ControlApi:
                               'mcp.credential_set': self._write, 'mcp.credential_delete': self._write,
                               'mcp.credential_read': self._credential_read_refused})
         self.handlers.update({'backlog.reprioritize': self._write, 'workers.stop': self._write, 'workers.cap': self._write})
+        self.handlers.update({'conversations.read': self._conversations_read, 'conversations.open': self._write,
+                              'conversations.close': self._write, 'conversations.set_role': self._write,
+                              'conversations.attach_project': self._write})
+        # VELDO-0178: conversation route calls by route and outcome.
+        self.conversation_counts = {}
         self.handlers.update({m.route: self._read for m in MO.READ_MODELS})
         self.handlers.update({m.route: self._metadata_read for m in MO.METADATA_READS})
 
@@ -492,6 +517,14 @@ class ControlApi:
                 value['owner_request'] = exc.owner_request
         event = dict(about, outcome='accepted' if status < 400 else 'refused',
                      refusal=value.get('refusal') if status >= 400 else None, status=status)
+        if 'conversation' in about:
+            # VELDO-0178: a conversation route call names its conversation (an open's, the one it made) and the API
+            # request id its command carries, never a message's text.
+            if event['conversation'] is None and isinstance(value, dict):
+                event['conversation'] = value.get('conversation')
+            event['request_id'] = value.get('api_request_id') if isinstance(value, dict) else None
+            counts = self.conversation_counts.setdefault(about['route'], {})
+            counts[event['outcome']] = counts.get(event['outcome'], 0) + 1
         self.observations.append(event)
         self.observe(event)
         kind = 'text/event-stream' if isinstance(value, Stream) else 'application/json'
@@ -538,6 +571,9 @@ class ControlApi:
             body = dict(pairs)
             if len(body) != len(pairs):
                 raise Refused('invalid_input:query', 'each query parameter is named once')
+        if route.family == 'conversations' or (route.name == 'messages.send' and body.get('conversation') is not None):
+            conversation = body.get('conversation')
+            about['conversation'] = conversation if isinstance(conversation, str) else None
         problem = body_problem(route, body)
         if problem:
             raise Refused(problem, 'the request carries exactly the route\'s fields')
@@ -771,13 +807,19 @@ class ControlApi:
             expected = {'dispatch:' + str(parameters['dispatch']): parameters['dispatch_version']}
         elif route.operation == 'set_account_cap':
             expected = {'account:' + str(parameters['account']): parameters['account_version']}
+        elif route.operation in ('close_conversation', 'change_conversation_role', 'attach_conversation_project'):
+            expected = {'conversation:' + str(parameters['conversation']): parameters['version']}
         target = {'save_capability_configuration': 'agent_configuration', 'propose_team': str(parameters.get('project')),
                   'save_default_team': 'default_team', 'send_message': self.domain, 'answer_decision': str(parameters.get('request_id')),
                   'revoke_credential': 'api_credential', 'save_workflow': str(parameters.get('workflow')),
                   'save_mcp_server': 'mcp_catalog', 'set_mcp_credential': 'mcp_credential',
                   'delete_mcp_credential': 'mcp_credential', 'reprioritize_backlog': str(parameters.get('item')),
                   'stop_worker': 'dispatch:' + str(parameters.get('dispatch')),
-                  'set_account_cap': 'account:' + str(parameters.get('account'))}[route.operation]
+                  'set_account_cap': 'account:' + str(parameters.get('account')),
+                  'open_conversation': 'conversation',
+                  'close_conversation': 'conversation:' + str(parameters.get('conversation')),
+                  'change_conversation_role': 'conversation:' + str(parameters.get('conversation')),
+                  'attach_conversation_project': 'conversation:' + str(parameters.get('conversation'))}[route.operation]
         assertion = dict(self.ids, schema=AS.SCHEMA, domain=self.domain, channel=AS.CHANNEL, edge=self.edge,
                          edge_key_id=AC.edge_channel(AS.CHANNEL)['edge_key_id'], request_id=request_id,
                          principal=session['principal'], credential_id=session['credential_id'],
@@ -811,7 +853,8 @@ class ControlApi:
         keep = ('outcome', 'proposal_id', 'question_id', 'question', 'project', 'repeated', 'request_id', 'answer',
                 'settlement', 'ruling', 'workflow', 'version', 'revision', 'entity_digest', 'definition_digest',
                 'layout_digest', 'server', 'id', 'reference', 'seq', 'role', 'digest', 'team_id', 'owner_request',
-                'team_application', 'set_at', 'set_by', 'rank', 'dispatch', 'state', 'stop', 'account', 'concurrency')
+                'team_application', 'set_at', 'set_by', 'rank', 'dispatch', 'state', 'stop', 'account', 'concurrency',
+                'conversation', 'status')
         return 200, dict({k: result[k] for k in keep if k in result}, api_request_id=request_id)
 
     @staticmethod
@@ -899,6 +942,14 @@ class ControlApi:
     def _workflow_read(self, route, body, session, extra, headers):
         version = _count(body.get('version'), 'version') if 'version' in body else None
         return 200, self._ask(self.authority.workflow, session['principal'], body['workflow'], version)
+
+    def _conversations_read(self, route, body, session, extra, headers):
+        """VELDO-0178: the member's own conversations, or one of his with its turns."""
+        return 200, self._ask(self.authority.conversations, session['principal'], body.get('conversation'))
+
+    def conversation_metrics(self):
+        """Conversation route calls by route and outcome (VELDO-0178)."""
+        return {route: dict(counts) for route, counts in self.conversation_counts.items()}
 
     def _events_read(self, route, body, session, extra, headers):
         after = _count(body.get('after', '0'), 'after', minimum=0)

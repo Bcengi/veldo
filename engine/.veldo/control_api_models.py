@@ -139,9 +139,11 @@ IDENTITY_METADATA = ('id', 'label', 'author_name', 'author_email', 'remote_host'
                      'default_visibility')
 SCOPE = _organ('control_api_models_scope')
 
-def reader_scope(conn, membership, scope):
+def reader_scope(conn, membership, scope, principal=None):
+    """The reader's scope; `principal` names the reader, the only one a conversation of his is visible to
+    (VELDO-0178)."""
     return SCOPE.ReaderScope(conn, membership, scope, {k.kind: k.project_rule for m in READ_MODELS + METADATA_READS
-                                                       for k in m.kinds})
+                                                       for k in m.kinds}, principal=principal)
 
 # THE UI ACTION CONTRACT. An action with a route executes the named existing command; an action without
 # one is a gap owned by the named specification.

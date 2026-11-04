@@ -48,6 +48,9 @@ only wakes the API, which reads the lines after its cursor through the authority
 caught up by the next. A socket is written only when it is this account's own, in a directory nobody else
 can enter, and its peer is this account (SO_PEERCRED).
 
+A CONVERSATION TURN'S RECORD (VELDO-0178) is the same record, nothing dropped and redacted the same way, its header
+also naming the conversation id and turn sequence (`binding`) the header the receiver hands it names.
+
 READING (`read`). The authority (control_api_authority.record) reads the lines after a cursor from the file
 the dispatch id names, refusing by name a record whose header binds another dispatch and, once the dispatch
 ended with a committed record, one whose line count, size or digest differ from the committed ones.
@@ -427,6 +430,18 @@ def _safe_prefix(text, resolved):
     return safe
 
 
+def binding(header):
+    """VELDO-0178: a conversation turn's record binds its conversation id and turn sequence in its header, read from
+    the header the receiver builds or, when it is the whole contract, from the contract's source; {} for any other
+    run (its header is what it was)."""
+    source = header.get('source') if isinstance(header.get('source'), dict) else {}
+    if header.get('subject_kind') == 'conversation' or 'conversation' in header:
+        conversation = header.get('conversation', source.get('conversation'))
+        turn = header.get('turn', source.get('turn'))
+        return {'conversation': conversation, 'turn': turn}
+    return {}
+
+
 def encode(entry):
     return (json.dumps(entry, sort_keys=True, ensure_ascii=True) + '\n').encode('ascii')
 
@@ -452,7 +467,8 @@ class Recorder:
         self.sent = {'hints': 0, 'dropped': 0}
         self.closed = None
         self._write(dict({k: header.get(k) for k in ('dispatch_id', 'contract_digest', 'unit', 'station', 'project',
-                                                     'account', 'host')}, schema=SCHEMA, opened_at=self.clock()))
+                                                     'account', 'host')}, schema=SCHEMA, opened_at=self.clock(),
+                         **binding(header)))
 
     def _write(self, entry):
         data = encode(entry)

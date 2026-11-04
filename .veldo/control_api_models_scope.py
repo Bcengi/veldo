@@ -3,6 +3,11 @@
 Unknown or unresolved kinds are universal-only. References are read in the authority's
 read transaction; journal changes use their committed data and the same reference rules.
 No withheld identity is logged or returned, including in redaction and integrity problems.
+
+VELDO-0178: a conversation has no project; its scope is its owner. A conversation's records (the conversation,
+its turns, the messages sent in it, the answers kept under the owner's messages and a flag delivered to it) and the
+dispatch of one of its turns are visible to the conversation's owner alone, whatever the reader's scope, the
+universal one included; anyone else is withheld them as `conversation_owner`.
 """
 import copy
 import json
@@ -14,11 +19,47 @@ def field(data, path):
     return data
 
 
+# VELDO-0178: the kinds a conversation's records are kept as (control_conversation's KIND, TURN_KIND, SENT_KIND,
+# ANSWER_KIND and FLAG_KIND), each naming its conversation; a conversation turn's dispatch names it as its unit.
+CONVERSATION_KINDS = ('conversation', 'conversation_turn', 'conversation_message', 'conversation_answer',
+                      'conversation_flag')
+OWNER = 'conversation_owner'
+
+
+def conversation_of(conn, kind, data):
+    """The conversation a record belongs to, or None for a record of no conversation."""
+    if not isinstance(data, dict):
+        return None
+    if kind == 'conversation':
+        return data.get('id') if isinstance(data.get('id'), str) else ''
+    if kind in CONVERSATION_KINDS:
+        found = data.get('conversation')
+        # A flag delivered to no conversation (undelivered) belongs to none; every other record names one.
+        return found if isinstance(found, str) else (None if kind == 'conversation_flag' else '')
+    if kind == 'dispatch_active' and isinstance(data.get('dispatch_id'), str):
+        row = conn.execute('SELECT kind, data FROM entities WHERE id=?', ('dispatch:' + data['dispatch_id'],)).fetchone()
+        return conversation_of(conn, row[0], json.loads(row[1])) if row and row[0] == 'dispatch' else None
+    if kind == 'dispatch':
+        contract = data.get('contract') if isinstance(data.get('contract'), dict) else {}
+        if contract.get('subject_kind') == 'conversation':
+            return contract.get('unit') if isinstance(contract.get('unit'), str) else ''
+    return None
+
+
+def conversation_owner(conn, identity):
+    """The owner of a conversation, or None for an unknown one."""
+    if not isinstance(identity, str) or not identity:
+        return None
+    row = conn.execute('SELECT kind, data FROM entities WHERE id=?', ('conversation:' + identity,)).fetchone()
+    return json.loads(row[1]).get('owner') if row and row[0] == 'conversation' else None
+
+
 class ReaderScope:
-    def __init__(self, conn, membership, scope, rules):
+    def __init__(self, conn, membership, scope, rules, principal=None):
         self.conn, self.membership, self.scope, self.rules = conn, membership, scope, rules
-        self.withheld = {'out_of_scope': 0, 'no_project': 0}
-        self.records = {'out_of_scope': 0, 'no_project': 0}
+        self.principal = principal
+        self.withheld = {'out_of_scope': 0, 'no_project': 0, OWNER: 0}
+        self.records = {'out_of_scope': 0, 'no_project': 0, OWNER: 0}
 
     @property
     def universal(self):
@@ -104,7 +145,21 @@ class ReaderScope:
         walk(served)
         return served
 
+    def owned(self, kind, data):
+        """None for a record of no conversation, else whether the reader is its conversation's owner."""
+        conversation = conversation_of(self.conn, kind, data)
+        if conversation is None:
+            return None
+        if kind == 'conversation':
+            owner = data.get('owner')
+        else:
+            owner = conversation_owner(self.conn, conversation)
+        return isinstance(self.principal, str) and owner == self.principal
+
     def reason(self, identity, kind, data):
+        owned = self.owned(kind, data)
+        if owned is not None:
+            return None if owned else OWNER
         if self.universal:
             return None
         if self.rules.get(kind) == ('shared',):

@@ -19,7 +19,13 @@ judges the peer, the request signature and the workspace coordinate. Its command
 api edge's key alone, in control_api_assertion.REQUEST_NAMESPACE (`verifies`), so no member key speaks as
 the API and the API's request signature stands in for no command. `call` then runs it on the judge:
 `apply` (one edge-signed assertion packet, rechecked there), `inspect`, `read`, `workflow`, `events`,
-`feed` and `record` (one run's execution record after a cursor, VELDO-0141), and `subscribe`.
+`feed` and `record` (one run's execution record after a cursor, VELDO-0141), `conversations` (the reader's own
+conversations, VELDO-0178) and `subscribe`.
+
+THE OWNER'S CONVERSATIONS (VELDO-0178). The judge is handed control_conversation's Conversations on the same
+connection, written as the service's journal principal for the owner's verified commands, keeping each conversation
+it opens under the configuration's `state_root` (the factory state root the service's own conversations use), else
+beside the store.
 
 THE OWNER'S WORK COMMANDS (VELDO-0131). The judge is handed, on the same connection, control_backlog's Backlog
 (its reprioritize accepts the api edge's signature over a verified assertion), control_dispatch's Dispatches
@@ -71,7 +77,7 @@ FIELDS = ('schema', 'store_path', 'authority_ids', 'authority_generation', 'jour
           'projects', 'rp_id', 'origin', 'workflows_repository', 'publication_root')
 # VELDO-0141: the launch receivers' records directory (control_execution_record.directory), which the
 # execution record route reads; without it that route is unavailable_service by name.
-OPTIONAL = ('records',)
+OPTIONAL = ('records', 'state_root')
 SUBSCRIBER_LIMIT = 8
 SUBSCRIBERS_NAME = 'api-subscribers.json'
 HINT_LIMIT = 64 * 1024
@@ -103,6 +109,8 @@ def load_config(path):
         raise Refused('invalid_input', 'the API service configuration has exactly the %s fields' % SCHEMA)
     if 'records' in config and not (isinstance(config['records'], str) and os.path.isabs(config['records'])):
         raise Refused('invalid_input', 'the records directory is an absolute path')
+    if 'state_root' in config and not (isinstance(config['state_root'], str) and os.path.isabs(config['state_root'])):
+        raise Refused('invalid_input', 'the state root is an absolute path')
     return config
 
 
@@ -209,6 +217,11 @@ class ServiceApi:
             # An account record's ownership bound to other code (an installation not yet upgraded): the cap route
             # answers unavailable_service:accounts by name, and every other route serves as before.
             accounts = None
+        # VELDO-0178: the owner's conversation commands, as the service's own conversations write them.
+        conversations = AUTH._conversation_module().Conversations(
+            self.S, self.conn, domain=ids['domain_uuid'], principal=principal, signer=principal, sign=sign,
+            state_root=self.config.get('state_root') or os.path.dirname(self.config['store_path']),
+            generation=generation, observe=self.observe_mcp)
         self.edge = self.config['api_edge']
         self.authority = AUTH.ApiAuthority(self.S, CM, self.conn, ids=ids, domain=self.config['domain'], edge=self.edge,
                                            intake=intake, settlement=ingress.settlement, credentials=self.credentials,
@@ -216,7 +229,7 @@ class ServiceApi:
                                            authority_lock=lock, catalog=catalog, mcp_credentials=mcp_credentials,
                                            records=self.config.get('records'), configurations=configurations,
                                            team_routes=team_routes, backlog=backlog, dispatches=dispatches,
-                                           accounts=accounts)
+                                           accounts=accounts, conversations=conversations)
         self.instance = '%d-%s' % (os.getpid(), os.urandom(6).hex())
         # The subscribed APIs' hint sockets, remembered across a restart in this 0600 file of the service's
         # state directory, and each one's hint number from this instance.
@@ -274,6 +287,10 @@ class ServiceApi:
             return self.authority.workflow(a['principal'], a['workflow'], a['version'])
         if name == 'subscribe':
             return self.subscribe(a['socket'])
+        if name == 'conversations':
+            if a['conversation'] is not None and not isinstance(a['conversation'], str):
+                raise Refused('invalid_input:api_call', 'a conversation is named by its id')
+            return self.authority.conversations(a['principal'], a['conversation'])
         if name == 'record':
             after, limit = a['after'], a['limit']
             if (not isinstance(a['dispatch_id'], str) or type(after) is not int or after < 0 or type(limit) is not int

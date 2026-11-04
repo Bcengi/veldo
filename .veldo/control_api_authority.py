@@ -34,6 +34,23 @@ run is missing_evidence:unknown_run, a cursor past the end invalid_input:cursor_
 another dispatch or not matching its commitment unknown_outcome:record_binding or :record_digest; none is
 served as an empty record. The records are read from `records`, the receivers' records directory.
 
+VELDO-0178: a conversation turn's run has no project; its record is decided by its conversation and served to the
+conversation's owner alone (else missing_authority:conversation_owner), whatever his scope, and a run with neither a
+project nor a conversation is served to nobody (unauthorized:out_of_scope). The served run names the conversation and
+the turn its contract binds, and a record whose header names another conversation or turn is refused
+(unknown_outcome:record_binding). Each read of a turn's record is observed with its dispatch, conversation and turn.
+
+THE OWNER'S CONVERSATIONS (VELDO-0178 AC1). `conversations` reads, for a current person member, his own
+conversations (id, status, role, version, turn count and last activity) or one of them with every turn (sequence,
+state, his message as its intake source kept it, reply, outcome, dispatch id and account). A conversation of anyone
+else is refused missing_authority:conversation_owner, whatever the reader's scope, and is never listed; an unknown
+one is invalid_input:conversation:unknown. Four operations send VELDO-0174's typed commands as the verified member
+through control_conversation.Conversations (`conversations`): open_conversation (a new id from the request id, the
+assertion's digest as its intake digest), close_conversation, change_conversation_role and
+attach_conversation_project, each on the version the owner saw (else stale_version), each command's id the API
+request id, so a route call joins its command. Every conversation record is on the event feed for its owner alone
+(control_api_models_scope).
+
 A workflow save (AC4) is VELDO-0132's Workflows.save, the only writer of workflow revisions, for the
 verified principal with the base version the assertion carries: its own transaction judges the editor
 (an active person member holding project_owner or technical_authority scoped to the repository) and
@@ -114,6 +131,11 @@ BL = organ('control_backlog')
 DP = organ('control_dispatch')
 AA = organ('control_accounts')
 WORK_OPERATIONS = ('reprioritize_backlog', 'stop_worker', 'set_account_cap')
+# VELDO-0178: the conversation commands the API sends (control_conversation's OPEN, CLOSE, ROLE and ATTACH).
+CONVERSATION_OPERATIONS = ('open_conversation', 'close_conversation', 'change_conversation_role',
+                           'attach_conversation_project')
+CONVERSATIONS_SCHEMA = 'veldo.api_conversations/v1'
+OWNER_REFUSAL = 'missing_authority:conversation_owner'
 RECORD_SCHEMA = 'veldo.api_execution_record/v1'
 RECORD_LIMIT = 512
 # A dispatch's states once its run has ended (control_dispatch.STATES): its record grows no more.
@@ -165,6 +187,37 @@ def _class_of(code):
     return CLASSES[head] if head in CLASSES else CLASSES.get(WF.taxonomy(code), 'unknown_outcome')
 
 
+SCOPE = MO.SCOPE
+_CONVERSATION = []
+
+
+def _conversation_module():
+    """control_conversation, loaded once when first needed (VELDO-0178)."""
+    if not _CONVERSATION:
+        _CONVERSATION.append(organ('control_conversation'))
+    return _CONVERSATION[0]
+
+
+def _turns(conn, CVM, identity):
+    found = [json.loads(raw) for (raw,) in conn.execute('SELECT data FROM entities WHERE kind=?', (CVM.TURN_KIND,))]
+    return sorted((t for t in found if t.get('conversation') == identity), key=lambda t: t.get('sequence') or 0)
+
+
+def _last_activity(record, turns):
+    """The latest moment the conversation or one of its turns changed."""
+    moments = [record.get('opened_at'), record.get('closed_at')]
+    for turn in turns:
+        moments += [turn.get('created_at'), turn.get('dispatched_at'), turn.get('ended_at')]
+    moments = [m for m in moments if isinstance(m, (int, float)) and not isinstance(m, bool)]
+    return max(moments) if moments else None
+
+
+def _message_text(conn, source):
+    """The owner's words of a turn, as its intake source keeps them, or None."""
+    row = conn.execute('SELECT kind, data FROM entities WHERE id=?', (str(source),)).fetchone() if source else None
+    return json.loads(row[1]).get('text') if row and row[0] == 'intake_source' else None
+
+
 # Preserve the API authority's public check; all writers use the same implementation.
 authority_problem = LOCK.authority_problem
 
@@ -181,8 +234,10 @@ class ApiAuthority:
     def __init__(self, store, membership, conn, *, ids, domain, edge, intake, settlement, credentials,
                  workflows=None, publication=None, notify=None, clock=time.time, observe=None, authority_lock=None,
                  catalog=None, mcp_credentials=None, records=None, configurations=None, team_routes=None,
-                 backlog=None, dispatches=None, accounts=None, stop=None):
+                 backlog=None, dispatches=None, accounts=None, stop=None, conversations=None):
         self.S, self.CM, self.conn = store, membership, conn
+        # VELDO-0178: control_conversation.Conversations on `conn`, which sends the owner's conversation commands.
+        self.conversation_commands = conversations
         # VELDO-0131: control_backlog.Backlog, control_dispatch.Dispatches and control_accounts.Accounts on `conn`,
         # and `stop(dispatch_id, reason)`, the runner's in-process ask (control_launch.stop_requester), when held.
         self.backlog, self.dispatches, self.accounts, self.stop = backlog, dispatches, accounts, stop
@@ -262,7 +317,7 @@ class ApiAuthority:
 
     def _read_scope(self, principal):
         member = AC.membership_entry(self.CM.authority_state(self.S, self.conn)['membership'], principal)
-        return MO.reader_scope(self.conn, self.CM, member.get('scope'))
+        return MO.reader_scope(self.conn, self.CM, member.get('scope'), principal=principal)
 
     def _observe_read(self, principal, model, scope, answer, **extra):
         event = dict(schema=SCHEMA, operation='read', principal=principal, model=model,
@@ -319,8 +374,23 @@ class ApiAuthority:
             return answer
         return self._answer(principal, produce)
 
+    def _record_scope(self, principal, member, contract):
+        """Why `principal` may not read the record of the run `contract` binds, or None (VELDO-0141, VELDO-0164,
+        VELDO-0178): a conversation turn's record by its conversation's owner, a project run's by the member's scope
+        over its project, and a run with neither by nobody."""
+        source = contract.get('source') if isinstance(contract.get('source'), dict) else {}
+        if contract.get('subject_kind') == 'conversation':
+            owner = SCOPE.conversation_owner(self.conn, source.get('conversation'))
+            return None if owner is not None and owner == principal else OWNER_REFUSAL
+        project = (contract.get('reservation') or {}).get('project')
+        if project is None:
+            return 'unauthorized:out_of_scope'
+        return None if self.CM.scope_covers(member.get('scope'), project) else 'unauthorized:out_of_scope'
+
     def record(self, principal, dispatch_id, after, limit=RECORD_LIMIT):
         """One run's execution record after `after`, at most `limit` lines, for `principal` (VELDO-0141)."""
+        turn = {}
+
         def produce():
             self._authority()
             if not isinstance(dispatch_id, str) or not dispatch_id or type(after) is not int or after < 0:
@@ -330,10 +400,17 @@ class ApiAuthority:
             contract = (dispatch or {}).get('contract') or {}
             reservation = contract.get('reservation') or {}
             member = AC.membership_entry(self.CM.authority_state(self.S, self.conn)['membership'], principal)
-            if not self.CM.scope_covers(member.get('scope'), reservation.get('project', '*')):
-                raise ER.Refused('unauthorized:out_of_scope', 'the run\'s project is outside the member\'s scope')
             if dispatch is None:
+                # An unknown run reads as out of scope to a member whose scope is not universal, as before.
+                if not self.CM.scope_covers(member.get('scope'), '*'):
+                    raise ER.Refused('unauthorized:out_of_scope', 'the run\'s project is outside the member\'s scope')
                 raise ER.Refused('missing_evidence:unknown_run', 'no such run')
+            source = contract.get('source') if isinstance(contract.get('source'), dict) else {}
+            if contract.get('subject_kind') == 'conversation':
+                turn.update(conversation=source.get('conversation'), turn=source.get('turn'))
+            refusal = self._record_scope(principal, member, contract)
+            if refusal:
+                raise ER.Refused(refusal, 'the run is outside the member\'s scope')
             if self.records is None:
                 raise ER.Refused('unavailable_service:records', 'no records directory on this authority')
             ended = dispatch.get('state') in ENDED
@@ -342,14 +419,83 @@ class ApiAuthority:
             header = kept['header']
             if header.get('contract_digest') != dispatch.get('contract_digest'):
                 raise ER.Refused('unknown_outcome:record_binding', 'the record is bound to another run')
+            # VELDO-0178: a header naming a conversation or turn names the ones the run's contract binds.
+            if turn and any(key in header and header[key] != turn[key] for key in ('conversation', 'turn')):
+                raise ER.Refused('unknown_outcome:record_binding', 'the record is bound to another turn')
             lines = kept['lines']
-            return {'schema': RECORD_SCHEMA, 'dispatch_id': dispatch_id, 'after': after,
-                    'run': {'unit': contract.get('unit'), 'station': contract.get('station'),
-                            'project': reservation.get('project'), 'account': reservation.get('account'),
-                            'host': header.get('host'), 'state': dispatch.get('state'), 'process': dispatch.get('process')},
+            run = {'unit': contract.get('unit'), 'station': contract.get('station'),
+                   'project': reservation.get('project'), 'account': reservation.get('account'),
+                   'host': header.get('host'), 'state': dispatch.get('state'), 'process': dispatch.get('process')}
+            if turn:
+                run.update(turn)
+            return {'schema': RECORD_SCHEMA, 'dispatch_id': dispatch_id, 'after': after, 'run': run,
                     'lines': lines, 'cursor': lines[-1]['seq'] if lines else after, 'total': kept['total'],
                     'ended': ended, 'committed': committed}
+        answer = self._answer(principal, produce)
+        if turn:
+            # VELDO-0178: each read of a turn's record, joined to its conversation; never a line of it.
+            refusal = None if answer.get('ok') else answer.get('reason')
+            event = dict(schema=SCHEMA, operation='turn_record', principal=principal, dispatch=dispatch_id,
+                         conversation=turn['conversation'], turn=turn['turn'], after=after,
+                         outcome='served' if refusal is None else 'refused', refusal=refusal,
+                         lines=len(answer.get('lines') or ()))
+            self.observations.append(event)
+            self.observe(event)
+            key = 'turn_records' if refusal is None else 'turn_records_refused:' + str(refusal)
+            self.counts[key] = self.counts.get(key, 0) + 1
+        return answer
+
+    def conversations(self, principal, conversation=None):
+        """VELDO-0178 AC1: the reader's own conversations, or one of his with every turn, read now."""
+        def produce():
+            CVM = _conversation_module()
+            mark = MO.watermark(self.conn)
+            if conversation is None:
+                found = []
+                for (raw,) in self.conn.execute('SELECT data FROM entities WHERE kind=? ORDER BY id', (CVM.KIND,)):
+                    record = json.loads(raw)
+                    if record.get('owner') != principal:
+                        continue
+                    turns = _turns(self.conn, CVM, record.get('id'))
+                    found.append({'id': record.get('id'), 'status': record.get('status'), 'role': record.get('role'),
+                                  'version': record.get('version'), 'turns': len(turns),
+                                  'last_activity': _last_activity(record, turns)})
+                found.sort(key=lambda c: (-(c['last_activity'] or 0), c['id'] or ''))
+                answer = {'schema': CONVERSATIONS_SCHEMA, 'conversations': found, 'watermark': mark, 'freshness': 'live'}
+                self._observe_conversations(principal, None, 'listed', None, len(found))
+                return answer
+            if not isinstance(conversation, str) or not conversation:
+                raise CVM.Refused('invalid_input:conversation', 'a conversation id')
+            row = self.conn.execute('SELECT kind, data FROM entities WHERE id=?',
+                                    (CVM.conversation_id(conversation),)).fetchone()
+            if not row or row[0] != CVM.KIND:
+                self._observe_conversations(principal, conversation, 'refused', 'invalid_input:conversation:unknown')
+                raise CVM.Refused('invalid_input:conversation:unknown', 'no such conversation')
+            record = json.loads(row[1])
+            if record.get('owner') != principal:
+                self._observe_conversations(principal, conversation, 'refused', OWNER_REFUSAL)
+                raise CVM.Refused(OWNER_REFUSAL, 'the conversation is another member\'s')
+            turns = _turns(self.conn, CVM, conversation)
+            served = [{'sequence': t.get('sequence'), 'state': t.get('state'),
+                       'message': _message_text(self.conn, t.get('intake_command')), 'reply': t.get('reply'),
+                       'outcome': t.get('outcome'), 'dispatch_id': t.get('dispatch_id'), 'account': t.get('account'),
+                       'created_at': t.get('created_at'), 'ended_at': t.get('ended_at')} for t in turns]
+            view = {k: record.get(k) for k in ('id', 'status', 'role', 'version', 'opened_at', 'closed_at', 'project')}
+            view.update(turns=len(turns), last_activity=_last_activity(record, turns),
+                        attachments=[{k: a.get(k) for k in ('project', 'commit', 'at')}
+                                     for a in record.get('attachments') or []])
+            self._observe_conversations(principal, conversation, 'served', None, len(served))
+            return {'schema': CONVERSATIONS_SCHEMA, 'conversation': view, 'turns': served, 'watermark': mark,
+                    'freshness': 'live'}
         return self._answer(principal, produce)
+
+    def _observe_conversations(self, principal, conversation, outcome, refusal, count=0):
+        event = dict(schema=SCHEMA, operation='conversations', principal=principal, conversation=conversation,
+                     outcome=outcome, refusal=refusal, count=count)
+        self.observations.append(event)
+        self.observe(event)
+        key = 'conversation_reads:' + outcome + ('' if refusal is None else ':' + refusal)
+        self.counts[key] = self.counts.get(key, 0) + 1
 
     def feed(self, after, limit=256):
         """The same records for the API edge's own journal follow (ending sessions a record revokes); the
@@ -378,7 +524,10 @@ class ApiAuthority:
         out = []
         for seq, command, digest, changes, committed in rows:
             visible = changes
-            if scope is not None and not scope.universal:
+            # VELDO-0178: a conversation's records are withheld from everyone but its owner, whatever the scope.
+            if scope is not None and (not scope.universal or any(
+                    scope.owned((change or {}).get('kind'), (change or {}).get('data') or {}) is not None
+                    for change in changes.values())):
                 visible = {}
                 reasons = []
                 for eid, change in changes.items():
@@ -393,7 +542,8 @@ class ApiAuthority:
                         scope.withheld[reason] += 1
                         reasons.append(reason)
                 if not visible:
-                    scope.records['out_of_scope' if 'out_of_scope' in reasons else 'no_project'] += 1
+                    scope.records['out_of_scope' if 'out_of_scope' in reasons else
+                                  SCOPE.OWNER if SCOPE.OWNER in reasons else 'no_project'] += 1
                     continue
             revocations = {}
             for eid, change in visible.items():
@@ -497,6 +647,8 @@ class ApiAuthority:
             return self._save_workflow(a)
         if a['operation'] in WORK_OPERATIONS:
             return self._work(a, packet, provenance)
+        if a['operation'] in CONVERSATION_OPERATIONS:
+            return self._conversation(a)
         done = self.credentials.revoke_as_member(a['principal'], a['parameters']['credential_id'], provenance)
         if done['refusal']:
             return {'outcome': 'refused', 'reason': '%s:%s' % (CLASSES.get(done['error_class'], 'unknown_outcome'), done['refusal'])}
@@ -589,6 +741,39 @@ class ApiAuthority:
                 'missing_authority') else 'invalid_input' if str(c).startswith('invalid_input') else 'unknown_outcome')
             return {'outcome': 'refused', 'reason': _named(code, classify)}
 
+    def _conversation(self, a):
+        """VELDO-0178: the owner's conversation command, by control_conversation.Conversations, as the verified member
+        on the version he saw; its command id is the API request id."""
+        p, principal, request = a['parameters'], a['principal'], a['request_id']
+        if self.conversation_commands is None:
+            return {'outcome': 'refused', 'reason': 'unavailable_service:conversations'}
+        CVM = _conversation_module()
+        try:
+            if a['operation'] == 'open_conversation':
+                identity = 'c-' + hashlib.sha256(('api/' + request).encode()).hexdigest()[:20]
+                record = self.conversation_commands.open(identity, owner=principal, role=p.get('role') or CVM.DEFAULT_ROLE,
+                                                 intake_digest=AS.digest(a), command_id=request)
+                outcome = 'opened'
+            elif a['operation'] == 'close_conversation':
+                record = self.conversation_commands.close(p['conversation'], p['version'], owner=principal, command_id=request)
+                outcome = 'closed'
+            elif a['operation'] == 'change_conversation_role':
+                record = self.conversation_commands.change_role(p['conversation'], p['version'], p['role'], owner=principal,
+                                                        command_id=request)
+                outcome = 'role_changed'
+            else:
+                record = self.conversation_commands.attach_project(p['conversation'], p['version'], p['project'],
+                                                           owner=principal, command_id=request)
+                outcome = 'attached'
+        except Exception as error:  # noqa: BLE001 - the conversation authority's named refusal (its own class)
+            code = getattr(error, 'code', None)
+            if not isinstance(code, str):
+                raise
+            return {'outcome': 'refused', 'reason': _named(code, lambda c: 'unknown_outcome')}
+        record = record or {}
+        return {'outcome': outcome, 'conversation': record.get('id'), 'version': record.get('version'),
+                'status': record.get('status'), 'role': record.get('role'), 'project': record.get('project')}
+
     def _save_workflow(self, a):
         """VELDO-0132's save for the verified principal: its transaction judges the editor and the base."""
         p = a['parameters']
@@ -614,7 +799,8 @@ class ApiAuthority:
                 'save_workflow': WF.SAVE, MC.SAVE: MC.SAVE, CV.SET: CV.SET, CV.DELETE: CV.DELETE,
                 'save_capability_configuration': 'save_agent_configuration', 'propose_team': 'team_operation',
                 'save_default_team': 'save_default_team_revision', 'reprioritize_backlog': BL.OPERATION,
-                'stop_worker': DP.OPERATION, 'set_account_cap': AA.OPERATION}
+                'stop_worker': DP.OPERATION, 'set_account_cap': AA.OPERATION,
+                **{operation: 'conversation_command' for operation in CONVERSATION_OPERATIONS}}
 
     def _observe(self, about, ok, refusal, result):
         self.counts['accepted' if ok else 'refused'] += 1
