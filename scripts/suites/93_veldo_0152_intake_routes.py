@@ -368,9 +368,24 @@ else:
                         q = intake.question(p.get('question_id')) or {}
                         check('route/asked-only-when-unclear', 'offered projects', q.get('candidates') == ['bcengi', 'other', 'shared', 'a new project']
                               and (q.get('delivery') or {}).get('channel') == ('api' if channel == 'api_request' else 'telegram_chat'))
-                        answer = send(channel, 'other' if channel == 'api_request' else 'OTH-12', clarifies=pid,
-                                      reply=(q.get('delivery') or {}).get('message_id'))
-                        check('route/answers', 'offered name or ticket key', proposal(answer).get('project') == 'other'
+                        if channel == 'api_request':
+                            answer = send(channel, 'other', clarifies=pid)
+                        else:
+                            # VELDO-0181: a Telegram message's question is a decision request; his answer to its
+                            # presentation (here his inline answer in the UI) settles it, and the PM cycle's intake
+                            # applies the settled choice.
+                            shown = f['presenter'].current(q.get('request') or 'none') or {}
+                            body = dict(ids, schema='veldo.settlement_api_answer/v1', edge='api-edge',
+                                        answer_id=f['next_id']('route-answer'), principal='olga',
+                                        request_id=q.get('request'), request_version=1,
+                                        presentation_id=shown.get('presentation_id'),
+                                        presentation_digest=shown.get('brief_digest'),
+                                        presentation_version=shown.get('presentation_version'),
+                                        choice='accept project other', rationale='OTH-12 is the other project.')
+                            f['settlement'].api_answer({'answer': body, 'signature': f['sign_as'](
+                                'api-edge', S.canonical_bytes(body))})
+                            answer = (line.pm_cycles.services['intake'].route_answers() or [{}])[0]
+                        check('route/answers', 'offered name or settled choice', proposal(answer).get('project') == 'other'
                               and intake.proposal(pid).get('state') == 'ROUTED')
                     api_authority = load('v152_api_authority', mods / 'control_api_authority.py')
                     with (Path(f['db']).parent / api_authority.LOCK_NAME).open('a+') as authority_lock:
