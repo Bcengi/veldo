@@ -1,11 +1,11 @@
 Case: memory184-form-unqualified
-run: python3 scripts/check_gate_mutations.py with the case option naming memory184-form-unqualified, alone, at 0b3b30f6; exit 0
-stage: status=passed registered=1 executed=1 workers=3 elapsed=102.5s
+run: python3 scripts/check_gate_mutations.py with the case option naming memory184-form-unqualified, alone, at d4f45bda; exit 0
+stage: status=passed registered=1 executed=1 workers=3 elapsed=104.4s
 module control_engine_claude.py, rows ['AC1/qualified'], replacement count 1
 old: "    if entry.get('file_memory') != FILE_MEMORY or BASELINE['settings_option'] != FILE_MEMORY['settings_option']:\n"
 new: "    if False:  # defect: a version without the qualified form launches a run that lists the item\n"
-baseline: 41 assertions, failed rows [], target rows {'AC1/qualified': [True]}
-noop: 41 assertions, failed rows [], target rows {'AC1/qualified': [True]}
-mutant: 41 assertions, failed rows ['VELDO-0184 AC1/qualified'], target rows {'AC1/qualified': [False]}
+baseline: 42 assertions, failed rows [], target rows {'AC1/qualified': [True]}
+noop: 42 assertions, failed rows [], target rows {'AC1/qualified': [True]}
+mutant: 42 assertions, failed rows ['VELDO-0184 AC1/qualified'], target rows {'AC1/qualified': [False]}
 invalid results: []
-mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=102.523s
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=104.408s

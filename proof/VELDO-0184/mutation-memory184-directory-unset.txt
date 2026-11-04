@@ -1,11 +1,11 @@
 Case: memory184-directory-unset
-run: python3 scripts/check_gate_mutations.py with the case option naming memory184-directory-unset, alone, at 0b3b30f6; exit 0
-stage: status=passed registered=1 executed=1 workers=3 elapsed=103.4s
+run: python3 scripts/check_gate_mutations.py with the case option naming memory184-directory-unset, alone, at d4f45bda; exit 0
+stage: status=passed registered=1 executed=1 workers=3 elapsed=104.3s
 module control_engine_claude.py, rows ['AC1/memory-path'], replacement count 1
 old: "    settings[FILE_MEMORY['settings']['directory']] = handed['directory']\n"
 new: "    pass  # defect: autoMemoryDirectory left unset\n"
-baseline: 41 assertions, failed rows [], target rows {'AC1/memory-path': [True]}
-noop: 41 assertions, failed rows [], target rows {'AC1/memory-path': [True]}
-mutant: 41 assertions, failed rows ['VELDO-0184 AC1/settings', 'VELDO-0184 AC1/memory-path', 'VELDO-0184 AC2/configuration', 'VELDO-0184 AC2/later-read', 'VELDO-0184 AC3/tool-lines'], target rows {'AC1/memory-path': [False]}
+baseline: 42 assertions, failed rows [], target rows {'AC1/memory-path': [True]}
+noop: 42 assertions, failed rows [], target rows {'AC1/memory-path': [True]}
+mutant: 42 assertions, failed rows ['VELDO-0184 AC1/settings', 'VELDO-0184 AC1/memory-path', 'VELDO-0184 AC2/configuration', 'VELDO-0184 AC2/later-read', 'VELDO-0184 AC3/tool-lines'], target rows {'AC1/memory-path': [False]}
 invalid results: []
-mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=103.370s
+mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=104.341s

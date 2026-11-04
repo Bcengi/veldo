@@ -3,9 +3,10 @@
 Base 7b427ba7. Commits: e9c72a72 (the item and control_memory_file), edc29a35 (each engine's form, its byte evidence
 and the qualification records), a0f219c5 (the launch), cddb829f (the assistant roles list the item), 19d10614 (suite
 131 and its red run at the base), 86fabe6d (a receiver built without its constructor; census-clean labels), 0b3b30f6
-(seven mutation cases), and the proof commit after it.
+(seven mutation cases), and the proof commit after it. Fix round 1: 1d7b358f (the replay), d3ae78e4 (the qualify
+command's Claude Code record), d4f45bda (suite 131 reads no engine binary), and its proof commit.
 
-Test: scripts/suites/131_veldo_0184_file_memory.py, fifteen rows, registered in scripts/suites/manifest.json and
+Test: scripts/suites/131_veldo_0184_file_memory.py, sixteen rows (AC1/replay added in fix round 1), registered in scripts/suites/manifest.json and
 requires.json. It runs a real signed authority with the production conversation Line and real receiver subprocesses
 over fake pinned engines (VELDO-0174's, extended here), and VELDO-0182's fixture memory manifest in a temporary
 directory. The fake Claude Code applies auto memory the way the pinned binary's bytes say it does. The fake Codex
@@ -14,6 +15,9 @@ keeps its workspace-write sandbox. No real engine, login, memory store or paid A
 Evidence files:
 - red-before-7b427ba7.txt: suite 131 at the base, 14 of 15 rows red by assertion. AC1/without holds before and
   after: a role without the item kept auto memory off already.
+- red-before-replay.txt, red-before-qualify.txt (fix round 1): suite 131 against the files before each fix, red on
+  AC1/replay and on AC1/qualified alone.
+- suite-126.txt (fix round 1): suite 126 run alone, and the attribution of what it finds different.
 - suites.txt: every suite run alone, and its result.
 - falsifiers.txt (made by falsify.py): each spec falsifier applied to the checkout, the row's own words, restored.
 - mutation-<case>.txt: each case run alone by the gate's mutation driver. Baseline and no-op green, mutant red on
@@ -45,7 +49,7 @@ Built:
   as it does for a role-bound run. Every `memory_paths` value must be the handed directory, else the run stops
   binding_mismatch:engine_memory and no prompt is written.
 
-Rows: AC1/role-item, AC1/settings, AC1/memory-path (two turns at once on account-claude_code-1 and -2, the same
+Rows: AC1/role-item, AC1/replay (the identical signed save of a role listing the item replays), AC1/settings, AC1/memory-path (two turns at once on account-claude_code-1 and -2, the same
 record directory on both), AC1/without, AC1/qualified, AC1/mismatch-stop (a binary keeping memory in the account
 profile is stopped before its prompt), AC1/absent.
 
@@ -98,7 +102,22 @@ Falsifier (falsifiers.txt, mutation-memory184-no-index-digest.txt): with the ind
 line, AC3/loaded-at-launch is red on the missing digest. The line keeps its directory, form, index, revision and
 qualification and has no index_digest.
 
+## Fix round 1 (OPEN items 1 to 3; the lead widened the footprint, no requirement added)
+
+- control_owner_revisions.py (both copies): a committed role save is rebuilt with its `file_memory` item when it
+  carries one, so a replay of the identical signed save reads as replayed. AC1/replay runs VELDO-0203's writer on its
+  own temporary authority. It was red before on command_content_conflict and is green after.
+- control_engine_claude.py FILE_MEMORY_PATTERNS and file_memory_missing (both copies): the extractor's literals with
+  the minified names left open. qualify.py's claude_record (both copies) lists the form only when every pattern is
+  found, else it writes `file_memory_unqualified` naming the missing patterns. AC1/qualified gains two checks on
+  bundles made of the extracted code: red before, green after. Every pattern is found once in 2.1.281 and in
+  2.1.317 (read only). Suite 126 reproduces both Claude Code records. Its remaining reds are attributed in
+  suite-126.txt and OPEN item 3.
+- The seven mutation cases were rerun alone at d4f45bda: baseline and no-op green, mutant red on the target row.
+  An earlier run at d3ae78e4 had an invalid baseline, because the suite read the pinned binary from the home
+  directory, which the confined worker does not have. That check was removed (d4f45bda).
+
 ## Other suites
 
-suites.txt: 123, 127, 128, 129, 130 and 131 green alone at 0b3b30f6. Suite 86 has only its two stale live rows
-red. 105, 80, 81, 82, 87, 125, 79 and 78 are green alone. Suite 126 is in OPEN items 2 and 3.
+suites.txt: 123, 127, 128, 129, 130 and 131 green alone at 0b3b30f6, and again in fix round 1 (with 95, 80 and 125). Suite 86 has only its two stale live rows
+red. 105, 80, 81, 82, 87, 125, 79 and 78 are green alone. Suite 126 is in suite-126.txt and OPEN item 3.
