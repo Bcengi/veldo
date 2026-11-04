@@ -1,0 +1,48 @@
+Fix round 1, each suite alone: python3 scripts/selftest.py --suite <name> (inside systemd-run --user --scope -p MemoryMax=8G -p MemorySwapMax=0), at the round's code (a6e534af and later). Summary lines and every failed row. Suite 132 prints its refused-route cycle results (AC2/conversation-refused expects them) with the "detail" prefix; no row failed.
+
+== 131_veldo_0175_conversation_replies
+  131_veldo_0175_conversation_replies             16 passed    3.94s
+selftest (PARTIAL, 1 of 194 suites): 42 passed, 0 failed in 3.94s
+
+== 132_veldo_0175_conversation_routes
+  VELDO-0175 detail: cycle proposal_refused:intake_proposal:08f0281313562c3d9d9d02d18c36bad2 [{'name': 'intake_proposal:08f0281313562c3d9d9d02d18c36bad2', 'result': {'ok': False, 'outcome': 'refused', 'proposal_id': 'intake_proposal:08f0281313562c3d9d9d02d18c36bad2', 'reason': 'invalid_input:route:conversation'}, 'type': 'route'}]
+  VELDO-0175 detail: cycle proposal_refused:intake_proposal:bc49bc33fe870b2597be089d75418e5a [{'name': 'intake_proposal:bc49bc33fe870b2597be089d75418e5a', 'result': {'ok': False, 'outcome': 'refused', 'proposal_id': 'intake_proposal:bc49bc33fe870b2597be089d75418e5a', 'reason': 'invalid_input:route:conversation'}, 'type': 'route'}]
+  VELDO-0175 detail: cycle proposal_refused:intake_proposal:0d20217279a15feb23be01838f8564eb [{'name': 'intake_proposal:0d20217279a15feb23be01838f8564eb', 'result': {'ok': False, 'outcome': 'refused', 'proposal_id': 'intake_proposal:0d20217279a15feb23be01838f8564eb', 'reason': 'invalid_input:route:conversation'}, 'type': 'route'}]
+  132_veldo_0175_conversation_routes              18 passed   19.15s
+selftest (PARTIAL, 1 of 194 suites): 44 passed, 0 failed in 19.15s
+
+== 128_veldo_0177_conversation_workspace
+  128_veldo_0177_conversation_workspace           15 passed    3.29s
+selftest (PARTIAL, 1 of 194 suites): 41 passed, 0 failed in 3.29s
+
+== 123_veldo_0174_conversations
+  123_veldo_0174_conversations                    38 passed   12.20s
+selftest (PARTIAL, 1 of 194 suites): 64 passed, 0 failed in 12.20s
+
+== 129_veldo_0177_assistant_setup
+  129_veldo_0177_assistant_setup                   4 passed    3.91s
+selftest (PARTIAL, 1 of 194 suites): 30 passed, 0 failed in 3.91s
+
+== 130_veldo_0176_conversation_history
+  130_veldo_0176_conversation_history             17 passed   14.45s
+selftest (PARTIAL, 1 of 194 suites): 43 passed, 0 failed in 14.45s
+
+== 127_veldo_0231_run_flags
+  127_veldo_0231_run_flags                        17 passed   34.37s
+selftest (PARTIAL, 1 of 194 suites): 43 passed, 0 failed in 34.37s
+
+== 68_veldo_0126_intake
+  68_veldo_0126_intake                            18 passed    1.73s
+selftest (PARTIAL, 1 of 194 suites): 44 passed, 0 failed in 1.73s
+
+== 68_veldo_0134_acceptance
+  68_veldo_0134_acceptance                        27 passed    1.96s
+selftest (PARTIAL, 1 of 194 suites): 53 passed, 0 failed in 1.96s
+
+== 68_veldo_0136_hints
+  68_veldo_0136_hints                              7 passed    4.95s
+selftest (PARTIAL, 1 of 194 suites): 33 passed, 0 failed in 4.95s
+
+== 68_veldo_0137_policy_revision
+  68_veldo_0137_policy_revision                    2 passed    0.21s
+selftest (PARTIAL, 1 of 194 suites): 28 passed, 0 failed in 0.21s

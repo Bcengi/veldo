@@ -204,3 +204,9 @@ drives intake (both are real defects in what this specification promises, fixed 
 because VELDO-0177's attach clone fails when the project's branch has the fresh repository's initial branch
 name; scripts/mutation_case_inputs.json for the new modules' reuse declarations. Acceptance criteria are
 unchanged.
+
+2026-11-04: fix round 1 (proof/VELDO-0175/OPEN.md items 1, 3 and 4): messages.send carries the conversation field
+through the API assertion; a turn's payload carries the owner's words from its intake source; the running
+service's channel pass hands acquired Telegram messages to intake once each; the attach clone takes a branch with a
+fresh repository's initial branch name; the seventeen mutation-case declarations name the new modules. Acceptance
+criteria unchanged.
