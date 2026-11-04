@@ -1804,6 +1804,30 @@
    ],
    "regions": "Sixteen rows (VELDO-0178): the published table's five conversation routes with their exact fields and handlers, each command route VELDO-0174's typed command, messages.send's conversation field; the owner's open through the API, his message naming the conversation its first turn, the colleague's refused; the owner's list (id, status, role, turn count, last activity, his own only) and one conversation served with every turn's sequence, message, reply, outcome, dispatch id and account; a colleague of the same domain over the universal scope refused the served conversation, its commands and its turn's dispatch by name (missing_authority:conversation_owner), listing only his own; set_role, attach_project and close on the owner's versions, a stale version refused stale_version and an unknown conversation invalid_input:conversation:unknown with nothing written; the owner's feed carrying opened, changed, turn waiting, started and ended, and closed (live on his open stream), the colleague's none of them; route calls observed and counted, joined to their commands, never text (AC1); a turn whose fake engine prints a tool call, a command output with the account's resolved subscription token and an error line kept whole in the execution record with the value replaced before the scanner, the header naming the conversation and turn, served to the owner from a cursor live, on the live stream to the last line through the receiver's hints, and after the run, refused to the colleague live and after, a run with neither project nor conversation refused to every member, turn record reads observed and refusals counted (AC2).",
    "requires_note": "Only ROOT, expect and fast_temp. A real signed SQLite authority (VELDO-0073's support) with the owner and a universal-scope colleague; the production ControlApi over the production ApiAuthority holding the authority's lock, its writes assertions signed by the api edge's real key (the api channel edge enrolled by the steward's signed command), its feed VELDO-0051's publication, its sessions created for credentials the store holds (the ceremonies are suite 71's); the production intake and conversation authority; VELDO-0174's conversation Line with a real receiver subprocess over a fake pinned Claude Code (support/v174_journey.py) with a fixture subscription token, and the receiver's record hints on a socket of the suite's own. No real engine, login, Telegram, user unit or network. Writes only temporary fixtures."
+  },
+  {
+   "name": "134_veldo_0179_conversation_screens",
+   "file": "134_veldo_0179_conversation_screens.py",
+   "requires": [
+    "134_veldo_0179_conversation_screens"
+   ],
+   "regions": "Seven rows (VELDO-0179 AC1, AC2): unit/conversations, the conversation screens' Vitest specs; ac1/journey, New conversation through conversations.open, two messages through messages.send with the conversation field and both replies shown, a turn the owner sends from Telegram and its reply appearing without a reload, the role control (the default team's roles, the current one marked) through conversations.set_role, the project control (his scope's projects) through conversations.attach_project and Close through conversations.close; ac1/as-written, a message and a reply holding markup shown as text; ac1/stale-version, a role change on an older version refused stale_version beside the role control with nothing written; ac1/list, open conversations first, then closed, each with its opening words, role and last activity; ac1/api-only, every request a published route of this origin, the client log with route, outcome and latency and no text, metrics and traces joined; ac2/terminal, the running turn's terminal one tap from the conversation, its tool call, command output with its redaction mark and error line live, then the whole record with its line count and digest, every line matching the record in sequence, stream, receive time and redaction marks.",
+   "requires_note": "Only ROOT and expect. Copies engine/ui into scratch with its production copies (PRODUCTION) laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script, runs its conversation Vitest specs and the Playwright browser tests of engine/ui/e2e/conversations.spec.ts in system Chrome against engine/ui/e2e/conversation_harness.py (VELDO-0131's factory harness with the production conversation authority, a fake engine recording through the real Recorder and a fake Telegram edge on the loopback Bot API stand-in, from the checkout's .veldo). No real engine, login or Telegram. Writes only temporary files.",
+   "resources": {
+    "ui_browser": 1
+   }
+  },
+  {
+   "name": "135_veldo_0179_conversation_layout",
+   "file": "135_veldo_0179_conversation_layout.py",
+   "requires": [
+    "135_veldo_0179_conversation_layout"
+   ],
+   "regions": "Nine rows (VELDO-0179 AC3): ac3/dependency-policy and ac3/stack, the lockfile, package.json and dependency policy against VELDO-0131 AC4's origin, license and tier rules and the owner's stack; ac3/served-assets, the conversation screens' built assets with no rejected library; ac3/screens-360, -390, -1280 and -1440, the list and the conversation screen in loading, empty, waiting, running, error and populated states (and a turn's terminal) with no clipped primary action, overlap or page-wide overflow, 44 px phone targets, Send reachable above the phone keyboard, axe and no policy violation; ac3/keyboard-desktop and ac3/touch-phone, the owner's path by keyboard only with visible focus and by touch with 44 px targets and named controls.",
+   "requires_note": "Only ROOT and expect. As suite 134: a scratch copy of engine/ui with its production copies, the checkout's node_modules (or npm ci), its own build, the checkout's .veldo/control_api_ui.dependency_problems, and the Playwright browser tests of engine/ui/e2e/conversation-layout.spec.ts in system Chrome against engine/ui/e2e/conversation_harness.py. No real engine, login or Telegram. Writes only temporary files.",
+   "resources": {
+    "ui_browser": 1
+   }
   }
  ],
  "resource_capacities": {
