@@ -606,6 +606,7 @@ class ProjectCycles:
             return workers[0] if served(project) and workers else None
         factory = getattr(self, 'factory_line', lambda: False)()
         return CP.follow_up(self.conn, new_projects=self.services.get('new_projects') if factory else None,
+                            intake=self.services.get('intake') if factory else None,
                             objectives=self.services.get('objectives'), pm=manager, pm_sign=self.command_sign,
                             ids=lambda project: (dict(self.services['objectives'].ids)
                                                  if served(project) and 'objectives' in self.services else None),

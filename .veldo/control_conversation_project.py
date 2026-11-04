@@ -369,12 +369,25 @@ def pending(conn):
     return out
 
 
-def follow_up(conn, *, new_projects=None, objectives=None, pm=None, pm_sign=None, ids=None, observe=None):
-    """Carry each pending conversion on from what intake recorded of his command, and nothing else: a new project's
-    VELDO-0143 proposal from the command's own document, and an existing project's objective proposed by its PM
-    and accepted by his command (VELDO-0150's own-message acceptance). Returns what was done."""
+def unrouted(conn):
+    """The conversion proposals intake recorded from his command whose route was not carried out yet (CONVERTING)."""
+    return [eid for eid, raw in conn.execute("SELECT id, data FROM entities WHERE kind='intake_proposal' ORDER BY id")
+            if (data := json.loads(raw)).get('state') == CONVERTING and conversion_of(data) is not None]
+
+
+def follow_up(conn, *, new_projects=None, objectives=None, pm=None, pm_sign=None, ids=None, observe=None, intake=None):
+    """Carry each pending conversion on from what intake recorded of his command, and nothing else: a recorded
+    conversion whose route was not carried out (its routing command refused for a reason that may pass) routed again
+    by intake; a new project's VELDO-0143 proposal from the command's own document; and an existing project's
+    objective proposed by its PM and accepted by his command (VELDO-0150's own-message acceptance). Returns what was
+    done."""
     OB = _organ('control_objective')
     done = []
+    if intake is not None:
+        for pid in unrouted(conn):
+            result = intake._converted(pid, None)
+            done.append({'kind': 'conversation_project', 'operation': 'follow_up', 'step': 'route', 'proposal_id': pid,
+                         'outcome': result.get('outcome'), 'refusal': None, 'reason': result.get('reason')})
     for item in pending(conn):
         conversion, pid = item['conversion'], item['proposal_id']
         event = {'kind': 'conversation_project', 'operation': 'follow_up', 'step': item['kind'], 'proposal_id': pid,
