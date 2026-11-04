@@ -12134,6 +12134,26 @@ def cases():
         also=[("    head = kind is not None and set(ASSISTANTS) <= set(((saved or {}).get('team') or {}).get('roles') or {})\n",
                "    head = False  # defect: the default team step always runs\n")])
 
+    # VELDO-0183: the owner's memory servers as catalog servers over one store; each spec falsifier as one exact edit,
+    # and the guard the one-opener claim implies.
+    suite183 = '130_veldo_0183_memory_servers.py'
+    add(183, 'roles183-no-claude-mem', suite183, 'control_memory_servers.py',
+        "            for server, _ in SERVERS]\n",
+        "            for server, _ in SERVERS if server != 'claude-mem']  # defect: the roles lack claude-mem\n",
+        ['AC1/init'])
+    add(183, 'catalog183-paid-api-accepted', suite183, 'control_mcp_catalog.py',
+        "    return next((name for name in named if name in paid), None)\n",
+        "    return None  # defect: a paid-API key is accepted as a server's credential\n", ['AC2/paid-api'])
+    add(183, 'servers183-ava-opens-store', suite183, 'control_memory_servers.py',
+        "        found[server] = base\n",
+        "        if server == 'ava-memory':  # defect: mcp_server.py opens the store itself, as .mcp.json does today\n"
+        "            base.update(command=parts[part]['interpreter'],\n"
+        "                        arguments=[str(Path(parts[part]['code']) / 'mcp_server.py')])\n"
+        "        found[server] = base\n", ['AC4/one-opener'])
+    add(183, 'store183-open-unchecked', suite183, 'control_memory_store.py',
+        "    others = holders(data, {os.getpid()})\n",
+        "    others = set()  # defect: a store another process holds open is opened anyway\n", ['AC4/open-refused'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

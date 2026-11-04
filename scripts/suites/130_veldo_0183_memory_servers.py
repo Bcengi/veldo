@@ -540,12 +540,21 @@ for proc, _, _ in servers.values():
                   and (root / 'memory' / 'copies' / part).is_dir())
         server_pids = {part: manager.pid(MS.unit_name(part)) for part in MS.STORES}
         print('  VELDO-0183 store servers:', server_pids)
-        # A second opener: another store server for the same store, and a store held open by another process.
+        # A second opener: another store server for the same store, and a store held open by another process. A
+        # start that is not refused serves until stopped, so each is given 20 seconds and then stopped.
+        def start(argv):
+            proc = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+            try:
+                out, _ = proc.communicate(timeout=20)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                out, _ = proc.communicate()
+                out = ''
+            return subprocess.CompletedProcess(argv, proc.returncode, out, '')
         entry = definition['parts']['ava_memory']
-        second = subprocess.run([entry['interpreter'], '-B', str(mods / 'control_memory_store.py'), 'ava_memory',
-                                 '--code', entry['code'], '--data', MS.store_data(definition, 'ava_memory'),
-                                 '--socket', str(base / 'second.sock'), '--state-root', str(root),
-                                 '--python', sys.executable], capture_output=True, text=True, timeout=60)
+        second = start([entry['interpreter'], '-B', str(mods / 'control_memory_store.py'), 'ava_memory',
+                        '--code', entry['code'], '--data', MS.store_data(definition, 'ava_memory'),
+                        '--socket', str(base / 'second.sock'), '--state-root', str(root), '--python', sys.executable])
         check('AC4/open-refused', 'a second store server on the same store is refused, naming the holder [%s]'
               % second.stdout.strip(),
               json.loads(second.stdout or '{}').get('reason')
@@ -558,10 +567,9 @@ for proc, _, _ in servers.values():
                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         try:
             holder.stdout.readline()
-            refused = subprocess.run([entry['interpreter'], '-B', str(mods / 'control_memory_store.py'), 'memory_kb',
-                                      '--code', str(held), '--data', str(held / 'data' / 'chromadb'),
-                                      '--socket', str(base / 'held.sock'), '--state-root', str(root),
-                                      '--python', sys.executable], capture_output=True, text=True, timeout=60)
+            refused = start([entry['interpreter'], '-B', str(mods / 'control_memory_store.py'), 'memory_kb',
+                             '--code', str(held), '--data', str(held / 'data' / 'chromadb'),
+                             '--socket', str(base / 'held.sock'), '--state-root', str(root), '--python', sys.executable])
         finally:
             holder.stdin.close()
             holder.wait(10)
