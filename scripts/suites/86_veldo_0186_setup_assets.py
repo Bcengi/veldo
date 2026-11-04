@@ -123,7 +123,8 @@ def _v186_suite():
         config_path = installed.parent / 'config/service.json'
         config = json.loads(config_path.read_text()) if config_path.is_file() else {}
         expected = ['runtime/claude-qualification.json', 'runtime/codex-qualification.json', 'runtime/engines.json',
-                    'runtime/langgraph-records.json', 'runtime/future.json', 'runtime/nested/future.json']
+                    'runtime/langgraph-records.json', 'runtime/future.json', 'runtime/nested/future.json',
+                    'runtime/claude-mem-qualification.json']
         for name in expected:
             target = installed / name
             check('runtime/assets', name + ' installed with digest', target.is_file()
