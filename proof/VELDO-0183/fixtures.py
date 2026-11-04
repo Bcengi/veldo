@@ -339,9 +339,12 @@ DB_PATH = str(Path(__file__).resolve().parents[1] / 'data' / 'chromadb')
 COLLECTIONS = ['conversations', 'confluence', 'jira', 'emails', 'files', 'research', 'recipes']
 '''
 
-# memory_kb's kb package in the module layout its cli.py imports (the lead's reading of the owner's code): kb.store
-# search, search_all, get_stats, list_documents, delete; kb.indexers.file index_file, index_directory;
-# kb.indexers.telegram index_conversation; and chromadb.PersistentClient for clear. kb.store's _get_client,
+# memory_kb's kb package in the module layout its cli.py imports and with its functions' signatures (the lead's
+# reading of the owner's code): kb.store search(collection, query, n_results=5, classifications=None),
+# search_all(query, n_results=5, classifications=None), get_stats(), list_documents(collection, limit=20),
+# delete(collection, doc_id); kb.indexers.file index_file(file_path, classification="BP"),
+# index_directory(dir_path, pattern="*.md"); kb.indexers.telegram index_conversation(message_text, metadata=None,
+# classification="BP"); and chromadb.PersistentClient for clear. kb.store's _get_client,
 # _get_collection and _decrypt_results and kb/search.py are the ones VELDO-0182's check reads (its capture).
 KB_STORE = r'''import hashlib
 import chromadb
@@ -407,22 +410,23 @@ KB_INDEX_FILE = r'''from pathlib import Path
 from kb import store
 
 
-def index_file(path, collection='files'):
-    return [store.add_document(collection, Path(path).read_text(), str(Path(path).resolve()))]
+def index_file(file_path, classification="BP"):
+    return [store.add_document('files', Path(file_path).read_text(), str(Path(file_path).resolve()),
+                               dict(classification=classification))]
 
 
-def index_directory(path, collection='files'):
-    return [i for p in sorted(Path(path).rglob('*')) if p.is_file() for i in index_file(p, collection)]
+def index_directory(dir_path, pattern="*.md"):
+    return [i for p in sorted(Path(dir_path).rglob(pattern)) if p.is_file() for i in index_file(str(p))]
 '''
 
 KB_INDEX_TELEGRAM = r'''import hashlib
 from kb import store
 
 
-def index_conversation(message, metadata=None, classification=None):
-    metadata = dict(metadata or {}, classification=classification or 'personal')
-    source = 'telegram:%s:%s' % (metadata.get('chat_id'), hashlib.sha256(message.encode()).hexdigest()[:16])
-    return [store.add_document('conversations', message, source, metadata)]
+def index_conversation(message_text, metadata=None, classification="BP"):
+    metadata = dict(metadata or {}, classification=classification)
+    source = 'telegram:%s:%s' % (metadata.get('chat_id'), hashlib.sha256(message_text.encode()).hexdigest()[:16])
+    return [store.add_document('conversations', message_text, source, metadata)]
 '''
 
 KB_CRYPTO = r'''import os

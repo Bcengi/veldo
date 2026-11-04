@@ -281,8 +281,47 @@ for proc, _, _ in servers.values():
                    ('index-telegram', 'kb.indexers.telegram', 'index_conversation'),
                    ('stats', 'kb.store', 'get_stats'), ('list', 'kb.store', 'list_documents'),
                    ('delete', 'kb.store', 'delete'), ('clear', 'chromadb', 'PersistentClient.delete_collection')}
-        REAL_SIGNATURES = {'kb.store.list_documents': ['collection', 'limit'], 'kb.store.delete': ['collection', 'doc_id'],
-                           'kb.indexers.telegram.index_conversation': ['message', 'metadata', 'classification']}
+        # Each function's real signature (annotations aside), and memory_kb's cli.py's arguments per subcommand.
+        REAL_SIGNATURES = {
+            'kb.store.search': '(collection, query, n_results=5, classifications=None)',
+            'kb.store.search_all': '(query, n_results=5, classifications=None)',
+            'kb.store.delete': '(collection, doc_id)', 'kb.store.list_documents': '(collection, limit=20)',
+            'kb.store.get_stats': '()', 'kb.indexers.file.index_file': "(file_path, classification='BP')",
+            'kb.indexers.file.index_directory': "(dir_path, pattern='*.md')",
+            'kb.indexers.telegram.index_conversation': "(message_text, metadata=None, classification='BP')",
+            'chromadb.PersistentClient.delete_collection': '(self, name)'}
+        REAL_INPUTS = {'search': ({'query': 'string', 'collection': 'string', 'n': 'integer',
+                                   'classifications': 'string'}, ['query']),
+                       'index-file': ({'path': 'string', 'classification': 'string'}, ['path']),
+                       'index-dir': ({'path': 'string', 'pattern': 'string'}, ['path']),
+                       'index-telegram': ({'message': 'string', 'chat_id': 'string', 'classification': 'string'},
+                                          ['message']),
+                       'stats': ({}, []), 'list': ({'collection': 'string', 'limit': 'integer'}, ['collection']),
+                       'delete': ({'collection': 'string', 'doc_id': 'string'}, ['collection', 'doc_id']),
+                       'clear': ({'collection': 'string'}, ['collection'])}
+        # (tool, input, the function cli.py calls, the arguments it binds to that function's real signature).
+        REAL_CALLS = [
+            ('search', {'query': 'q', 'collection': 'files', 'n': 3, 'classifications': 'BP,personal'},
+             'kb.store.search', {'collection': 'files', 'query': 'q', 'n_results': 3, 'classifications': ['BP', 'personal']}),
+            ('search', {'query': 'q'}, 'kb.store.search_all', {'query': 'q', 'n_results': 5, 'classifications': None}),
+            ('search', {'query': 'q', 'n': 2, 'classifications': 'BP'}, 'kb.store.search_all',
+             {'query': 'q', 'n_results': 2, 'classifications': ['BP']}),
+            ('index-file', {'path': '/x/a.md', 'classification': 'personal'}, 'kb.indexers.file.index_file',
+             {'file_path': '/x/a.md', 'classification': 'personal'}),
+            ('index-file', {'path': '/x/a.md'}, 'kb.indexers.file.index_file', {'file_path': '/x/a.md', 'classification': 'BP'}),
+            ('index-dir', {'path': '/x', 'pattern': '*.txt'}, 'kb.indexers.file.index_directory',
+             {'dir_path': '/x', 'pattern': '*.txt'}),
+            ('index-dir', {'path': '/x'}, 'kb.indexers.file.index_directory', {'dir_path': '/x', 'pattern': '*.md'}),
+            ('index-telegram', {'message': 'm', 'chat_id': '42', 'classification': 'personal'},
+             'kb.indexers.telegram.index_conversation',
+             {'message_text': 'm', 'metadata': {'chat_id': '42'}, 'classification': 'personal'}),
+            ('index-telegram', {'message': 'm'}, 'kb.indexers.telegram.index_conversation',
+             {'message_text': 'm', 'metadata': {'chat_id': ''}, 'classification': 'BP'}),
+            ('stats', {}, 'kb.store.get_stats', {}),
+            ('list', {'collection': 'files', 'limit': 3}, 'kb.store.list_documents', {'collection': 'files', 'limit': 3}),
+            ('list', {'collection': 'files'}, 'kb.store.list_documents', {'collection': 'files', 'limit': 20}),
+            ('delete', {'collection': 'files', 'doc_id': 'd1'}, 'kb.store.delete', {'collection': 'files', 'doc_id': 'd1'}),
+            ('clear', {'collection': 'files'}, 'chromadb.PersistentClient.delete_collection', {'name': 'files'})]
         REAL_AVA = {'memory_search': "(query, limit=10, category='')",
                     'memory_add': "(text, category='general', source='')", 'memory_add_smart': '(text)',
                     'memory_stats': '()', 'memory_delete': '(memory_id)', 'memory_get_all': '(limit=50)'}
@@ -290,7 +329,7 @@ for proc, _, _ in servers.values():
         check('AC1/real-layout', 'every memory-kb tool maps to a function memory_kb\'s cli.py calls [not real: %s; '
               'missing: %s]' % (sorted(mapped - REAL_KB), sorted(REAL_KB - mapped)), mapped == REAL_KB)
         probe = base / 'layout-probe.py'
-        probe.write_text(r'''import importlib, inspect, json, os, sys
+        probe.write_text(r'''import importlib, importlib.util, inspect, json, os, sys
 code, part = sys.argv[1], sys.argv[2]
 sys.path.insert(0, code); os.chdir(code)
 out = {}
@@ -300,7 +339,7 @@ if part == 'memory_kb':
             target = importlib.import_module(module)
             for name in attribute.split('.'):
                 target = getattr(target, name)
-            out['%s.%s' % (module, attribute)] = list(inspect.signature(target).parameters)
+            out['%s.%s' % (module, attribute)] = str(inspect.signature(target))
         except Exception as error:
             out['%s.%s' % (module, attribute)] = 'missing: %s' % error
     gone = []
@@ -313,6 +352,48 @@ if part == 'memory_kb':
         except ImportError:
             pass
     out['guessed_names_present'] = gone
+    # Each tool's call, bound to the fixture function's own signature in place of calling it: a wrong parameter
+    # name or a missing or extra argument is a TypeError here, an omitted default shows as a missing argument.
+    spec = importlib.util.spec_from_file_location('probe_kb', sys.argv[4])
+    KBM = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(KBM)
+    seen = []
+
+    def recorder(label, signature, self_first=False):
+        def record(*args, **kwargs):
+            try:
+                bound = signature.bind(*((None,) if self_first else ()) + args, **kwargs).arguments
+                seen.append([label, {k: v for k, v in bound.items() if not (self_first and k == 'self')}])
+            except TypeError as error:
+                seen.append([label, 'TypeError: %s' % error])
+        return record
+    for tool, module, attribute in json.loads(sys.argv[3]):
+        if module == 'chromadb':
+            continue
+        found = importlib.import_module(module)
+        original = getattr(found, attribute)
+        if not getattr(original, 'probe', False):
+            record = recorder('%s.%s' % (module, attribute), inspect.signature(original))
+            record.probe = True
+            setattr(found, attribute, record)
+
+    class Client:
+        pass
+    Client.delete_collection = staticmethod(recorder(
+        'chromadb.PersistentClient.delete_collection',
+        inspect.signature(importlib.import_module('chromadb').PersistentClient.delete_collection), True))
+    KBM._client[:] = [Client()]
+    calls = []
+    for tool, arguments in json.loads(sys.argv[5]):
+        del seen[:]
+        try:
+            KBM.call(tool, arguments)
+            calls.append(seen[:] or 'no call')
+        except Exception as error:
+            calls.append('%s: %s' % (type(error).__name__, error))
+    out['calls'] = calls
+    out['inputs'] = {t['name']: [{k: v['type'] for k, v in t['inputSchema']['properties'].items()},
+                                 t['inputSchema']['required']] for t in KBM.tools()}
 else:
     import mcp_server
     out = {name: str(inspect.signature(fn)) for name, (fn, _) in mcp_server.mcp._tools.items()}
@@ -322,15 +403,24 @@ print(json.dumps(out))
         layout = {}
         for part in ('memory_kb', 'ava_memory'):
             done = subprocess.run([definition['parts'][part]['interpreter'], '-B', str(probe),
-                                   definition['parts'][part]['code'], part, json.dumps(sorted(KBM.targets()))],
+                                   definition['parts'][part]['code'], part, json.dumps(sorted(KBM.targets())),
+                                   str(mods / 'control_memory_kb.py'),
+                                   json.dumps([[tool, arguments] for tool, arguments, _, _ in REAL_CALLS])],
                                   capture_output=True, text=True, timeout=120)
             layout[part] = json.loads(done.stdout or '{}')
         kb_layout = layout['memory_kb']
+        signatures = {k: v for k, v in kb_layout.items() if k not in ('guessed_names_present', 'calls', 'inputs')}
         check('AC1/real-layout', 'each function a memory-kb tool reaches resolves in the fixture kb package, built to '
-              'the real layout [%s]' % kb_layout,
-              len([k for k in kb_layout if k != 'guessed_names_present']) == len(REAL_KB)
-              and not [v for v in kb_layout.values() if isinstance(v, str)]
-              and all(kb_layout.get(k, [])[:len(v)] == v for k, v in REAL_SIGNATURES.items()))
+              'the real layout with the real signatures [%s]' % signatures, signatures == REAL_SIGNATURES)
+        made = kb_layout.get('calls') or []
+        wrong = [(tool, arguments, made[n] if n < len(made) else None)
+                 for n, (tool, arguments, target, bound) in enumerate(REAL_CALLS)
+                 if n >= len(made) or made[n] != [[target, bound]]]
+        check('AC1/real-layout', 'each memory-kb tool calls its function as memory_kb\'s cli.py does, every argument '
+              'bound by name to the real signature [wrong: %s]' % wrong, len(made) == len(REAL_CALLS) and not wrong)
+        check('AC1/real-layout', 'each memory-kb tool\'s input is the cli\'s arguments for its subcommand [%s]'
+              % kb_layout.get('inputs'),
+              kb_layout.get('inputs') == {k: [f, r] for k, (f, r) in REAL_INPUTS.items()})
         check('AC1/real-layout', 'the fixture carries none of the guessed names the real code does not have [%s]'
               % kb_layout.get('guessed_names_present'), kb_layout.get('guessed_names_present') == [])
         check('AC1/real-layout', 'the fixture ava-memory is FastMCP ava-memory with mcp_server.py\'s six tools and '
@@ -477,16 +567,18 @@ print(json.dumps(out))
                                                   'description': 'Graph fact from conversation A'}],
             ['knowledge-graph', 'kg_search', {'query': 'Graph fact from conversation A'}],
             ['memory-kb', 'index-file', {'path': str(doc)}],
-            ['memory-kb', 'index-dir', {'path': str(notes), 'collection': 'research'}],
+            ['memory-kb', 'index-dir', {'path': str(notes), 'pattern': '*.md'}],
             ['memory-kb', 'index-telegram', {'message': 'Telegram thread about the garden', 'chat_id': '5590171',
                                              'classification': 'personal'}],
             ['memory-kb', 'search', {'query': 'deploy moved to Fridays'}],
-            ['memory-kb', 'search', {'query': 'Directory note alpha', 'collection': 'research'}],
+            ['memory-kb', 'search', {'query': 'Telegram thread about the garden', 'collection': 'conversations',
+                                     'n': 3, 'classifications': 'personal'}],
+            ['memory-kb', 'search', {'query': 'Directory note alpha', 'n': 5}],
             ['memory-kb', 'stats', {}],
             ['memory-kb', 'list', {'collection': 'files', 'limit': 50}],
             ['memory-kb', 'delete', {'collection': 'files', 'doc_id': 'seed-document'}],
-            ['memory-kb', 'clear', {'collection': 'research'}],
-            ['memory-kb', 'search', {'query': 'Directory note alpha', 'collection': 'research'}],
+            ['memory-kb', 'clear', {'collection': 'conversations'}],
+            ['memory-kb', 'search', {'query': 'Telegram thread about the garden', 'collection': 'conversations'}],
             ['claude-mem', 'search', {'query': 'flaky build'}],
             ['claude-mem', 'get_observations', {'ids': '1'}],
         ]
@@ -506,10 +598,15 @@ print(json.dumps(out))
                   not result['is_error'])
         check('AC2/tools-work', 'every call was answered', len(a['results']) == len(calls_a))
         searched = [n for n, c in enumerate(calls_a) if c[:2] == ['memory-kb', 'search'] and c[2].get('collection')]
-        check('AC2/tools-work', 'memory_kb search in one collection found the directory note, and after clear '
-              'nothing [%s]' % [a['texts'][n][:80] for n in searched if n < len(a['texts'])],
-              len(searched) == 2 and len(a['texts']) == len(calls_a) and 'Directory note alpha' in a['texts'][searched[0]]
-              and json.loads(a['texts'][searched[1]] or 'null') == [])
+        everywhere = [n for n, c in enumerate(calls_a) if c[:2] == ['memory-kb', 'search']
+                      and c[2]['query'] == 'Directory note alpha']
+        check('AC2/tools-work', 'memory_kb search in one collection found the telegram thread, and after clear '
+              'nothing; over every collection it found the directory note [%s]'
+              % [a['texts'][n][:80] for n in searched + everywhere if n < len(a['texts'])],
+              len(searched) == 2 and len(everywhere) == 1 and len(a['texts']) == len(calls_a)
+              and 'Telegram thread about the garden' in a['texts'][searched[0]]
+              and json.loads(a['texts'][searched[1]] or 'null') == []
+              and 'Directory note alpha' in a['texts'][everywhere[0]])
         smart = a['texts'][1] if len(a['texts']) > 1 else ''
         extraction = {}
         with contextlib.suppress(ValueError, IndexError, KeyError, TypeError):
