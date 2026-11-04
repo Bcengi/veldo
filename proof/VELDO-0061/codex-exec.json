@@ -1,5 +1,5 @@
 {
- "binary": "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+ "binary": "/home/dmitry/.local/share/codex-versions/0.166.0/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
  "events": [
   "error",
   "item.completed",
@@ -239,17 +239,17 @@
    "error"
   ],
   "offsets": {
-   "agent_states": 215514056,
-   "change_kinds": 215514026,
-   "collab": 212256560,
-   "collab_fields": 215513469,
-   "collab_tools": 215513761,
-   "command": 215513607,
-   "fields": 215513982,
-   "id": 215513793,
-   "kinds": 215514102,
-   "mcp_result": 215513640,
-   "status": 215513581
+   "agent_states": 263629955,
+   "change_kinds": 263629940,
+   "collab": 259774448,
+   "collab_fields": 263629539,
+   "collab_tools": 263629769,
+   "command": 263629615,
+   "fields": 263629895,
+   "id": 263629494,
+   "kinds": 263630001,
+   "mcp_result": 263629648,
+   "status": 263629582
   },
   "source": "the exec crate's literal runs: the ThreadItem kinds (tag 'type'), the item structs' long field names, the status and change-kind values; `error` is both an event and an item kind, one literal",
   "status": [
@@ -268,7 +268,7 @@
   ]
  },
  "schema": "veldo.codex-exec/v1",
- "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+ "sha256": "sha256:b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8",
  "spec_id": "VELDO-0061",
- "version": "0.154.0"
+ "version": "0.166.0"
 }

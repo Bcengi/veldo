@@ -394,33 +394,33 @@
    "claude_code": {
     "assistant": {
      "from_capture": 4,
-     "known": 150,
-     "optional": 67
+     "known": 214,
+     "optional": 113
     },
     "control_response": {
      "from_capture": 29,
-     "known": 43,
-     "optional": 15
+     "known": 44,
+     "optional": 16
     },
     "rate_limit_event": {
      "from_capture": 0,
-     "known": 33,
-     "optional": 20
+     "known": 53,
+     "optional": 31
     },
     "result/error": {
      "from_capture": 0,
-     "known": 79,
-     "optional": 23
+     "known": 102,
+     "optional": 38
     },
     "result/success": {
      "from_capture": 0,
-     "known": 100,
-     "optional": 42
+     "known": 267,
+     "optional": 148
     },
     "system/init": {
      "from_capture": 1,
-     "known": 56,
-     "optional": 27
+     "known": 66,
+     "optional": 35
     }
    },
    "codex": {
@@ -470,12 +470,12 @@
   "recorded_run": "2026-09-26",
   "sha256": "sha256:8f5b8eb50df11324ebdf50834e1018c0a2bbc93f653d81b5a69327e20808c8e3",
   "versions": {
-   "claude_code": "2.1.281",
-   "codex": "0.154.0"
+   "claude_code": "2.1.317",
+   "codex": "0.166.0"
   }
  },
  "claude_code": {
-  "binary": "/home/dmitry/.local/share/claude/versions/2.1.281",
+  "binary": "/home/dmitry/.local/share/claude/versions/2.1.317",
   "credential_tables": [
    {
     "decision": "strip",
@@ -489,7 +489,7 @@
      "ANTHROPIC_FOUNDRY_AUTH_TOKEN",
      "ANTHROPIC_AWS_API_KEY"
     ],
-    "offset": 193479633,
+    "offset": 276502010,
     "reason": "the credential variables a first-party or provider login reads"
    },
    {
@@ -511,7 +511,7 @@
      "ANTHROPIC_GOOGLE_CLOUD_WORKSPACE_ID",
      "CLOUD_ML_REGION"
     ],
-    "offset": 193476603,
+    "offset": 276496746,
     "reason": "the switches that move Claude Code off the subscription to another provider, with their companions"
    },
    {
@@ -522,7 +522,7 @@
      "CLAUDE_CODE_USE_ANTHROPIC_AWS",
      "CLAUDE_CODE_USE_MANTLE"
     ],
-    "offset": 193477020,
+    "offset": 276497163,
     "reason": "the AWS-hosted provider switches"
    },
    {
@@ -532,7 +532,7 @@
      "AWS_BEARER_TOKEN_BEDROCK",
      "ANTHROPIC_AWS_API_KEY"
     ],
-    "offset": 193477108,
+    "offset": 276497251,
     "reason": "the AWS-hosted provider keys"
    },
    {
@@ -546,7 +546,7 @@
      "CLAUDE_CODE_SKIP_ANTHROPIC_GOOGLE_CLOUD_AUTH",
      "CLAUDE_CODE_SKIP_MANTLE_AUTH"
     ],
-    "offset": 193479818,
+    "offset": 276502318,
     "reason": "the switches that skip a provider login"
    },
    {
@@ -557,6 +557,7 @@
      "ANTHROPIC_AUTH_TOKEN",
      "ANTHROPIC_CUSTOM_HEADERS",
      "CLAUDE_CODE_OAUTH_TOKEN",
+     "CLAUDE_CODE_SESSIONS_OAUTH_TOKEN",
      "CLAUDE_CODE_OAUTH_REFRESH_TOKEN",
      "CLAUDE_CODE_ARTIFACTS_API_TOKEN",
      "CLAUDE_CODE_MEMORY_API_TOKEN",
@@ -571,6 +572,7 @@
      "INPUT_ANTHROPIC_AUTH_TOKEN",
      "INPUT_ANTHROPIC_CUSTOM_HEADERS",
      "INPUT_CLAUDE_CODE_OAUTH_TOKEN",
+     "INPUT_CLAUDE_CODE_SESSIONS_OAUTH_TOKEN",
      "INPUT_CLAUDE_CODE_OAUTH_REFRESH_TOKEN",
      "INPUT_CLAUDE_CODE_ARTIFACTS_API_TOKEN",
      "INPUT_CLAUDE_CODE_MEMORY_API_TOKEN",
@@ -582,7 +584,7 @@
      "INPUT_ANTHROPIC_IDENTITY_TOKEN_FILE",
      "INPUT_ALL_INPUTS"
     ],
-    "offset": 194081123,
+    "offset": 277018632,
     "reason": "Claude Code's own list of Anthropic secrets (with their INPUT_ forms)"
    },
    {
@@ -590,9 +592,10 @@
     "name": "session_tokens",
     "names": [
      "CLAUDE_CODE_SESSION_ACCESS_TOKEN",
-     "CLAUDE_CODE_OAUTH_TOKEN"
+     "CLAUDE_CODE_OAUTH_TOKEN",
+     "CLAUDE_CODE_SESSIONS_OAUTH_TOKEN"
     ],
-    "offset": 215366265,
+    "offset": 313870211,
     "reason": "the session tokens a hosted or claimed session authenticates with"
    },
    {
@@ -603,7 +606,7 @@
      "CLAUDE_CODE_SESSION_ACCESS_TOKEN",
      "CLAUDE_CODE_HOST_SESSION_ID"
     ],
-    "offset": 226463485,
+    "offset": 324081443,
     "reason": "the tokens a claimed spare session is handed"
    },
    {
@@ -613,7 +616,7 @@
      "ANTHROPIC_AUTH_TOKEN",
      "ANTHROPIC_API_KEY"
     ],
-    "offset": 230879420,
+    "offset": 319426751,
     "reason": "the API key and bearer token"
    },
    {
@@ -624,7 +627,7 @@
      "AWS_SECRET_ACCESS_KEY",
      "AWS_SESSION_TOKEN"
     ],
-    "offset": 217006953,
+    "offset": 306368380,
     "reason": "the Bedrock setup wizard's AWS credentials: AWS_BEARER_TOKEN_BEDROCK is stripped by auth_credentials; the general AWS keys are the worker's tools' own cloud login and reach no model once the CLAUDE_CODE_USE_ switches are gone"
    },
    {
@@ -633,6 +636,7 @@
     "names": [
      "ANTHROPIC_API_KEY",
      "CLAUDE_CODE_OAUTH_TOKEN",
+     "CLAUDE_CODE_SESSIONS_OAUTH_TOKEN",
      "CLAUDE_CODE_ARTIFACTS_API_TOKEN",
      "CLAUDE_CODE_MEMORY_API_TOKEN",
      "CLAUDE_CODE_SLACK_TAG_TOKEN",
@@ -727,12 +731,16 @@
      "DEFAULT_WORKFLOW_TOKEN",
      "SSH_SIGNING_KEY"
     ],
-    "offset": 194073485,
+    "offset": 277010958,
     "reason": "the secrets Claude Code scrubs from its own tool children (package registries, CI, cloud, webhooks): tool credentials, not a model login"
    },
    {
     "decision": "strip",
     "exceptions": {
+     "ALLUSERSPROFILE": {
+      "decision": "keep",
+      "reason": "VELDO-0230 evaluation: a home name the worker's tools need, as APPDATA and PROGRAMDATA"
+     },
      "ALL_PROXY": {
       "decision": "keep",
       "reason": "general proxy: the worker's tools reach the network through it"
@@ -825,9 +833,25 @@
       "decision": "keep",
       "reason": "cloud: the worker's tools' own cloud login; no model request goes through it once the provider switches are stripped"
      },
+     "BUN_TLS_REFUSE_DISTRUSTED_KEYS": {
+      "decision": "keep",
+      "reason": "VELDO-0230 evaluation: TLS hardening of the runtime, as NODE_TLS_REJECT_UNAUTHORIZED"
+     },
      "CLAUDE_CODE_CERT_STORE": {
       "decision": "setting",
       "reason": "a Claude Code connection setting, not a login"
+     },
+     "CLAUDE_CODE_DISABLE_HTTPS_AGENT_KEEPING": {
+      "decision": "setting",
+      "reason": "VELDO-0230 evaluation: a Claude Code connection setting, not a login, as CLAUDE_CODE_CERT_STORE: off the inherited environment, passed when the adapter configures it"
+     },
+     "CLAUDE_CODE_DISABLE_LOOPED_CROSS_CERT_DROP": {
+      "decision": "setting",
+      "reason": "VELDO-0230 evaluation: a Claude Code connection setting, not a login, as CLAUDE_CODE_CERT_STORE"
+     },
+     "CLAUDE_CODE_DISABLE_SELF_NAMED_CERT_DROP": {
+      "decision": "setting",
+      "reason": "VELDO-0230 evaluation: a Claude Code connection setting, not a login, as CLAUDE_CODE_CERT_STORE"
      },
      "CLAUDE_CODE_ENABLE_PROXY_AUTH_HELPER": {
       "decision": "setting",
@@ -913,9 +937,29 @@
       "decision": "keep",
       "reason": "general proxy: the worker's tools reach the network through it"
      },
+     "NPM_CONFIG_HTTPS_PROXY": {
+      "decision": "keep",
+      "reason": "VELDO-0230 evaluation: the general proxy npm uses, as HTTPS_PROXY"
+     },
+     "NPM_CONFIG_HTTP_PROXY": {
+      "decision": "keep",
+      "reason": "VELDO-0230 evaluation: the general proxy npm uses, as HTTP_PROXY"
+     },
+     "NPM_CONFIG_PROXY": {
+      "decision": "keep",
+      "reason": "VELDO-0230 evaluation: the general proxy npm uses, as HTTPS_PROXY"
+     },
      "PROGRAMDATA": {
       "decision": "keep",
       "reason": "home: every tool the worker runs needs its home directory"
+     },
+     "SSL_CERT_DIR": {
+      "decision": "keep",
+      "reason": "VELDO-0230 evaluation: the CA directory the worker's tools verify TLS with, as NODE_EXTRA_CA_CERTS"
+     },
+     "SSL_CERT_FILE": {
+      "decision": "keep",
+      "reason": "VELDO-0230 evaluation: the CA bundle the worker's tools verify TLS with, as NODE_EXTRA_CA_CERTS"
      },
      "USERPROFILE": {
       "decision": "keep",
@@ -931,19 +975,28 @@
      "HTTPS_PROXY",
      "HTTP_PROXY",
      "NO_PROXY",
+     "SSL_CERT_FILE",
+     "SSL_CERT_DIR",
+     "ALL_PROXY",
+     "NPM_CONFIG_HTTPS_PROXY",
+     "NPM_CONFIG_HTTP_PROXY",
+     "NPM_CONFIG_PROXY",
+     "NODE_EXTRA_CA_CERTS",
+     "CLAUDE_CODE_CERT_STORE",
+     "CLAUDE_CODE_DISABLE_LOOPED_CROSS_CERT_DROP",
+     "CLAUDE_CODE_DISABLE_SELF_NAMED_CERT_DROP",
+     "CLAUDE_CODE_CLIENT_CERT",
+     "CLAUDE_CODE_CLIENT_KEY",
+     "CLAUDE_CODE_CLIENT_KEY_PASSPHRASE",
+     "NODE_TLS_REJECT_UNAUTHORIZED",
+     "BUN_TLS_REFUSE_DISTRUSTED_KEYS",
      "CLAUDE_CODE_PROXY_RESOLVES_HOSTS",
      "CLAUDE_CODE_ENABLE_PROXY_AUTH_HELPER",
      "CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS",
      "API_FORCE_IDLE_TIMEOUT",
      "ANTHROPIC_UNIX_SOCKET",
-     "NODE_EXTRA_CA_CERTS",
-     "CLAUDE_CODE_CERT_STORE",
-     "CLAUDE_CODE_CLIENT_CERT",
-     "CLAUDE_CODE_CLIENT_KEY",
-     "CLAUDE_CODE_CLIENT_KEY_PASSPHRASE",
-     "ALL_PROXY",
+     "CLAUDE_CODE_DISABLE_HTTPS_AGENT_KEEPING",
      "NODE_OPTIONS",
-     "NODE_TLS_REJECT_UNAUTHORIZED",
      "CLAUDE_CODE_USE_BEDROCK",
      "CLAUDE_CODE_USE_VERTEX",
      "CLAUDE_CODE_USE_FOUNDRY",
@@ -1036,6 +1089,7 @@
      "HOMEDRIVE",
      "HOMEPATH",
      "PROGRAMDATA",
+     "ALLUSERSPROFILE",
      "ANTHROPIC_CUSTOM_HEADERS",
      "CLAUDE_CODE_HOST_CREDS_FILE",
      "CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST",
@@ -1054,9 +1108,10 @@
      "CLAUDE_BRIDGE_BASE_URL",
      "CLAUDE_BRIDGE_OAUTH_TOKEN",
      "CLAUDE_BRIDGE_SESSION_INGRESS_URL",
-     "CLAUDE_REMOTE_TOOLS_BRIDGE_URL"
+     "CLAUDE_REMOTE_TOOLS_BRIDGE_URL",
+     "CLAUDE_CODE_GB_BASE_URL"
     ],
-    "offset": 193738325,
+    "offset": 276552683,
     "reason": "the variables Claude Code refuses to take from a settings file: its logins, the credential and settings redirects (CLAUDE_SECURESTORAGE_CONFIG_DIR, CLAUDE_CODE_HOST_CREDS_FILE, the managed and remote settings paths, the OAuth, bridge and federation overrides), the endpoints and provider switches"
    },
    {
@@ -1066,9 +1121,10 @@
      "CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR",
      "CLAUDE_CODE_GATEWAY_TOKEN_FILE_DESCRIPTOR",
      "CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR",
-     "CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR"
+     "CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR",
+     "CCR_AGENT_PROXY_TOKEN_FILE_DESCRIPTOR"
     ],
-    "offset": 193481111,
+    "offset": 276503768,
     "reason": "the credentials handed to Claude Code through a file descriptor"
    },
    {
@@ -1076,10 +1132,12 @@
     "name": "session_secrets",
     "names": [
      "CLAUDE_CODE_OAUTH_TOKEN",
+     "CLAUDE_CODE_SESSIONS_OAUTH_TOKEN",
      "CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR",
      "CLAUDE_CODE_GATEWAY_TOKEN_FILE_DESCRIPTOR",
      "CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR",
      "CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR",
+     "CCR_AGENT_PROXY_TOKEN_FILE_DESCRIPTOR",
      "CLAUDE_CODE_ARTIFACTS_API_TOKEN",
      "CLAUDE_CODE_SLACK_TAG_TOKEN",
      "CLAUDE_CODE_HFI_BEARER_TOKEN",
@@ -1093,7 +1151,7 @@
      "CLAUDE_BG_PTY_AUTH",
      "CLAUDE_BG_CLAIM_AUTH"
     ],
-    "offset": 193481286,
+    "offset": 276504172,
     "reason": "the OAuth, bridge, trusted-device and background-session tokens and auth paths"
    },
    {
@@ -1117,7 +1175,7 @@
      "ANTHROPIC_CUSTOM_HEADERS",
      "CLAUDE_CODE_SKIP_VERTEX_AUTH"
     ],
-    "offset": 202404254,
+    "offset": 285309637,
     "reason": "the variables a CLAUDE_CODE_HOST_CREDS_FILE may set when Claude Code copies it into its environment at start-up"
    },
    {
@@ -1145,10 +1203,14 @@
      "ANTHROPIC_SMALL_FAST_MODEL",
      "ANTHROPIC_SMALL_FAST_MODEL_AWS_REGION",
      "CLAUDE_CODE_SUBAGENT_MODEL",
+     "CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL",
      "CLAUDE_CODE_3P_PROBE_WROTE_SONNET_DEFAULT",
-     "CLAUDE_CODE_3P_PROBE_WROTE_OPUS_DEFAULT"
+     "CLAUDE_CODE_3P_PROBE_WROTE_OPUS_DEFAULT",
+     "CLAUDE_CODE_3P_PROBE_WROTE_HAIKU_DEFAULT",
+     "CLAUDE_CODE_3P_SEEDED_SONNET_DEFAULT",
+     "CLAUDE_CODE_3P_SEEDED_OPUS_DEFAULT"
     ],
-    "offset": 193480031,
+    "offset": 276502531,
     "reason": "the model configuration: stripped from the inherited environment only through the ANTHROPIC_ family, passed when the adapter configures it (the configured model is a capability, not a login)"
    },
    {
@@ -1160,7 +1222,7 @@
      "ANTHROPIC_CUSTOM_MODEL_OPTION_NAME",
      "ANTHROPIC_CUSTOM_MODEL_OPTION_SUPPORTED_CAPABILITIES"
     ],
-    "offset": 193480937,
+    "offset": 276503594,
     "reason": "the custom model option, as model_config"
    },
    {
@@ -1177,7 +1239,7 @@
      "CLAUDE_CODE_RESUME_TOKEN_THRESHOLD",
      "CLAUDE_CODE_ARG_KEY_SHAPE"
     ],
-    "offset": 194092220,
+    "offset": 277029771,
     "reason": "the names Claude Code itself says look like a secret and are not (its token thresholds and usage settings); a name here that a strip list also names is stripped"
    },
    {
@@ -1206,7 +1268,7 @@
      "CLAUDE_CODE_USE_VERTEX",
      "_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL"
     ],
-    "offset": 193478526,
+    "offset": 276500903,
     "reason": "the base URLs that point Claude Code at another endpoint, with their selections and companions"
    }
   ],
@@ -1217,11 +1279,14 @@
      "agents",
      "analytics_disabled",
      "available_output_styles",
+     "claude_code_version",
      "commands",
      "current_permission_mode",
      "fast_mode_state",
+     "feedback_mode",
      "feedback_survey_config",
      "footer_indicator",
+     "hook_on_failure_supported",
      "hooks_applied",
      "ide_rc_auto_enable_gate",
      "models",
@@ -1233,18 +1298,24 @@
      "remote_control_auto_enable",
      "remote_control_auto_on_by_default",
      "remote_control_available",
+     "sdk_mcp_manifests_parked",
      "session_state",
+     "survey_followup_box",
      "user_output_styles_dir",
      "workspace_trust_recorded"
     ],
-    "anchor": "Pe={commands:Zq(e),agents:r.map((de)=>({name:de.agentType,",
+    "anchor": "ye={commands:Dee(e()),agents:n.map((De)=>({name:De.agentType,",
     "conditional": {
-     "auto_default_nudge": "oS()&&Me",
-     "fast_mode_disabled_reason": "WM(w??null)??void 0",
-     "permission_mode_from_default_fallback": "oS()",
+     "auto_default_nudge": "xm()&&Ve",
+     "capabilities": "xe.length>0",
+     "claude_in_chrome_at_startup": "xm()",
+     "claude_in_chrome_prompt_disabled": "i.CLAUDE_CODE_DISABLE_CFC_PROMPT===!0",
+     "fast_mode_disabled_reason": "ZD(y??null)??Fne(y??null,Me.fastMode)??void 0",
+     "inbound_read_receipts": "x().isRemoteTransport&&LS()&&WRt()",
+     "permission_mode_from_default_fallback": "xm()",
      "unavailable_models": "s.length>0"
     },
-    "offset": 216186270,
+    "offset": 315081109,
     "path": [
      "control_response",
      "response",
@@ -1275,24 +1346,29 @@
      "type",
      "uuid"
     ],
-    "anchor": "g={type:\"system\",subtype:\"init\",cwd:e.cwd,",
+    "anchor": "n={type:\"system\",subtype:\"init\",cwd:e.cwd,",
     "conditional": {
+     "additional_directories": "e.additionalDirectories!==void 0",
      "capabilities": "e.capabilities",
      "effort": "e.effort!==void 0",
      "footer_indicator": "e.footerIndicator",
-     "mcp_server_errors": "r.length>0",
+     "mcp_server_errors": "a.length>0",
      "memory_paths": "e.memoryPaths",
      "messaging_socket_path": "e.messagingSocketPath!==void 0",
+     "original_cwd": "e.originalCwd!==void 0",
      "per_turn_effort_active": "e.perTurnEffortActive!==void 0",
      "plugin_errors": "e.pluginErrors.length>0",
      "plugin_warnings": "e.pluginWarnings.length>0",
      "powershell_path": "e.powerShellPath!==void 0",
      "scratchpad_path": "e.scratchpadPath!==void 0",
+     "synced_skills_path": "e.syncedSkillsPath!==void 0",
      "terminal_slash_commands": "s.length>0",
+     "ultrathink_available": "e.ultrathinkAvailable!==void 0",
+     "ultrathink_typed_raises": "e.ultrathinkTypedRaises!==void 0",
      "view_mode": "e.viewMode!==void 0",
      "worker_epoch": "e.workerEpoch!==void 0&&e.workerEpoch>=1"
     },
-    "offset": 208882812,
+    "offset": 294348860,
     "path": [
      "system/init"
     ]
@@ -1310,6 +1386,10 @@
       "optional": true,
       "type": "string"
      },
+     "agent_id": {
+      "optional": true,
+      "type": "string"
+     },
      "api_error": {
       "optional": true,
       "type": "enum",
@@ -1324,9 +1404,14 @@
        "autocompact_thrashing",
        "pdf_too_large",
        "pdf_password_protected",
+       "stored_login_refused",
+       "media_removed",
        "no_response",
        "tls_untrusted_ca",
        "gateway_content_type",
+       "connection_failed",
+       "stream_idle_timeout",
+       "computer_slept",
        "provider_credentials",
        "gateway_signin_required",
        "gateway_session_expired",
@@ -1338,18 +1423,48 @@
        "consent_unanswered",
        "no_allowed_fallback",
        "model_substitution_disabled",
-       "field_not_granted"
+       "field_not_granted",
+       "usage_limit_reached",
+       "empty_completion",
+       "malformed_tool_use_exhausted",
+       "unattended_start_limit",
+       "unattended_start_unconfirmed",
+       "network_edge_blocked"
       ]
      },
      "api_error_code": {
       "optional": true,
       "type": "string"
      },
+     "api_error_origin": {
+      "optional": true,
+      "type": "enum",
+      "values": [
+       "first_party"
+      ]
+     },
      "api_error_params": {
       "fields": {
        "effort": {
         "optional": true,
         "type": "string"
+       },
+       "media": {
+        "optional": true,
+        "type": "enum",
+        "values": [
+         "image",
+         "document"
+        ]
+       },
+       "media_reason": {
+        "optional": true,
+        "type": "enum",
+        "values": [
+         "unprocessable",
+         "unsupported_by_model",
+         "media_budget"
+        ]
        },
        "provider": {
         "optional": true,
@@ -1363,6 +1478,281 @@
          "foundry",
          "gateway"
         ]
+       },
+       "rate_limit_info": {
+        "fields": {
+         "adminRequestOffer": {
+          "fields": {
+           "confirm": {
+            "type": "boolean"
+           },
+           "confirmPrompt": {
+            "type": "string"
+           },
+           "doneLabel": {
+            "type": "string"
+           },
+           "label": {
+            "type": "string"
+           },
+           "lastFileFailed": {
+            "optional": true,
+            "type": "boolean"
+           },
+           "revision": {
+            "int": true,
+            "optional": true,
+            "type": "number"
+           },
+           "state": {
+            "type": "enum",
+            "values": [
+             "can_ask",
+             "pending",
+             "sending",
+             "sent"
+            ]
+           }
+          },
+          "optional": true,
+          "type": "object"
+         },
+         "canUserPurchaseCredits": {
+          "optional": true,
+          "type": "boolean"
+         },
+         "errorCode": {
+          "optional": true,
+          "type": "enum",
+          "values": [
+           "credits_required"
+          ]
+         },
+         "hasChargeableSavedPaymentMethod": {
+          "optional": true,
+          "type": "boolean"
+         },
+         "isUsingOverage": {
+          "optional": true,
+          "type": "boolean"
+         },
+         "limitScope": {
+          "optional": true,
+          "type": "enum",
+          "values": [
+           "service",
+           "channel",
+           "group_pool"
+          ]
+         },
+         "overageDisabledReason": {
+          "optional": true,
+          "type": "enum",
+          "values": [
+           "overage_not_provisioned",
+           "org_level_disabled",
+           "org_level_disabled_until",
+           "out_of_credits",
+           "seat_tier_level_disabled",
+           "member_level_disabled",
+           "seat_tier_zero_credit_limit",
+           "group_zero_credit_limit",
+           "member_zero_credit_limit",
+           "org_service_level_disabled",
+           "no_limits_configured",
+           "fetch_error",
+           "unknown"
+          ]
+         },
+         "overageEnabled": {
+          "optional": true,
+          "type": "boolean"
+         },
+         "overageInUse": {
+          "optional": true,
+          "type": "boolean"
+         },
+         "overagePeriodChannel": {
+          "fields": {
+           "utilization": {
+            "type": "number"
+           }
+          },
+          "optional": true,
+          "type": "object"
+         },
+         "overagePeriodMonthly": {
+          "fields": {
+           "utilization": {
+            "type": "number"
+           }
+          },
+          "optional": true,
+          "type": "object"
+         },
+         "overageResetsAt": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "overageStatus": {
+          "optional": true,
+          "type": "enum",
+          "values": [
+           "allowed",
+           "allowed_warning",
+           "rejected"
+          ]
+         },
+         "rateLimitGraceActive": {
+          "optional": true,
+          "type": "boolean"
+         },
+         "rateLimitType": {
+          "optional": true,
+          "type": "enum",
+          "values": [
+           "five_hour",
+           "seven_day",
+           "seven_day_opus",
+           "seven_day_sonnet",
+           "seven_day_overage_included",
+           "overage"
+          ]
+         },
+         "resetsAt": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "status": {
+          "type": "enum",
+          "values": [
+           "allowed",
+           "allowed_warning",
+           "rejected"
+          ]
+         },
+         "surpassedThreshold": {
+          "optional": true,
+          "type": "number"
+         },
+         "unifiedWindows": {
+          "fields": {
+           "five_hour": {
+            "fields": {
+             "resetsAt": {
+              "int": true,
+              "type": "number"
+             },
+             "status": {
+              "optional": true,
+              "type": "enum",
+              "values": [
+               "allowed",
+               "allowed_warning",
+               "rejected"
+              ]
+             },
+             "surpassedThreshold": {
+              "optional": true,
+              "type": "number"
+             },
+             "utilization": {
+              "type": "number"
+             }
+            },
+            "optional": true,
+            "type": "object"
+           },
+           "seven_day": {
+            "fields": {
+             "resetsAt": {
+              "int": true,
+              "type": "number"
+             },
+             "status": {
+              "optional": true,
+              "type": "enum",
+              "values": [
+               "allowed",
+               "allowed_warning",
+               "rejected"
+              ]
+             },
+             "surpassedThreshold": {
+              "optional": true,
+              "type": "number"
+             },
+             "utilization": {
+              "type": "number"
+             }
+            },
+            "optional": true,
+            "type": "object"
+           },
+           "seven_day_overage_included": {
+            "fields": {
+             "resetsAt": {
+              "int": true,
+              "type": "number"
+             },
+             "status": {
+              "optional": true,
+              "type": "enum",
+              "values": [
+               "allowed",
+               "allowed_warning",
+               "rejected"
+              ]
+             },
+             "surpassedThreshold": {
+              "optional": true,
+              "type": "number"
+             },
+             "utilization": {
+              "type": "number"
+             }
+            },
+            "optional": true,
+            "type": "object"
+           }
+          },
+          "optional": true,
+          "type": "object"
+         },
+         "usageCreditOffer": {
+          "fields": {
+           "daysLeft": {
+            "int": true,
+            "type": "number"
+           },
+           "headlinePct": {
+            "int": true,
+            "type": "number"
+           },
+           "kind": {
+            "type": "enum",
+            "values": [
+             "pct_off",
+             "extra_credit"
+            ]
+           },
+           "label": {
+            "type": "string"
+           }
+          },
+          "optional": true,
+          "type": "object"
+         },
+         "utilization": {
+          "optional": true,
+          "type": "number"
+         }
+        },
+        "optional": true,
+        "ref": "$co",
+        "type": "object"
        },
        "remedy": {
         "optional": true,
@@ -1407,7 +1797,7 @@
      },
      "batch_tool_uses": {
       "items": {
-       "ref": "Je",
+       "ref": "He",
        "type": "any"
       },
       "optional": true,
@@ -1437,7 +1827,7 @@
         "items": {
          "fields": {
           "kind": {
-           "ref": "osn",
+           "ref": "mwr",
            "type": "enum",
            "values": [
             "used",
@@ -1454,7 +1844,7 @@
            "type": "number"
           }
          },
-         "ref": "iK",
+         "ref": "LF",
          "type": "object"
         },
         "type": "array"
@@ -1552,12 +1942,12 @@
        }
       },
       "optional": true,
-      "ref": "aK",
+      "ref": "UF",
       "type": "object"
      },
      "error": {
       "optional": true,
-      "ref": "$o",
+      "ref": "So",
       "type": "enum",
       "values": [
        "authentication_failed",
@@ -1600,7 +1990,7 @@
      "local_command_outcome": {
       "fields": {
        "kind": {
-        "ref": "Do",
+        "ref": "no",
         "type": "enum",
         "values": [
          "unavailable_headless",
@@ -1623,6 +2013,10 @@
         "type": "string"
        },
        "command": {
+        "type": "string"
+       },
+       "plugin": {
+        "optional": true,
         "type": "string"
        }
       },
@@ -1665,7 +2059,7 @@
           "source": "proof/VELDO-0172/capture.json:streams.claude",
           "type": "object"
          },
-         "ref": "yq",
+         "ref": "eK",
          "type": "any"
         },
         "type": "array"
@@ -1735,7 +2129,7 @@
            }
           },
           "nullable": true,
-          "ref": "Oq",
+          "ref": "tK",
           "type": "object"
          },
          "cache_creation_input_tokens": {
@@ -1747,6 +2141,10 @@
           "int": true,
           "nullable": true,
           "type": "number"
+         },
+         "fallback_credit": {
+          "optional": true,
+          "type": "any"
          },
          "inference_geo": {
           "nullable": true,
@@ -1775,7 +2173,7 @@
           },
           "nullable": true,
           "optional": true,
-          "ref": "Cq",
+          "ref": "nK",
           "type": "object"
          },
          "server_tool_use": {
@@ -1795,7 +2193,7 @@
           ],
           "optional": true,
           "optional_source": "proof/VELDO-0172/capture.json:streams.claude",
-          "ref": "wq",
+          "ref": "sK",
           "type": "object"
          },
          "service_tier": {
@@ -1808,11 +2206,11 @@
           "type": "string"
          }
         },
-        "ref": "Uo",
+        "ref": "io",
         "type": "object"
        }
       },
-      "ref": "eK",
+      "ref": "IF",
       "type": "object"
      },
      "narration_block_indexes": {
@@ -1833,6 +2231,10 @@
      },
      "parent_tool_use_id": {
       "nullable": true,
+      "type": "string"
+     },
+     "refused_message_id": {
+      "optional": true,
       "type": "string"
      },
      "request_id": {
@@ -1866,6 +2268,15 @@
       "optional": true,
       "type": "string"
      },
+     "thinking_display": {
+      "optional": true,
+      "type": "string"
+     },
+     "thinking_duration_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
      "timestamp": {
       "optional": true,
       "type": "string"
@@ -1884,6 +2295,18 @@
          "type": "string"
         },
         "server_display_name": {
+         "optional": true,
+         "type": "string"
+        },
+        "server_id": {
+         "optional": true,
+         "type": "string"
+        },
+        "server_id_stamp": {
+         "optional": true,
+         "type": "string"
+        },
+        "tool_name": {
          "optional": true,
          "type": "string"
         }
@@ -1993,6 +2416,16 @@
           "type": "record",
           "values": {
            "fields": {
+            "cacheCreationEphemeral1hInputTokens": {
+             "int": true,
+             "optional": true,
+             "type": "number"
+            },
+            "cacheCreationEphemeral5mInputTokens": {
+             "int": true,
+             "optional": true,
+             "type": "number"
+            },
             "cacheCreationInputTokens": {
              "int": true,
              "type": "number"
@@ -2047,7 +2480,7 @@
              "type": "number"
             }
            },
-           "ref": "Ut",
+           "ref": "$e",
            "type": "object"
           }
          },
@@ -2075,7 +2508,7 @@
        }
       },
       "optional": true,
-      "ref": "_Rr",
+      "ref": "ths",
       "type": "object"
      },
      "user_message_uuid": {
@@ -2113,29 +2546,38 @@
     "fields": {
      "response": {
       "fields": {
-       "pending_permission_requests": {
+       "pending_elicitation_requests": {
         "items": {
-         "ref": "$T",
+         "ref": "_A",
          "type": "any"
         },
         "optional": true,
-        "ref": "Ty",
+        "ref": "kv",
+        "type": "array"
+       },
+       "pending_permission_requests": {
+        "items": {
+         "ref": "_A",
+         "type": "any"
+        },
+        "optional": true,
+        "ref": "vv",
         "type": "array"
        },
        "pending_user_dialog_requests": {
         "items": {
-         "ref": "$T",
+         "ref": "_A",
          "type": "any"
         },
         "optional": true,
-        "ref": "fy",
+        "ref": "Rv",
         "type": "array"
        },
        "request_id": {
         "type": "string"
        },
        "response": {
-        "anchor": "account:{email:ie?.email,organization:ie?.organization,subscriptionType:ie?.subscription,tokenSource:ie?.tokenSource,apiKeySource:ie?.apiKeySource,apiProvider:He()}",
+        "anchor": "account:{email:Ue?.email,organization:Ue?.organization,subscriptionType:Ue?.subscription,tokenSource:Ue?.tokenSource,apiKeySource:Ue?.apiKeySource,apiProvider:Te()}",
         "fields": {
          "account": {
           "fields": {
@@ -2249,7 +2691,7 @@
            1
           ],
           "optional": true,
-          "optional_condition": "WM(w??null)??void 0",
+          "optional_condition": "ZD(y??null)??Fne(y??null,Me.fastMode)??void 0",
           "optional_source": "claude_code.emitters.initialize",
           "source": "proof/VELDO-0172/capture.json:streams.claude",
           "type": "string"
@@ -2445,7 +2887,7 @@
         "value": "success"
        }
       },
-      "ref": "_Y",
+      "ref": "j1",
       "type": "object"
      },
      "type": {
@@ -2459,6 +2901,42 @@
     "fields": {
      "rate_limit_info": {
       "fields": {
+       "adminRequestOffer": {
+        "fields": {
+         "confirm": {
+          "type": "boolean"
+         },
+         "confirmPrompt": {
+          "type": "string"
+         },
+         "doneLabel": {
+          "type": "string"
+         },
+         "label": {
+          "type": "string"
+         },
+         "lastFileFailed": {
+          "optional": true,
+          "type": "boolean"
+         },
+         "revision": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "state": {
+          "type": "enum",
+          "values": [
+           "can_ask",
+           "pending",
+           "sending",
+           "sent"
+          ]
+         }
+        },
+        "optional": true,
+        "type": "object"
+       },
        "canUserPurchaseCredits": {
         "optional": true,
         "type": "boolean"
@@ -2505,6 +2983,10 @@
          "fetch_error",
          "unknown"
         ]
+       },
+       "overageEnabled": {
+        "optional": true,
+        "type": "boolean"
        },
        "overageInUse": {
         "optional": true,
@@ -2583,6 +3065,19 @@
             "int": true,
             "type": "number"
            },
+           "status": {
+            "optional": true,
+            "type": "enum",
+            "values": [
+             "allowed",
+             "allowed_warning",
+             "rejected"
+            ]
+           },
+           "surpassedThreshold": {
+            "optional": true,
+            "type": "number"
+           },
            "utilization": {
             "type": "number"
            }
@@ -2594,6 +3089,19 @@
           "fields": {
            "resetsAt": {
             "int": true,
+            "type": "number"
+           },
+           "status": {
+            "optional": true,
+            "type": "enum",
+            "values": [
+             "allowed",
+             "allowed_warning",
+             "rejected"
+            ]
+           },
+           "surpassedThreshold": {
+            "optional": true,
             "type": "number"
            },
            "utilization": {
@@ -2609,6 +3117,19 @@
             "int": true,
             "type": "number"
            },
+           "status": {
+            "optional": true,
+            "type": "enum",
+            "values": [
+             "allowed",
+             "allowed_warning",
+             "rejected"
+            ]
+           },
+           "surpassedThreshold": {
+            "optional": true,
+            "type": "number"
+           },
            "utilization": {
             "type": "number"
            }
@@ -2620,12 +3141,36 @@
         "optional": true,
         "type": "object"
        },
+       "usageCreditOffer": {
+        "fields": {
+         "daysLeft": {
+          "int": true,
+          "type": "number"
+         },
+         "headlinePct": {
+          "int": true,
+          "type": "number"
+         },
+         "kind": {
+          "type": "enum",
+          "values": [
+           "pct_off",
+           "extra_credit"
+          ]
+         },
+         "label": {
+          "type": "string"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       },
        "utilization": {
         "optional": true,
         "type": "number"
        }
       },
-      "ref": "yRr",
+      "ref": "$co",
       "type": "object"
      },
      "session_id": {
@@ -2659,7 +3204,7 @@
      },
      "fast_mode_disabled_reason": {
       "optional": true,
-      "ref": "Ht",
+      "ref": "Zt",
       "type": "enum",
       "values": [
        "free",
@@ -2676,13 +3221,18 @@
      },
      "fast_mode_state": {
       "optional": true,
-      "ref": "Bt",
+      "ref": "Jt",
       "type": "enum",
       "values": [
        "off",
        "cooldown",
        "on"
       ]
+     },
+     "interrupted_by_shutdown": {
+      "optional": true,
+      "type": "literal",
+      "value": true
      },
      "is_error": {
       "type": "boolean"
@@ -2691,6 +3241,16 @@
       "type": "record",
       "values": {
        "fields": {
+        "cacheCreationEphemeral1hInputTokens": {
+         "int": true,
+         "optional": true,
+         "type": "number"
+        },
+        "cacheCreationEphemeral5mInputTokens": {
+         "int": true,
+         "optional": true,
+         "type": "number"
+        },
         "cacheCreationInputTokens": {
          "int": true,
          "type": "number"
@@ -2745,7 +3305,80 @@
          "type": "number"
         }
        },
-       "ref": "Ut",
+       "ref": "$e",
+       "type": "object"
+      }
+     },
+     "model_usage_since_last_result": {
+      "optional": true,
+      "type": "record",
+      "values": {
+       "fields": {
+        "cacheCreationEphemeral1hInputTokens": {
+         "int": true,
+         "optional": true,
+         "type": "number"
+        },
+        "cacheCreationEphemeral5mInputTokens": {
+         "int": true,
+         "optional": true,
+         "type": "number"
+        },
+        "cacheCreationInputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "cacheReadInputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "canonicalModel": {
+         "optional": true,
+         "type": "string"
+        },
+        "contextWindow": {
+         "int": true,
+         "type": "number"
+        },
+        "costBasis": {
+         "optional": true,
+         "type": "enum",
+         "values": [
+          "list",
+          "managed",
+          "unknown"
+         ]
+        },
+        "costUSD": {
+         "type": "number"
+        },
+        "inputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "maxOutputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "outputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "provider": {
+         "optional": true,
+         "type": "string"
+        },
+        "thinkingTokens": {
+         "int": true,
+         "optional": true,
+         "type": "number"
+        },
+        "webSearchRequests": {
+         "int": true,
+         "type": "number"
+        }
+       },
+       "ref": "$e",
        "type": "object"
       }
      },
@@ -2755,7 +3388,7 @@
      },
      "origin": {
       "optional": true,
-      "ref": "Xo",
+      "ref": "Eo",
       "type": "any"
      },
      "permission_denials": {
@@ -2774,10 +3407,25 @@
          "type": "string"
         }
        },
-       "ref": "JR",
+       "ref": "jA",
        "type": "object"
       },
       "type": "array"
+     },
+     "process_garbage_collections": {
+      "optional": true,
+      "ref": "QA",
+      "type": "any"
+     },
+     "process_start_purge_delay_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "process_start_tuning": {
+      "int": true,
+      "optional": true,
+      "type": "number"
      },
      "queued_turn_count": {
       "int": true,
@@ -2815,18 +3463,24 @@
        }
       },
       "optional": true,
-      "ref": "dK",
+      "ref": "VF",
       "type": "object"
+     },
+     "safety_stops": {
+      "int": true,
+      "optional": true,
+      "type": "number"
      },
      "session_id": {
       "type": "string"
      },
      "startup_failure_reason": {
       "optional": true,
-      "ref": "uK",
+      "ref": "BF",
       "type": "enum",
       "values": [
        "org_pin_api_key_conflict",
+       "provider_not_allowed",
        "org_verify_failed",
        "org_pin_mismatch",
        "managed_settings_invalid",
@@ -2841,7 +3495,11 @@
        "worktree_resume_refused",
        "worktree_unverified",
        "cli_version_too_old",
-       "bypass_root"
+       "bypass_root",
+       "org_config_required_unavailable",
+       "org_config_refused",
+       "sandbox_required_unavailable",
+       "initialize_not_first"
       ]
      },
      "stop_reason": {
@@ -2934,7 +3592,7 @@
        }
       },
       "optional": true,
-      "ref": "ey",
+      "ref": "BA",
       "type": "object"
      },
      "subtype": {
@@ -2948,7 +3606,7 @@
      },
      "terminal_reason": {
       "optional": true,
-      "ref": "ZR",
+      "ref": "VA",
       "type": "string"
      },
      "total_cost_usd": {
@@ -2972,7 +3630,7 @@
          }
         },
         "nullable": true,
-        "ref": "Oq",
+        "ref": "tK",
         "type": "object"
        },
        "cache_creation_input_tokens": {
@@ -2984,6 +3642,10 @@
         "int": true,
         "nullable": true,
         "type": "number"
+       },
+       "fallback_credit": {
+        "optional": true,
+        "type": "any"
        },
        "inference_geo": {
         "nullable": true,
@@ -3012,7 +3674,7 @@
         },
         "nullable": true,
         "optional": true,
-        "ref": "Cq",
+        "ref": "nK",
         "type": "object"
        },
        "server_tool_use": {
@@ -3027,7 +3689,7 @@
          }
         },
         "nullable": true,
-        "ref": "wq",
+        "ref": "sK",
         "type": "object"
        },
        "service_tier": {
@@ -3040,7 +3702,7 @@
         "type": "string"
        }
       },
-      "ref": "WR",
+      "ref": "DA",
       "type": "object"
      },
      "user_message_uuid": {
@@ -3062,9 +3724,59 @@
    },
    "result/success": {
     "fields": {
+     "api_error": {
+      "optional": true,
+      "type": "enum",
+      "values": [
+       "max_output_tokens",
+       "dlp_request_denied",
+       "claude_code_version_too_old",
+       "safety_monitor_blocked",
+       "effort_requires_thinking",
+       "advisor_incompatible",
+       "tool_history_mismatch",
+       "autocompact_thrashing",
+       "pdf_too_large",
+       "pdf_password_protected",
+       "stored_login_refused",
+       "media_removed",
+       "no_response",
+       "tls_untrusted_ca",
+       "gateway_content_type",
+       "connection_failed",
+       "stream_idle_timeout",
+       "computer_slept",
+       "provider_credentials",
+       "gateway_signin_required",
+       "gateway_session_expired",
+       "api_key_auth_disabled",
+       "org_disabled_credential",
+       "invalid_credential_header",
+       "model_requires_usage_credits",
+       "long_context_credits_required",
+       "consent_unanswered",
+       "no_allowed_fallback",
+       "model_substitution_disabled",
+       "field_not_granted",
+       "usage_limit_reached",
+       "empty_completion",
+       "malformed_tool_use_exhausted",
+       "unattended_start_limit",
+       "unattended_start_unconfirmed",
+       "network_edge_blocked"
+      ],
+      "via": "api_error"
+     },
      "api_error_code": {
       "optional": true,
       "type": "string"
+     },
+     "api_error_origin": {
+      "optional": true,
+      "type": "enum",
+      "values": [
+       "first_party"
+      ]
      },
      "api_error_status": {
       "int": true,
@@ -3088,7 +3800,7 @@
        }
       },
       "optional": true,
-      "ref": "cK",
+      "ref": "jF",
       "type": "object"
      },
      "duration_api_ms": {
@@ -3101,7 +3813,7 @@
      },
      "fast_mode_disabled_reason": {
       "optional": true,
-      "ref": "Ht",
+      "ref": "Zt",
       "type": "enum",
       "values": [
        "free",
@@ -3118,7 +3830,7 @@
      },
      "fast_mode_state": {
       "optional": true,
-      "ref": "Bt",
+      "ref": "Jt",
       "type": "enum",
       "values": [
        "off",
@@ -3127,6 +3839,11 @@
       ]
      },
      "first_content_frame_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "first_request_input_tokens": {
       "int": true,
       "optional": true,
       "type": "number"
@@ -3148,7 +3865,7 @@
      },
      "first_stream_post_queued_behind": {
       "optional": true,
-      "ref": "SR",
+      "ref": "so",
       "type": "enum",
       "values": [
        "durable_post",
@@ -3167,17 +3884,231 @@
       "optional": true,
       "type": "number"
      },
+     "first_text_post_queue_wait_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "first_text_post_queued_behind": {
+      "optional": true,
+      "ref": "so",
+      "type": "enum",
+      "values": [
+       "durable_post",
+       "ephemeral_post",
+       "retry_backoff",
+       "hold",
+       "none"
+      ]
+     },
      "first_text_post_wall_ms": {
       "optional": true,
       "type": "number"
+     },
+     "flag_fetch_kick": {
+      "optional": true,
+      "type": "string"
      },
      "frame_enqueued_wall_ms": {
       "optional": true,
       "type": "number"
      },
+     "frame_intake_phases_ms": {
+      "optional": true,
+      "type": "record",
+      "values": {
+       "int": true,
+       "type": "number"
+      }
+     },
      "frame_received_wall_ms": {
       "optional": true,
       "type": "number"
+     },
+     "handoff_intake_phases_ms": {
+      "optional": true,
+      "type": "record",
+      "values": {
+       "int": true,
+       "type": "number"
+      }
+     },
+     "input_attachments_detail": {
+      "fields": {
+       "ambient_start_ms": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "ambient_wait_ms": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "changed_files_read_ms": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "changed_files_reread": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "cpu_ms": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "differs_files": {
+        "fields": {
+         "hash_only": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "size_25_to_50_kb": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "size_50_to_256_kb": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "size_over_256_kb": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "size_under_25_kb": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       },
+       "major_faults": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "producers": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "prompt_producers_ms": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "render_ms": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "setup_ms": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "slowest_producer": {
+        "optional": true,
+        "type": "string"
+       },
+       "slowest_producer_ms": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "token_count_ms": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "token_counts": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "touch_compare": {
+        "fields": {
+         "already_compared": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "differs": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "enoent": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "leaf_link": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "link_on_path": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "nlink": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "not_regular": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "other": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "oversize": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "partial_view": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "same": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         },
+         "via_outputs_link": {
+          "int": true,
+          "optional": true,
+          "type": "number"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       }
+      },
+      "optional": true,
+      "type": "object"
+     },
+     "interrupted_by_shutdown": {
+      "optional": true,
+      "type": "literal",
+      "value": true
      },
      "is_error": {
       "type": "boolean"
@@ -3186,10 +4117,75 @@
       "optional": true,
       "type": "string"
      },
+     "main_stream_chunk_count": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "main_stream_count": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "main_stream_event_count": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "message_normalization_detail": {
+      "fields": {
+       "after_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "before_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "images_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "messages": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "normalize_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "other_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "post_process_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "wire_messages": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       }
+      },
+      "optional": true,
+      "type": "object"
+     },
      "modelUsage": {
       "type": "record",
       "values": {
        "fields": {
+        "cacheCreationEphemeral1hInputTokens": {
+         "int": true,
+         "optional": true,
+         "type": "number"
+        },
+        "cacheCreationEphemeral5mInputTokens": {
+         "int": true,
+         "optional": true,
+         "type": "number"
+        },
         "cacheCreationInputTokens": {
          "int": true,
          "type": "number"
@@ -3244,7 +4240,80 @@
          "type": "number"
         }
        },
-       "ref": "Ut",
+       "ref": "$e",
+       "type": "object"
+      }
+     },
+     "model_usage_since_last_result": {
+      "optional": true,
+      "type": "record",
+      "values": {
+       "fields": {
+        "cacheCreationEphemeral1hInputTokens": {
+         "int": true,
+         "optional": true,
+         "type": "number"
+        },
+        "cacheCreationEphemeral5mInputTokens": {
+         "int": true,
+         "optional": true,
+         "type": "number"
+        },
+        "cacheCreationInputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "cacheReadInputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "canonicalModel": {
+         "optional": true,
+         "type": "string"
+        },
+        "contextWindow": {
+         "int": true,
+         "type": "number"
+        },
+        "costBasis": {
+         "optional": true,
+         "type": "enum",
+         "values": [
+          "list",
+          "managed",
+          "unknown"
+         ]
+        },
+        "costUSD": {
+         "type": "number"
+        },
+        "inputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "maxOutputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "outputTokens": {
+         "int": true,
+         "type": "number"
+        },
+        "provider": {
+         "optional": true,
+         "type": "string"
+        },
+        "thinkingTokens": {
+         "int": true,
+         "optional": true,
+         "type": "number"
+        },
+        "webSearchRequests": {
+         "int": true,
+         "type": "number"
+        }
+       },
+       "ref": "$e",
        "type": "object"
       }
      },
@@ -3254,7 +4323,7 @@
      },
      "origin": {
       "optional": true,
-      "ref": "Xo",
+      "ref": "Eo",
       "type": "any"
      },
      "permission_denials": {
@@ -3273,15 +4342,297 @@
          "type": "string"
         }
        },
-       "ref": "JR",
+       "ref": "jA",
        "type": "object"
       },
       "type": "array"
+     },
+     "process_anon_mib_result": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "process_anon_mib_turn_start": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "process_cpu_ms_between_turns": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "process_cpu_ms_streaming": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "process_cpu_ms_turn": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "process_garbage_collections": {
+      "optional": true,
+      "ref": "QA",
+      "type": "any"
+     },
+     "process_peak_rss_mib": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "process_rss_mib_result": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "process_rss_mib_turn_start": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "process_start_purge_delay_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "process_start_tuning": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "process_turn_index": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "process_turn_states": {
+      "fields": {
+       "after_last_request": {
+        "fields": {
+         "cpu_ms": {
+          "int": true,
+          "type": "number"
+         },
+         "entries": {
+          "int": true,
+          "type": "number"
+         },
+         "wall_ms": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       },
+       "agent_tool": {
+        "fields": {
+         "cpu_ms": {
+          "int": true,
+          "type": "number"
+         },
+         "entries": {
+          "int": true,
+          "type": "number"
+         },
+         "wall_ms": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       },
+       "before_first_request": {
+        "fields": {
+         "cpu_ms": {
+          "int": true,
+          "type": "number"
+         },
+         "entries": {
+          "int": true,
+          "type": "number"
+         },
+         "wall_ms": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       },
+       "between_requests": {
+        "fields": {
+         "cpu_ms": {
+          "int": true,
+          "type": "number"
+         },
+         "entries": {
+          "int": true,
+          "type": "number"
+         },
+         "wall_ms": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       },
+       "first_event_wait": {
+        "fields": {
+         "cpu_ms": {
+          "int": true,
+          "type": "number"
+         },
+         "entries": {
+          "int": true,
+          "type": "number"
+         },
+         "wall_ms": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       },
+       "main_stream": {
+        "fields": {
+         "cpu_ms": {
+          "int": true,
+          "type": "number"
+         },
+         "entries": {
+          "int": true,
+          "type": "number"
+         },
+         "wall_ms": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       },
+       "side_stream": {
+        "fields": {
+         "cpu_ms": {
+          "int": true,
+          "type": "number"
+         },
+         "entries": {
+          "int": true,
+          "type": "number"
+         },
+         "wall_ms": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       },
+       "tool": {
+        "fields": {
+         "cpu_ms": {
+          "int": true,
+          "type": "number"
+         },
+         "entries": {
+          "int": true,
+          "type": "number"
+         },
+         "wall_ms": {
+          "int": true,
+          "type": "number"
+         }
+        },
+        "optional": true,
+        "type": "object"
+       }
+      },
+      "optional": true,
+      "type": "object"
+     },
+     "process_wall_ms_between_turns": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "process_wall_ms_streaming": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "process_wall_ms_turn": {
+      "int": true,
+      "optional": true,
+      "type": "number"
      },
      "queued_turn_count": {
       "int": true,
       "optional": true,
       "type": "number"
+     },
+     "request_build_detail": {
+      "fields": {
+       "cache_break_record_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "headers_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "other_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "plans_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "record_attempt_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "records_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "retry_setup_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "sent_build_cache_breakpoints_ms": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "sent_build_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "sent_build_safety_context_ms": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "sent_build_surrogate_scan_ms": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "system_ms": {
+        "int": true,
+        "type": "number"
+       }
+      },
+      "optional": true,
+      "type": "object"
      },
      "request_sent_wall_ms": {
       "optional": true,
@@ -3299,8 +4650,66 @@
       "optional": true,
       "type": "string"
      },
+     "resume_store_confirm_detail": {
+      "fields": {
+       "ahead_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "failed_posts": {
+        "int": true,
+        "type": "number"
+       },
+       "other_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "post_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "posts": {
+        "int": true,
+        "type": "number"
+       },
+       "rows": {
+        "int": true,
+        "type": "number"
+       },
+       "rows_ahead": {
+        "int": true,
+        "type": "number"
+       },
+       "write_ms": {
+        "int": true,
+        "type": "number"
+       }
+      },
+      "optional": true,
+      "type": "object"
+     },
+     "safety_stops": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
      "session_id": {
       "type": "string"
+     },
+     "shell_cpu_ms_since_last_result": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "shell_cpu_ms_turn": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "shell_wall_ms_since_last_result": {
+      "int": true,
+      "optional": true,
+      "type": "number"
      },
      "stop_reason": {
       "nullable": true,
@@ -3396,7 +4805,7 @@
        }
       },
       "optional": true,
-      "ref": "ey",
+      "ref": "BA",
       "type": "object"
      },
      "subtype": {
@@ -3405,10 +4814,30 @@
      },
      "terminal_reason": {
       "optional": true,
-      "ref": "ZR",
+      "ref": "VA",
       "type": "string"
      },
+     "text_post_count": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "text_post_flush_timer_max_late_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "text_post_gap_over_500ms_count": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
      "time_origin_ms": {
+      "optional": true,
+      "type": "number"
+     },
+     "time_to_request_cpu_ms": {
+      "int": true,
       "optional": true,
       "type": "number"
      },
@@ -3417,10 +4846,68 @@
       "optional": true,
       "type": "number"
      },
+     "time_to_request_loop_lag_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "time_to_request_major_faults": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
      "time_to_request_ms": {
       "int": true,
       "optional": true,
       "type": "number"
+     },
+     "time_to_request_phases_ms": {
+      "optional": true,
+      "type": "record",
+      "values": {
+       "int": true,
+       "type": "number"
+      }
+     },
+     "tool_schema_build_detail": {
+      "fields": {
+       "after_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "betas_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "new_schemas": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "other_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "placement_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "render_ms": {
+        "int": true,
+        "type": "number"
+       },
+       "tools": {
+        "int": true,
+        "optional": true,
+        "type": "number"
+       },
+       "waits_ms": {
+        "int": true,
+        "type": "number"
+       }
+      },
+      "optional": true,
+      "type": "object"
      },
      "total_cost_usd": {
       "type": "number"
@@ -3434,6 +4921,30 @@
       "int": true,
       "optional": true,
       "type": "number"
+     },
+     "turn_start_control_requests_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
+     "turn_start_phases_ms": {
+      "optional": true,
+      "type": "record",
+      "values": {
+       "int": true,
+       "type": "number"
+      }
+     },
+     "turn_start_resume_kind": {
+      "optional": true,
+      "ref": "aA",
+      "type": "enum",
+      "values": [
+       "orphaned_permission",
+       "turn_handoff",
+       "deferred_tool_use",
+       "none"
+      ]
      },
      "turn_started_wall_ms": {
       "optional": true,
@@ -3457,7 +4968,7 @@
          }
         },
         "nullable": true,
-        "ref": "Oq",
+        "ref": "tK",
         "type": "object"
        },
        "cache_creation_input_tokens": {
@@ -3469,6 +4980,10 @@
         "int": true,
         "nullable": true,
         "type": "number"
+       },
+       "fallback_credit": {
+        "optional": true,
+        "type": "any"
        },
        "inference_geo": {
         "nullable": true,
@@ -3497,7 +5012,7 @@
         },
         "nullable": true,
         "optional": true,
-        "ref": "Cq",
+        "ref": "nK",
         "type": "object"
        },
        "server_tool_use": {
@@ -3512,7 +5027,7 @@
          }
         },
         "nullable": true,
-        "ref": "wq",
+        "ref": "sK",
         "type": "object"
        },
        "service_tier": {
@@ -3525,8 +5040,12 @@
         "type": "string"
        }
       },
-      "ref": "WR",
+      "ref": "DA",
       "type": "object"
+     },
+     "user_message_server_received_wall_ms": {
+      "optional": true,
+      "type": "number"
      },
      "user_message_uuid": {
       "optional": true,
@@ -3551,6 +5070,13 @@
    },
    "system/init": {
     "fields": {
+     "additional_directories": {
+      "items": {
+       "type": "string"
+      },
+      "optional": true,
+      "type": "array"
+     },
      "agents": {
       "items": {
        "type": "string"
@@ -3563,7 +5089,7 @@
       "type": "boolean"
      },
      "apiKeySource": {
-      "ref": "vq",
+      "ref": "aK",
       "type": "enum",
       "values": [
        "ANTHROPIC_API_KEY",
@@ -3594,9 +5120,30 @@
      "claude_code_version": {
       "type": "string"
      },
+     "client_thinking": {
+      "fields": {
+       "max_thinking_tokens": {
+        "int": true,
+        "nullable": true,
+        "type": "number"
+       },
+       "thinking_display": {
+        "nullable": true,
+        "ref": "nje",
+        "type": "enum",
+        "values": [
+         "summarized",
+         "omitted",
+         "highlights"
+        ]
+       }
+      },
+      "optional": true,
+      "type": "object"
+     },
      "cloud_session": {
       "optional": true,
-      "ref": "iy",
+      "ref": "JA",
       "type": "any"
      },
      "cwd": {
@@ -3616,7 +5163,7 @@
      },
      "fast_mode_disabled_reason": {
       "optional": true,
-      "ref": "Ht",
+      "ref": "Zt",
       "type": "enum",
       "values": [
        "free",
@@ -3633,13 +5180,18 @@
      },
      "fast_mode_state": {
       "optional": true,
-      "ref": "Bt",
+      "ref": "Jt",
       "type": "enum",
       "values": [
        "off",
        "cooldown",
        "on"
       ]
+     },
+     "flag_restate_noop": {
+      "optional": true,
+      "type": "literal",
+      "value": true
      },
      "footer_indicator": {
       "fields": {
@@ -3648,7 +5200,7 @@
        }
       },
       "optional": true,
-      "ref": "an",
+      "ref": "Oo",
       "type": "object"
      },
      "mcp_server_errors": {
@@ -3714,6 +5266,10 @@
      "model": {
       "type": "string"
      },
+     "original_cwd": {
+      "optional": true,
+      "type": "string"
+     },
      "output_style": {
       "type": "string"
      },
@@ -3722,7 +5278,7 @@
       "type": "boolean"
      },
      "permissionMode": {
-      "ref": "ne",
+      "ref": "ue",
       "type": "enum",
       "values": [
        "default",
@@ -3737,6 +5293,10 @@
       "items": {
        "fields": {
         "message": {
+         "type": "string"
+        },
+        "path": {
+         "optional": true,
          "type": "string"
         },
         "plugin": {
@@ -3830,6 +5390,10 @@
       "type": "literal",
       "value": "init"
      },
+     "synced_skills_path": {
+      "optional": true,
+      "type": "string"
+     },
      "terminal_slash_commands": {
       "items": {
        "type": "string"
@@ -3846,6 +5410,14 @@
      "type": {
       "type": "literal",
       "value": "system"
+     },
+     "ultrathink_available": {
+      "optional": true,
+      "type": "boolean"
+     },
+     "ultrathink_typed_raises": {
+      "optional": true,
+      "type": "boolean"
      },
      "uuid": {
       "type": "string"
@@ -3871,7 +5443,7 @@
    "result.modelUsage": "Per-model totals for every model call made through the query pipeline during this query() call - main loop, Task subagents, sidechains, and internal calls such as compaction and Workflow agents. Cumulative across turns in streaming-input sessions: each result carries the running total so far, so read the latest result rather than summing across results. Internal helper calls outside the query pipeline (e.g. the permission classifier, token-count probes) are excluded; crash/startup-error results may carry zeroed usage, a resumed or forked session continues from the totals its transcript saved, when it has them (so the first result already carries the earlier turns), and a mid-session /clear resets the running total. The correct field for token/cost accounting; treat it as an estimate, not a billing statement.",
    "result.usage": "MAIN AGENT LOOP ONLY - excludes Task subagent, sidechain, and auxiliary model calls, and is per-turn in streaming-input sessions. Prefer modelUsage for token/cost accounting."
   },
-  "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+  "sha256": "sha256:eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0",
   "source": "the zod schema of the SDK stream messages embedded in the binary (print mode, stream JSON)",
   "tool_forms": {
    "builtin_renamed": [
@@ -3910,11 +5482,6 @@
    "emitted_tool_fields": {
     "system/task_progress": [
      "workflow_progress.lastToolName"
-    ],
-    "tool_progress": [
-     "repl_call.inner_tool_name",
-     "repl_call.inner_tool_input",
-     "repl_call.inner_tool_use_id"
     ]
    },
    "emitted_tool_fields_source": "the fields a frame's emitters write that name a tool though its schema omits them: the REPL tool's repl_call on a tool_progress (both emitters) and a task_progress's workflow_progress entries (workflow_agent progress with lastToolName)",
@@ -3952,6 +5519,11 @@
     [
      "system",
      "post_turn_summary",
+     true
+    ],
+    [
+     "system",
+     "session_metadata",
      true
     ],
     [
@@ -4012,13 +5584,14 @@
       "container",
       "this-machine"
      ],
-     "routed": false,
+     "routed": "CLAUDE_CODE_REMOTE_TOOLS_FORWARD",
      "tools": [
       "Bash",
       "Edit",
       "Glob",
       "Grep",
       "Read",
+      "TaskStop",
       "Write"
      ]
     },
@@ -4034,7 +5607,7 @@
      "parent": "parent_tool_use_id",
      "tool": "Skill"
     },
-    "source": "the built-in tools whose effects stay inside the run's clone and host session (each name's binding and the tool's definition, with its aliases): the file tools, Glob and Grep, the notebook edit, the session checklist, the deferred-tool loader, Bash and its background companions (TaskStop, Monitor), the read-only web fetch and search, and rule 2's constructs (Agent, Skill, REPL, Workflow, CronCreate); the Agent tool is remote when its input's isolation is remote or, with none given, when the agent definition its subagent_type names says so (no built-in definition sets isolation; builtin_types), and a remote agent is a task of type remote_agent; the file tools and Bash take a _host naming another machine, routed there only when the remote-tools gate is on, which this build compiles off (routed false); the task types of the allowlisted tools, from the binary's task table. Skill's input schema is only skill and optional args, with no fork field; its definition supplies context (getContext or context, default inline). A sub-agent's Skill therefore asks regardless of input; an explicit context in the recorded input must exclude a fork. The binary has no LS tool.",
+    "source": "the built-in tools whose effects stay inside the run's clone and host session (each name's binding and the tool's definition, with its aliases): the file tools, Glob and Grep, the notebook edit, the session checklist, the deferred-tool loader, Bash and its background companions (TaskStop, Monitor), the read-only web fetch and search, and rule 2's constructs (Agent, Skill, Workflow, CronCreate); the Agent tool is remote when its input's isolation is remote or, with none given, when the agent definition its subagent_type names says so (no built-in definition sets isolation; builtin_types), and a remote agent is a task of type remote_agent; the file tools and Bash take a _host naming another machine, routed there only when the remote-tools gate is on, which this build turns on when the environment sets CLAUDE_CODE_REMOTE_TOOLS_FORWARD (routed names it); the task types of the allowlisted tools, from the binary's task table. Skill's input schema is only skill and optional args, with no fork field; its definition supplies context (getContext or context, default inline). A sub-agent's Skill therefore asks regardless of input; an explicit context in the recorded input must exclude a fork. The binary has no LS tool.",
     "task_types": {
      "field": "task_type",
      "in_run": [
@@ -4050,8 +5623,11 @@
       "in_process_teammate",
       "local_agent",
       "local_bash",
+      "local_memory_import",
       "local_workflow",
+      "monitor_mcp",
       "monitor_ws",
+      "post_turn_memory",
       "remote_agent"
      ]
     },
@@ -4064,7 +5640,6 @@
      "Grep",
      "Monitor",
      "NotebookEdit",
-     "REPL",
      "Read",
      "Skill",
      "TaskStop",
@@ -4168,6 +5743,10 @@
     ],
     [
      "system",
+     "file_attachments_missing"
+    ],
+    [
+     "system",
      "files_persisted"
     ],
     [
@@ -4188,7 +5767,15 @@
     ],
     [
      "system",
+     "inherited_asks_settled"
+    ],
+    [
+     "system",
      "init"
+    ],
+    [
+     "system",
+     "instruction_size_warning"
     ],
     [
      "system",
@@ -4224,6 +5811,10 @@
     ],
     [
      "system",
+     "permission_check_status"
+    ],
+    [
+     "system",
      "permission_denied"
     ],
     [
@@ -4233,6 +5824,14 @@
     [
      "system",
      "session_state_changed"
+    ],
+    [
+     "system",
+     "session_title_changed"
+    ],
+    [
+     "system",
+     "session_writes_lost"
     ],
     [
      "system",
@@ -4265,6 +5864,38 @@
     [
      "system",
      "turn_preempted"
+    ],
+    [
+     "system",
+     "ui_focus"
+    ],
+    [
+     "system",
+     "ui_invalidate"
+    ],
+    [
+     "system",
+     "ui_log"
+    ],
+    [
+     "system",
+     "ui_panes"
+    ],
+    [
+     "system",
+     "ui_placed"
+    ],
+    [
+     "system",
+     "ui_scroll"
+    ],
+    [
+     "system",
+     "ui_status"
+    ],
+    [
+     "system",
+     "ui_toast"
     ],
     [
      "system",
@@ -4312,9 +5943,7 @@
       "RemoteTrigger"
      ]
     },
-    "repl": {
-     "tool_progress": "repl_call"
-    },
+    "repl": {},
     "source": "the tools that run an agent, a skill, code, a workflow, a cloud agent routine or a scheduled prompt (each name's binding and the tool's definition or emitter naming it, with its aliases; the Agent tool's names are builtin_renamed's), the system frames whose schema carries a task_id, the fields a task frame gives a workflow and a workflow's task type, the REPL tool's inner call on a tool_progress, the progress kinds whose messages the CLI forwards with their task's id as parent_tool_use_id (Sne), the Skill tool's result when it forked an agent, and the calls that start an agent outside the run (remote_agent: any RemoteTrigger call, whose create, update and run start a cloud agent routine, and a CronCreate whose optional durable field, false by default and read through the semantic boolean that takes \"false\" for false, persists the prompt to .claude/scheduled_tasks.json to fire after the run)",
     "task_frames": [
      "system/task_notification",
@@ -4411,8 +6040,9 @@
      "system/task_progress"
     ],
     "nested_forwarded_only_with": "forwardSubagentText",
+    "nested_tool_calls_forwarded_with": "forwardNestedSubagentToolCalls",
     "parent": "parent_tool_use_id",
-    "source": "the frames whose schema carries a task's count of its calls (usage.tool_uses) and its id (tool_use_id), the count the tracker raises by one for each tool_use block of the task's own assistant messages (an agent's task_progress and its end notification carry it), the task's id as the parent_tool_use_id of the sub-agent's forwarded messages, and the gate that drops the messages of an agent a sub-agent starts unless forwardSubagentText is set",
+    "source": "the frames whose schema carries a task's count of its calls (usage.tool_uses) and its id (tool_use_id), the count the tracker raises by one for each tool_use block of the task's own assistant messages (an agent's task_progress and its end notification carry it), the task's id as the parent_tool_use_id of the sub-agent's forwarded messages, and the gate that drops the messages of an agent a sub-agent starts unless forwardSubagentText is set (its tool calls also when the consumer declares forwardNestedSubagentToolCalls)",
     "task": "tool_use_id"
    },
    "tool_fields": {
@@ -4423,6 +6053,7 @@
      "message.usage.server_tool_use",
      "parent_tool_use_id",
      "tool_use_meta",
+     "tool_use_meta.tool_name",
      "wire_tool_inputs"
     ],
     "result/error_during_execution": [
@@ -4430,6 +6061,10 @@
      "permission_denials.tool_input",
      "permission_denials.tool_name",
      "permission_denials.tool_use_id",
+     "process_turn_states.agent_tool",
+     "process_turn_states.tool",
+     "tool_schema_build_detail",
+     "tool_schema_build_detail.tools",
      "usage.server_tool_use"
     ],
     "result/error_max_budget_usd": [
@@ -4437,6 +6072,10 @@
      "permission_denials.tool_input",
      "permission_denials.tool_name",
      "permission_denials.tool_use_id",
+     "process_turn_states.agent_tool",
+     "process_turn_states.tool",
+     "tool_schema_build_detail",
+     "tool_schema_build_detail.tools",
      "usage.server_tool_use"
     ],
     "result/error_max_structured_output_retries": [
@@ -4444,6 +6083,10 @@
      "permission_denials.tool_input",
      "permission_denials.tool_name",
      "permission_denials.tool_use_id",
+     "process_turn_states.agent_tool",
+     "process_turn_states.tool",
+     "tool_schema_build_detail",
+     "tool_schema_build_detail.tools",
      "usage.server_tool_use"
     ],
     "result/error_max_turns": [
@@ -4451,6 +6094,10 @@
      "permission_denials.tool_input",
      "permission_denials.tool_name",
      "permission_denials.tool_use_id",
+     "process_turn_states.agent_tool",
+     "process_turn_states.tool",
+     "tool_schema_build_detail",
+     "tool_schema_build_detail.tools",
      "usage.server_tool_use"
     ],
     "result/success": [
@@ -4458,6 +6105,10 @@
      "permission_denials.tool_input",
      "permission_denials.tool_name",
      "permission_denials.tool_use_id",
+     "process_turn_states.agent_tool",
+     "process_turn_states.tool",
+     "tool_schema_build_detail",
+     "tool_schema_build_detail.tools",
      "usage.server_tool_use"
     ],
     "stream_event": [
@@ -4471,6 +6122,9 @@
     ],
     "system/init": [
      "tools"
+    ],
+    "system/permission_check_status": [
+     "tool_use_id"
     ],
     "system/permission_denied": [
      "tool_name",
@@ -4504,6 +6158,8 @@
      "source_tool_assistant_uuid",
      "source_tool_use_id",
      "tool_result_meta",
+     "tool_result_meta.built_in_tool",
+     "tool_states",
      "tool_use_result"
     ]
    },
@@ -4536,7 +6192,7 @@
     "Dec"
    ],
    "names": {
-    "five_hour": "session limit",
+    "five_hour": "5-hour limit",
     "overage": "usage credit limit",
     "seven_day": "weekly limit",
     "seven_day_opus": "Opus limit",
@@ -4562,10 +6218,10 @@
    "source": "the rate-limit result's text: `You've hit your ${limit}${' \u00b7 resets ' + time}` (+ ' \u00b7 progress saved'), the assistant API error message with error 'rate_limit' and the result's `result`; time en-US with ':minute' only when not 0, 'am'/'pm' lowercased, the date when the reset is over a day away, the year when it is another year, then ' (<zone>)', the engine's resolved IANA time zone",
    "zone": " (<IANA zone>)"
   },
-  "version": "2.1.281"
+  "version": "2.1.317"
  },
  "codex": {
-  "binary": "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+  "binary": "/home/dmitry/.local/share/codex-versions/0.166.0/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
   "credential_tables": [
    {
     "decision": "strip",
@@ -4575,7 +6231,7 @@
      "CODEX_API_KEY",
      "CODEX_ACCESS_TOKEN"
     ],
-    "offset": 213121037,
+    "offset": 260653692,
     "reason": "the auth variables Codex reads instead of its stored login"
    },
    {
@@ -4586,7 +6242,7 @@
      "OPENAI_FEDERATION_RULE_ID",
      "OPENAI_IDENTITY_TOKEN_FILE"
     ],
-    "offset": 213507228,
+    "offset": 261246839,
     "reason": "the agent identity login"
    },
    {
@@ -4597,7 +6253,7 @@
      "AWS_ACCESS_KEY_ID",
      "AWS_SECRET_ACCESS_KEY"
     ],
-    "offset": 212923203,
+    "offset": 261168815,
     "reason": "the Bedrock provider credentials: AWS_BEARER_TOKEN_BEDROCK is stripped (a model key both CLIs name); the general AWS keys are the worker's tools' own cloud login, and Codex selects Bedrock only through the model_provider of the owner-prepared profile"
    },
    {
@@ -4617,7 +6273,7 @@
      "AZURE_FEDERATED_TOKEN_FILE",
      "GOOGLE_APPLICATION_CREDENTIALS"
     ],
-    "offset": 215557232,
+    "offset": 263693921,
     "reason": "the secrets the exec server withholds from remote requests: its OpenAI and Codex names are stripped by prefix, the cloud names are tool credentials"
    },
    {
@@ -4629,7 +6285,7 @@
      "OPENAI_FEDERATION_RULE_ID",
      "OPENAI_IDENTITY_TOKEN_FILE"
     ],
-    "offset": 216938379,
+    "offset": 265511784,
     "reason": "the default exclusions of Codex's shell environment policy for its tool children: its Codex and OpenAI names are stripped by prefix, NODE_REPL_AUTH_TOKEN is a tool's own"
    },
    {
@@ -4639,7 +6295,7 @@
      "CODEX_AGENT_IDENTITY_AUTHAPI_BASE_URL",
      "CODEX_AGENT_IDENTITY_JWKS_BASE_URL"
     ],
-    "offset": 215894950,
+    "offset": 264248577,
     "reason": "the agent identity login endpoints"
    },
    {
@@ -4649,7 +6305,7 @@
      "CODEX_AGENT_IDENTITY_JWKS_BASE_URL",
      "CODEX_AUTHAPI_BASE_URL"
     ],
-    "offset": 212898077,
+    "offset": 260579697,
     "reason": "the account login endpoint"
    },
    {
@@ -4658,7 +6314,7 @@
     "names": [
      "CODEX_REFRESH_TOKEN_URL_OVERRIDE"
     ],
-    "offset": 212405856,
+    "offset": 259935232,
     "reason": "the token refresh endpoint"
    },
    {
@@ -4667,7 +6323,7 @@
     "names": [
      "CODEX_APP_SERVER_LOGIN_CLIENT_ID"
     ],
-    "offset": 212405920,
+    "offset": 259935264,
     "reason": "the login client id"
    },
    {
@@ -4676,7 +6332,7 @@
     "names": [
      "CODEX_APP_SERVER_LOGIN_ISSUER"
     ],
-    "offset": 212923750,
+    "offset": 261170263,
     "reason": "the login issuer"
    },
    {
@@ -4685,7 +6341,7 @@
     "names": [
      "CODEX_REVOKE_TOKEN_URL_OVERRIDE"
     ],
-    "offset": 215917946,
+    "offset": 264238494,
     "reason": "the token revocation endpoint"
    },
    {
@@ -4694,7 +6350,7 @@
     "names": [
      "CODEX_APP_SERVER_CHATGPT_BASE_URL"
     ],
-    "offset": 214856972,
+    "offset": 262873948,
     "reason": "the ChatGPT backend the subscription login talks to"
    },
    {
@@ -4703,7 +6359,7 @@
     "names": [
      "OPENAI_BASE_URL"
     ],
-    "offset": 216818717,
+    "offset": 265332978,
     "reason": "the model endpoint of the built-in OpenAI provider"
    },
    {
@@ -4713,7 +6369,7 @@
      "CODEX_OSS_PORT",
      "CODEX_OSS_BASE_URL"
     ],
-    "offset": 216246430,
+    "offset": 264734644,
     "reason": "the endpoint of the local model provider"
    },
    {
@@ -4722,7 +6378,7 @@
     "names": [
      "OPENAI_ORGANIZATION"
     ],
-    "offset": 216246116,
+    "offset": 264733882,
     "reason": "the organization an API-key login bills"
    },
    {
@@ -4731,301 +6387,336 @@
     "names": [
      "CODEX_SQLITE_HOME"
     ],
-    "offset": 211516062,
+    "offset": 259117970,
     "reason": "where Codex keeps its thread state, a redirect of the profile beside CODEX_HOME"
    }
   ],
   "errors": [
    {
     "message": "turn aborted. Something went wrong? Hit `/feedback` to report the issue.",
-    "offset": 216945383,
+    "offset": 265522765,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "fixed",
     "window": null
    },
    {
     "message": "shared rollout token budget exhausted",
-    "offset": 216945383,
+    "offset": 265522765,
     "reason": "Codex's own budget for one rollout, a local setting, not the account's",
     "source": "fixed",
     "window": null
    },
    {
+    "message": "stream disconnected before completion: Incomplete response returned, reason: content_filter",
+    "offset": 265522765,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "fixed",
+    "window": null
+   },
+   {
     "message": "Codex ran out of room in the model's context window. Start a new thread or clear earlier history before retrying.",
-    "offset": 216945383,
+    "offset": 265522765,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "fixed",
     "window": null
    },
    {
     "message": "agent thread limit reached",
-    "offset": 216945383,
+    "offset": 265522765,
     "reason": "Codex's own cap on concurrent agent threads",
     "source": "fixed",
     "window": null
    },
    {
     "message": "session configured event was not the first event in the stream",
-    "offset": 216945383,
+    "offset": 265522765,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "fixed",
     "window": null
    },
    {
     "message": "timeout waiting for child process to exit",
-    "offset": 216945383,
+    "offset": 265522765,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "fixed",
     "window": null
    },
    {
     "message": "request timed out",
-    "offset": 216945383,
+    "offset": 265522765,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "fixed",
     "window": null
    },
    {
     "message": "spawn failed: child stdout/stderr not captured",
-    "offset": 216945383,
+    "offset": 265522765,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "fixed",
     "window": null
    },
    {
     "message": "interrupted (Ctrl-C). Something went wrong? Hit `/feedback` to report the issue.",
-    "offset": 216945383,
+    "offset": 265522765,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "fixed",
     "window": null
    },
    {
     "message": "Image poisoning",
-    "offset": 216945383,
+    "offset": 265522765,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "fixed",
     "window": null
    },
    {
     "message": "Selected model is at capacity. Please try a different model.",
-    "offset": 216945383,
+    "offset": 265522765,
     "reason": "the service is busy; transient",
     "source": "fixed",
     "window": null
    },
    {
+    "message": "Policy-restricted capacity is unavailable. Please try again later.",
+    "offset": 265522765,
+    "reason": "the service has no capacity for a policy-restricted request; transient",
+    "source": "fixed",
+    "window": null
+   },
+   {
+    "message": "Flex capacity unavailable.",
+    "offset": 265522765,
+    "reason": "the flex service tier has no capacity; transient",
+    "source": "fixed",
+    "window": null
+   },
+   {
     "message": "Quota exceeded. Check your plan and billing details.",
-    "offset": 216945383,
+    "offset": 265522765,
     "reset": "none: blocked until observed otherwise",
     "source": "fixed",
     "window": "quota"
    },
    {
     "message": "To use Codex with your ChatGPT plan, upgrade to Plus: https://chatgpt.com/explore/plus.",
-    "offset": 216945383,
+    "offset": 265522765,
     "reset": "none: blocked until observed otherwise",
     "source": "fixed",
     "window": "plan"
    },
    {
-    "message": "We're currently experiencing high demand, which may cause temporary errors.",
-    "offset": 216945383,
+    "message": "We\u2019re currently experiencing high demand, which may cause temporary errors.",
+    "offset": 265522765,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "fixed",
     "window": null
    },
    {
     "message": "internal error; agent loop died unexpectedly",
-    "offset": 216945383,
+    "offset": 265522765,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "fixed",
     "window": null
    },
    {
     "message": "codex-linux-sandbox was required but not provided",
-    "offset": 216945383,
+    "offset": 265522765,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "fixed",
     "window": null
    },
    {
     "message": "sandbox denied exec error, exit code: {}, stdout: {}, stderr: {}",
-    "offset": 211619825,
+    "offset": 259224558,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "template",
     "window": null
    },
    {
     "message": "Missing environment variable: `{}`.",
-    "offset": 211619825,
+    "offset": 259224558,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "template",
     "window": null
    },
    {
     "message": "stream disconnected before completion: {}",
-    "offset": 211619825,
+    "offset": 259224558,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "template",
     "window": null
    },
    {
     "message": "no thread with id: {}",
-    "offset": 211619825,
+    "offset": 259224558,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "template",
     "window": null
    },
    {
     "message": "duplicate tool: {}",
-    "offset": 211619825,
+    "offset": 259224558,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "template",
     "window": null
    },
    {
     "message": "sandbox error: {}",
-    "offset": 211619825,
+    "offset": 259224558,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "template",
     "window": null
    },
    {
     "message": "unsupported operation: {}",
-    "offset": 211619825,
+    "offset": 259224558,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "template",
     "window": null
    },
    {
     "message": "Fatal error: {}",
-    "offset": 211619825,
+    "offset": 259224558,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "template",
     "window": null
    },
    {
     "message": "Error while reading the server response: {}{}",
-    "offset": 211619825,
+    "offset": 259224558,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "template",
     "window": null
    },
    {
     "message": ", request id: {}",
-    "offset": 211619825,
+    "offset": 259224558,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "template",
     "window": null
    },
    {
     "message": "Connection failed: {}",
-    "offset": 211619825,
+    "offset": 259224558,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "template",
     "window": null
    },
    {
     "message": "exceeded retry limit, last status: {}{}",
-    "offset": 211619825,
+    "offset": 259224558,
     "reason": "a request that failed its retries; it states no allowance",
     "source": "template",
     "window": null
    },
    {
-    "message": "You've hit your usage limit for {}. Switch to another model now,{}",
-    "offset": 211619825,
+    "message": "You\u2019ve hit your usage limit for {}. Switch to another model now,{}",
+    "offset": 259224558,
     "reset": "stated or none (its retry phrase)",
     "source": "template",
     "window": "usage_limit"
    },
    {
-    "message": "You've hit your usage limit. {},{}",
-    "offset": 211619825,
+    "message": "You\u2019ve hit your usage limit. {},{}",
+    "offset": 259224558,
     "reset": "stated or none (its retry phrase)",
     "source": "template",
     "window": "usage_limit"
    },
    {
-    "message": "You've hit your usage limit. Upgrade to Plus to continue using Codex (https://chatgpt.com/explore/plus),{}",
-    "offset": 211619825,
+    "message": "You\u2019ve hit your usage limit. Upgrade to Plus to continue using Codex (https://chatgpt.com/explore/plus),{}",
+    "offset": 259224558,
     "reset": "stated or none (its retry phrase)",
     "source": "template",
     "window": "usage_limit"
    },
    {
-    "message": "You've hit your usage limit. Visit https://chatgpt.com/codex/settings/usage to purchase more credits{}",
-    "offset": 211619825,
+    "message": "You\u2019ve hit your usage limit. Visit https://chatgpt.com/settings/usage to purchase more credits{}",
+    "offset": 259224558,
     "reset": "stated or none (its retry phrase)",
     "source": "template",
     "window": "usage_limit"
    },
    {
-    "message": "You've hit your usage limit. To get more access now, send a request to your admin{}",
-    "offset": 211619825,
+    "message": "You\u2019ve hit your usage limit.{}",
+    "offset": 259224558,
     "reset": "stated or none (its retry phrase)",
     "source": "template",
     "window": "usage_limit"
    },
    {
-    "message": "You've hit your usage limit.{}",
-    "offset": 211619825,
+    "message": "You\u2019ve hit your usage limit. To get more access now, send a request to your admin{}",
+    "offset": 259224558,
     "reset": "stated or none (its retry phrase)",
     "source": "template",
     "window": "usage_limit"
+   },
+   {
+    "message": "Incomplete response returned, reason: {}",
+    "offset": 259224558,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
    },
    {
     "message": "unexpected status {}: {}",
-    "offset": 211619825,
+    "offset": 259224558,
+    "reason": "a local, request or transient error; it states no allowance",
+    "source": "template",
+    "window": null
+   },
+   {
+    "message": ", url: {}",
+    "offset": 259224558,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "template",
     "window": null
    },
    {
     "message": ", auth error: {}",
-    "offset": 211619825,
+    "offset": 259224558,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "template",
     "window": null
    },
    {
     "message": ", auth error code: {}",
-    "offset": 211619825,
+    "offset": 259224558,
     "reason": "a local, request or transient error; it states no allowance",
     "source": "template",
     "window": null
    },
    {
     "message": "Your workspace is out of credits. Add credits to continue.",
-    "offset": 216968214,
+    "offset": 265524591,
     "reset": "none: blocked until observed otherwise",
     "source": "workspace",
     "window": "workspace_credits"
    },
    {
     "message": "Your workspace is out of credits. Ask your workspace owner to refill in order to continue.",
-    "offset": 216968214,
+    "offset": 265524591,
     "reset": "none: blocked until observed otherwise",
     "source": "workspace",
     "window": "workspace_credits"
    },
    {
     "message": "You hit your spend cap set in your workspace. Increase your spend cap to continue.",
-    "offset": 216968214,
+    "offset": 265524591,
     "reset": "none: blocked until observed otherwise",
     "source": "workspace",
     "window": "workspace_spend_cap"
    },
    {
     "message": "You hit your spend cap set by the owner of your workspace. Ask an owner to increase your spend cap to continue.",
-    "offset": 216968214,
+    "offset": 265524591,
     "reset": "none: blocked until observed otherwise",
     "source": "workspace",
     "window": "workspace_spend_cap"
    },
    {
-    "message": "You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits{}",
-    "offset": 216968555,
+    "message": "You\u2019ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits{}",
+    "offset": 265524932,
     "reset": "stated or none (its retry phrase)",
     "source": "template",
     "window": "usage_limit"
@@ -5261,9 +6952,9 @@
   },
   "items_source": "exec's ThreadItem (the `item` of item.started, item.updated and item.completed, tag `type`): the type names, the field names server, arguments and result, and the status values in_progress, completed and failed are the binary's literal runs; `id`, `type` and `tool` are names of four bytes or fewer, which the compiler places in code, not in the literal pool, and `result` and `error` are present only when the call has one",
   "notes": {
-   "turn.completed.usage": "exec's turn usage is read from the thread token usage its event processor receives (thread/tokenUsage/updated, a ThreadTokenUsage of total, last and modelContextWindow; the core's TokenUsageInfo of total_token_usage, last_token_usage and model_context_window): a thread total and a last-turn figure. The strings do not say which one turn.completed copies, so a resumed thread is never subtracted: the sum of the invocation's own completed turns never counts less than the CLI recorded under either reading"
+   "turn.completed.usage": "exec's turn usage is read from the thread token usage its event processor receives (thread/tokenUsage/updated, a ThreadTokenUsage of total, last and modelContextWindow; the core's TokenUsageInfo of total_token_usage, last_token_usage, last_usage_includes_reasoning and model_context_window): a thread total and a last-turn figure. The strings do not say which one turn.completed copies, so a resumed thread is never subtracted: the sum of the invocation's own completed turns never counts less than the CLI recorded under either reading"
   },
-  "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+  "sha256": "sha256:b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8",
   "source": "the serde names of codex-exec's ThreadEvent (tag 'type') and its payload structs, packed in the binary's literals; the strings show field names, not which are always present, so every usage field is marked optional",
   "tool_forms": {
    "exec_items": [
@@ -5337,7 +7028,7 @@
     "%-I:%M %p",
     "%b %-d{suffix}, %Y %-I:%M %p"
    ],
-   "message": "You've hit your usage limit",
+   "message": "You\u2019ve hit your usage limit",
    "retry_at": [
     " Try again at ",
     " or try again at "
@@ -5354,7 +7045,7 @@
     "th"
    ]
   },
-  "version": "0.154.0"
+  "version": "0.166.0"
  },
  "generated_by": "proof/VELDO-0062/extract_formats.py (reads binary schemas and the allowlist-scrubbed live capture)",
  "schema": "veldo.cli-formats/v1",

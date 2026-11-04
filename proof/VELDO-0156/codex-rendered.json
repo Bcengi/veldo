@@ -26,7 +26,6 @@
    "bundled_installed": [
     "imagegen",
     "openai-docs",
-    "plugin-creator",
     "review-agent",
     "skill-creator",
     "skill-installer"
@@ -60,7 +59,6 @@
    "bundled_installed": [
     "imagegen",
     "openai-docs",
-    "plugin-creator",
     "review-agent",
     "skill-creator",
     "skill-installer"
@@ -99,13 +97,12 @@
    "project_doc_fallback_filenames=[]": true
   }
  },
- "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+ "sha256": "sha256:b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8",
  "skills": {
   "with_switch": {
    "bundled_installed": [
     "imagegen",
     "openai-docs",
-    "plugin-creator",
     "review-agent",
     "skill-creator",
     "skill-installer"
@@ -138,7 +135,6 @@
    "bundled_installed": [
     "imagegen",
     "openai-docs",
-    "plugin-creator",
     "review-agent",
     "skill-creator",
     "skill-installer"
@@ -146,7 +142,6 @@
    "bundled_rendered": [
     "imagegen",
     "openai-docs",
-    "plugin-creator",
     "skill-creator",
     "skill-installer"
    ],
@@ -172,5 +167,5 @@
    "rendered": true
   }
  },
- "version": "0.154.0"
+ "version": "0.166.0"
 }

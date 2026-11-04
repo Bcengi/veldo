@@ -1,11 +1,28 @@
 {
  "claude_code": {
-  "binary": "/home/dmitry/.local/share/claude/versions/2.1.281",
+  "binary": "/home/dmitry/.local/share/claude/versions/2.1.317",
   "events": {
    "stream_event": {
     "fields": {
+     "abandoned_blocks": {
+      "fields": {
+       "api_message_id": {
+        "type": "string"
+       },
+       "from_block_index": {
+        "int": true,
+        "type": "number"
+       }
+      },
+      "optional": true,
+      "type": "object"
+     },
+     "api_message_id": {
+      "optional": true,
+      "type": "string"
+     },
      "event": {
-      "ref": "tK",
+      "ref": "PF",
       "type": "any"
      },
      "parent_tool_use_id": {
@@ -17,6 +34,15 @@
       "type": "string"
      },
      "session_id": {
+      "type": "string"
+     },
+     "text_runs_joined": {
+      "optional": true,
+      "type": "literal",
+      "value": true
+     },
+     "thinking_display": {
+      "optional": true,
       "type": "string"
      },
      "ttft_ms": {
@@ -146,7 +172,7 @@
            "type": "string"
           }
          },
-         "ref": "$R",
+         "ref": "LA",
          "type": "object"
         },
         "optional": true,
@@ -172,14 +198,14 @@
          },
          {
           "items": {
-           "ref": "fq",
+           "ref": "X0",
            "type": "any"
           },
-          "ref": "bq",
+          "ref": "Q0",
           "type": "array"
          }
         ],
-        "ref": "xo",
+        "ref": "ao",
         "type": "union"
        },
        "role": {
@@ -187,12 +213,12 @@
         "value": "user"
        }
       },
-      "ref": "J0",
+      "ref": "CF",
       "type": "object"
      },
      "origin": {
       "optional": true,
-      "ref": "Xo",
+      "ref": "Eo",
       "type": "any"
      },
      "parent_tool_use_id": {
@@ -201,7 +227,7 @@
      },
      "permission_mode": {
       "optional": true,
-      "ref": "ne",
+      "ref": "ue",
       "type": "enum",
       "values": [
        "default",
@@ -216,6 +242,18 @@
       "optional": true,
       "type": "string"
      },
+     "plugin_prompt": {
+      "fields": {
+       "name": {
+        "type": "string"
+       },
+       "text": {
+        "type": "string"
+       }
+      },
+      "optional": true,
+      "type": "object"
+     },
      "priority": {
       "optional": true,
       "type": "enum",
@@ -225,10 +263,23 @@
        "later"
       ]
      },
+     "refused_message_id": {
+      "optional": true,
+      "type": "string"
+     },
+     "requeue_if_interrupted_within_ms": {
+      "int": true,
+      "optional": true,
+      "type": "number"
+     },
      "seeded_summon": {
       "optional": true,
       "type": "literal",
       "value": true
+     },
+     "server_received_wall_ms": {
+      "optional": true,
+      "type": "number"
      },
      "shouldQuery": {
       "optional": true,
@@ -264,6 +315,12 @@
       "optional": true,
       "type": "object"
      },
+     "text_not_typed": {
+      "optional": true,
+      "ref": "Za",
+      "type": "literal",
+      "value": true
+     },
      "timestamp": {
       "optional": true,
       "type": "string"
@@ -271,12 +328,16 @@
      "tool_result_meta": {
       "items": {
        "fields": {
+        "built_in_tool": {
+         "optional": true,
+         "type": "string"
+        },
         "id": {
          "type": "string"
         },
         "non_execution_kind": {
          "optional": true,
-         "ref": "MR",
+         "ref": "v7t",
          "type": "enum",
          "values": [
           "user-rejected",
@@ -288,22 +349,59 @@
           "cancelled"
          ]
         },
+        "permission_decision": {
+         "fields": {
+          "decision": {
+           "ref": "TA",
+           "type": "enum",
+           "values": [
+            "accept",
+            "reject",
+            "cancelled"
+           ]
+          },
+          "reason_type": {
+           "optional": true,
+           "ref": "qLt",
+           "type": "enum",
+           "values": [
+            "rule",
+            "mode",
+            "subcommandResults",
+            "permissionPromptTool",
+            "hook",
+            "asyncAgent",
+            "sandboxOverride",
+            "workingDir",
+            "safetyCheck",
+            "classifier",
+            "other"
+           ]
+          },
+          "source": {
+           "type": "string"
+          }
+         },
+         "optional": true,
+         "type": "object"
+        },
         "remedy": {
          "fields": {
           "cause": {
            "optional": true,
-           "ref": "avo",
+           "ref": "E0i",
            "type": "enum",
            "values": [
             "managed_settings",
             "org_policy",
             "unavailable",
-            "user_setting"
+            "user_setting",
+            "unsupported_runtime"
            ]
           },
           "feature": {
            "optional": true,
-           "ref": "ivo",
+           "ref": "w0i",
            "type": "enum",
            "values": [
             "workflows",
@@ -311,7 +409,7 @@
            ]
           },
           "kind": {
-           "ref": "ovo",
+           "ref": "b0i",
            "type": "enum",
            "values": [
             "mcp_needs_auth",
@@ -340,7 +438,7 @@
           },
           "policy_kind": {
            "optional": true,
-           "ref": "lvo",
+           "ref": "v0i",
            "type": "enum",
            "values": [
             "org_denied",
@@ -349,7 +447,7 @@
           },
           "provider": {
            "optional": true,
-           "ref": "svo",
+           "ref": "S0i",
            "type": "enum",
            "values": [
             "claude_ai",
@@ -365,7 +463,7 @@
           }
          },
          "optional": true,
-         "ref": "rK",
+         "ref": "MF",
          "type": "object"
         },
         "user_feedback": {
@@ -390,28 +488,28 @@
     "type": "object"
    }
   },
-  "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+  "sha256": "sha256:eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0",
   "stderr": {
    "extra_certs": {
-    "anchor": "process.stderr.write(`Warning: Ignoring extra certs from \\`${extraPath}\\`, load failed: ${err?.code === \"ENOENT\" ? \"No such file or directory\" : err?.message}\n`);",
+    "anchor": "Warning: Ignoring extra certs from `{}`, load failed: {}{}",
     "environment": "NODE_EXTRA_CA_CERTS",
-    "text": "Warning: Ignoring extra certs from `{path}`, load failed: No such file or directory"
+    "text": "Warning: Ignoring extra certs from `{path}`, load failed: {error}"
    }
   },
-  "version": "2.1.281"
+  "version": "2.1.317"
  },
  "codex": {
-  "binary": "/home/dmitry/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+  "binary": "/home/dmitry/.local/share/codex-versions/0.166.0/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
   "login_status": {
    "chatgpt": "Logged in using ChatGPT"
   },
-  "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+  "sha256": "sha256:b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8",
   "stderr": {
    "prompt_from_stdin": {
     "text": "Reading prompt from stdin..."
    }
   },
-  "version": "0.154.0"
+  "version": "0.166.0"
  },
  "generated_by": "proof/VELDO-0141/extract_stream.py (reads the binaries' bytes only)",
  "schema": "veldo.stream-formats/v1",

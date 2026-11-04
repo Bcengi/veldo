@@ -239,6 +239,6 @@
   "skill_home_agents": true,
   "skill_profile": false
  },
- "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
- "version": "0.154.0"
+ "sha256": "sha256:b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8",
+ "version": "0.166.0"
 }

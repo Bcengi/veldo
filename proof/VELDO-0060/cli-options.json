@@ -1,6 +1,6 @@
 {
  "claude_code": {
-  "binary": "/home/dmitry/.local/share/claude/versions/2.1.281",
+  "binary": "/home/dmitry/.local/share/claude/versions/2.1.317",
   "environment": {
    "DISABLE_AUTOUPDATER": "read by the binary as the environment switch that turns its updater off"
   },
@@ -23,6 +23,11 @@
    "--allow-dangerously-skip-permissions": {
     "choices": null,
     "flags": "--allow-dangerously-skip-permissions",
+    "value": null
+   },
+   "--allow-other-models": {
+    "choices": null,
+    "flags": "--allow-other-models",
     "value": null
    },
    "--allowed-tools": {
@@ -80,6 +85,11 @@
     "flags": "--chrome",
     "value": null
    },
+   "--client-data-url": {
+    "choices": null,
+    "flags": "--client-data-url <url>",
+    "value": "required"
+   },
    "--continue": {
     "choices": null,
     "flags": "-c, --continue",
@@ -125,6 +135,11 @@
     "flags": "--deep-link-repo <slug>",
     "value": "required"
    },
+   "--desktop": {
+    "choices": null,
+    "flags": "--desktop",
+    "value": null
+   },
    "--disable-slash-commands": {
     "choices": null,
     "flags": "--disable-slash-commands",
@@ -160,6 +175,11 @@
     "flags": "--fallback-model <model>",
     "value": "required"
    },
+   "--fast-mode": {
+    "choices": null,
+    "flags": "--fast-mode <on|off>",
+    "value": "required"
+   },
    "--file": {
     "choices": null,
     "flags": "--file <specs...>",
@@ -180,6 +200,11 @@
     "flags": "--from-pr [value]",
     "value": "optional"
    },
+   "--host-auth-is-org-sign-in": {
+    "choices": null,
+    "flags": "--host-auth-is-org-sign-in",
+    "value": null
+   },
    "--ide": {
     "choices": null,
     "flags": "--ide",
@@ -193,6 +218,11 @@
    "--include-partial-messages": {
     "choices": null,
     "flags": "--include-partial-messages",
+    "value": null
+   },
+   "--include-unsupported-models": {
+    "choices": null,
+    "flags": "--include-unsupported-models",
     "value": null
    },
    "--inherit-permission-mode": {
@@ -516,9 +546,9 @@
     "with": "--print"
    }
   },
-  "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+  "sha256": "sha256:eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0",
   "source": "the commander chain of the main claude command embedded in the binary",
-  "version": "2.1.281"
+  "version": "2.1.317"
  },
  "generated_by": "proof/VELDO-0060/extract_cli.py",
  "schema": "veldo.cli_options/v1",

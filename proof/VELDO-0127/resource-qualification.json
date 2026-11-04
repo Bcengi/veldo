@@ -1,6 +1,6 @@
 {
  "owner_decision": "Telegram 29400/29401, 2026-09-28; 38878, 2026-11-03",
- "binary_sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+ "binary_sha256": "sha256:b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8",
  "cases": [
   {
    "model": "gpt-6-astra",
@@ -122,6 +122,9 @@
      "actual": [
       "exec",
       "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource",
       "update_plan",
       "wait",
       "write_stdin"
@@ -129,6 +132,9 @@
      "expected": [
       "exec",
       "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource",
       "update_plan",
       "wait",
       "write_stdin"
@@ -271,7 +277,13 @@
    "exact_equality": true
   }
  ],
- "offered_without_server": {},
+ "offered_without_server": {
+  "code_mode_only": [
+   "list_mcp_resource_templates",
+   "list_mcp_resources",
+   "read_mcp_resource"
+  ]
+ },
  "rule": "Exactly three resource readers with a selected MCP server; without one, none granted and exactly those the binary offers a model of its tool mode accepted (nothing to list or read).",
  "network": "127.0.0.1 stand-in; empty temporary HOME and CODEX_HOME; Landlock TCP restriction"
 }
