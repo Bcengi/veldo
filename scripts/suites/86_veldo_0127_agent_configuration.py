@@ -641,6 +641,14 @@ for step in (packet.get('payload') or {}).get('script',[]):
                     check('catalog/grants', name + ': undeliverable search grant is refused at save',
                           save_error == 'unsupported_configuration:codex_tool:' + EXPERIMENTAL_MODEL + ':tool_search')
                     continue
+                # VELDO-0231: the asynchronous flag holds only where the qualified binary's probe shows its call in the
+                # stream and an immediate, empty answer to the synchronous question; else it is refused at save.
+                flag_held = f.X.flag_grant(base / 'codex-qualification.json') is None if hasattr(f.X, 'flag_grant') else True
+                if 'request_user_input_async' in grants and not flag_held:
+                    check('catalog/grants', name + ': a flag grant the qualified binary does not hold is refused at save',
+                          save_error == 'unsupported_configuration:codex_tool:' + EXPERIMENTAL_MODEL
+                          + ':request_user_input_async')
+                    continue
                 entry = next(iter(own.get('model_catalog', {}).get('models', [])), {})
                 original = next((m for m in catalog.get('models', []) if m['slug'] == EXPERIMENTAL_MODEL), {})
                 wanted_entry = copy.deepcopy(original)

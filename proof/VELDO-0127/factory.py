@@ -230,6 +230,10 @@ for raw in sys.stdin:
     # Likewise the grants it does not deliver under Veldo's switches.
     codex_record['undelivered_grants'] = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text()).get(
         'undelivered_grants', [])
+    # VELDO-0231: and the forms in which its flag calls reach its stream (qualify.py's loopback probe).
+    if 'flag_means' in codex_record:
+        codex_record['flag_means'] = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text()).get(
+            'flag_means', codex_record['flag_means'])
     codex_qualification.write_text(json.dumps(codex_record))
     shutil.copyfile(codex_qualification, mods / 'runtime/codex-qualification.json')
     config = base / 'receiver.json'
