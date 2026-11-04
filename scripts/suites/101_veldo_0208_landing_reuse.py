@@ -1266,7 +1266,10 @@ def _v208_unconfined_leg():
                      '71_0130', '71_0138', '73_0139', '78_0060', '79_0061', '80_0155', '81_0156', '82_0129',
                      '82_0141', '83_0154', '85_0158', '85_0171', '86_0127', '86_0148', '86_0189', '87_0170',
                      '91_0167', '92_0088', '93_0152', '94_0162', '95_0203', '96_0204', '106_0185', '110_0143',
-                     '114_0220', '116_0188', '117_0227']
+                     '114_0220', '116_0188', '117_0227',
+                     # The conversation chain (listed by the lead): VELDO-0177's contained turns and setup, VELDO-0183's
+                     # memory servers, VELDO-0179's screens over the running service, VELDO-0187's contained Codex turn.
+                     '128_0177', '129_0177', '130_0183', '134_0179', '135_0179', '138_0187']
     # Browser suites (system Chrome, and the npm registry for 120 to 122 and 124): VELDO-0159, 0163 and 0131.
     browser = ['118_0159', '119_0163', '120_0131', '121_0131', '122_0131', '124_0131']
     manifest = [s['name'] for s in json.loads((ROOT / 'scripts/suites/manifest.json').read_text())['suites']]
@@ -1274,7 +1277,7 @@ def _v208_unconfined_leg():
     expected_whole = sorted([n for n in manifest for short in control_plane + browser + ['65_0067']
                              if n.startswith(short.replace('_', '_veldo_', 1) + '_')])
     expect('VELDO-0208 unconfined-leg/declared-list: ' + repr(sorted(set(whole) ^ set(expected_whole))),
-           document['stages'] == declared_commands and len(expected_whole) == 43 and whole == expected_whole
+           document['stages'] == declared_commands and len(expected_whole) == 49 and whole == expected_whole
            and {n: r for n, r in listed.items() if r} == {'100_veldo_0207_case_reuse': 'strace',
                                                          '101_veldo_0208_landing_reuse': 'strace'}
            and all(n in manifest for n in listed)
@@ -1308,7 +1311,7 @@ def _v208_unconfined_leg():
     listed_files = ['scripts/suites/%s.py' % name for name in listed]
     expect('VELDO-0208 unconfined-leg/dispatcher-is-protected',
            dispatcher_files <= set(P.protected_patterns()) and dispatcher_files <= set(front['protected_paths'])
-           and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 45
+           and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 51
            and not [f for f in listed_files for pattern in P.protected_patterns()
                     if __import__('fnmatch').fnmatch(f, pattern)])
 
