@@ -1,0 +1,15 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0230-LANDING",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0230",
+    "commit": "c4be3fc4d6ae7ee4040afd6e6002a9d1d13889ce",
+    "paths": []
+  },
+  "basis": "Dmitry approved landing of VELDO-0230 (upgrading an agent CLI is one command) at c4be3fc4 over Telegram on 2026-11-04T14:07Z (message 38919, 'Approve landing 0230'), asked in 38918. The approval includes the AC3 amendment he gave on 2026-11-03 (Telegram 38878: a newer binary never blocks; what it brings is evaluated and used if useful), recorded in the spec History. No protected path changed against main (policy_check exits 0). The canonical gate was GREEN at c4be3fc4 (gate 0230f, 2794 of 2794 mutation cases killed). WHAT IT DOES NOT COVER: any protected path or any other commit.",
+  "recorded_at": "2026-11-04T14:09:00Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-12-04T00:00:00Z"
+}
