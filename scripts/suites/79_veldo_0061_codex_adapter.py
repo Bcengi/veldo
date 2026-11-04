@@ -802,8 +802,18 @@ sys.exit(payload.get('code', 0))
         with region('pin/qualified-record'):
             installed = json.loads(INSTALLED_QUALIFICATION.read_text()) if INSTALLED_QUALIFICATION.is_file() else {}
             fresh, error = attempt(lambda: X.qualification(REAL, catalog=True))
+            # VELDO-0230: the qualify command completes the writer's record with what its loopback captures and the
+            # evaluations find (the new items, the readers offered without a server, the undelivered grants);
+            # suite 126 proves those reproduce. Every other field is the writer's.
+            written = json.loads(json.dumps(installed))
+            written.pop('new_capabilities', None)
+            if isinstance(written.get('mcp_resource_rule'), dict) and 'offered_without_server' in written['mcp_resource_rule']:
+                written['mcp_resource_rule']['offered_without_server'] = {}
+            if 'undelivered_grants' in written:
+                written['undelivered_grants'] = []
             check('pin/qualified-record', 'the installed qualification record is what the production writer makes of '
-                  'the installed vendor binary now [%s]' % error, installed and fresh == installed)
+                  'the installed vendor binary now, completed by the qualify command [%s]' % error,
+                  installed and fresh == written and isinstance(installed.get('new_capabilities'), list))
             check('pin/qualified-record', 'it names the qualified Codex, the vendor path inside @openai/codex, the digest both '
                   'extracted tables read from the binary, and the qualified flags',
                   installed.get('version') == FORMATS['version'] == EXEC['version'] == CODEX_VERSION

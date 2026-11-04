@@ -48,6 +48,9 @@ def _v127_feature_listing():
         try:
             f = factory.factory(ROOT, base, PRODUCTION, lambda _: wire.engine_source(catalog, fault))
             L, X, C = f.L, f.X, f.config_api
+            # VELDO-0230: a Code Mode run's runner and nested tools, with the readers the qualified binary offers it
+            # without a server (its record's reading; none to list or read), and nothing else.
+            runner = {'exec', 'wait'} | set(X.offered_without_server().get('code_mode_only', []))
             serial = [0]
             def launch(grants):
                 serial[0] += 1
@@ -101,13 +104,13 @@ def _v127_feature_listing():
             flags, error, tools, args = launch([])
             for feature in off_sources:
                 check('explicit/' + feature, feature not in defaults and error is None
-                      and flags.get(feature) is False and set(tools or []) == {'exec', 'wait'} and bool(args),
+                      and flags.get(feature) is False and set(tools or []) == runner and bool(args),
                       str((error, flags.get(feature), tools)))
 
             # Each refusal has a valid-listing positive control, including the
             # new explicit default-off value. Baseline refusal logic already
             # exists; the control is the changed behavior in these paired rows.
-            valid = error is None and flags.get('standalone_web_search') is False and set(tools or []) == {'exec', 'wait'} and bool(args)
+            valid = error is None and flags.get('standalone_web_search') is False and set(tools or []) == runner and bool(args)
             for kind in ('missing', 'empty', 'malformed'):
                 row = 'listing/' + kind
                 check(row, valid, 'valid listing explicitly disables standalone_web_search and launches')
@@ -125,14 +128,14 @@ def _v127_feature_listing():
             qualify(changed)
             for grants in ([], ['clock']):
                 flags, error, tools, args = launch(grants)
-                expected = {'exec', 'wait'} | (set(X.NATIVE_TOOL_MAPPING['clock']) if grants else set())
+                expected = runner | (set(X.NATIVE_TOOL_MAPPING['clock']) if grants else set())
                 check('explicit/mapped-default-off', error is None and flags.get('sleep_tool') is bool(grants)
                       and set(tools or []) == expected and bool(args), str((grants, error, flags.get('sleep_tool'), tools)))
 
             qualify(fixture['stdout'] + 'future_role_tool stable false\n')
             flags, error, tools, args = launch([])
             check('explicit/unknown-default-off', error is None and flags.get('future_role_tool') is False
-                  and set(tools or []) == {'exec', 'wait'} and bool(args), str((error, flags.get('future_role_tool'), tools)))
+                  and set(tools or []) == runner and bool(args), str((error, flags.get('future_role_tool'), tools)))
         except Exception as error:
             for row in rows:
                 check(row, False, 'raised ' + type(error).__name__ + ': ' + str(error)[:160])

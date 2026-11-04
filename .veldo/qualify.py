@@ -420,7 +420,8 @@ def previous_tables(root):
 def previous_new(root, engine):
     """The (kind, name) pairs the replaced record listed as new, with the digest it was qualified at."""
     try:
-        record = json.loads((Path(root) / '.veldo/runtime' / (engine + '-qualification.json')).read_text())
+        name = {'codex': 'codex', 'claude_code': 'claude'}[engine] + '-qualification.json'
+        record = json.loads((Path(root) / '.veldo/runtime' / name).read_text())
         entry = record if engine == 'codex' else next(iter(record['versions'].values()))
         return entry['sha256'], {(i['kind'], i['name']) for i in entry.get('new_capabilities') or ()}
     except (OSError, ValueError, KeyError, StopIteration, TypeError):

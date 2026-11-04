@@ -114,13 +114,14 @@ def _v127_feature_defaults():
             # VELDO-0230 AC3: a newer binary never blocks. The feature the classification does not know is
             # named in the qualification record and is off at launch, which proceeds with the tools it had.
             _, _, before, _ = launch([])
+            already = L.HANDOFF.codex_unclassified(fixture['stdout'])
             fixture['stdout'] += 'future_role_tool stable true\n'
             listing.write_text(json.dumps(fixture))
             requalified = X.qualification(str(f.vendored), catalog=True)
             f.codex_qualification.write_text(json.dumps(requalified))
             flags, error, tools, args = launch([])
             check('defaults/unknown', error is None and flags.get('future_role_tool') is False
-                  and requalified.get('unclassified_default_on') == ['future_role_tool']
+                  and requalified.get('unclassified_default_on') == sorted(set(already) | {'future_role_tool'})
                   and tools is not None and set(tools) == set(before or []) and bool(args),
                   str((error, flags.get('future_role_tool'), requalified.get('unclassified_default_on'), tools)))
             # VELDO-0230 AC3 (Telegram 38878): a new feature the record's evaluation grants stays at its default at
