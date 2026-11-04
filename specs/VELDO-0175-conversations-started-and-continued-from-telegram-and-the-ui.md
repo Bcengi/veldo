@@ -67,8 +67,9 @@ acceptance_criteria:
   - id: AC1
     text: >
       Claim: A Telegram reply to any message the factory sent in a conversation, or an API message naming
-      the conversation, continues that conversation at intake as its next turn, with no factory PM run and
-      no question. Set and completeness: The factory records every message it sends in a conversation (AC3)
+      the conversation, continues that conversation at intake as its next turn, with no route run, no
+      proposal and no question; the only factory PM step is AC4's reading of a plain Telegram reply, which
+      tells a plain-words command from the next turn. Set and completeness: The factory records every message it sends in a conversation (AC3)
       with its bot, chat and message id, bound to the conversation and turn. Intake resolves a Telegram
       message's `reply_to_message_id` against those records before the proposal and question records it
       reads today, and the `messages.send` route gains an optional `conversation` field beside `project` and
@@ -210,3 +211,8 @@ through the API assertion; a turn's payload carries the owner's words from its i
 service's channel pass hands acquired Telegram messages to intake once each; the attach clone takes a branch with a
 fresh repository's initial branch name; the seventeen mutation-case declarations name the new modules. Acceptance
 criteria unchanged.
+
+2026-11-04: AC1 amended by the lead after the independent review (proof/VELDO-0175/review-2026-11-04.md, item 2).
+AC1's "no factory PM run" could not hold together with AC4, the owner's later rule (Telegram 29299, applied when
+he marked this ready), that the factory PM reads every plain reply in case it is a command. AC1 now names that
+reading as the one PM step; a reply still takes no route run, no proposal and no question. AC4 is unchanged.
