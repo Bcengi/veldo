@@ -153,7 +153,7 @@ rollback: >
 
 ## Intent
 
-A connector that can create an ad, submit a Stripe dispute, generate a paid image or video, save a mail
+A connector that can create an ad, submit payment dispute evidence, generate a paid image or video, save a mail
 draft or publish a post must refuse to do it unless the owner approved that exact action. Today Veldo gives
 an outside server no way to check that, so every connector would ship read-only. This spec gives the server
 a proof it can check on its own: a token the factory signs only after the owner's settled approval, bound to
@@ -161,7 +161,7 @@ the server, the tool, the exact arguments, the subject, the approver and an expi
 
 ## Context
 
-- The connectors plan (research/veldo-connectors-plan-2026-11-04.md in myday, shared design point 3) makes
+- The owner's connectors plan (kept in the owner's installation, shared design point 3) makes
   every owner-word write two-phase: prepare computes the exact change and returns a plan and a digest with no
   outside effect; commit performs exactly that change after the server has verified the owner's approval. It
   names this missing piece P-A and requires that until P-A exists every commit tool refuses by name
@@ -203,7 +203,7 @@ catalog servers on another host, which need the published keys distributed to th
 
 ## What the reviewer judges
 
-- Normal use: the run prepares a paused Google Ads campaign, the owner sees the plan in Telegram and
+- Normal use: the run prepares a paused ad campaign, the owner sees the plan in Telegram and
   approves, the next run of that conversation commits, the server verifies the token and creates exactly
   that campaign, and a second commit with the same token is refused as approval_replayed.
 - Threat model: a model that types "approved"; a token copied to another run or server; arguments changed
@@ -224,7 +224,7 @@ strings.
 
 2026-11-04: new draft. Owner Telegram 39063 and 39067 (every switch decision for the connectors yes; paid
 image and video as spend-gated exceptions, each use approved). The connectors plan
-(myday research/veldo-connectors-plan-2026-11-04.md) names this prerequisite P-A and holds every connector's
+(kept in the owner's installation) names this prerequisite P-A and holds every connector's
 commit tools refused until it lands. Standalone.
 
 2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
