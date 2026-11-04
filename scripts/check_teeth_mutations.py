@@ -10469,7 +10469,7 @@ def cases():
                   '  "build": {\n   "kind": "review",\n', 'default/equivalence')
     # AC2, declared: a land reachable by a path that skips the owner_approval node is accepted.
     unit_workflow('v241-approval-skipped-accepted', 'control_workflow.py',
-                  "        if target in reached:\n            problems.append('invalid_input:missing_owner_approval:%s' % target)\n",
+                  "        if missing:\n            problems.append('invalid_input:missing_owner_approval:%s' % target)\n",
                   "        if False:  # defect: a path around the owner's approval is accepted\n"
                   "            problems.append('invalid_input:missing_owner_approval:%s' % target)\n",
                   'approval/side-edge')

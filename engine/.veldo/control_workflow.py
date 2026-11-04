@@ -90,7 +90,8 @@ STEP_KINDS = {
 # VELDO-0241: THE UNIT'S STATION KINDS, the steps a unit's process (control_workflow_unit) is made of. `station`
 # marks a kind the Line runs for a unit; `outward` a step that sends something out of the factory (land here;
 # deliver, publish and deploy register the same way), which the save check (approval_problems) lets a definition
-# reach only through an owner_approval node naming it; `changes_subject` a step that changes what was approved.
+# reach only through an owner_approval node naming it; `changes_subject` False marks a kind proven not to change
+# what was approved (a kind without it, registered here or later, counts as changing the subject).
 # An owner_approval node names its outward node in `approves`; it settles through the owner's ordinary decision
 # bound to the exact subject (VELDO-0068, VELDO-0057), and only its `granted` port passes on to that node.
 APPROVAL = 'owner_approval'
@@ -99,12 +100,15 @@ LAND_PORTS = ('landed', 'trunk_moved', 'conflict', 'awaiting_approval', 'unknown
 STEP_KINDS.update({
     'build': {'ports': ('done',), 'config': {}, 'input': None, 'terminal': False, 'station': True,
               'changes_subject': True},
-    'review': {'ports': ('done',), 'config': {}, 'input': None, 'terminal': False, 'station': True},
-    'gate': {'ports': ('passed',), 'config': {}, 'input': None, 'terminal': False, 'station': True},
+    'review': {'ports': ('done',), 'config': {}, 'input': None, 'terminal': False, 'station': True,
+               'changes_subject': False},
+    'gate': {'ports': ('passed',), 'config': {}, 'input': None, 'terminal': False, 'station': True,
+             'changes_subject': False},
     APPROVAL: {'ports': (GRANTED, 'stopped'), 'config': {'approves': (None, True)}, 'input': None, 'terminal': False,
-               'station': True},
-    'land': {'ports': LAND_PORTS, 'config': {}, 'input': None, 'terminal': False, 'station': True, 'outward': True},
-    'end': {'ports': (), 'config': {}, 'input': None, 'terminal': True, 'station': True},
+               'station': True, 'changes_subject': False},
+    'land': {'ports': LAND_PORTS, 'config': {}, 'input': None, 'terminal': False, 'station': True, 'outward': True,
+             'changes_subject': False},
+    'end': {'ports': (), 'config': {}, 'input': None, 'terminal': True, 'station': True, 'changes_subject': False},
 })
 LAYOUT_FIELDS = ('nodes', 'transitions', 'viewport')
 IDENTIFIER = re.compile(r'[a-z][a-z0-9_-]{0,62}\Z')
@@ -365,44 +369,45 @@ def _ring(nodes, edges):
 
 
 def approval_problems(nodes, edges, entry):
-    """VELDO-0241 AC2: every outward node is reached only through an owner_approval node that names it, on
-    every path from the entry, and no subject-changing step lies between that approval and the outward node.
-    An approval naming the node passes on to it only through its `granted` port; every other port is an
-    ordinary edge. Problems: invalid_input:missing_owner_approval:<outward node> when some path from the entry
-    reaches it without such an approval granting, invalid_input:approval_not_last:<approval node> when a path
-    from that approval's grant reaches the node through a subject-changing step with no later approval naming it
-    (a path that passes the node and comes back to it counts: a re-build after a land needs a new approval)."""
+    """VELDO-0241 AC2, over every path from the entry, cycles and back edges included: the edge taken out of the
+    last owner_approval node before an outward node must be the `granted` port of an approval naming that node,
+    and no step whose kind is not registered subject-preserving (`changes_subject: False`) lies between that edge
+    and the outward node. Any other port of an approval (stopped, or any outcome a later kind adds) and any port of
+    an approval naming another node leaves nothing approved. Complete by construction: a reachability over the
+    finite product of node and state, the state being None (nothing approved), ('approved', A) or ('changed', A)
+    (A granted, then a subject-changing step). Problems: invalid_input:missing_owner_approval:<outward node> when
+    the node is reached with nothing approved, invalid_input:approval_not_last:<approval node> when it is reached
+    after a subject-changing step that follows that approval's grant."""
     problems = []
     kinds = {name: step_kind(node) or {} for name, node in nodes.items()}
+    leaving = {}
+    for edge in edges:
+        leaving.setdefault(edge['from'], []).append(edge)
     for target in sorted(name for name in nodes if kinds[name].get('outward')):
-        approvals = {name for name, node in nodes.items() if node.get('kind') == APPROVAL
-                     and (node.get('config') or {}).get('approves') == target}
-        reached, todo = {entry}, [entry]
-        while todo and target not in reached:
-            here = todo.pop()
-            for edge in edges:
-                if edge['from'] != here or edge['to'] in reached or (here in approvals and edge['port'] == GRANTED):
-                    continue
-                reached.add(edge['to'])
-                if edge['to'] != target:
-                    todo.append(edge['to'])
-        if target in reached:
+        missing, stale = False, set()
+        seen, todo = {(entry, None)}, [(entry, None)]
+        while todo:
+            here, state = todo.pop()
+            if here == target:
+                if state is None:
+                    missing = True
+                elif state[0] == 'changed':
+                    stale.add(state[1])
+            node = nodes[here]
+            for edge in leaving.get(here, ()):
+                if node.get('kind') == APPROVAL:
+                    names = (node.get('config') or {}).get('approves') == target
+                    after = ('approved', here) if names and edge['port'] == GRANTED else None
+                elif state is not None and kinds[here].get('changes_subject', True) is not False:
+                    after = ('changed', state[1])
+                else:
+                    after = state
+                if (edge['to'], after) not in seen:
+                    seen.add((edge['to'], after))
+                    todo.append((edge['to'], after))
+        if missing:
             problems.append('invalid_input:missing_owner_approval:%s' % target)
-        for approval in sorted(approvals):
-            seen = set()
-            todo = [(edge['to'], False) for edge in edges if edge['from'] == approval and edge['port'] == GRANTED]
-            while todo:
-                here, changed = todo.pop()
-                changed = changed or bool(kinds.get(here, {}).get('changes_subject'))
-                if (here, changed) in seen:
-                    continue
-                seen.add((here, changed))
-                if here == target and changed:
-                    problems.append('invalid_input:approval_not_last:%s' % approval)
-                    break
-                if here in approvals:
-                    continue
-                todo.extend((edge['to'], changed) for edge in edges if edge['from'] == here)
+        problems += ['invalid_input:approval_not_last:%s' % name for name in sorted(stale)]
     return problems
 
 
