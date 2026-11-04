@@ -102,6 +102,70 @@
     "reason": "the CA bundle the worker's tools verify TLS with, as NODE_EXTRA_CA_CERTS"
    }
   },
+  "frames": {
+   "system/session_metadata": {
+    "decision": "granted",
+    "reason": "session metadata the CLI writes outside the message union; its schema carries no tool call, so the reader takes it as tool-free"
+   }
+  },
+  "messages": {
+   "system/file_attachments_missing": {
+    "decision": "granted",
+    "reason": "a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union"
+   },
+   "system/inherited_asks_settled": {
+    "decision": "granted",
+    "reason": "a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union"
+   },
+   "system/instruction_size_warning": {
+    "decision": "granted",
+    "reason": "a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union"
+   },
+   "system/permission_check_status": {
+    "decision": "granted",
+    "reason": "a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union"
+   },
+   "system/session_title_changed": {
+    "decision": "granted",
+    "reason": "a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union"
+   },
+   "system/session_writes_lost": {
+    "decision": "granted",
+    "reason": "a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union"
+   },
+   "system/ui_focus": {
+    "decision": "granted",
+    "reason": "a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union"
+   },
+   "system/ui_invalidate": {
+    "decision": "granted",
+    "reason": "a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union"
+   },
+   "system/ui_log": {
+    "decision": "granted",
+    "reason": "a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union"
+   },
+   "system/ui_panes": {
+    "decision": "granted",
+    "reason": "a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union"
+   },
+   "system/ui_placed": {
+    "decision": "granted",
+    "reason": "a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union"
+   },
+   "system/ui_scroll": {
+    "decision": "granted",
+    "reason": "a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union"
+   },
+   "system/ui_status": {
+    "decision": "granted",
+    "reason": "a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union"
+   },
+   "system/ui_toast": {
+    "decision": "granted",
+    "reason": "a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union"
+   }
+  },
   "options": {
    "--allow-other-models": {
     "decision": "not_applicable",
@@ -128,6 +192,135 @@
    "--include-unsupported-models": {
     "decision": "not_applicable",
     "reason": "lists unsupported models in the picker; Veldo passes the role's model"
+   }
+  },
+  "routing": {
+   "CLAUDE_CODE_REMOTE_TOOLS_FORWARD": {
+    "decision": "off",
+    "reason": "the switch that routes a file tool's or Bash's _host to another machine; stripped from the inherited environment and refused when configured (CREDENTIALS), and a _host naming another machine still asks (IN_RUN_HOST)",
+    "rule": "VELDO-0160 AC3"
+   }
+  },
+  "tool_fields": {
+   "assistant tool_use_meta.tool_name": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "a display copy of a tool_use block's name, read in the content; no call of its own"
+   },
+   "result/error_during_execution process_turn_states.agent_tool": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own"
+   },
+   "result/error_during_execution process_turn_states.tool": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own"
+   },
+   "result/error_during_execution tool_schema_build_detail": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic detail of how the tool schemas were built (the tools offered); no call of its own"
+   },
+   "result/error_during_execution tool_schema_build_detail.tools": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic detail of how the tool schemas were built (the tools offered); no call of its own"
+   },
+   "result/error_max_budget_usd process_turn_states.agent_tool": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own"
+   },
+   "result/error_max_budget_usd process_turn_states.tool": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own"
+   },
+   "result/error_max_budget_usd tool_schema_build_detail": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic detail of how the tool schemas were built (the tools offered); no call of its own"
+   },
+   "result/error_max_budget_usd tool_schema_build_detail.tools": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic detail of how the tool schemas were built (the tools offered); no call of its own"
+   },
+   "result/error_max_structured_output_retries process_turn_states.agent_tool": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own"
+   },
+   "result/error_max_structured_output_retries process_turn_states.tool": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own"
+   },
+   "result/error_max_structured_output_retries tool_schema_build_detail": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic detail of how the tool schemas were built (the tools offered); no call of its own"
+   },
+   "result/error_max_structured_output_retries tool_schema_build_detail.tools": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic detail of how the tool schemas were built (the tools offered); no call of its own"
+   },
+   "result/error_max_turns process_turn_states.agent_tool": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own"
+   },
+   "result/error_max_turns process_turn_states.tool": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own"
+   },
+   "result/error_max_turns tool_schema_build_detail": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic detail of how the tool schemas were built (the tools offered); no call of its own"
+   },
+   "result/error_max_turns tool_schema_build_detail.tools": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic detail of how the tool schemas were built (the tools offered); no call of its own"
+   },
+   "result/success process_turn_states.agent_tool": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own"
+   },
+   "result/success process_turn_states.tool": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own"
+   },
+   "result/success tool_schema_build_detail": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic detail of how the tool schemas were built (the tools offered); no call of its own"
+   },
+   "result/success tool_schema_build_detail.tools": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "diagnostic detail of how the tool schemas were built (the tools offered); no call of its own"
+   },
+   "system/permission_check_status tool_use_id": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "the id of a call waiting on its permission check (status checking or done), as permission_denied's tool_use_id; the call itself is its tool_use block"
+   },
+   "user tool_result_meta.built_in_tool": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "display metadata of a tool_result block: the built-in tool whose completed run made the result, a copy of the call the content shows"
+   },
+   "user tool_states": {
+    "decision": "granted",
+    "read": "free",
+    "reason": "the MCP App views' states a remote client sends with a prompt (widget context); no call of its own and nothing a print-mode run receives"
    }
   },
   "tools": {

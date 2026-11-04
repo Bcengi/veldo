@@ -298,21 +298,9 @@ RESETS = re.compile(r'resets (?:(?P<month>[A-Z][a-z]{2}) (?P<day>\d{1,2}), (?:(?
                     r'(?P<hour>\d{1,2})(?::(?P<minute>\d{2}))?(?P<half>am|pm) \((?P<zone>[^()]+)\)')
 MCP_PREFIX = 'mcp__'
 # The tool-call forms (VELDO-0160), from the binary's tables (proof/VELDO-0062/cli-formats.json, claude_code
-# tool_forms). MESSAGES: the stream's message types, with the subtype of those that have one (SUBTYPED).
+# tool_forms). MESSAGES (STREAM TABLES below): the stream's message types, with the subtype of those that have one
+# (SUBTYPED).
 SUBTYPED = ('system', 'result')
-MESSAGES = frozenset((
-    ('assistant', None), ('auth_status', None), ('command_lifecycle', None), ('conversation_reset', None),
-    ('prompt_suggestion', None), ('rate_limit_event', None), ('result', 'error_during_execution'),
-    ('result', 'error_max_budget_usd'), ('result', 'error_max_structured_output_retries'), ('result', 'error_max_turns'),
-    ('result', 'success'), ('stream_event', None), ('tool_progress', None), ('tool_use_summary', None), ('user', None),
-) + tuple(('system', sub) for sub in (
-    'api_retry', 'background_tasks_changed', 'cloud_session_delta', 'code_change_published', 'commands_changed',
-    'compact_boundary', 'control_request_progress', 'dev_intent', 'elicitation_complete', 'feedback_draft_queued',
-    'files_persisted', 'hook_progress', 'hook_response', 'hook_started', 'informational', 'init',
-    'local_command_output', 'memory_recall', 'mirror_error', 'model_refusal_fallback', 'model_refusal_no_fallback',
-    'notification', 'peer_message_hold', 'per_turn_effort_changed', 'permission_denied', 'plugin_install',
-    'session_state_changed', 'status', 'task_notification', 'task_progress', 'task_started', 'task_updated',
-    'thinking_tokens', 'turn_handoff_available', 'turn_preempted', 'vcs_state_changed', 'worker_shutting_down')))
 # The content blocks, of an assistant message (RESPONSE_BLOCKS) and of a user message (REQUEST_BLOCKS), and
 # of those the ones that are no tool call (TOOL_FREE_BLOCKS: text, reasoning, compaction; a user message's
 # text, images, documents and search results). Every other listed block is a tool call or a tool's result.
@@ -336,37 +324,15 @@ BUILTIN_TOOLS = frozenset(('Bash', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'Not
 BUILTIN_RENAMED = {'Agent': ('Task',)}
 BUILTIN = BUILTIN_TOOLS | frozenset(BUILTIN_RENAMED)
 # The frames the CLI writes outside the SDK message union (cli-formats.json frames) whose schema provably carries
-# no tool call; the others (control requests and responses, the transcript mirror) are unknown calls.
-TOOL_FREE_FRAMES = frozenset((('active_goal', None), ('autocompact_state', None), ('control_cancel_request', None),
-                              ('keep_alive', None), ('system', 'post_turn_summary'), ('system', 'task_summary')))
-# Every field of a stream message whose name names a tool, as the binary's schema declares it (cli-formats.json
-# tool_fields) and as its emitters write it beyond that schema (emitted_tool_fields), and how it is read. `call`:
-# the name of a tool that ran or may run, read as that call (TOOL CALLS in the module docstring). `id`: a call's
-# id, read against the ids shown. `free`: no call of its own: a count, a display or input copy of a block read
-# in the content, a tool the run offers or discovered, a call denied or deferred and never run. `task`: the id of
-# the task a frame or a sub-agent's message belongs to, and `count`: a task's count of its own calls, each read by
-# `Tasks` (TASK_COUNTS).
-TOOL_FIELDS = {
-    'assistant': {'attribution_mcp_tool': 'call', 'batch_tool_uses': 'call', 'context_usage.mcp_tools': 'free',
-                  'message.usage.server_tool_use': 'free', 'parent_tool_use_id': 'task', 'tool_use_meta': 'free',
-                  'wire_tool_inputs': 'free'},
-    'stream_event': {'parent_tool_use_id': 'free'},
-    'system/compact_boundary': {'compact_metadata.pre_compact_discovered_tools': 'free'},
-    'system/informational': {'tool_use_id': 'free'},
-    'system/init': {'tools': 'free'},
-    'system/permission_denied': {'tool_name': 'free', 'tool_use_id': 'free'},
-    'system/task_notification': {'tool_use_id': 'task', 'usage.tool_uses': 'count'},
-    'system/task_progress': {'last_tool_name': 'call', 'tool_use_id': 'task', 'usage.tool_uses': 'count',
-                             'workflow_progress.lastToolName': 'call'},
-    'system/task_started': {'tool_use_id': 'task'},
-    'system/turn_handoff_available': {'tools': 'free'},
-    'tool_progress': {'parent_tool_use_id': 'free', 'repl_call.inner_tool_input': 'free',
-                      'repl_call.inner_tool_name': 'call', 'repl_call.inner_tool_use_id': 'id', 'tool_name': 'call',
-                      'tool_use_id': 'id'},
-    'tool_use_summary': {'preceding_tool_use_ids': 'id'},
-    'user': {'parent_tool_use_id': 'free', 'source_tool_assistant_uuid': 'free', 'source_tool_use_id': 'free',
-             'tool_result_meta': 'free', 'tool_use_result': 'free'},
-}
+# no tool call are TOOL_FREE_FRAMES (STREAM TABLES below); the others (control requests and responses, the transcript
+# mirror) are unknown calls. Every field of a stream message whose name names a tool, as the binary's schema declares
+# it (cli-formats.json tool_fields) and as its emitters write it beyond that schema (emitted_tool_fields), and how it
+# is read, is TOOL_FIELDS (STREAM TABLES below). `call`: the name of a tool that ran or may run, read as that call
+# (TOOL CALLS in the module docstring). `id`: a call's id, read against the ids shown. `free`: no call of its own: a
+# count, a display or input copy of a block read in the content, a tool the run offers or discovered, a call denied
+# or deferred and never run. `task`: the id of the task a frame or a sub-agent's message belongs to, and `count`: a
+# task's count of its own calls, each read by `Tasks` (TASK_COUNTS). `ask` (VELDO-0230): a field a newer binary
+# brings that its evaluation does not grant; any value it holds is an unknown call.
 # How a task's count of its calls is read (cli-formats.json tool_forms task_counts): the frames that carry the count,
 # the field that holds it, the field of a frame naming its task, and the field of a sub-agent's message naming it.
 TASK_COUNTS = {'frames': ('system/task_notification', 'system/task_progress'), 'count': 'usage.tool_uses',
@@ -380,41 +346,91 @@ TASK_COUNTS = {'frames': ('system/task_notification', 'system/task_progress'), '
 NESTED_TOOLS = {'agent': ('Agent', 'SendMessage', 'Task'), 'repl': ('REPL',), 'skill': ('Skill',),
                 'cron': ('CronCreate',), 'remote': ('RemoteTrigger',),
                 'workflow': ('RunWorkflow', 'Workflow')}
-NESTED = {'task_frames': ('system/task_notification', 'system/task_progress', 'system/task_started',
-                          'system/task_updated'),
-          'workflow': {'system/task_progress': 'workflow_progress', 'system/task_started': 'workflow_name',
-                       'task_type': 'local_workflow'},
-          'repl': {'tool_progress': 'repl_call'},
-          'forwarded': {'field': 'parent_tool_use_id', 'progress': ('agent_progress', 'skill_progress')},
-          'fork': {'field': 'tool_use_result', 'status': 'forked'},
-          # The calls that start an agent outside the run (remote_agents): any call of these tools, and a CronCreate
-          # unless its input leaves `durable` out (false by default) or gives it a value the binary reads as false.
-          'remote_agent': {'tools': ('RemoteTrigger',),
-                           'durable': {'tool': 'CronCreate', 'field': 'durable', 'off': (False, 'false')}}}
+# The other constructs are NESTED (STREAM TABLES below): a task's own frames (task_frames); the fields a task frame
+# gives a workflow and a workflow's task type (workflow); the REPL tool's inner call on a tool_progress (repl, empty in
+# a build without it); the field a forwarded message carries and the progress kinds forwarded that way (forwarded);
+# the Skill tool's result when it forked an agent (fork); and the calls that start an agent outside the run
+# (remote_agent, remote_agents): any call of its tools, and a CronCreate unless its input leaves `durable` out (false
+# by default) or gives it a value the binary reads as false.
 # The built-in tools whose effects stay inside the run's clone and host session (VELDO-0160, the lead's allowlist; the
-# binary's, cli-formats.json tool_forms in_run), with their aliases: a call of any other built-in tool asks (outward_tools).
-IN_RUN_TOOLS = frozenset(('Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'REPL', 'Read',
-                          'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write'))
+# binary's, cli-formats.json tool_forms in_run; IN_RUN_TOOLS, STREAM TABLES below), with their aliases (IN_RUN, the
+# two together): a call of any other built-in tool asks (outward_tools).
 IN_RUN_ALIASES = {'Agent': ('Task',), 'TaskStop': ('KillBash', 'KillShell'), 'Workflow': ('RunWorkflow',)}
-IN_RUN = IN_RUN_TOOLS | frozenset(alias for names in IN_RUN_ALIASES.values() for alias in names)
 # How an allowlisted call still acts outside the run: the Agent tool with its input's isolation remote, or naming an
 # agent definition that is not built in (an agent file may set isolation remote); a file tool or Bash whose input's
-# `_host` names another machine (routed there only when the remote-tools gate is on, off in this build); a task whose
+# `_host` names another machine (IN_RUN_HOST, STREAM TABLES below; routed there only when the binary's remote-tools
+# gate is on: compiled off, or a switch the environment strips, CREDENTIALS); a task whose
 # type is not one of the allowlisted tools' (a remote agent is a task of type remote_agent).
 IN_RUN_AGENT = {'tools': ('Agent', 'Task'), 'field': 'isolation', 'values': ('worktree', 'remote'), 'outside': 'remote',
                 'type_field': 'subagent_type',
                 'builtin_types': ('Explore', 'Plan', 'claude', 'claude-code-guide', 'comment-thread-analyst', 'fork',
                                   'general-purpose', 'statusline-setup', 'web-fetch', 'worker', 'workflow-subagent')}
 IN_RUN_SKILL = {'tool': 'Skill', 'field': 'context', 'inline': 'inline', 'parent': 'parent_tool_use_id'}
-IN_RUN_HOST = {'field': '_host', 'local': ('', 'container', 'this-machine'),
-               'tools': ('Bash', 'Edit', 'Glob', 'Grep', 'Read', 'Write')}
 IN_RUN_TASKS = {'field': 'task_type',
                 'in_run': ('in_process_teammate', 'local_agent', 'local_bash', 'local_workflow', 'monitor_ws')}
-TOOL_FIELDS.update({'result/' + sub: {'deferred_tool_use': 'free', 'permission_denials.tool_input': 'free',
-                                      'permission_denials.tool_name': 'free', 'permission_denials.tool_use_id': 'free',
-                                      'usage.server_tool_use': 'free'}
-                    for sub in ('error_during_execution', 'error_max_budget_usd', 'error_max_structured_output_retries',
-                                'error_max_turns', 'success')})
+
+# STREAM TABLES (VELDO-0230 AC2). The reader's tables that follow the qualified binary are not literals here: python3
+# .veldo/qualify.py writes them, from the binary's own (cli-formats.json tool_forms), into the qualified version's
+# record (`stream_forms` in runtime/claude-qualification.json beside this module), and `stream_tables` reads them from
+# there (each read of the record's current bytes; the module's names MESSAGES, TOOL_FREE_FRAMES, TOOL_FIELDS, NESTED,
+# IN_RUN_TOOLS, IN_RUN and IN_RUN_HOST resolve to them). A form a newer binary brings is read by its evaluation in
+# runtime/capability-decisions.json: a message or a frame it does not grant is no known message and no tool-free frame
+# (an unknown call), a field it does not grant is `ask`. A record without the forms refuses the reading by name.
+STREAM_TABLES = ('MESSAGES', 'TOOL_FREE_FRAMES', 'TOOL_FIELDS', 'NESTED', 'IN_RUN_TOOLS', 'IN_RUN', 'IN_RUN_HOST')
+_STREAM = {}
+
+
+def _stream(forms):
+    """The reader's tables of one record's `stream_forms`."""
+    tables = {
+        'MESSAGES': frozenset(tuple(m) for m in forms['messages']),
+        'TOOL_FREE_FRAMES': frozenset(tuple(f) for f in forms['tool_free_frames']),
+        'TOOL_FIELDS': {tag: dict(paths) for tag, paths in forms['tool_fields'].items()},
+        'NESTED': json.loads(json.dumps(forms['nested'])),
+        'IN_RUN_TOOLS': frozenset(forms['in_run_tools']),
+        'IN_RUN_HOST': dict(forms['in_run_host']),
+    }
+    tables['IN_RUN'] = tables['IN_RUN_TOOLS'] | frozenset(alias for names in IN_RUN_ALIASES.values() for alias in names)
+    return tables
+
+
+def stream_tables(path=None):
+    """{name: table} of STREAM_TABLES, from the qualified version's `stream_forms` in the record beside this module
+    (the engines record's version when the record lists several); refused by name when there are none."""
+    path = Path(path) if path is not None else Path(__file__).resolve().parent / QUALIFICATION
+    try:
+        stat = path.stat()
+    except OSError:
+        raise Refused('missing_evidence:engine_qualification', str(path))
+    key = (str(path), stat.st_mtime_ns, stat.st_size)
+    if _STREAM.get('key') != key:
+        entries = {version: entry for version, entry in qualification(path)['versions'].items()
+                   if isinstance(entry, dict) and isinstance(entry.get('stream_forms'), dict)}
+        if len(entries) > 1:
+            try:
+                version = json.loads((path.parent / 'engines.json').read_text())['claude_code']['version']
+            except (OSError, ValueError, KeyError, TypeError):
+                version = None
+            entries = {version: entries[version]} if version in entries else {}
+        if len(entries) != 1:
+            raise Refused('missing_evidence:engine_stream_forms', str(path))
+        try:
+            tables = _stream(next(iter(entries.values()))['stream_forms'])
+        except (KeyError, TypeError, ValueError, AttributeError):
+            raise Refused('invalid_input:engine_stream_forms', str(path))
+        _STREAM.update(key=key, tables=tables)
+    return _STREAM['tables']
+
+
+def _tables(*names):
+    tables = stream_tables()
+    return tuple(tables[name] for name in names)
+
+
+def __getattr__(name):
+    if name in STREAM_TABLES:
+        return stream_tables()[name]
+    raise AttributeError('module %r has no attribute %r' % (__name__, name))
 
 
 def _count(value):
@@ -623,13 +639,36 @@ def tool_calls(event, seen, redacted=False):
     """[{id, server, tool}]: the MCP tool calls an event of the stream shows (VELDO-0160); a block that may be
     a tool call and cannot be read is {id, server: None, tool: None, unreadable: True}, and a tool-call form
     this reading does not recognize {id, server: None, tool: None, unknown: <form>}. `seen` holds the ids of
-    the tool calls shown so far; each tool_use read is added to it."""
+    the tool calls shown so far; each tool_use read is added to it. A field the evaluation of a newer binary does not
+    grant (TOOL_FIELDS `ask`) that holds a value is an unknown call, `field:<message>:<path>` (VELDO-0230)."""
+    MESSAGES, TOOL_FREE_FRAMES, TOOL_FIELDS = _tables('MESSAGES', 'TOOL_FREE_FRAMES', 'TOOL_FIELDS')
     kind = event.get('type')
     tag = (kind, event.get('subtype') if kind in SUBTYPED else None)
     if tag in TOOL_FREE_FRAMES:
         return []
     if tag not in MESSAGES:
         return [_unknown('message:%s' % '/'.join(str(part) for part in tag if part is not None))]
+    return _message_calls(event, kind, tag, seen, redacted) + _asked(event, tag, TOOL_FIELDS)
+
+
+def _values(value, path):
+    """The values at a dotted path of a message (an array's items share its path)."""
+    found = [value]
+    for part in path.split('.'):
+        found = [item[part] for each in found for item in (each if isinstance(each, list) else [each])
+                 if isinstance(item, dict) and part in item]
+    return found
+
+
+def _asked(event, tag, fields):
+    """VELDO-0230: an unknown call for each field of the message its evaluation does not grant (`ask`) holding a value."""
+    name = '/'.join(part for part in tag if part is not None)
+    return [_unknown('field:%s:%s' % (name, path)) for path, how in sorted((fields.get(name) or {}).items())
+            if how == 'ask' and any(value is not None for value in _values(event, path))]
+
+
+def _message_calls(event, kind, tag, seen, redacted):
+    """The calls a message of the union shows (tool_calls)."""
     if kind in ('assistant', 'user'):
         message = event.get('message')
         found = _blocks(message.get('content') if isinstance(message, dict) else None, seen, redacted, kind == 'user')
@@ -709,6 +748,7 @@ def nested_work(event):
     that ran is named, `task_frames` for a task's own frame, `workflow` also for a task frame of a workflow,
     `repl` also for a REPL inner call, `nested_progress` for a message a sub-agent or a forked skill produced (it
     names its task) or a progress frame of theirs, and `fork` for a forked skill's result."""
+    NESTED, = _tables('NESTED')
     kind = event.get('type')
     tag = '%s/%s' % (kind, event.get('subtype')) if kind == 'system' else kind
     found = []
@@ -739,7 +779,7 @@ def remote_agents(event):
     own input, where the event gives it, does not leave `durable` out or false), wherever a tool is named."""
     kind = event.get('type')
     tag = '%s/%s' % (kind, event.get('subtype')) if kind == 'system' else kind
-    remote = NESTED['remote_agent']
+    remote = _tables('NESTED')[0]['remote_agent']
     durable = remote['durable']
     # The inputs the event gives of the calls it names: an assistant message's tool_use blocks and the REPL tool's
     # inner call. Any other place naming the tool gives no input.
@@ -790,7 +830,7 @@ def tool_inputs(event):
         found.append((repl['inner_tool_use_id'], repl['inner_tool_input']))
     # A workflow's task (its start names the workflow, NESTED['workflow']): its progress's last tool is the label of
     # its current agent, not a tool, keyed ('workflow', the id of the call that started it).
-    workflow = NESTED['workflow']
+    workflow = _tables('NESTED')[0]['workflow']
     if kind == 'system' and event.get('subtype') == 'task_started' and isinstance(event.get(TASK_COUNTS['task']), str) \
             and (event.get(workflow['system/task_started']) is not None or event.get('task_type') == workflow['task_type']):
         found.append((('workflow', event[TASK_COUNTS['task']]), True))
@@ -864,6 +904,7 @@ def _outside_input(name, value):
             found.append('tool:%s:%s:%s' % (name, IN_RUN_AGENT['field'], isolation))
         if kind is not None and kind not in IN_RUN_AGENT['builtin_types']:
             found.append('tool:%s:%s' % (name, IN_RUN_AGENT['type_field']))
+    IN_RUN_HOST, = _tables('IN_RUN_HOST')
     host = value.get(IN_RUN_HOST['field'])
     if name in IN_RUN_HOST['tools'] and isinstance(host, str) and host.strip() not in IN_RUN_HOST['local']:
         found.append('tool:%s:%s' % (name, IN_RUN_HOST['field']))
@@ -878,6 +919,7 @@ def outward_tools(event, inputs):
     (`inputs`, {key: [input]}, tool_inputs; it may be remote: an agent a sub-agent starts shows its input only in the
     sub-agent's forwarded message, and one a deeper agent starts nowhere), a task whose type is not one of the allowlisted tools', and a workflow
     agent whose isolation is remote. An MCP tool (`mcp__...`) is the configuration's to judge."""
+    NESTED, IN_RUN = _tables('NESTED', 'IN_RUN')
     kind = event.get('type')
     tag = '%s/%s' % (kind, event.get('subtype')) if kind == 'system' else kind
     found = []

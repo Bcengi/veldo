@@ -929,6 +929,417 @@
    ],
    "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
    "source": "~/.local/share/claude/versions/2.1.281",
+   "stream_forms": {
+    "in_run_host": {
+     "field": "_host",
+     "local": [
+      "",
+      "container",
+      "this-machine"
+     ],
+     "tools": [
+      "Bash",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read",
+      "Write"
+     ]
+    },
+    "in_run_tools": [
+     "Agent",
+     "Bash",
+     "CronCreate",
+     "Edit",
+     "Glob",
+     "Grep",
+     "Monitor",
+     "NotebookEdit",
+     "REPL",
+     "Read",
+     "Skill",
+     "TaskStop",
+     "TodoWrite",
+     "ToolSearch",
+     "WebFetch",
+     "WebSearch",
+     "Workflow",
+     "Write"
+    ],
+    "messages": [
+     [
+      "assistant",
+      null
+     ],
+     [
+      "auth_status",
+      null
+     ],
+     [
+      "command_lifecycle",
+      null
+     ],
+     [
+      "conversation_reset",
+      null
+     ],
+     [
+      "prompt_suggestion",
+      null
+     ],
+     [
+      "rate_limit_event",
+      null
+     ],
+     [
+      "result",
+      "error_during_execution"
+     ],
+     [
+      "result",
+      "error_max_budget_usd"
+     ],
+     [
+      "result",
+      "error_max_structured_output_retries"
+     ],
+     [
+      "result",
+      "error_max_turns"
+     ],
+     [
+      "result",
+      "success"
+     ],
+     [
+      "stream_event",
+      null
+     ],
+     [
+      "system",
+      "api_retry"
+     ],
+     [
+      "system",
+      "background_tasks_changed"
+     ],
+     [
+      "system",
+      "cloud_session_delta"
+     ],
+     [
+      "system",
+      "code_change_published"
+     ],
+     [
+      "system",
+      "commands_changed"
+     ],
+     [
+      "system",
+      "compact_boundary"
+     ],
+     [
+      "system",
+      "control_request_progress"
+     ],
+     [
+      "system",
+      "dev_intent"
+     ],
+     [
+      "system",
+      "elicitation_complete"
+     ],
+     [
+      "system",
+      "feedback_draft_queued"
+     ],
+     [
+      "system",
+      "files_persisted"
+     ],
+     [
+      "system",
+      "hook_progress"
+     ],
+     [
+      "system",
+      "hook_response"
+     ],
+     [
+      "system",
+      "hook_started"
+     ],
+     [
+      "system",
+      "informational"
+     ],
+     [
+      "system",
+      "init"
+     ],
+     [
+      "system",
+      "local_command_output"
+     ],
+     [
+      "system",
+      "memory_recall"
+     ],
+     [
+      "system",
+      "mirror_error"
+     ],
+     [
+      "system",
+      "model_refusal_fallback"
+     ],
+     [
+      "system",
+      "model_refusal_no_fallback"
+     ],
+     [
+      "system",
+      "notification"
+     ],
+     [
+      "system",
+      "peer_message_hold"
+     ],
+     [
+      "system",
+      "per_turn_effort_changed"
+     ],
+     [
+      "system",
+      "permission_denied"
+     ],
+     [
+      "system",
+      "plugin_install"
+     ],
+     [
+      "system",
+      "session_state_changed"
+     ],
+     [
+      "system",
+      "status"
+     ],
+     [
+      "system",
+      "task_notification"
+     ],
+     [
+      "system",
+      "task_progress"
+     ],
+     [
+      "system",
+      "task_started"
+     ],
+     [
+      "system",
+      "task_updated"
+     ],
+     [
+      "system",
+      "thinking_tokens"
+     ],
+     [
+      "system",
+      "turn_handoff_available"
+     ],
+     [
+      "system",
+      "turn_preempted"
+     ],
+     [
+      "system",
+      "vcs_state_changed"
+     ],
+     [
+      "system",
+      "worker_shutting_down"
+     ],
+     [
+      "tool_progress",
+      null
+     ],
+     [
+      "tool_use_summary",
+      null
+     ],
+     [
+      "user",
+      null
+     ]
+    ],
+    "nested": {
+     "fork": {
+      "field": "tool_use_result",
+      "status": "forked"
+     },
+     "forwarded": {
+      "field": "parent_tool_use_id",
+      "progress": [
+       "agent_progress",
+       "skill_progress"
+      ]
+     },
+     "remote_agent": {
+      "durable": {
+       "field": "durable",
+       "off": [
+        false,
+        "false"
+       ],
+       "tool": "CronCreate"
+      },
+      "tools": [
+       "RemoteTrigger"
+      ]
+     },
+     "repl": {
+      "tool_progress": "repl_call"
+     },
+     "task_frames": [
+      "system/task_notification",
+      "system/task_progress",
+      "system/task_started",
+      "system/task_updated"
+     ],
+     "workflow": {
+      "system/task_progress": "workflow_progress",
+      "system/task_started": "workflow_name",
+      "task_type": "local_workflow"
+     }
+    },
+    "routed": false,
+    "tool_fields": {
+     "assistant": {
+      "attribution_mcp_tool": "call",
+      "batch_tool_uses": "call",
+      "context_usage.mcp_tools": "free",
+      "message.usage.server_tool_use": "free",
+      "parent_tool_use_id": "task",
+      "tool_use_meta": "free",
+      "wire_tool_inputs": "free"
+     },
+     "result/error_during_execution": {
+      "deferred_tool_use": "free",
+      "permission_denials.tool_input": "free",
+      "permission_denials.tool_name": "free",
+      "permission_denials.tool_use_id": "free",
+      "usage.server_tool_use": "free"
+     },
+     "result/error_max_budget_usd": {
+      "deferred_tool_use": "free",
+      "permission_denials.tool_input": "free",
+      "permission_denials.tool_name": "free",
+      "permission_denials.tool_use_id": "free",
+      "usage.server_tool_use": "free"
+     },
+     "result/error_max_structured_output_retries": {
+      "deferred_tool_use": "free",
+      "permission_denials.tool_input": "free",
+      "permission_denials.tool_name": "free",
+      "permission_denials.tool_use_id": "free",
+      "usage.server_tool_use": "free"
+     },
+     "result/error_max_turns": {
+      "deferred_tool_use": "free",
+      "permission_denials.tool_input": "free",
+      "permission_denials.tool_name": "free",
+      "permission_denials.tool_use_id": "free",
+      "usage.server_tool_use": "free"
+     },
+     "result/success": {
+      "deferred_tool_use": "free",
+      "permission_denials.tool_input": "free",
+      "permission_denials.tool_name": "free",
+      "permission_denials.tool_use_id": "free",
+      "usage.server_tool_use": "free"
+     },
+     "stream_event": {
+      "parent_tool_use_id": "free"
+     },
+     "system/compact_boundary": {
+      "compact_metadata.pre_compact_discovered_tools": "free"
+     },
+     "system/informational": {
+      "tool_use_id": "free"
+     },
+     "system/init": {
+      "tools": "free"
+     },
+     "system/permission_denied": {
+      "tool_name": "free",
+      "tool_use_id": "free"
+     },
+     "system/task_notification": {
+      "tool_use_id": "task",
+      "usage.tool_uses": "count"
+     },
+     "system/task_progress": {
+      "last_tool_name": "call",
+      "tool_use_id": "task",
+      "usage.tool_uses": "count",
+      "workflow_progress.lastToolName": "call"
+     },
+     "system/task_started": {
+      "tool_use_id": "task"
+     },
+     "system/turn_handoff_available": {
+      "tools": "free"
+     },
+     "tool_progress": {
+      "parent_tool_use_id": "free",
+      "repl_call.inner_tool_input": "free",
+      "repl_call.inner_tool_name": "call",
+      "repl_call.inner_tool_use_id": "id",
+      "tool_name": "call",
+      "tool_use_id": "id"
+     },
+     "tool_use_summary": {
+      "preceding_tool_use_ids": "id"
+     },
+     "user": {
+      "parent_tool_use_id": "free",
+      "source_tool_assistant_uuid": "free",
+      "source_tool_use_id": "free",
+      "tool_result_meta": "free",
+      "tool_use_result": "free"
+     }
+    },
+    "tool_free_frames": [
+     [
+      "active_goal",
+      null
+     ],
+     [
+      "autocompact_state",
+      null
+     ],
+     [
+      "control_cancel_request",
+      null
+     ],
+     [
+      "keep_alive",
+      null
+     ],
+     [
+      "system",
+      "post_turn_summary"
+     ],
+     [
+      "system",
+      "task_summary"
+     ]
+    ]
+   },
    "terminal_protocol": {
     "error_subtypes": [
      "error_during_execution",

@@ -446,6 +446,71 @@ def newer(current, before, carried, kind, same):
     return set(current) - before if before is not None else set()
 
 
+def previous_forms(root):
+    """The stream forms the replaced Claude Code record gave its reader (`stream_forms`), or None."""
+    try:
+        record = json.loads((Path(root) / '.veldo/runtime/claude-qualification.json').read_text())
+        forms = next(iter(record['versions'].values()))['stream_forms']
+        return forms if isinstance(forms, dict) else None
+    except (OSError, ValueError, KeyError, StopIteration, TypeError):
+        return None
+
+
+def _tag(pair):
+    return '/'.join(part for part in pair if part is not None)
+
+
+def stream_forms(root, previous, carried, same, decisions):
+    """VELDO-0230 AC2/AC3: the Claude Code stream reader's tables (control_engine_claude reads `stream_forms` from
+    the record) from the binary's own (proof/VELDO-0062/cli-formats.json tool_forms), and the new items among them.
+    The messages, the tool-free frames and the fields naming a tool the replaced record already gave the reader keep
+    their reading; one it did not give is new and read by its decision in runtime/capability-decisions.json: a
+    granted message is known, a granted frame tool-free, a granted field read as its decision says (free by
+    default); one not granted (off or unevaluated) is left out of the known messages and the tool-free frames,
+    and a field's value is an unknown call (`ask`). The nested-work and in-run tables are the binary's own; a
+    switch that routes `_host` to another machine (in_run host routed) is listed with its decision.
+    (forms, [new item])."""
+    binary = json.loads((Path(root) / 'proof/VELDO-0062/cli-formats.json').read_text())['claude_code']['tool_forms']
+    previous = previous or {}
+    known = {'messages': {_tag(m) for m in previous.get('messages') or ()},
+             'frames': {_tag(f) for f in previous.get('tool_free_frames') or ()},
+             'tool_fields': {'%s %s' % (tag, path): how for tag, paths in (previous.get('tool_fields') or {}).items()
+                             for path, how in paths.items() if how != 'ask'}}
+    current = {'messages': {_tag(m): m for m in binary['messages']},
+               'frames': {_tag(f[:2]): f[:2] for f in binary['frames'] if f[2]},
+               'tool_fields': {'%s %s' % (tag, path): (tag, path) for source in ('tool_fields', 'emitted_tool_fields')
+                               for tag, paths in (binary.get(source) or {}).items() for path in paths}}
+    table = (decisions.get('claude_code') or {})
+    items, granted, fresh = [], {}, {}
+    for kind in ('messages', 'frames', 'tool_fields'):
+        fresh[kind] = newer(current[kind], set(known[kind]), carried, kind, same)
+        items += decided(decisions, 'claude_code', kind, fresh[kind])
+        granted[kind] = {name for name in current[kind] if name not in fresh[kind] and name in known[kind]} | {
+            name for name in fresh[kind] if ((table.get(kind) or {}).get(name) or {}).get('decision') == 'granted'}
+    fields = {}
+    for name, (tag, path) in sorted(current['tool_fields'].items()):
+        if name not in granted['tool_fields']:
+            how = 'ask'
+        elif name in fresh['tool_fields']:
+            how = table['tool_fields'][name].get('read', 'free')
+        else:
+            how = known['tool_fields'][name]
+        fields.setdefault(tag, {})[path] = how
+    host = dict(binary['in_run']['host'])
+    routed = host.pop('routed')
+    if isinstance(routed, str):
+        before = previous.get('routed')
+        items += decided(decisions, 'claude_code', 'routing',
+                         newer({routed}, {before} if before is not None else set(), carried, 'routing', same))
+    order = lambda pair: (pair[0], pair[1] or '')
+    forms = {'messages': sorted((current['messages'][n] for n in granted['messages']), key=order),
+             'tool_free_frames': sorted((current['frames'][n] for n in granted['frames']), key=order),
+             'tool_fields': fields,
+             'nested': {k: v for k, v in binary['nested_work'].items() if k not in ('tools', 'source')},
+             'in_run_tools': binary['in_run']['tools'], 'in_run_host': host, 'routed': routed}
+    return forms, items
+
+
 def new_tools(entry, known):
     """VELDO-0230 AC3: the registry tools of a qualified Claude Code entry that the replaced record's
     classification did not hold, each with the class the new classification gives it."""
@@ -476,6 +541,7 @@ def main(argv=None):
     except (OSError, ValueError, KeyError, StopIteration):
         known_tools = set()
     before = previous_tables(root)
+    forms_before = previous_forms(root)
     codex_before, claude_before = previous_new(root, 'codex'), previous_new(root, 'claude_code')
     try:
         decisions = json.loads((root / DECISIONS).read_text())
@@ -527,6 +593,8 @@ def main(argv=None):
         + decided(decisions, 'claude_code', 'options', newer(cli, before['claude_options'], claude_before[1],
                                                              'options', same), {
             'decision': 'not_applicable', 'reason': 'Veldo passes only its qualified flags and baseline options'}))
+    entry['stream_forms'], found = stream_forms(root, forms_before, claude_before[1], same, decisions)
+    entry['new_capabilities'] += found
     write(root, 'claude-qualification.json', text(claude_qualification), written)
     fixtures(root, codex, written)
     codex_record = json.loads((root / '.veldo/runtime/codex-qualification.json').read_text())
