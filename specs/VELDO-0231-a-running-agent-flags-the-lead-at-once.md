@@ -45,6 +45,7 @@ footprint:
   - "specs/VELDO-0231-a-running-agent-flags-the-lead-at-once.md"
   - "specs/index.md"
   - "proof/VELDO-0231/**"
+  - "scripts/suites/78_veldo_0160_account_pool.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -135,7 +136,8 @@ acceptance_criteria:
     text: >
       Nothing outward, and a run that flags in a loop is rate limited with the count kept. A flag is written
       only as a record in this host's authority store, into the lead's own conversation (VELDO-0174); the
-      receiver and the service make no network call and start no process for it, and no tool that leaves
+      receiver and the service make no network call and start no process for it other than the store's
+      existing local journal signer (ssh-keygen -Y sign, which every store record uses), and no tool that leaves
       the host (PushNotification, SendUserFile, a remote trigger) is granted for it (VELDO-0160 AC3). The
       flag_conversation transition delivers a run's first flag at once and after it at most one flag per 60
       seconds and 20 per run; a flag beyond that is not delivered but counted on the run's flag summary
@@ -143,7 +145,8 @@ acceptance_criteria:
       before. The counts are in the store, so they survive a service restart. The suite drives a fake
       engine that raises 500 flags in 5 seconds: exactly one is delivered, the summary counts 499 held back,
       and a flag 61 seconds later (on the suite's clock) is delivered naming 499; with socket creation and
-      process start made to raise in the receiver and the service, a flag is still delivered.
+      every process start except that local signer made to raise in the receiver and the service, a flag is
+      still delivered.
     falsified_by: >
       Remove the per-run window from the flag_conversation transition, and the suite's flood row fails on
       500 delivered flags instead of one.
@@ -200,3 +203,10 @@ VELDO-0178, VELDO-0179); running Antigravity.
 
 2026-11-04: written by the lead from Telegram 38897-38901 (owner approved "Ok"). Depends on VELDO-0230,
 whose branch had not landed when this was written.
+
+2026-11-04: amended by the lead after the build (proof/VELDO-0231/OPEN.md items 1 and 2). AC4's "start
+no process" now names the one exception every store record already has: the authority store signs each
+record with the local ssh-keygen journal signer, and Veldo is standard library only, so an in-process
+signature is not available. The intent, nothing outward, is unchanged. Footprint adds
+scripts/suites/78_veldo_0160_account_pool.py, whose allowlist row lists the in-run tools literally and
+gains SendUserMessage.

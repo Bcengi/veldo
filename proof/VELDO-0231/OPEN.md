@@ -1,11 +1,11 @@
 # VELDO-0231: open items
 
-1. Outside the footprint: scripts/suites/78_veldo_0160_account_pool.py, row decision/outward-tool-asks (line about
+1. RESOLVED by the lead (spec History 2026-11-04, suite 78 34/34): scripts/suites/78_veldo_0160_account_pool.py, row decision/outward-tool-asks (line about
    1960). The row holds the lead's VELDO-0160 allowlist as a literal set; AC2 moves SendUserMessage onto that list,
    so the reader's allowlist now holds it and the row is red. The fix is one name: add 'SendUserMessage' to the set
    `{'Agent', 'Bash', ..., 'Write'}` in that check. Not made: the path is not in the spec's footprint.
 
-2. Outside the footprint: AC4's strict form, "process start made to raise in the service, a flag is still
+2. RESOLVED by the lead (AC4 amended, spec History 2026-11-04): AC4's strict form, "process start made to raise in the service, a flag is still
    delivered". Every record the authority store commits is journal-signed by a local process,
    `ssh-keygen -Y sign` (.veldo/control_signer.py sign_bytes, called through the store's `sign`). A flag record is a
    store record, so its commit starts that process. Suite 127 makes socket creation and every other process start
