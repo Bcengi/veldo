@@ -1,0 +1,27 @@
+Suites run for VELDO-0179 at 639965ea, each with python3 scripts/selftest.py --suite <name> in a transient user scope
+(MemoryMax=8G, MemorySwapMax=0), on 2026-11-04. Partial runs: the lead runs the gate (scripts/verify.sh).
+
+  134_veldo_0179_conversation_screens              7 passed
+  135_veldo_0179_conversation_layout               9 passed
+  113_veldo_0145_ui                                7 passed
+  120_veldo_0131_factory_ui                       14 passed
+  121_veldo_0131_factory_screens_narrow            2 passed
+  122_veldo_0131_factory_screens_wide              2 passed
+  124_veldo_0131_factory_reads_commands            8 passed
+  118_veldo_0159_mcp_credential_form               7 passed
+  119_veldo_0163_role_team_form                   10 passed
+  123_veldo_0174_conversations                    38 passed
+  127_veldo_0231_run_flags                        17 passed
+  128_veldo_0177_conversation_workspace           15 passed
+  129_veldo_0177_assistant_setup                   4 passed
+  130_veldo_0176_conversation_history             17 passed
+  131_veldo_0175_conversation_replies             16 passed
+  132_veldo_0175_conversation_routes              19 passed
+  133_veldo_0178_conversation_api                 16 passed
+  71_veldo_0130_api                               45 passed
+  86_veldo_0127_agent_configuration               26 passed, 2 failed: live/claude and live/codex (the two stale live
+                                                  captures the lead retakes; no other row red)
+
+Also, in engine/ui: npx vitest run, 31 files and 139 tests passed; npx playwright test e2e/layout.spec.ts
+e2e/screens.spec.ts e2e/run.spec.ts (VELDO-0145's shell, screens and run terminal, which no suite runs), 20 passed,
+against a build of this tree.
