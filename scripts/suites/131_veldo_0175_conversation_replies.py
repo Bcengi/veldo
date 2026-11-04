@@ -197,7 +197,14 @@ else:
         factories.append((factory, lock))
         factory.start()
 
+        def nth(identity, number):
+            """Turn `number` of the conversation, or {} when it has none (a falsifier's run goes on to its rows)."""
+            found = conversations.turns(identity) if identity else []
+            return found[number - 1] if len(found) >= number else {}
+
         def settle(identity, count, seconds=60):
+            if not identity or len(conversations.turns(identity)) < count:
+                return False
             J.pass_(factory)
             done = F.drive(factory, lambda: len(conversations.turns(identity)) >= count
                            and conversations.turns(identity)[count - 1].get('state') == 'ended', seconds)
@@ -254,7 +261,7 @@ else:
         check('AC3/parts-sent', 'every part is recorded with its bot, chat and message id, bound to the turn',
               recorded_one == [(n + 1, mid) for n, (mid, _t, _to) in enumerate(parts_one)]
               and all(r['bot_id'] == bot['id'] and r['chat_id'] == owner_chat for r in recorded if r.get('sequence') == 1)
-              and [s.get('message_id') for s in conversations.turns(talk)[0].get('sent') or []]
+              and [s.get('message_id') for s in nth(talk, 1).get('sent') or []]
               == [mid for mid, _t, _to in parts_one])
         check('AC3/parts-sent', 'a second pass sends nothing again', replies.deliver() == [] and
               len(sent_to(owner_chat)) == 3)
@@ -283,7 +290,7 @@ else:
         replies.deliver()
         after_two = sent_to(owner_chat)
         check('AC1/reply-continues', 'turn 2 ran and its reply came back as a reply to his follow-up',
-              conversations.turns(talk)[1].get('outcome') == 'completed' and len(after_two) == 4
+              nth(talk, 2).get('outcome') == 'completed' and len(after_two) == 4
               and after_two[3][2] == follow_update['message']['message_id'])
 
         # AC1: an API message naming the conversation is its next turn at once.
@@ -297,7 +304,7 @@ else:
         settle(talk, 3)
         delivered_three = replies.deliver()
         check('AC3/api-not-sent', 'an API turn\'s reply is kept on its record and nothing is sent to Telegram',
-              conversations.turns(talk)[2].get('reply', '').startswith('Turn 3 of') and delivered_three == []
+              (nth(talk, 3).get('reply') or '').startswith('Turn 3 of') and delivered_three == []
               and len(sent_to(owner_chat)) == 4)
 
         # AC3: a reply to the last part of turn 1 continues the conversation too.
@@ -315,7 +322,7 @@ else:
         # AC3: a turn that ends with no result text sends one status line, and a reply to it continues too.
         post('this one fails', conversation=talk)
         settle(talk, 5)
-        failed_turn = conversations.turns(talk)[4]
+        failed_turn = nth(talk, 5)
         before_status = len(sent_to(owner_chat))
         status = replies.deliver()
         print('  VELDO-0175 AC3 status:', failed_turn.get('outcome'), status)
@@ -324,10 +331,10 @@ else:
         none_reading(ask.get('proposal_id')) if ask.get('outcome') == 'reading' else None
         (markers / 'scenario.json').write_text(json.dumps({talk: {'6': {'fail': True}, '7': {'words': 5}}}))
         settle(talk, 6)
-        sixth = conversations.turns(talk)[5] if len(conversations.turns(talk)) > 5 else {}
+        sixth = nth(talk, 6)
         status = replies.deliver()
         lines = sent_to(owner_chat)[before_status:]
-        sixth = conversations.turns(talk)[5] if len(conversations.turns(talk)) > 5 else {}
+        sixth = nth(talk, 6)
         check('AC3/status-line', 'a turn that ends with no result text sends one status line naming the outcome '
               'and what happens next [%s %s]' % (sixth.get('outcome'), [t for _m, t, _r in lines]),
               sixth.get('state') == 'ended' and sixth.get('outcome') != 'completed' and sixth.get('reply') is None
@@ -396,7 +403,7 @@ else:
         check('AC1/observability', 'each conversation message is logged with how it was decided, its conversation and '
               'turn sequence or the replied message, never its text',
               any(e.get('decided_by') == 'reply' and e.get('conversation') == talk
-                  and e.get('reply_to') == parts_one[1][0] for e in decided if parts_one)
+                  and e.get('reply_to') == parts_one[1][0] for e in decided if len(parts_one) > 1)
               and any(e.get('decided_by') == 'field' and e.get('sequence') == 3 for e in decided)
               and any(e.get('decided_by') == 'route' and e.get('conversation') == talk for e in decided)
               and not any('what about the day before' in json.dumps(e) for e in decided))

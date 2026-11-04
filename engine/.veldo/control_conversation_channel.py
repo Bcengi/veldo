@@ -180,12 +180,18 @@ class Replies(Messages):
         pass. Returns one {conversation, sequence, kind, part, parts, outcome} per message tried."""
         results = []
         for turn in self._turns():
-            if turn.get('state') not in ('ended', 'waiting') or not (turn.get('state') == 'ended' or turn.get('limits')):
+            if not (turn.get('state') == 'ended' or turn.get('limits')):
                 continue
             where = telegram_source(self.conn, turn)
             if where is None:
                 continue
-            for kind, ref, part, count, text in self.due(turn):
+            try:
+                due = self.due(turn)
+            except ValueError as error:  # a reply no part can hold is named, never raised past the pass
+                results.append({'conversation': turn['conversation'], 'sequence': turn['sequence'], 'kind': 'reply',
+                                'outcome': 'refused', 'reason': str(error)})
+                continue
+            for kind, ref, part, count, text in due:
                 about = {'conversation': turn['conversation'], 'sequence': turn['sequence'], 'kind': kind,
                          'part': part, 'parts': count}
                 reply_to = where['message_id'] if part == 1 else None

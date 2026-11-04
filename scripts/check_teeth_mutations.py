@@ -12161,6 +12161,26 @@ def cases():
         "            return 'invalid_input:conversation_history'  # defect: a history beyond the bound is refused\n",
         ['AC3/long-history'])
 
+    # VELDO-0175: conversations started and continued from Telegram and the API; each spec falsifier as one exact edit.
+    replies175, routes175 = '131_veldo_0175_conversation_replies.py', '132_veldo_0175_conversation_routes.py'
+    add(175, 'reply175-proposals-only', replies175, 'control_intake.py',
+        "            conversation = self._replied_conversation(bot, chat, fields['reply_to_message_id'])\n",
+        "            conversation = None  # defect: a reply resolves only against proposals and questions\n",
+        ['AC1/reply-continues'])
+    add(175, 'route175-conversation-as-project', routes175, 'control_intake_routes.py',
+        "        if doc['route'] == 'new_project':\n",
+        "        if doc['route'] in ('new_project', 'new_conversation'):  # defect: a new conversation as a project\n",
+        ['AC2/new-conversation'])
+    add(175, 'parts175-first-only', replies175, 'control_conversation_channel.py',
+        "                    self.record(kind, sent, bot=where['bot_id'], conversation=turn['conversation'],\n",
+        "                    (self.record if part == 1 else (lambda *a, **k: None))(  # defect: only the first part\n"
+        "                        kind, sent, bot=where['bot_id'], conversation=turn['conversation'],\n",
+        ['AC3/reply-to-the-last-part'])
+    add(175, 'command175-taken-as-turn', routes175, 'control_intake_conversation.py',
+        "        if command['source_kind'] != 'telegram_message':\n",
+        "        if True:  # defect: every reply to a conversation message is its next turn\n",
+        ['AC4/slash-role'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

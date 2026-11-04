@@ -333,6 +333,14 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                   'invalid_input:route:conversation with nothing changed [%s]' % refused,
                   zed_open and all(r[1] == 'invalid_input:route:conversation' and r[2] and r[3] for r in refused))
 
+            if not (identity and conversations.read(identity)):
+                # The new-conversation route did not open one (a falsifier's run): the commands' conversation is
+                # opened directly and his message routed to it, so the AC4 rows judge only the commands.
+                fallback, _msg = telegram('a question for the commands')
+                conversations.open('commands-talk', owner='olga', role='assistant', intake_digest='sha256:commands')
+                intake.route(route(fallback['proposal_id'], 'open_conversation', conversation='commands-talk'),
+                             dispatch='fixture-fallback', proposal_id=fallback['proposal_id'])
+                identity = 'commands-talk'
             # A conversation message to reply to: turn 1's reply, delivered as the production delivery sends it.
             sent = end_with_reply(identity, 'Spend rose because two campaigns doubled their bids.')
             check('AC4/slash-role', 'the conversation has a sent reply part to reply to', len(sent) == 1)
