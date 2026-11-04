@@ -3067,6 +3067,13 @@ class FactoryLoop:
                 'conversation_running': sorted(self.conversation.runner.launches) if self.conversation else []}
 
 
+def landing_names(loop):
+    """VELDO-0235 AC3: the work configuration's land entry by execution repository, the remote and trunk each
+    project's landings use, which the API's objectives read names in the project view."""
+    return {repository: {k: roles['land'].get(k) for k in ('remote', 'trunk')}
+            for repository, roles in sorted(loop.work_roles.items()) if isinstance((roles or {}).get('land'), dict)}
+
+
 def open_loop(config, service, lock=None):
     """(FactoryLoop, None) for an installation's work configuration, (None, refusal) when it cannot be
     constructed, and (None, None) when the installation names none: then nothing in the service dispatches."""
@@ -3161,6 +3168,9 @@ def serve(config_path):
             signal.signal(signal.SIGINT, lambda signum, frame: stopping.append(signum))
             # VELDO-0154: the factory loop and its Runners, over this instance's connection.
             service.loop, service.loop_refusal = open_loop(config, service, lock)
+            if service.api is not None and service.loop is not None:
+                # VELDO-0235 AC3: the project view names the remote and trunk each project lands on.
+                service.api.authority.landing = lambda: landing_names(service.loop)
             if service.loop_refusal:
                 service._log({'kind': 'loop', 'operation': 'loop_open', 'at': time.time(), 'domain_uuid': service.domain,
                               'refusal': service.loop_refusal})

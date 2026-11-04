@@ -68,6 +68,33 @@ rows red. After (`after-change.txt`): 8 of 8 green, 34 checks.
   commit and read_at; the set land's log shows fetch, ls-remote and push and the origin received it. The existing
   landing suites pass unchanged: 70 57/57, 86_0148 52/52, 107 146/146, 108 32/32.
 
+## Fix round 1 (review F2, 2026-11-04)
+
+The review found AC3's project view unrendered, and its words "its remote" and "its trunk". The lead widened the
+footprint to `engine/ui/src/views/ProjectsView.vue` (spec History, d18d1d4c).
+
+- The service names its work configuration's land remote and trunk by execution repository
+  (`control_service.landing_names`) and gives them to the API authority when it serves a factory loop;
+  `ApiAuthority.read` adds `landing` to the objectives read, the remote and trunk by project name
+  (`control_api_authority.landing_of`), as the repositories read adds `identities`. A project whose repository names
+  no land entry is left out.
+- `projects.ts` reads `landing` and words each project's destination with that remote and trunk, the brief's own
+  words ("land and push to origin", "land locally on main, nothing pushed"); "the remote" or "the trunk" only when
+  the read names none, as control_landing.destination_words says.
+- `ProjectsView.vue` shows the destination on each project card and in the selected project's detail panel
+  (`Landing`), with `data-destination` naming the value.
+
+Evidence, red before and green after:
+
+- UI: `fix1-ui-vitest-before.txt` (on the projects.ts and ProjectsView.vue of d18d1d4c: the new
+  `features/projects/ProjectsView.spec.ts` 2 of 2 red, the card and the detail panel name no destination; the
+  extended `projects.spec.ts` 2 of 5 red on "its remote"), `fix1-ui-vitest-after.txt` (2 of 2 and 5 of 5 green,
+  vue-tsc clean). Each file run alone, from the locked dependencies in a scratch copy.
+- Suite 128 row bound/view: `fix1-suite128-before.txt` (on the control_service.py and control_api_authority.py of
+  d18d1d4c: red, the service has no landing_names, so the suite raises and every row is red),
+  `fix1-suite128-after.txt` (35 of 35 green).
+- Landing and neighbour suites at the fix tip: `fix1-suites.txt`.
+
 ## Falsifiers (finding 235), each run alone through the gate's driver
 
 `check_teeth_mutations.py --case <name>`: every case passed (baseline green, no-op green, mutant red). Receipts in

@@ -44,10 +44,11 @@ def _v235_suite():
         'lander.py': ROOT / ".veldo" / "lander.py",
         'control_effect_executor.py': ROOT / ".veldo" / "control_effect_executor.py",
         'control_service.py': ROOT / ".veldo" / "control_service.py",
+        'control_api_authority.py': ROOT / ".veldo" / "control_api_authority.py",
     }
     ROWS = ('destination/default-push', 'destination/owner-sets', 'destination/refused', 'local/lands',
-            'local/trunk-moved', 'bound/brief', 'bound/destination-changed', 'push/unchanged')
-    DP, DS, DR, LL, LM, BB, BC, PU = ROWS
+            'local/trunk-moved', 'bound/brief', 'bound/view', 'bound/destination-changed', 'push/unchanged')
+    DP, DS, DR, LL, LM, BB, BV, BC, PU = ROWS
     rows = {name: [] for name in ROWS}
     started = time.monotonic()
 
@@ -566,6 +567,28 @@ def _v235_suite():
         check(BB, 'the words are control_landing\'s own',
               LG.destination_words('land_and_push', 'origin', 'main') == 'land and push to origin'
               and LG.destination_words('land_locally', 'origin', 'main') == 'land locally on main, nothing pushed')
+
+        # ---- AC3: the project view names the destination with the remote and trunk the service lands on -----------
+        # The service's own naming of its work configuration's land entry (what the API's objectives read is given),
+        # over the published objectives read of this store, as the authority serves it to the project screen.
+        MO = load('v235_api_models', mods / 'control_api_models.py')
+        AUTH = load('v235_api_authority', mods / 'control_api_authority.py')
+        names = CS.landing_names(types.SimpleNamespace(work_roles={REPO: {'land': dict(LAND)}, 'other': {}}))
+        check(BV, 'the service names each repository\'s land remote and trunk, and only those [%s]' % names,
+              names == {REPO: {'remote': 'origin', 'trunk': 'main'}})
+        read = MO.read_model(S, writer, 'objectives')
+        served = AUTH.landing_of(read['items']['project'], names)
+        check(BV, 'the objectives read names the remote and trunk of every project of the repository [%s]' % served,
+              sorted(served) == sorted(set(PROJECT.values()))
+              and all(v == {'remote': 'origin', 'trunk': 'main'} for v in served.values()))
+        shown = {item['data']['name']: LG.destination_words(item['data'].get('landing_destination') or 'land_and_push',
+                                                            served[item['data']['name']]['remote'],
+                                                            served[item['data']['name']]['trunk'])
+                 for item in read['items']['project'] if item['data'].get('name') in ('local', 'pushed')}
+        check(BV, 'in the brief\'s own words: "land locally on main, nothing pushed" and "land and push to origin" [%s]'
+              % shown, shown == {'local': 'land locally on main, nothing pushed', 'pushed': 'land and push to origin'})
+        check(BV, 'a project whose repository names no land entry is left out, never given another\'s names',
+              AUTH.landing_of(read['items']['project'], {'other': {'remote': 'x', 'trunk': 'y'}}) == {})
 
         # ---- AC3 (declared falsifier): the destination changed after the grant refuses and asks again --------------
         dry = LD.GitLandOps(caller, builds[SWITCH]['branch'], trunk='main', remote='origin', push=False,

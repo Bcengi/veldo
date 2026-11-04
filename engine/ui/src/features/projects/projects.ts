@@ -42,9 +42,14 @@ export function landingDestination(data: Record<string, unknown>): LandingDestin
   return data.landing_destination === 'land_locally' ? 'land_locally' : 'land_and_push'
 }
 
-/** The destination in words, as every landing brief names it: "land and push to <remote>" or "land locally on
- * <trunk>, nothing pushed". A project record names neither its remote nor its trunk, so the view says "its". */
-export function destinationWords(destination: LandingDestination, remote = 'its remote', trunk = 'its trunk'): string {
+/** The remote and trunk each project's landings use, by project name, as the objectives read serves them from the
+ * work configuration's land entry (VELDO-0235 AC3). */
+export type ProjectLanding = Record<string, { remote?: string; trunk?: string }>
+
+/** The destination in words, as every landing brief names it (control_landing.destination_words): "land and push
+ * to <remote>" or "land locally on <trunk>, nothing pushed"; "the remote" or "the trunk" only when the read names
+ * none for the project. */
+export function destinationWords(destination: LandingDestination, remote = 'the remote', trunk = 'the trunk'): string {
   return destination === 'land_locally' ? `land locally on ${trunk}, nothing pushed` : `land and push to ${remote}`
 }
 
@@ -67,14 +72,18 @@ function objectiveOf(item: Item): ObjectiveView {
 }
 
 /** The projects of the objectives read, each with its objectives, by name. */
-export function projectsOf(answer: ReadAnswer | null): ProjectView[] {
+export function projectsOf(answer: (ReadAnswer & { landing?: ProjectLanding }) | null): ProjectView[] {
   if (!answer) return []
+  const landing = answer.landing ?? {}
   const objectives = (answer.items.objective ?? []).map(objectiveOf)
   return (answer.items.project ?? [])
     .map((item) => {
       const d = item.data as Record<string, any>
       const name = str(d.name, item.id.replace(/^project:/, ''))
       const destination = landingDestination(d)
+      const land = Object.prototype.hasOwnProperty.call(landing, name) ? landing[name] : undefined
+      const remote = typeof land?.remote === 'string' && land.remote ? land.remote : undefined
+      const trunk = typeof land?.trunk === 'string' && land.trunk ? land.trunk : undefined
       return {
         name,
         state: str(d.state, 'unknown'),
@@ -82,7 +91,7 @@ export function projectsOf(answer: ReadAnswer | null): ProjectView[] {
         purpose: str(d.charter?.purpose),
         objectives: objectives.filter((o) => o.project === name),
         destination,
-        destinationWords: destinationWords(destination),
+        destinationWords: destinationWords(destination, remote, trunk),
       }
     })
     .sort((a, b) => a.name.localeCompare(b.name))
