@@ -22,3 +22,19 @@ Suite 133 at the committed tree: 15 of 16, AC2/header red (it needs proof/VELDO-
 With the launch diff applied for the run (at a724a689; the production modules are unchanged since but for control_api_models' four ACTIONS, and every mutation baseline at 110221f7 with the diff applied is 16 of 16 too, see mutation-*.txt):
   133_veldo_0178_conversation_api                 16 passed    3.08s
 Notes: 86's two red rows are its stale live captures (live/claude, live/codex), as the lead expects. 113's ui/route-trace is red at the base b153dea1 too (messages.send's conversation field, VELDO-0175, against the UI's routes.json); see OPEN.md.
+
+Fix round 1 (review-2026-11-04 finding 1), on the tree of 5c9f2fd2 (the fix, the strengthened suite 133 and the new
+mutation case; the launch header binding is in the tree since bc93cb9b), each suite run alone the same way. The full
+gate was not run.
+  133_veldo_0178_conversation_api                 16 passed    3.08s
+  71_veldo_0130_api                               45 passed   24.10s
+  131_veldo_0175_conversation_replies             16 passed    3.42s
+  132_veldo_0175_conversation_routes              18 passed   15.85s
+  123_veldo_0174_conversations                    38 passed   10.60s
+  104_veldo_0164_scoped_reads                     19 passed    1.17s
+  82_veldo_0141_execution_record                  40 passed   20.96s
+  82_veldo_0129_worker_wiring                     29 passed   33.52s
+  82_veldo_0165_launch_hygiene                    23 passed   12.73s
+  94_veldo_0162_configuration_routes              26 passed    9.12s
+  124_veldo_0131_factory_reads_commands            8 passed   33.97s
+113_veldo_0145_ui (ui/route-trace, VELDO-0175's known red) was not rerun.

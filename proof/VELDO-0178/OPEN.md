@@ -32,7 +32,7 @@ diff to both.
 
 ## 2. The mutation cases are registered; suite 133 needs no systemd user manager
 
-`scripts/check_teeth_mutations.py` is in the footprint. The three finding 178 cases ran in the confined leg (each
+`scripts/check_teeth_mutations.py` is in the footprint. The four finding 178 cases ran in the confined leg (each
 receipt's legs are `confined`), so nothing is needed for `scripts/gate_unconfined.json`.
 
 ## 3. The API service's conversations root
@@ -62,7 +62,10 @@ directory lives differs.
   answer (out of scope to a member whose scope is not universal, else missing_evidence:unknown_run).
 - Owner-only applies to a conversation's records wherever the reader scope decides: the event feed (also for a
   universal-scope reader, whose feed was unfiltered before), and the read models, where a conversation turn's
-  dispatch (`dispatch`, `dispatch_active`) is now the owner's alone in the workers read.
+  dispatch (`dispatch`, `dispatch_active`) is now the owner's alone in the workers read. Fix round 1 extends this to
+  every record of a turn's run and intake: the released index, the turn's reservations (also on the spend read, where
+  a universal reader no longer sees a conversation's worker and invocation slots or its unit and project policies)
+  and the turn's intake source or a reading proposed in it.
 - `conversations.open` takes an optional `role`; the new conversation's id is derived from the API request id and its
   intake digest is the assertion's digest. Every conversation command's journal command id is the API request id,
   which the API's observation of the call carries, so a route call joins the command it sent.

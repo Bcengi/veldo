@@ -26,10 +26,35 @@ Evidence files:
   123, 127, 128, 129, 130, 131, 132, 86, plus 104, 82, 94, 113 and 124, each run alone.
 - `falsify.py`, `falsifiers.txt`: each spec falsifier and the guard (the finding 178 mutation cases) applied to the
   checkout's module, suite 133 run, the module restored byte for byte (`restored: True` each).
-- `mutation-*.txt`: each of the three registered cases run alone through `scripts/check_gate_mutations.py` with its case option,
+- `finding1-red-green.txt`: fix round 1's AC1/events check, red before the fix and green after.
+- `mutation-*.txt`: each of the four registered cases run alone through `scripts/check_gate_mutations.py` with its case option,
   confined leg: baseline and no-op green, the mutant killed at its row.
 - `control_launch-header.diff`: the change outside the footprint (OPEN.md item 1).
 - `OPEN.md`: the open item, and decisions to review.
+
+## Fix round 1 (review-2026-11-04, finding 1)
+
+The review found a universal-scope colleague served ids of the owner's conversation: a turn's `dispatch_active`
+index once its release cleared `dispatch_id`, the turn's reservations (worker, invocation, and the unit and project
+policies whose subject is the conversation) and the turn's `intake_source`, on the event feed, the spend read and
+(the released index) the workers read.
+
+Fix: `control_api_models_scope.conversation_of` (and its engine copy) decides each of them from its own link to the
+conversation, never from a field a run's end clears: a `dispatch_active` index by its unit when its station is `turn`
+and it has no repository (only a conversation turn's index is, by control_dispatch's contract rule), active or
+released; a `subscription_reservation` by its context's unit when its subject kind is conversation (worker and
+invocation, retired or not), or a policy whose project or unit subject is a conversation; an `intake_source` or
+`intake_proposal` by the conversation it names (the turn's message, a reading proposed in the conversation). The
+feed and every read model decide through the same `ReaderScope.reason`, so all are the owner's alone.
+
+Test: suite 133's row AC1/events gains a check over every id on the colleague's whole event feed and on all eight read
+models: none may carry the owner's conversation id or the turn's dispatch id, or be the turn's intake source, taken
+while the turn runs and again after it ended and the conversation closed. `finding1-red-green.txt`: red at
+6f27a5b5's modules (it lists the leaked ids, running and ended), green with the fix (16 of 16).
+
+Mutation case `index178-released-by-dispatch-id` (a released turn index decided again by its cleared dispatch id)
+kills at AC1/events alone; it and the three earlier cases were rerun alone through the gate's driver at 1b51fa3d,
+baseline and no-op green (`mutation-*.txt`), and `falsifiers.txt` was retaken with all four.
 
 ## AC1: the API lists the owner's conversations, serves each one's turns and replies, and sends his commands, only for the conversation's owner
 
