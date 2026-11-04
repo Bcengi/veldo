@@ -25,6 +25,8 @@ _git_spec = spec_from_file_location('handoff_git_process', Path(__file__).with_n
 _git_process = module_from_spec(_git_spec)
 _git_spec.loader.exec_module(_git_process)
 OPTION = '-' * 2
+# VELDO-0177 AC2: a Codex role's setting for its workspace-write sandbox's network access.
+NETWORK_ACCESS, NETWORK_VALUES = 'network_access', ('enabled', 'disabled')
 CODEX_NATIVE = {'shell': 'shell_tool', 'apply_patch': 'apply_patch_freeform',
                 'view_image': 'view_image', 'multi_agent': 'multi_agent'}
 # VELDO-0231: the role tools that flag the lead without stopping, by engine, and the one fixed text added to the
@@ -81,8 +83,13 @@ def materialize(conn, domain, repository, revision, roots):
     else:
         C.verify_binding(conn, domain, repository, revision)
     settings = revision['settings']
-    allowed = {'model'} if revision['engine'] == 'claude_code' else {'model', 'sandbox_mode', 'model_reasoning_effort'}
+    allowed = ({'model'} if revision['engine'] == 'claude_code'
+               else {'model', 'sandbox_mode', 'model_reasoning_effort', NETWORK_ACCESS})
     if set(settings) - allowed or any(not isinstance(v, str) or not v for v in settings.values()):
+        raise Refused('unsupported_configuration:engine_settings')
+    # VELDO-0177 AC2: network access is a grant of the workspace-write sandbox, on or off by name.
+    if NETWORK_ACCESS in settings and (settings[NETWORK_ACCESS] not in NETWORK_VALUES
+                                       or settings.get('sandbox_mode') != 'workspace-write'):
         raise Refused('unsupported_configuration:engine_settings')
     if revision['engine'] == 'codex' and set(revision['native_tools']) - C.CODEX_CAPABILITIES:
         raise Refused('unsupported_configuration:native_tools')
@@ -413,7 +420,12 @@ def codex_features(listing, grants, granted=frozenset()):
 def codex(configuration, capability, inventory, config, *, catalog=None, feature_listing=None, probe=False):
     """`probe` (VELDO-0231): the qualify command's loopback probe of the flag calls, run before the grant can hold."""
     revision = capability['revision']
-    configuration.update(revision['settings'])
+    settings = dict(revision['settings'])
+    network = settings.pop(NETWORK_ACCESS, None)
+    configuration.update(settings)
+    if network is not None:
+        # VELDO-0177 AC2: the workspace-write sandbox's network access, as Codex's own configuration names it.
+        configuration['sandbox_workspace_write'] = {'network_access': network == 'enabled'}
     if feature_listing is None:
         feature_listing = X.load_qualification().get('feature_listing', '')
     configuration.update(codex_features(feature_listing, set(revision['native_tools']), codex_granted()))

@@ -69,6 +69,12 @@ RESERVATION_PRINCIPALS = ('authority', 'launch-receiver')
 RESERVATION_ROLE = 'reservation_service'
 WORK_FILE = 'work.json'
 ACCOUNT_LOGIN = 'missing_authority:account_login:'
+# VELDO-0177 AC2: the conversation roles setup saves into the default team, one on each engine, and what each grants
+# beyond its engine's own in-run tools: the web, and on Codex its workspace-write sandbox with network access. A
+# starting grant, never a ceiling: the owner changes either in the role form (VELDO-0163).
+ASSISTANTS = {'assistant': 'claude_code', 'assistant_codex': 'codex'}
+ASSISTANT_WEB = {'claude_code': ('WebFetch', 'WebSearch'), 'codex': ('web_search',)}
+ASSISTANT_SETTINGS = {'claude_code': {}, 'codex': {'sandbox_mode': 'workspace-write', 'network_access': 'enabled'}}
 STEPS = ('work_configuration', 'reservation_principals', 'factory_project', 'default_team', 'account_registration',
          'reservation_policies', 'account_login')
 
@@ -105,9 +111,40 @@ def plan(workspace, engines, enrollment, Refused, root=None):
         return None
     present = sorted({a['provider'] for a in accounts})
     roles = dict(WALKTHROUGH) if set(WALKTHROUGH.values()) <= set(present) else {r: present[0] for r in WALKTHROUGH}
-    models = {'codex': codex_model(Refused)} if 'codex' in roles.values() else {}
+    # VELDO-0177 AC2: assistant_codex is saved on every host, so the Codex model is read whatever the walkthrough's.
+    models = {'codex': codex_model(Refused)}
     return {'registry': root, 'accounts': accounts, 'engines': present, 'roles': roles, 'models': models,
-            'adapters': adapters(engines, present)}
+            'adapters': adapters(engines, present),
+            'assistants': {role: assistant_definition(role, engines, models, Refused) for role in ASSISTANTS}}
+
+
+def assistant_definition(role, engines, models, Refused):
+    """VELDO-0177 AC2: the capability configuration setup saves for a conversation role: on Claude Code the pinned
+    version's in-run tools (its qualification's classification, VELDO-0173) with WebSearch and WebFetch; on Codex its
+    edit, shell and plan capabilities with web search, the workspace-write sandbox with network access. Every tool
+    `always`; never a tool that waits for an answer (VELDO-0231 AC3)."""
+    engine = ASSISTANTS[role]
+    if engine == 'claude_code':
+        E = organ('control_engine_claude')
+        version = (engines.get('claude_code') or {}).get('version')
+        try:
+            tools = E.qualified_tools(version, E.qualified(version))['in_run']
+        except E.Refused as error:
+            raise Refused(error.code, 'the pinned Claude Code version names no in-run tools') from None
+    else:
+        tools = NATIVE_TOOLS['codex'][None]
+    wait = organ('control_agent_config').WAIT_QUESTION_TOOLS.get(engine, ())
+    names = sorted((set(tools) | set(ASSISTANT_WEB[engine])) - set(wait))
+    settings = dict(ASSISTANT_SETTINGS[engine], **({'model': models['codex']} if engine == 'codex' else {}))
+    return dict(role=role, engine=engine, native_tools=[{'name': name, 'load': 'always'} for name in names], mcp=[],
+                skills=[], instructions=[], settings=settings)
+
+
+def assistant_role(role, revision):
+    """VELDO-0177 AC2: an assistant's default team role, a specialist naming its capability revision."""
+    return dict(kind='specialist', capability_configuration={'role': role, 'revision': revision}, workers=[role],
+                responsibilities=['converse'], expertise=['general'], proposal_permissions=[],
+                engines=[ASSISTANTS[role]], budget=dict(ROLE_BUDGET), independence={'distinct_from': []})
 
 
 def adapters(engines, present):
@@ -212,7 +249,10 @@ def held(conn):
     PJ, ACC, TR = organ('control_project'), organ('control_accounts'), organ('control_team_routes')
     principals = not enrollments_due(conn)
     project = row(PJ.project_id(PJ.FACTORY_PROJECT))[0] is not None
-    head = row(TR.HEAD)[0] is not None
+    kind, current = row(TR.HEAD)
+    # VELDO-0177 AC2: the default team is done once its head names both assistant roles.
+    saved = row(TR.default_id(current['revision']))[1] if kind is not None else None
+    head = kind is not None and set(ASSISTANTS) <= set(((saved or {}).get('team') or {}).get('roles') or {})
     accounts = {json.loads(d)['id'] for (d,) in conn.execute('SELECT data FROM entities WHERE kind=?', (ACC.KIND,))}
     return {'reservation_principals': principals, 'factory_project': project, 'default_team': head,
             'accounts': accounts}
@@ -339,7 +379,43 @@ def owner_packet(S, CM, conn, ids, owner, owner_sign, clock, operation, paramete
 def save_team(conn, CG, CT, ids, dispatch, prefix, apply, packet):
     """AC1: one capability configuration revision per role the store has none of, then the default team naming
     each role's head revision, each the owner's packet answered by `apply` (the writer under this run's lock, or
-    the running service). Returns (team, what was saved)."""
+    the running service). Then VELDO-0177 AC2: the assistant roles the head team lacks, each one capability
+    configuration revision when the store has none, and one default team revision adding them. Returns (team, what
+    was saved)."""
+    TR = organ('control_team_routes')
+    head = conn.execute('SELECT data FROM entities WHERE id=?', (TR.HEAD,)).fetchone()
+    if head is None:
+        chosen, saved = save_required(conn, CG, CT, ids, dispatch, prefix, apply, packet)
+        base = int(saved[-1].rsplit(':', 1)[1])
+    else:
+        base, saved = json.loads(head[0])['revision'], []
+        chosen = json.loads(conn.execute('SELECT data FROM entities WHERE id=?',
+                                         (TR.default_id(base),)).fetchone()[0])['team']
+    missing = [role for role in ASSISTANTS if role not in chosen['roles']]
+    if not missing:
+        return chosen, saved
+    roles = dict(chosen['roles'])
+    for role in missing:
+        try:
+            revision = CG.read(conn, ids['domain_uuid'], ids['repository_uuid'], role)['revision']
+        except CG.Refused:
+            answer = apply(packet('save_capability_configuration', dict(definition=dispatch['assistants'][role], base=0),
+                                  '%s-configuration-%s' % (prefix, role)))
+            if not answer.get('ok'):
+                raise StepRefused(answer.get('reason') or 'unknown_outcome:default_team')
+            revision = answer['result']['revision']
+            saved.append('configuration:%s:%d' % (role, revision))
+        roles[role] = assistant_role(role, revision)
+    chosen = dict(chosen, roles=roles)
+    answer = apply(packet('save_default_team', dict(team=chosen, base=base), prefix + '-assistant-team'))
+    if not answer.get('ok'):
+        raise StepRefused(answer.get('reason') or 'unknown_outcome:default_team')
+    saved.append('default_team:%d' % answer['result']['revision'])
+    return chosen, saved
+
+
+def save_required(conn, CG, CT, ids, dispatch, prefix, apply, packet):
+    """VELDO-0185 AC1's default team: the required roles' configurations and the team's first revision."""
     revisions, saved = {}, []
     for role in CT.REQUIRED_ROLES:
         try:
