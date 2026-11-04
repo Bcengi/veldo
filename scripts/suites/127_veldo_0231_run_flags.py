@@ -270,7 +270,8 @@ def _v231_suite():
                          'synchronous': False}])
         check('AC3/probe-answer', 'the binary answered the synchronous question at once with no answers: recorded',
               stream['question']['immediate'] is True and stream['question']['answers'] is False
-              and isinstance(stream['question']['seconds'], float) and stream['question']['answer'] is not None)
+              and stream['question']['within_seconds'] == X.IMMEDIATE_SECONDS and 'seconds' not in stream['question']
+              and stream['question']['answer'] is not None)
         blocked = probes['block']
         check('AC3/probe-answer', 'a binary that does not answer at once: the grant does not hold',
               blocked['question']['immediate'] is False and X.flag_grant({'flag_means': blocked}) is not None)

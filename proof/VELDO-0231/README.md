@@ -79,7 +79,8 @@ Falsifier (`flag231-question-unmapped`, request_user_input left out of the mappi
 Built:
 - control_agent_config: AskUserQuestion (Claude Code) and request_user_input (Codex) refused at save by name,
   `invalid_input:agent_native_tools:wait_question`.
-- The probe records the binary's own answer to request_user_input, how long it took, whether immediate (at most
+- The probe records the binary's own answer to request_user_input, how long it took as the bound it answered
+  within (`within_seconds`, never the measured time), whether immediate (at most
   5 s) and whether it gave answers; `flag_grant` holds only for an immediate answer with no answers; a role saved or
   launched with the grant where it does not hold is refused (`unsupported_configuration:codex_tool:...`).
 - The handoff adds one fixed text (`FLAG_INSTRUCTIONS`) to a role that lists a flag tool: nobody answers questions in

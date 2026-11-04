@@ -364,8 +364,9 @@ def flag_probe(executable, qualified, H, LB, source, temp):
     """VELDO-0231 AC2, AC3: on loopback, with the input closed after the prompt as Veldo launches it, the model calls
     request_user_input_async and, in a second run, request_user_input, each carrying FLAG_TOKEN. Records the form
     in which each call reaches the exec JSON stream, and for the synchronous one the binary's own answer (the call's
-    output in its next request), how long it took, whether it was immediate and whether it gave answers. The means
-    is the asynchronous call only where its form was found; else the marked line, with that reason."""
+    output in its next request), how long it took as the bound it answered within (`within_seconds`, never the
+    measured time, so the same binary writes the same record), whether it was immediate and whether it gave answers.
+    The means is the asynchronous call only where its form was found; else the marked line, with that reason."""
     import copy
     X = H.X
     models = qualified['model_catalog']['models']
@@ -402,9 +403,9 @@ def flag_probe(executable, qualified, H, LB, source, temp):
             except ValueError:
                 parsed = None
             answers = bool(parsed.get('answers')) if isinstance(parsed, dict) else output is None or bool(text_output)
-            question = {'answer': output, 'seconds': seconds, 'answers': answers,
-                        'immediate': seconds is not None and seconds <= X.IMMEDIATE_SECONDS,
-                        'returncode': result.get('returncode')}
+            immediate = seconds is not None and seconds <= X.IMMEDIATE_SECONDS
+            question = {'answer': output, 'within_seconds': X.IMMEDIATE_SECONDS if immediate else None,
+                        'answers': answers, 'immediate': immediate, 'returncode': result.get('returncode')}
     if forms[X.FLAG_TOOL] is None:
         return {'means': X.MARKED_LINE, 'forms': forms, 'question': question,
                 'reason': 'the asynchronous call does not reach the exec JSON stream on this binary'}
