@@ -1,0 +1,115 @@
+{
+ "claude_code": {
+  "file_memory": {
+   "init_field": "memory_paths",
+   "settings": {
+    "directory": "autoMemoryDirectory",
+    "enabled": "autoMemoryEnabled"
+   },
+   "settings_option": "--settings",
+   "source": "flagSettings",
+   "unset_environment": [
+    "CLAUDE_CODE_DISABLE_AUTO_MEMORY"
+   ]
+  },
+  "found": [
+   {
+    "excerpt": "){let n=[\"policySettings\",\"flagSettings\",...IU()?[\"localSettings\",\"projectSettings\"]:[],\"userSettings\"];for(let r of n){let s=ye(r)?.autoMemoryDirectory;if(s!=null)return{dir:s,source:r}}return{dir:void 0,source:void 0}}functi",
+    "literal": "let s=ye(r)?.autoMemoryDirectory;if(s!=null)return{dir:s,source:r}",
+    "offset": 195937744,
+    "shows": "the auto-memory directory source order: policySettings, flagSettings, trusted local and project, userSettings"
+   },
+   {
+    "excerpt": "let s=Ps(r).replace(/[/\\\\]+$/,\"\");if(Ky(s))return;return(s+So).normalize(\"NFC\")}function Ky(e){return!fD(e)||e.le",
+    "literal": "let s=Ps(r).replace(/[/\\\\]+$/,\"\")",
+    "offset": 195937340,
+    "shows": "the directory as reported: normalized with a trailing separator"
+   },
+   {
+    "excerpt": "turn\"off\";if(gC())return\"off\";let e=process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY;if(Oe(e))return\"off\";if(Ao(e))return\"forced_on\";return Hy()?\"off\":\"unset\"}function Hy(){if(a.CLAUDE_",
+    "literal": "let e=process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY;if(Oe(e))return\"off\"",
+    "offset": 195936096,
+    "shows": "the environment switch: CLAUDE_CODE_DISABLE_AUTO_MEMORY turns auto memory off, unset leaves the setting"
+   },
+   {
+    "excerpt": "function Uy(){if(PT(\"autoMemoryEnabled\")[0]===!1||_D())return!1;return![\"projectSettings\",\"localSettings\"].some((r)=>ye(r)?.autoMemoryEnabled===!1)}function _D(){return[...GU(),...J8(\"flagSettings\"),.",
+    "literal": "function Uy(){if(PT(\"autoMemoryEnabled\")",
+    "offset": 195935649,
+    "shows": "autoMemoryEnabled read from the merged settings, flagSettings among them"
+   },
+   {
+    "excerpt": "dt(){let e=Un(),n;if(Va()){if(n={auto:Qs()},fR())n.team=PS()}let r;r=import.meta",
+    "literal": "n={auto:Qs()},fR())n.team=PS()",
+    "offset": 208881764,
+    "shows": "the init event memory paths: auto, and team when team memory is on"
+   },
+   {
+    "excerpt": "if(e.memoryPaths)g.memory_paths={...e.memoryPaths}",
+    "literal": "if(e.memoryPaths)g.memory_paths={...e.memoryPaths}",
+    "offset": 208884278,
+    "shows": "the init event field"
+   },
+   {
+    "excerpt": "autoMemoryDirectory:o().optional().describe(\"Custom directory path for auto-memory storage. Supports ~/ prefix for home directory expansion. Ignored if set in proje",
+    "literal": "autoMemoryDirectory:o().optional().describe(",
+    "offset": 193681835,
+    "shows": "the settings schema entry"
+   }
+  ],
+  "sha256": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+  "version": "2.1.281"
+ },
+ "codex": {
+  "file_memory": {
+   "configuration": {
+    "memories.generate_memories": false,
+    "memories.use_memories": false
+   },
+   "instructions": "developer_instructions",
+   "sandbox_mode": "workspace-write",
+   "writable_roots": "sandbox_workspace_write.writable_roots"
+  },
+  "found": [
+   {
+    "excerpt": "MemoriesToml with 12 elementsmcp_serversusekey_opsalgkidx5ux5cx5tinputRe",
+    "literal": "MemoriesToml",
+    "offset": 212939108,
+    "shows": "the memories table"
+   },
+   {
+    "excerpt": "th 2 elementsdisable_on_external_contextgenerate_memoriesuse_memoriesdedicated_toolsmax_raw_memor",
+    "literal": "generate_memories",
+    "offset": 212938910,
+    "shows": "generate_memories"
+   },
+   {
+    "excerpt": "ble_on_external_contextgenerate_memoriesuse_memoriesdedicated_toolsmax_raw_memories_for_cons",
+    "literal": "use_memories",
+    "offset": 212938927,
+    "shows": "use_memories"
+   },
+   {
+    "excerpt": "SandboxWorkspaceWritewritable_rootsexclude_tmpdir_env_varexclude_slash_tmpCliVsCo",
+    "literal": "SandboxWorkspaceWrite",
+    "offset": 213055360,
+    "shows": "the workspace-write sandbox table"
+   },
+   {
+    "excerpt": "_user_inputupdate_planstateenabled_toolswritable_rootsnetwork_accessexclude_tmpdir_env_varexcl",
+    "literal": "writable_roots",
+    "offset": 212942552,
+    "shows": "writable_roots"
+   },
+   {
+    "excerpt": "res..agent role file at .% must define `developer_instructions`..agent role file at .'.developer_instr",
+    "literal": "developer_instructions",
+    "offset": 211459418,
+    "shows": "developer_instructions"
+   }
+  ],
+  "sha256": "sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022",
+  "version": "0.154.0"
+ },
+ "schema": "veldo.engine_memory_forms/v1",
+ "spec_id": "VELDO-0184"
+}

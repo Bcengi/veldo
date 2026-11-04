@@ -686,6 +686,8 @@ def qualification(executable, flags=FLAGS, *, catalog=False):
             'version': version.split('-', 1)[0], 'executable': str(Path(executable).relative_to(root)),
             'sha256': _file_digest(executable), 'flags': list(flags), 'environment': dict(ENVIRONMENT),
             'baseline': BASELINE, 'session_environment': session_environment(executable),
+            # VELDO-0184 AC2: listed only when the binary's bytes carry every key of the form.
+            **({'file_memory': FILE_MEMORY} if file_memory_carried(executable) else {}),
             'native_tool_mapping': NATIVE_TOOL_MAPPING, 'model_tool_modes': {}, 'undelivered_grants': [],
             'flag_means': dict(UNPROBED),
             'mcp_resource_rule': {'when': 'nonempty_mcp_servers', 'mapping': 'mcp_server', 'otherwise': [],
@@ -707,6 +709,37 @@ def qualification(executable, flags=FLAGS, *, catalog=False):
         record.update(feature_listing=listing, model_catalog=bundled, model_catalog_digest=catalog_digest(bundled),
                       model_tool_modes=catalog_modes(bundled), unclassified_default_on=unclassified)
     return record
+
+
+def file_memory_carried(executable):
+    """Whether the binary's bytes carry every literal of FILE_MEMORY (VELDO-0184 AC2)."""
+    data = Path(executable).read_bytes()
+    return all(literal in data for literal in FILE_MEMORY_LITERALS)
+
+
+def file_memory_form(bound, record=None):
+    """VELDO-0184 AC2: the binary's qualified file memory form (its record's `file_memory`, which must be
+    FILE_MEMORY), else missing_evidence:engine_baseline:<version>."""
+    listed = (record if isinstance(record, dict) else bound).get('file_memory')
+    if listed != FILE_MEMORY:
+        raise Refused('missing_evidence:engine_baseline:%s' % bound.get('version'))
+    return FILE_MEMORY_FORM
+
+
+def _file_memory(configuration, bound, handed, record=None):
+    """A run that lists the file memory: the directory a writable root of its workspace-write sandbox, the index
+    after the layout paragraph in its developer instructions, and Codex's own memory feature off."""
+    form = file_memory_form(bound, record)
+    if configuration.get('sandbox_mode') != FILE_MEMORY['sandbox_mode']:
+        raise Refused('unsupported_configuration:file_memory:sandbox_mode')
+    sandbox = dict(configuration.get('sandbox_workspace_write') or {})
+    sandbox['writable_roots'] = sorted(set(sandbox.get('writable_roots') or ()) | {handed['directory']})
+    configuration['sandbox_workspace_write'] = sandbox
+    memory = handed['layout'] + '\n\n' + handed['index']
+    own = configuration.get(FILE_MEMORY['instructions'])
+    configuration[FILE_MEMORY['instructions']] = (own + '\n\n' if own else '') + memory
+    configuration.update(FILE_MEMORY['configuration'])
+    return {'directory': handed['directory'], 'form': form}
 
 
 def load_qualification(path=None):
@@ -748,7 +781,7 @@ def bind(adapter, state_root=None):
     base = qualified_baseline(None, record)
     return {'engine': PROVIDER, 'path': executable, 'version': record['version'],
             'package_version': record['package_version'], 'sha256': digest, 'flags': list(record['flags']),
-            'baseline': base, 'model_tool_modes': record['model_tool_modes'],
+            'baseline': base, 'model_tool_modes': record['model_tool_modes'], 'file_memory': record.get('file_memory'),
             'feature_listing': record.get('feature_listing', ''),
             'model_catalog': record.get('model_catalog'), 'model_catalog_digest': record.get('model_catalog_digest')}
 
@@ -791,6 +824,22 @@ BASELINE = {
                       'skills.include_instructions': False},
 }
 GENERATED_FILE = 'config.toml'
+# VELDO-0184 AC2: the file memory form, every key the 0.154.0 binary's own (proof/VELDO-0184/engine-memory-forms.json,
+# read from its bytes): the directory added to the workspace-write sandbox's `writable_roots`, the index with the
+# layout paragraph in `developer_instructions`, and its own memory feature (MemoriesToml, which keeps memories in
+# the account profile) off with `memories.generate_memories` and `memories.use_memories` false. The qualification
+# record lists it as `file_memory` when the binary carries every key (`qualification`), else a run that lists the
+# item is refused by name before acceptance.
+FILE_MEMORY = {
+    'sandbox_mode': 'workspace-write',
+    'writable_roots': 'sandbox_workspace_write.writable_roots',
+    'instructions': 'developer_instructions',
+    'configuration': {'memories.generate_memories': False, 'memories.use_memories': False},
+}
+FILE_MEMORY_FORM = 'codex:writable_root+developer_instructions'
+# The literals the binary must carry for FILE_MEMORY to be its form (read from its bytes, never by running it).
+FILE_MEMORY_LITERALS = (b'MemoriesToml', b'generate_memories', b'use_memories', b'SandboxWorkspaceWrite',
+                        b'writable_roots', b'developer_instructions')
 # The account profile's own instruction files the binary reads into every prompt (its codex-home loader,
 # AGENTS.override.md first), which nothing in the baseline can turn off: a profile holding one is refused.
 PROFILE_INSTRUCTIONS = ('AGENTS.override.md', 'AGENTS.md')
@@ -912,13 +961,19 @@ def baseline(bound, run, environment=None, record=None, servers=()):
             wanted = helper.expected(run['capability'], listing)
         except helper.Refused as error:
             raise Refused(error.code) from None
+    handed = None
+    if run.get('file_memory'):
+        handed = _file_memory(configuration, bound, run['file_memory'], record)
     argv = list(base['options'])
     for key in sorted(configuration):
         argv += ['-c', '%s=%s' % (key, _toml(configuration[key]))]
     text = ''.join('%s = %s\n' % (key, _toml(configuration[key])) for key in sorted(configuration))
     files[GENERATED_FILE] = text.encode()
-    return {'argv': argv, 'environment': dict(base['environment']), 'files': files,
-            'secrets': secrets, 'routes': routes, 'expected': wanted}
+    extra = {'argv': argv, 'environment': dict(base['environment']), 'files': files,
+             'secrets': secrets, 'routes': routes, 'expected': wanted}
+    if handed is not None:
+        extra['file_memory'] = handed
+    return extra
 
 
 def _capability_handoff():
