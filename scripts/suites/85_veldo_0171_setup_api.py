@@ -135,6 +135,11 @@ def _v171_suite():
             shutil.copyfile(source, target)
     fixtures186 = load('v171_install_fixtures', ROOT / 'proof/VELDO-0186/fixtures.py')
     engines186 = fixtures186.install(ROOT, base, mods)
+    # VELDO-0232: Antigravity is an optional engine whose setup suite 128 covers; this suite's factory sets up the
+    # two fakes only, whatever Antigravity binary this host holds.
+    _agy_record = json.loads((mods / 'runtime/engines.json').read_text())
+    _agy_record.pop('antigravity', None)
+    (mods / 'runtime/engines.json').write_text(json.dumps(_agy_record, indent=1, sort_keys=True) + '\n')
     prior_path186 = os.environ.get('PATH', '')
     os.environ['PATH'] = str(engines186['path']) + os.pathsep + prior_path186
     H = load('v171_support', ROOT / 'scripts' / 'suites' / 'support' / 'v73_authority.py')

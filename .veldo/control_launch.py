@@ -237,18 +237,31 @@ DL = _organ('control_credential_delivery')
 # invocation seam and each subscription engine's login and usage reports.
 ACC = D.RES.ACC
 RTM = _organ('control_reservation_runtime')
-ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('control_engine_codex'),
-           # VELDO-0232: Antigravity's CLI, the third engine on the same protocol.
-           'antigravity': _organ('control_engine_antigravity')}
+ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('control_engine_codex')}
+# VELDO-0232: Antigravity's CLI, the third engine on the same protocol, wherever its module is installed (an
+# installation that does not ship it refuses an `antigravity` adapter by name, unregistered_adapter:engine).
+if Path(__file__).with_name('control_engine_antigravity.py').is_file():
+    ENGINES['antigravity'] = _organ('control_engine_antigravity')
 # VELDO-0185 AC4: the refusal of a dispatch on an account its engine reports not logged in to its subscription.
 ACCOUNT_LOGIN = D.RES.POOL.ACCOUNT_LOGIN
 # Every name either binary's lists make a login: none reaches any engine, whichever it is, and an
 # adapter configuring one is refused. STRIPPED adds each binary's settings of the owner's shell, which
 # the inherited environment loses and an adapter may configure.
-CREDENTIALS = frozenset().union(*(engine.CREDENTIALS for engine in ENGINES.values()))
+# VELDO-0232: Claude Code's and Codex's lists apply to every run (VELDO-0062). Antigravity's names Google's own
+# variables (a Cloud project, application credentials) that other engines' tools use as tool credentials, so its list
+# applies to its own runs: `engine_credentials(module)` is what a run of `module` loses and refuses.
+SHARED_LOGINS = ('claude_code', 'codex')
+CREDENTIALS = frozenset().union(*(ENGINES[name].CREDENTIALS for name in SHARED_LOGINS))
 STRIPPED = CREDENTIALS.union(*(engine.SETTINGS for engine in ENGINES.values()))
 NEVER_CONFIGURED = frozenset().union(*(getattr(engine, 'BASELINE', {}).get('strip_names', ())
                                        for engine in ENGINES.values()))
+
+
+def engine_credentials(module):
+    """Every login name a run of the engine `module` never inherits and its adapter never configures."""
+    return CREDENTIALS | (module.CREDENTIALS if module is not None else frozenset())
+
+
 # What every engine module implements, with the same signatures (THE ENGINE PROTOCOL above).
 ENGINE_PROTOCOL = ('PROVIDER', 'CREDENTIALS', 'SETTINGS', 'REGISTRATION', 'Meter', 'Refused', 'bind', 'command',
                    'environment', 'Terminal', 'baseline', 'profile_problem', 'login_problem', 'Guard')
@@ -1460,7 +1473,7 @@ class Receiver:
         if missing:
             return 'unregistered_adapter:engine_protocol:%s:%s' % (engine, missing[0])
         # What the adapter configures reaches the engine as configured; a login in it is refused by name.
-        configured = ACC.refused(adapter.get('environment') or {}, CREDENTIALS)
+        configured = ACC.refused(adapter.get('environment') or {}, engine_credentials(module))
         if configured:
             return 'invalid_input:adapter_environment:' + configured[0]
         # VELDO-0165 AC2: a name the baseline strips by name (the MCP tool naming switch) is never configured.
@@ -1582,8 +1595,9 @@ class Receiver:
         """The engine's login environment as _spawn builds it (VELDO-0062): the inherited one without every
         login, the adapter's configured one, the recorded account's profile."""
         inherited = dict(os.environ)
-        inherited = ACC.login_environment(inherited, self.login['record'], self.host, STRIPPED,
-                                          adapter.get('environment') or {}, CREDENTIALS)
+        module = self.login['engine']
+        inherited = ACC.login_environment(inherited, self.login['record'], self.host, STRIPPED | module.CREDENTIALS,
+                                          adapter.get('environment') or {}, engine_credentials(module))
         inherited['VELDO_ACCOUNT'] = self.login['account']
         return inherited
 
@@ -1784,8 +1798,10 @@ class Receiver:
         if self.login is not None:
             # VELDO-0062: the recorded account's own profile, no other profile and no other login in what
             # the engine inherits; what the adapter configures, as configured.
-            environment = ACC.login_environment(environment, self.login['record'], self.host, STRIPPED,
-                                                adapter.get('environment') or {}, CREDENTIALS)
+            module = self.login['engine']
+            environment = ACC.login_environment(environment, self.login['record'], self.host,
+                                                STRIPPED | module.CREDENTIALS, adapter.get('environment') or {},
+                                                engine_credentials(module))
             environment['VELDO_ACCOUNT'] = self.login['account']
         else:
             environment.update(adapter.get('environment') or {})

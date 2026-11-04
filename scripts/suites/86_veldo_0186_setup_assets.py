@@ -53,6 +53,11 @@ def _v186_suite():
             shutil.copyfile(source, mods / name)
     fixtures = load('v186_fixtures', TREE / 'proof/VELDO-0186/fixtures.py')
     engines = fixtures.install(ROOT, base, mods)
+    # VELDO-0232: Antigravity is an optional engine whose setup suite 128 covers; this suite's factory sets up the
+    # two fakes only, whatever Antigravity binary this host holds.
+    _agy_record = json.loads((mods / 'runtime/engines.json').read_text())
+    _agy_record.pop('antigravity', None)
+    (mods / 'runtime/engines.json').write_text(json.dumps(_agy_record, indent=1, sort_keys=True) + '\n')
     fake = engines['fake']
     compare_formats = load('v186_compare', TREE / 'proof/VELDO-0172/compare_formats.py')
     L = load('v186_launch', mods / 'control_launch.py')
@@ -122,7 +127,8 @@ def _v186_suite():
         installed = Path(report.get('home', home / 'absent')) / 'bin'
         config_path = installed.parent / 'config/service.json'
         config = json.loads(config_path.read_text()) if config_path.is_file() else {}
-        expected = ['runtime/claude-qualification.json', 'runtime/codex-qualification.json', 'runtime/engines.json',
+        expected = ['runtime/antigravity-qualification.json',
+                    'runtime/claude-qualification.json', 'runtime/codex-qualification.json', 'runtime/engines.json',
                     'runtime/langgraph-records.json', 'runtime/future.json', 'runtime/nested/future.json']
         for name in expected:
             target = installed / name

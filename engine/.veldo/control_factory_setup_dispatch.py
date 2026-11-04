@@ -414,8 +414,8 @@ def logins(bin_dir, conn, accounts, found_adapters, state_root, host=None):
         module = L.ENGINES.get(account['provider'])
         try:
             bound = module.bind(adapter, state_root)
-            environment = ACC.login_environment(dict(os.environ), record, host, L.STRIPPED,
-                                                adapter.get('environment') or {}, L.CREDENTIALS)
+            environment = ACC.login_environment(dict(os.environ), record, host, L.STRIPPED | module.CREDENTIALS,
+                                                adapter.get('environment') or {}, L.engine_credentials(module))
             kind = module.account_login(bound, environment, None)
         except (module.Refused, ACC.Refused) as error:
             kind = 'unchecked:' + error.code

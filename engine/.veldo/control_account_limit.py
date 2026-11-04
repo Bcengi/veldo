@@ -121,8 +121,10 @@ def _organ(name):
     return module
 
 
-ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('control_engine_codex'),
-           'antigravity': _organ('control_engine_antigravity')}
+ENGINES = {'claude_code': _organ('control_engine_claude'), 'codex': _organ('control_engine_codex')}
+# VELDO-0232: Antigravity's, wherever its module is installed (control_launch's rule).
+if Path(__file__).with_name('control_engine_antigravity.py').is_file():
+    ENGINES['antigravity'] = _organ('control_engine_antigravity')
 
 
 class Refused(Exception):
