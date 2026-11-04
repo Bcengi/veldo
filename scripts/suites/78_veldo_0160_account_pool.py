@@ -1580,9 +1580,13 @@ sys.exit(payload.get('code', 0))
              ['tool:SendMessage']),
             ('claude_code', 'skill', 'a Skill tool call', [c_blocks([tool_use('toolu_k', 'Skill')])], ['tool:Skill']),
             ('claude_code', 'repl', 'a REPL tool call', [c_blocks([tool_use('toolu_r', 'REPL')])], ['tool:REPL']),
+        ) + ((
+            # VELDO-0230: only a build whose REPL tool writes its inner call on a tool_progress (cli-formats.json
+            # nested_work repl; 2.1.317 has none) shows it.
             ('claude_code', 'repl', 'a REPL inner call on a heartbeat of another tool',
              [c_blocks([tool_use('toolu_b', 'Bash')]), c_progress('toolu_b', 'Bash', repl_call=inner('Read'))],
              ['tool_progress:repl_call']),
+        ) if (CFORMS.get('nested_work') or {}).get('repl') else ()) + (
             ('claude_code', 'workflow', 'a Workflow tool call', [c_blocks([tool_use('toolu_f', 'Workflow')])],
              ['tool:Workflow']),
             ('claude_code', 'workflow', 'a RunWorkflow tool call (its alias)', [c_blocks([tool_use('toolu_f', 'RunWorkflow')])],
@@ -1740,6 +1744,10 @@ sys.exit(payload.get('code', 0))
                  [c_task(last_tool_name='CronCreate')], [(at, 'cron', 'tool:CronCreate:durable')]))
             # The task whose last tool is a CronCreate counts one call the record does not show: rule A names it beside.
             BESIDE = {'a CronCreate named where its input is not given (a task\'s last tool)': [(at, 'outward_tool', 'task_tool_uses')]}
+            # VELDO-0230: a build whose allowlist has no REPL tool (2.1.317) asks for the REPL call by rule A too.
+            if 'REPL' not in ((CFORMS.get('in_run') or {}).get('tools') or ()):
+                BESIDE['a durable CronCreate as the REPL tool\'s inner call'] = [(at, 'outward_tool', 'tool:REPL'),
+                                                                    (at + 1, 'outward_tool', 'tool:REPL')]
             for what, lines, expected in OUTSIDE:
                 for label, servers in CONFIGURATIONS:
                     found, error = decide(c_rec(lines), 'claude_code', servers)
