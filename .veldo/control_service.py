@@ -268,6 +268,8 @@ I = _organ('control_assignment', lazy=True)
 ENT = _organ('entity_contract', lazy=True)
 TA = _organ('control_workflow_cycle_assignment', lazy=True)
 LIM = _organ('control_account_limit', lazy=True)
+# VELDO-0181: a conversation's questions as ordinary requests.
+CD = _organ('control_conversation_decisions', lazy=True)
 # VELDO-0148: the land station, each land its own land dispatch, and a land the trunk moved under re-landed.
 LS = _organ('control_landing_station', lazy=True)
 CT = _organ('control_team', lazy=True)
@@ -2860,6 +2862,18 @@ class ConversationLine:
         content = {'kind': kind, 'owner': owner, 'scope': scope,
                    'deadline': time.strftime(I.DEADLINE_FORMAT, time.gmtime(now + ASK_SECONDS)),
                    'budget': {'invocations': 1}, 'brief': brief, 'choices': list(choices), 'subject': subject}
+        if subject.get('kind') in CD.KINDS:
+            # VELDO-0181: an ordinary VELDO-0068 request (terms, request and framing, each signed as the service), so
+            # the presenter presents it on the owner's chat and settlement settles it once from his answer.
+            try:
+                return CD.open_question(
+                    S, CM, CLM, ENT, I, self.service.conn, domain=self.service.domain, store_uuid=self.service.store,
+                    identity=identity, alias=alias, content=content, principal=self.service.principal,
+                    journal_sign=self.service.sign, generation=self.service.generation,
+                    command_sign=lambda body: SIG.sign_bytes(self.service.config['journal_key'], body,
+                                                             AC.SIGNATURE_NAMESPACE))
+            except SIG.K.Refused:
+                return {'ok': False, 'reason': 'unavailable_service:signing'}, aid
         command = {'operation': 'open', 'alias': alias, 'principal': self.service.principal, 'command_id': alias,
                    'nonce': alias, 'domain_uuid': self.service.domain, 'repository_uuid': coordinate,
                    'store_uuid': self.service.store, 'assignment': content}
@@ -2872,6 +2886,9 @@ class ConversationLine:
 
     def answer(self, identity, aid):
         """The owner's settled ruling on a conversation question, or None while it waits (not admitted)."""
+        if CD.is_request(aid) and CD.kind_of(self.service.conn, aid) in CD.KINDS:
+            # VELDO-0181: settled once by VELDO-0068 from his reply to its presentation or his answer in the UI.
+            return CD.ruling(self.service.conn, aid)
         inbox = self.service.inbox(self.coordinate(identity))
         item = inbox.read(aid)
         if item is None or not inbox.admit(aid)['admitted']:
