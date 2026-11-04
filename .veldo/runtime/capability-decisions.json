@@ -338,6 +338,11 @@
     "reason": "publishes a plugin folder of this machine to the organization's library on claude.ai",
     "rule": "VELDO-0160 AC3"
    },
+   "PushNotification": {
+    "decision": "off",
+    "reason": "it can notify a phone, which leaves the host, and the flag already reaches the lead (SendUserMessage, VELDO-0231)",
+    "rule": "VELDO-0160 AC3"
+   },
    "ReadWidgetContext": {
     "decision": "not_applicable",
     "reason": "reads the state an MCP App view drawn in the conversation shared; a print-mode run draws no view"
@@ -351,6 +356,10 @@
     "decision": "off",
     "reason": "the context companion of SendToProject, sent to claude.ai",
     "rule": "VELDO-0160 AC3"
+   },
+   "SendUserMessage": {
+    "decision": "granted",
+    "reason": "VELDO-0231 (owner Telegram 38897-38901): the flag to the lead; in a print-mode run its message goes only into the stream the receiver reads, so it is on VELDO-0160's in-run list; its text is the flag and any attachments it names are not carried"
    },
    "WrapUp": {
     "decision": "not_applicable",
@@ -446,9 +455,8 @@
   },
   "grants": {
    "request_user_input_async": {
-    "decision": "off",
-    "reason": "on this binary the asynchronous user message reaches the model only with tools.experimental_request_user_input on, which also delivers the synchronous request_user_input that no role lists; the run launches without it",
-    "rule": "VELDO-0127 AC4"
+    "decision": "granted",
+    "reason": "VELDO-0231 (owner Telegram 38897-38901): a running agent flags the lead without stopping. On 0.166.0 the asynchronous call reaches the model only with tools.experimental_request_user_input on, which also delivers the synchronous request_user_input: the handoff turns the switch on only for a role that lists the grant, and the grant's tool mapping names both tools, so the wire set still equals the role's (VELDO-0127 AC4). It holds on a binary only where the qualify probe found the call in the exec JSON stream and the binary answered the synchronous question at once with no answers (flag_means in the qualification record); else the marked line is the means"
    }
   },
   "options": {},

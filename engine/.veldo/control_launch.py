@@ -888,6 +888,8 @@ class Launch:
         # VELDO-0154: the run's end seen on the launch pipe, and whether it was the pipe's end of file.
         self.ended = False
         self.lost = False
+        # VELDO-0231: the flag and question events read from the launch pipe and not yet taken by the service.
+        self.flags = []
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -959,6 +961,8 @@ class Launch:
             self.ends_by = message['ends_by']
         if isinstance(message.get('heartbeat'), dict):
             self.heartbeat = message['heartbeat']
+        if message.get('event') in ('flag', 'question'):
+            self.flags.append(message)
         if message.get('event') == 'artifact' and isinstance(message.get('artifact'), dict):
             # The engine's artifact report {path, digest, verdict, complete} (THE ENGINE PROTOCOL).
             self.artifact = message['artifact']
@@ -1133,6 +1137,9 @@ class Receiver:
         self.resolved = None
         self.recorder = None
         self.committed = None
+        # VELDO-0231: the run's flag reader and the bound engine's flag means.
+        self.flags = None
+        self.flag_means = None
 
     def _unstage_skills(self):
         """The role skills staged into the clone's discovery directory are links into the run's own configuration:
@@ -1520,6 +1527,8 @@ class Receiver:
             return error.code
         self.binding = dict(bound, argv=argv, environment=settings, configured_environment=dict(configured),
                             revision=revision, capability=capability)
+        # VELDO-0231: the forms in which this binary's flag calls reach its stream (the qualification's).
+        self.flag_means = module.flag_means(adapter.get('qualification')) if hasattr(module, 'flag_means') else None
         # VELDO-0155, VELDO-0156: the subscription token an account is configured with, the account profile
         # and the login the engine would take in its environment, checked before acceptance: a profile item
         # the baseline cannot keep out, or a login that is not a subscription, is refused by name and no
@@ -1954,6 +1963,13 @@ class Receiver:
     def _graces(self):
         return self._settings('stop_grace_seconds', 'kill_grace_seconds')
 
+    def _question_window(self):
+        """VELDO-0231 AC3: the receiver's question window, `question_window_seconds` of its configuration."""
+        value = self.config.get('question_window_seconds', QUESTION_WINDOW_SECONDS)
+        if not isinstance(value, (int, float)) or isinstance(value, bool) or not 0 < value:
+            return QUESTION_WINDOW_SECONDS
+        return value
+
     def _heartbeat(self):
         """The profile's heartbeat interval and missed-heartbeat window (VELDO-0041)."""
         return self._settings('heartbeat_seconds', 'heartbeat_window_seconds')
@@ -2070,7 +2086,16 @@ class Receiver:
                 self._stop(worker)
                 code = worker.returncode
 
+        # VELDO-0231: the run's flags, read from the engine's stream in this loop and reported at once.
+        engine = (self.login or {}).get('engine')
+        flags = self.flags = Flags(self.emit, contract['dispatch_id'], engine, (self.login or {}).get('account'),
+                                   self.flag_means, self._question_window(), recorder) \
+            if engine is not None and hasattr(engine, 'flags') else None
+
         def take(chunk):
+            # VELDO-0231: a flag goes out on the launch pipe as soon as its line is read.
+            if flags is not None:
+                flags.feed(chunk)
             # VELDO-0155, VELDO-0156: a login that is not a subscription stops it by name, and the held prompt
             # goes to the engine only once its login is confirmed and nothing has stopped it.
             if metering is not None and metering.guarded(chunk):
@@ -2108,6 +2133,8 @@ class Receiver:
                     waits.append(runtime_deadline - time.monotonic())
                 if live and getattr(login, 'init_deadline', None) is not None and not login.released:
                     waits.append(login.init_deadline - time.monotonic())
+                if live and flags is not None and flags.question_due is not None:
+                    waits.append(flags.question_due - time.monotonic())
                 waits += [due - time.monotonic() for due in (stop.due if stop is not None else math.inf,
                                                              watch.due() if watch is not None and live else math.inf,
                                                              settle if settle is not None else math.inf)
@@ -2153,6 +2180,11 @@ class Receiver:
                 now = time.monotonic()
                 if cause is None and code is None and hasattr(login, 'expired') and login.expired(now):
                     metering.login_stop = login.stop
+                    begin('configuration_stop')
+                if cause is None and code is None and flags is not None and flags.expired(now):
+                    # VELDO-0231 AC3: the engine kept waiting on a synchronous question: stopped by name.
+                    if metering is not None:
+                        metering.login_stop = metering.login_stop or QUESTION_STOP
                     begin('configuration_stop')
                 if cause is None and code is None and time.time() >= contract['deadline']:
                     begin('deadline')
@@ -2274,6 +2306,91 @@ class Receiver:
         return {'returncode': code if code is not None and code >= 0 else None,
                 'signal': -code if code is not None and code < 0 else None,
                 'output_digest': 'sha256:' + hasher.hexdigest(), 'output_bytes': size, 'deadline_stop': stopped}
+
+
+# VELDO-0231: the receiver's question window (a receiver setting, `question_window_seconds`): an engine that writes
+# nothing for this long after a synchronous question is stopped by name, never left waiting.
+QUESTION_WINDOW_SECONDS = 60
+QUESTION_STOP = 'configuration_stop:wait_question'
+
+
+class Flags:
+    """VELDO-0231: the flags a running agent raises, read from the engine's stream as the poll loop reads it, each
+    through the engine's module (`flags`), and written at once as one `flag` event on the launch pipe: the dispatch,
+    engine, account, means, text (its first FLAG_TEXT characters), its length, the execution record's sequence of
+    the line it was read from and when it was read. No wait or timer of its own. A synchronous question is also a
+    flag; after one, `question_due` is the end of the question window, cleared by anything more the engine writes.
+    Nothing here opens a socket or starts a process."""
+    FLAG_TEXT = 2000
+
+    def __init__(self, emit, dispatch_id, engine, account=None, means=None, window=QUESTION_WINDOW_SECONDS,
+                 recorder=None, clock=time.time, monotonic=time.monotonic):
+        self.emit, self.dispatch_id, self.engine, self.account = emit, dispatch_id, engine, account
+        self.means, self.window, self.recorder = means, window, recorder
+        self.clock, self.monotonic = clock, monotonic
+        self.pending = b''
+        self.read = 0
+        self.questions = 0
+        self.question_due = None
+        self.question = None
+
+    def feed(self, chunk):
+        """Read the whole lines `chunk` completes; emit each flag at once. True when a question window opened."""
+        if not chunk:
+            return False
+        self.pending += chunk
+        lines = []
+        while b'\n' in self.pending:
+            raw, _, self.pending = self.pending.partition(b'\n')
+            lines.append(raw)
+        if not lines:
+            return False
+        if self.question_due is not None:
+            # The engine wrote on after its question: it was answered (by the binary), and goes on.
+            self._question('answered')
+        opened = False
+        last = getattr(self.recorder, 'sequence', None)
+        for index, raw in enumerate(lines):
+            try:
+                event = json.loads(raw)
+            except ValueError:
+                continue
+            try:
+                found = self.engine.flags(event, self.means)
+            except (AttributeError, TypeError, ValueError, KeyError):
+                found = []
+            sequence = last - (len(lines) - 1 - index) if isinstance(last, int) else None
+            for flag in found:
+                self.read += 1
+                text = flag['text'] if isinstance(flag.get('text'), str) else ''
+                self.emit({'event': 'flag', 'dispatch_id': self.dispatch_id, 'engine': self.engine.PROVIDER,
+                           'account': self.account, 'means': flag['means'], 'text': text[:self.FLAG_TEXT],
+                           'length': len(text), 'synchronous': bool(flag.get('synchronous')),
+                           'sequence': sequence, 'read_at': self.clock(), 'metrics': {'flags_read': 1}})
+                if flag.get('synchronous'):
+                    if self.question_due is not None:
+                        self._question('answered')
+                    self.questions += 1
+                    self.question = {'means': flag['means'], 'sequence': sequence}
+                    self.question_due = self.monotonic() + self.window
+                    opened = index
+        if opened is not False and opened < len(lines) - 1:
+            # The engine already wrote on after its question in this same read.
+            self._question('answered')
+        return opened is not False
+
+    def _question(self, outcome):
+        self.emit({'event': 'question', 'dispatch_id': self.dispatch_id, 'engine': self.engine.PROVIDER,
+                   'means': (self.question or {}).get('means'), 'sequence': (self.question or {}).get('sequence'),
+                   'outcome': outcome})
+        self.question_due = self.question = None
+
+    def expired(self, now):
+        """The question window passed with nothing more from the engine: it is stopped by name."""
+        if self.question_due is None or now < self.question_due:
+            return False
+        self._question(QUESTION_STOP)
+        return True
 
 
 class Unfunded(Exception):
