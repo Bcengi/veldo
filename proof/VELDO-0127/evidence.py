@@ -41,6 +41,26 @@ def wire_observation(body, expected, handoff):
             'stop': handoff.codex_tool_difference(body, expected)}
 
 
+def wire_observations(bodies, expected, handoff):
+    """VELDO-0230 fix round 3: one observation per request of a run, each of what the run has declared by then
+    (handoff.codex_run_tools: a later incremental tools update declares only what changed). For a run of one
+    request it is that request's wire_observation."""
+    mapping = handoff.X.NATIVE_TOOL_MAPPING
+    observations = []
+    for i, body in enumerate(bodies):
+        wanted = handoff.codex_expected_tools(expected, body)
+        try:
+            actual = handoff.codex_run_tools(bodies[:i + 1])[-1] if i else handoff.codex_tool_names(
+                handoff.codex_request_tools(body))
+        except handoff.Refused:
+            actual = []
+        observations.append({'native_tool_mapping': mapping, 'actual': actual, 'expected': sorted(wanted),
+                             'unexpected': sorted(set(actual) - set(wanted)),
+                             'missing': sorted(set(wanted) - set(actual)),
+                             'stop': handoff.codex_run_tool_difference(bodies[:i + 1], expected)})
+    return observations
+
+
 def problems(root, engine, record, handoff):
     bad = []
     if (record.get('schema') != 'veldo.role-live/v1' or record.get('engine') != engine
@@ -79,13 +99,14 @@ def problems(root, engine, record, handoff):
             requests = wire.get('requests') or []
             if (wire.get('returncode') != 0 or wire.get('executable_digest') != pinned or not requests):
                 bad.append('Codex loopback request capture missing')
-            for request in requests:
-                difference = handoff.codex_tool_difference(request.get('body') or {}, expected)
-                if difference:
-                    observation = wire_observation(request.get('body') or {}, expected, handoff)
-                    bad.append(difference + ': unexpected=' + ','.join(observation['unexpected'])
+            # Every request of the run, each with what the run has declared by then (an incremental tools update
+            # declares only what changed): a tool the role does not list fails wherever it is first declared.
+            bodies = [request.get('body') or {} for request in requests]
+            for observation in wire_observations(bodies, expected, handoff):
+                if observation['stop']:
+                    bad.append(observation['stop'] + ': unexpected=' + ','.join(observation['unexpected'])
                                + '; missing=' + ','.join(observation['missing']))
-            if run.get('wire_tools') != [wire_observation(r.get('body') or {}, expected, handoff) for r in requests]:
+            if run.get('wire_tools') != wire_observations(bodies, expected, handoff):
                 bad.append('Codex loopback tool observation missing or different')
             try:
                 catalog = handoff.codex_model(qualification, revision)

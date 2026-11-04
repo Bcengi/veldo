@@ -433,17 +433,39 @@ def codex(configuration, capability, inventory, config, *, catalog=None, feature
     return files
 
 
+# The input items of a request that declare tool definitions to the model: `additional_tools` (a Code Mode
+# model's declaration, and with the incremental_tools feature each later tool-list update, which follows the
+# developer message "This is an incremental tools update. Previously declared tools remain available..."; Codex
+# 0.166.0 on loopback, proof/VELDO-0230/fix3-incremental-capture.json) and `tool_search_output` (definitions a
+# tool search loads into the session).
+DECLARING_ITEMS = ('additional_tools', 'tool_search_output')
+
+
 def codex_request_tools(body):
-    """Tool definitions from the pinned wire: Responses tools or additional_tools, or Chat tools."""
+    """Tool definitions one request declares on the pinned wire: Responses tools, every declaring input item,
+    or Chat tools."""
     arrays = []
     if isinstance(body.get('tools'), list):
         arrays.append(body['tools'])
     for item in body.get('input', []):
-        if isinstance(item, dict) and item.get('type') == 'additional_tools' and isinstance(item.get('tools'), list):
+        if isinstance(item, dict) and item.get('type') in DECLARING_ITEMS and isinstance(item.get('tools'), list):
             arrays.append(item['tools'])
     if not arrays:
         raise Refused('missing_evidence:codex_request_tools')
     return [tool for array in arrays for tool in array]
+
+
+def codex_declarations(body):
+    """What of one request the comparison reads, and nothing else of its context: its Responses tools and
+    its declaring input items (a later request with neither keeps its empty input)."""
+    kept = {}
+    if isinstance(body.get('tools'), list):
+        kept['tools'] = body['tools']
+    if isinstance(body.get('input'), list):
+        kept['input'] = [i for i in body['input'] if isinstance(i, dict) and i.get('type') in DECLARING_ITEMS]
+    if not kept:
+        raise ValueError('no tools or input')
+    return kept
 
 
 def codex_name(name):
@@ -491,18 +513,45 @@ def codex_expected_tools(wanted, body, modes=None):
     return sorted(set(names))
 
 
-def codex_tool_difference(body, wanted):
-    """Exact equality after expanding native grants and normalizing wire spellings."""
-    expected_names = codex_expected_tools(wanted, body)
+def codex_run_tools(bodies):
+    """VELDO-0230 fix round 3 (Telegram 38895-38896): the tools declared to the model at each request of a run,
+    in order: what that request declares and every earlier one did. An incremental tools update declares only
+    what changed ("previously declared tools remain available"), and a later request may carry only its new
+    input items, so a request's own declarations are never the whole set; the tools a later request reaches
+    are the union. A run with no request, or whose first request declares nothing, is refused by name; a later
+    request that declares nothing keeps the earlier set."""
+    declared, sets = set(), []
+    for body in bodies:
+        try:
+            declared = declared | set(codex_tool_names(codex_request_tools(body)))
+        except Refused:
+            # Only a readable later request (one with its input) may declare nothing new.
+            if not sets or not isinstance(body.get('input'), list):
+                raise
+        sets.append(sorted(declared))
+    if not sets:
+        raise Refused('missing_evidence:codex_request_tools')
+    return sets
+
+
+def codex_run_tool_difference(bodies, wanted):
+    """Exact equality after expanding native grants and normalizing wire spellings, at every request of a run
+    (VELDO-0127 AC4: a tool the role does not list is unexpected wherever it is first declared)."""
+    expected_names = set(codex_expected_tools(wanted, {}))
     try:
-        actual = codex_tool_names(codex_request_tools(body))
+        declared = codex_run_tools(bodies)
     except Refused as error:
         return error.code
-    if set(actual) - set(expected_names):
+    if any(set(names) - expected_names for names in declared):
         return 'configuration_stop:codex_unexpected_tool'
-    if set(actual) != set(expected_names):
+    if any(set(names) != expected_names for names in declared):
         return 'configuration_stop:codex_missing_tool'
     return None
+
+
+def codex_tool_difference(body, wanted):
+    """One request's comparison: the run comparison of a run of that request alone."""
+    return codex_run_tool_difference([body], wanted)
 
 
 def codex_observe(bound, extra, environment, config):
@@ -522,8 +571,8 @@ def codex_observe(bound, extra, environment, config):
         def do_POST(self):
             try:
                 body = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
-                observations.append({'tools': codex_request_tools(body)})
-            except (ValueError, KeyError, Refused):
+                observations.append(codex_declarations(body))
+            except (ValueError, KeyError, TypeError, AttributeError):
                 observations.append({})
             self.send_response(400)
             self.end_headers()
@@ -561,11 +610,17 @@ def codex_observe(bound, extra, environment, config):
 
 def codex_check_launch(bound, extra, environment, config):
     observations = codex_observe(bound, extra, environment, config)
+    stop = codex_run_tool_difference(observations, extra['expected'])
+    if stop:
+        raise Refused(stop)
+    # Every definition the run declared, as the first request's spelling has always been reported.
+    tools = []
     for body in observations:
-        stop = codex_tool_difference(body, extra['expected'])
-        if stop:
-            raise Refused(stop)
-    return codex_tool_names(codex_request_tools(observations[0]))
+        try:
+            tools.extend(codex_request_tools(body))
+        except Refused:
+            pass
+    return codex_tool_names(tools)
 
 
 def codex_listing(bound, extra, environment, config):
