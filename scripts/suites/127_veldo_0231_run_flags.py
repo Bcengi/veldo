@@ -138,7 +138,8 @@ def _v231_suite():
         check('AC1/at-once', 'ten flags committed, %d' % len(made), len(made) == 10 and len(latencies) == 10)
         check('AC1/at-once', 'each within 2 seconds of the engine writing it: max %.3f' % max(latencies or [99]),
               len(latencies) == 10 and max(latencies) < 2)
-        check('AC1/at-once', 'each committed while the dispatch is still running: %s' % sorted({c['state'] for c in made}),
+        states = sorted({c['state'] for c in made})
+        check('AC1/at-once', 'each committed while the dispatch is still running: %s' % states,
               bool(made) and all(c['state'] == 'running' for c in made))
         check('AC1/at-once', "each in the run's own conversation", len(delivered) == 10 and all(
             d['conversation'] == 'flags-claude' for d in delivered))
@@ -265,7 +266,8 @@ def _v231_suite():
         check('AC2/probe', 'the probed form is the one the receiver reads', X.flags(
             {'type': 'item.completed', 'item': {'id': 'a', 'type': 'mcp_tool_call', 'tool': 'request_user_input_async',
                                                 'arguments': {'message': 'blocked on the gate lock'}}},
-            stream) == [{'means': 'request_user_input_async', 'text': 'blocked on the gate lock', 'synchronous': False}])
+            stream) == [{'means': 'request_user_input_async', 'text': 'blocked on the gate lock',
+                         'synchronous': False}])
         check('AC3/probe-answer', 'the binary answered the synchronous question at once with no answers: recorded',
               stream['question']['immediate'] is True and stream['question']['answers'] is False
               and isinstance(stream['question']['seconds'], float) and stream['question']['answer'] is not None)
@@ -353,16 +355,20 @@ def _v231_suite():
               summary is not None and summary['read'] == 500 and summary['held_back'] == 499
               and sum(1 for c in flooded if c['result']['outcome'] == 'rate_limited:run_flag') == 499)
         # The counts are in the store: a restarted service (a new connection) reads them and goes on with them.
-        reopened = authority.S.open_store(str(authority.db))
-        reopened.command_registry = dict(getattr(authority.conn, 'command_registry', {}))
-        later = CV.Conversations(authority.S, reopened, domain=authority.ids['domain_uuid'], principal='authority',
-                                 signer='authority', sign=authority.journal_sign, state_root=f['root'] / 'state')
-        after = later.flag(flood['dispatch_id'], engine='codex', means='request_user_input_async',
-                           text='one more', at=summary['last_at'] + 61, read_at=time.time(), conversation='flood')
-        check('AC4/flood', 'after a restart, a flag 61 seconds later (suite clock) is delivered naming 499',
-              after['outcome'] == 'delivered' and after['flag']['held_back_since_last'] == 499
-              and later.flag_summary(flood['dispatch_id'])['held_back'] == 499)
-        reopened.close()
+        if summary is None:
+            check('AC4/flood', 'the flood run has a flag summary to restart with', False)
+        else:
+            reopened = authority.S.open_store(str(authority.db))
+            reopened.command_registry = dict(getattr(authority.conn, 'command_registry', {}))
+            later = CV.Conversations(authority.S, reopened, domain=authority.ids['domain_uuid'],
+                                     principal='authority', signer='authority', sign=authority.journal_sign,
+                                     state_root=f['root'] / 'state')
+            after = later.flag(flood['dispatch_id'], engine='codex', means='request_user_input_async',
+                               text='one more', at=summary['last_at'] + 61, read_at=time.time(), conversation='flood')
+            check('AC4/flood', 'after a restart, a flag 61 seconds later (suite clock) is delivered naming 499',
+                  after['outcome'] == 'delivered' and after['flag']['held_back_since_last'] == 499
+                  and later.flag_summary(flood['dispatch_id'])['held_back'] == 499)
+            reopened.close()
 
         # AC4: at most 20 per run.
         moment = time.time()
