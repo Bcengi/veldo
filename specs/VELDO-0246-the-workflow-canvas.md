@@ -123,6 +123,44 @@ acceptance_criteria:
     falsified_by: >
       Draw the run against the workflow's head revision instead of the recorded one; row ac4/run-revision must
       fail after version N+1 is saved while the run is open.
+  - id: AC5
+    text: >
+      Claim: the owner makes a workflow conditional and parallel on the canvas in plain words, and what is
+      saved is exactly what the canvas showed. Set: the three ways work branches (a step's named outcomes;
+      the Check step; parallel steps with a Join) and the Check's tests (mentions any of, does not mention,
+      is, is more than, is less than) over the fields the steps before it produce. Completeness: the tests
+      and the fields offered are read from the definition schema VELDO-0241 publishes, not from a constant;
+      the row drives every test once. In a real browser (Playwright, system Chrome, the real harness): add a
+      Check from the palette's Flow row onto a connection; in the inspector pick Look at, Test and the value
+      (words as chips, numbers with their unit), never typing an expression; the Check is drawn with one
+      labeled edge per branch plus Otherwise, which is always present and cannot be removed or relabeled away;
+      connect one step to two at once ("Both at once") and add a Join, which waits for every incoming branch;
+      a loop edge needs a cap (rounds) before Save is offered. Save as version N+1, and a fresh reads.workflow
+      returns the Check's rule, its branches, the parallel transitions and the Join with a canonical digest
+      equal to what the canvas sent, layout kept apart.
+    falsified_by: >
+      Let the inspector's Remove act on a Check's Otherwise branch; row ac5/otherwise-kept must fail because
+      the saved Check has no Otherwise transition.
+  - id: AC6
+    text: >
+      Claim: whatever the branches, no path reaches an outgoing step (publish, deliver, deploy, land) without
+      passing the owner's approval, and Save is refused with the offending path shown. Set: every path from
+      the start to every outgoing step in the definition, through outcome branches, Check branches (Otherwise
+      included), parallel branches and Joins, with each loop taken at most once. Completeness: the check
+      enumerates the definition's paths from its transitions (the same module the save sends), not from the
+      drawing; the row seeds one bypass per branch kind (a Check branch, an outcome branch, one side of a
+      parallel pair, an edge dragged across the approval line) and one definition with none. In a real browser:
+      for each bypass, Save as version N+1 sends nothing; the checks line says "Not saved: 1 path reaches
+      Publish without your approval" (the count and the outgoing step named); the offending edges, the steps
+      they run through and the outgoing step are drawn in the error color with "Skips your approval" where the
+      path crosses the approval line; the inspector lists the path step by step with the approval marked as
+      missing and offers the fixes (connect the branch to a step before the approval, or undo that
+      connection); the head version is unchanged. The definition with no bypass saves. If the client check is
+      bypassed (the falsifier's build), the API's own refusal (VELDO-0241) is shown beside Save by its name and
+      the head is unchanged.
+    falsified_by: >
+      Make the path check follow only each step's first outgoing transition; row ac6/every-path-gated must
+      fail because a definition whose Check Yes branch goes around the approval is saved as version N+1.
 required_evidence: [unit, integration, ui_states]
 rollback: >
   Revert the UI change and the route addition together; the definitions, their versions and every run's
@@ -151,10 +189,21 @@ layout), refused `stale_version` when the base is not the head. The UI's present
 `FlowCanvas` and `FlowProperties` (SVG, pan and zoom buttons, a step list), in VELDO-0229's neutral Nuxt UI
 look.
 
-The owner's OK on the pilot design comes first: `proof/VELDO-0246/design/` holds the four screens this spec
+The owner's OK on the pilot design comes first: `proof/VELDO-0246/design/` holds the six screens this spec
 builds exactly (a: the social post definition open; b: a step selected, the inspector, an inline field error
-and the refused removal of the approval; c: a run on the canvas; d: that run at 390 px), the design plan and
-the self-critique log. Where a screen and this text differ, the owner's comment on the screens decides.
+and the refused removal of the approval; c: a run on the canvas; d: that run at 390 px; e: conditions and
+parallel work, the Check step's rule open; f: a branch that goes around the approval, refused at save with
+the path shown), the design plan and the self-critique log. Where a screen and this text differ, the
+owner's comment on the screens decides.
+
+Telegram 39079 (2026-11-04), the owner on a to d: "Love it. But what if steps are conditional, not just next
+next?" The answer this spec builds: (1) branching on a step's named outcome (review passes or asks for
+changes, approval approves or declines, publish goes live or fails); (2) a Check step that routes the work by
+a rule set in plain words picked from fields, never code (if the post mentions prices, add a legal review;
+if the image costs more than $1, ask before generating; if it is for Instagram, make a square image), each
+branch labeled on the canvas, always with an Otherwise path; (3) parallel branches joined by a Join step
+that waits for all of them. Loops are always capped. Whatever the branches, no path reaches Publish,
+Deliver or Deploy without the owner's approval, and the canvas checks every path at save.
 
 ## Out of scope
 
@@ -182,8 +231,17 @@ phone show the same order; branches leave to the right with their outcome named 
 Failed) and end in a named pill (Dropped, Stopped, you are told); flow blue `#2E5BDA` marks connections,
 ports, selection and the path a run took, never a button or a state (a new token in both themes, added to
 `docs/design/colors.md` with its contrast); state keeps green, amber and red with words; the palette groups
-step types by what they do (Work, You, Timing, Going out) with one line each in plain words; the inspector's
-sections are Who does it, What it needs, Limits, Cost and approval, Where it goes next.
+step types by what they do (Work, Flow, You, Timing, Going out) with one line each in plain words, Flow being
+one compact row of Check and Join so the palette still fits a 900 px screen; the inspector's sections are Who
+does it, What it needs, Limits, Cost and approval, Where it goes next (a Check's are The rule and Where it goes
+next, Otherwise locked). A parallel start is drawn as one edge forking to its steps ("Both at once") and a
+Join as a step whose incoming edges meet on one bar; a loop back to an earlier step returns on the side its
+target sits; the canvas zooms to Fit when the definition is taller than the view.
+
+The condition editor is the Check step's inspector: Look at (a field one of the earlier steps produces,
+named with where it comes from), Test (a closed list in words), and the value (words as removable chips,
+amounts with their unit), plus Add another condition (all must hold) and Add a branch. A branch's label on the
+canvas is the rule's own words or the owner's short name for it ("Mentions prices?" with Yes and Otherwise).
 
 The run view needs the revision a unit recorded and its per-step states. If VELDO-0241 publishes them in an
 existing read, the canvas uses it; otherwise this spec adds one read route (`reads.workflow_run`) to the API's
@@ -192,9 +250,13 @@ ROUTES table and the UI's routes table, and the existing route-mirror test cover
 Usability rows run as suite 127 in Playwright with system Chrome against the real harness, like suites 118 to
 124, each test titled with its row in brackets: ac1/default-opens, ac1/add-and-connect, ac1/save-roundtrip,
 ac2/approval-kept, ac2/paid-approval-locked, ac2/server-refusal-shown, ac3/keyboard-only, ac3/undo-exact,
-ac3/axe, ac4/run-states, ac4/run-revision, ac4/terminal-one-click, ac4/phone-360, ac4/phone-390.
+ac3/axe, ac4/run-states, ac4/run-revision, ac4/terminal-one-click, ac4/phone-360, ac4/phone-390, ac5/check-rule-roundtrip, ac5/otherwise-kept,
+ac5/parallel-join, ac5/loop-capped, ac6/every-path-gated, ac6/refusal-shows-path, ac6/server-refusal-shown.
 
 ## History
 
 2026-11-04: new draft (Telegram 39072, on 39069 to 39071). Pilot screens in proof/VELDO-0246/design for the
 owner's OK before any build.
+2026-11-04: conditions and parallel work (Telegram 39079, "But what if steps are conditional, not just next
+next?"): the Check step and its condition editor, parallel steps and Join, capped loops, AC5 and AC6 (every
+path to an outgoing step passes the approval, refused at save with the path shown); screens e and f added.

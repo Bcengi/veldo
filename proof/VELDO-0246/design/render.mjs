@@ -6,7 +6,7 @@ import path from 'node:path'
 const require = createRequire(import.meta.url)
 const { chromium } = require('playwright')
 const here = path.dirname(fileURLToPath(import.meta.url))
-const screens = [['a-canvas-social-post', 1440, 900], ['b-step-inspector', 1440, 900], ['c-run-on-canvas', 1440, 900], ['d-run-phone', 390, 844]]
+const screens = [['a-canvas-social-post', 1440, 900], ['b-step-inspector', 1440, 900], ['c-run-on-canvas', 1440, 900], ['d-run-phone', 390, 844], ['e-conditions-and-parallel', 1440, 900], ['f-path-skips-approval', 1440, 900]]
 const browser = await chromium.launch({ executablePath: '/opt/google/chrome/chrome' })
 for (const [name, width, height] of screens) {
   const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 2 })

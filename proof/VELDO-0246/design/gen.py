@@ -44,6 +44,8 @@ P = {
     'kbd': '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
     'trash': '<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>',
     'copy': '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+    'split': '<path d="M12 3.5 20.5 12 12 20.5 3.5 12Z"/><path d="M12 9.5v.01M12 14.5v.01"/>',
+    'merge': '<path d="M6 3v3a6 6 0 0 0 6 6"/><path d="M18 3v3a6 6 0 0 1-6 6"/><path d="M12 12v9"/>',
     'clock': '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
 }
 
@@ -121,13 +123,17 @@ body.phone{width:390px;height:844px}
 .left .sub{font-size:13px;color:var(--ink-muted);padding:0 18px 12px;line-height:1.4}
 .search{margin:0 14px 6px;height:36px;border:1px solid var(--rule);border-radius:6px;display:flex;align-items:center;gap:8px;
  padding:0 10px;color:var(--ink-muted);font-size:14px}
-.grp{font-size:13px;font-weight:600;color:var(--ink-muted);padding:14px 18px 4px}
-.pi{display:flex;gap:10px;align-items:flex-start;padding:7px 10px;margin:0 8px;border-radius:6px}
+.grp{font-size:13px;font-weight:600;color:var(--ink-muted);padding:11px 18px 3px}
+.pi{display:flex;gap:10px;align-items:flex-start;padding:6px 10px;margin:0 8px;border-radius:6px}
 .pi .pic{width:30px;height:30px;border-radius:6px;border:1px solid var(--rule);display:grid;place-items:center;color:var(--ink);flex:none;background:var(--paper)}
 .pi .pt{font-size:14px;font-weight:600;line-height:1.25}
 .pi .pd{font-size:13px;color:var(--ink-muted);line-height:1.3;margin-top:1px}
 .pi.gate .pic{background:var(--ink);color:#fff;border-color:var(--ink)}
 .pi.hov{background:var(--wash)}
+.flowrow{display:flex;align-items:center;gap:8px;padding:8px 14px 0 18px}
+.flowrow .fl{font-size:13px;font-weight:600;color:var(--ink-muted);width:40px}
+.flowrow .ft{flex:1;display:flex;align-items:center;gap:8px;height:34px;border:1px solid var(--rule);border-radius:6px;padding:0 8px 0 4px;font-size:14px;font-weight:600}
+.flowrow .ft .pic{width:26px;height:26px;border-radius:5px;display:grid;place-items:center;color:var(--ink)}
 .left .foot{margin-top:auto;border-top:1px solid var(--rule);padding:12px 18px;font-size:13px;color:var(--ink-muted);line-height:1.45}
 
 /* canvas */
@@ -374,6 +380,7 @@ def palette():
         ('Work', [('pen', 'Write', 'Drafts text with a writer'), ('eye', 'Review', 'Checks work against your criteria'),
                   ('image', 'Generate image or video', 'Paid, asks you each time'),
                   ('file', 'Render pages', 'Turns a document into pages')]),
+        ('Flow', None),
         ('You', [('lock', 'Your approval', 'Required before anything goes out')]),
         ('Timing', [('cal', 'Schedule', 'Waits for a time you approve')]),
         ('Going out', [('send', 'Publish', 'Posts to a channel'), ('rocket', 'Deploy', 'Releases a build you approved'),
@@ -383,6 +390,13 @@ def palette():
          '<span class="kbd">Enter</span></div><div class="search">%s<span>Find a step type</span>'
          '<span class="grow"></span><span class="kbd">/</span></div>' % ic('search', 16)]
     for gname, items in groups:
+        if items is None:
+            # Check and Join as one compact row: a full group would push Deliver files and the shortcut line
+            # off a 900 px screen (measured: 126 px over).
+            h.append('<div class="flowrow"><span class="fl">Flow</span>%s</div>' % ''.join(
+                '<span class="ft" title="%s"><span class="pic">%s</span>%s</span>' % (d, ic(i, 15), t) for i, t, d in
+                [('split', 'Check', 'Routes work by a rule you set'), ('merge', 'Join', 'Waits for every branch')]))
+            continue
         h.append('<div class="grp">%s</div>' % gname)
         for icon, t, d in items:
             cls = ' gate' if icon == 'lock' else ('')
@@ -607,8 +621,213 @@ def screen_d():
     return page(body, phone=True)
 
 
+# Section: (e) and (f) conditions and parallel branches (owner, Telegram 39079: "what if steps are conditional?")
+# The flow is drawn at 85 percent (Fit) in its own layer, so every box below is in canvas units.
+EF_CSS = """
+.layer{position:absolute;left:0;top:0;transform-origin:0 0}
+.canvas.z85{background-size:17px 17px}
+.step.path{border:2px solid var(--stop);box-shadow:0 0 0 4px var(--stop-wash)}
+.elab.bad{color:var(--stop-text);font-weight:600}
+.end.path{border:2px solid var(--stop);box-shadow:0 0 0 3px var(--stop-wash)}
+.skip{position:absolute;display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;background:var(--stop);
+ color:#fff;font-size:13px;font-weight:650;white-space:nowrap}
+.rule .inp,.rule .sel2{height:38px}
+.chips{min-height:38px;border:1px solid var(--rule-strong);border-radius:6px;display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px;align-items:center}
+.chips .tk{display:inline-flex;align-items:center;gap:4px;font-size:13.5px;font-weight:500;background:var(--wash);border-radius:4px;padding:2px 4px 2px 8px}
+.chips .tk svg{color:var(--ink-muted)}
+.chips .add{font-size:13.5px;color:var(--ink-muted);padding-left:2px}
+.hint{font-size:13px;color:var(--ink-muted);line-height:1.4;margin-top:6px}
+.br{display:flex;align-items:center;gap:10px;border:1px solid var(--rule);border-radius:6px;padding:8px 10px;font-size:14px;margin-bottom:6px}
+.br .bl{font-weight:650;min-width:72px;display:flex;align-items:center;gap:8px}
+.br .bl:before{content:'';width:14px;height:1.5px;background:var(--flow)}
+.br .to{display:flex;align-items:center;gap:6px}
+.br .then{color:var(--ink-muted);font-size:13px}
+.br .lk{margin-left:auto;color:var(--ink-muted);display:flex;align-items:center;gap:4px;font-size:12.5px}
+.br.err{border:2px solid var(--stop);padding:7px 9px}
+.br.err .bl:before{background:var(--stop)}
+.note{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ink);line-height:1.4;padding:4px 0 12px}
+.refuse{border-bottom:1px solid var(--rule)}
+.refuse .ch{display:flex;gap:10px;align-items:flex-start;background:var(--stop-wash);padding:14px 20px;color:var(--stop-text)}
+.refuse .ch b{font-size:15px;font-weight:650;line-height:1.3;display:block}
+.refuse .cb{padding:12px 20px 4px;font-size:13.5px;line-height:1.45}
+.trail{position:relative;margin:10px 0 4px;padding-left:2px}
+.trail .tr{display:flex;align-items:center;gap:10px;height:30px;font-size:14px;position:relative}
+.trail .tr .n{width:12px;height:12px;border-radius:50%;background:var(--paper);border:2px solid #b8b8b8;flex:none;margin-left:5px;z-index:1}
+.trail .tr .o{margin-left:auto;font-size:13px;color:var(--ink-muted)}
+.trail .tr.on .n{border-color:var(--stop)}
+.trail .tr.on .o{color:var(--stop-text);font-weight:600}
+.trail .tr.miss{color:var(--stop-text);font-weight:600}
+.trail .tr.miss .n{width:22px;height:22px;margin-left:0;border:1.5px dashed var(--stop);display:grid;place-items:center;color:var(--stop)}
+.trail .ln{position:absolute;left:12px;width:2px}
+.refuse .ca{display:flex;flex-direction:column;gap:8px;padding:8px 20px 16px}
+.refuse .ca .btn{justify-content:center}
+"""
+
+EF_CX = 400
+EF = {
+    'start': (EF_CX - 36, 64, 72, 30),
+    'draft': (EF_CX - 348, 126, 340, 76), 'image': (EF_CX + 8, 126, 340, 76),
+    'join': (EF_CX - 130, 238, 260, 60),
+    'check': (EF_CX - 150, 330, 300, 76), 'legal': (EF_CX + 210, 330, 240, 76),
+    'review': (EF_CX - 170, 450, 340, 76), 'gate': (EF_CX - 192, 562, 384, 100),
+    'schedule': (EF_CX - 170, 718, 340, 76), 'publish': (EF_CX - 170, 826, 340, 76),
+    'end': (EF_CX - 52, 934, 104, 32), 'barrier': 694,
+}
+EF_STEPS = dict(STEPS, join=('merge', 'Join', 'Waits for copy and image', None),
+                check=('split', 'Mentions prices?', 'Looks at the post copy', None),
+                legal=('eye', 'Legal review', 'Compliance, on Claude', None))
+EF_S = 0.85
+
+
+def ef_box(k, cls='', meta=None, extra=''):
+    icon, name, who, m = EF_STEPS[k]
+    x, y, w, h = EF[k]
+    meta = m if meta is None else meta
+    mh = '<div class="sm">%s</div>' % meta if meta else ''
+    return ('<div class="step %s" style="left:%dpx;top:%dpx;width:%dpx;height:%dpx"><div class="sic">%s</div>'
+            '<div class="st"><div class="sn">%s</div><div class="sw">%s</div></div>%s%s</div>'
+            % (cls + (' gate' if k == 'gate' else ''), x, y, w, h, ic(icon, 20), name, who, mh, extra))
+
+
+def ef_edges(bad=False):
+    """bad: Legal review's Cleared is wired straight to Schedule, around the approval (screen f)."""
+    B = 'stroke="#2e5bda" stroke-width="1.75" fill="none"'
+    R = 'stroke="#d63b2a" stroke-width="2.5" fill="none"'
+    cx, out, labels = EF_CX, [], []
+
+    def e(d, red=False, arrow=True):
+        out.append('<path d="%s" %s%s/>' % (d, R if red else B, (' marker-end="url(#%s)"' % ('ar' if red else 'ab')) if arrow else ''))
+
+    def lab(x, y, t, zone=False, red=False):
+        labels.append('<div class="elab%s%s" style="left:%dpx;top:%dpx">%s</div>' % (' z' if zone else '', ' bad' if red else '', x, y, t))
+    L, Rt = cx - 174, cx + 182
+    # fork: one start, both at once
+    e('M%d 94 V110' % cx, arrow=False)
+    e('M%d 110 H%d' % (L, Rt), arrow=False)
+    e('M%d 110 V124' % L)
+    e('M%d 110 V124' % Rt)
+    lab(cx + 48, 70, 'Both at once')
+    # merge into Join
+    e('M%d 202 V222 M%d 202 V222 M%d 222 H%d' % (L, Rt, L, Rt), arrow=False)
+    e('M%d 222 V236' % cx)
+    lab(L + 12, 203, 'Done')
+    lab(Rt + 12, 203, 'Done')
+    e('M%d 298 V328' % cx)
+    lab(cx + 12, 303, 'Both done')
+    # the Check: Yes to Legal review, Otherwise straight on
+    e('M%d 368 H%d' % (cx + 150, cx + 207), red=bad)
+    lab(cx + 158, 340, 'Yes', red=bad)
+    e('M%d 406 V448' % cx)
+    lab(cx + 12, 416, 'Otherwise')
+    if bad:
+        # Cleared rewired around the approval, to Schedule
+        e('M%d 368 H%d Q%d 368 %d 378 V746 Q%d 756 %d 756 H%d' % (cx + 450, cx + 470, cx + 480, cx + 480, cx + 480, cx + 470, cx + 173), red=True)
+        lab(cx + 412, 450, 'Cleared', red=True)
+        e('M%d 794 V824' % cx, red=True)
+        e('M%d 902 V932' % cx, red=True)
+    else:
+        e('M%d 406 V478 Q%d 488 %d 488 H%d' % (cx + 330, cx + 330, cx + 320, cx + 173))
+        lab(cx + 342, 424, 'Cleared')
+        e('M%d 794 V824' % cx)
+        e('M%d 902 V932' % cx)
+    # review loop back to Draft copy (on the left, where Draft copy is)
+    e('M%d 488 H30 Q20 488 20 478 V176 Q20 166 30 166 H%d' % (cx - 170, cx - 348 - 3))
+    lab(30, 392, 'Changes asked')
+    e('M%d 526 V560' % cx)
+    lab(cx + 12, 533, 'Passed')
+    e('M%d 662 V716' % cx)
+    lab(cx + 12, 680, 'Approved', zone=True)
+    lab(cx + 12, 800, 'At the set time', zone=True, red=bad)
+    lab(cx + 12, 908, 'Live', zone=True, red=bad)
+    gx, gy, gw, gh = EF['gate']
+    e('M%d %d H%d' % (gx + gw, gy + gh // 2, gx + gw + 70))
+    lab(gx + gw + 10, gy + gh // 2 - 30, 'Declined')
+    px, py, pw, ph = EF['publish']
+    e('M%d %d H%d' % (px + pw, py + ph // 2, px + pw + 70))
+    lab(px + pw + 10, py + ph // 2 - 30, 'Failed', zone=True)
+    svg = ('<svg class="edges" width="1" height="1"><defs>'
+           '<marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">'
+           '<path d="M1 1 9 5 1 9Z" fill="#2e5bda"/></marker>'
+           '<marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">'
+           '<path d="M1 1 9 5 1 9Z" fill="#d63b2a"/></marker></defs>%s</svg>' % ''.join(out))
+    ends = ('<div class="end m" style="left:%dpx;top:%dpx">Start</div>' % EF['start'][:2] +
+            '<div class="end m" style="left:%dpx;top:%dpx">Dropped</div>' % (gx + gw + 74, gy + gh // 2 - 16) +
+            '<div class="end m" style="left:%dpx;top:%dpx">Stopped, you are told</div>' % (px + pw + 74, py + ph // 2 - 16) +
+            '<div class="end%s" style="left:%dpx;top:%dpx"><span class="d"></span>Published</div>' % (' path' if bad else '', EF['end'][0], EF['end'][1]))
+    return svg + ''.join(labels) + ends
+
+
+def ef_canvas(bad):
+    cw, ch = 1440 - 300 - 380, 900 - 56
+    paid = '<span class="tag">%s Paid, asks you</span>' % ic('coin', 14)
+    lockt = '<span class="tag">%s Always required</span>' % ic('lock', 13)
+    on_path = {'check', 'legal', 'schedule', 'publish'} if bad else set()
+    cls = lambda k: ('sel' if k == ('legal' if bad else 'check') else '') + (' path' if k in on_path and not (bad and k == 'legal') else '')
+    cards = ''.join(ef_box(k, cls=cls(k), meta=paid if k == 'image' else lockt if k == 'gate' else None)
+                    for k in ['draft', 'image', 'join', 'check', 'legal', 'review', 'gate', 'schedule', 'publish'])
+    sk = ('<div class="skip" style="left:%dpx;top:%dpx">%s Skips your approval</div>' % (EF_CX + 318, EF['barrier'] - 14, ic('alert', 14))
+          if bad else '')
+    sx, sy, sw, sh = EF[('legal' if bad else 'check')]
+    ports = ''.join('<span class="port" style="left:%dpx;top:%dpx"></span>' % p for p in
+                    [(sx + sw // 2 - 5, sy - 6), (sx + sw // 2 - 5, sy + sh - 4), (sx + sw - 4, sy + sh // 2 - 5)])
+    layer = ('<div class="layer" style="width:%dpx;height:%dpx;transform:scale(%s)">%s%s%s%s%s</div>'
+             % (round(cw / EF_S), round(ch / EF_S), EF_S, '<div class="zone" style="top:%dpx">%s</div>' % (
+                 EF['barrier'], '<div class="zl">%s<span>Runs only after you approve</span></div>' % ic('lock', 16)),
+                ef_edges(bad), cards, ports, sk))
+    chip = ('<div class="chip bad" style="left:16px;top:16px">%s Not saved: 1 path reaches Publish without your approval</div>' % ic('alert', 16)
+            if bad else
+            '<div class="chip" style="left:16px;top:16px">%s Ready to save: every path passes your approval before Publish</div>' % ic('check', 16))
+    return '<main class="canvas z85" style="left:300px;width:%dpx">%s%s%s</main>' % (cw, layer, chip, zoombar(16, 796, '85%'))
+
+
+def screen_e():
+    insp = ('<aside class="insp"><div class="ih"><div class="sic">%s</div><div><div class="t">Mentions prices?</div>'
+            '<div class="k">Check step</div></div><span class="grow"></span>'
+            '<span class="ibtn b" title="Duplicate">%s</span><span class="ibtn b" title="Remove step">%s</span></div>'
+            '<div class="sec rule"><h3>The rule</h3>'
+            '<div class="fld"><label>Look at</label><div class="sel2"><span class="grow">The post copy</span><span class="h">from Draft copy</span>%s</div></div>'
+            '<div class="fld"><label>Test</label><div class="sel2"><span class="grow">Mentions any of</span>%s</div>'
+            '<div class="hint">Or: does not mention, is, is more than, is less than</div></div>'
+            '<div class="fld"><label>Words</label><div class="chips">'
+            '<span class="tk">price %s</span><span class="tk">discount %s</span><span class="tk">per GB %s</span><span class="tk">$ %s</span>'
+            '<span class="add">Add a word</span></div></div>'
+            '<div class="addl">%s Add another condition</div></div>'
+            '<div class="sec"><h3>Where it goes next</h3>'
+            '<div class="br"><span class="bl">Yes</span><span class="to">Legal review <span class="then">then Review</span></span></div>'
+            '<div class="br"><span class="bl">Otherwise</span><span class="to">Review</span><span class="lk">%s Always there</span></div>'
+            '<div class="addl">%s Add a branch</div>'
+            '<div class="note">%s<span>Both ways still pass your approval before Publish. Every path is checked again when you save.</span></div></div>'
+            '</aside>' % (ic('split', 20), ic('copy', 16), ic('trash', 16), ic('chev', 16), ic('chev', 16),
+                          ic('x', 13), ic('x', 13), ic('x', 13), ic('x', 13), ic('plus', 15), ic('lock', 13), ic('plus', 15), ic('lock', 15)))
+    return page('<style>%s</style>' % EF_CSS + rail() + top('design', '<b>Version 3</b><span class="edited">Edited, not saved</span>')
+                + palette() + ef_canvas(False) + insp)
+
+
+def screen_f():
+    rows = [('', 'Start', ''), ('', 'Draft copy and Generate image', ''), ('', 'Join', ''),
+            ('on', 'Mentions prices?', 'Yes'), ('on', 'Legal review', 'Cleared'), ('miss', 'Your approval is not on this path', ''),
+            ('on', 'Schedule', ''), ('on', 'Publish', '')]
+    trail = ''.join('<div class="tr %s"><span class="n">%s</span><span>%s</span><span class="o">%s</span></div>'
+                    % (c, ic('lock', 12) if c == 'miss' else '', t, o) for c, t, o in rows)
+    insp = ('<aside class="insp"><div class="ih"><div class="sic">%s</div><div><div class="t">Legal review</div>'
+            '<div class="k">Review step</div></div><span class="grow"></span>'
+            '<span class="ibtn b" title="Duplicate">%s</span><span class="ibtn b" title="Remove step">%s</span></div>'
+            '<div class="refuse"><div class="ch">%s<div><b>Not saved: this path goes around your approval</b></div></div>'
+            '<div class="cb">Publish can only be reached through your approval. Cleared now goes from Legal review straight to Schedule:'
+            '<div class="trail"><span class="ln" style="top:15px;height:90px;background:#d4d4d4"></span>'
+            '<span class="ln" style="top:105px;height:120px;background:var(--stop)"></span>%s</div></div>'
+            '<div class="ca"><span class="btn">Send Cleared to Review instead</span><span class="btn q">Undo this connection</span></div></div>'
+            '<div class="sec"><h3>Where it goes next</h3>'
+            '<div class="br err"><span class="bl">Cleared</span><span class="to">Schedule</span></div>'
+            '<div class="ferr">%s<span>Schedule comes after your approval. Connect Cleared to Review or to Your approval.</span></div>'
+            '<div style="height:12px"></div></div>'
+            '</aside>' % (ic('eye', 20), ic('copy', 16), ic('trash', 16), ic('alert', 18), trail, ic('alert', 15)))
+    return page('<style>%s</style>' % EF_CSS + rail() + top('design', '<b>Version 3</b><span class="edited">Edited, not saved</span>')
+                + palette() + ef_canvas(True) + insp)
+
+
 if __name__ == '__main__':
     for name, fn in [('a-canvas-social-post', screen_a), ('b-step-inspector', screen_b), ('c-run-on-canvas', screen_c),
-                     ('d-run-phone', screen_d)]:
+                     ('d-run-phone', screen_d), ('e-conditions-and-parallel', screen_e), ('f-path-skips-approval', screen_f)]:
         (HERE / (name + '.html')).write_text(fn(), encoding='ascii')
         print('wrote', name + '.html')
