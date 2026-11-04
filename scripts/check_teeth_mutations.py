@@ -12166,6 +12166,33 @@ def cases():
         "    if False:  # defect: setup leaves the servers step to a separate command\n        with step('memory_servers'):\n",
         ['AC1/setup-step'])
 
+    # VELDO-0184: the file memory handed to every run whose role lists it; each spec falsifier as one exact edit, and
+    # the guards the claims imply.
+    suite184 = '131_veldo_0184_file_memory.py'
+    add(184, 'memory184-directory-unset', suite184, 'control_engine_claude.py',
+        "    settings[FILE_MEMORY['settings']['directory']] = handed['directory']\n",
+        "    pass  # defect: autoMemoryDirectory left unset\n", ['AC1/memory-path'])
+    add(184, 'memory184-no-writable-root', suite184, 'control_engine_codex.py',
+        "    configuration['sandbox_workspace_write'] = sandbox\n",
+        "    pass  # defect: the index handed in the instructions without the writable root\n", ['AC2/write'])
+    add(184, 'memory184-no-index-digest', suite184, 'control_memory_file.py',
+        "    return {LAUNCH_LINE: {'directory': handoff['directory'], 'form': form, 'index': INDEX, 'index_digest': digest,\n",
+        "    return {LAUNCH_LINE: {'directory': handoff['directory'], 'form': form, 'index': INDEX,  # defect: no digest\n",
+        ['AC3/loaded-at-launch'])
+    add(184, 'memory184-paths-unchecked', suite184, 'control_engine_claude.py',
+        "            if self.memory is not None and self.stop is None:\n",
+        "            if False:  # defect: the init event's memory paths are not checked\n", ['AC1/mismatch-stop'])
+    add(184, 'memory184-form-unqualified', suite184, 'control_engine_claude.py',
+        "    if entry.get('file_memory') != FILE_MEMORY or BASELINE['settings_option'] != FILE_MEMORY['settings_option']:\n",
+        "    if False:  # defect: a version without the qualified form launches a run that lists the item\n",
+        ['AC1/qualified'])
+    add(184, 'memory184-codex-memories-on', suite184, 'control_engine_codex.py',
+        "    configuration.update(FILE_MEMORY['configuration'])\n",
+        "    pass  # defect: Codex's own memory feature left as the profile has it\n", ['AC2/configuration'])
+    add(184, 'memory184-absent-unnamed', suite184, 'control_launch.py',
+        "        if not refusal or refusal.startswith('invalid_input:memory:file_memory:'):\n",
+        "        if not refusal:  # defect: a missing directory is refused under another name\n", ['AC1/absent'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
