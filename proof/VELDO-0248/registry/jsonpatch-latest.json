@@ -1,0 +1,82 @@
+{
+ "info": {
+  "author": "Stefan K\u00f6gl",
+  "author_email": "stefan@skoegl.net",
+  "bugtrack_url": null,
+  "classifiers": [
+   "Development Status :: 5 - Production/Stable",
+   "Environment :: Console",
+   "Intended Audience :: Developers",
+   "Operating System :: OS Independent",
+   "Programming Language :: Python",
+   "Programming Language :: Python :: 3",
+   "Programming Language :: Python :: 3 :: Only",
+   "Programming Language :: Python :: 3.10",
+   "Programming Language :: Python :: 3.11",
+   "Programming Language :: Python :: 3.12",
+   "Programming Language :: Python :: 3.13",
+   "Programming Language :: Python :: 3.14",
+   "Programming Language :: Python :: Implementation :: CPython",
+   "Programming Language :: Python :: Implementation :: PyPy",
+   "Topic :: Software Development :: Libraries",
+   "Topic :: Utilities",
+   "Typing :: Typed"
+  ],
+  "description": "python-json-patch\n=================\n\n[![PyPI version](https://img.shields.io/pypi/v/jsonpatch.svg)](https://pypi.org/project/jsonpatch//)\n[![Supported Python versions](https://img.shields.io/pypi/pyversions/jsonpatch.svg)](https://pypi.org/project/jsonpatch//)\n[![Build Status](https://github.com/stefankoegl/python-json-patch/actions/workflows/test.yaml/badge.svg?branch=master)](https://github.com/stefankoegl/python-json-patch/actions/workflows/test.yaml)\n[![Coverage Status](https://coveralls.io/repos/github/stefankoegl/python-json-patch/badge.svg?branch=master)](https://coveralls.io/github/stefankoegl/python-json-patch?branch=master)\n\nApplying JSON Patches in Python\n-------------------------------\n\nLibrary to apply JSON Patches according to\n[RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)\n\nSee source code for examples\n\n* Website: https://github.com/stefankoegl/python-json-patch\n* Repository: https://github.com/stefankoegl/python-json-patch.git\n* Documentation: https://python-json-patch.readthedocs.org/\n* PyPI: https://pypi.org/project/jsonpatch/\n* CI: https://github.com/stefankoegl/python-json-patch/actions\n* Coveralls: https://coveralls.io/github/stefankoegl/python-json-patch\n\nType hints\n----------\njsonpatch ships type stubs (in the `jsonpatch-stubs` directory, as\njsonpatch.py is a single-file module), so type checkers such as mypy and\npyright work with it without further setup. JSON documents are typed as `Any`.\n\nWhen changing the public API of jsonpatch.py, update\n`jsonpatch-stubs/__init__.pyi` as well. These check that both agree, and that\ntypical usage in `typetests/usage.py` type-checks:\n\n    pip install mypy .\n    python -m mypy.stubtest --mypy-config-file pyproject.toml jsonpatch\n    cd typetests && mypy --config-file ../pyproject.toml usage.py\n\nRunning external tests\n----------------------\nTo run external tests (such as those from https://github.com/json-patch/json-patch-tests) use ext_tests.py\n\n    ./ext_tests.py ../json-patch-tests/tests.json\n\nRunning property-based tests\n----------------------------\nProperty-based tests using [Hypothesis](https://hypothesis.readthedocs.io/)\nare in property_tests.py. Properties that the implementation does not satisfy\nyet are marked as expected failures.\n\n    pip install hypothesis\n    python property_tests.py\n\nSet `HYPOTHESIS_PROFILE=thorough` to run many more examples.\n",
+  "description_content_type": "text/markdown",
+  "docs_url": null,
+  "download_url": null,
+  "downloads": {
+   "last_day": -1,
+   "last_month": -1,
+   "last_week": -1
+  },
+  "dynamic": [
+   "Author",
+   "Author-Email",
+   "Classifier",
+   "Description",
+   "Description-Content-Type",
+   "Home-Page",
+   "License-File",
+   "License-Expression",
+   "Project-Url",
+   "Requires-Dist",
+   "Requires-Python",
+   "Summary"
+  ],
+  "home_page": "https://github.com/stefankoegl/python-json-patch",
+  "keywords": null,
+  "license": null,
+  "license_expression": "BSD-3-Clause",
+  "license_files": [
+   "LICENSE",
+   "AUTHORS"
+  ],
+  "maintainer": null,
+  "maintainer_email": null,
+  "name": "jsonpatch",
+  "package_url": "https://pypi.org/project/jsonpatch/",
+  "platform": null,
+  "project_url": "https://pypi.org/project/jsonpatch/",
+  "project_urls": {
+   "Documentation": "https://python-json-patch.readthedocs.org/",
+   "Homepage": "https://github.com/stefankoegl/python-json-patch",
+   "PyPI": "https://pypi.org/pypi/jsonpatch",
+   "Repository": "https://github.com/stefankoegl/python-json-patch.git",
+   "Test Coverage": "https://coveralls.io/github/stefankoegl/python-json-patch",
+   "Tests": "https://github.com/stefankoegl/python-json-patch/actions",
+   "Website": "https://github.com/stefankoegl/python-json-patch"
+  },
+  "provides_extra": null,
+  "release_url": "https://pypi.org/project/jsonpatch/1.42/",
+  "requires_dist": [
+   "jsonpointer>=3.8"
+  ],
+  "requires_python": ">=3.10",
+  "summary": "Apply JSON-Patches (RFC 6902) ",
+  "version": "1.42",
+  "yanked": false,
+  "yanked_reason": null
+ }
+}

@@ -1,0 +1,68 @@
+{
+ "info": {
+  "author": null,
+  "author_email": "Samuel Colvin <s@muelcolvin.com>, Adrian Garcia Badaracco <1755071+adriangb@users.noreply.github.com>, David Montague <david@pydantic.dev>, David Hewitt <mail@davidhewitt.dev>, Sydney Runkle <sydneymarierunkle@gmail.com>, Victorien Plot <contact@vctrn.dev>",
+  "bugtrack_url": null,
+  "classifiers": [
+   "Development Status :: 3 - Alpha",
+   "Environment :: WebAssembly :: Emscripten",
+   "Framework :: Pydantic",
+   "Intended Audience :: Developers",
+   "Intended Audience :: Information Technology",
+   "Operating System :: MacOS",
+   "Operating System :: Microsoft :: Windows",
+   "Operating System :: POSIX :: Linux",
+   "Programming Language :: Python",
+   "Programming Language :: Python :: 3",
+   "Programming Language :: Python :: 3 :: Only",
+   "Programming Language :: Python :: 3.10",
+   "Programming Language :: Python :: 3.11",
+   "Programming Language :: Python :: 3.12",
+   "Programming Language :: Python :: 3.13",
+   "Programming Language :: Python :: 3.14",
+   "Programming Language :: Python :: Implementation :: CPython",
+   "Programming Language :: Python :: Implementation :: GraalPy",
+   "Programming Language :: Python :: Implementation :: PyPy",
+   "Programming Language :: Rust",
+   "Typing :: Typed"
+  ],
+  "description": "# pydantic-core\n\n[![CI](https://github.com/pydantic/pydantic-core/workflows/ci/badge.svg?event=push)](https://github.com/pydantic/pydantic-core/actions?query=event%3Apush+branch%3Amain+workflow%3Aci)\n[![Coverage](https://codecov.io/gh/pydantic/pydantic-core/branch/main/graph/badge.svg)](https://codecov.io/gh/pydantic/pydantic-core)\n[![pypi](https://img.shields.io/pypi/v/pydantic-core.svg)](https://pypi.python.org/pypi/pydantic-core)\n[![versions](https://img.shields.io/pypi/pyversions/pydantic-core.svg)](https://github.com/pydantic/pydantic-core)\n[![license](https://img.shields.io/github/license/pydantic/pydantic-core.svg)](https://github.com/pydantic/pydantic-core/blob/main/LICENSE)\n\nThis package provides the core functionality for [pydantic](https://pydantic.dev/docs/validation/latest/get-started/) validation and serialization.\n\nPydantic-core is currently around 17x faster than pydantic V1.\nSee [`tests/benchmarks/`](./tests/benchmarks/) for details.\n\n## Example of direct usage\n\n*NOTE: You should not need to use pydantic-core directly; instead, use pydantic, which in turn uses pydantic-core.*\n\n```py\nfrom pydantic_core import SchemaValidator, ValidationError\n\nv = SchemaValidator(\n    {\n        'type': 'typed-dict',\n        'fields': {\n            'name': {\n                'type': 'typed-dict-field',\n                'schema': {\n                    'type': 'str',\n                },\n            },\n            'age': {\n                'type': 'typed-dict-field',\n                'schema': {\n                    'type': 'int',\n                    'ge': 18,\n                },\n            },\n            'is_developer': {\n                'type': 'typed-dict-field',\n                'schema': {\n                    'type': 'default',\n                    'schema': {'type': 'bool'},\n                    'default': True,\n                },\n            },\n        },\n    }\n)\n\nr1 = v.validate_python({'name': 'Samuel', 'age': 35})\nassert r1 == {'name': 'Samuel', 'age': 35, 'is_developer': True}\n\n# pydantic-core can also validate JSON directly\nr2 = v.validate_json('{\"name\": \"Samuel\", \"age\": 35}')\nassert r1 == r2\n\ntry:\n    v.validate_python({'name': 'Samuel', 'age': 11})\nexcept ValidationError as e:\n    print(e)\n    \"\"\"\n    1 validation error for model\n    age\n      Input should be greater than or equal to 18\n      [type=greater_than_equal, context={ge: 18}, input_value=11, input_type=int]\n    \"\"\"\n```\n\n## Getting Started\n\n### Prerequisites\n\nYou'll need:\n\n1. **[Rust](https://rustup.rs/)** - Rust stable (or nightly for coverage)\n2. **[uv](https://docs.astral.sh/uv/getting-started/installation/)** - Fast Python package manager\n3. **[git](https://git-scm.com/)** - For version control\n4. **[make](https://www.gnu.org/software/make/)** - For running development commands (or use `nmake` on Windows)\n\n### Quick Start\n\n```bash\n# Clone the repository (or from your fork)\ngit clone git@github.com:pydantic/pydantic-core.git\ncd pydantic-core\n\n# Install all dependencies using uv, setup pre-commit hooks, and build the development version\nmake install\n```\n\nVerify your installation by running:\n\n```bash\nmake\n```\n\nThis runs a full development cycle: formatting, building, linting, and testing\n\n### Development Commands\n\nRun `make help` to see all available commands, or use these common ones:\n\n```bash\nmake build-dev    # to build the package during development\nmake build-prod   # to perform an optimised build for benchmarking\nmake test         # to run the tests\nmake testcov      # to run the tests and generate a coverage report\nmake lint         # to run the linter\nmake format       # to format python and rust code\nmake all          # to run to run build-dev + format + lint + test\n```\n\n### Useful Resources\n\n* [`python/pydantic_core/_pydantic_core/`](./python/pydantic_core/_pydantic_core/) - Python API types (stubs)\n* [`python/pydantic_core/core_schema.py`](./python/pydantic_core/core_schema.py) - Core schema definitions\n* [`tests/`](./tests) - Comprehensive usage examples\n\n## Profiling\n\nIt's possible to profile the code using the [`flamegraph` utility from `flamegraph-rs`](https://github.com/flamegraph-rs/flamegraph). (Tested on Linux.) You can install this with `cargo install flamegraph`.\n\nRun `make build-profiling` to install a release build with debugging symbols included (needed for profiling).\n\nOnce that is built, you can profile pytest benchmarks with (e.g.):\n\n```bash\nflamegraph -- pytest tests/benchmarks/test_micro_benchmarks.py -k test_list_of_ints_core_py --benchmark-enable\n```\n\nThe `flamegraph` command will produce an interactive SVG at `flamegraph.svg`.\n\n## Releasing\n\nTBC (needs to be integrated into `pydantic` repository release process).\n\n",
+  "description_content_type": "text/markdown; charset=UTF-8; variant=GFM",
+  "docs_url": null,
+  "download_url": null,
+  "downloads": {
+   "last_day": -1,
+   "last_month": -1,
+   "last_week": -1
+  },
+  "dynamic": null,
+  "home_page": "https://github.com/pydantic/pydantic",
+  "keywords": null,
+  "license": null,
+  "license_expression": "MIT",
+  "license_files": [
+   "LICENSE"
+  ],
+  "maintainer": null,
+  "maintainer_email": null,
+  "name": "pydantic_core",
+  "package_url": "https://pypi.org/project/pydantic_core/",
+  "platform": null,
+  "project_url": "https://pypi.org/project/pydantic_core/",
+  "project_urls": {
+   "Funding": "https://github.com/sponsors/samuelcolvin",
+   "Homepage": "https://github.com/pydantic",
+   "Source": "https://github.com/pydantic/pydantic/tree/main/pydantic-core"
+  },
+  "provides_extra": null,
+  "release_url": "https://pypi.org/project/pydantic_core/2.50.3/",
+  "requires_dist": [
+   "typing-extensions>=4.16.0"
+  ],
+  "requires_python": ">=3.10",
+  "summary": "Core functionality for Pydantic validation and serialization",
+  "version": "2.50.3",
+  "yanked": false,
+  "yanked_reason": null
+ }
+}

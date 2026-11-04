@@ -1,7 +1,7 @@
 {
- "how": "PyPI JSON for each exact release and project, the PyPI integrity API for PEP 740 provenance, and the locked wheel downloaded from the registry URL, verified against the lock and the registry sha256 and against its own RECORD. Regenerate with proof/VELDO-0045/records.py.",
+ "how": "PyPI JSON for each exact release and project, the PyPI integrity API for PEP 740 provenance, and the locked wheel downloaded from the registry URL, verified against the lock and the registry sha256 and against its own RECORD. Origin and approval from proof/VELDO-0248/dependency-closure.json. Regenerate with proof/VELDO-0045/records.py.",
  "lock": ".veldo/control_graph_lock.py",
- "lock_digest": "b45d1e37f35885b242f64c70237db350ba3d9037a70b556c85d611b2d2e21c37",
+ "lock_digest": "fb75e741fdd6f683d486e015e288c4ef840e3c4be1c40a7aea933abdb87eb84e",
  "packages": [
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
@@ -37,9 +37,9 @@
    },
    "content": {
     "files": 52,
-    "sha256": "5e36e391e58bfaa86f76ac0573daf3cf5ad1103935e35b766da57cfc02763745"
+    "sha256": "c2ec9adde6c6b757a547eb7bd8f26ad9397fe15c89ba4e93082e77ac13ca82da"
    },
-   "latest": "4.15.1",
+   "latest": "4.16.0",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -49,12 +49,12 @@
    "name": "anyio",
    "origin": "github.com/agronholm, Alex Gronholm, Nurmijarvi, Finland",
    "requires_python": ">=3.10",
-   "sha256": "6152fdbbf9a77fdec97731721bebf7c4c44f7c29b424b0065826173efc7ed101",
+   "sha256": "c66ae634e0b8228396b801741beb3294326d4b6102f7bba4041c0dfb58c29026",
    "source": "https://github.com/agronholm/anyio",
-   "uploaded": "2026-09-05T10:42:37.923487Z",
-   "url": "https://files.pythonhosted.org/packages/12/b8/4bd346e22b28902df4d651910f5242c28d84e4a5c2435ca5c3f797ed7e2e/anyio-4.15.1-py3-none-any.whl",
-   "version": "4.15.1",
-   "wheel": "anyio-4.15.1-py3-none-any.whl"
+   "uploaded": "2026-11-01T11:20:05.590351Z",
+   "url": "https://files.pythonhosted.org/packages/a9/16/7757fb84c819accc7d7e9af5291b261e4abb8627ee040f99e7d35ef2457a/anyio-4.16.0-py3-none-any.whl",
+   "version": "4.16.0",
+   "wheel": "anyio-4.16.0-py3-none-any.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
@@ -66,9 +66,9 @@
    },
    "content": {
     "files": 11,
-    "sha256": "998620d2a29cd48a426405fa6fcb9eb1290be4b9d9d5fe63d9fab1201dc5e11c"
+    "sha256": "123b6ba954a9dd02c6411f6851531ed4d453f576f5297bc64226403535c14ebb"
    },
-   "latest": "2026.7.22",
+   "latest": "2026.10.23",
    "license": {
     "basis": "license",
     "registry_license": "MPL-2.0",
@@ -78,12 +78,12 @@
    "name": "certifi",
    "origin": "github.com/certifi (org, no location); PyPI author Kenneth Reitz",
    "requires_python": ">=3.7",
-   "sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775",
+   "sha256": "e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1",
    "source": "https://github.com/certifi/python-certifi",
-   "uploaded": "2026-07-22T03:35:11.276376Z",
-   "url": "https://files.pythonhosted.org/packages/0b/a7/71ac2cff56fec219ed242bb11b8efb69fcc4bec75db06fb7bfe35de520e6/certifi-2026.7.22-py3-none-any.whl",
-   "version": "2026.7.22",
-   "wheel": "certifi-2026.7.22-py3-none-any.whl"
+   "uploaded": "2026-10-23T11:36:14.763067Z",
+   "url": "https://files.pythonhosted.org/packages/32/d1/a3652fe2c19134d0d15922177821d863cbd7e842d53a21bbe7e8e3a1b5ac/certifi-2026.10.23-py3-none-any.whl",
+   "version": "2026.10.23",
+   "wheel": "certifi-2026.10.23-py3-none-any.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
@@ -95,9 +95,9 @@
    },
    "content": {
     "files": 20,
-    "sha256": "541869c6b0359464d2d4a69d31da92e78b5809c03623faa64d4583509092a512"
+    "sha256": "637ad6d3365db6694b4b028ac458fc7bcae948b45388738388d4ef5c39867d02"
    },
-   "latest": "3.5.1",
+   "latest": "3.5.2",
    "license": {
     "basis": "license",
     "registry_license": "MIT",
@@ -107,12 +107,12 @@
    "name": "charset-normalizer",
    "origin": "github.com/jawah (org, France); Ahmed R. Tahri (Ousret), France",
    "requires_python": ">=3.7",
-   "sha256": "b9af956078716df40d985fb0dfeb2c2120c5ca92ba4ff4b388acfd01cdc14d08",
+   "sha256": "3d31298449090ab8d47b7b1b2a555ff73cac7ed438a08b7ac160980c7ebed649",
    "source": "https://github.com/jawah/charset_normalizer",
-   "uploaded": "2026-08-15T08:17:17.683623Z",
-   "url": "https://files.pythonhosted.org/packages/6f/89/bb5108dc6c3651dca963f2b0a3ba19bbcb370c94e1b6d3e0e844a58e6dca/charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
-   "version": "3.5.1",
-   "wheel": "charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+   "uploaded": "2026-09-30T04:35:37.919109Z",
+   "url": "https://files.pythonhosted.org/packages/7f/c5/38806a25ab5e65fc178f39affeda20858efafede2fce1ffc2556cfc9fe73/charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+   "version": "3.5.2",
+   "wheel": "charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
@@ -191,9 +191,9 @@
    "attestation": null,
    "content": {
     "files": 35,
-    "sha256": "b83d364b2f45e0e133b04196164828efe0be00f279a9e00f659ed60ce5add8ba"
+    "sha256": "34aafd48941c940096a154cc193670b502e46e845d31e7f76213384143b3d3ba"
    },
-   "latest": "2.13.1",
+   "latest": "2.16.0",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -202,13 +202,13 @@
    },
    "name": "httpcore2",
    "origin": "github.com/pydantic/httpx2; maintainer Pydantic Services Inc.; Samuel Colvin, London, UK",
-   "requires_python": ">=3.10",
-   "sha256": "e1e05d4f25f7d7d496bfb96748f6f4b67657b03da069b3a68c36069f3db73d0a",
+   "requires_python": ">=3.11",
+   "sha256": "5c4358319f2602d984ad93182c9fee5160f22e9da7babdda870a5e7c4e2dc34f",
    "source": "https://github.com/pydantic/httpx2/blob/main/src/httpcore2",
-   "uploaded": "2026-09-23T07:47:19.365487Z",
-   "url": "https://files.pythonhosted.org/packages/09/ba/a4568248771ce81957bfb7cc600264a40fbcda092391ee1c415c50be4bea/httpcore2-2.13.1-py3-none-any.whl",
-   "version": "2.13.1",
-   "wheel": "httpcore2-2.13.1-py3-none-any.whl"
+   "uploaded": "2026-10-21T07:09:42.802531Z",
+   "url": "https://files.pythonhosted.org/packages/af/c2/ce417c397afa5181f0e3c6ff01a4d01639414e1adef08730d97571297151/httpcore2-2.16.0-py3-none-any.whl",
+   "version": "2.16.0",
+   "wheel": "httpcore2-2.16.0-py3-none-any.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
@@ -238,10 +238,10 @@
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
    "attestation": null,
    "content": {
-    "files": 35,
-    "sha256": "3a0686339fc2514527cf7e97c41b4fc726deb98e6a7516bbdfe0b6bb67c464c3"
+    "files": 36,
+    "sha256": "46d516806ecdddd085eb554268ed4cc57d1d6352f53beafea303eba909e5b3e7"
    },
-   "latest": "2.13.1",
+   "latest": "2.16.0",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -250,13 +250,13 @@
    },
    "name": "httpx2",
    "origin": "github.com/pydantic/httpx2; maintainer Pydantic Services Inc.; Samuel Colvin, London, UK",
-   "requires_python": ">=3.10",
-   "sha256": "6dff50fabc270ee5fd25d845d0b078ed20564579744d6d962850975996d2f9a4",
+   "requires_python": ">=3.11",
+   "sha256": "fd2c5d7909e8d86fe92d53020c310ca0e4e431b838c207c5754b9bbf0308d49a",
    "source": "https://github.com/pydantic/httpx2",
-   "uploaded": "2026-09-23T07:47:20.995722Z",
-   "url": "https://files.pythonhosted.org/packages/d8/9c/6fe8931fd9f381042a9e4c7d5a7b4cbf7016b252bec0c99a49fce42c3326/httpx2-2.13.1-py3-none-any.whl",
-   "version": "2.13.1",
-   "wheel": "httpx2-2.13.1-py3-none-any.whl"
+   "uploaded": "2026-10-21T07:09:44.010669Z",
+   "url": "https://files.pythonhosted.org/packages/7b/3d/2e4bc4fd1ef9770871669adb348d612a6e4786b303a23f9935b81c48dd60/httpx2-2.16.0-py3-none-any.whl",
+   "version": "2.16.0",
+   "wheel": "httpx2-2.16.0-py3-none-any.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
@@ -289,36 +289,46 @@
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
-   "attestation": null,
-   "content": {
-    "files": 6,
-    "sha256": "94b07231361d744ced4e446e4533c72de31c2bae43b2364beb08bcf5996a4c16"
+   "attestation": {
+    "environment": "pypi",
+    "kind": "GitHub",
+    "repository": "stefankoegl/python-json-patch",
+    "workflow": "publish.yaml"
    },
-   "latest": "1.33",
+   "content": {
+    "files": 9,
+    "sha256": "cf144119ad232953e2f9d9bf638e455339f8dbf847d48ef3b386eabf7528d580"
+   },
+   "latest": "1.42",
    "license": {
-    "basis": "license",
-    "registry_license": "Modified BSD License",
-    "registry_license_expression": null,
+    "basis": "license_expression",
+    "registry_license": null,
+    "registry_license_expression": "BSD-3-Clause",
     "spdx": "BSD-3-Clause"
    },
    "name": "jsonpatch",
    "origin": "github.com/stefankoegl, Stefan Koegl, Austria",
-   "requires_python": ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, !=3.6.*",
-   "sha256": "0ae28c0cd062bbd8b8ecc26d7d164fbbea9652a1a3693f3b956c1eae5145dade",
+   "requires_python": ">=3.10",
+   "sha256": "0a94e8725b8b53cafdf3eba3112a7ccd31ea420bb04e6374096d9d17bf4563e9",
    "source": "https://github.com/stefankoegl/python-json-patch.git",
-   "uploaded": "2023-06-16T21:01:28.466546Z",
-   "url": "https://files.pythonhosted.org/packages/73/07/02e16ed01e04a374e644b575638ec7987ae846d25ad97bcc9945a3ee4b0e/jsonpatch-1.33-py2.py3-none-any.whl",
-   "version": "1.33",
-   "wheel": "jsonpatch-1.33-py2.py3-none-any.whl"
+   "uploaded": "2026-11-04T12:32:37.816624Z",
+   "url": "https://files.pythonhosted.org/packages/0b/0e/f304972d58bdae95d130e3b2fbbf46da4ba40a5e6983b73e82e3471a0de3/jsonpatch-1.42-py3-none-any.whl",
+   "version": "1.42",
+   "wheel": "jsonpatch-1.42-py3-none-any.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
-   "attestation": null,
-   "content": {
-    "files": 6,
-    "sha256": "94656d025ce0af8d57f163db5f2e85a224a78287a50ce68fbef2ce7d6b25bfc2"
+   "attestation": {
+    "environment": "pypi",
+    "kind": "GitHub",
+    "repository": "stefankoegl/python-json-pointer",
+    "workflow": "publish.yml"
    },
-   "latest": "3.1.1",
+   "content": {
+    "files": 7,
+    "sha256": "defe8646721bd2246ad1c9182dc346f4b58b255ae2b3171ccf752d3f0543984a"
+   },
+   "latest": "3.8",
    "license": {
     "basis": "license",
     "registry_license": "Modified BSD License",
@@ -328,21 +338,21 @@
    "name": "jsonpointer",
    "origin": "github.com/stefankoegl, Stefan Koegl, Austria",
    "requires_python": ">=3.10",
-   "sha256": "8ff8b95779d071ba472cf5bc913028df06031797532f08a7d5b602d8b2a488ca",
+   "sha256": "d69af85adaea202111bbc931067ead68dc16bca4592c74e1a1953152e2a330ab",
    "source": "https://github.com/stefankoegl/python-json-pointer",
-   "uploaded": "2026-03-23T22:32:31.568290Z",
-   "url": "https://files.pythonhosted.org/packages/9e/6a/a83720e953b1682d2d109d3c2dbb0bc9bf28cc1cbc205be4ef4be5da709d/jsonpointer-3.1.1-py3-none-any.whl",
-   "version": "3.1.1",
-   "wheel": "jsonpointer-3.1.1-py3-none-any.whl"
+   "uploaded": "2026-11-02T21:52:17.617464Z",
+   "url": "https://files.pythonhosted.org/packages/76/61/20f3a497beac4c8f869b8161b468b31c0f05d9d73600da0313eb759bad8a/jsonpointer-3.8-py3-none-any.whl",
+   "version": "3.8",
+   "wheel": "jsonpointer-3.8-py3-none-any.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
    "attestation": null,
    "content": {
-    "files": 185,
-    "sha256": "f43cb32d4aa3868d06af0f5a183c91b812be018a4fd210b0f46db3a4e3b91ce5"
+    "files": 188,
+    "sha256": "566f1a7ab7239397d3e297e7ba1f313ad5c70c4b5b08d30ea83e18b330a09f3c"
    },
-   "latest": "1.6.4",
+   "latest": "1.7.5",
    "license": {
     "basis": "license",
     "registry_license": "MIT",
@@ -352,21 +362,21 @@
    "name": "langchain-core",
    "origin": "github.com/langchain-ai, LangChain, United States",
    "requires_python": "<4.0.0,>=3.10.0",
-   "sha256": "2f940c83f787676ad4dc651d49d053c7ec34bda5a6afcd224da2863ff53a0b84",
+   "sha256": "bd2629e8ef95cae10700b80bf3732a51f04e264b6629723e009a5dd58f45f496",
    "source": "https://github.com/langchain-ai/langchain",
-   "uploaded": "2026-09-21T15:51:06.555678Z",
-   "url": "https://files.pythonhosted.org/packages/c4/f2/41435d9a5448c52a0388f75741edb979fde7415eaa820d6a42878cad7e38/langchain_core-1.6.4-py3-none-any.whl",
-   "version": "1.6.4",
-   "wheel": "langchain_core-1.6.4-py3-none-any.whl"
+   "uploaded": "2026-11-04T15:49:43.695121Z",
+   "url": "https://files.pythonhosted.org/packages/72/e7/336b85cafb3f0d1b9e44cfcd4507b8ae46e2b5db790b33a5e54b08514b63/langchain_core-1.7.5-py3-none-any.whl",
+   "version": "1.7.5",
+   "wheel": "langchain_core-1.7.5-py3-none-any.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
    "attestation": null,
    "content": {
     "files": 6,
-    "sha256": "2fd6208c37a3189640f37053cca47db65fc0ce9e1edec3fba17d2b3f9c7278e9"
+    "sha256": "f3d775df9549f2430bc8d8cc50f11811ce2ec0a1d4aae33e61e5ff677e0dbbf2"
    },
-   "latest": "0.0.19",
+   "latest": "0.0.20",
    "license": {
     "basis": "license",
     "registry_license": "MIT",
@@ -376,21 +386,21 @@
    "name": "langchain-protocol",
    "origin": "github.com/langchain-ai, LangChain, United States",
    "requires_python": "<4.0.0,>=3.10.0",
-   "sha256": "4cdf879a492a35980fd859ae792d3c65458ccaae504e183c9a10d7eac1f0720f",
+   "sha256": "3c935e5e46b0f6f9cb52f45ba7cfa53d1b9fa80c82c4a277d47f03e07f7385b1",
    "source": "https://github.com/langchain-ai/agent-protocol",
-   "uploaded": "2026-08-26T21:11:59.781653Z",
-   "url": "https://files.pythonhosted.org/packages/80/c9/f6cbf357d48ccbd18bb394433b1fd7ad9be004eed9377ad08bb85777e5e6/langchain_protocol-0.0.19-py3-none-any.whl",
-   "version": "0.0.19",
-   "wheel": "langchain_protocol-0.0.19-py3-none-any.whl"
+   "uploaded": "2026-10-20T11:13:49.566752Z",
+   "url": "https://files.pythonhosted.org/packages/02/4b/f1c99a0b27c5ff8b4b131c0d6e62012c17cc424089efe213767db927afd2/langchain_protocol-0.0.20-py3-none-any.whl",
+   "version": "0.0.20",
+   "wheel": "langchain_protocol-0.0.20-py3-none-any.whl"
   },
   {
    "approval": "chosen software: actual LangGraph is required by owner Telegram 28848 and R34",
    "attestation": null,
    "content": {
-    "files": 82,
-    "sha256": "583e9e7b116e8092156a18d8bde1d1389c643ccf13495d033e2fdce859fdbc47"
+    "files": 83,
+    "sha256": "6c9b119d32b85881a128b62e75a5cc2925669f610dda62cf338f4c1c00d5e7e0"
    },
-   "latest": "1.2.12",
+   "latest": "1.2.19",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -400,21 +410,21 @@
    "name": "langgraph",
    "origin": "github.com/langchain-ai, LangChain, United States",
    "requires_python": ">=3.10",
-   "sha256": "95403af7b510de8d79164742f71daaf866c69ca804a8cb72bef2cc1fa1ab9813",
+   "sha256": "6094a5cbed52a77d8c74c276fcd2056abde7b2836eab1c7a6b74bacbd1a269b3",
    "source": "https://github.com/langchain-ai/langgraph/tree/main/libs/langgraph",
-   "uploaded": "2026-09-21T14:43:28.196799Z",
-   "url": "https://files.pythonhosted.org/packages/52/27/5a02054c535ed6fcfb2ab1e5c33c51c810cf1e773194ad28c928f0473509/langgraph-1.2.12-py3-none-any.whl",
-   "version": "1.2.12",
-   "wheel": "langgraph-1.2.12-py3-none-any.whl"
+   "uploaded": "2026-10-30T22:23:31.334338Z",
+   "url": "https://files.pythonhosted.org/packages/d7/9e/bd29e368fb16feea8d24270d377d56c34b49afea371717124f19cdfa890c/langgraph-1.2.19-py3-none-any.whl",
+   "version": "1.2.19",
+   "wheel": "langgraph-1.2.19-py3-none-any.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
    "attestation": null,
    "content": {
     "files": 26,
-    "sha256": "14ce5a9c1d304552b8fba5a181922adfadfa27363a652876abaab2e0af25057f"
+    "sha256": "c01685ea43d7882b6b2be8876566a75ecc2e9f5843d70067bcf34ae6cc671d07"
    },
-   "latest": "4.2.0",
+   "latest": "4.3.1",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -424,21 +434,21 @@
    "name": "langgraph-checkpoint",
    "origin": "github.com/langchain-ai, LangChain, United States",
    "requires_python": ">=3.10",
-   "sha256": "0547fd228935a0b758865de3a3d6d7a2537c308895d0f9ab092ce9151b5da942",
+   "sha256": "215a826935c8db4d9676e79fd95943e5b3847d78604390898e1d98581cc594e5",
    "source": "https://github.com/langchain-ai/langgraph/tree/main/libs/checkpoint",
-   "uploaded": "2026-08-07T20:05:02.655126Z",
-   "url": "https://files.pythonhosted.org/packages/05/71/3b475f09bd57d3a5649792c66353312b4432afd843f301739dfcebd157f0/langgraph_checkpoint-4.2.0-py3-none-any.whl",
-   "version": "4.2.0",
-   "wheel": "langgraph_checkpoint-4.2.0-py3-none-any.whl"
+   "uploaded": "2026-10-26T19:57:30.361016Z",
+   "url": "https://files.pythonhosted.org/packages/f3/40/4251d676b5c585d42175c901175d4bff56e22939625e18bcef781fc3e893/langgraph_checkpoint-4.3.1-py3-none-any.whl",
+   "version": "4.3.1",
+   "wheel": "langgraph_checkpoint-4.3.1-py3-none-any.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
    "attestation": null,
    "content": {
     "files": 11,
-    "sha256": "11284d8290a2f72a7f387bb083230d85f0a7fed10f468e7b018b0cae0ac75770"
+    "sha256": "0caa2829b0a6fba2cbab70c2075492bf07fd54c84e650b035572d792f619e7fe"
    },
-   "latest": "1.1.0",
+   "latest": "1.1.1",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -448,21 +458,21 @@
    "name": "langgraph-prebuilt",
    "origin": "github.com/langchain-ai, LangChain, United States",
    "requires_python": ">=3.10",
-   "sha256": "51e311747d755b751d5c6b39b0c1446124d3a7643d2515017e6714b323508fc9",
+   "sha256": "fae17c22562e501940eb7aa052a15c58a431febbabf33f8ad172e1b44354a7e4",
    "source": "https://github.com/langchain-ai/langgraph/tree/main/libs/prebuilt",
-   "uploaded": "2026-05-12T03:37:48.007261Z",
-   "url": "https://files.pythonhosted.org/packages/e9/43/3fe1a700b8490ed02679cdbbc8c915eb23a092faf496c9c1118abcd10be3/langgraph_prebuilt-1.1.0-py3-none-any.whl",
-   "version": "1.1.0",
-   "wheel": "langgraph_prebuilt-1.1.0-py3-none-any.whl"
+   "uploaded": "2026-10-15T04:32:24.100762Z",
+   "url": "https://files.pythonhosted.org/packages/38/26/4da2c6ae8b9fe73c3c09cf32c058415c5041e773fd00219c5e0d76588c23/langgraph_prebuilt-1.1.1-py3-none-any.whl",
+   "version": "1.1.1",
+   "wheel": "langgraph_prebuilt-1.1.1-py3-none-any.whl"
   },
   {
    "approval": "named exception, owner Telegram 28927 \"Allow\" answering 28926; client never pointed at LangChain hosting",
    "attestation": null,
    "content": {
-    "files": 49,
-    "sha256": "b26a799a85434ebd92fdc6750ba60f04f71df5df83d112015a8c64b83834d6bd"
+    "files": 52,
+    "sha256": "9d8d69b2ac8f39858ffacfc1bf6397e532d64ba4c3bb482728520c5bdb080fdf"
    },
-   "latest": "0.4.5",
+   "latest": "0.4.12",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -472,26 +482,26 @@
    "name": "langgraph-sdk",
    "origin": "github.com/langchain-ai, LangChain, United States",
    "requires_python": ">=3.10",
-   "sha256": "e03ef033a20d21288af496e9b6c08ae3afcc1b58dc5abcd37575bfd1a93045de",
+   "sha256": "cfc2e659a3daa615062a29cfa39eea00b5ea58d2683dbf2f4487fc4244a98078",
    "source": "https://github.com/langchain-ai/langgraph/tree/main/libs/sdk-py",
-   "uploaded": "2026-09-21T14:42:54.623661Z",
-   "url": "https://files.pythonhosted.org/packages/49/a9/71a6499f3481bc00bf4f42a17cb81caf19a02fce762db356626d7214e2c2/langgraph_sdk-0.4.5-py3-none-any.whl",
-   "version": "0.4.5",
-   "wheel": "langgraph_sdk-0.4.5-py3-none-any.whl"
+   "uploaded": "2026-11-03T18:10:15.309900Z",
+   "url": "https://files.pythonhosted.org/packages/fb/7c/3789d5bfa872f87ed8443177baf5fe51da5840ccbabdbe87dac3fc65e9bd/langgraph_sdk-0.4.12-py3-none-any.whl",
+   "version": "0.4.12",
+   "wheel": "langgraph_sdk-0.4.12-py3-none-any.whl"
   },
   {
    "approval": "named exception (client of a free and paid tier service), owner approval relayed by the lead 2026-09-23; tracing off",
    "attestation": {
     "environment": null,
     "kind": "GitHub",
-    "repository": "langchain-ai/langsmith-sdk",
-    "workflow": "release.yml"
+    "repository": "langchain-ai/langsmith-python",
+    "workflow": "publish-pypi.yml"
    },
    "content": {
-    "files": 311,
-    "sha256": "8fcdba1bfae0fde09888d25eace18e1b509160e5ee244a04ace26b4e09f4079b"
+    "files": 388,
+    "sha256": "c20322cd73d3e45d152360d821efb4aae1207e4bb1b984aaec3b0b4fed8fb454"
    },
-   "latest": "0.14.0",
+   "latest": "0.14.17",
    "license": {
     "basis": "license",
     "registry_license": "MIT",
@@ -501,12 +511,12 @@
    "name": "langsmith",
    "origin": "github.com/langchain-ai, LangChain, United States",
    "requires_python": ">=3.10",
-   "sha256": "1a89e52c24edd6f4c24d8cfb32857814ceb5b9bec344a2850e86ab38475de362",
-   "source": "https://github.com/langchain-ai/langsmith-sdk",
-   "uploaded": "2026-09-21T18:59:36.199489Z",
-   "url": "https://files.pythonhosted.org/packages/4d/be/d55279f7bfc43763fd479aa526d6f952fa93aaf4d86a40919f78726691cc/langsmith-0.14.0-py3-none-any.whl",
-   "version": "0.14.0",
-   "wheel": "langsmith-0.14.0-py3-none-any.whl"
+   "sha256": "0aa2c79936c93c7cea9c55656f05e21cc5da715fecbdbda439d084adc08429be",
+   "source": "https://github.com/langchain-ai/langsmith-python",
+   "uploaded": "2026-11-02T00:58:43.727601Z",
+   "url": "https://files.pythonhosted.org/packages/a8/11/4da3faa7fd20c487c4770f14aa2b4247871e787ad305c2ba528fcf0f2bcc/langsmith-0.14.17-py3-none-any.whl",
+   "version": "0.14.17",
+   "wheel": "langsmith-0.14.17-py3-none-any.whl"
   },
   {
    "approval": "named exception (origin not verified), owner Telegram 28927 \"Allow\" answering 28926",
@@ -518,9 +528,9 @@
    },
    "content": {
     "files": 10,
-    "sha256": "6000eb50cf1b4b3632e529cd93d8612074b19fe6052a32c485e25f9ca6111ac4"
+    "sha256": "1a5320f285c57ebe7f5b85372d0969f8bda65b1b541d34f04b37ff4d4f3f4fb1"
    },
-   "latest": "3.12.0",
+   "latest": "3.13.0",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -530,21 +540,26 @@
    "name": "orjson",
    "origin": "github.com/ijl, no public name or location (commit mail at mailbox.org); origin NOT verified",
    "requires_python": ">=3.10",
-   "sha256": "1192a7021b6d071aaf909864f6e924d6a2675ca360485b972b8401749311750b",
+   "sha256": "bceadfd314bd238f584fc229a4bbaf0e573597e7a026dec5429fbf29fd66c641",
    "source": "https://github.com/ijl/orjson",
-   "uploaded": "2026-08-14T16:12:35.713688Z",
-   "url": "https://files.pythonhosted.org/packages/8c/57/80b986ebfecd9c6a177ddf1c2319717f0cd8feffb2b78946595a18a2fc88/orjson-3.12.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-   "version": "3.12.0",
-   "wheel": "orjson-3.12.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+   "uploaded": "2026-10-07T14:08:30.041011Z",
+   "url": "https://files.pythonhosted.org/packages/ea/8c/bb07c368abbf4021c4cd01c12edb526e00090f7f750ff1b88da6e6b6c7a6/orjson-3.13.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "version": "3.13.0",
+   "wheel": "orjson-3.13.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
-   "attestation": null,
-   "content": {
-    "files": 11,
-    "sha256": "5f5b8d77e720449de51af0b16f623e020fecf10ae227099c114d19fbb34bbb68"
+   "attestation": {
+    "environment": null,
+    "kind": "GitHub",
+    "repository": "ormsgpack/ormsgpack",
+    "workflow": "release.yml"
    },
-   "latest": "1.12.2",
+   "content": {
+    "files": 12,
+    "sha256": "7946f289d8eb3895ab76e779b4a05ce5f6c8eae4ea45a47966452b15abd37f94"
+   },
+   "latest": "1.13.0",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -553,13 +568,13 @@
    },
    "name": "ormsgpack",
    "origin": "github.com/ormsgpack (org); Aviram Hassan, Tel Aviv, Israel; Emanuele Giaquinta (exg, no location)",
-   "requires_python": ">=3.10",
-   "sha256": "58d379d72b6c5e964851c77cfedfb386e474adee4fd39791c2c5d9efb53505cc",
+   "requires_python": ">=3.11",
+   "sha256": "8187048ec7b9ec628f985954e2409248acfeb8732e2751305649eaaba7304db7",
    "source": "https://github.com/ormsgpack/ormsgpack",
-   "uploaded": "2026-01-18T20:56:06.135450Z",
-   "url": "https://files.pythonhosted.org/packages/7b/ba/795b1036888542c9113269a3f5690ab53dd2258c6fb17676ac4bd44fcf94/ormsgpack-1.12.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-   "version": "1.12.2",
-   "wheel": "ormsgpack-1.12.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+   "uploaded": "2026-10-15T19:50:34.240641Z",
+   "url": "https://files.pythonhosted.org/packages/49/f1/1bc3710e6f1b8d4da288d949aa8c04d12d5265c23004799f0b102778ee2c/ormsgpack-1.13.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "version": "1.13.0",
+   "wheel": "ormsgpack-1.13.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
@@ -600,9 +615,9 @@
    },
    "content": {
     "files": 110,
-    "sha256": "80df13b1fe09963daa5ec9e8089fa18e5d37a9fb21ee54342d6726e2d74f821c"
+    "sha256": "d2625b3c4b25a93d6f918451a2bd632e3705862171dd6f61fcb40fd6d8581492"
    },
-   "latest": "2.13.5",
+   "latest": "2.14.2",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -611,23 +626,23 @@
    },
    "name": "pydantic",
    "origin": "github.com/pydantic (org, no location); Samuel Colvin, London, UK",
-   "requires_python": ">=3.9",
-   "sha256": "346a034f080da3755d8e9cb5e00e8b07de1d39e4f6e2c87d8ab7cafa0b269a73",
+   "requires_python": ">=3.10",
+   "sha256": "7efbf7507b937931cd32a5755acb00ea1cf5ccb1d4e8067a5850d5069e382118",
    "source": "https://github.com/pydantic/pydantic",
-   "uploaded": "2026-08-28T14:03:59.136157Z",
-   "url": "https://files.pythonhosted.org/packages/eb/47/c95ffc2009878c7aac0c5e08528022dcb885933252a88b5f170058014464/pydantic-2.13.5-py3-none-any.whl",
-   "version": "2.13.5",
-   "wheel": "pydantic-2.13.5-py3-none-any.whl"
+   "uploaded": "2026-10-29T16:37:10.181777Z",
+   "url": "https://files.pythonhosted.org/packages/97/01/c71a71258b58659c72504e5fd65b451f6e36e34dc931d0b237ded213c814/pydantic-2.14.2-py3-none-any.whl",
+   "version": "2.14.2",
+   "wheel": "pydantic-2.14.2-py3-none-any.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
    "attestation": null,
-   "capped_by": "pydantic 2.13.5 requires \"pydantic-core==2.46.5\"",
+   "capped_by": "pydantic 2.14.2 requires \"pydantic-core==2.50.2\"",
    "content": {
-    "files": 9,
-    "sha256": "fb183ee1a6e79d3a97d6855582d7f665ce07cf09ac2b37f7d17d18ad08805773"
+    "files": 10,
+    "sha256": "7a51844ba8cb2ccd253bb30cef4b0935b5ae36458d8de1982fca6f6c336f7f2a"
    },
-   "latest": "2.49.0",
+   "latest": "2.50.3",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -636,13 +651,13 @@
    },
    "name": "pydantic_core",
    "origin": "github.com/pydantic (org, no location); Samuel Colvin, London, UK",
-   "requires_python": ">=3.9",
-   "sha256": "0fc5be0abd4a407e200d844b404e33639a554e7bd0d448e7b9ae181be4789ac2",
+   "requires_python": ">=3.10",
+   "sha256": "9667637665acba166a7dbbc786f14c50512d3a01f7199e0e1a13b929e92d7c7a",
    "source": "https://github.com/pydantic/pydantic/tree/main/pydantic-core",
-   "uploaded": "2026-08-28T09:58:32.289985Z",
-   "url": "https://files.pythonhosted.org/packages/c0/a4/eb9409ec0736e50aa70a412f16c204ed149516846912f7e6724d4c73ee53/pydantic_core-2.46.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-   "version": "2.46.5",
-   "wheel": "pydantic_core-2.46.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+   "uploaded": "2026-10-29T16:32:20.381714Z",
+   "url": "https://files.pythonhosted.org/packages/08/93/2a6556bbdb8e918175af9d849a5d0b367b5644e41939d040f3a7215b1339/pydantic_core-2.50.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+   "version": "2.50.2",
+   "wheel": "pydantic_core-2.50.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
@@ -755,33 +770,38 @@
    },
    "content": {
     "files": 17,
-    "sha256": "7a5e4a0121d76c1b6bca1df9d78faf154a01566d27b1cc2ae2accd711fa22e16"
+    "sha256": "3fd7c5157a34665edeba8e3daa6ff0fc1fed92085c21390e04af21dcb53aba20"
    },
-   "latest": "9.1.4",
+   "latest": "9.2.1",
    "license": {
-    "basis": "license",
-    "registry_license": "Apache 2.0",
-    "registry_license_expression": null,
+    "basis": "license_expression",
+    "registry_license": null,
+    "registry_license_expression": "Apache-2.0",
     "spdx": "Apache-2.0"
    },
    "name": "tenacity",
    "origin": "github.com/jd, Julien Danjou, Toulouse, France",
    "requires_python": ">=3.10",
-   "sha256": "6095a360c919085f28c6527de529e76a06ad89b23659fa881ae0649b867a9d55",
+   "sha256": "9e56f17539296baab7beabb08b92f6ee3d7be92d8be72d763360677c2ad6580e",
    "source": "https://github.com/jd/tenacity",
-   "uploaded": "2026-02-07T10:45:32.240169Z",
-   "url": "https://files.pythonhosted.org/packages/d7/c1/eb8f9debc45d3b7918a32ab756658a0904732f75e555402972246b0b8e71/tenacity-9.1.4-py3-none-any.whl",
-   "version": "9.1.4",
-   "wheel": "tenacity-9.1.4-py3-none-any.whl"
+   "uploaded": "2026-10-07T12:13:00.102198Z",
+   "url": "https://files.pythonhosted.org/packages/d6/26/1ff2b0721ac66a3ec5b1402b333110b352ab0a8724052ac279a7b82d40c4/tenacity-9.2.1-py3-none-any.whl",
+   "version": "9.2.1",
+   "wheel": "tenacity-9.2.1-py3-none-any.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
-   "attestation": null,
+   "attestation": {
+    "environment": "deploy",
+    "kind": "GitHub",
+    "repository": "sethmlarson/truststore",
+    "workflow": "deploy.yml"
+   },
    "content": {
     "files": 10,
-    "sha256": "0e4625c92547f3ee6dfa1f89fa1a6785a437b1217d7cf06e148342c166c6d3e0"
+    "sha256": "d5512f79a33e61d674b60659e6edbcab153276294a68b4f2960033718991bedc"
    },
-   "latest": "0.10.4",
+   "latest": "0.10.5",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -791,12 +811,12 @@
    "name": "truststore",
    "origin": "github.com/sethmlarson, Seth Larson, Minneapolis, MN, US",
    "requires_python": ">=3.10",
-   "sha256": "adaeaecf1cbb5f4de3b1959b42d41f6fab57b2b1666adb59e89cb0b53361d981",
+   "sha256": "9aaaedaefaf06d8b206278cf8b5012bc897f485a874503501e12d776df78951c",
    "source": "https://github.com/sethmlarson/truststore",
-   "uploaded": "2025-08-12T18:49:01.460601Z",
-   "url": "https://files.pythonhosted.org/packages/19/97/56608b2249fe206a67cd573bc93cd9896e1efb9e98bce9c163bcdc704b88/truststore-0.10.4-py3-none-any.whl",
-   "version": "0.10.4",
-   "wheel": "truststore-0.10.4-py3-none-any.whl"
+   "uploaded": "2026-10-12T22:27:30.377491Z",
+   "url": "https://files.pythonhosted.org/packages/51/e9/3a7820be2bb0fe53b6bc9c3be26d3d1158004e4c3ab953aa6840b955b1e9/truststore-0.10.5-py3-none-any.whl",
+   "version": "0.10.5",
+   "wheel": "truststore-0.10.5-py3-none-any.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
@@ -808,9 +828,9 @@
    },
    "content": {
     "files": 8,
-    "sha256": "60558fbb874b14564211039f89c2ff08d7b66d5c793940f0b12ebb1af12584c0"
+    "sha256": "c1b8cdd1fec6bcb47690367de49fe5e69c175825ceadb9b5c05a329a85598c2a"
    },
-   "latest": "0.4.4",
+   "latest": "0.4.5",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -820,12 +840,12 @@
    "name": "typing-inspection",
    "origin": "github.com/pydantic; Victorien Plot (Viicos), Amsterdam, Netherlands",
    "requires_python": ">=3.10",
-   "sha256": "65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147",
+   "sha256": "bc210535442b39e1bf2805e0c7a17dfd6a4ace760c84c7f7d16245d23a6b1c39",
    "source": "https://github.com/pydantic/typing-inspection",
-   "uploaded": "2026-08-12T12:37:24.648475Z",
-   "url": "https://files.pythonhosted.org/packages/67/81/4add07e5172b7ac40d8ed5ff580409a7801a4fe26d529bdd915401dabfbe/typing_inspection-0.4.4-py3-none-any.whl",
-   "version": "0.4.4",
-   "wheel": "typing_inspection-0.4.4-py3-none-any.whl"
+   "uploaded": "2026-11-04T14:13:22.616254Z",
+   "url": "https://files.pythonhosted.org/packages/de/0c/ea2544850a7c135e15033a5c7a8e7211136184b7ae63e2239d557c2b3019/typing_inspection-0.4.5-py3-none-any.whl",
+   "version": "0.4.5",
+   "wheel": "typing_inspection-0.4.5-py3-none-any.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
@@ -893,12 +913,12 @@
     "repository": "aminalaee/uuid-utils",
     "workflow": "ci.yml"
    },
-   "capped_by": "langchain-core 1.6.4 and langsmith 0.14.0 both require \"uuid-utils<1.0,>=0.12.0\"",
+   "capped_by": "langsmith 0.14.17 requires \"uuid-utils<1.0,>=0.12.0\"",
    "content": {
     "files": 10,
-    "sha256": "5ee13bb00f42abb03f16e6698a41e886a0ba6066e0e64eaeab06738b3d65a3ba"
+    "sha256": "4bb8643629d2a3ec9cfa2fa152204b1969b4240ccab4cf7f4ad84c60ef9a4aef"
    },
-   "latest": "1.0.0",
+   "latest": "1.2.0",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -908,12 +928,12 @@
    "name": "uuid_utils",
    "origin": "github.com/aminalaee, Amin Alaee, Netherlands",
    "requires_python": ">=3.10",
-   "sha256": "d45f93f362d39f63ba14bbd9e4e1dd89fbed4de9bbef6bb428a379bd86571da2",
+   "sha256": "b8060530a8fa27f11947489c79bc36e6ebb465b2d714945364dc397283309417",
    "source": "https://github.com/aminalaee/uuid-utils",
-   "uploaded": "2026-09-08T11:28:15.235242Z",
-   "url": "https://files.pythonhosted.org/packages/02/1e/2abb7d9e3062a7889142818e2a2ae758a54a1c3b6cf8a86877e051b3d1dc/uuid_utils-0.17.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-   "version": "0.17.1",
-   "wheel": "uuid_utils-0.17.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+   "uploaded": "2026-10-26T10:54:14.309953Z",
+   "url": "https://files.pythonhosted.org/packages/be/45/8238eac588b668e5c500cb187fd74a9f6d984c09f3f3f2fa4161d3c07eb7/uuid_utils-0.19.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "version": "0.19.0",
+   "wheel": "uuid_utils-0.19.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
@@ -923,12 +943,11 @@
     "repository": "python-websockets/websockets",
     "workflow": "release.yml"
    },
-   "capped_by": "langgraph-sdk 0.4.5 requires \"websockets<17,>=14\"",
    "content": {
-    "files": 57,
-    "sha256": "adca1e94ff4a99a48db384e7c2610d6c2fbac8efea4d9eb500c26eec29f28477"
+    "files": 61,
+    "sha256": "445ff84ccb4100b86ce61d45a71763cab2bdb42f2d2f5b9fe2702fc35c1929f1"
    },
-   "latest": "17.1",
+   "latest": "17.4",
    "license": {
     "basis": "license_expression",
     "registry_license": null,
@@ -937,13 +956,13 @@
    },
    "name": "websockets",
    "origin": "github.com/python-websockets (org); Aymeric Augustin, Paris, France",
-   "requires_python": ">=3.10",
-   "sha256": "0f62863e8a00a6d33c3d6566ec0b89f23787b747ffe0c3bc71ec0e76b82c94b1",
+   "requires_python": ">=3.11",
+   "sha256": "9ae1429ee9e52b139167ed0169757806a27ed7307e942e8c62037a9184e9843b",
    "source": "https://github.com/python-websockets/websockets",
-   "uploaded": "2026-07-17T22:49:18.323939Z",
-   "url": "https://files.pythonhosted.org/packages/fe/ed/f1831681fce0e3242346e5458486003c5f124ed69e5e0b847fd029db4973/websockets-16.1.1-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl",
-   "version": "16.1.1",
-   "wheel": "websockets-16.1.1-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl"
+   "uploaded": "2026-10-30T15:07:17.563094Z",
+   "url": "https://files.pythonhosted.org/packages/cb/18/6229d6583031ca81d092a0cd887a13a57b402fb555acc323d39b45967eb7/websockets-17.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl",
+   "version": "17.4",
+   "wheel": "websockets-17.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl"
   },
   {
    "approval": "named exception (Chinese origin), owner approval relayed by the lead 2026-09-23",
@@ -955,9 +974,9 @@
    },
    "content": {
     "files": 9,
-    "sha256": "89dff503b905618de69a45bfe4496d1b0aba193b4702922cb142ab2c725f1747"
+    "sha256": "caaa8677a0d9afa3f9689c0daa43daeb70632e7306daa790cc1e551e36abb27e"
    },
-   "latest": "4.0.1",
+   "latest": "4.0.2",
    "license": {
     "basis": "license",
     "registry_license": "BSD-2-Clause",
@@ -967,12 +986,12 @@
    "name": "xxhash",
    "origin": "github.com/ifduyue, Yue Du, location China",
    "requires_python": ">=3.9",
-   "sha256": "237b8f63a2a0fcfb1ffc06e21dad23add44e6d354b2b014364a1d41e419a4dee",
+   "sha256": "7c7c95dba490be3b4e5a2fa5595b4d4f088fe7b8726e5998b8c1d83b1f9eb3e4",
    "source": "https://github.com/ifduyue/python-xxhash",
-   "uploaded": "2026-08-17T08:22:00.469778Z",
-   "url": "https://files.pythonhosted.org/packages/83/97/31bd8b8279e6935a0719f6910ced15e9d5a2cd554b253f6027ce1b5a1c2c/xxhash-4.0.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
-   "version": "4.0.1",
-   "wheel": "xxhash-4.0.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+   "uploaded": "2026-10-19T05:59:17.727313Z",
+   "url": "https://files.pythonhosted.org/packages/b2/c6/3a85fc0b821ed2dfcf6fb7cfdf07e0b261ada40374583a50abb3480f2863/xxhash-4.0.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+   "version": "4.0.2",
+   "wheel": "xxhash-4.0.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
   },
   {
    "approval": "dependency of software we chose: approved automatically (owner Telegram 28929)",
@@ -1001,7 +1020,7 @@
  ],
  "platform": "linux x86_64, manylinux wheels, CPython 3.12 (cp312)",
  "python": "3.12",
- "read": "2026-09-23",
- "root": "langgraph==1.2.12",
+ "read": "2026-11-04",
+ "root": "langgraph==1.2.19",
  "schema": "veldo.runtime-records/v1"
 }

@@ -1,0 +1,63 @@
+{
+ "info": {
+  "author": null,
+  "author_email": "Aviram Hassan <aviramyhassan@gmail.com>, Emanuele Giaquinta <emanuele.giaquinta@gmail.com>",
+  "bugtrack_url": null,
+  "classifiers": [
+   "Development Status :: 5 - Production/Stable",
+   "Intended Audience :: Developers",
+   "License :: OSI Approved :: Apache Software License",
+   "License :: OSI Approved :: MIT License",
+   "Operating System :: MacOS",
+   "Operating System :: Microsoft :: Windows",
+   "Operating System :: POSIX :: Linux",
+   "Programming Language :: Python",
+   "Programming Language :: Python :: 3",
+   "Programming Language :: Python :: 3.11",
+   "Programming Language :: Python :: 3.12",
+   "Programming Language :: Python :: 3.13",
+   "Programming Language :: Python :: 3.14",
+   "Programming Language :: Python :: 3.15",
+   "Programming Language :: Python :: Implementation :: CPython",
+   "Programming Language :: Python :: Implementation :: GraalPy",
+   "Programming Language :: Python :: Implementation :: PyPy",
+   "Programming Language :: Rust",
+   "Typing :: Typed"
+  ],
+  "description": "# ormsgpack\n\n![PyPI - Version](https://img.shields.io/pypi/v/ormsgpack)\n![PyPI - Python Version](https://img.shields.io/pypi/pyversions/ormsgpack)\n![PyPI - Downloads](https://img.shields.io/pypi/dm/ormsgpack)\n\normsgpack is a fast [MessagePack](https://msgpack.org/) serialization library for Python\nderived from [orjson](https://github.com/ijl/orjson), with native support for various\nPython types.\n\normsgpack follows semantic versioning and supports CPython, PyPy and GraalPy.\n\nLinks:\n\n- [Repository](https://github.com/ormsgpack/ormsgpack)\n- [Documentation](https://ormsgpack.readthedocs.io/)\n\n## Installation\n\npip\n\n```sh\npip install ormsgpack\n```\n\nuv\n\n```sh\nuv add ormsgpack\n```\n\nInstalling from a source distribution requires\n[Rust](https://www.rust-lang.org/) 1.81 or newer and\n[maturin](https://github.com/PyO3/maturin).\n\n## Quickstart\n\nThis is an example of serializing and deserializing an object:\n\n```python\n>>> import ormsgpack, datetime, numpy\n>>> event = {\n...     \"type\": \"put\",\n...     \"time\": datetime.datetime(1970, 1, 1),\n...     \"uid\": 1,\n...     \"data\": numpy.array([1, 2]),\n... }\n>>> ormsgpack.packb(event, option=ormsgpack.OPT_SERIALIZE_NUMPY)\nb'\\x84\\xa4type\\xa3put\\xa4time\\xb31970-01-01T00:00:00\\xa3uid\\x01\\xa4data\\x92\\x01\\x02'\n>>> ormsgpack.unpackb(_)\n{'type': 'put', 'time': '1970-01-01T00:00:00', 'uid': 1, 'data': [1, 2]}\n```\n\n## License\n\norjson was written by ijl <<ijl@mailbox.org>>, copyright 2018 - 2021, licensed\nunder both the Apache License, Version 2.0, and the MIT License.\n\normsgpack was forked from orjson by Aviram Hassan and is now maintained by Emanuele Giaquinta (@exg), licensed\nunder both the Apache License, Version 2.0, and the MIT License.\n\n",
+  "description_content_type": "text/markdown; charset=UTF-8; variant=GFM",
+  "docs_url": null,
+  "download_url": null,
+  "downloads": {
+   "last_day": -1,
+   "last_month": -1,
+   "last_week": -1
+  },
+  "dynamic": null,
+  "home_page": null,
+  "keywords": "fast, msgpack, dataclass, dataclasses, datetime",
+  "license": null,
+  "license_expression": "Apache-2.0 OR MIT",
+  "license_files": [
+   "LICENSE-APACHE",
+   "LICENSE-MIT"
+  ],
+  "maintainer": null,
+  "maintainer_email": null,
+  "name": "ormsgpack",
+  "package_url": "https://pypi.org/project/ormsgpack/",
+  "platform": null,
+  "project_url": "https://pypi.org/project/ormsgpack/",
+  "project_urls": {
+   "Homepage": "https://github.com/ormsgpack/ormsgpack"
+  },
+  "provides_extra": null,
+  "release_url": "https://pypi.org/project/ormsgpack/1.13.0/",
+  "requires_dist": null,
+  "requires_python": ">=3.11",
+  "summary": "Fast, correct Python msgpack library supporting dataclasses, datetimes, and numpy",
+  "version": "1.13.0",
+  "yanked": false,
+  "yanked_reason": null
+ }
+}

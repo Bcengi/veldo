@@ -1,0 +1,224 @@
+{
+ "schema": "veldo.closure-diff/v1",
+ "base": {
+  "closure": "proof/VELDO-0043/dependency-closure.json",
+  "root": "langgraph==1.2.12",
+  "read": "2026-09-23",
+  "registry_license_fields": "engine/runtime/langgraph-records.json at 67594919"
+ },
+ "new": {
+  "closure": "proof/VELDO-0248/dependency-closure.json",
+  "root": "langgraph==1.2.19",
+  "read": "2026-11-04"
+ },
+ "packages": 38,
+ "added": [],
+ "removed": [],
+ "moved": [
+  {
+   "name": "anyio",
+   "old": "4.15.1",
+   "new": "4.16.0"
+  },
+  {
+   "name": "certifi",
+   "old": "2026.7.22",
+   "new": "2026.10.23"
+  },
+  {
+   "name": "charset-normalizer",
+   "old": "3.5.1",
+   "new": "3.5.2"
+  },
+  {
+   "name": "httpcore2",
+   "old": "2.13.1",
+   "new": "2.16.0"
+  },
+  {
+   "name": "httpx2",
+   "old": "2.13.1",
+   "new": "2.16.0"
+  },
+  {
+   "name": "jsonpatch",
+   "old": "1.33",
+   "new": "1.42"
+  },
+  {
+   "name": "jsonpointer",
+   "old": "3.1.1",
+   "new": "3.8"
+  },
+  {
+   "name": "langchain-core",
+   "old": "1.6.4",
+   "new": "1.7.5"
+  },
+  {
+   "name": "langchain-protocol",
+   "old": "0.0.19",
+   "new": "0.0.20"
+  },
+  {
+   "name": "langgraph",
+   "old": "1.2.12",
+   "new": "1.2.19"
+  },
+  {
+   "name": "langgraph-checkpoint",
+   "old": "4.2.0",
+   "new": "4.3.1"
+  },
+  {
+   "name": "langgraph-prebuilt",
+   "old": "1.1.0",
+   "new": "1.1.1"
+  },
+  {
+   "name": "langgraph-sdk",
+   "old": "0.4.5",
+   "new": "0.4.12"
+  },
+  {
+   "name": "langsmith",
+   "old": "0.14.0",
+   "new": "0.14.17"
+  },
+  {
+   "name": "orjson",
+   "old": "3.12.0",
+   "new": "3.13.0"
+  },
+  {
+   "name": "ormsgpack",
+   "old": "1.12.2",
+   "new": "1.13.0"
+  },
+  {
+   "name": "pydantic",
+   "old": "2.13.5",
+   "new": "2.14.2"
+  },
+  {
+   "name": "pydantic_core",
+   "old": "2.46.5",
+   "new": "2.50.2"
+  },
+  {
+   "name": "tenacity",
+   "old": "9.1.4",
+   "new": "9.2.1"
+  },
+  {
+   "name": "truststore",
+   "old": "0.10.4",
+   "new": "0.10.5"
+  },
+  {
+   "name": "typing-inspection",
+   "old": "0.4.4",
+   "new": "0.4.5"
+  },
+  {
+   "name": "uuid_utils",
+   "old": "0.17.1",
+   "new": "0.19.0"
+  },
+  {
+   "name": "websockets",
+   "old": "16.1.1",
+   "new": "17.4"
+  },
+  {
+   "name": "xxhash",
+   "old": "4.0.1",
+   "new": "4.0.2"
+  }
+ ],
+ "unchanged": [
+  "PyYAML",
+  "annotated-types",
+  "distro",
+  "h11",
+  "httpcore",
+  "httpx",
+  "idna",
+  "packaging",
+  "requests",
+  "requests-toolbelt",
+  "sniffio",
+  "typing_extensions",
+  "urllib3",
+  "zstandard"
+ ],
+ "license_changed": [
+  {
+   "name": "jsonpatch",
+   "old": {
+    "basis": "license",
+    "registry_license": "Modified BSD License",
+    "registry_license_expression": null,
+    "spdx": "BSD-3-Clause"
+   },
+   "new": {
+    "registry_license": null,
+    "registry_license_expression": "BSD-3-Clause",
+    "spdx": "BSD-3-Clause"
+   },
+   "spdx_changed": false
+  },
+  {
+   "name": "tenacity",
+   "old": {
+    "basis": "license",
+    "registry_license": "Apache 2.0",
+    "registry_license_expression": null,
+    "spdx": "Apache-2.0"
+   },
+   "new": {
+    "registry_license": null,
+    "registry_license_expression": "Apache-2.0",
+    "spdx": "Apache-2.0"
+   },
+   "spdx_changed": false
+  }
+ ],
+ "wheel_tag_changed": [
+  {
+   "name": "jsonpatch",
+   "old": "jsonpatch-1.33-py2.py3-none-any.whl",
+   "new": "jsonpatch-1.42-py3-none-any.whl"
+  },
+  {
+   "name": "pydantic_core",
+   "old": "pydantic_core-2.46.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "new": "pydantic_core-2.50.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl"
+  },
+  {
+   "name": "uuid_utils",
+   "old": "uuid_utils-0.17.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "new": "uuid_utils-0.19.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+  }
+ ],
+ "source_changed": [
+  {
+   "name": "langsmith",
+   "old": "https://github.com/langchain-ai/langsmith-sdk",
+   "new": "https://github.com/langchain-ai/langsmith-python"
+  }
+ ],
+ "not_latest": {
+  "pydantic_core": {
+   "pinned": "2.50.2",
+   "latest": "2.50.3",
+   "why_not_latest": "pydantic 2.14.2 requires \"pydantic-core==2.50.2\""
+  },
+  "uuid_utils": {
+   "pinned": "0.19.0",
+   "latest": "1.2.0",
+   "why_not_latest": "langsmith 0.14.17 requires \"uuid-utils<1.0,>=0.12.0\""
+  }
+ },
+ "owner_approval_needed": []
+}
