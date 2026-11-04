@@ -476,8 +476,8 @@ def undelivered_grants(record=None):
 # agent_message item, never a tool result, a file or the prompt) that begins with FLAG_MARK. The asynchronous call
 # (request_user_input_async) is a flag, the synchronous one (request_user_input) a question that waits for an
 # answer: each is read in the form the qualify command's loopback probe found it in the exec JSON stream
-# (`flag_means` in the qualification record: the event type, the item type, and the path to the text, `$json`
-# reading a JSON-encoded string). A binary on which the asynchronous call does not reach the stream has the
+# (`flag_means` in the qualification record: the event type, the item type, the path to the tool's name, and the
+# path to the text, `$json` reading a JSON-encoded string). A binary on which the asynchronous call does not reach the stream has the
 # marked line as its means, with that reason, and the grant does not hold on it (flag_grant): never a grant the
 # receiver cannot read; nor does it hold unless the binary answers the synchronous question at once, with no
 # answers, when its input is closed after the prompt.
@@ -537,11 +537,15 @@ def _follow(value, path):
     return value
 
 
-def _form_text(event, form):
+def _form_text(event, form, tool):
+    """The text of `tool`'s call in `event` when the event has the recorded form: its type, its item's type, and
+    the tool's name where the probe found it (`name`, a path); else None."""
     if not isinstance(form, dict) or event.get('type') != form.get('type'):
         return None
     item = event.get('item')
     if form.get('item_type') is not None and (not isinstance(item, dict) or item.get('type') != form['item_type']):
+        return None
+    if not isinstance(form.get('name'), list) or _follow(event, form['name']) != tool:
         return None
     texts = [_follow(event, path) for path in form.get('text') or ()]
     texts = [t for t in texts if isinstance(t, str) and t]
@@ -559,7 +563,7 @@ def flags(event, means=None):
         found += [{'means': MARKED_LINE, 'text': t, 'synchronous': False} for t in marked_lines(item.get('text'))]
     forms = (means if means is not None else flag_means()).get('forms') or {}
     for tool, synchronous in ((FLAG_TOOL, False), (QUESTION_TOOL, True)):
-        text = _form_text(event, forms.get(tool))
+        text = _form_text(event, forms.get(tool), tool)
         if text is not None:
             found.append({'means': tool, 'text': text, 'synchronous': synchronous})
     return found
