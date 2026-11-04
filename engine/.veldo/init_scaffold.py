@@ -180,6 +180,9 @@ _FILES = [
     # VELDO-0141: every run's execution record, which control_launch.py writes and the API authority reads;
     # a runtime asset, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_execution_record.py",
+    # VELDO-0184: the file memory handed to every run whose role lists it, which control_launch.py and
+    # control_agent_config.py load; a runtime asset, no validator import, not REQUIRED_SUBSTRATE.
+    ".veldo/control_memory_file.py",
     ".veldo/control_launch_work.py",
     ".veldo/dispatch.py",
     ".veldo/work.py",
