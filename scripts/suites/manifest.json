@@ -1780,6 +1780,15 @@
    "resources": {
     "systemd_user_manager": 1
    }
+  },
+  {
+   "name": "131_veldo_0184_file_memory",
+   "file": "131_veldo_0184_file_memory.py",
+   "requires": [
+    "131_veldo_0184_file_memory"
+   ],
+   "regions": "Fifteen rows (VELDO-0184): the capability configuration's file_memory item, which the assistant roles' new revision lists always; two Claude Code turns at once on two accounts with auto memory on in exactly the memory record's directory through the generated flag settings and CLAUDE_CODE_DISABLE_AUTO_MEMORY unset, every other part of the baseline unchanged, and a role without the item keeping auto memory off; init memory paths naming the account profile's directory stopped binding_mismatch:engine_memory before the first turn; a version whose record lacks the form refused missing_evidence:engine_baseline:<version> and a missing index invalid_input:memory:file:absent (AC1); a Codex turn handed the directory as a workspace-write writable root and the index with the layout paragraph in its developer instructions, its own memory feature off, writing a new memory file and the index, which a later Claude Code turn loads and reads (AC2); each run's launch line naming the directory, the form and the index digest as loaded, before and after the editing run, every memory file read and write a tool call line with its input and result, no memory content in any event, line or receipt, and the handoff counts (AC3).",
+   "requires_note": "Only ROOT, expect and fast_temp. A real signed SQLite authority (VELDO-0073's support), the production conversation authority, VELDO-0174's conversation Line with real receiver subprocesses over fake pinned engines generated from VELDO-0174's (support/v174_journey.py), as another host's adapters (no worker group, no user manager), and VELDO-0182's fixture memory manifest; the shipped qualification records and proof/VELDO-0184/engine-memory-forms.json. No real engine, login, memory store, memory server or paid API. Writes only temporary fixtures."
   }
  ],
  "resource_capacities": {
