@@ -26,7 +26,8 @@
        "collaboration.wait_agent"
       ],
       "request_user_input_async": [
-       "request_user_input_async"
+       "request_user_input_async",
+       "request_user_input"
       ],
       "clock": [
        "clock__curr_time",
@@ -99,7 +100,8 @@
        "collaboration.wait_agent"
       ],
       "request_user_input_async": [
-       "request_user_input_async"
+       "request_user_input_async",
+       "request_user_input"
       ],
       "clock": [
        "clock__curr_time",
@@ -164,7 +166,8 @@
        "collaboration.wait_agent"
       ],
       "request_user_input_async": [
-       "request_user_input_async"
+       "request_user_input_async",
+       "request_user_input"
       ],
       "clock": [
        "clock__curr_time",
@@ -233,7 +236,8 @@
        "collaboration.wait_agent"
       ],
       "request_user_input_async": [
-       "request_user_input_async"
+       "request_user_input_async",
+       "request_user_input"
       ],
       "clock": [
        "clock__curr_time",
