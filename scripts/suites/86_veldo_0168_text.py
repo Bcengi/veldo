@@ -3,7 +3,9 @@
 The renderer input probes start with writer-produced snapshots. Choice/scope/subject probes call the
 renderers directly: unsupported decision choices are not publishable decisions. Intake's current
 question writer accepts ASCII project ids only; arbitrary prompt text exercises its production
-render_prompt seam, while the literal-escape project name exercises the real question send.
+render_prompt seam. Since VELDO-0181 the unclear route question is a decision request whose choices are
+picks, so it offers only project names a project can have; the literal escape reaches the real question
+send in the opening words of an open conversation of his, the one place his own text is offered there.
 """
 
 def _v168_suite():
@@ -331,30 +333,88 @@ def _v168_suite():
                 clock_ok.append(type(first['date']) is int and now < first['date'] < second['date'] < now + 3)
             check('intake/delivery', 'fixture messages follow the run clock and fractional enrollment time', all(clock_ok))
 
+            # VELDO-0181: the journal signer requests the unclear question's decision as a service member, as the
+            # service does (suite 68_veldo_0126 enrolls it the same way).
+            A.admin('steward', 'enroll_principal', {'principal': ing.inbox.journal_signer, 'principal_type': 'service',
+                                                    'roles': [], 'public_key': A.public[ing.inbox.journal_signer],
+                                                    'independence_group': ing.inbox.journal_signer, 'scope': '*'},
+                    enrollee=ing.inbox.journal_signer)
             intake = IN.Intake(ing.inbox.store, ing.inbox.membership if hasattr(ing.inbox, 'membership') else A.CM,
                                A.AC, ing.acquirer, ing.conn, domain=A.ids['domain_uuid'],
-                               projects=['project-a', 'literal<U+200B>'], api_edge='api-edge',
-                               journal_signer=ing.inbox.journal_signer, sign=ing.inbox.sign, asker=ing.presenter.edge)
+                               projects=['project-a', 'project-b'], api_edge='api-edge',
+                               journal_signer=ing.inbox.journal_signer, sign=ing.inbox.sign, asker=ing.presenter.edge,
+                               # VELDO-0181: the unclear route question is a decision request the journal signer
+                               # requests and the presenter shows on his chat.
+                               request_sign=lambda m: A.sign_as(ing.inbox.journal_signer, m),
+                               conversations=load('v168_conversation', organs / 'control_conversation.py').Conversations(
+                                   ing.inbox.store, ing.conn, domain=A.ids['domain_uuid'],
+                                   principal=ing.inbox.journal_signer, signer=ing.inbox.journal_signer,
+                                   sign=ing.inbox.sign, state_root=base / 'conversations'))
             # VELDO-0152 asks only after the factory PM returns an unclear route.
             neighbor152 = load('v168_intake_setup', Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py')
             neighbor152.factory(intake, A.ids, 'owner', A.sign_as)
-            incoming = H.deliver(api, token, owner, 'Please build a new calendar view')
-            # Keep this intake delivery after the run's signed membership enrollment.
-            incoming['message']['date'] = int(time.time()) + 1
+            # VELDO-0181: the unclear route question's choices are picks, so it offers project names a project can
+            # have; his own words reach it as the opening of an open conversation of his. That conversation is
+            # opened first (its first message routed to a new conversation), so every question offers it.
+            # A conversation opens on the default team's assistant role (suite 123's fixture of it).
+            CFG168 = load('v168_agent_config', organs / 'control_agent_config.py')
+            saved168 = {'role': 'assistant', 'engine': 'claude_code', 'native_tools': [], 'mcp': [], 'skills': [],
+                        'instructions': [], 'settings': {}, 'revision': 1, 'previous': None}
+            saved168['digest'] = CFG168.digest(saved168)
+            A.fixture('configuration:assistant', 'agent_configuration', saved168)
+            A.fixture('default-team:1', 'default_team_revision', {
+                'revision': 1, 'team': {'roles': {'assistant': {
+                    'kind': 'specialist', 'capability_configuration': {'role': 'assistant', 'revision': 1},
+                    'workers': ['assistant-worker'], 'responsibilities': ['assist'], 'expertise': ['general'],
+                    'proposal_permissions': [], 'engines': ['claude_code'],
+                    'budget': {'capacity': 4, 'invocations': 50, 'wall_seconds': 120, 'tokens': 1000000,
+                               'messages': 1000},
+                    'independence': {'distinct_from': []}}}},
+                'saved_by': 'owner', 'assertion_digest': 'sha256:fixture', 'previous': None,
+                'digest': 'sha256:default-one'})
+            A.fixture('default-team:head', 'default_team_head', {'revision': 1})
+            opening = H.deliver(api, token, owner, 'literal<U+200B> plan')
+            opening['message']['date'] = int(time.time()) + 1
             ing.acquirer.acquire()
             taken = intake.take_telegram()
+            first = [r for r in taken if r.get('outcome') == 'inbox' and r['command']['text'] == 'literal<U+200B> plan']
+            opened_conversation = [intake.route(dict(schema='veldo.intake_route/v1', proposal_id=r['proposal_id'],
+                                                     route='new_conversation', reason='His own conversation.'),
+                                                dispatch='fixture-pm-168', proposal_id=r['proposal_id']) for r in first]
+            opened_pids = {r['proposal_id'] for r in first}
+            taken = [r for r in taken if r.get('proposal_id') not in opened_pids]
             routes = [neighbor152.unclear(intake, result) for result in taken if result.get('outcome') == 'inbox']
+            incoming = H.deliver(api, token, owner, 'Please build a new calendar view')
+            # Keep this intake delivery after the run's signed membership enrollment.
+            incoming['message']['date'] = int(time.time()) + 2
+            ing.acquirer.acquire()
+            # A take returns the messages it took before again, marked repeated; only the new one is routed here.
+            later = [r for r in intake.take_telegram() if not r.get('repeated')]
+            taken += later
+            routes += [neighbor152.unclear(intake, result) for result in later if result.get('outcome') == 'inbox']
+            check('intake/delivery', 'his opening message opens his conversation',
+                  len(opened_conversation) == 1 and all(r.get('ok') for r in opened_conversation))
             check('intake/delivery', 'factory inbox proposals accept the unclear route',
                   bool(routes) and all(result.get('ok') for result in routes))
             questions = [json.loads(r[0]) for r in ing.conn.execute("SELECT data FROM entities WHERE kind='intake_question'")]
             delivered = []
             delivered_messages = []
+            # VELDO-0181: the question is shown as its decision request's presentation (the presenter's renderer, the
+            # one send path): the messages on his chat are the receipt's rendering, which shows the request's brief
+            # escaped exactly once, while the question keeps its prompt and the request its brief as written.
             for q in questions:
                 d = q.get('delivery') or {}
-                msg = api['bots'][token]['messages'].get((d.get('chat_id'), d.get('message_id')), {})
-                delivered_messages.append(msg)
-                delivered.append(msg.get('text') == expected(q['prompt'])
-                                 and 'literal<U+003C>U+200B>' in msg['text']
+                shown_q = ing.presenter.current(q.get('request') or 'none') or {}
+                msgs = [api['bots'][token]['messages'].get((d.get('chat_id'), mid), {}) for mid in d.get('message_ids') or []]
+                delivered_messages.append(msgs)
+                written = (shown_q.get('request') or {}).get('brief') or ''
+                joined = '\n'.join(m.get('text', '') for m in msgs)
+                delivered.append(bool(msgs) and d.get('request_id') == q.get('request')
+                                 and d.get('presentation_id') == shown_q.get('presentation_id')
+                                 and shown_q.get('outcome') == 'published'
+                                 and [m.get('text') for m in msgs] == shown_q.get('rendered')
+                                 and 'literal<U+200B>' in written and joined.count(expected(written)) == 1
+                                 and 'literal<U+003C>U+200B>' in joined and 'literal<U+200B>' not in joined
                                  and 'literal<U+200B>' in q['prompt'])
             if not (taken and delivered and all(delivered)) or os.environ.get('VELDO_0168_INTAKE_TRACE'):
                 print('VELDO-0168 intake observations: ' + json.dumps(dict(
@@ -362,7 +422,7 @@ def _v168_suite():
                     message_date=incoming['message']['date'],
                     owner_key_effective_at=[k.get('effective_at') for k in A.CM.authority_state(A.S, A.conn)['keyring']
                                             if k.get('principal') == 'owner']), sort_keys=True))
-            check('intake/delivery', 'real question writer and send escape once, retaining original prompt',
+            check('intake/delivery', 'real question presentation and send escape once, retaining original prompt',
                   bool(taken) and bool(delivered) and all(delivered))
 
             # Telegram trims the whitespace at both ends of a message: no message sent ends or begins in it,
@@ -430,7 +490,11 @@ def _v168_suite():
                 ('control_channel_presentation.py', 'Presenter.hint_owner', 'self', '_send'),
                 ('control_telegram_report.py', 'Reporter._send', 'self.edge', 'send'),
                 ('control_telegram_report.py', 'Reporter.report', 'self', '_send'),
-                ('control_intake.py', 'Intake._ask', 'self.asker', 'send'),
+                # VELDO-0181: intake's unclear route question is a decision request the presenter shows
+                # (Presenter._send above); VELDO-0175: a conversation's one-line answers and its turns' reply parts
+                # and status lines, each rendered once (the routes and assignments below).
+                ('control_conversation_channel.py', 'Messages.answer', 'edge', 'send'),
+                ('control_conversation_channel.py', 'Replies.deliver', 'self.edge', 'send'),
                 ('control_service_channel.py', 'Channel.tell_renewal', 'presenter', '_send'),
                 ('control_client_api.py', 'ServiceAuthority._call', 'CC', 'send'),
                 # Setup and passkey commands use the local authority socket, not a Telegram renderer.
@@ -464,11 +528,17 @@ def _v168_suite():
                 ('control_channel_presentation.py', 'Presenter._tell', 'TEXT.message'),
                 ('control_channel_presentation.py', 'Presenter._hint_text', 'TEXT.visible'),
                 ('control_service_channel.py', 'Channel.tell_renewal', 'V.TEXT.message'),
+                ('control_conversation_channel.py', 'parts', 'TEXT.visible'),
+                ('control_conversation_channel.py', 'status_line', 'TEXT.message'),
+                ('control_conversation_channel.py', 'Messages.answer', 'TEXT.message'),
             }
             wanted_assignments = {
                 ('control_channel_presentation.py', 'Presenter._tell', 'text', 'TEXT.message(text, free_text=False)'),
                 ('control_channel_presentation.py', 'Presenter._hint_text', 'line', 'TEXT.visible(line)'),
                 ('control_service_channel.py', 'Channel.tell_renewal', 'text', 'V.TEXT.message(text, free_text=False)'),
+                ('control_conversation_channel.py', 'parts', 'shown', 'TEXT.visible(TEXT.lines(reply), stats)'),
+                ('control_conversation_channel.py', 'status_line', 'text', 'TEXT.message(line, free_text=False)'),
+                ('control_conversation_channel.py', 'Messages.answer', 'sent', 'edge.send(chat, TEXT.message(text), reply_to=message)'),
             }
             # The repository's own doorbell (.veldo/request_doorbell.py, not installed into the engine) is
             # named outside the set by the specification.
