@@ -307,6 +307,10 @@ _FILES = [
     ".veldo/control_memory_adapter.py",
     ".veldo/control_memory_check.py",
     ".veldo/control_factory_setup_memory.py",
+    # VELDO-0183: the memory servers step, the store server each ChromaDB part's unit runs, and memory_kb's tools.
+    ".veldo/control_memory_servers.py",
+    ".veldo/control_memory_store.py",
+    ".veldo/control_memory_kb.py",
     # VELDO-0171: its API steps (the api edge, the API configurations and unit, Tailscale Serve) and
     # veldo factory passkey. An owner command too, so not REQUIRED_SUBSTRATE.
     ".veldo/control_factory_setup_api.py",
