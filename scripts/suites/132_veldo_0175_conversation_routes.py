@@ -1,5 +1,6 @@
 """VELDO-0175 AC2 and AC4: the factory PM's five routes, two of them to conversations, and the owner's typed and
-plain-words commands on a conversation from Telegram.
+plain-words commands on a conversation from Telegram (and AC1's closed refusal for a reply the PM reads after its
+conversation closed).
 
 Run: python3 scripts/selftest.py --suite 132_veldo_0175_conversation_routes
 
@@ -38,7 +39,8 @@ def _v175_routes_suite():
     ROWS = ('AC2/new-conversation', 'AC2/open-conversation', 'AC2/project-routes', 'AC2/unclear-offers',
             'AC2/route-input', 'AC2/conversation-refused', 'AC2/observability',
             'AC4/slash-role', 'AC4/slash-attach', 'AC4/attach-initial-branch', 'AC4/slash-close', 'AC4/plain-words', 'AC4/plain-none-is-a-turn',
-            'AC4/reads-only-his-words', 'AC4/other-member', 'AC4/no-reply', 'AC4/unknown-name', 'AC4/observability')
+            'AC4/reads-only-his-words', 'AC4/other-member', 'AC4/no-reply', 'AC4/unknown-name', 'AC4/observability',
+            'AC1/closed-before-reading')
     rows = {name: [] for name in ROWS}
 
     def check(name, label, condition):
@@ -511,6 +513,40 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
                   and (metrics.get('decided') or {}).get('command', 0) >= 3
                   and not any('switch this back' in json.dumps(e) for e in observed
                               if e.get('operation') == 'conversation'))
+
+            # AC1 with AC4 (fix round 2): "thanks" is held for the PM's reading, then his "/close" closes the
+            # conversation before the PM reads it. The reading settles the held message READ with the one
+            # stale_subject:conversation_closed line, and the PM's next run routes a later, unrelated message.
+            third, _msg = telegram('a third question, for a short talk')
+            run(route(third['proposal_id'], 'new_conversation'))
+            third_id = (intake.proposal(third['proposal_id']) or {}).get('conversation')
+            third_sent = end_with_reply(third_id, 'Here is the third answer.') if third_id else []
+            thanks, thanks_msg = telegram('thanks', reply=third_sent[0] if third_sent else None)
+            shut, _msg = telegram('/close', reply=third_sent[0] if third_sent else None)
+            count = len(turns(third_id)) if third_id else 0
+            mark = last_id()
+            record = run(reading(thanks.get('proposal_id'), 'none'))
+            lines = bot_lines(olga_chat, mark)
+            held = intake.proposal(thanks.get('proposal_id')) or {}
+            print('  VELDO-0175 closed before reading:', thanks.get('outcome'), shut.get('outcome'), record.get('state'),
+                  record.get('refusal'), held.get('state'), lines)
+            check('AC1/closed-before-reading', 'a held reply whose conversation closed before the reading is retired '
+                  'READ with one stale_subject:conversation_closed line and no turn [%s %s]'
+                  % (record.get('state'), held.get('state')),
+                  thanks.get('outcome') == 'reading' and shut.get('outcome') == 'command'
+                  and conversations.read(third_id)['status'] == 'closed' and held.get('state') == 'READ'
+                  and len(turns(third_id)) == count and len(lines) == 1
+                  and lines[0][2] == thanks_msg['message_id'] and 'stale_subject:conversation_closed' in lines[0][1])
+            mark = last_id()
+            later, _msg = telegram('an unrelated question about invoices')
+            record = run(route(later.get('proposal_id'), 'new_conversation'))
+            routed = intake.proposal(later.get('proposal_id')) or {}
+            check('AC1/closed-before-reading', 'a later unrelated message is routed by the PM\'s next run [%s]'
+                  % routed.get('state'),
+                  record.get('state') == 'proposed' and routed.get('state') == 'ROUTED'
+                  and not any(p.get('state') == 'AWAITING_READING' for p in intake._all(IN.PROPOSAL_KIND)))
+            check('AC1/closed-before-reading', 'the line is sent once: no second line to that message',
+                  not any(r == thanks_msg['message_id'] for _m, _t, r in bot_lines(olga_chat, mark)))
     except Exception as error:  # noqa: BLE001
         import traceback
         traceback.print_exc()

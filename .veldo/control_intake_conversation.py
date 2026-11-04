@@ -284,19 +284,21 @@ class Conversing:
             source = self._data(held['sources'][0], 'intake_source')
             where = self._where(source['command'])
             outcome, line, detail = 'turn', None, {}
-            if reading['command'] != 'none':
-                outcome = 'command'
-                try:
-                    self._owned_open(held['conversation'], held['principal'])
+            try:
+                # Every reading, `none` included: a conversation no longer his open one (closed after the reply
+                # was held, or gone) settles the held message READ by its named refusal, told once, no turn.
+                self._owned_open(held['conversation'], held['principal'])
+                if reading['command'] != 'none':
+                    outcome = 'command'
                     line, detail = self._steer(held['conversation'], held['principal'], reading['command'],
                                                reading.get('name'), held['sources'][0])
-                except self.route_refused as error:
-                    outcome, detail = 'refused', {'refusal': error.code}
-                    if refused_told(error.code):
-                        self._tell(where, self.refusal_line(error.code), kind='refusal',
-                                   conversation=held['conversation'])
-                    if error.code in ('stale_version', 'unsupported_configuration:conversations'):
-                        raise
+            except self.route_refused as error:
+                outcome, detail = 'refused', {'refusal': error.code}
+                if refused_told(error.code):
+                    self._tell(where, self.refusal_line(error.code), kind='refusal',
+                               conversation=held['conversation'])
+                if error.code in ('stale_version', 'unsupported_configuration:conversations'):
+                    raise
             params = dict(reading=dict(proposal_id=proposal_id, dispatch=dispatch, document=reading, outcome=outcome,
                                        detail=detail, version=version))
             changes, reads = self._route_plan(params)
@@ -314,7 +316,8 @@ class Conversing:
                     sequence=(done.get('turn') or {}).get('sequence'), command=reading['command'],
                     command_refusal=detail.get('refusal'),
                     reply_to=(source['command']['provenance'] or {}).get('reply_to_message_id'), **about)
-        return dict(ok=True, outcome=outcome if outcome != 'refused' else 'command_refused',
+        return dict(ok=True, outcome=outcome if outcome != 'refused' else (
+                        'command_refused' if reading['command'] != 'none' else 'refused'),
                     proposal_id=proposal_id, conversation=held['conversation'], detail=detail,
                     sequence=(done.get('turn') or {}).get('sequence'))
 
