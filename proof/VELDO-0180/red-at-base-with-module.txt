@@ -1,0 +1,48 @@
+suite 136 against the base 3fb0489b's .veldo modules with only the new control_conversation_project.py added, at HEAD 35cb35f4's suite
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  /tmp/tmp85yp_78i: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (
+  /tmp/tmp85yp_78i/proof4.json: criterion AC1 passed without evidence
+  VELDO-0180 detail: AC1/telegram-existing the owner's /project reply naming his project is recorded as a conversion of the conversation, the existing-project route [reading None]; intake's routing command carried out the factory's route document, built from the command and marked with its conversat
+  SELFTEST FAIL: VELDO-0180 AC1/telegram-existing
+  VELDO-0180 detail: AC1/objective-accepted the project's PM proposed the objective with his words as its outcome [None]; his own command accepted it (VELDO-0150), bound to its Telegram evidence; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC1/objective-accepted
+  VELDO-0180 detail: AC1/api-route conversations.make_project is a POST route of the published ROUTES table; it reaches intake as the edge-signed request carrying his command [404 None]; a new-project route: the proposal stays in the factory as NEW_PROJECT; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC1/api-route
+  VELDO-0180 detail: AC1/new-project-named-identity VELDO-0143's proposal from the command's own document settles with nothing asked [None None]; it names the command's project, identity and objective; the one judge reads it settled by his command [no_settled_decision:no_decision]; journey completes
+  SELFTEST FAIL: VELDO-0180 AC1/new-project-named-identity
+  VELDO-0180 detail: AC1/plain-words his reply is read by the PM (no typed command), and read as the project command it is his conversion [refused]; with no words after the name the objective is the conversation's first message; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC1/plain-words
+  VELDO-0180 detail: AC1/asks-only-without-identity with no identity his one answer is asked: the proposal is presented once [None None]; a later pass asks nothing again; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC1/asks-only-without-identity
+  VELDO-0180 detail: AC1/name-from-command a PM reading naming a project his words do not name is refused by name [None]; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC1/name-from-command
+  VELDO-0180 detail: AC1/not-owner another member's command is refused missing_authority:conversation_owner [invalid_input:request]; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC1/not-owner
+  VELDO-0180 detail: AC1/no-name a /project with no name is refused invalid_input:conversation_command:project_name [None]; and told in one line on Telegram; the API command with an empty name is refused by the same name [404 missing_evidence]; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC1/no-name
+  VELDO-0180 detail: AC1/out-of-scope a project outside his scope is refused unauthorized:project [404]; the factory project is refused invalid_input:factory_project [404]; a version he did not see is refused stale_version; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC1/out-of-scope
+  VELDO-0180 detail: AC1/injected-route journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC1/injected-route
+  VELDO-0180 detail: AC1/observability each conversion is recorded with its conversation, command and its route, the project route, the project and the digests it bound; conversions are counted by route and by command route, one asked a question, refusals by name; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC1/observability
+  VELDO-0180 detail: AC2/binding the objective binds the conversation id and the digests of its rendering and snapshot; both stored by digest under the project's state; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC2/binding
+  VELDO-0180 detail: AC2/history every turn so far, from the redacted records: both messages, the tool call and result, both replies; never shortened; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC2/history
+  VELDO-0180 detail: AC2/snapshot the workspace's files, the clone aside; the clone's local commits as a Git bundle against the trunk commit it was taken at; the bundle applies on trunk and carries the conversation's commit; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC2/snapshot
+  VELDO-0180 detail: AC2/context the PM run's input holds the first turn's message, as he wrote it; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC2/context
+  VELDO-0180 detail: AC2/pm-run the project's PM run carries the rendering and the snapshot as input artifacts, by their bound digests; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC2/pm-run
+  VELDO-0180 detail: AC2/first-build the first build run of the unit carries both input artifacts by their bound digests; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC2/first-build
+  VELDO-0180 detail: AC2/snapshot-mismatch journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC2/snapshot-mismatch
+  VELDO-0180 detail: AC2/stays-open the conversation stays open and points at the project; journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC2/stays-open
+  VELDO-0180 detail: AC2/observability journey completes: KeyError: 'path'
+  SELFTEST FAIL: VELDO-0180 AC2/observability
+  136_veldo_0180_conversation_projects             0 passed    2.97s
+selftest (PARTIAL, 1 of 198 suites): 26 passed, 21 failed in 2.97s

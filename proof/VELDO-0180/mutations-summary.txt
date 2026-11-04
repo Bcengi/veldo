@@ -1,0 +1,4 @@
+inputs180-last-message-only: baseline failed [], noop failed [], mutant failed ['VELDO-0180 AC2/history', 'VELDO-0180 AC2/context'], legs ['confined']
+launch180-snapshot-unchecked: baseline failed [], noop failed [], mutant failed ['VELDO-0180 AC2/snapshot-mismatch', 'VELDO-0180 AC2/observability'], legs ['confined']
+name180-read-not-his-words: baseline failed [], noop failed [], mutant failed ['VELDO-0180 AC1/name-from-command', 'VELDO-0180 AC1/injected-route', 'VELDO-0180 AC1/observability'], legs ['confined']
+route180-turn-reply-carried: baseline failed [], noop failed [], mutant failed ['VELDO-0180 AC1/injected-route', 'VELDO-0180 AC1/observability'], legs ['confined']
