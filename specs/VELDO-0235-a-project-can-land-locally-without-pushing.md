@@ -26,6 +26,7 @@ footprint:
   - "engine/.veldo/control_api*.py"
   - ".veldo/control_api*.py"
   - "engine/ui/src/features/**"
+  - "engine/ui/src/views/ProjectsView.vue"
   - "scripts/suites/*_veldo_0235_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -131,3 +132,7 @@ Pushing a locally landed commit later, other remotes or hosts than VELDO-0153 al
   Not implemented; the owner approves it before it is claimed.
 
 2026-11-04: approved by the owner, Telegram 39065 ("Yes approve all four"), with VELDO-0232, VELDO-0234, VELDO-0235 and core VELDO-3340. Status ready.
+
+2026-11-04: footprint widened by the lead after the independent review (proof/VELDO-0235/review-2026-11-04.md):
+engine/ui/src/views/ProjectsView.vue, the project screen AC3 requires to show the landing destination.
+Acceptance criteria unchanged.

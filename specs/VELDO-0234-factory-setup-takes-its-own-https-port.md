@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0171, VELDO-0130, VELDO-0227]
 placement: [engine, distribution]
-protected_paths: []
+protected_paths: ["scripts/gate_unconfined.json"]
 footprint:
   - "engine/.veldo/control_factory_setup*.py"
   - ".veldo/control_factory_setup*.py"
@@ -21,6 +21,7 @@ footprint:
   - "scripts/suites/*_veldo_0234_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/gate_unconfined.json"
   - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0234-factory-setup-takes-its-own-https-port.md"
   - "specs/index.md"
@@ -128,3 +129,7 @@ an installation already set up (that is a new setup).
   Not implemented; the owner approves it before it is claimed.
 
 2026-11-04: approved by the owner, Telegram 39065 ("Yes approve all four"), with VELDO-0232, VELDO-0234, VELDO-0235 and core VELDO-3340. Status ready.
+
+2026-11-04: footprint widened by the lead after the independent review (proof/VELDO-0235/review-2026-11-04.md):
+scripts/gate_unconfined.json, a protected path, for suite 127's entry (it drives the systemd user manager,
+the same reason as suite 117's entry). Needs the owner's approval at landing. Acceptance criteria unchanged.
