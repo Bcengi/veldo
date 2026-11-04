@@ -1,0 +1,41 @@
+== 128_veldo_0177_conversation_workspace (HEAD 391fc52c)
+  VELDO-0177 AC1 working directories: /dev/shm/v177-e1n8kcmt/workspace/state/conversations/a7937b64b8caa58f03721bb6bacf5c78cb235febe0e70b1b84cd99541461a08e/workspace /dev/shm/v177-e1n8kcmt/workspace/state/conversations/16367aacb67a4a017c8da8ab95682ccb390863780f7114dda0a0e0c55644c7c4/workspace outcomes: ['completed', 'completed']
+  VELDO-0177 AC2 first init tools: ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'Read', 'SendUserMessage', 'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write', 'mcp__alpha__echo']
+  VELDO-0177 AC2 second init tools: ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'Read', 'SendUserMessage', 'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write', 'mcp__beta__echo']
+  VELDO-0177 AC2 the turn record's tool calls: ['Bash', 'Edit', 'WebFetch']
+  VELDO-0177 AC2 codex outcome: ['completed']
+  128_veldo_0177_conversation_workspace           15 passed    3.18s
+selftest (PARTIAL, 1 of 191 suites): 41 passed, 0 failed in 3.18s
+== 129_veldo_0177_assistant_setup (HEAD 391fc52c)
+  VELDO-0177 setup: 0 set_up None
+  VELDO-0177 default team head 2, revision 2 roles ['assistant', 'assistant_codex', 'elaboration', 'implementation', 'independent_review', 'project_manager']
+  VELDO-0177 assistant tools: ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'Monitor', 'NotebookEdit', 'Read', 'SendUserMessage', 'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write']
+  VELDO-0177 assistant saves: [('setup-3ced1309-configuration-assistant', 'dmitry'), ('setup-3ced1309-configuration-assistant_codex', 'dmitry'), ('setup-3ced1309-assistant-team', 'dmitry')]
+  129_veldo_0177_assistant_setup                   4 passed    3.83s
+selftest (PARTIAL, 1 of 191 suites): 30 passed, 0 failed in 3.84s
+== 123_veldo_0174_conversations (HEAD 391fc52c)
+  VELDO-0174 detail: AC2/own-directory each engine runs in its own durable conversation directory
+  SELFTEST FAIL: VELDO-0174 AC2/own-directory
+  123_veldo_0174_conversations                    37 passed   10.65s
+selftest (PARTIAL, 1 of 191 suites): 63 passed, 1 failed in 10.65s
+== 127_veldo_0231_run_flags (HEAD 391fc52c)
+  VELDO-0231 AC1 latencies (s): 0.013, 0.014, 0.013, 0.014, 0.013, 0.013, 0.013, 0.014, 0.014, 0.013
+  127_veldo_0231_run_flags                        17 passed   33.96s
+selftest (PARTIAL, 1 of 191 suites): 43 passed, 0 failed in 33.96s
+== 86_veldo_0127_agent_configuration (HEAD 391fc52c)
+  VELDO-0127 live/claude detail: missing or stale live capture
+  SELFTEST FAIL: VELDO-0127 live/claude
+  VELDO-0127 live/codex detail: missing or stale live capture; Codex loopback tool observation missing or different; Codex loopback tool observation missing or different; Codex loopback tool observation missing or different; Codex loopback tool observation missing or different
+  SELFTEST FAIL: VELDO-0127 live/codex
+VELDO-0172 fake/capture:0127_agent_configuration: 9 fake lines compared, events ['claude:assistant', 'claude:control_response', 'claude:rate_limit_event', 'claude:result/success', 'claude:system/init', 'codex:item.completed', 'codex:thread.started', 'codex:turn.completed', 'codex:turn.started']
+  86_veldo_0127_agent_configuration               26 passed   36.46s
+selftest (PARTIAL, 1 of 191 suites): 52 passed, 2 failed in 36.46s
+== 106_veldo_0185_dispatch_setup (HEAD 391fc52c)
+VELDO-0172 fake/capture:0185_dispatch_setup: 8 fake lines compared, events ['claude:assistant', 'claude:control_response', 'claude:result/success', 'claude:system/init', 'codex:item.completed', 'codex:thread.started', 'codex:turn.completed', 'codex:turn.started']
+VELDO-0185 fresh/team detail: the default team is at revision 1, saved by the owner, with the four required roles on the walkthrough's engines [{'elaboration': ['claude_code'], 'implementation': ['claude_code'], 'independent_review': ['codex'], 'project_manager': ['claude_code']}]
+VELDO-0185 fresh/team detail: five owner revisions in the journal, each signed by the owner's command, its nonce its command id [[('setup-ee4d10da-configuration-project_manager', 'dmitry'), ('setup-ee4d10da-configuration-elaboration', 'dmitry'), ('setup-ee4d10da-configuration-implementation', 'dmitry'), ('setup-ee4d10da-configuration-independent_review', 'dmitry'), ('setup-ee4d10da-default-team', 'dmitry'), ('setup-ee4d10da-configuration-assistant', 'dmitry'), ('setup-ee4d10da-configuration-assistant_codex', 'dmitry')]]
+  SELFTEST FAIL: VELDO-0185 fresh/team: the default team is at revision 1, saved by the owner, with the four required roles on the walkthrough's engines [{'elaboration': ['claude_code'], 'implementation': ['claude_code'], 'independent_review': ['codex'], 'project_manager': ['claude_code']}]
+VELDO-0185 rerun/over-earlier-host detail: every journal record it added is one of these steps [['setup-fef5fa44-7c92cf3b-assistant-team']]
+  SELFTEST FAIL: VELDO-0185 rerun/over-earlier-host: every journal record it added is one of these steps [['setup-fef5fa44-7c92cf3b-assistant-team']]
+  106_veldo_0185_dispatch_setup                   18 passed   12.41s
+selftest (PARTIAL, 1 of 191 suites): 44 passed, 2 failed in 12.41s
