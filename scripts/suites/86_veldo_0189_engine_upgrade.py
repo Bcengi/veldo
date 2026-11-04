@@ -1764,15 +1764,21 @@ def _v189_suite():
             kill.manager.after_failed_start = damage_previous
             code, report = kill.setup()
             clear_failure()
-            blocked = recorded_previous(kill)
+            recorded = recorded_previous(kill)
+            # The blocked rows are the recorded ones whose module no longer has its previous bytes: every row of the
+            # damaged module. Other owning modules the upgrade changed (VELDO-0181 changed the settlement module)
+            # are recorded too and would restore; they are not blocked.
+            damaged = str(kill.home / 'bin' / 'control_channel_activation.py')
+            blocked = [r for r in recorded if S.module_digest(r[2]) != r[3]] if isinstance(recorded, list) else []
             detail = report.get('detail', '')
             check(RP, 'restore refusal and forward recovery are in the owner answer',
                   code == 1 and 'ownership_restore_differs' in detail and 're-run setup forward' in detail)
             check(RP, 'every blocked ownership row is named in the answer',
-                  len(blocked) >= 2 and all(value in detail and module in detail for _, value, module, _, _ in blocked))
+                  len(blocked) >= 2 and blocked == [r for r in recorded if r[2] == damaged]
+                  and all(value in detail and module in detail for _, value, module, _, _ in blocked))
             check(RP, 'a refused restore leaves all bindings and records intact',
-                  blocked and all(r[5] == next((b[4] for b in blocked if b[0:2] == r[0:2]), r[5])
-                                  for r in read_store(kill.store, S.entity_owners)))
+                  recorded and all(r[5] == next((b[4] for b in recorded if b[0:2] == r[0:2]), r[5])
+                                   for r in read_store(kill.store, S.entity_owners)))
             # Restore the edited fixture bytes; the refused transaction itself changes no row.
             path = kill.home / 'bin' / 'control_channel_activation.py'
             path.write_bytes(saved['entries'][str(path)][2])
