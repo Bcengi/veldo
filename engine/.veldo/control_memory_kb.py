@@ -37,6 +37,11 @@ TOOLS = {
 # cli.py's defaults for the optional arguments it always passes.
 DEFAULTS = {'n': 5, 'classification': 'BP', 'pattern': '*.md', 'chat_id': '', 'limit': 20}
 EVERY = ('kb.store', 'search_all')
+# VELDO-0187: every kb function call() may reach, by name (TOOLS' functions and EVERY's), so each attribute it looks up
+# is one of these and the census of claim and station contract writers (VELDO-0169) reads them all. A name outside it
+# is refused, never looked up.
+FUNCTIONS = ('search', 'search_all', 'index_file', 'index_directory', 'index_conversation', 'get_stats',
+             'list_documents', 'delete')
 LEFT_OUT = ('setup-passphrase',)
 _client = []
 
@@ -63,6 +68,14 @@ def client():
     return _client[0]
 
 
+def _function(module, attribute):
+    """The kb function `attribute` of `module`, one of FUNCTIONS; KeyError for any other name."""
+    for known in FUNCTIONS:
+        if known == attribute:
+            return getattr(importlib.import_module(module), known)
+    raise KeyError('not a memory_kb function: ' + str(attribute))
+
+
 def call(name, arguments):
     """One call: the function its subcommand calls, with the tool's input. Raises KeyError for an unknown tool
     or input and ValueError for a missing one."""
@@ -83,9 +96,8 @@ def call(name, arguments):
             if given.get('classifications') else None
         if given.get('collection'):
             return store.search(given['collection'], given['query'], n_results=int(given['n']), classifications=listed)
-        return getattr(importlib.import_module(EVERY[0]), EVERY[1])(given['query'], n_results=int(given['n']),
-                                                                    classifications=listed)
-    target = getattr(store, attribute)
+        return _function(*EVERY)(given['query'], n_results=int(given['n']), classifications=listed)
+    target = _function(module, attribute)
     if name == 'index-file':
         return target(given['path'], classification=given['classification'])
     if name == 'index-dir':

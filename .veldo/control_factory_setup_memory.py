@@ -106,6 +106,12 @@ def _stored(plan, memory, ids, S, conn, journal, owner_sign, send=None):
                 metrics=dict(memory_steps_done=1, memory_revisions=1, memory_checks_passed=len(checks)))
 
 
+# VELDO-0187: every input `veldo memory kb` takes (the fields of control_memory_kb.TOOLS, by name), so the census of
+# claim and station contract writers (VELDO-0169) reads each attribute of the parsed arguments servers_main reads.
+KB_INPUTS = ('query', 'collection', 'n', 'classifications', 'path', 'classification', 'pattern', 'message', 'chat_id',
+             'limit', 'doc_id')
+
+
 def servers_main(args):
     """VELDO-0183: `bridge`, `kb`, `extract` and `servers`."""
     MS = organ('control_memory_servers')
@@ -117,7 +123,10 @@ def servers_main(args):
         if args.action == 'kb':
             KB = organ('control_memory_kb')
             fields = KB.TOOLS[args.subcommand][2]
-            arguments = {k: getattr(args, k) for k in fields if getattr(args, k, None) is not None}
+            unread = sorted(set(fields) - set(KB_INPUTS))
+            if unread:
+                raise KeyError('unknown input: ' + ', '.join(unread))
+            arguments = {k: getattr(args, k) for k in KB_INPUTS if k in fields and getattr(args, k, None) is not None}
             if 'path' in arguments:
                 arguments['path'] = os.path.abspath(arguments['path'])
             result = MS.kb(root, args.subcommand, arguments)

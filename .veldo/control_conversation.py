@@ -115,6 +115,11 @@ SENT_SCHEMA = 'veldo.conversation_message/v1'
 # VELDO-0181: `decision`, a presentation of a question the conversation raised, sent in it but never its turn's reply.
 SENT_KINDS = ('reply', 'status', 'answer', 'refusal', 'decision')
 OPERATIONS = OWNER_OPERATIONS + (DISPATCH, DEFER, END, FLAG, NOTE, SENT, POINT, CAPTURE)
+# VELDO-0187 (VELDO-0169's census): the operations that hand a project's data to a conversation's runs (an attach,
+# which clones the project) or move its work into a project (VELDO-0180's pointing). Each asks the Gate's one project
+# check (`project_problems`) inside the write transaction, as the claim organ does for a handout; every other
+# operation writes the conversation's own records under the owner and service checks above.
+PROJECT_OPERATIONS = (ATTACH, POINT)
 # VELDO-0177: the workspace under the conversation's directory, the attached projects' clones under it, and the
 # receiver's refusal of a turn launched anywhere else.
 WORKSPACE = 'workspace'
@@ -341,6 +346,17 @@ def attach_authority(conn, member, record, project):
     return target
 
 
+_ELIGIBILITY = []
+
+
+def project_problems(conn, project):
+    """VELDO-0187: the Gate's one project check of `project` on `conn` (control_eligibility.Gate.project_named_problems):
+    (refusals, {entity id: version} read). Asked by each of PROJECT_OPERATIONS before it writes."""
+    if not _ELIGIBILITY:
+        _ELIGIBILITY.append(_organ('control_eligibility'))
+    return _ELIGIBILITY[0].Gate(S, conn, domain_uuid=None, repository_uuid=None).project_named_problems(project)
+
+
 def _int(value):
     return type(value) is int
 
@@ -422,6 +438,14 @@ def transition(conn, params, before):
             raise Refused('stale_subject:conversation_closed')
         if not all(_text(params.get(k)) for k in ('project', 'route', 'proposal', 'command')):
             raise Refused('invalid_input:conversation_project')
+        refusals, _read = project_problems(conn, params['project'])
+        if params['route'] == 'new_project':
+            # A new project's conversion names a project the store does not hold yet (its own decision makes it,
+            # VELDO-0143): the one check finds exactly that, or the name is no longer new.
+            if refusals != ['missing_authority:project'] or _row(conn, 'project:' + params['project']) is not None:
+                raise Refused('stale_subject:project_exists', params['project'])
+        elif refusals:
+            raise Refused(refusals[0], params['project'])
         record.setdefault('projects', []).append({k: params[k] for k in ('project', 'route', 'proposal', 'command')}
                                                  | {'at': now})
         record['version'] += 1
@@ -437,17 +461,14 @@ def transition(conn, params, before):
             raise Refused('stale_version')
         if record.get('status') != 'open':
             raise Refused('stale_subject:conversation_closed')
-        if operation == CLOSE:
-            record.update(status='closed', closed_at=now)
-        elif operation == ROLE:
-            role = params.get('role')
-            if not _text(role):
-                raise Refused('invalid_input:conversation_role')
-            role_at(conn, role)
-            record['role'] = role
-        else:
+        if operation == ATTACH:
             project = params.get('project')
             target = attach_authority(conn, member, record, project)
+            # VELDO-0187: an attach hands the project's data to the conversation's runs (its clone), so it asks the
+            # Gate's one project check after the owner's authority, as every other handout does.
+            refusals, _read = project_problems(conn, project)
+            if refusals:
+                raise Refused(refusals[0], str(project))
             record['project'] = project
             # VELDO-0177 AC3: the clone this attach takes, at the trunk commit read for it, beside every earlier one.
             repository = target['data'].get('execution_repository')
@@ -460,6 +481,16 @@ def transition(conn, params, before):
                     raise Refused('invalid_input:conversation_attach')
                 record.setdefault('attachments', []).append(
                     {'project': project, 'repository': repository, 'commit': commit, 'clone': path, 'at': now})
+            record['version'] += 1
+            return {cid: {'kind': KIND, 'data': record}}
+        if operation == CLOSE:
+            record.update(status='closed', closed_at=now)
+        else:
+            role = params.get('role')
+            if not _text(role):
+                raise Refused('invalid_input:conversation_role')
+            role_at(conn, role)
+            record['role'] = role
         record['version'] += 1
         return {cid: {'kind': KIND, 'data': record}}
     if operation == MESSAGE:
