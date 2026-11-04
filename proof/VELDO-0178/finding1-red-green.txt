@@ -13,3 +13,13 @@ RED: at 6f27a5b5's production modules with the strengthened suite:
   133_veldo_0178_conversation_api                 15 passed    3.05s
 selftest (PARTIAL, 1 of 195 suites): 41 passed, 1 failed in 3.05s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
+
+GREEN: with the fix (control_api_models_scope.conversation_of decides the dispatch index by its unit and station, a
+reservation by its conversation context or a policy by the conversation its subject names, and an intake source or
+reading proposal by the conversation it names):
+  VELDO-0178 opened: 200 None c-0042fd70ce7fd06a06a4 200 c-8682aab9a0a1d5551be0
+  VELDO-0178 midway: True dispatch/c-0042fd70ce7fd06a06a4/9e4bc15b30394aa089c740542b3b49b6
+  VELDO-0178 ended: True completed 8 ended
+  133_veldo_0178_conversation_api                 16 passed    3.04s
+selftest (PARTIAL, 1 of 195 suites): 42 passed, 0 failed in 3.04s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

@@ -6,8 +6,11 @@ No withheld identity is logged or returned, including in redaction and integrity
 
 VELDO-0178: a conversation has no project; its scope is its owner. A conversation's records (the conversation,
 its turns, the messages sent in it, the answers kept under the owner's messages and a flag delivered to it) and the
-dispatch of one of its turns are visible to the conversation's owner alone, whatever the reader's scope, the
-universal one included; anyone else is withheld them as `conversation_owner`.
+dispatch of one of its turns, with every record of that turn's run (its unit's dispatch index, active or released,
+its reservations, and the policy a conversation's subject names) and the intake records naming it (the turn's intake
+source, a reading proposed in it), are visible to the conversation's owner alone, whatever the reader's scope, the
+universal one included; anyone else is withheld them as `conversation_owner`. Each is decided from its own link to
+its conversation, never from a field its run's end clears.
 """
 import copy
 import json
@@ -36,13 +39,37 @@ def conversation_of(conn, kind, data):
         found = data.get('conversation')
         # A flag delivered to no conversation (undelivered) belongs to none; every other record names one.
         return found if isinstance(found, str) else (None if kind == 'conversation_flag' else '')
-    if kind == 'dispatch_active' and isinstance(data.get('dispatch_id'), str):
-        row = conn.execute('SELECT kind, data FROM entities WHERE id=?', ('dispatch:' + data['dispatch_id'],)).fetchone()
-        return conversation_of(conn, row[0], json.loads(row[1])) if row and row[0] == 'dispatch' else None
+    if kind == 'dispatch_active':
+        # Review-2026-11-04 finding 1: decided from its unit and station, which it keeps when its run ends and the
+        # index is released (dispatch_id None). A conversation turn's index is the only one with no repository and
+        # station `turn` (control_dispatch's contract rule); its unit is the conversation.
+        if data.get('station') == 'turn' and data.get('repository') is None:
+            return data.get('unit') if isinstance(data.get('unit'), str) else ''
+        if isinstance(data.get('dispatch_id'), str):
+            row = conn.execute('SELECT kind, data FROM entities WHERE id=?',
+                               ('dispatch:' + data['dispatch_id'],)).fetchone()
+            return conversation_of(conn, row[0], json.loads(row[1])) if row and row[0] == 'dispatch' else None
+        return None
     if kind == 'dispatch':
         contract = data.get('contract') if isinstance(data.get('contract'), dict) else {}
         if contract.get('subject_kind') == 'conversation':
             return contract.get('unit') if isinstance(contract.get('unit'), str) else ''
+    if kind == 'subscription_reservation':
+        # A turn's worker and invocation reservations name the conversation as their unit (control_reservations'
+        # conversation context, kept when retired); a policy whose subject is a conversation is that conversation's.
+        context = data.get('context') if isinstance(data.get('context'), dict) else {}
+        if context.get('subject_kind') == 'conversation':
+            return context.get('unit') if isinstance(context.get('unit'), str) else ''
+        if (data.get('type') == 'policy' and data.get('scope') in ('project', 'unit')
+                and conversation_owner(conn, data.get('subject')) is not None):
+            return data['subject']
+        return None
+    if kind in ('intake_source', 'intake_proposal'):
+        # A message naming a conversation (its turn's intake source) and a reading proposed in one name it.
+        context = data.get('context') if isinstance(data.get('context'), dict) else {}
+        for found in (context.get('conversation'), data.get('conversation')):
+            if isinstance(found, str):
+                return found
     return None
 
 
