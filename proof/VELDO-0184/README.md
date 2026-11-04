@@ -36,7 +36,7 @@ Built:
 - control_engine_claude FILE_MEMORY is the form read from the 2.1.281 bytes. The binary takes `autoMemoryDirectory`
   from policySettings, flagSettings, trusted local or project settings, then userSettings. CLAUDE_CODE_DISABLE_AUTO_MEMORY
   turns auto memory off. The init event's `memory_paths` is {auto, team}.
-- A run that lists the item gets `autoMemoryEnabled` true and `autoMemoryDirectory` set in the generated `--settings`
+- A run that lists the item gets `autoMemoryEnabled` true and `autoMemoryDirectory` set in the generated settings
   file (flagSettings). CLAUDE_CODE_DISABLE_AUTO_MEMORY is removed from the baseline environment and from every other
   source the launch carries. Nothing else in the baseline changes.
 - The 2.1.281 entry of the qualification record lists the form. A version whose entry lacks it is refused

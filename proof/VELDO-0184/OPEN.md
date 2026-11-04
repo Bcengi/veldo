@@ -19,7 +19,7 @@
 
 3. A rule I broke. I ran suite 126_veldo_0230_qualify_reproduces once, at 19d10614, without first reading that
    it runs the qualified real binaries offline (its docstring: extractor reads, Codex `features list` and
-   `debug models --bundled`, a loopback request, and a Claude Code init probe in empty profiles). The build rules
+   `debug models` on its bundled catalog, a loopback request, and a Claude Code init probe in empty profiles). The build rules
    say never launch a real engine. No account login or profile was used (empty scratch profiles), and nothing
    reached a paid API (offline and loopback only), but the real binaries did run. I did not run it again. Its
    result: qualify/reproduces red on both qualification records in both runtime copies and on

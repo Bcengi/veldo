@@ -1,4 +1,4 @@
-Suites run alone (python3 scripts/selftest.py with the suite option, each inside systemd-run --user --scope -p MemoryMax=8G -p MemorySwapMax=0), at 0b3b30f6:
+Suites run alone (python3 scripts/selftest.py with the suite option, each in a systemd user scope with MemoryMax=8G and MemorySwapMax=0), at 0b3b30f6:
   131_veldo_0184_file_memory: 15 rows passed in 43.86s, failed: none
   123_veldo_0174_conversations: 38 rows passed in 9.98s, failed: none
   127_veldo_0231_run_flags: 17 rows passed in 33.91s, failed: none
