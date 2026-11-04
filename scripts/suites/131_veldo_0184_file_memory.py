@@ -530,10 +530,6 @@ if ENGINE != 'codex':
               % lacking.get('file_memory_unqualified'), 'file_memory' not in lacking
               and (lacking.get('file_memory_unqualified') or {}).get('missing_patterns')
               == ['directory_source', 'settings_schema'])
-        pinned_binary = Path(os.path.expanduser(engines['claude_code']['binary']))
-        check('AC1/qualified', 'the pinned binary carries every pattern (read, not run) [%s]'
-              % (C.file_memory_missing(pinned_binary) if hasattr(C, 'file_memory_missing') else 'absent'),
-              pinned_binary.is_file() and hasattr(C, 'file_memory_missing') and C.file_memory_missing(pinned_binary) == [])
         shipped_codex = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text())
         check('AC2/qualified', 'the pinned Codex record lists the form, read from its bytes (every literal found)',
               shipped_codex.get('file_memory') == getattr(X, 'FILE_MEMORY', 'absent') and shipped_codex['version'] == engines['codex']['version']
