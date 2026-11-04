@@ -25,7 +25,7 @@ and in this command's output; a Claude Code tool not on the in-run list is outwa
 classification). EVALUATED AND USED IF USEFUL (Telegram 38878): every new item a binary brings (a Codex feature
 on by default the classification does not name or a feature, option, reader or grant the replaced binary did not
 have; a Claude Code tool, credential or environment name, option, stream message, tool-free frame, field naming a
-tool, or `_host` routing switch the replaced binary or record did not have) is listed in
+tool, `_host` routing switch, or built-in plugin the replaced binary or record did not have) is listed in
 the record (`new_capabilities`) and in the output with its decision from runtime/capability-decisions.json:
 granted with its reason, off with the written rule it breaks, or not applicable; one with no decision there is
 unevaluated and not granted. A granted Codex feature stays on at launch; nothing new ever blocks one.
@@ -221,11 +221,33 @@ def write(root, name, content, written):
         written.append(str((directory / name).relative_to(root)))
 
 
+BUILTIN_REGISTRAR = re.compile(rb'builtinPluginsInitialized=!0')
+BUILTIN_REGISTRATION = re.compile(rb'\("([a-z0-9][a-z0-9-]*)",\(\)=>import\.meta\.require\(')
+
+
+def registered_plugins(executable):
+    """Every built-in plugin the binary registers, read from its bytes: the registrar that sets
+    builtinPluginsInitialized and registers each module by name (`<registrar>("<name>",()=>import.meta.require(
+    "<chunk>"))`). A module decides for itself whether it loads (its isAvailable: 2.1.317's cc-plugin-sec-default
+    seats itself only for a Team or Enterprise organization or a machine with managed settings), so the probe's
+    empty, logged-out profile does not show every plugin a role-bound run on a real account loads. ['<name>@builtin']."""
+    data = Path(executable).read_bytes()
+    names = set()
+    for found in BUILTIN_REGISTRAR.finditer(data):
+        end = data.find(b'\nexport{', found.end())
+        body = data[found.end():end if 0 < end - found.end() < 20000 else found.end() + 20000]
+        names.update(name.decode() for name in BUILTIN_REGISTRATION.findall(body))
+    if not names:
+        raise SystemExit('qualify: %s registers no built-in plugin this reader finds (its registrar moved)' % executable)
+    return sorted(name + '@builtin' for name in names)
+
+
 def claude_builtins(executable, baseline):
     """VELDO-0127's reading of what Claude Code loads of its own beyond the baseline: the init event of one
     probe (the empty user message that queries nothing, answered before any model request, so no login is
     needed), run in a fresh empty profile with the baseline's environment and settings, the bundled skills
-    removed and skills listed. ({plugins}, {skills}): its built-in plugins and the skills left."""
+    removed and skills listed. ({plugins}, {skills}): its built-in plugins (those the probe loads and every one
+    the binary registers, `registered_plugins`) and the skills left."""
     import tempfile
     with tempfile.TemporaryDirectory(prefix='veldo-qualify-claude-') as temp:
         root = Path(temp)
@@ -248,7 +270,8 @@ def claude_builtins(executable, baseline):
         except ValueError:
             continue
         if isinstance(event, dict) and event.get('type') == 'system' and event.get('subtype') == 'init':
-            return (sorted(p['source'] for p in event.get('plugins') or []), sorted(event.get('skills') or []))
+            return (sorted(set(p['source'] for p in event.get('plugins') or []) | set(registered_plugins(executable))),
+                    sorted(event.get('skills') or []))
     raise SystemExit('qualify: %s printed no init event to the probe' % executable)
 
 
@@ -274,6 +297,34 @@ def claude_record(root, executable):
                  tool_classification=tools['tool_classification'], tool_registry=tools['tool_registry'])
     return {'engine': 'claude_code', 'note': CLAUDE_NOTE, 'schema': C.QUALIFICATION_SCHEMA, 'spec_id': 'VELDO-0060',
             'versions': {version: entry}}
+
+
+def builtin_plugins(plugins, previous, carried, same, decisions):
+    """VELDO-0230 AC3: the built-in plugins split by their evaluation. One the replaced record already held keeps
+    its reading (turned off, or accepted); a new one is read by its decision in runtime/capability-decisions.json
+    (claude_code `plugins`): granted is accepted (left on; the init comparison accepts it present or absent, since
+    the account may seat it whatever the settings say); off, not applicable or unevaluated is turned off.
+    (engine_plugins, accepted_plugins, [new item])."""
+    previous = previous or {}
+    held = set(previous.get('engine_plugins') or ()) | set(previous.get('accepted_plugins') or ())
+    # Re-qualifying the same binary keeps the items the record listed; a plugin the record held no reading for
+    # (a discovery this reader did not make before) is new on either path.
+    fresh = newer(plugins, held if previous else None, carried, 'plugins', same) | (
+        set(plugins) - held if previous else set())
+    items = decided(decisions, 'claude_code', 'plugins', fresh)
+    granted = {i['name'] for i in items if i['decision'] == 'granted'} | {
+        name for name in plugins if name not in fresh and name in set(previous.get('accepted_plugins') or ())}
+    return sorted(set(plugins) - granted), sorted(granted), items
+
+
+def previous_plugins(root):
+    """The replaced Claude Code record's built-in plugin readings, or None."""
+    try:
+        record = json.loads((Path(root) / '.veldo/runtime/claude-qualification.json').read_text())
+        entry = next(iter(record['versions'].values()))
+        return {k: entry[k] for k in ('engine_plugins', 'accepted_plugins') if k in entry}
+    except (OSError, ValueError, KeyError, StopIteration, TypeError, AttributeError):
+        return None
 
 
 def fixture_text(record):
@@ -547,6 +598,7 @@ def main(argv=None):
         known_tools = set()
     before = previous_tables(root)
     forms_before = previous_forms(root)
+    plugins_before = previous_plugins(root)
     codex_before, claude_before = previous_new(root, 'codex'), previous_new(root, 'claude_code')
     try:
         decisions = json.loads((root / DECISIONS).read_text())
@@ -600,6 +652,11 @@ def main(argv=None):
             'decision': 'not_applicable', 'reason': 'Veldo passes only its qualified flags and baseline options'}))
     entry['stream_forms'], found = stream_forms(root, forms_before, claude_before[1], same, decisions)
     entry['new_capabilities'] += found
+    entry['engine_plugins'], accepted, found = builtin_plugins(entry['engine_plugins'], plugins_before,
+                                                               claude_before[1], same, decisions)
+    if accepted:
+        entry['accepted_plugins'] = accepted
+    entry['new_capabilities'] += found
     write(root, 'claude-qualification.json', text(claude_qualification), written)
     fixtures(root, codex, written)
     codex_record = json.loads((root / '.veldo/runtime/codex-qualification.json').read_text())
@@ -628,6 +685,8 @@ def main(argv=None):
             or 'none'))
     print('claude_code built-in plugins and skills turned off in a role-bound run: %s; %s'
           % (', '.join(entry['engine_plugins']) or 'none', ', '.join(entry['engine_skills']) or 'none'))
+    print('claude_code built-in plugins granted (left on, accepted in the init event): %s'
+          % (', '.join(entry.get('accepted_plugins') or ()) or 'none'))
     for line in written:
         print('wrote ' + line)
     return 0

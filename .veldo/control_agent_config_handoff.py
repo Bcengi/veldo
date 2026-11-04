@@ -230,6 +230,13 @@ def difference(event, wanted, builtin=()):
                 return 'configuration_stop:' + field
             if field == 'mcp_servers' and any(v.get('status') != 'connected' for v in value):
                 return 'configuration_stop:mcp_servers'
+            if field == 'plugins':
+                # A built-in plugin the qualification grants (`accepted_plugins`) loads by the account, not by
+                # Veldo's settings (2.1.317's cc-plugin-sec-default: Team and Enterprise organizations), so it
+                # is accepted present or absent; every other plugin is compared.
+                accepted = set(wanted.get('accepted_plugins') or ())
+                value = [v for v in value if (v.get('source') if isinstance(v.get('source'), str)
+                                              else v['name'] + '@builtin') not in accepted]
             value = [v['name'] for v in value]
         if field == 'tools' and set(value) - set(wanted[field]):
             return 'configuration_stop:unexpected_tool'
@@ -246,6 +253,9 @@ def difference(event, wanted, builtin=()):
 # the built-in skills the disableBundledSkills setting leaves (skillOverrides "off" hides each from the model
 # and from typing; the setting removes the bundled ones). A role-bound run turns every one off in its
 # generated settings; one a later version adds reaches the init comparison and stops it until requalified.
+# VELDO-0230 AC3: qualify reads every built-in plugin the binary registers (not only those an empty, logged-out
+# profile loads) and evaluates each; one granted is `accepted_plugins`, left on and accepted in the init event
+# whether the account seats it or not; every other one is in `engine_plugins` and turned off.
 SETTINGS_FILE = 'settings.json'
 
 
@@ -257,8 +267,12 @@ def claude(extra, capability, inventory, config, *, engine):
     if SETTINGS_FILE not in extra['files']:
         raise Refused('missing_evidence:engine_settings')
     plugins, skills = engine.get('engine_plugins'), engine.get('engine_skills')
-    if not all(isinstance(names, list) and all(isinstance(n, str) for n in names) for names in (plugins, skills)):
+    accepted = engine.get('accepted_plugins', [])
+    if not all(isinstance(names, list) and all(isinstance(n, str) for n in names)
+               for names in (plugins, skills, accepted)) or set(plugins) & set(accepted):
         raise Refused('missing_evidence:engine_settings')
+    if accepted:
+        wanted['accepted_plugins'] = sorted(accepted)
     settings = json.loads(extra['files'][SETTINGS_FILE])
     settings.update(enabledPlugins={name: False for name in plugins}, disableBundledSkills=True,
                     skillOverrides={name: 'off' for name in skills})

@@ -5,6 +5,9 @@
  "spec_id": "VELDO-0060",
  "versions": {
   "2.1.317": {
+   "accepted_plugins": [
+    "cc-plugin-sec-default@builtin"
+   ],
    "authentication": {
     "init_api_key_source": "none",
     "mode": "subscription",
@@ -47,9 +50,18 @@
    },
    "engine_plugins": [
     "cc-plugin-agents-md@builtin",
+    "cc-plugin-claude-platform@builtin",
+    "cc-plugin-claude-test@builtin",
+    "cc-plugin-diff@builtin",
+    "cc-plugin-easel@builtin",
+    "cc-plugin-mermaid@builtin",
+    "cc-plugin-mods-guide@builtin",
     "cc-plugin-plugin-authoring@builtin",
     "cc-plugin-privacy@builtin",
-    "cc-plugin-telemetry@builtin"
+    "cc-plugin-responsive-mode@builtin",
+    "cc-plugin-telemetry@builtin",
+    "cc-plugin-tips@builtin",
+    "cc-plugin-you-should-know@builtin"
    ],
    "engine_skills": [
     "design",
@@ -568,6 +580,71 @@
      "name": "CLAUDE_CODE_REMOTE_TOOLS_FORWARD",
      "reason": "the switch that routes a file tool's or Bash's _host to another machine; stripped from the inherited environment and refused when configured (CREDENTIALS), and a _host naming another machine still asks (IN_RUN_HOST)",
      "rule": "VELDO-0160 AC3"
+    },
+    {
+     "decision": "off",
+     "kind": "plugins",
+     "name": "cc-plugin-claude-platform@builtin",
+     "reason": "setup guidance for Claude Platform on AWS or Google Cloud; a worker authenticates only with its subscription login and loads only what its role lists; turned off",
+     "rule": "VELDO-0127 AC4"
+    },
+    {
+     "decision": "off",
+     "kind": "plugins",
+     "name": "cc-plugin-claude-test@builtin",
+     "reason": "a test-and-fix workflow (Claude tests your app, fixes what it finds, and checks again) the role does not list; turned off",
+     "rule": "VELDO-0127 AC4"
+    },
+    {
+     "decision": "not_applicable",
+     "kind": "plugins",
+     "name": "cc-plugin-diff@builtin",
+     "reason": "a diff view of the interactive terminal; a stream-JSON worker draws nothing; turned off with the rest"
+    },
+    {
+     "decision": "not_applicable",
+     "kind": "plugins",
+     "name": "cc-plugin-easel@builtin",
+     "reason": "a canvas of the interactive and remote cowork sessions; a stream-JSON worker draws nothing; turned off with the rest"
+    },
+    {
+     "decision": "not_applicable",
+     "kind": "plugins",
+     "name": "cc-plugin-mermaid@builtin",
+     "reason": "draws mermaid code fences as box-drawing text in the interactive terminal; a stream-JSON worker draws nothing; turned off with the rest"
+    },
+    {
+     "decision": "off",
+     "kind": "plugins",
+     "name": "cc-plugin-mods-guide@builtin",
+     "reason": "teaches the model how this build's mods are written, a skill and context the role does not list; turned off",
+     "rule": "VELDO-0127 AC4"
+    },
+    {
+     "decision": "off",
+     "kind": "plugins",
+     "name": "cc-plugin-responsive-mode@builtin",
+     "reason": "adds instructions to every prompt (reply in a sentence before thinking or using tools), context the role does not list; turned off",
+     "rule": "VELDO-0127 AC4"
+    },
+    {
+     "decision": "granted",
+     "kind": "plugins",
+     "name": "cc-plugin-sec-default@builtin",
+     "reason": "the organization's security guard, seated by the account (a Team or Enterprise organization, or managed settings) and enabled from policy only, so no setting Veldo writes turns it off; it keeps the organization's hooks, settings and tool policy above plugins a person installs and adds no tool, skill or policy of its own; left on, and the init comparison accepts it present or absent"
+    },
+    {
+     "decision": "not_applicable",
+     "kind": "plugins",
+     "name": "cc-plugin-tips@builtin",
+     "reason": "tips shown to a person in the interactive terminal; a stream-JSON worker shows none; turned off with the rest"
+    },
+    {
+     "decision": "off",
+     "kind": "plugins",
+     "name": "cc-plugin-you-should-know@builtin",
+     "reason": "a side agent that watches the session and surfaces notes above the prompt, a model process the role does not list; turned off",
+     "rule": "VELDO-0127 AC4"
     }
    ],
    "pinned": "<state root>/engines/claude_code/2.1.317",

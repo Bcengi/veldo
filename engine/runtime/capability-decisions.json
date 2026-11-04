@@ -194,6 +194,53 @@
     "reason": "lists unsupported models in the picker; Veldo passes the role's model"
    }
   },
+  "plugins": {
+   "cc-plugin-claude-platform@builtin": {
+    "decision": "off",
+    "reason": "setup guidance for Claude Platform on AWS or Google Cloud; a worker authenticates only with its subscription login and loads only what its role lists; turned off",
+    "rule": "VELDO-0127 AC4"
+   },
+   "cc-plugin-claude-test@builtin": {
+    "decision": "off",
+    "reason": "a test-and-fix workflow (Claude tests your app, fixes what it finds, and checks again) the role does not list; turned off",
+    "rule": "VELDO-0127 AC4"
+   },
+   "cc-plugin-diff@builtin": {
+    "decision": "not_applicable",
+    "reason": "a diff view of the interactive terminal; a stream-JSON worker draws nothing; turned off with the rest"
+   },
+   "cc-plugin-easel@builtin": {
+    "decision": "not_applicable",
+    "reason": "a canvas of the interactive and remote cowork sessions; a stream-JSON worker draws nothing; turned off with the rest"
+   },
+   "cc-plugin-mermaid@builtin": {
+    "decision": "not_applicable",
+    "reason": "draws mermaid code fences as box-drawing text in the interactive terminal; a stream-JSON worker draws nothing; turned off with the rest"
+   },
+   "cc-plugin-mods-guide@builtin": {
+    "decision": "off",
+    "reason": "teaches the model how this build's mods are written, a skill and context the role does not list; turned off",
+    "rule": "VELDO-0127 AC4"
+   },
+   "cc-plugin-responsive-mode@builtin": {
+    "decision": "off",
+    "reason": "adds instructions to every prompt (reply in a sentence before thinking or using tools), context the role does not list; turned off",
+    "rule": "VELDO-0127 AC4"
+   },
+   "cc-plugin-sec-default@builtin": {
+    "decision": "granted",
+    "reason": "the organization's security guard, seated by the account (a Team or Enterprise organization, or managed settings) and enabled from policy only, so no setting Veldo writes turns it off; it keeps the organization's hooks, settings and tool policy above plugins a person installs and adds no tool, skill or policy of its own; left on, and the init comparison accepts it present or absent"
+   },
+   "cc-plugin-tips@builtin": {
+    "decision": "not_applicable",
+    "reason": "tips shown to a person in the interactive terminal; a stream-JSON worker shows none; turned off with the rest"
+   },
+   "cc-plugin-you-should-know@builtin": {
+    "decision": "off",
+    "reason": "a side agent that watches the session and surfaces notes above the prompt, a model process the role does not list; turned off",
+    "rule": "VELDO-0127 AC4"
+   }
+  },
   "routing": {
    "CLAUDE_CODE_REMOTE_TOOLS_FORWARD": {
     "decision": "off",

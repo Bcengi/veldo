@@ -27,7 +27,7 @@ def _v230_reproduce_suite():
     PRODUCTION = {
         'qualify.py': ROOT / ".veldo" / "qualify.py",
     }
-    ROWS = ('qualify/reproduces', 'qualify/covers')
+    ROWS = ('qualify/reproduces', 'qualify/covers', 'qualify/builtin-plugins')
     rows = {name: [] for name in ROWS}
     COPIED = ('.veldo', 'engine/runtime', 'packs', 'proof/VELDO-0060', 'proof/VELDO-0061', 'proof/VELDO-0062',
               'proof/VELDO-0127', 'proof/VELDO-0141', 'proof/VELDO-0155', 'proof/VELDO-0156', 'proof/VELDO-0165',
@@ -42,6 +42,53 @@ def _v230_reproduce_suite():
         spec.loader.exec_module(module)
         return module
 
+    def builtin_plugins_row():
+        """A fake Claude Code whose bytes register two built-in plugins and whose init probe (empty, logged-out
+        profile) loads only one: the plugin the account seats (as 2.1.317's cc-plugin-sec-default) must be found,
+        listed with its evaluation and, granted, accepted in the init event; one with no evaluation turned off."""
+        row = 'qualify/builtin-plugins'
+        probed, unlisted, seated = 'cc-plugin-fixture-probed', 'cc-plugin-fixture-unlisted', 'cc-plugin-fixture-seated'
+        scratch = Path(tempfile.mkdtemp(prefix='v230-builtins-'))
+        try:
+            fake = scratch / 'claude'
+            fake.write_text('#!%s\nimport json, sys\n# function O(){if(r.builtinPluginsInitialized=!0,'
+                            'reg("%s",()=>import.meta.require("/$bunfs/root/chunk-a.js")),'
+                            'reg("%s",()=>import.meta.require("/$bunfs/root/chunk-b.js")),'
+                            'reg("%s",()=>import.meta.require("/$bunfs/root/chunk-c.js")))}\n'
+                            'sys.stdin.readline()\n'
+                            'print(json.dumps({"type": "system", "subtype": "init", "skills": [], "plugins": '
+                            '[{"name": "%s", "source": "%s@builtin"}]}))\n'
+                            % (sys.executable, probed, unlisted, seated, probed, probed))
+            fake.chmod(0o755)
+            qualify = load('v230_builtins_qualify', PRODUCTION['qualify.py'])
+            C = load('v230_builtins_claude', ROOT / '.veldo' / 'control_engine_claude.py')
+            plugins, _skills = qualify.claude_builtins(fake, C.BASELINE)
+            check(row, 'discovery finds every built-in plugin the binary registers, not only the probe\'s [%s]'
+                  % plugins, {probed + '@builtin', unlisted + '@builtin', seated + '@builtin'} <= set(plugins))
+            decisions = {'claude_code': {'plugins': {seated + '@builtin': {'decision': 'granted', 'reason': 'fixture'}}}}
+            split = getattr(qualify, 'builtin_plugins', None)
+            off, accepted, items = split(plugins, {'engine_plugins': [probed + '@builtin']}, set(), False,
+                                         decisions) if split else (plugins, [], [])
+            listed = {i['name']: i['decision'] for i in items}
+            check(row, 'each new built-in plugin is listed with its evaluation [%s]' % listed,
+                  listed == {unlisted + '@builtin': 'unevaluated', seated + '@builtin': 'granted'})
+            check(row, 'the granted one is accepted, the others turned off [%s; %s]' % (off, accepted),
+                  accepted == [seated + '@builtin'] and off == sorted([probed + '@builtin', unlisted + '@builtin']))
+            H = load('v230_builtins_handoff', ROOT / '.veldo' / 'control_agent_config_handoff.py')
+            wanted = {'tools': [], 'mcp_servers': [], 'skills': [], 'slash_commands': [], 'plugins': [], 'model': None,
+                      'accepted_plugins': accepted}
+            init = lambda *names: {'tools': [], 'mcp_servers': [], 'skills': [], 'slash_commands': [],
+                                   'plugins': [{'name': n, 'source': n + '@builtin'} for n in names]}
+            check(row, 'the init comparison accepts the granted plugin present or absent',
+                  H.difference(init(seated), wanted) is None and H.difference(init(), wanted) is None)
+            check(row, 'an unlisted plugin still stops the run',
+                  H.difference(init(seated, unlisted), wanted) == 'configuration_stop:plugins')
+        except Exception as error:
+            check(row, 'raised ' + type(error).__name__ + ': ' + str(error)[:200], False)
+        finally:
+            shutil.rmtree(scratch, ignore_errors=True)
+
+    builtin_plugins_row()
     temp = tempfile.mkdtemp(prefix='v230-qualify-')
     try:
         tree = Path(temp) / 'tree'
@@ -89,7 +136,7 @@ def _v230_reproduce_suite():
         check('qualify/covers', 'it ran every reader of the binaries in write mode [missing %s]'
               % sorted(tables - set(written)), tables <= set(written))
     except Exception as error:
-        for row in ROWS:
+        for row in ROWS[:2]:
             check(row, 'raised ' + type(error).__name__ + ': ' + str(error)[:200], False)
     finally:
         shutil.rmtree(temp, ignore_errors=True)
