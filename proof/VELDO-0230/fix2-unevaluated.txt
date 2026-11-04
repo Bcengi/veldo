@@ -1,0 +1,12 @@
+VELDO-0230 fix round 2: a 2.1.317 stream form with no decision (three decisions removed in memory), python3 -B proof/VELDO-0230/fix2_unevaluated.py <2.1.317 scratch> <worktree>
+
+listed messages system/ui_toast unevaluated
+listed frames system/session_metadata unevaluated
+listed tool_fields user tool_states unevaluated
+session_metadata tool-free: False
+ui_toast known message: False
+user tool_states read: ask
+reader, a session_metadata frame: [{'id': None, 'server': None, 'tool': None, 'unknown': 'message:system/session_metadata'}]
+reader, a ui_toast message: [{'id': None, 'server': None, 'tool': None, 'unknown': 'message:system/ui_toast'}]
+reader, a user message with tool_states: [{'id': None, 'server': None, 'tool': None, 'unknown': 'field:user:tool_states'}]
+with the decisions, the same three: [[], [], []]

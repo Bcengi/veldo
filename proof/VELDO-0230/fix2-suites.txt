@@ -1,0 +1,36 @@
+VELDO-0230 fix round 2: suites, each with python3 scripts/selftest.py --suite NAME (exit 2 is selftest's PARTIAL marker for one suite).
+
+== scratch git worktree at 0a7bf55b, qualified with Claude Code 2.1.317 (fix2-ac2b-qualify-output.txt)
+ 78_veldo_0160_account_pool 34 passed 26.14s
+ 125_veldo_0230_engine_census 7 passed 6.93s
+ 126_veldo_0230_qualify_reproduces 2 passed 88.49s
+
+== worktree, Claude Code 2.1.281 (the shipped files), at 6f96444b (0a7bf55b changes only qualify.py's docstring and the evaluation file)
+ 78_veldo_0160_account_pool 34 passed 25.66s
+ 75_veldo_0062_accounts 24 passed 34.77s
+ 79_veldo_0061_codex_adapter 21 passed 13.56s
+ 81_veldo_0156_codex_baseline 22 passed 2.96s
+ 86_veldo_0127_agent_configuration 25 passed 38.49s  SELFTEST FAIL: VELDO-0127 live/claude   SELFTEST FAIL: VELDO-0127 live/codex 
+ 88_veldo_0127_feature_defaults 25 passed 9.26s
+ 89_veldo_0127_feature_listing 11 passed 4.51s
+ 90_veldo_0127_feature_profile 2 passed 11.65s
+ 125_veldo_0230_engine_census 7 passed 6.89s
+ 126_veldo_0230_qualify_reproduces 2 passed 71.59s
+ 78_veldo_0060_claude_adapter 35 passed 22.25s
+ 80_veldo_0155_claude_baseline 19 passed 14.07s
+ 82_veldo_0141_execution_record 39 passed 20.88s  SELFTEST FAIL: VELDO-0141 redaction/paths-kept 
+ 82_veldo_0165_launch_hygiene 23 passed 12.79s
+ 82_veldo_0173_tool_registry 11 passed 2.44s
+ 82_veldo_0129_worker_wiring 29 passed 33.07s
+ 83_veldo_0166_usage_windows 19 passed 0.57s
+ 85_veldo_0158_credential_delivery 23 passed 4.69s
+ 83_veldo_0154_factory_loop 14 passed 32.05s
+ 86_veldo_0186_setup_assets 11 passed 14.86s
+ 86_veldo_0189_engine_upgrade 34 passed 56.44s
+ 106_veldo_0185_dispatch_setup 20 passed 12.34s
+ 117_veldo_0227_ui_location 7 passed 7.35s
+
+86 live/claude and live/codex: "missing or stale live capture": the VELDO-0127 live captures bind the digest of control_engine_claude.py,
+which this round edits; the offline rows pass. The lead retakes them (proof/VELDO-0127/live.py is lead-only).
+82_0141 redaction/paths-kept: an entropy flake of the random clone id; the same suite re-run at 6f96444b: 40 passed, 0 failed
+(and 40 of 40 at cf07642d).

@@ -1,0 +1,25 @@
+VELDO-0230 fix round 2: the moved mutation anchors, each run through proof/VELDO-0230/fix2_mutants.py (proof/VELDO-0160/drive.py's
+runner and scripts/check_teeth_mutations.py's materialize; the production module is never edited, so nothing needs restoring).
+
+== worktree, Claude Code 2.1.281 (0a7bf55b's code; the anchors at 15bec39f)
+baseline failed=[] rows=33
+noop control_engine_claude.py failed=[]
+decision-claude-control-request-free     KILLED rows=['decision/unknown-forms', 'format/tool-forms'] failed=['decision/unknown-forms', 'format/tool-forms']
+format-claude-tool-field-unlisted        KILLED rows=['format/tool-forms'] failed=['format/tool-forms']
+remote-trigger-not-outside               KILLED rows=['decision/remote-agent-asks', 'format/tool-forms'] failed=['format/tool-forms', 'decision/remote-agent-asks', 'decision/outward-tool-asks']
+outward-sendmessage-allowlisted          KILLED rows=['decision/outward-tool-asks', 'format/tool-forms'] failed=['format/tool-forms', 'decision/outward-tool-asks']
+nested-repl-dropped                      KILLED rows=['decision/nested-constructs', 'format/tool-forms'] failed=['format/tool-forms', 'decision/nested-constructs']
+decision-claude-tool-free-frames-ask     KILLED rows=['decision/tool-free-forms'] failed=['decision/tool-free-forms']
+decision-claude-unlisted-message-free    KILLED rows=['decision/unknown-forms'] failed=['decision/unknown-forms']
+outward-host-ignored                     KILLED rows=['decision/outward-tool-asks'] failed=['decision/outward-tool-asks']
+
+[exited with code 0]
+
+== scratch qualified with Claude Code 2.1.317 (0a7bf55b)
+baseline failed=[] rows=33
+noop control_engine_claude.py failed=[]
+decision-claude-control-request-free     KILLED rows=['decision/unknown-forms', 'format/tool-forms'] failed=['decision/unknown-forms', 'format/tool-forms']
+format-claude-tool-field-unlisted        KILLED rows=['format/tool-forms'] failed=['format/tool-forms']
+remote-trigger-not-outside               KILLED rows=['decision/remote-agent-asks', 'format/tool-forms'] failed=['format/tool-forms', 'decision/remote-agent-asks', 'decision/outward-tool-asks']
+outward-sendmessage-allowlisted          KILLED rows=['decision/outward-tool-asks', 'format/tool-forms'] failed=['format/tool-forms', 'decision/outward-tool-asks']
+nested-repl-dropped                      KILLED rows=['decision/nested-constructs', 'format/tool-forms'] failed=['format/tool-forms', 'decision/nested-constructs']

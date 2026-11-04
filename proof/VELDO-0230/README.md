@@ -38,6 +38,56 @@ Producer: the Claude implementation agent (not an independent reviewer). Branch 
    and the launch proceeds; the 2.1.317 credential and environment names are decided (extractor exceptions for the
    kept and setting names, the module's strip and setting lists for the rest).
 
+## Fix round 2: the Claude Code stream reader's tables follow the qualified binary (AC2)
+
+The defect (round 1's first Open item, AC2's falsifier "after qualifying a newer installed binary, any gate row still
+comparing against the old version"): MESSAGES, TOOL_FREE_FRAMES, TOOL_FIELDS, NESTED, IN_RUN_TOOLS (and IN_RUN) and
+IN_RUN_HOST were module literals equal to 2.1.281's, so suite 78_0160 format/tool-forms and decision/outward-tool-asks
+stayed red after qualifying 2.1.317.
+
+- `.veldo/qualify.py` (`stream_forms`) writes the reader's tables into the qualified version's Claude Code record
+  (`stream_forms` in runtime/claude-qualification.json, both runtime copies), from the binary's own
+  (proof/VELDO-0062/cli-formats.json tool_forms). A message, tool-free frame or tool-naming field the replaced record
+  gave the reader keeps its reading; a new one is read by its decision in runtime/capability-decisions.json (claude_code
+  `messages`, `frames`, `tool_fields`, `routing`) and listed in `new_capabilities` and the output. With no decision
+  granting it a new message or frame is left out (an unknown call, never tool-free) and a field is `ask` (any value it
+  holds is an unknown call, `field:<message>:<path>`). The nested-work and in-run tables are the binary's own; a
+  `_host` routing switch (2.1.317: CLAUDE_CODE_REMOTE_TOOLS_FORWARD) is listed with its decision (off, VELDO-0160 AC3;
+  the module already strips it).
+- `.veldo/control_engine_claude.py` reads them from the record beside it (`stream_tables`, re-read when the record's
+  bytes change; the module names resolve to them); a record without them refuses the reading by name
+  (missing_evidence:engine_stream_forms). The seed: the 2.1.281 tables are the module's former literals, written once
+  into the record; qualify then generates them identically (fix2-ac2a-qualify-output.txt).
+- Decisions added for 2.1.317's forms (the evaluation file, section "Claude Code 2.1.317 stream forms"): the 14
+  messages, `system/session_metadata`, the round-1 fields and three more the extractor lists
+  (`system/permission_check_status tool_use_id`, `user tool_result_meta.built_in_tool`, `user tool_states`; all free),
+  and the routing switch.
+- Suite 78_0160: format/tool-forms compares the reader's tables with the qualified binary's, less what the record lists
+  as not granted; the `call` fields and the allowlist are the lead's, as far as the binary has them (2.1.317 has no
+  REPL); the remote-tools gate is off when compiled off or behind a switch the module strips; the two REPL fixtures
+  apply only where the binary's tables list the REPL forms (on 2.1.317 the REPL call asks by rule A, named beside).
+- Mutation anchors moved to the reader's table loader: decision-claude-control-request-free,
+  format-claude-tool-field-unlisted, remote-trigger-not-outside, outward-sendmessage-allowlisted, nested-repl-dropped
+  (its `also`). Each is killed by its rows on 2.1.281 and on 2.1.317, baseline and no-op green (fix2-mutations.txt).
+
+Results:
+
+1. On the qualified binaries (Codex 0.154.0, Claude Code 2.1.281) `python3 .veldo/qualify.py` in the worktree at
+   0a7bf55b left every file byte-identical (git status clean; fix2-ac2a-qualify-output.txt). The VELDO-0127 fixtures
+   were regenerated once before that (15501e77): they bind the reader module's digest.
+2. In a scratch git worktree at 0a7bf55b, `qualify --claude 2.1.317`: 71 Claude Code items (53 granted, 7 not
+   applicable, 11 off), none unevaluated (fix2-ac2b-qualify-output.txt); there suites 78_0160 (34 of 34), 125 and 126
+   pass, and 78_0160 passes on the shipped 2.1.281 files too (fix2-suites.txt).
+3. Suites 75, 79, 81, 86 offline rows, 88, 89, 90, 125 and 126 pass in the worktree, and so do the other suites that
+   load the reader module (fix2-suites.txt). 86 live/claude and live/codex are stale: the live captures bind the
+   digest of control_engine_claude.py, which this round edits; the lead retakes them.
+4. A form with no decision (fix2-unevaluated.txt): with three decisions removed, qualify lists each as unevaluated, the
+   frame is not tool-free, the message not known and the field `ask`; the reader names each an unknown call.
+
+Not changed: RESPONSE_BLOCKS, REQUEST_BLOCKS, STREAM_EVENTS, BUILTIN_TOOLS, BUILTIN_RENAMED, TASK_COUNTS, NESTED_TOOLS,
+IN_RUN_ALIASES, IN_RUN_AGENT, IN_RUN_SKILL and IN_RUN_TASKS are still module literals, equal in 2.1.281 and 2.1.317;
+a later binary that changes one of them reds format/tool-forms until it follows the same path.
+
 ## AC2 runs
 
 (a) Qualified binaries (Codex 0.154.0 global, Claude Code 2.1.281 copy): `python3 .veldo/qualify.py --codex
@@ -56,10 +106,6 @@ drivers, since the mutation checker's confined leg is denied /run/user on this h
 
 ## Open
 
-- Suite 78_0160 format/tool-forms and decision/outward-tool-asks stay red on 2.1.317 (green on 2.1.281): the
-  Claude Code stream reader's tables are module literals equal to 2.1.281's, pinned by mutation anchors, and the
-  rows require them equal to the installed binary's. The new forms are evaluated (the evaluation file); making
-  the tables follow the qualified binary is its own change.
 - Suite 86 live/claude and live/codex: the live captures bind digests of the production modules this change
   edits; by this repository's practice the lead retakes them on real accounts (live.py is lead-only).
 - Environment names reach the module's strip and setting lists by a code edit. A new name in one of a later
