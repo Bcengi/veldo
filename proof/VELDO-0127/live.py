@@ -245,7 +245,7 @@ def capture(f, engine, mode, marker, evidence, diagnostics=None):
         qualified = json.loads(f.codex_qualification.read_text())
         catalog = helper.codex_model(qualified, revision)
         wire = loopback.capture(document['executable']['path'], configuration, catalog=catalog)
-        wire_tools = [evidence.wire_observation(r['body'], expected, helper) for r in wire['requests']]
+        wire_tools = evidence.wire_observations([r['body'] for r in wire['requests']], expected, helper)
     return {'mode':mode, 'marker':marker, 'completed':f.D.completed(record), 'revision':revision,
             'executable_digest':document.get('executable',{}).get('sha256'), 'init':init, 'expected':expected,
             'builtin_commands':builtin, 'probe':document.get('probe'),

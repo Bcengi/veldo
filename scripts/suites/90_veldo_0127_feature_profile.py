@@ -123,7 +123,8 @@ def _v127_feature_profile():
                 for read_profile in (False, True):
                     observation = fixture.capture(wire.BINARY, argv, config, read_profile=read_profile)
                     bodies = observation['requests']
-                    difference = L.HANDOFF.codex_tool_difference(bodies[0], receiver.binding['expected']) if bodies else 'no request'
+                    difference = (L.HANDOFF.codex_run_tool_difference(bodies, receiver.binding['expected']) if bodies
+                                  else 'no request')
                     check('profile/pinned-tools', observation['exact_profile'] and bool(bodies) and difference is None,
                           str((number, read_profile, difference, observation['stderr'] if not bodies else '')))
         except Exception as error:

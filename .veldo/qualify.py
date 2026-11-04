@@ -378,7 +378,7 @@ def fixtures(root, executable, written):
     cases = []
     for model, selected, capability, inventory, catalog, result in captured:
         wanted = H.expected(capability, inventory)
-        observations = [E.wire_observation(r['body'], wanted, H) for r in result['requests']]
+        observations = E.wire_observations([r['body'] for r in result['requests']], wanted, H)
         result.update(expected=wanted, observations=observations, model_catalog=catalog,
                       production=E.production(Path(root)), selected_server=selected,
                       owner_decision='Telegram 29400/29401, 2026-09-28; 38878, 2026-11-03')
