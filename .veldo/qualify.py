@@ -329,18 +329,32 @@ def token_path(value, token, path=()):
     return None
 
 
-def stream_form(stdout, token):
-    """The form of the first exec JSON event that carries `token`: {type, item_type, text: [path]}, or None."""
+def name_path(value, name, path=()):
+    """The path to the first string in `value` equal to `name`, or None."""
+    if isinstance(value, str):
+        return list(path) if value == name else None
+    items = value.items() if isinstance(value, dict) else enumerate(value) if isinstance(value, list) else ()
+    for key, item in items:
+        found = name_path(item, name, path + (key,))
+        if found is not None:
+            return found
+    return None
+
+
+def stream_form(stdout, token, tool):
+    """The form of the first exec JSON event that carries `token` and names `tool`: {type, item_type, name: path,
+    text: [path]}, or None."""
     for line in (stdout or '').splitlines():
         try:
             event = json.loads(line)
         except ValueError:
             continue
         path = token_path(event, token) if isinstance(event, dict) else None
-        if path is not None:
+        named = name_path(event, tool) if path is not None else None
+        if path is not None and named is not None:
             item = event.get('item')
             return {'type': event.get('type'), 'item_type': item.get('type') if isinstance(item, dict) else None,
-                    'text': [path]}
+                    'name': named, 'text': [path]}
     return None
 
 
@@ -368,7 +382,7 @@ def flag_probe(executable, qualified, H, LB, source, temp):
         catalog = H.codex_model(qualified, revision)
         H.codex(cfg, capability, {}, temp, catalog=catalog, probe=True)
         result = LB.capture(executable, cfg, catalog=catalog, call=(tool, FLAG_TOKEN), timeout=PROBE_SECONDS)
-        forms[tool] = stream_form(result.get('stdout'), FLAG_TOKEN)
+        forms[tool] = stream_form(result.get('stdout'), FLAG_TOKEN, tool)
         if tool == X.QUESTION_TOOL:
             requests = result.get('requests') or []
             answered = requests[0].get('answered_at') if requests else None

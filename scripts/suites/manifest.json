@@ -1735,6 +1735,15 @@
    ],
    "regions": "Two rows (VELDO-0230 AC2): qualify/reproduces, python3 .veldo/qualify.py run in scratch against the Codex and Claude Code binaries the engines record names succeeds and every file it writes is byte-identical to the checkout's; qualify/covers, the files it writes include the engines record and both qualification records in both runtimes, the VELDO-0127 fixtures and every table the readers of the binaries write (the suite's own list, the two VELDO-0156 captures among them).",
    "requires_note": "Only ROOT and expect. Copies .veldo, engine/runtime, packs and the extractor and VELDO-0127 proof directories into scratch and runs the copy's qualify command there; runs the qualified binaries offline in empty profiles (extractor reads, features list, bundled catalog, loopback capture, Claude Code init probe). Writes only temporary files."
+  },
+  {
+   "name": "127_veldo_0231_run_flags",
+   "file": "127_veldo_0231_run_flags.py",
+   "requires": [
+    "127_veldo_0231_run_flags"
+   ],
+   "regions": "Seventeen rows (VELDO-0231): a running agent's flag reaches the lead's conversation within 2 seconds of the engine writing it while the run goes on (AC1), the run's own conversation or its project's most recently opened attached one, else kept undelivered:no_conversation; each engine's means granted with its reason and the Codex launch set equal to the role's with both tools the switch delivers, the qualify command's loopback flag probe, the marked line read only from the agent's own message text (AC2); wait-for-answer tools refused at save, the fixed flag instructions, a synchronous question answered at once by the binary or stopped by name within the receiver's question window (AC3); the per-run rate window and cap with the held back count kept in the store, and no socket or process for a flag (AC4).",
+   "requires_note": "Only ROOT, expect and fast_temp. A real signed SQLite authority (VELDO-0073's support), the production conversation authority, VELDO-0174's conversation Line with real receiver subprocesses over fake pinned engines (support/v231_fake_engines.py over v174_journey.py) and the service loop's poll over the launch pipes; the qualify flag probe over fake Codex binaries on loopback. No real engine, login, user unit or network beyond loopback. Writes only temporary fixtures."
   }
  ],
  "resource_capacities": {
