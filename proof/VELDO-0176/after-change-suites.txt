@@ -1,0 +1,18 @@
+VELDO-0176 after the change, at 13584670 (each suite alone: python3 scripts/selftest.py --suite <name>)
+  VELDO-0176 AC1 accounts: account-claude_code-1 account-claude_code-2 sessions: session-1747bce57974 session-1747bce57974 outcomes: completed completed
+  VELDO-0176 AC1 swapped: binding_mismatch:conversation_resume []
+  VELDO-0176 AC3 long history characters: 6257 bound: 2000
+  VELDO-0176 AC2 limited attempts: [('account-claude_code-1', 'c1ac6a'), ('account-claude_code-2', 'bcf682')] outcome: completed limits: [{'account': 'account-claude_code-1', 'at': 1793782180.6911206, 'decision': 'rerun', 'dispatch_id': 'dispatch/limited/9d7d62f836c645ddba15d672fdc1ac6a', 'question': None, 'reset_at': 1793785780, 'window': 'seven_day'}]
+  VELDO-0176 AC2 all limited: ['account-claude_code-2', 'account-claude_code-3'] question: assignment:conversation:waiting:conversation-limit-807f5ca0081ec1669df3afcb state: waiting
+  VELDO-0176 AC3 long rendering: kept [7, 8] left out 6 characters 1614 outcome completed
+  VELDO-0176 AC2 running at restart: ended outcome_unknown [{'at': 1793782187.158099, 'kind': 'notice', 'reason': 'outcome_unknown', 'ref': 'assignment:conversation:interrupted:conversation-restart-2504a79018e4e9cf3f328161', 'told': True}] acknowledgement
+  VELDO-0176 AC2 restart: ['completed', 'completed'] [('session-8cf596269b7b', None), ('session-8cf596269b7b', 'session-8cf596269b7b')]
+  VELDO-0176 metrics: {'resumed': 12, 'rendered': 2, 'rendered_shortened': 1, 'captures': 20, 'questions': {'wait': 1, 'move': 1}, 'session_mismatch': 0, 'resume_mismatch': 1}
+  130_veldo_0176_conversation_history             17 passed   12.80s
+  123_veldo_0174_conversations                    38 passed   10.50s
+  127_veldo_0231_run_flags                        17 passed   34.09s
+  128_veldo_0177_conversation_workspace           15 passed    3.14s
+  129_veldo_0177_assistant_setup                   4 passed    3.36s
+  SELFTEST FAIL: VELDO-0127 live/claude
+  SELFTEST FAIL: VELDO-0127 live/codex
+  86_veldo_0127_agent_configuration               26 passed   36.81s

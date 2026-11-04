@@ -449,6 +449,26 @@ else:
         check('AC3/long-history', 'the second conversation\'s history is three times the fixture bound',
               [t.get('outcome') for t in long_turns] == ['completed'] * 8 and whole['characters'] >= 3 * BOUND)
 
+        # AC3: a held session whose digest differs from its turn record is refused by name, before anything is
+        # spawned, and never replaced by a rendering.
+        tampered = Path((turns(f, 'remember')[1].get('session') or {}).get('capture') or '/nonexistent/v176')
+        tampered.write_text(tampered.read_text() + json.dumps({'turn': 99, 'part': 'done'}) + '\n')
+        before = len(observed(markers))
+        run_turn(f, factory, 'remember', 'three', 3)
+        refused_turn = turns(f, 'remember')[2]
+        refusals = [m for launch in launched for m in launch.messages
+                    if m.get('event') == 'conversation_session_refused' and m.get('conversation') == 'remember']
+        check('AC3/digest-refused', 'the turn is refused binding_mismatch:conversation_session and nothing ran [%s]'
+              % refused_turn.get('outcome'),
+              refused_turn.get('outcome') == 'binding_mismatch:conversation_session' and len(observed(markers)) == before
+              and refusals and refusals[0].get('session_id') == (turns(f, 'remember')[1].get('session') or {}).get('session_id'))
+        check('AC3/digest-refused', 'it was never replaced by a rendering and nothing was captured for it',
+              not refused_turn.get('starts') and not refused_turn.get('captures')
+              and not any(m.get('event') == 'conversation_history' and m.get('conversation') == 'remember'
+                          for launch in launched for m in launch.messages))
+        check('AC3/digest-refused', 'turns stopped so are counted [%s]' % conversations.status().get('sessions'),
+              (conversations.status().get('sessions') or {}).get('session_mismatch') == 1)
+
         # AC2: account A limited in the middle of a turn.
         scenario['limit'] = {'limited': 'once'}
         (markers / 'scenario.json').write_text(json.dumps(scenario))
@@ -570,30 +590,6 @@ else:
               claude_held and claude_held.get('session_id') == (moving[1].get('session') or {}).get('session_id')
               and Path(claude_held['capture']).is_file() and digest(claude_held['capture']) == claude_held['digest']
               and codex_held and codex_held.get('engine') == 'codex')
-
-        # AC3: a held session whose digest differs is refused by name and never replaced by a rendering.
-        tampered = Path((turns(f, 'remember')[1].get('session') or {}).get('capture'))
-        tampered.write_text(tampered.read_text() + json.dumps({'turn': 99, 'part': 'done'}) + '\n')
-        before = len(observed(markers))
-        version = conversations.read('remember')['version']
-        conversations.change_role('remember', version, 'assistant_codex', owner='owner')
-        conversations.change_role('remember', version + 1, 'assistant', owner='owner')
-        scenario['limit'] = {}
-        (markers / 'scenario.json').write_text(json.dumps(scenario))
-        # Every Claude Code account is at its limit here, so the refusal is shown on the receiver's own check of the
-        # contract the next offer would prepare.
-        reader = authority.S.open_store(str(authority.db), mode='r')
-        try:
-            held_now = CV.held_session(authority.conn, 'remember', 'claude_code')
-            refused = None
-            try:
-                CV.checked_capture(reader, 'remember', held_now)
-            except CV.Refused as error:
-                refused = error.code
-        finally:
-            reader.close()
-        check('AC3/digest-refused', 'the held session whose digest differs from its turn record is refused by name',
-              refused == 'binding_mismatch:conversation_session' and len(observed(markers)) == before)
 
         # AC2: restarts.
         # A turn running when the loop's service restarts is outcome_unknown, the owner is told, and the last capture
