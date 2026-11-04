@@ -1,0 +1,15 @@
+  selector    --suite 137_veldo_0181_conversation_decisions
+  running     1 of 199 suites: 137_veldo_0181_conversation_decisions
+  SELFTEST FAIL: VELDO-0181 AC1/rerun-presented
+  SELFTEST FAIL: VELDO-0181 AC1/turn-waits
+  SELFTEST FAIL: VELDO-0181 AC1/no-presentation-hint
+  SELFTEST FAIL: VELDO-0181 AC1/settles-by-reply
+  SELFTEST FAIL: VELDO-0181 AC1/move-presented
+  SELFTEST FAIL: VELDO-0181 AC1/settled-once-across
+  SELFTEST FAIL: VELDO-0181 AC1/unclear-route
+  SELFTEST FAIL: VELDO-0181 AC1/observability
+  SELFTEST FAIL: VELDO-0181 AC2/other-member
+  SELFTEST FAIL: VELDO-0181 AC2/no-authority-from-output
+  SELFTEST FAIL: VELDO-0181 AC2/observability
+  137_veldo_0181_conversation_decisions            0 passed    0.00s
+selftest (PARTIAL, 1 of 199 suites): 26 passed, 11 failed in 0.00s

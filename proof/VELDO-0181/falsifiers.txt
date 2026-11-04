@@ -1,0 +1,26 @@
+Running as unit: run-ra2e0bd7a70094b4e8a9a4172159f4de5.scope; invocation ID: c212b6a0242347599a1241a1b389f31a
+case: reply181-presentation-as-turn (control_channel_presentation.py)
+  target rows: ['AC1/settles-by-reply']
+  failed rows: ['VELDO-0181 AC1/observability', 'VELDO-0181 AC1/settled-once-across', 'VELDO-0181 AC1/settles-by-reply']
+  killed at its target: True
+      VELDO-0181 detail: AC1/settles-by-reply his reply to the presentation settles the request once, from Telegram, with his choice [pending]; it is no turn of the conversation and nothing intake took; the turn waited for it and then ran again on another account [['account-claude_code-1']]; a second reply is told once and settles nothing again, no turn
+      VELDO-0181 detail: AC1/settled-once-across a second UI answer and a later Telegram reply settle nothing again; the reply is told once and is no turn
+      VELDO-0181 detail: AC1/observability each decision is logged presented and settled with its kind, request, presentation and settlement; decisions are counted by kind and settlement {'account_limit_rerun/pending': 1, 'conversation_engine_limit/wait': 1}; a decision is joined to its turn, presentation receipt and settling answer
+  restored: True
+case: output181-answer-accepted (control_conversation.py)
+  target rows: ['AC2/no-authority-from-output']
+  failed rows: ['VELDO-0181 AC2/no-authority-from-output']
+  killed at its target: True
+      VELDO-0181 detail: AC2/no-authority-from-output the request the output answers is not settled: pending, no answer, no settlement, its question unanswered on the conversation, the turn still waiting [pending, rerun]
+  restored: True
+case: publish181-own-inbox-only (control_channel_presentation.py)
+  target rows: ['AC1/rerun-presented']
+  failed rows: ['VELDO-0181 AC1/move-presented', 'VELDO-0181 AC1/no-presentation-hint', 'VELDO-0181 AC1/observability', 'VELDO-0181 AC1/rerun-presented', 'VELDO-0181 AC1/settled-once-across', 'VELDO-0181 AC1/settles-by-reply']
+  killed at its target: True
+      VELDO-0181 detail: AC1/rerun-presented a versioned presentation is published on the chat he wrote from [None]; the owner sees the question and its choices in his chat; the presentation is kept in the conversation (a decision message, never a reply) and on the turn's question, shown on the chat he wrote from
+      VELDO-0181 detail: AC1/no-presentation-hint his answer sent without Reply is told to reply to the request message, the waiting request named [inbox]
+      VELDO-0181 detail: AC1/settles-by-reply his reply to the presentation settles the request once, from Telegram, with his choice [pending]; it is no turn of the conversation and nothing intake took; the turn waited for it and then ran again on another account [['account-claude_code-1']]; a second reply is told once and settles nothing again, no turn
+      VELDO-0181 detail: AC1/move-presented the wait-or-move question is a request at the conversation's coordinate, presented on the chat he wrote from with its choices
+      VELDO-0181 detail: AC1/settled-once-across his inline answer in the UI settles it once [refused]; a second UI answer and a later Telegram reply settle nothing again; the reply is told once and is no turn; the turn follows the settled answer (wait): the role is unchanged and the question records it
+      VELDO-0181 detail: AC1/observability each decision is logged presented and settled with its kind, request, presentation and settlement; decisions are counted by kind and settlement {'account_limit_rerun/pending': 1, 'conversation_engine_limit/pending': 1}; a decision is joined to its turn, presentation receipt and settling answer
+  restored: True
