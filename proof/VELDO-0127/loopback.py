@@ -127,7 +127,7 @@ def capture(binary, configuration, *, models=False, catalog=None, features=False
             result = {'returncode': done.returncode, 'stdout': done.stdout, 'stderr': done.stderr}
             if models and done.returncode == 0:
                 catalog = json.loads(result.pop('stdout'))
-                result['model_tool_modes'] = {m['slug']: m.get('tool_mode') for m in catalog['models']}
+                result['model_tool_modes'] = X.catalog_modes(catalog)
                 result['catalog_sha256'] = hashlib.sha256(done.stdout.encode()).hexdigest()
         except subprocess.TimeoutExpired as error:
             result = {'returncode': None, 'refusal': 'loopback_timeout', 'stderr': str(error)}
