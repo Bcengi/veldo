@@ -325,9 +325,9 @@ sys.exit(payload.get('code', 0))
             tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
             claude_record['versions'][CLAUDE_VERSION].update(tool_registry=tools173['tool_registry'],
                                                         tool_classification=tools173['tool_classification'])
-            # VELDO-0230: the shipped record's built-in plugins, skills and window names.
+            # VELDO-0230: the shipped record's built-in plugins, skills and window names, and its stream reader's tables.
             claude_record['versions'][CLAUDE_VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
-                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
+                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names', 'stream_forms')})
         (mods / 'runtime').mkdir()
         (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(claude_record))
         factory = base / 'factory'
@@ -1946,11 +1946,13 @@ sys.exit(payload.get('code', 0))
             listed = sorted(set(C_IN_RUN.get('tools') or ()) | {a for names in (C_IN_RUN.get('aliases') or {}).values()
                                                                for a in names})
             engine = (getattr(LIMIT, 'ENGINES', None) or {}).get('claude_code') if LIMIT is not None else None
+            # VELDO-0230: the lead's tools and their aliases, those of them the qualified binary has (2.1.317 has no REPL).
             check('decision/outward-tool-asks', 'claude_code: the allowlist the reader holds is the binary\'s own, the '
                   'lead\'s tools and their aliases, with no LS tool in this build [%s]' % listed,
-                  listed == ['Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'KillBash', 'KillShell', 'Monitor',
-                             'NotebookEdit', 'REPL', 'Read', 'RunWorkflow', 'Skill', 'Task', 'TaskStop', 'TodoWrite',
-                             'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write']
+                  set(listed) <= {'Agent', 'Bash', 'CronCreate', 'Edit', 'Glob', 'Grep', 'KillBash', 'KillShell', 'Monitor',
+                                  'NotebookEdit', 'REPL', 'Read', 'RunWorkflow', 'Skill', 'Task', 'TaskStop', 'TodoWrite',
+                                  'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write'}
+                  and {'Agent', 'Bash', 'Edit', 'Read', 'Skill', 'Task', 'Write'} <= set(listed)
                   and engine is not None and sorted(getattr(engine, 'IN_RUN', ())) == listed)
             for name in listed:
                 lines = called(name, 'toolu_a', **GIVEN.get(name, {'x': 'y'}))
@@ -2092,7 +2094,14 @@ sys.exit(payload.get('code', 0))
         # The readers' tables are the binaries' own; each listed fixture form is one they list, each unlisted one not.
         with region('format/tool-forms'):
             CE, XE = getattr(L, 'ENGINES', {}).get('claude_code'), getattr(L, 'ENGINES', {}).get('codex')
-            claude_tables = {'messages': {tuple(m) for m in CFORMS.get('messages') or ()},
+            # VELDO-0230: the reader's tables follow the qualified binary (qualify writes them into its record); a message
+            # or a frame a newer binary brings that its evaluation does not grant is withheld, and the record lists it.
+            withheld = {(item['kind'], item['name']) for item in json.loads(
+                (ROOT / '.veldo' / 'runtime' / 'claude-qualification.json').read_text())['versions'][CLAUDE_VERSION]
+                .get('new_capabilities') or () if item.get('decision') != 'granted'}
+            named = lambda pair: '/'.join(part for part in pair if part is not None)
+            claude_tables = {'messages': {tuple(m) for m in CFORMS.get('messages') or ()
+                                          if ('messages', named(m)) not in withheld},
                              'response_blocks': list(CFORMS.get('response_blocks') or ()),
                              'request_blocks': list(CFORMS.get('request_blocks') or ()),
                              'stream_events': list(CFORMS.get('stream_events') or ()),
@@ -2127,7 +2136,8 @@ sys.exit(payload.get('code', 0))
                   and reads == {('tool_progress', 'tool_name'), ('tool_progress', 'repl_call.inner_tool_name'),
                                 ('system/task_progress', 'last_tool_name'),
                                 ('system/task_progress', 'workflow_progress.lastToolName'),
-                                ('assistant', 'attribution_mcp_tool'), ('assistant', 'batch_tool_uses')})
+                                ('assistant', 'attribution_mcp_tool'), ('assistant', 'batch_tool_uses')} & binary_fields
+                  and ('tool_progress', 'tool_name') in reads)
             by_kind = {how: {(tag, path) for tag, paths in (getattr(CE, 'TOOL_FIELDS', None) or {}).items()
                              for path, kind in paths.items() if kind == how} for how in ('task', 'count')}
             binary_tasks = CFORMS.get('task_counts') or {}
@@ -2149,7 +2159,8 @@ sys.exit(payload.get('code', 0))
             check('format/tool-forms', 'claude_code: the frames outside the message union the reader takes as tool-free '
                   'are the ones whose schema provably carries no tool call [%s, %s]'
                   % (sorted(frames), sorted(map(str, getattr(CE, 'TOOL_FREE_FRAMES', ())))),
-                  set(getattr(CE, 'TOOL_FREE_FRAMES', ())) == {tag for tag, free in frames.items() if free}
+                  set(getattr(CE, 'TOOL_FREE_FRAMES', ())) == {tag for tag, free in frames.items()
+                                                               if free and ('frames', named(tag)) not in withheld}
                   and {('control_request', None), ('control_response', None), ('transcript_mirror', None)}
                   == {tag for tag, free in frames.items() if not free}
                   and not set(frames) & claude_tables['messages'])
@@ -2181,10 +2192,14 @@ sys.exit(payload.get('code', 0))
                                    if k in ('tool', 'field', 'inline', 'parent')},
                          'host': {k: v for k, v in (c_in.get('host') or {}).items() if k != 'routed'},
                          'task_types': {k: v for k, v in (c_in.get('task_types') or {}).items() if k != 'table'}}
+            # The remote-tools gate is off: compiled off (routed false) or, in a later build, behind a switch the
+            # environment strips (VELDO-0230: 2.1.317's CLAUDE_CODE_REMOTE_TOOLS_FORWARD, off by VELDO-0160 AC3).
+            routed = (c_in.get('host') or {}).get('routed')
             check('format/tool-forms', 'claude_code: the allowlist, the Agent tool\'s remote isolation, the _host field '
-                  'and the in-run task types are the binary\'s own, its remote-tools gate off [%s]'
-                  % [k for k in binary_in if binary_in[k] != module_in[k]],
-                  binary_in == module_in and (c_in.get('host') or {}).get('routed') is False
+                  'and the in-run task types are the binary\'s own, its remote-tools gate off [%s, %s]'
+                  % ([k for k in binary_in if binary_in[k] != module_in[k]], routed),
+                  binary_in == module_in and (routed is False or (isinstance(routed, str)
+                                                                  and routed in getattr(CE, 'CREDENTIALS', ())))
                   and c_in.get('workflow_last_tool') == 'label'
                   and (c_in.get('skill') or {}).get('input_fields') == ['args', 'skill']
                   and 'input_fork_field' in (c_in.get('skill') or {})

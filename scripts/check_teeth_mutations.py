@@ -7514,12 +7514,14 @@ def cases():
          "",
          ['decision/tool-free-forms'])
     pool('decision-claude-control-request-free', 'control_engine_claude.py',
-         "TOOL_FREE_FRAMES = frozenset((('active_goal', None),",
-         "TOOL_FREE_FRAMES = frozenset((('control_request', None), ('active_goal', None),  # defect\n",
+         "        'TOOL_FREE_FRAMES': frozenset(tuple(f) for f in forms['tool_free_frames']),\n",
+         "        'TOOL_FREE_FRAMES': frozenset([('control_request', None)] + [tuple(f) for f in forms['tool_free_frames']]),"
+         "  # defect\n",
          ['decision/unknown-forms', 'format/tool-forms'])
     pool('format-claude-tool-field-unlisted', 'control_engine_claude.py',
-         "    'system/init': {'tools': 'free'},\n",
-         "",
+         "        'TOOL_FIELDS': {tag: dict(paths) for tag, paths in forms['tool_fields'].items()},\n",
+         "        'TOOL_FIELDS': {tag: {path: how for path, how in paths.items() if (tag, path) != ('system/init', 'tools')}"
+         "  # defect\n                        for tag, paths in forms['tool_fields'].items()},\n",
          ['format/tool-forms'])
     # exec's own sub-agent call is an unknown call.
     pool('format-codex-collab-item-builtin', 'control_engine_codex.py',
@@ -7591,8 +7593,9 @@ def cases():
          "        named = [  # defect: the calls that contradict the configuration are not named beside it\n",
          ['decision/remote-agent-asks'])
     pool('remote-trigger-not-outside', 'control_engine_claude.py',
-         "          'remote_agent': {'tools': ('RemoteTrigger',),\n",
-         "          'remote_agent': {'tools': (),  # defect: a RemoteTrigger call starts nothing outside the run\n",
+         "        'NESTED': json.loads(json.dumps(forms['nested'])),\n",
+         "        'NESTED': dict(json.loads(json.dumps(forms['nested'])), remote_agent=dict(forms['nested']['remote_agent'],"
+         " tools=())),  # defect: a RemoteTrigger call starts nothing outside the run\n",
          ['decision/remote-agent-asks', 'format/tool-forms'])
     pool('remote-cron-durable-unread', 'control_engine_claude.py',
          "                if any(value is off or (isinstance(off, str) and value == off) for off in durable['off']):\n",
@@ -7628,9 +7631,9 @@ def cases():
          "    leaving = []  # defect: a call the allowlist does not show staying in the run is not asked about\n",
          ['decision/outward-tool-asks'])
     pool('outward-sendmessage-allowlisted', 'control_engine_claude.py',
-         "                          'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write'))\n",
-         "                          'Skill', 'TaskStop', 'TodoWrite', 'ToolSearch', 'WebFetch', 'WebSearch', 'Workflow', 'Write',"
-         " 'SendMessage'))  # defect: SendMessage is taken to stay in the run\n",
+         "        'IN_RUN_TOOLS': frozenset(forms['in_run_tools']),\n",
+         "        'IN_RUN_TOOLS': frozenset(forms['in_run_tools']) | {'SendMessage'},"
+         "  # defect: SendMessage is taken to stay in the run\n",
          ['decision/outward-tool-asks', 'format/tool-forms'])
     pool('outward-unknown-tool-allowed', 'control_engine_claude.py',
          "        if name not in IN_RUN:\n            found.append('tool:' + name)\n            continue\n",
@@ -7748,7 +7751,8 @@ def cases():
          "'repl': ('REPL',), ",
          "",
          ['decision/nested-constructs', 'format/tool-forms'],
-         also=[("          'repl': {'tool_progress': 'repl_call'},\n", "          'repl': {},\n")])
+         also=[("        'NESTED': json.loads(json.dumps(forms['nested'])),\n",
+                "        'NESTED': dict(json.loads(json.dumps(forms['nested'])), repl={}),\n")])
     pool('nested-workflow-dropped', 'control_engine_claude.py',
          "                'workflow': ('RunWorkflow', 'Workflow')}\n",
          "                }  # defect: the workflow tools are not nested work\n",
