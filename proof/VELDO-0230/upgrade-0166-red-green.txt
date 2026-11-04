@@ -1,0 +1,8 @@
+Suite 126 with the new row, on the modules at 91255fda (pre-fix discovery), scratch worktree:
+  SELFTEST FAIL: VELDO-0230 qualify/builtin-plugins: discovery finds every built-in plugin the binary registers, not only the probe's [['cc-plugin-fixture-probed@builtin']]
+  126_veldo_0230_qualify_reproduces                2 passed   98.31s
+  selftest (PARTIAL, 1 of 188 suites): 28 passed, 1 failed
+
+At ad7e54e4 (this fix):
+  126_veldo_0230_qualify_reproduces                3 passed   94.81s
+  selftest (PARTIAL, 1 of 188 suites): 29 passed, 0 failed
