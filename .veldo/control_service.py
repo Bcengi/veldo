@@ -272,6 +272,9 @@ LIM = _organ('control_account_limit', lazy=True)
 CD = _organ('control_conversation_decisions', lazy=True)
 # VELDO-0148: the land station, each land its own land dispatch, and a land the trunk moved under re-landed.
 LS = _organ('control_landing_station', lazy=True)
+# The factory PM's cycles, read for each unit's next station: loaded once, since VELDO-0175 made its own imports
+# (intake and its conversations) a module tree that costs about 0.2 s to load each time.
+PM = _organ('control_workflow_cycle_pm', lazy=True)
 CT = _organ('control_team', lazy=True)
 TR = _organ('control_team_routes', lazy=True)
 WORK = 'work.json'
@@ -2261,7 +2264,7 @@ class Line:
             if last is not None:
                 return self.after_land(unit, last, latest, report)
         build = latest.get((unit, 'build'))
-        pm = _organ('control_workflow_cycle_pm')
+        pm = PM
         assignment = pm.assigned(self.service.conn, unit)
         if build is None:
             try:
