@@ -34,6 +34,7 @@ THE CONTROL PORT adds:
   /conversation/replies   {replies: [text, ...]}         the replies the next turns end with, in order
   /conversation/hold      {conversation, on}              hold a conversation's running turn after its error line
   /conversation/pace      {seconds}                       the time between two printed lines
+  /conversation/pause     {on}                            start no new turn while on (a turn stays waiting)
   /conversation/telegram  {conversation, text}            the owner writes on Telegram; the PM routes it there
   /conversation/role      {conversation, role}            the owner changes the role elsewhere (a newer version)
   /conversation/read      {conversation}                  the stored conversation and its turns
@@ -126,7 +127,7 @@ class ConversationUi(F.FactoryUi):
             raise RuntimeError('default team conversation roles: %s' % answer)
         self.api.sessions.end_by_principal('owner')
         self._project()
-        self.replies, self.held, self.pace, self.jobs = [], set(), 0.4, {}
+        self.replies, self.held, self.pace, self.jobs, self.paused = [], set(), 0.4, {}, False
         self.secret = 'e2e-secret-' + secrets.token_hex(8)
         self.deliver()
 
@@ -171,7 +172,7 @@ class ConversationUi(F.FactoryUi):
         of each run that is due, and end each run that printed everything."""
         now = time.time()
         changed = False
-        for turn in self.conversations.waiting():
+        for turn in ([] if self.paused else self.conversations.waiting()):
             conversation = turn['conversation']
             if conversation not in self.jobs:
                 self._start(conversation, turn['sequence'])
@@ -305,6 +306,9 @@ def control_server(factory, stop):
         if path == '/conversation/hold':
             (f.held.add if body.get('on', True) else f.held.discard)(body['conversation'])
             return {'held': sorted(f.held)}
+        if path == '/conversation/pause':
+            f.paused = bool(body.get('on', True))
+            return {'paused': f.paused}
         if path == '/conversation/pace':
             f.pace = float(body['seconds'])
             return {'pace': f.pace}
