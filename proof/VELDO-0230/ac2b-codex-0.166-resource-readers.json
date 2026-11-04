@@ -1,80 +1,289 @@
 {
- "executable_digest": "sha256:b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8",
- "expected": {
-  "mcp_servers": [],
-  "model": "gpt-6-astra",
-  "plugins": [],
-  "skills": [],
-  "slash_commands": [],
-  "tools": [
-   "shell",
-   "update_plan"
+ "owner_decision": "Telegram 29400/29401, 2026-09-28; 38878, 2026-11-03",
+ "binary_sha256": "sha256:b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8",
+ "cases": [
+  {
+   "model": "gpt-6-astra",
+   "selected_server": true,
+   "record": "resources-gpt-6-astra-selected.json",
+   "returncode": 0,
+   "observations": [
+    {
+     "native_tool_mapping": {
+      "shell": [
+       "exec_command",
+       "write_stdin"
+      ],
+      "update_plan": [
+       "update_plan"
+      ],
+      "sub_agents": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ],
+      "request_user_input_async": [
+       "request_user_input_async"
+      ],
+      "clock": [
+       "clock__curr_time",
+       "clock.sleep"
+      ],
+      "multi_agent": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ],
+      "mcp_server": [
+       "list_mcp_resource_templates",
+       "list_mcp_resources",
+       "read_mcp_resource"
+      ]
+     },
+     "actual": [
+      "exec",
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "mcp__jira__jira_search",
+      "read_mcp_resource",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ],
+     "expected": [
+      "exec",
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "mcp__jira__jira_search",
+      "read_mcp_resource",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ],
+     "unexpected": [],
+     "missing": [],
+     "stop": null
+    }
+   ],
+   "exact_equality": true
+  },
+  {
+   "model": "gpt-6-astra",
+   "selected_server": false,
+   "record": "resources-gpt-6-astra-none.json",
+   "returncode": 0,
+   "observations": [
+    {
+     "native_tool_mapping": {
+      "shell": [
+       "exec_command",
+       "write_stdin"
+      ],
+      "update_plan": [
+       "update_plan"
+      ],
+      "sub_agents": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ],
+      "request_user_input_async": [
+       "request_user_input_async"
+      ],
+      "clock": [
+       "clock__curr_time",
+       "clock.sleep"
+      ],
+      "multi_agent": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ],
+      "mcp_server": [
+       "list_mcp_resource_templates",
+       "list_mcp_resources",
+       "read_mcp_resource"
+      ]
+     },
+     "actual": [
+      "exec",
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ],
+     "expected": [
+      "exec",
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "read_mcp_resource",
+      "update_plan",
+      "wait",
+      "write_stdin"
+     ],
+     "unexpected": [],
+     "missing": [],
+     "stop": null
+    }
+   ],
+   "exact_equality": true
+  },
+  {
+   "model": "gpt-5.5",
+   "selected_server": true,
+   "record": "resources-gpt-5.5-selected.json",
+   "returncode": 0,
+   "observations": [
+    {
+     "native_tool_mapping": {
+      "shell": [
+       "exec_command",
+       "write_stdin"
+      ],
+      "update_plan": [
+       "update_plan"
+      ],
+      "sub_agents": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ],
+      "request_user_input_async": [
+       "request_user_input_async"
+      ],
+      "clock": [
+       "clock__curr_time",
+       "clock.sleep"
+      ],
+      "multi_agent": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ],
+      "mcp_server": [
+       "list_mcp_resource_templates",
+       "list_mcp_resources",
+       "read_mcp_resource"
+      ]
+     },
+     "actual": [
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "mcp__jira__jira_search",
+      "read_mcp_resource",
+      "update_plan",
+      "write_stdin"
+     ],
+     "expected": [
+      "exec_command",
+      "list_mcp_resource_templates",
+      "list_mcp_resources",
+      "mcp__jira__jira_search",
+      "read_mcp_resource",
+      "update_plan",
+      "write_stdin"
+     ],
+     "unexpected": [],
+     "missing": [],
+     "stop": null
+    }
+   ],
+   "exact_equality": true
+  },
+  {
+   "model": "gpt-5.5",
+   "selected_server": false,
+   "record": "resources-gpt-5.5-none.json",
+   "returncode": 0,
+   "observations": [
+    {
+     "native_tool_mapping": {
+      "shell": [
+       "exec_command",
+       "write_stdin"
+      ],
+      "update_plan": [
+       "update_plan"
+      ],
+      "sub_agents": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ],
+      "request_user_input_async": [
+       "request_user_input_async"
+      ],
+      "clock": [
+       "clock__curr_time",
+       "clock.sleep"
+      ],
+      "multi_agent": [
+       "collaboration.followup_task",
+       "collaboration.interrupt_agent",
+       "collaboration.list_agents",
+       "collaboration.send_message",
+       "collaboration.spawn_agent",
+       "collaboration.wait_agent"
+      ],
+      "mcp_server": [
+       "list_mcp_resource_templates",
+       "list_mcp_resources",
+       "read_mcp_resource"
+      ]
+     },
+     "actual": [
+      "exec_command",
+      "update_plan",
+      "write_stdin"
+     ],
+     "expected": [
+      "exec_command",
+      "update_plan",
+      "write_stdin"
+     ],
+     "unexpected": [],
+     "missing": [],
+     "stop": null
+    }
+   ],
+   "exact_equality": true
+  }
+ ],
+ "offered_without_server": {
+  "code_mode_only": [
+   "list_mcp_resource_templates",
+   "list_mcp_resources",
+   "read_mcp_resource"
   ]
  },
- "note": "VELDO-0230 AC2(b): Codex 0.166.0, Code Mode model gpt-6-astra, no MCP server selected: the loopback request (qualify.py fixtures) offers the three MCP resource readers, which the owner rule of Telegram 29400/29401 (none without a selected server) stops as codex_unexpected_tool. Open: owner decision.",
- "observations": [
-  {
-   "actual": [
-    "exec",
-    "exec_command",
-    "list_mcp_resource_templates",
-    "list_mcp_resources",
-    "read_mcp_resource",
-    "update_plan",
-    "wait",
-    "write_stdin"
-   ],
-   "expected": [
-    "exec",
-    "exec_command",
-    "update_plan",
-    "wait",
-    "write_stdin"
-   ],
-   "missing": [],
-   "native_tool_mapping": {
-    "clock": [
-     "clock__curr_time",
-     "clock.sleep"
-    ],
-    "mcp_server": [
-     "list_mcp_resource_templates",
-     "list_mcp_resources",
-     "read_mcp_resource"
-    ],
-    "multi_agent": [
-     "collaboration.followup_task",
-     "collaboration.interrupt_agent",
-     "collaboration.list_agents",
-     "collaboration.send_message",
-     "collaboration.spawn_agent",
-     "collaboration.wait_agent"
-    ],
-    "request_user_input_async": [
-     "request_user_input_async"
-    ],
-    "shell": [
-     "exec_command",
-     "write_stdin"
-    ],
-    "sub_agents": [
-     "collaboration.followup_task",
-     "collaboration.interrupt_agent",
-     "collaboration.list_agents",
-     "collaboration.send_message",
-     "collaboration.spawn_agent",
-     "collaboration.wait_agent"
-    ],
-    "update_plan": [
-     "update_plan"
-    ]
-   },
-   "stop": "configuration_stop:codex_unexpected_tool",
-   "unexpected": [
-    "list_mcp_resource_templates",
-    "list_mcp_resources",
-    "read_mcp_resource"
-   ]
-  }
- ]
+ "rule": "Exactly three resource readers with a selected MCP server; without one, none granted and exactly those the binary offers a model of its tool mode accepted (nothing to list or read).",
+ "network": "127.0.0.1 stand-in; empty temporary HOME and CODEX_HOME; Landlock TCP restriction"
 }

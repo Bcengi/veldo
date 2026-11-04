@@ -1,8 +1,8 @@
-claude-pin-digest-unchecked              KILLED   rows=['pin/unexpected-launch'] failed=['pin/unexpected-launch']
-claude-unknown-version-accepted          KILLED   rows=['pin/unexpected-launch'] failed=['contained/bind', 'pin/copy', 'pin/unexpected-launch']
-claude-pin-unverified                    KILLED   rows=['pin/copy'] failed=['pin/copy']
-claude-qualification-not-installed       KILLED   rows=['pin/shipped-qualification'] failed=['pin/shipped-qualification']
-adapter-digest-unbound                   KILLED   rows=['pin/unexpected-launch'] failed=['pin/unexpected-launch']
-adapter-pin-skipped                      KILLED   rows=['pin/unexpected-launch'] failed=['artifacts/malformed-output', 'artifacts/missing-result', 'artifacts/missing-usage', 'artifacts/nonzero-and-signal', 'artifacts/normal-exit', 'caps/boundaries']
-adapter-version-unbound                  KILLED   rows=['pin/unexpected-launch'] failed=['pin/unexpected-launch']
-adapter-qualification-not-scaffolded     KILLED   rows=['pin/qualified-record'] failed=['pin/qualified-record']
+claude-pin-digest-unchecked              KILLED rows=['pin/unexpected-launch'] failed=['pin/unexpected-launch'] (baseline failed=[])
+claude-unknown-version-accepted          KILLED rows=['pin/unexpected-launch'] failed=['pin/unexpected-launch', 'pin/copy', 'contained/bind']
+claude-pin-unverified                    KILLED rows=['pin/copy'] failed=['pin/copy']
+claude-qualification-not-installed       KILLED rows=['pin/shipped-qualification'] failed=['pin/shipped-qualification']
+adapter-digest-unbound                   KILLED rows=['pin/unexpected-launch'] failed=['pin/unexpected-launch'] (baseline failed=[])
+adapter-pin-skipped                      KILLED rows=['pin/unexpected-launch'] failed=['lifecycle/registered', 'lifecycle/normal-run', 'lifecycle/actual-binary', 'pin/unexpected-launch', 'pin/qualified-record', 'artifacts/normal-exit']
+adapter-version-unbound                  KILLED rows=['pin/unexpected-launch'] failed=['pin/unexpected-launch']
+adapter-qualification-not-scaffolded     KILLED rows=['pin/qualified-record'] failed=['pin/qualified-record']

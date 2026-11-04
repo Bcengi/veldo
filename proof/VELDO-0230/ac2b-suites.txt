@@ -1,54 +1,24 @@
-AC2(b): the affected suites on Codex 0.166.0 (private prefix) and Claude Code 2.1.317, in a detached worktree at 3937e439 qualified by: python3 .veldo/qualify.py --codex <0.166.0 vendor binary> --claude 2.1.317
-79_veldo_0061_codex_adapter: 47 passed, 0 failed
-82_veldo_0165_launch_hygiene: 49 passed, 0 failed
-82_veldo_0173_tool_registry: 37 passed, 0 failed
-90_veldo_0127_feature_profile: 27 passed, 1 failed
-    SELFTEST FAIL: VELDO-0127 profile/pinned-tools
-78_veldo_0060_claude_adapter: 61 passed, 0 failed
-78_veldo_0160_account_pool: 58 passed, 2 failed
-    SELFTEST FAIL: VELDO-0160 format/tool-forms
-    SELFTEST FAIL: VELDO-0160 decision/outward-tool-asks
-80_veldo_0155_claude_baseline: 45 passed, 0 failed
-82_veldo_0141_execution_record: 66 passed, 0 failed
-85_veldo_0158_credential_delivery: 49 passed, 0 failed
-85_veldo_0171_setup_api: 44 passed, 0 failed
-88_veldo_0127_feature_defaults: 26 passed, 25 failed
-    SELFTEST FAIL: VELDO-0127 defaults/apps
-    SELFTEST FAIL: VELDO-0127 defaults/browser_use
-    SELFTEST FAIL: VELDO-0127 defaults/browser_use_external
-    SELFTEST FAIL: VELDO-0127 defaults/browser_use_full_cdp_access
-    SELFTEST FAIL: VELDO-0127 defaults/computer_use
-    SELFTEST FAIL: VELDO-0127 defaults/hooks
-    SELFTEST FAIL: VELDO-0127 defaults/image_generation
-    SELFTEST FAIL: VELDO-0127 defaults/in_app_browser
-    SELFTEST FAIL: VELDO-0127 defaults/in_app_local_automation
-    SELFTEST FAIL: VELDO-0127 defaults/mentions_v2
-    SELFTEST FAIL: VELDO-0127 defaults/plugins
-    SELFTEST FAIL: VELDO-0127 defaults/remote_plugin
-    SELFTEST FAIL: VELDO-0127 defaults/skill_mcp_dependency_install
-    SELFTEST FAIL: VELDO-0127 defaults/skill_search
-    SELFTEST FAIL: VELDO-0127 defaults/tool_suggest
-    SELFTEST FAIL: VELDO-0127 defaults/workspace_dependencies
-    SELFTEST FAIL: VELDO-0127 defaults/sleep_tool
-    SELFTEST FAIL: VELDO-0127 defaults/unified_exec
-    SELFTEST FAIL: VELDO-0127 defaults/unified_exec_tty
-    SELFTEST FAIL: VELDO-0127 mapped/shell
-    SELFTEST FAIL: VELDO-0127 mapped/clock
-    SELFTEST FAIL: VELDO-0127 mapped/view_image
-    SELFTEST FAIL: VELDO-0127 mapped/multi_agent
-    SELFTEST FAIL: VELDO-0127 mapped/sub_agents
-    SELFTEST FAIL: VELDO-0127 defaults/unknown
-89_veldo_0127_feature_listing: 26 passed, 11 failed
-    SELFTEST FAIL: VELDO-0127 explicit/memories
-    SELFTEST FAIL: VELDO-0127 explicit/recommended_plugins
-    SELFTEST FAIL: VELDO-0127 explicit/request_permissions_tool
-    SELFTEST FAIL: VELDO-0127 explicit/standalone_web_search
-    SELFTEST FAIL: VELDO-0127 explicit/enable_mcp_apps
-    SELFTEST FAIL: VELDO-0127 explicit/guardianv2.thread_context
-    SELFTEST FAIL: VELDO-0127 explicit/mapped-default-off
-    SELFTEST FAIL: VELDO-0127 explicit/unknown-default-off
-    SELFTEST FAIL: VELDO-0127 listing/missing
-    SELFTEST FAIL: VELDO-0127 listing/empty
-    SELFTEST FAIL: VELDO-0127 listing/malformed
-125_veldo_0230_engine_census: 31 passed, 0 failed
-126_veldo_0230_qualify_reproduces: 28 passed, 0 failed
+VELDO-0230 fix round 1, AC2 (b): scratch git worktree at 8fc791a2, qualified by one command with the
+private-prefix Codex 0.166.0 (npm install --prefix .scratch-0230/codex-0.166.0) and Claude Code 2.1.317; then each suite
+run there with python3 scripts/selftest.py --suite NAME. exit=2 is selftest's PARTIAL marker (one suite), not a failure.
+
+75_veldo_0062_accounts exit=2  75_veldo_0062_accounts 24 passed 35.60s
+78_veldo_0160_account_pool exit=1  78_veldo_0160_account_pool 32 passed 25.16s
+  SELFTEST FAIL: VELDO-0160 format/tool-forms
+  SELFTEST FAIL: VELDO-0160 decision/outward-tool-asks
+79_veldo_0061_codex_adapter exit=2  79_veldo_0061_codex_adapter 21 passed 14.99s
+81_veldo_0156_codex_baseline exit=2  81_veldo_0156_codex_baseline 22 passed 3.13s
+82_veldo_0165_launch_hygiene exit=2  82_veldo_0165_launch_hygiene 23 passed 15.60s
+82_veldo_0173_tool_registry exit=2  82_veldo_0173_tool_registry 11 passed 2.56s
+85_veldo_0158_credential_delivery exit=2  85_veldo_0158_credential_delivery 23 passed 4.71s
+85_veldo_0171_setup_api exit=2  85_veldo_0171_setup_api 18 passed 9.85s
+86_veldo_0127_agent_configuration exit=1  86_veldo_0127_agent_configuration 25 passed 41.23s
+  SELFTEST FAIL: VELDO-0127 live/claude
+  SELFTEST FAIL: VELDO-0127 live/codex
+87_veldo_0127_codex_delivery exit=2  87_veldo_0127_codex_delivery 192 passed 61.42s
+87_veldo_0170_receiver_trust exit=2  87_veldo_0170_receiver_trust 12 passed 6.56s
+88_veldo_0127_feature_defaults exit=2  88_veldo_0127_feature_defaults 25 passed 11.10s
+89_veldo_0127_feature_listing exit=2  89_veldo_0127_feature_listing 11 passed 5.63s
+90_veldo_0127_feature_profile exit=2  90_veldo_0127_feature_profile 2 passed 14.21s
+125_veldo_0230_engine_census exit=2  125_veldo_0230_engine_census 7 passed 7.35s
+126_veldo_0230_qualify_reproduces exit=2  126_veldo_0230_qualify_reproduces 2 passed 95.36s
