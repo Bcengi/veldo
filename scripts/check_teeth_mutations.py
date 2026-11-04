@@ -12153,6 +12153,14 @@ def cases():
     add(183, 'store183-open-unchecked', suite183, 'control_memory_store.py',
         "    others = holders(data, {os.getpid()})\n",
         "    others = set()  # defect: a store another process holds open is opened anyway\n", ['AC4/open-refused'])
+    add(183, 'kb183-guessed-name', suite183, 'control_memory_kb.py',
+        "    'stats': ('kb.store', 'get_stats', {}, []),\n",
+        "    'stats': ('kb.store', 'stats', {}, []),  # defect: a name memory_kb's cli.py does not call\n",
+        ['AC1/real-layout'])
+    add(183, 'setup183-no-servers-step', suite183, 'control_factory_setup.py',
+        "    if memory_plan is not None and dispatch is not None:\n        with step('memory_servers'):\n",
+        "    if False:  # defect: setup leaves the servers step to a separate command\n        with step('memory_servers'):\n",
+        ['AC1/setup-step'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
