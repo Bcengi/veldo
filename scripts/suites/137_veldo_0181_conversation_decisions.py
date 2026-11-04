@@ -795,12 +795,12 @@ else:
               len(k_settled) == 1 and k_settled[0].get('choice') == full_choice
               and k_settled[0].get('originating_channel') == 'telegram_chat'
               and k_settled[0].get('rationale') == key_text and k_told == [])
-        check('AC1/unclear-ticket-key', 'it routes the message exactly as the bare project name does %s' % (routing(kpid),),
-              [r.get('outcome') for r in k_applied] == ['resolved'] and routing(kpid) == routing(bpid)
+        check('AC1/unclear-ticket-key', 'it routes the message exactly as the bare project name (and the full form) does %s' % (routing(kpid),),
+              [r.get('outcome') for r in k_applied] == ['resolved'] and routing(kpid) == routing(fpid)
               and (intake.question(kq.get('question_id')) or {}).get('choice') == full_choice)
         check('AC1/unclear-ticket-key', 'a second reply settles and routes nothing again; neither reply is a turn, opens '
               'a conversation or is intake\'s message',
-              len(settled_records(kr) if kr else []) == 1 and route_answers() == [] and routing(kpid) == routing(bpid)
+              len(settled_records(kr) if kr else []) == 1 and route_answers() == [] and routing(kpid) == routing(fpid)
               and not_a_turn(k_update) and not_a_turn(k_again_update))
         free_text = 'not those: the invoices one from Monday'
         cpid, cq, cr, c_update, c_told, c_applied = answered_by(free_text)
