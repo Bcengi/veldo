@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0248
 title: The LangGraph runtime moves to the latest 1.2.x release, with the lock, its records and the reviewed closure regenerated from the registry
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -178,3 +178,6 @@ directory from an account.
 2026-11-04: drafted from the owner's question, Telegram 39083 ("Is 1.2 latest?"), and the lead's answer,
 Telegram 39084 (locked to 1.2.12, latest 1.2.19, a deliberate move before VELDO-0241 to VELDO-0247 are
 built). Target set read from PyPI the same day.
+
+2026-11-04: ready. The owner approved the move, Telegram 39087 ("Yes, get latest"), after the lead's
+summary of what changed between 1.2.12 and 1.2.19 (39086).
