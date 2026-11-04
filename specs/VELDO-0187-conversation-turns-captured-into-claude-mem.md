@@ -12,7 +12,7 @@ work: W147
 plan_revision: 4
 depends_on: [VELDO-0141, VELDO-0155, VELDO-0174, VELDO-0176, VELDO-0182, VELDO-0183]
 placement: [contracts, engine, fleet]
-protected_paths: []
+protected_paths: ["scripts/gate_unconfined.json"]
 footprint:
   - "engine/.veldo/control_memory*.py"
   - ".veldo/control_memory*.py"
@@ -33,6 +33,8 @@ footprint:
   - "specs/VELDO-0187-conversation-turns-captured-into-claude-mem.md"
   - "specs/index.md"
   - "proof/VELDO-0187/*"
+  - "scripts/gate_unconfined.json"
+  - "scripts/suites/86_veldo_0186_setup_assets.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -158,3 +160,7 @@ captured exactly as a Claude Code turn is.
 factory turns MVP function (the lead's decision). Only the owner marks a specification ready.
 
 2026-09-27: marked ready by the owner (Telegram 29301, "All ready otherwise"), with his two points applied: plain-words commands (29299) and smart add on the subscription instead of a paid API (29300).
+
+2026-11-04: footprint widened by the lead after the build (proof/VELDO-0187/OPEN.md items 1 and 2): suite 138 needs the
+systemd user manager, so it joins scripts/gate_unconfined.json (protected, owner approval at landing), and suite 86_0186's
+installed-assets row gains the claude-mem qualification record setup now installs. Acceptance criteria are unchanged.
