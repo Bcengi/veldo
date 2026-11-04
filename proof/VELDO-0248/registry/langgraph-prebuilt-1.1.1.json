@@ -1,0 +1,118 @@
+{
+ "info": {
+  "author": null,
+  "author_email": null,
+  "bugtrack_url": null,
+  "classifiers": [
+   "Development Status :: 5 - Production/Stable",
+   "Programming Language :: Python",
+   "Programming Language :: Python :: 3",
+   "Programming Language :: Python :: 3 :: Only",
+   "Programming Language :: Python :: 3.10",
+   "Programming Language :: Python :: 3.11",
+   "Programming Language :: Python :: 3.12",
+   "Programming Language :: Python :: 3.13",
+   "Programming Language :: Python :: Implementation :: CPython",
+   "Programming Language :: Python :: Implementation :: PyPy"
+  ],
+  "description": "# LangGraph Prebuilt\n\n[![PyPI - Version](https://img.shields.io/pypi/v/langgraph-prebuilt?label=%20)](https://pypi.org/project/langgraph-prebuilt/#history)\n[![PyPI - License](https://img.shields.io/pypi/l/langgraph-prebuilt)](https://opensource.org/licenses/MIT)\n[![PyPI - Downloads](https://img.shields.io/pepy/dt/langgraph-prebuilt)](https://pypistats.org/packages/langgraph-prebuilt)\n[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/langchain_oss.svg?style=social&label=Follow%20%40LangChain)](https://x.com/langchain_oss)\n\nTo help you ship LangGraph apps to production faster, check out [LangSmith](https://www.langchain.com/langsmith).\n[LangSmith](https://www.langchain.com/langsmith) is a unified developer platform for building, testing, and monitoring LLM applications.\n\n## Quick Install\n\n```bash\nuv add langgraph\n```\n\n## \ud83e\udd14 What is this?\n\nThis library defines high-level APIs for creating and executing LangGraph agents and tools. It includes prebuilt components such as `create_react_agent`, `ToolNode`, validation helpers, and Agent Inbox schemas.\n\n## \ud83d\udcd6 Documentation\n\nFor full documentation, see the [API reference](https://reference.langchain.com/python/langgraph.prebuilt/). For conceptual guides and tutorials, see the [LangGraph Docs](https://docs.langchain.com/oss/python/langgraph/overview).\n\n> [!IMPORTANT]\n> This library is bundled with `langgraph`; most users should install `langgraph` instead of installing `langgraph-prebuilt` directly.\n\n## Agents\n\n`langgraph-prebuilt` provides an [implementation](https://reference.langchain.com/python/langgraph.prebuilt/chat_agent_executor/create_react_agent) of a tool-calling ReAct-style agent - `create_react_agent`:\n\n```bash\nuv add langchain-anthropic\n```\n\n```python\nfrom langchain_anthropic import ChatAnthropic\nfrom langgraph.prebuilt import create_react_agent\n\n\n# Define the tools for the agent to use\ndef search(query: str):\n    \"\"\"Call to surf the web.\"\"\"\n    # This is a placeholder, but don't tell the LLM that...\n    if \"sf\" in query.lower() or \"san francisco\" in query.lower():\n        return \"It's 60 degrees and foggy.\"\n    return \"It's 90 degrees and sunny.\"\n\n\ntools = [search]\nmodel = ChatAnthropic(model=\"claude-3-7-sonnet-latest\")\n\napp = create_react_agent(model, tools)\n# run the agent\napp.invoke(\n    {\"messages\": [{\"role\": \"user\", \"content\": \"what is the weather in sf\"}]},\n)\n```\n\n## Tools\n\n### ToolNode\n\n`langgraph-prebuilt` provides an [implementation](https://reference.langchain.com/python/langgraph.prebuilt/tool_node/ToolNode) of a node that executes tool calls - `ToolNode`:\n\n```python\nfrom langgraph.prebuilt import ToolNode\nfrom langchain_core.messages import AIMessage\n\n\ndef search(query: str):\n    \"\"\"Call to surf the web.\"\"\"\n    # This is a placeholder, but don't tell the LLM that...\n    if \"sf\" in query.lower() or \"san francisco\" in query.lower():\n        return \"It's 60 degrees and foggy.\"\n    return \"It's 90 degrees and sunny.\"\n\n\ntool_node = ToolNode([search])\ntool_calls = [\n    {\"name\": \"search\", \"args\": {\"query\": \"what is the weather in sf\"}, \"id\": \"1\"}\n]\nai_message = AIMessage(content=\"\", tool_calls=tool_calls)\n# execute tool call\ntool_node.invoke({\"messages\": [ai_message]})\n```\n\n### ValidationNode\n\n`langgraph-prebuilt` provides an [implementation](https://reference.langchain.com/python/langgraph.prebuilt/tool_validator/ValidationNode) of a node that validates tool calls against a pydantic schema - `ValidationNode`:\n\n```python\nfrom pydantic import BaseModel, field_validator\nfrom langgraph.prebuilt import ValidationNode\nfrom langchain_core.messages import AIMessage\n\n\nclass SelectNumber(BaseModel):\n    a: int\n\n    @field_validator(\"a\")\n    def a_must_be_meaningful(cls, v):\n        if v != 37:\n            raise ValueError(\"Only 37 is allowed\")\n        return v\n\n\nvalidation_node = ValidationNode([SelectNumber])\nvalidation_node.invoke(\n    {\n        \"messages\": [\n            AIMessage(\n                \"\", tool_calls=[{\"name\": \"SelectNumber\", \"args\": {\"a\": 42}, \"id\": \"1\"}]\n            )\n        ]\n    }\n)\n```\n\n## Agent Inbox\n\nThe library contains schemas for using the [Agent Inbox](https://github.com/langchain-ai/agent-inbox) with LangGraph agents. Learn more about how to use Agent Inbox [here](https://github.com/langchain-ai/agent-inbox#interrupts).\n\n```python\nfrom langgraph.types import interrupt\nfrom langgraph.prebuilt.interrupt import HumanInterrupt, HumanResponse\n\ndef my_graph_function():\n    # Extract the last tool call from the `messages` field in the state\n    tool_call = state[\"messages\"][-1].tool_calls[0]\n    # Create an interrupt\n    request: HumanInterrupt = {\n        \"action_request\": {\n            \"action\": tool_call['name'],\n            \"args\": tool_call['args']\n        },\n        \"config\": {\n            \"allow_ignore\": True,\n            \"allow_respond\": True,\n            \"allow_edit\": False,\n            \"allow_accept\": False\n        },\n        \"description\": _generate_email_markdown(state) # Generate a detailed markdown description.\n    }\n    # Send the interrupt request inside a list, and extract the first response\n    response = interrupt([request])[0]\n    if response['type'] == \"response\":\n        # Do something with the response\n    ...\n```\n\n## \ud83d\udcd5 Releases & Versioning\n\nSee our [Releases](https://docs.langchain.com/oss/python/release-policy) and [Versioning](https://docs.langchain.com/oss/python/versioning) policies.\n\n## \ud83d\udc81 Contributing\n\nAs an open-source project in a rapidly developing field, we are extremely open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation.\n\nFor detailed information on how to contribute, see the [Contributing Guide](https://docs.langchain.com/oss/python/contributing/overview).\n",
+  "description_content_type": "text/markdown",
+  "docs_url": null,
+  "download_url": null,
+  "downloads": {
+   "last_day": -1,
+   "last_month": -1,
+   "last_week": -1
+  },
+  "dynamic": null,
+  "home_page": null,
+  "keywords": null,
+  "license": null,
+  "license_expression": "MIT",
+  "license_files": [
+   "LICENSE"
+  ],
+  "maintainer": null,
+  "maintainer_email": null,
+  "name": "langgraph-prebuilt",
+  "package_url": "https://pypi.org/project/langgraph-prebuilt/",
+  "platform": null,
+  "project_url": "https://pypi.org/project/langgraph-prebuilt/",
+  "project_urls": {
+   "Reddit": "https://www.reddit.com/r/LangChain/",
+   "Slack": "https://www.langchain.com/join-community",
+   "Source": "https://github.com/langchain-ai/langgraph/tree/main/libs/prebuilt",
+   "Twitter": "https://x.com/langchain_oss"
+  },
+  "provides_extra": null,
+  "release_url": "https://pypi.org/project/langgraph-prebuilt/1.1.1/",
+  "requires_dist": [
+   "langchain-core>=1.3.1",
+   "langgraph-checkpoint<5.0.0,>=2.1.0"
+  ],
+  "requires_python": ">=3.10",
+  "summary": "Library with high-level APIs for creating and executing LangGraph agents and tools.",
+  "version": "1.1.1",
+  "yanked": false,
+  "yanked_reason": null
+ },
+ "last_serial": 42257314,
+ "ownership": {
+  "organization": null,
+  "roles": [
+   {
+    "role": "Owner",
+    "user": "langchain"
+   }
+  ]
+ },
+ "urls": [
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0c378432b6201dcf4b6641e642ce9f03e353515a155f15501a91fa7cdd401496"
+   },
+   "digests": {
+    "blake2b_256": "38264da2c6ae8b9fe73c3c09cf32c058415c5041e773fd00219c5e0d76588c23",
+    "md5": "5edd8ec708a1e6d99afffcdb0ceeddcb",
+    "sha256": "fae17c22562e501940eb7aa052a15c58a431febbabf33f8ad172e1b44354a7e4"
+   },
+   "downloads": -1,
+   "filename": "langgraph_prebuilt-1.1.1-py3-none-any.whl",
+   "has_sig": false,
+   "md5_digest": "5edd8ec708a1e6d99afffcdb0ceeddcb",
+   "packagetype": "bdist_wheel",
+   "python_version": "py3",
+   "requires_python": ">=3.10",
+   "size": 42254,
+   "upload_time": "2026-10-15T04:32:24",
+   "upload_time_iso_8601": "2026-10-15T04:32:24.100762Z",
+   "url": "https://files.pythonhosted.org/packages/38/26/4da2c6ae8b9fe73c3c09cf32c058415c5041e773fd00219c5e0d76588c23/langgraph_prebuilt-1.1.1-py3-none-any.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": false,
+   "digests": {
+    "blake2b_256": "abd9e50d6e6b8d241b90564892afed8fac98d17da023c82810577cdb4530f87c",
+    "md5": "316dc6c1f6ec5729b43a8977eb2efc08",
+    "sha256": "f1b1a4772e7f9f15ba736411aad3877183ad40cd9349748df76bd2b9f58a83c7"
+   },
+   "downloads": -1,
+   "filename": "langgraph_prebuilt-1.1.1.tar.gz",
+   "has_sig": false,
+   "md5_digest": "316dc6c1f6ec5729b43a8977eb2efc08",
+   "packagetype": "sdist",
+   "python_version": "source",
+   "requires_python": ">=3.10",
+   "size": 179437,
+   "upload_time": "2026-10-15T04:32:25",
+   "upload_time_iso_8601": "2026-10-15T04:32:25.224295Z",
+   "url": "https://files.pythonhosted.org/packages/ab/d9/e50d6e6b8d241b90564892afed8fac98d17da023c82810577cdb4530f87c/langgraph_prebuilt-1.1.1.tar.gz",
+   "yanked": false,
+   "yanked_reason": null
+  }
+ ],
+ "vulnerabilities": []
+}

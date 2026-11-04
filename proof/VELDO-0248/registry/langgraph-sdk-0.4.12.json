@@ -1,0 +1,110 @@
+{
+ "info": {
+  "author": null,
+  "author_email": null,
+  "bugtrack_url": null,
+  "classifiers": [],
+  "description": "# LangGraph Python SDK\n\n[![PyPI - Version](https://img.shields.io/pypi/v/langgraph-sdk?label=%20)](https://pypi.org/project/langgraph-sdk/#history)\n[![PyPI - License](https://img.shields.io/pypi/l/langgraph-sdk)](https://opensource.org/licenses/MIT)\n[![PyPI - Downloads](https://img.shields.io/pepy/dt/langgraph-sdk)](https://pypistats.org/packages/langgraph-sdk)\n[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/langchain_oss.svg?style=social&label=Follow%20%40LangChain)](https://x.com/langchain_oss)\n\nTo help you ship LangGraph apps to production faster, check out [LangSmith](https://www.langchain.com/langsmith).\n[LangSmith](https://www.langchain.com/langsmith) is a unified developer platform for building, testing, and monitoring LLM applications.\n\n## Quick Install\n\n```bash\nuv add langgraph-sdk\n```\n\n## \ud83e\udd14 What is this?\n\nThis library provides the Python SDK for interacting with the LangGraph API. Use it to connect to a running LangGraph API server, manage assistants and threads, and stream runs from Python applications.\n\nYou will need a running LangGraph API server. If you're running a server locally using `langgraph-cli`, the SDK will automatically point at `http://localhost:8123`; otherwise, specify the server URL when creating a client.\n\n## \ud83d\udcd6 Documentation\n\nFor full documentation, see the [API reference](https://reference.langchain.com/python/langgraph-sdk/). For conceptual guides and tutorials, see the [LangGraph Docs](https://docs.langchain.com/oss/python/langgraph/overview).\n\n## Quick Start\n\n```python\nfrom langgraph_sdk import get_client\n\n# If you're using a remote server, initialize the client with `get_client(url=REMOTE_URL)`\nclient = get_client()\n\n# List all assistants\nassistants = await client.assistants.search()\n\n# We auto-create an assistant for each graph you register in config.\nagent = assistants[0]\n\n# Start a new thread\nthread = await client.threads.create()\n\n# Start a streaming run\ninput = {\"messages\": [{\"role\": \"human\", \"content\": \"what's the weather in la\"}]}\nasync for chunk in client.runs.stream(\n    thread[\"thread_id\"], agent[\"assistant_id\"], input=input\n):\n    print(chunk)\n```\n\n## Known Limitations\n\n- **WebSocket transport** requires `websockets>=14` and is only available on the async client (`AsyncThreadStream`). The sync client (`SyncThreadStream`) uses SSE exclusively.\n- **`thread.extensions[name]`** opens a new subscription each time the same name is accessed. Assign the projection to a variable and reuse it within a single session rather than re-indexing across multiple iterations.\n- **Sync streaming** drives the lifecycle watcher in a background thread. Long-lived sync sessions will hold that thread open until the context manager exits.\n- **Reconnect attempts** are limited to 5 by default for both the shared SSE fan-out and the lifecycle watcher. Persistent network partitions will surface as `RuntimeError` on in-flight projections.\n\n## Thread-Centric Streaming (v3)\n\n`client.threads.stream()` returns a context manager that owns the SSE session for one thread. Typed projections \u2014 values snapshots, message streams, tool calls, custom events \u2014 all share the same underlying connection.\n\n```python\nfrom langgraph_sdk import get_client\nimport asyncio\n\nclient = get_client()\n\nasync with client.threads.stream(\n    thread_id=\"my-thread\",\n    assistant_id=\"agent\",\n) as thread:\n    await thread.run.start(input={\"messages\": [{\"role\": \"user\", \"content\": \"hi\"}]})\n\n    # Start all consumers concurrently so they share one SSE connection.\n    async def get_messages():\n        return [s async for s in thread.messages]\n\n    async def get_tool_calls():\n        return [c async for c in thread.tool_calls]\n\n    messages, tool_calls = await asyncio.gather(get_messages(), get_tool_calls())\n\n    for stream in messages:\n        print(await stream.text)  # accumulated text\n\n    final = await thread.output  # terminal state values\n```\n\n## \ud83d\udcd5 Releases & Versioning\n\nSee our [Releases](https://docs.langchain.com/oss/python/release-policy) and [Versioning](https://docs.langchain.com/oss/python/versioning) policies.\n\n## \ud83d\udc81 Contributing\n\nAs an open-source project in a rapidly developing field, we are extremely open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation.\n\nFor detailed information on how to contribute, see the [Contributing Guide](https://docs.langchain.com/oss/python/contributing/overview).\n",
+  "description_content_type": "text/markdown",
+  "docs_url": null,
+  "download_url": null,
+  "downloads": {
+   "last_day": -1,
+   "last_month": -1,
+   "last_week": -1
+  },
+  "dynamic": null,
+  "home_page": null,
+  "keywords": null,
+  "license": null,
+  "license_expression": "MIT",
+  "license_files": [
+   "LICENSE"
+  ],
+  "maintainer": null,
+  "maintainer_email": null,
+  "name": "langgraph-sdk",
+  "package_url": "https://pypi.org/project/langgraph-sdk/",
+  "platform": null,
+  "project_url": "https://pypi.org/project/langgraph-sdk/",
+  "project_urls": {
+   "Reddit": "https://www.reddit.com/r/LangChain/",
+   "Slack": "https://www.langchain.com/join-community",
+   "Source": "https://github.com/langchain-ai/langgraph/tree/main/libs/sdk-py",
+   "Twitter": "https://x.com/langchain_oss"
+  },
+  "provides_extra": null,
+  "release_url": "https://pypi.org/project/langgraph-sdk/0.4.12/",
+  "requires_dist": [
+   "httpx>=0.25.2",
+   "langchain-core<2,>=1.4.0",
+   "langchain-protocol>=0.0.15",
+   "orjson>=3.11.5",
+   "websockets>=14"
+  ],
+  "requires_python": ">=3.10",
+  "summary": "SDK for interacting with LangGraph API",
+  "version": "0.4.12",
+  "yanked": false,
+  "yanked_reason": null
+ },
+ "last_serial": 43153861,
+ "ownership": {
+  "organization": null,
+  "roles": [
+   {
+    "role": "Owner",
+    "user": "langchain"
+   }
+  ]
+ },
+ "urls": [
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "357862243206f0b159c5952cd5124379b512a464f95ff32a531d0c7c3f94d4d6"
+   },
+   "digests": {
+    "blake2b_256": "fb7c3789d5bfa872f87ed8443177baf5fe51da5840ccbabdbe87dac3fc65e9bd",
+    "md5": "14ca7c9f5b96a717d89f0d992d613f4e",
+    "sha256": "cfc2e659a3daa615062a29cfa39eea00b5ea58d2683dbf2f4487fc4244a98078"
+   },
+   "downloads": -1,
+   "filename": "langgraph_sdk-0.4.12-py3-none-any.whl",
+   "has_sig": false,
+   "md5_digest": "14ca7c9f5b96a717d89f0d992d613f4e",
+   "packagetype": "bdist_wheel",
+   "python_version": "py3",
+   "requires_python": ">=3.10",
+   "size": 170444,
+   "upload_time": "2026-11-03T18:10:15",
+   "upload_time_iso_8601": "2026-11-03T18:10:15.309900Z",
+   "url": "https://files.pythonhosted.org/packages/fb/7c/3789d5bfa872f87ed8443177baf5fe51da5840ccbabdbe87dac3fc65e9bd/langgraph_sdk-0.4.12-py3-none-any.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": false,
+   "digests": {
+    "blake2b_256": "24443b07ae42ebfd3cc343201a2ff708d470867082810e747ea5d8dd85de50ec",
+    "md5": "78af01db4aaedffa0bce1b7d7da387be",
+    "sha256": "2f7ea2b9a7048e1ff9c3be7308b36eb56d6bfcccbe8100aeea6db688002219e0"
+   },
+   "downloads": -1,
+   "filename": "langgraph_sdk-0.4.12.tar.gz",
+   "has_sig": false,
+   "md5_digest": "78af01db4aaedffa0bce1b7d7da387be",
+   "packagetype": "sdist",
+   "python_version": "source",
+   "requires_python": ">=3.10",
+   "size": 369804,
+   "upload_time": "2026-11-03T18:10:16",
+   "upload_time_iso_8601": "2026-11-03T18:10:16.606976Z",
+   "url": "https://files.pythonhosted.org/packages/24/44/3b07ae42ebfd3cc343201a2ff708d470867082810e747ea5d8dd85de50ec/langgraph_sdk-0.4.12.tar.gz",
+   "yanked": false,
+   "yanked_reason": null
+  }
+ ],
+ "vulnerabilities": []
+}

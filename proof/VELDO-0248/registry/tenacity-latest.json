@@ -1,0 +1,65 @@
+{
+ "info": {
+  "author": null,
+  "author_email": "Julien Danjou <julien@danjou.info>",
+  "bugtrack_url": null,
+  "classifiers": [
+   "Intended Audience :: Developers",
+   "Programming Language :: Python",
+   "Programming Language :: Python :: 3",
+   "Programming Language :: Python :: 3 :: Only",
+   "Programming Language :: Python :: 3.10",
+   "Programming Language :: Python :: 3.11",
+   "Programming Language :: Python :: 3.12",
+   "Programming Language :: Python :: 3.13",
+   "Programming Language :: Python :: 3.14",
+   "Topic :: Utilities"
+  ],
+  "description": "Tenacity is a general-purpose retrying library to simplify the task of adding\nretry behavior to just about anything.\n\nSee the `documentation <https://tenacity.readthedocs.io/>`_ for examples and the\nAPI reference.\n",
+  "description_content_type": "text/x-rst",
+  "docs_url": null,
+  "download_url": null,
+  "downloads": {
+   "last_day": -1,
+   "last_month": -1,
+   "last_week": -1
+  },
+  "dynamic": null,
+  "home_page": null,
+  "keywords": null,
+  "license": null,
+  "license_expression": "Apache-2.0",
+  "license_files": [
+   "LICENSE"
+  ],
+  "maintainer": null,
+  "maintainer_email": null,
+  "name": "tenacity",
+  "package_url": "https://pypi.org/project/tenacity/",
+  "platform": null,
+  "project_url": "https://pypi.org/project/tenacity/",
+  "project_urls": {
+   "Changelog": "https://tenacity.readthedocs.io/en/latest/changelog.html",
+   "Documentation": "https://tenacity.readthedocs.io",
+   "Homepage": "https://github.com/jd/tenacity",
+   "Issues": "https://github.com/jd/tenacity/issues",
+   "Source": "https://github.com/jd/tenacity"
+  },
+  "provides_extra": [
+   "doc",
+   "test"
+  ],
+  "release_url": "https://pypi.org/project/tenacity/9.2.1/",
+  "requires_dist": [
+   "reno; extra == \"doc\"",
+   "sphinx; extra == \"doc\"",
+   "pytest; extra == \"test\"",
+   "tornado>=6.0; extra == \"test\""
+  ],
+  "requires_python": ">=3.10",
+  "summary": "Retry code until it succeeds",
+  "version": "9.2.1",
+  "yanked": false,
+  "yanked_reason": null
+ }
+}

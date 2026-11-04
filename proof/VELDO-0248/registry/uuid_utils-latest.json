@@ -1,0 +1,58 @@
+{
+ "info": {
+  "author": null,
+  "author_email": "Amin Alaee <mohammadamin.alaee@gmail.com>",
+  "bugtrack_url": null,
+  "classifiers": [
+   "Development Status :: 5 - Production/Stable",
+   "Intended Audience :: Developers",
+   "Operating System :: OS Independent",
+   "Programming Language :: Python",
+   "Programming Language :: Python :: 3",
+   "Programming Language :: Python :: 3 :: Only",
+   "Programming Language :: Python :: 3.10",
+   "Programming Language :: Python :: 3.11",
+   "Programming Language :: Python :: 3.12",
+   "Programming Language :: Python :: 3.13",
+   "Programming Language :: Python :: 3.14",
+   "Programming Language :: Python :: 3.15",
+   "Programming Language :: Rust"
+  ],
+  "description": "# Python UUID Utils\n\n<div align=\"center\">\n\n[![Package version](https://badge.fury.io/py/uuid-utils.svg)](https://pypi.org/project/uuid-utils/)\n![PyPI - Downloads](https://img.shields.io/pypi/dm/uuid-utils)\n[![Supported Python versions](https://img.shields.io/pypi/pyversions/uuid-utils.svg?color=%2334D058)](https://pypi.org/project/uuid-utils)\n[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/aminalaee/uuid-utils?utm_source=badge)\n\n</div>\n\n---\n\nFast, drop-in replacement for Python's uuid module, powered by Rust.\n\nAvailable UUID versions:\n\n- `uuid1` - Version 1 UUIDs using a timestamp and monotonic counter.\n- `uuid3` - Version 3 UUIDs based on the MD5 hash of some data.\n- `uuid4` - Version 4 UUIDs with random data.\n- `uuid5` - Version 5 UUIDs based on the SHA1 hash of some data.\n- `uuid6` - Version 6 UUIDs using a timestamp and monotonic counter.\n- `uuid7` - Version 7 UUIDs using a Unix timestamp ordered by time.\n- `uuid8` - Version 8 UUIDs using user-defined data.\n\n## Installation\nUsing `pip`:\n```shell\npip install uuid-utils\n```\nor, using `conda`:\n\n```shell\nconda install -c conda-forge uuid-utils\n```\n\n## Example\n\n```shell\n>>> import uuid_utils as uuid\n\n>>> # make a random UUID\n>>> uuid.uuid4()\nUUID('ffe95fcc-b818-4aca-a350-e0a35b9de6ec')\n\n>>> # make a random UUID using a Unix timestamp which is time-ordered.\n>>> uuid.uuid7()\nUUID('018afa4a-0d21-7e6c-b857-012bc678552b')\n\n>>> # make a UUID using a SHA-1 hash of a namespace UUID and a name\n>>> uuid.uuid5(uuid.NAMESPACE_DNS, 'python.org')\nUUID('886313e1-3b8a-5372-9b90-0c9aee199e5d')\n\n>>> # make a UUID using an MD5 hash of a namespace UUID and a name\n>>> uuid.uuid3(uuid.NAMESPACE_DNS, 'python.org')\nUUID('6fa459ea-ee8a-3ca4-894e-db77e160355e')\n```\n\n## Compatibility with Python UUID\n\nSome frameworks (e.g. Django) require `UUID` instances from the standard-library `uuid` module,\nnot a custom subclass. Use `uuid_utils.compat` for a drop-in replacement that returns stdlib\n`uuid.UUID` instances while still outperforming the standard library.\n\n```py\n>>> import uuid_utils.compat as uuid\n\n>>> uuid.uuid4()\nUUID('ffe95fcc-b818-4aca-a350-e0a35b9de6ec')\n```\n\n## Benchmarks\n\n![Benchmarks](https://raw.githubusercontent.com/aminalaee/uuid-utils/main/docs/benchmarks.svg)\n\n```\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 benchdiff \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\n\u2502                                                                              \u2502\n\u2502   Benchmark                    Min           Median          Max           \u00d7 \u2502\n\u2502  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u2502\n\u2502   uuid4()                                                                    \u2502\n\u2502     stdlib_uuid4            1178.260ns     1189.167ns     1260.025ns    19.2 \u2502\n\u2502     compat_uuid4            248.325ns      251.257ns      271.325ns     4.07 \u2502\n\u2502     uuid_utils_uuid4         60.212ns       61.642ns       62.068ns     1.00 \u2502\n\u2502   uuid7()                                                                    \u2502\n\u2502     stdlib_uuid7            1327.365ns     1336.479ns     1615.529ns    15.7 \u2502\n\u2502     compat_uuid7            277.427ns      279.572ns      286.819ns     3.30 \u2502\n\u2502     uuid_utils_uuid7         83.582ns       84.654ns       93.588ns     1.00 \u2502\n\u2502   UUID from hex                                                              \u2502\n\u2502     stdlib_from_hex         443.457ns      463.514ns      472.753ns     5.47 \u2502\n\u2502     uuid_utils_from_hex      84.256ns       84.639ns       85.301ns     1.00 \u2502\n\u2502   UUID from bytes                                                            \u2502\n\u2502     stdlib_from_bytes       398.878ns      400.830ns      403.030ns     3.80 \u2502\n\u2502     uuid_utils_from_byt\u2026    103.698ns      105.417ns      106.426ns     1.00 \u2502\n\u2502                                                                              \u2502\n\u2502 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u2502\n\u2502   Python      3.14.4                                                         \u2502\n\u2502   Platform    macOS-26.3.1                                                   \u2502\n\u2502   CPU         Apple M3 Pro                                                   \u2502\n\u2502   Rounds      10 \u00d7 100,000 calls                                             \u2502\n\u2502   Date        2026-05-13 21:24:22                                            \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\n```\n\n## How to develop locally\n\n```shell\nmake build\nmake test\n```\n\nOr:\n\n```shell\nmaturin develop --release\n```\n\n",
+  "description_content_type": "text/markdown; charset=UTF-8; variant=GFM",
+  "docs_url": null,
+  "download_url": null,
+  "downloads": {
+   "last_day": -1,
+   "last_month": -1,
+   "last_week": -1
+  },
+  "dynamic": null,
+  "home_page": null,
+  "keywords": "rust, uuid",
+  "license": null,
+  "license_expression": "BSD-3-Clause",
+  "license_files": [
+   "LICENSE.md"
+  ],
+  "maintainer": null,
+  "maintainer_email": null,
+  "name": "uuid-utils",
+  "package_url": "https://pypi.org/project/uuid-utils/",
+  "platform": null,
+  "project_url": "https://pypi.org/project/uuid-utils/",
+  "project_urls": {
+   "Documentation": "https://github.com/aminalaee/uuid-utils",
+   "Issues": "https://github.com/aminalaee/uuid-utils/issues",
+   "Source": "https://github.com/aminalaee/uuid-utils"
+  },
+  "provides_extra": null,
+  "release_url": "https://pypi.org/project/uuid-utils/1.2.0/",
+  "requires_dist": null,
+  "requires_python": ">=3.10",
+  "summary": "Fast, drop-in replacement for Python's uuid module, powered by Rust.",
+  "version": "1.2.0",
+  "yanked": false,
+  "yanked_reason": null
+ }
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate engine/runtime/langgraph-records.json from the registry (VELDO-0045 AC1).
 
-    python3 -B proof/VELDO-0045/records.py SCRATCH_DIR
+    python3 -B proof/VELDO-0045/records.py SCRATCH_DIR [CLOSURE]
 
 Reads, for every package in .veldo/control_graph_lock.py, TODAY's PyPI JSON for its exact release
 (https://pypi.org/pypi/<name>/<version>/json) and for the project (https://pypi.org/pypi/<name>/json, the latest
@@ -11,10 +11,12 @@ attestation). It downloads the one locked wheel from the URL the registry serves
 its sha256 equals both the lock and the registry, verifies every member of the wheel against the
 wheel's own RECORD, and records the wheel's content digest: sha256 over the sorted "path,hash" rows of
 that RECORD, leaving out the RECORD row itself and the .data/scripts/ rows pip rewrites when it
-installs them. Origin and approval are carried from the reviewed VELDO-0043 closure
-(proof/VELDO-0043/dependency-closure.json); the SPDX expression is the registry's license expression
-when it declares one, otherwise its license field in SPDX form (the three non-SPDX spellings are
-mapped below). Writes the canonical file and this repository's installed copy byte-identically.
+installs them. Origin and approval are carried from the reviewed closure CLOSURE, by default the
+VELDO-0043 closure (proof/VELDO-0043/dependency-closure.json); a later lock passes its own reviewed
+closure (VELDO-0248: proof/VELDO-0248/dependency-closure.json). A locked package with no entry in it
+stops the script by name: there is no origin or approval to carry. The SPDX expression is the
+registry's license expression when it declares one, otherwise its license field in SPDX form (the
+three non-SPDX spellings are mapped below). Writes the canonical file and this repository's installed copy byte-identically.
 Needs the network; never run by a suite or the gate.
 """
 import base64
@@ -33,6 +35,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[2]
 SPDX = {'Apache License, Version 2.0': 'Apache-2.0', 'Modified BSD License': 'BSD-3-Clause',
         'Apache 2.0': 'Apache-2.0'}
+DEFAULT_CLOSURE = 'proof/VELDO-0043/dependency-closure.json'
 ROOT_APPROVAL = 'chosen software: actual LangGraph is required by owner Telegram 28848 and R34'
 
 
@@ -74,13 +77,17 @@ def content(wheel):
     return {'files': len(kept), 'sha256': hashlib.sha256('\n'.join(sorted(kept)).encode()).hexdigest()}
 
 
-def main(scratch):
+def main(scratch, closure=DEFAULT_CLOSURE):
     scratch = Path(scratch)
     scratch.mkdir(parents=True, exist_ok=True)
     spec = importlib.util.spec_from_file_location('lock', ROOT / '.veldo/control_graph_lock.py')
     lock = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(lock)
-    reviewed = {c['name']: c for c in json.loads((ROOT / 'proof/VELDO-0043/dependency-closure.json').read_text())['closure']}
+    reviewed = {c['name']: c for c in json.loads((ROOT / closure).read_text())['closure']}
+    unreviewed = [name for name, _version, _wheel, _sha256 in lock.PACKAGES if name not in reviewed]
+    if unreviewed:
+        raise SystemExit('stopped: no reviewed entry in %s for %s (no origin or approval to carry)'
+                         % (closure, ', '.join(unreviewed)))
     packages = []
     for name, version, wheel, sha256 in lock.PACKAGES:
         status, body = fetch('https://pypi.org/pypi/%s/%s/json' % (name, version), scratch, '%s-%s.json' % (name, version))
@@ -131,7 +138,8 @@ def main(scratch):
         'python': lock.PYTHON, 'platform': lock.PLATFORM, 'read': datetime.date.today().isoformat(),
         'how': ('PyPI JSON for each exact release and project, the PyPI integrity API for PEP 740 provenance, '
                 'and the locked wheel downloaded from the registry URL, verified against the lock and the '
-                'registry sha256 and against its own RECORD. Regenerate with proof/VELDO-0045/records.py.'),
+                'registry sha256 and against its own RECORD. Origin and approval from %s. Regenerate with '
+                'proof/VELDO-0045/records.py.' % closure),
         'packages': packages,
     }
     text = json.dumps(records, indent=1, sort_keys=True) + '\n'
@@ -144,4 +152,6 @@ def main(scratch):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    if len(sys.argv) not in (2, 3):
+        raise SystemExit(__doc__.split('\n\n')[1])
+    main(*sys.argv[1:])

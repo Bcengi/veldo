@@ -1,0 +1,48 @@
+{
+ "info": {
+  "author": null,
+  "author_email": null,
+  "bugtrack_url": null,
+  "classifiers": [],
+  "description": "# LangGraph Checkpoint\n\n[![PyPI - Version](https://img.shields.io/pypi/v/langgraph-checkpoint?label=%20)](https://pypi.org/project/langgraph-checkpoint/#history)\n[![PyPI - License](https://img.shields.io/pypi/l/langgraph-checkpoint)](https://opensource.org/licenses/MIT)\n[![PyPI - Downloads](https://img.shields.io/pepy/dt/langgraph-checkpoint)](https://pypistats.org/packages/langgraph-checkpoint)\n[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/langchain_oss.svg?style=social&label=Follow%20%40LangChain)](https://x.com/langchain_oss)\n\nTo help you ship LangGraph apps to production faster, check out [LangSmith](https://www.langchain.com/langsmith).\n[LangSmith](https://www.langchain.com/langsmith) is a unified developer platform for building, testing, and monitoring LLM applications.\n\n## Quick Install\n\n```bash\nuv add langgraph-checkpoint\n```\n\n## \ud83e\udd14 What is this?\n\nThis library defines the base interface for LangGraph checkpointers. Checkpointers provide a persistence layer for LangGraph: they save graph state at every superstep, enabling human-in-the-loop, memory between interactions, durable execution, and more.\n\n## \ud83d\udcd6 Documentation\n\nFor full documentation, see the [API reference](https://reference.langchain.com/python/langgraph.checkpoint). For conceptual guides on persistence and memory, see the [LangGraph Docs](https://docs.langchain.com/oss/python/langgraph/overview).\n\n## Key concepts\n\n### Checkpoint\n\nCheckpoint is a snapshot of the graph state at a given point in time. Checkpoint tuple refers to an object containing checkpoint and the associated config, metadata and pending writes.\n\n### Thread\n\nThreads enable the checkpointing of multiple different runs, making them essential for multi-tenant chat applications and other scenarios where maintaining separate states is necessary. A thread is a unique ID assigned to a series of checkpoints saved by a checkpointer. When using a checkpointer, you must specify a `thread_id` and optionally `checkpoint_id` when running the graph.\n\n- `thread_id` is simply the ID of a thread. This is always required.\n- `checkpoint_id` can optionally be passed. This identifier refers to a specific checkpoint within a thread. This can be used to kick off a run of a graph from some point halfway through a thread.\n\nYou must pass these when invoking the graph as part of the configurable part of the config, e.g.\n\n```python\n{\"configurable\": {\"thread_id\": \"1\"}}  # valid config\n{\n    \"configurable\": {\n        \"thread_id\": \"1\",\n        \"checkpoint_id\": \"0c62ca34-ac19-445d-bbb0-5b4984975b2a\",\n    }\n}  # also valid config\n```\n\n### Serde\n\n`langgraph-checkpoint` also defines protocol for serialization/deserialization (serde) and provides a default implementation (`langgraph.checkpoint.serde.jsonplus.JsonPlusSerializer`) that handles a wide variety of types, including LangChain and LangGraph primitives, datetimes, enums and more.\n\n> [!IMPORTANT]\n> **Checkpoint deserialization security:** By default the serializer allows any Python type found in checkpoint data. New applications should set the environment variable `LANGGRAPH_STRICT_MSGPACK=true` or pass an explicit `allowed_msgpack_modules` list to `JsonPlusSerializer` to restrict deserialization to known-safe types.\n\n### Pending writes\n\nWhen a graph node fails mid-execution at a given superstep, LangGraph stores pending checkpoint writes from any other nodes that completed successfully at that superstep, so that whenever we resume graph execution from that superstep we don't re-run the successful nodes.\n\n## Interface\n\nEach checkpointer should conform to `langgraph.checkpoint.base.BaseCheckpointSaver` interface and must implement the following methods:\n\n- `.put` - Store a checkpoint with its configuration and metadata.\n- `.put_writes` - Store intermediate writes linked to a checkpoint (i.e. pending writes).\n- `.get_tuple` - Fetch a checkpoint tuple using for a given configuration (`thread_id` and `checkpoint_id`).\n- `.list` - List checkpoints that match a given configuration and filter criteria.\n- `.delete_thread()` - Delete all checkpoints and writes associated with a thread.\n- `.get_next_version()` - Generate the next version ID for a channel.\n\nIf the checkpointer will be used with asynchronous graph execution (i.e. executing the graph via `.ainvoke`, `.astream`, `.abatch`), checkpointer must implement asynchronous versions of the above methods (`.aput`, `.aput_writes`, `.aget_tuple`, `.alist`). Similarly, the checkpointer must implement `.adelete_thread()` if asynchronous thread cleanup is desired. The base class provides a default implementation of `.get_next_version()` that generates an integer sequence starting from 1, but this method should be overridden for custom versioning schemes.\n\n## Usage\n\n```python\nfrom langgraph.checkpoint.memory import InMemorySaver\n\nwrite_config = {\"configurable\": {\"thread_id\": \"1\", \"checkpoint_ns\": \"\"}}\nread_config = {\"configurable\": {\"thread_id\": \"1\"}}\n\ncheckpointer = InMemorySaver()\ncheckpoint = {\n    \"v\": 4,\n    \"ts\": \"2024-07-31T20:14:19.804150+00:00\",\n    \"id\": \"1ef4f797-8335-6428-8001-8a1503f9b875\",\n    \"channel_values\": {\"my_key\": \"meow\", \"node\": \"node\"},\n    \"channel_versions\": {\"__start__\": 2, \"my_key\": 3, \"start:node\": 3, \"node\": 3},\n    \"versions_seen\": {\n        \"__input__\": {},\n        \"__start__\": {\"__start__\": 1},\n        \"node\": {\"start:node\": 2},\n    },\n}\n\n# store checkpoint\ncheckpointer.put(write_config, checkpoint, {}, {})\n\n# load checkpoint\ncheckpointer.get(read_config)\n\n# list checkpoints\nlist(checkpointer.list(read_config))\n```\n\n## \ud83d\udcd5 Releases & Versioning\n\nSee our [Releases](https://docs.langchain.com/oss/python/release-policy) and [Versioning](https://docs.langchain.com/oss/python/versioning) policies.\n\n## \ud83d\udc81 Contributing\n\nAs an open-source project in a rapidly developing field, we are extremely open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation.\n\nFor detailed information on how to contribute, see the [Contributing Guide](https://docs.langchain.com/oss/python/contributing/overview).\n",
+  "description_content_type": "text/markdown",
+  "docs_url": null,
+  "download_url": null,
+  "downloads": {
+   "last_day": -1,
+   "last_month": -1,
+   "last_week": -1
+  },
+  "dynamic": null,
+  "home_page": null,
+  "keywords": null,
+  "license": null,
+  "license_expression": "MIT",
+  "license_files": [
+   "LICENSE"
+  ],
+  "maintainer": null,
+  "maintainer_email": null,
+  "name": "langgraph-checkpoint",
+  "package_url": "https://pypi.org/project/langgraph-checkpoint/",
+  "platform": null,
+  "project_url": "https://pypi.org/project/langgraph-checkpoint/",
+  "project_urls": {
+   "Reddit": "https://www.reddit.com/r/LangChain/",
+   "Slack": "https://www.langchain.com/join-community",
+   "Source": "https://github.com/langchain-ai/langgraph/tree/main/libs/checkpoint",
+   "Twitter": "https://x.com/langchain_oss"
+  },
+  "provides_extra": null,
+  "release_url": "https://pypi.org/project/langgraph-checkpoint/4.3.1/",
+  "requires_dist": [
+   "langchain-core>=0.2.38",
+   "ormsgpack>=1.12.0"
+  ],
+  "requires_python": ">=3.10",
+  "summary": "Library with base interfaces for LangGraph checkpoint savers.",
+  "version": "4.3.1",
+  "yanked": false,
+  "yanked_reason": null
+ }
+}

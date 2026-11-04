@@ -1,0 +1,62 @@
+{
+ "info": {
+  "author": null,
+  "author_email": "Victorien Plot <contact@vctrn.dev>",
+  "bugtrack_url": null,
+  "classifiers": [
+   "Development Status :: 3 - Alpha",
+   "Intended Audience :: Developers",
+   "Programming Language :: Python",
+   "Programming Language :: Python :: 3",
+   "Programming Language :: Python :: 3 :: Only",
+   "Programming Language :: Python :: 3.10",
+   "Programming Language :: Python :: 3.11",
+   "Programming Language :: Python :: 3.12",
+   "Programming Language :: Python :: 3.13",
+   "Programming Language :: Python :: 3.14",
+   "Programming Language :: Python :: 3.15",
+   "Programming Language :: Python :: Implementation :: CPython",
+   "Topic :: Software Development :: Libraries :: Python Modules",
+   "Typing :: Typed"
+  ],
+  "description": "# typing-inspection\n\n[![CI](https://img.shields.io/github/actions/workflow/status/pydantic/typing-inspection/ci.yml?branch=main&logo=github&label=CI)](https://github.com/pydantic/typing-inspection/actions?query=event%3Apush+branch%3Amain+workflow%3ACI)\n[![Coverage](https://coverage-badge.samuelcolvin.workers.dev/pydantic/typing-inspection.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/pydantic/typing-inspection)\n[![PyPI](https://img.shields.io/pypi/v/typing-inspection.svg)](https://pypi.org/project/typing-inspection/)\n[![Versions](https://img.shields.io/pypi/pyversions/typing-inspection.svg)](https://github.com/pydantic/typing-inspection)\n[![License](https://img.shields.io/github/license/pydantic/typing-inspection.svg)](https://github.com/pydantic/typing-inspection/blob/main/LICENSE)\n[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)\n\n`typing-inspection` provides tools to inspect type annotations at runtime.\n\n## Installation\n\nFrom [PyPI](https://pypi.org/project/typing-inspection/):\n\n```bash\npip install typing-inspection\n```\n\nThe library can be imported from the `typing_inspection` module.\n",
+  "description_content_type": "text/markdown",
+  "docs_url": null,
+  "download_url": null,
+  "downloads": {
+   "last_day": -1,
+   "last_month": -1,
+   "last_week": -1
+  },
+  "dynamic": null,
+  "home_page": null,
+  "keywords": null,
+  "license": null,
+  "license_expression": "MIT",
+  "license_files": [
+   "LICENSE"
+  ],
+  "maintainer": null,
+  "maintainer_email": null,
+  "name": "typing-inspection",
+  "package_url": "https://pypi.org/project/typing-inspection/",
+  "platform": null,
+  "project_url": "https://pypi.org/project/typing-inspection/",
+  "project_urls": {
+   "Changelog": "https://github.com/pydantic/typing-inspection/blob/main/HISTORY.md",
+   "Documentation": "https://pydantic.github.io/typing-inspection/dev/",
+   "Homepage": "https://github.com/pydantic/typing-inspection",
+   "Source": "https://github.com/pydantic/typing-inspection"
+  },
+  "provides_extra": null,
+  "release_url": "https://pypi.org/project/typing-inspection/0.4.5/",
+  "requires_dist": [
+   "typing-extensions>=4.15.0"
+  ],
+  "requires_python": ">=3.10",
+  "summary": "Runtime typing introspection tools",
+  "version": "0.4.5",
+  "yanked": false,
+  "yanked_reason": null
+ }
+}

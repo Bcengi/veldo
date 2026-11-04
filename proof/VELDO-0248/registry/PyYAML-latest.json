@@ -1,0 +1,80 @@
+{
+ "info": {
+  "author": "Kirill Simonov",
+  "author_email": "xi@resolvent.net",
+  "bugtrack_url": null,
+  "classifiers": [
+   "Development Status :: 5 - Production/Stable",
+   "Intended Audience :: Developers",
+   "License :: OSI Approved :: MIT License",
+   "Operating System :: OS Independent",
+   "Programming Language :: Cython",
+   "Programming Language :: Python",
+   "Programming Language :: Python :: 3",
+   "Programming Language :: Python :: 3.10",
+   "Programming Language :: Python :: 3.11",
+   "Programming Language :: Python :: 3.12",
+   "Programming Language :: Python :: 3.13",
+   "Programming Language :: Python :: 3.14",
+   "Programming Language :: Python :: 3.8",
+   "Programming Language :: Python :: 3.9",
+   "Programming Language :: Python :: Implementation :: CPython",
+   "Programming Language :: Python :: Implementation :: PyPy",
+   "Topic :: Software Development :: Libraries :: Python Modules",
+   "Topic :: Text Processing :: Markup"
+  ],
+  "description": "YAML is a data serialization format designed for human readability\nand interaction with scripting languages.  PyYAML is a YAML parser\nand emitter for Python.\n\nPyYAML features a complete YAML 1.1 parser, Unicode support, pickle\nsupport, capable extension API, and sensible error messages.  PyYAML\nsupports standard YAML tags and provides Python-specific tags that\nallow to represent an arbitrary Python object.\n\nPyYAML is applicable for a broad range of tasks from complex\nconfiguration files to object serialization and persistence.\n",
+  "description_content_type": null,
+  "docs_url": null,
+  "download_url": "https://pypi.org/project/PyYAML/",
+  "downloads": {
+   "last_day": -1,
+   "last_month": -1,
+   "last_week": -1
+  },
+  "dynamic": [
+   "Author",
+   "Author-Email",
+   "Classifier",
+   "Description",
+   "Download-Url",
+   "Home-Page",
+   "License",
+   "License-File",
+   "Platform",
+   "Project-Url",
+   "Requires-Python",
+   "Summary"
+  ],
+  "home_page": "https://pyyaml.org/",
+  "keywords": null,
+  "license": "MIT",
+  "license_expression": null,
+  "license_files": [
+   "LICENSE"
+  ],
+  "maintainer": null,
+  "maintainer_email": null,
+  "name": "PyYAML",
+  "package_url": "https://pypi.org/project/PyYAML/",
+  "platform": "Any",
+  "project_url": "https://pypi.org/project/PyYAML/",
+  "project_urls": {
+   "Bug Tracker": "https://github.com/yaml/pyyaml/issues",
+   "CI": "https://github.com/yaml/pyyaml/actions",
+   "Documentation": "https://pyyaml.org/wiki/PyYAMLDocumentation",
+   "Download": "https://pypi.org/project/PyYAML/",
+   "Homepage": "https://pyyaml.org/",
+   "Mailing lists": "http://lists.sourceforge.net/lists/listinfo/yaml-core",
+   "Source Code": "https://github.com/yaml/pyyaml"
+  },
+  "provides_extra": null,
+  "release_url": "https://pypi.org/project/PyYAML/6.0.3/",
+  "requires_dist": null,
+  "requires_python": ">=3.8",
+  "summary": "YAML parser and emitter for Python",
+  "version": "6.0.3",
+  "yanked": false,
+  "yanked_reason": null
+ }
+}
