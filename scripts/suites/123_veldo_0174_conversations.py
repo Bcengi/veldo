@@ -602,8 +602,8 @@ def _v174_suite():
             check('AC2/role-skills', 'both engines read the accepted skill body from their actual launch inputs',
                   len(observed) == 2 and all(v['skills'] == {'conversation-help':
                       (live['root']/'state/conversation-skill.md').read_text()} for v in observed))
-            check('AC2/own-directory','each engine runs in its own durable conversation directory',
-                  {v['cwd'] for v in observed}=={cv.read(i)['directory'] for i in ('claude-live','codex-live')})
+            check('AC2/own-directory','each engine runs in its own durable conversation workspace (VELDO-0177 AC1)',
+                  {v['cwd'] for v in observed}=={CV.workspace_of(cv.read(i)) for i in ('claude-live','codex-live')})
             J.drain(factory,markers)
             J.drain(factory,markers)
             J.drain(factory,markers)
