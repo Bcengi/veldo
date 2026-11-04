@@ -1735,6 +1735,15 @@
    ],
    "regions": "Two rows (VELDO-0230 AC2): qualify/reproduces, python3 .veldo/qualify.py run in scratch against the Codex and Claude Code binaries the engines record names succeeds and every file it writes is byte-identical to the checkout's; qualify/covers, the files it writes include the engines record and both qualification records in both runtimes, the VELDO-0127 fixtures and every table the readers of the binaries write (the suite's own list, the two VELDO-0156 captures among them).",
    "requires_note": "Only ROOT and expect. Copies .veldo, engine/runtime, packs and the extractor and VELDO-0127 proof directories into scratch and runs the copy's qualify command there; runs the qualified binaries offline in empty profiles (extractor reads, features list, bundled catalog, loopback capture, Claude Code init probe). Writes only temporary files."
+  },
+  {
+   "name": "127_veldo_0232_antigravity",
+   "file": "127_veldo_0232_antigravity.py",
+   "requires": [
+    "127_veldo_0232_antigravity"
+   ],
+   "regions": "Twenty-six rows (VELDO-0232): qualify/record, qualify/new-items, qualify/rerun-bytes, qualify/output, pin/copy, pin/pinned-path and bind/stale (AC1: the qualify command's Antigravity steps over a fake agy carrying the extractor's byte forms, a newer fake with one more step type and tool, the pinned copy and the shared refusals); launch/flags, launch/settings, launch/environment, launch/tool-outside-role, launch/role-mcp, launch/profile and launch/clone (AC2); stream/record, stream/meter, stream/missing-result, stream/verdicts, stream/limit, stream/tool-calls and stream/live-forms (AC3, the last against the owner-approved real run kept in proof/VELDO-0232/live-stream.jsonl); accounts/profile, accounts/credential-refused, accounts/paid-path, accounts/one-registration and accounts/pool (AC4).",
+   "requires_note": "Only ROOT, expect and fast_temp. Copies .veldo and the VELDO-0232 extractor into scratch, writes a fake agy (a shell script execing a Python fixture, with the extractor's byte forms after it) and drives the production store, accounts, reservations, claims, Runner, receiver and reported-identity wrapper locally: no user service manager, model, real account or network. Writes only temporary files."
   }
  ],
  "resource_capacities": {

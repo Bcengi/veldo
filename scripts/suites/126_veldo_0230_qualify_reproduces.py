@@ -31,7 +31,7 @@ def _v230_reproduce_suite():
     rows = {name: [] for name in ROWS}
     COPIED = ('.veldo', 'engine/runtime', 'packs', 'proof/VELDO-0060', 'proof/VELDO-0061', 'proof/VELDO-0062',
               'proof/VELDO-0127', 'proof/VELDO-0141', 'proof/VELDO-0155', 'proof/VELDO-0156', 'proof/VELDO-0165',
-              'proof/VELDO-0172', 'proof/VELDO-0173', 'proof/VELDO-0185')
+              'proof/VELDO-0172', 'proof/VELDO-0173', 'proof/VELDO-0185', 'proof/VELDO-0232')
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -54,8 +54,12 @@ def _v230_reproduce_suite():
         engines = json.loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
         qualify = load('v230_reproduce_qualify', PRODUCTION['qualify.py'])
         codex, claude = qualify.binary('codex', engines), qualify.binary('claude_code', engines)
+        # VELDO-0232: the Antigravity copy the engines record names; a pinned copy names its state root, so the
+        # command binds it as it is.
+        agy = qualify.binary('antigravity', engines)
+        pinned = ['--state-root', str(agy.parents[2])] if agy.parent.parent.name == 'engines' else []
         done = subprocess.run([sys.executable, '-B', str(tree / '.veldo' / 'qualify.py'), '--codex', str(codex),
-                               '--claude', str(claude), '--root', str(tree)],
+                               '--claude', str(claude), '--antigravity', str(agy)] + pinned + ['--root', str(tree)],
                               capture_output=True, text=True, timeout=1500, stdin=subprocess.DEVNULL,
                               env={'PATH': os.environ.get('PATH', '/usr/bin:/bin'), 'HOME': os.environ.get('HOME', '/'),
                                    'LANG': 'C.UTF-8', 'TMPDIR': tempfile.gettempdir()})
@@ -70,10 +74,12 @@ def _v230_reproduce_suite():
         record = json.loads((tree / '.veldo' / 'runtime' / 'engines.json').read_text())
         check('qualify/reproduces', 'it qualified the engines record\'s versions',
               record['codex']['version'] == engines['codex']['version']
-              and record['claude_code']['version'] == engines['claude_code']['version'])
+              and record['claude_code']['version'] == engines['claude_code']['version']
+              and record.get('antigravity', {}).get('version') == engines['antigravity']['version'])
         wanted = {'.veldo/runtime/engines.json', 'engine/runtime/engines.json',
                   '.veldo/runtime/codex-qualification.json', 'engine/runtime/codex-qualification.json',
                   '.veldo/runtime/claude-qualification.json', 'engine/runtime/claude-qualification.json',
+                  '.veldo/runtime/antigravity-qualification.json', 'engine/runtime/antigravity-qualification.json',
                   'proof/VELDO-0127/catalog-fixture.json', 'proof/VELDO-0127/features-fixture.json',
                   'proof/VELDO-0127/resource-qualification.json', 'proof/VELDO-0127/fixture-models.json'}
         # The suite's own list of every table the binaries' readers write (never the command's own list, so
@@ -83,7 +89,8 @@ def _v230_reproduce_suite():
                   'proof/VELDO-0155/claude-baseline.json', 'proof/VELDO-0156/codex-baseline.json',
                   'proof/VELDO-0156/codex-rendered.json', 'proof/VELDO-0156/codex-mentions.json',
                   'proof/VELDO-0165/claude-environment.json', 'proof/VELDO-0165/codex-environment.json',
-                  'proof/VELDO-0173/claude-tools.json', 'proof/VELDO-0185/login-status.json'}
+                  'proof/VELDO-0173/claude-tools.json', 'proof/VELDO-0185/login-status.json',
+                  'proof/VELDO-0232/agy-tables.json'}
         check('qualify/covers', 'it wrote the engines record and both qualification records in both runtimes and '
               'the VELDO-0127 fixtures [missing %s]' % sorted(wanted - set(written)), wanted <= set(written))
         check('qualify/covers', 'it ran every reader of the binaries in write mode [missing %s]'

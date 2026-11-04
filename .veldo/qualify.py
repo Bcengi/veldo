@@ -618,6 +618,44 @@ def antigravity_record(root, executable, version, decisions):
     return record
 
 
+def antigravity_entry(executable, state_root):
+    """(engines record entry, pinned path or None): the qualified Antigravity version, the copy every launch runs
+    (the pinned one under the state root, else the source) and its digest."""
+    version = antigravity_version(executable)
+    pinned = Path(state_root).resolve() / 'engines' / 'antigravity' / version if state_root else None
+    return {'version': version, 'binary': home_form(pinned or executable), 'sha256': digest(executable)}, pinned
+
+
+def antigravity_step(root, executable, entry, pinned, decisions, written):
+    """VELDO-0232 AC1, after the extractor wrote its tables: the Antigravity record written to every runtime copy,
+    then the binary pinned under the state root (mode 0555, digest checked against that record). The record."""
+    agy = antigravity_record(root, executable, entry['version'], decisions)
+    write(root, 'antigravity-qualification.json', text(agy), written)
+    if pinned is not None:
+        A = load('qualify_antigravity_pin', Path(root) / '.veldo/control_engine_antigravity.py')
+        try:
+            A.pin(entry['version'], source=executable, state_root=str(pinned.parent.parent.parent), record=agy)
+        except A.Refused as error:
+            raise SystemExit('qualify: the Antigravity copy was not pinned: %s' % error.code)
+        written.append(str(pinned))
+    return agy
+
+
+def antigravity_lines(entry, agy, pinned):
+    """What the command prints of Antigravity: the qualified engine, its pinned copy and every new item with its
+    decision (the record's `new_capabilities`)."""
+    lines = ['qualified antigravity %s (%s) %s' % (entry['version'], entry['binary'], entry['sha256']),
+             'pinned antigravity %s' % (pinned if pinned is not None else 'none (name --state-root; setup pins it)')]
+    for item in agy['new_capabilities']:
+        lines.append('new antigravity %s %s: %s%s (%s)' % (item['kind'], item['name'], item['decision'],
+                                                            ' by ' + item['rule'] if item.get('rule') else '',
+                                                            item['reason']))
+    counts = __import__('collections').Counter(i['decision'] for i in agy['new_capabilities'])
+    lines.append('new antigravity items: %d, %s' % (len(agy['new_capabilities']), ', '.join(
+        '%d %s' % (n, d) for d, n in sorted(counts.items())) or 'none'))
+    return lines
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Qualify the installed or named Codex, Claude Code and Antigravity.')
     parser.add_argument('--codex', help='the Codex vendor binary (default: the one the codex on PATH runs)')
@@ -651,10 +689,8 @@ def main(argv=None):
         decisions = json.loads((root / DECISIONS).read_text())
     except (OSError, ValueError):
         decisions = {}
-    agy_version = antigravity_version(antigravity)
-    pinned = (Path(args.state_root).resolve() / 'engines' / 'antigravity' / agy_version) if args.state_root else None
-    record = engines_record(codex, claude, {'version': agy_version, 'binary': home_form(pinned or antigravity),
-                                            'sha256': digest(antigravity)})
+    agy_entry, pinned = antigravity_entry(antigravity, args.state_root)
+    record = engines_record(codex, claude, agy_entry)
     write(root, 'engines.json', text(record), written)
     for script, reads, tables in EXTRACTORS:
         argv = [sys.executable, '-B', str(root / script)]
@@ -713,20 +749,10 @@ def main(argv=None):
         codex_record['new_capabilities'] += found
         write(root, 'codex-qualification.json', text(codex_record), [])
     # VELDO-0232 AC1: the Antigravity record, then its pinned copy under the factory state root.
-    agy = antigravity_record(root, antigravity, agy_version, decisions)
-    write(root, 'antigravity-qualification.json', text(agy), written)
-    if pinned is not None:
-        A = load('qualify_antigravity_pin', root / '.veldo/control_engine_antigravity.py')
-        try:
-            A.pin(agy_version, source=antigravity, state_root=str(pinned.parent.parent.parent), record=agy)
-        except A.Refused as error:
-            raise SystemExit('qualify: the Antigravity copy was not pinned: %s' % error.code)
+    agy = antigravity_step(root, antigravity, agy_entry, pinned, decisions, written)
     print('qualified codex %s (%s) %s' % (record['codex']['version'], record['codex']['binary'], record['codex']['sha256']))
     print('qualified claude_code %s (%s) %s' % (record['claude_code']['version'], record['claude_code']['binary'],
                                                record['claude_code']['sha256']))
-    print('qualified antigravity %s (%s) %s' % (record['antigravity']['version'], record['antigravity']['binary'],
-                                               record['antigravity']['sha256']))
-    print('pinned antigravity %s' % (pinned if pinned is not None else 'none (name --state-root; setup pins it)'))
     if previous:
         print('replaced codex %s, claude_code %s, antigravity %s' % (
             previous['codex']['version'], previous['claude_code']['version'],
@@ -736,8 +762,9 @@ def main(argv=None):
     print('claude_code tools the replaced classification did not hold: %s'
           % (', '.join('%s (%s)' % pair for pair in new_tools(entry, known_tools)) or 'none'))
     # VELDO-0230 AC3: every new item and its decision (runtime/capability-decisions.json); also in each record.
-    for engine, items in (('codex', codex_record['new_capabilities']), ('claude_code', entry['new_capabilities']),
-                          ('antigravity', agy['new_capabilities'])):
+    for line in antigravity_lines(agy_entry, agy, pinned):
+        print(line)
+    for engine, items in (('codex', codex_record['new_capabilities']), ('claude_code', entry['new_capabilities'])):
         for item in items:
             print('new %s %s %s: %s%s (%s)' % (engine, item['kind'], item['name'], item['decision'],
                                               ' by ' + item['rule'] if item.get('rule') else '', item['reason']))
