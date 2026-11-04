@@ -42,12 +42,11 @@ def _v232_suite():
         'control_reservation_runtime.py': ROOT / ".veldo" / "control_reservation_runtime.py",
     }
     EXTRACTOR = ROOT / 'proof' / 'VELDO-0232' / 'extract_agy.py'
-    LIVE = ROOT / 'proof' / 'VELDO-0232' / 'live-stream.jsonl'
     ROWS = ('qualify/record', 'qualify/new-items', 'qualify/rerun-bytes', 'qualify/output', 'pin/copy',
             'pin/pinned-path', 'bind/stale', 'launch/flags', 'launch/settings', 'launch/environment',
             'launch/tool-outside-role', 'launch/role-mcp', 'launch/profile', 'launch/clone', 'stream/record',
             'stream/meter', 'stream/missing-result', 'stream/verdicts', 'stream/limit', 'stream/tool-calls',
-            'stream/live-forms', 'accounts/profile', 'accounts/credential-refused', 'accounts/paid-path',
+            'accounts/profile', 'accounts/credential-refused', 'accounts/paid-path',
             'accounts/one-registration', 'accounts/pool')
     rows = {name: [] for name in ROWS}
 
@@ -403,27 +402,14 @@ sys.exit(payload.get('code', 0))
                 runners[account] = L.Runner(gate, reservations, dispatches, invoke, account=account)
             return runners[account]
 
-        CONV = 'conversation-232'
+        # The stream forms the fake prints (suite 128 compares them with the recorded real run).
+        FORMS = load('v232_forms', ROOT / 'scripts' / 'suites' / 'support' / 'v232_agy_forms.py')
+        CONV = FORMS.CONVERSATION
         TOOLS = list(TABLES['tool_registry'])
+        step, result = FORMS.step, FORMS.result
 
         def init():
-            return {'line': {'type': 'init', 'session_id': 'session-232', 'conversation_id': CONV,
-                             'model': 'fixture-model', 'cwd': '/fixture', 'tools': TOOLS}}
-
-        def step(index, kind, tool=None, **extra):
-            line = {'type': 'step_update', 'conversation_id': CONV, 'step_index': index, 'step_type': kind,
-                    'status': 'done'}
-            if tool is not None:
-                line['tool_info'] = {'name': tool, 'parameters': {'path': 'README'}, 'output': 'fixture'}
-            line.update(extra)
-            return {'line': line}
-
-        def result(inp, out, cache=0, text='done', reason=None):
-            line = {'type': 'result', 'conversation_id': CONV, 'result': text,
-                    'usage': {'input_tokens': inp, 'output_tokens': out, 'cache_read_tokens': cache}}
-            if reason is not None:
-                line['finished_reason'] = reason
-            return {'line': line}
+            return FORMS.init(TOOLS)
 
         def submit(unit, script, code_=0, via='acct-a1', adapter='agy', deadline=40):
             job = dict(holder=HOLDER, source=str(src), revision='HEAD',
@@ -683,20 +669,6 @@ sys.exit(payload.get('code', 0))
               and A.nested_work(step(6, 'planner_response', subagent_info={'conversation_id': 'c', 'log_uri': 'u'})['line'])
               == [('subagent', 'subagent_info')])
 
-        # VELDO-0172: every fake line has the form of a recorded real 1.5.0 stream-json run (kept in the proof).
-        def form(event):
-            return (event.get('type'), event.get('step_type') if event.get('type') == 'step_update' else None,
-                    tuple(sorted(event)))
-        fakes = {form(s['line']) for s in normal + outside[:2] + [result(1, 1, reason='error')] if 'line' in s}
-        live = set()
-        if LIVE.is_file():
-            for raw in LIVE.read_text().splitlines():
-                try:
-                    live.add(form(json.loads(raw)))
-                except ValueError:
-                    pass
-        check('stream/live-forms', 'the fakes print the forms of the owner-approved real run [%s]'
-              % sorted(map(str, fakes - live))[:3], bool(live) and fakes <= live)
     except Exception as error:  # noqa: BLE001
         import traceback
         for row in ROWS:

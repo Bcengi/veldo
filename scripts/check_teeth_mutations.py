@@ -12089,6 +12089,42 @@ def cases():
         "    paths = {'claude_code': qualified_claude(Refused)}\n",
         "    paths = {'claude_code': Path(shutil.which('claude')).resolve()}\n", ['setup/engines-record'])
 
+    # VELDO-0232: Antigravity's CLI as the third engine; each falsifier of the specification, run against suite 127.
+    agy232 = '127_veldo_0232_antigravity.py'
+    add(232, 'agy232-new-items-unlisted', agy232, 'qualify.py',
+        "        items += decided(decisions, 'antigravity', kind, fresh[kind], default)\n",
+        "        items += [] if kind in ('step_types', 'tools') else decided(decisions, 'antigravity', kind, fresh[kind], default)\n", ['qualify/new-items'])
+    add(232, 'agy232-new-tool-refused', agy232, 'control_engine_antigravity.py',
+        "        kind, reason = CLASSIFICATION.get(name, ('outward', 'not classified: outward until an evaluation grants it'))\n",
+        '        if name not in CLASSIFICATION:\n            continue  # defect: a new tool is left unclassified\n        kind, reason = CLASSIFICATION[name]\n', ['qualify/new-items'])
+    add(232, 'agy232-launch-unpinned', agy232, 'control_engine_antigravity.py',
+        '    path = pinned_path(state_root, version)\n    try:\n        info = os.lstat(path)',
+        "    path = Path(record['source'])  # defect: the source the updater rewrites, not the pinned copy\n    try:\n        info = os.lstat(path)", ['pin/pinned-path'])
+    add(232, 'agy232-outside-tool-unstopped', agy232, 'control_engine_antigravity.py',
+        '            if name is False or (name is not None and name not in self.allowed):\n',
+        '            if False:  # defect: a tool call outside the role is not stopped\n', ['launch/tool-outside-role'])
+    add(232, 'agy232-parent-names-reach', agy232, 'control_launch.py',
+        '        if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES) or name.startswith(PARENT_PREFIXES):\n',
+        "        if name in EXEC_STRIPPED or name.startswith(SESSION_PREFIXES):  # defect: a parent Antigravity session's names\n", ['launch/environment'])
+    add(232, 'agy232-profile-rule-accepted', agy232, 'control_engine_antigravity.py',
+        "    for place in places.get('profile') or () if home is not None else ():\n",
+        "    for place in ():  # defect: the account folder's load places are not read\n", ['launch/profile'])
+    add(232, 'agy232-quota-ordinary', agy232, 'control_engine_antigravity.py',
+        '            if QUOTA_TEXT in text:\n',
+        '            if False:  # defect: the individual quota is an ordinary failure\n', ['stream/limit'])
+    add(232, 'agy232-missing-result-complete', agy232, 'control_engine_antigravity.py',
+        "        if self.result is None or not self.after_result:\n            return 'missing_result'\n",
+        "        if False:  # defect: a zero exit without its result completes\n            return 'missing_result'\n", ['stream/missing-result'])
+    add(232, 'agy232-adapter-key-accepted', agy232, 'control_launch.py',
+        "        configured = ACC.refused(adapter.get('environment') or {}, engine_credentials(module))\n",
+        "        configured = ACC.refused(adapter.get('environment') or {}, CREDENTIALS)  # defect: Antigravity's list unread\n", ['accounts/credential-refused'])
+    add(232, 'agy232-ai-credits-accepted', agy232, 'control_engine_antigravity.py',
+        '        kind = _paid(data)\n',
+        "        kind = None  # defect: the account folder's paid paths are not read\n", ['accounts/paid-path'])
+    add(232, 'agy232-folder-twice', agy232, 'control_accounts.py',
+        "                    if _text((other.get('profiles') or {}).get(host)) and _same_profile(other['profiles'][host], directory):\n",
+        '                    if False:  # defect: one folder registered twice\n', ['accounts/one-registration'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

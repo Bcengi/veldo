@@ -1742,8 +1742,17 @@
    "requires": [
     "127_veldo_0232_antigravity"
    ],
-   "regions": "Twenty-six rows (VELDO-0232): qualify/record, qualify/new-items, qualify/rerun-bytes, qualify/output, pin/copy, pin/pinned-path and bind/stale (AC1: the qualify command's Antigravity steps over a fake agy carrying the extractor's byte forms, a newer fake with one more step type and tool, the pinned copy and the shared refusals); launch/flags, launch/settings, launch/environment, launch/tool-outside-role, launch/role-mcp, launch/profile and launch/clone (AC2); stream/record, stream/meter, stream/missing-result, stream/verdicts, stream/limit, stream/tool-calls and stream/live-forms (AC3, the last against the owner-approved real run kept in proof/VELDO-0232/live-stream.jsonl); accounts/profile, accounts/credential-refused, accounts/paid-path, accounts/one-registration and accounts/pool (AC4).",
+   "regions": "Twenty-five rows (VELDO-0232): qualify/record, qualify/new-items, qualify/rerun-bytes, qualify/output, pin/copy, pin/pinned-path and bind/stale (AC1: the qualify command's Antigravity steps over a fake agy carrying the extractor's byte forms, a newer fake with one more step type and tool, the pinned copy and the shared refusals); launch/flags, launch/settings, launch/environment, launch/tool-outside-role, launch/role-mcp, launch/profile and launch/clone (AC2); stream/record, stream/meter, stream/missing-result, stream/verdicts, stream/limit and stream/tool-calls (AC3); accounts/profile, accounts/credential-refused, accounts/paid-path, accounts/one-registration and accounts/pool (AC4).",
    "requires_note": "Only ROOT, expect and fast_temp. Copies .veldo and the VELDO-0232 extractor into scratch, writes a fake agy (a shell script execing a Python fixture, with the extractor's byte forms after it) and drives the production store, accounts, reservations, claims, Runner, receiver and reported-identity wrapper locally: no user service manager, model, real account or network. Writes only temporary files."
+  },
+  {
+   "name": "128_veldo_0232_live_forms",
+   "file": "128_veldo_0232_live_forms.py",
+   "requires": [
+    "128_veldo_0232_live_forms"
+   ],
+   "regions": "One row (VELDO-0232 AC3, VELDO-0172's rule): stream/live-forms, every form the suites' fake agy prints (scripts/suites/support/v232_agy_forms.py) is a form of the owner-approved real 1.5.0 stream-json run kept in proof/VELDO-0232/live-stream.jsonl; red until that run is recorded.",
+   "requires_note": "Only ROOT and expect. Reads the recorded run, the support module of the fake's forms and the shipped Antigravity record. Writes nothing."
   }
  ],
  "resource_capacities": {
