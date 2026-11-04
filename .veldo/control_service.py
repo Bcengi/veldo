@@ -2341,11 +2341,16 @@ class Line:
                  'assignment_id': aid, 'tree': subject.get('tree')}
         item = inbox.read(aid)
         if item is None:
+            # VELDO-0235: the brief names the destination the grant binds, in words.
+            destination = subject.get('destination') or last.get('destination') or LS.LG.LAND_AND_PUSH
             brief = ('Land %s of unit %s re-merged it onto the new %s at %s. The approval it holds is bound to another '
-                     'tree, so it needs a fresh grant for the re-merged tree %s (source %s, proof %s): %s. Grant it, '
-                     'or stop the unit?' % (last['dispatch_id'], unit, self.station.land_config['trunk'],
-                                           last.get('watermark'), subject.get('tree'), subject.get('source'),
-                                           subject.get('proof'), ', '.join(subject.get('approvals') or [])))
+                     'tree or destination, so it needs a fresh grant for the re-merged tree %s (source %s, proof %s): '
+                     '%s. Destination: %s. Grant it, or stop the unit?'
+                     % (last['dispatch_id'], unit, self.station.land_config['trunk'], last.get('watermark'),
+                        subject.get('tree'), subject.get('source'), subject.get('proof'),
+                        ', '.join(subject.get('approvals') or []),
+                        LS.LG.destination_words(destination, self.station.land_config['remote'],
+                                                self.station.land_config['trunk'])))
             owner, opened = self.open_question(inbox, alias, unit, brief, GRANT_CHOICES,
                                                {'kind': GRANT_KIND, 'ref': last['dispatch_id'],
                                                 'digest': S.digest_of(subject)}, 'loop-grant/' + last['dispatch_id'])

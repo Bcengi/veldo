@@ -38,6 +38,15 @@ A mixed refusal stays failed without a subject or an owner question.
 landed and unknown are followed by nothing. The original dispatch is never attempted again: its
 publication's recorded answer is final (VELDO-0057 AC3), and every re-land is a new identity.
 
+THE LANDING DESTINATION (VELDO-0235). Each land dispatch runs under the landing destination of the unit's
+project (control_landing.unit_destination: land_and_push when the project names none), read when the
+dispatch opens and recorded in its record with the command that last set it. land_and_push is the land
+above, byte for byte. land_locally builds the candidate on the local trunk's tip (no fetch) and publishes it
+as a compare-and-swap of the project repository's local trunk, pushing nothing (control_landing). A grant
+whose binding names another destination, or a destination changed after the grant, is a refusal a fresh
+grant answers: awaiting_approval, with the subject naming the destination; the owner is asked again and his
+grant binds it. status() counts the land dispatches by destination and outcome.
+
 THE RECORDS. `transition` is the one store transition of a land dispatch, `open` and `end`, committed on the
 caller's connection: its principal must be an active service member for the repository; one land of a unit
 runs at a time (the unit's index, kind `land_dispatch_unit`, names its latest land dispatch, its state and
@@ -300,14 +309,18 @@ class LandStation:
         read from the authority store's repository identity record (VELDO-0142), named here explicitly so
         authorship never depends on the policy callable the land is given."""
         land = self.land_config
+        # VELDO-0235: the destination land() read for this dispatch (land_and_push for any other caller).
+        destination = getattr(self, 'destination', None) or LG.LAND_AND_PUSH
         policy = LD.CandidatePolicy(self.store, self.conn, domain=self.domain, repository=self.repository,
                                     floor=self.floor, settlement_trust=self.settlement_trust)
         landing = LG.Landing(self.store, self.conn, domain=self.domain, repository=self.repository,
                              effects=land['effects'], target=land['target'], principal=land['principal'],
                              connection_key=land['connection_key'], floor=self.floor, events_root=land['events_root'],
                              signer=self.signer, sign=self.sign, generation=self.generation, call=self.call,
-                             observe=self.observe)
+                             observe=self.observe, destination=destination,
+                             local={'repository': land['repository'], 'trunk': land['trunk']})
         return LD.GitLandOps(land['repository'], evidence, trunk=land['trunk'], remote=land['remote'], push=True,
+                             destination=destination,
                              policy=policy, workspace_root=land.get('workspace_root'),
                              observe=self.observe, domain=self.domain, repository=self.repository,
                              installation=land.get('installation'), observations=land.get('observations'),
@@ -318,6 +331,9 @@ class LandStation:
         names the land dispatch this one re-lands. Returns the ended record. Refused, with nothing run,
         when the station cannot be built for it or its record cannot be opened (another land of the unit is
         running, or `follows` is not the unit's latest land that a new one may follow)."""
+        # VELDO-0235: the destination of the unit's project now, recorded with the command that set it.
+        destination = LG.unit_destination(self.conn, unit)
+        self.destination = destination['destination']
         try:
             ops = self._ops(evidence)
         except (LG.Refused, OSError, ValueError) as error:
@@ -327,10 +343,11 @@ class LandStation:
         attempt = int(((index or {}).get('data') or {}).get('attempts') or 0) + 1
         dispatch = 'dispatch/%s/land-%d-%s' % (unit, attempt, os.urandom(4).hex())
         opened = self._run('open', unit, dispatch, {'follows': follows, 'record': {
-            'evidence': evidence, 'holder': holder, 'generation': generation}})
+            'evidence': evidence, 'holder': holder, 'generation': generation,
+            'destination': destination['destination'], 'destination_command': destination['command_id']}})
         self.counts['opened'] += 1
         self._emit('open', unit, dispatch, outcome='accepted', follows=follows, attempt=opened.get('attempt'),
-                   evidence=evidence)
+                   evidence=evidence, destination=destination['destination'])
         subject = {'spec': unit, 'dispatch': dispatch, 'holder': holder, 'generation': generation}
         try:
             result = LD.veldo_land(ops, subject, worker_id='land-' + hashlib.sha256(dispatch.encode()).hexdigest()[:12],
@@ -340,7 +357,8 @@ class LandStation:
         outcome, end = self.classify(result, ops.record(), dispatch)
         self.counts[outcome] = self.counts.get(outcome, 0) + 1
         ended = self._run('end', unit, dispatch, {'outcome': outcome, 'end': end})
-        self._emit('end', unit, dispatch, outcome=outcome, follows=follows, watermark=end.get('watermark'),
+        self._emit('end', unit, dispatch, outcome=outcome, follows=follows, destination=destination['destination'],
+                   watermark=end.get('watermark'),
                    candidate=end.get('candidate'), refusal=end.get('refusal'), taxonomy=taxonomy(end.get('refusal'))
                    if end.get('refusal') else None, observed=end.get('observed'))
         return ended
@@ -387,7 +405,7 @@ class LandStation:
         if ((record or {}).get('state') != AWAITING or not isinstance(subject, dict)
                 or not subject.get('approvals') or record.get('unit') != unit):
             raise Refused('invalid_input:grant', 'no land of this unit awaits a grant')
-        bound = {f: subject.get(f) for f in LG.SUBJECT_FIELDS}
+        bound = LG.binding(subject)
         approvals = [(aid, json.loads(data)) for aid, data in
                      self.conn.execute("SELECT id, data FROM entities WHERE kind='approval'")]
         applied = [aid for aid, data in approvals if data.get('land_dispatch') == record['dispatch_id']]
@@ -399,7 +417,8 @@ class LandStation:
             prior = [data for _, data in approvals if data.get('unit') == unit and data.get('name') == name
                      and data.get('revision') == subject.get('revision') and data.get('state') == 'granted']
             if not any(isinstance(data.get('subject'), dict)
-                       and [f for f in LG.SUBJECT_FIELDS if data['subject'].get(f) != bound[f]] == ['tree']
+                       and LG.binding_differences(data['subject'], bound)
+                       and set(LG.binding_differences(data['subject'], bound)) <= {'tree', 'destination'}
                        for data in prior):
                 raise Refused('missing_authority:approval/' + name, 'prior grant no longer covers the older tree')
         written = []
@@ -429,7 +448,14 @@ class LandStation:
         """Metrics: opened and refused commands, the lands running, the outcomes of this repository's land
         dispatches, and the re-land dispatches (those that follow another) per unit."""
         records = self.records()
+        # VELDO-0235: the land dispatches by destination (a record before the field ran land_and_push) and outcome.
+        destinations = {}
+        for r in records:
+            if r.get('state') != RUNNING:
+                tally = destinations.setdefault(r.get('destination') or LG.LAND_AND_PUSH, {})
+                tally[r['state']] = tally.get(r['state'], 0) + 1
         return dict(self.counts, running=sorted(r['dispatch_id'] for r in records if r.get('state') == RUNNING),
+                    destinations=destinations,
                     outcomes={s: sum(r.get('state') == s for r in records) for s in ENDS},
                     relands={u: sum(1 for r in records if r.get('unit') == u and r.get('follows'))
                              for u in sorted({r.get('unit') for r in records})})

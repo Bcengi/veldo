@@ -12108,6 +12108,42 @@ def cases():
         "    https_port = API.HTTPS_PORT if https_port is None else https_port  # defect: the laid port is not kept\n",
         ['rerun/other-port'])
 
+    # VELDO-0235: each project has a landing destination, land and push or land locally.
+    dest235 = '128_veldo_0235_land_locally.py'
+    # AC1 (declared falsifier): a record without the field reads as land_locally, so the existing project's land
+    # publishes nothing.
+    add(235, 'dest235-absent-reads-local', dest235, 'control_project.py',
+        "    value = data.get(LANDING_DESTINATION, LAND_AND_PUSH) if isinstance(data, dict) else LAND_AND_PUSH\n",
+        "    value = data.get(LANDING_DESTINATION, LAND_LOCALLY) if isinstance(data, dict) else LAND_LOCALLY"
+        "  # defect: every existing project lands locally\n",
+        ['destination/default-push'])
+    # AC2 (declared falsifier): land locally also pushes the candidate to the project's remote.
+    add(235, 'dest235-local-also-pushes', dest235, 'control_landing.py',
+        "            if swapped.returncode == 0 and after == payload['commit']:\n",
+        "            if swapped.returncode == 0 and after == payload['commit']:\n"
+        "                # defect: the local landing pushes too\n"
+        "                origin = self._git(self.clone, 'config', '--get', 'remote.origin.url').stdout.strip()\n"
+        "                identity = _organ('control_git_identity').resolve(self.conn, self.domain, self.repository)\n"
+        "                self._git(self.clone, 'push', '-q', origin, payload['commit'] + ':' + self.ref, profile='identity',\n"
+        "                          push_identity=identity, remote_url=origin)\n",
+        ['local/lands'])
+    # AC3 (declared falsifier): the destination is left out of the bound subject, so a grant made before the
+    # destination changed lands under the new one.
+    add(235, 'dest235-destination-unbound', dest235, 'control_landing.py',
+        "                if bound.get('destination', LAND_AND_PUSH) != target:\n",
+        "                if False:  # defect: the approval is not bound to the destination\n",
+        ['bound/destination-changed'])
+    # AC4 (declared falsifier): land_and_push is routed through the local path, so the remote never moves: red in
+    # VELDO-0057's exact-tip row and in this suite's land_and_push rows.
+    local235 = ("            if self.destination == LAND_LOCALLY:\n"
+                "                return self._recorded(unit, candidate, dispatch, self._publish_locally(sid, candidate, dispatch, subject))\n")
+    pushed235 = ("            if True:  # defect: every landing takes the local path\n"
+                 "                return self._recorded(unit, candidate, dispatch, self._publish_locally(sid, candidate, dispatch, subject))\n")
+    add(235, 'dest235-push-routed-local-0057', '70_veldo_0057_landing.py', 'control_landing.py', local235, pushed235,
+        ['exact-tip/compare-and-swap'])
+    add(235, 'dest235-push-routed-local', dest235, 'control_landing.py', local235, pushed235,
+        ['destination/default-push', 'push/unchanged'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

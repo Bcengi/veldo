@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ReadAnswer } from '@/api/types'
-import { intakeOf, projectsOf, searchProjects } from './projects'
+import { destinationWords, intakeOf, projectsOf, searchProjects } from './projects'
 
 const item = (id: string, kind: string, data: Record<string, unknown>) => ({ id, kind, version: 1, digest: 'd', data })
 const answer = {
@@ -22,6 +22,14 @@ describe('projects', () => {
     expect(searchProjects(projectsOf(answer), 'parse').map((p) => p.name)).toEqual(['a'])
     expect(searchProjects(projectsOf(answer), 'billing active').map((p) => p.name)).toEqual(['b'])
     expect(searchProjects(projectsOf(answer), '').length).toBe(2)
+  })
+  it('names each project\'s landing destination in words, land and push when the record names none (VELDO-0235)', () => {
+    const local = { items: { project: [item('project:c', 'project', { name: 'c', state: 'ACTIVE', landing_destination: 'land_locally' })] } } as unknown as ReadAnswer
+    expect(projectsOf(answer).map((p) => [p.destination, p.destinationWords])).toEqual([
+      ['land_and_push', 'land and push to its remote'], ['land_and_push', 'land and push to its remote']])
+    expect(projectsOf(local).map((p) => [p.destination, p.destinationWords])).toEqual([['land_locally', 'land locally on its trunk, nothing pushed']])
+    expect(destinationWords('land_and_push', 'origin')).toBe('land and push to origin')
+    expect(destinationWords('land_locally', 'origin', 'main')).toBe('land locally on main, nothing pushed')
   })
   it('reads the intake\'s records of messages', () => {
     expect(intakeOf(answer)).toEqual([{ id: 'proposal:1', text: 'Add CSV export', project: 'a', state: 'PROPOSED', principal: 'owner', kind: 'proposal' }])
