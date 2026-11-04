@@ -1,0 +1,45 @@
+# VELDO-0175 fix round 2: each suite run alone at 7d2d6f6e, python3 scripts/selftest.py --suite NAME (partial runs exit nonzero by design)
+## 131_veldo_0175_conversation_replies
+  131_veldo_0175_conversation_replies             16 passed    3.32s
+selftest (PARTIAL, 1 of 194 suites): 42 passed, 0 failed in 3.32s
+## 132_veldo_0175_conversation_routes
+  132_veldo_0175_conversation_routes              19 passed   19.87s
+selftest (PARTIAL, 1 of 194 suites): 45 passed, 0 failed in 19.87s
+## 113_veldo_0145_ui
+  SELFTEST FAIL: VELDO-0145 ui/route-trace
+  113_veldo_0145_ui                                6 passed    3.99s
+selftest (PARTIAL, 1 of 194 suites): 32 passed, 1 failed in 3.99s
+## 71_veldo_0130_api
+  71_veldo_0130_api                               45 passed   23.57s
+selftest (PARTIAL, 1 of 194 suites): 71 passed, 0 failed in 23.57s
+## 71_veldo_0138_channel_service
+  71_veldo_0138_channel_service                   13 passed   31.33s
+selftest (PARTIAL, 1 of 194 suites): 39 passed, 0 failed in 31.33s
+## 128_veldo_0177_conversation_workspace
+  128_veldo_0177_conversation_workspace           15 passed    3.11s
+selftest (PARTIAL, 1 of 194 suites): 41 passed, 0 failed in 3.11s
+## 123_veldo_0174_conversations
+  123_veldo_0174_conversations                    38 passed   11.29s
+selftest (PARTIAL, 1 of 194 suites): 64 passed, 0 failed in 11.29s
+## 127_veldo_0231_run_flags
+  127_veldo_0231_run_flags                        17 passed   34.15s
+selftest (PARTIAL, 1 of 194 suites): 43 passed, 0 failed in 34.15s
+## 129_veldo_0177_assistant_setup
+  129_veldo_0177_assistant_setup                   4 passed    3.37s
+selftest (PARTIAL, 1 of 194 suites): 30 passed, 0 failed in 3.37s
+## 130_veldo_0176_conversation_history
+  130_veldo_0176_conversation_history             17 passed   13.03s
+selftest (PARTIAL, 1 of 194 suites): 43 passed, 0 failed in 13.03s
+## 68_veldo_0126_intake
+  68_veldo_0126_intake                            18 passed    1.70s
+selftest (PARTIAL, 1 of 194 suites): 44 passed, 0 failed in 1.70s
+## 68_veldo_0134_acceptance
+  68_veldo_0134_acceptance                        27 passed    1.57s
+selftest (PARTIAL, 1 of 194 suites): 53 passed, 0 failed in 1.57s
+## 68_veldo_0136_hints
+  68_veldo_0136_hints                              7 passed    4.10s
+selftest (PARTIAL, 1 of 194 suites): 33 passed, 0 failed in 4.10s
+## 68_veldo_0137_policy_revision
+  68_veldo_0137_policy_revision                    2 passed    0.19s
+selftest (PARTIAL, 1 of 194 suites): 28 passed, 0 failed in 0.19s
+## 113_veldo_0145_ui detail: VELDO-0145 ui/route-trace detail: messages.send is published with the same method, path and fields (engine/ui/src/api/routes.json lacks 'conversation'; outside the footprint, OPEN.md item 6)

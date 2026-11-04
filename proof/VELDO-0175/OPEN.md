@@ -59,3 +59,14 @@ footprint). The declared case `question-not-sent` still runs fresh and green (`u
 
 Neither new suite needs the systemd user manager (nothing for gate_unconfined.json). Suite 132 needs the installed
 graph runtime, as suite 93 does.
+
+## 6. Suite 113_veldo_0145_ui row ui/route-trace: red since fix round 1, fix outside the footprint
+
+Found by the lead. The row checks that every route in the UI's published route table,
+`engine/ui/src/api/routes.json`, matches `control_api.ROUTES` method, path, required and optional fields. Fix round 1
+added `conversation` to `messages.send`'s optional fields in `control_api.ROUTES`; the UI table still says
+`"optional": ["project", "clarifies"]`, so `messages.send is published with the same method, path and fields` fails
+(green at 7bc8279c). The fix is one edit in that file: `"optional": ["project", "clarifies", "conversation"]`.
+`engine/ui/src/api/routes.json` matches no footprint glob of this specification, so it is not changed here; the
+lead widens the footprint (then the edit is made and suite 113_veldo_0145_ui rerun) or decides otherwise. The row is
+not weakened.

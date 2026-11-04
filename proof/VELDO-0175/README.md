@@ -160,6 +160,30 @@ baseline green, no-op green, mutant red on the named row.
 
 The four spec falsifier cases were rerun alone after the round, all killed with baseline and no-op green.
 
+## Fix round 2 (review-2026-11-04.md finding 1)
+
+`control_intake_conversation.Conversing.read` now checks, for every reading (`none` included), that the held
+reply's conversation is still the sender's open one before it plans the reading. When it is not (closed after the
+reply was held, as "thanks" then "/close"; another member's; or gone), the reading is settled by its named refusal
+(`stale_subject:conversation_closed`, `missing_authority:conversation_owner`, `invalid_input:conversation:unknown`):
+the held record is retired READ with no turn, whatever the reading said, and the sender gets that refusal's one line
+(recorded under his message, so never twice). The PM cycle's `apply` then gets `ok` and the cycle is `proposed`, so
+the reading leaves the PM's `collection/readings` and the next run routes the inbox again. A command reading of such
+a conversation was already settled this way; the same path now covers `none`.
+
+Row AC1/closed-before-reading (suite 132, run by the production PM cycle): a plain reply "thanks" held
+AWAITING_READING, then "/close" applied at intake, then the PM's `none` reading: the record is READ, one
+stale_subject:conversation_closed line answers "thanks", no turn; the PM's next run routes a later unrelated message
+(ROUTED) and no AWAITING_READING record is left. Red before the fix (`fix-round-2/132-before-fix.txt`: reading
+refused, record AWAITING_READING, no line, later message AWAITING_ROUTE), green after (`fix-round-2/132-after-fix.txt`).
+
+Mutation case `reading175-closed-stuck` (control_intake_conversation.py: check the conversation only for a command
+reading, which brings the stuck state back): AC1/closed-before-reading. Killed.
+
+Every registered 0175 case (the ten above) was rerun alone after the round: baseline and no-op green, each mutant red
+on its named row; receipts in `mutations/`. Suites run alone: `fix-round-2-suites.txt`. 113_veldo_0145_ui row
+ui/route-trace stays red: OPEN.md item 6 (outside the footprint).
+
 ## Observability
 
 Intake logs how each conversation message was decided (`decided_by`: reply, field, command, route, reading) with the

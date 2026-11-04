@@ -216,3 +216,8 @@ criteria unchanged.
 AC1's "no factory PM run" could not hold together with AC4, the owner's later rule (Telegram 29299, applied when
 he marked this ready), that the factory PM reads every plain reply in case it is a command. AC1 now names that
 reading as the one PM step; a reply still takes no route run, no proposal and no question. AC4 is unchanged.
+
+2026-11-04: fix round 2 (proof/VELDO-0175/review-2026-11-04.md finding 1): a PM reading of a held reply whose
+conversation is no longer the sender's open one settles it READ by its named refusal with one line, so it never
+blocks the PM's routing. Suite 113_veldo_0145_ui's ui/route-trace needs engine/ui/src/api/routes.json, outside the
+footprint (proof/VELDO-0175/OPEN.md item 6). Acceptance criteria unchanged.
