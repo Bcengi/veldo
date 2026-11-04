@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0232
 title: Antigravity's CLI runs as a third Veldo engine on the same terms as Claude Code and Codex
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -277,3 +277,5 @@ Migrating scripts/agy_run.sh in myday onto Veldo.
 2026-11-04: drafted from Telegram 39045. The binary was probed read-only (help, models on agy1, bytes,
 embedded changelog); no prompt, no paid API, no settings change. The installed version was 1.5.0, not the
 1.4.12 the brief named: the self-update observed that day is why AC1 pins a copy.
+
+2026-11-04: approved by the owner, Telegram 39065 ("Yes approve all four"), with VELDO-0232, VELDO-0234, VELDO-0235 and core VELDO-3340. Status ready.
