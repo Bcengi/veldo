@@ -10,8 +10,11 @@ a fixture run's files, environment and command line for canary credentials. AC2:
 workspace at run end, a landing candidate's changed files, a project tree on the owner's command and at setup,
 masked findings, the engine login fixture, reports only. AC3: the one launcher decision, a default run reaching a
 fixture database on host loopback (TCP and its Unix socket) and a fixture service on a local address, a risky run
-taking the confined runner (scripts/agent_sandbox.py; suite 128 starts it), and a host without the runner's helper. Starts only
-loopback fixture servers and child processes; writes only temporary files.
+taking the confined runner (scripts/agent_sandbox.py; suite 128 starts it), and a host without the runner's helper. The
+fix round's rows: the launch-time scan through Receiver._spawn, the scans from the installed service layout, a
+failing scan logged and told, the run-end scan of changed files after the recorded end, the channel's owner notice,
+a risky spawn's work tree and client, and the cached runner self-test. Starts only loopback fixture servers and
+child processes; writes only temporary files.
 """
 
 

@@ -15,17 +15,27 @@ The rule is checked statically. `python3 .veldo/secret_scan.py sites` lists ever
 that builds a run's configuration, environment or command, and names each one that resolves a keystore
 reference or reads a credential as `credential_delivery_site:<module>:<function>`.
 
+It is also checked at every launch. Runs keep the environment they inherit today, so the launcher scans what a
+run is about to start with: its final environment (as the engine will receive it) and its command line, with
+the same formats as the secret scan below. Whatever put a value there (the host's own environment, a literal in
+an adapter's configuration, a file read into the environment) does not matter. A credential found there is
+logged masked with the trigger `launch`, the owner is told, and the launch is refused by name:
+`credential_delivery_site:environment:<name>` or `credential_delivery_site:command:<position>`. The engine's
+own model login, where the launcher hands it over, is not a finding.
+
 ## 2. A secret scan reports credentials left in workspaces and project trees
 
 One scan entry reads:
 
-- a run's workspace when the run ends (its clone's work tree and scratch, its conversation directory and its
-  own run directory);
+- the files a run added or changed in its workspace (its clone's work tree and scratch, its conversation
+  directory), read once the run's end is recorded, so the scan never delays the end and does not report again
+  what was there before the run;
 - the changed files of a landing candidate before it lands;
 - every project tree at setup, and any project tree on the owner's command:
   `python3 .veldo/secret_scan.py scan --project <name> --root <tree> [--log <file>]`.
 
-It detects credentials by the generic credential formats in `.veldo/secret_scan_patterns.json` and by an exact
+It detects credentials by the generic credential formats listed in `.veldo/secret_scan.py` itself (so every
+installed copy carries them) and by an exact
 match against the credentials held for the gate, compared by digest inside the scan process and never written
 out. The engine's own model login in its usual place (`.claude/.credentials.json`, `.codex/auth.json`) is not a
 finding.
@@ -33,8 +43,11 @@ finding.
 Each finding is `secret_found:<kind>` with the project, file and line and the masked form only: the kind, the
 length and a short digest of the value, never any character of it. The scan writes one log line per finding
 and one summary line per scan (files read, findings) to `secret-scan.jsonl` (the receiver configuration's
-`secret_scan_log`, else under the state root, else beside the store), and sends the owner one notice per scan
-that says to move each credential behind the gate. `python3 .veldo/secret_scan.py metrics --log <file>` counts
+`secret_scan_log`, else under the state root, else beside the store). A setup scan that finds nothing writes
+nothing, so a re-run of setup changes nothing. The running service's channel reads those logs and tells the
+owner, in the enrolled chat and once per scan, of each scan that found a credential, masked, with the advice to
+move it behind the gate. A scan that fails is never silent: it is logged as `secret_scan_failed` with its
+trigger and the error's name, and the owner is told what was not checked. `python3 .veldo/secret_scan.py metrics --log <file>` counts
 scans by trigger, findings by kind and trigger, and the findings still open.
 
 The scan reports. It does not edit files, stop runs or refuse a landing. Moving a found credential behind the

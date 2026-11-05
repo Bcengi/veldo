@@ -1,0 +1,21 @@
+VELDO-0254 fix round 1, red before (tests first, at 5935d53d's code). python3 scripts/selftest.py --suite 127_veldo_0254_secret_scan
+
+1. As written (the scratch .veldo holds modules only, as an installed receiver does): every row raised
+  SELFTEST FAIL: VELDO-0254 ac1/static-sites: raised FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/v254-mfpg_5b7/installed/.veldo/secret_scan_patterns.json'
+  127_veldo_0254_secret_scan                       0 passed    2.18s
+
+2. With the old formats file copied into the scratch .veldo for this run only, each new row red on its own:
+  SELFTEST FAIL: VELDO-0254 ac2/landing: the build collection scans the candidate before it can land, through the reporting wrapper
+  SELFTEST FAIL: VELDO-0254 ac2/one-entry: the receiver's run end calls the run-end scan once its end is recorded
+  SELFTEST FAIL: VELDO-0254 ac1/launch-scan: raised AttributeError: 'Receiver' object has no attribute 'runner'
+  SELFTEST FAIL: VELDO-0254 ac2/installed: the owner's command runs from the installed layout [1 rs, newline)
+  SELFTEST FAIL: VELDO-0254 ac2/failure-visible: raised AttributeError: module 'v254_launch' has no attribute 'candidate_scan'
+  SELFTEST FAIL: VELDO-0254 ac2/run-end-changed: only the files the run added or changed are read and reported [[('None', '4'), ('already/.env', 'None'), ('edit.txt', 'None'), ('new/settings.py', 'None')]]
+  SELFTEST FAIL: VELDO-0254 ac2/owner-notice: raised AttributeError: module 'v254_launch' has no attribute 'candidate_scan'
+  SELFTEST FAIL: VELDO-0254 ac3/risky-spawn: a risky codex run is confined with the clone work tree writable and the codex client [/home/dmitry/projects/veldo-worktrees/veldo-0254 None]
+  SELFTEST FAIL: VELDO-0254 ac3/selftest-cached: a receiver judges its host once [raised confined_runner_problem() takes 1 positional argument but 2 were given raised confined_runner_problem() takes 1 positional argument but 2 were given raised confined_runner
+  127_veldo_0254_secret_scan                      13 passed    4.95s
+
+3. Suite 103_veldo_0142_git_identities at 5935d53d: launch/spawn-config-commit-authors red (AttributeError 'Receiver' object has no attribute 'config', from the AC3 runner_argv call in _spawn); 22 passed, 1 failed.
+4. Suite 85_veldo_0171_setup_api after the formats moved into secret_scan.py: rerun/changes-nothing and rerun/over-0139-host red (secret-scan.jsonl added under the state root by a clean setup scan).
+5. Suite 63_veldo_0040_containment with the end report as a Receiver method: 5 rows red (AttributeError: SimpleNamespace has no _report_end).
