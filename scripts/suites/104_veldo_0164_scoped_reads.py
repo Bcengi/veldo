@@ -49,7 +49,10 @@ def _v164_suite():
                 if model.name == 'workers':
                     check('reads/member-A','derived machines contain only A',
                           [m['host'] for m in actual['machines']] == ['host-A'])
-                old = dict(legacy['read_model'](S,conn,model.name),ok=True)
+                # VELDO-0235 AC3: the objectives answer also names each project's land remote and trunk, derived
+                # from the project records it serves; this fixture's authority serves no land, so it is empty.
+                old = dict(legacy['read_model'](S,conn,model.name),ok=True,
+                           **({'landing': {}} if model.name == 'objectives' else {}))
                 check('owner/unchanged',model.name + ' exactly matches the old reader',authority.read(model.name,'owner') == old)
             for principal in ('reader','factory-reader'):
                 objectives = authority.read('objectives',principal)
