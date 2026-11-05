@@ -166,3 +166,5 @@ engine-only login criteria are removed; the file is renamed to match. VELDO-0210
 by this ticket. Changes recorded in proof/VELDO-0254/no-sandbox-revision-2026-11-05.md.
 
 2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.
+
+2026-11-05: footprint widened by the lead after the independent review (proof/VELDO-0254/review-2026-11-05.md): the one call site that sends the owner notice through Veldo's own channel (AC2), named in proof/VELDO-0254/OPEN.md by fix round 1. AC1 is met by a launch-time scan of the run's environment and command line, not by new confinement (owner rule, Telegram 39154). Acceptance criteria unchanged.
