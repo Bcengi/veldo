@@ -1609,11 +1609,20 @@ class Service:
         self._log(dict(sent, kind='api', operation='api_announce', at=time.time(), domain_uuid=self.domain))
         return sent
 
+    def installation_status(self):
+        """The installation folder and revision this service loaded (VELDO-0259), read once through the one
+        reader, which prints its resolution line."""
+        loaded = getattr(self, 'installation_loaded', None)
+        if loaded is None:
+            loaded = _organ('installation').trace()
+            self.installation_loaded = loaded
+        return dict(loaded)
+
     def api_status(self):
         if self.api is None:
             return {'available': False, 'configured': bool(self.config.get('api_service')),
-                    'refusal': self.api_refusal}
-        return dict(self.api.status(), configured=True)
+                    'refusal': self.api_refusal, 'installation': Service.installation_status(self)}
+        return dict(self.api.status(), configured=True, installation=Service.installation_status(self))
 
     def inbox(self, repository):
         """VELDO-0064's inbox of `repository` on this instance's connection, made for each use: its

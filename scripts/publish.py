@@ -96,6 +96,20 @@ EXCLUDE = (
 
 PRIVATE_NAMES = ROOT / ".veldo" / "private_names.txt"
 
+# THE PERSONAL-SETUP CHECK, the same code the gate's personal_setup stage runs (VELDO-0259 AC2), so the
+# gate and publication share one definition of what is personal: the installation's patterns and the
+# built-in shapes that name nobody.
+_cps_spec = _ilu.spec_from_file_location("veldo_check_personal_setup",
+                                         Path(__file__).resolve().parent / "check_personal_setup.py")
+CPS = _ilu.module_from_spec(_cps_spec)
+_cps_spec.loader.exec_module(CPS)
+
+
+def personal_setup(dest):
+    """Every file of the PRODUCED tree through the personal-setup check, sweep mode. The secret
+    inventory's dispositions are this repository's, by line digest. Returns the findings, masked."""
+    return CPS.sweep(dest, dispositions_root=ROOT)
+
 # The repository's own distribution coordinates are not a company reference. Stripped before
 # matching, exactly as the gate's genericity sweep does, so the owner's account name in a clone URL
 # does not read as a customer leak.
@@ -301,6 +315,11 @@ def build(dest, quiet=False):
     # out of the tree can create one and the manifest cannot exclude what does not exist yet.
     for cache in sorted(dest.rglob("__pycache__")):
         shutil.rmtree(cache, ignore_errors=True)
+    findings = personal_setup(dest)
+    if findings:
+        print("publish: REFUSED. The produced tree carries personal setup (findings above, masked).")
+        print("Nothing was cleaned and nothing further was written.")
+        raise SystemExit(1)
     findings = scan(dest, names)
     if findings:
         print("publish: REFUSED. The produced tree carries private names:")

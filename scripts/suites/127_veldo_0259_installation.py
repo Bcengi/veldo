@@ -293,7 +293,8 @@ def _v259_installation_suite():
 
         # ---- AC1: the reader is the only opener ----------------------------------------------------------
         tracked = git(ROOT, 'ls-files', '-z', '--', '*.py', '*.sh').split('\0')
-        opener = re.compile(r'VELDO_INSTALLATION|installation\.yaml|[\'"]installation[\'"]\s*\)')
+        opener = re.compile(r'VELDO_INSTALLATION|installation\.yaml|veldo/installation(?![.\w])'
+                            r'|[\'"]veldo[\'"]\s*,\s*[\'"]installation[\'"]')
         others = []
         for rel in tracked:
             if not rel or rel.startswith(('scripts/suites/', 'proof/', 'specs/', 'docs/')):

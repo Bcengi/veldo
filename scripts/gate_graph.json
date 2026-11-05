@@ -118,6 +118,13 @@
         "peak_cgroup_memory_bytes": 496013312
       }
     },
+    "personal_setup": {
+      "depends_on": [],
+      "writes_candidate": false,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "shared"
+    },
     "extra": {
       "depends_on": [],
       "writes_candidate": false,
