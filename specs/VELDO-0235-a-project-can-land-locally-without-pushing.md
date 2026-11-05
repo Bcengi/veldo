@@ -136,3 +136,15 @@ Pushing a locally landed commit later, other remotes or hosts than VELDO-0153 al
 2026-11-04: footprint widened by the lead after the independent review (proof/VELDO-0235/review-2026-11-04.md):
 engine/ui/src/views/ProjectsView.vue, the project screen AC3 requires to show the landing destination.
 Acceptance criteria unchanged.
+
+2026-11-04: plan consistency review (veldo-plan-consistency-review-2026-11-04.md) and the lead's rulings
+(veldo-plan-rulings-2026-11-04.md), owner request Telegram 39145. Built, gate queued, so the criteria and the
+code are unchanged here and each change goes to a follow-up ticket: VELDO-0253 makes the landing
+destination, remote and trunk keys of the project's file in the installation repository (finding A20,
+ruling R1): the signed control_project operation is dropped, land_locally to land_and_push is a widening
+and the reverse a narrowing. VELDO-0250 removes the personal setup (B2, B8): the named repository and the
+hosting default in Intent become a generic project and "its remote", suite 128 line 143's owner name
+becomes a role id, the message ids outside History go, and README line 3 follows. Review E13: a local
+landing moves refs/heads/<trunk> without updating a working tree that has the trunk checked out; that
+needs its own follow-up ticket, which the lead files and numbers before landing (this writer reserves no
+number, so ids do not collide). Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md on the veldo-parity-a branch.

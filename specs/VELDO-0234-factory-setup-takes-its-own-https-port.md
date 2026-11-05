@@ -133,3 +133,13 @@ an installation already set up (that is a new setup).
 2026-11-04: footprint widened by the lead after the independent review (proof/VELDO-0235/review-2026-11-04.md):
 scripts/gate_unconfined.json, a protected path, for suite 127's entry (it drives the systemd user manager,
 the same reason as suite 117's entry). Needs the owner's approval at landing. Acceptance criteria unchanged.
+
+2026-11-04: plan consistency review (veldo-plan-consistency-review-2026-11-04.md) and the lead's rulings
+(veldo-plan-rulings-2026-11-04.md), owner request Telegram 39145. Built, gate queued, so the criteria and the
+code are unchanged here and each change goes to a follow-up ticket: VELDO-0253 makes the HTTPS port
+installation configuration (finding A19, ruling R1): setup writes the port into the installation
+repository's first commit, a later port change is a commit the loader handles as a widening, and the
+holds_https_port refusal and the state-root option give way to it. VELDO-0250 removes the personal setup
+(B2, B8): the other app's name and port and this host's port in Intent, the fixture's
+occupied-root mapping and suite 127 lines 11 and 79 become a generic occupied port, the cutover
+research reference and the message ids outside History go, and README line 3 follows. Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md on the veldo-parity-a branch.
