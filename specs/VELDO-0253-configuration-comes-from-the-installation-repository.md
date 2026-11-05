@@ -7,7 +7,7 @@ risk: critical
 owner: owner
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0068, VELDO-0132, VELDO-0171, VELDO-0241, VELDO-0250]
+depends_on: [VELDO-0068, VELDO-0132, VELDO-0171, VELDO-0241, VELDO-0259]
 placement: [contracts, engine, distribution]
 protected_paths:
   - ".veldo/installation.py"
@@ -106,7 +106,7 @@ acceptance_criteria:
       memory/ (the memory manifest: stores, their servers and the session history sink; a run reaches a
       memory server only as a service under services/);
       schedules/<id>.yaml (schedules the installation declares);
-      patterns/ (the personal-setup patterns of VELDO-0250 AC3, read only by that check);
+      patterns/ (the personal-setup patterns of VELDO-0259, read only by that check);
       decisions/ (the map from a decision reference to its source message and quote);
       records/ (history records, VELDO-0250 AC2, kept with a digest list and never read as
       configuration);
@@ -116,7 +116,7 @@ acceptance_criteria:
       occurrences or account pauses. A secret is a reference by name ({secret: <name>}) resolved from the
       keystore at use time; a literal secret-shaped value is refused. Setup on a new installation creates
       the installation repository from the template the product ships (installation_template) at the path
-      VELDO-0250 AC1 resolves unless it is given one, and records that path as VELDO_INSTALLATION in the
+      VELDO-0259 resolves unless it is given one, and records that path as VELDO_INSTALLATION in the
       service's environment: a private Git repository with the declared layout, the values setup was given,
       the git remote it was given and one first commit. Veldo pushes each commit it makes (the first
       commit, an import commit, a canvas save) to the declared remote once the loader has accepted it,
@@ -210,7 +210,8 @@ never in Veldo.
 The repository holds the owner identity and approvers, projects, accounts, ports, the bot and its
 channels, roles and teams, outside services, local connectors with their allowed tools and never rules,
 landing destinations, workflow definitions, the memory manifest, declared schedules, and the
-personal-setup patterns, decision references and records of VELDO-0250. The database holds runs,
+personal-setup patterns and decision references of VELDO-0259 and the records of VELDO-0250. The
+database holds runs,
 approvals, conversations, schedule occurrences, account pauses, the record of which configuration commit was live, and which
 workflow revision each run used. A workflow saved on the canvas is committed to the repository, so there
 is one source of truth for definitions, and the database keeps an exact copy only of what a run used.
@@ -218,8 +219,8 @@ Every new installation starts its own private repository from a template that se
 
 ## Context
 
-- VELDO-0250 (ready) moves every personal value out of the product into one installation folder, read
-  only by .veldo/installation.py, and documents its layout. It treats the folder as files on disk. This
+- VELDO-0259 gives every deployment one installation folder, read only by .veldo/installation.py, and
+  documents its layout; VELDO-0250 later moves every personal value out of the product into it. It treats the folder as files on disk. This
   spec makes the folder a Git repository with a declared schema, reads it from commits, and defines how a
   change becomes live. The reader stays the single boundary: the loader here is built on it.
 - VELDO-0132 stores immutable workflow revisions in the store; Workflows.save is today the only writer
@@ -233,9 +234,9 @@ Every new installation starts its own private repository from a template that se
   state root, the host trust and service configuration files. Setup also lays down a small team
   repository for the factory project (VELDO-0143). None of that is versioned or reviewable as a whole,
   and a value changed by hand is live at the next restart with no record of who changed it.
-- VELDO-0250 (the owner identity, approvers, patterns, decisions and records), VELDO-0251 and VELDO-0252
-  (outside services and their grants) and the specs that move roles, teams, the memory manifest,
-  schedules and work keys out of the store each need installation kinds. All of them are declared in this
+- VELDO-0259 (the owner identity, approvers, patterns and decisions), VELDO-0250 (records), VELDO-0251
+  and VELDO-0252 (outside services and their grants) and the specs that move roles, teams, the memory
+  manifest, schedules and work keys out of the store each need installation kinds. All of them are declared in this
   spec's one schema (AC1), so no spec defines a layout of its own. Anything else in the folder must be
   declared as ignored by the schema (for example research notes), or it is refused as an unknown file.
 
@@ -311,3 +312,9 @@ written as an amendment note, proof/VELDO-0253/amend-0241.md, and VELDO-0241 its
 2026-11-04: approved by the owner, Telegram 39144 ("Yes", to 39143). Status ready.
 
 2026-11-04: amended per the plan consistency review (research/veldo-plan-consistency-review-2026-11-04.md) and the lead's rulings (research/veldo-plan-rulings-2026-11-04.md), both in the owner's installation repository, on the owner's request Telegram 39145. AC1 is now the one installation layout and schema with every kind the other specs need (R1, R8; findings D2, C18, A15, A16, A21), the installation overrides the product (D2), setup creates the repository at the VELDO-0250 path and records VELDO_INSTALLATION (C23), the installation declares its git remote and Veldo pushes each commit it makes there (R9, C20; the open question on a remote is answered), and setup writes one import commit from today's values (C17). AC2's widening list adds outside service, credential, route, read override, tools snapshot, grant, role, team, schedule, deploy target, render command and renumber hook changes (C19, R8). VELDO-0246 leaves depends_on, since its save UI builds on this spec's commit backend (D6). Owner field is a role id (B1). Status stays ready; the owner approves the amendments in one message.
+
+2026-11-04: depends on VELDO-0259 instead of VELDO-0250: the installation reader and the personal-setup
+check this spec builds on were split out of VELDO-0250 into VELDO-0259, which lands first, on the owner's
+request Telegram 39145 (plan consistency review research/veldo-plan-consistency-review-2026-11-04.md,
+finding D5). References to the reader and the patterns name VELDO-0259; records/ stays VELDO-0250's.
+Criteria unchanged; status stays ready.
