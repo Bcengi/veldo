@@ -225,8 +225,11 @@ def _v247_line_suite():
             value = line.next(name, line.latest(), rep)
             return {'value': value, 'calls': line.calls, 'report': rep, 'line': line}
 
+        def stations(run):
+            return [c for c in run['calls'] if 'station' in c]
+
         def offers(run):
-            return [(c['station'], (c.get('workflow') or {}).get('node')) for c in run['calls'] if 'station' in c]
+            return [(c['station'], (c.get('workflow') or {}).get('node')) for c in stations(run)]
 
         try:
             # A unit's process may hold checks, a fan-out and its join: it saves and is accepted as a unit workflow.
@@ -256,7 +259,7 @@ def _v247_line_suite():
                                record(name, name + '-r1', 'review', PIN_CHECKED, 'review', follows=name + '-b1')]
                     runs[key] = drive(name, PIN_CHECKED, checked, records)
                 big, small = runs['big'], runs['small']
-                decision = ((big['calls'] or [{}])[0].get('workflow') or {}).get('route') or [{}]
+                decision = ((stations(big) or [{}])[0].get('workflow') or {}).get('route') or [{}]
                 observed['check'] = {k: {'calls': v['calls'], 'report': v['report']} for k, v in runs.items()}
                 check('line/check-one-branch', lambda: offers(big) == [('review', 'second')]
                       and decision[0]['node'] == 'route' and decision[0]['branch'] == 'big'
@@ -265,7 +268,7 @@ def _v247_line_suite():
                                                          'value': 20, 'observed': 30, 'holds': True}]
                       and [(c['node'], c['decision']['branch']) for c in big['report'].get('checks', [])]
                       == [('route', 'big')]
-                      and big['calls'][0]['revision'] == 'commit-unit-check-big-b1'
+                      and stations(big)[0]['revision'] == 'commit-unit-check-big-b1'
                       and offers(small) == []
                       and [(c['node'], c['decision']['branch'], c['decision']['rule'])
                            for c in small['report'].get('checks', [])] == [('route', 'otherwise', 'otherwise')]
@@ -294,12 +297,12 @@ def _v247_line_suite():
                 unit(name)
                 b1 = record(name, 'fan-b1', 'build', PIN_PARALLEL, 'build')
                 together = drive(name, PIN_PARALLEL, parallel(), [b1])
-                pins = {(c.get('workflow') or {}).get('node'): c.get('workflow') for c in together['calls']}
+                pins = {(c.get('workflow') or {}).get('node'): c.get('workflow') for c in stations(together)}
                 observed['together'] = {'calls': together['calls'], 'report': together['report']}
                 check('line/dispatched-together', lambda: sorted(offers(together)) == [('build', 'docs'),
                                                                                        ('review', 'design')]
                       and pins['design'].get('branch') == 'to-design' and pins['docs'].get('branch') == 'to-docs'
-                      and {c['identity'] for c in together['calls'] if c['station'] == 'review'} == {'reviewer-b'}
+                      and {c['identity'] for c in stations(together) if c['station'] == 'review'} == {'reviewer-b'}
                       and together['report']['refused'] == [])
 
                 design_running = record(name, 'fan-r1', 'review', PIN_PARALLEL, 'design', state='running',
@@ -320,8 +323,8 @@ def _v247_line_suite():
                                      ('after', after))}
                 check('line/join-waits-for-all', lambda: offers(only_docs) == [] and offers(only_design) == []
                       and offers(both) == [('review', 'final')]
-                      and both['calls'][0]['revision'] == 'commit-fan-d1' and both['calls'][0]['follows'] == 'fan-d1'
-                      and 'branch' not in both['calls'][0]['workflow']
+                      and stations(both)[0]['revision'] == 'commit-fan-d1' and stations(both)[0]['follows'] == 'fan-d1'
+                      and 'branch' not in stations(both)[0]['workflow']
                       and offers(after) == []
                       and only_docs['report']['refused'] == [] and only_design['report']['refused'] == [])
 
@@ -352,7 +355,8 @@ def _v247_line_suite():
                                  configs=configs, fields=FIELDS)
                 two_reviews = graph('two-reviews', dict(PARALLEL_KINDS, docs='review'), PARALLEL_EDGES,
                                     configs=dict(APPROVES, **MEET))
-                gated = graph('gate-in-branch', dict(PARALLEL_KINDS, docs='gate'), PARALLEL_EDGES,
+                gated = graph('gate-in-branch', dict(PARALLEL_KINDS, docs='gate'),
+                              [(i, f, 'passed' if i == 'documented' else p, t) for i, f, p, t in PARALLEL_EDGES],
                               configs=dict(APPROVES, **MEET))
                 problems = {'nine': WU.unit_problems(wide(9)), 'eight': WU.unit_problems(wide(8)),
                             'two_reviews': WU.unit_problems(two_reviews), 'gated': WU.unit_problems(gated)}
