@@ -1,0 +1,92 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0254",
+ "commit": "ba5fe08e9b7ea4e7ee8d6ff918bc2993ccd55600",
+ "tree": "0253baf58f882f6bb870faf6f1eaa7468c9b7dc8",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-05T02:07:58.000625+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/127_veldo_0254_secret_scan.py",
+     "detail": "ac1/static-sites lists 39 launch sites and names only control_launch.py:Receiver._spawn (the VELDO-0158 resolution VELDO-0257 removes, OPEN.md 3); ac1/static-planted names a planted keystore resolution in engine_environment; ac1/canary-run finds a canary resolved into a run's environment or command. Red before: suite-red-before.txt; green: suite-green-after.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0254/falsifier-ac1.txt",
+     "detail": "Falsifier: a fixture keystore reference resolved into a run's environment; ac1/static-sites names credential_delivery_site:control_launch.py:engine_environment. Restored green (falsifiers-restored.txt); teeth case delivery254-keystore-into-environment killed in the confined leg (teeth-mutations-254.txt)."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0254/OPEN.md",
+     "detail": "Not built: the canary row over real launches of each kind on each engine with declared fixture services (VELDO-0251, VELDO-0253); the claim holds only once VELDO-0257 removes the VELDO-0158 site."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/127_veldo_0254_secret_scan.py",
+     "detail": "ac2/run-end (config, env file, script: one finding each, log lines, one masked notice), ac2/landing (candidate's changed files only), ac2/command (CLI, known format), ac2/setup, ac2/masked, ac2/login, ac2/reports-only, ac2/one-entry pass."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0254/falsifier-ac2.txt",
+     "detail": "Falsifier: the matched value printed in the finding line; ac2/masked finds canary characters. Restored green; teeth case scan254-value-in-finding killed."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0254/OPEN.md",
+     "detail": "Not wired: gate-held values (VELDO-0251, VELDO-0253) and the channel sink (outside footprint); the installed layout lacks the formats file (OPEN.md 6)."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/127_veldo_0254_secret_scan.py",
+     "detail": "ac3/default-reaches (loopback TCP, Unix socket, service on a local address), ac3/risky-confined (installation, project, dispatch marks), ac3/no-runner-host (default starts, risky refused confined_runner_unavailable:helper_missing), ac3/one-decision pass."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/128_veldo_0254_confined_runner.py",
+     "detail": "A dispatch-marked launch starts in the confined runner (AppArmor label veldo-userns-child) out of reach of the host database socket; passes outside the gate's confinement; needs the owner's unconfined-leg listing (OPEN.md 1)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0254/falsifier-ac3.txt",
+     "detail": "Falsifier: confined runner made the default; ac3/default-reaches fails. Restored green; teeth case runner254-confined-default killed."
+    }
+   ]
+  }
+ ],
+ "suites_run": [
+  "127_veldo_0254_secret_scan",
+  "128_veldo_0254_confined_runner",
+  "62_veldo_0039_dispatch",
+  "63_veldo_0040_containment",
+  "67_veldo_0041_heartbeat",
+  "73_veldo_0139_factory_setup",
+  "78_veldo_0060_claude_adapter",
+  "79_veldo_0061_codex_adapter",
+  "80_veldo_0155_claude_baseline",
+  "81_veldo_0156_codex_baseline",
+  "82_veldo_0129_worker_wiring",
+  "82_veldo_0141_execution_record",
+  "85_veldo_0158_credential_delivery",
+  "85_veldo_0171_setup_api",
+  "123_veldo_0174_conversations",
+  "125_veldo_0230_engine_census"
+ ],
+ "gate": "not run (instruction); scripts/check_template_sync.sh pass; docs hygiene pass on the new files"
+}
