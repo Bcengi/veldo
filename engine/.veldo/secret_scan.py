@@ -172,7 +172,7 @@ FORMATS = (
 LOG_NAME = 'secret-scan.jsonl'
 HELD_KIND = 'gate_credential'
 LOGIN_PLACES = ('.claude/.credentials.json', '.codex/auth.json')
-SKIPPED_DIRECTORIES = ('.git',)
+GIT_METADATA_DIRECTORIES = ('.git',)
 LARGEST = 16 * 1024 * 1024
 DIGEST_CHARS = 12
 _DELIMITED = re.compile(r'[^\s"\'`,;()\[\]{}<>|\\]+')
@@ -209,7 +209,7 @@ def tree_files(root):
     larger than LARGEST is yielded as None (counted, not read)."""
     root = str(root)
     for directory, names, files in os.walk(root, followlinks=False):
-        names[:] = sorted(n for n in names if n not in SKIPPED_DIRECTORIES)
+        names[:] = sorted(n for n in names if n not in GIT_METADATA_DIRECTORIES)
         for name in sorted(files):
             path = os.path.join(directory, name)
             relative = os.path.relpath(path, root).split(os.sep)
@@ -230,7 +230,7 @@ def tree_state(root):
     is read. What a run's workspace holds as it starts, so its end reads only what it changed."""
     state, root = {}, str(root)
     for directory, names, files in os.walk(root, followlinks=False):
-        names[:] = sorted(n for n in names if n not in SKIPPED_DIRECTORIES)
+        names[:] = sorted(n for n in names if n not in GIT_METADATA_DIRECTORIES)
         for name in files:
             path = os.path.join(directory, name)
             try:
@@ -261,16 +261,22 @@ def changed_files(root, before):
 
 def candidate_files(repository, base, head):
     """(relative path, bytes) of each file a landing candidate `head` adds or changes against `base`, read from
-    the candidate's own objects, never its work tree."""
-    git = ['git', '-c', 'core.quotepath=off', '-C', str(repository)]
-    environment = {'PATH': os.environ.get('PATH', '/usr/bin:/bin'), 'GIT_CONFIG_NOSYSTEM': '1',
-                   'GIT_CONFIG_GLOBAL': os.devnull, 'LANG': 'C'}
-    listed = subprocess.run(git + ['diff', '--name-only', '-z', '--no-renames', '--diff-filter=AM', base, head,
-                                   '--'], capture_output=True, timeout=120, check=True, env=environment,
-                            stdin=subprocess.DEVNULL).stdout
+    the candidate's own objects, never its work tree. Git runs through the repository's one Git boundary,
+    git_process, loaded from beside this module."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('secret_scan_git_process',
+                                                  Path(__file__).resolve().with_name('git_process.py'))
+    _git_process = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(_git_process)
+    where = str(repository)
+    environment = {'PATH': os.environ.get('PATH', '/usr/bin:/bin'), 'LANG': 'C'}
+    listed = _git_process.run(['git', '-c', 'core.quotepath=off', '-C', where, 'diff', '--name-only', '-z',
+                               '--no-renames', '--diff-filter=AM', base, head, '--'], capture_output=True,
+                              timeout=120, check=True, env=environment, stdin=subprocess.DEVNULL).stdout
     for name in [n for n in listed.decode('utf-8', 'surrogateescape').split('\0') if n]:
-        blob = subprocess.run(git + ['cat-file', 'blob', '%s:%s' % (head, name)], capture_output=True, timeout=120,
-                              env=environment, stdin=subprocess.DEVNULL)
+        blob = _git_process.run(['git', '-c', 'core.quotepath=off', '-C', where, 'cat-file', 'blob',
+                                 '%s:%s' % (head, name)], capture_output=True, timeout=120, env=environment,
+                                stdin=subprocess.DEVNULL)
         yield name, (blob.stdout if blob.returncode == 0 and len(blob.stdout) <= LARGEST else None)
 
 
