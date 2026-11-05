@@ -4,10 +4,10 @@ id: VELDO-0253
 title: Veldo loads an installation's configuration from the installation's own repository, keeps the last good configuration when a change is bad, and a workflow saved on the canvas is committed there
 status: ready
 risk: critical
-owner: dmitry
+owner: owner
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0068, VELDO-0132, VELDO-0171, VELDO-0241, VELDO-0246, VELDO-0250]
+depends_on: [VELDO-0068, VELDO-0132, VELDO-0171, VELDO-0241, VELDO-0250]
 placement: [contracts, engine, distribution]
 protected_paths:
   - ".veldo/installation.py"
@@ -75,7 +75,8 @@ observability:
     installation_secret_inline:<path>:<key> for a literal secret value; installation_secret_missing:<name>
     for a secret name the keystore does not hold; installation_waiting_approval:<commit> for a widening
     change with no owner decision yet; installation_unreadable:<reason> for a folder that is not a
-    repository or a commit that cannot be read. A canvas save keeps VELDO-0132 and VELDO-0241 names
+    repository or a commit that cannot be read; installation_push_failed:<reason> for a commit Veldo
+    made that its declared remote did not accept (the commit stays live locally). A canvas save keeps VELDO-0132 and VELDO-0241 names
     (stale_version, invalid_input:missing_owner_approval:<node>) and adds installation_invalid for a
     tree the new file would make invalid. None of these is a success, and none changes the live
     configuration.
@@ -84,15 +85,47 @@ acceptance_criteria:
     text: >
       Claim: an installation's configuration is one declared schema over the installation repository, read
       from a commit, applied whole or not at all, and a bad change leaves the last good configuration live.
-      Set: the schema (installation_schema, veldo.installation/v1) declares every path pattern the folder
-      may hold and the closed schema of each kind: projects, model accounts, ports, the messaging bot and
-      its channels, connectors with their allowed tools and never rules, landing destinations, and
-      workflow definitions with their layouts. It declares no kind for runs, approvals, conversations,
-      schedules or account pauses. A secret is a reference by name ({secret: <name>}) resolved from the
+      Set: the schema (installation_schema, veldo.installation/v1) is the one layout of an installation
+      repository. Every other spec that needs installation configuration adds its kind here and defines no
+      layout of its own. The schema declares every path pattern the folder may hold and the closed schema
+      of each kind:
+      installation.yaml (owner display name and owner role id, approver key ids, git identities, the
+      repository's git remote, hosts and tailnet names, ports, the messaging bot and its channels with the
+      inbound file cap, model accounts with their labels and binary paths, tracker sites and account ids,
+      the publisher identity, and receiver settings such as the question window);
+      projects/<id>.yaml (a project's account, landing destination, remote and trunk, workflow bindings,
+      and its work keys: render command, deploy targets, spend checklist items, renumber hook);
+      roles/<id>.yaml and teams/<id>.yaml (roles with their capability grants, and teams);
+      services/<name>.yaml, with its optional OpenAPI file and pinned tools snapshot beside it (the outside
+      services of VELDO-0251 AC4, schema veldo.outside_service/v1, with their credentials by reference,
+      per-service body limit, read overrides, never rules and the OAuth grant declarations of VELDO-0252
+      AC2);
+      connectors/<name>.yaml (local tool servers that hold no credential and reach nothing outside, with
+      their allowed tools and never rules);
+      workflows/<id>.json and workflows/<id>.layout.json (workflow definitions and their layouts);
+      memory/ (the memory manifest: stores, their servers and the session history sink; a run reaches a
+      memory server only as a service under services/);
+      schedules/<id>.yaml (schedules the installation declares);
+      patterns/ (the personal-setup patterns of VELDO-0250 AC3, read only by that check);
+      decisions/ (the map from a decision reference to its source message and quote);
+      records/ (history records, VELDO-0250 AC2, kept with a digest list and never read as
+      configuration);
+      research/ and notes/ (declared ignored).
+      A file with the same id as a product default (a workflow, a connector) overrides the product's own
+      for that installation. The schema declares no kind for runs, approvals, conversations, schedule
+      occurrences or account pauses. A secret is a reference by name ({secret: <name>}) resolved from the
       keystore at use time; a literal secret-shaped value is refused. Setup on a new installation creates
-      the installation repository from the template the product ships (installation_template): a
-      private local Git repository with the declared layout, the values setup was given and one first
-      commit; Veldo never adds a remote and never pushes it. Loading: at start the service reads the
+      the installation repository from the template the product ships (installation_template) at the path
+      VELDO-0250 AC1 resolves unless it is given one, and records that path as VELDO_INSTALLATION in the
+      service's environment: a private Git repository with the declared layout, the values setup was given,
+      the git remote it was given and one first commit. Veldo pushes each commit it makes (the first
+      commit, an import commit, a canvas save) to the declared remote once the loader has accepted it,
+      never with force; a push the remote refuses is told to the owner by name
+      (installation_push_failed). Setup over a factory that already holds configuration (state root
+      values, host service and receiver configuration, the team repository, store revisions of roles,
+      teams and workflows) writes one import commit holding every declared kind from the values live
+      today and records it as accepted with no widening decision, because each value was already live.
+      Loading: at start the service reads the
       commit the configured branch names (the committed tree, never uncommitted working files), and then
       subscribes to changes of that branch reference through the operating system's file change
       notification, reconciling by commit id at start and after any missed notification (no timed
@@ -114,7 +147,10 @@ acceptance_criteria:
       classifier compares the new tree with the last accepted one and lists every widening: a new project,
       account, port or channel chat; a tool added to a connector's allowed list; a never rule removed or
       relaxed; an approver added; a workflow binding changed; a workflow that gains an outward or paid step
-      or references a new role or tool. A commit with no widening goes live when valid. A commit with any
+      or references a new role or tool; a capability granted to a role or a role added to a team; a new or
+      changed schedule; a new outside service, a changed upstream base URL, a new route template, a
+      credential reference or location change, a read override, a new pinned tools snapshot, or changed
+      grant scopes or endpoints; a new or changed deploy target, render command or renumber hook. A commit with no widening goes live when valid. A commit with any
       widening waits (installation_waiting_approval) while the last good configuration stays live, and
       opens one owner decision that names the commit id, the digest of the widening list and each
       widening in plain words; it goes live only when that decision settles approved through the ordinary
@@ -171,9 +207,11 @@ what happens while Veldo runs, and the keystore holds secrets, never either of t
 open-source product, and every installation's own setup lives in that installation's private repository,
 never in Veldo.
 
-The repository holds projects, accounts, ports, the bot and its channels, connectors with their allowed
-tools and never rules, landing destinations and workflow definitions. The database holds runs, approvals,
-conversations, schedules, account pauses, the record of which configuration commit was live, and which
+The repository holds the owner identity and approvers, projects, accounts, ports, the bot and its
+channels, roles and teams, outside services, local connectors with their allowed tools and never rules,
+landing destinations, workflow definitions, the memory manifest, declared schedules, and the
+personal-setup patterns, decision references and records of VELDO-0250. The database holds runs,
+approvals, conversations, schedule occurrences, account pauses, the record of which configuration commit was live, and which
 workflow revision each run used. A workflow saved on the canvas is committed to the repository, so there
 is one source of truth for definitions, and the database keeps an exact copy only of what a run used.
 Every new installation starts its own private repository from a template that setup creates.
@@ -195,10 +233,11 @@ Every new installation starts its own private repository from a template that se
   state root, the host trust and service configuration files. Setup also lays down a small team
   repository for the factory project (VELDO-0143). None of that is versioned or reviewable as a whole,
   and a value changed by hand is live at the next restart with no record of who changed it.
-- An example installation repository holds config (projects, accounts, ports, the bot, landing
-  destinations), connectors, workflows, a memory manifest and its own research notes. Only the kinds
-  this spec's schema declares are read; anything else in the folder must be declared as ignored by the
-  schema (for example notes), or it is refused as an unknown file.
+- VELDO-0250 (the owner identity, approvers, patterns, decisions and records), VELDO-0251 and VELDO-0252
+  (outside services and their grants) and the specs that move roles, teams, the memory manifest,
+  schedules and work keys out of the store each need installation kinds. All of them are declared in this
+  spec's one schema (AC1), so no spec defines a layout of its own. Anything else in the folder must be
+  declared as ignored by the schema (for example research notes), or it is refused as an unknown file.
 
 ## Design
 
@@ -234,7 +273,7 @@ never depends on the repository's history staying intact.
 
 ## Out of scope
 
-Hosting, mirroring or pushing the installation repository anywhere; that is the owner's choice. Review
+Hosting the installation's remote; Veldo only pushes to the remote the installation declares. Review
 workflows on a Git host (pull requests, required reviewers); the owner may use them, and Veldo's authority
 check is the signed decision of AC2 regardless. Moving existing runtime records. Multi-branch promotion of
 configuration between environments. Configuration for the product's own defaults, which stay in the
@@ -242,7 +281,6 @@ product (the shipped `code` workflow among them).
 
 ## Open questions for the owner
 
-- Whether setup should also offer to add a remote the owner names, without ever pushing on its own.
 - Whether removing a project should count as widening (it narrows authority but can stop work in flight);
   this draft treats it as narrowing and lets units already running finish on their pinned revision.
 
@@ -250,8 +288,8 @@ product (the shipped `code` workflow among them).
 
 - Normal use: a fresh setup produces an installation repository whose first commit is valid; an owner's
   commit that narrows authority is live within one notification; a widening commit shows up as one
-  owner decision naming it; a canvas save produces exactly one commit and the next version; a run keeps
-  its revision after the file changes.
+  owner decision naming it; a canvas save produces exactly one commit and the next version, pushed to
+  the declared remote; a run keeps its revision after the file changes.
 - Threat model: a commit that widens authority and goes live without the owner; a Git author name taken
   as authority; a bad file that partially applies; a secret value committed to the repository; a second
   writer of definitions; a run whose recorded revision changes because the repository changed.
@@ -271,3 +309,5 @@ for this specification. Standalone; no plan work item. The change to VELDO-0241'
 written as an amendment note, proof/VELDO-0253/amend-0241.md, and VELDO-0241 itself is not edited.
 
 2026-11-04: approved by the owner, Telegram 39144 ("Yes", to 39143). Status ready.
+
+2026-11-04: amended per the plan consistency review (research/veldo-plan-consistency-review-2026-11-04.md) and the lead's rulings (research/veldo-plan-rulings-2026-11-04.md), both in the owner's installation repository, on the owner's request Telegram 39145. AC1 is now the one installation layout and schema with every kind the other specs need (R1, R8; findings D2, C18, A15, A16, A21), the installation overrides the product (D2), setup creates the repository at the VELDO-0250 path and records VELDO_INSTALLATION (C23), the installation declares its git remote and Veldo pushes each commit it makes there (R9, C20; the open question on a remote is answered), and setup writes one import commit from today's values (C17). AC2's widening list adds outside service, credential, route, read override, tools snapshot, grant, role, team, schedule, deploy target, render command and renumber hook changes (C19, R8). VELDO-0246 leaves depends_on, since its save UI builds on this spec's commit backend (D6). Owner field is a role id (B1). Status stays ready; the owner approves the amendments in one message.
