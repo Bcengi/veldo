@@ -31,6 +31,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Git runs only through the shared boundary, loaded by sibling path.
+import importlib.util as _git_importlib
+_git_spec = _git_importlib.spec_from_file_location('veldo_git_process', Path(__file__).resolve().with_name('git_process.py'))
+_git_process = _git_importlib.module_from_spec(_git_spec)
+_git_spec.loader.exec_module(_git_process)
+
 SCHEMA = 'veldo.installation/v1'
 PATTERNS_SCHEMA = 'veldo.installation.patterns/v1'
 ENVIRONMENT = 'VELDO_INSTALLATION'
@@ -219,8 +225,8 @@ class Installation:
         if not self.found or not self._path('.git').exists():
             return None
         try:
-            done = subprocess.run(['git', '-C', self.folder, 'rev-parse', '--verify', 'HEAD'],
-                                  capture_output=True, text=True, timeout=30)
+            done = _git_process.run(['git', '-C', self.folder, 'rev-parse', '--verify', 'HEAD'],
+                                    capture_output=True, text=True, timeout=30)
         except (OSError, subprocess.SubprocessError):
             return None
         head = done.stdout.strip()
