@@ -7,7 +7,7 @@ risk: critical
 owner: owner
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0144, VELDO-0158, VELDO-0162, VELDO-0249, VELDO-0250, VELDO-0253, VELDO-0254]
+depends_on: [VELDO-0144, VELDO-0158, VELDO-0162, VELDO-0249, VELDO-0253, VELDO-0254, VELDO-0259]
 placement: [contracts, engine, enforcement, distribution]
 protected_paths: ["scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "engine/scripts/agent_sandbox.json", "scripts/veldo_userns.c", ".veldo/pins/gate.json", "engine/.veldo/pins/gate.json", ".veldo/egress_classify.py", "engine/.veldo/egress_classify.py", ".veldo/installation.py", "engine/.veldo/installation.py"]
 footprint:
@@ -275,7 +275,7 @@ gate" is agentgateway; "the gate" alone elsewhere in Veldo means the verificatio
   in one place, the check service of VELDO-0252. This spec, VELDO-0252 and the VELDO-0249 amendment are
   built and landed as one unit; depends_on runs one way (VELDO-0252 depends on this spec, this spec on
   VELDO-0249) so the graph has no cycle.
-- VELDO-0250 gives every deployment one installation folder, and VELDO-0253 defines its one layout and
+- VELDO-0259 gives every deployment one installation folder, and VELDO-0253 defines its one layout and
   schema; outside services are installation configuration under services/ there, not product.
 - The outside gate is agentgateway (Linux Foundation, Apache-2.0), pinned to v1.7.0 under the dependency
   rule of VELDO-0252. Facts this spec relies on, read from its v1.7.0 source and documentation: its OpenAPI
@@ -361,3 +361,8 @@ Proposed change to VELDO-0249: proof/VELDO-0251/amend-0249.md. Standalone.
 2026-11-04: approved by the owner, Telegram 39144 ("Yes", to 39143). Status ready.
 
 2026-11-04: amended per the plan consistency review (research/veldo-plan-consistency-review-2026-11-04.md) and the lead's rulings (research/veldo-plan-rulings-2026-11-04.md), both in the owner's installation repository, on the owner's request Telegram 39145. depends_on drops VELDO-0209 and VELDO-0210 for the sandboxed launch ticket VELDO-0254 (R14, D1), drops VELDO-0252 (D4: built as one unit, graph one way) and VELDO-0203 (D3: declarations are installation files under VELDO-0253, a read override is a widening commit), and adds VELDO-0253 (R1). AC1 adds the read-only forward route, registries and git fetch as read routes, no git push from a run, memory and database servers behind the outside gate, no non-HTTP route, and engine hosts from each version's qualification record for every engine (R5, C5 to C10). AC2 makes the engine's model login readable by the engine process only (R7, A8). AC3 adds read overrides with reason and vendor documentation, and the prepare rule (R5, R12, E1). AC4 uses services/ of the one layout, a list of credentials, a per-service body limit and a paid flag (R1, R4, R11, C16). Design and Out of scope state the control plane carve-out (R6, C15, C24) and many-write releases (R3, C3). agentgateway is named the outside gate (E6). Owner field is a role id (B1). Status stays ready; the owner approves the amendments in one message.
+
+2026-11-04: depends on VELDO-0259 instead of VELDO-0250: the installation reader this spec builds on was
+split out of VELDO-0250 into VELDO-0259, which lands first, on the owner's request Telegram 39145 (plan
+consistency review research/veldo-plan-consistency-review-2026-11-04.md, finding D5). Criteria unchanged;
+status stays ready.

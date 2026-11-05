@@ -7,7 +7,7 @@ risk: critical
 owner: owner
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0065, VELDO-0066, VELDO-0068, VELDO-0144, VELDO-0159, VELDO-0203, VELDO-0234, VELDO-0249, VELDO-0250, VELDO-0251, VELDO-0253]
+depends_on: [VELDO-0065, VELDO-0066, VELDO-0068, VELDO-0144, VELDO-0159, VELDO-0203, VELDO-0234, VELDO-0249, VELDO-0251, VELDO-0253, VELDO-0259]
 placement: [contracts, engine, enforcement, distribution]
 protected_paths: [".veldo/tool_approval_verifier.py", "engine/.veldo/tool_approval_verifier.py", ".veldo/control_keys.py", "engine/.veldo/control_keys.py", ".veldo/control_signer.py", "engine/.veldo/control_signer.py", ".veldo/control_credential_keystore.py", "engine/.veldo/control_credential_keystore.py", ".veldo/pins/gate.json", "engine/.veldo/pins/gate.json", ".veldo/settlements/*"]
 footprint:
@@ -310,3 +310,8 @@ revocation) and hands the gate the current backend token per call. Companion of 
 2026-11-04: approved by the owner, Telegram 39144 ("Yes", to 39143). Status ready.
 
 2026-11-04: amended per the plan consistency review (research/veldo-plan-consistency-review-2026-11-04.md) and the lead's rulings (research/veldo-plan-rulings-2026-11-04.md), both in the owner's installation repository, on the owner's request Telegram 39145. AC1: the run submits the exact request first and the owner approves it decoded; canonical digests for form and multipart bodies; the body limit is declared per service and read whole or refused; workflow approval nodes and approved schedules use the same submission (R4, C1, C2, A24). AC2 and AC3: the redirect origin cites VELDO-0234 (C14), owner notices go through Veldo's own channel (R6). AC4: several credentials per service, no credential for public read services, user units, ports from the installation, the secret-tool prerequisite refused by name (R5, C11, C12, C16). Prepare and validate-only calls follow the shared classification (R12, E1). Many-write releases are out of scope (R3, C3). depends_on adds VELDO-0234 and VELDO-0253 (C14, R1). agentgateway is named the outside gate (E6). Owner field is a role id (B1). Status stays ready; the owner approves the amendments in one message.
+
+2026-11-04: depends on VELDO-0259 instead of VELDO-0250: the installation reader this spec builds on was
+split out of VELDO-0250 into VELDO-0259, which lands first, on the owner's request Telegram 39145 (plan
+consistency review research/veldo-plan-consistency-review-2026-11-04.md, finding D5). Criteria unchanged;
+status stays ready.
