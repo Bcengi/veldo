@@ -241,3 +241,5 @@ reader) and AC3 (the personal-setup check), with their falsifiers, footprint, ob
 move to VELDO-0259, which lands first. This spec keeps AC2 (records moved, live files rewritten) and AC4
 (fresh public history), depends on VELDO-0259 instead of WARP-1701, and is still the last step before
 publication. Criteria ids are kept. Status stays ready.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
