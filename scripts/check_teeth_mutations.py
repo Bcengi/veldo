@@ -9715,8 +9715,8 @@ def cases():
               ['grant/mixed-approvals'],
               also=[('                                     approvals=replacements)\n', "                                     approvals=list(data.get('approvals_required') or []))\n")])
     reland148('grant148-mixed-question-restored', 'control_service.py',
-              "        taken = WU.transition(state['definition'], node, last['state'])\n",
-              "        if (last['state'] == LS.FAILED and set(last.get('refusals') or []) ==\n                {'binding_mismatch:approval/owner/tree', 'missing_authority:approval/security'}):\n            return 'stop', self.grant(unit, dict(last, subject=dict(last.get('candidate') or {}, approvals=['owner'])), report)\n        taken = WU.transition(state['definition'], node, last['state'])\n",
+              "        taken = WU.transition(state['definition'], node, port=last['state'])\n",
+              "        if (last['state'] == LS.FAILED and set(last.get('refusals') or []) ==\n                {'binding_mismatch:approval/owner/tree', 'missing_authority:approval/security'}):\n            return 'stop', self.grant(unit, dict(last, subject=dict(last.get('candidate') or {}, approvals=['owner'])), report)\n        taken = WU.transition(state['definition'], node, port=last['state'])\n",
               ['grant/mixed-approvals'])
     reland148('grant148-proof-mismatch-replaceable', 'control_landing.py',
               "            if replacements and set(codes) == {'binding_mismatch:approval/%s/tree' % name for name in replacements}:\n",

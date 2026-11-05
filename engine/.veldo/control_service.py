@@ -2377,7 +2377,7 @@ class Line:
         state['landed'] = True
         if last is None or last.get('state') not in LS.ENDS:
             return 'stop', None
-        taken = WU.transition(state['definition'], node, last['state'])
+        taken = WU.transition(state['definition'], node, port=last['state'])
         if taken is not None and 'max' in taken:
             times = sum(1 for record in self.station.records(unit) if record.get('state') == last['state'])
             if times > taken['max']:
