@@ -1753,6 +1753,15 @@
    ],
    "regions": "Check and join steps and parallel branches (VELDO-0247): the check's closed configuration refused by name at save, one branch taken per check and re-evaluated by the cycle, a forged branch refused, two assignment branches dispatched together and run in one LangGraph superstep with a join that waits for all its inputs, fan-outs bounded at eight, and the owner approval rule on every path through checks, branches and joins.",
    "requires_note": "Only ROOT, expect and fast_temp. Real SQLite store with OpenSSH journal signatures, a real Git workspace and VELDO-0035 snapshot, the eligibility Gate, VELDO-0132 workflow saves and cycles on the VELDO-0045 activated LangGraph runtime staged into a temporary directory. Writes only temporary fixtures."
+  },
+  {
+   "name": "129_veldo_0247_line",
+   "file": "129_veldo_0247_line.py",
+   "requires": [
+    "129_veldo_0247_line"
+   ],
+   "regions": "The Line part of check and join steps and parallel branches (VELDO-0247): a unit's process holding a check, a fan-out and its join is accepted, the Line takes exactly one branch of a check and records why, refuses an unsupplied field and a recorded branch the subject no longer takes, offers both branches of a fan-out in one pass, passes the join only when every branch has arrived, counts every branch's nodes in the step budget, keeps fan-outs at eight and refuses two stations of one kind or the gate in parallel branches, and holds the owner approval rule on every path.",
+   "requires_note": "Only ROOT, expect and fast_temp. Real SQLite store with OpenSSH journal signatures, VELDO-0132 workflow saves, control_workflow_unit.bound_revision, and the Line of control_service.py with its station methods recorded instead of dispatched over fixture dispatch records. Writes only temporary fixtures."
   }
  ],
  "resource_capacities": {
