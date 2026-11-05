@@ -147,3 +147,5 @@ of work) and 39067 (NG2 and NG3 lifted, recorded in PLAN-0019 the same day). Sta
 The parity report's tickets T7, T9 and T16 become step types in VELDO-0242 to VELDO-0245 on top of this.
 
 2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
+
+2026-11-04: amended by the owner, Telegram 39144 ("Yes", to 39143): under VELDO-0253 the installation loader becomes the only writer of workflow revisions (copies keyed by digest, pins read those copies) and the binding moves to the project file in the installation repository. That change is built by VELDO-0253 (its note proof/VELDO-0253/amend-0241.md); this spec is landed as built.
