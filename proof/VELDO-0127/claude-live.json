@@ -1,8 +1,8 @@
 {
  "debug_control": {
-  "debug_bytes": 59108,
+  "debug_bytes": 66070,
   "debug_lines": [],
-  "debug_sha256": "de5b8686ac8c17a2295968936aba06407f3de4a0fb8ce46a946814060bb41909",
+  "debug_sha256": "c933af5a5ecd8b0a493be94f373fcfe5ae3401b1e2005fb21c19d1bf76d879b5",
   "qualification": "context-size-only",
   "ran": true,
   "returncode": 0
@@ -11,7 +11,7 @@
  "problems": [],
  "production": {
   "control_agent_config.py": "cb38a3a0bcd862334ec138d87b59f16e17646b368ae195865fd2f8374c5f63ee",
-  "control_agent_config_handoff.py": "9bfa5103fb203e2c2cd6193f46dba011b883215fa0d2682e4217726d3091f766",
+  "control_agent_config_handoff.py": "6388e401352a4ed34c58f2432ff51eb9206604e0a288a82df64c3a56d73d2853",
   "control_engine_claude.py": "65e8dad8c9792db3b0c1a58dd21543af8487240010a272fdf3f70567a88c0fbb",
   "control_engine_codex.py": "ab74086733af8e5e89cb9263d486ac9100e4e78cd0c775442c538421a698e837",
   "control_launch.py": "85f40e1e54e4e8ad030f01e599a91d7699a2defdc9ac9142dfd5c4a2cfca4194"
@@ -36,8 +36,10 @@
     "fast",
     "focus",
     "goal",
+    "heapdump",
     "import",
     "init",
+    "insights",
     "list-agents",
     "mcp",
     "model",
@@ -48,6 +50,7 @@
     "rename",
     "security-review",
     "skill-doctor",
+    "team-onboarding",
     "usage",
     "usage-credits",
     "workflow-launch-exec"
@@ -59,14 +62,14 @@
      "message": {
       "usage": {
        "cache_creation": {
-        "ephemeral_1h_input_tokens": 6280,
+        "ephemeral_1h_input_tokens": 6596,
         "ephemeral_5m_input_tokens": 0
        },
-       "cache_creation_input_tokens": 6280,
+       "cache_creation_input_tokens": 6596,
        "cache_read_input_tokens": 0,
        "inference_geo": "not_available",
        "input_tokens": 10,
-       "output_tokens": 1,
+       "output_tokens": 4,
        "service_tier": "standard",
        "speed": "standard"
       }
@@ -77,10 +80,10 @@
    "credential_sources": [
     "jira"
    ],
-   "debug_bytes": 30726,
+   "debug_bytes": 33658,
    "debug_lines": [],
    "debug_marker_present": false,
-   "debug_sha256": "9b126d690bc85948cf37e0de830721c5ba8310e5659099e4e1cc925ba0988324",
+   "debug_sha256": "ee03518fbf6751f2aebbfe0a99b109e305d6ec53d2a016062c82f62b175cf9a9",
    "disallowed": [
     "Agent",
     "AppifactRepl",
@@ -102,6 +105,7 @@
     "ExitPlanMode",
     "ExitWorktree",
     "FetchInboxMessage",
+    "GetTask",
     "Glob",
     "Grep",
     "LSP",
@@ -112,13 +116,16 @@
     "ListSkills",
     "Monitor",
     "NotebookEdit",
+    "OfferChromeSetup",
     "Poll",
     "PowerShell",
     "Projects",
     "ProposeGoal",
+    "PublishPlugin",
     "ReadMcpResourceDirTool",
     "ReadMcpResourceTool",
     "ReadNotifications",
+    "ReadWidgetContext",
     "RefreshMcpTools",
     "RemoteTrigger",
     "ReportFindings",
@@ -129,6 +136,8 @@
     "SendFeedback",
     "SendFile",
     "SendMessage",
+    "SendToProject",
+    "SendToProjectContext",
     "SendUserFile",
     "SendUserMessage",
     "ShareOnboardingGuide",
@@ -147,6 +156,7 @@
     "WebFetch",
     "WebSearch",
     "Workflow",
+    "WrapUp",
     "Write",
     "enable__mcp__claude-in-chrome",
     "enable__mcp__remote-devices__Claude_Browser",
@@ -167,8 +177,11 @@
     "self_hosted_runner_tail_log",
     "mcp__jira__jira_write"
    ],
-   "executable_digest": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+   "executable_digest": "sha256:eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0",
    "expected": {
+    "accepted_plugins": [
+     "cc-plugin-sec-default@builtin"
+    ],
     "mcp_servers": [
      "jira"
     ],
@@ -189,7 +202,7 @@
      "mcp__jira__jira_search"
     ]
    },
-   "first_turn_context": 6290,
+   "first_turn_context": 6606,
    "init": {
     "mcp_servers": [
      {
@@ -202,8 +215,13 @@
     "plugins": [
      {
       "name": "veldo-role",
-      "path": "/run/user/1000/veldo0127-live-8gsno4b5/factory/runs/29fc8fa1f700bebc8d8e29b41d7f4c92/config/role-plugin",
+      "path": "/run/user/UID/veldo0127-live-qhzdjjfr/factory/runs/87ef23d74df19aa974652b06b7e945cc/config/role-plugin",
       "source": "veldo-role@inline"
+     },
+     {
+      "name": "cc-plugin-sec-default",
+      "path": "builtin",
+      "source": "cc-plugin-sec-default@builtin"
      }
     ],
     "skills": [
@@ -224,6 +242,7 @@
      "effort",
      "fast",
      "focus",
+     "heapdump",
      "init",
      "mcp",
      "import",
@@ -237,12 +256,14 @@
      "usage-credits",
      "extra-usage",
      "usage",
+     "insights",
      "recap",
      "skill-doctor",
      "goal",
      "design-consent",
      "design-revoke",
-     "list-agents"
+     "list-agents",
+     "team-onboarding"
     ],
     "tools": [
      "PushNotification",
@@ -265,16 +286,16 @@
      "num_turns": 0,
      "result": "",
      "result_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "session_id": "8450d25e-3793-4a6f-a263-4cad0f91bba4",
+     "session_id": "5ea15769-1414-4e63-9959-41266bef72d4",
      "stop_reason": null,
      "subtype": "success",
      "tokens": 0
     }
    },
    "record_commitment": {
-    "bytes": 80946,
-    "digest": "sha256:3bc3bf31f86b1df3b81ff8f87560f2acd95ae2c3484737425f6cd216a8baf45c",
-    "lines": 304
+    "bytes": 90288,
+    "digest": "sha256:bd382ec903c7e0464842faf45b9a2fc22c94c78381418746bccca6ef975cae4c",
+    "lines": 326
    },
    "revision": {
     "digest": "sha256:a98bd73b1466eba4e84e08dd7bdee0a79aaa97650efdfdfea38f3119ff0a9daf",
@@ -368,11 +389,11 @@
      "message": {
       "usage": {
        "cache_creation": {
-        "ephemeral_1h_input_tokens": 1345,
+        "ephemeral_1h_input_tokens": 2258,
         "ephemeral_5m_input_tokens": 0
        },
-       "cache_creation_input_tokens": 1345,
-       "cache_read_input_tokens": 4939,
+       "cache_creation_input_tokens": 2258,
+       "cache_read_input_tokens": 4407,
        "inference_geo": "not_available",
        "input_tokens": 10,
        "output_tokens": 4,
@@ -386,10 +407,10 @@
    "credential_sources": [
     "jira"
    ],
-   "debug_bytes": 20448,
+   "debug_bytes": 22614,
    "debug_lines": [],
    "debug_marker_present": false,
-   "debug_sha256": "0105295de08798fac34df860d648f17b1a769658f56bfa4e6267d440b1fd0e5c",
+   "debug_sha256": "1624fd19a210bfe446498edc081c70b7acc8edb89729694157dccedc17dc515f",
    "disallowed": [
     "Agent",
     "AppifactRepl",
@@ -411,6 +432,7 @@
     "ExitPlanMode",
     "ExitWorktree",
     "FetchInboxMessage",
+    "GetTask",
     "Glob",
     "Grep",
     "LSP",
@@ -421,13 +443,16 @@
     "ListSkills",
     "Monitor",
     "NotebookEdit",
+    "OfferChromeSetup",
     "Poll",
     "PowerShell",
     "Projects",
     "ProposeGoal",
+    "PublishPlugin",
     "ReadMcpResourceDirTool",
     "ReadMcpResourceTool",
     "ReadNotifications",
+    "ReadWidgetContext",
     "RefreshMcpTools",
     "RemoteTrigger",
     "ReportFindings",
@@ -438,6 +463,8 @@
     "SendFeedback",
     "SendFile",
     "SendMessage",
+    "SendToProject",
+    "SendToProjectContext",
     "SendUserFile",
     "SendUserMessage",
     "ShareOnboardingGuide",
@@ -456,6 +483,7 @@
     "WebFetch",
     "WebSearch",
     "Workflow",
+    "WrapUp",
     "Write",
     "enable__mcp__claude-in-chrome",
     "enable__mcp__remote-devices__Claude_Browser",
@@ -476,8 +504,11 @@
     "self_hosted_runner_tail_log",
     "mcp__jira__jira_write"
    ],
-   "executable_digest": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+   "executable_digest": "sha256:eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0",
    "expected": {
+    "accepted_plugins": [
+     "cc-plugin-sec-default@builtin"
+    ],
     "mcp_servers": [
      "jira"
     ],
@@ -498,7 +529,7 @@
      "mcp__jira__jira_search"
     ]
    },
-   "first_turn_context": 6294,
+   "first_turn_context": 6675,
    "init": {
     "mcp_servers": [
      {
@@ -511,8 +542,13 @@
     "plugins": [
      {
       "name": "veldo-role",
-      "path": "/run/user/1000/veldo0127-live-8gsno4b5/factory/runs/592508a6bab4556998a38b6ac2c656ed/config/role-plugin",
+      "path": "/run/user/UID/veldo0127-live-qhzdjjfr/factory/runs/da969f1987a9aaf0fb207ac6e958c6fc/config/role-plugin",
       "source": "veldo-role@inline"
+     },
+     {
+      "name": "cc-plugin-sec-default",
+      "path": "builtin",
+      "source": "cc-plugin-sec-default@builtin"
      }
     ],
     "skills": [
@@ -577,16 +613,16 @@
      "num_turns": 0,
      "result": "",
      "result_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "session_id": "0ca52a07-2ac2-4c79-b4cb-25b62d25a4b0",
+     "session_id": "2c979382-e588-45a8-9ee8-0b223864b374",
      "stop_reason": null,
      "subtype": "success",
      "tokens": 0
     }
    },
    "record_commitment": {
-    "bytes": 64542,
-    "digest": "sha256:cfd9de7009ab307172850dfce5f66c0d83b01928f4013cea1f03bd1c57c1a512",
-    "lines": 219
+    "bytes": 71012,
+    "digest": "sha256:52a145d6b3b029adbeaa416fa7274ef3e61cf7ea124e74b06b8ba711ff11cf13",
+    "lines": 232
    },
    "revision": {
     "digest": "sha256:a98bd73b1466eba4e84e08dd7bdee0a79aaa97650efdfdfea38f3119ff0a9daf",
@@ -680,14 +716,14 @@
      "message": {
       "usage": {
        "cache_creation": {
-        "ephemeral_1h_input_tokens": 2165,
+        "ephemeral_1h_input_tokens": 1542,
         "ephemeral_5m_input_tokens": 0
        },
-       "cache_creation_input_tokens": 2165,
-       "cache_read_input_tokens": 4229,
+       "cache_creation_input_tokens": 1542,
+       "cache_read_input_tokens": 5171,
        "inference_geo": "not_available",
        "input_tokens": 10,
-       "output_tokens": 6,
+       "output_tokens": 4,
        "service_tier": "standard",
        "speed": "standard"
       }
@@ -698,10 +734,10 @@
    "credential_sources": [
     "jira"
    ],
-   "debug_bytes": 20351,
+   "debug_bytes": 23014,
    "debug_lines": [],
    "debug_marker_present": false,
-   "debug_sha256": "2785948ff15bd9cd9889750faf241daa6053a42adbc4e540263939a323fc243c",
+   "debug_sha256": "26ba797b8fe35e899acc42f08151cedf0622268699b5cd401bd3df084229fa81",
    "disallowed": [
     "Agent",
     "AppifactRepl",
@@ -723,6 +759,7 @@
     "ExitPlanMode",
     "ExitWorktree",
     "FetchInboxMessage",
+    "GetTask",
     "Glob",
     "Grep",
     "LSP",
@@ -733,13 +770,16 @@
     "ListSkills",
     "Monitor",
     "NotebookEdit",
+    "OfferChromeSetup",
     "Poll",
     "PowerShell",
     "Projects",
     "ProposeGoal",
+    "PublishPlugin",
     "ReadMcpResourceDirTool",
     "ReadMcpResourceTool",
     "ReadNotifications",
+    "ReadWidgetContext",
     "RefreshMcpTools",
     "RemoteTrigger",
     "ReportFindings",
@@ -750,6 +790,8 @@
     "SendFeedback",
     "SendFile",
     "SendMessage",
+    "SendToProject",
+    "SendToProjectContext",
     "SendUserFile",
     "SendUserMessage",
     "ShareOnboardingGuide",
@@ -768,6 +810,7 @@
     "WebFetch",
     "WebSearch",
     "Workflow",
+    "WrapUp",
     "Write",
     "enable__mcp__claude-in-chrome",
     "enable__mcp__remote-devices__Claude_Browser",
@@ -788,8 +831,11 @@
     "self_hosted_runner_tail_log",
     "mcp__jira__jira_write"
    ],
-   "executable_digest": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+   "executable_digest": "sha256:eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0",
    "expected": {
+    "accepted_plugins": [
+     "cc-plugin-sec-default@builtin"
+    ],
     "mcp_servers": [
      "jira"
     ],
@@ -810,7 +856,7 @@
      "mcp__jira__jira_search"
     ]
    },
-   "first_turn_context": 6404,
+   "first_turn_context": 6723,
    "init": {
     "mcp_servers": [
      {
@@ -823,8 +869,13 @@
     "plugins": [
      {
       "name": "veldo-role",
-      "path": "/run/user/1000/veldo0127-live-8gsno4b5/factory/runs/5a484fb462defe2afa0271ab27dc1d88/config/role-plugin",
+      "path": "/run/user/UID/veldo0127-live-qhzdjjfr/factory/runs/e4e56a660284faaf1f8ca446af1d7cd9/config/role-plugin",
       "source": "veldo-role@inline"
+     },
+     {
+      "name": "cc-plugin-sec-default",
+      "path": "builtin",
+      "source": "cc-plugin-sec-default@builtin"
      }
     ],
     "skills": [
@@ -889,16 +940,16 @@
      "num_turns": 0,
      "result": "",
      "result_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "session_id": "11e9a1db-040e-4890-a43e-b5b0ba7141a0",
+     "session_id": "923e4235-cac3-4922-ad76-fa8206f275c1",
      "stop_reason": null,
      "subtype": "success",
      "tokens": 0
     }
    },
    "record_commitment": {
-    "bytes": 64338,
-    "digest": "sha256:e56f79f31325afa22fdeca9bd536ca4bab35213dc9a0cbfb674ce64ff037a66a",
-    "lines": 218
+    "bytes": 75889,
+    "digest": "sha256:44ec8d53b88cb7b1444de6c0eef1fd48a67faa184119277ebb5db4fcced98756",
+    "lines": 233
    },
    "revision": {
     "digest": "sha256:720ac7f279f7b46696172cd9f3afc1cdf7d598834cca5b2786ec491a17f8c329",
@@ -1003,11 +1054,11 @@
      "message": {
       "usage": {
        "cache_creation": {
-        "ephemeral_1h_input_tokens": 1398,
+        "ephemeral_1h_input_tokens": 1548,
         "ephemeral_5m_input_tokens": 0
        },
-       "cache_creation_input_tokens": 1398,
-       "cache_read_input_tokens": 5001,
+       "cache_creation_input_tokens": 1548,
+       "cache_read_input_tokens": 5171,
        "inference_geo": "not_available",
        "input_tokens": 10,
        "output_tokens": 1,
@@ -1021,10 +1072,10 @@
    "credential_sources": [
     "jira"
    ],
-   "debug_bytes": 20779,
+   "debug_bytes": 23122,
    "debug_lines": [],
    "debug_marker_present": false,
-   "debug_sha256": "878a5c36e8edad7810c30bb905d1465384b5a1d94263172d4a3624440ad7274b",
+   "debug_sha256": "0c8f8fe8bba6e3f0e40c29dd9e59f90f1c98011c26def411dfe52caf345cbdb6",
    "disallowed": [
     "Agent",
     "AppifactRepl",
@@ -1046,6 +1097,7 @@
     "ExitPlanMode",
     "ExitWorktree",
     "FetchInboxMessage",
+    "GetTask",
     "Glob",
     "Grep",
     "LSP",
@@ -1056,13 +1108,16 @@
     "ListSkills",
     "Monitor",
     "NotebookEdit",
+    "OfferChromeSetup",
     "Poll",
     "PowerShell",
     "Projects",
     "ProposeGoal",
+    "PublishPlugin",
     "ReadMcpResourceDirTool",
     "ReadMcpResourceTool",
     "ReadNotifications",
+    "ReadWidgetContext",
     "RefreshMcpTools",
     "RemoteTrigger",
     "ReportFindings",
@@ -1073,6 +1128,8 @@
     "SendFeedback",
     "SendFile",
     "SendMessage",
+    "SendToProject",
+    "SendToProjectContext",
     "SendUserFile",
     "SendUserMessage",
     "ShareOnboardingGuide",
@@ -1091,6 +1148,7 @@
     "WebFetch",
     "WebSearch",
     "Workflow",
+    "WrapUp",
     "Write",
     "enable__mcp__claude-in-chrome",
     "enable__mcp__remote-devices__Claude_Browser",
@@ -1111,8 +1169,11 @@
     "self_hosted_runner_tail_log",
     "mcp__jira__jira_write"
    ],
-   "executable_digest": "sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1",
+   "executable_digest": "sha256:eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0",
    "expected": {
+    "accepted_plugins": [
+     "cc-plugin-sec-default@builtin"
+    ],
     "mcp_servers": [
      "jira"
     ],
@@ -1133,7 +1194,7 @@
      "mcp__jira__jira_search"
     ]
    },
-   "first_turn_context": 6409,
+   "first_turn_context": 6729,
    "init": {
     "mcp_servers": [
      {
@@ -1146,8 +1207,13 @@
     "plugins": [
      {
       "name": "veldo-role",
-      "path": "/run/user/1000/veldo0127-live-8gsno4b5/factory/runs/8aebeb692bf9c74b471d24d34b16f3ac/config/role-plugin",
+      "path": "/run/user/UID/veldo0127-live-qhzdjjfr/factory/runs/04df453ad6b8d5638308a189d74db145/config/role-plugin",
       "source": "veldo-role@inline"
+     },
+     {
+      "name": "cc-plugin-sec-default",
+      "path": "builtin",
+      "source": "cc-plugin-sec-default@builtin"
      }
     ],
     "skills": [
@@ -1212,16 +1278,16 @@
      "num_turns": 0,
      "result": "",
      "result_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-     "session_id": "f7cfb60e-22ef-439b-aa13-8fad31c2a8ea",
+     "session_id": "d847e203-012b-4e32-845c-2f83c7b9a07d",
      "stop_reason": null,
      "subtype": "success",
      "tokens": 0
     }
    },
    "record_commitment": {
-    "bytes": 65053,
-    "digest": "sha256:5ced2c1879266b91f03ab93288dec3948257dde56379f46cf9fd18f1a71fd742",
-    "lines": 221
+    "bytes": 76174,
+    "digest": "sha256:018728b1ca6d60473b2b6590dceaebd6d56a0ec98851dceea251816b8acbfe4d",
+    "lines": 235
    },
    "revision": {
     "digest": "sha256:720ac7f279f7b46696172cd9f3afc1cdf7d598834cca5b2786ec491a17f8c329",

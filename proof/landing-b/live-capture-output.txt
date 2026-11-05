@@ -1,0 +1,4 @@
+{"event": "account_added", "account": "acct-c1", "directory": "/run/user/<uid>/veldo0127-live-qhzdjjfr/claude-login", "directory_state": "existing", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "acct-x1", "directory": "/run/user/<uid>/veldo0127-live-qhzdjjfr/codex-login", "directory_state": "existing", "metrics": {"accounts_added": 1}}
+claude: captured
+codex: captured
