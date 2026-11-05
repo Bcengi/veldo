@@ -12144,6 +12144,30 @@ def cases():
     add(235, 'dest235-push-routed-local', dest235, 'control_landing.py', local235, pushed235,
         ['destination/default-push', 'push/unchanged'])
 
+    # VELDO-0260: a local landing keeps every working tree that has the trunk checked out in step with the trunk.
+    step260 = '129_veldo_0260_checkout_in_step.py'
+    # AC1 (declared falsifier): only the repository's main working tree is checked, so a linked one is missed.
+    add(260, 'step260-main-tree-only', step260, 'control_landing.py',
+        "        for entry in entries:\n",
+        "        for entry in entries[:1]:  # defect: only the main working tree is checked\n",
+        ['set/linked'])
+    # AC2 (declared falsifier): the ref is moved only, as VELDO-0235 did, so the clean tree is left behind.
+    add(260, 'step260-ref-only', step260, 'control_landing.py',
+        "                why = self._move_checkout(tree['path'], payload['old_tip'], payload['commit'])\n",
+        "                why = None  # defect: the working tree is not moved with the trunk\n",
+        ['move/clean'])
+    # AC3 (declared falsifier): the clean check is skipped and the swap made anyway.
+    add(260, 'step260-no-clean-check', step260, 'control_landing.py',
+        "        dirty = next((c for c in trees if c['clean'] is False), None)\n",
+        "        dirty = None  # defect: a tree with local changes does not refuse the landing\n",
+        ['dirty/edited'])
+    # AC4 (declared falsifier): the main working tree is moved whenever the repository has one, whatever its HEAD.
+    add(260, 'step260-main-tree-always', step260, 'control_landing.py',
+        "            if 'bare' in entry or entry.get('branch') != self.ref or not _text(entry.get('worktree')):\n",
+        "            if 'bare' in entry or (entry.get('branch') != self.ref and entry is not entries[0])"
+        " or not _text(entry.get('worktree')):  # defect: the main tree is always taken\n",
+        ['none/other-branch'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

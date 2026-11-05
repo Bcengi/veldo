@@ -122,7 +122,7 @@ def _v260_suite():
             worktree = GP.run(['git', '-C', str(tree), 'diff', '--quiet', commit], capture_output=True)
             return head == commit and status == '' and staged.returncode == 0 and worktree.returncode == 0
 
-        # ---- unit rows: the working-tree reads and moves over small real repositories ---------------------------
+        # unit rows: the working-tree reads and moves over small real repositories.
         def bare_landing(repo):
             landing = LG.Landing.__new__(LG.Landing)
             landing.clone, landing.ref, landing.trunk = str(repo), 'refs/heads/main', 'main'
@@ -192,7 +192,7 @@ def _v260_suite():
             for name in (US, UP, UL):
                 check(name, 'unit rows ran to their end (raised %s: %s)' % (type(error).__name__, str(error)[:300]), False)
 
-        # ---- the integration fixture: VELDO-0235's, landing locally into the caller's repository ----------------
+        # the integration fixture: VELDO-0235's, landing locally into the caller's repository.
         def gate_text(text):
             def declare(match):
                 if match.group(1) == 'unit':
@@ -394,7 +394,7 @@ def _v260_suite():
         def summary(record):
             return '%s %s' % (record.get('state'), record.get('refusal'))
 
-        # ---- AC1 and AC2: main checked out in the main working tree, clean, with an untracked and an ignored file -----
+        # AC1 and AC2: main checked out in the main working tree, clean, with an untracked and an ignored file.
         git(caller, 'checkout', '-q', 'main')
         (caller / 'notes.txt').write_bytes(b'untracked notes\x00\x01\n')
         (caller / '__pycache__').mkdir()
@@ -422,7 +422,7 @@ def _v260_suite():
         os.unlink(str(caller / 'notes.txt'))
         shutil.rmtree(str(caller / '__pycache__'))
 
-        # ---- AC1: main checked out only in a linked working tree ---------------------------------------------
+        # AC1: main checked out only in a linked working tree.
         git(caller, 'checkout', '-q', '--detach', 'main')
         linked = base / 'caller-linked'
         git(caller, 'worktree', 'add', '-q', str(linked), 'main')
@@ -438,7 +438,7 @@ def _v260_suite():
               git(caller, 'rev-parse', 'HEAD') == detached_head and files(caller) == detached_files)
         git(caller, 'worktree', 'remove', '--force', str(linked))
 
-        # ---- AC1: a detached HEAD at the trunk's tip is not a checkout of the trunk ----------------------------
+        # AC1: a detached HEAD at the trunk's tip is not a checkout of the trunk.
         git(caller, 'checkout', '-q', '--detach', 'main')
         at_tip, detached_files = local_tip(), files(caller)
         landed = land(DETACHED)
@@ -450,7 +450,7 @@ def _v260_suite():
               git(caller, 'rev-parse', 'HEAD') == at_tip and files(caller) == detached_files
               and local_tip() == candidate_of(landed))
 
-        # ---- AC4: the main working tree holds another branch: nothing is read or written there ------------------
+        # AC4: the main working tree holds another branch: nothing is read or written there.
         git(caller, 'checkout', '-q', '-B', 'other', SEED)
         (caller / 'README.md').write_text('another branch\n')
         (caller / 'src' / 'README').unlink()
@@ -469,7 +469,7 @@ def _v260_suite():
               mine.get('status') == 'completed' and mine.get('checkouts') == []
               and (mine.get('evidence') or {}).get('new_tip') == local_tip())
 
-        # ---- AC2: a swap made to lose restores the moved tree to the old tip ---------------------------------
+        # AC2: a swap made to lose restores the moved tree to the old tip.
         git(caller, 'checkout', '-q', 'main')
         old_tip, lost = local_tip(), {}
 
@@ -505,7 +505,7 @@ def _v260_suite():
         check(ML, 'the effect names the tree restored after the lost swap [%s]' % mine.get('checkouts'),
               [(real(c.get('path')), c.get('outcome')) for c in mine.get('checkouts') or []] == [(real(caller), 'restored')])
 
-        # ---- AC3: an edited tracked file refuses by name, nothing moves; discarded, the re-land lands ----------
+        # AC3: an edited tracked file refuses by name, nothing moves; discarded, the re-land lands.
         git(caller, 'checkout', '-q', 'main')
         (caller / 'README.md').write_text('a local edit\n')
         tip_before, edited = local_tip(), (caller / 'README.md').read_bytes()
@@ -534,7 +534,7 @@ def _v260_suite():
               % summary(relanded), relanded.get('state') == 'landed' and relanded.get('follows') == refused.get('dispatch_id')
               and in_step(caller, local_tip()) and local_tip() == candidate_of(relanded))
 
-        # ---- AC3: a staged change refuses by name; committed elsewhere, the re-land lands -----------------------
+        # AC3: a staged change refuses by name; committed elsewhere, the re-land lands.
         (caller / 'README.md').write_text('a staged change\n')
         git(caller, 'add', 'README.md')
         tip_before, staged = local_tip(), (caller / 'README.md').read_bytes()
@@ -551,7 +551,7 @@ def _v260_suite():
               relanded.get('state') == 'landed' and local_tip() == candidate_of(relanded)
               and (caller / 'README.md').read_bytes() == staged)
 
-        # ---- error taxonomy: a tree that cannot be moved (its index locked) refuses as unmovable ----------------
+        # error taxonomy: a tree that cannot be moved (its index locked) refuses as unmovable.
         git(caller, 'checkout', '-q', 'main')
         lock = Path(git(caller, 'rev-parse', '--absolute-git-dir')) / 'index.lock'
         lock.write_text('')
@@ -566,7 +566,7 @@ def _v260_suite():
         check(DU, 'with the lock gone, the re-land lands and moves the tree [%s]' % summary(relanded),
               relanded.get('state') == 'landed' and in_step(caller, local_tip()))
 
-        # ---- observability: the publication events and the counts by working-tree outcome ----------------------
+        # observability: the publication events and the counts by working-tree outcome.
         published = [e for e in events if e.get('operation') == 'local_publication']
         check(OM, 'every local publication event names its working trees and their outcome [%s]'
               % [e.get('checkout_outcome') for e in published],

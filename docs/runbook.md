@@ -1338,6 +1338,11 @@ Action: none; this is automatic. Two changes that each pass alone can fail toget
 
 Action: the spec says so explicitly and names the closest observable proxy as the criterion: a log signature stops appearing, a metric returns to baseline. Never a pretend failing test; never a criterion nobody can check.
 
+### III.10 A local landing waits on a working tree
+
+Signal: a project that lands locally reports `trunk_checkout_dirty:<working tree>` (or `trunk_checkout_unmovable:<working tree>`), and its brief says the landing waits until that tree is clean.
+Action: the named working tree has the trunk checked out and has local changes (or cannot be written, for example a leftover index lock). Commit them on another branch, or discard them, or clear the lock; nothing else. The landing moved nothing: the trunk and every file are as they were, and it is re-landed once the tree is clean. A clean tree with the trunk checked out needs no action: it moves with the trunk, untracked and ignored files untouched, and shows the landed commit with nothing to commit.
+
 ## Part IV - Every role
 
 ### IV.1 The founder, from chat

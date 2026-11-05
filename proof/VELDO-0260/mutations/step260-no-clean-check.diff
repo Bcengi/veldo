@@ -1,0 +1,5 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -653 +653 @@
+-        dirty = next((c for c in trees if c['clean'] is False), None)
++        dirty = None  # defect: a tree with local changes does not refuse the landing
