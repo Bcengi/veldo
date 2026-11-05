@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0256
 title: A run reads the production database through a read-only server behind the outside gate, on a database role that can only read, with the connection credential held gate side
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -117,3 +117,5 @@ runs keep their web, package registry and git access and need no read route. The
 registry routes, the git fetch override and push refusal from runs, the non-HTTP refusal and the dependency
 on VELDO-0254 are removed; the read-only production database behind the gate stays. Git push still happens
 from the control plane at landing (VELDO-0258). The file is renamed to match.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.

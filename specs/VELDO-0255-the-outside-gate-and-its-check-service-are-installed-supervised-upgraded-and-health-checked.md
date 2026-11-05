@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0255
 title: Setup installs the outside gate and its check service as supervised user services started with the authority, on ports from the installation, the service reports their health, and a gate upgrade goes live only after the new binary loads the configuration in force
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -161,3 +161,5 @@ verification and grants, not supervision. Standalone; no plan work item.
 2026-11-05: Telegram 39154 and 39155, revised rulings R5, R7 and R14 (no mandatory sandbox): the dependency
 on VELDO-0254, the per-dispatch relay sentence and the sandbox setup prerequisite of AC4 are removed; no
 confinement setup is a prerequisite of the gate.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.

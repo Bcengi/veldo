@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0254
 title: No outside-service credential is ever delivered into a run, a secret scan of workspaces and project trees reports any such credential it finds there, masked, so it is moved behind the outside gate, and the confined runner stays opt-in for risky work
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -164,3 +164,5 @@ small one: credentials are never delivered into runs, a secret scan reports leak
 confined runner stays opt-in for risky work. The sandbox launch, network namespace, model host list and
 engine-only login criteria are removed; the file is renamed to match. VELDO-0210 is no longer superseded
 by this ticket. Changes recorded in proof/VELDO-0254/no-sandbox-revision-2026-11-05.md.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.

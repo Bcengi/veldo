@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0258
 title: Veldo's own outside calls (tracker, repository provisioner, landing push, the owner's channel and its doorbell) are made by the service outside the gate and never from a run, with credentials only from the keystore and settings only from the installation repository
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -146,3 +146,5 @@ lands. Standalone; no plan work item.
 2026-11-05: Telegram 39154 and 39155, revised rulings R5, R7 and R14 (no mandatory sandbox): AC3 no longer
 says a run finds no route to a control-plane destination; it checks instead that no run holds a credential
 for one (VELDO-0254 AC1), and the Context and threat model say the same.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.

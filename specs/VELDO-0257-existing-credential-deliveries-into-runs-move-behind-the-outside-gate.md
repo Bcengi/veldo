@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0257
 title: Every credential path that existing features open into a run moves behind the outside gate and the old path is removed, while programs outside Veldo keep their own credentials until each is retired
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -168,3 +168,5 @@ no plan work item.
 requires the web read route, the engine network grant off or a failing direct fetch; AC2 keeps memory store
 secrets behind the gate but no longer fences a run from host store sockets or loopback ports, and its
 memory_socket_refused name is removed; the dependency on VELDO-0256 is removed.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.

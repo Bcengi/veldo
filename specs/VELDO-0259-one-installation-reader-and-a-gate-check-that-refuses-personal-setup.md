@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0259
 title: Veldo reads everything that belongs to one deployment from one installation folder through one reader, no product default names a person, and a gate stage refuses a candidate that adds personal setup
-status: draft
+status: ready
 risk: "critical - the same change rewires how a running factory finds its owner, accounts, channels and records, so a wrong cutover stops the factory, and a check that lets personal values through feeds them toward a public repository."
 owner: dmitry
 human_approval: required
@@ -177,3 +177,5 @@ patterns/ now points at AC2, records/ at VELDO-0250, and the layout notes that V
 spec). VELDO-0250 keeps the scrub and the fresh public root and depends on this spec; VELDO-0251, VELDO-0252
 and VELDO-0253 depend on this spec instead of VELDO-0250. New text, so status draft; the owner approves it
 in the next message. Standalone; no plan work item.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.

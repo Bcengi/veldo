@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0260
 title: A local landing keeps every working tree that has the trunk checked out in step with the trunk, updating a clean one with the move and refusing the landing when one has local changes
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -141,3 +141,5 @@ and the move are one step of the publication effect VELDO-0235 records.
 consistency review (research/veldo-plan-consistency-review-2026-11-04.md) on VELDO-0235: a local landing
 moves refs/heads/<trunk> without updating a working tree that has the trunk checked out. VELDO-0235 is
 built and its criteria stay unchanged; this ticket carries the fix. Standalone; no plan work item.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.
