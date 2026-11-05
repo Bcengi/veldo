@@ -340,3 +340,5 @@ routes, no engine host list, no engine-only login; the dependency on VELDO-0254 
 identity the relay wrote becomes a dispatch assertion the launcher issues into the run's environment. Kept:
 credentials only behind the gate, reads pass, writes need the owner's approval for that exact request.
 Status stays ready.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).

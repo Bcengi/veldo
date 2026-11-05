@@ -319,3 +319,5 @@ status stays ready.
 assertion becomes the dispatch assertion of VELDO-0251 AC1; AC4 no longer says no run can reach the check's
 loopback listener, since runs are not fenced; a caller without the outside gate key gets no credential; the
 forward route and public registry examples and the per-dispatch relay are removed. Status stays ready.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
