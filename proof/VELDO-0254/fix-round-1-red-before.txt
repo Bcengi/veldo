@@ -12,7 +12,7 @@ VELDO-0254 fix round 1, red before (tests first, at 5935d53d's code). python3 sc
   SELFTEST FAIL: VELDO-0254 ac2/failure-visible: raised AttributeError: module 'v254_launch' has no attribute 'candidate_scan'
   SELFTEST FAIL: VELDO-0254 ac2/run-end-changed: only the files the run added or changed are read and reported [[('None', '4'), ('already/.env', 'None'), ('edit.txt', 'None'), ('new/settings.py', 'None')]]
   SELFTEST FAIL: VELDO-0254 ac2/owner-notice: raised AttributeError: module 'v254_launch' has no attribute 'candidate_scan'
-  SELFTEST FAIL: VELDO-0254 ac3/risky-spawn: a risky codex run is confined with the clone work tree writable and the codex client [/home/dmitry/projects/veldo-worktrees/veldo-0254 None]
+  SELFTEST FAIL: VELDO-0254 ac3/risky-spawn: a risky codex run is confined with the clone work tree writable and the codex client [~/projects/veldo-worktrees/veldo-0254 None]
   SELFTEST FAIL: VELDO-0254 ac3/selftest-cached: a receiver judges its host once [raised confined_runner_problem() takes 1 positional argument but 2 were given raised confined_runner_problem() takes 1 positional argument but 2 were given raised confined_runner
   127_veldo_0254_secret_scan                      13 passed    4.95s
 
