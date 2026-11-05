@@ -170,6 +170,11 @@ _FILES = [
     # re-landed (it loads lander.py, control_landing.py and control_membership.py; the authority service
     # loads it); a runtime asset, no validator import, not substrate.
     ".veldo/control_landing_station.py",
+    # VELDO-0239: batch landing and the owner's batch command (the starter every intake is built with and
+    # the line that runs a requested batch; the authority service and the API load them); runtime assets,
+    # no validator import, not substrate.
+    ".veldo/control_batch.py",
+    ".veldo/control_batch_service.py",
     # VELDO-0039: dispatch records and the runner/receiver launch path; runtime assets the
     # receiver process executes, no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_dispatch.py",
