@@ -94,7 +94,7 @@ def _sibling(alias, name):
     return module
 
 
-GP = _sibling('veldo_git_process', 'git_process.py')
+_git_process = _sibling('veldo_git_process', 'git_process.py')
 _ORGANS = {}
 
 
@@ -457,10 +457,11 @@ class Batch:
 
     def _git(self, repo, *args, ok=(0,), identity=None, profile='isolated', text=True, remote_url=None):
         try:
-            result = GP.run(['git', '-C', str(repo), *args], capture_output=True, text=text, timeout=GIT_SECONDS,
-                            stdin=subprocess.DEVNULL, identity=identity, profile=profile,
-                            push_identity=self.push_identity if profile == 'identity' else None,
-                            remote_url=remote_url if profile == 'identity' else None)
+            result = _git_process.run(['git', '-C', str(repo), *args], capture_output=True, text=text,
+                                      timeout=GIT_SECONDS, stdin=subprocess.DEVNULL, identity=identity,
+                                      profile=profile,
+                                      push_identity=self.push_identity if profile == 'identity' else None,
+                                      remote_url=remote_url if profile == 'identity' else None)
         except (OSError, subprocess.SubprocessError, ValueError) as error:
             raise Refused('unavailable_service:git/' + args[0], type(error).__name__)
         if ok is not None and result.returncode not in ok:
@@ -592,7 +593,7 @@ class Batch:
         """Run the project's renumber hook after one merge; its changes are a separate renumber commit.
         Returns the hook run's record, or None when it failed (the caller leaves the unit out)."""
         watermark = self.record['watermark']
-        env = dict(GP.clean_env(profile='isolated'), PYTHONDONTWRITEBYTECODE='1',
+        env = dict(_git_process.clean_env(profile='isolated'), PYTHONDONTWRITEBYTECODE='1',
                    VELDO_BATCH=self.record['id'], VELDO_BATCH_UNIT=entry['unit'])
         started = self.clock()
         try:
