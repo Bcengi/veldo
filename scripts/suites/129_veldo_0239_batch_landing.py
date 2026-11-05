@@ -12,7 +12,7 @@ receive; the caller's clone the units are built in and whose local main a local 
 isolated clone, VELDO-0058's installed gate in candidate mode, and the project's renumber hook, a fixture script
 outside every repository that renames a newly merged migration to the next free number. The units' reviews, the
 owner's approval answers and the other approvals a unit needs are fixture records handed to the batch. Every gate
-run is counted by the fixture's unit check, which appends one line to a file outside the candidate. No engine
+run is counted by a logging `bash` first on PATH, which records each start of a verifier in candidate mode. No engine
 runs, nothing logs in and no credential exists.
 """
 
@@ -50,6 +50,8 @@ def _v239_suite():
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
+
+    restore = []
 
     def exercise(base):
         mods = base / 'installed' / '.veldo'
@@ -102,11 +104,6 @@ def _v239_suite():
         (seed / '.gitignore').write_text('__pycache__/\n')
         (seed / 'check_unit.py').write_text('\n'.join([
             'import pathlib, re, sys',
-            'try:',
-            '    with open(%r, "a") as log:' % str(gate_log),
-            '        log.write("unit\\n")',
-            'except OSError:',
-            '    pass',
             'bad = []',
             'numbers = {}',
             "for p in sorted(pathlib.Path('migrations').glob('*.sql')):",
@@ -144,7 +141,17 @@ def _v239_suite():
         git(seed, 'add', '--', '.veldo/last_verify', '.veldo/events.jsonl')
         git(seed, 'commit', '-q', '-m', 'Gate stamp for ' + first[:12])
         SEED = git(seed, 'rev-parse', 'HEAD')
-        gate_log.write_text('')
+
+        # Every gate run is counted by a logging `bash` first on PATH: control_verification starts the installed
+        # verifier as `bash <verify.sh> --candidate <root> --sink <dir>`, before the gate confines its checks.
+        logging_dir = base / 'logging-bash'
+        logging_dir.mkdir()
+        (logging_dir / 'bash').write_text('#!/bin/sh\ncase " $* " in *" --candidate "*) echo "$*" >> %s ;; esac\n'
+                                          'exec %s "$@"\n' % (gate_log, shutil.which('bash')))
+        (logging_dir / 'bash').chmod(0o755)
+        saved_path = os.environ.get('PATH', '')
+        os.environ['PATH'] = str(logging_dir) + os.pathsep + saved_path
+        restore.append(lambda: os.environ.__setitem__('PATH', saved_path))
 
         # The origin: a bare repository whose pre-receive hook records every receive.
         bare = base / 'origin.git'
@@ -228,18 +235,18 @@ def _v239_suite():
         def batch(**options):
             told, asked, returned, receipts = [], [], [], []
             options.setdefault('hook', HOOK)
-            made = BT.Batch(caller, project='fixture', identity=LANDER, workspace_root=str(base / 'work'),
+            made = BT.Batch(caller, project='fixture', identity=LANDER,
                             records=str(base / 'records'), tell=lambda kind, payload: told.append((kind, payload)),
                             ask=asked.append, fix_round=lambda unit, reds: returned.append((unit, reds)),
                             receipt=receipts.append, **options)
             made.told, made.asked, made.returned, made.receipts = told, asked, returned, receipts
+            restore.append(made.discard)
             return made
 
         def grant_for(request):
             return {'subject': request['subject'], 'subject_digest': request['subject_digest'], 'by': 'owner',
                     'at': clock[0]}
 
-        (base / 'work').mkdir()
 
         # AC1: batch/renumber. Two units add migration 037; the project's hook renumbers the second to 038.
         b = batch()
@@ -478,7 +485,7 @@ def _v239_suite():
               all(json.loads(p.read_text())['project'] == 'fixture' for p in (base / 'records').glob('*.json')))
 
     def types_namespace(**fields):
-        return type('Namespace', (), fields)()
+        return __import__('types').SimpleNamespace(**fields)
 
     try:
         fast = None
@@ -488,8 +495,14 @@ def _v239_suite():
         except OSError:
             pass
         with tempfile.TemporaryDirectory(prefix='v239-', dir=fast) as directory:
-            exercise(Path(directory))
+            try:
+                exercise(Path(directory))
+            finally:
+                for undo in restore:
+                    undo()
     except Exception as error:  # noqa: BLE001
+        if os.environ.get('VELDO_0239_DETAILS'):
+            __import__('traceback').print_exc()
         for row in ROWS:
             check(row, 'ran to its end (raised %s: %s)' % (type(error).__name__, str(error)[:300]), False)
     for name, observed in rows.items():
