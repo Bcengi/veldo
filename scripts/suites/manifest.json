@@ -1744,6 +1744,15 @@
    ],
    "regions": "A unit's process as a versioned workflow revision (VELDO-0241): the shipped code definition and its equivalence with the Line of the previous commit on every unit state, the save-time owner approval check on every path to an outward step, and the owner's per-project and per-kind-of-work binding with each unit pinned to the revision its first station recorded.",
    "requires_note": "Only ROOT, expect and fast_temp. Real SQLite store with OpenSSH journal and owner command signatures, VELDO-0132 workflow saves, VELDO-0076 project commands, the Line of control_service.py and its predecessor read from Git history with their station methods recorded instead of dispatched. Writes only temporary fixtures."
+  },
+  {
+   "name": "128_veldo_0247_check_join",
+   "file": "128_veldo_0247_check_join.py",
+   "requires": [
+    "128_veldo_0247_check_join"
+   ],
+   "regions": "Check and join steps and parallel branches (VELDO-0247): the check's closed configuration refused by name at save, one branch taken per check and re-evaluated by the cycle, a forged branch refused, two assignment branches dispatched together and run in one LangGraph superstep with a join that waits for all its inputs, fan-outs bounded at eight, and the owner approval rule on every path through checks, branches and joins.",
+   "requires_note": "Only ROOT, expect and fast_temp. Real SQLite store with OpenSSH journal signatures, a real Git workspace and VELDO-0035 snapshot, the eligibility Gate, VELDO-0132 workflow saves and cycles on the VELDO-0045 activated LangGraph runtime staged into a temporary directory. Writes only temporary fixtures."
   }
  ],
  "resource_capacities": {
