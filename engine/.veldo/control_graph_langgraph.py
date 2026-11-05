@@ -23,6 +23,15 @@ Nothing leaves this process that is not exact plain JSON data; LangGraph objects
 
 Workflow definitions are supplied by VELDO-0132; this module registers none, so production
 `main` answers every workflow with the named failure unsupported_workflow.
+
+PARALLEL BRANCHES (VELDO-0247). A node may suspend with `next` a mapping {branch: node}: a fan-out. The
+cycle then suspends at PARALLEL with notes {branches: {branch: {position, last}}, join} (the node names
+its join in its notes). An exchange entered at PARALLEL is one superstep of branches: the PARALLEL node
+starts every branch that has not reached the join through LangGraph's Send, so they all run in the same
+superstep, each in its own branch state merged by a reducer so no branch overwrites another; COLLECT
+then gathers them, counts one step for each branch node that moved, and suspends at PARALLEL again. A
+branch node always suspends: it moves to its next node, or stays (its input is not here yet). The join
+node runs only when every branch has reached it; it then runs as an ordinary node.
 """
 import json
 import math
@@ -60,6 +69,9 @@ def notes_text(notes):
 
 NO_RUNTIME = {'name': 'none', 'version': ''}
 CONTROL = {'suspend': 'veldo_suspend', 'cancel': 'veldo_cancel'}
+PARALLEL = 'veldo_parallel'
+COLLECT = 'veldo_collect'
+MAX_BRANCHES = 8
 
 
 def _reply(request, outcome, runtime, **fields):
@@ -94,7 +106,8 @@ def emit(request, reply, stdout):
 def _resume(request, workflow):
     resume = request.get('resume')
     if (type(resume) is not dict or set(resume) != {'position', 'step', 'notes'}
-            or resume['position'] not in workflow['nodes'] or type(resume['step']) is not int
+            or (resume['position'] not in workflow['nodes'] and resume['position'] != PARALLEL)
+            or type(resume['step']) is not int
             or type(resume['notes']) is not str):
         return None
     try:
@@ -115,10 +128,29 @@ def executed_by():
     return {'name': 'langgraph', 'version': __version__}
 
 
+def _merge_branches(old, new):
+    """The reducer of branch state: each branch writes only its own key, so none overwrites another."""
+    return dict(old or {}, **(new or {}))
+
+
+def _latest(old, new):
+    return new
+
+
+def _branch_set(notes, workflow):
+    """The plain branch positions and join a PARALLEL resume carries, or None."""
+    branches, join = notes.get('branches'), notes.get('join')
+    if (type(branches) is not dict or not 2 <= len(branches) <= MAX_BRANCHES or join not in workflow['nodes']
+            or not all(type(b) is dict and b.get('position') in workflow['nodes'] for b in branches.values())):
+        return None
+    return branches, join
+
+
 def _build(workflow):
-    from typing import TypedDict
+    from typing import Annotated, TypedDict
+    from langgraph.config import get_config
     from langgraph.graph import END, START, StateGraph
-    from langgraph.types import Command
+    from langgraph.types import Command, Send
 
     class State(TypedDict, total=False):
         identity: dict
@@ -131,10 +163,35 @@ def _build(workflow):
         proposals: list
         halt: str
         failure: dict
-        executed_by: dict
+        executed_by: Annotated[dict, _latest]
+        branch: str
+        branches: Annotated[dict, _merge_branches]
+
+    def branch_node(name, function, state):
+        """One branch's node, in the superstep every started branch shares: it writes only its own branch."""
+        branch = state['branch']
+        view = {'identity': state['identity'], 'snapshot': state['snapshot'],
+                'supplied_results': state['supplied_results'], 'notes': dict(state['notes']),
+                'step': state['step'], 'branch': branch}
+        out = function(view)
+        entry = {'superstep': get_config()['metadata'].get('langgraph_step')}
+        if type(out) is not dict or sorted(set(out) - set(NODE_KEYS)):
+            entry['failure'] = {'code': 'node_failed', 'detail': name + ' returned no node output mapping'}
+        elif out.get('failure') is not None:
+            entry['failure'] = out['failure']
+        elif (not out.get('suspend') or out.get('proposals') or type(out.get('next')) is not str
+              or out['next'] not in workflow['nodes']):
+            entry['failure'] = {'code': 'node_failed', 'detail': name + ' did not suspend at one node in its branch'}
+        else:
+            notes = out.get('notes') or {}
+            entry.update(position=out['next'], last=notes.get('last'),
+                         **({'decision': notes['decision']} if 'decision' in notes else {}))
+        return Command(goto=COLLECT, update={'branches': {branch: entry}, 'executed_by': executed_by()})
 
     def wrap(name, function):
         def node(state):
+            if state.get('branch'):
+                return branch_node(name, function, state)
             view = {'identity': state['identity'], 'snapshot': state['snapshot'],
                     'supplied_results': state['supplied_results'], 'notes': dict(state['notes']),
                     'step': state['step']}
@@ -153,6 +210,15 @@ def _build(workflow):
             update = dict(base, notes=dict(state['notes'], **(out.get('notes') or {})),
                           proposals=state['proposals'] + list(out.get('proposals') or []))
             following = out.get('next')
+            if type(following) is dict:
+                # A fan-out: every branch starts at its first node in the next exchange's one superstep.
+                if (not out.get('suspend') or update['proposals'] or not 2 <= len(following) <= MAX_BRANCHES
+                        or not all(target in workflow['nodes'] for target in following.values())):
+                    return Command(goto=END, update=dict(update, halt='failure', failure={
+                        'code': 'unsupported_workflow', 'detail': name + ' fans out to no bounded set of nodes'}))
+                notes = dict(update['notes'], branches={b: {'position': t, 'last': None}
+                                                        for b, t in sorted(following.items())})
+                return Command(goto=END, update=dict(update, notes=notes, halt='suspend', position=PARALLEL))
             if following is not None and following not in workflow['nodes']:
                 return Command(goto=END, update=dict(update, halt='failure', failure={
                     'code': 'unsupported_workflow', 'detail': name + ' names no node ' + repr(following)}))
@@ -167,6 +233,40 @@ def _build(workflow):
             return Command(goto=following, update=dict(update, position=following))
         return node
 
+    def parallel(state):
+        """Start every branch that has not reached the join, all in one superstep; or, when every branch has
+        reached it, the join."""
+        found = _branch_set(state['notes'], workflow)
+        if found is None:
+            return Command(goto=END, update={'halt': 'failure', 'executed_by': executed_by(), 'failure': {
+                'code': 'invalid_input', 'detail': 'the resume carries no plain branch set'}})
+        branches, join = found
+        if all(b['position'] == join for b in branches.values()):
+            return Command(goto=join, update={'position': join, 'executed_by': executed_by()})
+        view = {key: state[key] for key in ('identity', 'snapshot', 'supplied_results', 'notes', 'step')}
+        return Command(goto=[Send(b['position'], dict(view, branch=name)) for name, b in sorted(branches.items())
+                             if b['position'] != join], update={'executed_by': executed_by()})
+
+    def collect(state):
+        """Gather the superstep's branches: a failure ends the cycle, else every branch's position and the step
+        it moved, one step for each branch node that moved, and the cycle suspends at PARALLEL again."""
+        ran, (branches, join) = state.get('branches') or {}, _branch_set(state['notes'], workflow)
+        failed = sorted((b, e['failure']) for b, e in ran.items() if 'failure' in e)
+        if failed:
+            branch, failure = failed[0]
+            return Command(goto=END, update={'halt': 'failure', 'executed_by': executed_by(), 'failure': dict(
+                failure, detail=str(failure.get('detail', '')))})
+        after, moved = {}, 0
+        for name, prior in sorted(branches.items()):
+            entry = ran.get(name)
+            if entry is None:
+                after[name] = {'position': prior['position'], 'last': None}
+                continue
+            after[name] = entry
+            moved += entry.get('last') is not None
+        return Command(goto=END, update={'halt': 'suspend', 'position': PARALLEL, 'step': state['step'] + moved,
+                                         'notes': dict(state['notes'], branches=after), 'executed_by': executed_by()})
+
     def hold(state):
         # suspend: the cycle stays at its position; the graph ran and says so.
         return Command(goto=END, update={'halt': 'suspend', 'executed_by': executed_by()})
@@ -179,8 +279,10 @@ def _build(workflow):
         graph.add_node(name, wrap(name, function))
     graph.add_node(CONTROL['suspend'], hold)
     graph.add_node(CONTROL['cancel'], cancel)
+    graph.add_node(PARALLEL, parallel)
+    graph.add_node(COLLECT, collect)
     graph.add_conditional_edges(START, lambda state: CONTROL.get(state['operation'], state['position']),
-                                list(workflow['nodes']) + list(CONTROL.values()))
+                                list(workflow['nodes']) + list(CONTROL.values()) + [PARALLEL])
     return graph.compile()
 
 
@@ -194,7 +296,7 @@ def run_cycle(request, workflow, resume):
     state = {'identity': {key: request[key] for key in IDENTITY}, 'operation': request['operation'],
              'snapshot': request.get('snapshot'), 'supplied_results': request.get('supplied_results', []),
              'proposals': [], 'halt': '', 'position': resume['position'], 'step': resume['step'],
-             'notes': resume['notes']}
+             'notes': resume['notes'], 'branches': {}}
     try:
         final = _build(workflow).invoke(state, {'recursion_limit': MAX_STEPS})
     except GraphRecursionError:
@@ -224,7 +326,7 @@ def run_cycle(request, workflow, resume):
 def answer(request, workflows):
     workflow = workflows.get(request['workflow']['id'])
     if (workflow is None or workflow['version'] != request['workflow']['version']
-            or set(workflow['nodes']) & set(CONTROL.values())):
+            or set(workflow['nodes']) & (set(CONTROL.values()) | {PARALLEL, COLLECT})):
         return _failure(request, 'unsupported_workflow', 'no registered workflow ' +
                         request['workflow']['id'] + ' version ' + str(request['workflow']['version']))
     if request['operation'] == 'start':

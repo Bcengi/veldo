@@ -49,6 +49,21 @@ cycle, subject, bound workflow, record identity, graph command, runtime label, o
 and its taxonomy class. status() counts accepted and refused operations and names the pending work:
 each waiting cycle with the node and input it waits for.
 
+CHECKS AND PARALLEL BRANCHES (VELDO-0247). A check node is supplied `fields`, the values of the
+definition's declared fields read from the store (the subject's record, or the accepted result an
+assignment on every path before it routed on). The runner reports the branch with its decision; this
+service evaluates the same rule on the same values against the bound revision (control_workflow
+.evaluate) and refuses any difference (unsupported_workflow:branch_mismatch) before anything follows,
+so the runner never chooses the route; a field with no value or the wrong type fails the step
+(invalid_input:field_unsupplied:<field>). The record's `decisions` and the `check` event hold the node,
+branch, rule and every condition with its observed value (a private field's as its digest).
+A fan-out suspends at PARALLEL with one branch per transition of its port; the record's `block` holds
+each branch's position, input and arrival. Each exchange is one LangGraph superstep of branches: every
+branch with what it needs runs, all in that superstep, and every branch's transition is judged as a
+main-path step is; an assignment branch is dispatched (its ordinary checks, then waiting) without
+waiting for another. The join runs only when every branch has reached it. The step budget counts
+every node of every branch.
+
 NOT HERE: checkpoint recovery and resuming a cycle after a crash (Release 2); a cycle whose exchange
 fails is refused, never retried. The dispatcher's use of a pending assignment is the floor's.
 """
@@ -78,6 +93,8 @@ RUNNER_TYPES = ('service',)
 RESULT_KIND = 'proof_bundle'
 ANSWERS = ('accepted', 'declined')
 STATION = 'selection'
+PARALLEL = 'veldo_parallel'
+MISMATCH = 'unsupported_workflow:branch_mismatch'
 
 
 def _sibling(alias, name):
@@ -175,7 +192,7 @@ def _record_transition(conn, params, before):
                   'started': {'principal': params['principal'], 'at': now},
                   'state': 'running', 'position': None, 'steps': 0, 'trace': [], 'visits': {}, 'resume': None,
                   'waiting': None, 'assignment': None, 'received': None, 'result': None, 'answered': None,
-                  'proposals': [], 'refusal': None,
+                  'proposals': [], 'refusal': None, 'block': None, 'decisions': [], 'results': {},
                   'refusals': [], 'exchanges': 0}
         return {cid: {'kind': CYCLE_KIND, 'data': record}}
     record = params.get('record')
@@ -231,6 +248,10 @@ class Cycles:
         self.observe = observe or (lambda event: None)
         self.clock = clock or time.time
         self.counts = {'accepted': 0, 'refused': 0}
+        # VELDO-0247: checks by node and branch (otherwise on its own), fan-outs by width, branches running at
+        # once, joins waiting and their wait time, and branch decisions refused as mismatches.
+        self.metrics = {'checks': {}, 'otherwise': {}, 'fan_outs': {}, 'branches_running': {}, 'joins_waiting': {},
+                        'join_wait_seconds': [], 'branch_mismatch': 0}
         # Diagnostics only, bounded: the durable log is the observe callback's sink.
         self.observations = collections.deque(maxlen=1000)
         store.declare_owners(conn, OWNER, kinds={CYCLE_KIND: (RECORD,)}, module=__file__)
@@ -361,22 +382,30 @@ class Cycles:
             return 'missing_authority:role/' + key
         return None
 
-    def _assign(self, record, definition, node):
-        """The ordinary checks before an assignment waits for a worker: role authority, then the Gate."""
+    def _assignment(self, record, definition, node, position):
+        """The ordinary checks before an assignment waits for a worker: role authority, then the Gate.
+        Returns (assignment, None) or (None, (code, codes, fields))."""
         problem = self.role_problem(definition, node)
         if problem:
-            return self._refuse(record, problem, node=record['position'])
+            return None, (problem, None, {'node': position})
         decision = self.gate.decide(STATION, record['subject'])
         if not decision['eligible']:
-            return self._refuse(record, decision['refusals'][0], decision['refusals'], node=record['position'],
-                                decision=decision['decision_id'])
+            return None, (decision['refusals'][0], decision['refusals'], {'node': position,
+                                                                          'decision': decision['decision_id']})
         role = definition['references']['roles'][node['config']['role']]
+        return {'node': position, 'role': node['config']['role'], 'configuration': dict(role), 'station': STATION,
+                'decision': decision['decision_id'], 'watermark': decision['watermark']}, None
+
+    def _assign(self, record, definition, node):
+        # Through the class: a caller may drive this step with a stand-in holding only gate and role_problem.
+        assignment, refusal = Cycles._assignment(self, record, definition, node, record['position'])
+        if refusal:
+            code, codes, fields = refusal
+            return self._refuse(record, code, codes, **fields)
         record = dict(record, state='waiting', waiting={'node': record['position'], 'input': 'worker_result'},
-                      assignment={'node': record['position'], 'role': node['config']['role'],
-                                  'configuration': dict(role), 'station': STATION,
-                                  'decision': decision['decision_id'], 'watermark': decision['watermark']})
+                      assignment=assignment)
         return self._update(record, 'wait', node=record['position'], input='worker_result',
-                            decision=decision['decision_id'])
+                            decision=assignment['decision'])
 
     def _result(self, identity):
         """An accepted result for the cycle's subject, or None."""
@@ -428,7 +457,21 @@ class Cycles:
             revision = self._revision(record)
         except Refused as error:
             return self._refuse(record, error.code)
-        if record['waiting']['input'] == 'worker_result':
+        if record['position'] == PARALLEL:
+            # VELDO-0247: results for branches name the assignment node each is for: {node: entity id}.
+            named = (results or {}).get('worker_result') or {}
+            block = json.loads(json.dumps(record['block']))
+            for node, identity in sorted(named.items() if type(named) is dict else ()):
+                branch = next((b for b, st in block['branches'].items() if st['position'] == node
+                               and st['waiting'] == 'worker_result'
+                               and (st.get('assignment') or {}).get('node') == node), None)
+                row = self._result(identity)
+                if branch is None or not self._accepted_result(record, row):
+                    return self._refuse(record, 'missing_evidence:result', node=node)
+                block['branches'][branch]['received'] = {'id': identity, 'version': row['version'],
+                                                         'digest': row['digest']}
+            record = dict(record, block=block)
+        elif record['waiting']['input'] == 'worker_result':
             identity = (results or {}).get('worker_result')
             row = self._result(identity)
             if not self._accepted_result(record, row):
@@ -487,24 +530,75 @@ class Cycles:
             supplied.append(self._supply('worker_result', row, {'kind': row['kind']}))
         elif kind['input'] == 'accepted_result':
             result = record.get('result')
-            if result:
+            others = [(node, ref) for node, ref in sorted((record.get('results') or {}).items())
+                      if ref != result]
+            for name, result in ([('accepted_result', result)] if result else []) + [
+                    ('accepted_result@' + node, ref) for node, ref in others]:
                 row = self._result(result['id'])
                 if not self._accepted_result(record, row) or (row['version'], row['digest']) != (
                         result['version'], result['digest']):
                     raise Refused('missing_evidence:result', result['id'])
-                supplied.append(self._supply('accepted_result', row, {'kind': row['kind']}))
+                supplied.append(self._supply(name, row, {'kind': row['kind']}))
         return supplied
 
+    def _fields(self, record, definition, name):
+        """The supplied `fields` of a check: each declared field's value read from the store (absent when it has
+        none): the subject's record, or the accepted result the named assignment routed on."""
+        unit = _entity_row(self.conn, record['subject'])
+        values = {}
+        for field, declared in sorted((definition.get('fields') or {}).items()):
+            source = declared['source']
+            if 'subject' in source:
+                data = unit['data'] if unit else {}
+            else:
+                result = (record.get('results') or {}).get(source['node'])
+                row = self._result(result['id']) if result else None
+                if row is None or (row['version'], row['digest']) != (result['version'], result['digest']):
+                    continue
+                data = row['data']
+            if type(data) is dict and (source.get('subject') or source.get('result')) in data:
+                values[field] = data[source.get('subject') or source.get('result')]
+        return {'id': name, 'version': 1, 'digest': WF.digest(WF.canonical(values)), 'value': values}, values
+
+    def _judge_check(self, record, definition, position, values, reported, port):
+        """The cycle's own evaluation of a check against the bound revision: (decision, None) or (None, refusal)."""
+        node = definition['nodes'][position]
+        mine, problem = WF.evaluate(position, node['config'], definition.get('fields') or {}, values)
+        if problem is not None or reported != mine or port != mine['branch']:
+            self.metrics['branch_mismatch'] += 1
+            return None, MISMATCH
+        return mine, None
+
+    def _decided(self, record, definition, mine, command, answer, **fields):
+        """Record and report a check decision; count it by node and branch (otherwise on its own)."""
+        kept = WF.redacted(mine, definition.get('fields') or {})
+        if mine['branch'] == WF.OTHERWISE:
+            self.metrics['otherwise'][mine['node']] = self.metrics['otherwise'].get(mine['node'], 0) + 1
+        else:
+            counts = self.metrics['checks'].setdefault(mine['node'], {})
+            counts[mine['branch']] = counts.get(mine['branch'], 0) + 1
+        self._report(self._event('check', record, node=mine['node'], branch=mine['branch'], rule=mine['rule'],
+                                 conditions=kept['conditions'], graph=command, runtime=answer['runtime'], **fields))
+        return kept
+
     def _run(self, record, revision):
-        """Run the bound revision one judged step at a time until it waits, proposes or is refused."""
+        """Run the bound revision one judged step (one superstep of branches) at a time until it waits, proposes
+        or is refused."""
         definition = revision['definition']
-        transitions = {(t['from'], t['port']): t for t in definition['transitions']}
+        routes = {}
+        for t in definition['transitions']:
+            routes.setdefault((t['from'], t['port']), []).append(t)
         while True:
             position = record['position']
-            node = definition['nodes'][position]
-            kind = WF.STEP_KINDS[node['kind']]
             if record['steps'] >= definition['budget']['steps']:
                 return self._refuse(record, 'budget_exceeded:steps', node=position)
+            if position == PARALLEL:
+                record = self._block_step(record, revision, routes)
+                if record.get('state') != 'running':
+                    return record
+                continue
+            node = definition['nodes'][position]
+            kind = WF.STEP_KINDS[node['kind']]
             try:
                 supplied = self._inputs(record, node, kind)
             except Refused as error:
@@ -514,6 +608,10 @@ class Cycles:
                     return self._assign(record, definition, node)
                 waiting = dict(record, state='waiting', waiting={'node': position, 'input': kind['input']})
                 return self._update(waiting, 'wait', node=position, input=kind['input'])
+            values = None
+            if node['kind'] == WF.CHECK:
+                item, values = self._fields(record, definition, 'fields')
+                supplied.append(item)
             try:
                 answer, command = self._exchange(record, revision, 'advance', supplied=supplied)
             except Refused as error:
@@ -521,14 +619,29 @@ class Cycles:
             if kind['terminal']:
                 return self._propose(record, answer, command, supplied)
             if answer['outcome'] != 'suspended':
-                return self._refuse(record, self._failure_code(answer, 'invalid_response:outcome'), node=position,
-                                    graph=command)
+                code = self._failure_code(answer, 'invalid_response:outcome')
+                if values is not None:
+                    _mine, problem = WF.evaluate(position, node['config'], definition.get('fields') or {}, values)
+                    if problem is None or code != problem:
+                        self.metrics['branch_mismatch'] += problem is None
+                        code = MISMATCH if problem is None else problem
+                return self._refuse(record, code, node=position, graph=command)
             notes = self._notes(answer)
             if notes.get('workflow') != {k: record['binding'][k] for k in ('id', 'version', 'digest')}:
                 return self._refuse(record, 'missing_evidence:binding', node=position, graph=command)
             last = notes.get('last')
-            taken = (transitions.get((position, last[1])) if type(last) is list and len(last) == 3
-                     and type(last[1]) is str else None)
+            port = last[1] if type(last) is list and len(last) == 3 and type(last[1]) is str else None
+            found = routes.get((position, port)) or []
+            if values is not None:
+                mine, problem = self._judge_check(record, definition, position, values, notes.get('decision'), port)
+                if problem:
+                    return self._refuse(record, problem, node=position, graph=command)
+            if len(found) > 1:
+                record = self._fan_out(record, definition, answer, command, notes, found, kind, supplied)
+                if record.get('state') != 'running':
+                    return record
+                continue
+            taken = found[0] if found else None
             # The runner counts the intake as its first node: after definition step k it reports k + 1.
             if (taken is None or last[0] != position or last[2] != taken['to']
                     or answer['resume']['position'] != taken['to'] or answer['resume']['step'] != record['steps'] + 2):
@@ -541,14 +654,236 @@ class Cycles:
                 # The answer this visit routed on is spent: the next owner wait asks the owner again.
                 used = next(item for item in supplied if item['id'] == 'owner_answer')
                 record = dict(record, answered={'version': used['version'], 'digest': used['digest']})
+            if values is not None:
+                record = dict(record, decisions=(record.get('decisions') or []) + [
+                    self._decided(record, definition, mine, command, answer)])
             if kind['input'] == 'worker_result':
                 # The result this assignment routed on is the one a result handling step may cite; a later
                 # visit to an assignment waits for its own worker, after its own checks.
-                record = dict(record, result=record['received'], received=None)
+                record = dict(record, result=record['received'], received=None,
+                              results=dict(record.get('results') or {}, **{position: record['received']}))
             if 'max' in taken and visits[taken['id']] > taken['max']:
                 return self._refuse(record, 'budget_exceeded:loop/' + taken['id'], node=position, graph=command)
             self._update(record, 'step', node=position, port=last[1], graph=command, runtime=answer['runtime'],
                          executed=notes['workflow'])
+
+    def _fan_out(self, record, definition, answer, command, notes, starts, kind, supplied):
+        """A port with several transitions: the runner suspends at PARALLEL with one branch per transition, each at
+        its first node, naming the join whose inputs are exactly those branches."""
+        position, last = record['position'], notes.get('last')
+        _problems, blocks = WF.block_problems(definition['nodes'], definition['transitions'])
+        block = next((b for b in blocks if (b['fan_out'], b['port']) == (position, last[1])), None)
+        expected = {t['id']: {'position': t['to'], 'last': None} for t in starts}
+        if (block is None or last[0] != position or last[2] != PARALLEL or notes.get('branches') != expected
+                or notes.get('join') != block['join'] or answer['resume']['position'] != PARALLEL
+                or answer['resume']['step'] != record['steps'] + 2):
+            return self._refuse(record, 'invalid_response:trace', node=position, graph=command)
+        visits = dict(record['visits'])
+        for t in starts:
+            visits[t['id']] = visits.get(t['id'], 0) + 1
+        result = {}
+        if kind['input'] == 'owner_answer':
+            spent = next(item for item in supplied if item['id'] == 'owner_answer')
+            result['answered'] = {'version': spent['version'], 'digest': spent['digest']}
+        if kind['input'] == 'worker_result':
+            result = {'result': record['received'], 'received': None,
+                      'results': dict(record.get('results') or {}, **{position: record['received']})}
+        branches = {t['id']: {'position': t['to'], 'arrived': False, 'waiting': None, 'assignment': None,
+                              'received': None, 'answered': None} for t in starts}
+        record = dict(record, steps=record['steps'] + 1, trace=record['trace'] + [list(last)], visits=visits,
+                      position=PARALLEL, resume=answer['resume'], **result,
+                      block={'fan_out': position, 'port': last[1], 'join': block['join'], 'started': self.clock(),
+                             'first_arrival': None, 'branches': branches})
+        self.metrics['fan_outs'][len(starts)] = self.metrics['fan_outs'].get(len(starts), 0) + 1
+        bounded = [t['id'] for t in starts if 'max' in t and visits[t['id']] > t['max']]
+        if bounded:
+            return self._refuse(record, 'budget_exceeded:loop/' + bounded[0], node=position, graph=command)
+        self._update(record, 'step', node=position, port=last[1], graph=command, runtime=answer['runtime'],
+                     executed=notes['workflow'])
+        self._report(self._event('fan_out', record, node=position, width=len(starts), join=block['join'],
+                                 branches={t['id']: t['to'] for t in starts}, graph=command))
+        return record
+
+    def _branch_inputs(self, record, definition, branch, state):
+        """(items, waiting input or None, refusal or None) for one branch: what its node reads, keyed by node."""
+        position = state['position']
+        node = definition['nodes'][position]
+        kind = WF.STEP_KINDS[node['kind']]
+        if kind['input'] is None:
+            if node['kind'] == WF.CHECK:
+                item, _values = self._fields(dict(record, results=record.get('results') or {}), definition,
+                                             'fields@' + position)
+                return [item], None, None
+            return [], None, None
+        if kind['input'] == 'owner_answer':
+            answer = _entity_row(self.conn, 'admission:' + record['subject'])
+            data = answer['data'] if answer and answer['kind'] == 'admission' else {}
+            used = state.get('answered') or record.get('answered')
+            if (data.get('unit') != record['subject'] or data.get('state') not in ANSWERS
+                    or (used is not None and answer['version'] <= used['version'])):
+                return None, 'owner_answer', None
+            return [self._supply('owner_answer@' + position, answer, {'state': data['state']})], None, None
+        if kind['input'] == 'worker_result':
+            received = state.get('received')
+            if received and (state.get('assignment') or {}).get('node') == position:
+                row = self._result(received['id'])
+                if not self._accepted_result(record, row) or (row['version'], row['digest']) != (
+                        received['version'], received['digest']):
+                    return None, None, ('missing_evidence:result', None, {'node': position})
+                return [self._supply('worker_result@' + position, row, {'kind': row['kind']})], None, None
+            return None, 'worker_result', None
+        return None, None, ('unsupported_workflow:' + node['kind'] + '_in_branch', None, {'node': position})
+
+    def _block_step(self, record, revision, routes):
+        """One superstep of a fan-out's branches, or the join once every branch has reached it."""
+        definition = revision['definition']
+        block = json.loads(json.dumps(record['block']))
+        join, branches = block['join'], block['branches']
+        binding = {k: record['binding'][k] for k in ('id', 'version', 'digest')}
+        unit = _entity_row(self.conn, record['subject'])
+        if unit is None or unit['kind'] != 'execution_unit':
+            return self._refuse(record, 'missing_evidence:subject', node=PARALLEL)
+        supplied = [self._supply('subject', unit, {'unit': record['subject'], 'state': unit['data'].get('state')})]
+        if all(state['arrived'] for state in branches.values()):
+            try:
+                answer, command = self._exchange(record, revision, 'advance', supplied=supplied)
+            except Refused as error:
+                return self._refuse(record, error.code, node=join)
+            notes = self._notes(answer) if answer['outcome'] == 'suspended' else {}
+            last = notes.get('last')
+            taken = (routes.get((join, 'done')) or [None])[0]
+            if answer['outcome'] != 'suspended':
+                return self._refuse(record, self._failure_code(answer, 'invalid_response:outcome'), node=join,
+                                    graph=command)
+            if notes.get('workflow') != binding:
+                return self._refuse(record, 'missing_evidence:binding', node=join, graph=command)
+            if (taken is None or last != [join, 'done', taken['to']] or notes.get('branches') is not None
+                    or answer['resume']['position'] != taken['to'] or answer['resume']['step'] != record['steps'] + 2):
+                return self._refuse(record, 'invalid_response:trace', node=join, graph=command)
+            visits = dict(record['visits'])
+            visits[taken['id']] = visits.get(taken['id'], 0) + 1
+            waited = self.clock() - (block['first_arrival'] or block['started'])
+            self.metrics['join_wait_seconds'].append(round(waited, 3))
+            self.metrics['joins_waiting'].pop(record['cycle'], None)
+            self.metrics['branches_running'].pop(record['cycle'], None)
+            record = dict(record, steps=record['steps'] + 1, trace=record['trace'] + [list(last)], visits=visits,
+                          position=taken['to'], resume=answer['resume'], block=None)
+            if taken.get('max') is not None and visits[taken['id']] > taken['max']:
+                return self._refuse(record, 'budget_exceeded:loop/' + taken['id'], node=join, graph=command)
+            self._update(record, 'step', node=join, port='done', graph=command, runtime=answer['runtime'],
+                         executed=notes['workflow'], join=join, fan_out=block['fan_out'], waited=round(waited, 3),
+                         completed=self.clock())
+            return record
+        ready, dispatched = [], []
+        for branch, state in sorted(branches.items()):
+            if state['arrived']:
+                continue
+            items, waiting, refusal = self._branch_inputs(record, definition, branch, state)
+            if refusal:
+                code, codes, fields = refusal
+                return self._refuse(record, code, codes, branch=branch, **fields)
+            if items is not None:
+                ready.append(branch)
+                supplied += items
+                state['waiting'] = None
+                continue
+            state['waiting'] = waiting
+            if waiting == 'worker_result' and (state.get('assignment') or {}).get('node') != state['position']:
+                node = definition['nodes'][state['position']]
+                assignment, refused = self._assignment(record, definition, node, state['position'])
+                if refused:
+                    code, codes, fields = refused
+                    return self._refuse(record, code, codes, branch=branch, **fields)
+                state['assignment'], state['received'] = assignment, None
+                dispatched.append(branch)
+        running = sum(1 for state in branches.values() if not state['arrived'])
+        self.metrics['branches_running'][record['cycle']] = running
+        record = dict(record, block=block)
+        if not ready:
+            pending = {b: {'node': st['position'], 'input': st['waiting']} for b, st in sorted(branches.items())
+                       if not st['arrived']}
+            record = dict(record, state='waiting', waiting={'node': PARALLEL, 'input': 'branches', 'branches': pending})
+            return self._update(record, 'wait', node=PARALLEL, input='branches', branches=pending,
+                                dispatched=dispatched, fan_out=block['fan_out'], join=join)
+        try:
+            answer, command = self._exchange(record, revision, 'advance', supplied=supplied)
+        except Refused as error:
+            return self._refuse(record, error.code, node=PARALLEL)
+        if answer['outcome'] != 'suspended':
+            return self._refuse(record, self._failure_code(answer, 'invalid_response:outcome'), node=PARALLEL,
+                                graph=command)
+        notes = self._notes(answer)
+        if notes.get('workflow') != binding:
+            return self._refuse(record, 'missing_evidence:binding', node=PARALLEL, graph=command)
+        reported = notes.get('branches') if type(notes.get('branches')) is dict else {}
+        if set(reported) != set(branches) or answer['resume']['position'] != PARALLEL or notes.get('join') != join:
+            return self._refuse(record, 'invalid_response:trace', node=PARALLEL, graph=command)
+        moved, steps, supersteps, decisions = [], [], set(), []
+        visits = dict(record['visits'])
+        for branch, state in sorted(branches.items()):
+            entry = reported[branch] if type(reported[branch]) is dict else {}
+            if state['arrived']:
+                if entry != {'position': join, 'last': None}:
+                    return self._refuse(record, 'invalid_response:trace', node=PARALLEL, branch=branch, graph=command)
+                continue
+            supersteps.add(entry.get('superstep'))
+            last = entry.get('last')
+            if branch not in ready:
+                if entry.get('position') != state['position'] or last is not None:
+                    return self._refuse(record, 'invalid_response:trace', node=PARALLEL, branch=branch, graph=command)
+                continue
+            position = state['position']
+            node = definition['nodes'][position]
+            port = last[1] if type(last) is list and len(last) == 3 and type(last[1]) is str else None
+            found = routes.get((position, port)) or []
+            if node['kind'] == WF.CHECK:
+                _item, values = self._fields(record, definition, 'fields@' + position)
+                mine, problem = self._judge_check(record, definition, position, values, entry.get('decision'), port)
+                if problem:
+                    return self._refuse(record, problem, node=position, branch=branch, graph=command)
+                decisions.append((branch, mine))
+            if len(found) != 1 or last != [position, port, found[0]['to']] or entry.get('position') != found[0]['to']:
+                return self._refuse(record, 'invalid_response:trace', node=position, branch=branch, graph=command)
+            taken = found[0]
+            visits[taken['id']] = visits.get(taken['id'], 0) + 1
+            if taken.get('max') is not None and visits[taken['id']] > taken['max']:
+                return self._refuse(record, 'budget_exceeded:loop/' + taken['id'], node=position, branch=branch,
+                                    graph=command)
+            kind = WF.STEP_KINDS[node['kind']]
+            if kind['input'] == 'owner_answer':
+                used = next(item for item in supplied if item['id'] == 'owner_answer@' + position)
+                state['answered'] = {'version': used['version'], 'digest': used['digest']}
+            if kind['input'] == 'worker_result':
+                record = dict(record, result=state['received'],
+                              results=dict(record.get('results') or {}, **{position: state['received']}))
+                state['received'], state['assignment'] = None, None
+            state['position'], state['arrived'] = taken['to'], taken['to'] == join
+            moved.append(branch)
+            steps.append([branch, list(last), entry.get('superstep')])
+        # Every branch that ran shares one superstep: branches run one after another are not parallel.
+        if len(supersteps) != 1 or None in supersteps or answer['resume']['step'] != record['steps'] + 1 + len(moved):
+            return self._refuse(record, 'invalid_response:trace', node=PARALLEL, graph=command)
+        now = self.clock()
+        if any(branches[b]['arrived'] for b in moved) and block['first_arrival'] is None:
+            block['first_arrival'] = now
+        kept = {}
+        for branch, mine in decisions:
+            kept[branch] = self._decided(record, definition, mine, command, answer, branch=branch,
+                                         fan_out=block['fan_out'], join=join)
+        record = dict(record, steps=record['steps'] + len(moved), visits=visits, resume=answer['resume'], block=block,
+                      trace=record['trace'] + [last for _b, last, _s in steps],
+                      decisions=(record.get('decisions') or []) + [kept[b] for b in sorted(kept)])
+        if any(st['arrived'] for st in branches.values()) and not all(st['arrived'] for st in branches.values()):
+            self.metrics['joins_waiting'][record['cycle']] = sorted(b for b, st in branches.items() if st['arrived'])
+        record = self._update(record, 'superstep', node=PARALLEL, graph=command, runtime=answer['runtime'],
+                              executed=notes['workflow'], moved=moved, fan_out=block['fan_out'], join=join)
+        for branch, last, superstep in steps:
+            self._report(self._event('branch_step', record, branch=branch, node=last[0], port=last[1], next=last[2],
+                                     superstep=superstep, graph=command, runtime=answer['runtime'],
+                                     fan_out=block['fan_out'], join=join))
+            if branches[branch]['arrived']:
+                self._report(self._event('arrive', record, branch=branch, join=join, at=now, fan_out=block['fan_out']))
+        return record
 
     def _propose(self, record, answer, command, supplied):
         """The terminal step's proposal, judged by result validation; never completion itself."""

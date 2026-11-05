@@ -10481,6 +10481,35 @@ def cases():
                   " WF.head_version(conn, domain, repository, found['id']))  # defect: the head, not the recorded revision\n"
                   "    if False:\n", 'binding/pinned-revision')
 
+    # VELDO-0247: each criterion's declared falsifier, against the suite 128 row it names.
+    def check_join(name, module, old, new, row):
+        add(247, name, '128_veldo_0247_check_join.py', module, old, new, [row])
+
+    # AC1, declared: a check whose config has no otherwise branch is accepted.
+    check_join('v247-check-without-otherwise-accepted', 'control_workflow.py',
+               "    if config.get('otherwise') is not True:\n",
+               "    if False:  # defect: a check without otherwise is accepted\n",
+               'check/configuration-refusals')
+    # AC2, declared: the cycle accepts the branch the runner reports without re-evaluating the rule.
+    check_join('v247-runner-branch-trusted', 'control_workflow_cycle.py',
+               "        mine, problem = WF.evaluate(position, node['config'], definition.get('fields') or {}, values)\n"
+               "        if problem is not None or reported != mine or port != mine['branch']:\n",
+               "        mine, problem = reported, None  # defect: the runner's branch is taken on its word\n"
+               "        if False:\n",
+               'check/forged-branch')
+    # AC3, declared: the join runs when its first input arrives.
+    check_join('v247-join-on-first-input', 'control_graph_langgraph.py',
+               "        if all(b['position'] == join for b in branches.values()):\n",
+               "        if any(b['position'] == join for b in branches.values()):  # defect: the join fires on its first input\n",
+               'fanout/join-waits-for-all')
+    # AC4, declared: a check's otherwise branch straight to land is accepted while its named branch passes the approval.
+    check_join('v247-otherwise-around-approval', 'control_workflow.py',
+               "            for edge in leaving.get(here, ()):\n                if node.get('kind') == APPROVAL:\n",
+               "            for edge in leaving.get(here, ()):\n                if edge['port'] == OTHERWISE:\n"
+               "                    continue  # defect: a check's otherwise branch is not walked\n"
+               "                if node.get('kind') == APPROVAL:\n",
+               'approval/branch-around-approval')
+
     # VELDO-0203: owner signatures, exact revision identity and the service lock.
     add(203, 'v203-base-from-head', '95_veldo_0203_owner_revisions.py', 'control_owner_revisions.py',
         "base=p['base'], command_id=cid,",

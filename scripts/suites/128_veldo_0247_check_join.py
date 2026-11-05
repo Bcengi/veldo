@@ -547,7 +547,7 @@ def _v247_suite():
                 together = attempt(cycles.start, 'fan-together', workflow='fanned', subject='VELDO-9707', snapshot=snapshot)
                 together_waiting = cycles.record('fan-together') or {}
                 for name in ('copy', 'image'):
-                    put('proof-bundle:9707-' + name, 'proof_bundle', dict(unit='VELDO-9707', domain=DOMAIN,
+                    put('proof-bundle:9707-' + name, 'proof_bundle', dict(unit='VELDO-9707', domain=DOMAIN, part=name,
                                                                          repository=REPOSITORY, source={'commit': commit}))
                 together_done = attempt(cycles.advance, 'fan-together', {'worker_result': {
                     'assign_copy': 'proof-bundle:9707-copy', 'assign_image': 'proof-bundle:9707-image'}})
@@ -555,7 +555,7 @@ def _v247_suite():
                 # One at a time: with one result in, the join has not run.
                 one = attempt(cycles.start, 'fan-one', workflow='fanned', subject='VELDO-9708', snapshot=snapshot)
                 for name in ('copy', 'image'):
-                    put('proof-bundle:9708-' + name, 'proof_bundle', dict(unit='VELDO-9708', domain=DOMAIN,
+                    put('proof-bundle:9708-' + name, 'proof_bundle', dict(unit='VELDO-9708', domain=DOMAIN, part=name,
                                                                          repository=REPOSITORY, source={'commit': commit}))
                 first_in = attempt(cycles.advance, 'fan-one', {'worker_result': {'assign_copy': 'proof-bundle:9708-copy'}})
                 one_waiting = cycles.record('fan-one') or {}
@@ -590,6 +590,7 @@ def _v247_suite():
                       and None not in supersteps.values()
                       and len(joins(together_record)) == 1
                       and together_record.get('steps') == 5
+                      and len({entity('proof-bundle:9707-' + n)['digest'] for n in ('copy', 'image')}) == 2
                       and {entity('proof-bundle:9707-' + n)['digest'] for n in ('copy', 'image')}
                       <= set((together_record.get('proposals') or [{}])[0].get('evidence') or [])
                       and cycles.metrics.get('fan_outs', {}).get(2) == 2)
