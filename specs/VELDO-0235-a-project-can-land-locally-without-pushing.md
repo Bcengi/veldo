@@ -146,5 +146,5 @@ and the reverse a narrowing. VELDO-0250 removes the personal setup (B2, B8): the
 hosting default in Intent become a generic project and "its remote", suite 128 line 143's owner name
 becomes a role id, the message ids outside History go, and README line 3 follows. Review E13: a local
 landing moves refs/heads/<trunk> without updating a working tree that has the trunk checked out; that
-needs its own follow-up ticket, which the lead files and numbers before landing (this writer reserves no
-number, so ids do not collide). Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md on the veldo-parity-a branch.
+needs its own follow-up ticket, filed as VELDO-0260 (a local landing keeps every working tree that has
+the trunk checked out in step with the trunk). Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md on the veldo-parity-a branch.
