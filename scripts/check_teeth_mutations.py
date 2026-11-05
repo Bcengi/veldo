@@ -12098,6 +12098,13 @@ def cases():
         "    runtime = environment.pop(ENGINE_RUNTIME, None)\n"
         "    environment['FIXTURE_MAIL_TOKEN'] = _organ('secretref').resolve_for_runtime('keychain:fixture-mail', "
         "_organ('control_credential_keystore').SecretService()).reveal()\n", ['ac1/static-sites'])
+    # The same falsifier against the real-launch canary row: the canary reaches the engine's environment.
+    add(254, 'delivery254-keystore-into-launch-canary', '129_veldo_0254_canary_launch.py', 'control_launch.py',
+        "    runtime = environment.pop(ENGINE_RUNTIME, None)\n",
+        "    runtime = environment.pop(ENGINE_RUNTIME, None)\n"
+        "    environment['FIXTURE_MAIL_TOKEN'] = _organ('secretref').resolve_for_runtime('keychain:fixture-mail', "
+        "_organ('control_credential_keystore').SecretService()).reveal()\n",
+        ['ac1/canary-keystore', 'ac1/canary-engine-run', 'ac1/canary-conversation', 'ac1/canary-workflow-step'])
     add(254, 'scan254-value-in-finding', scan254, 'secret_scan.py',
         "'masked': mask(kind, value)})", "'masked': mask(kind, value), 'value': value})", ['ac2/masked'])
     add(254, 'runner254-confined-default', scan254, 'control_launch.py',

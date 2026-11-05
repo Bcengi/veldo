@@ -16,38 +16,62 @@ listed with its owner.
    `{"suite": "128_veldo_0254_confined_runner", "reason": "nested namespace: starts the confined runner of
    VELDO-0208, whose helper cannot be judged inside the gate's confinement"}`. Suite 127 and all three mutation
    cases pass in the confined leg (teeth-mutations-254.txt).
+   Suite 129_veldo_0254_canary_launch needs the systemd user manager, as 85_veldo_0158 does, so it needs the same
+   leg: `{"suite": "129_veldo_0254_canary_launch", "reason": "real launches in transient systemd scopes under the
+   owner's user manager, as 85_veldo_0158"}`. Until then the teeth case delivery254-keystore-into-launch-canary
+   stops at the driver's confined baseline (PermissionError on the runtime directory); its red was shown by hand.
 
 ## Depends on tickets not built here
 
-2. AC1 canary row as the spec states it (canaries in the keystore for each declared fixture service, one launch
-   of each kind on each engine, scan of everything the run can read). Declared services are VELDO-0253's and the
-   gate is VELDO-0251's. Built: the scan over a fixture run's workspace, scratch, environment and command line
-   (row ac1/canary-run), which finds a canary resolved into the environment or the command.
+2. AC1 canary row: built in fix round 1 as suite 129_veldo_0254_canary_launch (ruling (c) item 2). With canaries
+   `fixture-mail` and `fixture-tracker` in the existing keystore (control_credential_keystore through a fake
+   `secret-tool`) and no catalog server selected, real launches through the Runner, the receiver process and the
+   trusted wrapper: an engine run and a conversation turn on each of claude_code and codex, a workflow step (the PM
+   cycle's coordination dispatch, the same Runner.submit path) and a project process (the repository
+   provisioner). Each dumps its environment, command line and every file it can read under its workspace and
+   scratch, and none holds a canary, by substring and by the one scan entry holding them. With the AC1 falsifier
+   applied by hand, ac1/canary-keystore, ac1/canary-engine-run, ac1/canary-conversation and
+   ac1/canary-workflow-step go red (falsifier-ac1-canary.txt). Not covered: the LangGraph graph runner, which
+   starts with a fixed environment and runs no engine, and the engine's temporary directory (the shared /tmp,
+   since the wrapper strips TMPDIR). The declared fixture services of VELDO-0253 are not on this branch.
 3. AC1 static row: it names exactly one site today, `control_launch.py:Receiver._spawn`, the VELDO-0158 keystore
    resolution for selected catalog servers. Removing it is VELDO-0257 (Out of scope here). Suite 127 accepts that
    one site only while it exists (PENDING_0257) and fails on any other. Until VELDO-0257 lands, AC1's claim does
-   not hold for runs that select a credentialed catalog server.
+   not hold for runs that select a credentialed catalog server. The launch-time scan of fix round 1 (ruling (a))
+   likewise passes the values that path delivered itself (`Receiver.delivered`), as it passes the engine's own
+   subscription token; every other credential in a run's final environment or command line refuses the launch.
 4. AC2 exact match against the credentials held for the gate: `secret_scan.scan(held=...)` digests the values in
    process and never writes them, and the rows pass with fixture values. No production caller passes held
    values yet, because the gate's keystore (VELDO-0251, VELDO-0253) does not exist; the run-end, landing,
    setup and command triggers detect by format only until then.
-5. AC2 owner notice through Veldo's own channel: the scan builds one masked notice per scan and calls the
-   `notify` sink it is given (row ac2/run-end). The channel's outbound reports are control_telegram_report and
-   control_service_channel, outside this footprint, so no production trigger passes a sink yet; the findings and
-   the notice's absence are in the scan log.
+5. AC2 owner notice through Veldo's own channel: closed in fix round 1. The lead widened the footprint to the one
+   call site that sends it (review-2026-11-05.md, ruling (c)): `.veldo/control_service_channel.py` and its engine
+   copy `engine/.veldo/control_service_channel.py`, where `Channel.tick` now also runs `Channel.tell_secrets`,
+   which reads the installation's scan logs (`secret_scan.store_logs`) and tells the owner's enrolled chat once per
+   scan that found a credential or failed (`secret_scan.notices`, masked findings only). The one new send makes
+   `scripts/suites/86_veldo_0168_text.py`'s send inventory name it (one line, `Channel.tell_secrets`, and its
+   `V.TEXT.message` route); that suite is outside the footprint and the line is the only change to it, listed here
+   for the lead.
 
 ## Gaps of this build (no other ticket owns them)
 
-6. The installed service layout (control_service.layout, outside this footprint) copies the closure's modules
-   and `runtime/` assets only, so `.veldo/secret_scan_patterns.json` does not reach an installed receiver; its
-   run-end scan then fails, which is caught and noted on stderr (the run is unaffected). The fix is a layout
-   change or the formats file under runtime/, both outside this footprint.
-7. AC3 rows run the launcher's decision, refusal and argv (runner_decision, runner_refusal, runner_argv) and
-   start the argv for real; they do not drive a whole Receiver launch. The static row ac3/one-decision shows
-   Receiver.launch is the one caller and Receiver._spawn applies it. A risky engine run (pinned binary through
-   the clone entrance) is wrapped and the wrapper still re-hashes the pinned engine inside the runner's argv,
-   but the confined runner's grants for the clone root and the account profile are not exercised by any row.
+6. Closed in fix round 1 (finding 1): the formats are `secret_scan.FORMATS` inside the module, the data file is gone,
+   and suite 127's ac2/installed runs the owner's command, the run-end scan and the landing scan from the
+   installed service layout (`control_service.closure` and its runtime assets). A run-end, landing or setup scan
+   that fails is logged as `secret_scan_failed` to the owner's scan log and told to the owner (ac2/failure-visible).
+7. Closed in fix round 1 (finding 2): a risky engine run's confined runner gets the dispatch's clone work tree, as
+   `_engine_cwd` computes it, and the engine's client (`--client claude` or `--client codex`); suite 127's
+   ac3/risky-spawn drives `Receiver._spawn` for a risky launch on each engine and for a conversation turn. The
+   runner's self-test is taken once per receiver (finding 6, ac3/selftest-cached).
 8. Project processes (the repository provisioner started by control_service_projects) are not runs the
    receiver accepts; they are not routed through the runner decision. The static row covers
    control_service_projects as a launch module.
-9. The full gate was not run (instruction). Suites run are listed in the proof manifest.
+9. The full gate was not run (instruction). Suites run are listed in the proof manifest and
+   fix-round-1-suites.txt.
+10. Fix round 1, finding 4: the run-end scan reads only the files the run added or changed in its clone's work tree
+   and scratch and its conversation directory (a stat snapshot taken at the spawn), once its end is recorded and
+   before the end is reported. The run's own directory is no longer read: it is removed before the end is
+   recorded, so nothing in it outlives the run.
+11. Fix round 1, a consequence of item 6: a setup scan that finds nothing no longer writes to the state root, so a
+   re-run of setup still changes nothing (85_veldo_0171 rerun/changes-nothing). A setup scan with findings, or one
+   that fails, is logged in full.

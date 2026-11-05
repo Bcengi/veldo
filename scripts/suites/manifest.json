@@ -1753,6 +1753,18 @@
    ],
    "regions": "One row (VELDO-0254 AC3): ac3/risky-starts-confined, a launch its dispatch marks risky takes the confined runner, this host provides it, the launch is not refused, the argv the launcher gives starts in the confined runner (its AppArmor label) out of reach of a host database socket, and the same command unmarked reaches it.",
    "requires_note": "Only ROOT, expect and fast_temp. Loads the launcher from a scratch copy of .veldo with its production copy laid over it; a loopback Unix socket fixture database; starts the confined runner (scripts/agent_sandbox.py with scripts/agent_sandbox.json and the installed namespace helper /usr/local/lib/veldo/veldo-userns), which needs the gate's unconfined leg. Writes only temporary files."
+  },
+  {
+   "name": "129_veldo_0254_canary_launch",
+   "file": "129_veldo_0254_canary_launch.py",
+   "requires": [
+    "129_veldo_0254_canary_launch"
+   ],
+   "regions": "Six rows (VELDO-0254 AC1, the real-launch canary row): ac1/canary-keystore, a random canary for each fixture service (fixture-mail, fixture-tracker) is held by the keystore's Secret Service seam, matches no format of the scan's list, and no launch asks the keystore for one; ac1/canary-engine-run, a project dispatch on claude_code and on codex through the VELDO-0039 Runner, the launch receiver process and the trusted wrapper with no catalog server selected starts and completes on its account's login, and its fake engine's dump of its own environment, command line and every file it can read under its clone work tree, HOME, runtime and run directories and profile holds no canary, as a substring or through the one scan entry holding the canaries; ac1/canary-conversation, the same for a conversation turn on each engine offered by the production ConversationLine to a conversation receiver process; ac1/canary-workflow-step, a workflow step's engine reasoning is a coordination dispatch on the same Runner.submit path; ac1/canary-project-process, the repository provisioner NewProjectPass starts holds no canary in its environment, command line or configuration, read from /proc as it starts; format/fake-lines, the fakes' lines checked against the binaries' own tables.",
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, the owner enrolled through control_membership's signed command, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones, the VELDO-0039 Runner and launch receiver processes, the VELDO-0174 conversation authority and ConversationLine with a conversation receiver process, the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), control_service_projects starting the repository provisioner on a fixture configuration it refuses, a generated fake secret-tool first on every PATH the suite and the receivers use (the real keyring is never reached), a fake claude pinned through control_engine_claude.pin and a fake Codex vendor package qualified by control_engine_codex.qualification, printing only the binaries' table shapes; no real engine runs, no login and no real credential. Writes only temporary fixtures in the owner's runtime directory.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   }
  ],
  "resource_capacities": {
