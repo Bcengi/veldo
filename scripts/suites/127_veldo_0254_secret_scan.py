@@ -302,7 +302,8 @@ def _v254_suite():
         # AC2: one scan entry. The three triggers call it; no other module reports a found credential.
         launch_functions = functions(mods / 'control_launch.py')
         check('ac2/one-entry', 'the receiver\'s run end calls the run-end scan once its end is recorded',
-              'run_end_scan' in calls(launch_functions.get('Receiver._report_end') or ast.parse(''))
+              'report_end' in calls(launch_functions['Receiver._finish'])
+              and 'run_end_scan' in calls(launch_functions.get('report_end') or ast.parse(''))
               and 'scan_run_end' in calls(launch_functions['run_end_scan'])
               and 'scan' in calls(launch_functions['scan_run_end'])
               and 'scan' in calls(launch_functions['scan_candidate']))
@@ -641,9 +642,9 @@ print(json.dumps({'run_end': len(ended['findings']), 'landing': len(landed['find
             finish = functions(mods / 'control_launch.py')['Receiver._finish']
             ends = [s for s in ast.walk(finish) if isinstance(s, ast.Call) and isinstance(s.func, ast.Attribute)
                     and s.func.attr in ('exit', 'unknown')]
-            reported = [s for s in ast.walk(finish) if isinstance(s, ast.Call) and isinstance(s.func, ast.Attribute)
-                        and s.func.attr == '_report_end']
-            report_end = functions(mods / 'control_launch.py').get('Receiver._report_end')
+            reported = [s for s in ast.walk(finish) if isinstance(s, ast.Call) and isinstance(s.func, ast.Name)
+                        and s.func.id == 'report_end']
+            report_end = functions(mods / 'control_launch.py').get('report_end')
             order = [(s.lineno, getattr(s.func, 'attr', getattr(s.func, 'id', None)))
                      for s in ast.walk(report_end or ast.parse('')) if isinstance(s, ast.Call)
                      and getattr(s.func, 'attr', getattr(s.func, 'id', None)) in ('run_end_scan', 'emit')]

@@ -330,12 +330,19 @@ def _project(contract):
 def run_end_scan(receiver, dispatch_id, contract):
     """VELDO-0254 AC2: the run-end scan of the files the run changed in its workspace, once its end is recorded. It
     reports only; a scan that fails is logged to the owner's scan log by name and changes nothing about the run."""
+    config = getattr(receiver, 'config', None) or {}
     try:
-        before = getattr(receiver, 'workspace_before', None)
-        scan_run_end(receiver.config, dispatch_id, _project(contract), run_roots(receiver, dispatch_id),
-                     before=before)
+        scan_run_end(config, dispatch_id, _project(contract), run_roots(receiver, dispatch_id),
+                     before=getattr(receiver, 'workspace_before', None))
     except Exception as error:
-        SS.failed('run_end', _project(contract), error, _failure_log(receiver.config), dispatch=dispatch_id)
+        SS.failed('run_end', _project(contract), error, _failure_log(config), dispatch=dispatch_id)
+
+
+def report_end(receiver, contract, event):
+    """VELDO-0254 AC2: a run whose end is recorded has the files it changed scanned now, so the scan neither delays
+    the record nor re-reads what was there before; then its end is reported."""
+    run_end_scan(receiver, contract['dispatch_id'], contract)
+    receiver.emit(event)
 
 
 def _failure_log(config):
@@ -1601,26 +1608,26 @@ class Receiver:
             # outcome is unknown, and the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running', execution_record=self.committed)
-            self._report_end(contract, {'event': 'unknown', 'record': self._ended()})
+            report_end(self, contract, {'event': 'unknown', 'record': self._ended()})
             return
         supervision = self.supervision
         if remote and supervision['cause'] in ('paid_api', 'configuration_stop'):
             # Nor does stopping it for its login (VELDO-0155, VELDO-0156): the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running', execution_record=self.committed)
-            self._report_end(contract, {'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
+            report_end(self, contract, {'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         if remote and supervision['cause'] in ('requested', 'usage_cap'):
             # Nor does stopping it on request or at its usage cap: the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running', execution_record=self.committed)
-            self._report_end(contract, {'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
+            report_end(self, contract, {'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         if supervision['empty'] is False:
             # Something of the worker's group is still running: never recorded as ended.
             self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),
                                     expected_state='running', execution_record=self.committed)
-            self._report_end(contract, {'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
+            report_end(self, contract, {'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         report = self.metering.report if self.metering is not None else None
         artifact = {k: report[k] for k in ('verdict', 'complete', 'digest')} if report is not None else None
@@ -1629,14 +1636,8 @@ class Receiver:
                              execution_record=self.committed)
         # Kernel evidence commits the exit first; settlement still reads the retained scope.
         self._conclude_exit()
-        self._report_end(contract, {'event': 'exited', 'termination': termination, 'supervision': supervision,
+        report_end(self, contract, {'event': 'exited', 'termination': termination, 'supervision': supervision,
                                     'record': self._ended()})
-
-    def _report_end(self, contract, event):
-        """VELDO-0254 AC2: the run's end is recorded; the files the run changed are scanned now, so the scan
-        neither delays the record nor re-reads what was there before, and then the end is reported."""
-        run_end_scan(self, contract['dispatch_id'], contract)
-        self.emit(event)
 
     def _conclude_exit(self):
         group = self._exit_group

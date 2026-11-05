@@ -1145,19 +1145,27 @@ BASE_STEPS = ('directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollmen
 
 def scan_projects(plan, held=(), notify=None):
     """VELDO-0254 AC2: the setup trigger. Every project tree setup knows (the factory workspace) is scanned through
-    the one scan entry; findings are logged masked to <state root>/secret-scan.jsonl and reported, never refused."""
+    the one scan entry; findings are logged masked to <state root>/secret-scan.jsonl, from which the running
+    service's channel tells the owner, and never refused. A scan that finds nothing writes nothing there, so a
+    re-run of setup still changes nothing (VELDO-0171)."""
     SS = organ('secret_scan')
-    workspace = plan['workspace']
-    return SS.scan('setup', os.path.basename(os.path.normpath(workspace)), SS.tree_files(workspace), held=held,
-                   log=os.path.join(plan['root'], 'secret-scan.jsonl'), notify=notify)
+    workspace, lines = plan['workspace'], []
+    report = SS.scan('setup', os.path.basename(os.path.normpath(workspace)), SS.tree_files(workspace), held=held,
+                     log=lines.append, notify=notify)
+    if report['findings']:
+        for line in lines:
+            SS._log(os.path.join(plan['root'], SS.LOG_NAME), line)
+    return report
 
 
 def scan_projects_reporting(plan):
-    """The setup scan as setup runs it: it reports only, and a scan that fails changes nothing about setup."""
+    """The setup scan as setup runs it: it reports only; a scan that fails is logged to the owner's scan log by
+    name and changes nothing about setup."""
     try:
         scan_projects(plan)
     except Exception as error:
-        sys.stderr.write('secret scan at setup failed: %s\n' % type(error).__name__)
+        organ('secret_scan').failed('setup', os.path.basename(os.path.normpath(plan['workspace'])), error,
+                                    os.path.join(plan['root'], 'secret-scan.jsonl'))
 
 
 def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust, install_root, unit_dir, profile,
