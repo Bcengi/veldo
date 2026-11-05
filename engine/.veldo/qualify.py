@@ -292,7 +292,7 @@ def fixture_text(record):
 
 def normalized(record):
     """A loopback capture with what changes from run to run (temporary directories, thread, session and
-    installation ids) replaced by placeholders, so the same binary writes the same bytes."""
+    installation ids, the day it ran) replaced by placeholders, so the same binary writes the same bytes."""
     import tempfile
     raw = json.dumps(record)
     if tempfile.gettempdir() != '/tmp':
@@ -300,6 +300,8 @@ def normalized(record):
     raw = re.sub(r'/tmp/((?:v127|veldo)-[a-z-]*?-)[A-Za-z0-9_]{8}', r'/tmp/\1<temp>', raw)
     raw = re.sub(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', '<id>', raw)
     raw = re.sub(r'(_at_unix_ms\\?\\?\\?"\s*:\s*)[0-9]+', r'\g<1>0', raw)
+    # The engine's environment context names the day it ran; the fixture keeps a placeholder so a rerun matches.
+    raw = re.sub(r'<current_date>[0-9]{4}-[0-9]{2}-[0-9]{2}</current_date>', '<current_date><date></current_date>', raw)
     return json.loads(raw)
 
 
