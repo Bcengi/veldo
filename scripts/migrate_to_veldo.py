@@ -36,7 +36,6 @@ _git_spec.loader.exec_module(_git_process)
 import argparse
 import importlib.util
 import json
-import os
 import re
 import shutil
 import subprocess
@@ -183,18 +182,29 @@ def build(dest, names, path_placeholder, deny):
     return copied, redacted, withheld
 
 
+def commit_identity():
+    """(name, email) the produced tree is committed as: the owner's git identity from the installation,
+    read through .veldo/installation.py. Absent, it is refused as installation_missing:git_identities.owner;
+    the product carries no identity of its own to fall back to (VELDO-0259 AC1)."""
+    spec = importlib.util.spec_from_file_location("veldo_installation", ROOT / ".veldo" / "installation.py")
+    installation = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(installation)
+    identity = installation.load().git_identity("owner")
+    return identity["name"], identity["email"]
+
+
 def run_gate(dest):
     """The gate, inside the produced tree. It needs a git repository to reason about, so the
     tree gets one: a single commit, which is exactly the flattened history the migration is
-    for. If this is red, the redaction broke something the scan cannot see."""
+    for, declared as the tree's own trunk. If this is red, the redaction broke something the
+    scan cannot see."""
     dest = Path(dest)
-    env = dict(os.environ, GIT_AUTHOR_NAME="Dmitry Grinberg",
-               GIT_AUTHOR_EMAIL="dimaimages@gmail.com",
-               GIT_COMMITTER_NAME="Dmitry Grinberg",
-               GIT_COMMITTER_EMAIL="dimaimages@gmail.com")
+    identity = commit_identity()
     for cmd in (["init", "-q"], ["add", "-A"],
-                ["commit", "-q", "-m", "Veldo"]):
-        _git_process.run(["git", *cmd], cwd=str(dest), identity=("Dmitry Grinberg", "dimaimages@gmail.com"), check=True,
+                ["commit", "-q", "-m", "Veldo"],
+                ["update-ref", "refs/remotes/origin/main", "HEAD"],
+                ["symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"]):
+        _git_process.run(["git", *cmd], cwd=str(dest), identity=identity, check=True,
                        capture_output=True, text=True)
     # Inside a tree the agent launcher made, the gate's launcher is nested and needs its marker.
     sandbox_spec = importlib.util.spec_from_file_location("veldo_agent_sandbox", ROOT / "scripts" / "agent_sandbox.py")

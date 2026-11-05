@@ -845,7 +845,7 @@ def selfcheck():
     receipt = {"executed": True, "action": "rollback_deploy", "system": "fake-deploy-controller",
                "parameters": {"service": "checkout", "to_release": "prior-known-good"},
                "proposal_digest": proposal_digest(remedy)}
-    validation = {"validated_by": "dmitry", "validated_at": "2026-07-24T02:40:00Z",
+    validation = {"validated_by": "owner", "validated_at": "2026-07-24T02:40:00Z",
                   "bound_remedy": remedy["id"], "bound_digest": diagnosis_digest(incident, remedy)}
     store = FakeReconciliationStore()
     kw = {"remedy": remedy, "prior_incidents": [prior], "validation": validation, "execution_receipt": receipt}
