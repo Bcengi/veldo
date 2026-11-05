@@ -323,3 +323,5 @@ Criteria unchanged; status stays ready.
 kind no longer says a run reaches a memory server only through the gate; a memory server that carries a
 credential is served behind the outside gate, and runs keep today's access to local services. Status
 unchanged.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
