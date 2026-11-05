@@ -391,7 +391,7 @@ def _v260_suite():
         loop.wakes, loop.ended, loop.timer, loop.trees = [], [], None, {}
         line = CSV.Line.__new__(CSV.Line)
         line.loop, line.station, line.repository, line.roles = loop, station, REPO, {}
-        line.service = types.SimpleNamespace(conn=writer, principal='authority')
+        line.service = types.SimpleNamespace(conn=writer, principal='authority', domain=DOMAIN)
         line.claim_of = lambda unit: ('builder-a', 1)
         gated, veldo_land = [], LS.LD.veldo_land
 
