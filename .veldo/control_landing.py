@@ -70,6 +70,21 @@ the publication as stale_subject:landing/destination, as does a destination chan
 dispatch began; when that and an older tree are all a grant lacks, the refusal names the exact subject a
 fresh grant binds, its destination included for land_locally.
 
+A CHECKED-OUT TRUNK (VELDO-0260). Before the swap, a local landing reads the repository's own working-tree list
+(`git worktree list --porcelain -z`) and takes every working tree, the main one and every linked one, whose HEAD
+is the symbolic ref refs/heads/<trunk>; a detached HEAD, another branch and a bare repository are not taken. The
+set, each tree's path and whether it was clean, is recorded in the accepted publication effect. Clean means no
+staged or unstaged change to a tracked file and no merge, rebase or cherry-pick in progress; a tree that is not
+clean refuses the publication before anything moves as trunk_checkout_dirty:<working tree>, its local changes
+named by path and count, never by content. Each clean tree is then moved from the old tip to the candidate by a
+two-tree merge (`git read-tree -m -u <old> <new>`), which touches only the files the two commits differ in and
+leaves untracked and ignored files as they were, and the ref is swapped. A tree that cannot be moved (its index
+locked, a file that cannot be written) refuses as trunk_checkout_unmovable:<working tree>, and a swap that loses
+(trunk-moved) puts every tree it moved back on the old tip. Both refusals end the land dispatch as trunk_moved,
+so the land station re-lands it (VELDO-0148), and each carries the brief the owner reads: the working tree, and
+that the landing waits until it is clean. A repository where no tree has the trunk checked out lands exactly as
+above, with no working tree read or written.
+
 WHAT IT IS NOT. Release 1 function only: a lost or ambiguous publication stays stopped under its
 original identity with no recovery (Release 2), the receipt is replicated only into the local signed
 journal (off-host replication is Release 2), and a remote tip that moves between the publication and
@@ -125,7 +140,8 @@ GIT_SECONDS = 120
 TAXONOMY = ('invalid_input', 'missing_authority', 'stale_subject', 'unavailable_service', 'missing_evidence',
             'unknown_outcome')
 ALIASES = {'binding_mismatch': 'stale_subject', 'stale_authority': 'stale_subject', 'not_handed_off': 'missing_authority',
-           'unresolved_dependency': 'missing_evidence'}
+           'unresolved_dependency': 'missing_evidence', 'trunk_checkout_dirty': 'stale_subject',
+           'trunk_checkout_unmovable': 'unavailable_service'}
 # The executor's conclusive refusals, by the class each is (a refusal made before anything was pushed).
 EXECUTOR_REFUSALS = {'stale-subject': 'stale_subject', 'missing-evidence': 'missing_evidence',
                      'missing-authority': 'missing_authority', 'foreign-authority': 'missing_authority',
@@ -137,6 +153,16 @@ EXECUTOR_REFUSALS = {'stale-subject': 'stale_subject', 'missing-evidence': 'miss
 # longer at the watermark) or between the listing and the push (the lease lost to a commit that does not
 # contain the candidate). A publication refused so is followed by a re-land (control_landing_station).
 TRUNK_MOVED = ('stale-subject', 'trunk-moved')
+# VELDO-0260: a local publication refused for a working tree that has the trunk checked out: one with local
+# changes, or one that cannot be moved. Each is re-landed under VELDO-0148 as a trunk that moved is.
+CHECKOUT_DIRTY, CHECKOUT_UNMOVABLE = 'trunk_checkout_dirty', 'trunk_checkout_unmovable'
+CHECKOUT_REFUSALS = (CHECKOUT_DIRTY, CHECKOUT_UNMOVABLE)
+RELAND = TRUNK_MOVED + CHECKOUT_REFUSALS
+# The operations in progress that make a working tree not clean, by the marker each leaves in its Git directory.
+IN_PROGRESS = (('merge', 'MERGE_HEAD'), ('rebase', 'rebase-merge'), ('rebase', 'rebase-apply'),
+               ('cherry-pick', 'CHERRY_PICK_HEAD'))
+# The changed paths a record names at most (their count is always whole).
+CHANGED_PATHS = 20
 # VELDO-0235: the two landing destinations a project names, the refusal of an approval or a land bound to another
 # one, and the command that records a local publication.
 LAND_AND_PUSH, LAND_LOCALLY = 'land_and_push', 'land_locally'
@@ -257,6 +283,39 @@ def _same_place(a, b):
         return True
     local = [isinstance(x, str) and '://' not in x and not (':' in x.split('/', 1)[0]) for x in (a, b)]
     return all(local) and os.path.realpath(a) == os.path.realpath(b)
+
+
+def checkout_outcome(data):
+    """VELDO-0260: the working-tree outcome of one local publication record, or None for any other: none checked
+    out, moved with the trunk, refused for local changes, refused as unmovable, restored after a lost swap, or left
+    (refused for another reason before anything moved)."""
+    if not isinstance(data, dict) or data.get('destination_kind') != LAND_LOCALLY or not isinstance(data.get('checkouts'), list):
+        return None
+    trees = data['checkouts']
+    if data.get('refusal') == CHECKOUT_DIRTY:
+        return 'refused_local_changes'
+    if data.get('refusal') == CHECKOUT_UNMOVABLE:
+        return 'refused_unmovable'
+    if any(c.get('outcome') == 'restored' for c in trees):
+        return 'restored_after_lost_swap'
+    if not trees:
+        return 'none_checked_out'
+    if data.get('status') == 'completed' and all(c.get('outcome') == 'moved' for c in trees):
+        return 'moved_with_trunk'
+    return 'left' if data.get('status') == 'refused' else None
+
+
+def checkout_brief(word, tree, trunk, changes=None, reason=None):
+    """VELDO-0260: the landing brief the owner reads for a refusal of a working tree that has the trunk checked out."""
+    if word == CHECKOUT_DIRTY:
+        changes = changes or {}
+        why = 'has %s checked out with local changes (%d %s: %s)' % (
+            trunk, changes.get('count') or 0, 'file' if changes.get('count') == 1 else 'files',
+            ', '.join(changes.get('paths') or []) or 'an operation in progress')
+    else:
+        why = 'has %s checked out and cannot be moved with it (%s)' % (trunk, reason or 'unknown')
+    return ('The working tree %s %s. Nothing moved: the landing waits until it is clean and is re-landed then.'
+            % (tree, why))
 
 
 def _local_transition(store, params, before):
@@ -492,6 +551,69 @@ class Landing:
         value = found.stdout.strip()
         return value if found.returncode == 0 and _hex(value) else None
 
+    def _checkouts(self):
+        """VELDO-0260: every working tree of the project's repository whose HEAD is the symbolic ref of the trunk,
+        from the repository's own working-tree list, each with whether it is clean against its HEAD: no staged or
+        unstaged change to a tracked file and no merge, rebase or cherry-pick in progress. Local changes are named
+        by path and count, never by content."""
+        listed = self._git(self.clone, 'worktree', 'list', '--porcelain', '-z')
+        if listed.returncode:
+            raise Refused('unavailable_service:git/worktree', (listed.stderr or '')[:300])
+        entries, entry = [], {}
+        for field in listed.stdout.split('\0'):
+            if not field:
+                if entry:
+                    entries.append(entry)
+                entry = {}
+                continue
+            key, _, value = field.partition(' ')
+            entry[key] = value
+        if entry:
+            entries.append(entry)
+        found = []
+        for entry in entries:
+            if 'bare' in entry or entry.get('branch') != self.ref or not _text(entry.get('worktree')):
+                continue
+            found.append(self._checkout_state(entry['worktree']))
+        return found
+
+    def _checkout_state(self, path):
+        """VELDO-0260: one working tree holding the trunk: its path, whether it is clean, and what makes it not."""
+        state = {'path': path}
+        status = self._git(path, '--no-optional-locks', 'status', '--porcelain=v1', '-z', '--untracked-files=no',
+                           '--ignore-submodules=none')
+        if status.returncode:
+            state.update(clean=None, reason='status: ' + (status.stderr or '').strip()[:200])
+            return state
+        fields, changed, i = status.stdout.split('\0'), [], 0
+        while i < len(fields):
+            item = fields[i]
+            i += 1
+            if len(item) < 4:
+                continue
+            changed.append(item[3:])
+            if item[0] in 'RC':
+                i += 1
+        in_progress = []
+        for name, marker in IN_PROGRESS:
+            where = self._git(path, 'rev-parse', '--git-path', marker)
+            target = where.stdout.strip()
+            if where.returncode == 0 and target and os.path.exists(os.path.join(path, target)) and name not in in_progress:
+                in_progress.append(name)
+        state['clean'] = not changed and not in_progress
+        if changed:
+            state['changes'] = {'count': len(changed), 'paths': sorted(changed)[:CHANGED_PATHS]}
+        if in_progress:
+            state['in_progress'] = in_progress
+        return state
+
+    def _move_checkout(self, path, old, new):
+        """VELDO-0260: move one clean working tree from `old` to `new` by a two-tree merge that touches only the files
+        the two commits differ in. None when moved, else why it could not be."""
+        self._git(path, 'update-index', '-q', '--refresh')
+        moved = self._git(path, 'read-tree', '-m', '-u', old, new)
+        return None if moved.returncode == 0 else ((moved.stderr or '').strip()[:200] or 'read-tree failed')
+
     def _copy_objects(self, candidate):
         """VELDO-0235: every object the candidate holds beyond the watermark into the project's repository, by
         pack-objects and unpack-objects (nothing is pushed or fetched)."""
@@ -519,33 +641,74 @@ class Landing:
         self._copy_objects(candidate)
         payload = {'commit': subject['commit'], 'tree': subject['tree'], 'old_tip': subject['old_tip'],
                    'revision': subject['revision']}
+        # VELDO-0260: the working trees that have the trunk checked out, recorded before the swap.
+        found = self._checkouts()
         accepted = {'kind': 'publication', 'destination_kind': LAND_LOCALLY, 'dispatch_id': dispatch, 'unit': sid,
                     'domain_uuid': self.domain, 'repository_uuid': self.repository, 'station': STATION,
-                    'status': 'accepted', 'payload': payload, 'local': {'repository': self.clone, 'ref': self.ref}}
+                    'status': 'accepted', 'payload': payload, 'local': {'repository': self.clone, 'ref': self.ref},
+                    'checkouts': [{'path': c['path'], 'clean': c['clean']} for c in found]}
         self._local_record('accept', accepted)
+        trees = [dict(c, outcome='left') for c in found]
         before = self._local_tip()
+        dirty = next((c for c in trees if c['clean'] is False), None)
+        unreadable = next((c for c in trees if c['clean'] is None), None)
         if before != payload['old_tip']:
             # The local trunk moved since the watermark, found before the swap: nothing is moved.
             ended = dict(accepted, status='refused', refusal='stale-subject', evidence=None,
                          observed={'tip': before})
+        elif dirty is not None or unreadable is not None:
+            # VELDO-0260: a tree holding the trunk with local changes (or one that cannot be read) refuses before
+            # anything moves.
+            tree = dirty or unreadable
+            word = CHECKOUT_DIRTY if dirty is not None else CHECKOUT_UNMOVABLE
+            tree['outcome'] = 'refused'
+            ended = dict(accepted, status='refused', refusal=word, evidence=None,
+                         observed={'tip': before, 'working_tree': tree['path'], 'changes': tree.get('changes'),
+                                   'in_progress': tree.get('in_progress'), 'reason': tree.get('reason')})
         else:
-            swapped = self._git(self.clone, 'update-ref', '-m', 'veldo land ' + dispatch, self.ref, payload['commit'],
-                                payload['old_tip'])
-            after = self._local_tip()
-            if swapped.returncode == 0 and after == payload['commit']:
+            # VELDO-0260: each clean tree moves with the trunk; one that cannot puts the others back and refuses.
+            moved, stuck = [], None
+            for tree in trees:
+                why = self._move_checkout(tree['path'], payload['old_tip'], payload['commit'])
+                if why is not None:
+                    stuck = tree
+                    tree.update(outcome='refused', reason=why)
+                    break
+                tree['outcome'] = 'moved'
+                moved.append(tree)
+            swapped = after = None
+            if stuck is None:
+                swapped = self._git(self.clone, 'update-ref', '-m', 'veldo land ' + dispatch, self.ref,
+                                    payload['commit'], payload['old_tip'])
+                after = self._local_tip()
+            if stuck is None and swapped.returncode == 0 and after == payload['commit']:
                 ended = dict(accepted, status='completed', completed=True,
                              destination={'local_repository': self.clone,
                                           'destinations': [{'url': self.clone, 'ref': self.ref, 'outcome': 'at-tip'}]},
                              evidence={'local_commit': payload['commit'], 'tree': payload['tree'],
                                        'old_tip': payload['old_tip'], 'new_tip': after})
             else:
-                # The swap lost to a commit that moved the trunk under the ref lock; it was not overwritten.
-                ended = dict(accepted, status='refused', refusal='trunk-moved', evidence=None, observed={'tip': after})
+                for tree in moved:
+                    why = self._move_checkout(tree['path'], payload['commit'], payload['old_tip'])
+                    if why is None:
+                        tree['outcome'] = 'restored'
+                    else:
+                        tree.update(outcome='restore_failed', reason=why)
+                if stuck is not None:
+                    ended = dict(accepted, status='refused', refusal=CHECKOUT_UNMOVABLE, evidence=None,
+                                 observed={'tip': self._local_tip(), 'working_tree': stuck['path'],
+                                           'reason': stuck['reason']})
+                else:
+                    # The swap lost to a commit that moved the trunk under the ref lock; it was not overwritten.
+                    ended = dict(accepted, status='refused', refusal='trunk-moved', evidence=None,
+                                 observed={'tip': after})
+        ended['checkouts'] = trees
         effect = self._local_record('finish', ended)
         self.observe({'schema': SCHEMA, 'operation': 'local_publication', 'domain': self.domain,
                       'repository': self.repository, 'unit': sid, 'request': dispatch, 'destination': LAND_LOCALLY,
                       'ref': self.ref, 'old_tip': payload['old_tip'], 'new_tip': self._local_tip(),
-                      'outcome': ended['status'], 'refusal': ended.get('refusal')})
+                      'outcome': ended['status'], 'refusal': ended.get('refusal'), 'effect': 'effect:' + dispatch,
+                      'checkouts': trees, 'checkout_outcome': checkout_outcome(ended)})
         return effect
 
     # The exact subject at the effect boundary (AC2).
@@ -725,6 +888,17 @@ class Landing:
         data = effect['data']
         if data.get('status') == 'refused':
             word = data.get('refusal')
+            if word in CHECKOUT_REFUSALS:
+                # VELDO-0260: a working tree that has the trunk checked out held the landing; it is re-landed once
+                # the tree is clean (VELDO-0148), and the brief names the tree.
+                seen = data.get('observed') or {}
+                tree = seen.get('working_tree')
+                brief = checkout_brief(word, tree, getattr(self, 'trunk', None), seen.get('changes'), seen.get('reason'))
+                error = Refused('%s:%s' % (word, tree), brief)
+                error.observed = {'classification': word, 'watermark': (data.get('payload') or {}).get('old_tip'),
+                                  'tip': self._local_tip(), 'working_tree': tree, 'changes': seen.get('changes'),
+                                  'in_progress': seen.get('in_progress'), 'brief': brief}
+                raise error
             if word not in TRUNK_MOVED:
                 raise Refused(executor_code(word), 'the publication was refused before anything was pushed')
             # VELDO-0148: the trunk moved, at the listing or after it; the tip found now is recorded
@@ -969,4 +1143,10 @@ class Landing:
                                         root=self.events_root).status()['pending_events']
         except PJ.Refused as error:
             unprojected = [error.code]
-        return dict(self.counts, pending=pending, trunk_moved=moved, unprojected=unprojected)
+        # VELDO-0260: the local landings by working-tree outcome.
+        checkouts = {}
+        for data in mine:
+            outcome = checkout_outcome(data)
+            if outcome is not None:
+                checkouts[outcome] = checkouts.get(outcome, 0) + 1
+        return dict(self.counts, pending=pending, trunk_moved=moved, unprojected=unprojected, checkouts=checkouts)

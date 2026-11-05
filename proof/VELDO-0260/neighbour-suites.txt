@@ -1,0 +1,10 @@
+  70_veldo_0057_landing                           31 passed   13.95s
+selftest (PARTIAL, 1 of 191 suites): 57 passed, 0 failed in 13.95s
+  86_veldo_0148_re_land                           26 passed   64.30s
+selftest (PARTIAL, 1 of 191 suites): 52 passed, 0 failed in 64.30s
+  107_veldo_0153_identity_push                   120 passed    4.74s
+selftest (PARTIAL, 1 of 191 suites): 146 passed, 0 failed in 4.74s
+  108_veldo_0153_executor_profile                  6 passed    0.08s
+selftest (PARTIAL, 1 of 191 suites): 32 passed, 0 failed in 0.08s
+  128_veldo_0235_land_locally                      9 passed   11.88s
+selftest (PARTIAL, 1 of 191 suites): 35 passed, 0 failed in 11.88s

@@ -19,7 +19,10 @@ who lands a unit through the factory land it here. LandStation.land runs ONE lan
        landed             the compare-and-swap landed and its receipt is committed;
        trunk_moved        the publication was refused because another push moved the trunk: at the listing
                           (`stale-subject`) or between the listing and the push (`trunk-moved`); the
-                          watermark, the tip found and the classification are recorded;
+                          watermark, the tip found and the classification are recorded. VELDO-0260: a local
+                          publication refused for a working tree that has the trunk checked out
+                          (`trunk_checkout_dirty`, `trunk_checkout_unmovable`) ends so too, the tree and the
+                          owner's brief recorded, and is re-landed the same way once the tree is clean;
        conflict           the re-merge onto the watermark conflicted (a real conflict, or an append-only
                           union that is not safe); nothing was published;
        awaiting_approval  every refusal of the publication's subject is a prior grant with a mismatched binding;
@@ -388,7 +391,7 @@ class LandStation:
         if stage == 'reconcile' and str(refusal).startswith(CONFLICTS):
             return CONFLICT, fields
         if (stage == 'finalize' and landing.get('outcome') == 'failed'
-                and (landing.get('observed') or {}).get('classification') in LG.TRUNK_MOVED):
+                and (landing.get('observed') or {}).get('classification') in LG.RELAND):
             return TRUNK_MOVED, fields
         if (stage == 'finalize' and landing.get('outcome') == 'refused' and isinstance(landing.get('subject'), dict)
                 and refusals and all(code.startswith(LG.APPROVAL_CODES) for code in refusals)):
