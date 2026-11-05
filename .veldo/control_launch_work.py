@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import shutil
 import stat
+import sys
 import tempfile
 import time
 
@@ -230,6 +231,12 @@ class Runtime:
                                         str(collected), commit], capture_output=True, timeout=60)
             if fetched.returncode or not P.commit_exists(self.root, commit):
                 raise Refused('unavailable_service:build_objects')
+        # VELDO-0254 AC2: the landing candidate's changed files are scanned before it can land. The scan reports
+        # what it finds, masked; it never refuses the candidate, and a scan that fails changes nothing here.
+        try:
+            L.scan_candidate(self.config, self.config.get('repository'), self.root, revision, commit)
+        except Exception as error:
+            sys.stderr.write('secret scan of the landing candidate failed: %s\n' % type(error).__name__)
 
     def build(self, spec, calls=None):
         role = self.role('build')

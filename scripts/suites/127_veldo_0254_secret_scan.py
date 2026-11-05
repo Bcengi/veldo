@@ -294,7 +294,8 @@ def _v254_suite():
         # AC2: one scan entry. The three triggers call it; no other module reports a found credential.
         launch_functions = functions(mods / 'control_launch.py')
         check('ac2/one-entry', 'the receiver\'s run end calls the run-end scan before the run directory goes',
-              'scan_run_end' in calls(launch_functions['Receiver._finish'])
+              '_scan_workspace' in calls(launch_functions['Receiver._finish'])
+              and 'scan_run_end' in calls(launch_functions['Receiver._scan_workspace'])
               and 'scan' in calls(launch_functions['scan_run_end'])
               and 'scan' in calls(launch_functions['scan_candidate']))
         reporters = sorted(p.name for p in mods.glob('*.py')

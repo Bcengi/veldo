@@ -712,6 +712,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     with step('tailscale_serve'):
         if transport['serve'] == 'free':
             _api(lambda: API.serve(cli, transport['name'], port))
+    scan_projects_reporting(plan)
     return {'schema': SCHEMA, 'outcome': 'set_up', 'state_root': root, 'store': plan['store'], 'authority_ids': ids,
             'owner': owner, 'owner_key_digest': 'sha256:' + __import__('hashlib').sha256(owner_public.encode()).hexdigest(),
             'genesis': {'command_id': genesis.get('command_id'), 'principal': genesis.get('principal'),
@@ -1142,6 +1143,23 @@ BASE_STEPS = ('directories', 'keys', 'store', 'owner_bootstrap', 'chat_enrollmen
               'requester_enrollment', 'host_trust', 'workspace_enrollment', 'ingress_configuration', 'service_install')
 
 
+def scan_projects(plan, held=(), notify=None):
+    """VELDO-0254 AC2: the setup trigger. Every project tree setup knows (the factory workspace) is scanned through
+    the one scan entry; findings are logged masked to <state root>/secret-scan.jsonl and reported, never refused."""
+    SS = organ('secret_scan')
+    workspace = plan['workspace']
+    return SS.scan('setup', os.path.basename(os.path.normpath(workspace)), SS.tree_files(workspace), held=held,
+                   log=os.path.join(plan['root'], 'secret-scan.jsonl'), notify=notify)
+
+
+def scan_projects_reporting(plan):
+    """The setup scan as setup runs it: it reports only, and a scan that fails changes nothing about setup."""
+    try:
+        scan_projects(plan)
+    except Exception as error:
+        sys.stderr.write('secret scan at setup failed: %s\n' % type(error).__name__)
+
+
 def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust, install_root, unit_dir, profile,
           writable, origin, runner, clock, tailscale, port, git_identities=None, workspace_identity=None,
           accounts_root=None, memory=None):
@@ -1493,6 +1511,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         if lock is not None and lock != -1:
             os.close(lock)
     wrote = any(o['outcome'] == 'done' for o in outcomes)
+    scan_projects_reporting(plan)
     return {'schema': SCHEMA, 'outcome': 'set_up' if wrote else 'already_set_up', 'state_root': root,
             'store': plan['store'], 'authority_ids': ids, 'owner': owner, 'host_trust': plan['host_trust'],
             'workspace': workspace, 'ingress': os.path.join(host, 'ingress.json'), 'token_file': plan['token_file'],
