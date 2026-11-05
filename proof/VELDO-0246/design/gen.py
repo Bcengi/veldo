@@ -1,6 +1,6 @@
 """VELDO-0246 pilot design screens: writes the four static HTML screens from one geometry.
 
-Run: python3 gen.py && sh render.sh   (from this folder). Static mockups only; no app code.
+Run: python3 gen.py && node render.mjs   (from this folder). Static mockups only; no app code.
 Every card, edge and label is placed from GEOMETRY below, so a transition always meets its cards.
 """
 from pathlib import Path
@@ -65,7 +65,7 @@ CSS = r"""
  --ink:#171717;--ink-muted:#636363;--paper:#fff;--sunken:#fafafa;--rule:#e5e5e5;--rule-strong:#8f8f8f;
  --wash:#f2f2f2;--amber:#f2a900;--amber-text:#8a5a00;--amber-wash:#fdf3dc;--live:#23a15c;--live-text:#1d7a47;
  --live-wash:#e1f5e9;--stop:#d63b2a;--stop-text:#b42b1c;--stop-wash:#fbe6e2;
- /* VELDO-0246: the flow's own blue (Telegram 37382: Veldo is built on blue). It marks connections, selection,
+ /* VELDO-0246: the flow's own blue (Veldo is built on blue). It marks connections, selection,
     drop targets and the path a run took; never a button and never a state. 6.0:1 on white. */
  --flow:#2e5bda;--flow-soft:#9bb2ee;--flow-wash:#edf2fd;--flow-zone:#f5f8fe;
 }
@@ -261,11 +261,11 @@ svg.edges{position:absolute;left:0;top:0;overflow:visible}
 
 STEPS = {
     'draft': ('pen', 'Draft copy', 'Writer, on Claude', '20 min limit'),
-    'image': ('image', 'Generate image', 'Designer, on Imagen', None),
+    'image': ('image', 'Generate image', 'Designer, on an image service', None),
     'review': ('eye', 'Review', 'Editor, on Codex', 'Up to 2 rounds'),
     'gate': ('lock', 'Your approval', 'You see the post, image and time', None),
     'schedule': ('cal', 'Schedule', 'Waits for the time you approve', '08:00 to 20:00'),
-    'publish': ('send', 'Publish', 'LinkedIn, company page', 'Checks it went live'),
+    'publish': ('send', 'Publish', 'Main channel', 'Checks it went live'),
 }
 ORDER = ['draft', 'image', 'review', 'gate', 'schedule', 'publish']
 W, H, GW, GH = 340, 76, 384, 100
@@ -357,7 +357,7 @@ def rail(active='flow'):
             continue
         b = '<span class="badge">5</span>' if it[0] == 'inbox' else ''
         h.append('<span class="r%s" title="%s">%s%s</span>' % (' on' if it[0] == active else '', it[1], ic(it[0], 19), b))
-    h.append('<span class="av">DG</span></nav>')
+    h.append('<span class="av">OW</span></nav>')
     return ''.join(h)
 
 
@@ -467,7 +467,7 @@ def screen_b():
             '<span class="ibtn b" title="Duplicate">%s</span><span class="ibtn b" title="Remove step">%s</span></div>'
             '<div class="sec"><h3>Who does it</h3>'
             '<div class="fld"><label>Role</label><div class="sel2"><span class="grow">Designer</span><span class="h">your team</span>%s</div></div>'
-            '<div class="fld"><label>Engine</label><div class="sel2"><span class="grow">Imagen</span><span class="h">media server</span>%s</div></div></div>'
+            '<div class="fld"><label>Engine</label><div class="sel2"><span class="grow">Image service</span><span class="h">media server</span>%s</div></div></div>'
             '<div class="sec"><h3>What it needs</h3>'
             '<div class="need">%s The post copy<span class="from">from Draft copy</span></div>'
             '<div class="need">%s Brand guide<span class="from">project file</span></div>'
@@ -488,9 +488,9 @@ def screen_b():
 
 
 # Section: (c) a run on the same canvas
-RUNS = [('w', 'Lisbon eSIM tips', 'Waiting on you, 14 min', True), ('r', 'Packing list for Tokyo', 'Running: Generate image', False),
-        ('f', 'Weekend in Rome', 'Failed at Publish, 09:02', False), ('d', 'Data roaming myths', 'Published Tue 09:00', False),
-        ('d', 'Airport wifi or eSIM', 'Published Mon 12:30', False)]
+RUNS = [('w', 'Spring release notes', 'Waiting on you, 14 min', True), ('r', 'Tips for faster builds', 'Running: Generate image', False),
+        ('f', 'Meetup recap', 'Failed at Publish, 09:02', False), ('d', 'Docs refresh', 'Published Tue 09:00', False),
+        ('d', 'Contributor spotlight', 'Published Mon 12:30', False)]
 
 
 def run_list():
@@ -521,7 +521,7 @@ def screen_c():
     cw = 1440 - 300 - 380
     g = geometry(300)
     traveled = {'draft>image', 'image>review', 'review>gate', 'review>draft'}
-    bar = ('<div class="runbar" style="left:16px;top:12px;right:16px"><span class="lamp w"></span><span class="t">Lisbon eSIM tips</span>'
+    bar = ('<div class="runbar" style="left:16px;top:12px;right:16px"><span class="lamp w"></span><span class="t">Spring release notes</span>'
            '<span class="m">Step 4 of 6, version 3</span><span class="grow"></span><span class="btn q">%s Open terminal <span class="kbd">T</span></span></div>'
            % ic('term', 16))
     canvas = ('<main class="canvas" style="left:300px;width:%dpx">%s%s%s%s%s</main>'
@@ -538,10 +538,10 @@ def screen_c():
              '<div style="font-size:18px;font-weight:650;letter-spacing:-.015em">Approve this post?</div>'
              '<div style="font-size:13.5px;color:var(--ink-muted);margin-top:4px;line-height:1.45">Review passed it in round 2. '
              'Nothing is posted until you approve.</div></div>'
-             '<div class="rp"><div class="prev">%s<div class="pt">Landing in Lisbon this week? Skip the airport SIM queue: '
-             'install your eSIM before you fly and you are online the moment the wheels touch down.</div>'
-             '<div class="pm"><span>LinkedIn, company page</span><span>212 characters</span></div></div>'
-             '<dl class="facts" style="margin-top:12px"><dt>Posts at</dt><dd>Thu 6 Nov, 09:00 Lisbon</dd>'
+             '<div class="rp"><div class="prev">%s<div class="pt">Version 2.4 is out: faster start, a dark theme and offline mode. '
+             'Update today and tell us in the comments what you would like next.</div>'
+             '<div class="pm"><span>Main channel</span><span>131 characters</span></div></div>'
+             '<dl class="facts" style="margin-top:12px"><dt>Posts at</dt><dd>Thu 6 Nov, 09:00</dd>'
              '<dt>Spent so far</dt><dd class="num">$0.08 of $0.12</dd></dl>'
              '<span class="btn p lg" style="display:flex;justify-content:center;margin-top:14px">Approve</span>'
              '<div style="display:flex;gap:8px;margin-top:8px"><span class="btn" style="flex:1;justify-content:center">Ask for changes</span>'
@@ -599,7 +599,7 @@ def screen_d():
                    % (ic('check', 14), n, ' fail' if f else '', x) for n, x, f in done)
     todo = ''.join('<div class="tr todo"><span class="n">%s</span><span class="nm">%s</span><span class="x">Not started</span></div>'
                    % (ic(i, 13), n) for i, n in [('cal', 'Schedule, Thu 09:00'), ('send', 'Publish')])
-    body = ('<style>%s</style><header class="ptop"><span class="ibtn">%s</span><div><div class="t">Lisbon eSIM tips</div>'
+    body = ('<style>%s</style><header class="ptop"><span class="ibtn">%s</span><div><div class="t">Spring release notes</div>'
             '<div class="s">Social post, step 4 of 6</div></div><span class="grow"></span>'
             '<span class="btn q" style="height:34px;padding:0 10px">%s Terminal</span></header>'
             '<div class="pstat"><span class="badge2 w"><span class="lamp w"></span>Waiting on you</span>'
@@ -608,9 +608,9 @@ def screen_d():
             '<div class="track"><span class="line" style="top:29px;height:136px"></span><span class="line ahead" style="top:402px;height:66px"></span>'
             '%s<div class="pg"><div class="h"><span class="sic">%s</span><b>Your approval</b><span class="grow"></span>'
             '<span style="font-size:12.5px;color:#d4d4d4">Always required</span></div>'
-            '<div class="card">%s<div class="pt">Landing in Lisbon this week? Skip the airport SIM queue: install your eSIM '
-            'before you fly and you are online the moment the wheels touch down.</div></div>'
-            '<div class="meta"><span>LinkedIn, Thu 6 Nov, 09:00</span><span class="num">$0.08 spent</span></div></div>'
+            '<div class="card">%s<div class="pt">Version 2.4 is out: faster start, a dark theme and offline mode. Update today '
+            'and tell us in the comments what you would like next.</div></div>'
+            '<div class="meta"><span>Main channel, Thu 6 Nov, 09:00</span><span class="num">$0.08 spent</span></div></div>'
             '%s</div>'
             '<div class="act"><span class="btn p lg" style="width:100%%;justify-content:center">Approve</span>'
             '<span class="btn" style="flex:1;justify-content:center">Ask for changes</span><span class="btn q" style="flex:1;justify-content:center">Decline</span></div>'
@@ -621,7 +621,7 @@ def screen_d():
     return page(body, phone=True)
 
 
-# Section: (e) and (f) conditions and parallel branches (owner, Telegram 39079: "what if steps are conditional?")
+# Section: (e) and (f) conditions and parallel branches (the owner: "what if steps are conditional?")
 # The flow is drawn at 85 percent (Fit) in its own layer, so every box below is in canvas units.
 EF_CSS = """
 .layer{position:absolute;left:0;top:0;transform-origin:0 0}
@@ -789,7 +789,7 @@ def screen_e():
             '<div class="fld"><label>Test</label><div class="sel2"><span class="grow">Mentions any of</span>%s</div>'
             '<div class="hint">Or: does not mention, is, is more than, is less than</div></div>'
             '<div class="fld"><label>Words</label><div class="chips">'
-            '<span class="tk">price %s</span><span class="tk">discount %s</span><span class="tk">per GB %s</span><span class="tk">$ %s</span>'
+            '<span class="tk">price %s</span><span class="tk">discount %s</span><span class="tk">fee %s</span><span class="tk">$ %s</span>'
             '<span class="add">Add a word</span></div></div>'
             '<div class="addl">%s Add another condition</div></div>'
             '<div class="sec"><h3>Where it goes next</h3>'

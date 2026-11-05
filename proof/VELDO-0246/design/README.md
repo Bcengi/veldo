@@ -1,7 +1,7 @@
 # VELDO-0246 pilot design: the workflow canvas
 
-Six static screens for the owner's OK before any build (a to d first, e and f added for Telegram 39079) (Telegram 39072: "UI Canvas for this needs to be
-great! Extra effort to make UX super usable"). Content is the default social post definition of VELDO-0245
+Six static screens for the owner's OK before any build (a to d first, e and f added when the owner asked about
+conditional steps) (the owner: "UI Canvas for this needs to be great! Extra effort to make UX super usable"). Content is the default social post definition of VELDO-0245
 (draft copy, image, review, owner approval, schedule, publish).
 
 | File | Screen |
@@ -10,21 +10,21 @@ great! Extra effort to make UX super usable"). Content is the default social pos
 | `b-step-inspector.png` | The image step selected: the inspector, an inline field error, and the refused removal of the approval |
 | `c-run-on-canvas.png` | One run of the definition on the same canvas, waiting on the owner |
 | `d-run-phone.png` | The same run at 390 px, where the owner approves |
-| `e-conditions-and-parallel.png` | Conditions and parallel work (Telegram 39079): Draft copy and Generate image at once, a Join, the Check "Mentions prices?" selected with its rule open, Yes to Legal review, otherwise straight on |
+| `e-conditions-and-parallel.png` | Conditions and parallel work: Draft copy and Generate image at once, a Join, the Check "Mentions prices?" selected with its rule open, Yes to Legal review, otherwise straight on |
 | `f-path-skips-approval.png` | The same canvas after one wrong edit: Legal review's Cleared wired to Schedule, around the approval; Save refused, the path shown in red and listed, with two fixes |
 
 All are 1440x900 (the phone 390x844) at device scale 2. To rebuild: `python3 gen.py`, then
-`NODE_PATH=<a Veldo engine/ui>/node_modules node render.mjs` (Playwright driving system Chrome at
-`/opt/google/chrome`). Fonts are the UI's own Fontsource files (IBM Plex Sans Variable, IBM Plex Mono, OFL).
+`NODE_PATH=<a Veldo engine/ui>/node_modules node render.mjs <browser executable>` (Playwright driving a
+system Chrome or Chromium whose path is given as the argument or in CHROME_PATH). Fonts are the UI's own Fontsource files (IBM Plex Sans Variable, IBM Plex Mono, OFL).
 
 ## Design plan
 
 Subject: an owner who is not at a desk most of the day decides how each kind of work gets made, and must be
 able to tell at a glance that nothing leaves the factory without passing them.
 
-Color. The shell keeps VELDO-0229's neutral look (Telegram 38255): white panels `#FFFFFF`, ink `#171717`,
+Color. The shell keeps VELDO-0229's neutral look: white panels `#FFFFFF`, ink `#171717`,
 muted `#636363`, rules `#E5E5E5`, the main action solid inverted. The canvas adds one color of its own,
-flow blue `#2E5BDA` (Telegram 37382: Veldo is built on blue), with its wash `#EDF2FD` and zone tint `#F5F8FE`.
+flow blue `#2E5BDA` (Veldo is built on blue), with its wash `#EDF2FD` and zone tint `#F5F8FE`.
 Blue means "the flow": transitions, ports, the selection ring, drop targets and the path a run has taken. It
 is never a button and never a state; state keeps green, amber and red, always with words.
 
@@ -79,7 +79,7 @@ only along the path taken.
    where desktop says "Ask for changes"; one action now has one name on both.
 6. Removed a static hover highlight from the palette (a mockup should not show a hover nobody is doing).
 
-## Conditions and parallel work (screens e and f, Telegram 39079)
+## Conditions and parallel work (screens e and f)
 
 The owner asked: "But what if steps are conditional, not just next next?" Three kinds of branching, all drawn
 with the same cards, edges and labels as a to d:
@@ -111,4 +111,4 @@ Self-critique (e and f):
 8. f: the red Cleared label floated 100 px from its edge; moved beside it. Published got the path ring.
 9. A full Flow group pushed the palette off screen; replaced with the compact row (measured, not guessed).
 
-Open for the owner: the image prices ($0.04 an image) and engine names are illustrative, not quotes.
+Open for the owner: the image prices ($0.04 an image), the engine names and the sample post are illustrative, not quotes.
