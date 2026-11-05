@@ -265,6 +265,18 @@ def words(event, zone='UTC'):
         account, ' and '.join(e['kind'] for e in ended) or 'nothing', window, clock(event.get('until') or 0, zone, now))
 
 
+UNRECORDED_END = 'stale_subject:account_pacing_end'
+
+
+def due(record, now):
+    """Whether `record` still holds a pause or a ceiling whose end is at or before `now`."""
+    pause = record.get('pause')
+    if isinstance(pause, dict) and _number(pause.get('until')) and pause['until'] <= now:
+        return True
+    return any(isinstance(c, dict) and _number(c.get('until')) and c['until'] <= now
+               for c in (record.get('ceilings') or {}).values())
+
+
 def history(conn, account=None):
     """VELDO-0236 AC4: every pacing record in journal order, read from the journal itself (never a cache): each
     journal record whose account record's `pacing` event is that record's own command, with its sequence."""
@@ -485,6 +497,9 @@ class Accounts:
             target = entity_id(params['account'])
             params = dict(params, now=now, command_id=command_id, route=route, provenance=provenance)
             for _ in range(attempts):
+                # A pause or ceiling already past its end that no loop pass has recorded yet is recorded first, as
+                # its own end record, so the new command never overwrites or folds it away unrecorded.
+                self.lapse(now, account=params['account'])
                 row = self.conn.execute('SELECT version FROM entities WHERE id=?', (target,)).fetchone()
                 command = dict(command_id=command_id, operation=OPERATION, principal=principal,
                                nonce='account/' + command_id, parameters=params,
@@ -493,8 +508,8 @@ class Accounts:
                 self._own()
                 try:
                     self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
-                except self.store.StoreRefused as error:
-                    if error.code == 'stale_version':
+                except (self.store.StoreRefused, Refused) as error:
+                    if error.code in ('stale_version', UNRECORDED_END):
                         continue
                     raise
                 break
@@ -517,12 +532,14 @@ class Accounts:
         self.observe_pacing(observed)
         return event
 
-    def lapse(self, now, *, pass_id=None):
+    def lapse(self, now, *, pass_id=None, account=None):
         """One factory loop pass's ends: for each pause or ceiling whose end is at or before `now` still on its
         account record, one signed record of its end, committed once (a second pass finds it gone). Returns the
-        end events committed."""
+        end events committed. With `account`, only that account's (a pacing command records them first)."""
         ended = []
         for record in self.list():
+            if account is not None and record.get('id') != account:
+                continue
             due = []
             pause = record.get('pause')
             if isinstance(pause, dict) and _number(pause.get('until')) and pause['until'] <= now:
@@ -576,6 +593,9 @@ class Accounts:
                      route=params.get('route'), account=account, window=params.get('window'), at=now,
                      provenance=params.get('provenance'))
         window_id = params.get('window')
+        if action != END and due(current, now):
+            # VELDO-0236 AC4: an end not yet recorded is never overwritten or folded into a resume.
+            raise Refused(UNRECORDED_END, '%s has a pause or ceiling ended and not yet recorded' % account)
         if action in ('pause', 'ceiling'):
             window = (current.get('windows') or {}).get(window_id)
             if not isinstance(window, dict):

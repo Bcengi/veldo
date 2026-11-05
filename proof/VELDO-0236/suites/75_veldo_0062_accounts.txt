@@ -12,43 +12,43 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-{"event": "account_added", "account": "acct-c1", "directory": "/dev/shm/v62-km8__1qw/helper/accounts/profiles/acct-c1", "directory_state": "created", "metrics": {"accounts_added": 1}}
-{"event": "account_added", "account": "acct-c2", "directory": "/dev/shm/v62-km8__1qw/helper/accounts/profiles/acct-c2", "directory_state": "created", "metrics": {"accounts_added": 1}}
-{"event": "account_added", "account": "acct-c3", "directory": "/dev/shm/v62-km8__1qw/helper/accounts/profiles/acct-c3", "directory_state": "created", "metrics": {"accounts_added": 1}}
-{"event": "account_added", "account": "acct-x1", "directory": "/dev/shm/v62-km8__1qw/helper/accounts/profiles/acct-x1", "directory_state": "created", "metrics": {"accounts_added": 1}}
-{"event": "account_added", "account": "acct-x2", "directory": "/dev/shm/v62-km8__1qw/helper/accounts/profiles/acct-x2", "directory_state": "created", "metrics": {"accounts_added": 1}}
-{"event": "account_added", "account": "acct-x3", "directory": "/dev/shm/v62-km8__1qw/helper/accounts/profiles/acct-x3", "directory_state": "created", "metrics": {"accounts_added": 1}}
-{"event": "account_added", "account": "acct-x4", "directory": "/dev/shm/v62-km8__1qw/helper/accounts/profiles/acct-x4", "directory_state": "created", "metrics": {"accounts_added": 1}}
-{"event": "account_added", "account": "acct-x5", "directory": "/dev/shm/v62-km8__1qw/helper/accounts/profiles/acct-x5", "directory_state": "created", "metrics": {"accounts_added": 1}}
-{"event": "account_added", "account": "acct-paused", "directory": "/dev/shm/v62-km8__1qw/helper/accounts/profiles/acct-paused", "directory_state": "created", "metrics": {"accounts_added": 1}}
-{"event": "account_added", "account": "acct-mac", "directory": "/dev/shm/v62-km8__1qw/helper/accounts/profiles/acct-mac", "directory_state": "created", "metrics": {"accounts_added": 1}}
-  /tmp/tmpu3tusaoy: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpu3tusaoy/nocrit.md: no acceptance criteria
-  /tmp/tmpu3tusaoy/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/tmpu3tusaoy/status.md: bad status: donezo
-  /tmp/tmpu3tusaoy/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/tmpu3tusaoy/proof2.json: spec criterion AC1 missing from proof
-  /tmp/tmpu3tusaoy/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/tmpu3tusaoy/proof4.json: criterion AC1 passed without evidence
-  /tmp/tmpu3tusaoy/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/tmpu3tusaoy/verdict.json: bad verdict: looks_fine
-  /tmp/tmprcpuhuf6/cycle.md: dependency cycle through WARP-9101
-  /tmp/tmprcpuhuf6/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/tmprcpuhuf6/oref.md: feature F1: unknown outcome ref O7
-  /tmp/tmprcpuhuf6/fref.md: work W1: unknown feature ref F9
-  /tmp/tmprcpuhuf6/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/tmprcpuhuf6/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/tmprcpuhuf6/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/tmprcpuhuf6/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/tmprcpuhuf6/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/tmprcpuhuf6/dupspec.md: duplicate spec ids across work items
-  /tmp/tmprcpuhuf6/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/tmprcpuhuf6/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+{"event": "account_added", "account": "acct-c1", "directory": "/dev/shm/v62-n5ob7mvz/helper/accounts/profiles/acct-c1", "directory_state": "created", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "acct-c2", "directory": "/dev/shm/v62-n5ob7mvz/helper/accounts/profiles/acct-c2", "directory_state": "created", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "acct-c3", "directory": "/dev/shm/v62-n5ob7mvz/helper/accounts/profiles/acct-c3", "directory_state": "created", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "acct-x1", "directory": "/dev/shm/v62-n5ob7mvz/helper/accounts/profiles/acct-x1", "directory_state": "created", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "acct-x2", "directory": "/dev/shm/v62-n5ob7mvz/helper/accounts/profiles/acct-x2", "directory_state": "created", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "acct-x3", "directory": "/dev/shm/v62-n5ob7mvz/helper/accounts/profiles/acct-x3", "directory_state": "created", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "acct-x4", "directory": "/dev/shm/v62-n5ob7mvz/helper/accounts/profiles/acct-x4", "directory_state": "created", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "acct-x5", "directory": "/dev/shm/v62-n5ob7mvz/helper/accounts/profiles/acct-x5", "directory_state": "created", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "acct-paused", "directory": "/dev/shm/v62-n5ob7mvz/helper/accounts/profiles/acct-paused", "directory_state": "created", "metrics": {"accounts_added": 1}}
+{"event": "account_added", "account": "acct-mac", "directory": "/dev/shm/v62-n5ob7mvz/helper/accounts/profiles/acct-mac", "directory_state": "created", "metrics": {"accounts_added": 1}}
+  /tmp/tmppy38yrs6: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmppy38yrs6/nocrit.md: no acceptance criteria
+  /tmp/tmppy38yrs6/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmppy38yrs6/status.md: bad status: donezo
+  /tmp/tmppy38yrs6/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmppy38yrs6/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmppy38yrs6/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmppy38yrs6/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmppy38yrs6/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmppy38yrs6/verdict.json: bad verdict: looks_fine
+  /tmp/tmpw4j5qvy8/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmpw4j5qvy8/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmpw4j5qvy8/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmpw4j5qvy8/fref.md: work W1: unknown feature ref F9
+  /tmp/tmpw4j5qvy8/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmpw4j5qvy8/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmpw4j5qvy8/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmpw4j5qvy8/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmpw4j5qvy8/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmpw4j5qvy8/dupspec.md: duplicate spec ids across work items
+  /tmp/tmpw4j5qvy8/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmpw4j5qvy8/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
 VELDO-0172 fake/capture:0062_accounts: 8 fake lines compared, events ['claude:assistant', 'claude:control_response', 'claude:rate_limit_event', 'claude:result/success', 'claude:system/init', 'codex:thread.started', 'codex:turn.completed', 'codex:turn.started']
-VELDO-0062 suite seconds: 41.202
-  75_veldo_0062_accounts                          24 passed   41.22s
-selftest (PARTIAL, 1 of 203 suites): 50 passed, 0 failed in 41.23s
+VELDO-0062 suite seconds: 36.771
+  75_veldo_0062_accounts                          24 passed   36.79s
+selftest (PARTIAL, 1 of 203 suites): 50 passed, 0 failed in 36.79s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

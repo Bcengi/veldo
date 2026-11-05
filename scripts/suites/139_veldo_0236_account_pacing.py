@@ -48,7 +48,7 @@ def _v236_suite():
     }
     ROWS = ('pause/ends', 'pause/no-reset', 'ceiling/relative', 'ceiling/lapse', 'resume/early',
             'ceiling/no-utilization', 'route/telegram', 'route/ui', 'route/other', 'journal/history', 'journal/once',
-            'observability/counts')
+            'observability/counts', 'end/before-command', 'engine/second', 'writers/two')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -96,19 +96,19 @@ def _v236_suite():
         has_pacing = all(hasattr(pacer, n) for n in ('pause', 'ceiling', 'resume', 'lapse'))
         serial = [0]
 
-        def register(*names):
+        def register(*names, engine='claude_code'):
             for name in names:
                 profile = base / 'profiles' / name
                 profile.mkdir(parents=True)
-                registry.register('register/' + name, name, 'claude_code', name, {'host': str(profile)}, now=1)
+                registry.register('register/' + name, name, engine, name, {'host': str(profile)}, now=1)
 
         def observe(name, window, utilization, reset, at):
             serial[0] += 1
             observer.observe('observe/%d' % serial[0], name, window, status='allowed', reset_at=reset,
                              utilization=utilization, source_dispatch='dispatch/%s/%d' % (name, serial[0]), now=at)
 
-        def choose(now, exclude=()):
-            request = {'engine': 'claude_code', 'host': 'host'}
+        def choose(now, exclude=(), engine='claude_code'):
+            request = {'engine': engine, 'host': 'host'}
             if exclude:
                 request['exclude'] = list(exclude)
             return POOL.choose(conn, {}, request, now, lambda account: None)
@@ -127,6 +127,7 @@ def _v236_suite():
             if not has_pacing:
                 raise AttributeError('no pacing operation ' + kind)
             serial[0] += 1
+            pacer.principal = 'authority'  # the writer's own service principal records any end it finds first
             return getattr(pacer, kind)('pace/%d' % serial[0], *args, principal=principal, now=now, route=route)
 
         def lapse(now, passes):
@@ -332,6 +333,108 @@ def _v236_suite():
                                    'selection': at50.get('trace')}}).get('passed_over')
               == {'paused_until': 1, 'ceiling': 1})
 
+        # AC4 end/before-command: a pause or ceiling past its end, no loop pass yet, then a new command on the account:
+        # the earlier end is recorded first with its own end time, then the new command; no end is lost.
+        register('account-j', 'account-k', 'account-l')
+        X = T + 40_000
+        for name in ('account-j', 'account-k', 'account-l'):
+            observe(name, 'five_hour', 0.2, X + 1000, X)
+        observe('account-l', 'seven_day', 0.2, X + 9000, X)
+        first = {}
+        try:
+            first['j'] = pace('pause', 'account-j', 'five_hour', now=X + 1)
+            first['k'] = pace('ceiling', 'account-k', 'five_hour', 50, now=X + 1)
+            first['l'] = pace('ceiling', 'account-l', 'five_hour', 50, now=X + 1)
+            first['l-pause'] = pace('pause', 'account-l', 'seven_day', now=X + 2)
+            for name in ('account-j', 'account-k'):
+                observe(name, 'five_hour', 0.3, X + 6000, X + 1500)
+            pace('pause', 'account-j', 'five_hour', now=X + 1600)
+            pace('ceiling', 'account-k', 'five_hour', 60, now=X + 1600)
+            resumed_l = pace('resume', 'account-l', now=X + 1600)
+        except Exception as error:  # noqa: BLE001
+            resumed_l = {}
+            check('end/before-command', 'the commands are accepted (%s)' % getattr(error, 'code', error), False)
+        types = {n: [e.get('type') for e in history('account-' + n)] for n in 'jkl'}
+        check('end/before-command', 'a new pause after an unrecorded end: pause, end, pause [%s]' % types['j'],
+              types['j'] == ['pause', 'end', 'pause'])
+        check('end/before-command', 'a new ceiling after an unrecorded end: ceiling, end, ceiling [%s]' % types['k'],
+              types['k'] == ['ceiling', 'end', 'ceiling'])
+        check('end/before-command', 'a resume after an unrecorded end: the end first, then the resume [%s]' % types['l'],
+              types['l'] == ['ceiling', 'pause', 'end', 'resume']
+              and [(e.get('kind'), e.get('window')) for e in resumed_l.get('ended') or []] == [('pause', 'seven_day')])
+        ends = {n: [e for e in history('account-' + n) if e.get('type') == 'end'] for n in 'jkl'}
+        check('end/before-command', 'each end carries its own end time and the command that set it, by the service',
+              all(len(ends[n]) == 1 and ends[n][0].get('until') == X + 1000 and ends[n][0].get('principal') == 'authority'
+                  and (ends[n][0].get('ended') or [{}])[0].get('command_id') == first[n].get('command_id')
+                  for n in 'jkl'))
+        later = {n: AA.read(conn, 'account-' + n) or {} for n in 'jk'}
+        check('end/before-command', 'the new command is in force with the new reset',
+              (later['j'].get('pause') or {}).get('until') == X + 6000
+              and ((later['k'].get('ceilings') or {}).get('five_hour') or {}).get('value') == 60)
+
+        # engine/second: the same pacing on the second engine's accounts; the first engine's choice is untouched.
+        register('account-m', 'account-n', engine='codex')
+        Y = T + 50_000
+        observe('account-m', 'five_hour', 0.1, Y + 1000, Y)
+        observe('account-n', 'five_hour', 0.4, Y + 1000, Y)
+        try:
+            paused_m = pace('pause', 'account-m', 'five_hour', now=Y + 1)
+            capped_n = pace('ceiling', 'account-n', 'five_hour', '+10', now=Y + 2)
+        except Exception as error:  # noqa: BLE001
+            paused_m, capped_n = {}, {}
+            check('engine/second', 'the pause and ceiling are accepted (%s)' % getattr(error, 'code', error), False)
+        codex = choose(Y + 3, engine='codex')
+        check('engine/second', 'the paused codex account is passed over until its reset [%s]'
+              % codex.get('trace', {}).get('passed'), codex.get('account') == 'account-n'
+              and codex.get('trace', {}).get('passed', {}).get('account-m') == 'paused_until:%d' % (Y + 1000)
+              and paused_m.get('until') == Y + 1000)
+        observe('account-n', 'five_hour', 0.5, Y + 1000, Y + 4)
+        held_codex = choose(Y + 5, engine='codex')
+        check('engine/second', 'the capped codex account at its ceiling is passed over; nothing else to choose [%s]'
+              % POOL.refusal(held_codex), held_codex.get('account') is None and capped_n.get('value') == 50
+              and POOL.refusal(held_codex) == 'no_account_until:%d' % (Y + 1000))
+        claude = choose(Y + 5)
+        check('engine/second', 'the first engine never sees the codex accounts',
+              not {'account-m', 'account-n'} & set(claude.get('trace', {}).get('passed', {}))
+              and claude.get('account') not in ('account-m', 'account-n'))
+        check('engine/second', 'at the reset the codex account is selected again with no command',
+              choose(Y + 1000, engine='codex').get('account') in ('account-m', 'account-n')
+              and choose(Y + 1000, engine='codex', exclude=['account-n']).get('account') == 'account-m')
+
+        # writers/two: a second Accounts built on the same connection after the first; each writer's command is judged
+        # by its own instance (OPEN.md item 5's registry change), alternating writers.
+        second = AA.Accounts(S, conn, principal='authority', signer='authority', sign=js, **held)
+        register('account-o')
+        Z = T + 60_000
+        observe('account-o', 'five_hour', 0.2, Z + 1000, Z)
+        outcomes = []
+        for step, (writer, kind, args) in enumerate(((pacer, 'pause', ('account-o', 'five_hour')),
+                                   (second, 'ceiling', ('account-o', 'five_hour', 40)),
+                                   (pacer, 'resume', ('account-o',)),
+                                   (second, 'pause', ('account-o', 'five_hour')))):
+            serial[0] += 1
+            try:
+                getattr(writer, kind)('pace/%d' % serial[0], *args, principal='steward', now=Z + 1 + step, route='ui')
+                outcomes.append('accepted')
+            except Exception as error:  # noqa: BLE001
+                outcomes.append(getattr(error, 'code', type(error).__name__))
+        fresh = AA.Accounts(S, conn, principal='authority', signer='authority', sign=js, **held)
+        try:
+            pacer.ceiling('pace/two-last', 'account-o', 'five_hour', 30, principal='steward', now=Z + 200, route='ui')
+            outcomes.append('accepted')
+        except Exception as error:  # noqa: BLE001
+            outcomes.append(getattr(error, 'code', type(error).__name__))
+        check('writers/two', 'each writer\'s command is accepted, whichever was built last [%s]' % outcomes,
+              outcomes == ['accepted'] * 5 and fresh is not None)
+        check('writers/two', 'one record per command, by the owner, in order',
+              [(e.get('type'), e.get('principal')) for e in history('account-o')]
+              == [('pause', 'steward'), ('ceiling', 'steward'), ('resume', 'steward'), ('pause', 'steward'),
+                  ('ceiling', 'steward')])
+        check('writers/two', 'a non-owner through either writer is still refused by name',
+              all(refused(lambda w=w, n=n: w.pause('pace/two-other-%d' % n, 'account-o', 'five_hour', principal='owner',
+                                                   now=Z + 201, route='ui')) == AA.NOT_FACTORY_OWNER
+                  for n, w in enumerate((pacer, second))))
+
         # AC3: the routes. The loopback Bot API, the steward's (factory owner's) chat and the owner's.
         IN = load('v236_intake', mods / 'control_intake.py')
         API = load('v236_api', mods / 'control_api.py')
@@ -453,7 +556,7 @@ def _v236_suite():
               and any(t.startswith('account-tg resumed') for t in texts))
         telegram(steward_user, '/pause account-tg five_hour')
         paused = AA.read(conn, 'account-tg') or {}
-        free = choose(reset, exclude=[n for n in ('account-%s' % c for c in 'abcdefghi')] + ['account-ui'])
+        free = choose(reset, exclude=[n for n in ('account-%s' % c for c in 'abcdefghijklo')] + ['account-ui'])
         check('route/telegram', 'the pause carries its end: no indefinite status, the account selected at its reset',
               paused.get('status') == 'active' and (paused.get('pause') or {}).get('until') == reset
               and free.get('account') == 'account-tg')
