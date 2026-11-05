@@ -148,3 +148,5 @@ becomes a role id, the message ids outside History go, and README line 3 follows
 landing moves refs/heads/<trunk> without updating a working tree that has the trunk checked out; that
 needs its own follow-up ticket, filed as VELDO-0260 (a local landing keeps every working tree that has
 the trunk checked out in step with the trunk). Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md on the veldo-parity-a branch.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).

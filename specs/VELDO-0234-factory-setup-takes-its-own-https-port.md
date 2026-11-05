@@ -143,3 +143,5 @@ holds_https_port refusal and the state-root option give way to it. VELDO-0250 re
 (B2, B8): the other app's name and port and this host's port in Intent, the fixture's
 occupied-root mapping and suite 127 lines 11 and 79 become a generic occupied port, the cutover
 research reference and the message ids outside History go, and README line 3 follows. Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md on the veldo-parity-a branch.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
