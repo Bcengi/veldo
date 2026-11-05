@@ -92,7 +92,7 @@ acceptance_criteria:
       whose runner names a branch the rule does not match, must fail.
   - id: AC3
     text: >
-      Claim: a fan-out runs its branches at the same time on the real LangGraph 1.2.12 runtime and a Join
+      Claim: a fan-out runs its branches at the same time on the real pinned LangGraph runtime and a Join
       completes only when all its inputs have, within a bound on width. Set: a port may lead to several
       transitions, which makes that step a fan-out of at most FAN_OUT_CEILING (8) branches; every branch
       reaches the one Join node that names exactly those branches as its inputs, no path leaves a branch except
@@ -125,9 +125,11 @@ acceptance_criteria:
 required_evidence: [unit, integration]
 rollback: >
   Revert the change; check and join are unregistered and a port may again lead to one transition only, so a
-  stored definition that uses them no longer validates and a unit bound to it stops at its next station with
-  missing_workflow and is put to the owner. Stored revisions and recorded decisions stay in the store. No
-  automatic rollback, retry or recovery is authorized.
+  definition that uses them no longer validates and a unit bound to it stops at its next station with
+  missing_workflow and is put to the owner. Definitions stay in the installation repository, and recorded
+  revisions and decisions stay in the store; a later installation commit that still holds a definition
+  using check or join is refused as a whole (VELDO-0253 AC1) until that file is changed. No automatic
+  rollback, retry or recovery is authorized.
 ---
 
 ## Intent
@@ -141,7 +143,7 @@ cannot be routed around.
 
 ## Context
 
-Owner, Telegram 39079 (2026-11-04), on the canvas design (VELDO-0246): "what if steps are conditional, not
+The owner (2026-11-04), on the canvas design (VELDO-0246): "what if steps are conditional, not
 just next next?" Answered and agreed the same day: branching on a named outcome already exists; a Check step
 routes the work by a rule set in plain words over declared fields (field, comparison, value; named branches
 plus a required otherwise path; never code, shell or expressions); parallel branches from one step run at
@@ -151,7 +153,7 @@ VELDO-0132 stores definitions as plain data with registered step kinds (STEP_KIN
 .veldo/control_workflow.py), one transition per port, bounded loops through `max`, and runs one pinned
 revision per cycle on LangGraph through control_workflow_langgraph.py spliced into the production runner
 control_graph_langgraph.py, one step per exchange. VELDO-0241 makes a unit's process such a revision and
-adds the save-time approval rule (its AC2). Veldo runs LangGraph 1.2.12, which has conditional edges,
+adds the save-time approval rule (its AC2). Veldo's pinned LangGraph runtime has conditional edges,
 parallel fan-out with a join that waits for all its inputs, and Send; this spec uses them rather than
 building a scheduler of its own.
 
@@ -168,7 +170,7 @@ to VELDO-0246, which reads the named problems and the recorded decisions this sp
 - Normal use: the owner adds a Check after review, "if the change touches more than 20 files, send it to a
   second reviewer, otherwise go on", picks the field from a list, the comparison from a list and types the
   number; or splits a document into a copy branch and an image branch that run at the same time and meet at
-  a Join before review and his approval. The run view shows which branch a check took and the rule that
+  a Join before review and the owner's approval. The run view shows which branch a check took and the rule that
   decided it, and which branches are still running.
 - Threat model: a check whose value smuggles code, a template or a shell line; a field that is not declared
   or comes from a step that may not have run; a check with no otherwise, so a run can fall through with no
@@ -176,7 +178,7 @@ to VELDO-0246, which reads the named problems and the recorded decisions this sp
   claiming to be parallel; a join that fires before every branch is done; a fan-out wide enough to exhaust
   workers; and any check branch, parallel branch or join that reaches an outward step without the owner's
   approval or with a subject-changing step after it.
-- Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962); recovery of a fan-out
+- Out of review scope (filed, not blocking): unlikely edge cases (the owner's standing ruling); recovery of a fan-out
   after a crash between two branch steps beyond what the store records (Release 2 checkpointing).
 
 ## Notes
@@ -203,3 +205,7 @@ loop and fan-out bounded; agreed), on the canvas design of VELDO-0246 and the pr
 VELDO-0241 to VELDO-0245 (Telegram 39069 to 39071). Standalone; no plan work item.
 
 2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
+
+2026-11-04: amended under the plan consistency review (owner Telegram 39145; research/veldo-plan-consistency-review-2026-11-04.md, findings A23, E4, E7) and the lead's rulings (research/veldo-plan-rulings-2026-11-04.md, R1): the rollback keeps definitions in the installation repository and says a later commit holding check or join is refused until changed; the LangGraph version is the pinned runtime. Status stays ready.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
