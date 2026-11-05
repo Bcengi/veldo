@@ -32,6 +32,9 @@ footprint:
   - "specs/VELDO-0236-pause-an-account-until-its-reset-and-a-window-ceiling.md"
   - "specs/index.md"
   - "proof/VELDO-0236/*"
+  - "scripts/suites/71_veldo_0130_api.py"
+  - "engine/ui/src/views/UsageView.vue"
+  - "engine/ui/docs/views/**"
 behavior_bearing: true
 observability:
   logs: >
@@ -166,3 +169,5 @@ state, the accounts as installation configuration (R1). Status stays ready; the
 owner approves the amendments in one message. Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md.
 
 2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
+
+2026-11-05: footprint widened by the lead after the build (proof/VELDO-0236/OPEN.md items 1 and 2): suite 71_veldo_0130_api's body table for the three new write routes, the usage screen that mounts the pacing panel, and that screen's docs page. Rulings: the owner's time zone stays a service setting until VELDO-0253 declares it in the installation; the Telegram route calling the same signed operation in process meets AC3. Acceptance criteria unchanged.
