@@ -121,3 +121,9 @@ export function intakeOf(answer: ReadAnswer | null): IntakeEntry[] {
   })
   return [...proposals, ...questions]
 }
+
+/** VELDO-0239: the owner's batch command for one project, the same text the Telegram command is. The project view
+ * sends it through the common intake (messages.send), which hands it to the batch starter. */
+export function batchCommand(project: string): string {
+  return `/batch ${project}`
+}

@@ -274,6 +274,8 @@ LIM = _organ('control_account_limit', lazy=True)
 LS = _organ('control_landing_station', lazy=True)
 # VELDO-0241: a unit's process, the versioned workflow revision the Line runs it by.
 WU = _organ('control_workflow_unit', lazy=True)
+# VELDO-0239: the owner's batches of a line's project, run on the line's pass.
+BS = _organ('control_batch_service', lazy=True)
 CT = _organ('control_team', lazy=True)
 TR = _organ('control_team_routes', lazy=True)
 WORK = 'work.json'
@@ -2102,6 +2104,24 @@ class Line:
             principal=service.principal, signer=service.principal, sign=service.sign, generation=service.generation,
             settlement_trust=self.gate.settlement_trust,
             observe=lambda event: service._log(dict(event, kind='land', at=time.time()))) if roles.get('land') else None
+        # VELDO-0239: the owner's `/batch <project>` requests of this repository, run with the same land
+        # configuration, the repository's identity record and the repository's inbox for his approval.
+        self.batches = self.batch_line() if roles.get('land') else None
+
+    def batch_line(self):
+        service, land = self.service, self.roles['land']
+        identities = _organ('control_git_identity')
+        try:
+            record = identities.resolve(service.conn, service.domain, self.repository, land['repository'])
+        except identities.Refused:
+            record = None
+        return BS.BatchLine(
+            S, service.conn, domain=service.domain, repository=self.repository, land=land, signer=service.principal,
+            sign=service.sign, generation=service.generation, store_uuid=service.store,
+            command_sign=lambda data: SIG.sign_bytes(service.config['journal_key'], data, AC.SIGNATURE_NAMESPACE),
+            inbox=lambda: service.inbox(self.repository),
+            identity=identities.author(record) if record else None,
+            push_identity=record, observe=lambda event: service._log(dict(event, kind='batch', at=time.time())))
 
     def invoke(self, contract):
         """The Runner's receiver: the installed launch receiver of this repository, a separate process."""
@@ -2188,6 +2208,8 @@ class Line:
         latest = self.latest()
         for unit in self.assigned():
             self.next(unit, latest, report)
+        if getattr(self, 'batches', None) is not None:
+            report.setdefault('batches', []).extend(self.batches.pass_once())
 
     def wants_cycles(self):
         """Whether this line runs project cycles: an active project executes in its repository, or it is the
