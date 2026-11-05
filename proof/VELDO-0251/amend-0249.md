@@ -48,8 +48,8 @@ request the gate received, before anything goes upstream; it recomputes the dige
 the replay ledger lives in the service's state, committed before the allow. Added rows: another method,
 path or query, and a body changed by one byte. The two-phase subject check stays at the server, in a
 lighter form: the server no longer verifies a signature; it compares the subject digest the gate passes on
-an allowed write (a request header set by the check, which the caller cannot set because the relay and
-gate strip it) with its stored pending action, and refuses a mismatch as before. A server may still run the
+an allowed write (a request header set by the check, which the caller cannot set because the gate
+strips it) with its stored pending action, and refuses a mismatch as before. A server may still run the
 full verifier as defence in depth, but it is not required to.
 
 **AC4 (conformance).** Retargeted from each connector to the gate. The harness drives every write route and

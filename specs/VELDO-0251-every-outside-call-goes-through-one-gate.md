@@ -1,20 +1,18 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0251
-title: Every outside call from a run or a project process goes through one outside gate, which alone holds the credentials, lets reads pass and sends every write to the approval check, with the network itself refusing any other way out
+title: Every outside service a run or a project process uses is reached through one outside gate, which alone holds the credentials, lets reads pass and sends every write to the approval check for the owner's approval of that exact request
 status: ready
 risk: critical
 owner: owner
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0144, VELDO-0158, VELDO-0162, VELDO-0249, VELDO-0253, VELDO-0254, VELDO-0259]
+depends_on: [VELDO-0144, VELDO-0158, VELDO-0162, VELDO-0249, VELDO-0253, VELDO-0259]
 placement: [contracts, engine, enforcement, distribution]
-protected_paths: ["scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "engine/scripts/agent_sandbox.json", "scripts/veldo_userns.c", ".veldo/pins/gate.json", "engine/.veldo/pins/gate.json", ".veldo/egress_classify.py", "engine/.veldo/egress_classify.py", ".veldo/installation.py", "engine/.veldo/installation.py"]
+protected_paths: [".veldo/pins/gate.json", "engine/.veldo/pins/gate.json", ".veldo/egress_classify.py", "engine/.veldo/egress_classify.py", ".veldo/installation.py", "engine/.veldo/installation.py"]
 footprint:
   - ".veldo/egress_gate.py"
   - "engine/.veldo/egress_gate.py"
-  - ".veldo/egress_relay.py"
-  - "engine/.veldo/egress_relay.py"
   - ".veldo/egress_classify.py"
   - "engine/.veldo/egress_classify.py"
   - ".veldo/egress_openapi.py"
@@ -37,17 +35,10 @@ footprint:
   - "engine/.veldo/control_engine_codex.py"
   - ".veldo/control_engine_antigravity.py"
   - "engine/.veldo/control_engine_antigravity.py"
-  - ".veldo/qualify.py"
-  - "engine/.veldo/qualify.py"
   - ".veldo/control_service.py"
   - "engine/.veldo/control_service.py"
   - ".veldo/init_scaffold.py"
   - "engine/.veldo/init_scaffold.py"
-  - "scripts/agent_sandbox.py"
-  - "engine/scripts/agent_sandbox.py"
-  - "scripts/agent_sandbox.json"
-  - "engine/scripts/agent_sandbox.json"
-  - "scripts/veldo_userns.c"
   - "docs/outside-services.md"
   - "scripts/suites/*_veldo_0251_*.py"
   - "scripts/suites/manifest.json"
@@ -62,29 +53,27 @@ observability:
     The outside gate writes one access line per call: dispatch id, project, service, route template or tool
     name, method, the classification (read or write) and the rule that produced it, the check verdict and
     its refusal name, the upstream status and the latency. Paths are logged as the declared template, never
-    with query values, header values or bodies. The relay writes one line per accepted connection (dispatch,
-    peer process id, bytes each way, close reason) and one line per refused engine tunnel (requested host).
-    The forward route writes one line per call: dispatch, method, destination host, verdict and upstream
-    status, never the path's query, a header value or a body. The declaration loader writes one line per
+    with query values, header values or bodies. The launcher writes one line per dispatch assertion it
+    issues (dispatch, project, selected services, expiry), never the assertion itself. The declaration loader writes one line per
     service per revision: the declaration revision, the OpenAPI outcome (loaded as is, converted, refused
     with its name) and each operation moved to the HTTP route with its reason. No credential value, token or
     argument value is logged.
   metrics: >
-    Count calls by service, classification and verdict; writes refused by refusal name; relay connections
-    per dispatch; refused engine tunnels; declarations loaded, converted and refused by reason; operations
+    Count calls by service, classification and verdict; writes refused by refusal name; calls refused for a
+    missing, forged or expired dispatch assertion; declarations loaded, converted and refused by reason; operations
     served by the HTTP route because their body is not JSON; and tool drift events (a tool whose schema or
     annotations differ from its pinned snapshot).
   traces: >
-    A dispatch id joins the run's execution record to its relay connections, each relay connection to its
-    gate access lines, each write's access line to the approval check decision and token id of VELDO-0252,
+    A dispatch id joins the run's execution record to its dispatch assertion and to its gate access lines,
+    each write's access line to the approval check decision and token id of VELDO-0252,
     and the outside gate configuration revision in force to the declaration revisions it was generated from.
   error_taxonomy: >
-    Gate and relay side, each returned to the caller by name with no upstream contact:
+    Gate side, each returned to the caller by name with no upstream contact:
     service_not_declared:<service>, service_not_selected:<service>, route_not_declared:<service>,
-    tool_not_declared:<service>:<tool>, forward_write_refused (a method other than GET or HEAD on the
-    forward route), approval_required (a write reached the check with no matching token; the check's own
+    tool_not_declared:<service>:<tool>, caller_assertion (the dispatch assertion is missing, forged or
+    expired), approval_required (a write reached the check with no matching token; the check's own
     refusal names follow VELDO-0252), check_unavailable (the check could not be reached, so the call is
-    refused, never let through), engine_tunnel_refused:<host>. Declaration side:
+    refused, never let through). Declaration side:
     invalid_input:service:<field>, invalid_input:service:literal_credential:<field>,
     invalid_input:service:read_override:<field> (an override that is a prefix or wildcard, or names no
     reason), unsupported_credential_kind:<kind>, openapi_refused:<service>:<reason> with reasons unreadable,
@@ -95,77 +84,55 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: a run or project process can reach outside only through the outside gate, and only the services
-      its dispatch selected, because the network it lives in has no other way out. Set and completeness:
-      every process Veldo starts for a run or a project (the engine and every tool child, catalog servers
-      started inside the run, workflow steps, and the project processes Veldo launches) starts in the
-      unprivileged sandbox of VELDO-0254, whose network namespace holds only a loopback interface. The only
-      listening socket in that namespace that leads anywhere is created there by the trusted launcher and
-      held by the launcher-side relay this spec builds, outside the sandbox; the relay forwards each
-      accepted connection to the outside gate's host listener and overwrites the caller identity with a
-      signed assertion of the dispatch, its project and the services its capability configuration selected
-      (VELDO-0162), removing anything the caller sent under that name. The run learns the outside gate only
-      through non-secret values in its environment: VELDO_GATE_URL, per selected service
-      VELDO_SERVICE_<NAME>_URL for its HTTP route and the outside gate MCP endpoint written into the
-      generated MCP configuration, and, when its capability configuration selects web reads, HTTPS_PROXY and
-      HTTP_PROXY naming the forward route. The forward route is read only: it accepts GET and HEAD to any
-      host, resolves names on the outside gate side, terminates the run's TLS with a certificate authority
-      of the installation that the run trusts (a CONNECT the run sends for a web read ends at the outside
-      gate and is never passed through), verifies the destination's certificate against the system roots,
-      carries no credential, and refuses every other method as forward_write_refused. Package registries and
-      git fetch are declared services whose read routes the package managers and git are pointed at; git
-      push never leaves a run, since landing pushes from the control plane. A service on host loopback or a
-      host Unix socket (a memory store among them) is reached only as a service behind the outside gate,
-      never directly. Non-HTTP protocols have no route from a run: a database is served as a read-only MCP
-      server behind the outside gate, on a database role that can only read, and that server alone reaches
-      the database's declared host and port; SMTP and every other non-HTTP service are not reachable. The
-      single exception is the engine's own model traffic: the relay accepts an HTTP CONNECT tunnel only to
-      the host and port pairs the engine version's qualification record names (the qualify run records the
-      hosts that engine version used and pins them in the record, and the adapter reads its tunnel list from
-      there), passes the TLS through uninspected, adds nothing to it, and refuses every other tunnel as
-      engine_tunnel_refused:<host>; this holds for every engine the engines record names. No DNS resolver
-      exists in the namespace. Rows, each against a stub vendor on a routable address with a planted key
-      inside the run: a direct HTTPS call by IP, by IPv6, by a name, a UDP send, a raw socket, a CONNECT
-      tunnel to the stub passed through the relay uninspected, a connection to the outside gate's host
-      listener, to the check service of VELDO-0252 and to any other host loopback port all fail and the stub
-      records nothing; the same call through the service's gate route reaches the stub; a call to a service
-      the dispatch did not select is refused as service_not_selected and the stub records nothing; a GET
-      through the forward route reaches the stub and a POST is refused as forward_write_refused; a git push
-      from the run to a stub remote fails; a stub memory service on host loopback is unreachable directly
-      and answers through its gate service; an engine version reaches only the hosts its qualification
-      record names, for every engine the engines record names; the factory's existing run journeys pass in
-      the namespace with their registries and git fetch served by declared read routes.
+      Claim: a run or project process reaches an outside service it holds no credential for only through
+      the outside gate, and only the services its dispatch selected. Runs are not fenced: they keep today's
+      network and local access (shared databases, container tooling, local and loopback services, web pages,
+      package registries and git), with no namespace, no change to name resolution and no egress rule. Set
+      and completeness: for every process Veldo starts for a run or a project (the engine and every tool
+      child, catalog servers started inside the run, workflow steps, and the project processes Veldo
+      launches) the launcher issues one dispatch assertion, signed with a key held by the launcher and the
+      check service of VELDO-0252 only, naming the dispatch, its project and the services its capability
+      configuration selected (VELDO-0162), and expiring when the dispatch ends. The run learns the outside
+      gate only through values in its environment: VELDO_GATE_URL, VELDO_GATE_ASSERTION, per selected
+      service VELDO_SERVICE_<NAME>_URL for its HTTP route, and the outside gate MCP endpoint written into the
+      generated MCP configuration. The assertion is not an outside-service credential: it lets the gate tell
+      which dispatch is calling, any write it carries still needs the owner's approval, and it is useless
+      after the dispatch ends. The outside gate passes each call's assertion to the check, which refuses a
+      missing, forged or expired one as caller_assertion and a service the assertion does not select as
+      service_not_selected:<service>. A production database is served as a read-only MCP server behind the
+      outside gate (VELDO-0256). Landing pushes are made by the control plane. Rows, each against a stub
+      vendor that accepts only the gate's credential: a call through the service's gate route with the
+      run's assertion reaches the stub with the gate's credential; the same call with no assertion, a forged
+      one or one from an ended dispatch is refused as caller_assertion and the stub records nothing; a call
+      to a service the dispatch did not select is refused as service_not_selected and the stub records
+      nothing; a direct call from the run to the stub without a credential is refused by the stub's own
+      authentication; a run reaches a fixture database on host loopback and a fixture public page as today;
+      the factory's existing run journeys pass unchanged.
     falsified_by: >
-      Launch the run without the gate-only network, or let the relay forward a CONNECT tunnel to any host:
-      the direct-call row or the tunnel row must reach the stub vendor and fail. Or let the relay pass the
-      caller's own identity header through: the other-service row is let through and fails. Or let the
-      forward route pass POST: the forward-write row reaches the stub and fails.
+      Let the check accept a call with no assertion, or with an assertion for another service: the
+      no-assertion row or the other-service row reaches the stub and fails.
   - id: AC2
     text: >
       Claim: no outside-service credential or login ever enters a workspace, a run, a project process, an
-      agent's environment or its context, and the engine's own model login is readable by the engine process
-      only. Set and completeness: the one credential present where a run executes is the engine's own model
-      login in its account profile; the sandbox of VELDO-0254 makes it readable by the engine process only
-      and never by its tool children, with unprivileged means (Landlock or equivalent, in a single-user
-      setup), and a configuration that needs any other credential in a run is refused. Outside-service
+      agent's environment or its context. Set and completeness: the engine's own model login stays where it
+      is today, with no new confinement of the engine or its tools; a configuration that needs any other
+      credential in a run is refused. Outside-service
       credentials are declared in the installation (AC4) by reference only and are added by the outside gate
       to the upstream request it sends, from the per-call backend token VELDO-0252 returns; the outside gate
       removes any Authorization header, any header the declaration names as a credential location and any
       query parameter it names as one before forwarding, so the vendor sees the outside gate's credential
       and never the caller's. VELDO-0158's delivery no longer resolves keystore references for outside
       services into a run: a catalog record (VELDO-0144) whose environment or headers carry a keychain
-      reference is served behind the outside gate (its stdio server runs in the outside gate's own confined
-      process tree under the AC1 network rule, reaching its vendor through the outside gate route where it
-      accepts a base URL, or for a database server only the declared host and port), and selecting such a
+      reference is served behind the outside gate (its stdio server runs in the outside gate's own process
+      tree with the credential, reaching its vendor through the outside gate route where it accepts a base
+      URL, or for a database server its declared host and port), and selecting such a
       record for a run directly is refused at launch as
       unsupported_configuration:credential_in_run:<record>. Catalog records with no credential (local tools)
       keep working as today. Rows, with canary values stored in the keystore for a stub service: the
       canaries appear nowhere in the run's readable filesystem, any run process's environment, the generated
-      engine configuration, the prompt, the transcript, the execution record, the journal or the gate and
-      relay logs; a run that sends its own Authorization header and a planted key in a declared query
-      parameter to a route reaches the stub with only the outside gate's credential; a tool child's read of
-      the engine profile's credential files fails while the engine's own model call works; for every engine
-      the engines record names.
+      engine configuration, the prompt, the transcript, the execution record, the journal or the gate logs; a run that sends its own Authorization header and a planted key in a declared query
+      parameter to a route reaches the stub with only the outside gate's credential; the engine's own model
+      call works as today; for every engine the engines record names.
     falsified_by: >
       Keep VELDO-0158's delivery of a record's keychain references into the run's generated configuration,
       or stop the outside gate from stripping the caller's Authorization header: the canary scan row finds
@@ -183,8 +150,7 @@ acceptance_criteria:
       pinned snapshot is a write and is reported as tool_drift until the owner pins a new snapshot. The
       installation may tighten (declare a read as a write) freely, and may loosen only by a read override
       that names an exact method and path template, or an exact tool, as a read, with its reason; a protocol
-      whose read uses POST (git-upload-pack, a registry search) and a vendor operation documented as having
-      no effect (a validate-only call) are declared read only this way, and the override for a vendor
+      whose read uses POST (a search endpoint) and a vendor operation documented as having no effect (a validate-only call) are declared read only this way, and the override for a vendor
       operation cites that documentation. An override is a widening change under VELDO-0253 AC2, live only
       after the owner's decision on that commit; a prefix, a wildcard or an override with no reason is
       refused at load (invalid_input:service:read_override:<field>). A two-phase prepare or a validate-only
@@ -222,7 +188,7 @@ acceptance_criteria:
       templates, or tools, refused outright). A literal secret is refused as
       invalid_input:service:literal_credential:<field>; a signature-based credential scheme is refused as
       unsupported_credential_kind:<kind>. Veldo's own defaults declare no service, and a fresh installation
-      reaches no outside service. egress_openapi.py, standard library only, cuts the file down to the
+      serves no outside service through the gate. egress_openapi.py, standard library only, cuts the file down to the
       declared operations first, then: 3.0 loads as is; 3.1 is converted to 3.0 by a closed, documented set
       of rewrites (type lists with null to nullable, examples to example, const to a one-value enum, numeric
       exclusive bounds to the 3.0 form, dropped webhooks and pathItems), and any 3.1 construct outside that
@@ -246,9 +212,9 @@ acceptance_criteria:
       row fails.
 required_evidence: [unit, integration]
 rollback: >
-  Revert the change and restart the services: runs keep the sandbox of VELDO-0254 and regain only what it
-  allows without this spec's relay and outside gate; VELDO-0158 delivery of catalog references into runs
-  returns, and the outside gate and relay stop being started. Declarations in the installation repository,
+  Revert the change and restart the services: runs keep today's access; VELDO-0158 delivery of catalog
+  references into runs returns, and the outside gate stops being started and no dispatch assertion is
+  issued. Declarations in the installation repository,
   generated configurations and gate logs stay on disk, inert. No automatic rollback, retry or recovery is
   authorized.
 ---
@@ -258,16 +224,17 @@ rollback: >
 An agent, or a script an agent writes, that holds a vendor key can act on the owner's accounts with no one
 asking. The owner decided that every outside call, whether an agent's tool call or a project's own code,
 goes through one outside gate: the credentials live only behind it, reads pass, and every write needs the
-owner's approval of that exact call. This spec builds the outside gate and makes it the only way out,
-enforced by the network rather than by convention, so a stray key in a workspace is useless. "The outside
+owner's approval of that exact call. This spec builds the outside gate and makes it the only place
+outside-service credentials live, so a run holds nothing it could call a vendor with on its own; a key
+that leaks into a workspace anyway is reported by the secret scan of VELDO-0254 and moved behind the gate.
+Runs are not fenced: they keep today's access. "The outside
 gate" is agentgateway; "the gate" alone elsewhere in Veldo means the verification gate.
 
 ## Context
 
-- Today a run's sandbox (agent_sandbox.py) confines files, Unix sockets and IPC, but allows outbound TCP
-  and TLS in every profile, and the factory launch does not use it. VELDO-0254 makes the factory launch
-  run every run in the unprivileged sandbox with the gate-only network; this spec builds what that
-  network leads to. Catalog servers (VELDO-0144) run inside the run, and VELDO-0158
+- Runs keep today's access; a mandatory sandbox for every run was withdrawn because different executions
+  need different things that are not clear upfront, and the confined runner stays opt-in for risky work
+  (VELDO-0254). Catalog servers (VELDO-0144) run inside the run, and VELDO-0158
   resolves their keystore references into the run's generated configuration or the engine environment, so
   the credential is inside the run.
 - VELDO-0249 (approved, amended per proof/VELDO-0251/amend-0249.md) issues a signed, single-use token for
@@ -287,20 +254,17 @@ gate" is agentgateway; "the gate" alone elsewhere in Veldo means the verificatio
 
 ## Design
 
-1. Network. The sandbox of VELDO-0254 gives each run and project process tree a network namespace with
-   loopback only. The launcher creates a listening socket inside that namespace before confinement and hands
-   it to this spec's relay, which stays outside. Sockets keep the namespace they were created in, so no
-   forwarder runs inside the sandbox and nothing inside can widen the path.
-2. Relay. Plain HTTP inside the namespace, one hop to the outside gate's host listener. The relay strips and
-   writes the caller assertion (dispatch, project, selected services, expiry), signed with a key held by
-   the relay and the check service only. It also carries the engine's provider tunnels, to the hosts the
-   engine version's qualification record names, nothing else.
+1. No fence. Runs keep today's network and local access; protection comes from where the credentials
+   live, behind the outside gate.
+2. Dispatch assertion. The launcher signs one assertion per dispatch (dispatch, project, selected services,
+   expiry at dispatch end) with a key held by the launcher and the check service only, and puts it in the
+   run's environment; the outside gate passes it to the check with every call.
 3. Outside gate. One route per declared service under /s/<service>/, one MCP target per service under
    /mcp/<service>, generated from the declarations by egress_gate.py. Every call of a selected service
    goes to the check of VELDO-0252 in fail-closed mode; the check returns the backend token, and for a
-   write, only after the approval verifies. Never rules become deny rules ahead of everything else. A
-   read-only forward route serves web reads (GET and HEAD); registries and git fetch are declared read
-   routes; memory and database servers are services behind the outside gate.
+   write, only after the approval verifies. Never rules become deny rules ahead of everything else.
+   Credentialed memory servers and the read-only production database are services behind the outside
+   gate.
 4. Classification. One classifier, one table per declaration revision, read by both the outside gate
    configuration and the check service, so they can never disagree on what is a write.
 5. Declarations and OpenAPI. Files under services/ in the installation repository (VELDO-0253), a
@@ -314,10 +278,10 @@ gate" is agentgateway; "the gate" alone elsewhere in Veldo means the verificatio
 ## Out of scope
 
 - The check service itself: approval verification, OAuth grants and backend tokens (VELDO-0252).
-- The engine's own model traffic and its subscription login, which stay with the engine through the
-  tunnels its qualification record names (AC1, AC2); moving them behind the outside gate is filed for
-  later.
-- The sandbox and its gate-only network themselves (VELDO-0254).
+- The engine's own model traffic and its subscription login, which stay with the engine as today; moving
+  them behind the outside gate is filed for later.
+- Any network fence, namespace or engine confinement for runs; the confined runner stays opt-in for risky
+  work (VELDO-0254).
 - Veldo's own control plane calls (Design 6), which do not go through the outside gate.
 - Releases, deploys, publishing, pipelines, chunked uploads and batches of many writes: the owner approves
   one release and an executor of the control plane, outside every run, performs it with keystore
@@ -325,7 +289,7 @@ gate" is agentgateway; "the gate" alone elsewhere in Veldo means the verificatio
 - Signature-based vendor credentials (request signing schemes), refused by name and filed.
 - Swagger 2.0 upward conversion, filed; such vendors use the HTTP route.
 - Processes Veldo does not start. The installation guide (docs/outside-services.md) says how to keep the
-  host's own programs off the vendor credentials, but Veldo cannot confine what it does not launch.
+  host's own programs off the vendor credentials.
 - Standing approvals for recurring writes: every write needs its own token here.
 
 ## What the reviewer judges
@@ -334,8 +298,8 @@ gate" is agentgateway; "the gate" alone elsewhere in Veldo means the verificatio
   them with no key in the project; an agent asks to refund one, submits the exact request to the approval
   service of VELDO-0252, the owner approves it, and the next run's POST of that same request passes once;
   a second identical POST is refused.
-- Threat model: a key pasted into a workspace; a script opening a direct socket, resolving a name, using
-  IPv6 or UDP; a CONNECT tunnel to a vendor; a forged caller identity; a call to an unselected service; a
+- Threat model: a key pasted into a workspace (reported by the scan of VELDO-0254); a credential delivered
+  into a run; a forged, missing or expired dispatch assertion; a call to an unselected service; a
   vendor MCP server that changes a tool's annotations after review; a 3.1 file half loaded; a form body
   silently dropped; the check down; a credential reaching a log.
 - Out of review scope (filed, not blocking): unlikely edge cases (an owner decision); attacks from
@@ -343,8 +307,8 @@ gate" is agentgateway; "the gate" alone elsewhere in Veldo means the verificatio
 
 ## Notes
 
-The namespace makes the guarantee independent of any process inside the run behaving well: there is no
-route out, so there is nothing to bypass. Writes are refused by default because a mistaken read label is the
+The guarantee rests on where the credentials are, not on fencing the run: a run that reaches a vendor
+directly has no credential to present, so the vendor refuses it. Writes are refused by default because a mistaken read label is the
 one error that turns into an unapproved write; a mistaken write label only costs one approval. New servers
 an owner finds in a public server directory enter only through a declaration like any other service.
 
@@ -366,3 +330,13 @@ Proposed change to VELDO-0249: proof/VELDO-0251/amend-0249.md. Standalone.
 split out of VELDO-0250 into VELDO-0259, which lands first, on the owner's request Telegram 39145 (plan
 consistency review research/veldo-plan-consistency-review-2026-11-04.md, finding D5). Criteria unchanged;
 status stays ready.
+
+2026-11-05: amended after the owner's correction Telegram 39154 (a mandatory sandbox is highly problematic:
+different executions need different things that are not clear upfront, for example a shared database
+instead of a new server) and the lead's answer 39155 (no mandatory sandbox; protection comes from where the
+keys live), under revised rulings R5, R7 and R14. Every rule that a run can reach only the gate is dropped:
+no network namespace, no relay, no DNS removal, no egress fence, no forward route, no registry or git read
+routes, no engine host list, no engine-only login; the dependency on VELDO-0254 is removed. The caller
+identity the relay wrote becomes a dispatch assertion the launcher issues into the run's environment. Kept:
+credentials only behind the gate, reads pass, writes need the owner's approval for that exact request.
+Status stays ready.

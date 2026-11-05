@@ -78,7 +78,7 @@ observability:
     approval_digest, approval_dispatch, approval_expired, approval_not_yet_valid, approval_replayed,
     approval_ledger (the consumption could not be made durable, so the call is refused),
     approval_body_too_large, approval_request_unknown (an approval naming no request the service stored),
-    caller_assertion (the relay's assertion is missing, forged or expired),
+    caller_assertion (the dispatch assertion is missing, forged or expired),
     gate_key (the request did not come from the outside gate). Grant refusals: grant_missing:<service>,
     grant_reconnect_needed:<service>, grant_revoked:<service>, grant_refresh_failing:<service> (only once
     the access token has expired). Consent refusals: consent_state (missing, unknown, reused or expired
@@ -100,7 +100,7 @@ acceptance_criteria:
       of VELDO-0249 issues each token at the addressed dispatch's launch to this service (as amended by
       proof/VELDO-0251/amend-0249.md), not to the run or a server; the service stores it 0600 in its own
       0700 state directory, keyed by dispatch. The service answers the outside gate's extAuthz call only
-      when it carries the outside gate's own key and a valid relay assertion (VELDO-0251 AC1). For a call
+      when it carries the outside gate's own key and a valid dispatch assertion (VELDO-0251 AC1). For a call
       the shared classification table of VELDO-0251 marks as a write it recomputes the target from the
       request it actually received, by the same rule it used at submission: for an HTTP route the service,
       the method, the path after the route prefix (percent-decoded once, dot segments refused), the query
@@ -120,7 +120,7 @@ acceptance_criteria:
       token's subject digest to the outside gate as request headers for the upstream. Rows: no token, a
       forged signature, a revoked or retired key, a token for another dispatch, service, method, path, query
       or tool, a body or argument changed by one byte, an expired token, a token reused after one success,
-      two concurrent calls with one token (exactly one passes), a missing or forged relay assertion, a
+      two concurrent calls with one token (exactly one passes), a missing or forged dispatch assertion, a
       request without the outside gate key, a body over the service's declared limit, and the ledger made
       unwritable: each is refused by its name and the stub vendor records nothing; a submission reaches
       nothing upstream; an approved multipart upload sent again with a new boundary, and an approved form
@@ -191,9 +191,9 @@ acceptance_criteria:
       service, the first as extauthz.backend_token and any further ones as headers the check returns for the
       upstream request, each formatted for its declared location (bearer, a named header, a named query
       parameter, or basic), read from the keystore for a static credential or from the active grant, and
-      only when the request carries the outside gate key and a relay assertion that selects that service; a
-      service declared with no credential (the forward route, a public registry) gets an allow with none.
-      Its listener is on host loopback, which no run or project process can reach (VELDO-0251 AC1). The
+      only when the request carries the outside gate key and a dispatch assertion that selects that service;
+      a service declared with no credential gets an allow with none. Its listener is on host loopback; runs
+      are not fenced from it, so a caller without the outside gate key gets no credential. The
       service is Python standard library only (http.server, urllib with the default TLS context, sqlite3,
       hmac, hashlib, secrets, json) plus the ssh-keygen and secret-tool binaries Veldo already uses; a suite
       row fails on any other import. The outside gate binary is pinned in .veldo/pins/gate.json: name,
@@ -206,8 +206,7 @@ acceptance_criteria:
       service checks that the outside gate's reported version equals the pin and refuses to serve otherwise
       (gate_version_mismatch). An upgrade is a reviewed change to the pin file. Setup installs user units
       for the outside gate and this service, started with the authority as the API service is, restarted on
-      failure, and refused if the pinned version is wrong; the relay is started per dispatch by the
-      launcher; listen ports come from the installation's ports (VELDO-0253). Setup refuses by name a host
+      failure, and refused if the pinned version is wrong; listen ports come from the installation's ports (VELDO-0253). Setup refuses by name a host
       without the tools the service needs (host_prerequisite_missing:secret-tool) before it installs
       anything. Rows: a request without the outside gate key, with an assertion for another service, or with
       no assertion gets no credential; the credential never appears in a run; a tampered asset and an
@@ -242,7 +241,7 @@ quietly.
   key, verifies the token here, and stores the submitted request the owner approves. It is built and
   landed as one unit with VELDO-0251 and the VELDO-0249 amendment; depends_on runs one way, so the graph
   has no cycle.
-- VELDO-0251 makes the outside gate the only way out and sends every call of a selected service to this
+- VELDO-0251 makes the outside gate the only place outside-service credentials live and sends every call of a selected service to this
   service's check in fail-closed mode. The outside gate adds the credential from extauthz.backend_token and
   removes the caller's own.
 - VELDO-0144 and VELDO-0159 already put credentials in the OS keystore through standard input, set by the
@@ -255,7 +254,7 @@ quietly.
 ## Design
 
 1. One process, two jobs, one check endpoint. The outside gate's extAuthz (HTTP mode) posts each call with
-   its body up to the service's declared limit. The service checks the outside gate key and the relay
+   its body up to the service's declared limit. The service checks the outside gate key and the dispatch
    assertion, looks up the classification, verifies the approval for a write, and returns allow with the
    backend token, or deny with a refusal name.
 2. Approvals. A run submits the exact request first; the owner approves it as stored and decoded. Tokens
@@ -272,7 +271,7 @@ quietly.
 
 ## Out of scope
 
-- The outside gate, the network rule, the declarations and the classifier (VELDO-0251).
+- The outside gate, the dispatch assertion, the declarations and the classifier (VELDO-0251).
 - Device authorization and other grant types; request-signing credential schemes.
 - Standing approvals for recurring writes.
 - Releases, deploys, publishing, pipelines, chunked uploads and batches of many writes, which the owner
@@ -286,7 +285,7 @@ quietly.
   the next refresh gets invalid_grant, the owner gets one notice with a reconnect link, and calls are
   refused by name until reconnect.
 - Threat model: a write with no token, a copied token, a changed body, a replay including two concurrent
-  calls, a forged relay assertion, a host process asking for a credential, a replayed consent state, a
+  calls, a forged dispatch assertion, a run or host process without the outside gate key asking for a credential, a replayed consent state, a
   code pasted into the channel, a rotated refresh token lost in a crash, a tampered gate download, a secret
   in a log.
 - Out of review scope (filed, not blocking): unlikely edge cases (an owner decision); clock attacks on
@@ -315,3 +314,8 @@ revocation) and hands the gate the current backend token per call. Companion of 
 split out of VELDO-0250 into VELDO-0259, which lands first, on the owner's request Telegram 39145 (plan
 consistency review research/veldo-plan-consistency-review-2026-11-04.md, finding D5). Criteria unchanged;
 status stays ready.
+
+2026-11-05: Telegram 39154 and 39155, revised rulings R5, R7 and R14 (no mandatory sandbox): the relay
+assertion becomes the dispatch assertion of VELDO-0251 AC1; AC4 no longer says no run can reach the check's
+loopback listener, since runs are not fenced; a caller without the outside gate key gets no credential; the
+forward route and public registry examples and the per-dispatch relay are removed. Status stays ready.
