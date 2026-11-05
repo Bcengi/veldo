@@ -40,18 +40,18 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   SELFTEST FAIL: VELDO-0208 sandbox/unavailable-refuses-before-exec
   SELFTEST FAIL: VELDO-0208 sandbox/old-abi-refuses-before-exec
 Traceback (most recent call last):
-  File "/home/dmitry/projects/veldo-worktrees/veldo-0247/scripts/selftest.py", line 256, in <module>
+  File "~/projects/veldo-worktrees/veldo-0247/scripts/selftest.py", line 256, in <module>
     exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
-  File "/home/dmitry/projects/veldo-worktrees/veldo-0247/scripts/suites/101_veldo_0208_landing_reuse.py", line 2276, in <module>
+  File "~/projects/veldo-worktrees/veldo-0247/scripts/suites/101_veldo_0208_landing_reuse.py", line 2276, in <module>
     _v208_case_input_proposal()
-  File "/home/dmitry/projects/veldo-worktrees/veldo-0247/scripts/suites/101_veldo_0208_landing_reuse.py", line 2262, in _v208_case_input_proposal
+  File "~/projects/veldo-worktrees/veldo-0247/scripts/suites/101_veldo_0208_landing_reuse.py", line 2262, in _v208_case_input_proposal
     result, _ = proposer.trace_case(gate, case)
                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/dmitry/projects/veldo-worktrees/veldo-0247/scripts/propose_case_inputs.py", line 79, in trace_case
+  File "~/projects/veldo-worktrees/veldo-0247/scripts/propose_case_inputs.py", line 79, in trace_case
     accesses = list(T.accesses(trace, cwd=ROOT))
                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/dmitry/projects/veldo-worktrees/veldo-0247/scripts/suites/101_veldo_0208_landing_reuse.py", line 2245, in accesses
+  File "~/projects/veldo-worktrees/veldo-0247/scripts/suites/101_veldo_0208_landing_reuse.py", line 2245, in accesses
     for line in T.syscall_lines(trace):
-  File "/home/dmitry/projects/veldo-worktrees/veldo-0247/scripts/case_trace.py", line 52, in syscall_lines
+  File "~/projects/veldo-worktrees/veldo-0247/scripts/case_trace.py", line 52, in syscall_lines
     raise ValueError('incomplete file-read trace')
 ValueError: incomplete file-read trace
