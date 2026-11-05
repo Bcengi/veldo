@@ -10,7 +10,7 @@ and leaves the unit out as `hook_failed:renumber:<unit>` on a non-zero exit; `ho
 Missing piece, for VELDO-0253: read the hook command from the project's file in the installation repository and hand
 it to the batch. Nothing here reads or invents that file.
 
-## B. The live service does not yet construct a batch starter
+## B. The live service does not yet construct a batch starter (resolved in fix round 1, see fix-round-1.md)
 
 The owner's command reaches the batch through one seam: `control_intake.Intake(batches=...)`. A `/batch <project>`
 message (Telegram, or the same text the project view sends through messages.send) is handed to that starter as
@@ -22,7 +22,8 @@ checks that the principal is the project's owner, and constructs that starter wi
 (VELDO-0068 settlement), the fix-round return of each named unit and the receipt writer. The batch takes each of
 these as an argument (`ask`, `fix_round`, `receipt`, `requirements`, `tell`), so the wiring adds no batch logic.
 
-## C. Receipts are the batch record's, not yet the authority store's
+## C. Receipts are the batch record's, not yet the authority store's (resolved in fix round 1: batch receipts are
+written to the store and read back as landed)
 
 Each landed unit gets a `revision_landed` receipt naming the batch (schema `veldo.batch_receipt/v1`), in the batch
 record and through the `receipt` callable. The single-unit receipt (control_landing, committed in the store with the
