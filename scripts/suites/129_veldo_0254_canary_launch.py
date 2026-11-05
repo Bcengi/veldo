@@ -723,10 +723,27 @@ out.close()
             os.environ['DBUS_SESSION_BUS_ADDRESS'] = saved_environment['DBUS_SESSION_BUS_ADDRESS']
 
         # THE PROJECT PROCESS: control_service_projects starts the repository provisioner; it runs no engine. Its
-        # environment and command line are read from /proc while it is stopped right after its start.
+        # environment and command line are read from /proc while it is stopped right after its start. Its
+        # configuration is a named pipe the suite writes only after that read, so the provisioner is still alive
+        # when it is read however loaded the host is (a provisioner that had already ended leaves an empty
+        # environ); fed the fixture text, it refuses a configuration that is not a regular file.
         provisioner_config = base / 'provisioner.json'
-        provisioner_config.write_text('{}\n')
-        provisioner_config.chmod(0o600)
+        provisioner_text = b'{}\n'
+        os.mkfifo(str(provisioner_config), 0o600)
+
+        def feed_provisioner(process):
+            end = time.time() + 30
+            while time.time() < end and process.poll() is None:
+                try:
+                    pipe = os.open(str(provisioner_config), os.O_WRONLY | os.O_NONBLOCK)
+                except OSError:
+                    time.sleep(0.02)
+                    continue
+                try:
+                    os.write(pipe, provisioner_text)
+                finally:
+                    os.close(pipe)
+                return
         new_projects = NP.NewProjectPass(types.SimpleNamespace(config={'provisioner': str(provisioner_config)}), {})
         project_process = {}
         started_event, project_process['error'] = attempt(lambda: new_projects.provision(
@@ -745,6 +762,7 @@ out.close()
                 project_process['environ'] = project_process['cmdline'] = b''
             with contextlib.suppress(OSError):
                 os.kill(process.pid, signal.SIGCONT)
+            feed_provisioner(process)
             end = time.time() + 30
             while time.time() < end and not one.pump():
                 time.sleep(0.02)
@@ -876,9 +894,9 @@ out.close()
             check('ac1/canary-project-process', 'project process: no canary is in its environment, its command line or '
                   'its configuration file',
                   bool(environ) and not leaked_in(environ.decode('latin-1') + cmdline.decode('latin-1')
-                                                  + provisioner_config.read_text()))
+                                                  + provisioner_text.decode('latin-1')))
             report = SS.scan('run_end', PROJECT, [('environment', environ), ('command', cmdline),
-                                                  ('configuration', provisioner_config.read_bytes())], held=SECRETS)
+                                                  ('configuration', provisioner_text)], held=SECRETS)
             check('ac1/canary-project-process', 'project process: the one scan entry holding the canaries finds none',
                   report['files'] == 3 and not [f for f in report['findings'] if f['kind'] == SS.HELD_KIND])
             check('ac1/canary-project-process', 'project process: it ended on its own, refusing the fixture '
