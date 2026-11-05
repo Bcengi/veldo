@@ -274,3 +274,5 @@ commit tools refused until it lands. Standalone.
 2026-11-05: Telegram 39154 and 39155, revised rulings R5, R7 and R14 (no mandatory sandbox): AC2's subject
 digest header is stripped by the outside gate alone, since VELDO-0251 no longer has a relay. Status
 unchanged.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
