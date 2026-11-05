@@ -179,3 +179,5 @@ and VELDO-0253 depend on this spec instead of VELDO-0250. New text, so status dr
 in the next message. Standalone; no plan work item.
 
 2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.
+
+2026-11-05: footprint widened by the lead after the independent review (proof/VELDO-0259/review-2026-11-05.md): Veldo's own evidence and log writers that record into proof/ write the home directory as "~", so the built-in home_path rule never blocks normal work; the writers are listed in proof/VELDO-0259/OPEN.md by fix round 1. Acceptance criteria unchanged.
