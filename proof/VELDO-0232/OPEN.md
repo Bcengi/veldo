@@ -3,7 +3,7 @@
 1. The recorded real run (AC3, VELDO-0172's rule). Suite 128 row stream/live-forms is red until the lead records
    one owner-approved real agy 1.5.0 stream-json run, one stdout line per line as printed, at
    proof/VELDO-0232/live-stream.jsonl (pinned copy, flags as control_engine_antigravity.FLAGS, a review prompt on
-   agy1). The fake's forms (scripts/suites/support/v232_agy_forms.py, printed by suite 127's fake) are my reading
+   one Antigravity account, its identity redacted before commit). The fake's forms (scripts/suites/support/v232_agy_forms.py, printed by suite 127's fake) are my reading
    of the binary's bytes and changelog, not of a live stream; where the capture differs, the support module, and
    if needed the module's readers, follow it. The readings to confirm against that run:
    - the stream-json input message shape (`{"type": "user", "message": {"role": "user", "content": ...}}`, Guard.message);
@@ -36,3 +36,34 @@
 
 4. No new suite needs the systemd user manager: suites 127 and 128 run the reported-identity wrapper locally
    (no entry for gate_unconfined.json).
+
+Items 5 to 9 come from the plan consistency review and the lead's rulings of 2026-11-04 (Telegram 39145). The
+spec was amended; the code on this branch was not, by instruction. Each item is what the build still lacks.
+
+5. Model hosts and proxy settings (review A12, rulings R5 and R13; spec AC1, AC2). The extractor and qualify
+   record no model hosts and no proxy reading. Still to build: the qualification record's model hosts (host and
+   port for the model, the sign-in refresh and `agy models`, confirmed by the item 1 run), whether agy 1.5.0
+   honours the outside gate's proxy variables with no local name resolution, the sandbox allowing exactly those
+   hosts for the engine process, and the refusal unsupported_configuration:engine_proxy:antigravity with its
+   fail-closed row. If 1.5.0 ignores the proxy settings, the engine waits for a version that supports them;
+   nothing runs unconfined. This needs VELDO-0251 and the sandboxed launch ticket of ruling R14.
+
+6. Login files readable by the run's tools (review A7, ruling R7; spec AC4 and L6). HOME is the account folder,
+   so `run_command` and `view_file` can read the subscription login. No role may grant Antigravity until the
+   login files are readable by the engine process only (Landlock or a split HOME, under the R14 sandboxed
+   launch ticket). Setup on this branch gives the service an `antigravity` adapter; staffing a role on it waits.
+
+7. Personal paths in shipped data (review B7). runtime/engines.json (both copies) names `"binary":
+   "~/.local/bin/agy"` and .veldo/runtime/antigravity-qualification.json line 281 names `"source":
+   "~/.local/bin/agy"`; binary paths move to the installation's model accounts (VELDO-0253). The live capture of
+   item 1 is committed with the account identity redacted.
+
+8. Tracker code outside the footprint (review A9, C15, D10). Commit 7c8b0360 adds tracker_adapter.py,
+   tracker_conformance.py, tracker_jira_init.py, tracker_jira_live.py, tracker_mirror_runner.py and
+   request_doorbell.py (engine/ copies), outside this spec's footprint, to repair the engine/ mirror. They read
+   Jira credentials from the process environment. The lead takes them off this branch into their own
+   mirror-repair ticket, where the tracker reads its credentials from the keystore and its routing from the
+   installation repository; under ruling R6 these are the control plane's calls and stay outside the gate.
+
+9. Suite numbers (review D12). Suites 127 and 128 collide with other branches (0231, 0234, 0235, 0241, 0177);
+   they are renumbered at batch assembly.

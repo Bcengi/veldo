@@ -69,7 +69,9 @@ observability:
     same in the clone), invalid_input:agent_mcp_servers:antigravity (a role for this engine that selects an
     MCP server, limit L1), configuration_stop:tool_outside_role (a tool call outside the role's set read
     from the stream, limit L2), and paid_api:antigravity_login:<kind> (an API-key, Cloud project,
-    application-default, gateway, pay-as-you-go or AI-credits path).
+    application-default, gateway, pay-as-you-go or AI-credits path), and
+    unsupported_configuration:engine_proxy:antigravity (a qualified version that ignores the outside gate's
+    proxy settings, ruling R13).
 acceptance_criteria:
   - id: AC1
     text: >
@@ -89,7 +91,11 @@ acceptance_criteria:
       brings that the replaced record did not have is listed by name in the output and in the record
       (`new_capabilities`) with its decision from runtime/capability-decisions.json (granted, off with the
       written rule it breaks, or not applicable); an item with none is unevaluated and not granted, and
-      nothing new stops a launch. Run twice on the same binary, the command rewrites every file with the
+      nothing new stops a launch. The record also declares the version's model hosts (each host and port the
+      binary connects to for its model, its sign-in refresh and its model list, read from its bytes and
+      confirmed by the recorded run of AC3) and whether the binary honours the outside gate's proxy settings
+      with no local name resolution; the sandbox allows exactly those hosts for the engine process (ruling
+      R5). Run twice on the same binary, the command rewrites every file with the
       bytes it holds. bind refuses a pinned copy whose version or digest differs from the record by the
       shared names before anything is accepted.
     falsified_by: >
@@ -118,13 +124,17 @@ acceptance_criteria:
       option of that version turns off (the account folder's .gemini tree, the clone's and its parents'
       instruction files and .agents folders, as the record lists them; the binary's own built-in skills
       only if no option keeps them out) is refused by name before acceptance when it holds anything
-      (invalid_input:engine_profile:<entry>, invalid_input:engine_clone:<entry>); nothing is deleted.
+      (invalid_input:engine_profile:<entry>, invalid_input:engine_clone:<entry>); nothing is deleted. If the
+      qualified version ignores the outside gate's proxy settings, it fails closed in the sandbox: every
+      launch is refused by name before acceptance (unsupported_configuration:engine_proxy:antigravity) and the
+      engine waits until a version supports them; nothing runs unconfined to make it work (ruling R13).
     falsified_by: >
       Remove the stream check for tool calls outside the role, and the suite's fake engine that calls a
       denied tool ends `complete` instead of stopped by name; plant ANTIGRAVITY_LS_ADDRESS and an AGY_ name
       no list holds in the parent environment, and the launched fake engine's environment row fails if
       either is present; plant a rule file in the account folder's .gemini/config, and the acceptance row
-      fails if the run is accepted.
+      fails if the run is accepted; qualify a fake agy recorded as ignoring the proxy settings, and the
+      fail-closed row fails if its launch is accepted.
   - id: AC3
     text: >
       The output stream is read into the run record, the meter and the verdict exactly as the other
@@ -142,7 +152,8 @@ acceptance_criteria:
       line's observation time plus the stated duration, rounded up to the minute; "Your AI credits balance
       is too low to continue." and the binary's other plan refusals are windows with no reset. VELDO-0172's
       rule holds: every Antigravity fake engine in the suites prints the forms of a recorded real 1.5.0
-      stream-json run (one run the owner approves, kept in the proof).
+      stream-json run (one run the owner approves, kept in the proof with the account's identity redacted
+      before commit).
     falsified_by: >
       Classify the individual quota line as an ordinary failure, and the limit row fails (no
       `account_limit`, no reset on the account); accept a zero exit whose result line is removed, and the
@@ -151,8 +162,8 @@ acceptance_criteria:
     text: >
       Antigravity accounts are in the pool with their limits and leases, subscription only (VELDO-0062,
       0160, 0185). accounts.PROFILE_ENV names HOME for `antigravity` (the binary has no configuration
-      directory variable; it keeps .gemini under HOME), so an account is one folder (~/.agy-accounts/<name>
-      today), registered once, and its login command is the binary run interactively with HOME set to it.
+      directory variable; it keeps .gemini under HOME), so an account is one folder (the folder the installation's
+      model account names), registered once, and its login command is the binary run interactively with HOME set to it.
       Antigravity accounts run concurrently with each other and with the other engines' accounts, each run
       reserved and charged to the account its dispatch recorded, moved off an account at its limit, with
       the re-run-or-ask decision, as for the other engines. CREDENTIALS is every name the binary makes a
@@ -163,7 +174,9 @@ acceptance_criteria:
       adapter configuring one is refused by name. login_problem refuses, before acceptance, an account
       folder whose settings select a model API provider, a Google Cloud or pay-as-you-go billing model, or
       AI credits use (paid_api:antigravity_login:<kind>), so a run at its plan quota stops at the limit and
-      never spends credits. Where the qualified binary's init event names the sign-in kind, the receiver
+      never spends credits. Because the account folder is the HOME of the run's tools (L6), no role grants
+      Antigravity until its login files are readable by the engine process only and never by its tool
+      children (ruling R7). Where the qualified binary's init event names the sign-in kind, the receiver
       writes the prompt only after it names a Google subscription sign-in (the Guard); the qualify command
       records whether it does (limit L3).
     falsified_by: >
@@ -180,10 +193,8 @@ rollback: >
 
 ## Intent
 
-Owner direction, Telegram 39045 (2026-11-04): "missing antigravity", on the plan to move our work onto
-Veldo's factory with all our model accounts. Google Antigravity's CLI (agy) runs on a Google AI subscription
-and already does reviews for us outside Veldo (scripts/agy_run.sh in myday). This specification makes it a
-third Veldo engine beside Claude Code and Codex, on exactly their terms and nothing more: pinned and
+Google Antigravity's CLI (agy) runs on a Google AI subscription and is already used for reviews outside
+Veldo. This specification makes it a third Veldo engine beside Claude Code and Codex, on exactly their terms and nothing more: pinned and
 qualified by the one command, launched headless in the run's containment with only the role's grant, its
 stream read into the run record, its accounts in the pool, subscription only.
 
@@ -196,8 +207,8 @@ login_problem, Guard), accounts.PROFILE_ENV and the engine tables in control_acc
 control_launch.py. The new module implements that protocol with the same signatures; nothing else in
 the protocol changes.
 
-The binary, probed read-only on 2026-11-04 (help, `agy models` on the agy1 account, its bytes and its
-embedded changelog; no prompt was run): the brief named 1.4.12, but ~/.local/bin/agy reported 1.5.0, its
+The binary, probed read-only on 2026-11-04 (help, `agy models` on one subscription account, its bytes and
+its embedded changelog; no prompt was run): the brief named 1.4.12, but ~/.local/bin/agy reported 1.5.0, its
 file rewritten at 03:16 that day by its own updater. It is one 238 MB executable outside any package
 manager, so it is pinned the way Claude Code's versioned copy is (VELDO-0060), not the way Codex's
 vendor binary is. Its headless mode is print mode with text, json or stream-json output; stream-json is a
@@ -209,10 +220,10 @@ object that is never saved, disable-slash-commands, sandbox, mode, effort and mo
 names the tools offered, no per-run MCP server option (servers live in the account's
 .gemini/config/mcp_config.json), and its subcommands (acp, agent, agents, changelog, help, install, mcp,
 mic-serve, models, plugin, plugins, remote-control, update) include no login status. `agy models` fetches
-the account's model list over the network (13 slugs on agy1: Gemini 4 Argon, Gemini 3.8 Flash, Claude Opus
+the account's model list over the network (13 slugs on the probed account: Gemini 4 Argon, Gemini 3.8 Flash, Claude Opus
 5.5 and Sonnet 5.5, GPT-OSS 120B, each at several efforts). Its quota is per model group with a five-hour
 and a weekly window; the stream reports exhaustion as "Individual quota reached ... Resets in 4h23m"
-(observed 2026-10-23 in myday) and, after plan quota with credits too low, "Your AI credits balance is too
+(observed 2026-10-23) and, after plan quota with credits too low, "Your AI credits balance is too
 low to continue." Its changelog also names a billing choice after a Google Cloud sign-in (a Gemini
 subscription or pay as you go) and a "Use AI Credits" setting: both are paid paths AC4 refuses.
 
@@ -248,7 +259,9 @@ is lifted by that version's decisions, not by this specification.
 - L6. The login folder is the worker's HOME. Claude Code and Codex name their login folder in a variable
   of their own, separate from HOME; Antigravity has none, so the worker's tools run with the account
   folder as their home (the Release 2 separation of login from tools, VELDO-0061 and 0062, applies here
-  too and is not added by this specification).
+  too and is not added by this specification). Under ruling R7 the login files must be unreadable to the
+  run's tools (by Landlock or a split HOME, under the sandboxed launch ticket of ruling R14) before any role
+  grants Antigravity (AC4).
 
 VELDO-0231 (on its own branch) names Antigravity's means of flagging the lead as the marked line; that is
 VELDO-0231's to carry, not this specification's.
@@ -258,13 +271,13 @@ VELDO-0231's to carry, not this specification's.
 Anything beyond parity: new roles, staffing Antigravity into a team, choosing which work it does, model
 selection policy, the Mac read-back (VELDO-0147), the terminal sandbox option (an item the
 qualify command decides like any other), and buying or enabling AI credits (never; spend gate).
-Migrating scripts/agy_run.sh in myday onto Veldo.
+Migrating any script that runs the CLI outside Veldo onto Veldo.
 
 ## What the reviewer judges
 
-- Normal use: on a host with agy 1.5.0 and the agy1 account, the one command qualifies all three engines
+- Normal use: on a host with agy 1.5.0 and one Antigravity account, the one command qualifies all three engines
   and a review role bound to `antigravity` runs a fake-backed and then one owner-approved real run inside
-  containment, its stream in the run record and its usage on agy1.
+  containment, its stream in the run record and its usage on that account.
 - Threat model: a paid path reached through an environment variable, a settings file, a Cloud sign-in or
   AI credits; a self-updated binary run unqualified; the account folder's rules, skills, plugins, hooks or
   MCP servers loaded into a run; a tool outside the role called and not stopped; a parent session's
@@ -279,3 +292,12 @@ embedded changelog); no prompt, no paid API, no settings change. The installed v
 1.4.12 the brief named: the self-update observed that day is why AC1 pins a copy.
 
 2026-11-04: approved by the owner, Telegram 39065 ("Yes approve all four"), with VELDO-0232, VELDO-0234, VELDO-0235 and core VELDO-3340. Status ready.
+
+2026-11-04: amended under the plan consistency review (veldo-plan-consistency-review-2026-11-04.md) and the
+lead's rulings (veldo-plan-rulings-2026-11-04.md), owner request Telegram 39145: the qualification record
+declares the model hosts and whether the binary honours the outside gate's proxy settings, and a version
+that ignores them fails closed and waits (A12, R5, R13); no role grants Antigravity until its login files are
+unreadable to the run's tools (A7, R7); no personal account label, path or project outside History, and the
+recorded run is redacted (B2, B7). The code on this branch is not changed; what it lacks is listed in
+proof/VELDO-0232/OPEN.md items 5 to 9. Status stays ready; the owner approves the amendments in one message.
+Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md on the veldo-parity-a branch.
