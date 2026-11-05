@@ -24,6 +24,16 @@ and every later station reads that record (pinned), not the project's binding an
 new revision or rebinding while a unit runs leaves it on its recorded revision; the next new unit takes the new one.
 A unit whose stations predate this record runs the shipped `code`, which is what it ran.
 
+CHECKS, FAN-OUTS AND JOINS (VELDO-0247). A unit's process may also hold check and join nodes and fan-outs (a port
+with several transitions), with the save rules of control_workflow (closed check configuration, at most
+FAN_OUT_CEILING branches, each branch reaching the one join naming them, no approval or outward step in a branch).
+A check reads only the fields the definition declares from the subject (the unit's record); the Line evaluates it
+as data. The walk starts every branch of a fan-out in the same pass, each with its own state (fork), counts every
+node of every branch in the step budget, and passes on from the join only when every branch has arrived. Two
+stations of one kind in different branches of a fan-out, and a gate in a branch (it runs inside the land, so the
+branch could never arrive), are refused at binding as unsupported_configuration:parallel_station:<node>: a unit
+holds one active dispatch per station (control_launch), so such branches could not run at the same time.
+
 WHAT IS NOT HERE. The save check that no definition reaches an outward step without the owner's approval is
 control_workflow.approval_problems (every save runs it); this module only loads, resolves and walks.
 """
@@ -94,14 +104,44 @@ def pin(definition, version):
     return {'id': definition['id'], 'version': version, 'digest': WF.definition_digest(definition)}
 
 
+ROUTING = (WF.CHECK, WF.JOIN)
+ARRIVED = object()
+
+
 def unit_problems(definition):
-    """Every problem of `definition` as a unit's process: the save problems, and any node that is not a station
-    kind (a VELDO-0132 cycle definition is not a unit process)."""
+    """Every problem of `definition` as a unit's process: the save problems, any node that is neither a station
+    kind nor a check or join (a VELDO-0132 cycle definition is not a unit process), and the parallel branches a
+    unit cannot run at the same time (parallel_problems)."""
     problems = WF.definition_problems(definition)
     if problems:
         return problems
-    return ['unsupported_configuration:not_a_station:%s' % name for name, node in sorted(definition['nodes'].items())
-            if not (WF.step_kind(node) or {}).get('station')]
+    problems = ['unsupported_configuration:not_a_station:%s' % name for name, node in sorted(definition['nodes'].items())
+                if not ((WF.step_kind(node) or {}).get('station') or node['kind'] in ROUTING)]
+    return problems or parallel_problems(definition)
+
+
+def blocks(definition):
+    """The fan-out blocks of a valid definition (control_workflow.block_problems)."""
+    return WF.block_problems(definition['nodes'], definition['transitions'])[1]
+
+
+def parallel_problems(definition):
+    """A station kind held by two branches of one fan-out, or a gate in a branch: parallel_station:<node>, naming
+    each node of a kind an earlier branch (in branch id order) already holds, and each gate."""
+    problems, nodes = [], definition['nodes']
+    for block in blocks(definition):
+        held = set()
+        for _branch, region in sorted(block['regions'].items()):
+            kinds = {}
+            for name in sorted(region):
+                kind = nodes[name]['kind']
+                if kind in ROUTING:
+                    continue
+                if kind == 'gate' or kind in held:
+                    problems.append('unsupported_configuration:parallel_station:%s' % name)
+                kinds.setdefault(kind, name)
+            held |= set(kinds)
+    return sorted(set(problems), key=problems.index)
 
 
 def bound_revision(store, conn, domain, repository, workflow, version):
@@ -168,21 +208,47 @@ def nodes_of(definition, kind):
     return sorted(name for name, node in definition['nodes'].items() if node['kind'] == kind)
 
 
-def walk(definition, start, act):
+def walk(definition, start, act, fork=None):
     """Run `act(node, kind)` from `start`: it answers ('port', port) to move on by that port's transition, or
-    ('stop', value) to end the walk with value. A walk longer than the definition's step budget stops
-    ('budget_exceeded:steps', None); a port with no transition stops ('missing_transition', None)."""
-    node, steps = start, 0
-    while steps < definition['budget']['steps']:
-        steps += 1
+    ('stop', value) to end the walk with value. A port with several transitions is a fan-out (VELDO-0247): every
+    branch is walked in the same pass, branch by branch in id order, each with `fork(branch id)`'s act (its own
+    state), up to its join; the walk goes on from the join only when every branch has arrived there, else it ends
+    with {branch id: the value its walk stopped with} for the branches that have not. A walk whose steps, every node
+    of every branch counted, pass the definition's step budget stops ('budget_exceeded:steps', None); a port with no
+    transition stops ('missing_transition', None)."""
+    starts = {(block['fan_out'], block['port']): block for block in blocks(definition)}
+    problem, value = _walk(definition, start, act, fork, starts, [definition['budget']['steps']], None)
+    return problem, (None if value is ARRIVED else value)
+
+
+def _walk(definition, node, act, fork, starts, budget, join):
+    """One walk from `node`; a branch's walk ends (None, ARRIVED) when it reaches its `join`."""
+    while True:
+        if join is not None and node == join:
+            return None, ARRIVED
+        if budget[0] <= 0:
+            return 'budget_exceeded:steps', None
+        budget[0] -= 1
         answer, value = act(node, definition['nodes'][node]['kind'])
         if answer == 'stop':
             return None, value
-        taken = transition(definition, node, value)
-        if taken is None:
-            return 'missing_transition:%s.%s' % (node, value), None
-        node = taken['to']
-    return 'budget_exceeded:steps', None
+        block = starts.get((node, value))
+        if block is None:
+            taken = transition(definition, node, value)
+            if taken is None:
+                return 'missing_transition:%s.%s' % (node, value), None
+            node = taken['to']
+            continue
+        waiting = {}
+        for branch, first in sorted(block['branches'].items()):
+            problem, got = _walk(definition, first, fork(branch) if fork else act, fork, starts, budget, block['join'])
+            if problem is not None:
+                return problem, None
+            if got is not ARRIVED:
+                waiting[branch] = got
+        if waiting:
+            return None, waiting
+        node = block['join']
 
 
 def metrics(processes):

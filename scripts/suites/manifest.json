@@ -1804,6 +1804,24 @@
    ],
    "regions": "Sixteen rows (VELDO-0259): ac1/resolution, ac1/kinds, ac1/missing-by-name, ac1/invalid-by-name, ac1/revision, ac1/one-reader, ac1/traces, ac1/no-personal-default, ac1/fresh-clone over the one installation reader; ac2/planted, ac2/masked, ac2/added-only, ac2/no-installation, ac2/publish-shares, ac2/stage-declared, ac2/product-clean over the personal-setup gate stage.",
    "requires_note": "Only ROOT and expect. Builds fixture installations with invented values and small Git candidates in a temporary folder, clones the checkout once, loads the reader, the check, publish.py, gate_schedule.py and the two consumers by path. Writes only temporary files; never reads a real installation."
+  },
+  {
+   "name": "128_veldo_0247_check_join",
+   "file": "128_veldo_0247_check_join.py",
+   "requires": [
+    "128_veldo_0247_check_join"
+   ],
+   "regions": "Check and join steps and parallel branches (VELDO-0247): the check's closed configuration refused by name at save, one branch taken per check and re-evaluated by the cycle, a forged branch refused, two assignment branches dispatched together and run in one LangGraph superstep with a join that waits for all its inputs, fan-outs bounded at eight, and the owner approval rule on every path through checks, branches and joins.",
+   "requires_note": "Only ROOT, expect and fast_temp. Real SQLite store with OpenSSH journal signatures, a real Git workspace and VELDO-0035 snapshot, the eligibility Gate, VELDO-0132 workflow saves and cycles on the VELDO-0045 activated LangGraph runtime staged into a temporary directory. Writes only temporary fixtures."
+  },
+  {
+   "name": "129_veldo_0247_line",
+   "file": "129_veldo_0247_line.py",
+   "requires": [
+    "129_veldo_0247_line"
+   ],
+   "regions": "The Line part of check and join steps and parallel branches (VELDO-0247): a unit's process holding a check, a fan-out and its join is accepted, the Line takes exactly one branch of a check and records why, refuses an unsupplied field and a recorded branch the subject no longer takes, offers both branches of a fan-out in one pass, passes the join only when every branch has arrived, counts every branch's nodes in the step budget, keeps fan-outs at eight and refuses two stations of one kind or the gate in parallel branches, and holds the owner approval rule on every path.",
+   "requires_note": "Only ROOT, expect and fast_temp. Real SQLite store with OpenSSH journal signatures, VELDO-0132 workflow saves, control_workflow_unit.bound_revision, and the Line of control_service.py with its station methods recorded instead of dispatched over fixture dispatch records. Writes only temporary fixtures."
   }
  ],
  "resource_capacities": {

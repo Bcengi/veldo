@@ -68,10 +68,11 @@ non_goals:
       operator.
       Amended 2026-11-04 by owner Telegram 39067 (yes to decision 2 of 39063, an owner-approved deploy
       step per release). Ruling applied: a project may deploy or publish only through a deploy or publish
-      step of its workflow, a named command run with keystore credentials after the project owner
-      approves that exact release, then checked (a container service, a storage bucket, a content pipeline,
-      a post to a social channel through its catalog server). Every deployment or publication without
-      that per-release approval, customer charging, telecom operations and integration with another
+      step of its workflow: the project owner approves that exact release (the exact commit, the artifact
+      digest, the target and the named action), a control-plane executor outside every run then performs
+      it with credentials from the keystore, and it is checked; no credential enters a run, and a run never
+      makes the release's writes itself. Targets are declared per installation. Every deployment or
+      publication without that per-release approval, customer charging, telecom operations and integration with another
       operator remain excluded.
   - id: NG3
     text: >
@@ -82,9 +83,10 @@ non_goals:
       Amended 2026-11-04 by owner Telegram 39067 (yes to decision 1 of 39063, Veldo runs non-software
       projects). Ruling applied: the owner's own projects may be non-software work (decks, financial
       models, plans, documents, images and video, social posts), built, reviewed, gated and landed or
-      delivered on his approval like any project. Paid image and video generation is allowed only as a
-      spend-gated exception, each use approved by the owner (decision 3 of 39063); text and code work
-      stays on the subscriptions. Other people's published prose and client-engagement material remain
+      delivered on the owner's approval like any project. Paid image and video generation is allowed only
+      as a spend-gated exception, each use approved by the owner (decision 3 of 39063): the generate call is
+      one write through the outside gate, approved as that exact request, and no credential enters a run;
+      text and code work stays on the subscriptions. Other people's published prose and client-engagement material remain
       excluded.
 
 constraints:
@@ -2131,3 +2133,16 @@ operations and another operator's integration stay excluded. Draft VELDO-0244, n
 VELDO-0086. No work item, edge, release or other text changes.
 
 2026-11-04: the NG2 and NG3 amendments approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092).
+
+2026-11-04: VELDO-0247 (Check and Join steps and parallel branches, owner Telegram 39079) joins the
+process-as-workflow drafts VELDO-0241 to VELDO-0245 under the NG3 amendment; standalone, no plan work item.
+
+2026-11-04: NG2 and NG3 amendments revised under the plan consistency review (owner Telegram 39145;
+research/veldo-plan-consistency-review-2026-11-04.md, findings A5, B12, D16) and the lead's rulings
+(research/veldo-plan-rulings-2026-11-04.md, R2, R3, R4): a release is approved as the exact commit, artifact
+digest, target and named action and performed by a control-plane executor outside every run with keystore
+credentials; a paid generate call is one write through the outside gate approved as that exact request; no
+credential enters a run; the list of example targets is removed (targets are declared per installation). No
+work item, edge, release or other text changes.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
