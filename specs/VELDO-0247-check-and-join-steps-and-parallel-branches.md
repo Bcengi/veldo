@@ -50,7 +50,7 @@ observability:
     unsupported_configuration:undeclared_field:<node>:<field>, unsupported_configuration:unknown_comparison:<node>:<name>,
     unsupported_configuration:code_like_value:<node>:<rule>, unsupported_configuration:value_type:<node>:<rule>,
     unsupported_configuration:fan_out_too_wide:<node>, unsupported_configuration:join_inputs:<node>,
-    unsupported_configuration:branch_escapes_join:<node>, and VELDO-0241's
+    unsupported_configuration:branch_escapes_join:<node> (also refuses a fan-out nested inside a branch), unsupported_configuration:parallel_station:<node> (two Line stations of one kind, or a gate, inside parallel branches of a unit's process), and VELDO-0241's
     invalid_input:missing_owner_approval:<node> and invalid_input:approval_not_last:<node>, which also name
     approval_in_branch:<node> and outward_in_branch:<node>. At run: a declared field with no value or the wrong
     type is invalid_input:field_unsupplied:<field>, never the otherwise path; a branch reported by the runner
@@ -209,3 +209,5 @@ VELDO-0241 to VELDO-0245 (Telegram 39069 to 39071). Standalone; no plan work ite
 2026-11-04: amended under the plan consistency review (owner Telegram 39145; research/veldo-plan-consistency-review-2026-11-04.md, findings A23, E4, E7) and the lead's rulings (research/veldo-plan-rulings-2026-11-04.md, R1): the rollback keeps definitions in the installation repository and says a later commit holding check or join is refused until changed; the LangGraph version is the pinned runtime. Status stays ready.
 
 2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
+
+2026-11-05: error taxonomy completed by the lead after the build: branch_escapes_join also names a nested fan-out (refused; no AC requires nesting), and parallel_station names Line stations that cannot run in parallel. Acceptance criteria unchanged.
