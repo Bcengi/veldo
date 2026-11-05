@@ -50,8 +50,9 @@ def _v259_installation_suite():
     }
     ROWS = ('ac1/resolution', 'ac1/kinds', 'ac1/missing-by-name', 'ac1/invalid-by-name', 'ac1/revision',
             'ac1/one-reader', 'ac1/traces', 'ac1/no-personal-default', 'ac1/fresh-clone',
-            'ac2/planted', 'ac2/masked', 'ac2/added-only', 'ac2/no-installation', 'ac2/publish-shares',
-            'ac2/stage-declared', 'ac2/product-clean')
+            'ac1/owner-sites', 'ac2/planted', 'ac2/masked', 'ac2/added-only', 'ac2/quoted-names',
+            'ac2/declared-base', 'ac2/no-installation', 'ac2/publish-shares', 'ac2/stage-declared',
+            'ac2/product-clean')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -357,16 +358,91 @@ def _v259_installation_suite():
         check('ac1/no-personal-default', 'the built-in shapes find nothing in the reader, the check and the '
               'consumers [%s]' % found, found == [])
 
+        # ---- AC1: every reader of the owner's identity or name goes through the installation ----------------
+        MIG = load('v259_migrate_to_veldo', ROOT / 'scripts' / 'migrate_to_veldo.py')
+        environ(VELDO_INSTALLATION=fixture)
+        ident, error = attempt(MIG.commit_identity)
+        check('ac1/owner-sites', 'the migration commits as the installation owner git identity [%s %s]'
+              % (ident, error), ident == (OWNER_NAME, 'owner@example.com'))
+        for folder, how in ((empty, 'empty'), (temp / 'absent', 'absent')):
+            environ(VELDO_INSTALLATION=folder)
+            _, error = attempt(MIG.commit_identity)
+            check('ac1/owner-sites', 'an %s installation refuses the migration identity by name [%s]' % (how, error),
+                  error == 'installation_missing:git_identities.owner')
+        calls = []
+
+        class RecordingGit:
+            @staticmethod
+            def run(args, **kwargs):
+                calls.append((list(args), kwargs.get('identity')))
+                return subprocess.CompletedProcess(args, 0, '', '')
+
+        class NoGate:
+            @staticmethod
+            def run(args, **kwargs):
+                return subprocess.CompletedProcess(args, 0, 'GATE: fixture\n', '')
+
+        real_git, real_subprocess = MIG._git_process, MIG.subprocess
+        MIG._git_process, MIG.subprocess = RecordingGit, NoGate
+        try:
+            environ(VELDO_INSTALLATION=empty)
+            _, error = attempt(lambda: MIG.run_gate(temp / 'migrated-empty'))
+            check('ac1/owner-sites', 'the produced tree is never committed without the installation owner [%s %s]'
+                  % (error, len(calls)), error == 'installation_missing:git_identities.owner' and calls == [])
+            environ(VELDO_INSTALLATION=fixture)
+            (temp / 'migrated').mkdir()
+            _, error = attempt(lambda: MIG.run_gate(temp / 'migrated'))
+            commits = [identity for args, identity in calls if 'commit' in args]
+            check('ac1/owner-sites', 'the produced tree is committed as the installation owner [%s %s]'
+                  % (error, commits), error is None and commits == [(OWNER_NAME, 'owner@example.com')])
+            check('ac1/owner-sites', 'the produced tree declares its one commit as its trunk',
+                  any(args[:2] == ['git', 'symbolic-ref'] and 'refs/remotes/origin/HEAD' in args for args, _ in calls))
+        finally:
+            MIG._git_process, MIG.subprocess = real_git, real_subprocess
+        source = (ROOT / 'scripts' / 'migrate_to_veldo.py').read_text()
+        check('ac1/owner-sites', 'the migration names no identity of its own',
+              'GIT_AUTHOR_NAME' not in source and 'GIT_COMMITTER_EMAIL' not in source)
+        # A recorded person in product code is the owner role id, never a person's name.
+        import ast
+        product = [p for p in git(ROOT, 'ls-files', '-z', '--', '.veldo/*.py', 'engine/.veldo/*.py', 'scripts/*.py',
+                                  'engine/scripts/*.py').split('\0') if p and '/suites/' not in p]
+        people = []
+        for rel in product:
+            tree = ast.parse((ROOT / rel).read_text())
+            for node in ast.walk(tree):
+                pairs = []
+                if isinstance(node, ast.Dict):
+                    pairs = [(k.value, v) for k, v in zip(node.keys, node.values) if isinstance(k, ast.Constant)
+                             and k.value in ('ruled_by', 'confirmed_by', 'validated_by')]
+                elif isinstance(node, ast.Call):
+                    name = getattr(node.func, 'id', getattr(node.func, 'attr', ''))
+                    pairs = [(k.arg, k.value) for k in node.keywords if name == 'intake_item' and k.arg == 'owner']
+                    if name == 'ExecutorCredential' and node.args:
+                        pairs.append(('credential', node.args[0]))
+                for key, value in pairs:
+                    # Role ids only: the owner's, and the conformance run's own principal.
+                    if isinstance(value, ast.Constant) and isinstance(value.value, str) \
+                            and value.value.split('-')[0] not in ('owner', 'conformance'):
+                        people.append('%s:%d %s' % (rel, node.lineno, key))
+        check('ac1/owner-sites', 'every recorded person in product code is the owner role id [%s]' % people,
+              people == [])
+        CASE = load('v259_naming', ROOT / '.veldo' / 'naming.py').CASE
+        check('ac1/owner-sites', 'the naming ruling records the owner role id', CASE.get('ruled_by') == 'owner')
+
         # ---- AC2: the gate over a candidate ----------------------------------------------------------------
-        def candidate(name, lines, base_lines=()):
+        def candidate(name, lines, base_lines=(), trunk='main', declared=True):
+            # The trunk is declared the way a clone and the lander declare it: refs/remotes/origin/HEAD.
             root = temp / name
             root.mkdir()
-            git(root, 'init', '-q', '-b', 'main')
+            git(root, 'init', '-q', '-b', trunk)
             (root / 'tests' / 'fixtures').mkdir(parents=True)
             (root / 'app.py').write_text('\n'.join(['x = 1'] + list(base_lines)) + '\n')
             (root / 'tests' / 'fixtures' / 'data.txt').write_text('fixture\n')
             git(root, 'add', '-A')
             git(root, 'commit', '-q', '-m', 'base')
+            if declared:
+                git(root, 'update-ref', 'refs/remotes/origin/' + trunk, 'HEAD')
+                git(root, 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/' + trunk)
             git(root, 'checkout', '-q', '-b', 'work')
             for rel, text in lines:
                 with open(root / rel, 'a') as handle:
@@ -429,6 +505,48 @@ def _v259_installation_suite():
         code, output = gate(reserved)
         check('ac2/added-only', 'reserved example domains in a fixture pass [%s]' % code, code == 0)
 
+        # Names Git quotes (non-ASCII, a double quote, a backslash) are judged like any other name.
+        environ(VELDO_INSTALLATION=temp / 'absent')
+        odd = ['plain.txt', 'caf\u00e9.txt', 'say "hi".txt', 'back\\slash.txt']
+        quoted = candidate('quoted', [(rel, 'WHERE = "%s"' % HOME_PATH) for rel in odd])
+        code, output = gate(quoted)
+        seen = [rel for rel in odd if ('personal_setup:home_path %s:1 ' % rel) in output]
+        check('ac2/quoted-names', 'committed files with quoted names are each refused [%s]' % seen,
+              code == 1 and seen == odd)
+        for rel in odd:
+            with open(quoted / rel, 'a') as handle:
+                handle.write('BUS = "%s"\n' % UID_PATH)
+        code, output = gate(quoted)
+        seen = [rel for rel in odd if ('personal_setup:login_uid %s:2 ' % rel) in output]
+        check('ac2/quoted-names', 'uncommitted lines of files with quoted names are each refused [%s]' % seen,
+              code == 1 and seen == odd)
+
+        # The base is the candidate's declared trunk, never a guess; none declared refuses by name.
+        planted_line = [('app.py', 'WHERE = "%s"' % HOME_PATH)]
+        named = candidate('trunk-named', planted_line, trunk='trunk')
+        code, output = gate(named)
+        check('ac2/declared-base', 'a committed value is refused against a trunk not called main [%s]' % code,
+              code == 1 and 'personal_setup:home_path app.py:2 ' in output)
+        for trunk in ('main', 'master', 'trunk'):
+            bare = candidate('undeclared-' + trunk, planted_line, trunk=trunk, declared=False)
+            code, output = gate(bare)
+            check('ac2/declared-base', 'no declared trunk (local %s present) refuses by name, never passes [%s %r]'
+                  % (trunk, code, output.strip().splitlines()[-1:]),
+                  code == 2 and 'personal setup: REFUSED personal_setup:no_base' in output)
+        code, output = gate(named, '--base', 'no-such-ref')
+        check('ac2/declared-base', 'a named base that does not resolve refuses by name [%s]' % code,
+              code == 2 and 'personal setup: REFUSED personal_setup:no_base' in output)
+        code, output = gate(candidate('undeclared-given', planted_line, declared=False), '--base', 'main')
+        check('ac2/declared-base', 'a base named on the command line is used [%s]' % code,
+              code == 1 and 'personal_setup:home_path app.py:2 ' in output)
+        empty_repo = temp / 'no-commits'
+        empty_repo.mkdir()
+        git(empty_repo, 'init', '-q', '-b', 'main')
+        (empty_repo / 'new.txt').write_text('fine\n')
+        code, output = gate(empty_repo)
+        check('ac2/declared-base', 'a repository with no commits judges its files and needs no base [%s]' % code,
+              code == 0)
+
         # No installation: the built-in shapes only, said on its own line.
         environ(VELDO_INSTALLATION=temp / 'absent')
         clean = candidate('clean', [('app.py', 'y = 2')])
@@ -484,8 +602,18 @@ def _v259_installation_suite():
 
         # ---- AC1: a fresh clone with no installation -------------------------------------------------------
         environ(VELDO_INSTALLATION=temp / 'absent')
+        # Published as a fresh clone sees it: the trunk the candidate declares is the remote's default
+        # branch, and the candidate is a branch on top of it.
+        published = temp / 'published.git'
+        git(temp, 'init', '-q', '--bare', '-b', 'main', str(published))
+        try:
+            trunk_tip = git(ROOT, 'rev-parse', '--verify', '-q', 'refs/remotes/origin/HEAD')
+        except RuntimeError:
+            trunk_tip = git(ROOT, 'rev-parse', 'HEAD')
+        git(ROOT, 'push', '-q', str(published), trunk_tip + ':refs/heads/main', 'HEAD:refs/heads/candidate')
         clone = temp / 'clone'
-        git(temp, 'clone', '-q', '--no-hardlinks', str(ROOT), str(clone))
+        git(temp, 'clone', '-q', '--no-hardlinks', str(published), str(clone))
+        git(clone, 'checkout', '-q', 'candidate')
         code, output = gate(clone)
         check('ac1/fresh-clone', 'a fresh clone with no installation passes the stage, built-in only [%s %s]'
               % (code, output.strip().splitlines()[-2:]), code == 0 and 'built-in shapes only' in output)

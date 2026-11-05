@@ -16,9 +16,12 @@ anybody and name nobody:
 With no installation the built-in shapes run alone and the check says so on its own line, so a
 contributor is not blocked by patterns they do not have.
 
-GATE MODE judges the lines the candidate adds against its base: the commits ahead of the trunk
-(origin/main, else main, else master, unless --base names one), the uncommitted changes and every line
-of an untracked file. SWEEP MODE judges every line of every file given (scripts/publish.py calls it over
+GATE MODE judges the lines the candidate adds against its base: the commits ahead of the trunk the
+candidate declares (refs/remotes/origin/HEAD, the ref a clone sets and the lander points at the trunk it
+gates against, unless --base names one), the uncommitted changes and every line of an untracked file.
+The base is never guessed: a repository with commits and no declared trunk is refused as
+personal_setup:no_base, never passed on its uncommitted lines alone. File names are read NUL-separated,
+so a name Git would quote (non-ASCII, a double quote, a backslash) is judged like any other. SWEEP MODE judges every line of every file given (scripts/publish.py calls it over
 the produced tree, so the gate and publication share one definition).
 
 A finding prints as `personal_setup:<category> <file>:<line> <masked>`, the mask being the first two
@@ -155,28 +158,43 @@ def _read(path):
 
 
 def _diff_added(text):
-    """Added lines of a -U0 unified diff as [(file, line number, text)]."""
-    out, rel, number = [], None, 0
+    """Added lines of a -U0 unified diff of ONE file as [(line number, text)]."""
+    out, number, body = [], 0, False
     for line in (text or '').splitlines():
-        if line.startswith('+++ '):
-            target = line[4:]
-            rel = target[2:] if target.startswith('b/') else None
-        elif line.startswith('@@'):
+        if line.startswith('@@'):
             hit = re.match(r'@@ -\S+ \+(\d+)', line)
-            number = int(hit.group(1)) if hit else 0
-        elif line.startswith('+') and rel is not None:
-            out.append((rel, number, line[1:]))
+            number, body = (int(hit.group(1)) if hit else 0), True
+        elif body and line.startswith('+'):
+            out.append((number, line[1:]))
             number += 1
     return out
 
 
-def base_ref(root):
-    head = (_git(root, 'rev-parse', 'HEAD') or '').strip()
-    for ref in ('origin/main', 'main', 'origin/master', 'master'):
-        found = (_git(root, 'rev-parse', '--verify', '-q', ref) or '').strip()
-        if found and found != head:
-            return ref
-    return None
+class NoBase(Exception):
+    code = 'personal_setup:no_base'
+
+
+# The trunk a candidate declares: a clone sets it to the remote's default branch, and the lander points
+# it at the trunk it syncs and gates against (lander.POLICY_HEAD_REF), whatever that trunk is named.
+DECLARED_TRUNK = 'refs/remotes/origin/HEAD'
+
+
+def base_ref(root, base=None):
+    """The commit the candidate's lines are judged against: `base` when named, else the declared trunk.
+    Raises NoBase when it does not resolve; a local main or master is never taken as a guess."""
+    ref = base or DECLARED_TRUNK
+    found = (_git(root, 'rev-parse', '--verify', '-q', ref + '^{commit}') or '').strip()
+    if not found:
+        raise NoBase('%s does not resolve to a commit' % ref)
+    return found
+
+
+def _changed(root, *revs):
+    """The files changed between revs (or revs and the working tree), NUL-separated, so no name is quoted."""
+    names = _git(root, 'diff', '--name-only', '-z', '--no-renames', '--diff-filter=d', *revs)
+    if names is None:
+        raise NoBase('git diff %s cannot be read' % ' '.join(revs))
+    return [n for n in names.split('\0') if n]
 
 
 def added_lines(root, base=None):
@@ -184,17 +202,16 @@ def added_lines(root, base=None):
     root = Path(root)
     added = {}
     flags = ('-U0', '--no-color', '--no-ext-diff', '--no-renames', '--text')
-    chunks = []
-    base = base or base_ref(root)
-    if base:
-        merge = (_git(root, 'merge-base', base, 'HEAD') or '').strip()
-        if merge:
-            chunks.append(_git(root, 'diff', *flags, merge, 'HEAD'))
+    ranges = []
     if (_git(root, 'rev-parse', '--verify', '-q', 'HEAD') or '').strip():
-        chunks.append(_git(root, 'diff', *flags, 'HEAD'))
-    for chunk in chunks:
-        for rel, number, text in _diff_added(chunk):
-            added[(rel, number, text)] = None
+        merge = (_git(root, 'merge-base', base_ref(root, base), 'HEAD') or '').strip()
+        if not merge:
+            raise NoBase('no merge base with %s' % (base or DECLARED_TRUNK))
+        ranges = [(merge, 'HEAD'), ('HEAD',)]
+    for revs in ranges:
+        for rel in _changed(root, *revs):
+            for number, text in _diff_added(_git(root, 'diff', *flags, *revs, '--', ':(literal)' + rel)):
+                added[(rel, number, text)] = None
     for rel in (_git(root, 'ls-files', '-z', '--others', '--exclude-standard') or '').split('\0'):
         text = _read(root / rel) if rel else None
         for number, line in enumerate((text or '').splitlines(), 1):
@@ -270,7 +287,8 @@ def main(argv=None):
         else:
             findings = gate(args.root, args.base, out=out)
     except Exception as error:  # an unreadable installation is red, never a silent pass
-        out.write('personal setup: REFUSED %s\n' % getattr(error, 'code', type(error).__name__))
+        out.write('personal setup: REFUSED %s%s\n' % (getattr(error, 'code', type(error).__name__),
+                  ': %s; name the base with --base' % error if isinstance(error, NoBase) else ''))
         return 2
     return 1 if findings else 0
 
