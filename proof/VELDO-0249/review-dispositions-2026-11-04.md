@@ -1,0 +1,48 @@
+# Review dispositions, 2026-11-04: the gate and installation cluster
+
+Scope: VELDO-0249 (this worktree), VELDO-0251 and VELDO-0252 (veldo-0251), VELDO-0253 (veldo-0253), VELDO-0250 (veldo-0250) and the factory README. Sources: the plan consistency review and the lead's rulings R1 to R14 of 2026-11-04, kept in the owner's installation repository (research/), owner request Telegram 39145. One line per finding handled.
+
+- A8: applied. 0251 AC2: the engine's model login is the one credential where a run executes, readable by the engine process only, never by tool children, via the VELDO-0254 sandbox (R7); new row.
+- A15: applied. 0253 AC1 declares roles/ and teams/ kinds; AC2 counts a role capability grant or team change as widening (R8).
+- A16: applied. 0253 AC1 declares memory/ (the memory manifest), whose servers a run reaches only as services/ entries (R5).
+- A21: applied. 0253 AC1 gives the inbound file cap a home in installation.yaml and the render command, deploy targets, spend checklist and renumber hook a home in projects/; the other specs' wording belongs to their writers.
+- A22: applied for 0253 only. 0253 no longer depends on VELDO-0246 (see D6); the 0246 text itself belongs to its writer.
+- A23: applied, no edit. 0253's footprint already covers control_project.py and control_workflow*.py.
+- A24: applied for my specs. 0249 AC1 and 0252 AC1: a workflow owner_approval node and an approved schedule raise their approval through the same exact-request mechanism (R4); 0240 and 0241 wording belongs to their writers.
+- B1: applied. Owner field is the role id `owner` in 0249, 0250, 0251, 0252, 0253 and their index rows.
+- B2: applied outside History. "Telegram 28962" left the review sections of 0249, 0251, 0252; 0250's Intent quotes moved into its History; History ids stay for now, as instructed (VELDO-0250 maps them to decision references).
+- B12 class (0249): applied. The owner's connectors plan, its point numbers and "P-A" left 0249's Intent, Context, AC4 and Out of scope.
+- B15: applied. 0250 AC2 and Context: the full inventory is personal setup, moves to records/ with the scrub, and the product proof keeps counts only.
+- B16: applied, no edit. 0250 AC4's fresh public root already covers commit authorship.
+- C1: applied. 0252 AC1: the run submits the exact request first, the service stores it under a request id and the presentation is built from it decoded; 0249 AC1 and Design name the stored request (R4).
+- C2: applied. 0249 AC1 and 0252 AC1: canonical digests for form bodies (sorted fields) and multipart (ordered part headers with each part's sha256, boundary ignored); new rows (R4).
+- C3: applied. 0251 and 0252 Out of scope: releases, deploys, pipelines, chunked uploads and many-write batches are one owner-approved release performed by a control-plane executor; per-call approval is for single writes (R3).
+- C4: applied, no edit. 0249 keeps the addressed-dispatch keying; the dispatch fixes belong to the writers of 0181, 0241, 0243, 0244 and 0245.
+- C5: applied. 0251 AC1: read-only forward route (GET and HEAD, TLS ended at the outside gate, no credential, forward_write_refused); rows (R5).
+- C6: applied. 0251 AC1 and AC3: registries and git fetch as declared read routes, POST reads only by a reviewed read override, no git push from a run (R5).
+- C7: applied. 0251 AC1, AC2, AC4: a database is a read-only MCP server behind the outside gate on a read-only role reaching only its declared host and port; SMTP and other non-HTTP services unreachable (R5).
+- C8: applied for memory. 0251 AC1: host loopback and Unix socket services only as gate services, with a row; the core test-port part is outside my specs.
+- C9: applied. 0251 AC1: each engine version's model hosts come from its qualification record, recorded by the qualify run; qualify.py added to the footprint (R5).
+- C10: applied. 0251 footprint adds control_engine_antigravity.py; rows read "every engine the engines record names" in 0251 and 0249.
+- C11: applied. 0252 AC4: setup installs user units for the outside gate and the service, restarted on failure, refused on a wrong pin; relay per dispatch; ports from the installation; rows.
+- C12: applied in part. 0252 AC4 refuses a host without secret-tool by name (host_prerequisite_missing); the user namespace prerequisite belongs to VELDO-0254 (R14) and the cutover plan is outside my specs.
+- C13: applied, no edit. Covered by 0251 AC1; the end state for host programs is cutover work (C21).
+- C14: applied. 0252 depends on VELDO-0234 and cites it for the redirect origin; Notes carry the generic testing-status refresh token note for docs/outside-services.md.
+- C15: applied for my specs. 0251 Design 6 and Out of scope: Veldo's own calls (tracker, provisioner, landing push, channel, doorbell) do not go through the outside gate (R6); the tracker ticket is not mine.
+- C16: applied. 0251 AC4 allows a list of credentials per service and a paid flag (R11); 0252 AC4 sends every declared credential upstream; the spend checklist has its home in 0253's projects/ kind.
+- C17: applied. 0253 AC1: setup over an existing factory writes one import commit for every declared kind, recorded as accepted without a widening decision.
+- C18: applied. 0253 AC1 is the full kind list, with research/ and notes/ declared ignored (R1).
+- C19: applied. 0253 AC2's widening list adds new service, base URL, route template, credential reference or location, read override, tools snapshot, grant scopes or endpoints, deploy target, render command, renumber hook, plus role, team and schedule changes (R8).
+- C20: applied. 0253 AC1: installation.yaml declares the git remote and Veldo pushes each commit it makes there, never with force, installation_push_failed on refusal; the open question and the no-push Out of scope line are removed (R9).
+- C23: applied. 0253 AC1: setup creates the repository at the VELDO-0250 resolution path unless given one and records VELDO_INSTALLATION.
+- C24: applied. 0251 Design 6 and 0252 AC3: messages and files Veldo sends the owner through its own channel need no per-call approval (R6).
+- D1: applied. 0251 depends on VELDO-0254 instead of VELDO-0209 and VELDO-0210; AC1, Context, Design and rollback cite the VELDO-0254 sandbox (R14).
+- D2: applied. 0253 AC1 is the one layout; 0250 AC1 and 0251 AC4 cite it; the installation overrides the product's own files (0250 AC1, 0253 AC1); the factory README matches (R1).
+- D3: applied. 0251 AC3 and AC4: declarations are installation files changed by commits, a read override is a widening under 0253 AC2; VELDO-0203 leaves 0251's depends_on; 0249 AC4 cites the approved read override.
+- D4: applied. Graph runs one way: 0249 drops 0251 and 0252, 0251 drops 0252, 0252 keeps 0249 and 0251; all three say they build and land as one unit.
+- D5: applied as staging, not a split. 0250 Design "Order": AC1 and AC3 land first, AC2 and AC4 last; a split would need new ids other writers are allocating today, and one spec with a stated order meets the finding.
+- D6: applied. VELDO-0246 leaves 0253's depends_on.
+- E1: applied. 0251 AC3, 0252 Design and 0249 AC1: a two-phase prepare or validate-only call that reaches the vendor is a write unless a read override citing the vendor's documentation names it (R12).
+- E2: applied through D3, no further edit. 0251 AC3 already allows an exact-tool read override; the memory servers' declarations belong to the 0183 writer.
+- E3: applied through C3, no further edit.
+- E6: applied. agentgateway is "the outside gate" in 0249, 0251 and 0252 (titles, criteria, prose, index rows), with the term defined in 0251's Intent.
