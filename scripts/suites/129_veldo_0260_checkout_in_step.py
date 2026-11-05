@@ -35,11 +35,12 @@ def _v260_suite():
     PRODUCTION = {
         'control_landing.py': ROOT / ".veldo" / "control_landing.py",
         'control_landing_station.py': ROOT / ".veldo" / "control_landing_station.py",
+        'control_service.py': ROOT / ".veldo" / "control_service.py",
     }
     ROWS = ('unit/set', 'unit/in-progress', 'unit/locked', 'set/main', 'set/linked', 'set/detached', 'move/clean',
             'move/untracked-ignored', 'move/lost-swap', 'move/restore-failed', 'dirty/edited', 'dirty/staged',
-            'dirty/unmovable', 'dirty/reland', 'dirty/waits', 'none/other-branch', 'observe/metrics')
-    (US, UP, UL, SM, SL, SD, MC, MU, ML, MR, DE, DS, DU, DR, DW, NO, OM) = ROWS
+            'dirty/unmovable', 'dirty/reland', 'dirty/waits', 'dirty/wakes', 'none/other-branch', 'observe/metrics')
+    (US, UP, UL, SM, SL, SD, MC, MU, ML, MR, DE, DS, DU, DR, DW, DK, NO, OM) = ROWS
     rows = {name: [] for name in ROWS}
     started = time.monotonic()
 
@@ -201,9 +202,9 @@ def _v260_suite():
                 return 'CHECK_%s="na:fixture"' % match.group(1)
             return re.sub(r'(?m)^CHECK_([A-Za-z0-9_]+)=".*"$', declare, text)
 
-        MAIN, LINKED, DETACHED, OTHER, LOST, EDIT, STAGED, LOCKED, RESTORE, WAIT = (
-            'VELDO-97%02d' % n for n in range(1, 11))
-        UNITS = (MAIN, LINKED, DETACHED, OTHER, LOST, EDIT, STAGED, LOCKED, RESTORE, WAIT)
+        MAIN, LINKED, DETACHED, OTHER, LOST, EDIT, STAGED, LOCKED, RESTORE, WAIT, WAKE = (
+            'VELDO-97%02d' % n for n in range(1, 12))
+        UNITS = (MAIN, LINKED, DETACHED, OTHER, LOST, EDIT, STAGED, LOCKED, RESTORE, WAIT, WAKE)
         seed = base / 'seed'
         seed.mkdir()
         GP.run(['git', 'init', '-q', '-b', 'main', str(seed)], check=True, capture_output=True)
@@ -387,7 +388,7 @@ def _v260_suite():
         CSV = load('v260_service', mods / 'control_service.py')
         CSV.LS = LS
         loop = CSV.FactoryLoop.__new__(CSV.FactoryLoop)
-        loop.wakes, loop.ended, loop.timer = [], [], None
+        loop.wakes, loop.ended, loop.timer, loop.trees = [], [], None, {}
         line = CSV.Line.__new__(CSV.Line)
         line.loop, line.station, line.repository, line.roles = loop, station, REPO, {}
         line.service = types.SimpleNamespace(conn=writer, principal='authority')
@@ -402,13 +403,20 @@ def _v260_suite():
         def drive(sid, wakes, cap=6):
             made = []
             for source in wakes:
-                loop.wake(source)
+                if source is not None:
+                    loop.wake(source)
                 while loop.wakes and len(made) < cap:
-                    loop.wakes = []
+                    made_by = [w.get('source') for w in loop.wakes]
+                    loop.wakes, loop.trees = [], {}
                     report = {'offered': [], 'refused': [], 'lands': [], 'waiting': [], 'asked': []}
                     line.next(sid, {}, report)
-                    made.append(report)
+                    made.append(dict(report, sources=made_by))
             return made
+
+        def iterate(sid, cap=6):
+            # One service loop iteration with no packet, run end or timer: only the watched trees may wake a pass.
+            loop.trees_changed()
+            return drive(sid, [None], cap)
 
         def effect(dispatch):
             got = row('effect:' + str(dispatch))
@@ -650,6 +658,31 @@ def _v260_suite():
               and records[-1].get('state') == 'landed' and records[-1].get('follows') == refused.get('dispatch_id')
               and in_step(caller, local_tip()) and len(passes) == 2)
 
+        # The wake: a waiting landing re-lands once, with no other event, after the tree is cleaned.
+        git(caller, 'checkout', '-q', 'main')
+        (caller / 'README.md').write_text('an edit only the tree watch may end\n')
+        refused = land(WAKE)
+        before_gates = len(gated)
+        passes = drive(WAKE, ['run_end'])
+        waits = [r for p in passes for r in p['refused']]
+        check(DK, 'the re-land waits on the dirty tree, watched by the loop [%s %s]'
+              % ([w.get('refusals') for w in waits], sorted(loop.trees)),
+              refused.get('state') == 'trunk_moved' and len(passes) == 1 and len(waits) == 1
+              and waits[0].get('working_tree') == str(caller) and sorted(loop.trees) == [str(caller)])
+        idle = [iterate(WAKE) for _ in range(3)]
+        check(DK, 'while nothing in the tree changes no iteration wakes a pass, rebuilds or gates [%s]' % idle,
+              idle == [[], [], []] and len(gated) == before_gates and len(station.records(WAKE)) == 1)
+        git(caller, 'checkout', '-q', '--', 'README.md')
+        woke = iterate(WAKE)
+        records = station.records(WAKE)
+        check(DK, 'once cleaned, the next iteration wakes one pass from the tree alone and it re-lands once [%s %s]'
+              % ([p.get('sources') for p in woke], [summary(r) for r in records]),
+              [p.get('sources') for p in woke] == [['working_tree']] and len(records) == 2
+              and records[-1].get('state') == 'landed' and records[-1].get('follows') == refused.get('dispatch_id')
+              and len(gated) == before_gates + 1 and in_step(caller, local_tip()))
+        check(DK, 'after it landed nothing is watched and no further iteration wakes a pass',
+              loop.trees == {} and iterate(WAKE) == [] and len(station.records(WAKE)) == 2)
+
         # error taxonomy: a tree that cannot be moved (its index locked) refuses as unmovable.
         git(caller, 'checkout', '-q', 'main')
         lock = Path(git(caller, 'rev-parse', '--absolute-git-dir')) / 'index.lock'
@@ -680,13 +713,13 @@ def _v260_suite():
         published = [e for e in events if e.get('operation') == 'local_publication']
         check(OM, 'every local publication event names its working trees and their outcome [%s]'
               % [e.get('checkout_outcome') for e in published],
-              len(published) == 14 and all('checkouts' in e and e.get('checkout_outcome') for e in published)
+              len(published) == 16 and all('checkouts' in e and e.get('checkout_outcome') for e in published)
               and all(set(c) <= {'path', 'clean', 'outcome', 'changes', 'in_progress', 'reason'}
                       for e in published for c in e['checkouts']))
         counted = landings[-1].status().get('checkouts') or {}
         check(OM, 'the counts by working-tree outcome [%s]' % counted,
-              counted.get('none_checked_out') == 3 and counted.get('moved_with_trunk') == 5
-              and counted.get('refused_local_changes') == 3 and counted.get('refused_unmovable') == 1
+              counted.get('none_checked_out') == 3 and counted.get('moved_with_trunk') == 6
+              and counted.get('refused_local_changes') == 4 and counted.get('refused_unmovable') == 1
               and counted.get('restored_after_lost_swap') == 1 and counted.get('restore_failed') == 1)
 
     try:

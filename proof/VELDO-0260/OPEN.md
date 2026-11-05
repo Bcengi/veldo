@@ -17,9 +17,11 @@ A re-land of a land refused for a checked-out tree now waits: `LandStation.land`
 `Landing.checkout_held` (git worktree list, git status, an index.lock test, a writability test of the directories the
 move writes) and, while a tree is still dirty or unmovable, refuses `trunk_checkout_dirty:<tree>` /
 `trunk_checkout_unmovable:<tree>` with the brief before any dispatch is opened, rebuilt or gated. Line.reland records
-that refusal and does not wake the loop, so nothing spins; once nothing holds, exactly one re-land runs. Remaining,
-outside this footprint (`control_service.py`): the probe runs on a pass something else woke (a journal advance, a
-run's end, the account timer); no watch on the working tree wakes a pass by itself when it becomes clean.
+that refusal and does not wake the loop, so nothing spins; once nothing holds, exactly one re-land runs. In fix round 2
+(footprint widened to `control_service.py`) the waiting tree is itself a wake source: a change to its git index,
+HEAD or index.lock wakes one pass, whose cheap probe decides (row `dirty/wakes`). Still not watched: a tree made
+movable again by a directory permission change alone (the `cannot write in` reason) touches none of those files,
+so it is noticed on the next pass anything else wakes.
 
 ## C. PDF
 

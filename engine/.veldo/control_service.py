@@ -101,8 +101,9 @@ anything else refuses installation by name) into config/work.json, and `serve` b
 one Line per repository, whose VELDO-0039 Runner dispatches through the repository's installed launch receiver,
 choosing each dispatch's account from the VELDO-0160 pool, over this instance's connection as its principal. A
 pass starts only when something woke it: a packet or channel pass that advanced the journal (hint_after), a run's
-end on a launch pipe the service loop's poll set watches, or the account reset timer the last pass set for the
-earliest reset a waiting unit needs. A pass settles each run that ended (a receiver that died has its run
+end on a launch pipe the service loop's poll set watches, the account reset timer the last pass set for the
+earliest reset a waiting unit needs, or (VELDO-0260) a change to the git index, HEAD or index lock of a working
+tree a waiting re-land names (the station's cheap probe then decides; no rebuild or gate is polled). A pass settles each run that ended (a receiver that died has its run
 recorded outcome_unknown and its account slot freed), offers every unit the builder holds a claim on its next
 station (build, then review once the build completed; the Gate refuses a paused project's units, so none is
 offered), and carries out VELDO-0160's re-run-or-ask decision for a run its account's limit stopped: the same
@@ -2282,10 +2283,20 @@ class Line:
         holder, generation = self.claim_of(unit)
         entry = {'repository': self.repository, 'unit': unit, 'station': LS.STATION, 'identity': self.service.principal,
                  'follows': last['dispatch_id'], 'rerun_of': None}
+        # VELDO-0260: the tree a refused local publication named, its git files read before the station's cheap probe,
+        # so a change made while the probe ran still differs from what the loop then watches.
+        seen = (last.get('observed') or {}).get('working_tree')
+        before = (seen, tree_signature(seen)) if isinstance(seen, str) and seen else None
         try:
             record = self.station.land(unit, evidence=last['evidence'], holder=holder, generation=generation,
                                        follows=last['dispatch_id'])
         except LS.Refused as error:
+            word, _, tree = error.code.partition(':')
+            if word in CHECKOUT_WAITS and tree:
+                # The landing waits on that working tree: a change to its git files wakes the loop (watch_tree).
+                self.loop.watch_tree(tree, before[1] if before and before[0] == tree else tree_signature(tree))
+                report['refused'].append(dict(entry, refusals=[error.code], working_tree=tree))
+                return None
             report['refused'].append(dict(entry, refusals=[error.code]))
             return None
         report['offered'].append(dict(entry, dispatch_id=record['dispatch_id'], attempt=record['attempt'],
@@ -2775,13 +2786,51 @@ class ConversationLine:
         return launch
 
 
+# VELDO-0260: the refusal words of a re-land that waits on a working tree holding the trunk, and the files of that
+# tree's git directory whose change wakes the loop (`working_tree`): its index, its HEAD and its index lock.
+CHECKOUT_WAITS = ('trunk_checkout_dirty', 'trunk_checkout_unmovable')
+TREE_WATCHED = ('index', 'HEAD', 'index.lock')
+
+
+def tree_git_dir(tree):
+    """VELDO-0260: the git directory of working tree `tree` (its `.git` directory, or the one a linked tree's `.git`
+    file names), read without running git; None when there is none."""
+    dot = os.path.join(tree, '.git')
+    if os.path.isdir(dot):
+        return dot
+    try:
+        text = Path(dot).read_text()
+    except (OSError, ValueError):
+        return None
+    if not text.startswith('gitdir:'):
+        return None
+    found = text[len('gitdir:'):].strip()
+    return found if os.path.isabs(found) else os.path.normpath(os.path.join(tree, found))
+
+
+def tree_signature(tree):
+    """VELDO-0260: what a change of working tree `tree` changes: its git directory and, for each watched file, its
+    inode, size and change times (None for one absent). Stats only; nothing is run or written."""
+    found, marks = tree_git_dir(tree), []
+    for name in TREE_WATCHED:
+        try:
+            info = os.stat(os.path.join(found, name)) if found else None
+        except OSError:
+            info = None
+        marks.append(None if info is None else (info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns))
+    return found, tuple(marks)
+
+
 class FactoryLoop:
     """THE FACTORY LOOP (VELDO-0154): the Runner of every line, inside this authority service, the one scheduling
-    instance. A pass starts only from its three WAKE SOURCES: a packet or channel pass that advanced the journal
+    instance. A pass starts only from its WAKE SOURCES: a packet or channel pass that advanced the journal
     (`journal`, from hint_after), a run's end seen on its launch pipe (`run_end`: the receiver's `exited` or
-    `unknown` report, or the pipe's end of file when the receiver died), and the account reset timer (`account_reset`,
-    set to the earliest reset a waiting unit needs). Nothing else starts one: the service loop's accept timeout
-    and channel pass start none, and the loop never polls. The wakes a service loop iteration collects make one
+    `unknown` report, or the pipe's end of file when the receiver died), the account reset timer (`account_reset`,
+    set to the earliest reset a waiting unit needs), and (VELDO-0260) a change to the git index, HEAD or index lock
+    of a working tree a re-land waits on (`working_tree`, watch_tree and trees_changed: a stat of those files at
+    each service loop iteration, never a pass, a rebuild or a gate by itself; on the wake the station's cheap probe
+    decides). Nothing else starts one: the service loop's accept timeout and channel pass start none, and the loop
+    never polls for work. The wakes a service loop iteration collects make one
     pass. Each pass is logged (kind `loop`) with its sources and what it ended, freed, offered, refused, left
     waiting, decided and asked, each land dispatch it ran (VELDO-0148), and the timer it set."""
 
@@ -2800,6 +2849,7 @@ class FactoryLoop:
         conversation_path = conversation_receiver(service.config)
         self.conversation = ConversationLine(self, conversation_path) if conversation_path else None
         self.wakes, self.ended, self.timer = [], [], None
+        self.trees = {}
         self.passes, self.last = 0, None
         self.counts = {'offered': 0, 'conversation_offered': 0, 'refused': 0, 'waiting': 0,
                        'asked': 0, 'released': 0, 'faults': 0, 'lands': 0}
@@ -2970,6 +3020,22 @@ class FactoryLoop:
     def wake(self, source, detail=None):
         self.wakes.append({'source': source, 'detail': detail, 'at': time.time()})
 
+    def watch_tree(self, tree, signature):
+        """VELDO-0260: a re-land waits on working tree `tree`, whose git files read `signature` before the probe
+        refused it; until the next pass, a change to them wakes the loop."""
+        self.trees[tree] = signature
+
+    def trees_changed(self):
+        """VELDO-0260: every watched working tree whose index, HEAD or index lock changed wakes the loop
+        (`working_tree`), once; the pass it starts asks the station's cheap probe again. Returns the trees."""
+        changed = []
+        for tree, signature in sorted(self.trees.items()):
+            if tree_signature(tree) != signature:
+                del self.trees[tree]
+                changed.append(tree)
+                self.wake('working_tree', tree)
+        return changed
+
     def pipes(self):
         """{fd: (line, launch)}: the launch pipe of every dispatch a Runner of this loop watches."""
         found = {}
@@ -3009,6 +3075,8 @@ class FactoryLoop:
         wakes, self.wakes = self.wakes, []
         ended, self.ended = self.ended, []
         self.timer = None
+        # VELDO-0260: the trees this pass's re-lands still wait on are watched again; the others no longer.
+        self.trees = {}
         self.passes += 1
         report = {'kind': 'loop', 'operation': 'loop_pass', 'pass': self.passes, 'at': time.time(),
                   'domain_uuid': self.service.domain, 'principal': self.service.principal,
@@ -3050,6 +3118,7 @@ class FactoryLoop:
 
     def status(self):
         return {'available': True, 'passes': self.passes, 'timer': self.timer, 'counts': dict(self.counts),
+                'watched_trees': sorted(self.trees),
                 'running': sorted(d for line in self.lines.values() for d in line.runner.launches),
                 'orphans': sorted(d for line in self.lines.values() for d in line.runner.orphans),
                 'last_sources': (self.last or {}).get('sources'),
@@ -3218,6 +3287,9 @@ def serve(config_path):
                             service.loop.readable(pipes[fd])
                     if service.loop is not None and service.loop.due(time.time()):
                         service.loop.wake('account_reset')
+                    # VELDO-0260: a working tree a waiting re-land names changed its git index, HEAD or index lock.
+                    if service.loop is not None and service.loop.trees:
+                        service.loop.trees_changed()
                     if service.channel is not None and not stopping and time.monotonic() >= next_pass:
                         service.channel_pass()
                         next_pass = time.monotonic() + CH.POLL_SECONDS

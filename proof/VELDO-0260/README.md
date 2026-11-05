@@ -70,3 +70,22 @@ written here, as for VELDO-0235: it follows the gate and review.
   cases (the four earlier plus step260-reland-spins, step260-restore-failed-relands), each mutant red on its row.
   Neighbour suites (70, 86, 107, 108, 128, every suite with those prefixes): `round1-neighbour-suites.txt`, 0 failed.
   `check_template_sync`, `check_docs`, `check_lint`, `check_generated`: pass. The full gate was not run.
+
+## Fix round 2 (open item B: a cleaned tree waited for another event)
+
+- The lead widened the footprint to `control_service.py` (both copies; spec History). A re-land the station refuses
+  `trunk_checkout_dirty:<tree>` / `trunk_checkout_unmovable:<tree>` now makes that tree a wake source of the service
+  loop, as the account reset timer is (VELDO-0154): `Line.reland` calls `FactoryLoop.watch_tree` with the stat
+  signature of the tree's git `index`, `HEAD` and `index.lock` (read before the probe, so a change during the probe
+  is not lost), and each service loop iteration calls `FactoryLoop.trees_changed`, which wakes one pass
+  (`working_tree`) when any of them changed. On that pass the station's cheap probe decides; a stat is the only
+  per-iteration work, never a rebuild, gate or pass. Each pass re-arms only the trees its re-lands still wait on.
+  The probe's `git status` runs with `--no-optional-locks`, so it never writes the index and never wakes itself.
+- Row `dirty/wakes` (suite 129, unit VELDO-9711): one pass leaves the tree watched; three idle iterations wake
+  nothing, gate nothing, open nothing; after `git checkout -- README.md` the next iteration wakes exactly one pass
+  from `working_tree` alone and it re-lands once, landed and in step; afterwards nothing is watched.
+- Falsifier: `step260-tree-never-wakes` (the wake removed) is red on `dirty/wakes`. `mutations/run.json`: finding
+  260, 7 registered, 7 executed, 7 rejected, status passed (diff dir outside the tree; the diffs copied here).
+- `round2-after-fix.txt`: suite 129, 18 of 18 rows, 44 checks. `round2-neighbour-suites.txt`: every suite with
+  prefix 70, 86, 107, 108, 128, 0 failed. `check_generated`, `check_template_sync`, `check_lint`: pass. The full
+  gate was not run.

@@ -1,0 +1,5 @@
+--- a/.veldo/control_service.py
++++ b/.veldo/control_service.py
+@@ -3036 +3036 @@
+-                self.wake('working_tree', tree)
++                pass  # defect: a change to the watched working tree wakes no pass

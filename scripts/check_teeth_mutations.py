@@ -12177,6 +12177,11 @@ def cases():
         "                unrestored = next((c for c in trees if c['outcome'] == 'restore_failed'), None)\n",
         "                unrestored = None  # defect: a failed rollback ends as trunk-moved\n",
         ['move/restore-failed'])
+    # Fix round 2 (AC3): the waiting landing's working tree is no wake source, so a cleaned tree waits for an event.
+    add(260, 'step260-tree-never-wakes', step260, 'control_service.py',
+        "                self.wake('working_tree', tree)\n",
+        "                pass  # defect: a change to the watched working tree wakes no pass\n",
+        ['dirty/wakes'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
