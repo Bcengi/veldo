@@ -82,6 +82,16 @@ terminal source or a missing predicate is refused by name.
 
 Each transition appends one entry to the record's `history` and never changes an earlier one.
 
+THE LANDING DESTINATION (VELDO-0235). A project lands its approved candidates in one of two ways, its
+`landing_destination`: land_and_push (the approved commit is pushed to the project's remote, VELDO-0057)
+or land_locally (it becomes the project's local trunk and nothing is pushed). A record without the field
+reads as land_and_push (landing_destination(data)) and is never rewritten for it. Only the owner's signed
+`set_landing_destination` command changes it, checked as every operation after activation is (an active
+person holding project_owner in a scope covering the project, the owner the record names, the record's
+current version); a value outside the two is refused invalid_input:landing_destination and nothing is
+written. It is not a lifecycle edge: the state and `history` are unchanged, and the record appends one
+entry to `landing_destination_history` naming the old and new value, the owner and his command id.
+
 WHAT BELONGS TO A PROJECT. Its units: execution units whose `project` is the name, or whose chain
 (backlog item, objective, project_uuid) ends at the project. Objectives: `project_uuid` is the
 project's id. Assignments: an inbox assignment whose scope names the project or whose unit is one
@@ -126,7 +136,11 @@ ID_PREFIX = 'project:'
 OPERATION = 'project_operation'
 OWNER = 'VELDO-0076 project lifecycle'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
-OPERATIONS = ('activate', 'pause', 'resume', 'cancel', 'complete')
+OPERATIONS = ('activate', 'pause', 'resume', 'cancel', 'complete', 'set_landing_destination')
+# VELDO-0235: where a project's landings end, the record's field, and the one value a record without it reads as.
+LANDING_DESTINATION = 'landing_destination'
+LAND_AND_PUSH, LAND_LOCALLY = 'land_and_push', 'land_locally'
+LANDING_DESTINATIONS = (LAND_AND_PUSH, LAND_LOCALLY)
 # VELDO-0149: the two paths an activation comes by, and the activation request a settled answer answers:
 # a VELDO-0068 request of this touchpoint whose terms target the project under this target kind.
 ACTIVATION_PATHS = ('signed_command', 'settled_answer', 'new_project')
@@ -216,6 +230,13 @@ def activation_target(proposal):
     the proposal, so a settled answer names exactly what it activates."""
     name = proposal.get('project') if isinstance(proposal, dict) else None
     return {'kind': ACTIVATION_TARGET, 'ref': project_id(str(name)), 'digest': _digest(proposal)}
+
+
+def landing_destination(data):
+    """The landing destination a project record's data names (VELDO-0235): its field, or land_and_push when the
+    record has none, so every project written before the field keeps today's landing."""
+    value = data.get(LANDING_DESTINATION, LAND_AND_PUSH) if isinstance(data, dict) else LAND_AND_PUSH
+    return value if value in LANDING_DESTINATIONS else None
 
 
 def charter_problems(charter):
@@ -433,6 +454,13 @@ class Projects:
                 params['disposition'] = command['disposition']
             if op == 'resume':
                 self._activation_evidence(data, state, name, now)
+            if op == 'set_landing_destination':
+                value = command.get(LANDING_DESTINATION)
+                if value not in LANDING_DESTINATIONS:
+                    raise Refused('invalid_input:landing_destination', 'land_and_push or land_locally')
+                params[LANDING_DESTINATION] = value
+                params['previous'] = landing_destination(data)
+                observation.update(previous=params['previous'], landing_destination=value)
         versions = {eid: entities.get(eid, {}).get('version', 0) for eid in (pid, principal, key['key_id'])}
         observation['accepted_versions'] = versions
         stored = dict(command_id=command['command_id'], principal=principal, operation=OPERATION, parameters=params,
@@ -698,6 +726,15 @@ class Projects:
         if current is None or current.get('kind') != KIND:
             raise Refused('no_such_project', pid)
         data = json.loads(json.dumps(current['data']))
+        if op == 'set_landing_destination':
+            # VELDO-0235: not a lifecycle edge; the destination and one entry naming the change.
+            value = params.get(LANDING_DESTINATION)
+            if value not in LANDING_DESTINATIONS:
+                raise Refused('invalid_input:landing_destination', 'land_and_push or land_locally')
+            data['landing_destination_history'] = list(data.get('landing_destination_history') or []) + [
+                dict(entry, previous=landing_destination(data), landing_destination=value)]
+            data[LANDING_DESTINATION] = value
+            return {pid: {'kind': KIND, 'data': data}}
         source = data.get('state')
         target = {'pause': 'PAUSED', 'resume': 'ACTIVE', 'cancel': 'CANCELED', 'complete': 'COMPLETED'}[op]
         if op == 'resume':

@@ -1,0 +1,418 @@
+{
+ "cases": [
+  {
+   "baseline": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 9.976,
+    "targets": {
+     "tailscale/serve-bg": [
+      true
+     ]
+    }
+   },
+   "case": "api171-funnel-in-place-of-serve",
+   "module": ".veldo/control_factory_setup_api.py",
+   "mutant": {
+    "failed_details": [],
+    "failed_rows": [
+     "VELDO-0171 tailscale/serve-bg"
+    ],
+    "returncode": 0,
+    "seconds": 9.978,
+    "targets": {
+     "tailscale/serve-bg": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "571bb40114ab55036d3bb068ff402855f785ea38c03dee8242142a4620919e77",
+   "new": "    code, _out, _err = cli.run(['funnel', '--bg', '--https=%d' % https_port, target(port)])  # defect: Funnel publishes the API\n",
+   "noop": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 9.996,
+    "targets": {
+     "tailscale/serve-bg": [
+      true
+     ]
+    }
+   },
+   "noop_sha256": "bd4b3c81f3781aec6aaf93238b36ee3c414ae77860afacab500558f431dce7d4",
+   "old": "    code, _out, _err = cli.run(['serve', '--bg', '--https=%d' % https_port, target(port)])\n",
+   "replacement_count": 1,
+   "restored": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 9.504,
+    "targets": {
+     "tailscale/serve-bg": [
+      true
+     ]
+    }
+   },
+   "rows": [
+    "tailscale/serve-bg"
+   ],
+   "source_sha256": "bd4b3c81f3781aec6aaf93238b36ee3c414ae77860afacab500558f431dce7d4",
+   "suite": "85_veldo_0171_setup_api.py",
+   "verdict": "red_under_mutant_green_restored"
+  },
+  {
+   "baseline": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 9.477,
+    "targets": {
+     "passkey/first-enrollment": [
+      true
+     ]
+    }
+   },
+   "case": "api171-origin-loopback",
+   "module": ".veldo/control_factory_setup_api.py",
+   "mutant": {
+    "failed_details": [],
+    "failed_rows": [
+     "VELDO-0171 api/service-configuration",
+     "VELDO-0171 passkey/first-enrollment",
+     "VELDO-0171 api/content-security-policy"
+    ],
+    "returncode": 0,
+    "seconds": 9.458,
+    "targets": {
+     "passkey/first-enrollment": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "0e21fe17eac0f3d309c83920e803c00d3128facdbd6865e4b2933fcdfc447557",
+   "new": "            'api': {'origin': target(port), 'rp_id': name, 'host': authority_of(name, https_port),  # defect: the loopback address as the origin\n",
+   "noop": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 9.993,
+    "targets": {
+     "passkey/first-enrollment": [
+      true
+     ]
+    }
+   },
+   "noop_sha256": "bd4b3c81f3781aec6aaf93238b36ee3c414ae77860afacab500558f431dce7d4",
+   "old": "            'api': {'origin': origin_of(name, https_port), 'rp_id': name, 'host': authority_of(name, https_port),\n",
+   "replacement_count": 1,
+   "restored": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 9.479,
+    "targets": {
+     "passkey/first-enrollment": [
+      true
+     ]
+    }
+   },
+   "rows": [
+    "passkey/first-enrollment"
+   ],
+   "source_sha256": "bd4b3c81f3781aec6aaf93238b36ee3c414ae77860afacab500558f431dce7d4",
+   "suite": "85_veldo_0171_setup_api.py",
+   "verdict": "red_under_mutant_green_restored"
+  },
+  {
+   "baseline": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 7.995,
+    "targets": {
+     "port/own-port-occupied": [
+      true
+     ],
+     "port/serve-own-port": [
+      true
+     ]
+    }
+   },
+   "case": "port234-serve-state-reads-443",
+   "module": ".veldo/control_factory_setup_api.py",
+   "mutant": {
+    "failed_details": [
+     [
+      "VELDO-0234 port/serve-own-port",
+      "setup on port 8443 beside the other app completed [{'outcome': 'refused', 'reason': 'invalid_input:tailscale_serve:occupied', 'detail': \"the tailnet name's HTTPS port 443 already maps elsewhere\"}]"
+     ],
+     [
+      "VELDO-0234 port/own-port-occupied",
+      "the refusal names port 8443 [the tailnet name's HTTPS port 443 already maps elsewhere]"
+     ],
+     [
+      "VELDO-0234 origin/configurations",
+      "setup on port 8443 beside the other app completed [{'outcome': 'refused', 'reason': 'invalid_input:tailscale_serve:occupied', 'detail': \"the tailnet name's HTTPS port 443 already maps elsewhere\"}]"
+     ],
+     [
+      "VELDO-0234 origin/first-enrollment",
+      "setup on port 8443 beside the other app completed [{'outcome': 'refused', 'reason': 'invalid_input:tailscale_serve:occupied', 'detail': \"the tailnet name's HTTPS port 443 already maps elsewhere\"}]"
+     ],
+     [
+      "VELDO-0234 origin/443-unchanged",
+      "setup on port 8443 beside the other app completed [{'outcome': 'refused', 'reason': 'invalid_input:tailscale_serve:occupied', 'detail': \"the tailnet name's HTTPS port 443 already maps elsewhere\"}]"
+     ],
+     [
+      "VELDO-0234 rerun/same-port",
+      "setup on port 8443 beside the other app completed [{'outcome': 'refused', 'reason': 'invalid_input:tailscale_serve:occupied', 'detail': \"the tailnet name's HTTPS port 443 already maps elsewhere\"}]"
+     ],
+     [
+      "VELDO-0234 rerun/other-port",
+      "setup on port 8443 beside the other app completed [{'outcome': 'refused', 'reason': 'invalid_input:tailscale_serve:occupied', 'detail': \"the tailnet name's HTTPS port 443 already maps elsewhere\"}]"
+     ],
+     [
+      "VELDO-0234 rerun/pre-change-host",
+      "setup on port 8443 beside the other app completed [{'outcome': 'refused', 'reason': 'invalid_input:tailscale_serve:occupied', 'detail': \"the tailnet name's HTTPS port 443 already maps elsewhere\"}]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0234 port/serve-own-port",
+     "VELDO-0234 port/own-port-occupied",
+     "VELDO-0234 origin/configurations",
+     "VELDO-0234 origin/first-enrollment",
+     "VELDO-0234 origin/443-unchanged",
+     "VELDO-0234 rerun/same-port",
+     "VELDO-0234 rerun/other-port",
+     "VELDO-0234 rerun/pre-change-host"
+    ],
+    "returncode": 0,
+    "seconds": 2.977,
+    "targets": {
+     "port/own-port-occupied": [
+      false
+     ],
+     "port/serve-own-port": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "67818db1f0eb1622808eaf2f0a8c6cda650495e5ba693bcfa4e8ebc1d88f876a",
+   "new": "    chosen = HTTPS_PORT  # defect: only the HTTPS root is ever read\n",
+   "noop": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 8.503,
+    "targets": {
+     "port/own-port-occupied": [
+      true
+     ],
+     "port/serve-own-port": [
+      true
+     ]
+    }
+   },
+   "noop_sha256": "bd4b3c81f3781aec6aaf93238b36ee3c414ae77860afacab500558f431dce7d4",
+   "old": "    chosen = https_port\n",
+   "replacement_count": 1,
+   "restored": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 8.496,
+    "targets": {
+     "port/own-port-occupied": [
+      true
+     ],
+     "port/serve-own-port": [
+      true
+     ]
+    }
+   },
+   "rows": [
+    "port/serve-own-port",
+    "port/own-port-occupied"
+   ],
+   "source_sha256": "bd4b3c81f3781aec6aaf93238b36ee3c414ae77860afacab500558f431dce7d4",
+   "suite": "127_veldo_0234_https_port.py",
+   "verdict": "red_under_mutant_green_restored"
+  },
+  {
+   "baseline": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 8.011,
+    "targets": {
+     "origin/configurations": [
+      true
+     ],
+     "origin/first-enrollment": [
+      true
+     ]
+    }
+   },
+   "case": "port234-origin-without-port",
+   "module": ".veldo/control_factory_setup_api.py",
+   "mutant": {
+    "failed_details": [
+     [
+      "VELDO-0234 port/serve-own-port",
+      "the report names the port, the origin, the Serve mapping done and the mappings left alone [{'https_port': 8443, 'origin': 'https://factory.invalid', 'serve': {'https_port': 8443, 'left_alone': ['factory.invalid:443'], 'mapping': 'done'}}]"
+     ],
+     [
+      "VELDO-0234 origin/configurations",
+      "veldo.api_service/v1: origin https://<name>:8443, rp_id <name> [https://factory.invalid factory.invalid]"
+     ],
+     [
+      "VELDO-0234 origin/first-enrollment",
+      "two passkeys register with Host <name>:8443 and Origin https://<name>:8443 [unauthorized:origin unauthorized:origin]"
+     ],
+     [
+      "VELDO-0234 rerun/same-port",
+      "a re-run with --https-port 8443 is accepted and reports every step already done [refused invalid_input:state_root:holds_https_port]"
+     ],
+     [
+      "VELDO-0234 rerun/other-port",
+      "a re-run with --https-port 443 is refused as invalid_input:state_root:holds_https_port, writing nothing [invalid_input:tailscale_serve:occupied []]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0234 port/serve-own-port",
+     "VELDO-0234 origin/configurations",
+     "VELDO-0234 origin/first-enrollment",
+     "VELDO-0234 rerun/same-port",
+     "VELDO-0234 rerun/other-port"
+    ],
+    "returncode": 0,
+    "seconds": 8.016,
+    "targets": {
+     "origin/configurations": [
+      false
+     ],
+     "origin/first-enrollment": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "00ce562ef6a65ffe1ed52846a03b698f69401779fe12d637520c1dc29ca76c36",
+   "new": "    return 'https://' + name  # defect: the origin drops the tailnet HTTPS port\n",
+   "noop": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 8.528,
+    "targets": {
+     "origin/configurations": [
+      true
+     ],
+     "origin/first-enrollment": [
+      true
+     ]
+    }
+   },
+   "noop_sha256": "bd4b3c81f3781aec6aaf93238b36ee3c414ae77860afacab500558f431dce7d4",
+   "old": "    return 'https://' + authority_of(name, https_port)\n",
+   "replacement_count": 1,
+   "restored": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 8.534,
+    "targets": {
+     "origin/configurations": [
+      true
+     ],
+     "origin/first-enrollment": [
+      true
+     ]
+    }
+   },
+   "rows": [
+    "origin/configurations",
+    "origin/first-enrollment"
+   ],
+   "source_sha256": "bd4b3c81f3781aec6aaf93238b36ee3c414ae77860afacab500558f431dce7d4",
+   "suite": "127_veldo_0234_https_port.py",
+   "verdict": "red_under_mutant_green_restored"
+  },
+  {
+   "baseline": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 9.044,
+    "targets": {
+     "rerun/other-port": [
+      true
+     ]
+    }
+   },
+   "case": "port234-rerun-takes-option",
+   "module": ".veldo/control_factory_setup.py",
+   "mutant": {
+    "failed_details": [
+     [
+      "VELDO-0234 rerun/other-port",
+      "a re-run with --https-port 443 is refused as invalid_input:state_root:holds_https_port, writing nothing [invalid_input:tailscale_serve:occupied []]"
+     ]
+    ],
+    "failed_rows": [
+     "VELDO-0234 rerun/other-port"
+    ],
+    "returncode": 0,
+    "seconds": 9.024,
+    "targets": {
+     "rerun/other-port": [
+      false
+     ]
+    }
+   },
+   "mutant_sha256": "64f7e6f3081b0b0495ecde46c6c5f7fa4aaaa8ee42c7bc387a5669b49ead924c",
+   "new": "    https_port = API.HTTPS_PORT if https_port is None else https_port  # defect: the laid port is not kept\n",
+   "noop": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 9.048,
+    "targets": {
+     "rerun/other-port": [
+      true
+     ]
+    }
+   },
+   "noop_sha256": "ef80075c3e0b3b0936a0d4d01f4c3a67c64fa7df65c9089a0ebfaaf11bcbb0f0",
+   "old": "    https_port = rerun_https_port(API.laid_https_port(os.path.join(host, API.SERVICE_CONFIG)), https_port, holds)\n",
+   "replacement_count": 1,
+   "restored": {
+    "failed_details": [],
+    "failed_rows": [],
+    "returncode": 0,
+    "seconds": 8.521,
+    "targets": {
+     "rerun/other-port": [
+      true
+     ]
+    }
+   },
+   "rows": [
+    "rerun/other-port"
+   ],
+   "source_sha256": "ef80075c3e0b3b0936a0d4d01f4c3a67c64fa7df65c9089a0ebfaaf11bcbb0f0",
+   "suite": "127_veldo_0234_https_port.py",
+   "verdict": "red_under_mutant_green_restored"
+  }
+ ],
+ "commit": "7fc61e45b36054ef24af5306ccff273b69128851",
+ "driver": "scripts/check_teeth_mutations.py --worker (unconfined; see OPEN.md)",
+ "driver_sha256": "f167ef3ed86ad6f54fa6cedb8a2987adc8d7dff64120bf647e7f51d8fee7d33c",
+ "proven": 5,
+ "registered": 5,
+ "schema": "veldo.falsifier_receipt/v1",
+ "spec": "VELDO-0234",
+ "suites": {
+  "127_veldo_0234_https_port.py": "06b34ef18d62915bb320ff3132cdd929dd3e177a5fe79c58ca573292ab45c221",
+  "85_veldo_0171_setup_api.py": "15ad3483560aa76a4ac1d13fc0f264fa88404252292b2382a9e76cc602b3e0ad"
+ }
+}

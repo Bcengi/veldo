@@ -1,0 +1,164 @@
+# Fix round 1 (review F2), 2026-11-04: UI specs on the projects.ts and ProjectsView.vue of d18d1d4c
+## npx vitest run src/features/projects/projects.spec.ts (locked node_modules, npm ci in a scratch copy)
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./src/ui/icons" without a file extension (vite.config.ts:5:23). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /tmp/v235-fix1-ui/engine/ui
+
+ > src/features/projects/projects.spec.ts (5 tests | 2 failed) 10ms
+   > projects (5)
+     x names each project's landing destination in words, land and push when the record names none (VELDO-0235) 3ms
+     x names the remote and trunk the read serves for each project, never "its remote" or "its trunk" (VELDO-0235 AC3) 1ms
+
+------- Failed Tests 2 -------
+
+ FAIL  src/features/projects/projects.spec.ts > projects > names each project's landing destination in words, land and push when the record names none (VELDO-0235)
+AssertionError: expected [ [ 'land_and_push', ...(1) ], ...(1) ] to deeply equal [ [ 'land_and_push', ...(1) ], ...(1) ]
+
+- Expected
++ Received
+
+  [
+    [
+      "land_and_push",
+-     "land and push to the remote",
++     "land and push to its remote",
+    ],
+    [
+      "land_and_push",
+-     "land and push to the remote",
++     "land and push to its remote",
+    ],
+  ]
+
+ > src/features/projects/projects.spec.ts:28:80
+     26|   it('names each project\'s landing destination in words, land and pus...
+     27|     const local = { items: { project: [item('project:c', 'project', { ...
+     28|     expect(projectsOf(answer).map((p) => [p.destination, p.destination...
+       |                                                                                ^
+     29|       ['land_and_push', 'land and push to the remote'], ['land_and_pus...
+     30|     expect(projectsOf(local).map((p) => [p.destination, p.destinationW...
+
+------------------------[1/2]-
+
+ FAIL  src/features/projects/projects.spec.ts > projects > names the remote and trunk the read serves for each project, never "its remote" or "its trunk" (VELDO-0235 AC3)
+AssertionError: expected [ [ 'c', ...(1) ], [ 'd', ...(1) ] ] to deeply equal [ [ 'c', ...(1) ], [ 'd', ...(1) ] ]
+
+- Expected
++ Received
+
+  [
+    [
+      "c",
+-     "land locally on main, nothing pushed",
++     "land locally on its trunk, nothing pushed",
+    ],
+    [
+      "d",
+-     "land and push to upstream",
++     "land and push to its remote",
+    ],
+  ]
+
+ > src/features/projects/projects.spec.ts:41:73
+     39|       landing: { c: { remote: 'origin', trunk: 'main' }, d: { remote: ...
+     40|     } as unknown as ReadAnswer
+     41|     expect(projectsOf(served).map((p) => [p.name, p.destinationWords])...
+       |                                                                         ^
+     42|       ['c', 'land locally on main, nothing pushed'], ['d', 'land and p...
+     43|   })
+
+------------------------[2/2]-
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  16:57:10
+   Duration  571ms (environment 77%, transform 19%, tests 2%, import 1%, setup 1%)
+
+## npx vitest run src/features/projects/ProjectsView.spec.ts (locked node_modules, npm ci in a scratch copy)
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./src/ui/icons" without a file extension (vite.config.ts:5:23). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /tmp/v235-fix1-ui/engine/ui
+
+stderr | src/features/projects/ProjectsView.spec.ts > ProjectsView landing destination (VELDO-0235 AC3) > names each project's destination on its card
+[Vue warn]: Extraneous non-props attributes (data-slot, class) were passed to component but could not be automatically inherited because component renders fragment or text or teleport root nodes. 
+  at <Anonymous key=0 icon="lucide-panel-left" mode="svg"  ... > 
+  at <Icon key=0 name="i-lucide-panel-left" data-slot="leadingIcon"  ... > 
+  at <Primitive as="button" type="button" disabled=undefined  ... > 
+  at <LinkBase data-slot="base" aria-label="Expand sidebar" aria-expanded="false"  ... > 
+  at <PrimitiveSlot key=1 > 
+  at <Link type=undefined disabled=undefined custom=""  ... > 
+  at <Button icon="i-lucide-panel-left" color="neutral" variant="ghost"  ... > 
+  at <ScreenHeader title="Projects" back=undefined > 
+  at <ProjectsView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+stderr | src/features/projects/ProjectsView.spec.ts > ProjectsView landing destination (VELDO-0235 AC3) > names the selected project's destination in its detail panel
+[Vue warn]: Extraneous non-props attributes (data-slot, class) were passed to component but could not be automatically inherited because component renders fragment or text or teleport root nodes. 
+  at <Anonymous key=0 icon="lucide-panel-left" mode="svg"  ... > 
+  at <Icon key=0 name="i-lucide-panel-left" data-slot="leadingIcon"  ... > 
+  at <Primitive as="button" type="button" disabled=undefined  ... > 
+  at <LinkBase data-slot="base" aria-label="Expand sidebar" aria-expanded="false"  ... > 
+  at <PrimitiveSlot key=1 > 
+  at <Link type=undefined disabled=undefined custom=""  ... > 
+  at <Button icon="i-lucide-panel-left" color="neutral" variant="ghost"  ... > 
+  at <ScreenHeader title="Projects" back=undefined > 
+  at <ProjectsView ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+ > src/features/projects/ProjectsView.spec.ts (2 tests | 2 failed) 54ms
+   > ProjectsView landing destination (VELDO-0235 AC3) (2)
+     x names each project's destination on its card 45ms
+     x names the selected project's destination in its detail panel 9ms
+
+------- Failed Tests 2 -------
+
+ FAIL  src/features/projects/ProjectsView.spec.ts > ProjectsView landing destination (VELDO-0235 AC3) > names each project's destination on its card
+Error: Unable to get [data-testid="project-destination"] within: <li class="factory-card" aria-current="true" data-project="core"><button type="button" class="factory-card-button"><span class="factory-card-title">core</span><span class="factory-meta"><span class="factory-tag">ACTIVE</span><span>0 objectives</span>
+    <!--v-if--></span>
+    <!--v-if-->
+  </button></li>
+ > DOMWrapper.get node_modules/@vue/test-utils/dist/vue-test-utils.cjs.js:7333:15
+ > src/features/projects/ProjectsView.spec.ts:44:61
+     42|     const wrapper = await screen('/projects')
+     43|     const named = Object.fromEntries(wrapper.findAll('[data-project]')...
+     44|       .map((card) => [card.attributes('data-project'), card.get('[data...
+       |                                                             ^
+     45|     expect(named).toEqual({ core: 'land locally on main, nothing pushe...
+     46|   })
+ > src/features/projects/ProjectsView.spec.ts:44:8
+
+------------------------[1/2]-
+
+ FAIL  src/features/projects/ProjectsView.spec.ts > ProjectsView landing destination (VELDO-0235 AC3) > names the selected project's destination in its detail panel
+Error: Unable to get [data-testid="project-detail-destination"] within: <section class="panel" aria-labelledby="project-detail" data-testid="project-detail" data-project="core">
+  <h2 id="project-detail" class="panel-title">core <span class="factory-tag">ACTIVE</span></h2>
+  <div class="factory-body">
+    <!--v-if-->
+    <h3 class="panel-title">Objectives <span class="panel-count">0</span></h3>
+    <ul class="factory-list">
+      <li class="factory-meta">No objective yet.</li>
+    </ul>
+  </div>
+</section>
+ > DOMWrapper.get node_modules/@vue/test-utils/dist/vue-test-utils.cjs.js:7333:15
+ > src/features/projects/ProjectsView.spec.ts:51:19
+     49|     const detail = wrapper.get('[data-testid="project-detail"]')
+     50|     expect(detail.attributes('data-project')).toBe('core')
+     51|     expect(detail.get('[data-testid="project-detail-destination"]').te...
+       |                   ^
+     52|     expect(detail.text()).not.toContain('its remote')
+     53|     expect(detail.text()).not.toContain('its trunk')
+
+------------------------[2/2]-
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  16:57:32
+   Duration  1.24s (environment 39%, transform 31%, import 25%, tests 5%)
+

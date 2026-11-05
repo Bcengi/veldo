@@ -1735,6 +1735,27 @@
    ],
    "regions": "Four rows (VELDO-0230 AC2, AC3): qualify/builtin-plugins, against a fake Claude Code whose bytes register built-in plugins its logged-out init probe does not load, discovery finds every registered one, each new one is listed with its evaluation, a granted one is accepted in the init comparison present or absent and the rest turned off, and an unlisted plugin still stops the run; qualify/reproduces, python3 .veldo/qualify.py run in scratch against the Codex and Claude Code binaries the engines record names succeeds and every file it writes is byte-identical to the checkout's; qualify/covers, the files it writes include the engines record and both qualification records in both runtimes, the VELDO-0127 fixtures and every table the readers of the binaries write (the suite's own list, the two VELDO-0156 captures among them).; qualify/gate-reads, every binary the engines record names lies beneath an optional_read_roots entry of scripts/agent_sandbox.json and of its engine canon, so the gate's confinement and its mutation workers can run the qualified binaries",
    "requires_note": "Only ROOT and expect. Copies .veldo, engine/runtime, packs and the extractor and VELDO-0127 proof directories into scratch and runs the copy's qualify command there; runs the qualified binaries offline in empty profiles (extractor reads, features list, bundled catalog, loopback capture, Claude Code init probe). Writes only temporary files."
+  },
+  {
+   "name": "127_veldo_0234_https_port",
+   "file": "127_veldo_0234_https_port.py",
+   "requires": [
+    "127_veldo_0234_https_port"
+   ],
+   "regions": "veldo factory setup taking the tailnet HTTPS port as an option (443 by default, 8443 or 10000, any other refused as invalid_input:https_port before a write), mapping only that port beside another app's Serve mapping of the HTTPS root and refusing the chosen port when another target or Funnel holds it, writing https://<name>:<port> as origin and <name>:<port> as Host with the bare name as relying party id in the API service and process configurations, the passkey bindings and credential record and the report (a first enrollment and sign-in over the installed API on 8443), byte for byte VELDO-0171's configuration on 443, a same-port re-run changing nothing, an other-port re-run refused as invalid_input:state_root:holds_https_port, and a host laid down by commit 043c2ef6 re-run without the option read as 443 with every file kept (VELDO-0234).",
+   "requires_note": "Only ROOT and expect. VELDO-0171's installed-host fixture (suite 85's setup preamble and cleanup, reused as VELDO-0227 reuses it) with the real setup module, its user manager stand-in running the installed authority and API units, its Tailscale stand-in (its captured Serve status edited to hold another app's mapping of the HTTPS root) and loopback Bot API; openssl ES256 passkeys over HTTP to the installed API's loopback listener with Host <name>:8443; the .veldo of commit 043c2ef6 read from history through git_process. Writes only temporary fixtures.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
+  },
+  {
+   "name": "128_veldo_0235_land_locally",
+   "file": "128_veldo_0235_land_locally.py",
+   "requires": [
+    "128_veldo_0235_land_locally"
+   ],
+   "regions": "A project's landing destination (VELDO-0235): a record without the field reading as land_and_push and landing to the remote, never rewritten; the owner's signed set_landing_destination accepted and recorded with the old and new value and his command id, any other value, another key's signature, another principal and an unsigned command refused writing nothing; land_locally through the land station moving the caller's local main to the candidate by compare-and-swap with the receipt and spec.shipped, the bare origin byte for byte unchanged and no push, fetch or ls-remote logged; a local main moved after the watermark refused as trunk_moved, kept, and re-landed; the owner's grant brief naming the destination in words; a destination changed after the grant refused as stale_subject:landing/destination, asked again and landed after the fresh grant bound to it; land_and_push, set or absent, with today's effect contract, executor push, remote re-read and receipt.",
+   "requires_note": "Only ROOT, expect and launcher_fds. Real Git (a scaffolded seed and its own gate, a bare origin with a recording pre-receive hook, the caller's and the publication clones), VELDO-0153's identity wire and a logging git first on PATH, the SQLite store with OpenSSH signatures, the VELDO-0076 project service, the land station, the lander, VELDO-0057's Landing and the VELDO-0028 executor process; control_service's Line.grant over a recording inbox. Fixture units, floor handoffs, approvals and candidate policy. Writes only temporary files."
   }
  ],
  "resource_capacities": {

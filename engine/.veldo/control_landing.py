@@ -52,6 +52,24 @@ is always about the revision that was approved and published, never the revision
 completion. Only then does it run the VELDO-0051 projection (control_event_projection), which alone
 derives spec.shipped from that receipt; a refused projection makes the completion not ok, named.
 
+THE LANDING DESTINATION (VELDO-0235). Each landing runs under its project's landing destination
+(control_project.landing_destination, land_and_push when the record has none). land_and_push is every
+step above, byte for byte. land_locally keeps every check before publication (step 2) and replaces steps
+3 to 5 and the remote re-read: the candidate's objects are copied into the project's own repository (the
+land configuration's `repository`) with pack-objects and unpack-objects, the publication is a
+compare-and-swap of its local refs/heads/<trunk> from the recorded watermark (its local tip when the
+candidate was built) to the candidate commit (`git update-ref <ref> <new> <old>`, atomic under the ref
+lock), recorded by this module as the dispatch's publication `effect:<dispatch>` (accepted before the swap,
+then completed with its one destination at the tip, or refused), and completion re-reads that local ref and
+commits the same revision_landed receipt. No remote is listed, fetched or pushed, the executor is not
+called and no push credential is read. A local trunk that moved after the watermark is a refused
+publication, `stale-subject` when found before the swap and `trunk-moved` when the swap itself loses, so the
+land station re-lands it (VELDO-0148), and the moved trunk is never overwritten. The destination is bound:
+an approval whose subject names another destination (one without the field names land_and_push) refuses
+the publication as stale_subject:landing/destination, as does a destination changed since the land
+dispatch began; when that and an older tree are all a grant lacks, the refusal names the exact subject a
+fresh grant binds, its destination included for land_locally.
+
 WHAT IT IS NOT. Release 1 function only: a lost or ambiguous publication stays stopped under its
 original identity with no recovery (Release 2), the receipt is replicated only into the local signed
 journal (off-host replication is Release 2), and a remote tip that moves between the publication and
@@ -119,8 +137,69 @@ EXECUTOR_REFUSALS = {'stale-subject': 'stale_subject', 'missing-evidence': 'miss
 # longer at the watermark) or between the listing and the push (the lease lost to a commit that does not
 # contain the candidate). A publication refused so is followed by a re-land (control_landing_station).
 TRUNK_MOVED = ('stale-subject', 'trunk-moved')
-# The refusals of the subject that only a grant for the re-merged tree answers (VELDO-0148 AC3).
-APPROVAL_CODES = ('binding_mismatch:approval/',)
+# VELDO-0235: the two landing destinations a project names, the refusal of an approval or a land bound to another
+# one, and the command that records a local publication.
+LAND_AND_PUSH, LAND_LOCALLY = 'land_and_push', 'land_locally'
+DESTINATIONS = (LAND_AND_PUSH, LAND_LOCALLY)
+DESTINATION_CODE = 'stale_subject:landing/destination'
+LOCAL_OPERATION = 'record_local_publication'
+# The refusals of the subject that only a grant for the re-merged tree (or, VELDO-0235, for the project's
+# current destination) answers (VELDO-0148 AC3).
+APPROVAL_CODES = ('binding_mismatch:approval/', DESTINATION_CODE)
+
+
+def destination_words(destination, remote=None, trunk=None):
+    """The destination as the owner reads it in every landing brief and the project view (VELDO-0235)."""
+    if destination == LAND_LOCALLY:
+        return 'land locally on %s, nothing pushed' % (trunk or 'the trunk')
+    return 'land and push to %s' % (remote or 'the remote')
+
+
+def unit_project(conn, unit):
+    """The project record of an execution unit, read on `conn`: its `project` name, or the end of its chain
+    (backlog item, objective, project_uuid). (name, data) or (None, None)."""
+    def row(identity):
+        found = conn.execute('SELECT kind, data FROM entities WHERE id=?', (identity,)).fetchone() if _text(identity) else None
+        return (found[0], json.loads(found[1])) if found else (None, None)
+    kind, data = row(unit)
+    data = data if kind == 'execution_unit' and isinstance(data, dict) else {}
+    name = data.get('project') if _text(data.get('project')) else None
+    if name is None:
+        kind, item = row(data.get('backlog_item_uuid'))
+        kind, objective = row((item or {}).get('objective_uuid')) if kind == 'backlog_item' else (None, None)
+        pid = (objective or {}).get('project_uuid') if kind == 'objective' else None
+        name = pid[len('project:'):] if _text(pid) and pid.startswith('project:') else None
+    kind, project = row('project:' + name) if name else (None, None)
+    return (name, project) if kind == 'project' and isinstance(project, dict) else (name, None)
+
+
+def unit_destination(conn, unit):
+    """{project, destination, command_id}: the landing destination of the unit's project now (land_and_push
+    when it has no project record or the record names none) and the command that last set it."""
+    name, project = unit_project(conn, unit)
+    # The project service's own reading of its record, the one place a record without the field is read.
+    value = _organ('control_project').landing_destination(project or {})
+    changes = (project or {}).get('landing_destination_history') or []
+    return {'project': name, 'destination': value if value in DESTINATIONS else None,
+            'command_id': (changes[-1] or {}).get('command_id') if changes else None}
+
+
+def binding(subject):
+    """What an approval binds of a subject: its SUBJECT_FIELDS, and its destination when that is land_locally
+    (a binding without one names land_and_push, so today's grants keep their bytes)."""
+    bound = {f: subject.get(f) for f in SUBJECT_FIELDS}
+    if subject.get('destination', LAND_AND_PUSH) != LAND_AND_PUSH:
+        bound['destination'] = subject['destination']
+    return bound
+
+
+def binding_differences(bound, exact):
+    """The fields an approval's bound subject differs from the exact one in, `destination` among them."""
+    bound = bound if isinstance(bound, dict) else {}
+    found = [f for f in SUBJECT_FIELDS if bound.get(f) != exact.get(f)]
+    if bound.get('destination', LAND_AND_PUSH) != exact.get('destination', LAND_AND_PUSH):
+        found.append('destination')
+    return found
 
 
 def taxonomy(code):
@@ -180,6 +259,31 @@ def _same_place(a, b):
     return all(local) and os.path.realpath(a) == os.path.realpath(b)
 
 
+def _local_transition(store, params, before):
+    """VELDO-0235: the record of a local publication, `effect:<dispatch>`: `accept` writes it before the swap,
+    while nothing is recorded under the dispatch; `finish` ends that accepted record, completed with its one
+    destination at the tip or refused, and nothing else."""
+    refused = store.StoreRefused
+    eid, data, action = params.get('effect_id'), params.get('data'), params.get('action')
+    current = before.get(eid)
+    if not isinstance(data, dict) or data.get('kind') != 'publication' or data.get('destination_kind') != LAND_LOCALLY \
+            or eid != 'effect:' + str(data.get('dispatch_id')):
+        raise refused('transition_refused', 'a local publication of one dispatch')
+    if action == 'accept':
+        if current is not None or data.get('status') != 'accepted':
+            raise refused('transition_refused', 'the dispatch already has a publication')
+    elif action == 'finish':
+        held = (current or {}).get('data') or {}
+        if (not current or current.get('kind') != EFFECT_KIND or held.get('status') != 'accepted'
+                or held.get('destination_kind') != LAND_LOCALLY or data.get('status') not in ('completed', 'refused')
+                or {k: held.get(k) for k in ('dispatch_id', 'unit', 'domain_uuid', 'repository_uuid', 'payload', 'local')}
+                != {k: data.get(k) for k in ('dispatch_id', 'unit', 'domain_uuid', 'repository_uuid', 'payload', 'local')}):
+            raise refused('transition_refused', 'not the accepted local publication of this dispatch')
+    else:
+        raise refused('transition_refused', 'accept or finish')
+    return {eid: {'kind': EFFECT_KIND, 'data': data}}
+
+
 def _receipt_transition(store, params, before):
     """The one write of a confirmed landing: the receipt, only while the publication it names is still
     the confirmed publication of exactly this unit and dispatch, the receipt's revision is the one that
@@ -223,11 +327,14 @@ class Landing:
     events_root   the repository whose .veldo/events.jsonl the VELDO-0051 projection publishes.
     signer, sign  the journal signer of this service's commands; generation the authority generation.
     call          the executor adapter (control_effect_executor.call by default).
-    observe       receives one record per operation."""
+    observe       receives one record per operation.
+    destination   VELDO-0235: the project's landing destination this landing runs under (land_and_push by
+                  default); with land_locally, `local` names the project's repository and its trunk."""
 
     def __init__(self, store, conn, *, domain, repository, effects, target, principal, connection_key,
                  floor, events_root, signer, sign, generation=1, call=None, observe=None, clock=None,
-                 deadline_seconds=600, reviewer_group='review', worker_group='landing'):
+                 deadline_seconds=600, reviewer_group='review', worker_group='landing', destination=LAND_AND_PUSH,
+                 local=None):
         if not all(_text(v) for v in (domain, repository, target, principal, signer)):
             raise Refused('invalid_input:coordinates', 'the domain, repository, receiver, principal and signer are named')
         self.store, self.conn = store, conn
@@ -255,10 +362,21 @@ class Landing:
                 or not all(_text(receiver.get(k)) for k in ('repository', 'remote', 'ref'))):
             raise Refused('invalid_input:effects/receiver', 'the receiver is not a Git publication')
         self.clone, self.remote, self.ref = receiver['repository'], receiver['remote'], receiver['ref']
+        if destination not in DESTINATIONS:
+            raise Refused('invalid_input:landing_destination', 'land_and_push or land_locally')
+        self.destination = destination
+        if destination == LAND_LOCALLY:
+            # The project's own repository and its local trunk are the publication's one destination.
+            if not isinstance(local, dict) or not all(_text(local.get(k)) for k in ('repository', 'trunk')):
+                raise Refused('invalid_input:landing_destination/local', 'the repository and trunk a local landing moves')
+            self.clone, self.remote, self.ref = str(local['repository']), None, 'refs/heads/' + local['trunk']
+            self.trunk = local['trunk']
         self.call = call or _organ('control_effect_executor').call
         store = self.store
         conn.command_registry[OPERATION] = {'transition': lambda params, before: _receipt_transition(store, params, before),
                                             'writes': WRITES}
+        conn.command_registry[LOCAL_OPERATION] = {
+            'transition': lambda params, before: _local_transition(store, params, before), 'writes': WRITES}
 
     # Reads.
 
@@ -368,6 +486,68 @@ class Landing:
         tips = [value for value, name in lines if name == self.ref]
         return tips[0] if len(tips) == 1 else None
 
+    def _local_tip(self):
+        """VELDO-0235: the commit the project's local trunk holds now, or None."""
+        found = self._git(self.clone, 'rev-parse', '--verify', '--quiet', self.ref + '^{commit}')
+        value = found.stdout.strip()
+        return value if found.returncode == 0 and _hex(value) else None
+
+    def _copy_objects(self, candidate):
+        """VELDO-0235: every object the candidate holds beyond the watermark into the project's repository, by
+        pack-objects and unpack-objects (nothing is pushed or fetched)."""
+        wanted = ('%s\n^%s\n' % (candidate['commit'], candidate['watermark'])).encode()
+        try:
+            packed = _git_process.run(['git', '-C', str(candidate['workspace']), 'pack-objects', '--revs', '--stdout',
+                                       '-q'], input=wanted, capture_output=True, timeout=GIT_SECONDS)
+            unpacked = _git_process.run(['git', '-C', self.clone, 'unpack-objects', '-q'], input=packed.stdout,
+                                        capture_output=True, timeout=GIT_SECONDS) if packed.returncode == 0 else packed
+        except (OSError, subprocess.SubprocessError) as error:
+            raise Refused('unavailable_service:git/transfer', type(error).__name__) from None
+        if unpacked.returncode or self._tree(self.clone, candidate['commit']) != candidate['tree']:
+            raise Refused('unavailable_service:git/transfer', (unpacked.stderr or b'').decode('utf-8', 'replace')[:300])
+
+    def _local_record(self, action, data):
+        eid = 'effect:' + data['dispatch_id']
+        current = self._row(eid)
+        self._command(LOCAL_OPERATION, {'action': action, 'effect_id': eid, 'data': data},
+                      {eid: current['version'] if current else 0})
+        return self._row(eid)
+
+    def _publish_locally(self, sid, candidate, dispatch, subject):
+        """VELDO-0235: the compare-and-swap of the project's local trunk from the recorded watermark to the
+        candidate, recorded as this dispatch's publication. Returns the recorded effect."""
+        self._copy_objects(candidate)
+        payload = {'commit': subject['commit'], 'tree': subject['tree'], 'old_tip': subject['old_tip'],
+                   'revision': subject['revision']}
+        accepted = {'kind': 'publication', 'destination_kind': LAND_LOCALLY, 'dispatch_id': dispatch, 'unit': sid,
+                    'domain_uuid': self.domain, 'repository_uuid': self.repository, 'station': STATION,
+                    'status': 'accepted', 'payload': payload, 'local': {'repository': self.clone, 'ref': self.ref}}
+        self._local_record('accept', accepted)
+        before = self._local_tip()
+        if before != payload['old_tip']:
+            # The local trunk moved since the watermark, found before the swap: nothing is moved.
+            ended = dict(accepted, status='refused', refusal='stale-subject', evidence=None,
+                         observed={'tip': before})
+        else:
+            swapped = self._git(self.clone, 'update-ref', '-m', 'veldo land ' + dispatch, self.ref, payload['commit'],
+                                payload['old_tip'])
+            after = self._local_tip()
+            if swapped.returncode == 0 and after == payload['commit']:
+                ended = dict(accepted, status='completed', completed=True,
+                             destination={'local_repository': self.clone,
+                                          'destinations': [{'url': self.clone, 'ref': self.ref, 'outcome': 'at-tip'}]},
+                             evidence={'local_commit': payload['commit'], 'tree': payload['tree'],
+                                       'old_tip': payload['old_tip'], 'new_tip': after})
+            else:
+                # The swap lost to a commit that moved the trunk under the ref lock; it was not overwritten.
+                ended = dict(accepted, status='refused', refusal='trunk-moved', evidence=None, observed={'tip': after})
+        effect = self._local_record('finish', ended)
+        self.observe({'schema': SCHEMA, 'operation': 'local_publication', 'domain': self.domain,
+                      'repository': self.repository, 'unit': sid, 'request': dispatch, 'destination': LAND_LOCALLY,
+                      'ref': self.ref, 'old_tip': payload['old_tip'], 'new_tip': self._local_tip(),
+                      'outcome': ended['status'], 'refusal': ended.get('refusal')})
+        return effect
+
     # The exact subject at the effect boundary (AC2).
 
     def subject(self, sid, candidate):
@@ -387,8 +567,13 @@ class Landing:
         bad = sorted(f for f, v in fields.items() if not _hex(v))
         if bad or not _text((candidate.get('proof') or {}).get('digest')) or not _text(candidate.get('workspace')):
             raise Refused(['invalid_input:candidate/' + f for f in bad] or ['invalid_input:candidate'])
-        if not _same_place(candidate.get('remote_url'), self.remote):
+        if self.destination == LAND_AND_PUSH and not _same_place(candidate.get('remote_url'), self.remote):
             codes.append('missing_authority:publication/remote')
+        # VELDO-0235: the project's destination now is the one this landing runs under, and the one its
+        # approvals must be bound to.
+        target = unit_destination(self.conn, sid)['destination']
+        if target != self.destination:
+            codes.append(DESTINATION_CODE)
         workspace = candidate['workspace']
         tree = self._tree(workspace, fields['commit'])
         if tree is None or tree != fields['tree']:
@@ -432,6 +617,8 @@ class Landing:
             if row:
                 dependencies[dep] = {'version': row['version'], 'digest': row['digest']}
         exact = {'tree': tree, 'source': fields['evidence'], 'proof': proof, 'dependencies': dependencies}
+        if target != LAND_AND_PUSH:
+            exact['destination'] = target
         approvals = self._kind('approval')
         replacements = []
         for name in data.get('approvals_required') or []:
@@ -444,9 +631,16 @@ class Landing:
             for approval in granted:
                 bound = approval.get('subject') if isinstance(approval.get('subject'), dict) else {}
                 differences.append([f for f in SUBJECT_FIELDS if bound.get(f) != exact[f]])
+                # VELDO-0235: and the destination it was granted for (a binding without one names land_and_push).
+                if bound.get('destination', LAND_AND_PUSH) != target:
+                    differences[-1].append('destination')
             closest = min(differences, key=len)
-            codes.extend('binding_mismatch:approval/%s/%s' % (name, f) for f in closest)
+            codes.extend(DESTINATION_CODE if f == 'destination' else 'binding_mismatch:approval/%s/%s' % (name, f)
+                         for f in closest)
             if closest == ['tree']:
+                replacements.append(name)
+            elif closest and set(closest) <= {'tree', 'destination'}:
+                # VELDO-0235: a grant for another destination is answered by a fresh grant, as an older tree's is.
                 replacements.append(name)
         if codes:
             error = Refused(codes)
@@ -454,6 +648,10 @@ class Landing:
                 # Every problem must be only an older tree's prior grant at this revision.
                 error.subject = dict(exact, unit=sid, revision=data.get('revision'),
                                      approvals=replacements)
+            elif replacements and DESTINATION_CODE in codes and set(codes) <= {
+                    'binding_mismatch:approval/%s/tree' % name for name in replacements} | {DESTINATION_CODE}:
+                # VELDO-0235: only an older tree's or another destination's prior grant: the exact subject to ask for.
+                error.subject = dict(exact, unit=sid, revision=data.get('revision'), approvals=replacements)
             raise error
         return dict(exact, unit=sid, revision=data.get('revision'), commit=fields['commit'], old_tip=fields['watermark'],
                     implementation=fields['implementation'], observation=reference,
@@ -533,7 +731,7 @@ class Landing:
             # with its classification.
             error = Refused(executor_code(word), 'the trunk moved from the watermark; nothing was published')
             error.observed = {'classification': word, 'watermark': (data.get('payload') or {}).get('old_tip'),
-                              'tip': self._remote_tip()}
+                              'tip': self._local_tip() if self.destination == LAND_LOCALLY else self._remote_tip()}
             raise error
         if not PJ.confirmed(data):
             raise Refused('unknown_outcome:publication/' + str(data.get('status')),
@@ -561,6 +759,8 @@ class Landing:
                 raise Refused('unknown_outcome:publication/outstanding',
                               'publication %s of this unit has no conclusive answer' % outstanding[0])
             subject = self.subject(sid, candidate)
+            if self.destination == LAND_LOCALLY:
+                return self._recorded(unit, candidate, dispatch, self._publish_locally(sid, candidate, dispatch, subject))
             self._transfer(candidate, dispatch)
             contract = self._authorize(sid, candidate, dispatch, subject)
             answer = self._execute(contract)
@@ -622,13 +822,18 @@ class Landing:
                 codes.append('binding_mismatch:gate/tree')
         except Refused as error:
             codes.extend(error.codes)
-        tip = self._remote_tip()
+        tip = self._local_tip() if self.destination == LAND_LOCALLY else self._remote_tip()
         if tip != fields['commit']:
             codes.append('unknown_outcome:confirmation')
         if codes:
             raise Refused(codes)
-        scrub = getattr(_organ('control_effect_executor'), 'scrubbed_url', lambda url: url)
-        confirmation = {'remote': scrub(self.remote), 'ref': self.ref, 'commit': tip, 'read_at': self.clock()}
+        if self.destination == LAND_LOCALLY:
+            # VELDO-0235: the local ref's own answer, re-read now.
+            confirmation = {'destination': LAND_LOCALLY, 'repository': self.clone, 'ref': self.ref, 'commit': tip,
+                            'read_at': self.clock()}
+        else:
+            scrub = getattr(_organ('control_effect_executor'), 'scrubbed_url', lambda url: url)
+            confirmation = {'remote': scrub(self.remote), 'ref': self.ref, 'commit': tip, 'read_at': self.clock()}
         return {
             'implementation_commit': fields['implementation'], 'proof_digest': candidate['proof']['digest'],
             'reviewed_source_digest': _digest(_canonical(handoff.get('source') or {})),

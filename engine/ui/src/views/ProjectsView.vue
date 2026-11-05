@@ -15,7 +15,7 @@ import '@/styles/factory.css'
 
 /** Objectives and projects (VELDO-0131): a searchable list of projects, the selected project's objectives with
  * their evidence and status, and the message box to the factory beside them (a sheet on a phone, opened from a
- * message button that stays on screen). */
+ * message button that stays on screen). Each project names its landing destination in words (VELDO-0235 AC3). */
 const route = useRoute()
 const router = useRouter()
 const desktop = useDesktop()
@@ -65,6 +65,7 @@ onMounted(() => void live.start())
                       <span class="factory-tag" :class="STATE_TONE[project.state]">{{ project.state }}</span>
                       <span>{{ project.objectives.length }} objective{{ project.objectives.length === 1 ? '' : 's' }}</span>
                       <span v-if="project.owner">Owner {{ project.owner }}</span>
+                      <span :data-destination="project.destination" data-testid="project-destination">{{ project.destinationWords }}</span>
                     </span>
                     <span v-if="project.purpose">{{ project.purpose }}</span>
                   </button>
@@ -77,6 +78,9 @@ onMounted(() => void live.start())
             <h2 id="project-detail" class="panel-title">{{ selected.name }} <span class="factory-tag" :class="STATE_TONE[selected.state]">{{ selected.state }}</span></h2>
             <div class="factory-body">
               <p v-if="selected.purpose">{{ selected.purpose }}</p>
+              <dl class="factory-facts">
+                <dt>Landing</dt><dd :data-destination="selected.destination" data-testid="project-detail-destination">{{ selected.destinationWords }}</dd>
+              </dl>
               <h3 class="panel-title">Objectives <span class="panel-count">{{ selected.objectives.length }}</span></h3>
               <ul class="factory-list">
                 <li v-for="objective in selected.objectives" :key="objective.id" class="factory-card" :data-objective="objective.id" :data-state="objective.state">

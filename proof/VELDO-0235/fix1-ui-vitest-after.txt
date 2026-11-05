@@ -1,0 +1,28 @@
+# Fix round 1 (review F2), 2026-11-04: UI specs after the change
+## npx vitest run src/features/projects/projects.spec.ts
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./src/ui/icons" without a file extension (vite.config.ts:5:23). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /tmp/v235-fix1-ui/engine/ui
+
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  16:57:18
+   Duration  365ms (environment 86%, transform 9%, tests 2%, import 1%, setup 1%, worker 1%)
+
+## npx vitest run src/features/projects/ProjectsView.spec.ts
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./src/ui/icons" without a file extension (vite.config.ts:5:23). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /tmp/v235-fix1-ui/engine/ui
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  16:57:20
+   Duration  2.27s (environment 65%, import 18%, transform 14%, tests 2%)
+
+## npx vue-tsc --noEmit (exit 0)

@@ -1,0 +1,6 @@
+api171-funnel-in-place-of-serve: baseline green, no-op green, mutant red ['VELDO-0171 tailscale/serve-bg'], restored green -> red_under_mutant_green_restored
+api171-origin-loopback: baseline green, no-op green, mutant red ['VELDO-0171 api/service-configuration', 'VELDO-0171 passkey/first-enrollment', 'VELDO-0171 api/content-security-policy'], restored green -> red_under_mutant_green_restored
+port234-serve-state-reads-443: baseline green, no-op green, mutant red ['VELDO-0234 port/serve-own-port', 'VELDO-0234 port/own-port-occupied', 'VELDO-0234 origin/configurations', 'VELDO-0234 origin/first-enrollment', 'VELDO-0234 origin/443-unchanged', 'VELDO-0234 rerun/same-port', 'VELDO-0234 rerun/other-port', 'VELDO-0234 rerun/pre-change-host'], restored green -> red_under_mutant_green_restored
+port234-origin-without-port: baseline green, no-op green, mutant red ['VELDO-0234 port/serve-own-port', 'VELDO-0234 origin/configurations', 'VELDO-0234 origin/first-enrollment', 'VELDO-0234 rerun/same-port', 'VELDO-0234 rerun/other-port'], restored green -> red_under_mutant_green_restored
+port234-rerun-takes-option: baseline green, no-op green, mutant red ['VELDO-0234 rerun/other-port'], restored green -> red_under_mutant_green_restored
+falsifiers: 5 of 5 red under the mutant, green restored

@@ -9321,15 +9321,15 @@ def cases():
               " projection)  # defect: the api edge is not enrolled\n", 'api-edge/installed-api-call')
     # AC2 (declared falsifier): setup runs `tailscale funnel` in place of `tailscale serve`.
     setup_api('api171-funnel-in-place-of-serve', 'control_factory_setup_api.py',
-              "    code, _out, _err = cli.run(['serve', '--bg', '--https=%d' % HTTPS_PORT, target(port)])\n",
-              "    code, _out, _err = cli.run(['funnel', '--bg', '--https=%d' % HTTPS_PORT, target(port)])"
+              "    code, _out, _err = cli.run(['serve', '--bg', '--https=%d' % https_port, target(port)])\n",
+              "    code, _out, _err = cli.run(['funnel', '--bg', '--https=%d' % https_port, target(port)])"
               "  # defect: Funnel publishes the API\n", 'tailscale/serve-bg')
     # AC3 (declared falsifier): the API's origin is written as the loopback address, not the tailnet name.
     setup_api('api171-origin-loopback', 'control_factory_setup_api.py',
-              "            'api': {'origin': 'https://' + name, 'rp_id': name, 'host': name, 'domain': ids['domain_uuid'],\n",
-              "            'api': {'origin': target(port), 'rp_id': name, 'host': name, 'domain': ids['domain_uuid'],"
+              "            'api': {'origin': origin_of(name, https_port), 'rp_id': name, 'host': authority_of(name, https_port),\n",
+              "            'api': {'origin': target(port), 'rp_id': name, 'host': authority_of(name, https_port),"
               "  # defect: the loopback address as the origin\n", 'passkey/first-enrollment',
-              also=[("            'origin': 'https://' + name, 'workflows_repository': ids['repository_uuid'],\n",
+              also=[("            'origin': origin_of(name, https_port), 'workflows_repository': ids['repository_uuid'],\n",
                      "            'origin': target(PORT), 'workflows_repository': ids['repository_uuid'],"
                      "  # defect: the loopback address as the origin\n")])
     # AC4 (declared falsifier): a new api edge key is generated on every run.
@@ -12088,6 +12088,61 @@ def cases():
     add(230, 'setup230-claude-from-path', census230, 'control_factory_setup_engines.py',
         "    paths = {'claude_code': qualified_claude(Refused)}\n",
         "    paths = {'claude_code': Path(shutil.which('claude')).resolve()}\n", ['setup/engines-record'])
+
+    # VELDO-0234: setup can put the API on its own tailnet HTTPS port beside another app's mapping of the root.
+    port234 = '127_veldo_0234_https_port.py'
+    # AC1 (declared falsifier): serve_state keeps reading 443 whatever port was chosen, so 8443 is refused as
+    # occupied by the other app's root mapping.
+    add(234, 'port234-serve-state-reads-443', port234, 'control_factory_setup_api.py',
+        "    chosen = https_port\n",
+        "    chosen = HTTPS_PORT  # defect: only the HTTPS root is ever read\n",
+        ['port/serve-own-port', 'port/own-port-occupied'])
+    # AC2 (declared falsifier): the origin is written without the port on 8443, so the browser's origin is refused.
+    add(234, 'port234-origin-without-port', port234, 'control_factory_setup_api.py',
+        "    return 'https://' + authority_of(name, https_port)\n",
+        "    return 'https://' + name  # defect: the origin drops the tailnet HTTPS port\n",
+        ['origin/configurations', 'origin/first-enrollment'])
+    # AC3 (declared falsifier): a re-run takes its port from the option every time instead of the one laid down.
+    add(234, 'port234-rerun-takes-option', port234, 'control_factory_setup.py',
+        "    https_port = rerun_https_port(API.laid_https_port(os.path.join(host, API.SERVICE_CONFIG)), https_port, holds)\n",
+        "    https_port = API.HTTPS_PORT if https_port is None else https_port  # defect: the laid port is not kept\n",
+        ['rerun/other-port'])
+
+    # VELDO-0235: each project has a landing destination, land and push or land locally.
+    dest235 = '128_veldo_0235_land_locally.py'
+    # AC1 (declared falsifier): a record without the field reads as land_locally, so the existing project's land
+    # publishes nothing.
+    add(235, 'dest235-absent-reads-local', dest235, 'control_project.py',
+        "    value = data.get(LANDING_DESTINATION, LAND_AND_PUSH) if isinstance(data, dict) else LAND_AND_PUSH\n",
+        "    value = data.get(LANDING_DESTINATION, LAND_LOCALLY) if isinstance(data, dict) else LAND_LOCALLY"
+        "  # defect: every existing project lands locally\n",
+        ['destination/default-push'])
+    # AC2 (declared falsifier): land locally also pushes the candidate to the project's remote.
+    add(235, 'dest235-local-also-pushes', dest235, 'control_landing.py',
+        "            if swapped.returncode == 0 and after == payload['commit']:\n",
+        "            if swapped.returncode == 0 and after == payload['commit']:\n"
+        "                # defect: the local landing pushes too\n"
+        "                origin = self._git(self.clone, 'config', '--get', 'remote.origin.url').stdout.strip()\n"
+        "                identity = _organ('control_git_identity').resolve(self.conn, self.domain, self.repository)\n"
+        "                self._git(self.clone, 'push', '-q', origin, '+' + payload['commit'] + ':' + self.ref, profile='identity',\n"
+        "                          push_identity=identity, remote_url=origin)\n",
+        ['local/lands'])
+    # AC3 (declared falsifier): the destination is left out of the bound subject, so a grant made before the
+    # destination changed lands under the new one.
+    add(235, 'dest235-destination-unbound', dest235, 'control_landing.py',
+        "                if bound.get('destination', LAND_AND_PUSH) != target:\n",
+        "                if False:  # defect: the approval is not bound to the destination\n",
+        ['bound/destination-changed'])
+    # AC4 (declared falsifier): land_and_push is routed through the local path, so the remote never moves: red in
+    # VELDO-0057's exact-tip row and in this suite's land_and_push rows.
+    local235 = ("            if self.destination == LAND_LOCALLY:\n"
+                "                return self._recorded(unit, candidate, dispatch, self._publish_locally(sid, candidate, dispatch, subject))\n")
+    pushed235 = ("            if True:  # defect: every landing takes the local path\n"
+                 "                return self._recorded(unit, candidate, dispatch, self._publish_locally(sid, candidate, dispatch, subject))\n")
+    add(235, 'dest235-push-routed-local-0057', '70_veldo_0057_landing.py', 'control_landing.py', local235, pushed235,
+        ['exact-tip/compare-and-swap'])
+    add(235, 'dest235-push-routed-local', dest235, 'control_landing.py', local235, pushed235,
+        ['destination/default-push', 'push/unchanged'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

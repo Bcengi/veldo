@@ -169,6 +169,18 @@ def _class_of(code):
 authority_problem = LOCK.authority_problem
 
 
+def landing_of(projects, lands):
+    """VELDO-0235 AC3: the remote and trunk each project's landings use, by project name, from `lands` (the work
+    configuration's land entry by execution repository); a project whose repository names none is left out."""
+    named = {}
+    for item in projects:
+        data = item.get('data') or {}
+        land = lands.get(data.get('execution_repository')) if isinstance(data.get('execution_repository'), str) else None
+        if isinstance(data.get('name'), str) and isinstance(land, dict):
+            named[data['name']] = {k: land.get(k) for k in ('remote', 'trunk') if isinstance(land.get(k), str)}
+    return named
+
+
 class ApiAuthority:
     """The API assertion judge on the authority's store connection `conn`.
 
@@ -201,6 +213,9 @@ class ApiAuthority:
         self.observe = observe or (lambda event: None)
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
+        # VELDO-0235 AC3: `landing()`, the work configuration's land remote and trunk by execution repository,
+        # which the factory loop's service sets when it serves one; the objectives read names them per project.
+        self.landing = None
 
     # the read the API's session checks use
 
@@ -289,6 +304,8 @@ class ApiAuthority:
                 # VELDO-0131: the Git identities (setup tables, not entities), metadata only, in this read.
                 answer['identities'] = MO.identities(self.conn, self.ids['domain_uuid'], answer['items']['repository'],
                                                      scope)
+            if model == 'objectives':
+                answer['landing'] = landing_of(answer['items']['project'], self.landing() if self.landing else {})
             self._observe_read(principal, model, scope, answer)
             return answer
         return self._answer(principal, produce)

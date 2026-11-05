@@ -1,0 +1,17 @@
+103_veldo_0142_git_identities: selftest (PARTIAL, 1 of 189 suites): 49 passed, 0 failed in 19.53s
+105_veldo_0182_memory: selftest (PARTIAL, 1 of 189 suites): 153 passed, 0 failed in 79.58s
+106_veldo_0185_dispatch_setup: selftest (PARTIAL, 1 of 189 suites): 46 passed, 0 failed in 12.39s
+109_veldo_0161_adoption: selftest (PARTIAL, 1 of 189 suites): 81 passed, 0 failed in 24.29s
+110_veldo_0143_new_project: selftest (PARTIAL, 1 of 189 suites): 135 passed, 0 failed in 34.01s
+116_veldo_0188_project_lines: selftest (PARTIAL, 1 of 189 suites): 53 passed, 0 failed in 26.17s
+117_veldo_0227_ui_location: selftest (PARTIAL, 1 of 189 suites): 33 passed, 0 failed in 7.43s
+125_veldo_0230_engine_census: selftest (PARTIAL, 1 of 189 suites): 33 passed, 0 failed in 7.16s
+73_veldo_0139_factory_setup: selftest (PARTIAL, 1 of 189 suites): 43 passed, 0 failed in 25.22s
+74_veldo_0140_standing_delegation: selftest (PARTIAL, 1 of 189 suites): 35 passed, 0 failed in 11.56s
+85_veldo_0171_setup_api: selftest (PARTIAL, 1 of 189 suites): 44 passed, 0 failed in 9.40s
+86_veldo_0168_text: selftest (PARTIAL, 1 of 189 suites): 52 passed, 0 failed in 3.62s
+86_veldo_0186_setup_assets: selftest (PARTIAL, 1 of 189 suites): 37 passed, 0 failed in 15.46s
+86_veldo_0189_engine_upgrade: selftest (PARTIAL, 1 of 189 suites): 60 passed, 0 failed in 55.47s
+87_veldo_0170_receiver_trust: selftest (PARTIAL, 1 of 189 suites): 38 passed, 0 failed in 7.23s
+91_veldo_0167_setup_records: selftest (PARTIAL, 1 of 189 suites): 35 passed, 0 failed in 13.38s
+92_veldo_0088_pm_cycles: selftest (PARTIAL, 1 of 189 suites): 56 passed, 0 failed in 56.39s

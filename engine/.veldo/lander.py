@@ -352,6 +352,9 @@ class GitLandOps(LandOps):
     trunk       the trunk's branch name, whatever it is; remote the caller's remote for it.
     push        False builds, gates and accepts the candidate but publishes nothing and
                 completes nothing.
+    destination VELDO-0235: land_locally builds the candidate on the local trunk's tip, as push=False
+                does, fetching nothing, and publishes it through the wired Landing, which moves the
+                local trunk; land_and_push (the default) is the remote landing.
     landing     VELDO-0057: the control_landing.Landing a factory land publishes and completes
                 through (the unit handed to finalize names its land dispatch). With none, the
                 direct publication requires an explicit authority identity reader and policy.
@@ -371,7 +374,8 @@ class GitLandOps(LandOps):
 
     def __init__(self, repo_root, build_ref, trunk="main", remote="origin", push=True, *,
                  policy=None, identity=None, workspace_root=None, observe=None, domain=None,
-                 repository=None, installation=None, observations=None, landing=None, identity_conn=None):
+                 repository=None, installation=None, observations=None, landing=None, identity_conn=None,
+                 destination="land_and_push"):
         self.repo_root = str(repo_root)
         self.build_ref = build_ref
         self.trunk = trunk
@@ -388,6 +392,13 @@ class GitLandOps(LandOps):
         self.installation = str(installation) if installation is not None else None
         self.observations = str(observations) if observations is not None else None
         self.landing = landing
+        if destination not in ("land_and_push", "land_locally") or (destination == "land_locally" and landing is None):
+            raise ValueError("a local landing publishes through a wired Landing")
+        self.destination = destination
+        # VELDO-0235: a local landing reads its watermark from the local trunk and touches no remote, as a
+        # land with push disabled does; only the wired Landing still publishes it.
+        if destination == "land_locally":
+            self.push = False
         self.counts = {"accepted": 0, "refused": 0}
         self.identity_counts = {}
         # The caller's Git common directory, where direct-land identity operations are kept durably
@@ -537,6 +548,8 @@ class GitLandOps(LandOps):
         self.candidate = {"schema": CANDIDATE_SCHEMA, "id": "candidate-" + uuid.uuid4().hex[:16], "state": "new",
                           "trunk": self.trunk, "remote": self.remote if self.push else None,
                           "workspace": None, "merges": [], "projections": {}}
+        if self.destination != "land_and_push":
+            self.candidate["destination"] = self.destination
         try:
             self._identity()
             workspace = Path(tempfile.mkdtemp(prefix="veldo-candidate-", dir=self.workspace_root))
@@ -857,6 +870,9 @@ class GitLandOps(LandOps):
             error = CandidateRefused(refusals[0], "; ".join(refusals), operation="policy")
             return self._refuse("finalize", error, refusals=refusals, **detail)
         c["state"] = "accepted"
+        if self.destination == "land_locally":
+            # VELDO-0235: a local landing is a real publication and completion, through the wired Landing.
+            return self._publish(unit, detail)
         if not self.push:
             # Nothing is published, so nothing is completed: no receipt, no projection.
             self._event("finalize", "accepted", pushed=False)

@@ -10,6 +10,10 @@ prints exactly that state's outputs for the five read-only commands the capture 
 stream as the real CLI prints it). `serve --bg --https=443 <target>` from the ready state succeeds and
 afterwards `serve status --json` prints the capture's `served` state with @TARGET@ that target; `funnel`
 is logged and answered like it, so a check that setup never ran Funnel can only be the invocation log's.
+VELDO-0234: `set(state, target, https_port, neighbors)` also takes the HTTPS port the mapping is on (443, 8443
+or 10000; the captured `served` state's 443 keys renamed to it) and `neighbors`, a Serve status fragment (Web,
+TCP, AllowFunnel) of mappings another app holds, merged into every `serve status --json` the stand-in prints;
+`serve --bg --https=<port> <target>` is refused (exit 1) when a neighbor already holds that port.
 Anything else exits 2. Every invocation is appended to a log in a second 0700 directory the stand-in's
 path does not reveal (outside setup's reach), which the suite reads after setup exits.
 """
@@ -32,9 +36,21 @@ with open(STATE) as handle:
     state = json.load(handle)
 states = {s['name']: s['outputs'] for s in capture['derived_states']}
 outputs = states[state['state']]
-serve_status = outputs['serve-status']
-if state.get('target') is not None:
-    serve_status = json.loads(json.dumps(states['served']['serve-status']).replace('@TARGET@', state['target']))
+serve_status = json.loads(json.dumps(outputs['serve-status']))
+neighbors = state.get('neighbors') or {}
+held = state.get('https_port') or 443
+
+
+def ours(port):
+    served = json.loads(json.dumps(states['served']['serve-status']).replace('@TARGET@', state['target']))
+    return {'TCP': {str(port) if k == '443' else k: v for k, v in served.get('TCP', {}).items()},
+            'Web': {(k[:-len(':443')] + ':%%d' %% port) if k.endswith(':443') else k: v
+                    for k, v in served.get('Web', {}).items()}}
+
+
+for part in (neighbors, ours(held) if state.get('target') is not None else {}):
+    for section, entries in part.items():
+        serve_status.setdefault(section, {}).update(entries)
 
 
 def emit(value):
@@ -51,10 +67,15 @@ elif argv == ['serve', '--help']:
     sys.stderr.write(outputs['serve-help'])
 elif argv == ['serve', 'status', '--json']:
     emit(serve_status)
-elif argv[:1] in (['serve'], ['funnel']) and '--bg' in argv and len(argv) == 4 and argv[2] == '--https=443':
-    if state['state'] != 'ready' or state.get('target') not in (None, argv[3]):
+elif (argv[:1] in (['serve'], ['funnel']) and '--bg' in argv and len(argv) == 4
+      and argv[2] in ('--https=443', '--https=8443', '--https=10000')):
+    port = int(argv[2].split('=', 1)[1])
+    taken = (str(port) in (neighbors.get('TCP') or {})
+             or any(k.endswith(':%%d' %% port) for k in (neighbors.get('Web') or {})))
+    if (state['state'] != 'ready' or taken or state.get('target') not in (None, argv[3])
+            or (state.get('target') is not None and held != port)):
         sys.exit(1)
-    state['target'] = argv[3]
+    state['target'], state['https_port'] = argv[3], port
     with open(STATE, 'w') as handle:
         json.dump(state, handle)
 else:
@@ -76,8 +97,9 @@ class StandIn:
                                               'log': self.log_file})
         os.chmod(self.path, 0o700)
 
-    def set(self, state, target=None):
-        Path(self.state_file).write_text(json.dumps({'state': state, 'target': target}))
+    def set(self, state, target=None, https_port=443, neighbors=None):
+        Path(self.state_file).write_text(json.dumps({'state': state, 'target': target, 'https_port': https_port,
+                                                     'neighbors': neighbors or {}}))
 
     def target(self):
         return json.loads(Path(self.state_file).read_text()).get('target')
