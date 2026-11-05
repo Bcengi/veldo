@@ -295,3 +295,5 @@ model hosts or whether the binary honours the outside gate's proxy settings, and
 waits for proxy support (AC1, AC2, the engine_proxy refusal name). AC4 and L6 no longer hold roles back until
 the login files are readable by the engine process only. Open items 5 and 6 in proof/VELDO-0232/OPEN.md are
 withdrawn. Status stays ready; code unchanged.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
