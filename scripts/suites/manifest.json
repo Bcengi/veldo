@@ -1756,6 +1756,15 @@
    ],
    "regions": "A project's landing destination (VELDO-0235): a record without the field reading as land_and_push and landing to the remote, never rewritten; the owner's signed set_landing_destination accepted and recorded with the old and new value and his command id, any other value, another key's signature, another principal and an unsigned command refused writing nothing; land_locally through the land station moving the caller's local main to the candidate by compare-and-swap with the receipt and spec.shipped, the bare origin byte for byte unchanged and no push, fetch or ls-remote logged; a local main moved after the watermark refused as trunk_moved, kept, and re-landed; the owner's grant brief naming the destination in words; a destination changed after the grant refused as stale_subject:landing/destination, asked again and landed after the fresh grant bound to it; land_and_push, set or absent, with today's effect contract, executor push, remote re-read and receipt.",
    "requires_note": "Only ROOT, expect and launcher_fds. Real Git (a scaffolded seed and its own gate, a bare origin with a recording pre-receive hook, the caller's and the publication clones), VELDO-0153's identity wire and a logging git first on PATH, the SQLite store with OpenSSH signatures, the VELDO-0076 project service, the land station, the lander, VELDO-0057's Landing and the VELDO-0028 executor process; control_service's Line.grant over a recording inbox. Fixture units, floor handoffs, approvals and candidate policy. Writes only temporary files."
+  },
+  {
+   "name": "129_veldo_0260_checkout_in_step",
+   "file": "129_veldo_0260_checkout_in_step.py",
+   "requires": [
+    "129_veldo_0260_checkout_in_step"
+   ],
+   "regions": "A local landing keeping every working tree that has the trunk checked out in step with the trunk (VELDO-0260): the set read from the repository's own working-tree list (the main tree holding main, a linked tree holding main, a detached HEAD at the tip, another branch and a bare repository), a clean tree moved with the trunk by a two-tree merge with its untracked and ignored files byte for byte unchanged, a lost swap restoring the moved tree to the old tip, an edited and a staged tracked file, a merge in progress and a locked index refusing as trunk_checkout_dirty or trunk_checkout_unmovable before the swap with the ref and files unchanged and re-landed under VELDO-0148 once clean, a main tree on another branch never read or written, and the publication events and counts by working-tree outcome.",
+   "requires_note": "Only ROOT, expect and launcher_fds. Real Git (small repositories with linked and bare clones for the unit rows; a scaffolded seed and its own gate and the caller's repository with its main and a linked working tree for the integration rows), the SQLite store with OpenSSH signatures, the VELDO-0076 project service, the land station, the lander, VELDO-0058's installed gate and VELDO-0057's Landing. Fixture units, floor handoffs and candidate policy. Writes only temporary files."
   }
  ],
  "resource_capacities": {
