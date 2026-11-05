@@ -1,3 +1,4 @@
 # landing-a integration fixes
 
 - VELDO-0169 census/writers (caused by VELDO-0241, 6c6bacd9): Line.step_land's WU.transition(definition, node, port) is the workflow graph's edge lookup, not a claim write; its port is passed by keyword so it cannot bind the claim organ's (conn, params, before) and the census records it 'not the claim organ'; mutation case grant148-mixed-question-restored re-anchored to the new line; suite 84 green, handout-unlisted-resume and grant148-mixed-question-restored red under their mutants.
+- VELDO-0208 unconfined-leg/declared-list and dispatcher-is-protected (caused by VELDO-0234, which listed 127_veldo_0234_https_port in scripts/gate_unconfined.json): suite 101 knows 127_0234 among the control-plane suites, 44 whole and 46 listed, as f84a7c13 did for 128/129; suite 101 alone: both rows green (its two Landlock sandbox rows fail only outside the gate's confined leg, unrelated).
