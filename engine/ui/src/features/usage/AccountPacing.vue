@@ -57,7 +57,7 @@ function cap(account: string, window: string) {
     <h2 id="usage-pacing-title" class="panel-title">Pacing <span class="panel-count">{{ accounts.length }}</span></h2>
     <p v-if="!accounts.length" class="factory-body factory-meta" data-testid="pacing-empty">No account is registered yet.</p>
     <ul v-else class="factory-body factory-list">
-      <li v-for="a in accounts" :key="a.account" class="factory-card" :data-account="a.account">
+      <li v-for="a in accounts" :key="a.account" class="factory-card" :data-pacing-account="a.account">
         <span class="factory-card-title">{{ a.account }}
           <span v-if="a.pause" class="factory-tag is-stop" data-testid="pacing-paused">Paused until {{ when(a.pause.until) }}, when {{ a.pause.window }} resets</span>
           <span v-for="c in a.ceilings" :key="c.window" class="factory-tag is-waiting" data-testid="pacing-ceiling">Ceiling {{ c.value }}% on {{ c.window }} until {{ when(c.until) }}</span>

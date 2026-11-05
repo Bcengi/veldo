@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, shallowRef } from 'vue'
 import { readEvents, type JournalEvent } from '@/api/events'
-import { readSpend } from '@/api/reads'
+import { readPacing, readSpend } from '@/api/reads'
+import type { ReadAnswer } from '@/api/types'
 import ScreenHeader from '@/components/ScreenHeader.vue'
 import StatePanel from '@/components/StatePanel.vue'
 import VButton from '@/components/VButton.vue'
@@ -9,6 +10,7 @@ import { useDesktop } from '@/composables/useMedia'
 import { useLiveRead } from '@/composables/useLiveRead'
 import { useNow } from '@/composables/useNow'
 import LiveMeta from '@/features/factory/LiveMeta.vue'
+import AccountPacing from '@/features/usage/AccountPacing.vue'
 import UsageChart from '@/features/usage/UsageChart.vue'
 import { accountsOf, amount, breakdown, invocationsOf, noAccountUntil, seriesOf, timesOf, UNITS, type BreakdownKey, type UsageUnit } from '@/features/usage/usage'
 import '@/styles/factory.css'
@@ -17,11 +19,14 @@ import '@/styles/factory.css'
  * (invocations, wall seconds, tokens, messages), bucketed by the journal time each was committed, with the
  * breakdown by provider, account, project and run, each account's rate-limit windows, reset times and active runs, and
  * "no account until" the earliest reset when every account is out. Unknown usage is shown as unknown, never as
- * zero, and no price is ever computed. */
+ * zero, and no price is ever computed. The pacing panel (VELDO-0236) reads accounts.pacing beside the spend read:
+ * each account's pause and ceilings, the owner's pause, ceiling and resume actions, and their history. */
 const events = shallowRef<JournalEvent[]>([])
+const pacing = shallowRef<ReadAnswer | null>(null)
 const live = useLiveRead(
   async (signal) => {
-    const spend = await readSpend(signal)
+    const [spend, pace] = await Promise.all([readSpend(signal), readPacing(signal)])
+    pacing.value = pace
     const all: JournalEvent[] = []
     let after = 0
     for (let page = 0; page < 200; page += 1) {
@@ -157,6 +162,7 @@ onMounted(() => void live.start())
             </div>
           </section>
         </div>
+        <AccountPacing :pacing="pacing" :now="now / 1000" @changed="live.refresh()" />
       </div>
     </StatePanel>
   </section>
