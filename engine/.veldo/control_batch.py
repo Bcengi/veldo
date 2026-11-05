@@ -10,7 +10,17 @@ it names, and lands the batch as one compare-and-swap.
 THE COMMAND. The owner starts a batch of one project: the Telegram message `/batch <project>` (read by
 control_intake, batch_command below) or the same text sent from the UI's project view. The batch takes
 every unit of that project whose independent review has passed and that has not landed (eligible), in
-review-completion order.
+review-completion order. Every production intake hands the command to control_batch_service.Starter,
+which records the owner's request in the authority store; the project's line runs it
+(control_batch_service.BatchLine).
+
+THE AUTHORITY (Authority). A batch reads its authority from the authority store and from nowhere else,
+as the single-unit landing does (control_landing.Landing.subject): a unit's review is its floor record's
+handoff (VELDO-0049) bound to the exact reviewed commit, its landing is a revision_landed receipt in the
+store (the completion reader, or a batch receipt for the unit's revision), and the batch approval is the
+owner's settled answer (VELDO-0064 inbox, VELDO-0068 settlement: an answered assignment the inbox admits,
+the owner's own signed answer) to the question asked for exactly this subject. A caller's dict is never
+an approval and a caller's review state is never a review.
 
 ASSEMBLY (Batch.assemble). A new isolated clone (VELDO-0042's shape: `git init` with no template, the
 caller's object store borrowed through alternates, no remote, no worktree link, a detached checkout) holds
@@ -35,18 +45,22 @@ inventory names each red with its stage, each failing check the stage reports, a
 the owner (`tell`) and into the batch record, and each named unit is returned to its own fix round
 (`fix_round`). Nothing of a red batch lands.
 
-THE APPROVAL (Batch.approval_request, Batch.land). One approval request (VELDO-0068's settlement is the
-caller's `ask`) shows every unit with its review, the renumber commits, the gate observation and the
-project's landing destination (VELDO-0235). Its bound subject is the batch tip and the unit list (with the
-watermark, project and destination); a grant bound to anything else is refused `stale_subject:batch` and
-the owner is asked again. Any other approval a unit already needs (a protected path) is the caller's
+THE APPROVAL (Batch.approval_request, Batch.land). One approval request, asked as an inbox question to
+the project's owner (Authority.ask), shows every unit with its review, the renumber commits, the gate
+observation and the project's landing destination (VELDO-0235). Its bound subject is the batch tip and the
+unit list (with the watermark, project and destination). Batch.land reads the settled answer for exactly
+that subject from the store: none yet is `missing_authority:approval/batch` (asked once); a settled grant
+for another subject this batch asked is refused `stale_subject:batch` and the owner is asked again. Any other approval a unit already needs (a protected path) is the caller's
 `requirements(unit)`, still asked; the batch approval never replaces it. A red batch asked to land is
 refused `missing_evidence:gate`.
 
 PUBLICATION. One compare-and-swap of the trunk from the watermark to the batch tip: a push leased on the
 watermark (land_and_push), or `git update-ref <trunk> <tip> <watermark>` in the project repository
-(land_locally). The trunk is re-read afterwards, and each unit gets its revision_landed receipt naming the
-batch. A trunk moved after the watermark ends the batch `trunk_moved`; Batch.reland re-merges the same
+(land_locally). The trunk is re-read afterwards whatever the swap answered, and classified by what was
+found there: at the tip the batch landed and each unit gets its revision_landed receipt naming the batch,
+written to the store; at the watermark the swap failed by name (unavailable_service:git/push or
+git/update-ref) and the batch stays green; a trunk that cannot be read is unknown_outcome:batch/trunk.
+A trunk found anywhere else moved after the watermark and ends the batch `trunk_moved`; Batch.reland re-merges the same
 units on the new trunk, re-runs the hook and the gate, and the owner is asked again (VELDO-0148).
 
 A single unit's landing is not touched: it never reads or writes a batch record.
@@ -102,6 +116,16 @@ HOOK_SECONDS = 600
 NOT_STARTED_EXIT = 75
 STALE = 'stale_subject:batch'
 RED = 'missing_evidence:gate'
+MISSING_APPROVAL = 'missing_authority:approval/batch'
+STOPPED = 'missing_authority:approval/batch/stopped'
+UNREAD = 'unknown_outcome:batch/trunk'
+APPROVAL_SUBJECT = 'batch_approval'
+APPROVAL_CHOICES = ('grant', 'stop')
+RECEIPT_KIND = 'batch_receipt'
+FIX_KIND = 'batch_fix_round'
+FLOOR_KIND = 'floor_unit'
+ASK_SECONDS = 7 * 86400
+READS = 2
 # The owner's command: `/batch <project>` (a bot suffix, `/batch@bot`, is Telegram's own form).
 COMMAND = re.compile(r'^/batch(?:@[A-Za-z0-9_]{1,64})?[ \t]+([A-Za-z0-9][A-Za-z0-9_.-]{0,127})[ \t]*$')
 # A failing check a stage reports: a line of its output that starts FAIL, FAILED or ERROR.
@@ -109,7 +133,7 @@ FAILING = re.compile(r'^\s*(?:\[?(?:FAIL|FAILED|ERROR)\]?)(?::|\s)\s*(.+?)\s*$')
 TAXONOMY = {'conflict': 'stale_subject', 'hook_failed': 'unavailable_service', 'stale_subject': 'stale_subject',
             'missing_evidence': 'missing_evidence', 'missing_authority': 'missing_authority',
             'invalid_input': 'invalid_input', 'unavailable_service': 'unavailable_service',
-            'trunk_moved': 'stale_subject', 'not_started': 'unavailable_service'}
+            'trunk_moved': 'stale_subject', 'not_started': 'unavailable_service', 'unknown_outcome': 'unknown_outcome'}
 
 
 class Refused(Exception):
@@ -147,19 +171,211 @@ def batch_command(text):
     return found.group(1) if found else None
 
 
-def eligible(units):
-    """The units a batch takes, in review-completion order: each whose independent review has passed and
-    that has not landed. A unit is {unit, commit (the reviewed commit), review: {state, completed_at, ...},
-    landed}."""
+def floor_id(repository, unit):
+    return 'floor:' + json.dumps([repository, unit], separators=(',', ':'))
+
+
+def receipt_id(batch, unit):
+    return 'batch-receipt:%s:%s' % (batch, unit)
+
+
+def approval_alias(subject_digest):
+    """The inbox alias of the owner's question for one batch subject: one question per subject."""
+    return 'batch-approval-' + hashlib.sha256(str(subject_digest).encode()).hexdigest()[:24]
+
+
+class Authority:
+    """What a batch reads from the authority store, and the only writer of what it records there.
+
+    `store` and `conn` are control_store and the service's connection; `inbox` the repository's VELDO-0064
+    Inbox on that connection (control_assignment), or None for a reader that asks nothing; `signer`/`sign`
+    the journal signer of this service's commands, `command_sign(bytes)` the same principal's signature of
+    an inbox command (AC.SIGNATURE_NAMESPACE)."""
+
+    def __init__(self, store, conn, inbox=None, *, domain, repository, signer, sign, command_sign=None,
+                 generation=1, store_uuid=None, clock=time.time):
+        if not all(_text(v) for v in (domain, repository, signer)):
+            raise Refused('invalid_input:authority', 'the domain, repository and signer are named')
+        self.store, self.conn, self.inbox = store, conn, inbox
+        self.domain, self.repository, self.signer, self.sign = domain, repository, signer, sign
+        self.command_sign, self.generation, self.clock = command_sign, generation, clock
+        self.store_uuid = store_uuid or ((getattr(inbox, 'ids', None) or {}).get('store_uuid'))
+
+    # Reads.
+
+    def _row(self, identity):
+        row = self.conn.execute('SELECT kind, version, digest, data FROM entities WHERE id=?', (identity,)).fetchone()
+        return {'id': identity, 'kind': row[0], 'version': row[1], 'digest': row[2], 'data': json.loads(row[3])} if row else None
+
+    def _kind(self, kind):
+        return [{'id': i, 'version': v, 'data': json.loads(t)} for i, v, t in self.conn.execute(
+            'SELECT id, version, data FROM entities WHERE kind=? ORDER BY id', (kind,))]
+
+    def _written_at(self, identity):
+        """The journal sequence of the last write of `identity`: the order the store committed it in."""
+        pattern = '%' + json.dumps(identity)[1:-1] + '%'
+        latest = 0
+        for seq, after in self.conn.execute('SELECT seq, after_versions FROM journal WHERE after_versions LIKE ? '
+                                            'ORDER BY seq', (pattern,)):
+            try:
+                if identity in json.loads(after):
+                    latest = seq
+            except ValueError:
+                continue
+        return latest
+
+    def unit(self, unit):
+        row = self._row(unit) if _text(unit) else None
+        if not row or row['kind'] != 'execution_unit' or row['data'].get('repository_uuid') != self.repository:
+            return None
+        return row['data']
+
+    def review(self, unit):
+        """The unit's independent review from the store: its floor record handed off (VELDO-0049), with the
+        reviewed commit it is bound to and the order it completed in; None when it has not passed."""
+        if self.unit(unit) is None:
+            return None
+        row = self._row(floor_id(self.repository, unit))
+        data = row['data'] if row and row['kind'] == FLOOR_KIND else {}
+        handoff = data.get('handoff') if isinstance(data.get('handoff'), dict) else {}
+        commit = (handoff.get('source') or {}).get('commit')
+        if data.get('state') != 'handoff' or not _hex(commit):
+            return None
+        return {'state': 'passed', 'commit': commit, 'reviewers': list(handoff.get('reviewers') or []),
+                'attempt': handoff.get('attempt'), 'floor_version': row['version'],
+                'completed_at': self._written_at(row['id'])}
+
+    def landed(self, unit):
+        """Whether the unit's current revision has landed: a batch receipt for it in the store, or the
+        completion reader's revision_landed (VELDO-0057). A reading that fails is never 'not landed'."""
+        data = self.unit(unit)
+        if data is None:
+            return True
+        revision = data.get('revision')
+        for row in self._kind(RECEIPT_KIND):
+            r = row['data']
+            if r.get('unit') == unit and r.get('repository') == self.repository and r.get('revision') == revision \
+                    and r.get('fact') == LANDED:
+                return True
+        try:
+            gate = _organ('control_eligibility').Gate(self.store, self.conn, domain_uuid=self.domain,
+                                                      repository_uuid=self.repository, workspace=None)
+            return bool(gate.landed(unit))
+        except Exception:  # noqa: BLE001 - an unreadable landing is never taken as not landed
+            return True
+
+    def project(self, name):
+        row = self._row('project:' + str(name))
+        return row['data'] if row and row['kind'] == 'project' else None
+
+    def units_of(self, project):
+        """Every unit of `project` in this repository, [{unit, commit}] with the commit its review is bound
+        to: the store's own list, for the owner's command."""
+        found = []
+        for row in self._kind('execution_unit'):
+            data = row['data']
+            if data.get('repository_uuid') != self.repository:
+                continue
+            name, _record = _organ('control_landing').unit_project(self.conn, row['id'])
+            if name != project:
+                continue
+            review = self.review(row['id'])
+            if review is not None:
+                found.append({'unit': row['id'], 'commit': review['commit']})
+        return found
+
+    def _assignment(self, subject_digest):
+        return _organ('control_assignment').assignment_id(self.repository, approval_alias(subject_digest))
+
+    def approval(self, subject):
+        """The owner's settled answer to the batch question for exactly `subject`, read from the store:
+        {ruling, subject_digest, by, assignment, version}, or None while there is none. Only an answer the
+        inbox admits (the owner's own signed answer, VELDO-0064 and VELDO-0068) counts."""
+        if self.inbox is None or not isinstance(subject, dict):
+            return None
+        d = digest(subject)
+        aid = self._assignment(d)
+        item = self.inbox.read(aid)
+        data = (item or {}).get('data') or {}
+        if not item or data.get('subject') != {'kind': APPROVAL_SUBJECT, 'ref': subject.get('batch'), 'digest': d}:
+            return None
+        if not self.inbox.admit(aid).get('admitted'):
+            return None
+        answer = data.get('answer') or {}
+        return {'ruling': answer.get('ruling'), 'subject_digest': d, 'by': data.get('owner'), 'assignment': aid,
+                'version': item.get('version'), 'answer': digest(answer.get('command') or {})}
+
+    def asked(self, subject_digest):
+        return self.inbox is not None and self.inbox.read(self._assignment(subject_digest)) is not None
+
+    # Writes.
+
+    def ask(self, request):
+        """Open the owner's question for this request's subject (once per subject). The project owner is read
+        from the store; the question is signed as this service's principal."""
+        if self.inbox is None or not callable(self.command_sign):
+            raise Refused('unavailable_service:inbox', 'no inbox to ask the owner through')
+        if self.asked(request['subject_digest']):
+            return {'ok': True, 'repeated': True}
+        owner = (self.project(request['project']) or {}).get('owner')
+        if not _text(owner):
+            raise Refused('missing_authority:project_owner', str(request['project']))
+        I = _organ('control_assignment')
+        alias = approval_alias(request['subject_digest'])
+        key = 'batch-ask/' + request['subject_digest'][len('sha256:'):][:32]
+        content = {'kind': 'decision', 'owner': owner, 'scope': [self.repository],
+                   'deadline': time.strftime(I.DEADLINE_FORMAT, time.gmtime(self.clock() + ASK_SECONDS)),
+                   'budget': {'invocations': 1}, 'brief': request['brief'][:4000], 'choices': list(APPROVAL_CHOICES),
+                   'subject': {'kind': APPROVAL_SUBJECT, 'ref': request['batch'], 'digest': request['subject_digest']}}
+        command = {'operation': 'open', 'alias': alias, 'principal': self.signer, 'command_id': key, 'nonce': key,
+                   'domain_uuid': self.domain, 'repository_uuid': self.repository, 'store_uuid': self.store_uuid,
+                   'assignment': content}
+        opened = self.inbox.apply({'command': command, 'signature': self.command_sign(self.store.canonical_bytes(command))})
+        if not opened.get('ok'):
+            raise Refused('unavailable_service:inbox/' + str(opened.get('reason')))
+        return opened
+
+    def _upsert(self, identity, kind, data):
+        current = self._row(identity)
+        if current is not None and current['data'] == data:
+            return current
+        command_id = 'batch/%s' % digest([identity, data])[len('sha256:'):][:32]
+        self.store.execute(self.conn, {
+            'command_id': command_id, 'principal': self.signer, 'operation': 'upsert_entity',
+            'parameters': {'entity_id': identity, 'kind': kind, 'data': data},
+            'expected_versions': {identity: current['version'] if current else 0}, 'artifact_digests': [],
+            'nonce': command_id + '/nonce'}, self.signer, self.sign, self.generation)
+        return self._row(identity)
+
+    def write_receipt(self, receipt):
+        data = dict(receipt, repository=self.repository, revision=(self.unit(receipt['unit']) or {}).get('revision'))
+        return self._upsert(receipt_id(receipt['batch'], receipt['unit']), RECEIPT_KIND, data)
+
+    def receipts(self, unit=None):
+        return [r['data'] for r in self._kind(RECEIPT_KIND)
+                if r['data'].get('repository') == self.repository and (unit is None or r['data'].get('unit') == unit)]
+
+    def fix_round(self, batch, unit, commit, reds):
+        """The unit returned to its own fix round, recorded with the reds that name it."""
+        return self._upsert('batch-fix:%s:%s' % (batch, unit), FIX_KIND, {
+            'unit': unit, 'commit': commit, 'batch': batch, 'repository': self.repository, 'reds': reds})
+
+
+def eligible(authority, units):
+    """The units a batch takes, in review-completion order: each whose independent review, read from the
+    authority store, has passed for exactly the commit named, and that has not landed. A unit is {unit,
+    commit}; any review a caller attaches is ignored and replaced by the store's."""
+    if not isinstance(authority, Authority):
+        raise Refused('missing_authority:batch', 'a batch reads its units\' reviews from the authority store')
     picked = []
     for entry in units or ():
         if not isinstance(entry, dict) or not _text(entry.get('unit')) or not _hex(entry.get('commit')):
             continue
-        review = entry.get('review') or {}
-        if review.get('state') != 'passed' or entry.get('landed'):
+        review = authority.review(entry['unit'])
+        if review is None or review['commit'] != entry['commit'] or authority.landed(entry['unit']):
             continue
-        picked.append(entry)
-    return sorted(picked, key=lambda e: (float((e.get('review') or {}).get('completed_at') or 0), e['unit']))
+        picked.append({'unit': entry['unit'], 'commit': entry['commit'], 'review': review})
+    return sorted(picked, key=lambda e: (e['review']['completed_at'], e['unit']))
 
 
 def stages_of(observation):
@@ -200,14 +416,17 @@ class Batch:
     watermark and the merge commit appended, or None. `identity` is the (name, email) every commit the
     batch makes carries; `push_identity` the VELDO-0153 identity record a push runs under, if any.
     `installation` is the trusted gate's directory (by default the watermark's own, laid down from Git
-    objects outside the clone). `tell(kind, payload)` reaches the owner, `ask(request)` asks for the batch
-    approval (VELDO-0068), `fix_round(unit, reds)` returns a unit to its fix round, `receipt(receipt)`
-    records a landing receipt, `requirements(unit)` names every other approval a unit still lacks."""
+    objects outside the clone). `authority` is the Authority every review, landing and approval is read
+    from and every receipt and fix round is written to. `tell(kind, payload)` reaches the owner,
+    `fix_round(unit, reds)` is told of each unit returned to its fix round (after the store records it),
+    `requirements(unit)` names every other approval a unit still lacks."""
 
-    def __init__(self, repo_root, *, project, identity, trunk='main', remote='origin', destination=LAND_AND_PUSH,
-                 hook=None, push_identity=None, installation=None, workspace_root=None, records=None,
-                 observe=None, tell=None, ask=None, fix_round=None, receipt=None, requirements=None,
+    def __init__(self, repo_root, *, project, identity, authority, trunk='main', remote='origin',
+                 destination=LAND_AND_PUSH, hook=None, push_identity=None, installation=None, workspace_root=None,
+                 records=None, observe=None, tell=None, fix_round=None, requirements=None,
                  clock=time.time, gate_timeout=None, follows=None):
+        if not isinstance(authority, Authority):
+            raise Refused('missing_authority:batch', 'a batch reads and writes its authority through the store')
         if destination not in (LAND_AND_PUSH, LAND_LOCALLY):
             raise Refused('invalid_input:landing_destination', str(destination))
         if hook is not None and (not isinstance(hook, (list, tuple)) or not hook or not all(_text(a) for a in hook)):
@@ -221,11 +440,13 @@ class Batch:
         self.workspace_root = str(workspace_root) if workspace_root is not None else None
         self.records = Path(records) if records is not None else None
         self.observe = observe or (lambda event: None)
+        self.authority = authority
         self.tell = tell or (lambda kind, payload: None)
-        self.ask = ask or (lambda request: None)
         self.fix_round = fix_round or (lambda unit, reds: None)
-        self.receipt = receipt or (lambda receipt: None)
         self.requirements = requirements or (lambda unit: [])
+        # Every subject this batch asked the owner for, across re-assembly: a settled grant of one of them
+        # that is not the current subject is a stale grant, refused by name.
+        self.asked_subjects = []
         self.clock, self.gate_timeout, self.follows = clock, gate_timeout, follows
         self.gate_runs = 0
         self.record = None
@@ -428,8 +649,8 @@ class Batch:
     def assemble(self, units):
         """Assemble every eligible unit onto the trunk watermark in one candidate (see the module text)."""
         self.discard()
-        self._units = [dict(u) for u in units or ()]
-        picked = eligible(self._units)
+        self._units = [{'unit': u.get('unit'), 'commit': u.get('commit')} for u in units or () if isinstance(u, dict)]
+        picked = eligible(self.authority, self._units)
         self.record = {'schema': SCHEMA, 'id': 'batch-' + uuid.uuid4().hex[:16], 'project': self.project,
                        'trunk': self.trunk, 'destination': self.destination, 'follows': self.follows,
                        'hook': list(self.hook) if self.hook else None, 'state': 'new', 'watermark': None,
@@ -541,7 +762,9 @@ class Batch:
             for red in inventory:
                 for unit in red['units']:
                     named.setdefault(unit, []).append(red)
+            commits = {u['unit']: u['commit'] for u in r['units']}
             for unit, reds in sorted(named.items()):
+                self.authority.fix_round(r['id'], unit, commits.get(unit), reds)
                 self.fix_round(unit, reds)
                 self._event('fix_round', 'returned', unit=unit, reds=len(reds))
         return {'ok': green, 'inventory': inventory, 'stages': r['gate']['stages']}
@@ -585,9 +808,14 @@ class Batch:
             return {'ok': False, 'refusal': RED}
         request = self.approval_request()
         r['approval'] = {'asked': [request['subject_digest']], 'granted': None}
-        self._event('approval', 'asked', subject=request['subject_digest'])
-        self.ask(request)
+        self._ask(request)
         return {'ok': True, 'request': request}
+
+    def _ask(self, request):
+        if request['subject'] not in self.asked_subjects:
+            self.asked_subjects.append(request['subject'])
+        self.authority.ask(request)
+        self._event('approval', 'asked', subject=request['subject_digest'])
 
     def _refuse_land(self, code, **fields):
         r = self.record
@@ -595,23 +823,31 @@ class Batch:
         self._event('land', 'refused', code, **fields)
         return dict({'ok': False, 'refusal': code, 'outcome': 'refused'}, **fields)
 
-    def land(self, grant):
-        """Land a green batch on the owner's `grant` ({subject, subject_digest, by, at}): one compare-and-swap
-        of the trunk from the watermark to the tip, then a receipt per unit naming the batch."""
+    def land(self, grant=None):
+        """Land a green batch on the owner's settled approval, read from the store for exactly this batch's
+        subject (a `grant` the caller passes is never authority and is not read): one compare-and-swap of
+        the trunk from the watermark to the tip, then a receipt per unit naming the batch."""
         r = self.record
         if r is None or r.get('state') != 'green':
             return self._refuse_land(RED, state=(r or {}).get('state'))
         subject = self.subject()
-        bound = (grant or {}).get('subject') if isinstance(grant, dict) else None
-        if not isinstance(bound, dict) or bound != subject or grant.get('subject_digest') != digest(subject):
+        grant = self.authority.approval(subject)
+        if grant is None or grant.get('ruling') != APPROVAL_CHOICES[0]:
+            stale = any((self.authority.approval(other) or {}).get('ruling') == APPROVAL_CHOICES[0]
+                        for other in self.asked_subjects if other != subject)
             asked = self.approval_request()
             if not r.get('approval'):
                 r['approval'] = {'asked': [], 'granted': None}
-            r['approval']['asked'].append(asked['subject_digest'])
-            self.ask(asked)
-            return self._refuse_land(STALE, asked=asked['subject_digest'])
+            if asked['subject_digest'] not in r['approval']['asked']:
+                r['approval']['asked'].append(asked['subject_digest'])
+            if grant is not None:
+                return self._refuse_land(STOPPED, ruling=grant.get('ruling'))
+            if not self.authority.asked(asked['subject_digest']):
+                self._ask(asked)
+            return self._refuse_land(STALE if stale else MISSING_APPROVAL, asked=asked['subject_digest'])
         r['approval'] = dict(r.get('approval') or {'asked': []}, granted={
-            'subject_digest': grant['subject_digest'], 'by': grant.get('by'), 'at': grant.get('at')})
+            'subject_digest': grant['subject_digest'], 'by': grant.get('by'), 'assignment': grant['assignment'],
+            'version': grant.get('version'), 'answer': grant.get('answer')})
         missing = []
         for unit in r['units']:
             missing.extend(self.requirements(dict(unit)) or [])
@@ -638,30 +874,57 @@ class Batch:
                        'merge': unit['merge'], 'batch': r['id'], 'project': self.project, 'tip': r['tip'],
                        'trunk': self.trunk, 'destination': self.destination, 'confirmed': r['landing']['confirmed']}
             r['receipts'].append(receipt)
-            self.receipt(receipt)
+            self.authority.write_receipt(receipt)
         r['state'] = 'landed'
         self._event('land', 'landed', units=[u['unit'] for u in r['units']])
         return {'ok': True, 'outcome': 'landed', 'tip': r['tip'], 'receipts': list(r['receipts'])}
 
+    def _read_trunk(self, url=None, profile='isolated'):
+        """The trunk as it is now, read with no expectation of success: (commit or None, read at all)."""
+        ref = 'refs/heads/' + self.trunk
+        for _attempt in range(READS):
+            if self.destination == LAND_AND_PUSH:
+                listed = self._git(self.clone, 'ls-remote', url, ref, ok=None, profile=profile, remote_url=url)
+                if listed.returncode == 0:
+                    words = (listed.stdout or '').split()
+                    return (words[0] if words else None), True
+            else:
+                found = self._git(self.repo_root, 'rev-parse', '--verify', '--quiet', ref, ok=None)
+                if found.returncode in (0, 1):
+                    return ((found.stdout or '').strip() or None), True
+        return None, False
+
     def _swap(self):
-        """(swapped, trunk found): the one compare-and-swap from the watermark to the tip, then re-read."""
+        """(swapped, trunk found): the one compare-and-swap from the watermark to the tip, then the trunk
+        re-read and classified by what was found: the tip is landed; the watermark after a failed swap is that
+        swap's failure by name (Refused); a trunk that cannot be read is unknown (Refused); anything else is a
+        moved trunk."""
         r, ref = self.record, 'refs/heads/' + self.trunk
         if self.destination == LAND_AND_PUSH:
             url = r['remote_url']
             profile = 'identity' if self.push_identity else 'isolated'
             push = self._git(self.clone, 'push', '-q', '--force-with-lease=%s:%s' % (ref, r['watermark']), url,
                              '%s:%s' % (r['tip'], ref), ok=None, profile=profile, remote_url=url)
-            listed = self._git(self.clone, 'ls-remote', url, ref, profile=profile, remote_url=url).stdout.split()
-            found = listed[0] if listed else None
-            return push.returncode == 0 and found == r['tip'], found
-        staging = 'refs/veldo/batch/' + r['id']
-        self._git(self.clone, 'push', '-q', self.repo_root, '%s:%s' % (r['tip'], staging))
-        try:
-            swap = self._git(self.repo_root, 'update-ref', ref, r['tip'], r['watermark'], ok=None)
-        finally:
-            self._git(self.repo_root, 'update-ref', '-d', staging, ok=None)
-        found = self._git(self.repo_root, 'rev-parse', '--verify', ref).stdout.strip()
-        return swap.returncode == 0 and found == r['tip'], found
+            swap = push
+            found, read = self._read_trunk(url, profile)
+            operation = 'push'
+        else:
+            staging = 'refs/veldo/batch/' + r['id']
+            self._git(self.clone, 'push', '-q', self.repo_root, '%s:%s' % (r['tip'], staging))
+            try:
+                swap = self._git(self.repo_root, 'update-ref', ref, r['tip'], r['watermark'], ok=None)
+            finally:
+                self._git(self.repo_root, 'update-ref', '-d', staging, ok=None)
+            found, read = self._read_trunk()
+            operation = 'update-ref'
+        if not read:
+            raise Refused(UNREAD, 'the trunk could not be read after the swap (%s exit %s)' % (operation, swap.returncode))
+        if found == r['tip']:
+            return True, found
+        if found == r['watermark']:
+            raise Refused('unavailable_service:git/' + operation, (swap.stderr or '').strip()[:300]
+                          or 'the swap failed and the trunk is still at the watermark')
+        return False, found
 
     def reland(self):
         """VELDO-0148 for a batch: the trunk moved after the watermark, so the same units are merged again
