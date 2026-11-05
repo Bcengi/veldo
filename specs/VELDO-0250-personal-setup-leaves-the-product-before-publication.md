@@ -1,10 +1,10 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0250
-title: Before Veldo is published, every piece of the owner's personal setup moves to his installation, the owner becomes an installation setting, a gate check refuses its return, and the public repository starts from a fresh history
+title: Before Veldo is published, every piece of the owner's personal setup moves to the installation, the owner becomes an installation setting, a gate check refuses its return, and the public repository starts from a fresh history
 status: ready
-risk: "critical - it moves bytes toward a public repository. A personal value that reaches a public push is permanent, and the same change rewires how the owner's running factory finds its owner, accounts, channels and records, so a wrong cutover stops his factory."
-owner: dmitry
+risk: "critical - it moves bytes toward a public repository. A personal value that reaches a public push is permanent, and the same change rewires how the owner's running factory finds its owner, accounts, channels and records, so a wrong cutover stops the factory."
+owner: owner
 human_approval: required
 lane: standalone
 depends_on: [WARP-1701, WARP-1704]
@@ -74,13 +74,15 @@ acceptance_criteria:
       belongs to one deployment from one installation folder, resolved in a fixed order: the
       VELDO_INSTALLATION environment variable, else $XDG_CONFIG_HOME/veldo/installation (else
       ~/.config/veldo/installation), the same configuration root that already holds host_trust.json. One
-      reader, .veldo/installation.py (schema veldo.installation/v1), is the only code that opens it, and
-      docs/installation.md documents its layout: installation.yaml (owner display name, owner role id, git
-      identity, approver key ids, channels with secrets by reference only, model accounts and their
-      labels, hosts, tailnet names, ports, tracker sites and account ids, publisher identity),
-      connectors/ and workflows/ (searched after the product's own, through the existing catalog and pack
-      loaders), patterns/ (the personal-setup patterns of AC3), decisions/ (the map from a decision
-      reference to its source message and quote) and records/ (the owner's pre-split history, AC2). Product
+      reader, .veldo/installation.py (schema veldo.installation/v1), is the only code that opens it. Its
+      layout is the one installation schema of VELDO-0253 AC1, and docs/installation.md documents that
+      layout; this spec defines no layout of its own and uses these of its kinds: installation.yaml (owner
+      display name, owner role id, git identities, approver key ids, channels with secrets by reference
+      only, model accounts and their labels, hosts, tailnet names, ports, tracker sites and account ids,
+      publisher identity), connectors/, services/ and workflows/ (an installation file with the same id as
+      the product's own overrides it), patterns/ (the personal-setup patterns of AC3), decisions/ (the map
+      from a decision reference to its source message and quote) and records/ (the owner's pre-split
+      history, AC2). Product
       defaults name nobody: the spec owner field holds a role id, an action that needs a person resolves
       it through the installation, and when the value is absent it refuses by name
       (installation_missing:owner), never falls back to a built-in person. A fresh clone with no
@@ -114,7 +116,9 @@ acceptance_criteria:
       .veldo/private_names.txt, which is deleted because it is itself a list of the owner's products.
       Proof files the gate reads as inputs (fixtures, extractors, baselines) are live, found from the
       suites' declared case inputs and not by guessing, and move to scripts/fixtures with generic
-      content. Rerunning the inventory over the scrubbed tree, with the installation's patterns, reports
+      content. The full inventory names files and lines by personal term, so it is itself personal setup: it
+      moves to records/ with the rest, and the product proof keeps only the per-category and per-folder
+      counts. Rerunning the inventory over the scrubbed tree, with the installation's patterns, reports
       zero files in every category, and the full gate is green.
     falsified_by: >
       Any inventory row over the scrubbed tree; a moved file whose digest in records/ differs from its
@@ -164,7 +168,7 @@ acceptance_criteria:
       pipeline's output of the scrubbed tree as a single root commit authored by the publisher identity from
       the installation, which is a project identity and not a person; nothing from the private history is
       reachable in it. From then on the public repository is upstream and the owner's factory works on
-      clones of it, reading everything personal from his installation. The order keeps the factory running:
+      clones of it, reading everything personal from the installation. The order keeps the factory running:
       first the installation repository is filled from the current values, then factory setup writes
       VELDO_INSTALLATION into the running service's environment, then the reader lands, then the in-tree
       values are removed. After each step a continuity probe dispatches one unit and lands it.
@@ -191,9 +195,8 @@ rollback: >
 
 ## Intent
 
-Owner decisions, Telegram 2026-11-04. 39098: "Remember that veldo repo can't have any of my personal
-setup". 39100: "Maybe we need custom repo for our factory with veldo config and all custom connectors and
-workflows? We can't commit it back to veldo repo that is open source". 39104: yes to this cleanup ticket.
+The owner decided that the Veldo repository holds none of the owner's personal setup, and that the
+factory's configuration, connectors and workflows live in a separate private repository (see History).
 
 Veldo is a product; the owner's factory is one deployment of it. A mature open-source project keeps the
 two apart the way a server keeps its code apart from its configuration: the product ships generic defaults
@@ -205,7 +208,7 @@ it.
 ## Context
 
 The measured inventory of 2026-11-04 (proof/VELDO-0250/inventory.json lists every file, its category and
-its matching line count) read all 7419 tracked files on main at 043c2ef6. 1227 files carry personal setup:
+its matching line count, and moves to the installation's records/ under AC2) read all 7419 tracked files on main at 043c2ef6. 1227 files carry personal setup:
 741 are history, 231 are live records (open specs and plans), 255 are live behaviour.
 
 - Owner name and email: 728 files, 2233 lines (live 129 files, open records 230, history 369). Every spec's
@@ -213,7 +216,7 @@ its matching line count) read all 7419 tracked files on main at 043c2ef6. 1227 f
   scripts/migrate_to_veldo.py, docs and prose.
 - Telegram ids and quotes: 337 files, 888 lines (live 89, open records 139, history 109). Spec Intent and
   History sections, comments in engine code, the chat id in two suites.
-- Paths under the owner's home and his host name: 167 files, 2422 lines, almost all history (162 files in
+- Paths under the owner's home and the host name: 167 files, 2422 lines, almost all history (162 files in
   proof, mostly worktree paths); 2 live files, 3 open records.
 - Company, products, repositories, industry terms, vendors and services: 230 files, 1236 lines (live 55,
   open records 18, history 157). Includes the committed .veldo/private_names.txt, which is itself a list of
@@ -253,7 +256,7 @@ for any number of installations, not for this one.
 
 **What moves to the installation repository.** Owner identity, approvers, git identity, channels, model
 accounts and their labels, hosts, tailnet names, ports, tracker sites and ids, publisher identity, custom
-connectors and workflows (39100), the personal-setup patterns, the decision reference map, and records/:
+connectors, services and workflows, the personal-setup patterns, the decision reference map, and records/:
 the history that cannot be rewritten without falsifying it.
 
 **What is rewritten in place.** Everything a user runs or reads: code labels and defaults, suites and
@@ -262,6 +265,11 @@ spec History cites a decision reference that the installation maps to its source
 
 **History.** History records move unchanged; they are true records of the owner's deployment and belong
 to it. The private repository keeps every commit. The public repository starts from one root commit.
+
+**Order.** AC1 (the reader) and AC3 (the check) land first, ahead of VELDO-0251, VELDO-0252 and
+VELDO-0253, which build on the reader, so every draft written from then on is refused personal setup.
+AC2 (the scrub) and AC4 (the fresh public root) run last, after the tickets in flight land, as the last
+step before publication.
 
 **The guard.** The patterns that define personal live with the person. The product's check knows only
 shapes that are personal for anybody (a home path, a uid, a real-looking email, a secret).
@@ -294,3 +302,5 @@ and the owner's approval.
 inventory in proof/VELDO-0250/inventory.json.
 
 2026-11-04: approved by the owner, Telegram 39113 ("Yes", to 39112), with the lead's sequencing: it runs after the tickets in flight land, as the last step before publication. Status ready.
+
+2026-11-04: amended per the plan consistency review (research/veldo-plan-consistency-review-2026-11-04.md) and the lead's rulings (research/veldo-plan-rulings-2026-11-04.md), both in the owner's installation repository, on the owner's request Telegram 39145. AC1 uses the one installation layout of VELDO-0253 instead of its own, and the installation overrides the product's own files (R1, D2). AC1 and AC3 land first and AC2 and AC4 last (D5). The full inventory moves to records/ and the product proof keeps counts only (B15). The Intent's quotes of Telegram 39098 ("Remember that veldo repo can't have any of my personal setup") and 39100 ("Maybe we need custom repo for our factory with veldo config and all custom connectors and workflows? We can't commit it back to veldo repo that is open source") move here from the Intent; 39104 was yes to this ticket. Owner field is a role id (B1). Status stays ready; the owner approves the amendments in one message.
