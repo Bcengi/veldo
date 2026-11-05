@@ -26,6 +26,10 @@ judges the whole tree); ac2/no-installation (the built-in-only line, and a clean
 ac2/publish-shares (scripts/publish.py refuses a produced tree through the same code); ac2/stage-declared
 (scripts/verify.sh declares the stage, and scripts/gate_graph.json carries exactly the node the scheduler
 requires for it); ac2/product-clean (no pattern of the fixture installation is in a tracked file).
+
+writers/home-as-tilde (the lead's ruling after review, not a criterion): Veldo's own evidence and log writers
+that record into proof/ write the user's home directory as ~ when they write, so the built-in home_path
+rule never blocks a builder who forgot to.
 """
 
 
@@ -47,12 +51,13 @@ def _v259_installation_suite():
         'check_personal_setup.py': ROOT / "scripts" / "check_personal_setup.py",
         'control_service.py': ROOT / ".veldo" / "control_service.py",
         'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
+        'qualify.py': ROOT / ".veldo" / "qualify.py",
     }
     ROWS = ('ac1/resolution', 'ac1/kinds', 'ac1/missing-by-name', 'ac1/invalid-by-name', 'ac1/revision',
             'ac1/one-reader', 'ac1/traces', 'ac1/no-personal-default', 'ac1/fresh-clone',
             'ac1/owner-sites', 'ac2/planted', 'ac2/masked', 'ac2/added-only', 'ac2/quoted-names',
             'ac2/declared-base', 'ac2/no-installation', 'ac2/publish-shares', 'ac2/stage-declared',
-            'ac2/product-clean')
+            'ac2/product-clean', 'writers/home-as-tilde')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -599,6 +604,50 @@ def _v259_installation_suite():
         _, error = attempt(lambda: SCHED.read_graph(catalog, legs, ROOT / 'scripts' / 'gate_graph.json'))
         check('ac2/stage-declared', 'the scheduler accepts the graph for the declared catalog [%s]' % error,
               error is None and 'personal_setup' in catalog)
+
+        # ---- The evidence and log writers that record into proof/ write the home directory as ~ ------------
+        # Each writer and how many of its writes into proof/ there are, by the function that makes them.
+        WRITERS = {'.veldo/fix_validation.py': {'main': 1}, '.veldo/fix_assessor.py': {'main': 1},
+                   '.veldo/fix_validation_record.py': {'write_record': 2}, '.veldo/qualify.py': {'fixtures': 1},
+                   'scripts/drive.py': {'red': 1, 'main': 2}, 'scripts/parser_corpus_audit.py': {'main': 2},
+                   'scripts/propose_case_inputs.py': {'main': 1}, 'scripts/suite_slice.py': {'main': 1},
+                   'scripts/suite_extract.py': {'main': 1}}
+        import ast
+        import pwd
+        home = str(temp / 'home-of-someone')
+        environ()
+        os.environ['HOME'] = home
+        account_home = pwd.getpwuid(os.getuid()).pw_dir
+        for rel, functions in WRITERS.items():
+            path = PRODUCTION.get(Path(rel).name, ROOT / rel)
+            module, error = attempt(lambda: load('v259_writer_' + Path(rel).stem, path))
+            tilde = getattr(module, 'home_as_tilde', None)
+            sample = '{"cwd": "%s/work", "log": "File \\"%s/x.py\\"", "other": "%sx/y", "account": "%s/z"}' % (
+                home, home, home, account_home)
+            got = tilde(sample) if tilde else None
+            check('writers/home-as-tilde', '%s writes the home directory as ~ [%s %s]' % (rel, error, got),
+                  got == '{"cwd": "~/work", "log": "File \\"~/x.py\\"", "other": "%sx/y", "account": "~/z"}' % home)
+            tree = ast.parse(path.read_text())
+            for function, wanted in functions.items():
+                node = next((n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == function), None)
+                tilded = set()
+                for part in ast.walk(node) if node else ():
+                    if isinstance(part, ast.Assign) and isinstance(part.value, ast.Call) \
+                            and getattr(part.value.func, 'id', '') == 'home_as_tilde':
+                        tilded |= {t.id for t in part.targets if isinstance(t, ast.Name)}
+                wrapped = 0
+                for part in ast.walk(node) if node else ():
+                    if isinstance(part, ast.Call) and getattr(part.func, 'attr', '') == 'write_text' and part.args:
+                        arg = part.args[0]
+                        if isinstance(arg, ast.Call) and getattr(arg.func, 'id', '') == 'home_as_tilde' \
+                                or isinstance(arg, ast.Name) and arg.id in tilded:
+                            wrapped += 1
+                check('writers/home-as-tilde', '%s %s passes each of its %d proof writes through home_as_tilde [%d]'
+                      % (rel, function, wanted, wrapped), wrapped == wanted)
+            mirror = ROOT / 'engine' / rel
+            if rel.startswith('.veldo/'):
+                check('writers/home-as-tilde', 'the engine canon of %s is the same writer' % rel,
+                      mirror.is_file() and mirror.read_bytes() == path.read_bytes())
 
         # ---- AC1: a fresh clone with no installation -------------------------------------------------------
         environ(VELDO_INSTALLATION=temp / 'absent')

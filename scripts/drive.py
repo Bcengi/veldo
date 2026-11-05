@@ -88,6 +88,23 @@ def _raised(observed):
     return any('run to its end' in d or 'raised' in d for d in observed['details'])
 
 
+def home_as_tilde(text):
+    """Evidence text with the user's home directory written as ~ (VELDO-0259). The personal-setup gate
+    stage refuses a home path on any line a candidate adds, proof/ included, so the writer that records
+    into proof/ does this when it writes, and no builder has to remember to."""
+    import os
+    import re
+    homes = {os.path.expanduser('~')}
+    try:
+        import pwd
+        homes.add(pwd.getpwuid(os.getuid()).pw_dir)
+    except (ImportError, KeyError):
+        pass
+    for home in sorted({h.rstrip('/') for h in homes if h and h.rstrip('/')}, key=len, reverse=True):
+        text = re.sub(re.escape(home) + r'(?![A-Za-z0-9_.\-])', lambda _: '~', text)
+    return text
+
+
 def red(commit):
     """Run the current suite once against the whole tree of COMMIT, extracted with git archive."""
     resolved = _git_process.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', commit + '^{commit}'],
@@ -103,7 +120,7 @@ def red(commit):
                   tree='git archive %s, unchanged; the current suite file run against it' % resolved, modules=modules,
                   by_assertion=not _raised(observed), **observed)
     name = 'red-at-%s.json' % commit
-    (HERE / name).write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
+    (HERE / name).write_text(home_as_tilde(json.dumps(report, indent=1, sort_keys=True) + '\n'))
     print(json.dumps({'commit': resolved, 'failed_rows': observed['failed_rows'], 'by_assertion': report['by_assertion'],
                       'written': name}))
 
@@ -130,9 +147,9 @@ def main():
         for case in cases:
             prepared = ctm.materialize(case, 'mutant', Path(directory) / case['name'])
             source = prepared['source'].read_text()
-            (HERE / (case['name'] + '.diff')).write_text(''.join(difflib.unified_diff(
+            (HERE / (case['name'] + '.diff')).write_text(home_as_tilde(''.join(difflib.unified_diff(
                 source.splitlines(keepends=True), ctm.mutate(source, case).splitlines(keepends=True),
-                n=0, fromfile='a/.veldo/' + case['module'], tofile='b/.veldo/' + case['module'])))
+                n=0, fromfile='a/.veldo/' + case['module'], tofile='b/.veldo/' + case['module']))))
             observed = run({case['module']: str(prepared['mutant'])})
             report['mutants'].append(dict(name=case['name'], module='.veldo/' + case['module'], named_rows=case['rows'],
                                           diff='proof/VELDO-0085/%s.diff' % case['name'],
@@ -150,7 +167,7 @@ def main():
     report['mutations_per_row'] = per_row
     report['serial_seconds'] = round(report['baseline']['seconds'] + sum(n['seconds'] for n in report['noop'].values())
                                      + sum(m['seconds'] for m in report['mutants']), 3)
-    (HERE / 'mutations.json').write_text(json.dumps(report, indent=1, sort_keys=True) + '\n')
+    (HERE / 'mutations.json').write_text(home_as_tilde(json.dumps(report, indent=1, sort_keys=True) + '\n'))
     print(json.dumps({'mutants': len(report['mutants']), 'all_named_rows_red': report['all_named_rows_red'],
                       'all_by_assertion': report['all_by_assertion'],
                       'controls_green': report['controls_green'], 'serial_seconds': report['serial_seconds']}))

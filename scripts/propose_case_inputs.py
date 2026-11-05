@@ -116,6 +116,23 @@ def trace_case(gate, case):
             'runtime_absent': sorted(runtime_absent)}, runtime
 
 
+def home_as_tilde(text):
+    """Evidence text with the user's home directory written as ~ (VELDO-0259). The personal-setup gate
+    stage refuses a home path on any line a candidate adds, proof/ included, so the writer that records
+    into proof/ does this when it writes, and no builder has to remember to."""
+    import os
+    import re
+    homes = {os.path.expanduser('~')}
+    try:
+        import pwd
+        homes.add(pwd.getpwuid(os.getuid()).pw_dir)
+    except (ImportError, KeyError):
+        pass
+    for home in sorted({h.rstrip('/') for h in homes if h and h.rstrip('/')}, key=len, reverse=True):
+        text = re.sub(re.escape(home) + r'(?![A-Za-z0-9_.\-])', lambda _: '~', text)
+    return text
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--probe', nargs=2)
@@ -159,7 +176,7 @@ def main():
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(document, indent=2) + '\n')
-        args.report.write_text(json.dumps(report, indent=2) + '\n')
+        args.report.write_text(home_as_tilde(json.dumps(report, indent=2) + '\n'))
         print(name, len(result['files']), 'proposed', flush=True)
 
 

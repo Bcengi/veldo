@@ -12120,6 +12120,22 @@ def cases():
         "        out.write('personal setup: no installation found; ran the built-in shapes only\\n')\n",
         "        pass\n", ['ac2/no-installation'])
     result[-1]['dir'] = 'scripts'
+    # Fix round 1 (review F1, F2, F3 and the lead's ruling on the home path in proof/).
+    add(259, 'personal259-quoted-names-skipped', install259, 'check_personal_setup.py',
+        "    return [n for n in names.split('\\0') if n]\n",
+        "    return [n for n in names.split('\\0') if n and n.isascii() and '\"' not in n and '\\\\' not in n]\n",
+        ['ac2/quoted-names'])
+    result[-1]['dir'] = 'scripts'
+    add(259, 'personal259-base-guessed', install259, 'check_personal_setup.py',
+        "    ref = base or DECLARED_TRUNK\n", "    ref = base or 'main'\n", ['ac2/declared-base'])
+    result[-1]['dir'] = 'scripts'
+    add(259, 'personal259-no-base-silent', install259, 'check_personal_setup.py',
+        "        raise NoBase('%s does not resolve to a commit' % ref)\n", "        return 'HEAD'\n",
+        ['ac2/declared-base'])
+    result[-1]['dir'] = 'scripts'
+    add(259, 'writers259-home-kept', install259, 'qualify.py',
+        "        (here / name).write_text(home_as_tilde(content))\n", "        (here / name).write_text(content)\n",
+        ['writers/home-as-tilde'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

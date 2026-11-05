@@ -302,6 +302,23 @@ def fixture_models(catalog):
     return (next(s for s, mode in modes if mode == 'code_mode_only'), next(s for s, mode in modes if mode is None))
 
 
+def home_as_tilde(text):
+    """Evidence text with the user's home directory written as ~ (VELDO-0259). The personal-setup gate
+    stage refuses a home path on any line a candidate adds, proof/ included, so the writer that records
+    into proof/ does this when it writes, and no builder has to remember to."""
+    import os
+    import re
+    homes = {os.path.expanduser('~')}
+    try:
+        import pwd
+        homes.add(pwd.getpwuid(os.getuid()).pw_dir)
+    except (ImportError, KeyError):
+        pass
+    for home in sorted({h.rstrip('/') for h in homes if h and h.rstrip('/')}, key=len, reverse=True):
+        text = re.sub(re.escape(home) + r'(?![A-Za-z0-9_.\-])', lambda _: '~', text)
+    return text
+
+
 def fixtures(root, executable, written):
     """The VELDO-0127 fixtures the role suites read: the bundled catalog, the features listing and the real
     binary's loopback request with and without a selected MCP server for each of the two models."""
@@ -398,7 +415,7 @@ def fixtures(root, executable, written):
         'network': '127.0.0.1 stand-in; empty temporary HOME and CODEX_HOME; Landlock TCP restriction'},
         indent=1) + '\n'
     for name, content in outputs.items():
-        (here / name).write_text(content)
+        (here / name).write_text(home_as_tilde(content))
         written.append(FIXTURES + '/' + name)
 
 
