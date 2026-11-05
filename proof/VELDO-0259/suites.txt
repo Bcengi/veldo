@@ -1,0 +1,32 @@
+VELDO-0259 suite results, each run alone the way scripts/verify.sh runs one suite:
+python3 scripts/selftest.py --suite NAME. The full gate was not run (instruction).
+
+new suite
+  127_veldo_0259_installation          red before (16 rows fail, reader and check absent), 42 passed 0 failed after
+
+existing suites the change touches
+  114_veldo_0216_concurrent_stages     51/1 first (shell-catalog: the not-applicable count was typed as 15);
+                                       the count is now derived from ORDER; 52 passed 0 failed
+  113_veldo_0220_gate_host             28/1 first (the stub authority had no check_personal_setup.py);
+                                       stub added; 29 passed 0 failed
+  114_veldo_0220_gate_scope            26/1 first (same stub); 27 passed 0 failed
+  69_veldo_0058_gate_output            42 passed 0 failed
+  10_warp_0613_anti_vacuity            2748 passed 0 failed (9 suites with its prerequisites)
+  06_capabilities_manifest_honesty     1414 passed 0 failed (4 suites with its prerequisites)
+  24_veldo_0007_install_and_run        131 passed 0 failed (the real publisher, now through the shared check)
+  73_veldo_0139_factory_setup          43 passed 0 failed
+  85_veldo_0171_setup_api              44 passed 0 failed
+  71_veldo_0130_api                    71 passed 0 failed
+  111_veldo_0214_first_use_budget      36 passed 0 failed
+  101_veldo_0208_landing_reuse         214 passed 2 failed: sandbox/unavailable-refuses-before-exec and
+                                       sandbox/old-abi-refuses-before-exec. The same two rows fail on the base
+                                       commit ad5ba8cb in a scratch worktree (214/2), so they are not this change.
+
+stage scripts run directly
+  bash scripts/check_docs.sh           docs hygiene: pass
+  bash scripts/check_template_sync.sh  pass (302 pairs; engine/.veldo/installation.py == .veldo/installation.py)
+  bash scripts/check_generated.sh      pass (requires.json regenerated with run_scope.py --emit-requires)
+  python3 scripts/check_personal_setup.py over this branch, VELDO_INSTALLATION at an empty folder:
+                                       built-in shapes only, 0 findings, exit 0
+  python3 scripts/publish.py <scratch> with an empty installation: personal setup 0 findings, 841 files,
+                                       7 packs composed, leak scan clean

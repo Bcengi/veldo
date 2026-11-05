@@ -1795,6 +1795,15 @@
    "resources": {
     "systemd_user_manager": 1
    }
+  },
+  {
+   "name": "127_veldo_0259_installation",
+   "file": "127_veldo_0259_installation.py",
+   "requires": [
+    "127_veldo_0259_installation"
+   ],
+   "regions": "Sixteen rows (VELDO-0259): ac1/resolution, ac1/kinds, ac1/missing-by-name, ac1/invalid-by-name, ac1/revision, ac1/one-reader, ac1/traces, ac1/no-personal-default, ac1/fresh-clone over the one installation reader; ac2/planted, ac2/masked, ac2/added-only, ac2/no-installation, ac2/publish-shares, ac2/stage-declared, ac2/product-clean over the personal-setup gate stage.",
+   "requires_note": "Only ROOT and expect. Builds fixture installations with invented values and small Git candidates in a temporary folder, clones the checkout once, loads the reader, the check, publish.py, gate_schedule.py and the two consumers by path. Writes only temporary files; never reads a real installation."
   }
  ],
  "resource_capacities": {

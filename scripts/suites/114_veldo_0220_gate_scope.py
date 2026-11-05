@@ -112,7 +112,8 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
         'scripts/v220_probe.py': probe,
         'scripts/check_lint.sh': 'exec python3 scripts/v220_probe.py\n',
         'scripts/selftest.py': '', 'scripts/check_first_use.py': '', 'scripts/secret_inventory.py': '',
-        'scripts/check_install_and_run.py': '', 'scripts/check_generated.sh': 'exit 0\n',
+        'scripts/check_install_and_run.py': '', 'scripts/check_personal_setup.py': '',
+        'scripts/check_generated.sh': 'exit 0\n',
         'scripts/check_docs.sh': 'exit 0\n', 'scripts/check_template_sync.sh': 'exit 0\n',
         '.veldo/validate.py': '', '.veldo/shape_gate.py': '', '.veldo/events.py': '',
     }

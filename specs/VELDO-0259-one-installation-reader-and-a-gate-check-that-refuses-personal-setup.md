@@ -29,6 +29,28 @@ footprint:
   - "scripts/check_docs.sh"
   - "scripts/suites/**"
   - "scripts/check_teeth_mutations.py"
+  - "scripts/migrate_to_veldo.py"
+  - ".veldo/naming.py"
+  - "engine/.veldo/naming.py"
+  - ".veldo/action_executor.py"
+  - "engine/.veldo/action_executor.py"
+  - ".veldo/incident_reconcile.py"
+  - "engine/.veldo/incident_reconcile.py"
+  - ".veldo/tracker_intake.py"
+  - "engine/.veldo/tracker_intake.py"
+  - ".veldo/fix_validation.py"
+  - "engine/.veldo/fix_validation.py"
+  - ".veldo/fix_assessor.py"
+  - "engine/.veldo/fix_assessor.py"
+  - ".veldo/fix_validation_record.py"
+  - "engine/.veldo/fix_validation_record.py"
+  - ".veldo/qualify.py"
+  - "engine/.veldo/qualify.py"
+  - "scripts/drive.py"
+  - "scripts/parser_corpus_audit.py"
+  - "scripts/propose_case_inputs.py"
+  - "scripts/suite_slice.py"
+  - "scripts/suite_extract.py"
   - "specs/VELDO-0259-one-installation-reader-and-a-gate-check-that-refuses-personal-setup.md"
   - "specs/index.md"
   - "proof/VELDO-0259/**"
@@ -179,3 +201,5 @@ and VELDO-0253 depend on this spec instead of VELDO-0250. New text, so status dr
 in the next message. Standalone; no plan work item.
 
 2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.
+
+2026-11-05: footprint widened by the lead after the independent review (proof/VELDO-0259/review-2026-11-05.md): Veldo's own evidence and log writers that record into proof/ write the home directory as "~", so the built-in home_path rule never blocks normal work; the writers are listed in proof/VELDO-0259/OPEN.md by fix round 1. Acceptance criteria unchanged.

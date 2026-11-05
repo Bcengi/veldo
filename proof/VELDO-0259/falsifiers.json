@@ -1,0 +1,143 @@
+[
+ {
+  "falsifier": "ac1-builtin-person-fallback",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/missing-by-name"
+  ],
+  "red_rows": [
+   "ac1/missing-by-name",
+   "ac1/one-reader"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac1-second-module-opens-folder",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/one-reader"
+  ],
+  "red_rows": [
+   "ac1/one-reader",
+   "ac1/traces"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac1-fresh-clone-red-without-installation",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/fresh-clone",
+   "ac2/no-installation"
+  ],
+  "red_rows": [
+   "ac1/fresh-clone",
+   "ac2/no-installation"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac1-setup-answer-drops-installation",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/traces"
+  ],
+  "red_rows": [
+   "ac1/fresh-clone",
+   "ac1/no-personal-default",
+   "ac1/resolution",
+   "ac1/traces",
+   "ac2/added-only",
+   "ac2/masked",
+   "ac2/no-installation",
+   "ac2/planted",
+   "ac2/product-clean",
+   "ac2/publish-shares",
+   "ac2/stage-declared"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac2-installation-patterns-ignored",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/planted"
+  ],
+  "red_rows": [
+   "ac2/added-only",
+   "ac2/planted",
+   "ac2/publish-shares"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac2-builtin-shape-dropped",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/planted"
+  ],
+  "red_rows": [
+   "ac2/planted"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac2-match-unmasked",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/masked"
+  ],
+  "red_rows": [
+   "ac2/added-only",
+   "ac2/masked",
+   "ac2/planted",
+   "ac2/publish-shares"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac2-silent-without-installation",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/no-installation"
+  ],
+  "red_rows": [
+   "ac1/fresh-clone",
+   "ac2/no-installation"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac2-pattern-in-tracked-file",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/product-clean"
+  ],
+  "red_rows": [
+   "ac2/product-clean"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac2-publication-own-scan",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/publish-shares"
+  ],
+  "red_rows": [
+   "ac2/publish-shares"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac2-stage-undeclared",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/stage-declared"
+  ],
+  "red_rows": [
+   "ac2/stage-declared"
+  ],
+  "red_as_expected": true
+ }
+]

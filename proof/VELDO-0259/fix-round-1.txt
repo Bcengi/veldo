@@ -1,0 +1,93 @@
+VELDO-0259 fix round 1 evidence. Each suite run alone the way scripts/verify.sh runs one:
+scripts/selftest.py with the suite selector naming one suite. The full gate was not run (instruction).
+
+== Items 1 and 2: red before (tests added at 8dc8faf8 code, the check unchanged)
+  SELFTEST FAIL: VELDO-0259 ac1/owner-sites
+  SELFTEST FAIL: VELDO-0259 ac2/quoted-names: committed files with quoted names are each refused [['plain.txt']]
+  SELFTEST FAIL: VELDO-0259 ac2/declared-base: a committed value is refused against a trunk not called main [0]
+  127_veldo_0259_installation                     16 passed  206.53s
+selftest (PARTIAL, 1 of 189 suites): 42 passed, 3 failed in 206.53s
+
+== Items 1 to 3: red before (all fix-round tests against the pre-fix product files, check and owner sites restored to 8dc8faf8)
+   (the missing commit_identity raises and the suite's one try block collapses the later rows; the rows below fail)
+  SELFTEST FAIL: VELDO-0259 ac1/resolution: raised AttributeError: module 'v259_migrate_to_veldo' has no attribute 'commit_identity'     ident, error = attempt(MIG.commit_identity)
+  SELFTEST FAIL: VELDO-0259 ac1/fresh-clone
+  SELFTEST FAIL: VELDO-0259 ac1/owner-sites
+  SELFTEST FAIL: VELDO-0259 ac2/planted
+  SELFTEST FAIL: VELDO-0259 ac2/masked
+  SELFTEST FAIL: VELDO-0259 ac2/added-only
+  SELFTEST FAIL: VELDO-0259 ac2/quoted-names
+  SELFTEST FAIL: VELDO-0259 ac2/declared-base
+  SELFTEST FAIL: VELDO-0259 ac2/no-installation
+  SELFTEST FAIL: VELDO-0259 ac2/publish-shares
+  SELFTEST FAIL: VELDO-0259 ac2/stage-declared
+  SELFTEST FAIL: VELDO-0259 ac2/product-clean
+  127_veldo_0259_installation                      7 passed    0.40s
+selftest (PARTIAL, 1 of 189 suites): 33 passed, 12 failed in 0.40s
+
+== Items 1 to 3: green after f8907c46 and 555e169d
+  127_veldo_0259_installation                     19 passed   16.40s
+selftest (PARTIAL, 1 of 189 suites): 45 passed, 0 failed in 16.40s
+
+== Item 4: red before (writers test added, writers unchanged)
+  SELFTEST FAIL: VELDO-0259 writers/home-as-tilde: .veldo/fix_validation.py writes the home directory as ~ [None None]
+  127_veldo_0259_installation                     19 passed   17.42s
+selftest (PARTIAL, 1 of 189 suites): 45 passed, 1 failed in 17.42s
+
+== Item 4: green after; final run at e509bce0
+  127_veldo_0259_installation                     20 passed   13.87s
+selftest (PARTIAL, 1 of 189 suites): 46 passed, 0 failed in 13.87s
+
+== Falsifiers (scripts/check_teeth_mutations.py finding 259, run through its own materialize() and worker(): noop copy then mutant copy)
+RED-AS-EXPECTED install259-builtin-person noop rows 46 targets {"ac1/missing-by-name": [true]} failed [] | mutant targets {"ac1/missing-by-name": [false]} red rows ['VELDO-0259 ac1/missing-by-name']
+RED-AS-EXPECTED install259-setup-untraced noop rows 46 targets {"ac1/traces": [true]} failed [] | mutant targets {"ac1/traces": [false]} red rows ['VELDO-0259 ac1/fresh-clone', 'VELDO-0259 ac1/no-personal-default', 'VELDO-0259 ac1/owner-sites', 'VELDO-0259 ac1/resolution', 'VELDO-0259 ac1/traces', 'VELDO-0259 ac2/added-only', 'VELDO-0259 ac2/declared-base', 'VELDO-0259 ac2/masked', 'VELDO-0259 ac2/no-installation', 'VELDO-0259 ac2/planted', 'VELDO-0259 ac2/product-clean', 'VELDO-0259 ac2/publish-shares', 'VELDO-0259 ac2/quoted-names', 'VELDO-0259 ac2/stage-declared', 'VELDO-0259 writers/home-as-tilde']
+RED-AS-EXPECTED personal259-red-without-installation noop rows 46 targets {"ac1/fresh-clone": [true], "ac2/no-installation": [true]} failed [] | mutant targets {"ac1/fresh-clone": [false], "ac2/no-installation": [false]} red rows ['VELDO-0259 ac1/fresh-clone', 'VELDO-0259 ac2/declared-base', 'VELDO-0259 ac2/no-installation']
+RED-AS-EXPECTED personal259-patterns-ignored noop rows 46 targets {"ac2/planted": [true]} failed [] | mutant targets {"ac2/planted": [false]} red rows ['VELDO-0259 ac2/added-only', 'VELDO-0259 ac2/planted']
+RED-AS-EXPECTED personal259-uid-shape-dropped noop rows 46 targets {"ac2/planted": [true]} failed [] | mutant targets {"ac2/planted": [false]} red rows ['VELDO-0259 ac2/planted', 'VELDO-0259 ac2/quoted-names']
+RED-AS-EXPECTED personal259-unmasked noop rows 46 targets {"ac2/masked": [true]} failed [] | mutant targets {"ac2/masked": [false]} red rows ['VELDO-0259 ac2/added-only', 'VELDO-0259 ac2/masked', 'VELDO-0259 ac2/planted']
+RED-AS-EXPECTED personal259-silent-builtin-only noop rows 46 targets {"ac2/no-installation": [true]} failed [] | mutant targets {"ac2/no-installation": [false]} red rows ['VELDO-0259 ac1/fresh-clone', 'VELDO-0259 ac2/no-installation']
+RED-AS-EXPECTED personal259-quoted-names-skipped noop rows 46 targets {"ac2/quoted-names": [true]} failed [] | mutant targets {"ac2/quoted-names": [false]} red rows ['VELDO-0259 ac2/quoted-names']
+RED-AS-EXPECTED personal259-base-guessed noop rows 46 targets {"ac2/declared-base": [true]} failed [] | mutant targets {"ac2/declared-base": [false]} red rows ['VELDO-0259 ac2/declared-base']
+RED-AS-EXPECTED personal259-no-base-silent noop rows 46 targets {"ac2/declared-base": [true]} failed [] | mutant targets {"ac2/declared-base": [false]} red rows ['VELDO-0259 ac2/declared-base']
+NOT-RED install259-migrate-builtin-identity noop rows 46 targets {"ac1/owner-sites": [false]} failed ['VELDO-0259 ac1/fresh-clone', 'VELDO-0259 ac1/owner-sites', 'VELDO-0259 ac1/resolution', 'VELDO-0259 ac2/added-only', 'VELDO-0259 ac2/declared-base', 'VELDO-0259 ac2/masked', 'VELDO-0259 ac2/no-installation', 'VELDO-0259 ac2/planted', 'VELDO-0259 ac2/product-clean', 'VELDO-0259 ac2/publish-shares', 'VELDO-0259 ac2/quoted-names', 'VELDO-0259 ac2/stage-declared', 'VELDO-0259 writers/home-as-tilde'] | mutant targets {"ac1/owner-sites": [false]} red rows ['VELDO-0259 ac1/fresh-clone', 'VELDO-0259 ac1/owner-sites', 'VELDO-0259 ac1/resolution', 'VELDO-0259 ac2/added-only', 'VELDO-0259 ac2/declared-base', 'VELDO-0259 ac2/masked', 'VELDO-0259 ac2/no-installation', 'VELDO-0259 ac2/planted', 'VELDO-0259 ac2/product-clean', 'VELDO-0259 ac2/publish-shares', 'VELDO-0259 ac2/quoted-names', 'VELDO-0259 ac2/stage-declared', 'VELDO-0259 writers/home-as-tilde']
+RED-AS-EXPECTED writers259-home-kept noop rows 46 targets {"writers/home-as-tilde": [true]} failed [] | mutant targets {"writers/home-as-tilde": [false]} red rows ['VELDO-0259 writers/home-as-tilde']
+install259-migrate-builtin-identity (manual):   SELFTEST FAIL: VELDO-0259 ac1/owner-sites: the migration commits as the installation owner git identity [('Built In', 'built-in@example.com') None]
+install259-migrate-builtin-identity (manual): selftest (PARTIAL, 1 of 189 suites): 45 passed, 1 failed in 13.89s
+owner259-person-recorded (manual, incident_reconcile validated_by):   SELFTEST FAIL: VELDO-0259 ac1/owner-sites: every recorded person in product code is the owner role id [['.veldo/incident_reconcile.py:848 validated_by']]
+owner259-person-recorded (manual, incident_reconcile validated_by): selftest (PARTIAL, 1 of 189 suites): 45 passed, 1 failed in 13.77s
+
+== Existing suites the fix touches, each alone
+41_veldo_0103_assessor: selftest (PARTIAL, 1 of 189 suites): 44 passed, 0 failed in 0.29s
+42_veldo_0102_fixval: selftest (PARTIAL, 1 of 189 suites): 51 passed, 0 failed in 42.69s
+43_veldo_0104_proofcheck: selftest (PARTIAL, 1 of 189 suites): 35 passed, 0 failed in 5.82s
+44_veldo_0105_startline: selftest (PARTIAL, 1 of 189 suites): 34 passed, 0 failed in 1.05s
+45_veldo_0106_policyread: selftest (PARTIAL, 1 of 189 suites): 35 passed, 0 failed in 0.63s
+50_git_environment:   SELFTEST FAIL: git-boundary/no-private-git-invocations
+50_git_environment: selftest (PARTIAL, 1 of 189 suites): 29 passed, 1 failed in 2.90s
+51_parser_boundary: selftest (PARTIAL, 1 of 189 suites): 51 passed, 0 failed in 5.53s
+57_veldo_0120_policygrammar: selftest (PARTIAL, 1 of 189 suites): 29 passed, 0 failed in 5.80s
+126_veldo_0230_qualify_reproduces: selftest (PARTIAL, 1 of 189 suites): 28 passed, 0 failed in 70.58s
+86_veldo_0127_agent_configuration: selftest (PARTIAL, 1 of 189 suites): 54 passed, 0 failed in 40.14s
+125_veldo_0230_engine_census: selftest (PARTIAL, 1 of 189 suites): 33 passed, 0 failed in 7.26s
+53_veldo_0123_mutations: selftest (PARTIAL, 1 of 189 suites): 40 passed, 0 failed in 29.30s
+01_warp_0101_reviewer_notes: selftest (PARTIAL, 1 of 189 suites): 637 passed, 0 failed in 9.40s
+09_action_whitelist_warp_1205: selftest (PARTIAL, 8 of 189 suites): 2487 passed, 0 failed in 42.11s
+05_tracker_routing_resolver_veldo: selftest (PARTIAL, 1 of 189 suites): 277 passed, 0 failed in 0.08s
+63_veldo_0049_floor: selftest (PARTIAL, 1 of 189 suites): 46 passed, 0 failed in 12.22s
+52_writer_boundary: selftest (PARTIAL, 1 of 189 suites): 38 passed, 0 failed in 7.67s
+11_inbound_command_receipt_reconcile: selftest (PARTIAL, 10 of 189 suites): 3055 passed, 0 failed in 43.31s
+12_warp_1210_hardening_four: selftest (PARTIAL, 11 of 189 suites): 3304 passed, 0 failed in 156.77s
+13_warp_0623_codified_live: selftest (PARTIAL, 12 of 189 suites): 3536 passed, 0 failed in 82.11s
+06_capabilities_manifest_honesty_veldo: selftest (PARTIAL, 4 of 189 suites): 1414 passed, 0 failed in 34.95s
+24_veldo_0007_install_and_run: selftest (PARTIAL, 1 of 189 suites): 131 passed, 0 failed in 91.13s
+10_warp_0613_anti_vacuity: selftest (PARTIAL, 9 of 189 suites): 2748 passed, 0 failed in 41.80s
+101_veldo_0208_landing_reuse:   SELFTEST FAIL: VELDO-0208 sandbox/unavailable-refuses-before-exec
+101_veldo_0208_landing_reuse:   SELFTEST FAIL: VELDO-0208 sandbox/old-abi-refuses-before-exec
+101_veldo_0208_landing_reuse: selftest (PARTIAL, 1 of 189 suites): 214 passed, 2 failed in 261.97s
+113_veldo_0220_gate_host: selftest (PARTIAL, 1 of 189 suites): 29 passed, 0 failed in 5.10s
+114_veldo_0220_gate_scope: selftest (PARTIAL, 1 of 189 suites): 27 passed, 0 failed in 2.66s
+
+50_git_environment git-boundary/no-private-git-invocations: .veldo/installation.py:222 and
+scripts/check_personal_setup.py call subprocess.run(['git', ...]) directly. Both calls were in the
+original build (8dc8faf8, check_personal_setup.py:143); not one of the four fix-round items, left open.
+101_veldo_0208_landing_reuse: the same two sandbox rows the review recorded as environmental at the base.

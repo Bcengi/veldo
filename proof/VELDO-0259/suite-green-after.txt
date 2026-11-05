@@ -1,0 +1,4 @@
+  selector    --suite 127_veldo_0259_installation
+  running     1 of 189 suites: 127_veldo_0259_installation
+  127_veldo_0259_installation                     16 passed   10.60s
+selftest (PARTIAL, 1 of 189 suites): 42 passed, 0 failed in 10.60s

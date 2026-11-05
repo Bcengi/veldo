@@ -1699,8 +1699,12 @@ def main(argv=None, **overrides):
     except SystemExit as exc:
         return exc.code if isinstance(exc.code, int) else EXIT_USAGE
 
+    # VELDO-0259: the answer names the installation folder and revision setup ran with, read through the one
+    # reader, which prints its resolution line.
+    installation = organ('installation').trace()
+
     def answer(value, code):
-        print(json.dumps(value, sort_keys=True))
+        print(json.dumps(dict(value, installation=installation), sort_keys=True))
         return code
     try:
         if args.git_identities is not None:

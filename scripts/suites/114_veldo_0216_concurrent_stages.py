@@ -527,7 +527,9 @@ raise SystemExit(m.main())
                 safe_output = graph_enabled is not True or (not (shell_out/'gate-schedule.json').is_symlink()
                     and victim.read_text()=='preserve this target'
                     and json.loads((shell_out/'gate-schedule.json').read_text())['checks_run']==9)
-                shell_counts.append(result.returncode==0 and 'COUNTS 9 15 0' in result.stdout and safe_output)
+                # Not-applicable is every catalog item the fixture does not run (VELDO-0259 added personal_setup).
+                shell_counts.append(result.returncode==0 and 'COUNTS 9 %d 0' % (len(order.split()) - 9) in result.stdout
+                                    and safe_output)
             if not shell_counts[-1]:
                 print('catalog fixture diagnostics',graph_enabled,result.returncode,result.stdout[-3000:],result.stderr[-2000:])
         row('shell-catalog', all(shell_counts))

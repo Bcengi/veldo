@@ -164,6 +164,10 @@ CHECK_docs="required:bash scripts/check_docs.sh"
 CHECK_performance="na:no performance thresholds declared"
 CHECK_coverage="na:no coverage floor declared"
 CHECK_packaging="required:python3 scripts/check_install_and_run.py"
+# VELDO-0259 AC2: refuse a candidate that adds personal setup. The patterns come from the installation
+# (.veldo/installation.py), the check itself knows only shapes that name nobody; with no installation it
+# runs those alone and says so. scripts/publish.py runs the same code over the produced tree.
+CHECK_personal_setup="required:python3 scripts/check_personal_setup.py"
 CHECK_deploy_dry_run="na:no automated deployment path yet"
 # VELDO-0205: mutation receipts distinguish fresh and reused results.
 # Landing permits authenticated reuse; VELDO_GATE_FORCE_FRESH=1 explicitly bypasses it.
@@ -196,7 +200,7 @@ CHECK_mutation="required:authority mutation stage"
 
 ORDER="format lint types unit integration contract journeys ui_states accessibility \
 token_lint visual_baselines build dependency_audit licenses security migration \
-generated docs performance coverage packaging deploy_dry_run extra mutation"
+generated docs performance coverage packaging personal_setup deploy_dry_run extra mutation"
 
 FAIL=0; RAN=0; NA=0; WAIVED=0; UNDECLARED=0; MUTATION_RAN=0
 TODAY=$(date -u +%Y-%m-%d)

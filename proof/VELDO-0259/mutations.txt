@@ -1,0 +1,10 @@
+# VELDO-0259 registered mutation cases (scripts/check_teeth_mutations.py, finding 259), run through its own materialize() and worker(): noop copy then mutant copy, target rows.
+install259-builtin-person noop rows 42 targets {"ac1/missing-by-name": [true]} []
+install259-builtin-person mutant rows 42 targets {"ac1/missing-by-name": [false]} 
+install259-setup-untraced noop rows 42 targets {"ac1/traces": [true]} []
+install259-setup-untraced mutant rows 42 targets {"ac1/traces": [false]} 
+personal259-red-without-installation noop targets ac1/fresh-clone,ac2/no-installation true; mutant false
+personal259-patterns-ignored noop ac2/planted true; mutant false
+personal259-uid-shape-dropped noop ac2/planted true; mutant false
+personal259-unmasked noop ac2/masked true; mutant false
+personal259-silent-builtin-only noop ac2/no-installation true; mutant false
