@@ -234,11 +234,12 @@ class Batch:
 
     # Git through the one boundary.
 
-    def _git(self, repo, *args, ok=(0,), identity=None, profile='isolated', text=True):
+    def _git(self, repo, *args, ok=(0,), identity=None, profile='isolated', text=True, remote_url=None):
         try:
             result = GP.run(['git', '-C', str(repo), *args], capture_output=True, text=text, timeout=GIT_SECONDS,
                             stdin=subprocess.DEVNULL, identity=identity, profile=profile,
-                            push_identity=self.push_identity if profile == 'identity' else None)
+                            push_identity=self.push_identity if profile == 'identity' else None,
+                            remote_url=remote_url if profile == 'identity' else None)
         except (OSError, subprocess.SubprocessError, ValueError) as error:
             raise Refused('unavailable_service:git/' + args[0], type(error).__name__)
         if ok is not None and result.returncode not in ok:
@@ -292,7 +293,7 @@ class Batch:
                 url = str((Path(self.repo_root) / url).resolve())
             self._git(clone, 'fetch', '-q', '--no-tags', '--no-write-fetch-head', url,
                       '+refs/heads/%s:%s' % (self.trunk, WATERMARK_REF),
-                      profile='identity' if self.push_identity else 'isolated')
+                      profile='identity' if self.push_identity else 'isolated', remote_url=url)
             self.record['remote_url'] = url
         else:
             local = self._git(self.repo_root, 'rev-parse', '--verify', 'refs/heads/%s^{commit}' % self.trunk).stdout.strip()
@@ -649,8 +650,8 @@ class Batch:
             url = r['remote_url']
             profile = 'identity' if self.push_identity else 'isolated'
             push = self._git(self.clone, 'push', '-q', '--force-with-lease=%s:%s' % (ref, r['watermark']), url,
-                             '%s:%s' % (r['tip'], ref), ok=None, profile=profile)
-            listed = self._git(self.clone, 'ls-remote', url, ref, profile=profile).stdout.split()
+                             '%s:%s' % (r['tip'], ref), ok=None, profile=profile, remote_url=url)
+            listed = self._git(self.clone, 'ls-remote', url, ref, profile=profile, remote_url=url).stdout.split()
             found = listed[0] if listed else None
             return push.returncode == 0 and found == r['tip'], found
         staging = 'refs/veldo/batch/' + r['id']

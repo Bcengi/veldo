@@ -12144,6 +12144,53 @@ def cases():
     add(235, 'dest235-push-routed-local', dest235, 'control_landing.py', local235, pushed235,
         ['destination/default-push', 'push/unchanged'])
 
+    # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
+    batch239 = '129_veldo_0239_batch_landing.py'
+    # AC1 (declared falsifier): the units are merged without running the project's renumber hook, so the batch tip
+    # holds two files numbered 037.
+    add(239, 'batch239-hook-not-run', batch239, 'control_batch.py',
+        "                if self.hook:\n                    hook_run = self._renumber(entry, merge)\n",
+        "                if False:  # defect: the units are merged without running the hook\n"
+        "                    hook_run = self._renumber(entry, merge)\n",
+        ['batch/renumber'])
+    # AC2 (declared falsifier): the batch stops at the first red stage, so the second red stage is missing from the
+    # inventory.
+    add(239, 'batch239-stops-at-first-red', batch239, 'control_batch.py',
+        "            for check in stage['checks']:\n"
+        "                inventory.append({'stage': stage['stage'], 'check': check['check'],\n"
+        "                                  'units': self._attribute(check['text'])})\n",
+        "            for check in stage['checks']:\n"
+        "                inventory.append({'stage': stage['stage'], 'check': check['check'],\n"
+        "                                  'units': self._attribute(check['text'])})\n"
+        "            break  # defect: the batch stops at the first red stage\n",
+        ['gate/inventory'])
+    # AC3 (declared falsifier): each unit of the batch is landed by its own compare-and-swap, so the trunk moves more
+    # than once.
+    add(239, 'batch239-swap-per-unit', batch239, 'control_batch.py',
+        "            push = self._git(self.clone, 'push', '-q', '--force-with-lease=%s:%s' % (ref, r['watermark']), url,\n"
+        "                             '%s:%s' % (r['tip'], ref), ok=None, profile=profile, remote_url=url)\n",
+        "            old = r['watermark']\n"
+        "            for step in [u['renumber'] or u['merge'] for u in r['units']][:-1] + [r['tip']]:  # defect: a swap per unit\n"
+        "                push = self._git(self.clone, 'push', '-q', '--force-with-lease=%s:%s' % (ref, old), url,\n"
+        "                                 '%s:%s' % (step, ref), ok=None, profile=profile, remote_url=url)\n"
+        "                old = step\n",
+        ['land/together'])
+    # AC4 (declared falsifier): a single unit's landing is routed through the batch path: the candidate is swapped
+    # by the batch's compare-and-swap and kept as a batch record, so VELDO-0057's exact-tip row finds no publication
+    # effect of its dispatch.
+    add(239, 'batch239-single-through-batch-0057', '70_veldo_0057_landing.py', 'lander.py',
+        "            landed = self.landing.publish(unit, self.record())\n",
+        "            # defect: a single unit's landing is routed through the batch path\n"
+        "            BT = _load('veldo_batch_ld', 'control_batch.py')\n"
+        "            single = BT.Batch(self.repo_root, project=str(_unit_id(unit)), identity=('Lander', 'lander@example.invalid'),\n"
+        "                              trunk=self.trunk, remote=self.remote, push_identity=self.identity_record)\n"
+        "            single.record = {'id': 'batch-single', 'remote_url': c.get('remote_url'), 'watermark': c['watermark'],\n"
+        "                             'tip': c['commit'], 'clone': c['workspace'], 'units': [], 'receipts': []}\n"
+        "            swapped, _found = single._swap()\n"
+        "            landed = {'ok': swapped, 'outcome': 'landed' if swapped else 'failed', 'published': swapped,\n"
+        "                      'batch': single.record}\n",
+        ['exact-tip/compare-and-swap'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
