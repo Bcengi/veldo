@@ -1,0 +1,734 @@
+{
+ "read": "2026-11-04",
+ "scratch": "the registry reads lock.py and records.py made, by file name; sha256 and bytes are of the full body as served. Project reads (<name>-latest.json) keep only their info object. Reads whose body held non-ASCII characters are re-serialized as ASCII JSON (same parsed content); the sha256 and bytes stay those of the body as served.",
+ "reads": [
+  {
+   "file": "PyYAML-6.0.3.json",
+   "status": "200",
+   "bytes": 66402,
+   "sha256": "c3f35597bc2f08cc990c2a5fe57bef6687b3a3d7c61d8b0ba4cc067777eb1def"
+  },
+  {
+   "file": "PyYAML-6.0.3.provenance.json",
+   "status": "404",
+   "bytes": 135,
+   "sha256": "d5310fd92e6021427418b663b99748bce15c3bdf867bb62d511e6a5c73e602f7"
+  },
+  {
+   "file": "PyYAML-latest.json",
+   "status": "200",
+   "bytes": 558621,
+   "sha256": "d0c463a86ed24144dd112fd1fe43b7c208e52c7d3903c2f51c84acfb5b10c749",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "annotated-types-0.8.0.json",
+   "status": "200",
+   "bytes": 17411,
+   "sha256": "a6e8e5b10c8fd2f596bba53e015cd37f6279fb5cec26ce0c5e9968625be4fefa"
+  },
+  {
+   "file": "annotated-types-0.8.0.provenance.json",
+   "status": "404",
+   "bytes": 80,
+   "sha256": "ee8c4f6580abe2996e5ebfc46853682989cadb15aa22d4074ae874b10b59e57e"
+  },
+  {
+   "file": "annotated-types-latest.json",
+   "status": "200",
+   "bytes": 31556,
+   "sha256": "bbe701554fc03915c80b90d54d2af7b15fa716679967376e86f222ea7fc80181",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "anyio-4.16.0.json",
+   "status": "200",
+   "bytes": 6904,
+   "sha256": "0ea1314e4706d64fe828b76006f7c790b193979f9fb18c6ce416939a89fca1ff"
+  },
+  {
+   "file": "anyio-4.16.0.provenance.json",
+   "status": "200",
+   "bytes": 9708,
+   "sha256": "09fb6a22566167a8d8cae27b53d9d6913d55e1c0b0778f7369d7d8bf483d3038"
+  },
+  {
+   "file": "anyio-latest.json",
+   "status": "200",
+   "bytes": 118762,
+   "sha256": "00f4748f63a708c237d66b173efea5bc93ec9e674214d2d66dd5a963b8851e96",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "certifi-2026.10.23.json",
+   "status": "200",
+   "bytes": 4631,
+   "sha256": "546ce90e02c152f5ff565baca6bc2a8f43c355855f637756f49a0143e312bdb2"
+  },
+  {
+   "file": "certifi-2026.10.23.provenance.json",
+   "status": "200",
+   "bytes": 9774,
+   "sha256": "8cafc30a120ffeebf1239b003381c4a43a46920f4ad7a05fb8631200abbdc940"
+  },
+  {
+   "file": "certifi-latest.json",
+   "status": "200",
+   "bytes": 117842,
+   "sha256": "08bd0534b646a844c933436e3f16632b0dbfabc2458fe7022250411f2909e1cb",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "charset-normalizer-3.5.2.json",
+   "status": "200",
+   "bytes": 202370,
+   "sha256": "9fda300857ae6a0486b4cd2d2fec7817ed2d45657249a6dfc0c2bbd1a44267b6"
+  },
+  {
+   "file": "charset-normalizer-3.5.2.provenance.json",
+   "status": "200",
+   "bytes": 9705,
+   "sha256": "406660061d685c25423fbadf72b20bc43b18512ed1e4d0f96ea586d5fc7b2156"
+  },
+  {
+   "file": "charset-normalizer-latest.json",
+   "status": "200",
+   "bytes": 2390209,
+   "sha256": "ebc7ce9a3db6dad867780ed2f9a900635d81cb7f4cd1ab7e2f28a63d1bafe24e",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "distro-1.9.0.json",
+   "status": "200",
+   "bytes": 9058,
+   "sha256": "d83d91adebd208c0ce5b969017d4ce5c4ec59ea7d46793c20d36b261325fc236"
+  },
+  {
+   "file": "distro-1.9.0.provenance.json",
+   "status": "404",
+   "bytes": 71,
+   "sha256": "ba4c4f9787fe244cd2bcfa8e10798ccba46048502f895c4a33e182d1538f21ec"
+  },
+  {
+   "file": "distro-latest.json",
+   "status": "200",
+   "bytes": 31136,
+   "sha256": "6d851ddb94a0f56275d3e8ade724cb379758d00b9905b770b5b35024abfd9585",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "h11-0.16.0.json",
+   "status": "200",
+   "bytes": 10603,
+   "sha256": "97f4efb9cc00826f0408076983adc1a1e48e8f2cabf403aaf250f724e081440d"
+  },
+  {
+   "file": "h11-0.16.0.provenance.json",
+   "status": "404",
+   "bytes": 69,
+   "sha256": "b76529d5e66f2174cc65250036ac9491c7b3dd5c7dcf4a2ca0d565078e5b4637"
+  },
+  {
+   "file": "h11-latest.json",
+   "status": "200",
+   "bytes": 30401,
+   "sha256": "82edaa88c2cda51615d444a45e725eeaa7693f6821ab1422de1f031753d9556c",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "httpcore-1.0.9.json",
+   "status": "200",
+   "bytes": 24057,
+   "sha256": "e26eca5c3d288fe9e6446af9bcbca1038ba688629d5c8a2886c47d74718d87a2"
+  },
+  {
+   "file": "httpcore-1.0.9.provenance.json",
+   "status": "404",
+   "bytes": 73,
+   "sha256": "79e0386c33a3bf4fdb9dd7390e70a8900d6e2e9b3adee29bd9fccbffdd5b1a3d"
+  },
+  {
+   "file": "httpcore-latest.json",
+   "status": "200",
+   "bytes": 115200,
+   "sha256": "d73786f0235ce97aa3239d411456be526320325e3b259b6fd25a0ce93775771c",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "httpcore2-2.16.0.json",
+   "status": "200",
+   "bytes": 30224,
+   "sha256": "194dc38b07c5836c3793de7ce6a56f998798304de165a4857c52f6525a6dd9ab"
+  },
+  {
+   "file": "httpcore2-2.16.0.provenance.json",
+   "status": "404",
+   "bytes": 75,
+   "sha256": "a5cb1c20ee246e28432df7aeb061b4e7b3774c23842146c0e090e3f538b3cc7b"
+  },
+  {
+   "file": "httpcore2-latest.json",
+   "status": "200",
+   "bytes": 64275,
+   "sha256": "266426c78cb24ee9fd2560cdae5a7cfe62d74d8e0c7e58f6f82f42f455035045",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "httpx-0.28.1.json",
+   "status": "200",
+   "bytes": 9117,
+   "sha256": "293bfab7bf587fcd0825f1bd8eed8e6303285ba14801b15659853827cbe30796"
+  },
+  {
+   "file": "httpx-0.28.1.provenance.json",
+   "status": "404",
+   "bytes": 71,
+   "sha256": "17ed6ad95ad9b94a04d75fc729ecc2c92f2ae3b18531fbb9652354a1189b997d"
+  },
+  {
+   "file": "httpx-latest.json",
+   "status": "200",
+   "bytes": 119911,
+   "sha256": "bb69a37ba295d008ec1ae05b324c4f5e64fba48b7276189ebf2a2920dd2f1fc8",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "httpx2-2.16.0.json",
+   "status": "200",
+   "bytes": 11983,
+   "sha256": "95a397422b57e91a6e9ee2dc062b31229cbed63a2e863f2c1a58ec5ec2555cf0"
+  },
+  {
+   "file": "httpx2-2.16.0.provenance.json",
+   "status": "404",
+   "bytes": 72,
+   "sha256": "f54b6a80432b737e794bd075a12c1162c806622354bc305971fe9fc982abb7a2"
+  },
+  {
+   "file": "httpx2-latest.json",
+   "status": "200",
+   "bytes": 45777,
+   "sha256": "d1f047ea81b1a9f49203c85ee7ec335c9d9b148f129464e3408065cc70397f11",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "idna-3.20.json",
+   "status": "200",
+   "bytes": 9180,
+   "sha256": "e7cbd26e23ce60f6cb3a151d2adf3b1b087bb8f10ac2d9d6db70fdccbf3bb041"
+  },
+  {
+   "file": "idna-3.20.provenance.json",
+   "status": "200",
+   "bytes": 9133,
+   "sha256": "ceaa511453b8a4d080dbd69064aee4a26139fef1524ccb23f3df030275ee9051"
+  },
+  {
+   "file": "idna-latest.json",
+   "status": "200",
+   "bytes": 65706,
+   "sha256": "724599748057193c3fa6f98e11c76d7acc14a7b0d005bc2a506fc8e2ec41c117",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "jsonpatch-1.42.json",
+   "status": "200",
+   "bytes": 6247,
+   "sha256": "913ce09ac2dfe1eb94bfda63b68293090536899c13790352f3d6982a50eb28ee"
+  },
+  {
+   "file": "jsonpatch-1.42.provenance.json",
+   "status": "200",
+   "bytes": 9919,
+   "sha256": "eba191dfc9175368a2985c266f4cea19dbce4006e673d5b2449445c0e815c589"
+  },
+  {
+   "file": "jsonpatch-latest.json",
+   "status": "200",
+   "bytes": 71620,
+   "sha256": "651f445f3fa5a2345dd2ca5d2278d4b9430fdb09d9075537d81dfc644ce72cc0",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "jsonpointer-3.8.json",
+   "status": "200",
+   "bytes": 4707,
+   "sha256": "5131a4e108e6ef474e4a9a5ae9b042e103033e76a57890a7495e5373e3773090"
+  },
+  {
+   "file": "jsonpointer-3.8.provenance.json",
+   "status": "200",
+   "bytes": 10085,
+   "sha256": "226d23dd03fd98450d13832bebe47cc38652a20eec62641648f339c376f47007"
+  },
+  {
+   "file": "jsonpointer-latest.json",
+   "status": "200",
+   "bytes": 53984,
+   "sha256": "034139eff6ed14bbb00a1c95f5d743fae53cebd57f3f58a5d73ecfad2f6a5565",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "langchain-core-1.7.5.json",
+   "status": "200",
+   "bytes": 6805,
+   "sha256": "c856acea85e273f4db642d9b6bd5a1148fec18714f76fd7a3de2437ed42fbee5"
+  },
+  {
+   "file": "langchain-core-1.7.5.provenance.json",
+   "status": "404",
+   "bytes": 79,
+   "sha256": "83248cde055e902dde2272c000e149c094fa2237c293f015c0a7096a43e65aa5"
+  },
+  {
+   "file": "langchain-core-latest.json",
+   "status": "200",
+   "bytes": 513551,
+   "sha256": "0f040b84d06c7257f424657624bf49b022b4ca2abfd5d7128ac964be3c1d97f0",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "langchain-protocol-0.0.20.json",
+   "status": "200",
+   "bytes": 4643,
+   "sha256": "3b4535aca32895ecf1b48b6be83fde7e0c4bc0fb9b72303aa126df3db1922d2f"
+  },
+  {
+   "file": "langchain-protocol-0.0.20.provenance.json",
+   "status": "404",
+   "bytes": 84,
+   "sha256": "9b7753dd04555d782509b0dd9b9927130681c37cbfcba2350526558cda1c150e"
+  },
+  {
+   "file": "langchain-protocol-latest.json",
+   "status": "200",
+   "bytes": 25472,
+   "sha256": "e020697d550c56c8ca7465dddda630059078c240db2ff99f98e58c1a28d2fc29",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "langgraph-1.2.19.json",
+   "status": "200",
+   "bytes": 6913,
+   "sha256": "219a0b104b8b58646eb325a8928d76091e7d4dbefb2321a6935c84cd26f7f70e"
+  },
+  {
+   "file": "langgraph-1.2.19.provenance.json",
+   "status": "404",
+   "bytes": 75,
+   "sha256": "aa71d989f97da04d7751866dd2fd30ec314ce6ef50eb8c52acc543e41f4207a0"
+  },
+  {
+   "file": "langgraph-checkpoint-4.3.1.json",
+   "status": "200",
+   "bytes": 9113,
+   "sha256": "8306fd90d20208355857448b3d4f34a145893c298c884d38adb03bbb54490b0d"
+  },
+  {
+   "file": "langgraph-checkpoint-4.3.1.provenance.json",
+   "status": "404",
+   "bytes": 85,
+   "sha256": "34c74488242c0418e064710c9f119e21a89c8b85ca7d798b398fd77357e60145"
+  },
+  {
+   "file": "langgraph-checkpoint-latest.json",
+   "status": "200",
+   "bytes": 108379,
+   "sha256": "3a01ce9b52410723e7c746ea1553db8612301dafcf5efce1f363caaed1420712",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "langgraph-latest.json",
+   "status": "200",
+   "bytes": 449328,
+   "sha256": "c4754df2b645fca30f9bc1f1b06e80f2a2fc1a476c07d68ce1797fda3bdb365a",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "langgraph-prebuilt-1.1.1.json",
+   "status": "200",
+   "bytes": 9311,
+   "sha256": "47fec783008c5c3c0aa46d58a57d41517a4343f56d5e9c6ed50cc0b69192a296"
+  },
+  {
+   "file": "langgraph-prebuilt-1.1.1.provenance.json",
+   "status": "404",
+   "bytes": 83,
+   "sha256": "f5391781559ef517f0a8f1f4ea5c1c8bdcfb0e7e716be977b5bf5b806494fe04"
+  },
+  {
+   "file": "langgraph-prebuilt-latest.json",
+   "status": "200",
+   "bytes": 80779,
+   "sha256": "5d2046f4997249e47ab127893200f83411d91d1bc1f33842ee08814cf6b3386c",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "langgraph-sdk-0.4.12.json",
+   "status": "200",
+   "bytes": 7394,
+   "sha256": "a2ef8f8a553f2e455b042f60e3362d310d08a012625e7745f4f8c8fe06dadfb8"
+  },
+  {
+   "file": "langgraph-sdk-0.4.12.provenance.json",
+   "status": "404",
+   "bytes": 79,
+   "sha256": "932dec8c516d1292640f1c64044180c8898e99c5530cd0ac1713676e47fcf255"
+  },
+  {
+   "file": "langgraph-sdk-latest.json",
+   "status": "200",
+   "bytes": 180142,
+   "sha256": "592dbc90c93981d55aa33c4029a593ec678c1ec33c921a3287735b6a877d141f",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "langsmith-0.14.17.json",
+   "status": "200",
+   "bytes": 42721,
+   "sha256": "cfe518ebf9bfb4add61c3aa7ae7a7c479b74e40064ec415c9f0cd7f656129387"
+  },
+  {
+   "file": "langsmith-0.14.17.provenance.json",
+   "status": "200",
+   "bytes": 9963,
+   "sha256": "6708389d42fe65a2570b5d8d2b0b90d0314c367950a7b70676aa7cc4992ad2da"
+  },
+  {
+   "file": "langsmith-latest.json",
+   "status": "200",
+   "bytes": 899781,
+   "sha256": "2e459a35a3bc033e0426fbb5d4a07c4d680f41e3e19603947addf81e9ab8bb94",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "orjson-3.13.0.json",
+   "status": "200",
+   "bytes": 95504,
+   "sha256": "90387700fce899577bd4cca8502a8db0201136ebe8384e7b80ed92ff03bad743"
+  },
+  {
+   "file": "orjson-3.13.0.provenance.json",
+   "status": "200",
+   "bytes": 9505,
+   "sha256": "e89641cdacaffde1acc2d8d6c2875b1efcc5457f3fe4912527286316b2a6dda4"
+  },
+  {
+   "file": "orjson-latest.json",
+   "status": "200",
+   "bytes": 4565024,
+   "sha256": "2f32024b4f416576a4374cf0d6cad7f23799b571c08167f1af793690d49999d8",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "ormsgpack-1.13.0.json",
+   "status": "200",
+   "bytes": 47005,
+   "sha256": "80e64a0b1aabc6dd4e5424a80337471398d13919cabd545be595044b380369ea"
+  },
+  {
+   "file": "ormsgpack-1.13.0.provenance.json",
+   "status": "200",
+   "bytes": 9876,
+   "sha256": "df9471589dec5f8c72209c8acd9284389f7e16ca20f6778cd4074ee1e63a4243"
+  },
+  {
+   "file": "ormsgpack-latest.json",
+   "status": "200",
+   "bytes": 825173,
+   "sha256": "d22a2dc1ffb236032137bdaed281109fbd39dd299b6fc4cdcf163c1d717c1d14",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "packaging-26.3.json",
+   "status": "200",
+   "bytes": 5748,
+   "sha256": "4f190d2f0b312b3086058cee64ab4333bf3ce67fb78b4c2bdb43899049b29f4d"
+  },
+  {
+   "file": "packaging-26.3.provenance.json",
+   "status": "200",
+   "bytes": 9443,
+   "sha256": "5a9e89058dff717aad4b2f658df5145e55541de897a2377e0ff699bc0abbfec8"
+  },
+  {
+   "file": "packaging-latest.json",
+   "status": "200",
+   "bytes": 90241,
+   "sha256": "9d7a2885e9e79296598f8c943e0a94c2468e21c800abd26ed13c633465a78835",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "pip-report.json",
+   "status": null,
+   "bytes": 548661,
+   "sha256": "2aab51b5cf1fd097d58caa2d1cea08da447ff5ecd0f6b24763cc368d8b8feec9"
+  },
+  {
+   "file": "pydantic-2.14.2.json",
+   "status": "200",
+   "bytes": 141090,
+   "sha256": "752f55c1d193bf51db156f3a72040605b80f6edfef7c530a0fa45382ff3e6cca"
+  },
+  {
+   "file": "pydantic-2.14.2.provenance.json",
+   "status": "200",
+   "bytes": 9508,
+   "sha256": "65d21b42d22f826bd81b541c98c6b5692e9c5716640bbb42177598ef900f6edd"
+  },
+  {
+   "file": "pydantic-latest.json",
+   "status": "200",
+   "bytes": 1890269,
+   "sha256": "d7128fe5cddbb8721b96124d65d65efe5f09c27be4146c2151cb8df3a9ff0cad",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "pydantic_core-2.50.2.json",
+   "status": "200",
+   "bytes": 131770,
+   "sha256": "b8e28e9ed71d344e446061f9078d2ab76bf8911b878352ba70e14e8d54563549"
+  },
+  {
+   "file": "pydantic_core-2.50.2.provenance.json",
+   "status": "404",
+   "bytes": 121,
+   "sha256": "deab2dc6840ec2ebbdb1d1b335326ab41c1d8d2f2cdb24b76de4296c7eac7025"
+  },
+  {
+   "file": "pydantic_core-latest.json",
+   "status": "200",
+   "bytes": 13037337,
+   "sha256": "ee36ff148e5e42ff1b3bc1260bc3ae9895527f476b7449cd9e1de8ff07cb69af",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "requests-2.34.2.json",
+   "status": "200",
+   "bytes": 6811,
+   "sha256": "8622e50ffd295ed759ec793f2a009172a4ed0204bbc5e948de23111bc3d2aeae"
+  },
+  {
+   "file": "requests-2.34.2.provenance.json",
+   "status": "200",
+   "bytes": 9282,
+   "sha256": "451f005330da1e3ea84e8c252b990c30d3b825b90a014d608ddd7cccd222f39e"
+  },
+  {
+   "file": "requests-latest.json",
+   "status": "200",
+   "bytes": 192973,
+   "sha256": "bcfc6a202592e4e90f5a28ff002694eaa7c58ba741b76077f432b8bee1480111",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "requests-toolbelt-1.0.0.json",
+   "status": "200",
+   "bytes": 17323,
+   "sha256": "77572be079b3e272fe239c8a0e1ae3491e90ee3c58eb63614ea4d7e5bcbc2b8e"
+  },
+  {
+   "file": "requests-toolbelt-1.0.0.provenance.json",
+   "status": "404",
+   "bytes": 86,
+   "sha256": "938d6184204057159e91fb91a0d39aeaf13e06b961990ed90f310ca6d865a2e8"
+  },
+  {
+   "file": "requests-toolbelt-latest.json",
+   "status": "200",
+   "bytes": 49113,
+   "sha256": "e1c70013d966cf54ca73cc8364d9d9adb2cdbf8167e3cc570d34d4c0954b769c",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "sniffio-1.3.1.json",
+   "status": "200",
+   "bytes": 5953,
+   "sha256": "1217ad6ed84734e8f77ecfd151d91786d5a633b0482af1cde28185de0159bd37"
+  },
+  {
+   "file": "sniffio-1.3.1.provenance.json",
+   "status": "404",
+   "bytes": 72,
+   "sha256": "c21eefe9a86693a2dbe4bb8c74938d399a0c58de81e363e03a9072e3dd3efbef"
+  },
+  {
+   "file": "sniffio-latest.json",
+   "status": "200",
+   "bytes": 14337,
+   "sha256": "e9af8ee27171c4cbf1086c7fef5119e266a219b0cac54fee61609de1eab103d9",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "tenacity-9.2.1.json",
+   "status": "200",
+   "bytes": 3470,
+   "sha256": "c9b0a31d18971c3ad08979fadee97707207b2c983c85169a5acb8fa6e328e6f0"
+  },
+  {
+   "file": "tenacity-9.2.1.provenance.json",
+   "status": "200",
+   "bytes": 9469,
+   "sha256": "a03678a10952bfa85fbdaab365b32d10abc167293ff3f8f0c39587a51e9ec686"
+  },
+  {
+   "file": "tenacity-latest.json",
+   "status": "200",
+   "bytes": 82696,
+   "sha256": "28404408e6eac056124fa63cf78a231e18f38389e664bc63dffc92163b7ae5a2",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "truststore-0.10.5.json",
+   "status": "200",
+   "bytes": 6734,
+   "sha256": "3aa1222ab6468e1e01b751aeda8db44afca8117297c93cb497c8d27e8f37e17b"
+  },
+  {
+   "file": "truststore-0.10.5.provenance.json",
+   "status": "200",
+   "bytes": 9994,
+   "sha256": "3982cbe8113e731c81ccd88ea2a8e1fb6e5d57d1e34ef19aec75b2fb3c746f90"
+  },
+  {
+   "file": "truststore-latest.json",
+   "status": "200",
+   "bytes": 33157,
+   "sha256": "83132cf2db141b3cd0916f0d59385e5c76a1404b08d196bf53c210cee997ff29",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "typing-inspection-0.4.5.json",
+   "status": "200",
+   "bytes": 4629,
+   "sha256": "5143a2b62f3dcf4202e44c2b48d661a1251059f65fc4a996040278adc4a8c5eb"
+  },
+  {
+   "file": "typing-inspection-0.4.5.provenance.json",
+   "status": "200",
+   "bytes": 9514,
+   "sha256": "11761af16a7f43c43190fd7f73b358f563b66136b02f3f7ca40f5f48b568c48c"
+  },
+  {
+   "file": "typing-inspection-latest.json",
+   "status": "200",
+   "bytes": 21970,
+   "sha256": "2f0ccd72debc44bcf425de1ae36426eb9cf1c2f36f83de99fb68f713b7da3192",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "typing_extensions-4.16.0.json",
+   "status": "200",
+   "bytes": 5631,
+   "sha256": "2140da00d62dde967f52d0be0ae28444f1d6a3fe603f52c83c23988c32122d5a"
+  },
+  {
+   "file": "typing_extensions-4.16.0.provenance.json",
+   "status": "200",
+   "bytes": 10119,
+   "sha256": "9ecac9fbc4d8ae992987c9cb12490672f82a57de80c26979771e921489ab96d6"
+  },
+  {
+   "file": "typing_extensions-latest.json",
+   "status": "200",
+   "bytes": 97612,
+   "sha256": "2e567d7ca1b1c70a8e8f23b7204a8bd51b0bacd39e2fe53b33b153cff255ac68",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "urllib3-2.8.0.json",
+   "status": "200",
+   "bytes": 9510,
+   "sha256": "5315e7401db3cacccd0c2ce5daf81f752a9cc3614b18c37f2b79930b7159ce2f"
+  },
+  {
+   "file": "urllib3-2.8.0.provenance.json",
+   "status": "200",
+   "bytes": 9533,
+   "sha256": "68c2b794eb6c28e944cbbb052d33318f2e1b787ac1724a00f00a0aa525362537"
+  },
+  {
+   "file": "urllib3-latest.json",
+   "status": "200",
+   "bytes": 160832,
+   "sha256": "fe033abdf4e116777f2062304b5442660092498d27f55f0ff6968f86d064bb5c",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "uuid_utils-0.19.0.json",
+   "status": "200",
+   "bytes": 53676,
+   "sha256": "ee48aba3473dc0f71d07d0c41819ba0b8000fa607230f454178558adeb412433"
+  },
+  {
+   "file": "uuid_utils-0.19.0.provenance.json",
+   "status": "200",
+   "bytes": 9358,
+   "sha256": "938f2ca5f264b348b68ca42f4d902e9b27b69490f627b5a6e374c0b715eaf165"
+  },
+  {
+   "file": "uuid_utils-latest.json",
+   "status": "200",
+   "bytes": 2285391,
+   "sha256": "5f1f7467523cb173d910e0f967f039a97dc2caae09c0c7d5bbf0730e7e296752",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "websockets-17.4.json",
+   "status": "200",
+   "bytes": 142959,
+   "sha256": "44c13cba2bf7f1b8adec49e89259c2cb2bd5e1a17d2eb89c01261282a0c3f846"
+  },
+  {
+   "file": "websockets-17.4.provenance.json",
+   "status": "200",
+   "bytes": 9808,
+   "sha256": "dddf0124646c8415b413fb9425926b285d37cb9ad5bcb0cb83c33d5f590f7741"
+  },
+  {
+   "file": "websockets-latest.json",
+   "status": "200",
+   "bytes": 2423439,
+   "sha256": "61bd3307862b200f44e62ccdf5fbcce2503310adf8e1475dcc7117a78f563d27",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "xxhash-4.0.2.json",
+   "status": "200",
+   "bytes": 215842,
+   "sha256": "444449ad30cce1f870a2b9cd992ff657ce18f2e98f4cd8cb6ec41c2d4127762a"
+  },
+  {
+   "file": "xxhash-4.0.2.provenance.json",
+   "status": "200",
+   "bytes": 9786,
+   "sha256": "52d5f6e5e42a63b926bf61d2e65fd82f4307da70d4fbd3e76a86957a6a017177"
+  },
+  {
+   "file": "xxhash-latest.json",
+   "status": "200",
+   "bytes": 3670148,
+   "sha256": "e4c39c044cd2c1e2834a916fb1258ff75820b00587c808283d389f08c3faf085",
+   "kept": "info only (the only part lock.py and records.py read)"
+  },
+  {
+   "file": "zstandard-0.25.0.json",
+   "status": "200",
+   "bytes": 90168,
+   "sha256": "a9d6f5a97e7a3b5f5125d0c4bac1d5e2c268fd2a5b2148dd8aad511d17240aef"
+  },
+  {
+   "file": "zstandard-0.25.0.provenance.json",
+   "status": "404",
+   "bytes": 117,
+   "sha256": "6dd1ef5e7df60811eac8739edd17cf899aea7e704903b535ad3f0de386381d94"
+  },
+  {
+   "file": "zstandard-latest.json",
+   "status": "200",
+   "bytes": 1171292,
+   "sha256": "ca077b19ef0862777f658211d34204b8d380d4cb46488969f85b90a71f166d9e",
+   "kept": "info only (the only part lock.py and records.py read)"
+  }
+ ]
+}

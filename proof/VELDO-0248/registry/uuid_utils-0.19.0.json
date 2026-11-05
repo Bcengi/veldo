@@ -1,0 +1,1341 @@
+{
+ "info": {
+  "author": null,
+  "author_email": "Amin Alaee <mohammadamin.alaee@gmail.com>",
+  "bugtrack_url": null,
+  "classifiers": [
+   "Development Status :: 5 - Production/Stable",
+   "Intended Audience :: Developers",
+   "Operating System :: OS Independent",
+   "Programming Language :: Python",
+   "Programming Language :: Python :: 3",
+   "Programming Language :: Python :: 3 :: Only",
+   "Programming Language :: Python :: 3.10",
+   "Programming Language :: Python :: 3.11",
+   "Programming Language :: Python :: 3.12",
+   "Programming Language :: Python :: 3.13",
+   "Programming Language :: Python :: 3.14",
+   "Programming Language :: Python :: 3.15",
+   "Programming Language :: Rust"
+  ],
+  "description": "# Python UUID Utils\n\n<div align=\"center\">\n\n[![Package version](https://badge.fury.io/py/uuid-utils.svg)](https://pypi.org/project/uuid-utils/)\n![PyPI - Downloads](https://img.shields.io/pypi/dm/uuid-utils)\n[![Supported Python versions](https://img.shields.io/pypi/pyversions/uuid-utils.svg?color=%2334D058)](https://pypi.org/project/uuid-utils)\n[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/aminalaee/uuid-utils?utm_source=badge)\n\n</div>\n\n---\n\nFast, drop-in replacement for Python's uuid module, powered by Rust.\n\nAvailable UUID versions:\n\n- `uuid1` - Version 1 UUIDs using a timestamp and monotonic counter.\n- `uuid3` - Version 3 UUIDs based on the MD5 hash of some data.\n- `uuid4` - Version 4 UUIDs with random data.\n- `uuid5` - Version 5 UUIDs based on the SHA1 hash of some data.\n- `uuid6` - Version 6 UUIDs using a timestamp and monotonic counter.\n- `uuid7` - Version 7 UUIDs using a Unix timestamp ordered by time.\n- `uuid8` - Version 8 UUIDs using user-defined data.\n\n## Installation\nUsing `pip`:\n```shell\npip install uuid-utils\n```\nor, using `conda`:\n\n```shell\nconda install -c conda-forge uuid-utils\n```\n\n## Example\n\n```shell\n>>> import uuid_utils as uuid\n\n>>> # make a random UUID\n>>> uuid.uuid4()\nUUID('ffe95fcc-b818-4aca-a350-e0a35b9de6ec')\n\n>>> # make a random UUID using a Unix timestamp which is time-ordered.\n>>> uuid.uuid7()\nUUID('018afa4a-0d21-7e6c-b857-012bc678552b')\n\n>>> # make a UUID using a SHA-1 hash of a namespace UUID and a name\n>>> uuid.uuid5(uuid.NAMESPACE_DNS, 'python.org')\nUUID('886313e1-3b8a-5372-9b90-0c9aee199e5d')\n\n>>> # make a UUID using an MD5 hash of a namespace UUID and a name\n>>> uuid.uuid3(uuid.NAMESPACE_DNS, 'python.org')\nUUID('6fa459ea-ee8a-3ca4-894e-db77e160355e')\n```\n\n## Compatibility with Python UUID\n\nSome frameworks (e.g. Django) require `UUID` instances from the standard-library `uuid` module,\nnot a custom subclass. Use `uuid_utils.compat` for a drop-in replacement that returns stdlib\n`uuid.UUID` instances while still outperforming the standard library.\n\n```py\n>>> import uuid_utils.compat as uuid\n\n>>> uuid.uuid4()\nUUID('ffe95fcc-b818-4aca-a350-e0a35b9de6ec')\n```\n\n## Benchmarks\n\n![Benchmarks](https://raw.githubusercontent.com/aminalaee/uuid-utils/main/docs/benchmarks.svg)\n\n```\n\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 benchdiff \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\n\u2502                                                                              \u2502\n\u2502   Benchmark                    Min           Median          Max           \u00d7 \u2502\n\u2502  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u2502\n\u2502   uuid4()                                                                    \u2502\n\u2502     stdlib_uuid4            1178.260ns     1189.167ns     1260.025ns    19.2 \u2502\n\u2502     compat_uuid4            248.325ns      251.257ns      271.325ns     4.07 \u2502\n\u2502     uuid_utils_uuid4         60.212ns       61.642ns       62.068ns     1.00 \u2502\n\u2502   uuid7()                                                                    \u2502\n\u2502     stdlib_uuid7            1327.365ns     1336.479ns     1615.529ns    15.7 \u2502\n\u2502     compat_uuid7            277.427ns      279.572ns      286.819ns     3.30 \u2502\n\u2502     uuid_utils_uuid7         83.582ns       84.654ns       93.588ns     1.00 \u2502\n\u2502   UUID from hex                                                              \u2502\n\u2502     stdlib_from_hex         443.457ns      463.514ns      472.753ns     5.47 \u2502\n\u2502     uuid_utils_from_hex      84.256ns       84.639ns       85.301ns     1.00 \u2502\n\u2502   UUID from bytes                                                            \u2502\n\u2502     stdlib_from_bytes       398.878ns      400.830ns      403.030ns     3.80 \u2502\n\u2502     uuid_utils_from_byt\u2026    103.698ns      105.417ns      106.426ns     1.00 \u2502\n\u2502                                                                              \u2502\n\u2502 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u2502\n\u2502   Python      3.14.4                                                         \u2502\n\u2502   Platform    macOS-26.3.1                                                   \u2502\n\u2502   CPU         Apple M3 Pro                                                   \u2502\n\u2502   Rounds      10 \u00d7 100,000 calls                                             \u2502\n\u2502   Date        2026-05-13 21:24:22                                            \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\n```\n\n## How to develop locally\n\n```shell\nmake build\nmake test\n```\n\nOr:\n\n```shell\nmaturin develop --release\n```\n\n",
+  "description_content_type": "text/markdown; charset=UTF-8; variant=GFM",
+  "docs_url": null,
+  "download_url": null,
+  "downloads": {
+   "last_day": -1,
+   "last_month": -1,
+   "last_week": -1
+  },
+  "dynamic": null,
+  "home_page": null,
+  "keywords": "rust, uuid",
+  "license": null,
+  "license_expression": "BSD-3-Clause",
+  "license_files": [
+   "LICENSE.md"
+  ],
+  "maintainer": null,
+  "maintainer_email": null,
+  "name": "uuid-utils",
+  "package_url": "https://pypi.org/project/uuid-utils/",
+  "platform": null,
+  "project_url": "https://pypi.org/project/uuid-utils/",
+  "project_urls": {
+   "Documentation": "https://github.com/aminalaee/uuid-utils",
+   "Issues": "https://github.com/aminalaee/uuid-utils/issues",
+   "Source": "https://github.com/aminalaee/uuid-utils"
+  },
+  "provides_extra": null,
+  "release_url": "https://pypi.org/project/uuid-utils/0.19.0/",
+  "requires_dist": null,
+  "requires_python": ">=3.10",
+  "summary": "Fast, drop-in replacement for Python's uuid module, powered by Rust.",
+  "version": "0.19.0",
+  "yanked": false,
+  "yanked_reason": null
+ },
+ "last_serial": 42757777,
+ "ownership": {
+  "organization": null,
+  "roles": [
+   {
+    "role": "Owner",
+    "user": "aminalaee"
+   }
+  ]
+ },
+ "urls": [
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "face78f9d79c820b8afc9b0498b0a5f5ef87ea970a19cc382127087f36cd4839",
+    "md5": "9bc853b7f3b29c175c7c2da0822ec49b",
+    "sha256": "84929d8c594381c6f1444afa2a25cce9ff7edac99d35e071ebc48275bae83730"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl",
+   "has_sig": false,
+   "md5_digest": "9bc853b7f3b29c175c7c2da0822ec49b",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 574701,
+   "upload_time": "2026-10-26T10:54:06",
+   "upload_time_iso_8601": "2026-10-26T10:54:06.751264Z",
+   "url": "https://files.pythonhosted.org/packages/fa/ce/78f9d79c820b8afc9b0498b0a5f5ef87ea970a19cc382127087f36cd4839/uuid_utils-0.19.0-cp310-abi3-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "fc63fe81dda73d651fb6bf8b0e21c4ea34209fc535ca109634c0d93f14ac21dc",
+    "md5": "67140254e8199cefb8e349618fc9180d",
+    "sha256": "a416c78167b750186095a0ea950d95b8b4e157e3172fc6ccdc317b6ca2896580"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-macosx_10_12_x86_64.whl",
+   "has_sig": false,
+   "md5_digest": "67140254e8199cefb8e349618fc9180d",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 294226,
+   "upload_time": "2026-10-26T10:54:08",
+   "upload_time_iso_8601": "2026-10-26T10:54:08.422596Z",
+   "url": "https://files.pythonhosted.org/packages/fc/63/fe81dda73d651fb6bf8b0e21c4ea34209fc535ca109634c0d93f14ac21dc/uuid_utils-0.19.0-cp310-abi3-macosx_10_12_x86_64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "816c118c7e11fb579b5631212bfbbb31542a1778936dfb7c55591aa9b52c7c99",
+    "md5": "21e76c6d9f8dff7afb3c694efe7514a3",
+    "sha256": "82573c0e5090732c0ae2e18626e06cb35fe7cfcf6fe9534d4c1638af41d25d36"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+   "has_sig": false,
+   "md5_digest": "21e76c6d9f8dff7afb3c694efe7514a3",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 327869,
+   "upload_time": "2026-10-26T10:54:10",
+   "upload_time_iso_8601": "2026-10-26T10:54:10.016309Z",
+   "url": "https://files.pythonhosted.org/packages/81/6c/118c7e11fb579b5631212bfbbb31542a1778936dfb7c55591aa9b52c7c99/uuid_utils-0.19.0-cp310-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "a37680e9bad735cbf92f127183ee5c44ee0d83604e56197bddcaaaed2c66f7e6",
+    "md5": "35983893b0ad95fec9c4df3565c67d21",
+    "sha256": "c78d527fddf5495e80032caeca2f140731ef394298ef4cbecaaf51aa2c257e1e"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl",
+   "has_sig": false,
+   "md5_digest": "35983893b0ad95fec9c4df3565c67d21",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 334737,
+   "upload_time": "2026-10-26T10:54:11",
+   "upload_time_iso_8601": "2026-10-26T10:54:11.434039Z",
+   "url": "https://files.pythonhosted.org/packages/a3/76/80e9bad735cbf92f127183ee5c44ee0d83604e56197bddcaaaed2c66f7e6/uuid_utils-0.19.0-cp310-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "9e7bc8eb8e45569e8681f20e381859248d18635d823b8aedc70de8a0bd5faca6",
+    "md5": "c9bd453b1999e2850f40d00add5fe36a",
+    "sha256": "3c33b5c62cf82d509945c770201b1656448c2560e12931d1a8d698a683e9125d"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl",
+   "has_sig": false,
+   "md5_digest": "c9bd453b1999e2850f40d00add5fe36a",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 440438,
+   "upload_time": "2026-10-26T10:54:12",
+   "upload_time_iso_8601": "2026-10-26T10:54:12.864591Z",
+   "url": "https://files.pythonhosted.org/packages/9e/7b/c8eb8e45569e8681f20e381859248d18635d823b8aedc70de8a0bd5faca6/uuid_utils-0.19.0-cp310-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "be458238eac588b668e5c500cb187fd74a9f6d984c09f3f3f2fa4161d3c07eb7",
+    "md5": "1e7005676df77a7dcb2eb6fbbdfda69b",
+    "sha256": "b8060530a8fa27f11947489c79bc36e6ebb465b2d714945364dc397283309417"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "has_sig": false,
+   "md5_digest": "1e7005676df77a7dcb2eb6fbbdfda69b",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 330342,
+   "upload_time": "2026-10-26T10:54:14",
+   "upload_time_iso_8601": "2026-10-26T10:54:14.309953Z",
+   "url": "https://files.pythonhosted.org/packages/be/45/8238eac588b668e5c500cb187fd74a9f6d984c09f3f3f2fa4161d3c07eb7/uuid_utils-0.19.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "0e458215129786e67842d479480a44066cac8a7086f345ac9707f629ed777cfe",
+    "md5": "1b2e5b4d9828838c14149c4741904285",
+    "sha256": "96429c78eab28ac71b2121fb47c66783bfe5d06632b5bd5200004707fdc0faad"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-manylinux_2_5_i686.manylinux1_i686.whl",
+   "has_sig": false,
+   "md5_digest": "1b2e5b4d9828838c14149c4741904285",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 354275,
+   "upload_time": "2026-10-26T10:54:15",
+   "upload_time_iso_8601": "2026-10-26T10:54:15.753122Z",
+   "url": "https://files.pythonhosted.org/packages/0e/45/8215129786e67842d479480a44066cac8a7086f345ac9707f629ed777cfe/uuid_utils-0.19.0-cp310-abi3-manylinux_2_5_i686.manylinux1_i686.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "7fbca673bfd116eb26419dd82bffa9bc2bc1e915af02bf68ac8c09598dc678ec",
+    "md5": "83defdda75dacd2e72f4ba055628ea8e",
+    "sha256": "80e0b37b3ddf60c50c51b869e1b02df61415941aa68bc903f61562fd8df04b18"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-musllinux_1_2_aarch64.whl",
+   "has_sig": false,
+   "md5_digest": "83defdda75dacd2e72f4ba055628ea8e",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 504446,
+   "upload_time": "2026-10-26T10:54:17",
+   "upload_time_iso_8601": "2026-10-26T10:54:17.450045Z",
+   "url": "https://files.pythonhosted.org/packages/7f/bc/a673bfd116eb26419dd82bffa9bc2bc1e915af02bf68ac8c09598dc678ec/uuid_utils-0.19.0-cp310-abi3-musllinux_1_2_aarch64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "afff61867210f202c603d4a5ca1c5b3c4c76e8d8724eeebd7cf1307d18b63a9a",
+    "md5": "d2e34860f66963eca3429b60d6da7732",
+    "sha256": "f629f2a4f95e46d99ee673536ab9706899696cdc6686e93314ea756d3b394ce4"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-musllinux_1_2_armv7l.whl",
+   "has_sig": false,
+   "md5_digest": "d2e34860f66963eca3429b60d6da7732",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 609016,
+   "upload_time": "2026-10-26T10:54:18",
+   "upload_time_iso_8601": "2026-10-26T10:54:18.914298Z",
+   "url": "https://files.pythonhosted.org/packages/af/ff/61867210f202c603d4a5ca1c5b3c4c76e8d8724eeebd7cf1307d18b63a9a/uuid_utils-0.19.0-cp310-abi3-musllinux_1_2_armv7l.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "42816fb8a2ee8010a6a0c5cb29f5efed2604717613cc9888f9e5c999dc36b84b",
+    "md5": "b3fe2d06ea0d1f713bcc3cddea5eb3ad",
+    "sha256": "ec330297c09e40b82d613326b57bb381d68535e8a341fa2e501b46791cbdfeec"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-musllinux_1_2_i686.whl",
+   "has_sig": false,
+   "md5_digest": "b3fe2d06ea0d1f713bcc3cddea5eb3ad",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 570293,
+   "upload_time": "2026-10-26T10:54:20",
+   "upload_time_iso_8601": "2026-10-26T10:54:20.328469Z",
+   "url": "https://files.pythonhosted.org/packages/42/81/6fb8a2ee8010a6a0c5cb29f5efed2604717613cc9888f9e5c999dc36b84b/uuid_utils-0.19.0-cp310-abi3-musllinux_1_2_i686.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "0f2fe1c749b65c584ebd8bc5379cf18e26c67cdff8f2bd9f8f77111a47083408",
+    "md5": "da268381d41415e25e784894aebef35a",
+    "sha256": "313de97d59dbbb09f4598cece2c799cc233d8673bb075ad7eff442cd485623c2"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-musllinux_1_2_x86_64.whl",
+   "has_sig": false,
+   "md5_digest": "da268381d41415e25e784894aebef35a",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 535321,
+   "upload_time": "2026-10-26T10:54:21",
+   "upload_time_iso_8601": "2026-10-26T10:54:21.735990Z",
+   "url": "https://files.pythonhosted.org/packages/0f/2f/e1c749b65c584ebd8bc5379cf18e26c67cdff8f2bd9f8f77111a47083408/uuid_utils-0.19.0-cp310-abi3-musllinux_1_2_x86_64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "87baf423f68fd784124e68ab1b1afe27ab4591ffd5363b39eccfcbaf8f3b0ff3",
+    "md5": "d9dff33bb1bfa62c5b5e222c100584ed",
+    "sha256": "5c47c7fc35e91a801996477f0d746d506a2e5b47a13accbf41dc29844786c40c"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-pyemscripten_2025_0_wasm32.whl",
+   "has_sig": false,
+   "md5_digest": "d9dff33bb1bfa62c5b5e222c100584ed",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 103141,
+   "upload_time": "2026-10-26T10:54:23",
+   "upload_time_iso_8601": "2026-10-26T10:54:23.192582Z",
+   "url": "https://files.pythonhosted.org/packages/87/ba/f423f68fd784124e68ab1b1afe27ab4591ffd5363b39eccfcbaf8f3b0ff3/uuid_utils-0.19.0-cp310-abi3-pyemscripten_2025_0_wasm32.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "f19a7a0a0dad166db9f4437f3d259e47ce74d552ccc50d8aa63d05b2510e3096",
+    "md5": "fbbfcf87f71f18f0e0a95d2419c4dd21",
+    "sha256": "23868cdc4dfa71021fec6cf43fbb83797345362ac1c866b50dbf17f479587413"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-pyemscripten_2026_0_wasm32.whl",
+   "has_sig": false,
+   "md5_digest": "fbbfcf87f71f18f0e0a95d2419c4dd21",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 103069,
+   "upload_time": "2026-10-26T10:54:24",
+   "upload_time_iso_8601": "2026-10-26T10:54:24.709183Z",
+   "url": "https://files.pythonhosted.org/packages/f1/9a/7a0a0dad166db9f4437f3d259e47ce74d552ccc50d8aa63d05b2510e3096/uuid_utils-0.19.0-cp310-abi3-pyemscripten_2026_0_wasm32.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "5d1844000e1784068d76cbfb5753cfbb968ab68833b96f41139bbebb714d9244"
+   },
+   "digests": {
+    "blake2b_256": "e13cc5fef96cea027de66a035b4173951fc29c2e83ed49a5d5b3fa7b632f95b5",
+    "md5": "d6b357da5db61e04bbb5fe60815a4333",
+    "sha256": "0cff166cf6348e9a705740e6575ce7bc727554a71a6add60b9ceceaaf169002a"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-win32.whl",
+   "has_sig": false,
+   "md5_digest": "d6b357da5db61e04bbb5fe60815a4333",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 175479,
+   "upload_time": "2026-10-26T10:54:25",
+   "upload_time_iso_8601": "2026-10-26T10:54:25.949860Z",
+   "url": "https://files.pythonhosted.org/packages/e1/3c/c5fef96cea027de66a035b4173951fc29c2e83ed49a5d5b3fa7b632f95b5/uuid_utils-0.19.0-cp310-abi3-win32.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "5d1844000e1784068d76cbfb5753cfbb968ab68833b96f41139bbebb714d9244"
+   },
+   "digests": {
+    "blake2b_256": "3f16edfb8edc8a4624cfaf1387a57bf37cd53e5d7f213ebeb8dd6fbd2f6b2c64",
+    "md5": "c9c1ec2c2b7cf4a83f44ed66cb3d3aef",
+    "sha256": "b763ae8f23334ccd95d0b81fb19ee418f38f9e80ebfb521f313a9745280bc07c"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-win_amd64.whl",
+   "has_sig": false,
+   "md5_digest": "c9c1ec2c2b7cf4a83f44ed66cb3d3aef",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 182891,
+   "upload_time": "2026-10-26T10:54:27",
+   "upload_time_iso_8601": "2026-10-26T10:54:27.527697Z",
+   "url": "https://files.pythonhosted.org/packages/3f/16/edfb8edc8a4624cfaf1387a57bf37cd53e5d7f213ebeb8dd6fbd2f6b2c64/uuid_utils-0.19.0-cp310-abi3-win_amd64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "5d1844000e1784068d76cbfb5753cfbb968ab68833b96f41139bbebb714d9244"
+   },
+   "digests": {
+    "blake2b_256": "6317258e5dd380bc594731b2b705082360fb4cef1e5cbaab46ef307439a6f415",
+    "md5": "50b19b2be690832a36e2303897c1e5ce",
+    "sha256": "b244ea25bfe1b34e40fabf8f079d59a9f153b22bd4095842065bb0a9dfaa477b"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp310-abi3-win_arm64.whl",
+   "has_sig": false,
+   "md5_digest": "50b19b2be690832a36e2303897c1e5ce",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp310",
+   "requires_python": ">=3.10",
+   "size": 180849,
+   "upload_time": "2026-10-26T10:54:28",
+   "upload_time_iso_8601": "2026-10-26T10:54:28.860317Z",
+   "url": "https://files.pythonhosted.org/packages/63/17/258e5dd380bc594731b2b705082360fb4cef1e5cbaab46ef307439a6f415/uuid_utils-0.19.0-cp310-abi3-win_arm64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "cb64b5554f686d5395db970bc07944b9c59c26ab0e192a27d7c8b555e5fc6332",
+    "md5": "b234f6054a5ae8ad800e79f3cd69383e",
+    "sha256": "9adf8d69574f0018a25aed0cc194bffacc05fb91b922fdd8e794109c45ad80ed"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp314-cp314t-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl",
+   "has_sig": false,
+   "md5_digest": "b234f6054a5ae8ad800e79f3cd69383e",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp314",
+   "requires_python": ">=3.10",
+   "size": 565592,
+   "upload_time": "2026-10-26T10:54:30",
+   "upload_time_iso_8601": "2026-10-26T10:54:30.242291Z",
+   "url": "https://files.pythonhosted.org/packages/cb/64/b5554f686d5395db970bc07944b9c59c26ab0e192a27d7c8b555e5fc6332/uuid_utils-0.19.0-cp314-cp314t-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "4aa3d8d0b7bf4892c41dbbb0e81a356d20aad781cc28d3029669e167eb72d9a1",
+    "md5": "b80ff7ec1d8f7cc3da3180a00c8305ab",
+    "sha256": "ac37f30acc7fe01266c73f19a686d0ea1fbd22495d81205cc3b572e2fb2293a6"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp314-cp314t-macosx_10_12_x86_64.whl",
+   "has_sig": false,
+   "md5_digest": "b80ff7ec1d8f7cc3da3180a00c8305ab",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp314",
+   "requires_python": ">=3.10",
+   "size": 292083,
+   "upload_time": "2026-10-26T10:54:32",
+   "upload_time_iso_8601": "2026-10-26T10:54:32.053914Z",
+   "url": "https://files.pythonhosted.org/packages/4a/a3/d8d0b7bf4892c41dbbb0e81a356d20aad781cc28d3029669e167eb72d9a1/uuid_utils-0.19.0-cp314-cp314t-macosx_10_12_x86_64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "fac1770ccb569b4c15ee81c36bc40e74f03c5e0a2ee71ecc534d3fe7cfa5696d",
+    "md5": "4417c5aed6ba1b9cf4091f1c3edf93f2",
+    "sha256": "afc1dc05c83163ec58304350ee61d20f1f3285d0e8fb873e4d85a97988c284ad"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp314-cp314t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+   "has_sig": false,
+   "md5_digest": "4417c5aed6ba1b9cf4091f1c3edf93f2",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp314",
+   "requires_python": ">=3.10",
+   "size": 323275,
+   "upload_time": "2026-10-26T10:54:33",
+   "upload_time_iso_8601": "2026-10-26T10:54:33.896392Z",
+   "url": "https://files.pythonhosted.org/packages/fa/c1/770ccb569b4c15ee81c36bc40e74f03c5e0a2ee71ecc534d3fe7cfa5696d/uuid_utils-0.19.0-cp314-cp314t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "c712798e09469358bf59848534291aa62d16cc6fbd66767f469c5d8278d0bc4d",
+    "md5": "ff0914e0dbbae9bf70fc3043b4543acc",
+    "sha256": "16e68b1a4b81301fa7ba52d500947094226d8b0c1521695746ec57ff0779ff6f"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp314-cp314t-manylinux_2_17_armv7l.manylinux2014_armv7l.whl",
+   "has_sig": false,
+   "md5_digest": "ff0914e0dbbae9bf70fc3043b4543acc",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp314",
+   "requires_python": ">=3.10",
+   "size": 328681,
+   "upload_time": "2026-10-26T10:54:35",
+   "upload_time_iso_8601": "2026-10-26T10:54:35.506716Z",
+   "url": "https://files.pythonhosted.org/packages/c7/12/798e09469358bf59848534291aa62d16cc6fbd66767f469c5d8278d0bc4d/uuid_utils-0.19.0-cp314-cp314t-manylinux_2_17_armv7l.manylinux2014_armv7l.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "421671df642a7969381747de36d4e365e59683cdaa2c425da0530e9383e4de86",
+    "md5": "d557c4bfe6db607c1c28b22ec19e7772",
+    "sha256": "833edd2b38ef08a324e9f3aed4269d2ab955d4cb66417422eeb3af28a6237427"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp314-cp314t-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl",
+   "has_sig": false,
+   "md5_digest": "d557c4bfe6db607c1c28b22ec19e7772",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp314",
+   "requires_python": ">=3.10",
+   "size": 434504,
+   "upload_time": "2026-10-26T10:54:36",
+   "upload_time_iso_8601": "2026-10-26T10:54:36.960434Z",
+   "url": "https://files.pythonhosted.org/packages/42/16/71df642a7969381747de36d4e365e59683cdaa2c425da0530e9383e4de86/uuid_utils-0.19.0-cp314-cp314t-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "c11835c86d901bbd6d3f088217f37a6ff01aae4ce8f8cdb3f9ddb5220887a122",
+    "md5": "c7021ec6db5901543a4ee73ef899ba8d",
+    "sha256": "21356ba99b82c813c1945054a09ff7ebc1bf55b858b41a6ae084e6ed2c8bb9a9"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp314-cp314t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "has_sig": false,
+   "md5_digest": "c7021ec6db5901543a4ee73ef899ba8d",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp314",
+   "requires_python": ">=3.10",
+   "size": 325810,
+   "upload_time": "2026-10-26T10:54:38",
+   "upload_time_iso_8601": "2026-10-26T10:54:38.492675Z",
+   "url": "https://files.pythonhosted.org/packages/c1/18/35c86d901bbd6d3f088217f37a6ff01aae4ce8f8cdb3f9ddb5220887a122/uuid_utils-0.19.0-cp314-cp314t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "fc5125427eee1031946d5abe0d8985123f6fd4a1931c8a5a8660b1c76368ca12",
+    "md5": "82439df1565e8790cdfd80af97dc94b4",
+    "sha256": "2477161656105e787a5f986adb63191b61f129c9d7399b2bce406f87a1407b4d"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp314-cp314t-manylinux_2_5_i686.manylinux1_i686.whl",
+   "has_sig": false,
+   "md5_digest": "82439df1565e8790cdfd80af97dc94b4",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp314",
+   "requires_python": ">=3.10",
+   "size": 346300,
+   "upload_time": "2026-10-26T10:54:39",
+   "upload_time_iso_8601": "2026-10-26T10:54:39.864344Z",
+   "url": "https://files.pythonhosted.org/packages/fc/51/25427eee1031946d5abe0d8985123f6fd4a1931c8a5a8660b1c76368ca12/uuid_utils-0.19.0-cp314-cp314t-manylinux_2_5_i686.manylinux1_i686.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "264bedbb0ebdc948549a0250363f441883c31fef42fb4e4bb607b9a083efaeba",
+    "md5": "b3262747c1416de6373497264f69f79a",
+    "sha256": "ddf61d8443993d683c8d6fcd05cbb711c2655042952850fc0cf25af969e3a213"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp314-cp314t-musllinux_1_2_aarch64.whl",
+   "has_sig": false,
+   "md5_digest": "b3262747c1416de6373497264f69f79a",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp314",
+   "requires_python": ">=3.10",
+   "size": 501365,
+   "upload_time": "2026-10-26T10:54:41",
+   "upload_time_iso_8601": "2026-10-26T10:54:41.268929Z",
+   "url": "https://files.pythonhosted.org/packages/26/4b/edbb0ebdc948549a0250363f441883c31fef42fb4e4bb607b9a083efaeba/uuid_utils-0.19.0-cp314-cp314t-musllinux_1_2_aarch64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "68e4f5a788fae45e315d8d04d5889a0b0809543e27c8d08b9fe10b09d0766b9b",
+    "md5": "d204c69702fbf209274011a14560602d",
+    "sha256": "cb9ead0aeae67ad2de3f660f2e978ece77e14ad3f2a7082b768e2c75866664a2"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp314-cp314t-musllinux_1_2_armv7l.whl",
+   "has_sig": false,
+   "md5_digest": "d204c69702fbf209274011a14560602d",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp314",
+   "requires_python": ">=3.10",
+   "size": 604290,
+   "upload_time": "2026-10-26T10:54:42",
+   "upload_time_iso_8601": "2026-10-26T10:54:42.686880Z",
+   "url": "https://files.pythonhosted.org/packages/68/e4/f5a788fae45e315d8d04d5889a0b0809543e27c8d08b9fe10b09d0766b9b/uuid_utils-0.19.0-cp314-cp314t-musllinux_1_2_armv7l.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "a7903800a0b2083d6c156a4d686e75f26c055a48fcf315b9310ba211b7e3659c",
+    "md5": "36da7dd04fc7ffd1f1e5116ed75b2833",
+    "sha256": "4e5155902b7779ae7b692ac69e6031f41481d62fa85a530d3725c270799940a0"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp314-cp314t-musllinux_1_2_i686.whl",
+   "has_sig": false,
+   "md5_digest": "36da7dd04fc7ffd1f1e5116ed75b2833",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp314",
+   "requires_python": ">=3.10",
+   "size": 563566,
+   "upload_time": "2026-10-26T10:54:44",
+   "upload_time_iso_8601": "2026-10-26T10:54:44.068905Z",
+   "url": "https://files.pythonhosted.org/packages/a7/90/3800a0b2083d6c156a4d686e75f26c055a48fcf315b9310ba211b7e3659c/uuid_utils-0.19.0-cp314-cp314t-musllinux_1_2_i686.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "7f371b58a17a041bd560a1d652afccd57ecd5d0e0c4d6280deded663b783de43",
+    "md5": "9b4142cc4e3826411c2e5d9a01e776d7",
+    "sha256": "fd3bcc556e249bb70b1c7fd78e659a1ebfb5572e7ff2091d096aecbac62edb1c"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp314-cp314t-musllinux_1_2_x86_64.whl",
+   "has_sig": false,
+   "md5_digest": "9b4142cc4e3826411c2e5d9a01e776d7",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp314",
+   "requires_python": ">=3.10",
+   "size": 531143,
+   "upload_time": "2026-10-26T10:54:45",
+   "upload_time_iso_8601": "2026-10-26T10:54:45.599375Z",
+   "url": "https://files.pythonhosted.org/packages/7f/37/1b58a17a041bd560a1d652afccd57ecd5d0e0c4d6280deded663b783de43/uuid_utils-0.19.0-cp314-cp314t-musllinux_1_2_x86_64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "5d1844000e1784068d76cbfb5753cfbb968ab68833b96f41139bbebb714d9244"
+   },
+   "digests": {
+    "blake2b_256": "66acf6286bcfad2f321be2acd04961934a58e4a6c15ba78070a13d193cbbb9f0",
+    "md5": "1586babe5568ab2a47cf0191980fd892",
+    "sha256": "9b9064d96c6fe5e43ff4486722c5c891083a7fa91ee36311286cfd833b4b5562"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp314-cp314t-win32.whl",
+   "has_sig": false,
+   "md5_digest": "1586babe5568ab2a47cf0191980fd892",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp314",
+   "requires_python": ">=3.10",
+   "size": 172229,
+   "upload_time": "2026-10-26T10:54:46",
+   "upload_time_iso_8601": "2026-10-26T10:54:46.925226Z",
+   "url": "https://files.pythonhosted.org/packages/66/ac/f6286bcfad2f321be2acd04961934a58e4a6c15ba78070a13d193cbbb9f0/uuid_utils-0.19.0-cp314-cp314t-win32.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "5d1844000e1784068d76cbfb5753cfbb968ab68833b96f41139bbebb714d9244"
+   },
+   "digests": {
+    "blake2b_256": "87450df876abf12875ef82bcd8f034c0c7adc1507dd721a5942232120b6267e8",
+    "md5": "0518dad4a3ffaba5dc372a326a655428",
+    "sha256": "eeaf6b77ed2ec9815988e10d043d1533a1ae8c6535e7fb5479fd7e2e6ad25dff"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp314-cp314t-win_amd64.whl",
+   "has_sig": false,
+   "md5_digest": "0518dad4a3ffaba5dc372a326a655428",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp314",
+   "requires_python": ">=3.10",
+   "size": 178436,
+   "upload_time": "2026-10-26T10:54:48",
+   "upload_time_iso_8601": "2026-10-26T10:54:48.249677Z",
+   "url": "https://files.pythonhosted.org/packages/87/45/0df876abf12875ef82bcd8f034c0c7adc1507dd721a5942232120b6267e8/uuid_utils-0.19.0-cp314-cp314t-win_amd64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "5d1844000e1784068d76cbfb5753cfbb968ab68833b96f41139bbebb714d9244"
+   },
+   "digests": {
+    "blake2b_256": "d2aec9b4aaa8ee95581b444a7be681dc0ceb57a465b50b28b2f2517f5fec1c51",
+    "md5": "5f92788215916bb1dedde026405ef168",
+    "sha256": "ebb011b9010ddbd8acd4650896e87db2715f2cfc70fb194c03ebcbf4150d3844"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp314-cp314t-win_arm64.whl",
+   "has_sig": false,
+   "md5_digest": "5f92788215916bb1dedde026405ef168",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp314",
+   "requires_python": ">=3.10",
+   "size": 175725,
+   "upload_time": "2026-10-26T10:54:49",
+   "upload_time_iso_8601": "2026-10-26T10:54:49.562192Z",
+   "url": "https://files.pythonhosted.org/packages/d2/ae/c9b4aaa8ee95581b444a7be681dc0ceb57a465b50b28b2f2517f5fec1c51/uuid_utils-0.19.0-cp314-cp314t-win_arm64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "416e3a3fdaa9689b687f105ba885e61f6b2e8336ec4d209fd51d41923ad83479",
+    "md5": "5191a0ff8f630dc4c53c8b12eca31c3b",
+    "sha256": "8c76f01a815a0ca8b698202f2f5e40098a4b3cd56305e1fc9ed3d959ac718ff0"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp315-cp315t-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl",
+   "has_sig": false,
+   "md5_digest": "5191a0ff8f630dc4c53c8b12eca31c3b",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp315",
+   "requires_python": ">=3.10",
+   "size": 565325,
+   "upload_time": "2026-10-26T10:54:50",
+   "upload_time_iso_8601": "2026-10-26T10:54:50.924954Z",
+   "url": "https://files.pythonhosted.org/packages/41/6e/3a3fdaa9689b687f105ba885e61f6b2e8336ec4d209fd51d41923ad83479/uuid_utils-0.19.0-cp315-cp315t-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "5e1a23dacf86dfe52f4606694501a6072379156025a3c6988e16f477f627249c",
+    "md5": "324b49d6efcc122ac8497d914f5ba33b",
+    "sha256": "f3828e1fc0831a9d539e702992e9fcfeb400e80f737467b8e557921cdc8ae067"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp315-cp315t-macosx_10_12_x86_64.whl",
+   "has_sig": false,
+   "md5_digest": "324b49d6efcc122ac8497d914f5ba33b",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp315",
+   "requires_python": ">=3.10",
+   "size": 291930,
+   "upload_time": "2026-10-26T10:54:52",
+   "upload_time_iso_8601": "2026-10-26T10:54:52.529916Z",
+   "url": "https://files.pythonhosted.org/packages/5e/1a/23dacf86dfe52f4606694501a6072379156025a3c6988e16f477f627249c/uuid_utils-0.19.0-cp315-cp315t-macosx_10_12_x86_64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "4ef2adf223ded569b0d75e8ac10db14be8fc253da900a63e678436bc3ff3b72a",
+    "md5": "fb504c3895a6bdf450451bc505ca694b",
+    "sha256": "b25ddec2775c2f500a36029ab93af09f39d5c417786df02a464464e030152014"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp315-cp315t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+   "has_sig": false,
+   "md5_digest": "fb504c3895a6bdf450451bc505ca694b",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp315",
+   "requires_python": ">=3.10",
+   "size": 322729,
+   "upload_time": "2026-10-26T10:54:54",
+   "upload_time_iso_8601": "2026-10-26T10:54:54.010549Z",
+   "url": "https://files.pythonhosted.org/packages/4e/f2/adf223ded569b0d75e8ac10db14be8fc253da900a63e678436bc3ff3b72a/uuid_utils-0.19.0-cp315-cp315t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "88df0f78e7f22c778d2e48ef092a3a1c44d5b8b487b7e178e1044e7a39195b17",
+    "md5": "21b1f92cad23defbf4e55c86c85ea741",
+    "sha256": "1fc412a5ef2f1e6f96d132a6656af59bae2dba9fd04f8df2a2f6eb913fe6180a"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp315-cp315t-manylinux_2_17_armv7l.manylinux2014_armv7l.whl",
+   "has_sig": false,
+   "md5_digest": "21b1f92cad23defbf4e55c86c85ea741",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp315",
+   "requires_python": ">=3.10",
+   "size": 328838,
+   "upload_time": "2026-10-26T10:54:55",
+   "upload_time_iso_8601": "2026-10-26T10:54:55.473202Z",
+   "url": "https://files.pythonhosted.org/packages/88/df/0f78e7f22c778d2e48ef092a3a1c44d5b8b487b7e178e1044e7a39195b17/uuid_utils-0.19.0-cp315-cp315t-manylinux_2_17_armv7l.manylinux2014_armv7l.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "b3969a9d6f7bef37b3545203eaf643e7f4d574f4ea3a6364af8865c071847df5",
+    "md5": "76a48bf43f89a1fffe828e541c79a57a",
+    "sha256": "94cbef978d789b18014c477f51c8311800803cd2a0c7e1de6d2af85377210053"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp315-cp315t-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl",
+   "has_sig": false,
+   "md5_digest": "76a48bf43f89a1fffe828e541c79a57a",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp315",
+   "requires_python": ">=3.10",
+   "size": 433992,
+   "upload_time": "2026-10-26T10:54:56",
+   "upload_time_iso_8601": "2026-10-26T10:54:56.911768Z",
+   "url": "https://files.pythonhosted.org/packages/b3/96/9a9d6f7bef37b3545203eaf643e7f4d574f4ea3a6364af8865c071847df5/uuid_utils-0.19.0-cp315-cp315t-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "079262f67dc40a036ab890ac3f55eaab610999c713654bb3d0b56d5676ce3eaa",
+    "md5": "305dba307900ffd740e23fa9dfa3fec0",
+    "sha256": "d4b012d2a2c5516e11ded4fb70cdd730f36e2d40b45018b9a40c6605dc5c0666"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp315-cp315t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "has_sig": false,
+   "md5_digest": "305dba307900ffd740e23fa9dfa3fec0",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp315",
+   "requires_python": ">=3.10",
+   "size": 326138,
+   "upload_time": "2026-10-26T10:54:58",
+   "upload_time_iso_8601": "2026-10-26T10:54:58.533793Z",
+   "url": "https://files.pythonhosted.org/packages/07/92/62f67dc40a036ab890ac3f55eaab610999c713654bb3d0b56d5676ce3eaa/uuid_utils-0.19.0-cp315-cp315t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "c8b7740525de1aa1a150eb7a80a667c997d54284f407b7f3b38ce8f90f948813",
+    "md5": "d3010a8f683ba41c3cbe7824ef16fd9d",
+    "sha256": "4062c0dfd6697ce7c91a504d8ff6eb8dcaf4e790fb6adec69c4c83fd89870d4a"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp315-cp315t-manylinux_2_5_i686.manylinux1_i686.whl",
+   "has_sig": false,
+   "md5_digest": "d3010a8f683ba41c3cbe7824ef16fd9d",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp315",
+   "requires_python": ">=3.10",
+   "size": 346714,
+   "upload_time": "2026-10-26T10:55:00",
+   "upload_time_iso_8601": "2026-10-26T10:55:00.010641Z",
+   "url": "https://files.pythonhosted.org/packages/c8/b7/740525de1aa1a150eb7a80a667c997d54284f407b7f3b38ce8f90f948813/uuid_utils-0.19.0-cp315-cp315t-manylinux_2_5_i686.manylinux1_i686.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "3c1ac9d2be770a2061da608164d022becda3fc7ddabb34ec7a1950d29ae51ca0",
+    "md5": "20a28285beb1b690de35a93e64817665",
+    "sha256": "361cfd0fba0a49f1c8b6df741a35f7d948f0fae3d3914f8622ba261dc4656a5a"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp315-cp315t-musllinux_1_2_aarch64.whl",
+   "has_sig": false,
+   "md5_digest": "20a28285beb1b690de35a93e64817665",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp315",
+   "requires_python": ">=3.10",
+   "size": 500974,
+   "upload_time": "2026-10-26T10:55:01",
+   "upload_time_iso_8601": "2026-10-26T10:55:01.392672Z",
+   "url": "https://files.pythonhosted.org/packages/3c/1a/c9d2be770a2061da608164d022becda3fc7ddabb34ec7a1950d29ae51ca0/uuid_utils-0.19.0-cp315-cp315t-musllinux_1_2_aarch64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "362eee7522207a7f9477c58757f040f05c4eedb68f362623d4e40da4983bdf5b",
+    "md5": "c90b5dcd060594d60549216e6968b712",
+    "sha256": "a15c8943e02ac59992eaad1ce69793720dc711ce66188d386be1cbf8f5b5a2e4"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp315-cp315t-musllinux_1_2_armv7l.whl",
+   "has_sig": false,
+   "md5_digest": "c90b5dcd060594d60549216e6968b712",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp315",
+   "requires_python": ">=3.10",
+   "size": 604607,
+   "upload_time": "2026-10-26T10:55:03",
+   "upload_time_iso_8601": "2026-10-26T10:55:03.141865Z",
+   "url": "https://files.pythonhosted.org/packages/36/2e/ee7522207a7f9477c58757f040f05c4eedb68f362623d4e40da4983bdf5b/uuid_utils-0.19.0-cp315-cp315t-musllinux_1_2_armv7l.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "07b8c9a1f21627238171a2021dd777177a211df20b12c0c5e45b828ee9bc3c84",
+    "md5": "62b96c68e103a56e9ff6acbf926449ff",
+    "sha256": "4bd00a485e973cb3bcefe06f13a663cf4ee0c54caeacb2a656a5f901d1505a03"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp315-cp315t-musllinux_1_2_i686.whl",
+   "has_sig": false,
+   "md5_digest": "62b96c68e103a56e9ff6acbf926449ff",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp315",
+   "requires_python": ">=3.10",
+   "size": 563749,
+   "upload_time": "2026-10-26T10:55:04",
+   "upload_time_iso_8601": "2026-10-26T10:55:04.809306Z",
+   "url": "https://files.pythonhosted.org/packages/07/b8/c9a1f21627238171a2021dd777177a211df20b12c0c5e45b828ee9bc3c84/uuid_utils-0.19.0-cp315-cp315t-musllinux_1_2_i686.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "e59eed7d14d4d7bdb94159909e722337a557c855e8990a7fdff55ef6b016fb38",
+    "md5": "206b911dbeaafccf3350f1f594c3809a",
+    "sha256": "9fe68c4b2e017fb13c5e460b76b76c5cfa717ddd653cea184c2664bc2a852011"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp315-cp315t-musllinux_1_2_x86_64.whl",
+   "has_sig": false,
+   "md5_digest": "206b911dbeaafccf3350f1f594c3809a",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp315",
+   "requires_python": ">=3.10",
+   "size": 530994,
+   "upload_time": "2026-10-26T10:55:06",
+   "upload_time_iso_8601": "2026-10-26T10:55:06.511068Z",
+   "url": "https://files.pythonhosted.org/packages/e5/9e/ed7d14d4d7bdb94159909e722337a557c855e8990a7fdff55ef6b016fb38/uuid_utils-0.19.0-cp315-cp315t-musllinux_1_2_x86_64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "5d1844000e1784068d76cbfb5753cfbb968ab68833b96f41139bbebb714d9244"
+   },
+   "digests": {
+    "blake2b_256": "07925b84a87dd4127a14337d42eb4a24a764583e4decc2675a9949d4568b16e1",
+    "md5": "a19dbfe31623bb06b55e88b5e5539d22",
+    "sha256": "5397581f40e268535cd48230e4f2f372dc5f3e70ce79e0aff9cb5ceb838163c8"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp315-cp315t-win32.whl",
+   "has_sig": false,
+   "md5_digest": "a19dbfe31623bb06b55e88b5e5539d22",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp315",
+   "requires_python": ">=3.10",
+   "size": 172512,
+   "upload_time": "2026-10-26T10:55:08",
+   "upload_time_iso_8601": "2026-10-26T10:55:08.261137Z",
+   "url": "https://files.pythonhosted.org/packages/07/92/5b84a87dd4127a14337d42eb4a24a764583e4decc2675a9949d4568b16e1/uuid_utils-0.19.0-cp315-cp315t-win32.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "5d1844000e1784068d76cbfb5753cfbb968ab68833b96f41139bbebb714d9244"
+   },
+   "digests": {
+    "blake2b_256": "d643a11a33e39f64c50f17483842652933b8ef769ce7cac3399ed7d2a2b928c2",
+    "md5": "87451af06020e66beaefeb955b9da86f",
+    "sha256": "225752e3c36b7c861eb1bbceb5c9197c134c806b210ed53dcacf6339a3d599e6"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp315-cp315t-win_amd64.whl",
+   "has_sig": false,
+   "md5_digest": "87451af06020e66beaefeb955b9da86f",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp315",
+   "requires_python": ">=3.10",
+   "size": 178626,
+   "upload_time": "2026-10-26T10:55:09",
+   "upload_time_iso_8601": "2026-10-26T10:55:09.658664Z",
+   "url": "https://files.pythonhosted.org/packages/d6/43/a11a33e39f64c50f17483842652933b8ef769ce7cac3399ed7d2a2b928c2/uuid_utils-0.19.0-cp315-cp315t-win_amd64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "5d1844000e1784068d76cbfb5753cfbb968ab68833b96f41139bbebb714d9244"
+   },
+   "digests": {
+    "blake2b_256": "ab784f9dc891db194ce8107c9704d7e2e51da558af457e64134da1b1a7c5db1f",
+    "md5": "7d4cc7aa454f93c5b9e181859ad05e4b",
+    "sha256": "bfcda2352c1500230227da5475139ab177bb2516309254cd74ade19a28cb842d"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-cp315-cp315t-win_arm64.whl",
+   "has_sig": false,
+   "md5_digest": "7d4cc7aa454f93c5b9e181859ad05e4b",
+   "packagetype": "bdist_wheel",
+   "python_version": "cp315",
+   "requires_python": ">=3.10",
+   "size": 175582,
+   "upload_time": "2026-10-26T10:55:11",
+   "upload_time_iso_8601": "2026-10-26T10:55:11.001255Z",
+   "url": "https://files.pythonhosted.org/packages/ab/78/4f9dc891db194ce8107c9704d7e2e51da558af457e64134da1b1a7c5db1f/uuid_utils-0.19.0-cp315-cp315t-win_arm64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "6160751fb8688322e107e4b4b66747f084ac0e3de599eec6f800b1661b1bbf7b",
+    "md5": "908204f5aca6fa9069e562e8c2b6b489",
+    "sha256": "492e621a6aa0d8b4a47cad5e71b9fbbebf5e7af6d0f568daea65d38353f713c1"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-pp311-pypy311_pp73-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl",
+   "has_sig": false,
+   "md5_digest": "908204f5aca6fa9069e562e8c2b6b489",
+   "packagetype": "bdist_wheel",
+   "python_version": "pp311",
+   "requires_python": ">=3.10",
+   "size": 569090,
+   "upload_time": "2026-10-26T10:55:12",
+   "upload_time_iso_8601": "2026-10-26T10:55:12.449873Z",
+   "url": "https://files.pythonhosted.org/packages/61/60/751fb8688322e107e4b4b66747f084ac0e3de599eec6f800b1661b1bbf7b/uuid_utils-0.19.0-pp311-pypy311_pp73-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "7a0c2971bf13e98e2cab194fb43a81c3ffc47d2eaf84d4669d1d5b96ed89d98f",
+    "md5": "78bea4e82e4f54b9688ac8b587da6c40",
+    "sha256": "68ab7e44d8be02c5d34e2501c465e32747b384c04cf7476de80c01729466a9dc"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-pp311-pypy311_pp73-macosx_10_12_x86_64.whl",
+   "has_sig": false,
+   "md5_digest": "78bea4e82e4f54b9688ac8b587da6c40",
+   "packagetype": "bdist_wheel",
+   "python_version": "pp311",
+   "requires_python": ">=3.10",
+   "size": 290711,
+   "upload_time": "2026-10-26T10:55:13",
+   "upload_time_iso_8601": "2026-10-26T10:55:13.836370Z",
+   "url": "https://files.pythonhosted.org/packages/7a/0c/2971bf13e98e2cab194fb43a81c3ffc47d2eaf84d4669d1d5b96ed89d98f/uuid_utils-0.19.0-pp311-pypy311_pp73-macosx_10_12_x86_64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "bf18a446ae37e9489a4dd905c738fcd98a4a49cd3c57ba36b300fc50372162b8",
+    "md5": "9deb0dfdc1cacaa2dfb4d4c060018e0c",
+    "sha256": "0edba30609b6f1d6bc5eb9be5cc90759bf5d0c77f132d2b63fc7c62038b9304e"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-pp311-pypy311_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+   "has_sig": false,
+   "md5_digest": "9deb0dfdc1cacaa2dfb4d4c060018e0c",
+   "packagetype": "bdist_wheel",
+   "python_version": "pp311",
+   "requires_python": ">=3.10",
+   "size": 325610,
+   "upload_time": "2026-10-26T10:55:15",
+   "upload_time_iso_8601": "2026-10-26T10:55:15.237976Z",
+   "url": "https://files.pythonhosted.org/packages/bf/18/a446ae37e9489a4dd905c738fcd98a4a49cd3c57ba36b300fc50372162b8/uuid_utils-0.19.0-pp311-pypy311_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "41ee32ae97908244fdbed279b4c7215fe186891a9aa1fe9d25f6760b4fe415bc",
+    "md5": "27539b09b1bf3e1f296ea67adb628ec9",
+    "sha256": "6e137ad199860077c8cf732b71fc8350dbf4bc5e427c01fb82b27dbddd45e370"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-pp311-pypy311_pp73-manylinux_2_17_armv7l.manylinux2014_armv7l.whl",
+   "has_sig": false,
+   "md5_digest": "27539b09b1bf3e1f296ea67adb628ec9",
+   "packagetype": "bdist_wheel",
+   "python_version": "pp311",
+   "requires_python": ">=3.10",
+   "size": 333087,
+   "upload_time": "2026-10-26T10:55:16",
+   "upload_time_iso_8601": "2026-10-26T10:55:16.728373Z",
+   "url": "https://files.pythonhosted.org/packages/41/ee/32ae97908244fdbed279b4c7215fe186891a9aa1fe9d25f6760b4fe415bc/uuid_utils-0.19.0-pp311-pypy311_pp73-manylinux_2_17_armv7l.manylinux2014_armv7l.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "25f5dc1ad3783eb0409a912d7c87f0f00143b450cb60cecbb9e1648aabc06f30",
+    "md5": "12227f487ada6d0d83c8924b70ddf03f",
+    "sha256": "42f53089ba59a2d1777be98db285aa4948169d434421ee1474ce4615215326ea"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-pp311-pypy311_pp73-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl",
+   "has_sig": false,
+   "md5_digest": "12227f487ada6d0d83c8924b70ddf03f",
+   "packagetype": "bdist_wheel",
+   "python_version": "pp311",
+   "requires_python": ">=3.10",
+   "size": 438894,
+   "upload_time": "2026-10-26T10:55:18",
+   "upload_time_iso_8601": "2026-10-26T10:55:18.202131Z",
+   "url": "https://files.pythonhosted.org/packages/25/f5/dc1ad3783eb0409a912d7c87f0f00143b450cb60cecbb9e1648aabc06f30/uuid_utils-0.19.0-pp311-pypy311_pp73-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "5d4c07bbee76758ee4e425455477120899463eb8e05e5c533eb61c6314bf188c",
+    "md5": "e5f4db4008313652a114a623fa25cef0",
+    "sha256": "b10d689c0f2715502b7d42426947e3bb5c76ac5ba91ae9bd23afc34283189b82"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-pp311-pypy311_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "has_sig": false,
+   "md5_digest": "e5f4db4008313652a114a623fa25cef0",
+   "packagetype": "bdist_wheel",
+   "python_version": "pp311",
+   "requires_python": ">=3.10",
+   "size": 328432,
+   "upload_time": "2026-10-26T10:55:19",
+   "upload_time_iso_8601": "2026-10-26T10:55:19.512901Z",
+   "url": "https://files.pythonhosted.org/packages/5d/4c/07bbee76758ee4e425455477120899463eb8e05e5c533eb61c6314bf188c/uuid_utils-0.19.0-pp311-pypy311_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "0332e95af212190fed2aabf51512552425c7e7082cd1216563530174e9a16f08"
+   },
+   "digests": {
+    "blake2b_256": "14d61e70bbe1c3828fec80b060137f11db69d16b4f40f8ae32526d98b9e604ec",
+    "md5": "64c13b92dde1d58add77f222a44269fd",
+    "sha256": "0da57ba80366ae75307b686376bf437bdc76b3710d52e6ffe012c99a5c800927"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-pp311-pypy311_pp73-manylinux_2_5_i686.manylinux1_i686.whl",
+   "has_sig": false,
+   "md5_digest": "64c13b92dde1d58add77f222a44269fd",
+   "packagetype": "bdist_wheel",
+   "python_version": "pp311",
+   "requires_python": ">=3.10",
+   "size": 351628,
+   "upload_time": "2026-10-26T10:55:20",
+   "upload_time_iso_8601": "2026-10-26T10:55:20.922333Z",
+   "url": "https://files.pythonhosted.org/packages/14/d6/1e70bbe1c3828fec80b060137f11db69d16b4f40f8ae32526d98b9e604ec/uuid_utils-0.19.0-pp311-pypy311_pp73-manylinux_2_5_i686.manylinux1_i686.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "5d1844000e1784068d76cbfb5753cfbb968ab68833b96f41139bbebb714d9244"
+   },
+   "digests": {
+    "blake2b_256": "79df75f58b9ee63449e8f81b1698e9e3cb76efada622e6b5590b329d26242a6b",
+    "md5": "a619f661712f618d875706a4eb4e7bdc",
+    "sha256": "bb0c63bfa8d9af4228353b5c1b06917acf76067674d4d741c31d2117a3db09c5"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0-pp311-pypy311_pp73-win_amd64.whl",
+   "has_sig": false,
+   "md5_digest": "a619f661712f618d875706a4eb4e7bdc",
+   "packagetype": "bdist_wheel",
+   "python_version": "pp311",
+   "requires_python": ">=3.10",
+   "size": 181546,
+   "upload_time": "2026-10-26T10:55:22",
+   "upload_time_iso_8601": "2026-10-26T10:55:22.522314Z",
+   "url": "https://files.pythonhosted.org/packages/79/df/75f58b9ee63449e8f81b1698e9e3cb76efada622e6b5590b329d26242a6b/uuid_utils-0.19.0-pp311-pypy311_pp73-win_amd64.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": false,
+   "digests": {
+    "blake2b_256": "f10fcd9b3e495e514441e9af3a42c5c63436aee620f61412cafcce67e259228b",
+    "md5": "f4c7e172f1c22415fb0b89f588af5f61",
+    "sha256": "4b2996bb9d12da9b62f6f4c64a066b26926fa75dbe47b4f8e309e24e187abf1d"
+   },
+   "downloads": -1,
+   "filename": "uuid_utils-0.19.0.tar.gz",
+   "has_sig": false,
+   "md5_digest": "f4c7e172f1c22415fb0b89f588af5f61",
+   "packagetype": "sdist",
+   "python_version": "source",
+   "requires_python": ">=3.10",
+   "size": 43343,
+   "upload_time": "2026-10-26T10:55:23",
+   "upload_time_iso_8601": "2026-10-26T10:55:23.821370Z",
+   "url": "https://files.pythonhosted.org/packages/f1/0f/cd9b3e495e514441e9af3a42c5c63436aee620f61412cafcce67e259228b/uuid_utils-0.19.0.tar.gz",
+   "yanked": false,
+   "yanked_reason": null
+  }
+ ],
+ "vulnerabilities": []
+}

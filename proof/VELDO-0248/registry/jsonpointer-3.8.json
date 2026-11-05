@@ -1,0 +1,131 @@
+{
+ "info": {
+  "author": "Stefan K\u00f6gl",
+  "author_email": "stefan@skoegl.net",
+  "bugtrack_url": null,
+  "classifiers": [
+   "Development Status :: 5 - Production/Stable",
+   "Environment :: Console",
+   "Intended Audience :: Developers",
+   "License :: OSI Approved :: BSD License",
+   "Operating System :: OS Independent",
+   "Programming Language :: Python",
+   "Programming Language :: Python :: 3",
+   "Programming Language :: Python :: 3.10",
+   "Programming Language :: Python :: 3.11",
+   "Programming Language :: Python :: 3.12",
+   "Programming Language :: Python :: 3.13",
+   "Programming Language :: Python :: 3.14",
+   "Programming Language :: Python :: Implementation :: CPython",
+   "Programming Language :: Python :: Implementation :: PyPy",
+   "Topic :: Software Development :: Libraries",
+   "Topic :: Utilities",
+   "Typing :: Typed"
+  ],
+  "description": "python-json-pointer\n===================\n\n[![PyPI version](https://img.shields.io/pypi/v/jsonpointer.svg)](https://pypi.python.org/pypi/jsonpointer/)\n[![Supported Python versions](https://img.shields.io/pypi/pyversions/jsonpointer.svg)](https://pypi.python.org/pypi/jsonpointer/)\n[![Tests](https://github.com/stefankoegl/python-json-pointer/actions/workflows/test.yaml/badge.svg?branch=master)](https://github.com/stefankoegl/python-json-pointer/actions/workflows/test.yaml)\n[![Coverage Status](https://coveralls.io/repos/github/stefankoegl/python-json-pointer/badge.svg?branch=master)](https://coveralls.io/github/stefankoegl/python-json-pointer?branch=master)\n\n\nResolve JSON Pointers in Python\n-------------------------------\n\nLibrary to resolve JSON Pointers according to\n[RFC 6901](http://tools.ietf.org/html/rfc6901)\n\nSee source code for examples\n* Website: https://github.com/stefankoegl/python-json-pointer\n* Repository: https://github.com/stefankoegl/python-json-pointer.git\n* Documentation: https://python-json-pointer.readthedocs.org/\n* PyPI: https://pypi.python.org/pypi/jsonpointer\n* GitHub Actions: https://github.com/stefankoegl/python-json-pointer/actions\n* Coveralls: https://coveralls.io/github/stefankoegl/python-json-pointer\n",
+  "description_content_type": "text/markdown",
+  "docs_url": null,
+  "download_url": null,
+  "downloads": {
+   "last_day": -1,
+   "last_month": -1,
+   "last_week": -1
+  },
+  "dynamic": [
+   "Author",
+   "Author-Email",
+   "Classifier",
+   "Description",
+   "Description-Content-Type",
+   "Home-Page",
+   "License",
+   "License-File",
+   "Requires-Python",
+   "Summary"
+  ],
+  "home_page": "https://github.com/stefankoegl/python-json-pointer",
+  "keywords": null,
+  "license": "Modified BSD License",
+  "license_expression": null,
+  "license_files": [
+   "LICENSE.txt",
+   "AUTHORS"
+  ],
+  "maintainer": null,
+  "maintainer_email": null,
+  "name": "jsonpointer",
+  "package_url": "https://pypi.org/project/jsonpointer/",
+  "platform": null,
+  "project_url": "https://pypi.org/project/jsonpointer/",
+  "project_urls": {
+   "Homepage": "https://github.com/stefankoegl/python-json-pointer"
+  },
+  "provides_extra": null,
+  "release_url": "https://pypi.org/project/jsonpointer/3.8/",
+  "requires_dist": null,
+  "requires_python": ">=3.10",
+  "summary": "Identify specific nodes in a JSON document (RFC 6901) ",
+  "version": "3.8",
+  "yanked": false,
+  "yanked_reason": null
+ },
+ "last_serial": 43110405,
+ "ownership": {
+  "organization": null,
+  "roles": [
+   {
+    "role": "Owner",
+    "user": "skoegl"
+   }
+  ]
+ },
+ "urls": [
+  {
+   "comment_text": null,
+   "core-metadata": {
+    "sha256": "bd3bbc517d3042b7d7595f54c657ec500ea39b113f3c8c611f45439a910ef112"
+   },
+   "digests": {
+    "blake2b_256": "766120f3a497beac4c8f869b8161b468b31c0f05d9d73600da0313eb759bad8a",
+    "md5": "e1d906671aa73003eb12fbfc8434d6d8",
+    "sha256": "d69af85adaea202111bbc931067ead68dc16bca4592c74e1a1953152e2a330ab"
+   },
+   "downloads": -1,
+   "filename": "jsonpointer-3.8-py3-none-any.whl",
+   "has_sig": false,
+   "md5_digest": "e1d906671aa73003eb12fbfc8434d6d8",
+   "packagetype": "bdist_wheel",
+   "python_version": "py3",
+   "requires_python": ">=3.10",
+   "size": 10233,
+   "upload_time": "2026-11-02T21:52:17",
+   "upload_time_iso_8601": "2026-11-02T21:52:17.617464Z",
+   "url": "https://files.pythonhosted.org/packages/76/61/20f3a497beac4c8f869b8161b468b31c0f05d9d73600da0313eb759bad8a/jsonpointer-3.8-py3-none-any.whl",
+   "yanked": false,
+   "yanked_reason": null
+  },
+  {
+   "comment_text": null,
+   "core-metadata": false,
+   "digests": {
+    "blake2b_256": "c2cf5d665216bd9dea19dd26ea93ca525ef02936a9cccd0cd856f8408eb77f0b",
+    "md5": "3a374c70523eb15a0b75ed465a2ee5f3",
+    "sha256": "a627a255641390bfb4d51d4cfbb90648078ae855b45804ef7e19ea13a4cca355"
+   },
+   "downloads": -1,
+   "filename": "jsonpointer-3.8.tar.gz",
+   "has_sig": false,
+   "md5_digest": "3a374c70523eb15a0b75ed465a2ee5f3",
+   "packagetype": "sdist",
+   "python_version": "source",
+   "requires_python": ">=3.10",
+   "size": 19212,
+   "upload_time": "2026-11-02T21:52:18",
+   "upload_time_iso_8601": "2026-11-02T21:52:18.838868Z",
+   "url": "https://files.pythonhosted.org/packages/c2/cf/5d665216bd9dea19dd26ea93ca525ef02936a9cccd0cd856f8408eb77f0b/jsonpointer-3.8.tar.gz",
+   "yanked": false,
+   "yanked_reason": null
+  }
+ ],
+ "vulnerabilities": []
+}

@@ -1,0 +1,72 @@
+{
+ "info": {
+  "author": "Stefan K\u00f6gl",
+  "author_email": "stefan@skoegl.net",
+  "bugtrack_url": null,
+  "classifiers": [
+   "Development Status :: 5 - Production/Stable",
+   "Environment :: Console",
+   "Intended Audience :: Developers",
+   "License :: OSI Approved :: BSD License",
+   "Operating System :: OS Independent",
+   "Programming Language :: Python",
+   "Programming Language :: Python :: 3",
+   "Programming Language :: Python :: 3.10",
+   "Programming Language :: Python :: 3.11",
+   "Programming Language :: Python :: 3.12",
+   "Programming Language :: Python :: 3.13",
+   "Programming Language :: Python :: 3.14",
+   "Programming Language :: Python :: Implementation :: CPython",
+   "Programming Language :: Python :: Implementation :: PyPy",
+   "Topic :: Software Development :: Libraries",
+   "Topic :: Utilities",
+   "Typing :: Typed"
+  ],
+  "description": "python-json-pointer\n===================\n\n[![PyPI version](https://img.shields.io/pypi/v/jsonpointer.svg)](https://pypi.python.org/pypi/jsonpointer/)\n[![Supported Python versions](https://img.shields.io/pypi/pyversions/jsonpointer.svg)](https://pypi.python.org/pypi/jsonpointer/)\n[![Tests](https://github.com/stefankoegl/python-json-pointer/actions/workflows/test.yaml/badge.svg?branch=master)](https://github.com/stefankoegl/python-json-pointer/actions/workflows/test.yaml)\n[![Coverage Status](https://coveralls.io/repos/github/stefankoegl/python-json-pointer/badge.svg?branch=master)](https://coveralls.io/github/stefankoegl/python-json-pointer?branch=master)\n\n\nResolve JSON Pointers in Python\n-------------------------------\n\nLibrary to resolve JSON Pointers according to\n[RFC 6901](http://tools.ietf.org/html/rfc6901)\n\nSee source code for examples\n* Website: https://github.com/stefankoegl/python-json-pointer\n* Repository: https://github.com/stefankoegl/python-json-pointer.git\n* Documentation: https://python-json-pointer.readthedocs.org/\n* PyPI: https://pypi.python.org/pypi/jsonpointer\n* GitHub Actions: https://github.com/stefankoegl/python-json-pointer/actions\n* Coveralls: https://coveralls.io/github/stefankoegl/python-json-pointer\n",
+  "description_content_type": "text/markdown",
+  "docs_url": null,
+  "download_url": null,
+  "downloads": {
+   "last_day": -1,
+   "last_month": -1,
+   "last_week": -1
+  },
+  "dynamic": [
+   "Author",
+   "Author-Email",
+   "Classifier",
+   "Description",
+   "Description-Content-Type",
+   "Home-Page",
+   "License",
+   "License-File",
+   "Requires-Python",
+   "Summary"
+  ],
+  "home_page": "https://github.com/stefankoegl/python-json-pointer",
+  "keywords": null,
+  "license": "Modified BSD License",
+  "license_expression": null,
+  "license_files": [
+   "LICENSE.txt",
+   "AUTHORS"
+  ],
+  "maintainer": null,
+  "maintainer_email": null,
+  "name": "jsonpointer",
+  "package_url": "https://pypi.org/project/jsonpointer/",
+  "platform": null,
+  "project_url": "https://pypi.org/project/jsonpointer/",
+  "project_urls": {
+   "Homepage": "https://github.com/stefankoegl/python-json-pointer"
+  },
+  "provides_extra": null,
+  "release_url": "https://pypi.org/project/jsonpointer/3.8/",
+  "requires_dist": null,
+  "requires_python": ">=3.10",
+  "summary": "Identify specific nodes in a JSON document (RFC 6901) ",
+  "version": "3.8",
+  "yanked": false,
+  "yanked_reason": null
+ }
+}
