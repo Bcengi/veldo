@@ -7,7 +7,7 @@ risk: high
 owner: dmitry
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0251, VELDO-0252, VELDO-0253, VELDO-0254]
+depends_on: [VELDO-0251, VELDO-0252, VELDO-0253]
 placement: [engine, distribution]
 protected_paths: [".veldo/pins/gate.json", "engine/.veldo/pins/gate.json"]
 footprint:
@@ -60,8 +60,7 @@ acceptance_criteria:
       control_service installs the API), each started with the authority, stopped with it, restarted on
       failure with a bounded backoff, and started only after VELDO-0252's pin and version checks pass; each
       listen address and port is read from the installation's ports kind (VELDO-0253) and an absent one
-      refuses setup as port_not_declared:<unit>. The relay stays per dispatch in the launcher (VELDO-0251,
-      VELDO-0254). A second setup run with the same values changes nothing. Rows: setup creates both units
+      refuses setup as port_not_declared:<unit>. A second setup run with the same values changes nothing. Rows: setup creates both units
       with the declared ports; stopping the authority stops both; killing the gate's process restarts it;
       a second setup run leaves the unit files byte for byte unchanged.
     falsified_by: >
@@ -100,11 +99,11 @@ acceptance_criteria:
     text: >
       Claim: a host missing what the gate needs is refused at setup by name, and the installation guide
       lists the prerequisites. Set: setup checks the keystore's command-line tool and a reachable keystore
-      service (the gate's credentials and grants live there, VELDO-0252), and the sandbox setup of
-      VELDO-0254, and refuses each missing one as prerequisite_missing:<name> with the command the owner
-      runs; docs/outside-services.md lists each prerequisite and its check. Rows: setup on a fixture host
-      without the keystore tool, and on one without the sandbox setup, is refused by name and installs no
-      unit; the guide names each prerequisite setup checks.
+      service (the gate's credentials and grants live there, VELDO-0252), and refuses each missing one as prerequisite_missing:<name> with the command the owner
+      runs; docs/outside-services.md lists each prerequisite and its check. No confinement setup is a
+      prerequisite. Rows: setup on a fixture host without the keystore tool, and on one without a reachable
+      keystore service, is refused by name and installs no unit; setup on a host without any confinement
+      setup installs both units; the guide names each prerequisite setup checks.
     falsified_by: >
       Skip the keystore tool check; the missing-tool row installs the units and the first grant fails at use
       instead of at setup.
@@ -158,3 +157,7 @@ prerequisite checks with the owner's command named.
 C12) and the lead's rulings research/veldo-plan-rulings-2026-11-04.md (R1 for ports in the installation,
 R6 for notices through Veldo's own channel). Not absorbed by VELDO-0252, whose four criteria cover
 verification and grants, not supervision. Standalone; no plan work item.
+
+2026-11-05: Telegram 39154 and 39155, revised rulings R5, R7 and R14 (no mandatory sandbox): the dependency
+on VELDO-0254, the per-dispatch relay sentence and the sandbox setup prerequisite of AC4 are removed; no
+confinement setup is a prerequisite of the gate.

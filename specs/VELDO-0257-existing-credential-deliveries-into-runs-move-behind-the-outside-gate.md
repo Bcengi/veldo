@@ -7,7 +7,7 @@ risk: critical
 owner: dmitry
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0158, VELDO-0177, VELDO-0181, VELDO-0183, VELDO-0249, VELDO-0251, VELDO-0252, VELDO-0254, VELDO-0256]
+depends_on: [VELDO-0158, VELDO-0177, VELDO-0181, VELDO-0183, VELDO-0249, VELDO-0251, VELDO-0252, VELDO-0254]
 placement: [engine, enforcement, distribution]
 protected_paths: [".veldo/control_credential_delivery.py", "engine/.veldo/control_credential_delivery.py"]
 footprint:
@@ -49,38 +49,36 @@ observability:
     VELDO-0252 and the gate access line of the dispatch that sent it.
   error_taxonomy: >
     unsupported_configuration:credential_in_run:<record> (VELDO-0251 AC2; a run selecting a record that
-    carries a keychain reference), approval_required (a write a turn sent with no settled decision),
-    memory_socket_refused (a run's attempt to reach a host store server directly). No other new names.
+    carries a keychain reference), approval_required (a write a turn sent with no settled decision). No
+    other new names.
 acceptance_criteria:
   - id: AC1
     text: >
-      Claim: a conversation turn reaches its role's credentialed servers and the web only through the gate,
-      with no credential and no direct network in the run. Set: the delivery of VELDO-0158 that VELDO-0177
+      Claim: a conversation turn reaches its role's credentialed servers only through the gate, with no
+      credential in the run. Set: the delivery of VELDO-0158 that VELDO-0177
       AC1 uses for conversation runs no longer resolves keystore references into the run; each catalog
       record with a keychain reference is served behind the gate and the turn reaches it through
-      VELDO_SERVICE_<NAME>_URL or the gate MCP endpoint; the assistant roles' web fetch uses the read route
-      of VELDO-0256, and an engine's own sandbox network grant for a role is off. Completeness: every
-      conversation and project launch path reads the same selection. Rows, on each engine: the fixture
-      engine finds no credential file and no canary value anywhere it can read; a turn's tool call to a
-      credentialed fixture server answers through the gate; a turn fetches a fixture page through the
-      read route; a direct fetch fails.
+      VELDO_SERVICE_<NAME>_URL or the gate MCP endpoint. The assistant roles keep their web fetch and
+      network access as today. Completeness: every conversation and project launch path reads the same
+      selection. Rows, on each engine: the fixture engine finds no credential file and no canary value
+      anywhere it can read; a turn's tool call to a credentialed fixture server answers through the gate;
+      a turn fetches a fixture page as before.
     falsified_by: >
       Keep VELDO-0158's resolution for conversation runs; the canary scan row finds the fixture credential
       in the run and fails.
   - id: AC2
     text: >
-      Claim: memory servers an installation declares are services behind the gate, their store secrets stay
-      gate side, and no run reaches a store server or a host loopback service directly. Set: each memory
-      server of VELDO-0183 that carries a credential reference or reaches a host store server (over a Unix
-      socket or host loopback) runs behind the gate as an MCP service; its passphrase-style credential is
-      resolved gate side; the run reaches only the gate endpoint. Each tool is classified by VELDO-0251 AC3:
+      Claim: memory servers an installation declares with a credential are services behind the gate, and
+      their store secrets stay gate side. Set: each memory server of VELDO-0183 that carries a credential
+      reference runs behind the gate as an MCP service; its passphrase-style credential is resolved gate
+      side and never enters the run. Runs keep their access to host and loopback services as today; no
+      socket or port is fenced. Each tool is classified by VELDO-0251 AC3:
       a tool the installation wants to pass without per-call approval is a reviewed exact read override,
       and a tool with no such override is a write. Rows: a run's memory search and add through the gate
-      answer from the one fixture store; the run's connect to the store server's socket path and to the
-      session-history worker's loopback port fail; the passphrase canary appears nowhere in the run; an
-      unannotated tool with no override asks for approval.
+      answer from the one fixture store; the passphrase canary appears nowhere in the run; an unannotated
+      tool with no override asks for approval.
     falsified_by: >
-      Keep the stdio bridge in the run reaching the store server's socket; the socket row connects and
+      Keep resolving the passphrase into the in-run stdio bridge; the canary row finds it in the run and
       fails.
   - id: AC3
     text: >
@@ -132,8 +130,8 @@ the gate and removes the old path, so no credential but the engine's own login i
   store servers over a Unix socket; its session-history server needs a worker on host loopback.
 - VELDO-0181's out-of-scope text lets the owner's plain reply be the next turn, with the tool acting
   through its own configured credentials.
-- VELDO-0251 AC2 refuses a credential-bearing record in a run; VELDO-0254 closes every direct path out;
-  VELDO-0256 gives runs their web reads back through the gate.
+- VELDO-0251 AC2 refuses a credential-bearing record in a run; VELDO-0254 makes no credential delivery
+  into a run a checked rule and reports leaked credentials. Runs keep today's network access.
 - An installation moving to the gate usually has other programs on the host that use the same vendor
   credentials from their own files; Veldo does not launch them and must not break them.
 
@@ -145,16 +143,16 @@ same exact-request approval as every other write, sent by the next dispatch.
 
 ## Out of scope
 
-- The gate, the check, the approval service and the read routes themselves.
+- The gate, the check and the approval service themselves.
 - Retiring host programs' own credential copies, which is installation practice the guide describes.
 - Changing what memory servers store or how they serialize writes.
 
 ## What the reviewer judges
 
 - Normal use: after landing, a conversation on each engine searches memory, reads a credentialed service,
-  fetches a page and asks for one write that the owner approves, all with no credential in the run, while
+  fetches a page as before and asks for one write that the owner approves, all with no credential in the run, while
   the owner's other host programs keep working.
-- Threat model: a credential left in a run by a path not migrated, a run reaching a store server's socket,
+- Threat model: a credential left in a run by a path not migrated, a store passphrase resolved into a run,
   a plain reply taken as approval, a migration that edits another program's credential file.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962).
 
@@ -165,3 +163,8 @@ A6, A10, A13, A14, C4 for VELDO-0181, C8, C13, C21, D9, E2) and the lead's rulin
 research/veldo-plan-rulings-2026-11-04.md (R2: VELDO-0177, VELDO-0183 and VELDO-0181 land as built and one
 ticket migrates them after VELDO-0251 and VELDO-0252; R5 memory services behind the gate; R7). Standalone;
 no plan work item.
+
+2026-11-05: Telegram 39154 and 39155, revised rulings R5, R7 and R14 (no mandatory sandbox): AC1 no longer
+requires the web read route, the engine network grant off or a failing direct fetch; AC2 keeps memory store
+secrets behind the gate but no longer fences a run from host store sockets or loopback ports, and its
+memory_socket_refused name is removed; the dependency on VELDO-0256 is removed.

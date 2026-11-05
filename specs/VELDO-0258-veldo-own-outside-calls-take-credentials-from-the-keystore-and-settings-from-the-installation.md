@@ -85,9 +85,10 @@ acceptance_criteria:
       makes an outside call for the control plane (tracker, provisioner, landing push, the owner's channel,
       the doorbell) with its destination kind; a static row fails on an outside call from any other engine
       module as control_plane_call_unregistered:<module>; each listed module runs only in the service
-      process, never in a launch of VELDO-0254, and messages and files Veldo sends the owner through its own
+      process, never in a run, and messages and files Veldo sends the owner through its own
       channel need no per-call approval. Rows: the static row passes on the register and fails on a planted
-      call in another module; a run that tries a listed module's destination finds no route out; a landing
+      call in another module; a run's files, environment and command line hold no canary for any listed
+      module's credential (VELDO-0254 AC1); a landing
       push from the control plane reaches a fixture remote with no gate call.
     falsified_by: >
       Drop the static row's scan of unregistered modules; the planted-call row passes where it must fail.
@@ -113,7 +114,7 @@ unnoticed.
   doorbell reuses it for its own token.
 - The product ships trackers.json with routing an installation fills in.
 - VELDO-0253 declares the installation schema; every spec adds its kinds there.
-- VELDO-0254 gives runs no route to these destinations.
+- Runs hold no credential for these destinations (VELDO-0254); they are not fenced from the network.
 
 ## Design
 
@@ -131,7 +132,7 @@ installation schema, and one register with a static row.
 - Normal use: an installation declares its tracker in its repository, stores the token in the keystore,
   and the mirror works; the owner's channel and doorbell work as before.
 - Threat model: a token in the environment silently used, routing read from a product file, a new outside
-  call added to an unlisted module, a run reaching a control-plane destination.
+  call added to an unlisted module, a control-plane credential found in a run.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962).
 
 ## History
@@ -141,3 +142,7 @@ and the lead's rulings research/veldo-plan-rulings-2026-11-04.md (R6: the contro
 gate; R1: tracker and doorbell kinds join VELDO-0253's schema). It decides only where the tracker's
 credentials and settings come from, not whether the unreviewed tracker code on another branch (review D10)
 lands. Standalone; no plan work item.
+
+2026-11-05: Telegram 39154 and 39155, revised rulings R5, R7 and R14 (no mandatory sandbox): AC3 no longer
+says a run finds no route to a control-plane destination; it checks instead that no run holds a credential
+for one (VELDO-0254 AC1), and the Context and threat model say the same.
