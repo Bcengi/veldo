@@ -29,6 +29,7 @@ def _v260_suite():
     import sys
     import tempfile
     import time
+    import types
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -36,9 +37,9 @@ def _v260_suite():
         'control_landing_station.py': ROOT / ".veldo" / "control_landing_station.py",
     }
     ROWS = ('unit/set', 'unit/in-progress', 'unit/locked', 'set/main', 'set/linked', 'set/detached', 'move/clean',
-            'move/untracked-ignored', 'move/lost-swap', 'dirty/edited', 'dirty/staged', 'dirty/unmovable',
-            'dirty/reland', 'none/other-branch', 'observe/metrics')
-    (US, UP, UL, SM, SL, SD, MC, MU, ML, DE, DS, DU, DR, NO, OM) = ROWS
+            'move/untracked-ignored', 'move/lost-swap', 'move/restore-failed', 'dirty/edited', 'dirty/staged',
+            'dirty/unmovable', 'dirty/reland', 'dirty/waits', 'none/other-branch', 'observe/metrics')
+    (US, UP, UL, SM, SL, SD, MC, MU, ML, MR, DE, DS, DU, DR, DW, NO, OM) = ROWS
     rows = {name: [] for name in ROWS}
     started = time.monotonic()
 
@@ -200,8 +201,9 @@ def _v260_suite():
                 return 'CHECK_%s="na:fixture"' % match.group(1)
             return re.sub(r'(?m)^CHECK_([A-Za-z0-9_]+)=".*"$', declare, text)
 
-        MAIN, LINKED, DETACHED, OTHER, LOST, EDIT, STAGED, LOCKED = ('VELDO-97%02d' % n for n in range(1, 9))
-        UNITS = (MAIN, LINKED, DETACHED, OTHER, LOST, EDIT, STAGED, LOCKED)
+        MAIN, LINKED, DETACHED, OTHER, LOST, EDIT, STAGED, LOCKED, RESTORE, WAIT = (
+            'VELDO-97%02d' % n for n in range(1, 11))
+        UNITS = (MAIN, LINKED, DETACHED, OTHER, LOST, EDIT, STAGED, LOCKED, RESTORE, WAIT)
         seed = base / 'seed'
         seed.mkdir()
         GP.run(['git', 'init', '-q', '-b', 'main', str(seed)], check=True, capture_output=True)
@@ -378,6 +380,36 @@ def _v260_suite():
             except LS.Refused as error:
                 return {'state': 'not_opened', 'refusal': error.code, 'unit': sid}
 
+        # The real loop's side of a land (VELDO-0148): the service's own Line.next, after_land and reland, and the
+        # FactoryLoop's wake, over this station. A pass is made for each wake, and a pass the line itself woke
+        # is followed at once by the next, as FactoryLoop.run does; `gated` names every land that rebuilt and
+        # gated a candidate (lander.veldo_land).
+        CSV = load('v260_service', mods / 'control_service.py')
+        CSV.LS = LS
+        loop = CSV.FactoryLoop.__new__(CSV.FactoryLoop)
+        loop.wakes, loop.ended, loop.timer = [], [], None
+        line = CSV.Line.__new__(CSV.Line)
+        line.loop, line.station, line.repository, line.roles = loop, station, REPO, {}
+        line.service = types.SimpleNamespace(conn=writer, principal='authority')
+        line.claim_of = lambda unit: ('builder-a', 1)
+        gated, veldo_land = [], LS.LD.veldo_land
+
+        def counted(ops, subject, **kwargs):
+            gated.append((subject or {}).get('spec'))
+            return veldo_land(ops, subject, **kwargs)
+        LS.LD.veldo_land = counted
+
+        def drive(sid, wakes, cap=6):
+            made = []
+            for source in wakes:
+                loop.wake(source)
+                while loop.wakes and len(made) < cap:
+                    loop.wakes = []
+                    report = {'offered': [], 'refused': [], 'lands': [], 'waiting': [], 'asked': []}
+                    line.next(sid, {}, report)
+                    made.append(report)
+            return made
+
         def effect(dispatch):
             got = row('effect:' + str(dispatch))
             return got['data'] if got and got['kind'] == 'protected_effect' else {}
@@ -505,6 +537,46 @@ def _v260_suite():
         check(ML, 'the effect names the tree restored after the lost swap [%s]' % mine.get('checkouts'),
               [(real(c.get('path')), c.get('outcome')) for c in mine.get('checkouts') or []] == [(real(caller), 'restored')])
 
+        # AC2: a lost swap whose rollback of a moved tree fails is its own stop, never a re-land.
+        git(caller, 'checkout', '-q', 'main')
+        old_tip, lost = local_tip(), {}
+        lock = Path(git(caller, 'rev-parse', '--absolute-git-dir')) / 'index.lock'
+
+        def lose_and_jam(ops):
+            landing = ops.landing
+            run = landing._git
+
+            def racing(repo, *args, **kwargs):
+                if args and args[0] == 'update-ref' and 'commit' not in lost:
+                    lost['commit'] = git(caller, 'commit-tree', old_tip + '^{tree}', '-p', old_tip, '-m',
+                                         'Another commit on the local main')
+                    git(caller, 'update-ref', 'refs/heads/main', lost['commit'], old_tip)
+                    answer = run(repo, *args, **kwargs)
+                    lock.write_text('')
+                    return answer
+                return run(repo, *args, **kwargs)
+            landing._git = racing
+        hooks[RESTORE] = lose_and_jam
+        before_gates = len(gated)
+        stuck = land(RESTORE)
+        mine, observed = effect(stuck.get('dispatch_id')), stuck.get('observed') or {}
+        check(MR, 'the failed rollback ends the land unknown, refused as trunk_checkout_restore_failed:<working tree> '
+              '[%s]' % summary(stuck), stuck.get('state') == 'unknown'
+              and stuck.get('refusal') == 'trunk_checkout_restore_failed:' + str(caller))
+        check(MR, 'the effect records its own refusal and the tree whose rollback failed [%s %s]'
+              % (mine.get('refusal'), mine.get('checkouts')), mine.get('refusal') == 'trunk_checkout_restore_failed'
+              and [(real(c.get('path')), c.get('outcome')) for c in mine.get('checkouts') or []]
+              == [(real(caller), 'restore_failed')] and LG.checkout_outcome(mine) == 'restore_failed')
+        brief = str(observed.get('brief') or '')
+        check(MR, 'the owner\'s brief names the tree and says it was not put back [%s]' % brief,
+              str(caller) in brief and 'not put back' in brief and observed.get('working_tree') == str(caller))
+        loop.wakes = []
+        passes = drive(RESTORE, ['run_end', 'journal'])
+        check(MR, 'the loop never re-lands it [%d passes, %d gated]' % (len(passes), len(gated) - before_gates - 1),
+              len(passes) == 2 and len(gated) == before_gates + 1 and len(station.records(RESTORE)) == 1)
+        lock.unlink()
+        git(caller, 'reset', '-q', '--hard', 'main')
+
         # AC3: an edited tracked file refuses by name, nothing moves; discarded, the re-land lands.
         git(caller, 'checkout', '-q', 'main')
         (caller / 'README.md').write_text('a local edit\n')
@@ -551,6 +623,33 @@ def _v260_suite():
               relanded.get('state') == 'landed' and local_tip() == candidate_of(relanded)
               and (caller / 'README.md').read_bytes() == staged)
 
+        # AC3 through the real loop: while the tree stays dirty no pass rebuilds or gates; once clean, one re-land.
+        git(caller, 'checkout', '-q', 'main')
+        (caller / 'README.md').write_text('an edit the loop waits on\n')
+        tip_before, edited = local_tip(), (caller / 'README.md').read_bytes()
+        refused = land(WAIT)
+        before_gates = len(gated)
+        passes = drive(WAIT, ['run_end', 'journal', 'journal'])
+        waits = [r for p in passes for r in p['refused']]
+        check(DW, 'the first land was refused for the dirty tree [%s]' % summary(refused),
+              refused.get('state') == 'trunk_moved' and refused.get('refusal') == name)
+        check(DW, 'while the tree stays dirty each wake makes one pass and no pass wakes the next [%d passes]'
+              % len(passes), len(passes) == 3 and not loop.wakes)
+        check(DW, 'no pass rebuilt or gated a candidate or opened a land [%d gated, %d records]'
+              % (len(gated) - before_gates, len(station.records(WAIT))),
+              len(gated) == before_gates and len(station.records(WAIT)) == 1)
+        check(DW, 'each pass names the wait by the tree [%s]' % [w.get('refusals') for w in waits],
+              len(waits) == 3 and all(w.get('refusals') == [name] for w in waits))
+        check(DW, 'the trunk and the edited file are unchanged',
+              local_tip() == tip_before and (caller / 'README.md').read_bytes() == edited)
+        git(caller, 'checkout', '-q', '--', 'README.md')
+        passes = drive(WAIT, ['journal', 'journal'])
+        records = station.records(WAIT)
+        check(DW, 'once clean, exactly one re-land, which lands and moves the tree [%s]'
+              % [summary(r) for r in records], len(gated) == before_gates + 1 and len(records) == 2
+              and records[-1].get('state') == 'landed' and records[-1].get('follows') == refused.get('dispatch_id')
+              and in_step(caller, local_tip()) and len(passes) == 2)
+
         # error taxonomy: a tree that cannot be moved (its index locked) refuses as unmovable.
         git(caller, 'checkout', '-q', 'main')
         lock = Path(git(caller, 'rev-parse', '--absolute-git-dir')) / 'index.lock'
@@ -561,23 +660,34 @@ def _v260_suite():
               refused.get('state') == 'trunk_moved' and refused.get('refusal') == 'trunk_checkout_unmovable:' + str(caller))
         check(DU, 'the trunk ref and every file are unchanged',
               local_tip() == tip_before and files(caller) == locked_files)
+        brief = str((refused.get('observed') or {}).get('brief') or '')
+        check(DU, 'the brief states the actual reason and what clears it, not that the tree has changes [%s]' % brief,
+              str(caller) in brief and 'index.lock' in brief and 'is removed' in brief
+              and 'until it is clean' not in brief)
+        before_gates = len(gated)
+        passes = drive(LOCKED, ['run_end', 'journal'])
+        check(DU, 'while the lock stays no pass rebuilds or gates [%d passes, %d gated]'
+              % (len(passes), len(gated) - before_gates), len(passes) == 2 and len(gated) == before_gates
+              and len(station.records(LOCKED)) == 1)
         lock.unlink()
-        relanded = land(LOCKED, follows=refused.get('dispatch_id'))
-        check(DU, 'with the lock gone, the re-land lands and moves the tree [%s]' % summary(relanded),
-              relanded.get('state') == 'landed' and in_step(caller, local_tip()))
+        passes = drive(LOCKED, ['journal'])
+        records = station.records(LOCKED)
+        check(DU, 'with the lock gone, one re-land lands and moves the tree [%s]' % [summary(r) for r in records],
+              len(records) == 2 and records[-1].get('state') == 'landed' and in_step(caller, local_tip())
+              and len(gated) == before_gates + 1)
 
         # observability: the publication events and the counts by working-tree outcome.
         published = [e for e in events if e.get('operation') == 'local_publication']
         check(OM, 'every local publication event names its working trees and their outcome [%s]'
               % [e.get('checkout_outcome') for e in published],
-              len(published) == 11 and all('checkouts' in e and e.get('checkout_outcome') for e in published)
+              len(published) == 14 and all('checkouts' in e and e.get('checkout_outcome') for e in published)
               and all(set(c) <= {'path', 'clean', 'outcome', 'changes', 'in_progress', 'reason'}
                       for e in published for c in e['checkouts']))
         counted = landings[-1].status().get('checkouts') or {}
         check(OM, 'the counts by working-tree outcome [%s]' % counted,
-              counted.get('none_checked_out') == 3 and counted.get('moved_with_trunk') == 4
-              and counted.get('refused_local_changes') == 2 and counted.get('refused_unmovable') == 1
-              and counted.get('restored_after_lost_swap') == 1)
+              counted.get('none_checked_out') == 3 and counted.get('moved_with_trunk') == 5
+              and counted.get('refused_local_changes') == 3 and counted.get('refused_unmovable') == 1
+              and counted.get('restored_after_lost_swap') == 1 and counted.get('restore_failed') == 1)
 
     try:
         with tempfile.TemporaryDirectory(prefix='v260-', dir=fast) as directory, contextlib.ExitStack() as wired:
