@@ -12167,6 +12167,16 @@ def cases():
         "            if 'bare' in entry or (entry.get('branch') != self.ref and entry is not entries[0])"
         " or not _text(entry.get('worktree')):  # defect: the main tree is always taken\n",
         ['none/other-branch'])
+    # Fix round 1 (AC3, F1): the re-land does not wait for the tree, so every loop pass rebuilds and gates again.
+    add(260, 'step260-reland-spins', step260, 'control_landing_station.py',
+        "            self._checkout_wait(unit, follows, ops.landing)\n",
+        "            pass  # defect: the re-land does not wait for the working tree\n",
+        ['dirty/waits'])
+    # Fix round 1 (AC2, F3): a moved tree that could not be put back is recorded as a lost swap, re-landed.
+    add(260, 'step260-restore-failed-relands', step260, 'control_landing.py',
+        "                unrestored = next((c for c in trees if c['outcome'] == 'restore_failed'), None)\n",
+        "                unrestored = None  # defect: a failed rollback ends as trunk-moved\n",
+        ['move/restore-failed'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

@@ -81,9 +81,15 @@ two-tree merge (`git read-tree -m -u <old> <new>`), which touches only the files
 leaves untracked and ignored files as they were, and the ref is swapped. A tree that cannot be moved (its index
 locked, a file that cannot be written) refuses as trunk_checkout_unmovable:<working tree>, and a swap that loses
 (trunk-moved) puts every tree it moved back on the old tip. Both refusals end the land dispatch as trunk_moved,
-so the land station re-lands it (VELDO-0148), and each carries the brief the owner reads: the working tree, and
-that the landing waits until it is clean. A repository where no tree has the trunk checked out lands exactly as
-above, with no working tree read or written.
+and each carries the brief the owner reads: the working tree, and what holds it (its local changes, or the
+actual reason it cannot be moved and what clears that). The re-land (VELDO-0148) waits for the cause to be gone:
+before it opens a land, rebuilds or gates anything, the land station asks checkout_held, a cheap read of the
+working trees (their status, an index lock, whether the directories the move writes can be written), and while
+a tree is still held it refuses with nothing run and the next pass asks again; once nothing holds, one re-land
+runs. A moved tree that cannot be put back after a lost swap is its own stop,
+trunk_checkout_restore_failed:<working tree> (an unknown outcome, never re-landed), with the tree named and a
+brief that tells the owner it was not put back. A repository where no tree has the trunk checked out lands
+exactly as above, with no working tree read or written.
 
 WHAT IT IS NOT. Release 1 function only: a lost or ambiguous publication stays stopped under its
 original identity with no recovery (Release 2), the receipt is replicated only into the local signed
@@ -141,7 +147,7 @@ TAXONOMY = ('invalid_input', 'missing_authority', 'stale_subject', 'unavailable_
             'unknown_outcome')
 ALIASES = {'binding_mismatch': 'stale_subject', 'stale_authority': 'stale_subject', 'not_handed_off': 'missing_authority',
            'unresolved_dependency': 'missing_evidence', 'trunk_checkout_dirty': 'stale_subject',
-           'trunk_checkout_unmovable': 'unavailable_service'}
+           'trunk_checkout_unmovable': 'unavailable_service', 'trunk_checkout_restore_failed': 'unknown_outcome'}
 # The executor's conclusive refusals, by the class each is (a refusal made before anything was pushed).
 EXECUTOR_REFUSALS = {'stale-subject': 'stale_subject', 'missing-evidence': 'missing_evidence',
                      'missing-authority': 'missing_authority', 'foreign-authority': 'missing_authority',
@@ -157,6 +163,8 @@ TRUNK_MOVED = ('stale-subject', 'trunk-moved')
 # changes, or one that cannot be moved. Each is re-landed under VELDO-0148 as a trunk that moved is.
 CHECKOUT_DIRTY, CHECKOUT_UNMOVABLE = 'trunk_checkout_dirty', 'trunk_checkout_unmovable'
 CHECKOUT_REFUSALS = (CHECKOUT_DIRTY, CHECKOUT_UNMOVABLE)
+# A tree moved before a lost swap that could not be put back: a stop, never a re-land.
+CHECKOUT_RESTORE_FAILED = 'trunk_checkout_restore_failed'
 RELAND = TRUNK_MOVED + CHECKOUT_REFUSALS
 # The operations in progress that make a working tree not clean, by the marker each leaves in its Git directory.
 IN_PROGRESS = (('merge', 'MERGE_HEAD'), ('rebase', 'rebase-merge'), ('rebase', 'rebase-apply'),
@@ -292,6 +300,8 @@ def checkout_outcome(data):
     if not isinstance(data, dict) or data.get('destination_kind') != LAND_LOCALLY or not isinstance(data.get('checkouts'), list):
         return None
     trees = data['checkouts']
+    if data.get('refusal') == CHECKOUT_RESTORE_FAILED:
+        return 'restore_failed'
     if data.get('refusal') == CHECKOUT_DIRTY:
         return 'refused_local_changes'
     if data.get('refusal') == CHECKOUT_UNMOVABLE:
@@ -305,17 +315,35 @@ def checkout_outcome(data):
     return 'left' if data.get('status') == 'refused' else None
 
 
-def checkout_brief(word, tree, trunk, changes=None, reason=None):
-    """VELDO-0260: the landing brief the owner reads for a refusal of a working tree that has the trunk checked out."""
+def _clears(reason):
+    """VELDO-0260: what clears the reason a working tree cannot be moved."""
+    if 'index.lock' in reason:
+        return 'its Git directory\'s index.lock is removed once no Git command is running there'
+    if reason.startswith('status:'):
+        return 'git status can read it again'
+    if reason.startswith('cannot write'):
+        return 'that directory can be written'
+    return 'git read-tree -m -u can move it (the reason above is Git\'s own)'
+
+
+def checkout_brief(word, tree, trunk, changes=None, reason=None, old=None):
+    """VELDO-0260: the landing brief the owner reads for a refusal of a working tree that has the trunk checked out:
+    what holds the tree and what clears it."""
+    reason = ((reason or 'unknown').strip().splitlines() or ['unknown'])[0]
     if word == CHECKOUT_DIRTY:
         changes = changes or {}
-        why = 'has %s checked out with local changes (%d %s: %s)' % (
-            trunk, changes.get('count') or 0, 'file' if changes.get('count') == 1 else 'files',
-            ', '.join(changes.get('paths') or []) or 'an operation in progress')
-    else:
-        why = 'has %s checked out and cannot be moved with it (%s)' % (trunk, reason or 'unknown')
-    return ('The working tree %s %s. Nothing moved: the landing waits until it is clean and is re-landed then.'
-            % (tree, why))
+        return ('The working tree %s has %s checked out with local changes (%d %s: %s). Nothing moved: the landing '
+                'waits until it is clean and is re-landed then.' % (
+                    tree, trunk, changes.get('count') or 0, 'file' if changes.get('count') == 1 else 'files',
+                    ', '.join(changes.get('paths') or []) or 'an operation in progress'))
+    if word == CHECKOUT_RESTORE_FAILED:
+        return ('The working tree %s has %s checked out and was moved with it, but the swap lost to another commit and '
+                'it was not put back on %s (%s). Nothing landed and the landing stops here, with no re-land: the tree '
+                'holds the candidate\'s files while %s does not; once nothing there needs keeping, git reset --hard %s '
+                'in it puts it in step again.' % (tree, trunk, old or 'the old tip', reason, trunk, trunk))
+    return ('The working tree %s has %s checked out and cannot be moved with it (%s). It has no local changes to '
+            'commit or discard. Nothing moved: the landing waits until %s, and is re-landed then.'
+            % (tree, trunk, reason, _clears(reason)))
 
 
 def _local_transition(store, params, before):
@@ -614,6 +642,38 @@ class Landing:
         moved = self._git(path, 'read-tree', '-m', '-u', old, new)
         return None if moved.returncode == 0 else ((moved.stderr or '').strip()[:200] or 'read-tree failed')
 
+    def _movable(self, path, old=None, new=None):
+        """VELDO-0260: a cheap read of whether a clean working tree could be moved now: None, or why not (its index
+        locked, or a directory the move from `old` to `new` writes that cannot be written). Nothing is written."""
+        where = self._git(path, 'rev-parse', '--git-path', 'index.lock')
+        target = where.stdout.strip()
+        if where.returncode == 0 and target and os.path.exists(os.path.join(path, target)):
+            return 'index.lock exists: ' + os.path.join(path, target)
+        if _hex(old) and _hex(new):
+            names = self._git(self.clone, 'diff', '--name-only', '-z', old, new)
+            for name in (names.stdout.split('\0') if names.returncode == 0 else []):
+                if not name:
+                    continue
+                folder = os.path.dirname(os.path.join(path, name))
+                while folder and not os.path.isdir(folder):
+                    folder = os.path.dirname(folder)
+                if folder and not os.access(folder, os.W_OK):
+                    return 'cannot write in ' + folder
+        return None
+
+    def checkout_held(self, old=None, new=None):
+        """VELDO-0260: what still holds a re-land of a local landing refused for a working tree, read before anything
+        is rebuilt or gated: (refusal word, working tree, brief) for the first tree with the trunk checked out that
+        has local changes or cannot be moved now, or None when nothing holds. Reads only."""
+        for tree in self._checkouts():
+            path = tree['path']
+            if tree['clean'] is False:
+                return CHECKOUT_DIRTY, path, checkout_brief(CHECKOUT_DIRTY, path, self.trunk, tree.get('changes'))
+            why = tree.get('reason') if tree['clean'] is None else self._movable(path, old, new)
+            if why:
+                return CHECKOUT_UNMOVABLE, path, checkout_brief(CHECKOUT_UNMOVABLE, path, self.trunk, reason=why)
+        return None
+
     def _copy_objects(self, candidate):
         """VELDO-0235: every object the candidate holds beyond the watermark into the project's repository, by
         pack-objects and unpack-objects (nothing is pushed or fetched)."""
@@ -694,7 +754,13 @@ class Landing:
                         tree['outcome'] = 'restored'
                     else:
                         tree.update(outcome='restore_failed', reason=why)
-                if stuck is not None:
+                unrestored = next((c for c in trees if c['outcome'] == 'restore_failed'), None)
+                if unrestored is not None:
+                    # A moved tree that could not be put back: its own stop, never a re-land.
+                    ended = dict(accepted, status='refused', refusal=CHECKOUT_RESTORE_FAILED, evidence=None,
+                                 observed={'tip': self._local_tip(), 'working_tree': unrestored['path'],
+                                           'reason': unrestored['reason'], 'lost_to': after})
+                elif stuck is not None:
                     ended = dict(accepted, status='refused', refusal=CHECKOUT_UNMOVABLE, evidence=None,
                                  observed={'tip': self._local_tip(), 'working_tree': stuck['path'],
                                            'reason': stuck['reason']})
@@ -888,6 +954,17 @@ class Landing:
         data = effect['data']
         if data.get('status') == 'refused':
             word = data.get('refusal')
+            if word == CHECKOUT_RESTORE_FAILED:
+                # VELDO-0260: a moved tree was not put back after a lost swap: a named stop the owner is told of.
+                seen = data.get('observed') or {}
+                tree = seen.get('working_tree')
+                brief = checkout_brief(word, tree, getattr(self, 'trunk', None), reason=seen.get('reason'),
+                                       old=(data.get('payload') or {}).get('old_tip'))
+                error = Refused('%s:%s' % (word, tree), brief)
+                error.observed = {'classification': word, 'watermark': (data.get('payload') or {}).get('old_tip'),
+                                  'tip': self._local_tip(), 'working_tree': tree, 'reason': seen.get('reason'),
+                                  'brief': brief}
+                raise error
             if word in CHECKOUT_REFUSALS:
                 # VELDO-0260: a working tree that has the trunk checked out held the landing; it is re-landed once
                 # the tree is clean (VELDO-0148), and the brief names the tree.
@@ -897,7 +974,8 @@ class Landing:
                 error = Refused('%s:%s' % (word, tree), brief)
                 error.observed = {'classification': word, 'watermark': (data.get('payload') or {}).get('old_tip'),
                                   'tip': self._local_tip(), 'working_tree': tree, 'changes': seen.get('changes'),
-                                  'in_progress': seen.get('in_progress'), 'brief': brief}
+                                  'in_progress': seen.get('in_progress'), 'reason': seen.get('reason'),
+                                  'candidate': (data.get('payload') or {}).get('commit'), 'brief': brief}
                 raise error
             if word not in TRUNK_MOVED:
                 raise Refused(executor_code(word), 'the publication was refused before anything was pushed')

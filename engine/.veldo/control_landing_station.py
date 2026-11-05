@@ -22,7 +22,11 @@ who lands a unit through the factory land it here. LandStation.land runs ONE lan
                           watermark, the tip found and the classification are recorded. VELDO-0260: a local
                           publication refused for a working tree that has the trunk checked out
                           (`trunk_checkout_dirty`, `trunk_checkout_unmovable`) ends so too, the tree and the
-                          owner's brief recorded, and is re-landed the same way once the tree is clean;
+                          owner's brief recorded. Its re-land waits: land() following it first reads the
+                          working trees (control_landing.Landing.checkout_held) and, while one still has local
+                          changes or cannot be moved, refuses with that tree's name before any land dispatch is
+                          opened, rebuilt or gated (so nothing ends and no pass is woken); once nothing holds,
+                          the one re-land runs;
        conflict           the re-merge onto the watermark conflicted (a real conflict, or an append-only
                           union that is not safe); nothing was published;
        awaiting_approval  every refusal of the publication's subject is a prior grant with a mismatched binding;
@@ -342,6 +346,8 @@ class LandStation:
         except (LG.Refused, OSError, ValueError) as error:
             raise Refused(getattr(error, 'code', 'unavailable_service:land/' + type(error).__name__),
                           getattr(error, 'detail', '')) from None
+        if follows is not None and destination['destination'] == LG.LAND_LOCALLY:
+            self._checkout_wait(unit, follows, ops.landing)
         index = _entity(self.conn, unit_index_id(self.domain, self.repository, unit))
         attempt = int(((index or {}).get('data') or {}).get('attempts') or 0) + 1
         dispatch = 'dispatch/%s/land-%d-%s' % (unit, attempt, os.urandom(4).hex())
@@ -365,6 +371,28 @@ class LandStation:
                    candidate=end.get('candidate'), refusal=end.get('refusal'), taxonomy=taxonomy(end.get('refusal'))
                    if end.get('refusal') else None, observed=end.get('observed'))
         return ended
+
+    def _checkout_wait(self, unit, follows, landing):
+        """VELDO-0260: a re-land of a land refused for a working tree that has the trunk checked out waits, cheaply,
+        until the cause is gone: while the tree still has local changes or still cannot be moved, refused here with
+        the tree named and the owner's brief, before anything is opened, rebuilt or gated."""
+        last = self.record(follows) or {}
+        seen = last.get('observed') or {}
+        if last.get('state') != TRUNK_MOVED or seen.get('classification') not in LG.CHECKOUT_REFUSALS:
+            return
+        try:
+            held = landing.checkout_held(seen.get('watermark'), seen.get('candidate')
+                                         or (last.get('candidate') or {}).get('commit'))
+        except LG.Refused as error:
+            held = (LG.CHECKOUT_UNMOVABLE, (seen.get('working_tree') or '?'), error.detail or error.code)
+        if held is None:
+            return
+        word, tree, brief = held
+        code = '%s:%s' % (word, tree)
+        self.counts['waiting'] = self.counts.get('waiting', 0) + 1
+        self._emit('wait', unit, follows, outcome='waiting', refusal=code, taxonomy=LG.taxonomy(code),
+                   working_tree=tree, brief=brief)
+        raise Refused(code, brief)
 
     @staticmethod
     def classify(result, candidate, dispatch):

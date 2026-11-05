@@ -1340,8 +1340,10 @@ Action: the spec says so explicitly and names the closest observable proxy as th
 
 ### III.10 A local landing waits on a working tree
 
-Signal: a project that lands locally reports `trunk_checkout_dirty:<working tree>` (or `trunk_checkout_unmovable:<working tree>`), and its brief says the landing waits until that tree is clean.
-Action: the named working tree has the trunk checked out and has local changes (or cannot be written, for example a leftover index lock). Commit them on another branch, or discard them, or clear the lock; nothing else. The landing moved nothing: the trunk and every file are as they were, and it is re-landed once the tree is clean. A clean tree with the trunk checked out needs no action: it moves with the trunk, untracked and ignored files untouched, and shows the landed commit with nothing to commit.
+Signal: a project that lands locally reports `trunk_checkout_dirty:<working tree>` (its brief says the landing waits until that tree is clean) or `trunk_checkout_unmovable:<working tree>` (its brief names the actual reason, for example a leftover index lock, and what clears it).
+Action: the named working tree has the trunk checked out and has local changes, or cannot be moved for the reason named. Commit the changes on another branch, or discard them, or clear the named cause; nothing else. The landing moved nothing: the trunk and every file are as they were. While the cause stays, the landing waits: each later pass only reads the working trees, and nothing is rebuilt or gated; once the cause is gone, the landing is re-landed once. A clean tree with the trunk checked out needs no action: it moves with the trunk, untracked and ignored files untouched, and shows the landed commit with nothing to commit.
+
+Signal: `trunk_checkout_restore_failed:<working tree>`. The swap lost to another commit after the named tree had been moved with the trunk, and the tree could not be put back. Nothing landed and the landing stops; it is not re-landed. Action: look at that tree; once nothing there needs keeping, `git reset --hard <trunk>` in it puts it in step with its branch again, then land the unit again.
 
 ## Part IV - Every role
 

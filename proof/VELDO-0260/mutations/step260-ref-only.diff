@@ -1,5 +1,5 @@
 --- a/.veldo/control_landing.py
 +++ b/.veldo/control_landing.py
-@@ -672 +672 @@
+@@ -732 +732 @@
 -                why = self._move_checkout(tree['path'], payload['old_tip'], payload['commit'])
 +                why = None  # defect: the working tree is not moved with the trunk
