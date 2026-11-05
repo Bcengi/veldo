@@ -1,0 +1,42 @@
+# VELDO-0239 UI specs after the change
+## npx vitest run src/features/projects/ProjectsBatch.spec.ts
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./src/ui/icons" without a file extension (vite.config.ts:5:23). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /tmp/v239-ui/engine/ui
+
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  20:53:59
+   Duration  741ms (environment 36%, import 28%, transform 27%, tests 8%, setup 1%)
+
+## npx vitest run src/features/projects/ProjectsView.spec.ts
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./src/ui/icons" without a file extension (vite.config.ts:5:23). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /tmp/v239-ui/engine/ui
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  20:54:00
+   Duration  628ms (environment 45%, import 34%, transform 13%, tests 7%, setup 1%)
+
+## npx vitest run src/features/projects/projects.spec.ts
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./src/ui/icons" without a file extension (vite.config.ts:5:23). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /tmp/v239-ui/engine/ui
+
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  20:54:01
+   Duration  338ms (environment 87%, transform 7%, tests 2%, import 1%, setup 1%, worker 1%)
+
+## npx vue-tsc --noEmit -p tsconfig.json
+vue-tsc exit 0
