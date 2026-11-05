@@ -143,8 +143,8 @@ acceptance_criteria:
       flag, environment value or argument that skips a check, and a call it cannot decide is refused. A read
       takes no token. For a two-phase server the subject check stays at the server in a lighter form: the
       server does not verify a signature; it compares the subject digest the outside gate passes on an
-      allowed write (a request header set by the check, which the caller cannot set because the relay and
-      gate strip it) with its stored pending action, and refuses a mismatch, so a draft edited after
+      allowed write (a request header set by the check, which the caller cannot set because the outside
+      gate strips it) with its stored pending action, and refuses a mismatch, so a draft edited after
       approval is refused. A server may still run the full verifier as defence in depth, but is not required
       to. Rows: no token, a forged signature, a token signed by a revoked or retired key, a token for
       another service, tool or dispatch, another method, path or query, arguments or a body changed by one
@@ -270,3 +270,7 @@ commit tools refused until it lands. Standalone.
 2026-11-04: amended per the plan consistency review (research/veldo-plan-consistency-review-2026-11-04.md) and the lead's rulings (research/veldo-plan-rulings-2026-11-04.md), both in the owner's installation repository, on the owner's request Telegram 39145. AC1: an HTTP write is approved as the exact request the run submitted first to the approval service of VELDO-0252 and shown decoded; canonical digests for form and multipart bodies; a workflow approval node and an approved schedule use the same mechanism; a prepare that calls the vendor is a write unless declared read (R4, R12, C1, C2, A24, E1). AC3: the whole body is read or refused under the per-service limit (R4). AC4: a read label needs an approved read override (D3). depends_on drops VELDO-0251 and VELDO-0252, which depend on this spec, so the graph has no cycle (D4). The title, Intent, Context, Design, rollback and observability now describe delivery to the outside gate's check instead of per-server delivery, matching the amended criteria. agentgateway is named the outside gate (E6). The owner's connectors plan and its point numbers leave the spec, and the owner field is a role id (B1). Status stays ready; the owner approves the amendments in one message.
 
 2026-11-05: the lead removed VELDO-0243 and VELDO-0244 from depends_on: they use this spec's approvals and depend on it, so listing them here made a cycle. No acceptance criterion changes.
+
+2026-11-05: Telegram 39154 and 39155, revised rulings R5, R7 and R14 (no mandatory sandbox): AC2's subject
+digest header is stripped by the outside gate alone, since VELDO-0251 no longer has a relay. Status
+unchanged.
