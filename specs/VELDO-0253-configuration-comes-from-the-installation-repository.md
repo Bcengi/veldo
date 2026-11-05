@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0253
 title: Veldo loads an installation's configuration from the installation's own repository, keeps the last good configuration when a change is bad, and a workflow saved on the canvas is committed there
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -269,3 +269,5 @@ secrets; a workflow saved on the canvas is committed to the repository as the on
 new installation starts its own private repository from a template setup creates. 39140: the owner asked
 for this specification. Standalone; no plan work item. The change to VELDO-0241's revision store is
 written as an amendment note, proof/VELDO-0253/amend-0241.md, and VELDO-0241 itself is not edited.
+
+2026-11-04: approved by the owner, Telegram 39144 ("Yes", to 39143). Status ready.
