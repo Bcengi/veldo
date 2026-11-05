@@ -17,6 +17,14 @@ VELDO-0175: a Telegram reply to any message the factory sent in a conversation, 
 command, or a reply the factory PM reads for one; it is resolved before the proposal and question records.
 The PM's routes include a new conversation and an open one of the sender's.
 
+VELDO-0236: the factory owner's typed account commands in the factory's Telegram chat, `/pause <account> <window>`,
+`/resume <account>` and `/ceiling <account> <window> <percent | +percent>`, are decided as typed commands, never a
+proposal: intake sends control_accounts' own signed pause, resume or ceiling as the sender (route `telegram`, the
+intake source its provenance), the same operation the API's routes reach, records the source, and answers with one
+line naming the account, the window and the end in the owner's time zone (`time_zone`). A refusal (anyone but the
+factory owner, an unknown account or window, a window with no reset ahead, a ceiling out of range or on a window with
+no observed utilization) writes no pacing record and is answered with one line naming it.
+
 VELDO-0181: a Telegram message's unclear question is a decision request presented on the chat he wrote from and
 settled once by his reply to it or his answer in the UI; its settled choice resolves or clarifies the proposal as an
 answering reply did (control_intake_routes.route_answers). An API message's question is answered as before.
@@ -38,6 +46,7 @@ def _renderer_module(name):
 
 
 TEXT = _renderer_module('control_channel_presentation_text')
+AA = _renderer_module('control_accounts')
 PJ = _renderer_module('control_project')
 RT = _renderer_module('control_intake_routes')
 CI = _renderer_module('control_intake_conversation')
@@ -61,6 +70,9 @@ CONVERSATION_FIELD = 'conversation'
 CONVERSION_FIELD = CI.CONVERSION_FIELD
 PROPOSAL_STATES = ('PROPOSED', 'AWAITING_ROUTE', 'NEW_PROJECT', 'ROUTED', 'AWAITING_PROJECT', 'RESOLVED',
                    CI.AWAITING_READING, CI.READ)
+# VELDO-0236: the factory owner's typed account commands and the words each takes after the command word.
+ACCOUNT_COMMANDS = {'/pause': ('pause', 2), '/resume': ('resume', 1), '/ceiling': ('ceiling', 3)}
+ACCOUNT_OUTCOME = 'account_command'
 TICKET_KEY = re.compile(r'(?<![A-Za-z0-9_-])([A-Za-z][A-Za-z0-9_]*)-[0-9]+(?![A-Za-z0-9_-])')
 # The attribution's own reasons for a message it attributed to a person but that is no presentation
 # answer: it replies to nothing, or to a message that is not a presentation.
@@ -112,6 +124,15 @@ def render_prompt(prompt):
     """The plain text renderer for a question, applied only at the send boundary: the question keeps
     its original prompt."""
     return TEXT.message(prompt)
+
+
+def account_command(text):
+    """VELDO-0236: (kind, words after the command word) of a typed account command, else None."""
+    if not isinstance(text, str):
+        return None
+    words = text.split()
+    found = ACCOUNT_COMMANDS.get(words[0]) if words else None
+    return (found[0], words[1:]) if found else None
 
 
 def source_key(kind, source_id):
@@ -211,7 +232,7 @@ class Intake(RT.Routes, CI.Conversing):
 
     def __init__(self, store, membership, contract, acquirer, conn, *, domain, projects, api_edge, journal_signer,
                  sign, asker=None, authority_generation=1, clock=time.time, observe=None, conversations=None,
-                 request_sign=None):
+                 request_sign=None, accounts=None, time_zone='UTC'):
         if not _identifier(domain) or not _identifier(api_edge) or not _identifier(journal_signer):
             raise Refused('invalid_input', 'domain, API edge and journal signer are named')
         if not callable(projects) and (not projects or not all(_identifier(p) for p in projects)
@@ -222,6 +243,8 @@ class Intake(RT.Routes, CI.Conversing):
         self.journal_signer, self.sign, self.generation = journal_signer, sign, authority_generation
         self.asker, self.clock = asker, clock
         self.conversations = conversations
+        # VELDO-0236: control_accounts.Accounts on this connection (or a callable returning it) and the owner's zone.
+        self.accounts, self.time_zone = accounts, time_zone
         # VELDO-0181: signs the unclear question's decision request as the journal signer (the command namespace).
         self.request_sign = request_sign
         self.observe = observe or (lambda event: None)
@@ -550,6 +573,12 @@ class Intake(RT.Routes, CI.Conversing):
         steered = None
         try:
             changes, reads, result = self._plan(command, self._entity)
+            if result['outcome'] == ACCOUNT_OUTCOME:
+                # VELDO-0236: the owner's account command, sent before its source is recorded; never a proposal.
+                try:
+                    steered = self._pace(command, key)
+                except Refused as error:
+                    return self._account_refused(command, error.code, about)
             if result['outcome'] == 'command':
                 # VELDO-0175 AC4: the owner's typed command, sent before its source is recorded; never a turn.
                 steered = self._steer(result['conversation'], command['principal'], *CI.typed_command(command['text']),
@@ -581,6 +610,10 @@ class Intake(RT.Routes, CI.Conversing):
         done = self._event('submit', result['outcome'], None, accepted_versions=expected, project=result.get('project'),
                            decision=result.get('decision'), command=command, **dict(about, **{k: result[k] for k in ('proposal_id', 'question_id', 'question')
                                                              if k in result}))
+        if result['outcome'] == ACCOUNT_OUTCOME:
+            event, line = steered
+            done.update(account=event.get('account'), window=event.get('window'), until=event.get('until'),
+                        changed=result.get('command'), told=self._say(command, line))
         if command.get(CONVERSATION_FIELD) is not None:
             done = self._conversation_done(command, result, steered, done)
         if result['outcome'] == CI.CP.SOURCE_OUTCOME:
@@ -590,6 +623,53 @@ class Intake(RT.Routes, CI.Conversing):
             if not converted.get('ok'):
                 done.update(outcome='refused', reason=converted.get('reason'))
         return done
+
+    def _pace(self, command, key):
+        """VELDO-0236: the owner's typed account command as control_accounts' own signed operation, as the sender;
+        (the pacing event, its one line). Refused by name, with nothing written."""
+        accounts = self.accounts
+        if accounts is not None and not hasattr(accounts, 'pause') and callable(accounts):
+            accounts = accounts()
+        if accounts is None:
+            raise Refused('unavailable_service:accounts')
+        kind, words = account_command(command['text'])
+        arity = next(n for k, n in ACCOUNT_COMMANDS.values() if k == kind)
+        if len(words) != arity:
+            raise Refused('invalid_input:account', 'the command names its account%s' % (
+                '' if kind == 'resume' else ', window' + (' and percent' if kind == 'ceiling' else '')))
+        common = dict(principal=command['principal'], now=self.clock(), route='telegram', provenance=key)
+        command_id = 'account-command/' + _hex(key)
+        try:
+            if kind == 'pause':
+                event = accounts.pause(command_id, words[0], words[1], **common)
+            elif kind == 'ceiling':
+                event = accounts.ceiling(command_id, words[0], words[1], words[2], **common)
+            else:
+                event = accounts.resume(command_id, words[0], **common)
+        except Exception as error:  # noqa: BLE001 - control_accounts' named refusal (its own class), by its name
+            if not isinstance(getattr(error, 'code', None), str):
+                raise
+            raise Refused(error.code, getattr(error, 'detail', '')) from None
+        return event, AA.words(event, self.time_zone)
+
+    def _say(self, command, line):
+        """One line answering the owner's account command where he wrote it; the outcome of the send."""
+        where = self._where(command)
+        if self.asker is None or not where:
+            return 'unavailable_service'
+        try:
+            self.asker.send(where['chat_id'], TEXT.message(line), reply_to=where['message_id'])
+        except Exception as error:  # noqa: BLE001 - a failed send is named, never raised past intake
+            return str(getattr(error, 'code', None) or type(error).__name__)
+        return 'sent'
+
+    def _account_refused(self, command, code, about):
+        """VELDO-0236: an account command refused by name, answered with one line; no pacing record is written."""
+        result = self._event('submit', 'refused', code, account_command=account_command(command['text'])[0], **about)
+        where = self._where(command)
+        if where:
+            result['told'] = self._tell(where, self.refusal_line(code), kind='refusal').get('outcome')
+        return result
 
     def _conversation_refused(self, command, code, about):
         """A refusal by name; a conversation message's is answered with one line on Telegram (VELDO-0175)."""
@@ -676,6 +756,16 @@ class Intake(RT.Routes, CI.Conversing):
             conversation_source.update(proposal_id=result.get('proposal_id'), question_id=None, result=dict(result))
             changes[key] = {'kind': SOURCE_KIND, 'data': conversation_source}
             return changes, reads, result
+        if command['source_kind'] == 'telegram_message' and account_command(text) is not None:
+            # VELDO-0236: the owner's account command: its source recorded, decided by intake, never a proposal.
+            typed = account_command(text)[0]
+            result = {'outcome': ACCOUNT_OUTCOME, 'command': typed}
+            source = {'schema': SOURCE_SCHEMA, 'source_id': key, 'source_kind': command['source_kind'],
+                      'source_ref': command['source_id'], 'principal': principal, 'text': text,
+                      'content_digest': content_digest(command), 'command': command,
+                      'context': {'domain': self.domain, 'account_command': typed}, 'proposal_id': None,
+                      'question_id': None, 'result': dict(result)}
+            return {key: {'kind': SOURCE_KIND, 'data': source}}, [principal], result
         if command['source_kind'] == 'telegram_message' and CI.typed_command(text) is not None:
             # VELDO-0175 AC4: a typed conversation command that replies to no conversation message.
             raise Refused('invalid_input:conversation_command:no_conversation')

@@ -10,6 +10,12 @@ export const ACTION_ROUTES = {
   owner_priority: 'backlog.reprioritize',
   /** The owner's cap of one account's concurrent runs (control_accounts.cap). */
   worker_cap: 'workers.cap',
+  /** VELDO-0236: the owner's pause of an account until one window resets (control_accounts.pause). */
+  account_pause: 'accounts.pause',
+  /** VELDO-0236: the owner's resume of an account, ending its pause and ceilings (control_accounts.resume). */
+  account_resume: 'accounts.resume',
+  /** VELDO-0236: the owner's ceiling on one window of an account until it resets (control_accounts.ceiling). */
+  account_ceiling: 'accounts.ceiling',
 } as const
 
 export type ActionResult<T> = { sent: true; answer: T } | { sent: false; route: string }
@@ -37,4 +43,19 @@ export function reprioritize(item: string, itemVersion: number, rank: number, co
 /** Set one account's run concurrency (1 to 16) at the version shown, by the owner's own command. */
 export function setCap(account: string, accountVersion: number, concurrency: number, contractRoute: string | null = null) {
   return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.worker_cap, { account, account_version: accountVersion, concurrency })
+}
+
+/** VELDO-0236: pause one account until the named window resets; the answer names the end. */
+export function pauseAccount(account: string, window: string, contractRoute: string | null = null) {
+  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.account_pause, { account, window })
+}
+
+/** VELDO-0236: resume one account: its pause and its ceilings end now. */
+export function resumeAccount(account: string, contractRoute: string | null = null) {
+  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.account_resume, { account })
+}
+
+/** VELDO-0236: cap one window of an account at a percent (50) or a further percent of it (+10) until it resets. */
+export function setCeiling(account: string, window: string, value: number | string, contractRoute: string | null = null) {
+  return send<Record<string, unknown>>(contractRoute ?? ACTION_ROUTES.account_ceiling, { account, window, value })
 }

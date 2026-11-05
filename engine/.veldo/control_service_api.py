@@ -229,7 +229,8 @@ class ServiceApi:
                                            authority_lock=lock, catalog=catalog, mcp_credentials=mcp_credentials,
                                            records=self.config.get('records'), configurations=configurations,
                                            team_routes=team_routes, backlog=backlog, dispatches=dispatches,
-                                           accounts=accounts, conversations=conversations)
+                                           accounts=accounts, conversations=conversations,
+                                           time_zone=self.config.get('time_zone') or 'UTC')
         self.instance = '%d-%s' % (os.getpid(), os.urandom(6).hex())
         # The subscribed APIs' hint sockets, remembered across a restart in this 0600 file of the service's
         # state directory, and each one's hint number from this instance.

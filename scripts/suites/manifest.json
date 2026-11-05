@@ -1879,6 +1879,15 @@
    "resources": {
     "systemd_user_manager": 1
    }
+  },
+  {
+   "name": "139_veldo_0236_account_pacing",
+   "file": "139_veldo_0236_account_pacing.py",
+   "requires": [
+    "139_veldo_0236_account_pacing"
+   ],
+   "regions": "Thirteen rows (VELDO-0236): a pause of one of two accounts stored with its window's reset as its end, the account passed over paused_until:<reset> before it and selected from it with no command, the end the no_account_until the loop's timer waits for, a later observation not moving it and no indefinite status (AC1); a window with no reset ahead refused invalid_input:pause_reset, unknown ones invalid_input:account, nothing written; a +10 ceiling on a window at 40 percent stored as 50, selected at 49 and passed over ceiling:five_hour:50 at 50, replaced by a new one, lapsed at the reset; resume ending a pause and a ceiling at once; a ceiling on a window with no utilization refused invalid_input:ceiling (AC2); /pause, /ceiling and /resume typed in the factory owner's Telegram chat and the UI's accounts.pause, .ceiling and .resume reaching the same signed operations with the same journal record type and fields, each answer naming the account, window and end in words, a non-owner refused missing_authority:owner_command:not_factory_owner with nothing written (AC3); a pause, a ceiling, a resume and an end at reset exactly four journal records in order, two passes after an end one end record, the spend read serving them from the journal (AC4); counts, observations and pass-overs by reason; the UI pacing spec's empty, populated and refused states.",
+   "requires_note": "Only ROOT, expect and fast_temp. A real signed SQLite authority (VELDO-0073's support) with the steward as factory owner and a project owner who is not; production control_accounts, control_account_pool, FactoryLoop.lapse, intake over the production Acquirer and a loopback Bot API stand-in, and the production ControlApi over ApiAuthority holding the authority's lock with the api edge's real key; the UI spec on the checkout's locked dependencies (node_modules or npm ci --prefer-offline into a scratch copy). No real engine, login, Telegram or outside network; writes only temporary fixtures."
   }
  ],
  "resource_capacities": {

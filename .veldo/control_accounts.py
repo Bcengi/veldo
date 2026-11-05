@@ -55,16 +55,37 @@ is factory scope, else missing_authority), and the new concurrency (an integer f
 refused). The record keeps every change in `concurrency_history` (concurrency, previous, by, at, command and,
 from the API, the assertion digest). Control_account_pool reads `concurrency` as it always has.
 
+THE OWNER'S PACING (VELDO-0236). An account is never switched off by these commands, only not used until a window
+resets. `pause` names an account and one of its usage windows and stores the pause with that window's last reported
+reset (VELDO-0166) as its end; `ceiling` caps one window at a utilization percent (absolute, 1 to 100, or relative,
++N added to the window's last observed utilization and stored as the absolute result) until that window's reset; a new
+ceiling on a window replaces the old one; `resume` ends the account's pause and its ceilings at once. A window with no
+reported reset later than now is refused invalid_input:pause_reset or invalid_input:ceiling_reset, a ceiling value
+outside 1 to 100 or any ceiling on a window with no observed utilization invalid_input:ceiling, an unknown account or
+window invalid_input:account, and a command of anyone but the factory owner (VELDO-0203's: a current person member who
+enrolled himself and holds every bootstrap role) missing_authority:owner_command:not_factory_owner; a refusal writes
+nothing. A later observation of the window never moves an end, and none of these sets the indefinite `paused` status.
+A pause or a ceiling is out of force from its end on with no command (`paced`, read by control_account_pool);
+`lapse`, run at each factory loop pass, commits one record of each end it finds, once. A utilization percent is the
+CLI's reported fraction times 100 (`percent`). Every pacing command and end is one signed journal record whose
+account record carries the event as `pacing` (type, command id, principal, route, account, window, end, value,
+the utilization a ceiling was read against, the window observation it read, the provenance and, for an end, the
+pass); `history` reads those records from the journal, never a cache. Observed (`observe`) and counted by type,
+route and outcome (`observe_pacing`), never a credential or a profile's contents.
+
 Writes go through the store's signed transaction under a declared owner, so only this module's
 command writes an `account` record. `authorize(conn, command)` is the caller's current-authority
 predicate, run inside the transaction. Standard library only.
 """
 import copy
+import datetime
+import hashlib
 import importlib.util
 import json
 import math
 import os
 from pathlib import Path
+import zoneinfo
 
 SCHEMA = 'veldo.account/v1'
 KIND = 'account'
@@ -99,6 +120,15 @@ OBSERVER_ROLE = 'reservation_service'
 # VELDO-0160: the outcome of a run its account's limit stopped, and the signals that state the limit.
 LIMIT_OUTCOME = 'account_limit'
 LIMIT_SIGNALS = ('stream', 'result')
+# VELDO-0236: the owner's pacing commands, the end a factory loop pass records, the routes a command comes by, the
+# roles VELDO-0203's factory owner holds, and the event fields every pacing record carries.
+PACING = ('pause', 'ceiling', 'resume')
+END = 'end'
+ROUTES = ('telegram', 'ui')
+BOOTSTRAP_ROLES = frozenset({'project_owner', 'membership_steward'})
+NOT_FACTORY_OWNER = 'missing_authority:owner_command:not_factory_owner'
+EVENT_FIELDS = ('type', 'command_id', 'principal', 'route', 'account', 'window', 'until', 'value', 'utilization',
+                'observation', 'provenance', 'ended', 'pass', 'at')
 
 
 class Refused(Exception):
@@ -158,6 +188,95 @@ def blocking(record, now):
         reset = window.get('reset_at')
         if not _number(reset) or now < reset:
             found.append(window_id)
+    return found
+
+
+def factory_owner(conn, principal, now):
+    """VELDO-0203's factory owner: a current person member who enrolled himself and holds every bootstrap role."""
+    member = _member(conn, principal)
+    if not isinstance(member, dict) or member.get('revoked_at') is not None:
+        return False
+    expires = member.get('expires_at')
+    if expires is not None and (not _number(now) or now >= expires):
+        return False
+    return (member.get('principal_type') == 'person' and member.get('enrolled_by') == principal
+            and BOOTSTRAP_ROLES <= set(member.get('roles') or []))
+
+
+def percent(utilization):
+    """A window's utilization as a percent: the CLI's reported fraction times 100; None when none was reported."""
+    return round(utilization * 100, 6) if _number(utilization) else None
+
+
+def shown(value):
+    """A percent as the words and reasons name it: 50, not 50.0."""
+    return ('%d' % value) if _number(value) and float(value).is_integer() else ('%g' % value)
+
+
+def paced(record, now):
+    """Why the owner's pacing passes the account over at `now`: (reason, end, command id) of its pause in force
+    (paused_until:<reset>) or of a ceiling in force on a window whose last observed utilization is at or above its
+    value (ceiling:<window>:<value>); None when neither. Each is out of force from its end on."""
+    record = record or {}
+    pause = record.get('pause')
+    if isinstance(pause, dict) and _number(pause.get('until')) and now < pause['until']:
+        return 'paused_until:%d' % math.ceil(pause['until']), pause['until'], pause.get('command_id')
+    windows = record.get('windows') or {}
+    for window, ceiling in sorted((record.get('ceilings') or {}).items()):
+        if not (isinstance(ceiling, dict) and _number(ceiling.get('until')) and now < ceiling['until']):
+            continue
+        used = percent((windows.get(window) or {}).get('utilization'))
+        if used is not None and used >= ceiling['value']:
+            return 'ceiling:%s:%s' % (window, shown(ceiling['value'])), ceiling['until'], ceiling.get('command_id')
+    return None
+
+
+def zone_of(name):
+    try:
+        return datetime.timezone.utc if name in (None, '', 'UTC', 'Etc/UTC', 'GMT') else zoneinfo.ZoneInfo(name)
+    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
+        return datetime.timezone.utc
+
+
+def clock(seconds, zone='UTC', now=None):
+    """A time in the owner's time zone, in words: 14:05 UTC, with its date first when that is not now's date there."""
+    tz = zone_of(zone)
+    at = datetime.datetime.fromtimestamp(seconds, tz)
+    label = at.tzname() or 'UTC'
+    same = _number(now) and datetime.datetime.fromtimestamp(now, tz).date() == at.date()
+    return '%s %s' % (at.strftime('%H:%M' if same else '%Y-%m-%d %H:%M'), label)
+
+
+def words(event, zone='UTC'):
+    """The answer to a pacing command, naming the account, the window and the end in words and in `zone`."""
+    kind, account, window, now = event.get('type'), event.get('account'), event.get('window'), event.get('at')
+    if kind == 'pause':
+        return '%s paused until %s, when its %s window resets.' % (account, clock(event['until'], zone, now), window)
+    if kind == 'ceiling':
+        return '%s capped at %s percent of its %s window until %s, when it resets (now at %s percent).' % (
+            account, shown(event['value']), window, clock(event['until'], zone, now), shown(event['utilization']))
+    ended = event.get('ended') or []
+    if kind == 'resume':
+        if not ended:
+            return '%s resumed: it had no pause or ceiling in force.' % account
+        return '%s resumed: %s ended now.' % (account, ', '.join(
+            ('its pause on %s' if e['kind'] == 'pause' else 'its ceiling on %s') % e['window'] for e in ended))
+    return '%s: its %s on %s ended at %s, when that window reset.' % (
+        account, ' and '.join(e['kind'] for e in ended) or 'nothing', window, clock(event.get('until') or 0, zone, now))
+
+
+def history(conn, account=None):
+    """VELDO-0236 AC4: every pacing record in journal order, read from the journal itself (never a cache): each
+    journal record whose account record's `pacing` event is that record's own command, with its sequence."""
+    found = []
+    for seq, command_id, transition in conn.execute(
+            "SELECT seq, command_id, transition FROM journal WHERE transition LIKE '%\"pacing\"%' ORDER BY seq"):
+        for eid, entry in sorted(json.loads(transition).items()):
+            data = (entry or {}).get('data') or {}
+            event = data.get('pacing') if entry.get('kind') == KIND else None
+            if (isinstance(event, dict) and event.get('command_id') == command_id
+                    and (account is None or event.get('account') == account)):
+                found.append(dict(event, seq=seq))
     return found
 
 
@@ -224,16 +343,25 @@ class Accounts:
     """The account records over one store connection. `authorize(conn, command)` runs inside the
     store transaction (`authority` in production); `sign(bytes)` signs journal records as `signer`."""
 
-    def __init__(self, store, conn, *, principal, signer, sign, authorize=authority, generation=1):
+    def __init__(self, store, conn, *, principal, signer, sign, authorize=authority, generation=1,
+                 observe_pacing=None):
         if not all(_text(v) for v in (principal, signer)):
             raise Refused('invalid_input', 'principal and signer are named')
         self.store, self.conn = store, conn
         self.principal, self.signer, self.sign = principal, signer, sign
         self.authorize, self.generation = authorize, generation
         self.counts = {'accepted': 0, 'refused': 0}
+        # VELDO-0236: pacing commands and ends by type/route/outcome, and what each was observed with.
+        self.pacing_counts, self.pacing_events = {}, []
+        self.observe_pacing = observe_pacing or (lambda event: None)
         conn.command_registry[OPERATION] = {'transaction_transition': self._in_transaction, 'writes': WRITES}
         store.declare_owners(conn, OWNER, kinds={KIND: (OPERATION,)}, prefixes={PREFIX: (OPERATION,)},
                              module=__file__)
+
+    def _own(self):
+        # VELDO-0236: several Accounts may share one connection (the API's and the factory loop's); the one writing
+        # now judges its own command, never another instance's last one.
+        self.conn.command_registry[OPERATION] = {'transaction_transition': self._in_transaction, 'writes': WRITES}
 
     def get(self, account):
         return read(self.conn, account)
@@ -258,6 +386,7 @@ class Accounts:
                            nonce='account/' + command_id, parameters=params,
                            expected_versions={target: row[0] if row else 0}, artifact_digests=[])
             self._command = command
+            self._own()
             try:
                 result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
             except self.store.StoreRefused as error:
@@ -313,6 +442,7 @@ class Accounts:
         command = dict(command_id=command_id, operation=OPERATION, principal=principal, nonce='account/' + command_id,
                        parameters=params, expected_versions={target: base}, artifact_digests=[])
         self._command = command
+        self._own()
         try:
             result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
         except (self.store.StoreRefused, Refused):
@@ -321,7 +451,203 @@ class Accounts:
         self.counts['accepted'] += 1
         return result
 
+    # -- the owner's pacing (VELDO-0236) ----------------------------------------------------------------------
+
+    def pause(self, command_id, account, window, *, principal, now, route, provenance=None):
+        """Pause `account` until `window`'s last reported reset. Returns the pacing event."""
+        return self._pace(command_id, dict(action='pause', account=account, window=window), principal, now, route,
+                          provenance)
+
+    def ceiling(self, command_id, account, window, value, *, principal, now, route, provenance=None):
+        """Cap `window` of `account` at `value` (a percent 1 to 100, or '+N' relative) until that window resets."""
+        return self._pace(command_id, dict(action='ceiling', account=account, window=window, value=value), principal,
+                          now, route, provenance)
+
+    def resume(self, command_id, account, *, principal, now, route, provenance=None):
+        """End `account`'s pause and its ceilings at once."""
+        return self._pace(command_id, dict(action='resume', account=account, window=None), principal, now, route,
+                          provenance)
+
+    def _count(self, kind, route, outcome):
+        key = '%s/%s/%s' % (kind, route, outcome)
+        self.pacing_counts[key] = self.pacing_counts.get(key, 0) + 1
+
+    def _pace(self, command_id, params, principal, now, route, provenance, attempts=5):
+        kind = params['action']
+        about = {'kind': 'account_pacing', 'operation': kind, 'command_id': command_id, 'principal': principal,
+                 'route': route, 'account': params.get('account'), 'window': params.get('window')}
+        try:
+            if (not _text(command_id) or not _text(principal) or not _number(now) or route not in ROUTES
+                    or (provenance is not None and not _text(provenance, ))):
+                raise Refused('invalid_input', 'a command id, principal, time, route and provenance')
+            if not _text(params.get('account')) or (kind != 'resume' and not _text(params.get('window'))):
+                raise Refused('invalid_input:account', 'an account and one of its windows')
+            target = entity_id(params['account'])
+            params = dict(params, now=now, command_id=command_id, route=route, provenance=provenance)
+            for _ in range(attempts):
+                row = self.conn.execute('SELECT version FROM entities WHERE id=?', (target,)).fetchone()
+                command = dict(command_id=command_id, operation=OPERATION, principal=principal,
+                               nonce='account/' + command_id, parameters=params,
+                               expected_versions={target: row[0] if row else 0}, artifact_digests=[])
+                self._command = command
+                self._own()
+                try:
+                    self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
+                except self.store.StoreRefused as error:
+                    if error.code == 'stale_version':
+                        continue
+                    raise
+                break
+            else:
+                raise Refused('stale_subject:account', target)
+        except (Refused, self.store.StoreRefused) as error:
+            self.counts['refused'] += 1
+            self._count(kind, route, 'refused')
+            event = dict(about, outcome='refused', refusal=error.code)
+            self.pacing_events.append(event)
+            self.observe_pacing(event)
+            raise
+        self.counts['accepted'] += 1
+        self._count(kind, route, 'accepted')
+        event = (read(self.conn, params['account']) or {}).get('pacing') or {}
+        observed = dict(about, outcome='accepted', until=event.get('until'), value=event.get('value'),
+                        utilization=event.get('utilization'), observation=event.get('observation'),
+                        ended=event.get('ended'))
+        self.pacing_events.append(observed)
+        self.observe_pacing(observed)
+        return event
+
+    def lapse(self, now, *, pass_id=None):
+        """One factory loop pass's ends: for each pause or ceiling whose end is at or before `now` still on its
+        account record, one signed record of its end, committed once (a second pass finds it gone). Returns the
+        end events committed."""
+        ended = []
+        for record in self.list():
+            due = []
+            pause = record.get('pause')
+            if isinstance(pause, dict) and _number(pause.get('until')) and pause['until'] <= now:
+                due.append(('pause', pause))
+            for window, ceiling in sorted((record.get('ceilings') or {}).items()):
+                if isinstance(ceiling, dict) and _number(ceiling.get('until')) and ceiling['until'] <= now:
+                    due.append(('ceiling', dict(ceiling, window=window)))
+            for kind, item in due:
+                command_id = 'account-end/' + hashlib.sha256(json.dumps(
+                    [record['id'], kind, item.get('window'), item.get('command_id')]).encode()).hexdigest()[:32]
+                target = entity_id(record['id'])
+                row = self.conn.execute('SELECT version FROM entities WHERE id=?', (target,)).fetchone()
+                params = dict(action=END, account=record['id'], kind=kind, window=item.get('window'),
+                              set_by=item.get('command_id'), now=now, command_id=command_id, pass_id=pass_id)
+                command = dict(command_id=command_id, operation=OPERATION, principal=self.principal,
+                               nonce='account/' + command_id, parameters=params,
+                               expected_versions={target: row[0] if row else 0}, artifact_digests=[])
+                self._command = command
+                self._own()
+                try:
+                    self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
+                except (Refused, self.store.StoreRefused) as error:
+                    self._count(END, 'pass', 'refused')
+                    event = {'kind': 'account_pacing', 'operation': END, 'command_id': command_id,
+                             'account': record['id'], 'window': item.get('window'), 'pass': pass_id,
+                             'outcome': 'refused', 'refusal': error.code}
+                    self.pacing_events.append(event)
+                    self.observe_pacing(event)
+                    continue
+                self._count(END, 'pass', 'accepted')
+                event = (read(self.conn, record['id']) or {}).get('pacing') or {}
+                observed = {'kind': 'account_pacing', 'operation': END, 'command_id': command_id,
+                            'principal': self.principal, 'account': record['id'], 'window': item.get('window'),
+                            'until': item.get('until'), 'ended': event.get('ended'), 'pass': pass_id,
+                            'outcome': 'accepted'}
+                self.pacing_events.append(observed)
+                self.observe_pacing(observed)
+                ended.append(event)
+        return ended
+
+    def _pacing(self, conn, params, current):
+        """The account record after one pacing command or end, inside the transaction, or Refused by name."""
+        action, now, account = params['action'], params['now'], params['account']
+        if action != END and not factory_owner(conn, self._command.get('principal'), now):
+            raise Refused(NOT_FACTORY_OWNER, str(self._command.get('principal')))
+        if current is None:
+            raise Refused('invalid_input:account', account)
+        value = copy.deepcopy(current)
+        event = {f: None for f in EVENT_FIELDS}
+        event.update(type=action, command_id=params['command_id'], principal=self._command['principal'],
+                     route=params.get('route'), account=account, window=params.get('window'), at=now,
+                     provenance=params.get('provenance'))
+        window_id = params.get('window')
+        if action in ('pause', 'ceiling'):
+            window = (current.get('windows') or {}).get(window_id)
+            if not isinstance(window, dict):
+                raise Refused('invalid_input:account', '%s has no window %s' % (account, window_id))
+            reset = window.get('reset_at')
+            if not _number(reset) or reset <= now:
+                raise Refused('invalid_input:%s_reset' % action, '%s reports no reset after now' % window_id)
+            observation = {'observed_at': window.get('observed_at'), 'source_dispatch': window.get('source_dispatch'),
+                           'reset_at': reset, 'utilization': window.get('utilization')}
+            entry = {'until': reset, 'command_id': params['command_id'], 'by': self._command['principal'], 'at': now,
+                     'route': params.get('route'), 'observation': observation}
+            event.update(until=reset, observation=observation)
+            if action == 'pause':
+                value['pause'] = dict(entry, window=window_id)
+            else:
+                used = percent(window.get('utilization'))
+                given = params.get('value')
+                if used is None:
+                    raise Refused('invalid_input:ceiling', '%s has no observed utilization' % window_id)
+                relative = isinstance(given, str) and given.strip().startswith('+')
+                try:
+                    amount = float(given.strip().lstrip('+')) if isinstance(given, str) else given
+                except ValueError:
+                    amount = None
+                if not _number(amount):
+                    raise Refused('invalid_input:ceiling', 'a percent from 1 to 100, or +percent')
+                limit = round(used + amount, 6) if relative else amount
+                if not 1 <= limit <= 100 or (relative and amount <= 0):
+                    raise Refused('invalid_input:ceiling', 'the ceiling is a percent from 1 to 100')
+                limit = int(limit) if float(limit).is_integer() else limit
+                ceilings = dict(current.get('ceilings') or {})
+                ceilings[window_id] = dict(entry, value=limit, utilization=used, relative=given if relative else None)
+                value['ceilings'] = ceilings
+                event.update(value=limit, utilization=used)
+        elif action == 'resume':
+            ended = []
+            if isinstance(current.get('pause'), dict):
+                ended.append({'kind': 'pause', 'window': current['pause'].get('window'),
+                              'until': current['pause'].get('until'), 'command_id': current['pause'].get('command_id')})
+            for window, ceiling in sorted((current.get('ceilings') or {}).items()):
+                ended.append({'kind': 'ceiling', 'window': window, 'until': ceiling.get('until'),
+                              'command_id': ceiling.get('command_id')})
+            value['pause'], value['ceilings'] = None, {}
+            event.update(ended=ended)
+        else:
+            kind, set_by = params.get('kind'), params.get('set_by')
+            if kind == 'pause':
+                item = current.get('pause') if isinstance(current.get('pause'), dict) else None
+            else:
+                item = (current.get('ceilings') or {}).get(window_id)
+            if not isinstance(item, dict) or item.get('command_id') != set_by or not (
+                    _number(item.get('until')) and item['until'] <= now):
+                raise Refused('stale_subject:account_pacing', 'no %s of %s ends now' % (kind, account))
+            if kind == 'pause':
+                value['pause'] = None
+            else:
+                value['ceilings'] = {w: c for w, c in (current.get('ceilings') or {}).items() if w != window_id}
+            event.update(route=None, until=item['until'], value=item.get('value'), utilization=item.get('utilization'),
+                         observation=item.get('observation'), provenance=None,
+                         ended=[{'kind': kind, 'window': window_id, 'until': item['until'], 'command_id': set_by}])
+            event['pass'] = params.get('pass_id')
+        value['pacing'] = event
+        return value
+
     def _in_transaction(self, conn, params, before):
+        if params.get('action') in PACING + (END,):
+            # VELDO-0236: the owner's pacing is judged by VELDO-0203's factory owner rule, an end by the pass.
+            target = entity_id(params['account'])
+            current = copy.deepcopy((before.get(target) or {}).get('data'))
+            if params['action'] == END and self._command.get('principal') != self.principal:
+                raise Refused('missing_authority')
+            return {target: {'kind': KIND, 'data': self._pacing(conn, params, current)}}
         if self.authorize(conn, self._command) is not True:
             raise Refused('missing_authority')
         target = entity_id(params['account'])

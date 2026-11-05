@@ -70,6 +70,11 @@ for the verified principal, each refusing by name and writing nothing on a refus
   - set_account_cap: control_accounts.Accounts.cap, a versioned change of the account's run concurrency.
 A missing writer is unavailable_service by name.
 
+THE OWNER'S PACING (VELDO-0236). pause_account, resume_account and set_account_ceiling execute control_accounts'
+pause, resume and ceiling for the verified principal (route `ui`, the assertion digest its provenance), the same signed
+operations Telegram's typed commands reach through intake; control_accounts refuses anyone but the factory owner. The
+answer names the account, the window and the end in words in the authority's time zone (`time_zone`).
+
 READS (AC2). `inspect` is the read the API's session checks go through: named committed entities and the
 journal watermark, as the VELDO-0047 service's inspect answers them. `read` serves one published read
 model (control_api_models.read_model) from this connection for a principal who is a current person
@@ -131,6 +136,8 @@ BL = organ('control_backlog')
 DP = organ('control_dispatch')
 AA = organ('control_accounts')
 WORK_OPERATIONS = ('reprioritize_backlog', 'stop_worker', 'set_account_cap')
+# VELDO-0236: the owner's pacing of an account, each control_accounts' own signed operation.
+PACING_OPERATIONS = {'pause_account': 'pause', 'resume_account': 'resume', 'set_account_ceiling': 'ceiling'}
 # VELDO-0178: the conversation commands the API sends (control_conversation's OPEN, CLOSE, ROLE and ATTACH).
 CONVERSATION_OPERATIONS = ('open_conversation', 'close_conversation', 'change_conversation_role',
                            'attach_conversation_project')
@@ -234,8 +241,10 @@ class ApiAuthority:
     def __init__(self, store, membership, conn, *, ids, domain, edge, intake, settlement, credentials,
                  workflows=None, publication=None, notify=None, clock=time.time, observe=None, authority_lock=None,
                  catalog=None, mcp_credentials=None, records=None, configurations=None, team_routes=None,
-                 backlog=None, dispatches=None, accounts=None, stop=None, conversations=None):
+                 backlog=None, dispatches=None, accounts=None, stop=None, conversations=None, time_zone='UTC'):
         self.S, self.CM, self.conn = store, membership, conn
+        # VELDO-0236: the owner's time zone the pacing answers name their ends in.
+        self.time_zone = time_zone
         # VELDO-0178: control_conversation.Conversations on `conn`, which sends the owner's conversation commands.
         self.conversation_commands = conversations
         # VELDO-0131: control_backlog.Backlog, control_dispatch.Dispatches and control_accounts.Accounts on `conn`,
@@ -648,6 +657,8 @@ class ApiAuthority:
             return self._save_workflow(a)
         if a['operation'] in WORK_OPERATIONS:
             return self._work(a, packet, provenance)
+        if a['operation'] in PACING_OPERATIONS:
+            return self._pacing(a, provenance)
         if a['operation'] in CONVERSATION_OPERATIONS:
             return self._conversation(a)
         done = self.credentials.revoke_as_member(a['principal'], a['parameters']['credential_id'], provenance)
@@ -742,6 +753,31 @@ class ApiAuthority:
                 'missing_authority') else 'invalid_input' if str(c).startswith('invalid_input') else 'unknown_outcome')
             return {'outcome': 'refused', 'reason': _named(code, classify)}
 
+    def _pacing(self, a, provenance):
+        """VELDO-0236: the owner's pause, resume or ceiling of one account, control_accounts' own signed operation for
+        the verified principal; its command id is the API request id."""
+        if self.accounts is None:
+            return {'outcome': 'refused', 'reason': 'unavailable_service:accounts'}
+        p, kind = a['parameters'], PACING_OPERATIONS[a['operation']]
+        common = dict(principal=a['principal'], now=self.clock(), route='ui', provenance=provenance['assertion_digest'])
+        try:
+            if kind == 'pause':
+                event = self.accounts.pause(a['request_id'], p['account'], p['window'], **common)
+            elif kind == 'ceiling':
+                event = self.accounts.ceiling(a['request_id'], p['account'], p['window'], p['value'], **common)
+            else:
+                event = self.accounts.resume(a['request_id'], p['account'], **common)
+        except Exception as error:  # noqa: BLE001 - control_accounts' named refusal (its own Refused class)
+            code = getattr(error, 'code', None)
+            if not isinstance(code, str):
+                raise
+            return {'outcome': 'refused', 'reason': _named(code, lambda c: 'missing_authority' if str(c).startswith(
+                'missing_authority') else 'invalid_input' if str(c).startswith('invalid_input') else 'unknown_outcome')}
+        return {'outcome': {'pause': 'paused', 'ceiling': 'capped', 'resume': 'resumed'}[kind],
+                'account': p['account'], 'window': event.get('window'), 'until': event.get('until'),
+                'value': event.get('value'), 'utilization': event.get('utilization'), 'ended': event.get('ended'),
+                'words': AA.words(event, self.time_zone)}
+
     def _conversation(self, a):
         """VELDO-0178: the owner's conversation command, by control_conversation.Conversations, as the verified member
         on the version he saw; its command id is the API request id."""
@@ -802,6 +838,7 @@ class ApiAuthority:
                 'save_capability_configuration': 'save_agent_configuration', 'propose_team': 'team_operation',
                 'save_default_team': 'save_default_team_revision', 'reprioritize_backlog': BL.OPERATION,
                 'stop_worker': DP.OPERATION, 'set_account_cap': AA.OPERATION,
+                **{operation: AA.OPERATION for operation in PACING_OPERATIONS},
                 **{operation: 'conversation_command' for operation in CONVERSATION_OPERATIONS}}
 
     def _observe(self, about, ok, refusal, result):

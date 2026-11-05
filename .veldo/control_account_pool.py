@@ -24,6 +24,13 @@ with no later dispatch on it its receiver accepted) is still a candidate, ranked
 no such refusal: a logged-out account is never chosen while another can take the work, and an account logged
 in again is chosen when it is the one left, its receiver checking its login again before acceptance.
 
+THE OWNER'S PACING (VELDO-0236): an account the owner paused until a window's reset is passed over
+(`paused_until:<reset>`) while now is before that end, and one whose ceiling on a window is in force is passed over
+(`ceiling:<window>:<value>`) while that window's last observed utilization is at or above the value
+(control_accounts.paced); from the end on it is a candidate again with no command. Each end is among the resets
+`until` names, so the loop's timer (VELDO-0154 AC1) offers a waiting unit at that pass. The trace names the pacing
+command that caused each such pass-over (`paced`). A run already started is never stopped by either.
+
 THE ORDER: after LOGIN, the lowest last reported utilization on the tightest window (the highest utilization among
 the account's windows whose reported reset has not passed), an account whose utilization is unknown
 after every account whose utilization is known; then the fewest active runs; then the least recently
@@ -138,7 +145,7 @@ def choose(conn, records, request, now, check):
     Returns {account, trace} or {account: None, passed, until}: `passed` names each account's reason for
     being passed over, `until` the earliest reported reset among the accounts at their limit."""
     engine, host = request.get('engine'), request.get('host')
-    passed, ranked, until, windows = {}, [], None, {}
+    passed, ranked, until, windows, paced = {}, [], None, {}, {}
     excluded, refused = set(request.get('exclude') or ()), login_refused(conn)
     for record in accounts(conn):
         name = record['id']
@@ -153,6 +160,12 @@ def choose(conn, records, request, now, check):
             continue
         if name in excluded:
             passed[name] = 'account_login:excluded'
+            continue
+        pacing = ACC.paced(record, now)
+        if pacing is not None:
+            # VELDO-0236: the owner's pause or ceiling, until its end, which the loop's timer waits for.
+            passed[name], end, paced[name] = pacing
+            until = end if until is None else min(until, end)
             continue
         limited = ACC.blocking(record, now)
         if limited:
@@ -183,8 +196,8 @@ def choose(conn, records, request, now, check):
         chosen = candidate['account']
         return {'account': chosen, 'trace': {
             'schema': SCHEMA, 'engine': engine, 'host': host, 'chosen': chosen, 'at': now,
-            'candidates': candidates, 'passed': passed, 'windows': windows}}
-    return {'account': None, 'passed': passed, 'until': until}
+            'candidates': candidates, 'passed': passed, 'windows': windows, 'paced': paced}}
+    return {'account': None, 'passed': passed, 'until': until, 'paced': paced}
 
 
 def refusal(choice):
@@ -219,12 +232,17 @@ class Pool:
 
 
 def metrics(records):
-    """Dispatches per account, and runs ended account_limit per account and window, from the ledger."""
-    shown = {'dispatches': {}, 'account_limit': {}}
+    """Dispatches per account, runs ended account_limit per account and window, and dispatches that passed an
+    account over for the owner's pacing by reason (VELDO-0236: paused_until, ceiling), from the ledger."""
+    shown = {'dispatches': {}, 'account_limit': {}, 'passed_over': {'paused_until': 0, 'ceiling': 0}}
     for record in records.values():
         account = (record.get('context') or {}).get('account')
         if record.get('type') == 'worker':
             shown['dispatches'][account] = shown['dispatches'].get(account, 0) + 1
+            for reason in ((record.get('selection') or {}).get('passed') or {}).values():
+                head = str(reason).split(':', 1)[0]
+                if head in shown['passed_over']:
+                    shown['passed_over'][head] += 1
         elif record.get('type') == 'invocation' and record.get('outcome') == ACC.LIMIT_OUTCOME:
             window = (record.get('limit') or {}).get('window')
             per = shown['account_limit'].setdefault(account, {})

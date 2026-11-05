@@ -1536,7 +1536,13 @@ class Service:
                 S, CM, AC, ingress.acquirer, self.conn, domain=self.domain, projects=lambda: IN.store_projects(self.conn),
                 api_edge=ingress.settlement.api_edge, journal_signer=self.principal, sign=self.sign,
                 asker=ingress.presenter.edge, authority_generation=self.generation, observe=observe,
-                conversations=self.conversations())
+                conversations=self.conversations(),
+                # VELDO-0236: the owner's typed account commands, control_accounts' own writer on this connection.
+                accounts=lambda: L.ACC.Accounts(S, self.conn, principal=self.principal, signer=self.principal,
+                                                sign=self.sign, generation=self.generation,
+                                                observe_pacing=lambda event: self._log(dict(event, at=time.time(),
+                                                                                     domain_uuid=self.domain))),
+                time_zone=self.config.get('time_zone') or 'UTC')
         intake = self._telegram_intake
         taken = intake.take_acquired(None if not self._telegram_caught_up else evidence_ids)
         self._telegram_caught_up = True
@@ -3100,6 +3106,8 @@ class FactoryLoop:
         self.wakes, self.ended, self.timer = [], [], None
         # VELDO-0231: the clock flags are written with (the rate window's), and what this loop delivered.
         self.clock = time.time
+        # VELDO-0236: the account records each pass ends the owner's pauses and ceilings on (built when first needed).
+        self.accounts = None
         self.flag_counts = {'delivered': 0, 'held_back': 0, 'undelivered': 0, 'faults': 0}
         self.passes, self.last = 0, None
         self.counts = {'offered': 0, 'conversation_offered': 0, 'refused': 0, 'waiting': 0,
@@ -3268,6 +3276,24 @@ class FactoryLoop:
         report.setdefault('provisioning', []).append(answer)
         return answer
 
+    def lapse(self, report):
+        """VELDO-0236 AC4: the first pass at or after the end of an owner's pause or ceiling commits one record of that
+        end (control_accounts.Accounts.lapse, signed by this service); a later pass finds it ended and commits nothing.
+        What ended goes into the pass's report (`paces_ended`); a fault is named there, never the loop's end."""
+        service = self.service
+        try:
+            if self.accounts is None:
+                self.accounts = L.ACC.Accounts(S, service.conn, principal=service.principal, signer=service.principal,
+                                             sign=service.sign, generation=service.generation)
+            ended = self.accounts.lapse(self.clock(), pass_id=self.passes)
+        except Exception as error:  # noqa: BLE001 - a lapse that cannot run is a fault by name, never the end
+            report['faults'].append({'paces': 'lapse', 'reason': str(getattr(error, 'code', None)
+                                                                     or 'unknown_outcome:' + type(error).__name__)})
+            return []
+        report['paces_ended'] = [{k: e.get(k) for k in ('command_id', 'account', 'window', 'until', 'ended', 'pass')}
+                                 for e in ended]
+        return ended
+
     def wake(self, source, detail=None):
         self.wakes.append({'source': source, 'detail': detail, 'at': time.time()})
 
@@ -3365,6 +3391,7 @@ class FactoryLoop:
                   'offered': [], 'refused': [], 'waiting': [], 'decisions': [], 'asked': [], 'awaiting': [],
                   'stopped': [], 'faults': [], 'lands': [], 'provisioning': [], 'conversation_offered': []}
         self.provision(report, 'pass')
+        self.lapse(report)
         # VELDO-0188: a pass a journal advance woke makes the lines the store's before any work is offered.
         if 'journal' in report['sources']:
             try:

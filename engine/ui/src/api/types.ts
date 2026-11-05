@@ -23,6 +23,8 @@ export interface ReadAnswer<K extends string = string> {
   redacted: string[]
   watermark: Watermark
   freshness: 'live' | 'stale'
+  /** VELDO-0236: the spend read's pause, ceiling, resume and end records, read from the journal. */
+  pacing?: Record<string, unknown>[]
 }
 
 export interface SessionView {

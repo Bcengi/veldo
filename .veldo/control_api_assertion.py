@@ -70,6 +70,10 @@ OPERATIONS = {
     'reprioritize_backlog': {'parameters': ('item', 'item_version', 'rank'), 'boundary': 'command_acceptance'},
     'stop_worker': {'parameters': ('dispatch', 'dispatch_version'), 'boundary': 'command_acceptance'},
     'set_account_cap': {'parameters': ('account', 'account_version', 'concurrency'), 'boundary': 'command_acceptance'},
+    # VELDO-0236: the owner's pause of an account until a window resets, its resume, and a ceiling on one window.
+    'pause_account': {'parameters': ('account', 'window'), 'boundary': 'command_acceptance'},
+    'resume_account': {'parameters': ('account',), 'boundary': 'command_acceptance'},
+    'set_account_ceiling': {'parameters': ('account', 'window', 'value'), 'boundary': 'command_acceptance'},
     # VELDO-0178: the owner's conversation commands (control_conversation's OPEN, CLOSE, ROLE and ATTACH).
     'open_conversation': {'parameters': ('role',), 'boundary': 'command_acceptance'},
     'close_conversation': {'parameters': ('conversation', 'version'), 'boundary': 'command_acceptance'},

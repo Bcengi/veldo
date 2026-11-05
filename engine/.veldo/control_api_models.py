@@ -164,6 +164,11 @@ ACTIONS = (
     Action('project_cancel', None, None, None, None, 'VELDO-0076'),
     Action('worker_stop', 'workers.stop', 'stop_worker', 'control_dispatch', 'OPERATION', 'VELDO-0041'),
     Action('worker_cap', 'workers.cap', 'set_account_cap', 'control_accounts', 'OPERATION', 'VELDO-0062'),
+    # VELDO-0236: the owner's pause until a window resets, resume, and ceiling on one window of an account.
+    Action('account_pause', 'accounts.pause', 'pause_account', 'control_accounts', 'OPERATION', 'VELDO-0236'),
+    Action('account_resume', 'accounts.resume', 'resume_account', 'control_accounts', 'OPERATION', 'VELDO-0236'),
+    Action('account_ceiling', 'accounts.ceiling', 'set_account_ceiling', 'control_accounts', 'OPERATION',
+           'VELDO-0236'),
     Action('team_configuration_edit', 'teams.save', 'propose_team', 'control_team', 'OPERATION', 'VELDO-0162'),
     Action('agent_configuration_edit', 'configurations.save', 'save_capability_configuration',
            'control_agent_config', 'SAVE', 'VELDO-0162'),
@@ -272,6 +277,12 @@ def read_model(store, conn, name, scope=None):
                 continue
             items[item['kind']].append(item)
             redacted.extend(extra)
+        pacing = None
+        if name == 'spend':
+            # VELDO-0236 AC4: every pause, ceiling, resume and end of the accounts this reader sees, read from the
+            # journal at this read's watermark, never a cache.
+            seen = {item['data'].get('id') for item in items.get('account') or []}
+            pacing = [e for e in _organ('control_accounts').history(conn) if e.get('account') in seen]
     finally:
         if opened:
             conn.execute('COMMIT')
@@ -280,6 +291,8 @@ def read_model(store, conn, name, scope=None):
               'gaps': [g._asdict() for g in GAPS if g.criterion == 'AC2' and _gap_of(g, name)]}
     if name == 'workers':
         answer['machines'] = machines(items['dispatch'])
+    if pacing is not None:
+        answer['pacing'] = pacing
     return answer
 
 

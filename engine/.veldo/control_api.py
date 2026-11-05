@@ -214,6 +214,13 @@ ROUTES = (
           ('dispatch', 'dispatch_version'), (), 'stop_worker'),
     Route('workers.cap', 'POST', '/api/v1/domains/{domain}/workers/cap', 'work', True,
           ('account', 'account_version', 'concurrency'), (), 'set_account_cap'),
+    # VELDO-0236: the owner's pause until a window resets, resume, and ceiling on one window of an account.
+    Route('accounts.pause', 'POST', '/api/v1/domains/{domain}/accounts/pause', 'work', True,
+          ('account', 'window'), (), 'pause_account'),
+    Route('accounts.resume', 'POST', '/api/v1/domains/{domain}/accounts/resume', 'work', True,
+          ('account',), (), 'resume_account'),
+    Route('accounts.ceiling', 'POST', '/api/v1/domains/{domain}/accounts/ceiling', 'work', True,
+          ('account', 'window', 'value'), (), 'set_account_ceiling'),
     # VELDO-0178: the owner's conversations, their turns and replies, and his conversation commands.
     Route('conversations.read', 'GET', '/api/v1/domains/{domain}/conversations', 'conversations', True, (),
           ('conversation',), None),
@@ -494,6 +501,8 @@ class ControlApi:
                               'mcp.credential_set': self._write, 'mcp.credential_delete': self._write,
                               'mcp.credential_read': self._credential_read_refused})
         self.handlers.update({'backlog.reprioritize': self._write, 'workers.stop': self._write, 'workers.cap': self._write})
+        self.handlers.update({'accounts.pause': self._write, 'accounts.resume': self._write,
+                              'accounts.ceiling': self._write})
         self.handlers.update({'conversations.read': self._conversations_read, 'conversations.open': self._write,
                               'conversations.close': self._write, 'conversations.set_role': self._write,
                               'conversations.attach_project': self._write,
@@ -824,6 +833,9 @@ class ControlApi:
                   'delete_mcp_credential': 'mcp_credential', 'reprioritize_backlog': str(parameters.get('item')),
                   'stop_worker': 'dispatch:' + str(parameters.get('dispatch')),
                   'set_account_cap': 'account:' + str(parameters.get('account')),
+                  'pause_account': 'account:' + str(parameters.get('account')),
+                  'resume_account': 'account:' + str(parameters.get('account')),
+                  'set_account_ceiling': 'account:' + str(parameters.get('account')),
                   'open_conversation': 'conversation',
                   'close_conversation': 'conversation:' + str(parameters.get('conversation')),
                   'change_conversation_role': 'conversation:' + str(parameters.get('conversation')),
@@ -863,7 +875,8 @@ class ControlApi:
                 'settlement', 'ruling', 'workflow', 'version', 'revision', 'entity_digest', 'definition_digest',
                 'layout_digest', 'server', 'id', 'reference', 'seq', 'role', 'digest', 'team_id', 'owner_request',
                 'team_application', 'set_at', 'set_by', 'rank', 'dispatch', 'state', 'stop', 'account', 'concurrency',
-                'conversation', 'status', 'route', 'routed_to')
+                'conversation', 'status', 'route', 'routed_to', 'window', 'until', 'value', 'utilization', 'words',
+                'ended')
         return 200, dict({k: result[k] for k in keep if k in result}, api_request_id=request_id)
 
     @staticmethod
