@@ -12089,6 +12089,38 @@ def cases():
         "    paths = {'claude_code': qualified_claude(Refused)}\n",
         "    paths = {'claude_code': Path(shutil.which('claude')).resolve()}\n", ['setup/engines-record'])
 
+    # VELDO-0259: one installation reader, and a gate stage that refuses a candidate adding personal setup.
+    install259 = '127_veldo_0259_installation.py'
+    add(259, 'install259-builtin-person', install259, 'installation.py',
+        "            raise _missing(key)\n",
+        "            return {'display_name': 'Built In', 'role_id': 'owner'} if key == 'owner' else ['x']\n",
+        ['ac1/missing-by-name'])
+    result[-1]['siblings'] = True
+    add(259, 'install259-setup-untraced', install259, 'control_factory_setup.py',
+        "        print(json.dumps(dict(value, installation=installation), sort_keys=True))\n",
+        "        print(json.dumps(value, sort_keys=True))\n", ['ac1/traces'])
+    result[-1]['siblings'] = True
+    add(259, 'personal259-red-without-installation', install259, 'check_personal_setup.py',
+        "    return 1 if findings else 0\n",
+        "    return 1 if findings or not _load('installation.py').resolve()['found'] else 0\n",
+        ['ac1/fresh-clone', 'ac2/no-installation'])
+    result[-1]['dir'] = 'scripts'
+    add(259, 'personal259-patterns-ignored', install259, 'check_personal_setup.py',
+        "        for category, matcher in installation_rules:\n", "        for category, matcher in ():\n",
+        ['ac2/planted'])
+    result[-1]['dir'] = 'scripts'
+    add(259, 'personal259-uid-shape-dropped', install259, 'check_personal_setup.py',
+        "BUILTIN = ('home_path', 'login_uid', 'fixture_email', 'secret')",
+        "BUILTIN = ('home_path', 'fixture_email', 'secret')", ['ac2/planted'])
+    result[-1]['dir'] = 'scripts'
+    add(259, 'personal259-unmasked', install259, 'check_personal_setup.py',
+        "    return value[:2] + '***'\n", "    return value\n", ['ac2/masked'])
+    result[-1]['dir'] = 'scripts'
+    add(259, 'personal259-silent-builtin-only', install259, 'check_personal_setup.py',
+        "        out.write('personal setup: no installation found; ran the built-in shapes only\\n')\n",
+        "        pass\n", ['ac2/no-installation'])
+    result[-1]['dir'] = 'scripts'
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
