@@ -12190,6 +12190,31 @@ def cases():
         "            landed = {'ok': swapped, 'outcome': 'landed' if swapped else 'failed', 'published': swapped,\n"
         "                      'batch': single.record}\n",
         ['exact-tip/compare-and-swap'])
+    # Fix round 1, F1 (AC1): the API's intake is built without the batch starter, so the project view's Start batch
+    # would be an ordinary intake proposal.
+    add(239, 'batch239-api-intake-unwired', batch239, 'control_service_api.py',
+        "                              batches=_organ('control_batch_service').starter(\n"
+        "                                  self.S, self.conn, domain=ids['domain_uuid'], signer=principal, sign=sign,\n"
+        "                                  generation=generation, clock=clock))\n",
+        "                              )  # defect: the batch starter is not wired\n",
+        ['wire/constructions'])
+    # Fix round 1, F2 (AC3): the batch takes a caller's grant for its own subject as the approval.
+    add(239, 'batch239-caller-grant-accepted', batch239, 'control_batch.py',
+        "        grant = self.authority.approval(subject)\n",
+        "        grant = (dict(grant, ruling='grant', assignment=None) if isinstance(grant, dict)  # defect: caller's grant\n"
+        "                 and grant.get('subject') == subject else self.authority.approval(subject))\n",
+        ['authority/unsettled-grant'])
+    # Fix round 1, F2 (AC3): a unit's stored review is not bound to the commit the batch merges.
+    add(239, 'batch239-review-unbound', batch239, 'control_batch.py',
+        "        if review is None or review['commit'] != entry['commit'] or authority.landed(entry['unit']):\n",
+        "        if review is None or authority.landed(entry['unit']):  # defect: the review is not bound to the commit\n",
+        ['authority/review-commit'])
+    # Fix round 1, F3 (AC3): the swap is judged by the push's exit status, not by the trunk found after it.
+    add(239, 'batch239-push-status-judged', batch239, 'control_batch.py',
+        "        if not read:\n"
+        "            raise Refused(UNREAD, 'the trunk could not be read after the swap (%s exit %s)' % (operation, swap.returncode))\n",
+        "        return swap.returncode == 0 and found == r['tip'], found  # defect: judged by the swap's exit status\n",
+        ['push/at-tip', 'push/at-watermark'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
