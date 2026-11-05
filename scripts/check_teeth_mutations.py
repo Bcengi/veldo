@@ -12089,6 +12089,21 @@ def cases():
         "    paths = {'claude_code': qualified_claude(Refused)}\n",
         "    paths = {'claude_code': Path(shutil.which('claude')).resolve()}\n", ['setup/engines-record'])
 
+    # VELDO-0254: the falsifier of each acceptance criterion. AC1 a keystore reference resolved into a run's
+    # environment is named by the static row; AC2 a finding line that prints the matched value is found by the
+    # masking row; AC3 the confined runner made the default fails the default-run row.
+    scan254 = '127_veldo_0254_secret_scan.py'
+    add(254, 'delivery254-keystore-into-environment', scan254, 'control_launch.py',
+        "    runtime = environment.pop(ENGINE_RUNTIME, None)\n",
+        "    runtime = environment.pop(ENGINE_RUNTIME, None)\n"
+        "    environment['FIXTURE_MAIL_TOKEN'] = _organ('secretref').resolve_for_runtime('keychain:fixture-mail', "
+        "_organ('control_credential_keystore').SecretService()).reveal()\n", ['ac1/static-sites'])
+    add(254, 'scan254-value-in-finding', scan254, 'secret_scan.py',
+        "'masked': mask(kind, value)})", "'masked': mask(kind, value), 'value': value})", ['ac2/masked'])
+    add(254, 'runner254-confined-default', scan254, 'control_launch.py',
+        "    return {'runner': 'default', 'why': None}\n", "    return {'runner': 'confined', 'why': None}\n",
+        ['ac3/default-reaches'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

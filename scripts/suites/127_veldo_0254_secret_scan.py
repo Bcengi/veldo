@@ -10,7 +10,7 @@ a fixture run's files, environment and command line for canary credentials. AC2:
 workspace at run end, a landing candidate's changed files, a project tree on the owner's command and at setup,
 masked findings, the engine login fixture, reports only. AC3: the one launcher decision, a default run reaching a
 fixture database on host loopback (TCP and its Unix socket) and a fixture service on a local address, a risky run
-started in the confined runner (scripts/agent_sandbox.py), and a host without the runner's helper. Starts only
+taking the confined runner (scripts/agent_sandbox.py; suite 128 starts it), and a host without the runner's helper. Starts only
 loopback fixture servers and child processes; writes only temporary files.
 """
 
@@ -294,8 +294,8 @@ def _v254_suite():
         # AC2: one scan entry. The three triggers call it; no other module reports a found credential.
         launch_functions = functions(mods / 'control_launch.py')
         check('ac2/one-entry', 'the receiver\'s run end calls the run-end scan before the run directory goes',
-              '_scan_workspace' in calls(launch_functions['Receiver._finish'])
-              and 'scan_run_end' in calls(launch_functions['Receiver._scan_workspace'])
+              'run_end_scan' in calls(launch_functions['Receiver._finish'])
+              and 'scan_run_end' in calls(launch_functions['run_end_scan'])
               and 'scan' in calls(launch_functions['scan_run_end'])
               and 'scan' in calls(launch_functions['scan_candidate']))
         reporters = sorted(p.name for p in mods.glob('*.py')
@@ -410,13 +410,11 @@ print(json.dumps(out))
               all(decision == {'runner': 'confined', 'why': why} for why, decision in decided))
         check('ac3/risky-confined', 'another project\'s mark leaves this launch on the default runner',
               L.runner_decision(dict(runner_config, risky={'projects': ['other']}), contract())['runner'] == 'default')
-        check('ac3/risky-confined', 'this host provides the confined runner [%s]' % L.confined_runner_problem(runner_config),
-              L.confined_runner_problem(runner_config) is None)
         confined = L.runner_argv(runner_config, decided[2][1], probe_argv, str(runs))
-        inside = started(confined)
-        check('ac3/risky-confined', 'the risky run starts in the confined runner [%s]' % inside,
-              'veldo-userns-child' in str(inside.get('label')) and confined[-len(probe_argv):] == probe_argv
-              and confined != probe_argv)
+        check('ac3/risky-confined', 'the risky run\'s argv is the confined runner around the same command (suite '
+              '128 starts it on a host that provides the runner)',
+              confined[:4] == [sys.executable, '-I', '-S', str(SANDBOX)] and confined[-len(probe_argv):] == probe_argv
+              and L.confined_inner(confined) == probe_argv)
 
         # AC3: a host without the confined runner's setup. A default run starts; a risky run is refused by name.
         missing = base / 'nohelper'
@@ -430,7 +428,7 @@ print(json.dumps(out))
                                     'config': str(missing / 'agent_sandbox.json')}}
         problem = L.confined_runner_problem(bare)
         check('ac3/no-runner-host', 'the missing helper is a named problem [%s]' % problem,
-              isinstance(problem, str) and problem.startswith('confined_runner_unavailable:'))
+              problem == 'confined_runner_unavailable:helper_missing')
         check('ac3/no-runner-host', 'an installation with no confined runner configured has one too',
               str(L.confined_runner_problem({})).startswith('confined_runner_unavailable:'))
         seen_bare = started(L.runner_argv(bare, L.runner_decision(bare, contract()), probe_argv, str(runs)))

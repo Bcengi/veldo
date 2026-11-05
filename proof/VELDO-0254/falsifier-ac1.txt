@@ -1,0 +1,7 @@
+AC1 falsifier: a fixture service's keystore reference resolved into a run's environment (control_launch.engine_environment)
+  selector    --suite 127_veldo_0254_secret_scan
+  running     1 of 189 suites: 127_veldo_0254_secret_scan
+  SELFTEST FAIL: VELDO-0254 ac1/static-sites: no launch site resolves a keystore reference or reads a credential, but the VELDO-0158 one VELDO-0257 removes [['credential_delivery_site:control_launch.py:engine_environment']]
+  SELFTEST FAIL: VELDO-0254 ac1/static-planted: the plant changed only that site
+  127_veldo_0254_secret_scan                      13 passed    2.77s
+selftest (PARTIAL, 1 of 189 suites): 39 passed, 2 failed in 2.77s

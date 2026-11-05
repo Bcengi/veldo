@@ -208,6 +208,7 @@ from pathlib import Path
 import select
 import shutil
 import queue
+import re
 import signal
 import socket
 import subprocess
@@ -304,6 +305,25 @@ def scan_run_end(config, dispatch_id, project, roots, held=(), notify=None):
                    dispatch=dispatch_id)
 
 
+def run_end_scan(receiver, dispatch_id, contract):
+    """VELDO-0254 AC2: the run-end scan of a receiver's run workspace (its clone's work tree and scratch, its
+    conversation directory, its own run directory), before the run directory goes. It reports only; a scan that
+    fails is noted on stderr and changes nothing about the run."""
+    try:
+        config, roots = receiver.config, []
+        if config.get('clones'):
+            clones = _organ('control_clone').Clones(receiver.dispatches, **config['clones'])
+            handle = clones.clone_of(dispatch_id)
+            if handle is not None:
+                paths = clones._paths(handle)
+                roots += [paths.get('work'), (paths.get('scratch') or {}).get(dispatch_id)]
+        roots += [receiver.conversation_directory, receiver.run]
+        project = (contract.get('reservation') or {}).get('project') or contract.get('repository')
+        scan_run_end(config, dispatch_id, project, [r for r in roots if r])
+    except Exception as error:
+        sys.stderr.write('secret scan at run end failed: %s\n' % type(error).__name__)
+
+
 def scan_candidate(config, project, repository, base, head, held=(), notify=None):
     """The landing-candidate trigger: the files `head` adds or changes against `base`, before it lands."""
     return SS.scan('landing_candidate', project, SS.candidate_files(repository, base, head), held=held,
@@ -342,17 +362,23 @@ def confined_runner_problem(config):
         return 'confined_runner_unavailable:program_missing'
     if not os.path.isfile(settings):
         return 'confined_runner_unavailable:config_missing'
+    # The helper the runner names, read from its source (never loaded into this process), then the runner's own
+    # self-test of the namespace it makes: only a host where both hold provides the confined runner.
     try:
-        spec = importlib.util.spec_from_file_location('launch_confined_runner', program)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        helper = Path(module.NAMESPACE_HELPER)
-        if not os.path.lexists(helper):
-            return 'confined_runner_unavailable:helper_missing'
-        if module.helper_problem(helper):
-            return 'confined_runner_unavailable:helper_untrusted'
-    except Exception:
+        named = re.search(r"^NAMESPACE_HELPER = Path\('([^']+)'\)$", Path(program).read_text(), re.M)
+    except (OSError, UnicodeError):
+        named = None
+    if named is None:
         return 'confined_runner_unavailable:program_unusable'
+    if not os.path.lexists(named.group(1)):
+        return 'confined_runner_unavailable:helper_missing'
+    try:
+        tested = subprocess.run([sys.executable, '-I', '-S', program, 'namespace-selftest'], capture_output=True,
+                                timeout=120, stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError):
+        tested = None
+    if tested is None or tested.returncode != 0:
+        return 'confined_runner_unavailable:namespace_selftest'
     return None
 
 
@@ -1489,24 +1515,6 @@ class Receiver:
                 self._exit_group.close()
                 self._exit_group = None
 
-    def _scan_workspace(self, dispatch_id, contract):
-        """VELDO-0254 AC2: the run-end scan of the run's workspace (its clone's work tree and scratch, its
-        conversation directory, its own run directory), before the run directory goes. It reports only; a scan
-        that fails is noted on stderr and changes nothing about the run."""
-        roots = []
-        try:
-            if self.config.get('clones'):
-                clones = _organ('control_clone').Clones(self.dispatches, **self.config['clones'])
-                handle = clones.clone_of(dispatch_id)
-                if handle is not None:
-                    paths = clones._paths(handle)
-                    roots += [paths.get('work'), (paths.get('scratch') or {}).get(dispatch_id)]
-            roots += [self.conversation_directory, self.run]
-            project = (contract.get('reservation') or {}).get('project') or contract.get('repository')
-            scan_run_end(self.config, dispatch_id, project, [r for r in roots if r])
-        except Exception as error:
-            sys.stderr.write('secret scan at run end failed: %s\n' % type(error).__name__)
-
     def _finish(self, termination, contract, contract_digest, process, remote):
         dispatch_id = contract['dispatch_id']
         if self.metering is not None:
@@ -1514,7 +1522,7 @@ class Receiver:
             self.metering.settle(termination, (self.supervision or {}).get('cause'))
             if self.metering.report is not None:
                 self.emit({'event': 'artifact', 'artifact': self.metering.report})
-        self._scan_workspace(dispatch_id, contract)
+        run_end_scan(self, dispatch_id, contract)
         self._remove_run()
         if remote and termination['deadline_stop']:
             # Stopping the local transport at the deadline does not show the remote engine ended: its
