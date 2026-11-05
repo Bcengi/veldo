@@ -4,9 +4,9 @@ Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 
  RUN  v5.0.5 /tmp/v236-ui
 
- ❯ src/features/usage/pacing.spec.ts (0 test)
+ ? src/features/usage/pacing.spec.ts (0 test)
 
-⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+?????? Failed Suites 1 ???????
 
  FAIL  src/features/usage/pacing.spec.ts [ src/features/usage/pacing.spec.ts ]
 Error: Failed to resolve import "./AccountPacing.vue" from "src/features/usage/pacing.spec.ts". Does the file exist?
@@ -18,19 +18,19 @@ Error: Failed to resolve import "./AccountPacing.vue" from "src/features/usage/p
      |                             ^
   6  |  import { canCap, canPause, ceilingValue, historyOf, pacingOf } from "./pacing";
   7  |  afterEach(() => vi.unstubAllGlobals());
- ❯ TransformPluginContext._formatLog node_modules/vite/dist/node/chunks/node.js:8803:39
- ❯ TransformPluginContext.error node_modules/vite/dist/node/chunks/node.js:8800:14
- ❯ resolveId node_modules/vite/dist/node/chunks/node.js:26594:18
- ❯ node_modules/vite/dist/node/chunks/node.js:26693:23
- ❯ TransformPluginContext.transform node_modules/vite/dist/node/chunks/node.js:26666:4
- ❯ EnvironmentPluginContainer.transform node_modules/vite/dist/node/chunks/node.js:8582:14
- ❯ loadAndTransform node_modules/vite/dist/node/chunks/node.js:20155:26
+ ? TransformPluginContext._formatLog node_modules/vite/dist/node/chunks/node.js:8803:39
+ ? TransformPluginContext.error node_modules/vite/dist/node/chunks/node.js:8800:14
+ ? resolveId node_modules/vite/dist/node/chunks/node.js:26594:18
+ ? node_modules/vite/dist/node/chunks/node.js:26693:23
+ ? TransformPluginContext.transform node_modules/vite/dist/node/chunks/node.js:26666:4
+ ? EnvironmentPluginContainer.transform node_modules/vite/dist/node/chunks/node.js:8582:14
+ ? loadAndTransform node_modules/vite/dist/node/chunks/node.js:20155:26
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+????????????????????????[1/1]?
 
 
  Test Files  1 failed (1)
       Tests  no tests
-   Start at  21:20:19
-   Duration  17.50s (environment 98%, transform 1%, worker 1%)
+   Start at  21:48:06
+   Duration  582ms (environment 98%, setup 1%, transform 1%, worker 1%)
 

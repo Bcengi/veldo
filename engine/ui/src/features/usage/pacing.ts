@@ -1,7 +1,7 @@
 import type { ReadAnswer } from '@/api/types'
 
-/** VELDO-0236: the owner's pacing of each account, read from the spend read's account records (their windows, pause
- * and ceilings) and its pacing history (the journal's own records). A pause or ceiling past its end is out of force
+/** VELDO-0236: the owner's pacing of each account, read from the pacing read (accounts.pacing): its account records
+ * (their windows, pause and ceilings) and its history (the journal's own records). A pause or ceiling past its end is out of force
  * and is not shown as one: it ended at its window's reset with no command. */
 
 export interface PaceWindow {
@@ -55,9 +55,9 @@ export function percentOf(utilization: unknown): number | null {
 }
 
 /** Each account's windows with utilization and reset, and its pause and ceilings in force at `now` (seconds). */
-export function pacingOf(spend: ReadAnswer | null, now: number): AccountPacing[] {
+export function pacingOf(read: ReadAnswer | null, now: number): AccountPacing[] {
   const found: AccountPacing[] = []
-  for (const item of spend?.items.account ?? []) {
+  for (const item of read?.items.account ?? []) {
     const d = item.data as Record<string, any>
     const windows: PaceWindow[] = Object.entries((d.windows ?? {}) as Record<string, Record<string, unknown>>)
       .map(([id, w]) => ({ id, utilization: percentOf(w.utilization), resetAt: num(w.reset_at) }))
@@ -78,8 +78,8 @@ export function pacingOf(spend: ReadAnswer | null, now: number): AccountPacing[]
 }
 
 /** The pacing history of the read, in journal order: every pause, ceiling, resume and end. */
-export function historyOf(spend: ReadAnswer | null): PacingEvent[] {
-  return (spend?.pacing ?? [])
+export function historyOf(read: ReadAnswer | null): PacingEvent[] {
+  return (read?.pacing ?? [])
     .map((e) => ({
       seq: num(e.seq) ?? 0, type: str(e.type), account: str(e.account), window: str(e.window), until: num(e.until),
       value: num(e.value), principal: str(e.principal), route: str(e.route),

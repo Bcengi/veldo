@@ -9,7 +9,7 @@ import { canCap, canPause, ceilingValue, historyOf, pacingOf } from './pacing'
 afterEach(() => vi.unstubAllGlobals())
 
 const account = (id: string, data: Record<string, unknown>) => ({ id: `account:${id}`, kind: 'account', version: 1, digest: 'd', data: { id, label: id, status: 'active', ...data } })
-const spend = {
+const read = {
   items: {
     account: [
       account('account-a', {
@@ -31,15 +31,15 @@ const spend = {
 
 describe('pacing', () => {
   it('shows each window with utilization and reset, and only the pause and ceilings in force', () => {
-    const [a, b] = pacingOf(spend, 100)
+    const [a, b] = pacingOf(read, 100)
     expect(a!.windows).toEqual([{ id: 'five_hour', utilization: 40, resetAt: 1000 }, { id: 'seven_day', utilization: null, resetAt: 5000 }])
     expect(a!.pause).toEqual({ window: 'five_hour', until: 1000 })
     expect(a!.ceilings.map((c) => c.window)).toEqual(['seven_day'])
     expect(b!.pause).toBeNull()
-    expect(pacingOf(spend, 1000)[0]!.pause).toBeNull()
+    expect(pacingOf(read, 1000)[0]!.pause).toBeNull()
   })
   it('reads the history in journal order', () => {
-    expect(historyOf(spend).map((e) => e.type)).toEqual(['pause', 'ceiling', 'resume', 'end'])
+    expect(historyOf(read).map((e) => e.type)).toEqual(['pause', 'ceiling', 'resume', 'end'])
   })
   it('takes a percent from 1 to 100 or a relative +N, and nothing else', () => {
     expect(ceilingValue('50')).toBe(50)
@@ -49,29 +49,30 @@ describe('pacing', () => {
     expect(ceilingValue('ten')).toBeNull()
   })
   it('offers a ceiling only on a window with observed utilization and a reset ahead', () => {
-    const [a] = pacingOf(spend, 100)
+    const [a] = pacingOf(read, 100)
     expect(canCap(a!.windows[0]!, 100)).toBe(true)
     expect(canCap(a!.windows[1]!, 100)).toBe(false)
     expect(canPause(a!.windows[1]!, 100)).toBe(true)
     expect(canPause(a!.windows[0]!, 2000)).toBe(false)
   })
-  it('names a published route for each of the three commands', () => {
+  it('names a published route for each of the three commands and the read', () => {
     expect(published(ACTION_ROUTES.account_pause)).toBe(true)
     expect(published(ACTION_ROUTES.account_resume)).toBe(true)
     expect(published(ACTION_ROUTES.account_ceiling)).toBe(true)
+    expect(published('accounts.pacing')).toBe(true)
   })
 })
 
 describe('AccountPacing states', () => {
   it('empty: no account', () => {
     setActivePinia(createPinia())
-    const wrapper = mount(AccountPacing, { props: { spend: { items: { account: [] } } as unknown as ReadAnswer, now: 100 } })
+    const wrapper = mount(AccountPacing, { props: { pacing: { items: { account: [] } } as unknown as ReadAnswer, now: 100 } })
     expect(wrapper.find('[data-testid="pacing-empty"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="pacing-history-empty"]').exists()).toBe(true)
   })
   it('populated: the pause, the ceiling, the actions and the history', () => {
     setActivePinia(createPinia())
-    const wrapper = mount(AccountPacing, { props: { spend, now: 100 } })
+    const wrapper = mount(AccountPacing, { props: { pacing: read, now: 100 } })
     expect(wrapper.find('[data-account="account-a"] [data-testid="pacing-paused"]').text()).toContain('five_hour')
     expect(wrapper.find('[data-testid="pacing-ceiling"]').text()).toContain('50%')
     expect(wrapper.findAll('[data-account="account-a"] [data-testid="pacing-pause"]').length).toBe(2)
@@ -83,7 +84,7 @@ describe('AccountPacing states', () => {
     setActivePinia(createPinia())
     const fetch = vi.fn()
     vi.stubGlobal('fetch', fetch)
-    const wrapper = mount(AccountPacing, { props: { spend, now: 100 } })
+    const wrapper = mount(AccountPacing, { props: { pacing: read, now: 100 } })
     await wrapper.find('[data-account="account-a"] [data-window="five_hour"] [data-testid="pacing-ceiling-value"]').setValue('0')
     await wrapper.find('[data-account="account-a"] [data-window="five_hour"] [data-testid="pacing-ceiling-set"]').trigger('click')
     await flushPromises()

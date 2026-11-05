@@ -206,6 +206,8 @@ ROUTES = (
     # credential records' metadata (never a value), and the repositories with their Git identities.
     Route('mcp.list', 'GET', '/api/v1/domains/{domain}/mcp/servers', 'configuration', True, (), (), None),
     Route('repositories.read', 'GET', '/api/v1/domains/{domain}/repositories', 'configuration', True, (), (), None),
+    # VELDO-0236: the accounts' pauses and ceilings and their history from the journal (control_api_models' pacing).
+    Route('accounts.pacing', 'GET', '/api/v1/domains/{domain}/accounts/pacing', 'work', True, (), (), None),
     # VELDO-0131 (owner, Telegram 38184): the owner's commands over the factory's work, each the existing writer's
     # command for the session's member at the version the screen showed (control_api_authority._work).
     Route('backlog.reprioritize', 'POST', '/api/v1/domains/{domain}/backlog/reprioritize', 'work', True,

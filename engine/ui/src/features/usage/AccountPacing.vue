@@ -8,13 +8,13 @@ import VButton from '@/components/VButton.vue'
 import { canCap, canPause, ceilingValue, eventWords, historyOf, pacingOf } from './pacing'
 
 /** VELDO-0236: each account's windows with utilization and reset, its pause and ceilings in force, the owner's
- * pause, ceiling and resume actions, and the pacing history read from the journal. A refusal is shown beside the
+ * pause, ceiling and resume actions, and the history, all from the pacing read (accounts.pacing, from the journal). A refusal is shown beside the
  * action with its name; an action is shown done only when the API answers it. */
-const props = defineProps<{ spend: ReadAnswer | null; now: number }>()
+const props = defineProps<{ pacing: ReadAnswer | null; now: number }>()
 const emit = defineEmits<{ changed: [] }>()
 
-const accounts = computed(() => pacingOf(props.spend, props.now))
-const history = computed(() => historyOf(props.spend))
+const accounts = computed(() => pacingOf(props.pacing, props.now))
+const history = computed(() => historyOf(props.pacing))
 const pending = ref<string | null>(null)
 const answer = ref<{ key: string; words: string } | null>(null)
 const refusal = ref<{ key: string; refusal: { refusal: string; error: string } } | null>(null)

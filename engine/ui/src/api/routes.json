@@ -38,6 +38,7 @@
     "backlog.reprioritize": {"method": "POST", "path": "/api/v1/domains/{domain}/backlog/reprioritize", "required": ["item", "item_version", "rank"], "optional": []},
     "workers.stop": {"method": "POST", "path": "/api/v1/domains/{domain}/workers/stop", "required": ["dispatch", "dispatch_version"], "optional": []},
     "workers.cap": {"method": "POST", "path": "/api/v1/domains/{domain}/workers/cap", "required": ["account", "account_version", "concurrency"], "optional": []},
+    "accounts.pacing": {"method": "GET", "path": "/api/v1/domains/{domain}/accounts/pacing", "required": [], "optional": []},
     "accounts.pause": {"method": "POST", "path": "/api/v1/domains/{domain}/accounts/pause", "required": ["account", "window"], "optional": []},
     "accounts.resume": {"method": "POST", "path": "/api/v1/domains/{domain}/accounts/resume", "required": ["account"], "optional": []},
     "accounts.ceiling": {"method": "POST", "path": "/api/v1/domains/{domain}/accounts/ceiling", "required": ["account", "window", "value"], "optional": []},

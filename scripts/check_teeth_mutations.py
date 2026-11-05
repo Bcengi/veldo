@@ -12480,6 +12480,38 @@ def cases():
         '                    break\n',
         ['AC3/pending'])
 
+    # VELDO-0236: each acceptance criterion's declared falsifier as one exact edit: a pause kept in force after its
+    # reset until a resume; a ceiling that outlives its window's reset; the Telegram /pause setting the indefinite
+    # paused status instead of the timed pause; an end at reset not recorded.
+    suite236 = '139_veldo_0236_account_pacing.py'
+    add(236, 'pace236-pause-outlives-reset', suite236, 'control_accounts.py',
+        "    if isinstance(pause, dict) and _number(pause.get('until')) and now < pause['until']:\n",
+        "    if isinstance(pause, dict) and _number(pause.get('until')):  # defect: in force until a resume\n",
+        ['pause/ends'])
+    add(236, 'pace236-ceiling-outlives-reset', suite236, 'control_accounts.py',
+        "        if not (isinstance(ceiling, dict) and _number(ceiling.get('until')) and now < ceiling['until']):\n",
+        "        if not (isinstance(ceiling, dict) and _number(ceiling.get('until'))):  # defect: outlives its reset\n",
+        ['ceiling/lapse'])
+    add(236, 'pace236-telegram-indefinite', suite236, 'control_intake.py',
+        "                event = accounts.pause(command_id, words[0], words[1], **common)\n",
+        "                accounts.principal = command['principal']  # defect: the indefinite paused status\n"
+        "                accounts.status(command_id, words[0], 'paused', now=common['now'])\n"
+        "                event = {'type': 'pause', 'account': words[0], 'window': words[1], 'until': 0, 'at': common['now']}\n",
+        ['route/telegram'])
+    add(236, 'pace236-end-unrecorded', suite236, 'control_accounts.py',
+        "                try:\n"
+        "                    self.store.execute(self.conn, command, self.signer, self.sign, self.generation)\n"
+        "                except (Refused, self.store.StoreRefused) as error:\n",
+        "                try:\n"
+        "                    pass  # defect: the end at reset is not recorded\n"
+        "                except (Refused, self.store.StoreRefused) as error:\n",
+        ['journal/history'])
+    # Each module loads its organs beside itself by path (control_intake its accounts and project organs), so each
+    # mutant runs in a whole .veldo copy.
+    for case in result:
+        if case['finding'] == 236:
+            case['siblings'] = True
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

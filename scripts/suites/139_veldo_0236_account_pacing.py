@@ -11,21 +11,18 @@ by the reservation service member as the launch receiver writes them (VELDO-0166
 lapse (control_service.FactoryLoop.lapse) as each pass runs it; the production intake (control_intake) over the
 production VELDO-0066 Acquirer and a loopback Bot API stand-in for the Telegram route; the production ControlApi over
 the production ApiAuthority holding the authority's lock, its writes assertions the API edge's real key signs (the
-api channel edge enrolled by the steward's signed command), for the UI route and the spend read's history. The UI's
-pacing logic and component states are its Vitest spec (src/features/usage/pacing.spec.ts), run on the checkout's
-locked dependencies (node_modules, or npm ci --prefer-offline into a scratch copy). No real engine, login, Telegram
-or network beyond loopback; no credential exists. Writes only temporary fixtures.
+api channel edge enrolled by the steward's signed command), for the UI route and the pacing read's history. The UI's
+pacing logic and component states are its Vitest spec (src/features/usage/pacing.spec.ts), which suite
+120_veldo_0131_factory_ui runs with every usage spec. No real engine, login, Telegram or network beyond loopback; no
+credential exists. Writes only temporary fixtures.
 """
 
 
 def _v236_suite():
-    import glob
     import importlib.util
     import json
     import os
     from pathlib import Path
-    import pwd
-    import re
     import shutil
     import subprocess
     import tempfile
@@ -51,7 +48,7 @@ def _v236_suite():
     }
     ROWS = ('pause/ends', 'pause/no-reset', 'ceiling/relative', 'ceiling/lapse', 'resume/early',
             'ceiling/no-utilization', 'route/telegram', 'route/ui', 'route/other', 'journal/history', 'journal/once',
-            'observability/counts', 'ui/states')
+            'observability/counts')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -485,9 +482,11 @@ def _v236_suite():
               all(n in table for n in ('accounts.pause', 'accounts.resume', 'accounts.ceiling'))
               and ui.route_problems() == []
               and {a.name for a in API.MO.ACTIONS} >= {'account_pause', 'account_resume', 'account_ceiling'})
-        status, spend = call('GET', 'spend')
+        status, spend = call('GET', 'accounts/pacing')
         served = [e for e in (spend or {}).get('pacing') or [] if e.get('account') in ('account-ui', 'account-tg')]
-        check('route/ui', 'the spend read serves the history from the journal [%s]' % status,
+        _status, plain = call('GET', 'spend')
+        check('route/ui', 'the spend read keeps its representation (no pacing field)', 'pacing' not in (plain or {}))
+        check('route/ui', 'the pacing read serves the accounts and the history from the journal [%s]' % status,
               status == 200 and [e.get('seq') for e in served] == [e['seq'] for e in history() if e.get('account')
                                                                   in ('account-ui', 'account-tg')] and len(served) >= 7)
 
@@ -510,51 +509,6 @@ def _v236_suite():
               and not [r for r in S.export_journal(conn) if r['seq'] > count
                        and 'account:account-ui' in r['transition']])
 
-        # The UI's pacing logic and its component states (empty, populated, refused), as its Vitest spec states them.
-        UI = ROOT / 'engine' / 'ui'
-
-        def environment():
-            env = dict(os.environ)
-            home = pwd.getpwuid(os.getuid()).pw_dir
-            found = sorted(glob.glob(os.path.join(home, '.nvm', 'versions', 'node', 'v*', 'bin')),
-                           key=lambda p: [int(x) for x in re.findall(r'\d+', os.path.basename(os.path.dirname(p)))])
-            if found:
-                env['PATH'] = found[-1] + os.pathsep + env.get('PATH', '')
-            return env
-
-        def run(args, cwd, timeout=600):
-            try:
-                done = subprocess.run(args, cwd=str(cwd), env=environment(), capture_output=True, text=True,
-                                      timeout=timeout, stdin=subprocess.DEVNULL)
-                return done.returncode, (done.stdout or '') + (done.stderr or '')
-            except (OSError, subprocess.TimeoutExpired) as error:
-                return -1, '%s: %s' % (type(error).__name__, error)
-        scratch = base / 'ui'
-        shutil.copytree(UI, scratch, ignore=lambda d, names: [n for n in names if Path(d) == UI and n in
-                                                              ('node_modules', 'dist', 'test-results', 'playwright-report')])
-        code = 0
-        if (UI / 'node_modules').is_dir():
-            os.symlink(UI / 'node_modules', scratch / 'node_modules')
-        else:
-            code, out = run(['npm', 'ci', '--prefer-offline', '--no-audit', '--no-fund'], scratch)
-            check('ui/states', 'the locked UI dependencies are installed [%s]' % out[-300:].replace('\n', ' '), code == 0)
-        if code == 0:
-            spec = scratch / 'src' / 'features' / 'usage' / 'pacing.spec.ts'
-            out_file = base / 'vitest.json'
-            code, out = run(['npx', 'vitest', 'run', 'src/features/usage/pacing.spec.ts', 'src/api/actions.spec.ts',
-                             '--reporter=json', '--outputFile=' + str(out_file)], scratch, timeout=300)
-            try:
-                unit = json.loads(out_file.read_text())
-            except (OSError, ValueError):
-                unit = {}
-            results = [a for f in unit.get('testResults') or [] for a in f.get('assertionResults') or []]
-            failed = [a.get('fullName') for a in results if a.get('status') != 'passed']
-            names = {a.get('fullName') for a in results}
-            check('ui/states', 'the pacing spec exists and passes [%d passed, failed %s]'
-                  % (len(results) - len(failed), failed[:4]), spec.is_file() and code == 0 and results and not failed)
-            check('ui/states', 'it states the empty, populated and refused states of the usage screen\'s pacing',
-                  all(any(n and n.startswith('AccountPacing states ' + s) for n in names)
-                      for s in ('empty', 'populated', 'error')))
     except Exception as error:  # noqa: BLE001 - a fixture that broke fails every row still empty, by name
         import traceback
         traceback.print_exc()

@@ -1,0 +1,4 @@
+pace236-pause-outlives-reset: expected red ['pause/ends']; failed rows ['pause/ends', 'route/telegram']; selftest (PARTIAL, 1 of 203 suites): 37 passed, 2 failed in 82.50s; RED as declared
+pace236-ceiling-outlives-reset: expected red ['ceiling/lapse']; failed rows ['ceiling/lapse']; selftest (PARTIAL, 1 of 203 suites): 38 passed, 1 failed in 37.66s; RED as declared
+pace236-telegram-indefinite: expected red ['route/telegram']; failed rows ['route/other', 'route/telegram', 'route/ui']; selftest (PARTIAL, 1 of 203 suites): 36 passed, 3 failed in 48.71s; RED as declared
+pace236-end-unrecorded: expected red ['journal/history']; failed rows ['journal/history', 'journal/once']; selftest (PARTIAL, 1 of 203 suites): 37 passed, 2 failed in 80.70s; RED as declared

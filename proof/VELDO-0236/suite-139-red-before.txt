@@ -12,28 +12,28 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-  /tmp/tmp45z0_kyc: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmp45z0_kyc/nocrit.md: no acceptance criteria
-  /tmp/tmp45z0_kyc/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/tmp45z0_kyc/status.md: bad status: donezo
-  /tmp/tmp45z0_kyc/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/tmp45z0_kyc/proof2.json: spec criterion AC1 missing from proof
-  /tmp/tmp45z0_kyc/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/tmp45z0_kyc/proof4.json: criterion AC1 passed without evidence
-  /tmp/tmp45z0_kyc/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/tmp45z0_kyc/verdict.json: bad verdict: looks_fine
-  /tmp/tmpkhpyr81n/cycle.md: dependency cycle through WARP-9101
-  /tmp/tmpkhpyr81n/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/tmpkhpyr81n/oref.md: feature F1: unknown outcome ref O7
-  /tmp/tmpkhpyr81n/fref.md: work W1: unknown feature ref F9
-  /tmp/tmpkhpyr81n/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/tmpkhpyr81n/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/tmpkhpyr81n/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/tmpkhpyr81n/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/tmpkhpyr81n/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/tmpkhpyr81n/dupspec.md: duplicate spec ids across work items
-  /tmp/tmpkhpyr81n/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/tmpkhpyr81n/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  /tmp/tmpa84lghog: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpa84lghog/nocrit.md: no acceptance criteria
+  /tmp/tmpa84lghog/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmpa84lghog/status.md: bad status: donezo
+  /tmp/tmpa84lghog/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmpa84lghog/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmpa84lghog/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmpa84lghog/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmpa84lghog/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmpa84lghog/verdict.json: bad verdict: looks_fine
+  /tmp/tmpy946ifil/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmpy946ifil/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmpy946ifil/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmpy946ifil/fref.md: work W1: unknown feature ref F9
+  /tmp/tmpy946ifil/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmpy946ifil/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmpy946ifil/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmpy946ifil/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmpy946ifil/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmpy946ifil/dupspec.md: duplicate spec ids across work items
+  /tmp/tmpy946ifil/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmpy946ifil/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
@@ -73,12 +73,12 @@ VELDO-0236 detail: route/telegram: its records are the pause, ceiling and resume
 VELDO-0236 detail: route/telegram: each answer names the account, the window and the end in words [[]]
 VELDO-0236 detail: route/telegram: the pause carries its end: no indefinite status, the account selected at its reset
 VELDO-0236 detail: route/telegram: no message became a proposal
-  SELFTEST FAIL: VELDO-0236 route/ui: each route answers 200 with its outcome [[(404, 'missing_evidence:route'), (404, 'missing_evidence:route'), (404, 'missing_evidence:route')]]; each answer names the account, the window and the end in words; the same journal record types and fields as the Telegram route's; the routes, operations and UI actions are published together; the spend read serves the history from the journal [200]
+  SELFTEST FAIL: VELDO-0236 route/ui: each route answers 200 with its outcome [[(404, 'missing_evidence:route'), (404, 'missing_evidence:route'), (404, 'missing_evidence:route')]]; each answer names the account, the window and the end in words; the same journal record types and fields as the Telegram route's; the routes, operations and UI actions are published together; the pacing read serves the accounts and the history from the journal [404]
 VELDO-0236 detail: route/ui: each route answers 200 with its outcome [[(404, 'missing_evidence:route'), (404, 'missing_evidence:route'), (404, 'missing_evidence:route')]]
 VELDO-0236 detail: route/ui: each answer names the account, the window and the end in words
 VELDO-0236 detail: route/ui: the same journal record types and fields as the Telegram route's
 VELDO-0236 detail: route/ui: the routes, operations and UI actions are published together
-VELDO-0236 detail: route/ui: the spend read serves the history from the journal [200]
+VELDO-0236 detail: route/ui: the pacing read serves the accounts and the history from the journal [404]
   SELFTEST FAIL: VELDO-0236 route/other: a non-owner's Telegram command is refused as VELDO-0203 refuses it [None]; a non-owner's UI commands are refused by that name [(404, {'refusal': 'missing_evidence:route', 'error': 'missing_evidence'})]
 VELDO-0236 detail: route/other: a non-owner's Telegram command is refused as VELDO-0203 refuses it [None]
 VELDO-0236 detail: route/other: a non-owner's UI commands are refused by that name [(404, {'refusal': 'missing_evidence:route', 'error': 'missing_evidence'})]
@@ -93,6 +93,6 @@ VELDO-0236 detail: journal/once: two passes after the end commit one end record 
 VELDO-0236 detail: observability/counts: pauses, ceilings, resumes and ends counted by route and outcome [{}]
 VELDO-0236 detail: observability/counts: each observation names command, principal, route, account, window and end
 VELDO-0236 detail: observability/counts: dispatches passed over for a pause or a ceiling counted by reason
-  139_veldo_0236_account_pacing                    1 passed   77.54s
-selftest (PARTIAL, 1 of 203 suites): 27 passed, 12 failed in 77.54s
+  139_veldo_0236_account_pacing                    0 passed    1.47s
+selftest (PARTIAL, 1 of 203 suites): 26 passed, 12 failed in 1.47s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

@@ -132,6 +132,10 @@ METADATA_READS = (
         Kind('credential', 'control_credential', 'KIND', 'VELDO-0144', ('shared',)))),
     ReadModel('repositories', 'repositories.read', 'repositories and Git identities', (
         Kind('repository', 'control_repository', 'KIND', 'VELDO-0161', ('repository', 'repository')),)),
+    # VELDO-0236: the accounts with their windows, pauses and ceilings, and every pause, ceiling, resume and end,
+    # read from the journal (`pacing`). Its own read, so the spend read keeps the representation VELDO-0164 fixed.
+    ReadModel('pacing', 'accounts.pacing', 'account pauses, ceilings and their history', (
+        Kind('account', 'control_accounts', 'KIND', 'VELDO-0062', ('shared',)),)),
 )
 METADATA = {m.name: m for m in METADATA_READS}
 CREDENTIAL_METADATA = ('id', 'label', 'reference', 'set_at', 'set_by', 'deleted')
@@ -278,7 +282,7 @@ def read_model(store, conn, name, scope=None):
             items[item['kind']].append(item)
             redacted.extend(extra)
         pacing = None
-        if name == 'spend':
+        if name == 'pacing':
             # VELDO-0236 AC4: every pause, ceiling, resume and end of the accounts this reader sees, read from the
             # journal at this read's watermark, never a cache.
             seen = {item['data'].get('id') for item in items.get('account') or []}

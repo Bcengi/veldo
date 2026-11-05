@@ -451,7 +451,7 @@ class Accounts:
         self.counts['accepted'] += 1
         return result
 
-    # -- the owner's pacing (VELDO-0236) ----------------------------------------------------------------------
+    # The owner's pacing (VELDO-0236).
 
     def pause(self, command_id, account, window, *, principal, now, route, provenance=None):
         """Pause `account` until `window`'s last reported reset. Returns the pacing event."""

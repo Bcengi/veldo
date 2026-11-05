@@ -1,0 +1,12 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./src/ui/icons" without a file extension (vite.config.ts:5:23). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /tmp/v236-ui
+
+
+ Test Files  5 passed (5)
+      Tests  25 passed (25)
+   Start at  21:48:07
+   Duration  1.31s (environment 75%, import 16%, tests 5%, transform 3%, setup 1%)
+

@@ -8,6 +8,8 @@ export const readWork = (signal?: AbortSignal) => request<ReadAnswer>('reads.wor
 export const readObjectives = (signal?: AbortSignal) => request<ReadAnswer>('reads.objectives', { signal })
 export const readProof = (signal?: AbortSignal) => request<ReadAnswer>('reads.proof', { signal })
 export const readSpend = (signal?: AbortSignal) => request<ReadAnswer>('reads.spend', { signal })
+/** VELDO-0236: the accounts with their pauses and ceilings, and every pause, ceiling, resume and end from the journal. */
+export const readPacing = (signal?: AbortSignal) => request<ReadAnswer>('accounts.pacing', { signal })
 export const readConfigurationModel = (signal?: AbortSignal) => request<ReadAnswer>('reads.configuration', { signal })
 
 /** One action of the API's published UI action contract (control_api_models.ACTIONS). An action whose `route`
