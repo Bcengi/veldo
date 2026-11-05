@@ -83,8 +83,13 @@ acceptance_criteria:
       occurrence appends a turn with the approved text to its conversation, marked as started by the schedule,
       run by the conversation's role as any turn (VELDO-0174); a closed conversation ends the schedule,
       recorded. A batch_gate occurrence starts a VELDO-0239 batch of the project; a batch with no reviewed unit
-      is recorded empty and runs nothing; a green batch still waits for the owner's landing approval. Durable
-      engine cron stays outward and asks (VELDO-0160 rule A). Rows: kind/turn requires the turn with the
+      is recorded empty and runs nothing; a green batch still waits for the owner's landing approval. A schedule's
+      approval starts the turn or the batch gate only and approves no outside write: each outside write an
+      occurrence needs is submitted as its exact request and waits for the owner's approval of that request,
+      the same mechanism as any other write (ruling R4, the outside gate of VELDO-0251 and VELDO-0252), and a
+      write sent without one is refused approval_required and the owner is told. A message or file the turn
+      sends the owner through Veldo's own channel is not an outside write (ruling R6). Durable engine cron
+      stays outward and asks (VELDO-0160 rule A). Rows: kind/turn requires the turn with the
       approved text in the conversation; kind/batch requires a batch and its gate and no landing; kind/empty
       requires an empty record and no gate.
     falsified_by: >
@@ -110,8 +115,8 @@ rollback: >
 
 ## Intent
 
-The owner relies on work that happens at a time: the daily batch gate of each project (core at 10am, Veldo
-at 5pm, Telegram 37201 and 37215) and recurring checks such as a sweep run by a conversation. Veldo has no
+The owner relies on work that happens at a time: the daily batch gate of each project at its own hour and
+recurring checks such as a sweep run by a conversation. Veldo has no
 scheduler; VELDO-0082 is a parked draft that excludes generic time scheduling, and a durable engine cron is
 outward under VELDO-0160 rule A. This is the narrow part he needs: schedules he approves, of two kinds only,
 each listed, cancellable and recorded.
@@ -121,8 +126,10 @@ each listed, cancellable and recorded.
 - The loop already wakes on a timer for the earliest account reset (VELDO-0154 AC1).
 - A conversation turn is appended and run in order (VELDO-0174); decisions a turn raises go through the
   owner's decision flow and carry no authority (VELDO-0181).
-- A batch gate is VELDO-0239. VELDO-0245 (a separate draft) lists its own schedule steps through this list.
-- The owner's parity report (kept in the owner's installation), kinds 2, 21 and 33, ticket T9.
+- A batch gate is VELDO-0239. VELDO-0245's schedule steps (a separate draft) may be shown in this list, but
+  they are timed by their workflow, not by this scheduler, and add no kind here.
+- A schedule is runtime state in the store, like runs and approvals, not installation configuration
+  (VELDO-0253 AC1 declares no kind for schedules).
 
 ## Out of scope
 
@@ -131,7 +138,7 @@ occurrences, and the host's own crontab jobs, which stay as they are.
 
 ## What the reviewer judges
 
-- Normal use: the owner approves a weekday 10am batch gate for core and a 6-hourly sweep turn in a
+- Normal use: the owner approves a weekday 10am batch gate for a project and a 6-hourly sweep turn in a
   conversation, sees both in /schedules, and cancels one.
 - Threat model: a schedule that runs without approval or after cancel; a turn that grants itself a
   schedule; a missed occurrence run hours late without the owner knowing.
@@ -143,3 +150,10 @@ occurrences, and the host's own crontab jobs, which stay as they are.
   implemented; the owner approves it before it is claimed.
 
 2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
+
+2026-11-04: amended under the plan consistency review (veldo-plan-consistency-review-2026-11-04.md) and the
+lead's rulings (veldo-plan-rulings-2026-11-04.md), owner request Telegram 39145: a schedule's approval starts the turn or gate only and every outside write in an occurrence
+needs its own approval of the exact request (A24, R4); messages to the owner through Veldo's channel are not
+writes (C24, R6); VELDO-0245's steps are listed but timed by their workflow (D14); schedules stay runtime
+state (R1); no project names, owner report or message ids outside History (B2, B9). Status stays ready; the
+owner approves the amendments in one message. Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md.

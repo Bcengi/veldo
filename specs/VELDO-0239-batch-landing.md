@@ -7,7 +7,7 @@ risk: critical
 owner: dmitry
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0042, VELDO-0057, VELDO-0058, VELDO-0068, VELDO-0148, VELDO-0216, VELDO-0220, VELDO-0235]
+depends_on: [VELDO-0042, VELDO-0057, VELDO-0058, VELDO-0068, VELDO-0148, VELDO-0216, VELDO-0220, VELDO-0235, VELDO-0253]
 placement: [engine, loop]
 protected_paths: []
 footprint:
@@ -66,7 +66,7 @@ acceptance_criteria:
       <project>, or the UI's project view) starts a batch of every unit of that project whose independent
       review has passed and that has not landed, merged in review-completion order onto the trunk watermark in
       a VELDO-0042 isolated clone. After each merge the project's renumber hook, a command named in the
-      project's work configuration, runs in the clone with the watermark and the merge commit; its changes are
+      project's file in the installation repository (VELDO-0253), runs in the clone with the watermark and the merge commit; its changes are
       committed as a separate renumber commit and recorded; the factory itself renames no file. A unit whose
       merge conflicts, or whose hook run fails, is left out by name and the batch goes on with the others; a
       project with no hook merges with no renumbering. Rows on a fixture repository with two units that each
@@ -119,10 +119,10 @@ rollback: >
 
 ## Intent
 
-The owner's rule for gates (Telegram 37189, 37201) is the QA rule: never a full gate per ticket, but one
-gate for a batch of everything finished, every failure from that run back to its ticket, and the batch
-landed together. Veldo gates and lands each unit by itself, so a project like core, with a full gate of about
-an hour, would gate dozens of times a day and the migrations two tickets add with the same number would
+The owner's rule for gates is the QA rule: never a full gate per ticket, but one gate for a batch of
+everything finished, every failure from that run back to its ticket, and the batch landed together. Veldo
+gates and lands each unit by itself, so a project with a full gate of about an hour would gate dozens of
+times a day and the migrations two tickets add with the same number would
 collide on trunk. This adds a batch: assemble, renumber through the project's own hook, gate once, inventory
 every red, land on one approval.
 
@@ -133,7 +133,6 @@ every red, land on one approval.
 - The gate runs the project's own verify.sh in candidate mode on a declared stage graph, under the host lock
   (VELDO-0058, VELDO-0216, VELDO-0220).
 - A project lands by push or locally (VELDO-0235).
-- The owner's parity report (kept in the owner's installation), kinds 2 and 14, ticket T8.
 
 ## Out of scope
 
@@ -142,7 +141,7 @@ flow; batches across projects; any change to a project's verify.sh or to the gat
 
 ## What the reviewer judges
 
-- Normal use: the owner starts the core batch, two units' migrations are renumbered by core's own script,
+- Normal use: the owner starts a project's batch, two units' migrations are renumbered by the project's own script,
   one red goes back to its unit, and after the fix the next batch lands on one approval.
 - Threat model: a batch approval covering a unit or tip the owner did not see; a hook run reaching outside
   the clone; a red hidden by an early stop.
@@ -154,3 +153,8 @@ flow; batches across projects; any change to a project's verify.sh or to the gat
   39065). Not implemented; the owner approves it before it is claimed.
 
 2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
+
+2026-11-04: amended under the plan consistency review (veldo-plan-consistency-review-2026-11-04.md) and the
+lead's rulings (veldo-plan-rulings-2026-11-04.md), owner request Telegram 39145: the renumber hook is named in the project's file in the installation repository, so VELDO-0253
+joins depends_on (A21, R1); no project names, owner report or message ids outside History (B2, B9). Status stays ready; the
+owner approves the amendments in one message. Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md.

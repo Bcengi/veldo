@@ -47,8 +47,8 @@ observability:
     and the window observation (VELDO-0166) its reset was read from.
   error_taxonomy: >
     A window with no reported reset in the future is invalid_input:pause_reset (for a pause) or
-    invalid_input:ceiling_reset (for a ceiling); a ceiling value outside 1 to 100 percent, or a relative
-    value on a window with no observed utilization, is invalid_input:ceiling; an unknown account or window is
+    invalid_input:ceiling_reset (for a ceiling); a ceiling value outside 1 to 100 percent, or any ceiling
+    on a window with no observed utilization, is invalid_input:ceiling; an unknown account or window is
     invalid_input:account; a command not signed by the factory owner is refused as VELDO-0203 refuses it.
     Keep VELDO-0160's pool reasons and add paused_until:<reset> and ceiling:<window>:<value>.
 acceptance_criteria:
@@ -77,11 +77,14 @@ acceptance_criteria:
       the same rule as a pause (invalid_input:ceiling_reset). At each dispatch, as VELDO-0160 checks its
       limit, the pool passes the account over with reason ceiling:<window>:<value> while that window's last
       observed utilization is at or above the value; a run already started is not stopped. At the end the
-      ceiling lapses. A new ceiling on the same window replaces the old one. Resume, a signed operation on an
+      ceiling lapses. A new ceiling on the same window replaces the old one. A ceiling, absolute or relative, on a window with
+      no observed utilization (an engine that states only a reset reports none) is refused
+      invalid_input:ceiling and nothing is written, since it could never take effect. Resume, a signed operation on an
       account, ends its pause and its ceilings at once. Rows: ceiling/relative sets +10 on a window observed at
       40 percent and requires 50 stored, the account selected at 49 and passed over at 50; ceiling/lapse
       requires it selected again after the reset at 50; resume/early requires a paused and capped account
-      selected right after resume.
+      selected right after resume; ceiling/no-utilization requires the refusal for a window observed with a
+      reset and no utilization.
     falsified_by: >
       Let a ceiling outlive its window's reset, and the ceiling/lapse row must fail on the account still
       passed over after the reset.
@@ -93,7 +96,7 @@ acceptance_criteria:
       commands (VELDO-0175) and sends the operation through the API as the owner. The UI's usage screen shows
       each account's windows with utilization, reset, any pause or ceiling, and offers the same three actions.
       Every answer names the account, the window and the end in words and in the owner's time zone, for
-      example "codex2 paused until 14:05 EDT, when its five_hour window resets". A command from anyone but
+      example "account-b paused until 14:05 UTC, when its five_hour window resets". A command from anyone but
       the factory owner is refused and writes nothing. Rows: route/telegram and route/ui send each command and
       require the same journal record type and fields from both; route/other requires a non-owner refused.
     falsified_by: >
@@ -119,12 +122,11 @@ rollback: >
 
 ## Intent
 
-The owner paces his subscription accounts every day ("no codex2 until reset", "another 10% of codex1
-today", "exclude acct4"). Veldo meters every window and moves a run off an account at its limit, but these
-orders have no command: today they would need a signed revision by hand. He decided that an account is never
-switched off, only not used until it resets (Telegram 39058, 2026-11-04: "don't switch accounts off, only
-stop using them until they reset"). So a pause here always carries its reset and ends by itself, and a
-ceiling caps one window until that window resets.
+An owner paces subscription accounts every day: no use of one account until its reset, another 10 percent
+of another account's window today, one account left out for now. Veldo meters every window and moves a run
+off an account at its limit, but these orders have no command: today they would need a signed revision by
+hand. The owner decided that an account is never switched off, only not used until it resets. So a pause
+here always carries its reset and ends by itself, and a ceiling caps one window until that window resets.
 
 ## Context
 
@@ -133,7 +135,9 @@ ceiling caps one window until that window resets.
 - control_account_pool selects among accounts at each dispatch and names why each was passed over
   (VELDO-0160); the loop already sets a timer for the earliest account reset a waiting unit needs
   (VELDO-0154 AC1).
-- The owner's parity report (kept in the owner's installation), kind 12 and ticket T2.
+- The accounts are declared in the installation repository (VELDO-0253); a pause or a ceiling is runtime
+  state in the database, recorded in the journal, not installation configuration (VELDO-0253 AC1 declares no
+  kind for account pauses).
 
 ## Out of scope
 
@@ -143,8 +147,8 @@ rules the factory sets by itself.
 
 ## What the reviewer judges
 
-- Normal use: the owner pauses codex2 until its weekly window resets and allows codex1 another 10 percent of
-  its five-hour window, from his phone, and both end by themselves.
+- Normal use: the owner pauses one account until its weekly window resets and allows another account a
+  further 10 percent of its five-hour window, from Telegram, and both end by themselves.
 - Threat model: an account left off forever by a pause with no end; a run or a non-owner setting a pause.
 
 ## History
@@ -154,3 +158,9 @@ rules the factory sets by itself.
   their reset (Telegram 39058). Not implemented; the owner approves it before it is claimed.
 
 2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
+
+2026-11-04: amended under the plan consistency review (veldo-plan-consistency-review-2026-11-04.md) and the
+lead's rulings (veldo-plan-rulings-2026-11-04.md), owner request Telegram 39145: a ceiling on a window with no observed utilization is refused (finding E12); generic account
+labels and no owner quotes or message ids outside History (B2, B9); pauses and ceilings stated as runtime
+state, the accounts as installation configuration (R1). Status stays ready; the
+owner approves the amendments in one message. Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md.

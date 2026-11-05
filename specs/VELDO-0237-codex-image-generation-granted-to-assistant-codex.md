@@ -7,7 +7,7 @@ risk: high
 owner: dmitry
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0062, VELDO-0127, VELDO-0163, VELDO-0177, VELDO-0189, VELDO-0230]
+depends_on: [VELDO-0062, VELDO-0127, VELDO-0163, VELDO-0177, VELDO-0189, VELDO-0230, VELDO-0253]
 placement: [engine, fleet]
 protected_paths: []
 footprint:
@@ -47,7 +47,7 @@ acceptance_criteria:
     text: >
       Claim: image_generation is a granted Codex capability that a launch turns on only for a role revision
       listing it. Set: runtime/capability-decisions.json records codex.features.image_generation as granted
-      with its one-line reason and the owner decision; control_agent_config_handoff moves image_generation
+      with its one-line reason and its decision reference (D-<n>, VELDO-0250); control_agent_config_handoff moves image_generation
       from the features no role is granted to the features that deliver a grant (native tool
       image_generation); a Codex launch turns the feature on exactly when the bound revision lists that native
       tool and off otherwise, compared on the wire as VELDO-0127 AC4 compares tools. Rows: grant/on launches
@@ -58,12 +58,14 @@ acceptance_criteria:
       the implementation role's request.
   - id: AC2
     text: >
-      Claim: setup grants it to assistant_codex and to no other role of the default team. Set: setup saves one
-      new assistant_codex capability configuration revision adding the native tool image_generation, signed
-      as VELDO-0203 signs, and an upgraded host gets it through VELDO-0189's re-run; a second run saves
-      nothing; every other role in the default team is unchanged; the owner removes or adds the grant in the
-      role form (VELDO-0163). Rows: setup/assistant requires the new revision and exactly one; census/roles
-      requires image_generation in no other default role.
+      Claim: the grant is given to assistant_codex and to no other role of the default team. Set: roles and
+      teams are installation configuration (VELDO-0253), so the installation template's assistant_codex role
+      file lists the native tool image_generation, with the role's sandbox network off; an existing
+      installation gets it as one commit to that role file, a widening that goes live only on the owner's
+      signed decision (VELDO-0253 AC2); a second setup run commits nothing; every other role in the default
+      team is unchanged; the owner removes or adds the grant in the role form (VELDO-0163), which saves a
+      commit. Rows: setup/assistant requires the grant in the assistant_codex role file exactly once and its
+      sandbox network off; census/roles requires image_generation in no other default role.
     falsified_by: >
       Add image_generation to the implementation role as well, and the census/roles row must fail.
   - id: AC3
@@ -72,17 +74,20 @@ acceptance_criteria:
       turn's workspace, on the account's subscription login. Set: proof/VELDO-0237/ holds a capture made with
       the proof/VELDO-0127/live.py pattern on the qualified Codex binary: the init tool list with the image
       tool, a turn asked for one small image, the image file's path inside the workspace with its size, digest
-      and dimensions, the account's login method (ChatGPT, no API key in the environment), and a listing of the
-      account's profile directory and the host's temporary directory showing no copy of the image there. If
-      the binary writes images elsewhere by default, the launch directs the output into the workspace, and the
-      capture says how. A row replays the capture's checks against a fake engine.
+      and dimensions, the account's login method (ChatGPT, no API key in the environment), the network hosts the turn's
+      image traffic used, and a listing of the account's profile directory and the host's temporary
+      directory, by paths relative to those directories and naming the account by its role's account label
+      only, showing no copy of the image there. The hosts the capture shows are declared in the Codex
+      qualification record as that engine version's model hosts, so the sandbox allows exactly those for the
+      engine process (ruling R5). If the binary writes images elsewhere by default, the launch directs the
+      output into the workspace, and the capture says how. A row replays the capture's checks against a fake engine.
     falsified_by: >
       Have the fake engine write the image under the account's profile directory instead of the workspace, and
       the replayed capture row must fail on the file outside the workspace.
 required_evidence: [unit, integration, operational]
 rollback: >
-  Save an assistant_codex revision without image_generation by the owner's command, then revert the
-  classification and the decision record. Images already in workspaces stay as ordinary files.
+  Commit an assistant_codex role file without image_generation (a narrowing, live when valid under
+  VELDO-0253), then revert the classification and the decision record. Images already in workspaces stay as ordinary files.
 ---
 
 ## Intent
@@ -98,15 +103,15 @@ and proves where the image goes.
 - control_agent_config_handoff.CODEX_FEATURES_UNGRANTED lists image_generation; CODEX_FEATURE_GRANTS maps
   features to the native tools a role can grant (VELDO-0127).
 - runtime/capability-decisions.json is the record of each Codex feature's decision (VELDO-0230 AC3).
-- assistant_codex is saved by setup with the workspace-write sandbox, network and web search (VELDO-0177
-  AC2); each turn runs in its conversation's own workspace (VELDO-0177 AC1).
-- The owner's parity report (kept in the owner's installation), kind 19 gap 1, ticket T3.
+- assistant_codex has the workspace-write sandbox with its network off; a run reaches outside only through
+  the outside gate and its engine's declared model hosts (VELDO-0251, ruling R5); provider-side web search
+  rides the model connection. Each turn runs in its conversation's own workspace (VELDO-0177 AC1).
 
 ## Out of scope
 
-Sending the image to the owner (VELDO-0238); paid image or video APIs and catalog servers that carry their
-keys, which the owner allowed only as spend-gated exceptions approved per use (VELDO-0243, a separate
-draft); granting the feature to any project role.
+Sending the image to the owner (VELDO-0238); paid image or video services, which an installation names
+with the spend gate flag, each use needing the owner's approval with the cost shown, and which Veldo's
+defaults never name (ruling R11; VELDO-0243, a separate draft); granting the feature to any project role.
 
 ## What the reviewer judges
 
@@ -123,3 +128,10 @@ draft); granting the feature to any project role.
   the owner approves it before it is claimed.
 
 2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
+
+2026-11-04: amended under the plan consistency review (veldo-plan-consistency-review-2026-11-04.md) and the
+lead's rulings (veldo-plan-rulings-2026-11-04.md), owner request Telegram 39145: assistant_codex's sandbox network off and the image hosts captured and declared in the Codex
+qualification record (A11, R5); the grant is a role file in the installation repository, a widening commit
+(A15, R1, R8), so VELDO-0253 joins depends_on; paid services per R11; a decision reference instead of the
+owner decision and relative paths in the capture (B9). Status stays ready; the
+owner approves the amendments in one message. Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md.

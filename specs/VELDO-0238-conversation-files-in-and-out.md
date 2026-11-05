@@ -7,7 +7,7 @@ risk: high
 owner: dmitry
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0141, VELDO-0158, VELDO-0168, VELDO-0174, VELDO-0175, VELDO-0177, VELDO-0178, VELDO-0179]
+depends_on: [VELDO-0141, VELDO-0158, VELDO-0168, VELDO-0174, VELDO-0175, VELDO-0177, VELDO-0178, VELDO-0179, VELDO-0253]
 placement: [contracts, loop, distribution]
 protected_paths: []
 footprint:
@@ -67,8 +67,8 @@ acceptance_criteria:
       sends a CSV holding a planted credential value must fail on that value in the record.
   - id: AC2
     text: >
-      Claim: inbound files are size-capped before anything is fetched. Set: an inbound cap, configured in the
-      factory's channel configuration with a default of 20 MB per file (Telegram's bot download limit), is
+      Claim: inbound files are size-capped before anything is fetched. Set: an inbound cap, configured on the
+      channel in the installation repository (VELDO-0253, the bot and its channels) with a default of 20 MB per file (Telegram's bot download limit), is
       checked against the size the channel reports before the fetch, and again on the bytes received; a
       message with any file over the cap is answered with the refusal naming the file and the cap, no file of
       it is written and no turn runs for it. Rows: cap/in sends a file one byte over a lowered cap and
@@ -91,11 +91,12 @@ acceptance_criteria:
       Follow links in the outbox, and the out/escape row must fail on the outside file delivered.
   - id: AC4
     text: >
-      Claim: no outgoing file carries a credential the run was given. Set: before sending, each outgoing file
-      is checked for every value in the run's redaction set (VELDO-0158); a file holding one is withheld,
-      never altered and sent, and the reply names it as withheld:credential. Rows: out/credential writes the
-      run's delivered server credential into an outbox file and requires it withheld and the channel fake to
-      receive nothing for it.
+      Claim: no outgoing file carries a secret value. Set: before sending, each outgoing file is checked for
+      every value in the run's redaction set (VELDO-0158); a file holding one is withheld, never altered and
+      sent, and the reply names it as withheld:credential. No credential is delivered into a run (VELDO-0251),
+      so the row plants a keystore canary. Rows: out/credential writes a secret-shaped canary value, held in
+      the suite's keystore and in the redaction set, into an outbox file and requires it withheld and the
+      channel fake to receive nothing for it.
     falsified_by: >
       Skip the redaction-set check on outgoing files, and the out/credential row must fail on the file
       delivered.
@@ -119,9 +120,10 @@ record, redacted and size-capped.
   execution record, redacted, and served only to the conversation's owner (VELDO-0141, VELDO-0178).
 - Telegram messages are acquired by the service's channel pass and decided by intake (VELDO-0175); replies
   are sent as written (VELDO-0168).
-- VELDO-0242 (a separate draft) delivers approved rendered files to the owner through an installed file
-  delivery; this spec is that delivery for conversations.
-- The owner's parity report (kept in the owner's installation), kinds 16 to 19, 24 and 31, ticket T5.
+- The file delivery this spec builds is Veldo's one delivery of files to the owner; VELDO-0242 (a separate
+  draft) calls it for approved rendered files instead of adding its own.
+- Files and messages Veldo sends to the owner through its own channel are the control plane's, not an
+  outside write by the run, and need no per-call approval (ruling R6).
 
 ## Out of scope
 
@@ -142,3 +144,9 @@ stays the project attach of VELDO-0177 AC3.
   PLAN-0019 NG3). Not implemented; the owner approves it before it is claimed.
 
 2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
+
+2026-11-04: amended under the plan consistency review (veldo-plan-consistency-review-2026-11-04.md) and the
+lead's rulings (veldo-plan-rulings-2026-11-04.md), owner request Telegram 39145: the inbound cap is a channel setting in the installation repository (A21); the credential row
+plants a keystore canary, since no credential reaches a run (D9, E9); one file delivery, which VELDO-0242
+calls (D13); files to the owner need no per-call approval (E14, R6); no owner report in Context (B9). Status stays ready; the
+owner approves the amendments in one message. Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md.
