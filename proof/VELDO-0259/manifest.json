@@ -1,0 +1,70 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0259",
+ "commit": "980243de9663c39258c45c7c02e360b5b39f6ccc",
+ "tree": "85ebc3153388ef4809a61348b7e3a09e35b02f7b",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-05T01:48:49.655386+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/127_veldo_0259_installation.py",
+     "detail": "Rows ac1/resolution (VELDO_INSTALLATION, else $XDG_CONFIG_HOME/veldo/installation, else ~/.config/veldo/installation; one line naming folder and how, or none found), ac1/kinds, ac1/missing-by-name (installation_missing:<key>, never a built-in person), ac1/invalid-by-name (installation_invalid:<key>, literal channel secret refused), ac1/revision, ac1/one-reader, ac1/traces, ac1/no-personal-default, ac1/fresh-clone pass over fixture installations only. Red before: proof/VELDO-0259/suite-red-before.txt; green after: suite-green-after.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0259/falsifiers.json",
+     "detail": "Falsifiers applied to the working tree, suite red on the named rows, file restored, suite green: a built-in person fallback (ac1/missing-by-name), a second module reading VELDO_INSTALLATION (ac1/one-reader), the stage red without an installation (ac1/fresh-clone), the setup answer without the installation (ac1/traces). Registered as mutation cases install259-builtin-person, install259-setup-untraced, personal259-red-without-installation (proof/VELDO-0259/mutations.txt)."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0259/suites.txt",
+     "detail": "Touched suites run alone: factory setup 73, setup API 85, API 71, install and run 24, gate catalog 114_0216, 113_0220, 114_0220, 69, 111, 10, 06 pass; 101_0208 two sandbox rows red on the base commit too."
+    },
+    {
+     "type": "operational",
+     "ref": "proof/VELDO-0259/suites.txt",
+     "detail": "check_personal_setup.py over this branch with an empty installation: built-in shapes only, 0 findings. publish.py into scratch: 0 personal-setup findings, 7 packs composed. Assumption, not proven: the full gate of a fresh clone with no installation was not run (instruction: no full gate); the new stage is green on a fresh clone (ac1/fresh-clone)."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/127_veldo_0259_installation.py",
+     "detail": "Rows ac2/planted (one value per installation category and per built-in shape refused as personal_setup:<category> with file, line, masked match, each alone red), ac2/masked, ac2/added-only, ac2/no-installation (the built-in-only line), ac2/publish-shares, ac2/stage-declared (gate_schedule.read_graph accepts the graph for verify.sh's catalog with personal_setup), ac2/product-clean pass."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0259/falsifiers.json",
+     "detail": "Falsifiers red then restored green: installation patterns ignored and a built-in shape dropped (ac2/planted), the match printed unmasked (ac2/masked), the built-in-only line removed (ac2/no-installation), a fixture pattern written into a tracked file (ac2/product-clean), publication with its own scan (ac2/publish-shares), the stage removed from ORDER (ac2/stage-declared). Registered mutation cases personal259-patterns-ignored, -uid-shape-dropped, -unmasked, -silent-builtin-only: noop green, mutant red."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0259/suites.txt",
+     "detail": "24_veldo_0007_install_and_run passes with the real publisher calling check_personal_setup.sweep over the produced tree."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite <each suite in proof/VELDO-0259/suites.txt>"
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The build instruction ran single suites only, not the full gate."
+  }
+ ],
+ "rollback": "Per criterion: remove the personal_setup stage from scripts/gate_graph.json and scripts/verify.sh and the call in scripts/publish.py; revert the reader and the two consumer fields. The installation folder stays on disk and is no longer read."
+}
