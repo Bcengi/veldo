@@ -69,9 +69,7 @@ observability:
     same in the clone), invalid_input:agent_mcp_servers:antigravity (a role for this engine that selects an
     MCP server, limit L1), configuration_stop:tool_outside_role (a tool call outside the role's set read
     from the stream, limit L2), and paid_api:antigravity_login:<kind> (an API-key, Cloud project,
-    application-default, gateway, pay-as-you-go or AI-credits path), and
-    unsupported_configuration:engine_proxy:antigravity (a qualified version that ignores the outside gate's
-    proxy settings, ruling R13).
+    application-default, gateway, pay-as-you-go or AI-credits path).
 acceptance_criteria:
   - id: AC1
     text: >
@@ -91,11 +89,7 @@ acceptance_criteria:
       brings that the replaced record did not have is listed by name in the output and in the record
       (`new_capabilities`) with its decision from runtime/capability-decisions.json (granted, off with the
       written rule it breaks, or not applicable); an item with none is unevaluated and not granted, and
-      nothing new stops a launch. The record also declares the version's model hosts (each host and port the
-      binary connects to for its model, its sign-in refresh and its model list, read from its bytes and
-      confirmed by the recorded run of AC3) and whether the binary honours the outside gate's proxy settings
-      with no local name resolution; the sandbox allows exactly those hosts for the engine process (ruling
-      R5). Run twice on the same binary, the command rewrites every file with the
+      nothing new stops a launch. Run twice on the same binary, the command rewrites every file with the
       bytes it holds. bind refuses a pinned copy whose version or digest differs from the record by the
       shared names before anything is accepted.
     falsified_by: >
@@ -124,17 +118,13 @@ acceptance_criteria:
       option of that version turns off (the account folder's .gemini tree, the clone's and its parents'
       instruction files and .agents folders, as the record lists them; the binary's own built-in skills
       only if no option keeps them out) is refused by name before acceptance when it holds anything
-      (invalid_input:engine_profile:<entry>, invalid_input:engine_clone:<entry>); nothing is deleted. If the
-      qualified version ignores the outside gate's proxy settings, it fails closed in the sandbox: every
-      launch is refused by name before acceptance (unsupported_configuration:engine_proxy:antigravity) and the
-      engine waits until a version supports them; nothing runs unconfined to make it work (ruling R13).
+      (invalid_input:engine_profile:<entry>, invalid_input:engine_clone:<entry>); nothing is deleted.
     falsified_by: >
       Remove the stream check for tool calls outside the role, and the suite's fake engine that calls a
       denied tool ends `complete` instead of stopped by name; plant ANTIGRAVITY_LS_ADDRESS and an AGY_ name
       no list holds in the parent environment, and the launched fake engine's environment row fails if
       either is present; plant a rule file in the account folder's .gemini/config, and the acceptance row
-      fails if the run is accepted; qualify a fake agy recorded as ignoring the proxy settings, and the
-      fail-closed row fails if its launch is accepted.
+      fails if the run is accepted.
   - id: AC3
     text: >
       The output stream is read into the run record, the meter and the verdict exactly as the other
@@ -174,9 +164,7 @@ acceptance_criteria:
       adapter configuring one is refused by name. login_problem refuses, before acceptance, an account
       folder whose settings select a model API provider, a Google Cloud or pay-as-you-go billing model, or
       AI credits use (paid_api:antigravity_login:<kind>), so a run at its plan quota stops at the limit and
-      never spends credits. Because the account folder is the HOME of the run's tools (L6), no role grants
-      Antigravity until its login files are readable by the engine process only and never by its tool
-      children (ruling R7). Where the qualified binary's init event names the sign-in kind, the receiver
+      never spends credits. Where the qualified binary's init event names the sign-in kind, the receiver
       writes the prompt only after it names a Google subscription sign-in (the Guard); the qualify command
       records whether it does (limit L3).
     falsified_by: >
@@ -259,9 +247,8 @@ is lifted by that version's decisions, not by this specification.
 - L6. The login folder is the worker's HOME. Claude Code and Codex name their login folder in a variable
   of their own, separate from HOME; Antigravity has none, so the worker's tools run with the account
   folder as their home (the Release 2 separation of login from tools, VELDO-0061 and 0062, applies here
-  too and is not added by this specification). Under ruling R7 the login files must be unreadable to the
-  run's tools (by Landlock or a split HOME, under the sandboxed launch ticket of ruling R14) before any role
-  grants Antigravity (AC4).
+  too and is not added by this specification). The engine's own model login stays where it is today; no
+  new confinement of the engine or its tools is required (revised ruling R7).
 
 VELDO-0231 (on its own branch) names Antigravity's means of flagging the lead as the marked line; that is
 VELDO-0231's to carry, not this specification's.
@@ -301,3 +288,10 @@ unreadable to the run's tools (A7, R7); no personal account label, path or proje
 recorded run is redacted (B2, B7). The code on this branch is not changed; what it lacks is listed in
 proof/VELDO-0232/OPEN.md items 5 to 9. Status stays ready; the owner approves the amendments in one message.
 Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md on the veldo-parity-a branch.
+
+2026-11-05: Telegram 39154 and 39155, revised rulings R5, R7 and R14 (no mandatory sandbox): the old R13
+requirements are removed, since they served only the sandbox: the qualification record no longer declares
+model hosts or whether the binary honours the outside gate's proxy settings, and no version fails closed or
+waits for proxy support (AC1, AC2, the engine_proxy refusal name). AC4 and L6 no longer hold roles back until
+the login files are readable by the engine process only. Open items 5 and 6 in proof/VELDO-0232/OPEN.md are
+withdrawn. Status stays ready; code unchanged.

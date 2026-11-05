@@ -40,18 +40,11 @@
 Items 5 to 9 come from the plan consistency review and the lead's rulings of 2026-11-04 (Telegram 39145). The
 spec was amended; the code on this branch was not, by instruction. Each item is what the build still lacks.
 
-5. Model hosts and proxy settings (review A12, rulings R5 and R13; spec AC1, AC2). The extractor and qualify
-   record no model hosts and no proxy reading. Still to build: the qualification record's model hosts (host and
-   port for the model, the sign-in refresh and `agy models`, confirmed by the item 1 run), whether agy 1.5.0
-   honours the outside gate's proxy variables with no local name resolution, the sandbox allowing exactly those
-   hosts for the engine process, and the refusal unsupported_configuration:engine_proxy:antigravity with its
-   fail-closed row. If 1.5.0 ignores the proxy settings, the engine waits for a version that supports them;
-   nothing runs unconfined. This needs VELDO-0251 and the sandboxed launch ticket of ruling R14.
+5. Model hosts and proxy settings: withdrawn 2026-11-05 (Telegram 39154, 39155, revised rulings R5, R7, R14).
+   With no mandatory sandbox nothing needs a model host list or proxy support, so nothing is left to build.
 
-6. Login files readable by the run's tools (review A7, ruling R7; spec AC4 and L6). HOME is the account folder,
-   so `run_command` and `view_file` can read the subscription login. No role may grant Antigravity until the
-   login files are readable by the engine process only (Landlock or a split HOME, under the R14 sandboxed
-   launch ticket). Setup on this branch gives the service an `antigravity` adapter; staffing a role on it waits.
+6. Login files readable by the run's tools: withdrawn 2026-11-05 (same messages, revised ruling R7). The
+   engine's own model login stays where it is today; no role waits on engine-only login access.
 
 7. Personal paths in shipped data (review B7). runtime/engines.json (both copies) names `"binary":
    "~/.local/bin/agy"` and .veldo/runtime/antigravity-qualification.json line 281 names `"source":
