@@ -111,6 +111,7 @@ I = _organ('control_assignment')
 V = _organ('control_channel_presentation')
 A = _organ('control_signer_answers')
 TR = _organ('control_telegram_report')
+SS = _organ('secret_scan')
 
 CHANNEL = ACT.CHANNEL
 AUTHORIZE = ACT.AUTHORIZE
@@ -133,6 +134,8 @@ DELEGATION_OPERATIONS = ('grant_delegation', 'supersede_delegation')
 DELEGATION_KINDS = ('decision_answer', 'review_disposition')
 MAX_DELEGATION_DAYS = 366
 RENEWAL_PREFIX = 'delegation-renewal:'
+# VELDO-0254 AC2: the one notice per secret scan that found a credential or failed, by its scan id.
+SECRET_PREFIX = 'secret-scan:'
 
 
 def qualification_alias(run):
@@ -423,7 +426,8 @@ class Channel:
         told, reported = [], []
         if woke.get('outcome') == 'woken':
             published = [r.get('outcome') for r in ing.presenter.publish()]
-            told = self.tell_unsigned(woke.get('acquired') or []) + self.tell_renewal(record)
+            told = (self.tell_unsigned(woke.get('acquired') or []) + self.tell_renewal(record)
+                    + self.tell_secrets(record))
             if self.run is not None:
                 recorded = self._qualification(woke)
             reported = self.report(record)
@@ -534,6 +538,35 @@ class Channel:
         sent = presenter._send(told['chat_id'], text, None)
         return [{'kind': 'renewal', 'delegation_id': standing['delegation_id'], 'status': standing['status'],
                  'outcome': 'sent' if sent['platform'] else 'not_sent'}]
+
+    def tell_secrets(self, record):
+        """VELDO-0254 AC2: tell the recorded owner of an ACTIVE edge, once per scan, in his enrolled chat, of each
+        secret scan of this installation (secret_scan.store_logs) that found a credential or failed: the masked
+        findings and what to do with them, or what was not checked. The notice is recorded before it is sent, so
+        no scan is told twice."""
+        owner = (record or {}).get('owner')
+        if (record or {}).get('state') != 'active' or not owner:
+            return []
+        presenter = self.ingress.presenter
+        chat = self._entity(presenter.P.enrollment_id(owner))
+        if chat is None:
+            return []
+        told = []
+        for log in SS.store_logs(self.config['store_path']):
+            for scan, kind, text in SS.notices(log):
+                tid = SECRET_PREFIX + scan
+                if self._entity(tid) is not None:
+                    continue
+                text = V.TEXT.message(text, free_text=False)
+                notice = {'schema': 'veldo.presentation_tell/v1', 'channel': CHANNEL, 'request_id': None,
+                          'chat_id': chat['data'].get('chat_id'), 'message_id': None, 'text': text, 'scan': scan}
+                try:
+                    presenter._commit(V.TELL_OPERATION, dict(tell_id=tid, tell=notice), {tid: 0}, command_id=tid)
+                except presenter.store.StoreRefused:
+                    continue
+                sent = presenter._send(notice['chat_id'], text, None)
+                told.append({'kind': kind, 'scan': scan, 'outcome': 'sent' if sent['platform'] else 'not_sent'})
+        return told
 
     def _trim(self):
         ing = self.ingress

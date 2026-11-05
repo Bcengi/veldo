@@ -18,6 +18,7 @@ loopback fixture servers and child processes; writes only temporary files.
 def _v254_suite():
     import ast
     import base64
+    import contextlib
     import hashlib
     import http.server
     import importlib.util
@@ -28,16 +29,19 @@ def _v254_suite():
     import socket
     import subprocess
     import sys
+    import sqlite3
     import tempfile
     import threading
+    import types
+    from unittest import mock
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
         'secret_scan.py': ROOT / ".veldo" / "secret_scan.py",
-        'secret_scan_patterns.json': ROOT / ".veldo" / "secret_scan_patterns.json",
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_launch_work.py': ROOT / ".veldo" / "control_launch_work.py",
         'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
+        'control_service_channel.py': ROOT / ".veldo" / "control_service_channel.py",
     }
     SANDBOX = ROOT / 'scripts' / 'agent_sandbox.py'
     SANDBOX_CONFIG = ROOT / 'scripts' / 'agent_sandbox.json'
@@ -46,7 +50,9 @@ def _v254_suite():
     PENDING_0257 = {'credential_delivery_site:control_launch.py:Receiver._spawn'}
     ROWS = ('ac1/static-sites', 'ac1/static-planted', 'ac1/canary-run', 'ac2/run-end', 'ac2/landing',
             'ac2/command', 'ac2/setup', 'ac2/masked', 'ac2/login', 'ac2/reports-only', 'ac2/one-entry',
-            'ac3/default-reaches', 'ac3/risky-confined', 'ac3/no-runner-host', 'ac3/one-decision')
+            'ac3/default-reaches', 'ac3/risky-confined', 'ac3/no-runner-host', 'ac3/one-decision',
+            'ac1/launch-scan', 'ac2/installed', 'ac2/failure-visible', 'ac2/run-end-changed', 'ac2/owner-notice',
+            'ac3/risky-spawn', 'ac3/selftest-cached')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -220,8 +226,10 @@ def _v254_suite():
         work = (mods / 'control_launch_work.py')
         collect = functions(work).get('Work._collect') or functions(work).get('_collect')
         collect = collect or next((node for name, node in functions(work).items() if name.endswith('._collect')), None)
-        check('ac2/landing', 'the build collection scans the candidate before it can land',
-              collect is not None and 'scan_candidate' in calls(collect))
+        check('ac2/landing', 'the build collection scans the candidate before it can land, through the reporting '
+              'wrapper', collect is not None and 'candidate_scan' in calls(collect)
+              and 'scan_candidate' in calls(functions(mods / 'control_launch.py').get('candidate_scan')
+                                            or ast.parse('')))
         check('ac2/landing', 'the landing scan reads the candidate\'s changed files through the one entry',
               hasattr(L, 'scan_candidate'))
 
@@ -293,16 +301,17 @@ def _v254_suite():
 
         # AC2: one scan entry. The three triggers call it; no other module reports a found credential.
         launch_functions = functions(mods / 'control_launch.py')
-        check('ac2/one-entry', 'the receiver\'s run end calls the run-end scan before the run directory goes',
-              'run_end_scan' in calls(launch_functions['Receiver._finish'])
+        check('ac2/one-entry', 'the receiver\'s run end calls the run-end scan once its end is recorded',
+              'run_end_scan' in calls(launch_functions.get('Receiver._report_end') or ast.parse(''))
               and 'scan_run_end' in calls(launch_functions['run_end_scan'])
               and 'scan' in calls(launch_functions['scan_run_end'])
               and 'scan' in calls(launch_functions['scan_candidate']))
         reporters = sorted(p.name for p in mods.glob('*.py')
                            if p.name != 'secret_scan.py' and "'secret_found" in p.read_text())
         check('ac2/one-entry', 'no other module names secret_found [%s]' % reporters, not reporters)
-        check('ac2/one-entry', 'the triggers are exactly run end, landing candidate, setup and command',
-              tuple(SS.TRIGGERS) == ('run_end', 'landing_candidate', 'setup', 'command'))
+        check('ac2/one-entry', 'the triggers are exactly run end, landing candidate, setup and command, and the '
+              'launch-time scan of AC1', tuple(SS.TRIGGERS) == ('run_end', 'landing_candidate', 'setup', 'command',
+                                                                'launch'))
 
         # AC3: fixture services. A database answering on host loopback, by TCP and by its Unix socket, and a service
         # on a local address (the host's own address when it has one, loopback otherwise).
@@ -451,6 +460,316 @@ print(json.dumps(out))
                         if any(isinstance(s, ast.Constant) and s.value == 'risky' for s in ast.walk(node)))
         check('ac3/one-decision', 'only the decision reads the risky mark [%s]' % marked,
               marked == ['runner_decision'])
+
+        @contextlib.contextmanager
+        def section(name):
+            try:
+                yield
+            except Exception as error:
+                check(name, 'raised %s: %s' % (type(error).__name__, str(error)[:300]), False)
+
+        # The fix round's rows (proof/VELDO-0254/review-2026-11-05.md).
+        clean_environment = {k: v for k, v in os.environ.items()
+                             if not any(rx.search(v) for _kind, rx in SS.formats())}
+
+        def bare_receiver(config_, binding, contract_, runner=None):
+            receiver = object.__new__(L.Receiver)
+            receiver.login, receiver.memory, receiver.binding = None, None, binding
+            receiver.config, receiver.contract = config_, contract_
+            if runner is not None:
+                receiver.runner = runner
+            receiver._resolve_credentials = lambda adapter: None
+            receiver._baseline = lambda dispatch, argv_, env, reported: (argv_, env)
+            receiver._record = lambda adapter, env: None
+            started_ = []
+            receiver._contained = lambda dispatch, argv_, env, cwd=None: started_.append((argv_, env, cwd)) or 'worker'
+            return receiver, started_
+
+        with section('ac1/launch-scan'):
+            # AC1 completeness at launch (ruling (a)): the run's final environment and command line, whatever reached
+            # them (an inherited host value, an adapter literal, a value read from a file), are scanned before the run
+            # starts; a credential found is reported masked and the launch is refused by name.
+            launch_log = logs / 'launch.jsonl'
+            launch_config = {'store': str(base / 'authority' / 'control.sqlite3'), 'secret_scan_log': str(launch_log)}
+            project_contract = {'dispatch_id': 'launch-254', 'subject_kind': 'project', 'repository': 'fixture',
+                                'reservation': {'project': 'fixture'}, 'input': {'context': {}}}
+            engine = ['/fixture/engine', 'exec', 'build it']
+
+            def launch_with(environment_=None, adapter_environment=None, argv_=None, baseline=None, token=None):
+                receiver, started_ = bare_receiver(launch_config, None, project_contract)
+                if baseline is not None:
+                    receiver.binding = dict(argv=list(argv_ or engine), environment={}, path='fixture', sha256='fixture',
+                                            engine='codex')
+                    receiver._baseline = baseline
+                receiver.token = token
+                adapter = {'argv': list(argv_ or engine), 'identity': 'local', 'environment': adapter_environment or {}}
+                with mock.patch.dict(os.environ, dict(clean_environment, **(environment_ or {})), clear=True):
+                    try:
+                        receiver._spawn('launch-254', 'acceptance', adapter)
+                        return None, started_
+                    except L.C.Refused as error:
+                        return error.code, started_
+            refused_host, host_started = launch_with({'FIXTURE_SERVICE_TOKEN': known})
+            check('ac1/launch-scan', 'an inherited host value of a known format refuses the launch by name [%s]'
+                  % refused_host, refused_host == 'credential_delivery_site:environment:FIXTURE_SERVICE_TOKEN'
+                  and host_started == [])
+            url_secret = 'https://fixture:%s@example.invalid/' % canary().lower()
+            refused_literal, _ = launch_with(adapter_environment={'SERVICE_URL': url_secret})
+            check('ac1/launch-scan', 'an adapter literal is refused by name [%s]' % refused_literal,
+                  refused_literal == 'credential_delivery_site:environment:SERVICE_URL')
+            refused_command, _ = launch_with(argv_=engine + ['--token', known])
+            check('ac1/launch-scan', 'a credential on the command line is refused by its position [%s]' % refused_command,
+                  refused_command == 'credential_delivery_site:command:4')
+            credential_file = base / 'service-token'
+            credential_file.write_text(known + '\n')
+
+            def from_file(dispatch, argv_, env, reported):
+                env = dict(env)
+                env[L.ENGINE_RUNTIME] = str(base / 'runtime')
+                env[L.ENGINE_OVERRIDES] = json.dumps({'FILE_TOKEN': credential_file.read_text().strip()})
+                return argv_, env
+            refused_file, _ = launch_with(argv_=engine, baseline=from_file)
+            check('ac1/launch-scan', 'a value read from a file into the engine\'s final environment is refused [%s]'
+                  % refused_file, refused_file == 'credential_delivery_site:environment:FILE_TOKEN')
+            login_token = 'sk-ant-oat01-' + base64.b32encode(os.urandom(30)).decode().rstrip('=')
+
+            def with_login(dispatch, argv_, env, reported):
+                env = dict(env)
+                env[L.ENGINE_RUNTIME] = str(base / 'runtime')
+                env[L.ENGINE_OVERRIDES] = json.dumps({L.TOKEN_VARIABLE: login_token})
+                return argv_, env
+            refused_login, login_started = launch_with(argv_=engine, baseline=with_login, token=login_token)
+            check('ac1/launch-scan', 'the engine\'s own model login is used as before, not refused [%s]' % refused_login,
+                  refused_login is None and len(login_started) == 1)
+            refused_clean, clean_started = launch_with()
+            check('ac1/launch-scan', 'a launch with no credential starts [%s]' % refused_clean,
+                  refused_clean is None and len(clean_started) == 1)
+            launch_text = launch_log.read_text() if launch_log.is_file() else ''
+            launch_lines = [json.loads(line) for line in launch_text.splitlines()]
+            check('ac1/launch-scan', 'each found credential is logged masked with the launch trigger and the dispatch',
+                  len([x for x in launch_lines if x.get('event') == 'secret_found' and x.get('trigger') == 'launch'
+                       and x.get('dispatch') == 'launch-254']) == 4
+                  and not leaks(launch_text, known[4:]) and not leaks(launch_text, url_secret[16:40])
+                  and not leaks(launch_text, login_token[13:]))
+            spawn_node = functions(mods / 'control_launch.py')['Receiver._spawn']
+            check('ac1/launch-scan', 'the one spawn scans what it starts', 'launch_scan' in calls(spawn_node))
+
+        with section('ac2/installed'):
+            # AC2 on an installed receiver (finding 1): the installed service layout (control_service.closure and its
+            # runtime assets) carries the scan's formats, and its command, run-end and landing scans work there.
+            if (ROOT / '.veldo' / 'runtime').is_dir() and not (mods / 'runtime').exists():
+                shutil.copytree(ROOT / '.veldo' / 'runtime', mods / 'runtime')
+            CS = load('v254_service', mods / 'control_service.py')
+            members = CS.closure()
+            installed = base / 'service' / 'bin'
+            installed.mkdir(parents=True)
+            for name in members:
+                shutil.copyfile(mods / name, installed / name)
+            for name, data in CS.runtime_assets(members).items():
+                (installed / name).parent.mkdir(parents=True, exist_ok=True)
+                (installed / name).write_bytes(data)
+            check('ac2/installed', 'the installed layout holds the scan and the launcher, and no data file beside them',
+                  {'secret_scan.py', 'control_launch.py', 'control_launch_work.py'} <= set(members)
+                  and not [p.name for p in installed.iterdir() if p.is_file() and p.suffix != '.py'])
+            at_install = subprocess.run([sys.executable, '-I', '-B', str(installed / 'secret_scan.py'), 'scan', '--project',
+                                         'fixture', '--root', str(project), '--log', str(logs / 'installed.jsonl')],
+                                        capture_output=True, text=True, timeout=120, stdin=subprocess.DEVNULL)
+            check('ac2/installed', 'the owner\'s command runs from the installed layout [%s %s]'
+                  % (at_install.returncode, (at_install.stdout + at_install.stderr).strip()[-200:]),
+                  at_install.returncode == 0 and 'secret_found:github_token' in at_install.stdout)
+            installed_script = base / 'installed_scan.py'
+            installed_script.write_text('''import importlib.util, json, sys
+spec = importlib.util.spec_from_file_location('installed_launch', sys.argv[1])
+L = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(L)
+config = {'store': sys.argv[2], 'secret_scan_log': sys.argv[3]}
+ended = L.scan_run_end(config, 'installed-254', 'fixture', [sys.argv[4]])
+held = sys.stdin.read().strip()
+landed = L.scan_candidate(config, 'fixture', sys.argv[5], sys.argv[6], sys.argv[7], held=[held])
+assert L.candidate_scan(config, 'fixture', sys.argv[5], sys.argv[6], sys.argv[7]) is not None
+print(json.dumps({'run_end': len(ended['findings']), 'landing': len(landed['findings'])}, sort_keys=True))
+''')
+            installed_log = logs / 'installed-launch.jsonl'
+            ran = subprocess.run([sys.executable, '-I', '-B', str(installed_script), str(installed / 'control_launch.py'),
+                                  str(base / 'authority' / 'control.sqlite3'), str(installed_log), str(project), str(repo),
+                                  base_commit, head], capture_output=True, text=True, timeout=300, input=held)
+            check('ac2/installed', 'the installed launcher\'s run-end and landing scans report what they find [%s %s]'
+                  % (ran.stdout.strip()[-120:], ran.stderr.strip()[-200:]),
+                  ran.stdout.strip().endswith('{"landing": 1, "run_end": 1}')
+                  and '"secret_scan_failed"' not in (installed_log.read_text() if installed_log.is_file() else ''))
+
+        with section('ac2/failure-visible'):
+            # AC2: a scan that fails is never swallowed: the owner's scan log names it, by trigger, and nothing of the
+            # run or the landing is changed.
+            failing_log = logs / 'failing.jsonl'
+            failing = {'store': str(base / 'authority' / 'control.sqlite3'), 'secret_scan_log': str(failing_log),
+                       'clones': {'no_such_argument': True}}
+            stub = types.SimpleNamespace(config=failing, dispatches=None, conversation_directory=None, run=None,
+                                         workspace_before=None)
+            L.run_end_scan(stub, 'failing-254', {'reservation': {'project': 'fixture'}})
+            landed_failure = L.candidate_scan(failing, 'fixture', str(base / 'no-repository'), 'HEAD~1', 'HEAD')
+            failures = [json.loads(line) for line in failing_log.read_text().splitlines()] if failing_log.is_file() else []
+            check('ac2/failure-visible', 'a run-end scan that fails is logged to the owner\'s scan log by name [%s]'
+                  % failures[:1], any(x.get('event') == 'secret_scan_failed' and x.get('trigger') == 'run_end'
+                                      and x.get('dispatch') == 'failing-254' and x.get('error') == 'TypeError'
+                                      for x in failures))
+            check('ac2/failure-visible', 'so is a landing scan that fails, and the landing goes on [%s]'
+                  % [x.get('error') for x in failures], landed_failure is None
+                  and any(x.get('event') == 'secret_scan_failed' and x.get('trigger') == 'landing_candidate'
+                          for x in failures))
+            check('ac2/failure-visible', 'the owner is told of the failure',
+                  hasattr(SS, 'notices')
+                  and any('failed' in text and 'not checked' in text for _scan, _kind, text in SS.notices(failing_log)))
+
+        with section('ac2/run-end-changed'):
+            # AC2 (finding 4): the run-end scan reads only the files the run changed, after the run's end is recorded.
+            changed_ws = base / 'changed'
+            tree(changed_ws, {'already/.env': 'TOKEN=%s\n' % known, 'keep.txt': 'kept\n', 'edit.txt': 'a\n'})
+            snapshot = {str(changed_ws): SS.tree_state(changed_ws)} if hasattr(SS, 'tree_state') else {}
+            tree(changed_ws, {'edit.txt': 'a\nKEY="%s"\n' % known, 'new/settings.py': 'TOKEN = "%s"\n' % known})
+            changed_log = logs / 'changed.jsonl'
+            changed_stub = types.SimpleNamespace(config={'store': str(base / 'authority' / 'control.sqlite3'),
+                                                         'secret_scan_log': str(changed_log)},
+                                                 dispatches=None, conversation_directory=str(changed_ws), run=None,
+                                                 workspace_before=snapshot)
+            L.run_end_scan(changed_stub, 'changed-254', {'reservation': {'project': 'fixture'}})
+            changed_lines = [json.loads(line) for line in changed_log.read_text().splitlines()] if changed_log.is_file() else []
+            check('ac2/run-end-changed', 'only the files the run added or changed are read and reported [%s]'
+                  % sorted((str(x.get('file')), str(x.get('files'))) for x in changed_lines),
+                  sorted(x['file'] for x in changed_lines if x.get('event') == 'secret_found') == ['edit.txt', 'new/settings.py']
+                  and [x.get('files') for x in changed_lines if x.get('event') == 'secret_scan'] == [2])
+            finish = functions(mods / 'control_launch.py')['Receiver._finish']
+            ends = [s for s in ast.walk(finish) if isinstance(s, ast.Call) and isinstance(s.func, ast.Attribute)
+                    and s.func.attr in ('exit', 'unknown')]
+            reported = [s for s in ast.walk(finish) if isinstance(s, ast.Call) and isinstance(s.func, ast.Attribute)
+                        and s.func.attr == '_report_end']
+            report_end = functions(mods / 'control_launch.py').get('Receiver._report_end')
+            order = [(s.lineno, getattr(s.func, 'attr', getattr(s.func, 'id', None)))
+                     for s in ast.walk(report_end or ast.parse('')) if isinstance(s, ast.Call)
+                     and getattr(s.func, 'attr', getattr(s.func, 'id', None)) in ('run_end_scan', 'emit')]
+            check('ac2/run-end-changed', 'the scan runs after each recorded end and before the end is reported [%s]'
+                  % sorted(order), 'run_end_scan' not in calls(finish) and len(ends) == len(reported) == 5
+                  and [name for _line, name in sorted(order)] == ['run_end_scan', 'emit']
+                  and all(e.lineno < r.lineno for e, r in zip(sorted(ends, key=lambda n: n.lineno),
+                                                             sorted(reported, key=lambda n: n.lineno))))
+            check('ac2/run-end-changed', 'the spawn records the workspace as the run starts',
+                  'tree_state' in calls(spawn_node))
+
+        with section('ac2/owner-notice'):
+            # AC2: the owner notice through Veldo's own channel (OPEN.md item 5): the running service's channel tells
+            # the owner, in his enrolled chat, of each scan that found a credential or failed, masked, once.
+            SC = load('v254_channel', mods / 'control_service_channel.py')
+            store_dir = base / 'owner' / 'authority'
+            store_dir.mkdir(parents=True)
+            owner_config = {'store': str(store_dir / 'control.sqlite3')}
+            L.scan_run_end(owner_config, 'noticed-254', 'fixture', [workspace], held=[held])
+            L.candidate_scan(owner_config, 'fixture', str(base / 'no-repository'), 'HEAD~1', 'HEAD')
+            conn = sqlite3.connect(':memory:')
+            conn.execute('CREATE TABLE entities (id TEXT PRIMARY KEY, kind TEXT, version INTEGER, data TEXT)')
+            conn.execute('INSERT INTO entities VALUES (?, ?, 1, ?)', ('enrolled:owner-254', 'enrollment',
+                                                                     json.dumps({'chat_id': 4254})))
+            sent = []
+
+            class Presenter:
+                P = types.SimpleNamespace(enrollment_id=lambda owner: 'enrolled:' + owner)
+                store = types.SimpleNamespace(StoreRefused=RuntimeError)
+
+                def _commit(self, operation, params, versions, command_id=None):
+                    for key, value in params.items():
+                        if key.endswith('_id'):
+                            conn.execute('INSERT INTO entities VALUES (?, ?, 1, ?)',
+                                         (value, operation, json.dumps(params[key[:-3]])))
+
+                def _send(self, chat, text, reply_to):
+                    sent.append((chat, text))
+                    return {'platform': {'chat_id': chat, 'message_id': len(sent)}, 'refusal': None}
+            channel = object.__new__(SC.Channel)
+            channel.config = {'store_path': owner_config['store']}
+            channel.ingress = types.SimpleNamespace(conn=conn, presenter=Presenter())
+            tell = getattr(channel, 'tell_secrets', lambda record: [])
+            told = tell({'state': 'active', 'owner': 'owner-254'})
+            check('ac2/owner-notice', 'the owner\'s enrolled chat is told of the finding scan and the failed one [%s]'
+                  % told, sorted(t.get('kind') for t in told) == ['secret_scan', 'secret_scan_failed']
+                  and all(chat == 4254 for chat, _text in sent) and len(sent) == 2)
+            found_notice = next((text for _chat, text in sent if 'secret_found:' in text), '')
+            check('ac2/owner-notice', 'the notice names each finding, masked, and says to move it behind the gate',
+                  found_notice.count('secret_found:') == 3 and 'behind the outside gate' in found_notice
+                  and not leaks(found_notice, held))
+            check('ac2/owner-notice', 'each scan is told once',
+                  tell({'state': 'active', 'owner': 'owner-254'}) == [] and len(sent) == 2)
+            check('ac2/owner-notice', 'nothing is told on an edge that is not active',
+                  tell({'state': 'stopped', 'owner': 'owner-254'}) == [])
+            channel_functions = functions(mods / 'control_service_channel.py')
+            check('ac2/owner-notice', 'every pass of an active edge tells the owner',
+                  'tell_secrets' in calls(channel_functions['Channel.tick']))
+
+        with section('ac3/risky-spawn'):
+            # AC3 (finding 2): a risky engine run's confined runner gets the dispatch's clone work tree as its writable
+            # root, as _engine_cwd computes it, and the engine's client files; Receiver._spawn is driven for real.
+            CL = load('v254_clone', mods / 'control_clone.py')
+            clone_root = base / 'clones'
+            work_tree = clone_root / 'one' / 'work'
+            work_tree.mkdir(parents=True)
+            (clone_root / 'one' / CL.MANIFEST).write_text(json.dumps(
+                {'clone_id': 'one', 'work': str(work_tree),
+                 'users': [{'dispatch_id': 'risky-254', 'scratch': str(clone_root / 'one' / 'scratch')}]}))
+            entrance_argv = [sys.executable, '-B', str(mods / 'control_clone.py'), 'enter', str(clone_root), '--',
+                             '/fixture/engine', 'exec', 'build it']
+            risky = {'runner': 'confined', 'why': 'dispatch'}
+            spawn_config = dict(runner_config, store=str(base / 'authority' / 'control.sqlite3'),
+                                secret_scan_log=str(logs / 'spawn.jsonl'))
+            risky_contract = dict(project_contract, dispatch_id='risky-254', input={'context': {'risky': True}})
+            for engine_name, client in (('codex', 'codex'), ('claude_code', 'claude')):
+                receiver, spawned = bare_receiver(spawn_config, dict(argv=list(entrance_argv), environment={},
+                                                                     path='fixture', sha256='fixture', engine=engine_name),
+                                                  risky_contract, risky)
+                with mock.patch.dict(os.environ, clean_environment, clear=True):
+                    receiver._spawn('risky-254', 'acceptance', {'argv': entrance_argv, 'identity': 'local'})
+                given = spawned[0][0] if spawned else []
+                option = lambda flag: given[given.index(flag) + 1] if flag in given else None
+                check('ac3/risky-spawn', 'a risky %s run is confined with the clone work tree writable and the %s client '
+                      '[%s %s]' % (engine_name, client, option('--worktree'), option('--client')),
+                      option('--worktree') == str(work_tree) == receiver._engine_cwd(entrance_argv, 'risky-254', False)
+                      and option('--client') == client and L.confined_inner(given) == entrance_argv)
+            conversation = base / 'conversation'
+            receiver, spawned = bare_receiver(spawn_config, dict(argv=list(engine), environment={}, path='fixture',
+                                                                 sha256='fixture', engine='claude_code'),
+                                              dict(risky_contract, subject_kind='conversation'), risky)
+            receiver.conversation_directory = str(conversation)
+            with mock.patch.dict(os.environ, clean_environment, clear=True):
+                receiver._spawn('risky-254', 'acceptance', {'argv': engine, 'identity': 'local'})
+            given = spawned[0][0] if spawned else []
+            check('ac3/risky-spawn', 'a risky conversation turn is confined to its conversation directory',
+                  '--worktree' in given and given[given.index('--worktree') + 1] == str(conversation))
+            receiver, spawned = bare_receiver(spawn_config, dict(argv=list(entrance_argv), environment={}, path='fixture',
+                                                                 sha256='fixture', engine='codex'), project_contract)
+            with mock.patch.dict(os.environ, clean_environment, clear=True):
+                receiver._spawn('launch-254', 'acceptance', {'argv': entrance_argv, 'identity': 'local'})
+            check('ac3/risky-spawn', 'an unmarked launch starts its argv as today',
+                  bool(spawned) and spawned[0][0] == entrance_argv)
+
+        with section('ac3/selftest-cached'):
+            # Finding 6: the confined runner's self-test is taken once per receiver.
+            cache = {}
+            moved = Path(bare['confined_runner']['program'])
+            try:
+                first = L.confined_runner_problem(bare, cache)
+                moved.rename(moved.with_suffix('.moved'))
+                again = L.confined_runner_problem(bare, cache)
+                uncached = L.confined_runner_problem(bare)
+            except TypeError as error:
+                first = again = uncached = 'raised %s' % error
+            finally:
+                if moved.with_suffix('.moved').exists():
+                    moved.with_suffix('.moved').rename(moved)
+            check('ac3/selftest-cached', 'a receiver judges its host once [%s %s %s]' % (first, again, uncached),
+                  first == again == 'confined_runner_unavailable:helper_missing'
+                  and uncached == 'confined_runner_unavailable:program_missing')
+            launch_node = functions(mods / 'control_launch.py')['Receiver.launch']
+            check('ac3/selftest-cached', 'the launch passes the receiver\'s own cache',
+                  any(isinstance(s, ast.Call) and getattr(s.func, 'id', None) == 'runner_refusal' and len(s.args) == 3
+                      for s in ast.walk(launch_node)))
+
     except Exception as error:
         for row in ROWS:
             check(row, 'raised ' + type(error).__name__ + ': ' + str(error)[:300], False)

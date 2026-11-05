@@ -133,8 +133,9 @@ def scan_files(files, read=None):
 # outside gate; this scan finds one left in a run's workspace, a landing candidate's changed files or a project
 # tree, and REPORTS it, masked, so the owner moves it behind the gate. It never edits a file, stops a run or
 # refuses a landing. One entry, `scan`, serves every trigger, and nothing else reports a found credential.
-# Detection: the product's generic credential formats (secret_scan_patterns.json) and an exact match against the
-# credentials held for the gate, compared by digest inside this process and never written out. A finding is
+# Detection: the product's generic credential formats (FORMATS, kept in this module so every installed copy of it
+# carries them) and an exact match against the credentials held for the gate, compared by digest inside this process
+# and never written out. A finding is
 # written as its MASKED form only: the kind, the length and a short digest of the value, never a character of
 # it. The engine's own model login in its usual place (LOGIN_PLACES) is where it belongs and is not a finding.
 import hashlib
@@ -146,8 +147,29 @@ import sys
 import time
 import uuid
 
-TRIGGERS = ('run_end', 'landing_candidate', 'setup', 'command')
-FORMATS_FILE = Path(__file__).with_name('secret_scan_patterns.json')
+# The workspace triggers of AC2, and `launch`, the launcher's scan of a run's final environment and command line
+# before the run starts (AC1): a credential found there refuses that launch, by the launcher, never by this scan.
+TRIGGERS = ('run_end', 'landing_candidate', 'setup', 'command', 'launch')
+# THE PRODUCT'S GENERIC LIST OF CREDENTIAL FORMATS: a kind and the regular expression of its format; the first entry
+# that matches a span names it. Formats only: no value, account or service of any installation belongs here. They
+# live in this module, not in a data file beside it, because the installed service copies modules only
+# (control_service.closure) and a scan without its formats would find nothing on every installed receiver.
+FORMATS = (
+    ('private_key', r'-{5}BEGIN (?:[A-Z]+ )*PRIVATE KEY-{5}'),
+    ('aws_access_key', r'\b(?:AKIA|ASIA)[0-9A-Z]{16}\b'),
+    ('github_token', r'\b(?:gh[pousr]_[A-Za-z0-9]{36,255}|github_pat_[A-Za-z0-9_]{22,255})\b'),
+    ('gitlab_token', r'\bglpat-[A-Za-z0-9_\-]{20,}'),
+    ('slack_token', r'\bxox[abposr]-[A-Za-z0-9\-]{10,}'),
+    ('stripe_key', r'\b[rs]k_live_[A-Za-z0-9]{20,}'),
+    ('google_api_key', r'\bAIza[0-9A-Za-z_\-]{35}\b'),
+    ('anthropic_key', r'\bsk-ant-[A-Za-z0-9_\-]{20,}'),
+    ('openai_key', r'\bsk-(?:proj-|svcacct-)?[A-Za-z0-9_\-]{32,}'),
+    ('npm_token', r'\bnpm_[A-Za-z0-9]{36}\b'),
+    ('telegram_bot_token', r'\b[0-9]{8,10}:AA[A-Za-z0-9_\-]{33}\b'),
+    ('jwt', r'\beyJ[A-Za-z0-9_\-]{10,}\.eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}'),
+    ('url_password', r'\b[a-z][a-z0-9+.\-]*://[^\s:/@]+:[^\s:/@]{8,}@'),
+)
+LOG_NAME = 'secret-scan.jsonl'
 HELD_KIND = 'gate_credential'
 LOGIN_PLACES = ('.claude/.credentials.json', '.codex/auth.json')
 SKIPPED_DIRECTORIES = ('.git',)
@@ -156,10 +178,16 @@ DIGEST_CHARS = 12
 _DELIMITED = re.compile(r'[^\s"\'`,;()\[\]{}<>|\\]+')
 
 
-def formats(path=None):
-    """[(kind, compiled pattern)] in the order the formats file gives them."""
-    document = json.loads(Path(path or FORMATS_FILE).read_text())
-    return [(entry['kind'], re.compile(entry['pattern'])) for entry in document['formats']]
+def formats():
+    """[(kind, compiled pattern)] in the order FORMATS gives them."""
+    return [(kind, re.compile(pattern)) for kind, pattern in FORMATS]
+
+
+def store_logs(store):
+    """The scan logs of one installation, as the running service's channel reads them: beside its store (a receiver
+    configuration that names no state root) and in the state root that holds the store's directory."""
+    directory = os.path.dirname(os.path.abspath(str(store)))
+    return [os.path.join(directory, LOG_NAME), os.path.join(os.path.dirname(directory), LOG_NAME)]
 
 
 def _digest(value):
@@ -197,6 +225,40 @@ def tree_files(root):
                 yield '/'.join(relative), None
 
 
+def tree_state(root):
+    """{relative path: (size, mtime_ns, inode)} of every regular file under `root`, as tree_files walks it; nothing
+    is read. What a run's workspace holds as it starts, so its end reads only what it changed."""
+    state, root = {}, str(root)
+    for directory, names, files in os.walk(root, followlinks=False):
+        names[:] = sorted(n for n in names if n not in SKIPPED_DIRECTORIES)
+        for name in files:
+            path = os.path.join(directory, name)
+            try:
+                info = os.lstat(path)
+            except OSError:
+                continue
+            if os.path.isfile(path) and not os.path.islink(path):
+                state['/'.join(os.path.relpath(path, root).split(os.sep))] = (info.st_size, info.st_mtime_ns,
+                                                                              info.st_ino)
+    return state
+
+
+def changed_files(root, before):
+    """(relative path, bytes) of each file under `root` that is new or changed against `before` (tree_state), so
+    a credential that was already there is not read, nor reported, again."""
+    now = tree_state(root)
+    for relative in sorted(name for name, seen in now.items() if (before or {}).get(name) != seen):
+        path = os.path.join(str(root), *relative.split('/'))
+        try:
+            if os.path.getsize(path) > LARGEST:
+                yield relative, None
+                continue
+            with open(path, 'rb') as handle:
+                yield relative, handle.read()
+        except OSError:
+            yield relative, None
+
+
 def candidate_files(repository, base, head):
     """(relative path, bytes) of each file a landing candidate `head` adds or changes against `base`, read from
     the candidate's own objects, never its work tree."""
@@ -212,8 +274,8 @@ def candidate_files(repository, base, head):
         yield name, (blob.stdout if blob.returncode == 0 and len(blob.stdout) <= LARGEST else None)
 
 
-def _held_spans(line, held):
-    """(start, end) of each delimited value on `line` whose digest is a held credential's."""
+def _covered(line, digests):
+    """(start, end) of each delimited value on `line` whose digest is one of `digests`."""
     spans = []
     for match in _DELIMITED.finditer(line):
         token, start = match.group(0), match.start()
@@ -223,18 +285,25 @@ def _held_spans(line, held):
                 at = token.index(separator) + 1
                 candidates.append((token[at:], start + at))
         for value, at in candidates:
-            if value and _digest(value) in held:
+            if value and _digest(value) in digests:
                 spans.append((at, at + len(value)))
                 break
     return spans
 
 
-def _occurrences(text, known, held):
+def _held_spans(line, held):
+    """(start, end) of each delimited value on `line` whose digest is a held credential's."""
+    return _covered(line, held)
+
+
+def _occurrences(text, known, held, own=frozenset()):
     """[(line, kind, value)]: one per occurrence. A held credential is named as such; a span a held credential
-    covers is not reported again by format, and overlapping formats report the first."""
+    covers is not reported again by format, and overlapping formats report the first. A span that is one of `own`
+    (the digests of the engine's own model login where the launcher hands it over) is where it belongs, not a
+    finding."""
     found = []
     for number, line in enumerate(text.splitlines(), 1):
-        taken = []
+        taken = list(_covered(line, own)) if own else []
         for start, end in _held_spans(line, held) if held else ():
             taken.append((start, end))
             found.append((number, HELD_KIND, line[start:end]))
@@ -251,10 +320,61 @@ def notice_text(trigger, project, findings):
     """The owner's notice: each finding masked, and what to do with it."""
     lines = ['Veldo secret scan (%s, project %s): %d credential(s) found. Move each one behind the outside gate '
              'and take it out of the file.' % (trigger, project, len(findings))]
+    if trigger == 'launch':
+        lines[0] += ' The launch was refused.'
     lines += ['%s %s:%d (%s, %d characters, sha256 %s)' % (f['code'], f['file'], f['line'], f['masked']['kind'],
                                                           f['masked']['length'], f['masked']['digest'])
               for f in findings]
     return '\n'.join(lines)
+
+
+def failure_text(trigger, project, error):
+    """The owner's notice of a scan that failed: what was not checked and how to check it."""
+    return ('Veldo secret scan (%s, project %s) failed: %s. Its files were not checked; check the project tree with '
+            'secret_scan.py scan --project <name> --root <tree>.' % (trigger, project, error))
+
+
+def error_name(error):
+    """A failure's name for the log and the notice: its class, and the errno name of an OSError. Never its message,
+    which could quote what it was reading."""
+    name = type(error).__name__
+    number = getattr(error, 'errno', None)
+    return name + (':' + __import__('errno').errorcode.get(number, str(number)) if isinstance(error, OSError)
+                   and number else '')
+
+
+def failed(trigger, project, error, log, dispatch=None):
+    """A scan that could not run, logged by name to the owner's scan log (and noted on stderr when even that log
+    cannot be written), so a failure is never silent. It changes nothing about the run or the landing."""
+    entry = {'event': 'secret_scan_failed', 'scan': uuid.uuid4().hex[:16], 'trigger': trigger, 'project': project,
+             'dispatch': dispatch, 'error': error_name(error), 'at': time.time()}
+    sys.stderr.write('secret scan (%s) failed: %s\n' % (trigger, entry['error']))
+    try:
+        _log(log, entry)
+    except Exception as again:
+        sys.stderr.write('secret scan failure could not be logged: %s\n' % type(again).__name__)
+    return entry
+
+
+def notices(log):
+    """[(scan id, notice text)] of each scan in a scan log that found a credential or failed, in log order: what
+    the owner is told through Veldo's own channel. Built from the logged masked findings only."""
+    try:
+        with open(str(log), encoding='utf-8') as handle:
+            entries = [json.loads(line) for line in handle if line.strip()]
+    except (OSError, ValueError):
+        return []
+    found, out = {}, []
+    for entry in entries:
+        if entry.get('event') == 'secret_found':
+            found.setdefault(entry.get('scan'), []).append(entry)
+        elif entry.get('event') == 'secret_scan' and entry.get('findings'):
+            out.append((entry['scan'], 'secret_scan',
+                        notice_text(entry.get('trigger'), entry.get('project'), found.get(entry['scan'], []))))
+        elif entry.get('event') == 'secret_scan_failed':
+            out.append((entry['scan'], 'secret_scan_failed',
+                        failure_text(entry.get('trigger'), entry.get('project'), entry.get('error'))))
+    return out
 
 
 def _log(log, entry):
@@ -268,7 +388,7 @@ def _log(log, entry):
         handle.write(json.dumps(entry, sort_keys=True) + '\n')
 
 
-def scan(trigger, project, files, *, held=(), login=(), log=None, notify=None, dispatch=None, known=None):
+def scan(trigger, project, files, *, held=(), login=(), log=None, notify=None, dispatch=None, known=None, own=()):
     """THE ONE SCAN ENTRY. `files` is an iterable of (relative path, bytes or None); `held` the credentials held
     for the gate (values, digested here and dropped); `log` a JSONL path or a callable taking each line; `notify`
     the owner channel's sink, called once with the notice text and returning its id. Returns the report: the
@@ -276,6 +396,7 @@ def scan(trigger, project, files, *, held=(), login=(), log=None, notify=None, d
     if trigger not in TRIGGERS:
         raise ValueError('unknown trigger: %r' % (trigger,))
     held = {_digest(value) for value in held if isinstance(value, str) and value}
+    own = frozenset(_digest(value) for value in own if isinstance(value, str) and value)
     known = formats() if known is None else known
     scan_id = uuid.uuid4().hex[:16]
     findings, read, unread = [], 0, 0
@@ -287,7 +408,7 @@ def scan(trigger, project, files, *, held=(), login=(), log=None, notify=None, d
             continue
         read += 1
         text = data.decode('utf-8', 'replace') if isinstance(data, bytes) else str(data)
-        for number, kind, value in _occurrences(text, known, held):
+        for number, kind, value in _occurrences(text, known, held, own):
             findings.append({'code': 'secret_found:' + kind, 'kind': kind, 'file': relative, 'line': number,
                              'masked': mask(kind, value)})
     notice = None
