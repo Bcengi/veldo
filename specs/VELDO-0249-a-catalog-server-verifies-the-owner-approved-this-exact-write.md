@@ -7,7 +7,7 @@ risk: critical
 owner: owner
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0065, VELDO-0066, VELDO-0068, VELDO-0144, VELDO-0158, VELDO-0162, VELDO-0181, VELDO-0241, VELDO-0243, VELDO-0244]
+depends_on: [VELDO-0065, VELDO-0066, VELDO-0068, VELDO-0144, VELDO-0158, VELDO-0162, VELDO-0181, VELDO-0241]
 placement: [contracts, engine, distribution]
 protected_paths: [".veldo/control_store.py", "engine/.veldo/control_store.py", ".veldo/control_request_settlement.py", "engine/.veldo/control_request_settlement.py", ".veldo/control_channel_attribution.py", "engine/.veldo/control_channel_attribution.py", ".veldo/control_signer_answers.py", "engine/.veldo/control_signer_answers.py", ".veldo/control_keys.py", "engine/.veldo/control_keys.py", ".veldo/authority_contract.py", "engine/.veldo/authority_contract.py", ".veldo/settlements/*"]
 footprint:
@@ -268,3 +268,5 @@ commit tools refused until it lands. Standalone.
 2026-11-04: amended as approved by the owner, Telegram 39144 ("Yes", to 39143: approvals go to the gate's check instead of to each connector). Applied as written in proof/VELDO-0251/amend-0249.md (VELDO-0251 branch): AC1 target v2, AC2 replaced by delivery to the approval service, AC3 moved into the gate's check with the subject comparison kept at two-phase servers, AC4 retargeted to the gate, the remote server out of scope item removed, observability decision line moved, depends_on adds VELDO-0251 and VELDO-0252. Status stays ready.
 
 2026-11-04: amended per the plan consistency review (research/veldo-plan-consistency-review-2026-11-04.md) and the lead's rulings (research/veldo-plan-rulings-2026-11-04.md), both in the owner's installation repository, on the owner's request Telegram 39145. AC1: an HTTP write is approved as the exact request the run submitted first to the approval service of VELDO-0252 and shown decoded; canonical digests for form and multipart bodies; a workflow approval node and an approved schedule use the same mechanism; a prepare that calls the vendor is a write unless declared read (R4, R12, C1, C2, A24, E1). AC3: the whole body is read or refused under the per-service limit (R4). AC4: a read label needs an approved read override (D3). depends_on drops VELDO-0251 and VELDO-0252, which depend on this spec, so the graph has no cycle (D4). The title, Intent, Context, Design, rollback and observability now describe delivery to the outside gate's check instead of per-server delivery, matching the amended criteria. agentgateway is named the outside gate (E6). The owner's connectors plan and its point numbers leave the spec, and the owner field is a role id (B1). Status stays ready; the owner approves the amendments in one message.
+
+2026-11-05: the lead removed VELDO-0243 and VELDO-0244 from depends_on: they use this spec's approvals and depend on it, so listing them here made a cycle. No acceptance criterion changes.
