@@ -119,6 +119,10 @@ _FILES = [
     ".veldo/control_workflow_cycle_assignment.py",
     ".veldo/control_graph_pm.py",
     ".veldo/control_workflow_langgraph.py",
+    # VELDO-0241: a unit's process as a workflow revision, and the shipped `code` definition the canvas shows
+    # and setup saves. No validator import.
+    ".veldo/control_workflow_unit.py",
+    ".veldo/workflows/code.json",
     # VELDO-0045: activation of that runtime against its license and provenance records (laid down
     # from _RUNTIME_ASSETS below), the qualification workload and the no-runtime enforcement check.
     # Runtime asset; no validator import, so not REQUIRED_SUBSTRATE.

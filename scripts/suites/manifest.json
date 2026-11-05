@@ -1749,6 +1749,15 @@
    }
   },
   {
+   "name": "127_veldo_0241_unit_workflows",
+   "file": "127_veldo_0241_unit_workflows.py",
+   "requires": [
+    "127_veldo_0241_unit_workflows"
+   ],
+   "regions": "A unit's process as a versioned workflow revision (VELDO-0241): the shipped code definition and its equivalence with the Line of the previous commit on every unit state, the save-time owner approval check on every path to an outward step, and the owner's per-project and per-kind-of-work binding with each unit pinned to the revision its first station recorded.",
+   "requires_note": "Only ROOT, expect and fast_temp. Real SQLite store with OpenSSH journal and owner command signatures, VELDO-0132 workflow saves, VELDO-0076 project commands, the Line of control_service.py and its predecessor read from Git history with their station methods recorded instead of dispatched. Writes only temporary fixtures."
+  },
+  {
    "name": "128_veldo_0235_land_locally",
    "file": "128_veldo_0235_land_locally.py",
    "requires": [

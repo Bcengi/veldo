@@ -1,0 +1,1604 @@
+{
+ "binding_refusals": {
+  "absent": "missing_workflow",
+  "agent": "not_authorized",
+  "not_a_unit_workflow": "missing_workflow:not_a_unit_workflow",
+  "not_owner": "not_owner",
+  "stale": "stale_subject"
+ },
+ "bindings": {
+  "bound": {
+   "obligations": [],
+   "ok": true,
+   "project": {
+    "authority_policy": {
+     "grooming": [
+      "project_owner"
+     ]
+    },
+    "charter": {
+     "exclusions": [],
+     "purpose": "Deliver the alpha work."
+    },
+    "charter_digest": "sha256:41c8507076ae9536634d8a2468e4fc03b8cbb3c7f4dcbfa0c83d1aeba661d1a9",
+    "charter_revision": 1,
+    "coordination_budget": {
+     "capacity": 20,
+     "invocations": 200,
+     "wall_seconds": 1000000
+    },
+    "domain_uuid": "domain-241",
+    "execution_repository": "repository-241",
+    "history": [
+     {
+      "at": 1793834964.8061647,
+      "by": "owner",
+      "command_id": "pc-6",
+      "source": "DRAFT",
+      "target": "ACTIVE"
+     }
+    ],
+    "name": "alpha",
+    "owner": "owner",
+    "provenance": {
+     "created_at": 1793834964.8061647,
+     "created_by": "owner",
+     "source": "activate"
+    },
+    "repository_uuid": "repository-241",
+    "schema": "veldo.project/v1",
+    "state": "ACTIVE",
+    "stopping": [],
+    "version": 2,
+    "workflow_bindings": [
+     {
+      "at": 1793834965.04796,
+      "by": "owner",
+      "command_id": "pc-8",
+      "kind_of_work": "default",
+      "new": {
+       "digest": "sha256:551ed35128680d2cec11d358e2d8cff9fa605087495d4a2c42a5e8574699da1f",
+       "version": 1,
+       "workflow": "flow"
+      },
+      "old": null,
+      "project": "alpha"
+     }
+    ],
+    "workflows": {
+     "default": {
+      "digest": "sha256:551ed35128680d2cec11d358e2d8cff9fa605087495d4a2c42a5e8574699da1f",
+      "version": 1,
+      "workflow": "flow"
+     }
+    }
+   },
+   "project_id": "project:alpha",
+   "reason": "bind_workflow",
+   "receipt": {
+    "after_versions": {
+     "key:owner:1": 1,
+     "owner": 1,
+     "project:alpha": 2
+    },
+    "command_id": "pc-8",
+    "committed": true,
+    "effects": [],
+    "record_digest": "sha256:b4bea617ed19890333f84fdd42fea6e80a971fca755b0ead92ac7f5b0a06e733",
+    "replayed": false,
+    "reservations": [],
+    "result_digest": "sha256:deb95dbe44d7949d13516b89f695edb6d9a7c09bc4b839882a73cf82152e33be",
+    "seq": 12
+   },
+   "stops": []
+  },
+  "cycle": {
+   "ok": {
+    "definition_digest": "sha256:a5008cbe5965cee11376b9623ee3c433e52f83f4727daf0c9b92515f8cf1ac7a",
+    "entity_digest": "sha256:917afebb3208c9357d569af408de0425b2624a64b127da9780147f157c55f36d",
+    "layout_digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "revision": "workflow-revision:[\"domain-241\",\"repository-241\",\"cycle\",1]",
+    "seq": 11,
+    "version": 1,
+    "workflow": "cycle"
+   }
+  },
+  "docs": {
+   "obligations": [],
+   "ok": true,
+   "project": {
+    "authority_policy": {
+     "grooming": [
+      "project_owner"
+     ]
+    },
+    "charter": {
+     "exclusions": [],
+     "purpose": "Deliver the alpha work."
+    },
+    "charter_digest": "sha256:41c8507076ae9536634d8a2468e4fc03b8cbb3c7f4dcbfa0c83d1aeba661d1a9",
+    "charter_revision": 1,
+    "coordination_budget": {
+     "capacity": 20,
+     "invocations": 200,
+     "wall_seconds": 1000000
+    },
+    "domain_uuid": "domain-241",
+    "execution_repository": "repository-241",
+    "history": [
+     {
+      "at": 1793834964.8061647,
+      "by": "owner",
+      "command_id": "pc-6",
+      "source": "DRAFT",
+      "target": "ACTIVE"
+     }
+    ],
+    "name": "alpha",
+    "owner": "owner",
+    "provenance": {
+     "created_at": 1793834964.8061647,
+     "created_by": "owner",
+     "source": "activate"
+    },
+    "repository_uuid": "repository-241",
+    "schema": "veldo.project/v1",
+    "state": "ACTIVE",
+    "stopping": [],
+    "version": 3,
+    "workflow_bindings": [
+     {
+      "at": 1793834965.04796,
+      "by": "owner",
+      "command_id": "pc-8",
+      "kind_of_work": "default",
+      "new": {
+       "digest": "sha256:551ed35128680d2cec11d358e2d8cff9fa605087495d4a2c42a5e8574699da1f",
+       "version": 1,
+       "workflow": "flow"
+      },
+      "old": null,
+      "project": "alpha"
+     },
+     {
+      "at": 1793834965.057626,
+      "by": "owner",
+      "command_id": "pc-9",
+      "kind_of_work": "docs",
+      "new": {
+       "digest": "sha256:6d48cf41a4bd891e0db6a5daa57c4e2aa1b9b0636f5851a30364f388694614bf",
+       "version": 1,
+       "workflow": "docs-flow"
+      },
+      "old": null,
+      "project": "alpha"
+     }
+    ],
+    "workflows": {
+     "default": {
+      "digest": "sha256:551ed35128680d2cec11d358e2d8cff9fa605087495d4a2c42a5e8574699da1f",
+      "version": 1,
+      "workflow": "flow"
+     },
+     "docs": {
+      "digest": "sha256:6d48cf41a4bd891e0db6a5daa57c4e2aa1b9b0636f5851a30364f388694614bf",
+      "version": 1,
+      "workflow": "docs-flow"
+     }
+    }
+   },
+   "project_id": "project:alpha",
+   "reason": "bind_workflow",
+   "receipt": {
+    "after_versions": {
+     "key:owner:1": 1,
+     "owner": 1,
+     "project:alpha": 3
+    },
+    "command_id": "pc-9",
+    "committed": true,
+    "effects": [],
+    "record_digest": "sha256:37b3169cbb4406d007e75cb6ec1b57f7b09fb847430b5eeb545b0e488b40f705",
+    "replayed": false,
+    "reservations": [],
+    "result_digest": "sha256:905625ad18318a544ed0e495094f8a93b06c3b7409765d7ff59464f0918e01f3",
+    "seq": 13
+   },
+   "stops": []
+  },
+  "log": [
+   {
+    "at": 1793834965.04796,
+    "by": "owner",
+    "command_id": "pc-8",
+    "kind_of_work": "default",
+    "new": {
+     "digest": "sha256:551ed35128680d2cec11d358e2d8cff9fa605087495d4a2c42a5e8574699da1f",
+     "version": 1,
+     "workflow": "flow"
+    },
+    "old": null,
+    "project": "alpha"
+   },
+   {
+    "at": 1793834965.057626,
+    "by": "owner",
+    "command_id": "pc-9",
+    "kind_of_work": "docs",
+    "new": {
+     "digest": "sha256:6d48cf41a4bd891e0db6a5daa57c4e2aa1b9b0636f5851a30364f388694614bf",
+     "version": 1,
+     "workflow": "docs-flow"
+    },
+    "old": null,
+    "project": "alpha"
+   }
+  ],
+  "workflows": {
+   "default": {
+    "digest": "sha256:551ed35128680d2cec11d358e2d8cff9fa605087495d4a2c42a5e8574699da1f",
+    "version": 1,
+    "workflow": "flow"
+   },
+   "docs": {
+    "digest": "sha256:6d48cf41a4bd891e0db6a5daa57c4e2aa1b9b0636f5851a30364f388694614bf",
+    "version": 1,
+    "workflow": "docs-flow"
+   }
+  }
+ },
+ "equivalence": {
+  "compared": {
+   "build-completed": {
+    "new": {
+     "calls": [
+      [
+       "offer",
+       "unit-build-completed",
+       "review",
+       "reviewer-b",
+       {
+        "context": {
+         "reviewer": "reviewer-b"
+        },
+        "follows": "unit-build-completed-b1",
+        "holder": "builder-a",
+        "payload": null,
+        "revision": "commit-unit-build-completed-b1"
+       }
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "offered:review"
+    },
+    "old": {
+     "calls": [
+      [
+       "offer",
+       "unit-build-completed",
+       "review",
+       "reviewer-b",
+       {
+        "context": {
+         "reviewer": "reviewer-b"
+        },
+        "follows": "unit-build-completed-b1",
+        "holder": "builder-a",
+        "payload": null,
+        "revision": "commit-unit-build-completed-b1"
+       }
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "offered:review"
+    }
+   },
+   "build-completed-no-independent-reviewer": {
+    "new": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [
+       {
+        "refusals": [
+         "missing_authority:independent_reviewer"
+        ],
+        "repository": "repository-241",
+        "station": "review",
+        "unit": "unit-build-completed-no-independent-reviewer"
+       }
+      ],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    },
+    "old": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [
+       {
+        "refusals": [
+         "missing_authority:independent_reviewer"
+        ],
+        "repository": "repository-241",
+        "station": "review",
+        "unit": "unit-build-completed-no-independent-reviewer"
+       }
+      ],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    }
+   },
+   "build-failed": {
+    "new": {
+     "calls": [
+      [
+       "limited",
+       "unit-build-failed-b1"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    },
+    "old": {
+     "calls": [
+      [
+       "limited",
+       "unit-build-failed-b1"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    }
+   },
+   "build-held": {
+    "new": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    },
+    "old": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    }
+   },
+   "land-awaiting_approval": {
+    "new": {
+     "calls": [
+      [
+       "grant",
+       "unit-land-awaiting_approval",
+       "unit-land-awaiting_approval-l1"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "granted"
+    },
+    "old": {
+     "calls": [
+      [
+       "grant",
+       "unit-land-awaiting_approval",
+       "unit-land-awaiting_approval-l1"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "granted"
+    }
+   },
+   "land-conflict": {
+    "new": {
+     "calls": [
+      [
+       "offer",
+       "unit-land-conflict",
+       "build",
+       "builder-a",
+       {
+        "follows": "unit-land-conflict-l1",
+        "payload": {
+         "follows": "unit-land-conflict-l1",
+         "merge": {
+          "conflicts": [
+           "README"
+          ],
+          "land_dispatch": "unit-land-conflict-l1",
+          "onto": "watermark-unit-land-conflict-l1",
+          "trunk": "main"
+         },
+         "operation": "build",
+         "task": "build the unit",
+         "unit": "unit-land-conflict"
+        },
+        "revision": "evidence-unit-land-conflict-l1"
+       }
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "offered:build"
+    },
+    "old": {
+     "calls": [
+      [
+       "offer",
+       "unit-land-conflict",
+       "build",
+       "builder-a",
+       {
+        "follows": "unit-land-conflict-l1",
+        "payload": {
+         "follows": "unit-land-conflict-l1",
+         "merge": {
+          "conflicts": [
+           "README"
+          ],
+          "land_dispatch": "unit-land-conflict-l1",
+          "onto": "watermark-unit-land-conflict-l1",
+          "trunk": "main"
+         },
+         "operation": "build",
+         "task": "build the unit",
+         "unit": "unit-land-conflict"
+        },
+        "revision": "evidence-unit-land-conflict-l1"
+       }
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "offered:build"
+    }
+   },
+   "land-failed": {
+    "new": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    },
+    "old": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    }
+   },
+   "land-landed": {
+    "new": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    },
+    "old": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    }
+   },
+   "land-running": {
+    "new": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    },
+    "old": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    }
+   },
+   "land-trunk_moved": {
+    "new": {
+     "calls": [
+      [
+       "reland",
+       "unit-land-trunk_moved",
+       "unit-land-trunk_moved-l1"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "relanded"
+    },
+    "old": {
+     "calls": [
+      [
+       "reland",
+       "unit-land-trunk_moved",
+       "unit-land-trunk_moved-l1"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "relanded"
+    }
+   },
+   "land-unknown": {
+    "new": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    },
+    "old": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    }
+   },
+   "nothing-yet": {
+    "new": {
+     "calls": [
+      [
+       "offer",
+       "unit-nothing-yet",
+       "build",
+       "builder-a",
+       {
+        "payload": null,
+        "revision": "HEAD"
+       }
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "offered:build"
+    },
+    "old": {
+     "calls": [
+      [
+       "offer",
+       "unit-nothing-yet",
+       "build",
+       "builder-a",
+       {
+        "payload": null,
+        "revision": "HEAD"
+       }
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "offered:build"
+    }
+   },
+   "nothing-yet-no-station": {
+    "new": {
+     "calls": [
+      [
+       "offer",
+       "unit-nothing-yet-no-station",
+       "build",
+       "builder-a",
+       {
+        "payload": null,
+        "revision": "HEAD"
+       }
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "offered:build"
+    },
+    "old": {
+     "calls": [
+      [
+       "offer",
+       "unit-nothing-yet-no-station",
+       "build",
+       "builder-a",
+       {
+        "payload": null,
+        "revision": "HEAD"
+       }
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "offered:build"
+    }
+   },
+   "rebuild-completed": {
+    "new": {
+     "calls": [
+      [
+       "offer",
+       "unit-rebuild-completed",
+       "review",
+       "reviewer-b",
+       {
+        "context": {
+         "reviewer": "reviewer-b"
+        },
+        "follows": "unit-rebuild-completed-b2",
+        "holder": "builder-a",
+        "payload": null,
+        "revision": "commit-unit-rebuild-completed-b2"
+       }
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "offered:review"
+    },
+    "old": {
+     "calls": [
+      [
+       "offer",
+       "unit-rebuild-completed",
+       "review",
+       "reviewer-b",
+       {
+        "context": {
+         "reviewer": "reviewer-b"
+        },
+        "follows": "unit-rebuild-completed-b2",
+        "holder": "builder-a",
+        "payload": null,
+        "revision": "commit-unit-rebuild-completed-b2"
+       }
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "offered:review"
+    }
+   },
+   "rebuild-failed": {
+    "new": {
+     "calls": [
+      [
+       "limited",
+       "unit-rebuild-failed-b2"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    },
+    "old": {
+     "calls": [
+      [
+       "limited",
+       "unit-rebuild-failed-b2"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    }
+   },
+   "rebuild-held": {
+    "new": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    },
+    "old": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    }
+   },
+   "rebuild-review-held": {
+    "new": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    },
+    "old": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    }
+   },
+   "rebuild-reviewed": {
+    "new": {
+     "calls": [
+      [
+       "limited",
+       "unit-rebuild-reviewed-r2"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    },
+    "old": {
+     "calls": [
+      [
+       "limited",
+       "unit-rebuild-reviewed-r2"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    }
+   },
+   "review-completed": {
+    "new": {
+     "calls": [
+      [
+       "limited",
+       "unit-review-completed-r1"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    },
+    "old": {
+     "calls": [
+      [
+       "limited",
+       "unit-review-completed-r1"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    }
+   },
+   "review-failed": {
+    "new": {
+     "calls": [
+      [
+       "limited",
+       "unit-review-failed-r1"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    },
+    "old": {
+     "calls": [
+      [
+       "limited",
+       "unit-review-failed-r1"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    }
+   },
+   "review-held": {
+    "new": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    },
+    "old": {
+     "calls": [],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": null
+    }
+   },
+   "second-land-trunk-moved": {
+    "new": {
+     "calls": [
+      [
+       "reland",
+       "unit-second-land-trunk-moved",
+       "unit-second-land-trunk-moved-l2"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "relanded"
+    },
+    "old": {
+     "calls": [
+      [
+       "reland",
+       "unit-second-land-trunk-moved",
+       "unit-second-land-trunk-moved-l2"
+      ]
+     ],
+     "report": {
+      "asked": [],
+      "awaiting": [],
+      "decisions": [],
+      "ended": [],
+      "lands": [],
+      "offered": [],
+      "refused": [],
+      "released": [],
+      "stopped": [],
+      "waiting": []
+     },
+     "value": "relanded"
+    }
+   }
+  },
+  "differing": []
+ },
+ "kinds": {
+  "unit-docs": [
+   {
+    "digest": "sha256:6d48cf41a4bd891e0db6a5daa57c4e2aa1b9b0636f5851a30364f388694614bf",
+    "id": "docs-flow",
+    "node": "build",
+    "version": 1
+   }
+  ],
+  "unit-media": [
+   {
+    "digest": "sha256:551ed35128680d2cec11d358e2d8cff9fa605087495d4a2c42a5e8574699da1f",
+    "id": "flow",
+    "node": "build",
+    "version": 1
+   }
+  ],
+  "unit-plain": [
+   {
+    "digest": "sha256:551ed35128680d2cec11d358e2d8cff9fa605087495d4a2c42a5e8574699da1f",
+    "id": "flow",
+    "node": "build",
+    "version": 1
+   }
+  ]
+ },
+ "later": {
+  "accepted": [],
+  "refused": {
+   "codes": [
+    "invalid_input:missing_owner_approval:deliver"
+   ],
+   "refused": "invalid_input:missing_owner_approval:deliver"
+  }
+ },
+ "pinned": {
+  "early": {
+   "digest": "sha256:551ed35128680d2cec11d358e2d8cff9fa605087495d4a2c42a5e8574699da1f",
+   "id": "flow",
+   "node": "build",
+   "version": 1
+  },
+  "early_next": [
+   [
+    [
+     "offer",
+     "unit-early",
+     "review",
+     "reviewer-b",
+     {
+      "context": {
+       "reviewer": "reviewer-b"
+      },
+      "follows": "early-b1",
+      "holder": "builder-a",
+      "payload": null,
+      "revision": "commit-early-b1"
+     }
+    ]
+   ],
+   [
+    {
+     "digest": "sha256:551ed35128680d2cec11d358e2d8cff9fa605087495d4a2c42a5e8574699da1f",
+     "id": "flow",
+     "node": "review",
+     "version": 1
+    }
+   ]
+  ],
+  "flow2": {
+   "definition_digest": "sha256:5514694bdcdfbc4fabddab2f17a8a19ddbcbfcc5e8583179800f9428349e1147",
+   "entity_digest": "sha256:3fe25ea0bb0554ce26bc108e405ebf3049aa6ef45dd51698262db572624e0e7e",
+   "layout_digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+   "revision": "workflow-revision:[\"domain-241\",\"repository-241\",\"flow\",2]",
+   "seq": 18,
+   "version": 2,
+   "workflow": "flow"
+  },
+  "late": {
+   "digest": "sha256:5514694bdcdfbc4fabddab2f17a8a19ddbcbfcc5e8583179800f9428349e1147",
+   "id": "flow",
+   "node": "build",
+   "version": 2
+  },
+  "late_next": [
+   [],
+   []
+  ],
+  "rebound": {
+   "obligations": [],
+   "ok": true,
+   "project": {
+    "authority_policy": {
+     "grooming": [
+      "project_owner"
+     ]
+    },
+    "charter": {
+     "exclusions": [],
+     "purpose": "Deliver the alpha work."
+    },
+    "charter_digest": "sha256:41c8507076ae9536634d8a2468e4fc03b8cbb3c7f4dcbfa0c83d1aeba661d1a9",
+    "charter_revision": 1,
+    "coordination_budget": {
+     "capacity": 20,
+     "invocations": 200,
+     "wall_seconds": 1000000
+    },
+    "domain_uuid": "domain-241",
+    "execution_repository": "repository-241",
+    "history": [
+     {
+      "at": 1793834964.8061647,
+      "by": "owner",
+      "command_id": "pc-6",
+      "source": "DRAFT",
+      "target": "ACTIVE"
+     }
+    ],
+    "name": "alpha",
+    "owner": "owner",
+    "provenance": {
+     "created_at": 1793834964.8061647,
+     "created_by": "owner",
+     "source": "activate"
+    },
+    "repository_uuid": "repository-241",
+    "schema": "veldo.project/v1",
+    "state": "ACTIVE",
+    "stopping": [],
+    "version": 4,
+    "workflow_bindings": [
+     {
+      "at": 1793834965.04796,
+      "by": "owner",
+      "command_id": "pc-8",
+      "kind_of_work": "default",
+      "new": {
+       "digest": "sha256:551ed35128680d2cec11d358e2d8cff9fa605087495d4a2c42a5e8574699da1f",
+       "version": 1,
+       "workflow": "flow"
+      },
+      "old": null,
+      "project": "alpha"
+     },
+     {
+      "at": 1793834965.057626,
+      "by": "owner",
+      "command_id": "pc-9",
+      "kind_of_work": "docs",
+      "new": {
+       "digest": "sha256:6d48cf41a4bd891e0db6a5daa57c4e2aa1b9b0636f5851a30364f388694614bf",
+       "version": 1,
+       "workflow": "docs-flow"
+      },
+      "old": null,
+      "project": "alpha"
+     },
+     {
+      "at": 1793834965.144172,
+      "by": "owner",
+      "command_id": "pc-19",
+      "kind_of_work": "default",
+      "new": {
+       "digest": "sha256:5514694bdcdfbc4fabddab2f17a8a19ddbcbfcc5e8583179800f9428349e1147",
+       "version": 2,
+       "workflow": "flow"
+      },
+      "old": {
+       "digest": "sha256:551ed35128680d2cec11d358e2d8cff9fa605087495d4a2c42a5e8574699da1f",
+       "version": 1,
+       "workflow": "flow"
+      },
+      "project": "alpha"
+     }
+    ],
+    "workflows": {
+     "default": {
+      "digest": "sha256:5514694bdcdfbc4fabddab2f17a8a19ddbcbfcc5e8583179800f9428349e1147",
+      "version": 2,
+      "workflow": "flow"
+     },
+     "docs": {
+      "digest": "sha256:6d48cf41a4bd891e0db6a5daa57c4e2aa1b9b0636f5851a30364f388694614bf",
+      "version": 1,
+      "workflow": "docs-flow"
+     }
+    }
+   },
+   "project_id": "project:alpha",
+   "reason": "bind_workflow",
+   "receipt": {
+    "after_versions": {
+     "key:owner:1": 1,
+     "owner": 1,
+     "project:alpha": 4
+    },
+    "command_id": "pc-19",
+    "committed": true,
+    "effects": [],
+    "record_digest": "sha256:a95607103d5c8e142810512fb2e655feeafcd2d3834e389a68803e2e7bffcc2b",
+    "replayed": false,
+    "reservations": [],
+    "result_digest": "sha256:c783f3b4d5f3df1fb570a64de0b285915d3b859fa4ca5e4b81d16a7ba2889b63",
+    "seq": 19
+   },
+   "stops": []
+  }
+ },
+ "raised": [],
+ "refusals": {
+  "build-after": {
+   "codes": [
+    "invalid_input:approval_not_last:approval"
+   ],
+   "refused": "invalid_input:approval_not_last:approval"
+  },
+  "build-after-land": {
+   "codes": [
+    "invalid_input:approval_not_last:approval"
+   ],
+   "refused": "invalid_input:approval_not_last:approval"
+  },
+  "removed": {
+   "codes": [
+    "invalid_input:missing_owner_approval:land"
+   ],
+   "refused": "invalid_input:missing_owner_approval:land"
+  },
+  "side-edge": {
+   "codes": [
+    "invalid_input:missing_owner_approval:land"
+   ],
+   "refused": "invalid_input:missing_owner_approval:land"
+  }
+ },
+ "rows": [
+  [
+   "VELDO-0241 default/shipped",
+   true
+  ],
+  [
+   "VELDO-0241 default/equivalence",
+   true
+  ],
+  [
+   "VELDO-0241 default/unbound-runs-code",
+   true
+  ],
+  [
+   "VELDO-0241 approval/code-saves",
+   true
+  ],
+  [
+   "VELDO-0241 approval/removed",
+   true
+  ],
+  [
+   "VELDO-0241 approval/side-edge",
+   true
+  ],
+  [
+   "VELDO-0241 approval/build-after",
+   true
+  ],
+  [
+   "VELDO-0241 approval/build-after-land",
+   true
+  ],
+  [
+   "VELDO-0241 approval/later-outward-kinds",
+   true
+  ],
+  [
+   "VELDO-0241 binding/owner-binds",
+   true
+  ],
+  [
+   "VELDO-0241 binding/refusals",
+   true
+  ],
+  [
+   "VELDO-0241 binding/kind-of-work",
+   true
+  ],
+  [
+   "VELDO-0241 binding/pinned-revision",
+   true
+  ],
+  [
+   "VELDO-0241 ran/default/shipped",
+   true
+  ],
+  [
+   "VELDO-0241 ran/default/equivalence",
+   true
+  ],
+  [
+   "VELDO-0241 ran/default/unbound-runs-code",
+   true
+  ],
+  [
+   "VELDO-0241 ran/approval/code-saves",
+   true
+  ],
+  [
+   "VELDO-0241 ran/binding/owner-binds",
+   true
+  ]
+ ],
+ "shipped": {
+  "kinds": {
+   "approval": "owner_approval",
+   "build": "build",
+   "done": "end",
+   "gate": "gate",
+   "land": "land",
+   "review": "review"
+  },
+  "problems": []
+ },
+ "unbound": {
+  "legacy": [
+   {
+    "digest": "sha256:dbf1f73dd9a0b9e21e9bd2476980a4345b1566130a733dbf7f9b971b72f40207",
+    "id": "code",
+    "node": "review",
+    "version": 0
+   }
+  ],
+  "pins": [
+   {
+    "digest": "sha256:dbf1f73dd9a0b9e21e9bd2476980a4345b1566130a733dbf7f9b971b72f40207",
+    "id": "code",
+    "node": "build",
+    "version": 0
+   }
+  ]
+ }
+}

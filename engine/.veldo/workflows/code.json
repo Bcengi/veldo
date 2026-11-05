@@ -1,0 +1,111 @@
+{
+ "schema": "veldo.workflow/v1",
+ "id": "code",
+ "entry": "build",
+ "terminal": [
+  "done"
+ ],
+ "nodes": {
+  "build": {
+   "kind": "build",
+   "config": {}
+  },
+  "review": {
+   "kind": "review",
+   "config": {}
+  },
+  "gate": {
+   "kind": "gate",
+   "config": {}
+  },
+  "approval": {
+   "kind": "owner_approval",
+   "config": {
+    "approves": "land"
+   }
+  },
+  "land": {
+   "kind": "land",
+   "config": {}
+  },
+  "done": {
+   "kind": "end",
+   "config": {}
+  }
+ },
+ "transitions": [
+  {
+   "id": "built",
+   "from": "build",
+   "port": "done",
+   "to": "review"
+  },
+  {
+   "id": "reviewed",
+   "from": "review",
+   "port": "done",
+   "to": "gate"
+  },
+  {
+   "id": "gated",
+   "from": "gate",
+   "port": "passed",
+   "to": "approval"
+  },
+  {
+   "id": "approved",
+   "from": "approval",
+   "port": "granted",
+   "to": "land"
+  },
+  {
+   "id": "stopped",
+   "from": "approval",
+   "port": "stopped",
+   "to": "done"
+  },
+  {
+   "id": "landed",
+   "from": "land",
+   "port": "landed",
+   "to": "done"
+  },
+  {
+   "id": "re-land",
+   "from": "land",
+   "port": "trunk_moved",
+   "to": "land",
+   "max": 16
+  },
+  {
+   "id": "re-build",
+   "from": "land",
+   "port": "conflict",
+   "to": "build",
+   "max": 16
+  },
+  {
+   "id": "re-approval",
+   "from": "land",
+   "port": "awaiting_approval",
+   "to": "approval",
+   "max": 16
+  },
+  {
+   "id": "unknown",
+   "from": "land",
+   "port": "unknown",
+   "to": "done"
+  },
+  {
+   "id": "failed",
+   "from": "land",
+   "port": "failed",
+   "to": "done"
+  }
+ ],
+ "references": {},
+ "budget": {
+  "steps": 64
+ }
+}

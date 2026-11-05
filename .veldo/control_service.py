@@ -105,14 +105,16 @@ end on a launch pipe the service loop's poll set watches, or the account reset t
 earliest reset a waiting unit needs. A pass settles each run that ended (a receiver that died has its run
 recorded outcome_unknown and its account slot freed), offers every unit the builder holds a claim on its next
 station (build, then review once the build completed; the Gate refuses a paused project's units, so none is
-offered), and carries out VELDO-0160's re-run-or-ask decision for a run its account's limit stopped: the same
+offered; VELDO-0241: the stations, and the order they come in, are the unit's bound workflow revision, the shipped
+`code` definition unless its project binds another), and carries out VELDO-0160's re-run-or-ask decision for a run its account's limit stopped: the same
 station again on another account from the same commit, or one ordinary decision request to the project's owner
 in the VELDO-0064 inbox, which this service also serves (an assignment command packet), and nothing until his
 answer admits. With no work configuration nothing in the service dispatches.
 
 THE LAND STATION (VELDO-0148). A repository whose work configuration names `land` gets a
 control_landing_station.LandStation on the service's connection, and a unit that has landed through it takes its
-next station from its latest land dispatch: a land whose publication was refused because another push moved the
+next station from its latest land dispatch, by the transition its bound revision takes from the land node on the
+land's end (VELDO-0241; under the shipped `code` definition): a land whose publication was refused because another push moved the
 trunk (stale-subject at the listing, trunk-moved after it) is followed by exactly one new land dispatch that
 re-merges on a watermark fetched now, re-gates and makes a new compare-and-swap, with nothing ever forced; a
 re-merge that conflicts sends the unit back to its builder as a new build dispatch told to merge the new trunk,
@@ -270,6 +272,8 @@ TA = _organ('control_workflow_cycle_assignment', lazy=True)
 LIM = _organ('control_account_limit', lazy=True)
 # VELDO-0148: the land station, each land its own land dispatch, and a land the trunk moved under re-landed.
 LS = _organ('control_landing_station', lazy=True)
+# VELDO-0241: a unit's process, the versioned workflow revision the Line runs it by.
+WU = _organ('control_workflow_unit', lazy=True)
 CT = _organ('control_team', lazy=True)
 TR = _organ('control_team_routes', lazy=True)
 WORK = 'work.json'
@@ -292,11 +296,11 @@ LOADER = 'spec_from_file_location'
 
 SCHEMA = 'veldo.authority_service/v1'
 UNIT_SCHEMA = 'veldo.authority_unit/v1'
-# VELDO-0154: the work configuration the factory loop dispatches, each role's fields, the station a run's
-# completion leads to, the question a limited run may raise and the service loop's accept timeout.
+# VELDO-0154: the work configuration the factory loop dispatches, each role's fields, the question a limited run
+# may raise and the service loop's accept timeout. The station a run's completion leads to is the unit's bound
+# workflow revision's (VELDO-0241, control_workflow_unit).
 WORK_SCHEMA = 'veldo.factory_work/v1'
 ROLE_FIELDS = ('identity', 'adapter', 'configuration', 'seconds', 'payload')
-NEXT_STATION = {'build': 'review'}
 ASK_KIND = 'account_limit_rerun'
 ASK_CHOICES = ('rerun', 'stop')
 # VELDO-0185 AC4: a login the Line cannot read here (Line.login_now), left to the pool and the receiver's check.
@@ -2210,63 +2214,180 @@ class Line:
         return True
 
     def next(self, unit, latest, report):
-        """Offer `unit` its next station: build when it has none; review once its build ran to a completion
-        (control_dispatch.completed); nothing while a run holds it or after a run that ended otherwise, except
-        a run its account's limit stopped, which is re-run or put to the owner (limited). A unit that has landed
-        through the land station takes its next station from its latest land dispatch first (after_land)."""
-        if self.station is not None:
-            last = self.station.latest(unit)
-            if last is not None:
-                return self.after_land(unit, last, latest, report)
+        """Offer `unit` its next station as the workflow revision it is bound to says (VELDO-0241, process): the
+        walk starts at the definition's entry, or, for a unit that has landed through the land station, at its land
+        node with the latest land dispatch's end as the port taken; each node is its station (station_step) and the
+        first node that offers, waits or stops ends the walk. Under the shipped `code` definition this is exactly
+        today's rule: build when it has none; review once its build ran to a completion (control_dispatch.completed);
+        nothing while a run holds it or after a run that ended otherwise, except a run its account's limit stopped,
+        which is re-run or put to the owner (limited); and after a land, VELDO-0148's re-land, grant and re-build."""
+        process = self.process(unit, latest, report)
+        if process is None:
+            return None
+        found, definition = process
+        last = self.station.latest(unit) if self.station is not None else None
+        state = {'unit': unit, 'latest': latest, 'report': report, 'pin': found, 'definition': definition,
+                 'last': last, 'anchor': None, 'build': None, 'port': None, 'landed': False}
+        if last is not None:
+            lands = WU.nodes_of(definition, LS.STATION)
+            named = (last.get('workflow') or {}).get('node') if isinstance(last.get('workflow'), dict) else None
+            start = named if named in lands else (lands[0] if lands else None)
+            if start is None:
+                return None
+        else:
+            start = definition['entry']
+        problem, value = WU.walk(definition, start, lambda node, kind: self.station_step(state, node, kind))
+        if problem is not None:
+            report['refused'].append({'repository': self.repository, 'unit': unit, 'station': None,
+                                      'refusals': [problem]})
+        return value
+
+    def process(self, unit, latest, report):
+        """(pin, definition) of the revision `unit` runs: the one its stations recorded (control_workflow_unit
+        .pinned), the shipped `code` for a unit whose stations predate that record, else for its first station the
+        revision its project binds for its kind of work (resolve). None, named in the pass, when it is missing."""
+        records = [record for (owner, _station), record in sorted(latest.items(), key=lambda item: str(item[0]))
+                   if owner == unit]
+        last = self.station.latest(unit) if self.station is not None else None
+        found = next((WU.recorded(((r.get('contract') or {}).get('input') or {}).get('payload')) for r in records
+                      if WU.recorded(((r.get('contract') or {}).get('input') or {}).get('payload'))), None)
+        if found is None and last is not None:
+            found = WU.recorded({'workflow': last.get('workflow')})
+        conn, domain = self.service.conn, self.service.domain
+        try:
+            if found is not None:
+                definition = WU.pinned(S, conn, domain, self.repository, found)
+            elif records or last is not None:
+                definition = WU.shipped()
+                found = WU.pin(definition, WU.SHIPPED)
+            else:
+                record = self.gate.unit_record(unit) or {}
+                row = conn.execute('SELECT kind, data FROM entities WHERE id=?',
+                                   ('project:' + str(record.get('project')),)).fetchone()
+                project = json.loads(row[1]) if row and row[0] == 'project' else {}
+                found, definition = WU.resolve(S, conn, domain, self.repository, project, record.get(WU.KIND_FIELD))
+        except WU.Refused as error:
+            missing = self.__dict__.setdefault('process_missing', {})
+            missing[error.code] = missing.get(error.code, 0) + 1
+            report['refused'].append({'repository': self.repository, 'unit': unit, 'station': None,
+                                      'refusals': [error.code]})
+            return None
+        return found, definition
+
+    def station_step(self, state, node, kind):
+        """One node of the unit's walk: ('port', port) to move on, ('stop', value) to end it. The gate runs inside
+        the land (VELDO-0058) and the first land and its approval are the landing path's, so a gate node, and an
+        approval or land node with nothing for the Line to do, waits; an end node ends."""
+        workflow = dict(state['pin'], node=node)
+        self.__dict__.setdefault('processes', {})[state['unit']] = workflow
+        arrived, state['port'] = state['port'], None
+        if kind == 'build':
+            return self.step_build(state, workflow)
+        if kind == 'review':
+            return self.step_review(state, workflow)
+        if kind == LS.STATION:
+            return self.step_land(state, node, workflow, arrived)
+        if kind == WU.WF.APPROVAL and arrived == LS.AWAITING:
+            return 'stop', self.grant(state['unit'], state['last'], state['report'], workflow=workflow)
+        return 'stop', None
+
+    @staticmethod
+    def follows(record):
+        return ((((record or {}).get('contract') or {}).get('input') or {}).get('payload') or {}).get('follows')
+
+    def step_build(self, state, workflow):
+        """The build station: offered when the unit has none (after a land, none following it: a new build told to
+        merge the new trunk); passed on once it completed."""
+        unit, latest, report, last = state['unit'], state['latest'], state['report'], state['last']
         build = latest.get((unit, 'build'))
-        pm = _organ('control_workflow_cycle_pm')
-        assignment = pm.assigned(self.service.conn, unit)
+        if state['anchor'] is not None and self.follows(build) != state['anchor']:
+            build = None
+        if build is None and state['anchor'] is not None:
+            # VELDO-0148: a re-merge that conflicted sends the unit back to its builder, from its evidence commit.
+            role = self.roles['builder']
+            payload = dict(role['payload'], operation='build', unit=unit, follows=last['dispatch_id'],
+                           merge={'trunk': self.station.land_config['trunk'], 'onto': last.get('watermark'),
+                                  'conflicts': list(last.get('conflicts') or []), 'land_dispatch': last['dispatch_id']})
+            return 'stop', self.offer(report, unit, 'build', role, revision=last['evidence'], payload=payload,
+                                      follows=last['dispatch_id'], workflow=workflow)
         if build is None:
+            pm = _organ('control_workflow_cycle_pm')
+            assignment = pm.assigned(self.service.conn, unit)
             try:
                 role = pm.engineering_role(self, assignment, 'build') if assignment else self.roles['builder']
             except pm.Refused as error:
                 report['refused'].append({'repository': self.repository, 'unit': unit, 'station': 'build',
                                           'refusals': [error.code]})
-                return None
-            return self.offer(report, unit, 'build', role, revision='HEAD')
+                return 'stop', None
+            return 'stop', self.offer(report, unit, 'build', role, revision='HEAD', workflow=workflow)
         if build['state'] in L.D.HOLDING:
-            return None
+            return 'stop', None
         if not L.D.completed(build):
-            return self.limited(build, report)
-        review = latest.get((unit, NEXT_STATION['build']))
+            return 'stop', self.limited(build, report)
+        state['build'] = build
+        if state['anchor'] is not None:
+            state['anchor'] = build['dispatch_id']
+        state['port'] = 'done'
+        return 'port', 'done'
+
+    def step_review(self, state, workflow):
+        """The review station: offered once the build before it completed, to a reviewer independent of its holder;
+        a review that ended is handed to limited as today, and passes on once it completed."""
+        unit, latest, report = state['unit'], state['latest'], state['report']
+        review = latest.get((unit, 'review'))
+        if state['anchor'] is not None and self.follows(review) != state['anchor']:
+            review = None
         if review is not None:
-            return None if review['state'] in L.D.HOLDING else self.limited(review, report)
-        holder = (build['contract']['input']['context'] or {}).get('holder')
+            if review['state'] in L.D.HOLDING:
+                return 'stop', None
+            result = self.limited(review, report)
+            if result is not None or not L.D.completed(review):
+                return 'stop', result
+            state['port'] = 'done'
+            return 'port', 'done'
+        build = state['build']
+        holder = ((build['contract']['input']['context'] or {}).get('holder')) if build else None
+        pm = _organ('control_workflow_cycle_pm')
+        assignment = pm.assigned(self.service.conn, unit) if state['anchor'] is None else None
         try:
             reviewer = (pm.engineering_role(self, assignment, 'review') if assignment else
                         next((role for role in self.roles['reviewers'] if role['identity'] != holder), None))
         except pm.Refused as error:
             report['refused'].append({'repository': self.repository, 'unit': unit, 'station': 'review',
                                       'refusals': [error.code]})
-            return None
+            return 'stop', None
         if reviewer is None:
             report['refused'].append({'repository': self.repository, 'unit': unit, 'station': 'review',
                                       'refusals': ['missing_authority:independent_reviewer']})
-            return None
-        return self.offer(report, unit, 'review', reviewer, revision=build['contract']['source']['commit'],
-                          holder=holder, context={'reviewer': reviewer['identity']}, follows=build['dispatch_id'])
+            return 'stop', None
+        return 'stop', self.offer(report, unit, 'review', reviewer,
+                                  revision=build['contract']['source']['commit'] if build else 'HEAD', holder=holder,
+                                  context={'reviewer': reviewer['identity']},
+                                  follows=build['dispatch_id'] if build else None, workflow=workflow)
 
-    # VELDO-0148: what follows a land dispatch.
-
-    def after_land(self, unit, last, latest, report):
-        """The next station of a unit after its latest land dispatch `last`: nothing while it runs; a re-land
-        (a new land dispatch) when the trunk moved under it; the owner asked once for a fresh grant bound to the
-        re-merged tree when that is all the publication lacks, and the land offered again once he grants it; a
-        new build told to merge the new trunk when the re-merge conflicted, and its review once it completed;
-        a mixed approval refusal stays failed without asking the owner;
-        nothing after a land that landed or ended unknown (a named stop, no new attempt)."""
-        if last['state'] == LS.TRUNK_MOVED:
-            return self.reland(unit, last, report)
-        if last['state'] == LS.AWAITING:
-            return self.grant(unit, last, report)
-        if last['state'] == LS.CONFLICT:
-            return self.rebuild(unit, last, latest, report)
-        return None
+    def step_land(self, state, node, workflow, arrived):
+        """The land node. Reached first, the unit's latest land dispatch (VELDO-0148) is its outcome: nothing while it
+        runs, else the port named by how it ended, within the transition's bound. Reached again by the re-land
+        transition (the trunk moved), a new land dispatch. The first land is the landing path's, never the Line's."""
+        unit, report, last = state['unit'], state['report'], state['last']
+        if state['landed']:
+            if arrived == LS.TRUNK_MOVED:
+                return 'stop', self.reland(unit, last, report, workflow=workflow)
+            return 'stop', None
+        state['landed'] = True
+        if last is None or last.get('state') not in LS.ENDS:
+            return 'stop', None
+        taken = WU.transition(state['definition'], node, last['state'])
+        if taken is not None and 'max' in taken:
+            times = sum(1 for record in self.station.records(unit) if record.get('state') == last['state'])
+            if times > taken['max']:
+                report['refused'].append({'repository': self.repository, 'unit': unit, 'station': LS.STATION,
+                                          'dispatch_id': last['dispatch_id'],
+                                          'refusals': ['budget_exceeded:%s' % taken['id']]})
+                return 'stop', None
+        state['anchor'] = last['dispatch_id']
+        state['port'] = last['state']
+        return 'port', last['state']
 
     def claim_of(self, unit):
         """(holder, generation) of the unit's current claim (VELDO-0031), read now."""
@@ -2275,16 +2396,16 @@ class Line:
         claim = json.loads(row[1]) if row and row[0] == 'claim' else {}
         return claim.get('holder'), claim.get('generation')
 
-    def reland(self, unit, last, report):
+    def reland(self, unit, last, report, workflow=None):
         """A new land dispatch of `unit`, following `last`: the same evidence commit re-merged on a watermark
-        fetched now, gated again and published by a new compare-and-swap. Its end wakes the next pass when a
-        station follows it."""
+        fetched now, gated again and published by a new compare-and-swap, recording the unit's `workflow` (VELDO-0241).
+        Its end wakes the next pass when a station follows it."""
         holder, generation = self.claim_of(unit)
         entry = {'repository': self.repository, 'unit': unit, 'station': LS.STATION, 'identity': self.service.principal,
                  'follows': last['dispatch_id'], 'rerun_of': None}
         try:
             record = self.station.land(unit, evidence=last['evidence'], holder=holder, generation=generation,
-                                       follows=last['dispatch_id'])
+                                       follows=last['dispatch_id'], **({'workflow': workflow} if workflow else {}))
         except LS.Refused as error:
             report['refused'].append(dict(entry, refusals=[error.code]))
             return None
@@ -2298,37 +2419,7 @@ class Line:
             self.loop.wake('run_end', record['dispatch_id'])
         return record
 
-    def rebuild(self, unit, last, latest, report):
-        """A re-merge that conflicted: the unit back to its builder as a new build dispatch told to merge the
-        new trunk, from its evidence commit; once that build completed, its review (by a reviewer independent
-        of the holder), as for any build."""
-        def follows(record):
-            return ((((record or {}).get('contract') or {}).get('input') or {}).get('payload') or {}).get('follows')
-        build = latest.get((unit, 'build'))
-        if build is None or follows(build) != last['dispatch_id']:
-            role = self.roles['builder']
-            payload = dict(role['payload'], operation='build', unit=unit, follows=last['dispatch_id'],
-                           merge={'trunk': self.station.land_config['trunk'], 'onto': last.get('watermark'),
-                                  'conflicts': list(last.get('conflicts') or []), 'land_dispatch': last['dispatch_id']})
-            return self.offer(report, unit, 'build', role, revision=last['evidence'], payload=payload,
-                              follows=last['dispatch_id'])
-        if build['state'] in L.D.HOLDING:
-            return None
-        if not L.D.completed(build):
-            return self.limited(build, report)
-        review = latest.get((unit, NEXT_STATION['build']))
-        if review is not None and follows(review) == build['dispatch_id']:
-            return None if review['state'] in L.D.HOLDING else self.limited(review, report)
-        holder = (build['contract']['input']['context'] or {}).get('holder')
-        reviewer = next((role for role in self.roles['reviewers'] if role['identity'] != holder), None)
-        if reviewer is None:
-            report['refused'].append({'repository': self.repository, 'unit': unit, 'station': 'review',
-                                      'refusals': ['missing_authority:independent_reviewer']})
-            return None
-        return self.offer(report, unit, 'review', reviewer, revision=build['contract']['source']['commit'],
-                          holder=holder, context={'reviewer': reviewer['identity']}, follows=build['dispatch_id'])
-
-    def grant(self, unit, last, report):
+    def grant(self, unit, last, report, workflow=None):
         """The owner's fresh grant for the re-merged tree (VELDO-0064 inbox): asked once for this land dispatch,
         naming the tree; nothing is published until his answer admits; his `grant` records the approval bound to
         exactly that subject and offers the land again (a new land dispatch following this one), his `stop`
@@ -2371,7 +2462,7 @@ class Line:
         except (LS.Refused, S.StoreRefused) as error:
             report['refused'].append(dict(entry, refusals=[getattr(error, 'code', type(error).__name__)]))
             return None
-        return self.reland(unit, last, report)
+        return self.reland(unit, last, report, workflow=workflow)
 
     def open_question(self, inbox, alias, unit, brief, choices, subject, key):
         """(owner, the inbox's answer): one ordinary decision request to the unit's project owner, signed as the
@@ -2397,7 +2488,7 @@ class Line:
         return owner, inbox.apply({'command': command, 'signature': signature})
 
     def offer(self, report, unit, station, role, *, revision, holder=None, context=None, payload=None,
-              adapter=None, configuration=None, follows=None, rerun_of=None, exclude=()):
+              adapter=None, configuration=None, follows=None, rerun_of=None, exclude=(), workflow=None):
         """Offer one station of one unit to the Runner: the Gate's decision for it first, then Runner.submit,
         whose preparation takes the account the pool selects on the adapter's host, passing over the accounts
         `exclude` names (a login retry's, VELDO-0185 AC4). A unit no account can take now waits, with the earliest
@@ -2413,6 +2504,9 @@ class Line:
             return None
         if payload is None:
             payload = dict(role['payload'], operation=station, unit=unit, follows=follows)
+        if workflow is not None:
+            # VELDO-0241: the station records the workflow revision the unit is bound to and the node it runs.
+            payload = dict(payload, workflow=workflow)
         try:
             launch = self.runner.submit(unit, station, holder=holder, source=self.workspace, revision=revision,
                                         payload=payload, adapter=adapter,

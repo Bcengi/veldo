@@ -326,9 +326,10 @@ class LandStation:
                              installation=land.get('installation'), observations=land.get('observations'),
                              landing=landing, identity_conn=self.conn)
 
-    def land(self, unit, *, evidence, holder=None, generation=None, follows=None):
+    def land(self, unit, *, evidence, holder=None, generation=None, follows=None, workflow=None):
         """Run one land dispatch of `unit`, landing the build whose evidence commit is `evidence`; `follows`
-        names the land dispatch this one re-lands. Returns the ended record. Refused, with nothing run,
+        names the land dispatch this one re-lands; `workflow`, when given, is the unit's workflow revision and node
+        (VELDO-0241), recorded on the dispatch. Returns the ended record. Refused, with nothing run,
         when the station cannot be built for it or its record cannot be opened (another land of the unit is
         running, or `follows` is not the unit's latest land that a new one may follow)."""
         # VELDO-0235: the destination of the unit's project now, recorded with the command that set it.
@@ -342,9 +343,10 @@ class LandStation:
         index = _entity(self.conn, unit_index_id(self.domain, self.repository, unit))
         attempt = int(((index or {}).get('data') or {}).get('attempts') or 0) + 1
         dispatch = 'dispatch/%s/land-%d-%s' % (unit, attempt, os.urandom(4).hex())
-        opened = self._run('open', unit, dispatch, {'follows': follows, 'record': {
+        opened = self._run('open', unit, dispatch, {'follows': follows, 'record': dict({
             'evidence': evidence, 'holder': holder, 'generation': generation,
-            'destination': destination['destination'], 'destination_command': destination['command_id']}})
+            'destination': destination['destination'], 'destination_command': destination['command_id']},
+            **({'workflow': workflow} if workflow is not None else {}))})
         self.counts['opened'] += 1
         self._emit('open', unit, dispatch, outcome='accepted', follows=follows, attempt=opened.get('attempt'),
                    evidence=evidence, destination=destination['destination'])
