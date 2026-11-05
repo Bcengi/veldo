@@ -545,7 +545,7 @@ class Channel:
         findings and what to do with them, or what was not checked. The notice is recorded before it is sent, so
         no scan is told twice."""
         owner = (record or {}).get('owner')
-        if (record or {}).get('state') != 'active' or not owner:
+        if not owner or (record or {}).get('state') != 'active':
             return []
         presenter = self.ingress.presenter
         chat = self._entity(presenter.P.enrollment_id(owner))
@@ -557,14 +557,14 @@ class Channel:
                 tid = SECRET_PREFIX + scan
                 if self._entity(tid) is not None:
                     continue
-                text = V.TEXT.message(text, free_text=False)
+                shown = V.TEXT.message(text, free_text=False)
                 notice = {'schema': 'veldo.presentation_tell/v1', 'channel': CHANNEL, 'request_id': None,
-                          'chat_id': chat['data'].get('chat_id'), 'message_id': None, 'text': text, 'scan': scan}
+                          'chat_id': chat['data'].get('chat_id'), 'message_id': None, 'text': shown, 'scan': scan}
                 try:
                     presenter._commit(V.TELL_OPERATION, dict(tell_id=tid, tell=notice), {tid: 0}, command_id=tid)
                 except presenter.store.StoreRefused:
                     continue
-                sent = presenter._send(notice['chat_id'], text, None)
+                sent = presenter._send(notice['chat_id'], shown, None)
                 told.append({'kind': kind, 'scan': scan, 'outcome': 'sent' if sent['platform'] else 'not_sent'})
         return told
 

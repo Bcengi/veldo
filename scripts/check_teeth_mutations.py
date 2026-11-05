@@ -7961,8 +7961,8 @@ def cases():
            "        if False:  # defect: any program may run the entrance, and then nothing re-hashes the engine\n",
            'pin/entrance-interpreter')
     claude('claude-wrapper-path-unresolved', 'control_launch.py',
-           "    elif pinned is not None and os.path.realpath(path) == os.path.realpath(pinned):\n",
-           "    elif pinned is not None and os.path.abspath(path) == pinned:  # defect: a `..` in the path skips the re-hash\n",
+           "    elif pinned is not None and os.path.realpath(target_path) == os.path.realpath(pinned):\n",
+           "    elif pinned is not None and os.path.abspath(target_path) == pinned:  # defect: a `..` in the path skips the re-hash\n",
            'pin/rehash-dot-dot')
     claude('claude-wrapper-entrance-unforwarded', 'control_launch.py',
            "        environment[ENGINE_PATH], environment[ENGINE_DIGEST] = pinned, expected\n",
