@@ -181,3 +181,13 @@ built). Target set read from PyPI the same day.
 
 2026-11-04: ready. The owner approved the move, Telegram 39087 ("Yes, get latest"), after the lead's
 summary of what changed between 1.2.12 and 1.2.19 (39086).
+
+2026-11-04: plan consistency review (veldo-plan-consistency-review-2026-11-04.md) and the lead's rulings
+(veldo-plan-rulings-2026-11-04.md), owner request Telegram 39145. Built, gate queued, so the criteria and the
+code are unchanged here and each change goes to a follow-up ticket. VELDO-0250 (findings B2, B11): AC2's
+closure entry records the approval by its decision reference (D-<n>) instead of a message id, and it
+regenerates engine/runtime/langgraph-records.json, its .veldo/runtime copy and
+proof/VELDO-0248/dependency-closure.json with decision references; the message ids in Intent go. The
+sandboxed launch ticket of ruling R14 (finding E8): its landing steps build this runtime directory from the
+lock on each host, outside the run's sandbox, before any confined gate run. Dispositions:
+proof/VELDO-0236/review-dispositions-2026-11-04.md on the veldo-parity-a branch.
