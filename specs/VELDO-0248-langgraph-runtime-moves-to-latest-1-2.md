@@ -191,3 +191,5 @@ proof/VELDO-0248/dependency-closure.json with decision references; the message i
 sandboxed launch ticket of ruling R14 (finding E8): its landing steps build this runtime directory from the
 lock on each host, outside the run's sandbox, before any confined gate run. Dispositions:
 proof/VELDO-0236/review-dispositions-2026-11-04.md on the veldo-parity-a branch.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
