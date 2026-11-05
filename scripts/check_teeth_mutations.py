@@ -10509,6 +10509,18 @@ def cases():
                "                    continue  # defect: a check's otherwise branch is not walked\n"
                "                if node.get('kind') == APPROVAL:\n",
                'approval/branch-around-approval')
+    # The Line part (lead's ruling, round 2): the Line's join passes on when its first branch arrives, and the Line
+    # walks a fan-out's branches one after another, stopping at the first that has not arrived.
+    add(247, 'v247-line-join-on-first-arrival', '129_veldo_0247_line.py', 'control_workflow_unit.py',
+        "        if waiting:\n            return None, waiting\n",
+        "        if len(waiting) == len(block['branches']):  # defect: the join passes when its first branch arrives\n"
+        "            return None, waiting\n",
+        ['line/join-waits-for-all'])
+    add(247, 'v247-line-branches-in-turn', '129_veldo_0247_line.py', 'control_workflow_unit.py',
+        "            if got is not ARRIVED:\n                waiting[branch] = got\n",
+        "            if got is not ARRIVED:\n                waiting[branch] = got\n"
+        "                break  # defect: the next branch waits for this one\n",
+        ['line/dispatched-together'])
 
     # VELDO-0203: owner signatures, exact revision identity and the service lock.
     add(203, 'v203-base-from-head', '95_veldo_0203_owner_revisions.py', 'control_owner_revisions.py',
