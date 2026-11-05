@@ -1735,6 +1735,15 @@
    ],
    "regions": "Two rows (VELDO-0230 AC2): qualify/reproduces, python3 .veldo/qualify.py run in scratch against the Codex and Claude Code binaries the engines record names succeeds and every file it writes is byte-identical to the checkout's; qualify/covers, the files it writes include the engines record and both qualification records in both runtimes, the VELDO-0127 fixtures and every table the readers of the binaries write (the suite's own list, the two VELDO-0156 captures among them).",
    "requires_note": "Only ROOT and expect. Copies .veldo, engine/runtime, packs and the extractor and VELDO-0127 proof directories into scratch and runs the copy's qualify command there; runs the qualified binaries offline in empty profiles (extractor reads, features list, bundled catalog, loopback capture, Claude Code init probe). Writes only temporary files."
+  },
+  {
+   "name": "127_veldo_0259_installation",
+   "file": "127_veldo_0259_installation.py",
+   "requires": [
+    "127_veldo_0259_installation"
+   ],
+   "regions": "Sixteen rows (VELDO-0259): ac1/resolution, ac1/kinds, ac1/missing-by-name, ac1/invalid-by-name, ac1/revision, ac1/one-reader, ac1/traces, ac1/no-personal-default, ac1/fresh-clone over the one installation reader; ac2/planted, ac2/masked, ac2/added-only, ac2/no-installation, ac2/publish-shares, ac2/stage-declared, ac2/product-clean over the personal-setup gate stage.",
+   "requires_note": "Only ROOT and expect. Builds fixture installations with invented values and small Git candidates in a temporary folder, clones the checkout once, loads the reader, the check, publish.py, gate_schedule.py and the two consumers by path. Writes only temporary files; never reads a real installation."
   }
  ],
  "resource_capacities": {

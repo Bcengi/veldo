@@ -1,0 +1,20 @@
+  selector    --suite 127_veldo_0259_installation
+  running     1 of 189 suites: 127_veldo_0259_installation
+  SELFTEST FAIL: VELDO-0259 ac1/resolution: raised FileNotFoundError: [Errno 2] No such file or directory: '<repo>/.veldo/installation.py'   File "<frozen importlib._bootstrap_external>", line 1128, in get_code
+  SELFTEST FAIL: VELDO-0259 ac1/kinds
+  SELFTEST FAIL: VELDO-0259 ac1/missing-by-name
+  SELFTEST FAIL: VELDO-0259 ac1/invalid-by-name
+  SELFTEST FAIL: VELDO-0259 ac1/revision
+  SELFTEST FAIL: VELDO-0259 ac1/one-reader
+  SELFTEST FAIL: VELDO-0259 ac1/traces
+  SELFTEST FAIL: VELDO-0259 ac1/no-personal-default
+  SELFTEST FAIL: VELDO-0259 ac1/fresh-clone
+  SELFTEST FAIL: VELDO-0259 ac2/planted
+  SELFTEST FAIL: VELDO-0259 ac2/masked
+  SELFTEST FAIL: VELDO-0259 ac2/added-only
+  SELFTEST FAIL: VELDO-0259 ac2/no-installation
+  SELFTEST FAIL: VELDO-0259 ac2/publish-shares
+  SELFTEST FAIL: VELDO-0259 ac2/stage-declared
+  SELFTEST FAIL: VELDO-0259 ac2/product-clean
+  127_veldo_0259_installation                      0 passed    0.01s
+selftest (PARTIAL, 1 of 189 suites): 26 passed, 16 failed in 0.01s
