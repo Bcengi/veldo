@@ -26,6 +26,14 @@ single-suite run of scripts/selftest.py with its suite selector, PARTIAL by cons
   branch_step, arrive and the join step; metrics in `Cycles.metrics`.
 - `scripts/check_teeth_mutations.py`: the four declared falsifiers (finding 247).
 - `scripts/suites/128_veldo_0247_check_join.py`, registered in manifest.json and requires.json.
+- Round 2, the Line part: `engine/.veldo/control_workflow_unit.py` (and the `.veldo` copy): check and join are
+  accepted in a unit's process; `walk` starts every branch of a fan-out in the same pass on its own state (`fork`),
+  counts every branch node in the step budget and goes on from the join only when every branch has arrived;
+  `parallel_problems` refuses parallel_station at binding. `engine/.veldo/control_service.py` (and the copy): `latest`
+  also keys records by node; `at` reads by node when a process holds several nodes of one kind (one node per kind
+  reads as before); `step_check` evaluates as data over subject fields, records the route in the pass (`checks`) and
+  in every later station's payload, refuses field_unsupplied and branch_mismatch; `step_join` merges the branches.
+  `scripts/suites/129_veldo_0247_line.py`, registered; two falsifiers in `scripts/check_teeth_mutations.py`.
 
 ## Acceptance criteria (suite 128, 45 passed, 0 failed: `suite-128_veldo_0247_check_join.txt`)
 
@@ -50,11 +58,22 @@ single-suite run of scripts/selftest.py with its suite selector, PARTIAL by cons
 Red before the implementation: `red-before-128.txt` (15 rows failed). Falsifier runs: `falsifiers.jsonl`, produced
 by `falsify.py` through the mutation driver's own materialize and worker; restored green is the suite-128 run.
 
+## The Line part (suite 129, 40 passed, 0 failed: `suite-129_veldo_0247_line.txt`)
+
+Rows line/unit-accepts-check-join, line/check-one-branch, line/check-field-unsupplied, line/check-recorded-mismatch,
+line/dispatched-together (both branches' stations offered in one pass before either result), line/join-waits-for-all
+(one branch in: nothing offered; both in: the review after the join offered once, on the docs branch's build),
+line/budget-counts-branches, line/fan-out-bounded (9 refused, 8 accepted, parallel_station), line/approval-every-path.
+Red before: `red-before-129.txt` (9 rows failed on the pre-implementation Line). Falsifiers v247-line-join-on-first-
+arrival (line/join-waits-for-all red) and v247-line-branches-in-turn (line/dispatched-together red): `falsifiers.jsonl`.
+
 ## Existing suites, run single (0 failed each)
 
 65 workflow, 127 unit workflows, 59 graph, 62 runtime, 92 PM cycles, 66 authority, 71 API, 93 intake routes,
 73 backlog, 82 decomposition, 96 reservation policies, 110 new project, 113 UI, 86 engine upgrade, 83 factory loop,
-86 re-land, 116 project lines. Suite 73 failed one row (priority/missing-priority) on the first build, which drives
+86 re-land, 116 project lines. Round 2, after the Line part, each again: 129, 128, 127, 65, 59, 116, 70 landing,
+86 re-land, 83, 62, 92, 96, 66, 71, 93, 73, 82, 110, 113, 86 engine upgrade, 53 mutations, 0 failed each; 101 landing
+reuse fails as it does at 56d8860e (OPEN.md item 8). Suite 73 failed one row (priority/missing-priority) on the first build, which drives
 Cycles._assign with a stand-in object; fixed by calling the shared checks through the class, then green.
 Template sync: pass. The VELDO-0132 and VELDO-0241 mutation anchors in the changed files are each still unique.
 
