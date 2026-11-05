@@ -461,9 +461,12 @@ def _v247_suite():
 
             # AC2 and AC3 on the actual LangGraph runtime.
             with region('check/one-branch', 'check/field-unsupplied', 'check/forged-branch', 'check/observations',
-                        'fanout/dispatched-together', 'fanout/join-waits-for-all', 'fanout/actual-langgraph'):
+                        'fanout/dispatched-together', 'fanout/join-waits-for-all', 'fanout/budget-whole-superstep',
+                        'fanout/actual-langgraph'):
+                tight = fanned('fanned-tight', 4)
+                tight['budget'] = {'steps': 3}
                 saved = {name: attempt(workflows.save, {'definition': body}, principal='owner', base=0)
-                         for name, body in (('fanned', fanned()),)}
+                         for name, body in (('fanned', fanned()), ('fanned-tight', tight))}
                 gate = EL.Gate(S, reader, domain_uuid=DOMAIN, repository_uuid=REPOSITORY, workspace=str(work))
                 stage = base / 'graph-stage'
                 cycles = CY.Cycles(S, writer, workflows, gate=gate, principal='cycle-runner', signer='cycle-runner',
@@ -602,6 +605,33 @@ def _v247_suite():
                       and (parked.get('image') or {}).get('waiting') == 'worker_result'
                       and one_record.get('state') == 'proposed' and len(joins(one_record)) == 1
                       and [e[0] for e in one_record.get('trace') or []].count('meet') == 1)
+                # A budget of 3 and a 4-wide fan-out after one step: the superstep would take the cycle to 5, so it
+                # is refused by the budget's own name before any branch runs, never after it has run past.
+                tight_start = attempt(cycles.start, 'fan-tight', workflow='fanned-tight', subject='VELDO-9709',
+                                      snapshot=snapshot)
+                tight_waiting = cycles.record('fan-tight') or {}
+                tight_names = ['copy', 'image', 'extra0', 'extra1']
+                for name in tight_names:
+                    put('proof-bundle:9709-' + name, 'proof_bundle', dict(unit='VELDO-9709', domain=DOMAIN, part=name,
+                                                                         repository=REPOSITORY, source={'commit': commit}))
+                tight_in = attempt(cycles.advance, 'fan-tight', {'worker_result': {
+                    'assign_' + n: 'proof-bundle:9709-' + n for n in tight_names}})
+                tight_record = cycles.record('fan-tight') or {}
+                tight_branch_events = [e for e in events if e.get('schema') == CY.SCHEMA and e.get('cycle') == 'fan-tight'
+                                       and e.get('operation') in ('branch_step', 'superstep')]
+                observed['fan_tight'] = {'saved': saved.get('fanned-tight'), 'start': tight_start.get('refused'),
+                                         'advance': tight_in.get('refused'),
+                                         'waiting': {k: tight_waiting.get(k) for k in ('state', 'steps', 'trace')},
+                                         'record': {k: tight_record.get(k) for k in ('state', 'steps', 'trace', 'refusal')},
+                                         'branch_events': len(tight_branch_events)}
+                check('fanout/budget-whole-superstep',
+                      lambda: (saved['fanned-tight'].get('ok') or {}).get('version') == 1
+                      and tight_waiting.get('state') == 'waiting' and tight_waiting.get('steps') == 1
+                      and tight_record.get('state') == 'refused'
+                      and tight_record.get('refusal') == 'budget_exceeded:steps'
+                      and tight_record.get('steps') == 1
+                      and not [e for e in tight_record.get('trace') or [] if e[0].startswith('assign_')]
+                      and tight_branch_events == [])
                 evidence = json.dumps(load('v247_graph', mods / 'control_graph.py').runtime_evidence(), sort_keys=True)
                 labels = {json.dumps(e.get('runtime'), sort_keys=True) for e in events
                           if e.get('schema') == CY.SCHEMA and e.get('cycle') in ('fan-together', 'fan-one', 'check-many')

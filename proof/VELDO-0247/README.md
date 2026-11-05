@@ -35,7 +35,7 @@ single-suite run of scripts/selftest.py with its suite selector, PARTIAL by cons
   in every later station's payload, refuses field_unsupplied and branch_mismatch; `step_join` merges the branches.
   `scripts/suites/129_veldo_0247_line.py`, registered; two falsifiers in `scripts/check_teeth_mutations.py`.
 
-## Acceptance criteria (suite 128, 45 passed, 0 failed: `suite-128_veldo_0247_check_join.txt`)
+## Acceptance criteria (suite 128, 46 passed, 0 failed: `suite-128_veldo_0247_check_join.txt`)
 
 - AC1. Rows check/configuration-accepted, check/configuration-refusals (no otherwise, undeclared field, unknown
   comparison, comparison the type does not allow, wrong value types, a field from a step not on every path, the five
@@ -57,6 +57,18 @@ single-suite run of scripts/selftest.py with its suite selector, PARTIAL by cons
 
 Red before the implementation: `red-before-128.txt` (15 rows failed). Falsifier runs: `falsifiers.jsonl`, produced
 by `falsify.py` through the mutation driver's own materialize and worker; restored green is the suite-128 run.
+
+## Review finding 1: the whole superstep counts against the budget
+
+The cycle checked budget.steps only before an exchange, so one superstep of up to 8 branches could end a cycle
+up to 7 steps past it. control_workflow_cycle.py `_block_step` now refuses a superstep whose ready branches would
+take steps past budget.steps, by the budget's own name (budget_exceeded:steps), before the exchange and before
+any branch is dispatched. Row fanout/budget-whole-superstep (budget 3, a 4-wide fan-out after one step: refused
+at 1 step, no branch step, no superstep event). Red before: `red-before-128-budget.txt` (that row alone failed on
+HEAD 7c613b43's cycle); green after: `suite-128_veldo_0247_check_join.txt` (46 passed). Suites 129 (40 passed)
+and 65 (42 passed) run single, 0 failed. The six VELDO-0247 falsifiers re-run red (`falsifiers.jsonl`); the 17
+mutation cases on control_workflow_cycle.py keep unique anchors and each re-run red
+(`falsifiers-cycle-module.jsonl`).
 
 ## The Line part (suite 129, 40 passed, 0 failed: `suite-129_veldo_0247_line.txt`)
 

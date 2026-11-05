@@ -62,7 +62,8 @@ each branch's position, input and arrival. Each exchange is one LangGraph supers
 branch with what it needs runs, all in that superstep, and every branch's transition is judged as a
 main-path step is; an assignment branch is dispatched (its ordinary checks, then waiting) without
 waiting for another. The join runs only when every branch has reached it. The step budget counts
-every node of every branch.
+every node of every branch, and a superstep whose branches would take the cycle past budget.steps is
+refused (budget_exceeded:steps) before any of them starts.
 
 NOT HERE: checkpoint recovery and resuming a cycle after a crash (Release 2); a cycle whose exchange
 fails is refused, never retried. The dispatcher's use of a pending assignment is the floor's.
@@ -789,13 +790,19 @@ class Cycles:
                 continue
             state['waiting'] = waiting
             if waiting == 'worker_result' and (state.get('assignment') or {}).get('node') != state['position']:
-                node = definition['nodes'][state['position']]
-                assignment, refused = self._assignment(record, definition, node, state['position'])
-                if refused:
-                    code, codes, fields = refused
-                    return self._refuse(record, code, codes, branch=branch, **fields)
-                state['assignment'], state['received'] = assignment, None
                 dispatched.append(branch)
+        # The whole superstep counts against the budget: one that would pass it is refused before any branch
+        # starts, so a wide fan-out never runs past budget.steps.
+        if ready and record['steps'] + len(ready) > definition['budget']['steps']:
+            return self._refuse(record, 'budget_exceeded:steps', node=PARALLEL, branches=ready)
+        for branch in dispatched:
+            state = branches[branch]
+            node = definition['nodes'][state['position']]
+            assignment, refused = self._assignment(record, definition, node, state['position'])
+            if refused:
+                code, codes, fields = refused
+                return self._refuse(record, code, codes, branch=branch, **fields)
+            state['assignment'], state['received'] = assignment, None
         running = sum(1 for state in branches.values() if not state['arrived'])
         self.metrics['branches_running'][record['cycle']] = running
         record = dict(record, block=block)
