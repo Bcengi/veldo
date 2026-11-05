@@ -158,3 +158,5 @@ flow; batches across projects; any change to a project's verify.sh or to the gat
 lead's rulings (veldo-plan-rulings-2026-11-04.md), owner request Telegram 39145: the renumber hook is named in the project's file in the installation repository, so VELDO-0253
 joins depends_on (A21, R1); no project names, owner report or message ids outside History (B2, B9). Status stays ready; the
 owner approves the amendments in one message. Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).

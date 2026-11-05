@@ -136,3 +136,5 @@ owner approves the amendments in one message. Dispositions: proof/VELDO-0236/rev
 2026-11-05: Telegram 39154 and 39155, revised rulings R5, R7 and R14 (no mandatory sandbox): the role's
 network stays as today instead of off, and the capture no longer records the image hosts for a sandbox
 host list in the Codex qualification record. Status stays ready.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).

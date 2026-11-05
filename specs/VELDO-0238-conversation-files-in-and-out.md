@@ -150,3 +150,5 @@ lead's rulings (veldo-plan-rulings-2026-11-04.md), owner request Telegram 39145:
 plants a keystore canary, since no credential reaches a run (D9, E9); one file delivery, which VELDO-0242
 calls (D13); files to the owner need no per-call approval (E14, R6); no owner report in Context (B9). Status stays ready; the
 owner approves the amendments in one message. Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).

@@ -157,3 +157,5 @@ needs its own approval of the exact request (A24, R4); messages to the owner thr
 writes (C24, R6); VELDO-0245's steps are listed but timed by their workflow (D14); schedules stay runtime
 state (R1); no project names, owner report or message ids outside History (B2, B9). Status stays ready; the
 owner approves the amendments in one message. Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
