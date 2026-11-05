@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0251, VELDO-0252, VELDO-0253]
 placement: [engine, enforcement]
-protected_paths: [".veldo/secret_scan.py", "engine/.veldo/secret_scan.py", ".veldo/secret_scan_patterns.json", "engine/.veldo/secret_scan_patterns.json"]
+protected_paths: [".veldo/secret_scan.py", "engine/.veldo/secret_scan.py", ".veldo/secret_scan_patterns.json", "engine/.veldo/secret_scan_patterns.json", "scripts/gate_unconfined.json"]
 footprint:
   - ".veldo/secret_scan.py"
   - "engine/.veldo/secret_scan.py"
@@ -29,6 +29,7 @@ footprint:
   - "specs/VELDO-0254-credentials-never-enter-runs-and-a-secret-scan-reports-leaked-ones.md"
   - "specs/index.md"
   - "proof/VELDO-0254/**"
+  - "scripts/gate_unconfined.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -170,3 +171,5 @@ by this ticket. Changes recorded in proof/VELDO-0254/no-sandbox-revision-2026-11
 2026-11-05: footprint widened by the lead after the independent review (proof/VELDO-0254/review-2026-11-05.md): the one call site that sends the owner notice through Veldo's own channel (AC2), named in proof/VELDO-0254/OPEN.md by fix round 1. AC1 is met by a launch-time scan of the run's environment and command line, not by new confinement (owner rule, Telegram 39154). Acceptance criteria unchanged.
 
 2026-11-05: fix round 1 (proof/VELDO-0254/review-2026-11-05.md). The lead's footprint widening names `.veldo/control_service_channel.py` and `engine/.veldo/control_service_channel.py`, the owner notice's one call site (`Channel.tick` runs `Channel.tell_secrets`), and the one send-inventory line that call needs in `scripts/suites/86_veldo_0168_text.py`; listed in proof/VELDO-0254/OPEN.md item 5. `.veldo/secret_scan_patterns.json` and its engine copy are removed: the formats live in `secret_scan.py`, which the installed receiver carries. Acceptance criteria unchanged.
+
+2026-11-05: footprint and protected paths widened by the lead after fix round 1: scripts/gate_unconfined.json gets entries for suites 128 (nested namespace of the confined runner) and 129 (real launches under the user manager). A protected path: the owner approves it at landing. Acceptance criteria unchanged.
