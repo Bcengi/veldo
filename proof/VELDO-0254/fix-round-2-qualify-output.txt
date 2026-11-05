@@ -1,0 +1,34 @@
+qualified codex 0.154.0 (~/.nvm/versions/node/v22.22.0/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex) sha256:3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022
+qualified claude_code 2.1.281 (~/.local/share/claude/versions/2.1.281) sha256:56fe3da88458465fb27d7e9299dddb3fead55750fb9c2de795f233b5eea6dce1
+replaced codex 0.154.0, claude_code 2.1.281
+codex features on by default the classification does not name: none
+claude_code tools the replaced classification did not hold: none
+new codex items: 0, none
+new claude_code items: 0, none
+claude_code built-in plugins and skills turned off in a role-bound run: agents-md@builtin, telemetry@builtin; design, doctor
+wrote .veldo/runtime/engines.json
+wrote engine/runtime/engines.json
+wrote proof/VELDO-0062/cli-formats.json
+wrote proof/VELDO-0061/codex-exec.json
+wrote proof/VELDO-0060/cli-options.json
+wrote proof/VELDO-0141/stream-formats.json
+wrote proof/VELDO-0155/claude-baseline.json
+wrote proof/VELDO-0156/codex-baseline.json
+wrote proof/VELDO-0156/codex-rendered.json
+wrote proof/VELDO-0156/codex-mentions.json
+wrote proof/VELDO-0165/claude-environment.json
+wrote proof/VELDO-0165/codex-environment.json
+wrote proof/VELDO-0173/claude-tools.json
+wrote proof/VELDO-0185/login-status.json
+wrote .veldo/runtime/codex-qualification.json
+wrote engine/runtime/codex-qualification.json
+wrote .veldo/runtime/claude-qualification.json
+wrote engine/runtime/claude-qualification.json
+wrote proof/VELDO-0127/catalog-fixture.json
+wrote proof/VELDO-0127/fixture-models.json
+wrote proof/VELDO-0127/features-fixture.json
+wrote proof/VELDO-0127/resources-gpt-6-astra-selected.json
+wrote proof/VELDO-0127/resources-gpt-6-astra-none.json
+wrote proof/VELDO-0127/resources-gpt-5.5-selected.json
+wrote proof/VELDO-0127/resources-gpt-5.5-none.json
+wrote proof/VELDO-0127/resource-qualification.json

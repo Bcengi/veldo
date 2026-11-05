@@ -1,0 +1,6 @@
+AC2 falsifier: the matched value printed in the finding line (secret_scan.scan)
+  selector    --suite 127_veldo_0254_secret_scan
+  running     1 of 189 suites: 127_veldo_0254_secret_scan
+  SELFTEST FAIL: VELDO-0254 ac2/masked: no report, log line or notice holds any part of a canary [['CANARY', 'ANARYQ', 'NARYQL']]
+  127_veldo_0254_secret_scan                      14 passed    2.79s
+selftest (PARTIAL, 1 of 189 suites): 40 passed, 1 failed in 2.79s

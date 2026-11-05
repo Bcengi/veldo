@@ -640,6 +640,15 @@
   ],
   "128_veldo_0235_land_locally": [
    "128_veldo_0235_land_locally"
+  ],
+  "127_veldo_0254_secret_scan": [
+   "127_veldo_0254_secret_scan"
+  ],
+  "128_veldo_0254_confined_runner": [
+   "128_veldo_0254_confined_runner"
+  ],
+  "129_veldo_0254_canary_launch": [
+   "129_veldo_0254_canary_launch"
   ]
  }
 }

@@ -230,6 +230,10 @@ class Runtime:
                                         str(collected), commit], capture_output=True, timeout=60)
             if fetched.returncode or not P.commit_exists(self.root, commit):
                 raise Refused('unavailable_service:build_objects')
+        # VELDO-0254 AC2: the landing candidate's changed files are scanned before it can land. The scan reports
+        # what it finds, masked; it never refuses the candidate, and a scan that fails is logged to the owner's
+        # scan log by name and changes nothing here.
+        L.candidate_scan(self.config, self.config.get('repository'), self.root, revision, commit)
 
     def build(self, spec, calls=None):
         role = self.role('build')

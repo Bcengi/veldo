@@ -7961,8 +7961,8 @@ def cases():
            "        if False:  # defect: any program may run the entrance, and then nothing re-hashes the engine\n",
            'pin/entrance-interpreter')
     claude('claude-wrapper-path-unresolved', 'control_launch.py',
-           "    elif pinned is not None and os.path.realpath(path) == os.path.realpath(pinned):\n",
-           "    elif pinned is not None and os.path.abspath(path) == pinned:  # defect: a `..` in the path skips the re-hash\n",
+           "    elif pinned is not None and os.path.realpath(target_path) == os.path.realpath(pinned):\n",
+           "    elif pinned is not None and os.path.abspath(target_path) == pinned:  # defect: a `..` in the path skips the re-hash\n",
            'pin/rehash-dot-dot')
     claude('claude-wrapper-entrance-unforwarded', 'control_launch.py',
            "        environment[ENGINE_PATH], environment[ENGINE_DIGEST] = pinned, expected\n",
@@ -12170,6 +12170,28 @@ def cases():
         ['exact-tip/compare-and-swap'])
     add(235, 'dest235-push-routed-local', dest235, 'control_landing.py', local235, pushed235,
         ['destination/default-push', 'push/unchanged'])
+
+    # VELDO-0254: the falsifier of each acceptance criterion. AC1 a keystore reference resolved into a run's
+    # environment is named by the static row; AC2 a finding line that prints the matched value is found by the
+    # masking row; AC3 the confined runner made the default fails the default-run row.
+    scan254 = '127_veldo_0254_secret_scan.py'
+    add(254, 'delivery254-keystore-into-environment', scan254, 'control_launch.py',
+        "    runtime = environment.pop(ENGINE_RUNTIME, None)\n",
+        "    runtime = environment.pop(ENGINE_RUNTIME, None)\n"
+        "    environment['FIXTURE_MAIL_TOKEN'] = _organ('secretref').resolve_for_runtime('keychain:fixture-mail', "
+        "_organ('control_credential_keystore').SecretService()).reveal()\n", ['ac1/static-sites'])
+    # The same falsifier against the real-launch canary row: the canary reaches the engine's environment.
+    add(254, 'delivery254-keystore-into-launch-canary', '129_veldo_0254_canary_launch.py', 'control_launch.py',
+        "    runtime = environment.pop(ENGINE_RUNTIME, None)\n",
+        "    runtime = environment.pop(ENGINE_RUNTIME, None)\n"
+        "    environment['FIXTURE_MAIL_TOKEN'] = _organ('secretref').resolve_for_runtime('keychain:fixture-mail', "
+        "_organ('control_credential_keystore').SecretService()).reveal()\n",
+        ['ac1/canary-keystore', 'ac1/canary-engine-run', 'ac1/canary-conversation', 'ac1/canary-workflow-step'])
+    add(254, 'scan254-value-in-finding', scan254, 'secret_scan.py',
+        "'masked': mask(kind, value)})", "'masked': mask(kind, value), 'value': value})", ['ac2/masked'])
+    add(254, 'runner254-confined-default', scan254, 'control_launch.py',
+        "    return {'runner': 'default', 'why': None}\n", "    return {'runner': 'confined', 'why': None}\n",
+        ['ac3/default-reaches'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

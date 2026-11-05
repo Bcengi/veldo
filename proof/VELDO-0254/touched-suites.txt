@@ -1,0 +1,14 @@
+  127_veldo_0254_secret_scan                      15 passed    2.78s
+selftest (PARTIAL, 1 of 190 suites): 41 passed, 0 failed in 2.78s
+  128_veldo_0254_confined_runner                   1 passed    0.70s
+selftest (PARTIAL, 1 of 190 suites): 27 passed, 0 failed in 0.70s
+  63_veldo_0040_containment                       59 passed    7.23s
+selftest (PARTIAL, 1 of 190 suites): 85 passed, 0 failed in 7.23s
+  62_veldo_0039_dispatch                          25 passed    9.51s
+selftest (PARTIAL, 1 of 190 suites): 51 passed, 0 failed in 9.51s
+  123_veldo_0174_conversations                    38 passed   10.17s
+selftest (PARTIAL, 1 of 190 suites): 64 passed, 0 failed in 10.17s
+  125_veldo_0230_engine_census                     7 passed    7.06s
+selftest (PARTIAL, 1 of 190 suites): 33 passed, 0 failed in 7.06s
+  82_veldo_0141_execution_record                  40 passed   20.96s
+selftest (PARTIAL, 1 of 190 suites): 66 passed, 0 failed in 20.96s

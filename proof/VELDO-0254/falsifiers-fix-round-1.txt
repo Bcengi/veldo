@@ -1,0 +1,5 @@
+VELDO-0254 fix round 1: python3 scripts/check_teeth_mutations.py --finding 254 --case <each of the three>
+mutations: passed registered=3 executed=3 reused=0 rejected=3 workers=7 elapsed=15.562s
+runner254-confined-default (control_launch.py, expected red ['ac3/default-reaches']): baseline failed []; mutant failed ['VELDO-0254 ac3/default-reaches', 'VELDO-0254 ac3/risky-confined', 'VELDO-0254 ac3/no-runner-host']
+delivery254-keystore-into-environment (control_launch.py, expected red ['ac1/static-sites']): baseline failed []; mutant failed ['VELDO-0254 ac1/static-sites', 'VELDO-0254 ac1/static-planted', 'VELDO-0254 ac1/launch-scan', 'VELDO-0254 ac2/run-end-changed']
+scan254-value-in-finding (secret_scan.py, expected red ['ac2/masked']): baseline failed []; mutant failed ['VELDO-0254 ac2/masked', 'VELDO-0254 ac1/launch-scan']

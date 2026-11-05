@@ -208,6 +208,7 @@ from pathlib import Path
 import select
 import shutil
 import queue
+import re
 import signal
 import socket
 import subprocess
@@ -276,6 +277,208 @@ def keystore_credentials(receiver, contract, adapter, environment):
 # `environment`); every value one returns enters the run's set of resolved values, which the execution
 # record replaces before the secret scanner runs. VELDO-0158 AC3 adds the keystore's.
 RESOLVERS = [subscription_token, keystore_credentials]
+
+
+# THE SECRET SCAN AT RUN END AND AT A LANDING CANDIDATE (VELDO-0254 AC2). The one scan entry (secret_scan.scan)
+# reads the files a run changed in its workspace (its clone's work tree and scratch, its conversation directory)
+# once its end is recorded, and the changed files of a landing candidate before it lands, and REPORTS what it finds,
+# masked, to the scan log (the configuration's `secret_scan_log`, else secret-scan.jsonl under the state root, else
+# beside the store), from which the running service's channel tells the owner (control_service_channel). It never
+# edits a file, stops a run or refuses a landing; a scan that fails is logged there by name, never swallowed. The
+# credentials held for the gate, which it also matches by digest, are the outside gate's (VELDO-0251) and reach it
+# through `held` once the gate holds them.
+SS = _organ('secret_scan')
+
+
+def secret_scan_log(config):
+    """Where a receiver configuration's secret scans are logged (None for a configuration naming no store)."""
+    root = config.get('state_root') or (os.path.dirname(config['store']) if config.get('store') else None)
+    return config.get('secret_scan_log') or (os.path.join(root, SS.LOG_NAME) if root else None)
+
+
+def scan_run_end(config, dispatch_id, project, roots, held=(), notify=None, before=None):
+    """The run-end trigger: one scan, one report, over the files under the run's workspace roots; with `before`
+    ({root: secret_scan.tree_state} as the run started) only the files the run added or changed."""
+    def files():
+        for root in roots:
+            if root and os.path.isdir(root):
+                if before is not None:
+                    yield from SS.changed_files(root, before.get(root))
+                else:
+                    yield from SS.tree_files(root)
+    return SS.scan('run_end', project, files(), held=held, log=secret_scan_log(config), notify=notify,
+                   dispatch=dispatch_id)
+
+
+def run_roots(receiver, dispatch_id):
+    """A run's workspace roots: its clone's work tree and scratch, and its conversation directory."""
+    config, roots = getattr(receiver, 'config', None) or {}, []
+    if config.get('clones'):
+        clones = _organ('control_clone').Clones(receiver.dispatches, **config['clones'])
+        handle = clones.clone_of(dispatch_id)
+        if handle is not None:
+            paths = clones._paths(handle)
+            roots += [paths.get('work'), (paths.get('scratch') or {}).get(dispatch_id)]
+    roots.append(getattr(receiver, 'conversation_directory', None))
+    return [r for r in roots if r]
+
+
+def _project(contract):
+    return (contract.get('reservation') or {}).get('project') or contract.get('repository')
+
+
+def run_end_scan(receiver, dispatch_id, contract):
+    """VELDO-0254 AC2: the run-end scan of the files the run changed in its workspace, once its end is recorded. It
+    reports only; a scan that fails is logged to the owner's scan log by name and changes nothing about the run."""
+    config = getattr(receiver, 'config', None) or {}
+    try:
+        scan_run_end(config, dispatch_id, _project(contract), run_roots(receiver, dispatch_id),
+                     before=getattr(receiver, 'workspace_before', None))
+    except Exception as error:
+        SS.failed('run_end', _project(contract), error, _failure_log(config), dispatch=dispatch_id)
+
+
+def report_end(receiver, contract, event):
+    """VELDO-0254 AC2: a run whose end is recorded has the files it changed scanned now, so the scan neither delays
+    the record nor re-reads what was there before; then its end is reported."""
+    run_end_scan(receiver, contract['dispatch_id'], contract)
+    receiver.emit(event)
+
+
+def _failure_log(config):
+    try:
+        return secret_scan_log(config)
+    except Exception:
+        return None
+
+
+def scan_candidate(config, project, repository, base, head, held=(), notify=None):
+    """The landing-candidate trigger: the files `head` adds or changes against `base`, before it lands."""
+    return SS.scan('landing_candidate', project, SS.candidate_files(repository, base, head), held=held,
+                   log=secret_scan_log(config), notify=notify)
+
+
+def candidate_scan(config, project, repository, base, head):
+    """The landing scan as the build collection runs it: it reports only, and a scan that fails is logged to the
+    owner's scan log by name (None is returned) and changes nothing about the landing."""
+    try:
+        return scan_candidate(config, project, repository, base, head)
+    except Exception as error:
+        SS.failed('landing_candidate', project, error, _failure_log(config))
+        return None
+
+
+# THE LAUNCH-TIME SCAN (VELDO-0254 AC1). Runs keep today's environment inheritance; what a run is started with is
+# scanned instead, whatever reached it (a value inherited from the host, an adapter's literal, anything read from a
+# file into the environment or the command): the run's final environment (as the trusted wrapper hands it to the
+# engine, engine_environment) and its command line, through the one scan entry with the same formats, just before
+# the spawn. A credential found is logged masked and the launch is refused by name,
+# credential_delivery_site:environment:<name> or credential_delivery_site:command:<position>. The engine's own
+# model login, where the launcher hands it over (the subscription token), is where it belongs and is not a finding,
+# nor, until VELDO-0257 removes that path, a VELDO-0158 catalog credential the launcher delivered itself.
+def launch_scan(config, dispatch_id, project, environment, argv, own=()):
+    """None when the run's final environment and command line hold no credential, else the named refusal."""
+    final = engine_environment(dict(environment)) if ENGINE_RUNTIME in environment else dict(environment)
+    files = [('environment/' + name, str(value).encode('utf-8', 'surrogateescape'))
+             for name, value in sorted(final.items())]
+    files += [('command/%d' % at, str(arg).encode('utf-8', 'surrogateescape')) for at, arg in enumerate(argv)]
+    report = SS.scan('launch', project, files, log=secret_scan_log(config), dispatch=dispatch_id, own=own)
+    if not report['findings']:
+        return None
+    return 'credential_delivery_site:' + report['findings'][0]['file'].replace('/', ':', 1)
+
+
+# THE ONE LAUNCHER DECISION (VELDO-0254 AC3). By default a launch starts as today: the host's network, shared
+# databases, container tooling and local and loopback services, with no fence, namespace, name resolution change
+# or filesystem confinement added. A launch starts in the confined runner of VELDO-0208 (scripts/agent_sandbox.py,
+# named with its configuration by the receiver configuration's `confined_runner`: {program, config}) only when it
+# is marked risky: by the installation (`risky.installation`), its project (`risky.projects`) or its dispatch (the
+# contract's input context `risky`). A risky launch on a host that cannot provide the confined runner is refused as
+# confined_runner_unavailable:<reason>; no other launch is ever refused for a confinement reason. Receiver.launch is
+# the one caller, for every launch kind it accepts (engine run, conversation turn, workflow step), and names the
+# decision on the launch's accepted (or refused) line.
+def runner_decision(config, contract):
+    """{runner: default | confined, why: None | installation | project | dispatch}."""
+    marks = config.get('risky') or {}
+    project = (contract.get('reservation') or {}).get('project') or contract.get('repository')
+    if marks.get('installation') is True:
+        return {'runner': 'confined', 'why': 'installation'}
+    if project is not None and project in (marks.get('projects') or ()):
+        return {'runner': 'confined', 'why': 'project'}
+    if ((contract.get('input') or {}).get('context') or {}).get('risky') is True:
+        return {'runner': 'confined', 'why': 'dispatch'}
+    return {'runner': 'default', 'why': None}
+
+
+def confined_runner_problem(config, cache=None):
+    """None when this host can start the configured confined runner, else confined_runner_unavailable:<reason>.
+    With `cache` (a receiver's own), the host is judged once per configured runner and the answer kept."""
+    runner = config.get('confined_runner') or {}
+    key = (runner.get('program'), runner.get('config'))
+    if cache is not None and key in cache:
+        return cache[key]
+    problem = _confined_runner_problem(runner)
+    if cache is not None:
+        cache[key] = problem
+    return problem
+
+
+def _confined_runner_problem(runner):
+    program, settings = runner.get('program'), runner.get('config')
+    if not isinstance(program, str) or not isinstance(settings, str):
+        return 'confined_runner_unavailable:not_configured'
+    if not os.path.isfile(program):
+        return 'confined_runner_unavailable:program_missing'
+    if not os.path.isfile(settings):
+        return 'confined_runner_unavailable:config_missing'
+    # The helper the runner names, read from its source (never loaded into this process), then the runner's own
+    # self-test of the namespace it makes: only a host where both hold provides the confined runner.
+    try:
+        named = re.search(r"^NAMESPACE_HELPER = Path\('([^']+)'\)$", Path(program).read_text(), re.M)
+    except (OSError, UnicodeError):
+        named = None
+    if named is None:
+        return 'confined_runner_unavailable:program_unusable'
+    if not os.path.lexists(named.group(1)):
+        return 'confined_runner_unavailable:helper_missing'
+    try:
+        tested = subprocess.run([sys.executable, '-I', '-S', program, 'namespace-selftest'], capture_output=True,
+                                timeout=120, stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError):
+        tested = None
+    if tested is None or tested.returncode != 0:
+        return 'confined_runner_unavailable:namespace_selftest'
+    return None
+
+
+def runner_refusal(config, decision, cache=None):
+    """The named refusal of a launch the decision sends to a confined runner this host cannot provide, else None."""
+    return confined_runner_problem(config, cache) if decision['runner'] == 'confined' else None
+
+
+# The confined runner's agent client (scripts/agent_sandbox.json `clients`) whose files each engine receives.
+RUNNER_CLIENTS = {'claude_code': 'claude', 'codex': 'codex'}
+
+
+def runner_argv(config, decision, argv, worktree, client=None):
+    """What the spawn starts: the argv as today, or the same argv inside the confined runner, with `worktree` its
+    writable root and `client` the agent client whose files it hands the engine."""
+    if decision['runner'] != 'confined':
+        return list(argv)
+    if not worktree:
+        raise C.Refused('confined_runner_unavailable:no_worktree')
+    runner = config['confined_runner']
+    return [sys.executable, '-I', '-S', runner['program'], '--config', runner['config'],
+            *(['--client', client] if client else []), '--worktree', str(worktree), '--', *argv]
+
+
+def confined_inner(argv):
+    """The argv a confined-runner argv starts (runner_argv's shape), else None."""
+    at = 6 if len(argv) > 6 and argv[6] == '--client' else 4
+    if (len(argv) > at + 5 and argv[1:3] == ['-I', '-S'] and argv[4] == '--config'
+            and argv[at + 2] == '--worktree' and argv[at + 4] == '--'):
+        return list(argv[at + 5:])
+    return None
 
 
 # OS process identity.
@@ -1122,6 +1325,11 @@ class Receiver:
         self.token = None
         self.run = None
         self.conversation_directory = None
+        # VELDO-0254 AC3: the launcher's runner decision for this launch, and this receiver's judgment of its host's
+        # confined runner, taken once. AC2: what the run's workspace held as it started.
+        self.runner = {'runner': 'default', 'why': None}
+        self.confined_checked = {}
+        self.workspace_before = None
         # VELDO-0158: the selected MCP servers with their credentials resolved just before the spawn, and the
         # values delivered into the engine environment, by name.
         self.credentials = None
@@ -1282,10 +1490,17 @@ class Receiver:
             finally:
                 reader.close()
 
+        if not refusal:
+            # VELDO-0254 AC3: the one launcher decision; only a risky launch can be refused for confinement.
+            self.runner = runner_decision(self.config, contract)
+            refusal = runner_refusal(self.config, self.runner, self.confined_checked)
+            if not refusal and self.runner['runner'] == 'confined' and adapter.get('identity', 'local') == 'reported':
+                # The confined runner is this host's; another host's engine cannot be started in it from here.
+                refusal = 'confined_runner_unavailable:remote_host'
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
-            self.emit({'event': 'refused', 'refusal': refusal,
+            self.emit({'event': 'refused', 'refusal': refusal, 'runner': self.runner,
                        'dispatch_id': dispatch_id, 'repository': self.config.get('repository'),
                        'configuration': getattr(self, 'configuration_path', None),
                        'metrics': {'host_trust_required': int(refusal == 'host_trust_required:receiver_configuration'),
@@ -1306,7 +1521,7 @@ class Receiver:
             self.emit({'event': 'refused', 'refusal': error.code})
             return
         acceptance = self.dispatches.receipt(dispatch_id, 'accept')
-        self.emit({'event': 'accepted', 'acceptance': acceptance})
+        self.emit({'event': 'accepted', 'acceptance': acceptance, 'runner': self.runner})
         try:
             worker = self._invoke(contract, acceptance, adapter)
         except Unfunded as error:
@@ -1393,26 +1608,26 @@ class Receiver:
             # outcome is unknown, and the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running', execution_record=self.committed)
-            self.emit({'event': 'unknown', 'record': self._ended()})
+            report_end(self, contract, {'event': 'unknown', 'record': self._ended()})
             return
         supervision = self.supervision
         if remote and supervision['cause'] in ('paid_api', 'configuration_stop'):
             # Nor does stopping it for its login (VELDO-0155, VELDO-0156): the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running', execution_record=self.committed)
-            self.emit({'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
+            report_end(self, contract, {'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         if remote and supervision['cause'] in ('requested', 'usage_cap'):
             # Nor does stopping it on request or at its usage cap: the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running', execution_record=self.committed)
-            self.emit({'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
+            report_end(self, contract, {'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         if supervision['empty'] is False:
             # Something of the worker's group is still running: never recorded as ended.
             self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),
                                     expected_state='running', execution_record=self.committed)
-            self.emit({'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
+            report_end(self, contract, {'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
         report = self.metering.report if self.metering is not None else None
         artifact = {k: report[k] for k in ('verdict', 'complete', 'digest')} if report is not None else None
@@ -1421,7 +1636,8 @@ class Receiver:
                              execution_record=self.committed)
         # Kernel evidence commits the exit first; settlement still reads the retained scope.
         self._conclude_exit()
-        self.emit({'event': 'exited', 'termination': termination, 'supervision': supervision, 'record': self._ended()})
+        report_end(self, contract, {'event': 'exited', 'termination': termination, 'supervision': supervision,
+                                    'record': self._ended()})
 
     def _conclude_exit(self):
         group = self._exit_group
@@ -1806,6 +2022,27 @@ class Receiver:
         # VELDO-0141: the run's resolved values and its execution record, before the worker exists; its error
         # stream comes to this receiver, which keeps it in the record.
         self._record(adapter, environment)
+        # VELDO-0254 AC3: the same argv, inside the confined runner only when the decision says so: writable in the
+        # engine's own working directory (the dispatch's clone work tree, or the conversation directory) and handed
+        # the engine's client files.
+        config = getattr(self, 'config', None) or {}
+        runner = getattr(self, 'runner', None) or {'runner': 'default', 'why': None}
+        if runner['runner'] == 'confined':
+            reported = adapter.get('identity', 'local') == 'reported'
+            argv = runner_argv(config, runner, argv, cwd or self._engine_cwd(argv, dispatch_id, reported),
+                               RUNNER_CLIENTS.get((self.binding or {}).get('engine')))
+        # VELDO-0254 AC1: what the run starts with, scanned before it starts; a credential refuses the launch.
+        project = _project(getattr(self, 'contract', None) or {})
+        own = [getattr(self, 'token', None)] + list((getattr(self, 'delivered', None) or {}).values())
+        refusal = launch_scan(config, dispatch_id, project, environment, argv, own=own)
+        if refusal:
+            raise C.Refused(refusal)
+        # VELDO-0254 AC2: what the run's workspace holds as it starts, so its end reads only what it changed.
+        try:
+            self.workspace_before = {root: SS.tree_state(root) for root in run_roots(self, dispatch_id)}
+        except Exception as error:
+            self.workspace_before = None
+            SS.failed('run_end', project, error, _failure_log(config), dispatch=dispatch_id)
         if adapter.get('identity', 'local') != 'reported':
             if cwd is not None:
                 return self._contained(dispatch_id, argv, environment, cwd=cwd)
@@ -2528,13 +2765,18 @@ def wrap(argv):
     environment = dict(os.environ)
     # THE ENGINE PROTOCOL: the names of the exec-time re-hash reach the clone entrance only, never an engine.
     pinned, expected = environment.pop(ENGINE_PATH, None), environment.pop(ENGINE_DIGEST, None)
-    if pinned is not None and entrance(custody_worker(argv)):
+    # VELDO-0254 AC3: a risky launch's argv is the confined runner around the engine argv; the engine argv inside
+    # it is what is judged and re-hashed here, exactly as when this wrapper execs it itself.
+    inner = confined_inner(argv)
+    target = argv if inner is None else inner
+    target_path = path if inner is None else (shutil.which(inner[0]) or inner[0])
+    if pinned is not None and entrance(custody_worker(target)):
         environment[ENGINE_PATH], environment[ENGINE_DIGEST] = pinned, expected
-    elif pinned is not None and os.path.realpath(path) == os.path.realpath(pinned):
+    elif pinned is not None and os.path.realpath(target_path) == os.path.realpath(pinned):
         # This wrapper execs the pinned engine itself (however its path is spelled), so it re-hashes the
         # file now, immediately before the exec; a changed one never runs.
         try:
-            unchanged = file_digest(path) == expected
+            unchanged = file_digest(target_path) == expected
         except OSError:
             unchanged = False
         if not unchanged:
