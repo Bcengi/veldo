@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0252
 title: One small service behind the gate verifies the owner's approval token on every write and keeps the owner's service logins, refreshing them before expiry and telling the owner when one fails, and hands the gate only the current credential for each call
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -266,3 +266,5 @@ VELDO-0249 already requires, because a write whose outcome is unknown must not r
 one small service of our own verifies the approval token on every write as the gate's extAuthz, holds the
 OAuth logins (authorization code with PKCE, encrypted at rest in the keystore, refresh before expiry,
 revocation) and hands the gate the current backend token per call. Companion of VELDO-0251. Standalone.
+
+2026-11-04: approved by the owner, Telegram 39144 ("Yes", to 39143). Status ready.

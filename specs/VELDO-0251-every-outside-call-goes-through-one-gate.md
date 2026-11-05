@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0251
 title: Every outside call from a run or a project process goes through one gate, which alone holds the credentials, lets reads pass and sends every write to the approval check, with the network itself refusing any other way out
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -293,3 +293,5 @@ and the HTTP route for non-JSON vendors; one small service of our own for approv
 (VELDO-0252); discovery of new servers stays installation practice. The gate and the service are generic;
 which services an installation uses, their credentials and never rules are installation configuration.
 Proposed change to VELDO-0249: proof/VELDO-0251/amend-0249.md. Standalone.
+
+2026-11-04: approved by the owner, Telegram 39144 ("Yes", to 39143). Status ready.
