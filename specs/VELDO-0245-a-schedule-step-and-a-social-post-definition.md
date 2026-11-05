@@ -121,3 +121,5 @@ Acceptance criteria otherwise unchanged.
 2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
 
 2026-11-04: amended under the plan consistency review (owner Telegram 39145; research/veldo-plan-consistency-review-2026-11-04.md, findings A23, A24, D8, D14, E4, E5) and the lead's rulings (research/veldo-plan-rulings-2026-11-04.md, R1, R3, R4): the schedule's approval goes through the approval service and confers no write approval beyond what it names; the default social post definition ships in the installation template with a generic channel; definitions stay in the installation repository on rollback; Context states the one schedule store; depends on VELDO-0249, VELDO-0251, VELDO-0252 and VELDO-0253. Status stays ready.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).

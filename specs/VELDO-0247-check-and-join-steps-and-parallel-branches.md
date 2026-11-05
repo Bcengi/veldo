@@ -207,3 +207,5 @@ VELDO-0241 to VELDO-0245 (Telegram 39069 to 39071). Standalone; no plan work ite
 2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
 
 2026-11-04: amended under the plan consistency review (owner Telegram 39145; research/veldo-plan-consistency-review-2026-11-04.md, findings A23, E4, E7) and the lead's rulings (research/veldo-plan-rulings-2026-11-04.md, R1): the rollback keeps definitions in the installation repository and says a later commit holding check or join is refused until changed; the LangGraph version is the pinned runtime. Status stays ready.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).

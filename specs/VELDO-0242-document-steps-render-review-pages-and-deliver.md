@@ -125,3 +125,5 @@ as workflow). Supersedes the fixed document-project design of parity ticket T7. 
 2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
 
 2026-11-04: amended under the plan consistency review (owner Telegram 39145; research/veldo-plan-consistency-review-2026-11-04.md, findings A21, A23, B12, C24, D8, D13, E4, E5) and the lead's rulings (research/veldo-plan-rulings-2026-11-04.md, R1, R6): the render command is a key of the project's file in the installation repository; deliver calls VELDO-0238's one file delivery module and depends on it, the number hedge removed; the default definition ships in the installation template and stays in the installation repository on rollback; depends on VELDO-0238 and VELDO-0253; delivery through Veldo's own channel needs no per-call approval at the outside gate. Status stays ready.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).

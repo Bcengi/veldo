@@ -135,3 +135,5 @@ approval and one mechanism, never a second beside the gate's check.
 2026-11-04: approved by the owner, Telegram 39096 ("Yes covers both", to 39089-39092 asking approval of VELDO-0236 to VELDO-0249, the PLAN-0019 amendment and the connectors plan). Status ready.
 
 2026-11-04: amended under the plan consistency review (owner Telegram 39145; research/veldo-plan-consistency-review-2026-11-04.md, findings A3, A21, A24, B12, D8, E4, E5, E6) and the lead's rulings (research/veldo-plan-rulings-2026-11-04.md, R1, R2, R4, R11): the generate call is one write through the outside gate to a declared service and no credential enters the run; the owner's spend approval is the approval service's approval of that exact request, matched once by the gate's check; the spend checklist is an installation kind, none shipped; the default definition ships in the installation template; depends on VELDO-0249, VELDO-0251, VELDO-0252 and VELDO-0253. Status stays ready.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).

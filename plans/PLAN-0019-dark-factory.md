@@ -2144,3 +2144,5 @@ digest, target and named action and performed by a control-plane executor outsid
 credentials; a paid generate call is one write through the outside gate approved as that exact request; no
 credential enters a run; the list of example targets is removed (targets are declared per installation). No
 work item, edge, release or other text changes.
+
+2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
