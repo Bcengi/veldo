@@ -1241,6 +1241,11 @@ def _v130_checks(base):
         # VELDO-0180: the owner's typed command making a conversation a project's work (suite 136 judges it).
         if 'make_conversation_project' in getattr(AS, 'OPERATIONS', {}):
             bodies['conversations.make_project'] = {'conversation': 'c-none', 'version': 1, 'project': 'project-a'}
+        # VELDO-0236: the owner's account pause, resume and window ceiling (suite 139 judges them).
+        if 'accounts.pause' in {r.name for r in write_routes}:
+            bodies.update({'accounts.pause': {'account': 'none', 'window': 'five_hour'},
+                           'accounts.resume': {'account': 'none'},
+                           'accounts.ceiling': {'account': 'none', 'window': 'five_hour', 'value': 50}})
 
         def path_of(route, domain=DOMAIN):
             return route.path.replace('{domain}', domain)
