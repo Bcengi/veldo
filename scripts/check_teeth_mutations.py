@@ -12354,6 +12354,45 @@ def cases():
         "        return swap.returncode == 0 and found == r['tip'], found  # defect: judged by the swap's exit status\n",
         ['push/at-tip', 'push/at-watermark'])
 
+    # VELDO-0260: a local landing keeps every working tree that has the trunk checked out in step with the trunk.
+    step260 = '129_veldo_0260_checkout_in_step.py'
+    # AC1 (declared falsifier): only the repository's main working tree is checked, so a linked one is missed.
+    add(260, 'step260-main-tree-only', step260, 'control_landing.py',
+        "        for entry in entries:\n",
+        "        for entry in entries[:1]:  # defect: only the main working tree is checked\n",
+        ['set/linked'])
+    # AC2 (declared falsifier): the ref is moved only, as VELDO-0235 did, so the clean tree is left behind.
+    add(260, 'step260-ref-only', step260, 'control_landing.py',
+        "                why = self._move_checkout(tree['path'], payload['old_tip'], payload['commit'])\n",
+        "                why = None  # defect: the working tree is not moved with the trunk\n",
+        ['move/clean'])
+    # AC3 (declared falsifier): the clean check is skipped and the swap made anyway.
+    add(260, 'step260-no-clean-check', step260, 'control_landing.py',
+        "        dirty = next((c for c in trees if c['clean'] is False), None)\n",
+        "        dirty = None  # defect: a tree with local changes does not refuse the landing\n",
+        ['dirty/edited'])
+    # AC4 (declared falsifier): the main working tree is moved whenever the repository has one, whatever its HEAD.
+    add(260, 'step260-main-tree-always', step260, 'control_landing.py',
+        "            if 'bare' in entry or entry.get('branch') != self.ref or not _text(entry.get('worktree')):\n",
+        "            if 'bare' in entry or (entry.get('branch') != self.ref and entry is not entries[0])"
+        " or not _text(entry.get('worktree')):  # defect: the main tree is always taken\n",
+        ['none/other-branch'])
+    # Fix round 1 (AC3, F1): the re-land does not wait for the tree, so every loop pass rebuilds and gates again.
+    add(260, 'step260-reland-spins', step260, 'control_landing_station.py',
+        "            self._checkout_wait(unit, follows, ops.landing)\n",
+        "            pass  # defect: the re-land does not wait for the working tree\n",
+        ['dirty/waits'])
+    # Fix round 1 (AC2, F3): a moved tree that could not be put back is recorded as a lost swap, re-landed.
+    add(260, 'step260-restore-failed-relands', step260, 'control_landing.py',
+        "                unrestored = next((c for c in trees if c['outcome'] == 'restore_failed'), None)\n",
+        "                unrestored = None  # defect: a failed rollback ends as trunk-moved\n",
+        ['move/restore-failed'])
+    # Fix round 2 (AC3): the waiting landing's working tree is no wake source, so a cleaned tree waits for an event.
+    add(260, 'step260-tree-never-wakes', step260, 'control_service.py',
+        "                self.wake('working_tree', tree)\n",
+        "                pass  # defect: a change to the watched working tree wakes no pass\n",
+        ['dirty/wakes'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

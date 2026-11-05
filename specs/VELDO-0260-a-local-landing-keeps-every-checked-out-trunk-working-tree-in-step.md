@@ -23,6 +23,8 @@ footprint:
   - "specs/VELDO-0260-a-local-landing-keeps-every-checked-out-trunk-working-tree-in-step.md"
   - "specs/index.md"
   - "proof/VELDO-0260/**"
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -143,3 +145,5 @@ moves refs/heads/<trunk> without updating a working tree that has the trunk chec
 built and its criteria stay unchanged; this ticket carries the fix. Standalone; no plan work item.
 
 2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.
+
+2026-11-05: footprint widened by the lead after fix round 1: control_service.py (and its mirror), so a landing waiting on a dirty or unmovable trunk working tree is a wake source of the service loop and re-lands once the tree is clean without waiting for an unrelated event. Acceptance criteria unchanged.

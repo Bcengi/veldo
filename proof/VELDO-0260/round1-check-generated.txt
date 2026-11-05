@@ -1,0 +1,5 @@
+before: exit 1
+ | WARP-0720 | The approval surface cannot recognise anyone - declare the approver registry IN THE REPOSITORY on a protected path, make the tracker group a reconciliation check that fails loudly on divergence, and refuse rather than degrade when the declaration cannot be read | draft | critical | dmitry | required | WARP-0720-approver-registry-declared.md |
+generated: FAIL (specs/index.md was stale; the diff above is what regeneration produces.
+after python3 scripts/update_index.py: exit 0
+generated: pass

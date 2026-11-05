@@ -1,0 +1,5 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -603 +603 @@
+-            if 'bare' in entry or entry.get('branch') != self.ref or not _text(entry.get('worktree')):
++            if 'bare' in entry or (entry.get('branch') != self.ref and entry is not entries[0]) or not _text(entry.get('worktree')):  # defect: the main tree is always taken
