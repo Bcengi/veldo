@@ -103,8 +103,8 @@ acceptance_criteria:
       connectors/<name>.yaml (local tool servers that hold no credential and reach nothing outside, with
       their allowed tools and never rules);
       workflows/<id>.json and workflows/<id>.layout.json (workflow definitions and their layouts);
-      memory/ (the memory manifest: stores, their servers and the session history sink; a run reaches a
-      memory server only as a service under services/);
+      memory/ (the memory manifest: stores, their servers and the session history sink; a memory server
+      that carries a credential is served behind the outside gate as a service under services/);
       schedules/<id>.yaml (schedules the installation declares);
       patterns/ (the personal-setup patterns of VELDO-0259, read only by that check);
       decisions/ (the map from a decision reference to its source message and quote);
@@ -318,3 +318,8 @@ check this spec builds on were split out of VELDO-0250 into VELDO-0259, which la
 request Telegram 39145 (plan consistency review research/veldo-plan-consistency-review-2026-11-04.md,
 finding D5). References to the reader and the patterns name VELDO-0259; records/ stays VELDO-0250's.
 Criteria unchanged; status stays ready.
+
+2026-11-05: Telegram 39154 and 39155, revised rulings R5, R7 and R14 (no mandatory sandbox): the memory
+kind no longer says a run reaches a memory server only through the gate; a memory server that carries a
+credential is served behind the outside gate, and runs keep today's access to local services. Status
+unchanged.
