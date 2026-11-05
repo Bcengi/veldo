@@ -2116,15 +2116,21 @@ class Line:
                        and isinstance(claim.get('unit_id'), str) and claim['unit_id']})
 
     def latest(self):
-        """{(unit, station): the record of its latest attempt} over this repository's dispatch records."""
+        """{(unit, station): the record of its latest attempt} over this repository's dispatch records, and
+        (VELDO-0247) {(unit, station, node): the latest attempt of that station at that node of the unit's workflow}
+        for every record whose payload names its node, which a process holding several nodes of one kind reads."""
         found = {}
         for record in self._rows(L.D.RECORD_KIND):
             contract = (record or {}).get('contract') or {}
             if contract.get('domain') != self.service.domain or contract.get('repository') != self.repository:
                 continue
             key = (contract.get('unit'), contract.get('station'))
-            if key not in found or contract.get('attempt', 0) > found[key]['contract'].get('attempt', 0):
-                found[key] = record
+            payload = (contract.get('input') or {}).get('payload') if isinstance(contract.get('input'), dict) else None
+            workflow = payload.get('workflow') if isinstance(payload, dict) else None
+            node = workflow.get('node') if isinstance(workflow, dict) else None
+            for key in [key] + ([key + (node,)] if isinstance(node, str) else []):
+                if key not in found or contract.get('attempt', 0) > found[key]['contract'].get('attempt', 0):
+                    found[key] = record
         return found
 
     def invocation(self, dispatch_id):
@@ -2227,7 +2233,8 @@ class Line:
         found, definition = process
         last = self.station.latest(unit) if self.station is not None else None
         state = {'unit': unit, 'latest': latest, 'report': report, 'pin': found, 'definition': definition,
-                 'last': last, 'anchor': None, 'build': None, 'port': None, 'landed': False}
+                 'last': last, 'anchor': None, 'build': None, 'port': None, 'landed': False, 'branch': None,
+                 'route': [], 'branches': {}}
         if last is not None:
             lands = WU.nodes_of(definition, LS.STATION)
             named = (last.get('workflow') or {}).get('node') if isinstance(last.get('workflow'), dict) else None
@@ -2236,7 +2243,8 @@ class Line:
                 return None
         else:
             start = definition['entry']
-        problem, value = WU.walk(definition, start, lambda node, kind: self.station_step(state, node, kind))
+        problem, value = WU.walk(definition, start, lambda node, kind: self.station_step(state, node, kind),
+                                 fork=lambda branch: self.fork(state, branch))
         if problem is not None:
             report['refused'].append({'repository': self.repository, 'unit': unit, 'station': None,
                                       'refusals': [problem]})
@@ -2246,8 +2254,8 @@ class Line:
         """(pin, definition) of the revision `unit` runs: the one its stations recorded (control_workflow_unit
         .pinned), the shipped `code` for a unit whose stations predate that record, else for its first station the
         revision its project binds for its kind of work (resolve). None, named in the pass, when it is missing."""
-        records = [record for (owner, _station), record in sorted(latest.items(), key=lambda item: str(item[0]))
-                   if owner == unit]
+        records = [record for key, record in sorted(latest.items(), key=lambda item: str(item[0]))
+                   if len(key) == 2 and key[0] == unit]
         last = self.station.latest(unit) if self.station is not None else None
         found = next((WU.recorded(((r.get('contract') or {}).get('input') or {}).get('payload')) for r in records
                       if WU.recorded(((r.get('contract') or {}).get('input') or {}).get('payload'))), None)
@@ -2279,8 +2287,17 @@ class Line:
         the land (VELDO-0058) and the first land and its approval are the landing path's, so a gate node, and an
         approval or land node with nothing for the Line to do, waits; an end node ends."""
         workflow = dict(state['pin'], node=node)
+        # VELDO-0247: a station in a parallel branch records its branch, and one after a check the route it took.
+        if state['branch'] is not None:
+            workflow['branch'] = state['branch']
+        if state['route']:
+            workflow['route'] = list(state['route'])
         self.__dict__.setdefault('processes', {})[state['unit']] = workflow
         arrived, state['port'] = state['port'], None
+        if kind == WU.WF.CHECK:
+            return self.step_check(state, node)
+        if kind == WU.WF.JOIN:
+            return self.step_join(state)
         if kind == 'build':
             return self.step_build(state, workflow)
         if kind == 'review':
@@ -2291,6 +2308,71 @@ class Line:
             return 'stop', self.grant(state['unit'], state['last'], state['report'], workflow=workflow)
         return 'stop', None
 
+    def fork(self, state, branch):
+        """VELDO-0247: the act of one parallel branch, on its own copy of the walk's state (its position, the build
+        its stations follow, its route), kept under the branch id for the join."""
+        mine = dict(state, branch=branch, route=list(state['route']), port=None, branches={})
+        state['branches'][branch] = mine
+        return lambda node, kind: self.station_step(mine, node, kind)
+
+    def step_join(self, state):
+        """The join, reached only when every branch has arrived (control_workflow_unit.walk): the branches' builds
+        and routes are the unit's from here on, and it passes on by `done`."""
+        for _branch, mine in sorted(state['branches'].items()):
+            if mine['build'] is not None and mine['build'] is not state['build']:
+                state['build'] = mine['build']
+            state['route'] += [decision for decision in mine['route'] if decision not in state['route']]
+        state['branches'] = {}
+        return 'port', 'done'
+
+    def recorded_route(self, state, node):
+        """The branches the unit's station records hold as taken at check `node`."""
+        taken = set()
+        for key, record in state['latest'].items():
+            if key[0] != state['unit']:
+                continue
+            payload = ((record.get('contract') or {}).get('input') or {}).get('payload')
+            workflow = payload.get('workflow') if isinstance(payload, dict) else None
+            route = workflow.get('route') if isinstance(workflow, dict) else None
+            taken |= {d.get('branch') for d in route or () if isinstance(d, dict) and d.get('node') == node}
+        return taken
+
+    def step_check(self, state, node):
+        """VELDO-0247: a check node, evaluated by the Line as data (control_workflow.evaluate) over the fields its
+        definition declares from the subject, the unit's record. Exactly one branch is taken and its decision (the
+        rule and every condition with its observed value, a private field's only as a digest) goes into the pass
+        and the record of every station after it; a declared field with no value or the wrong type is refused
+        field_unsupplied and takes no branch; a branch a station of the unit already recorded at this check that
+        differs from the evaluation now is refused unsupported_workflow:branch_mismatch, and nothing follows."""
+        unit, report, definition = state['unit'], state['report'], state['definition']
+        fields = definition.get('fields') or {}
+        subject = self.gate.unit_record(unit) or {}
+        values = {name: subject[field['source']['subject']] for name, field in fields.items()
+                  if 'subject' in field['source'] and field['source']['subject'] in subject}
+        entry = {'repository': self.repository, 'unit': unit, 'station': WU.WF.CHECK, 'node': node,
+                 'branch': state['branch'], 'workflow': dict(state['pin'])}
+        decision, problem = WU.WF.evaluate(node, definition['nodes'][node]['config'], fields, values)
+        if problem is None and self.recorded_route(state, node) - {decision['branch']}:
+            problem = 'unsupported_workflow:branch_mismatch'
+        counts = self.__dict__.setdefault('check_counts', {})
+        if problem is not None:
+            counts[problem] = counts.get(problem, 0) + 1
+            report['refused'].append(dict(entry, refusals=[problem]))
+            return 'stop', None
+        shown = WU.WF.redacted(decision, fields)
+        key = '%s:%s' % (node, decision['branch'])
+        counts[key] = counts.get(key, 0) + 1
+        state['route'].append(shown)
+        report.setdefault('checks', []).append(dict(entry, decision=shown))
+        return 'port', decision['branch']
+
+    def at(self, state, station, node):
+        """The unit's latest record of `station`: by station, as today, when its process has one node of that kind,
+        else (VELDO-0247) the latest at exactly `node`."""
+        if len(WU.nodes_of(state['definition'], station)) <= 1:
+            return state['latest'].get((state['unit'], station))
+        return state['latest'].get((state['unit'], station, node))
+
     @staticmethod
     def follows(record):
         return ((((record or {}).get('contract') or {}).get('input') or {}).get('payload') or {}).get('follows')
@@ -2298,8 +2380,8 @@ class Line:
     def step_build(self, state, workflow):
         """The build station: offered when the unit has none (after a land, none following it: a new build told to
         merge the new trunk); passed on once it completed."""
-        unit, latest, report, last = state['unit'], state['latest'], state['report'], state['last']
-        build = latest.get((unit, 'build'))
+        unit, report, last = state['unit'], state['report'], state['last']
+        build = self.at(state, 'build', workflow['node'])
         if state['anchor'] is not None and self.follows(build) != state['anchor']:
             build = None
         if build is None and state['anchor'] is not None:
@@ -2333,8 +2415,8 @@ class Line:
     def step_review(self, state, workflow):
         """The review station: offered once the build before it completed, to a reviewer independent of its holder;
         a review that ended is handed to limited as today, and passes on once it completed."""
-        unit, latest, report = state['unit'], state['latest'], state['report']
-        review = latest.get((unit, 'review'))
+        unit, report = state['unit'], state['report']
+        review = self.at(state, 'review', workflow['node'])
         if state['anchor'] is not None and self.follows(review) != state['anchor']:
             review = None
         if review is not None:
