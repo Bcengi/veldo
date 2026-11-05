@@ -11,12 +11,15 @@ footprint addition or a follow-up: in `Line.after_land`, when the latest land en
 `observed.classification` in `control_landing.CHECKOUT_REFUSALS`, send `observed.brief` to the project owner once
 per dispatch (as `Line.grant` does with `open_question`).
 
-## B. Re-land cadence while a tree stays dirty
+## B. Re-land cadence while a tree stays dirty (fixed in round 1, finding F1)
 
-Both checkout refusals end the land as trunk_moved, so `Line.after_land` re-lands on its next pass, as for a moved
-trunk. While the tree stays dirty each re-land rebuilds and gates a candidate and is refused again at publication,
-nothing moved. The station already records no bound or backoff for a trunk that keeps moving (hardening); the same
-applies here. Recorded, not built: the spec authorizes no retry policy.
+A re-land of a land refused for a checked-out tree now waits: `LandStation.land` with `follows` first calls
+`Landing.checkout_held` (git worktree list, git status, an index.lock test, a writability test of the directories the
+move writes) and, while a tree is still dirty or unmovable, refuses `trunk_checkout_dirty:<tree>` /
+`trunk_checkout_unmovable:<tree>` with the brief before any dispatch is opened, rebuilt or gated. Line.reland records
+that refusal and does not wake the loop, so nothing spins; once nothing holds, exactly one re-land runs. Remaining,
+outside this footprint (`control_service.py`): the probe runs on a pass something else woke (a journal advance, a
+run's end, the account timer); no watch on the working tree wakes a pass by itself when it becomes clean.
 
 ## C. PDF
 
