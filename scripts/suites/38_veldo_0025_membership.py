@@ -373,13 +373,9 @@ except Exception as e:
                 p.kill()
             try:
                 p.stdin.write("release\n")
-                p.stdin.flush()
-            except (OSError, ValueError):
+                p.stdin.flush()  # communicate below closes it
+            except OSError:
                 pass  # a racer killed or ended above reads no release
-            try:
-                p.stdin.close()
-            except (OSError, ValueError):
-                pass
         return [_v25_answer(p) for p in procs], report
 
     def _v25_said(answer):
