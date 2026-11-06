@@ -12207,7 +12207,7 @@ def cases():
         "                    elif self.control is not None and fd == self.control[0] and self._stop_asked(poller):\n"
         "                        begin('requested')\n",
         "                    elif self.control is not None and fd == self.control[0] and self._stop_asked(poller):\n"
-        "                        time.sleep(10 ** 6)  # defect: a stop leaves the record running\n", stops261)
+        "                        os._exit(0)  # defect: the receiver ends on a stop and leaves the record running\n", stops261)
     # AC3: each race order reds its own row on every run. The racers load the whole mutated .veldo copy.
     add(261, 'membership261-store-version-unchecked', '38_veldo_0025_membership.py', 'control_store.py',
         "            if actual != expected:\n"

@@ -349,12 +349,18 @@ sys.exit(child.wait())
                 for made in dispatch_ids() - before:
                     born.setdefault(made, labels[0])
 
+        # VELDO-0261: the two owner stop rows' workers are held to this contract deadline. An asked stop is begun
+        # within seconds of the worker's start and its cause is then fixed, so the deadline never decides a stop
+        # that was asked; a stop never asked, or ignored, ends at it as a deadline stop, which the rows name.
+        STOP_ROW_DEADLINE = 30
+
         def settle_stopped(launch):
             """VELDO-0261: wait for a stopped dispatch's record to reach a terminal state, bounded by the product's
             own end obligation for that dispatch (Launch.wait's bound when no timeout is given: the later of its
             contract deadline and the end its receiver announced, plus ACCEPT_SECONDS), and only then settle it with
-            the runner's wait. None, or the wait report when the bound ran out (the runner's wait then ends the
-            receiver at once and records what it finds, as it does for any caller's timeout)."""
+            the runner's wait. The wait also ends when the receiver itself has ended, since no one is left to record
+            the end. None, or the wait report (the runner's wait then ends the receiver at once and records what it
+            finds, as it does for any caller's timeout)."""
             ends_by = max(launch.contract['deadline'], launch.ends_by or 0)
             bound = (max(1.0, ends_by - time.time() + L.ACCEPT_SECONDS),
                      "the dispatch's end obligation: the later of its contract deadline and the end its receiver "
@@ -362,8 +368,14 @@ sys.exit(child.wait())
 
             def ended():
                 state = rec(launch.dispatch_id).get('state')
-                return state not in D.STOPPABLE, state
-            report = wait_for(ended, bound, 'dispatch %s to reach a terminal state' % launch.dispatch_id)
+                receiver = launch.child.poll() if launch.child is not None else 'none'
+                return state not in D.STOPPABLE or receiver is not None, {'state': state, 'receiver_exit': receiver}
+            what = 'dispatch %s to reach a terminal state' % launch.dispatch_id
+            report = wait_for(ended, bound, what)
+            if report is None and rec(launch.dispatch_id).get('state') in D.STOPPABLE:
+                report = 'the receiver of %s ended (exit %r) with the record still %s: nothing is left to record its end' % (
+                    launch.dispatch_id, launch.child.poll() if launch.child is not None else None,
+                    rec(launch.dispatch_id).get('state'))
             runner.wait(launch, timeout=None if report is None else 0)
             return report
 
@@ -823,7 +835,7 @@ sys.exit(child.wait())
                 member('stranger-person', kind='person', roles=['project_owner'], scope=['p9'])
                 member('plain-person', kind='person', roles=[], scope=['p1'])
                 us = admitted('VELDO-9340')
-                stopping = runner.submit(us, 'build', **job(release='never-9340'))
+                stopping = runner.submit(us, 'build', **job(release='never-9340', deadline=STOP_ROW_DEADLINE))
                 running_seen = marker_for(stopping.dispatch_id)
                 sid = stopping.dispatch_id
                 version = dispatches.version(sid)
@@ -876,7 +888,7 @@ sys.exit(child.wait())
             # (another runner, e.g. control_launch_work's, may hold it); the holder asks on its own sweep.
             with region('dispatch/owner-stop-other-runner'):
                 uo = admitted('VELDO-9341')
-                held_run = runner.submit(uo, 'build', **job(release='never-9341'))
+                held_run = runner.submit(uo, 'build', **job(release='never-9341', deadline=STOP_ROW_DEADLINE))
                 oid = held_run.dispatch_id
                 marker_for(oid)
                 bystander = L.Runner(gate, reservations, dispatches, invoke, account=ACCOUNT)
