@@ -321,20 +321,74 @@ sys.exit(child.wait())
         emitted, raised, regions = set(), [], []
         observed = {}
 
-        def check(label, condition):
+        def check(label, condition, detail=''):
+            """One row; a false one carries `detail`, what it saw, after its name's colon (VELDO-0261)."""
             emitted.add(label)
-            expect('VELDO-0039 ' + label, bool(condition))
+            expect('VELDO-0039 ' + label + (': ' + detail if detail and not condition else ''), bool(condition))
+
+        # VELDO-0261: the region each dispatch was made in, so a row that finds a dispatch it did not expect names
+        # where that dispatch came from.
+        born = {}
+
+        def dispatch_ids():
+            return {json.loads(data)['dispatch_id']
+                    for (data,) in writer.execute('SELECT data FROM entities WHERE kind=?', (D.RECORD_KIND,))}
 
         @contextlib.contextmanager
         def region(*labels):
             regions.append(labels[0])
+            before = dispatch_ids()
             try:
                 yield
             except Exception as error:  # noqa: BLE001 - a raise reds its rows, never skips them
                 raised.append((labels[0], repr(error)))
                 for label in labels:
                     if label not in emitted:
-                        check(label, False)
+                        check(label, False, 'raised ' + repr(error))
+            finally:
+                for made in dispatch_ids() - before:
+                    born.setdefault(made, labels[0])
+
+        # VELDO-0261: the two owner stop rows' workers are held to this contract deadline. An asked stop is begun
+        # within seconds of the worker's start and its cause is then fixed, so the deadline never decides a stop
+        # that was asked; a stop never asked, or ignored, ends at it as a deadline stop, which the rows name.
+        STOP_ROW_DEADLINE = 30
+
+        def settle_stopped(launch):
+            """VELDO-0261: wait for a stopped dispatch's record to reach a terminal state, bounded by the product's
+            own end obligation for that dispatch (Launch.wait's bound when no timeout is given: the later of its
+            contract deadline and the end its receiver announced, plus ACCEPT_SECONDS), and only then settle it with
+            the runner's wait. The wait also ends when the receiver itself has ended, since no one is left to record
+            the end. None, or the wait report (the runner's wait then ends the receiver at once and records what it
+            finds, as it does for any caller's timeout)."""
+            ends_by = max(launch.contract['deadline'], launch.ends_by or 0)
+            bound = (max(1.0, ends_by - time.time() + L.ACCEPT_SECONDS),
+                     "the dispatch's end obligation: the later of its contract deadline and the end its receiver "
+                     "announced, plus control_launch.ACCEPT_SECONDS")
+
+            def ended():
+                state = rec(launch.dispatch_id).get('state')
+                receiver = launch.child.poll() if launch.child is not None else 'none'
+                return state not in D.STOPPABLE or receiver is not None, {'state': state, 'receiver_exit': receiver}
+            what = 'dispatch %s to reach a terminal state' % launch.dispatch_id
+            report = wait_for(ended, bound, what)
+            if report is None and rec(launch.dispatch_id).get('state') in D.STOPPABLE:
+                report = 'the receiver of %s ended (exit %r) with the record still %s: nothing is left to record its end' % (
+                    launch.dispatch_id, launch.child.poll() if launch.child is not None else None,
+                    rec(launch.dispatch_id).get('state'))
+            runner.wait(launch, timeout=None if report is None else 0)
+            return report
+
+        def stop_cause(launch, record):
+            """What ended a stopped dispatch, as the row judges it: the cause, never the speed."""
+            termination = record.get('termination') or {}
+            return {'state': record.get('state'), 'asked': ((record.get('stop_request') or {}).get('result') or {}).get('asked'),
+                    'deadline_stop': termination.get('deadline_stop'), 'cause': (launch.supervision or {}).get('cause'),
+                    'returncode': termination.get('returncode'), 'signal': termination.get('signal')}
+
+        def stopped_by_request(cause):
+            return (cause['state'] == 'exited' and cause['asked'] is True and cause['deadline_stop'] is False
+                    and cause['cause'] == 'requested')
 
         try:
             # AC1: the complete contract before any worker; one active dispatch per unit/station
@@ -781,7 +835,7 @@ sys.exit(child.wait())
                 member('stranger-person', kind='person', roles=['project_owner'], scope=['p9'])
                 member('plain-person', kind='person', roles=[], scope=['p1'])
                 us = admitted('VELDO-9340')
-                stopping = runner.submit(us, 'build', **job(release='never-9340'))
+                stopping = runner.submit(us, 'build', **job(release='never-9340', deadline=STOP_ROW_DEADLINE))
                 running_seen = marker_for(stopping.dispatch_id)
                 sid = stopping.dispatch_id
                 version = dispatches.version(sid)
@@ -798,11 +852,12 @@ sys.exit(child.wait())
                 held = rec(sid)
                 pending_before = dispatches.stop_requests()
                 swept = runner.honor_stops()
-                # Bounded: a receiver never asked would leave the never-released worker running, and the row must
-                # then fail by its checks rather than wait out the worker (an asked stop ends in a few seconds).
-                runner.wait(stopping, timeout=25)
+                # VELDO-0261: the end is waited on, bounded by the product's own obligation, and judged by its cause:
+                # an unasked or ignored stop ends the worker otherwise, and the cause says so.
+                waited = settle_stopped(stopping)
                 elapsed = time.monotonic() - started
                 ended = rec(sid)
+                cause = stop_cause(stopping, ended)
                 again = attempt(lambda: dispatches.request_stop(sid, dispatches.version(sid), 'owner-person',
                                                                 now=time.time(), request='stop-2'))
                 actors = [r[0] for r in writer.execute(
@@ -812,7 +867,7 @@ sys.exit(child.wait())
                                           'swept': swept, 'state': ended.get('state'), 'again': again,
                                           'stop_request': ended.get('stop_request'), 'elapsed': round(elapsed, 2),
                                           'actors': actors, 'termination': ended.get('termination'),
-                                          'stop_requested': stopping.stop_requested}
+                                          'stop_requested': stopping.stop_requested, 'cause': cause, 'waited': waited}
                 check('dispatch/owner-stop',
                       running_seen.get('dispatch') == sid
                       and stale == ('refused', 'stale_version') and outside == ('refused', 'not_authorized:scope')
@@ -821,18 +876,19 @@ sys.exit(child.wait())
                       and (held.get('stop_request') or {}).get('by') == 'owner-person'
                       and (held.get('stop_request') or {}).get('result') is None
                       and pending_before == [(sid, 'owner_stop')] and swept == [(sid, True)]
-                      and ended.get('state') == 'exited' and elapsed < 40 and stopping.stop_requested is True
-                      and ((ended.get('stop_request') or {}).get('result') or {}).get('asked') is True
+                      and waited is None and stopped_by_request(cause) and stopping.stop_requested is True
                       and dispatches.stop_requests() == []
                       and again[0] == 'refused' and str(again[1]).startswith('transition_refused:exited')
                       and actors == ['owner-person', 'runner']
-                      and len(of_unit('dispatch', us)) == 1)
+                      and len(of_unit('dispatch', us)) == 1,
+                      'cause %r; wait %s; observed %r' % (cause, waited or 'held', {k: v for k, v in observed['owner_stop'].items()
+                                                                                 if k not in ('cause', 'waited')}))
 
             # A runner on the same store that does not hold the running dispatch leaves its stop request waiting
             # (another runner, e.g. control_launch_work's, may hold it); the holder asks on its own sweep.
             with region('dispatch/owner-stop-other-runner'):
                 uo = admitted('VELDO-9341')
-                held_run = runner.submit(uo, 'build', **job(release='never-9341'))
+                held_run = runner.submit(uo, 'build', **job(release='never-9341', deadline=STOP_ROW_DEADLINE))
                 oid = held_run.dispatch_id
                 marker_for(oid)
                 bystander = L.Runner(gate, reservations, dispatches, invoke, account=ACCOUNT)
@@ -841,16 +897,19 @@ sys.exit(child.wait())
                 by_bystander = bystander.honor_stops()
                 still = dispatches.stop_requests()
                 by_holder = runner.honor_stops()
-                runner.wait(held_run, timeout=25)  # bounded as in dispatch/owner-stop
+                waited = settle_stopped(held_run)  # waited on and judged as in dispatch/owner-stop
                 settled = rec(oid)
+                cause = stop_cause(held_run, settled)
                 observed['owner_stop_other_runner'] = {'requested': asked_by[0], 'bystander': by_bystander,
                                                        'still': still, 'holder': by_holder,
                                                        'state': settled.get('state'),
-                                                       'stop_request': settled.get('stop_request')}
+                                                       'stop_request': settled.get('stop_request'), 'cause': cause,
+                                                       'waited': waited}
                 check('dispatch/owner-stop-other-runner',
                       asked_by[0] == 'ok' and by_bystander == [] and still == [(oid, 'owner_stop')]
-                      and by_holder == [(oid, True)] and settled.get('state') == 'exited'
-                      and ((settled.get('stop_request') or {}).get('result') or {}).get('asked') is True)
+                      and by_holder == [(oid, True)] and waited is None and stopped_by_request(cause),
+                      'cause %r; wait %s; requested %r, bystander %r, still %r, holder %r'
+                      % (cause, waited or 'held', asked_by, by_bystander, still, by_holder))
 
             # Authority: only an active service member of this repository writes a record
             with region('dispatch/service-principals-only'):
@@ -875,8 +934,15 @@ sys.exit(child.wait())
                 fields = {'schema', 'operation', 'domain', 'repository', 'unit', 'station', 'dispatch_id', 'request',
                           'accepted_versions', 'outcome'}
                 refused_events = [e for e in events if e['outcome'] == 'refused']
+                # The three dispatches this suite makes unknown on purpose; any other is named with its state and
+                # the region that made it, so another row's failure is attributed to that row.
+                made_unknown = {lost.dispatch_id, orphaned.dispatch_id, remote.dispatch_id}
+                stray = {'extra': [(d, rec(d).get('state'), born.get(d, 'outside any region'))
+                                   for d in sorted(set(status['stopped']) - made_unknown)],
+                         'missing': [(d, rec(d).get('state'), born.get(d, 'outside any region'))
+                                     for d in sorted(made_unknown - set(status['stopped']))]}
                 obs_ok = (status['accepted'] > 0 and status['refused'] > 0
-                          and set(status['stopped']) == {lost.dispatch_id, orphaned.dispatch_id, remote.dispatch_id}
+                          and set(status['stopped']) == made_unknown
                           and set(status['pending']) == {prepared_only['dispatch_id'], accepted_only['dispatch_id']}
                           and all(fields <= set(e) for e in events)
                           and all(e.get('refusal') and e.get('taxonomy') for e in refused_events)
@@ -891,7 +957,9 @@ sys.exit(child.wait())
                           and D.taxonomy('something-unnamed') == 'unknown_outcome')
                 observed['status'] = status
                 observed['event_sample'] = [e for e in events if e.get('unit') == u6][:4]
-                check('dispatch/observations', obs_ok)
+                check('dispatch/observations', obs_ok,
+                      'unknown dispatches differ from the three made unknown on purpose: %r' % stray
+                      if stray['extra'] or stray['missing'] else 'status %r' % status)
 
             with region('dispatch/installed-assets'):
                 scaffold = load('v39_scaffold', mods / 'init_scaffold.py')

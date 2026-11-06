@@ -1,0 +1,8 @@
+# VELDO-0261 AC4 probe: two writable handles on one store, the first holding the write lock, the second beginning
+# a command with busy_timeout 50 ms; then a read-only handle beginning a command.
+## before (control_store.py at 2c185c6b, the tests commit)
+busy: read_only_handle | this handle cannot write (database is locked): open the store with mode='rw' at a qualified location
+read-only: read_only_handle | this handle cannot write (attempt to write a readonly database)
+## after (control_store.py at 32e40031)
+busy: store_busy | another writer held the store's write lock for the whole busy timeout (database is locked): the write did not begin
+read-only: read_only_handle | this handle cannot write (attempt to write a readonly database)

@@ -113,7 +113,7 @@ CATEGORIES = {
     'publication_conflict': 'stale_subject', 'publication_order': 'stale_subject',
     'below_accepted_history': 'stale_subject',
     'nonce_consumed': 'stale_subject',
-    'allocation_contention': 'unavailable_service', 'read_only_handle': 'unavailable_service',
+    'allocation_contention': 'unavailable_service', 'read_only_handle': 'unavailable_service', 'store_busy': 'unavailable_service',
     'unsupported_filesystem': 'unavailable_service', 'durability_not_enabled': 'unavailable_service',
     'incomplete_transaction': 'unavailable_service', 'wrong_connection': 'unavailable_service',
     'missing_transaction': 'unavailable_service',

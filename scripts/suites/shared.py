@@ -95,6 +95,29 @@ def expect(name, condition):
         print(f"  SELFTEST FAIL: {name}")
 
 
+def wait_for(condition, bound, what):
+    """VELDO-0261: wait on an observable condition, never on the clock alone.
+
+    `condition()` returns (holds, observation). It is polled until it holds, and wait_for returns
+    None as soon as it does. `bound` is (seconds, source): the most it waits and where that bound
+    comes from. When the bound runs out it returns the report a row carries: `what` it waited for,
+    the bound and its source, the seconds it waited and the last observation. It never sleeps a
+    fixed time (each pause is the shorter of a poll interval and what is left of the bound) and it
+    never repeats the action under test: it only reads."""
+    import time as _time
+    seconds, source = bound
+    began = _time.monotonic()
+    while True:
+        holds, observation = condition()
+        if holds:
+            return None
+        waited = _time.monotonic() - began
+        if waited >= seconds:
+            return ('waited %.1f s for %s, bound %.1f s (%s); last observed: %r'
+                    % (waited, what, seconds, source, observation))
+        _time.sleep(min(0.02, seconds - waited))
+
+
 _FAST_TEMP = []
 
 

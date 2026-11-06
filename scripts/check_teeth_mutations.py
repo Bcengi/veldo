@@ -12103,7 +12103,7 @@ def cases():
     add(131, 'launch131-stop-recorded-unasked', '62_veldo_0039_dispatch.py', 'control_launch.py',
         "                asked = bool(launch is not None and launch.stop(reason or 'owner_stop'))\n",
         "                asked = launch is not None  # defect: recorded as asked, the receiver never asked\n",
-        ['dispatch/owner-stop'])
+        ['dispatch/owner-stop', 'dispatch/owner-stop-other-runner'])
     # Worker stop: a runner that does not hold the running dispatch consumes its stop request as not asked.
     add(131, 'launch131-stop-consumed-unheld', '62_veldo_0039_dispatch.py', 'control_launch.py',
         "            if launch is None and (self.dispatches.record(dispatch_id) or {}).get('state') in D.STOPPABLE:\n",
@@ -12392,6 +12392,85 @@ def cases():
         "                self.wake('working_tree', tree)\n",
         "                pass  # defect: a change to the watched working tree wakes no pass\n",
         ['dirty/wakes'])
+
+    # VELDO-0261: the three intermittent rows become deterministic. Each criterion's declared falsifiers.
+    # AC1: the delivery fixture keeps every row and the whole failure. Its fixture is the mutated module.
+    fixture261 = ("                receiver.credentials = L.DL.resolve(f.writer, f.DOMAIN, configuration, "
+                  "keystore=f.keystore)\n")
+    add(261, 'delivery261-keystore-exits-for-one-model', delivery127, 'delivery_fixture.py', fixture261,
+        "                receiver.credentials = L.DL.resolve(f.writer, f.DOMAIN, configuration, keystore=(\n"
+        "                    type(f.keystore)('/bin/false') if d['settings']['model'] == " + repr(code127) + " else f.keystore))"
+        "  # defect: this model's keystore double exits nonzero\n",
+        ['delivery/' + code127 + '/jira', 'stop/' + code127 + '/missing', 'stop/' + code127 + '/extra',
+         'stop/' + code127 + '/mcp'])
+    result[-1]['dir'] = 'proof/VELDO-0127'
+    add(261, 'delivery261-setup-raises', delivery127, 'delivery_fixture.py',
+        "            f = factory.factory(ROOT, base, PRODUCTION, lambda _: wire.engine_source(catalog, fault))\n",
+        "            raise RuntimeError('defect: factory setup raises')\n"
+        "            f = factory.factory(ROOT, base, PRODUCTION, lambda _: wire.engine_source(catalog, fault))\n",
+        ['delivery/setup', 'delivery/' + code127 + '/none', 'delivery/' + code127 + '/shell',
+         'delivery/' + code127 + '/clock', 'delivery/' + code127 + '/jira', 'stop/' + code127 + '/missing',
+         'delivery/' + plain127 + '/none', 'delivery/' + plain127 + '/tool_search', 'save/' + plain127 + '/search-mcp'])
+    result[-1]['dir'] = 'proof/VELDO-0127'
+    add(261, 'delivery261-bind-raises-after-first-case', delivery127, 'delivery_fixture.py',
+        "                at('configuration bind')\n",
+        "                at('configuration bind')\n"
+        "                if serial[0] > 1:\n"
+        "                    raise RuntimeError('defect: the configuration bind raises after the first case')\n",
+        ['delivery/' + code127 + '/none', 'delivery/' + code127 + '/jira', 'stop/' + code127 + '/missing'])
+    result[-1]['dir'] = 'proof/VELDO-0127'
+    # AC2: the owner stop rows judge the cause of the end (with launch131-stop-recorded-unasked above, the holding
+    # runner records the ask without writing it to its receiver).
+    stops261 = ['dispatch/owner-stop', 'dispatch/owner-stop-other-runner']
+    add(261, 'dispatch261-stop-message-ignored', '62_veldo_0039_dispatch.py', 'control_launch.py',
+        "                asked = asked or (isinstance(message, dict) and bool(message.get('stop')))\n",
+        "                asked = asked  # defect: the receiver ignores a stop message\n", stops261)
+    add(261, 'dispatch261-stop-leaves-record-running', '62_veldo_0039_dispatch.py', 'control_launch.py',
+        "                    elif self.control is not None and fd == self.control[0] and self._stop_asked(poller):\n"
+        "                        begin('requested')\n",
+        "                    elif self.control is not None and fd == self.control[0] and self._stop_asked(poller):\n"
+        "                        time.sleep(10 ** 6)  # defect: a stop leaves the receiver alive and the record running\n",
+        stops261,
+        # The product's bound is shortened on this mutant copy only, so it runs out well inside the worker budget:
+        # the receiver announces its contract deadline as its end, and the module the suite loads allows 2 s to
+        # accept (the launch's own acceptance keeps its 30 s, bound into invoke and read by the receiver process).
+        also=[("        ends_by = contract['deadline'] + (sum(self._graces()) + C.SETTLE_SECONDS if group else 0)\n",
+               "        ends_by = contract['deadline']  # the mutant's shortened end obligation\n"),
+              ("if __name__ == '__main__':\n    main()\n",
+               "if __name__ == '__main__':\n    main()\nelse:\n    ACCEPT_SECONDS = 2  # the mutant's shortened allowance\n")])
+    # wait_for's expiry branch: a helper that never reports an expired wait reds the row that drives it.
+    add(261, 'wait261-expiry-returns-none', '38_veldo_0025_membership.py', 'shared.py',
+        "            return ('waited %.1f s for %s, bound %.1f s (%s); last observed: %r'\n",
+        "            return None  # defect: an expired wait reports nothing\n"
+        "            return ('waited %.1f s for %s, bound %.1f s (%s); last observed: %r'\n",
+        ['wait/expiry-report'])
+    result[-1]['dir'] = 'scripts/suites'
+    # AC3: each race order reds its own row on every run. The racers load the whole mutated .veldo copy.
+    add(261, 'membership261-store-version-unchecked', '38_veldo_0025_membership.py', 'control_store.py',
+        "            if actual != expected:\n"
+        "                raise StoreRefused(\"stale_version\", \"entity %s is at version %r, the command expected %r\" % (eid, actual, expected))\n",
+        "            if False:  # defect: the expected version is not compared\n"
+        "                raise StoreRefused(\"stale_version\", \"entity %s is at version %r, the command expected %r\" % (eid, actual, expected))\n",
+        ['membership/one-transition/overlapped'])
+    result[-1]['siblings'] = True
+    add(261, 'membership261-envelope-version-unchecked', '38_veldo_0025_membership.py', 'authority_contract.py',
+        '    for f in ("membership_version", "delegation_version"):\n        if envelope.get(f) != authority.get(f):\n',
+        '    for f in ("membership_version", "delegation_version"):\n'
+        '        if f != "membership_version" and envelope.get(f) != authority.get(f):  # defect: membership version unchecked\n',
+        ['membership/one-transition/sequential'])
+    result[-1]['siblings'] = True
+    # AC4: a busy lock and a read-only handle are told apart by the database's error code.
+    named261 = ('    if code == sqlite3.SQLITE_BUSY:\n        return StoreRefused("store_busy", BUSY % error)\n'
+                '    if code == sqlite3.SQLITE_READONLY:\n')
+    add(261, 'store261-busy-named-read-only', '38_veldo_0025_membership.py', 'control_store.py', named261,
+        named261.replace('return StoreRefused("store_busy", BUSY % error)',
+                         'return StoreRefused("read_only_handle", cannot % error)  # defect: busy named read-only'),
+        ['store/busy-store-named'])
+    result[-1]['siblings'] = True
+    add(261, 'store261-every-error-busy', '38_veldo_0025_membership.py', 'control_store.py', named261,
+        named261.replace('    if code == sqlite3.SQLITE_BUSY:', '    if True:  # defect: every error named busy'),
+        ['store/busy-store-named'])
+    result[-1]['siblings'] = True
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

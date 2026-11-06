@@ -290,28 +290,51 @@ else:
            _v25_m2_res_a[1] is None and _v25_m2_rec["transition"]["svc"]["data"]["roles"] == ["membership_steward"] and _v25_m2_rec["principal"] == "svc"
            and _v25_m2_res_b[1] is None and _v25_svc_self == "not_a_person")
 
-    # Two client PROCESSES race two role changes against one version; then a writer is SIGKILLed after
+    # Two client PROCESSES race two role changes against one version, in each order the admission can
+    # meet (VELDO-0261 AC3): the order is controlled, never hoped for. Then a writer is SIGKILLed after
     # acceptance (after COMMIT, before the reply) and the retry of the same envelope replays.
+    # The racers run the organs where these anchors name them: a registered mutation of the store or the
+    # authority contract substitutes one of them with a whole .veldo copy holding its one edit.
+    _v25_race_organs = [ROOT / ".veldo" / "control_store.py", ROOT / ".veldo" / "authority_contract.py"]
+    _v25_race_dir = next((str(p.parent) for p in _v25_race_organs if p.parent != ROOT / ".veldo"), str(ROOT / ".veldo"))
     _v25_child = '''
-import importlib.util, sys, json
+import importlib.util, sys, json, os, time, pathlib
 def load(n, p):
     sp = importlib.util.spec_from_file_location(n, p); m = importlib.util.module_from_spec(sp); sp.loader.exec_module(m); return m
 veldo = sys.argv[1]
 CS = load("cs", veldo + "/control_store.py"); CM = load("cm", veldo + "/control_membership.py"); CM.attach(CS)
 conn = CS.open_store(sys.argv[2]); job = json.load(open(sys.argv[3]))
+arrival = sys.argv[4] if len(sys.argv) > 4 else ""
+moments = {}
+class Commit:
+    """The store module, every call delegated to it; its commit first records this racer's arrival and
+    waits for the parent's release on standard input."""
+    def __getattr__(self, name):
+        return getattr(CS, name)
+    def execute(self, *args, **kwargs):
+        moments["arrived"] = time.time()
+        pathlib.Path(arrival + ".tmp").write_text(json.dumps(moments["arrived"]))
+        os.replace(arrival + ".tmp", arrival)
+        if sys.stdin.readline().strip() != "release":
+            raise RuntimeError("the parent closed the barrier without a release")
+        moments["released"] = time.time()
+        return CS.execute(*args, **kwargs)
 try:
-    import subprocess, pathlib
+    import subprocess
     kd = pathlib.Path(job["keydir"])
     def jsign(m):
-        f = kd / ("child-%d.msg" % __import__("os").getpid()); f.write_bytes(m); sig = pathlib.Path(str(f) + ".sig")
+        f = kd / ("child-%d.msg" % os.getpid()); f.write_bytes(m); sig = pathlib.Path(str(f) + ".sig")
         if sig.exists(): sig.unlink()
         subprocess.run(["ssh-keygen", "-Y", "sign", "-f", str(kd / "authority"), "-n", job["namespace"], str(f)], check=True, capture_output=True, stdin=subprocess.DEVNULL, timeout=60)
         return sig.read_text()
-    r = CM.admit(CS, conn, job["envelope"], job["command"], job["signature"], job["ids"], job["now"], enrollee_signature=job.get("enrollee_signature"), journal_signer=("veldo-authority", jsign))
-    print("REPLIED " + json.dumps({"seq": r["seq"], "replayed": r["replayed"]}))
+    r = CM.admit(Commit() if arrival else CS, conn, job["envelope"], job["command"], job["signature"], job["ids"], job["now"], enrollee_signature=job.get("enrollee_signature"), journal_signer=("veldo-authority", jsign))
+    moments["answered"] = time.time()
+    print("REPLIED " + json.dumps({"seq": r["seq"], "replayed": r["replayed"], "moments": moments}))
 except Exception as e:
-    print("REFUSED " + getattr(e, "code", type(e).__name__))
+    moments["answered"] = time.time()
+    print("REFUSED " + str(getattr(e, "code", None) or type(e).__name__) + " " + json.dumps({"detail": str(getattr(e, "detail", e)), "moments": moments}))
 '''
+    _v25_RACER_SECONDS = 180  # each racer process's own timeout (communicate), the bound of every wait on a racer
 
     def _v25_job(world, signer, command, env=None):
         env = env or world.envelope(signer, command)
@@ -321,39 +344,182 @@ except Exception as e:
         f.write_text(_v25_json.dumps(job))
         return str(f)
 
-    def _v25_run_children(world, jobs, kill_at=None):
+    def _v25_racer(world, job, kill_at=None, arrival=None):
         env = dict(_v25_os.environ, VELDO_CONTROL_TEST_HARNESS="1" if kill_at else "0", VELDO_CONTROL_KILL_AT=kill_at or "")
-        procs = [_v25_sp.Popen([_v25_sys.executable, "-c", _v25_child, str(ROOT / ".veldo"), world.db, j], stdout=_v25_sp.PIPE, stderr=_v25_sp.PIPE, text=True, stdin=_v25_sp.DEVNULL, env=env) for j in jobs]
-        outs = []
-        for p in procs:
-            out, err = p.communicate(timeout=180)
-            outs.append((p.returncode, out.strip().split("\n")[-1] if out.strip() else "", err[-200:]))
-        return outs
+        return _v25_sp.Popen([_v25_sys.executable, "-c", _v25_child, _v25_race_dir, world.db, job] + ([arrival] if arrival else []),
+                             stdout=_v25_sp.PIPE, stderr=_v25_sp.PIPE, text=True, stdin=_v25_sp.PIPE if arrival else _v25_sp.DEVNULL, env=env)
 
+    def _v25_answer(p):
+        """(exit status, last line printed, standard error) of a racer, once it has ended."""
+        out, err = p.communicate(timeout=_v25_RACER_SECONDS)
+        return (p.returncode, out.strip().split("\n")[-1] if out.strip() else "", err)
+
+    def _v25_run_children(world, jobs, kill_at=None):
+        return [_v25_answer(p) for p in [_v25_racer(world, j, kill_at) for j in jobs]]
+
+    def _v25_overlap(world, jobs):
+        """Both racers read the committed state and reach their commit before either commits: each waits at its
+        commit until both have arrived, then both are released together. (answers, wait report or None)."""
+        arrivals = [str(world.dir / ("arrived-%d" % i)) for i in range(len(jobs))]
+        procs = [_v25_racer(world, j, arrival=a) for j, a in zip(jobs, arrivals)]
+        report = wait_for(lambda: (all(_v25_os.path.exists(a) or p.poll() is not None for a, p in zip(arrivals, procs)),
+                                   [{"arrived": _v25_os.path.exists(a), "exit": p.poll()} for a, p in zip(arrivals, procs)]),
+                          (_v25_RACER_SECONDS, "each racer process's own timeout"), "both racers to reach their commit")
+        if report is None and not all(_v25_os.path.exists(a) for a in arrivals):
+            report = "a racer ended before reaching its commit: " + repr([{"arrived": _v25_os.path.exists(a), "exit": p.poll()}
+                                                                          for a, p in zip(arrivals, procs)])
+        for p in procs:
+            if report is not None and p.poll() is None:
+                p.kill()
+            try:
+                p.stdin.write("release\n")
+                p.stdin.flush()  # communicate below closes it
+            except OSError:
+                pass  # a racer killed or ended above reads no release
+        return [_v25_answer(p) for p in procs], report
+
+    def _v25_said(answer):
+        """(word, code, detail, moments) of one racer's printed answer."""
+        word, _, rest = answer[1].partition(" ")
+        if word == "REPLIED":
+            data = _v25_json.loads(rest or "{}")
+            return word, None, "", data.get("moments", {})
+        code, _, data = rest.partition(" ")
+        data = _v25_json.loads(data) if data.startswith("{") else {}
+        return word, code, data.get("detail", ""), data.get("moments", {})
+
+    def _v25_racers_seen(answers):
+        return [{"exit": a[0], "said": a[1], "stderr": a[2][-2000:] if a[0] != 0 or not a[1] else ""} for a in answers]
+
+    # (a) overlapped: both read the version before either commits; the loser is refused by the store's version.
+    _v25_mv_before = _v25_w.state()["membership_version"]
+    _v25_journal_before = len(CS25.export_journal(_v25_w.conn))
     _v25_ra = _v25_w.cmd("proc-a", "change_roles", {"principal": "lena", "roles": ["admission_authority", "priority_authority"]})
     _v25_rb = _v25_w.cmd("proc-b", "change_roles", {"principal": "lena", "roles": []})
-    _v25_race = _v25_run_children(_v25_w, [_v25_job(_v25_w, "dmitry", _v25_ra), _v25_job(_v25_w, "dmitry", _v25_rb)])
+    _v25_race, _v25_race_wait = _v25_overlap(_v25_w, [_v25_job(_v25_w, "dmitry", _v25_ra), _v25_job(_v25_w, "dmitry", _v25_rb)])
+    _v25_race_said = [_v25_said(a) for a in _v25_race]
+    _v25_race_lost = [s for s in _v25_race_said if s[0] == "REFUSED"]
     _v25_lena_roles = _v25_w.members().get("lena")
     _v25_mv_after_race = _v25_w.state()["membership_version"]
+    _v25_journal_race = len(CS25.export_journal(_v25_w.conn))
+    _v25_race_ok = (_v25_race_wait is None and sorted(s[0] for s in _v25_race_said) == ["REFUSED", "REPLIED"] and all(a[0] == 0 for a in _v25_race)
+                    and len(_v25_race_lost) == 1 and _v25_race_lost[0][1] == "store_refused" and "stale_version" in _v25_race_lost[0][2]
+                    and CM25.VERSIONS_ENTITY in _v25_race_lost[0][2] and all("arrived" in s[3] for s in _v25_race_said)
+                    and _v25_lena_roles in (["admission_authority", "priority_authority"], []) and _v25_mv_after_race == _v25_mv_before + 1
+                    and _v25_journal_race == _v25_journal_before + 1)
+    expect("VELDO-0025 AC2 membership/one-transition/overlapped: two client processes racing two role changes for lena against one membership "
+           "version each verify a real signature and reach their commit before either commits (each waits at its commit until the parent "
+           "releases both); exactly one commits, the other is refused store_refused with a stale_version detail naming %s, lena holds one "
+           "of the two role sets and the membership version advanced by one (racers: %s%s)"
+           % (CM25.VERSIONS_ENTITY, _v25_racers_seen(_v25_race) if not _v25_race_ok else [a[1] for a in _v25_race],
+              "; wait: " + _v25_race_wait if _v25_race_wait else ""),
+           _v25_race_ok)
+
+    # (b) sequential: the second racer starts only after the first has answered, so its envelope's membership
+    # version is stale when it is checked; it is refused by the envelope and writes nothing.
+    _v25_sa = _v25_w.cmd("seq-a", "change_roles", {"principal": "lena", "roles": ["admission_authority"]})
+    _v25_sb = _v25_w.cmd("seq-b", "change_roles", {"principal": "lena", "roles": ["priority_authority"]})
+    _v25_seq_jobs = [_v25_job(_v25_w, "dmitry", _v25_sa), _v25_job(_v25_w, "dmitry", _v25_sb)]
+    _v25_mv_seq_before = _v25_w.state()["membership_version"]
+    _v25_seq_first = _v25_run_children(_v25_w, _v25_seq_jobs[:1])
+    _v25_mv_seq_first = _v25_w.state()["membership_version"]
+    _v25_journal_seq_first = len(CS25.export_journal(_v25_w.conn))
+    _v25_seq_second = _v25_run_children(_v25_w, _v25_seq_jobs[1:])
+    _v25_seq_said = _v25_said(_v25_seq_second[0])
+    _v25_seq = _v25_seq_first + _v25_seq_second
+    _v25_seq_ok = (all(a[0] == 0 for a in _v25_seq) and _v25_said(_v25_seq_first[0])[0] == "REPLIED"
+                   and _v25_seq_said[0] == "REFUSED" and _v25_seq_said[1] == "envelope_refused"
+                   and "membership_version %r is not the authority's current %r" % (_v25_mv_seq_before, _v25_mv_seq_first) in _v25_seq_said[2]
+                   and _v25_mv_seq_first == _v25_mv_seq_before + 1 and _v25_w.state()["membership_version"] == _v25_mv_seq_first
+                   and len(CS25.export_journal(_v25_w.conn)) == _v25_journal_seq_first and _v25_w.members().get("lena") == ["admission_authority"])
+    expect("VELDO-0025 AC2 membership/one-transition/sequential: two role changes for lena signed against one membership version, the second "
+           "racer started only after the first answered: the first commits, the second is refused envelope_refused with a detail naming its "
+           "stale membership version, and nothing of it is written (racers: %s)"
+           % (_v25_racers_seen(_v25_seq) if not _v25_seq_ok else [a[1] for a in _v25_seq]),
+           _v25_seq_ok)
+
+    _v25_mv_before_kill = _v25_w.state()["membership_version"]
     _v25_kc = _v25_w.cmd("proc-kill", "change_roles", {"principal": "svc", "roles": ["operations_authority"]})
     _v25_k_env = _v25_w.envelope("dmitry", _v25_kc)
     _v25_k_job = _v25_job(_v25_w, "dmitry", _v25_kc, env=_v25_k_env)
     _v25_killed = _v25_run_children(_v25_w, [_v25_k_job], kill_at="after_commit")
     _v25_svc_after_kill = _v25_w.members().get("svc")
     _v25_mv_after_kill = _v25_w.state()["membership_version"]
+    _v25_journal_after_kill = len(CS25.export_journal(_v25_w.conn))
     _v25_retry = _v25_run_children(_v25_w, [_v25_k_job])
     _v25_journal_after = len(CS25.export_journal(_v25_w.conn))
-    expect("VELDO-0025 AC2 membership/one-transition: two client processes racing two role changes for lena against one membership version "
-           "each verify a real signature and exactly one commits (the other loses as store_refused by version), lena holds one of the two "
-           "role sets and the membership version advanced by one; a writer SIGKILLed after acceptance (after COMMIT, before the reply) "
+    _v25_kill_ok = (_v25_killed[0][0] == -9 and _v25_killed[0][1] == "" and _v25_svc_after_kill == ["operations_authority"]
+                    and _v25_mv_after_kill == _v25_mv_before_kill + 1
+                    and _v25_retry[0][1].startswith("REPLIED") and '"replayed": true' in _v25_retry[0][1] and _v25_journal_after == _v25_journal_after_kill
+                    and _v25_w.members()["dmitry"] == ["membership_steward", "project_owner"] and _v25_w.members()["asya"] == ["security_authority"])
+    expect("VELDO-0025 AC2 membership/one-transition/kill-replay: a writer SIGKILLed after acceptance (after COMMIT, before the reply) "
            "leaves the change committed with the version advanced, and the retry of the SAME envelope replays the committed result "
-           "without a new journal record; historical authority is unchanged (dmitry and asya keep their roles) (race: %s; kill: %s; retry: %s)"
-           % ([o[1] for o in _v25_race], [(o[0], o[1]) for o in _v25_killed], [o[1] for o in _v25_retry]),
-           sorted(o[1].split(" ")[0] for o in _v25_race) == ["REFUSED", "REPLIED"] and all(o[0] == 0 for o in _v25_race)
-           and "store_refused" in "".join(o[1] for o in _v25_race) and _v25_lena_roles in (["admission_authority", "priority_authority"], []) and _v25_mv_after_race == 5
-           and _v25_killed[0][0] == -9 and _v25_killed[0][1] == "" and _v25_svc_after_kill == ["operations_authority"] and _v25_mv_after_kill == 6
-           and _v25_retry[0][1].startswith("REPLIED") and '"replayed": true' in _v25_retry[0][1] and _v25_journal_after == 6
-           and _v25_w.members()["dmitry"] == ["membership_steward", "project_owner"] and _v25_w.members()["asya"] == ["security_authority"])
+           "without a new journal record; historical authority is unchanged (dmitry and asya keep their roles) (kill: %s; retry: %s)"
+           % ([(o[0], o[1]) + ((o[2][-2000:],) if not _v25_kill_ok else ()) for o in _v25_killed],
+              [o[1] for o in _v25_retry] if _v25_kill_ok else _v25_racers_seen(_v25_retry)),
+           _v25_kill_ok)
+
+    # VELDO-0261 AC4: a write that cannot begin because another writer holds the store's write lock for the whole
+    # busy timeout is refused store_busy; a handle that cannot write is still refused read_only_handle. Both told
+    # apart by the database's own error code, over the store module the anchor above names.
+    _v25_BS = _v25_load("v25_store_busy", _v25_race_organs[0])
+    _v25_busy_db = str(_v25_tmp / "busy" / "control.sqlite3")
+    _v25_holder = _v25_BS.open_store(_v25_busy_db)
+    _v25_waiter = _v25_BS.open_store(_v25_busy_db)
+    _v25_waiter.execute("PRAGMA busy_timeout=50")  # a short busy timeout: the lock is held for all of it
+
+    def _v25_begin(conn, cid):
+        command = {"command_id": cid, "principal": "owner", "operation": "upsert_entity", "nonce": cid, "artifact_digests": [],
+                   "expected_versions": {"busy:entity": 0}, "parameters": {"entity_id": "busy:entity", "kind": "note", "data": {}}}
+        try:
+            _v25_BS.execute(conn, command, "owner", lambda message: "unsigned", 1)
+            return "committed"
+        except _v25_BS.StoreRefused as e:
+            return e.code
+
+    _v25_holder.execute("BEGIN IMMEDIATE")
+    _v25_busy_code = _v25_begin(_v25_waiter, "busy-1")
+    _v25_holder.execute("ROLLBACK")
+    _v25_ro = _v25_BS.open_store(_v25_busy_db, mode="r")
+    _v25_ro_code = _v25_begin(_v25_ro, "busy-2")
+    for _v25_c in (_v25_holder, _v25_waiter, _v25_ro):
+        _v25_c.close()
+    expect("VELDO-0261 AC4 store/busy-store-named: a writable handle beginning a command while another writable handle holds the "
+           "store's write lock past its busy timeout is refused store_busy, and a read-only handle beginning a command is refused "
+           "read_only_handle; both are named in the store's refusal list (busy: %s; read-only: %s)" % (_v25_busy_code, _v25_ro_code),
+           _v25_busy_code == "store_busy" and _v25_ro_code == "read_only_handle"
+           and {"store_busy", "read_only_handle"} <= set(_v25_BS.REFUSALS))
+
+    # VELDO-0261 AC2: wait_for's expiry branch, driven directly with a condition that never holds and a short bound.
+    # The helper is the shared module's own function, read from the file the anchor names, so a broken expiry path
+    # in that file reds this row. Every field of the report is asserted: what, the bound, its source, the elapsed
+    # seconds and the last observation.
+    import ast as _v25_ast
+    import re as _v25_re
+    import time as _v25_time
+    _v25_wf_file = ROOT / "scripts/suites" / "shared.py"
+    _v25_wf_ns = {}
+    exec(compile(_v25_ast.Module(body=[n for n in _v25_ast.parse(_v25_wf_file.read_text()).body
+                                       if isinstance(n, _v25_ast.FunctionDef) and n.name == "wait_for"], type_ignores=[]),
+                 str(_v25_wf_file), "exec"), _v25_wf_ns)
+    _v25_polls = []
+
+    def _v25_never():
+        _v25_polls.append(len(_v25_polls) + 1)
+        return False, {"poll": _v25_polls[-1]}
+
+    _v25_wf_began = _v25_time.monotonic()
+    _v25_wf_report = _v25_wf_ns["wait_for"](_v25_never, (0.3, "the row's own short bound"), "a condition that never holds")
+    _v25_wf_took = _v25_time.monotonic() - _v25_wf_began
+    _v25_wf_m = _v25_re.fullmatch(r"waited (\d+\.\d) s for a condition that never holds, bound 0\.3 s "
+                                  r"\(the row's own short bound\); last observed: (.*)", _v25_wf_report or "")
+    expect("VELDO-0261 AC2 wait/expiry-report: wait_for given a condition that never holds and a 0.3 s bound returns, once the "
+           "bound has run out, the report naming what it waited for, the bound, its source, the elapsed seconds and the last "
+           "observation, after polling more than once (report: %r; polls: %d; took %.2f s)"
+           % (_v25_wf_report, len(_v25_polls), _v25_wf_took),
+           _v25_wf_m is not None and 0.3 <= float(_v25_wf_m.group(1)) <= _v25_wf_took + 0.05
+           and _v25_wf_m.group(2) == repr({"poll": len(_v25_polls)}) and len(_v25_polls) > 1
+           and 0.3 <= _v25_wf_took < 5)
     _v25_st = _v25_w.state()
     _v25_req_named = {"roles": [], "named_principals": ["ops-lead"], "quorum": 1, "subject_digest": "sha256:s"}
     _v25_req_two = {"roles": [], "named_principals": [], "quorum": 2, "min_independence": 2, "subject_digest": "sha256:s"}
