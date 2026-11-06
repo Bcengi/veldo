@@ -90,9 +90,11 @@ as committed and the suites above are the restored green.
   stop, cause deadline, signal 15; `dispatch/service-principals-only` also red.
 - AC2 (2), `dispatch261-stop-message-ignored`: baseline green; mutant: both stop rows red by cause: exited,
   deadline stop, cause deadline, signal 15; `dispatch/service-principals-only` also red.
-- AC2 (3), `dispatch261-stop-leaves-record-running`: baseline green; mutant: both stop rows red with the wait
-  report: "the receiver of dispatch/... ended (exit 0) with the record still running: nothing is left to record its
-  end" (state unknown); `dispatch/observations` also red, naming the stray unknown dispatches.
+- AC2 (3), `dispatch261-stop-leaves-record-running`, as registered at 66f23c71 (the receiver exits on a stop):
+  baseline green; mutant: both stop rows red with the dead-receiver message "the receiver of dispatch/... ended
+  (exit 0) with the record still running: nothing is left to record its end" (state unknown), which is not the
+  wait report: the wait ended on its first poll and its expiry branch never ran. `dispatch/observations` also red,
+  naming the stray unknown dispatches. Superseded by fix round 1 below.
 - AC3 (1), `membership261-store-version-unchecked`: baseline green; mutant: `membership/one-transition/overlapped`
   red, only it.
 - AC3 (2), `membership261-envelope-version-unchecked`: baseline green; mutant:
@@ -100,6 +102,44 @@ as committed and the suites above are the restored green.
 - AC4, `store261-busy-named-read-only`: baseline green; mutant: `store/busy-store-named` red (busy:
   read_only_handle).
 - AC4, `store261-every-error-busy`: baseline green; mutant: `store/busy-store-named` red (read-only: store_busy).
+
+### Fix round 1 (independent check, AC2 finding)
+
+The check found that falsifier (3) never ran `wait_for`'s expiry branch, and that nothing else did either. Changed
+at 349e227d:
+
+- `dispatch261-stop-leaves-record-running` now leaves the receiver alive and the record running on a stop (the
+  receiver sleeps where it would begin the requested stop). The product's bound is shortened on the mutant copy
+  only, by two further replacements: the receiver announces its contract deadline as its end (no graces or
+  settle), and the module the suite loads allows 2 s to accept (`ACCEPT_SECONDS = 2` outside `__main__`, so the
+  launch's own acceptance keeps its 30 s). Row names unchanged.
+- `scripts/suites/38_veldo_0025_membership.py`: unit row `VELDO-0261 AC2 wait/expiry-report` drives the expiry
+  branch directly: the shared module's own `wait_for`, read from the file the anchor `ROOT / "scripts/suites" /
+  "shared.py"` names, with a condition that never holds and a 0.3 s bound; it asserts what, the bound, its
+  source, the elapsed seconds (at least the bound, at most the time measured), the last observation (the last
+  poll's) and that it polled more than once.
+- New falsifier `wait261-expiry-returns-none` (`shared.py`, dir `scripts/suites`): the expiry branch returns
+  None; declared row `wait/expiry-report`.
+
+Runs at 349e227d, 2026-11-06, each once under `flock` on the gate lock:
+
+- 62_veldo_0039_dispatch: 25 rows, 25 passed, 0 failed, 9.47 s.
+- 38_veldo_0025_membership: 21 rows, 21 passed, 0 failed, 1.87 s (the 20 before plus `wait/expiry-report`).
+- `python3 scripts/check_gate_mutations.py --case dispatch261-stop-leaves-record-running --case
+  wait261-expiry-returns-none`: status passed, registered 2, executed 2, rejected 2, invalid 0, 96.7 s; the
+  suite 62 case in the unconfined leg.
+  - `dispatch261-stop-leaves-record-running` (77.2 s): baseline green (51 rows, 0 failed), noop copy green (51, 0
+    failed); mutant: `dispatch/owner-stop` and `dispatch/owner-stop-other-runner` red with the wait report:
+    "waited 31.5 s for dispatch dispatch/VELDO-9340/... to reach a terminal state, bound 31.5 s (the dispatch's
+    end obligation: the later of its contract deadline and the end its receiver announced, plus
+    control_launch.ACCEPT_SECONDS); last observed: {'state': 'running', 'receiver_exit': None}" (the other row
+    the same for VELDO-9341), cause state unknown, asked True; `dispatch/service-principals-only` and
+    `dispatch/observations` (naming the two stray unknown dispatches by region) also red.
+  - `wait261-expiry-returns-none` (2.5 s): baseline green (47 rows, 0 failed), noop copy green (47, 0 failed);
+    mutant: only `wait/expiry-report` red ("report: None; polls: 16; took 0.30 s").
+
+The mutants are temporary copies; the source stays as committed, and the two suite runs above are the restored
+green.
 
 ### Still open
 
