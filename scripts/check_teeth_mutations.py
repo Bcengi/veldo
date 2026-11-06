@@ -12223,15 +12223,15 @@ def cases():
         ['membership/one-transition/sequential'])
     result[-1]['siblings'] = True
     # AC4: a busy lock and a read-only handle are told apart by the database's error code.
-    begin261 = ('        if busy(e):\n            raise StoreRefused("store_busy", BUSY % e)\n'
-                '        raise StoreRefused("read_only_handle", cannot % e)\n')
-    add(261, 'store261-busy-named-read-only', '38_veldo_0025_membership.py', 'control_store.py', begin261,
-        begin261.replace('raise StoreRefused("store_busy", BUSY % e)',
-                         'raise StoreRefused("read_only_handle", cannot % e)  # defect: busy named read-only'),
+    named261 = ('    if code == sqlite3.SQLITE_BUSY:\n        return StoreRefused("store_busy", BUSY % error)\n'
+                '    if code == sqlite3.SQLITE_READONLY:\n')
+    add(261, 'store261-busy-named-read-only', '38_veldo_0025_membership.py', 'control_store.py', named261,
+        named261.replace('return StoreRefused("store_busy", BUSY % error)',
+                         'return StoreRefused("read_only_handle", cannot % error)  # defect: busy named read-only'),
         ['store/busy-store-named'])
     result[-1]['siblings'] = True
-    add(261, 'store261-every-error-busy', '38_veldo_0025_membership.py', 'control_store.py', begin261,
-        begin261.replace('        if busy(e):', '        if True:  # defect: every error named busy'),
+    add(261, 'store261-every-error-busy', '38_veldo_0025_membership.py', 'control_store.py', named261,
+        named261.replace('    if code == sqlite3.SQLITE_BUSY:', '    if True:  # defect: every error named busy'),
         ['store/busy-store-named'])
     result[-1]['siblings'] = True
 

@@ -524,22 +524,27 @@ def command_problems(command, registry=None):
 BUSY = "another writer held the store's write lock for the whole busy timeout (%s): the write did not begin"
 
 
-def busy(error):
-    """VELDO-0261: the database's own error code says another writer holds the write lock (SQLITE_BUSY or one of
-    its extended codes), never its message text."""
-    return (getattr(error, "sqlite_errorcode", 0) & 0xFF) == sqlite3.SQLITE_BUSY
+def write_refusal(error, cannot):
+    """VELDO-0261: the refusal of a write the database would not take, told apart by the database's own error code
+    (its primary code, so every extended code counts), never by its message text: store_busy when another writer
+    held the write lock for the whole busy timeout (SQLITE_BUSY), read_only_handle (`cannot`, with the error) when
+    this handle cannot write (SQLITE_READONLY). None for any other error."""
+    code = getattr(error, "sqlite_errorcode", 0) & 0xFF
+    if code == sqlite3.SQLITE_BUSY:
+        return StoreRefused("store_busy", BUSY % error)
+    if code == sqlite3.SQLITE_READONLY:
+        return StoreRefused("read_only_handle", cannot % error)
+    return None
 
 
 def _begin(conn, cannot):
     """Begin a write transaction (BEGIN IMMEDIATE), or refuse by name with nothing written: store_busy when another
-    writer held the write lock for the whole busy timeout, read_only_handle (`cannot`, with the error) when this
-    handle cannot write."""
+    writer held the write lock for the whole busy timeout, else read_only_handle (`cannot`, with the error), as
+    every begin refused before."""
     try:
         conn.execute("BEGIN IMMEDIATE")
     except sqlite3.OperationalError as e:
-        if busy(e):
-            raise StoreRefused("store_busy", BUSY % e)
-        raise StoreRefused("read_only_handle", cannot % e)
+        raise write_refusal(e, cannot) or StoreRefused("read_only_handle", cannot % e)
 
 
 def _kill_point(name):
@@ -703,8 +708,9 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
     except sqlite3.OperationalError as e:
         if conn.in_transaction:
             conn.execute("ROLLBACK")
-        if "readonly" in str(e).lower() or "read-only" in str(e).lower():
-            raise StoreRefused("read_only_handle", "this handle cannot write (%s)" % e)
+        refusal = write_refusal(e, "this handle cannot write (%s)")
+        if refusal is not None:
+            raise refusal
         raise
     except StoreRefused:
         if conn.in_transaction:
@@ -1201,10 +1207,9 @@ def _write(conn, sql, params):
     except sqlite3.OperationalError as e:
         if conn.in_transaction:
             conn.execute("ROLLBACK")
-        if busy(e):
-            raise StoreRefused("store_busy", BUSY % e)
-        if "readonly" in str(e).lower() or "read-only" in str(e).lower():
-            raise StoreRefused("read_only_handle", "this handle cannot write (%s)" % e)
+        refusal = write_refusal(e, "this handle cannot write (%s)")
+        if refusal is not None:
+            raise refusal
         raise
 
 
