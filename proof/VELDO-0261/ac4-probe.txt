@@ -3,6 +3,6 @@
 ## before (control_store.py at 2c185c6b, the tests commit)
 busy: read_only_handle | this handle cannot write (database is locked): open the store with mode='rw' at a qualified location
 read-only: read_only_handle | this handle cannot write (attempt to write a readonly database)
-## after (control_store.py at 29937185)
+## after (control_store.py at 32e40031)
 busy: store_busy | another writer held the store's write lock for the whole busy timeout (database is locked): the write did not begin
 read-only: read_only_handle | this handle cannot write (attempt to write a readonly database)
