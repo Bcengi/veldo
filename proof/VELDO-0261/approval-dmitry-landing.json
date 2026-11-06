@@ -7,11 +7,15 @@
     "spec_id": "VELDO-0261",
     "commit": "94b85812e4fdf4b8e2458fe568391da160e697ff",
     "paths": [
-      ".veldo/secret_inventory.json"
+      ".veldo/secret_inventory.json",
+      "engine/scripts/agent_sandbox.json",
+      "scripts/agent_sandbox.json",
+      "scripts/gate_unconfined.json",
+      "scripts/suites/shared.py"
     ]
   },
-  "basis": "Dmitry approved landing of the landing-a batch plus VELDO-0261 at 94b85812 over Telegram on 2026-11-06T20:24Z (message 39529, 'approve landing'), asked in 39528 (commit line 39530). The ask listed the contents: the engine upgrade (0166), VELDO-0234, 0235, 0248, 0241 and the secret inventory update (approved for the earlier landing-a commit ecacfd0a in 39220), plus VELDO-0261 (deterministic gate rows and the store_busy refusal name), and stated the canonical gate was GREEN at 94b85812. The one protected path changed against main is .veldo/secret_inventory.json. WHAT IT DOES NOT COVER: any other protected path or commit.",
-  "recorded_at": "2026-11-06T20:40:00Z",
+  "basis": "Dmitry approved landing of the landing-a batch plus VELDO-0261 at 94b85812 over Telegram on 2026-11-06 (39529 'approve landing' to ask 39528; asked what 94b85812 is in 39531, explained in 39532, confirmed 'Yes' in 39533). The policy check then showed more protected paths than the first ask named; all five were disclosed in plain words in 39534 and he approved them with 'Yes' in 39535: (1) .veldo/secret_inventory.json, the secret inventory update; (2, 3) engine/scripts/agent_sandbox.json and scripts/agent_sandbox.json, one optional read root (~/.local/share/codex-versions) so the gate's sandbox can read the qualified Codex 0.166 program, from the engine upgrade; (4) scripts/gate_unconfined.json, suite 127 (VELDO-0234, the HTTPS port) added to the suites allowed to run outside the sandbox because it installs user services on the host; (5) scripts/suites/shared.py, the wait_for helper VELDO-0261's deterministic rows use. The canonical gate was GREEN at 94b85812. WHAT IT DOES NOT COVER: any other protected path or commit.",
+  "recorded_at": "2026-11-06T20:52:00Z",
   "recorded_by": "Claude (recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
   "expires_at": "2026-12-06T00:00:00Z"
 }
