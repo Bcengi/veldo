@@ -1,0 +1,17 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-VELDO-0261-LANDING",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0261",
+    "commit": "94b85812e4fdf4b8e2458fe568391da160e697ff",
+    "paths": [
+      ".veldo/secret_inventory.json"
+    ]
+  },
+  "basis": "Dmitry approved landing of the landing-a batch plus VELDO-0261 at 94b85812 over Telegram on 2026-11-06T20:24Z (message 39529, 'approve landing'), asked in 39528 (commit line 39530). The ask listed the contents: the engine upgrade (0166), VELDO-0234, 0235, 0248, 0241 and the secret inventory update (approved for the earlier landing-a commit ecacfd0a in 39220), plus VELDO-0261 (deterministic gate rows and the store_busy refusal name), and stated the canonical gate was GREEN at 94b85812. The one protected path changed against main is .veldo/secret_inventory.json. WHAT IT DOES NOT COVER: any other protected path or commit.",
+  "recorded_at": "2026-11-06T20:40:00Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-12-06T00:00:00Z"
+}
