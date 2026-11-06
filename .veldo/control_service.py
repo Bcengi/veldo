@@ -345,7 +345,7 @@ NAMED = {
     'command_content_conflict': 'stale_subject', 'stale_version': 'stale_subject',
     'nonce_consumed': 'stale_subject', 'foreign_key_violation': 'invalid_input',
     'entity_owned': 'missing_authority', 'foreign_transition': 'missing_authority',
-    'read_only_handle': 'unavailable_service', 'incomplete_transaction': 'unknown_outcome',
+    'read_only_handle': 'unavailable_service', 'store_busy': 'unavailable_service', 'incomplete_transaction': 'unknown_outcome',
     'unowned': 'stale_subject', 'not_owner': 'missing_authority', 'stale_generation': 'stale_subject',
     'capability': 'missing_authority', 'parked': 'stale_subject', 'ownership_uncertain': 'unknown_outcome',
     'ownership_restore_differs': 'stale_subject',

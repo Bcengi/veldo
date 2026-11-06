@@ -135,7 +135,7 @@ JOURNAL_SIGNED_FIELDS = JOURNAL_FIELDS + ("record_digest",)
 
 REFUSALS = ("malformed_command", "unregistered_operation", "command_content_conflict", "stale_version", "nonce_consumed",
             "foreign_key_violation", "unsupported_filesystem", "incomplete_transaction", "durability_not_enabled", "transition_refused",
-            "read_only_handle", "publication_backfill_required", "no_explicit_store_path", "entity_owned",
+            "read_only_handle", "store_busy", "publication_backfill_required", "no_explicit_store_path", "entity_owned",
             "ownership_conflict", "repository_binding_conflict", "foreign_transition", "ownership_restore_differs")
 DURABILITY_GRADES = ("off_host", "protocol_only")
 
@@ -521,6 +521,27 @@ def command_problems(command, registry=None):
 # Execution: one transaction, all of it or none (R22).
 # ---------------------------------------------------------------------------------------------
 
+BUSY = "another writer held the store's write lock for the whole busy timeout (%s): the write did not begin"
+
+
+def busy(error):
+    """VELDO-0261: the database's own error code says another writer holds the write lock (SQLITE_BUSY or one of
+    its extended codes), never its message text."""
+    return (getattr(error, "sqlite_errorcode", 0) & 0xFF) == sqlite3.SQLITE_BUSY
+
+
+def _begin(conn, cannot):
+    """Begin a write transaction (BEGIN IMMEDIATE), or refuse by name with nothing written: store_busy when another
+    writer held the write lock for the whole busy timeout, read_only_handle (`cannot`, with the error) when this
+    handle cannot write."""
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+    except sqlite3.OperationalError as e:
+        if busy(e):
+            raise StoreRefused("store_busy", BUSY % e)
+        raise StoreRefused("read_only_handle", cannot % e)
+
+
 def _kill_point(name):
     """Self-inflicted SIGKILL at a named boundary, only under the test harness. This is how the
     crash matrix reaches the durable boundaries of a real writer process."""
@@ -576,10 +597,7 @@ def execute(conn, command, signer, sign, authority_generation, receipt_refs=(), 
     receipt_refs = list(receipt_refs or ())  # materialized ONCE: an iterator consumed twice signs one list and stores another
     if not all(_is_str(r) for r in receipt_refs):
         raise StoreRefused("malformed_command", "receipt_refs must be strings")
-    try:
-        conn.execute("BEGIN IMMEDIATE")
-    except sqlite3.OperationalError as e:
-        raise StoreRefused("read_only_handle", "this handle cannot write (%s): open the store with mode='rw' at a qualified location" % e)
+    _begin(conn, "this handle cannot write (%s): open the store with mode='rw' at a qualified location")
     conn.command_transaction = True
     try:
         prior = conn.execute("SELECT command_digest, result FROM commands WHERE command_id=?", (command["command_id"],)).fetchone()
@@ -811,10 +829,7 @@ def declare_owners(conn, owner, kinds=None, prefixes=None, module=None):
     rows = _ownership_rows(owner, kinds, prefixes, module)
     if set(rows) <= set(entity_owners(conn)):
         return rows
-    try:
-        conn.execute("BEGIN IMMEDIATE")
-    except sqlite3.OperationalError as e:
-        raise StoreRefused("read_only_handle", "this handle cannot declare ownership (%s)" % e)
+    _begin(conn, "this handle cannot declare ownership (%s)")
     try:
         conn.execute(_OWNERS_DDL)
         declared = {(r[0], r[1]): r for r in entity_owners(conn)}
@@ -869,10 +884,7 @@ def rebind_owners(conn, installed, keep_previous=False, observe=None):
                 if r[4] in installed and r[5] != installed[r[4]] and module_digest(r[4]) == installed[r[4]]]
     if not due():
         return []
-    try:
-        conn.execute("BEGIN IMMEDIATE")
-    except sqlite3.OperationalError as e:
-        raise StoreRefused("read_only_handle", "this handle cannot rebind ownership (%s)" % e)
+    _begin(conn, "this handle cannot rebind ownership (%s)")
     try:
         rebound = due()
         for selector, value, module, previous, digest in rebound:
@@ -925,10 +937,7 @@ def restore_owners(conn, observe=None):
     a store with no record is not written."""
     if not previous_owners(conn):
         return []
-    try:
-        conn.execute("BEGIN IMMEDIATE")
-    except sqlite3.OperationalError as e:
-        raise StoreRefused("read_only_handle", "this handle cannot restore ownership (%s)" % e)
+    _begin(conn, "this handle cannot restore ownership (%s)")
     try:
         restored = previous_owners(conn)
         blocked = []
@@ -961,10 +970,7 @@ def drop_previous_owners(conn, observe=None):
     upgrade committed); `observe(dropped)` before the commit. A store with no record is not written."""
     if not previous_owners(conn):
         return []
-    try:
-        conn.execute("BEGIN IMMEDIATE")
-    except sqlite3.OperationalError as e:
-        raise StoreRefused("read_only_handle", "this handle cannot drop the previous bindings (%s)" % e)
+    _begin(conn, "this handle cannot drop the previous bindings (%s)")
     try:
         dropped = previous_owners(conn)
         conn.execute("DELETE FROM %s" % PREVIOUS_TABLE)
@@ -998,10 +1004,7 @@ def bind_repositories(conn, domain_uuid, repositories):
             _is_str(r) and _is_str(p) for r, p in repositories.items()):
         raise StoreRefused("malformed_command", "a repository binding names its domain and maps each repository to a path")
     targets = {repository: os.path.realpath(path) for repository, path in sorted(repositories.items())}
-    try:
-        conn.execute("BEGIN IMMEDIATE")
-    except sqlite3.OperationalError as e:
-        raise StoreRefused("read_only_handle", "this handle cannot bind a repository (%s)" % e)
+    _begin(conn, "this handle cannot bind a repository (%s)")
     try:
         spec = importlib.util.spec_from_file_location('store_git_identity',
                 os.path.join(os.path.dirname(os.path.abspath(__file__)), 'control_git_identity.py'))
@@ -1198,6 +1201,8 @@ def _write(conn, sql, params):
     except sqlite3.OperationalError as e:
         if conn.in_transaction:
             conn.execute("ROLLBACK")
+        if busy(e):
+            raise StoreRefused("store_busy", BUSY % e)
         if "readonly" in str(e).lower() or "read-only" in str(e).lower():
             raise StoreRefused("read_only_handle", "this handle cannot write (%s)" % e)
         raise
