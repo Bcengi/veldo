@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0261
 title: Three intermittent gate rows become deterministic, each waiting on what it checks and keeping the whole failure, and a busy store is refused by its own name
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -185,3 +185,5 @@ the gate's concurrency; any other suite's waits.
 2026-11-05: drafted from the three failed reruns of the landing candidate at ecacfd0a (gate logs
 ~/projects/myday/research/veldo-gate-landing-a2.log green, a3, a4 and a5 red). The gate lock was held
 throughout the diagnosis, so no suite was run; the diagnosis is from the logs and the code.
+
+2026-11-06: ready on the owner's instruction, Telegram 39313 ("Fix flaky tests, you should not run it like this"). AC4 (a busy store lock refused as read_only_handle) is a real product defect found on the same path and is fixed with it (a real defect is always fixed); the owner is told.
