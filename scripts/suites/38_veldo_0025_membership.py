@@ -489,6 +489,37 @@ except Exception as e:
            "read_only_handle; both are named in the store's refusal list (busy: %s; read-only: %s)" % (_v25_busy_code, _v25_ro_code),
            _v25_busy_code == "store_busy" and _v25_ro_code == "read_only_handle"
            and {"store_busy", "read_only_handle"} <= set(_v25_BS.REFUSALS))
+
+    # VELDO-0261 AC2: wait_for's expiry branch, driven directly with a condition that never holds and a short bound.
+    # The helper is the shared module's own function, read from the file the anchor names, so a broken expiry path
+    # in that file reds this row. Every field of the report is asserted: what, the bound, its source, the elapsed
+    # seconds and the last observation.
+    import ast as _v25_ast
+    import re as _v25_re
+    import time as _v25_time
+    _v25_wf_file = ROOT / "scripts/suites" / "shared.py"
+    _v25_wf_ns = {}
+    exec(compile(_v25_ast.Module(body=[n for n in _v25_ast.parse(_v25_wf_file.read_text()).body
+                                       if isinstance(n, _v25_ast.FunctionDef) and n.name == "wait_for"], type_ignores=[]),
+                 str(_v25_wf_file), "exec"), _v25_wf_ns)
+    _v25_polls = []
+
+    def _v25_never():
+        _v25_polls.append(len(_v25_polls) + 1)
+        return False, {"poll": _v25_polls[-1]}
+
+    _v25_wf_began = _v25_time.monotonic()
+    _v25_wf_report = _v25_wf_ns["wait_for"](_v25_never, (0.3, "the row's own short bound"), "a condition that never holds")
+    _v25_wf_took = _v25_time.monotonic() - _v25_wf_began
+    _v25_wf_m = _v25_re.fullmatch(r"waited (\d+\.\d) s for a condition that never holds, bound 0\.3 s "
+                                  r"\(the row's own short bound\); last observed: (.*)", _v25_wf_report or "")
+    expect("VELDO-0261 AC2 wait/expiry-report: wait_for given a condition that never holds and a 0.3 s bound returns, once the "
+           "bound has run out, the report naming what it waited for, the bound, its source, the elapsed seconds and the last "
+           "observation, after polling more than once (report: %r; polls: %d; took %.2f s)"
+           % (_v25_wf_report, len(_v25_polls), _v25_wf_took),
+           _v25_wf_m is not None and 0.3 <= float(_v25_wf_m.group(1)) <= _v25_wf_took + 0.05
+           and _v25_wf_m.group(2) == repr({"poll": len(_v25_polls)}) and len(_v25_polls) > 1
+           and 0.3 <= _v25_wf_took < 5)
     _v25_st = _v25_w.state()
     _v25_req_named = {"roles": [], "named_principals": ["ops-lead"], "quorum": 1, "subject_digest": "sha256:s"}
     _v25_req_two = {"roles": [], "named_principals": [], "quorum": 2, "min_independence": 2, "subject_digest": "sha256:s"}
