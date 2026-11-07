@@ -30,6 +30,7 @@ footprint:
   - "scripts/gate_unconfined.json"
   - ".veldo/policy.yaml"
   - "scripts/suites/101_veldo_0208_landing_reuse.py"
+  - "scripts/suites/08_restoration_spec_generation_veldo.py"
   - "scripts/suites/111_veldo_0214_first_use_budget.py"
   - "scripts/suites/113_veldo_0220_gate_host.py"
   - "scripts/suites/114_veldo_0220_gate_scope.py"
@@ -136,3 +137,5 @@ core half).
 2026-11-07: footprint and protected_paths widened by the lead (Telegram 39708 scope; ACs keep their meaning, AC3 names where the handoff and the stage are removed): the build stopped correctly because AC1 needs the --parked flag in scripts/selftest.py and AC3 touches gate_legs.py, gate_schedule.py and their engine copies, gate_unconfined.json, .veldo/policy.yaml and suites 101, 111, 113 and 114 (proof/VELDO-0278/README.md, 052a20a1). The policy change moves a protection to the file's new path at the same floor and removes none. depends_on stays as the landing order: 0267 and 0271 land first and 0278 merges onto them at landing.
 
 2026-11-07: by the lead (Telegram 39708 scope, ACs keep their meaning): the AC1 falsifier row no longer runs the real eight parked suites at the gate (the build measured 15_warp_1404 alone at 539 s, about 10 minutes added to the unit stage, which defeats the parking); the gate row uses a one-fragment fixture and the all-eight green run is proof evidence run once. Footprint gains scripts/suites/114_veldo_0216_concurrent_stages.py, whose four handoff rows drop with the VELDO-0214 handoff (proof/VELDO-0278/README.md).
+
+2026-11-07: footprint gains scripts/suites/08_restoration_spec_generation_veldo.py, by the lead under Telegram 39708 (ACs unchanged): its row 'governing_spec resolves a behavior by declared footprint match' asserts which spec governs the live .veldo/evidence.py, so it turns red whenever a later spec on the branch declares a broader footprint (the cleanup specs of ded89b93 do); the row must prove the footprint resolution on a fixed fixture corpus instead (check of 2026-11-07, research/claude-runs/veldo-0278-check-2026-11-07.md F3).
