@@ -1537,10 +1537,10 @@ def main():
     if not (args.full or args.finding or args.names):
         selection = gate_selection(chooser, args.root, common, leg)
     receipt = run_stage(args.root, common, capacities=resource_capacities(args.resource_capacity),
-                        findings=args.finding, names=args.names,
+                        findings=args.finding, names=args.names, selection=selection,
+                        trace_coverage=args.full, force_fresh=args.full,
                         admit=load(ROOT / 'scripts/gate_schedule.py').CHANNEL in os.environ,
-                        log_dir=args.worker_log_dir, leg=leg, measure=True, selection=selection,
-                        trace_coverage=args.full, force_fresh=args.full)
+                        log_dir=args.worker_log_dir, leg=leg, measure=True)
     if 'selection' in receipt:
         try:
             receipt['selection']['nightly'] = chooser.nightly_summary(
